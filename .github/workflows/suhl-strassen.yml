@@ -1,8 +1,9 @@
 # Suhl-Straßen (Stufe 2 des Suhl-Plans, Paket S2-3, Auftrag docs/plans/auftraege/suhl-strassen.md): die ganze Stadt – jede Straße und jeder
 # Weg der Gemeinde aus dem Geofabrik-Auszug Thüringen (mit osmium geschnitten), Längsprofile in einer Ausgleichsrechnung (Kreuzungen auf
 # einer Höhe), Wasser und Bahn als eigene Ebenen, die zwei Routen Garten – Suhl, die Ausstattung, die Prüfungen.
-# Ergebnis: Kacheln suhl/s/v0/… und suhl/m/v0/… und die Datei im Format der Fahrtdaten als Artefakt „suhl-strassen-stadt“ (bis es das
-# Daten-Repo gibt); auf den Zweig kommen nur kleine Dateien nach tools/suhl/out/strassen/stadt/ (Zahlen, Index, die Profile als
+# Ergebnis: die Produkt-Ordner suhl/s/v<N> und suhl/m/v<N> als Artefakte mit festem Namen „suhl-s-v<N>“ und „suhl-m-v<N>“ (suhl-daten
+# veröffentlicht den Satz durch die eine Tür – dieser Lauf veröffentlicht nichts selbst), alles zusammen als Artefakt
+# „suhl-strassen-stadt“; auf den Zweig kommen nur kleine Dateien nach tools/suhl/out/strassen/stadt/ (Zahlen, Index, die Profile als
 # fahrt/suhl.json.gz für suhl-boden). Sonst wird nichts angefasst.
 # Läuft nur auf suhl/strassen und nur, wenn diese Datei oder tools/suhl/strassen/lauf.txt sich ändert (lauf.txt ändern = neuen Lauf
 # bestellen). Der Lauf nimmt beim Start den neuesten Stand des Zweigs; Skript-Änderungen allein stoßen keinen Lauf an.
@@ -42,6 +43,12 @@ jobs:
           pip install --quiet numpy scipy shapely pyproj rasterio tifffile imagecodecs pillow requests
           sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
           mkdir -p "$SUHL_RAW" logs "$OUT" tools/suhl/out/strassen/stadt
+          # the generation of this set and of the uncut ground of suhl-boden it is solved on (order file: version=<N>, boden_version=<N>)
+          VER=$(grep -E '^version=' tools/suhl/strassen/lauf.txt | tail -1 | cut -d= -f2 | tr -d ' \r' || true)
+          BVER=$(grep -E '^boden_version=' tools/suhl/strassen/lauf.txt | tail -1 | cut -d= -f2 | tr -d ' \r' || true)
+          echo "VER=${VER:-1}" >> "$GITHUB_ENV"
+          echo "BVER=${BVER:-1}" >> "$GITHUB_ENV"
+          echo "Generation: s und m v${VER:-1}, gerechnet auf dem ungeschnittenen Boden v${BVER:-1}"
       - name: Rohdaten aus dem Cache (Downloads früherer Läufe)
         uses: actions/cache/restore@v4
         with:
@@ -111,7 +118,7 @@ jobs:
           TILES=""; if [ -n "$BODEN_T" ]; then TILES="--tiles $BODEN_T"; fi
           KOR=""; if [ -s "$OUT/fahrt/routen-suhl.json" ]; then KOR="--korridor $OUT/fahrt/routen-suhl.json"; fi
           python -I -u tools/suhl/strassen/lauf.py --gebiet stadt --opl "$SUHL_RAW/geofabrik/suhl-strassen.opl.gz" --raw "$SUHL_RAW" --out "$OUT" \
-            $TILES --tiles-from "$BODEN_FROM" $KOR 2>&1 | tee logs/lauf.log
+            --version "$VER" --based-on "boden=$BVER" $TILES --tiles-from "$BODEN_FROM" $KOR 2>&1 | tee logs/lauf.log
       - name: Ausstattung (Werkzeug des Straßen-Chats von feat/strassen, dazu Ampeln, Überwege, Haltestellen, Laternen, Straßenschilder)
         continue-on-error: true
         timeout-minutes: 15
@@ -129,33 +136,25 @@ jobs:
           if [ -f tools/suhl/strassen/pruefen.py ]; then
             python -I -u tools/suhl/strassen/pruefen.py --opl "$SUHL_RAW/geofabrik/suhl-strassen.opl.gz" --out "$OUT" 2>&1 | tee logs/pruefen.log
           else echo "pruefen.py fehlt noch – übersprungen" | tee logs/pruefen.log; fi
-      - name: Gegen den gemeinsamen Vertrag prüfen (tools/suhl/lib/validate.py von suhl-daten)
+      - name: Gegen den gemeinsamen Vertrag prüfen (tools/suhl/lib/validate.py von suhl-daten – der Prüfer ist der Richter)
         continue-on-error: true
         run: |
           set -o pipefail
           if [ -f tools/suhl/lib/validate.py ]; then
             python -I tools/suhl/lib/validate.py "$OUT" --quiet --json "$OUT/vertrag.json" 2>&1 | tail -15 | tee logs/vertrag.log || true
+            tail -1 logs/vertrag.log >> "$GITHUB_STEP_SUMMARY"
           else echo "validate.py fehlt – übersprungen" | tee logs/vertrag.log; fi
-      - name: Veröffentlichen ins Daten-Repo (nur mit DATEN_TOKEN und der Aktion von suhl-daten)
-        continue-on-error: true
-        env:
-          DATEN_TOKEN: ${{ secrets.DATEN_TOKEN }}
-        run: |
-          if [ -z "$DATEN_TOKEN" ] || [ ! -d .github/actions/suhl-publish ]; then
-            echo "Veröffentlichen übersprungen: DATEN_TOKEN oder die Aktion suhl-publish fehlt noch – die Kacheln bleiben als Artefakt." | tee logs/publish.txt
-          else
-            echo "DATEN_TOKEN und suhl-publish sind da – der Aufruf folgt, sobald suhl-daten die Aktion freigibt." | tee logs/publish.txt
-          fi
       - name: Kleine Ergebnisse für den Zweig zusammenstellen
         if: always()
         run: |
           D=tools/suhl/out/strassen/stadt
-          mkdir -p "$D/fahrt" "$D/suhl/s/v0" "$D/suhl/m/v0"
-          cp -f "$OUT/zahlen.json" "$D/" 2>/dev/null || true
+          # the folder holds the newest run only: index files of an older generation and files a run no longer writes go
+          rm -rf "$D/suhl" "$D/fahrt" "$D/strassen"
+          mkdir -p "$D/fahrt" "$D/strassen" "$D/suhl/s/v$VER" "$D/suhl/m/v$VER"
           cp -f "$OUT"/*.json "$D/" 2>/dev/null || true
-          cp -f "$OUT/suhl/s/v0/index.json" "$D/suhl/s/v0/" 2>/dev/null || true
-          cp -f "$OUT/suhl/m/v0/index.json" "$D/suhl/m/v0/" 2>/dev/null || true
-          mkdir -p "$D/strassen" && for f in "$OUT"/strassen/*.json; do [ -f "$f" ] && gzip -9 -n -c "$f" > "$D/strassen/$(basename "$f").gz"; done
+          cp -f "$OUT/suhl/s/v$VER/index.json" "$D/suhl/s/v$VER/" 2>/dev/null || true
+          cp -f "$OUT/suhl/m/v$VER/index.json" "$D/suhl/m/v$VER/" 2>/dev/null || true
+          for f in "$OUT"/strassen/*.json; do [ -f "$f" ] && gzip -9 -n -c "$f" > "$D/strassen/$(basename "$f").gz"; done
           cp -f logs/hoehen.txt "$D/hoehen.txt" 2>/dev/null || true
           for f in "$OUT"/fahrt/*.json; do [ -f "$f" ] && gzip -9 -n -c "$f" > "$D/fahrt/$(basename "$f").gz"; done
           cp -f "$SUHL_RAW/geofabrik/fileinfo-strassen.txt" "$D/osm-stand.txt" 2>/dev/null || true
@@ -172,7 +171,23 @@ jobs:
         with:
           path: ~/suhl-raw
           key: suhl-strassen-raw-v1-${{ env.RAWKEY }}
-      - name: Die ganze Stadt als Artefakt
+      - name: Straßenraum als Artefakt mit festem Namen (suhl-s-v<N> – der Produkt-Ordner mit Index, für die eine Tür von suhl-daten)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-s-v${{ env.VER }}
+          path: out/stadt/suhl/s/v${{ env.VER }}/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Möbel der Straße als Artefakt mit festem Namen (suhl-m-v<N>)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-m-v${{ env.VER }}
+          path: out/stadt/suhl/m/v${{ env.VER }}/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Die ganze Stadt als Artefakt (alles – Kacheln, Dateien im Format der Fahrtdaten, Zahlen, Protokolle)
         if: always()
         uses: actions/upload-artifact@v4
         with:

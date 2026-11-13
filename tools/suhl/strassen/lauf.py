@@ -63,11 +63,13 @@ def model_ring(coords, z=None, o=(0.0, 0.0)):
 
 
 def main():
+    global VERSION
     ap = argparse.ArgumentParser()
     ap.add_argument('--gebiet', default='probe', choices=['probe', 'zentrum', 'kernstadt', 'stadt'])
     ap.add_argument('--opl')
     ap.add_argument('--api-dir')
     ap.add_argument('--tiles')
+    ap.add_argument('--version', type=int, default=VERSION)   # the generation of this product: the folder suhl/s/v<N>
     ap.add_argument('--based-on', default='boden=1')   # the generation of suhl-boden's uncut ground the profiles are solved on (index.json based_on)
     ap.add_argument('--tiles-from', default='')   # where the ground tiles came from (branch and commit, or run and artifact): written into the files
     ap.add_argument('--raw', default=S.RAW)
@@ -79,6 +81,7 @@ def main():
     ap.add_argument('--korridor')                        # routen-suhl.json of routen.py: the roads for cars along the routes outside the area
     ap.add_argument('--alt', default=os.path.join(S.REPO, 'viz3', 'extra', 'fahrt', 'dist', 'fahrt', 'strassen.json'))
     a = ap.parse_args()
+    VERSION = a.version
     t0 = time.time()
     out = a.out or os.path.join(S.OUT, a.gebiet)
     name = a.name or {'probe': 'suhl-zentrum', 'zentrum': 'suhl-zentrum'}.get(a.gebiet, 'suhl')
@@ -271,7 +274,7 @@ def main():
     tiles = {t: {'ways': [], 'areas': [], 'rail': [], 'railpts': [], 'water': [], 'wareas': [], 'm': collections.Counter()} for t in T}
     f_rail, f_water, f_wareas, f_railpts = [], [], [], []
     km_rail, km_water = collections.Counter(), collections.Counter()
-    fw, f_lanes, f_ids, f_hw, f_ms, f_s0, f_kor, f_grund = [], [], [], [], [], [], [], []
+    fw, f_lanes, f_ids, f_hw, f_ms, f_s0, f_kor, f_grund, f_style = [], [], [], [], [], [], [], [], []
     km_kor = collections.Counter()
     km_kor_g = collections.Counter()
     bridges, tunnels = [], []
@@ -366,6 +369,7 @@ def main():
             f_ids.append(w['id'])
             f_hw.append(hw_i(w['hw']))
             f_ms.append(w['ms'])
+            f_style.append(style)
             f_s0.append(int(round(run_s0 * 10)))
             f_kor.append(bool(w.get('korridor')))
             Lr = S.way_len(run)
@@ -547,16 +551,14 @@ def main():
         nr = {i: k for k, i in enumerate(used)}
         d = {'v': 1, 'made': made[:10], 'note': note, 'credits': ATTR, 'kinds': KINDS, 'surf': SURF, 'names': [names[i] for i in used],
              'ways': [fw[i][:4] + [nr[fw[i][4]], nr[fw[i][5]], fw[i][6]] for i in sel],
-             'places': extra.get('places', []), 'signs': [], 'routes': extra.get('routes', {}), 'park': {},
+             'places': [], 'signs': [], 'routes': extra.get('routes', {}), 'park': {},
              'lanes': [f_lanes[i] for i in sel], 'ids': [f_ids[i] for i in sel], 'hws': hws, 'hw': [f_hw[i] for i in sel], 'ms': [f_ms[i] for i in sel],
-             's0': [f_s0[i] for i in sel], 'fl_bits': NZ.FL_DOC,
+             's0': [f_s0[i] for i in sel], 'style': [f_style[i] for i in sel], 'fl_bits': NZ.FL_DOC,
              'bridges': [dict(b, i=ren[b['i']]) for b in bridges if b['i'] in ren] + [b for b in bridges if b['i'] == -1 and extra.get('rail')],
              'tunnels': [dict(b, i=ren[b['i']]) for b in tunnels if b['i'] in ren]}
         if 'areas' in extra:
             d['areas'] = [ar[:2] + [nr[ar[2]]] + ar[3:] for ar in extra['areas']]
             d['atypes'] = NZ.ATYPES
-        if 'orte' in extra:
-            d['orte'] = extra['orte']
         if 'rail' in extra:
             d['rail'] = [r[:2] + [nr[r[2]]] + r[3:] for r in extra['rail']]
             d['railpts'] = [r[:4] + [nr[r[4]]] + r[5:] for r in extra['railpts']]
@@ -565,29 +567,60 @@ def main():
             d['wareas'] = [r[:1] + [nr[r[1]]] + r[2:] for r in extra['wareas']]
         if extra.get('grund'):
             d['grund'] = [f_grund[i] for i in sel]
-            d['grund_note'] = ('grund, eine Zahl je Weg: 1 = der Weg liegt auf den Geländekacheln von suhl-boden (dort ist er schon in den Boden '
-                               'geschnitten: FAHRT.add mit carve: false), 0 = außerhalb (die Fahrt schneidet den Boden wie in der Region). '
-                               'Ein Weg ist an dieser Grenze geteilt.')
+            d['grund_note'] = extra['grund']
         d.update(metric=res, heights=heights, junctions=jst)
         return d
     city = [i for i in range(len(fw)) if not f_kor[i]]
     drive = drive_doc(city, 'Suhl (%s): roads and ways in the format of fahrt/strassen.json (model dm: x east, y north, z = NHN - H0); the extra '
-                      'fields (lanes … junctions) and the bits of fl from 32 on are Suhl\'s, the app ignores them' % a.gebiet,
-                      dict(places=places, areas=f_areas, orte=orte, rail=f_rail, railpts=f_railpts, water=f_water, wareas=f_wareas))
+                      'fields (lanes … junctions) and the bits of fl from 32 on are Suhl\'s, the app ignores them. style, one number per way: 0 open '
+                      'country, 2 town, 3 village. The places and the built-up areas (places, orte) are a set of their own: %s-orte.json'
+                      % (a.gebiet, name), dict(areas=f_areas, rail=f_rail, railpts=f_railpts, water=f_water, wareas=f_wareas))
     pf = os.path.join(out, 'fahrt', name + '.json')
     nb = S.write_json(pf, drive)
+    pdir = os.path.join(out, L.product_dir('s', VERSION))
+    # the places and the built-up areas ONCE, as a set of their own (roads chat, 13.11.2026: FAHRT.add('suhl/orte', {ways: [], places, orte})
+    # - repeated in every tile or drive file the same area would lie many times in its search)
+    orte_doc = {'v': 1, 'made': made[:10], 'note': 'Suhl: the places (as in fahrt/strassen.json) and the built-up areas (orte, as in '
+                'strassen/ausstattung.json: t 2 town, 1 village; rings in model dm) - one set of their own, add it once', 'credits': ATTR,
+                'kinds': KINDS, 'surf': SURF, 'names': [''], 'ways': [], 'places': places, 'orte': orte, 'signs': [], 'routes': {}, 'park': {}}
+    S.write_json(os.path.join(out, 'fahrt', name + '-orte.json'), orte_doc)
+    S.write_json(os.path.join(pdir, 'orte.json'), orte_doc)
     if Kset:
         kor = [i for i in range(len(fw)) if f_kor[i]]
-        rdoc = {k: {'pts': v['pts'], 'm': v['m']} for k, v in routes_doc['routes'].items()}
-        nbk = S.write_json(os.path.join(out, 'fahrt', name + '-anfahrt.json'), drive_doc(
-            kor, 'Suhl, the approach: the roads for cars along the routes garden - Suhl outside the city\'s tiles and outside fahrt/strassen.json, in its '
-                 'format, solved in one system with the city (they meet without a step) and held at the profiles of fahrt/strassen.json where they touch; '
-                 'routes: the routes of routen.py', dict(routes=rdoc, grund=True)))
-        numbers['korridor'] = {'tiles': len(Kset), 'ways': len(kor), 'km_by_kind': {k: round(v, 2) for k, v in km_kor.most_common()},
+        k_out, k_in = [i for i in kor if not f_grund[i]], [i for i in kor if f_grund[i]]
+        # the routes the app offers: the two ways there carry a name (their end is then a destination on the small map), the ways back none;
+        # suhl_ab_frei is only the comparison of routen.py
+        ziel = {'suhl_land': 'Suhl', 'suhl_ab': 'Suhl'}
+        rdoc = {k: dict({'pts': v['pts'], 'm': v['m']}, **({'n': ziel[k]} if k in ziel else {})) for k, v in routes_doc['routes'].items() if k != 'suhl_ab_frei'}
+        d_out = drive_doc(k_out, 'Suhl, the approach OUTSIDE the ground tiles of suhl-boden: the roads for cars along the routes garden - Suhl beyond '
+                          'fahrt/strassen.json, in its format, solved in one system with the city (they meet without a step) and held at the profiles '
+                          'of fahrt/strassen.json where they touch. The drive code carves the ground for them as in the rest of the region: '
+                          'FAHRT.add(name, json). routes: the routes of routen.py (n = the destination on the small map)',
+                          dict(routes=rdoc, grund='grund, eine Zahl je Weg: hier immer 0 = der Weg liegt außerhalb der Geländekacheln von suhl-boden '
+                                                  '(die Fahrt schneidet den Boden wie in der Region). Ein Weg ist an dieser Grenze geteilt; der andere '
+                                                  'Teil steht in %s-anfahrt-grund.json.' % name))
+        d_in = drive_doc(k_in, 'Suhl, the approach ON the ground tiles of suhl-boden: the same roads where that ground carries them - they are cut '
+                         'into it already, so the drive code must not carve: FAHRT.add(name, json, {carve: false}). No routes in this file',
+                         dict(grund='grund, eine Zahl je Weg: hier immer 1 = der Weg liegt auf den Geländekacheln von suhl-boden (dort ist er schon '
+                                    'in den Boden geschnitten: FAHRT.add mit carve: false). Der Teil außerhalb steht in %s-anfahrt.json.' % name))
+        nbk = S.write_json(os.path.join(out, 'fahrt', name + '-anfahrt.json'), d_out) + S.write_json(os.path.join(out, 'fahrt', name + '-anfahrt-grund.json'), d_in)
+        S.write_json(os.path.join(pdir, 'anfahrt.json'), d_out)
+        S.write_json(os.path.join(pdir, 'anfahrt-grund.json'), d_in)
+        Kg = sorted(t for t in Kset if dem.tiles is not None and (S.LEVEL, t[0], t[1]) in dem.tiles.have)
+        numbers['korridor'] = {'tiles': len(Kset), 'tiles_auf_suhls_boden': len(Kg), 'ways': len(kor), 'ways_auf_suhls_boden': len(k_in),
+                               'ways_ausserhalb': len(k_out), 'km_by_kind': {k: round(v, 2) for k, v in km_kor.most_common()},
                                'km': round(sum(km_kor.values()), 1), 'pinned_nodes': len(pin), 'bytes': nbk,
                                'km_auf_suhls_boden': round(km_kor_g.get(1, 0.0), 1), 'km_ausserhalb': round(km_kor_g.get(0, 0.0), 1)}
         index['numbers']['korridor'] = numbers['korridor']
         index['korridor'] = L.tileset_encode(sorted(Kset))
+        if Kg:
+            index['korridor_grund'] = L.tileset_encode(Kg)
+        index['files'] = {'orte.json': 'places and orte, once: FAHRT.add(name, json)',
+                          'anfahrt.json': 'the approach outside the ground tiles of suhl-boden, with the routes: FAHRT.add(name, json)',
+                          'anfahrt-grund.json': 'the approach on the ground tiles of suhl-boden: FAHRT.add(name, json, {carve: false})'}
+        S.write_json(os.path.join(out, L.index_path('s', VERSION)), index)
+    else:
+        index['files'] = {'orte.json': 'places and orte, once: FAHRT.add(name, json)'}
         S.write_json(os.path.join(out, L.index_path('s', VERSION)), index)
     numbers['bytes_drive'] = nb
     S.common_index(os.path.join(out, L.product_dir('s', VERSION)), a.gebiet, ['osm'] + (['dgm1'] if heights.get('dgm1_share') else []) + ['cop30', 'worldcover'],

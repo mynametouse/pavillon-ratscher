@@ -34,7 +34,7 @@ def main():
     from shapely.ops import unary_union
     from shapely.prepared import prep
     from shapely.strtree import STRtree
-    fz = [p for p in sorted(glob.glob(os.path.join(a.out, 'fahrt', '*.json'))) if not os.path.basename(p).startswith('routen')]
+    fz = [p for p in sorted(glob.glob(os.path.join(a.out, 'fahrt', '*.json'))) if not os.path.basename(p).startswith('routen') and not p.endswith('-orte.json')]
     fz.sort(key=lambda q: ('anfahrt' in os.path.basename(q), q))
     F = json.load(open(fz[0], encoding='utf-8'))
     for extra in fz[1:]:                 # the approach roads belong to the same run
