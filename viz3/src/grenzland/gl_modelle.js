@@ -484,7 +484,7 @@ export const GLMOD = (() => {
       P = name => N.pieces.find(p => p.name === name);
     dial.name = 'grenzland tacho';
     radioM.name = 'grenzland radio';
-    g.add(body);
+    g.add(body, schatten(T));
     body.add(meshes(P('body'), T, lamps, Object.assign({ tacho: dial, radio: radioM }, ctl)));
     // the steering wheel: its frame is x right, the column (away from the driver), up in the wheel's plane
     const wheelG = new THREE.Group(),
@@ -568,7 +568,8 @@ export const GLMOD = (() => {
       g = new THREE.Group(),
       body = new THREE.Group();
     dial.name = 'grenzland tacho';
-    g.add(body);
+    // the patch on the ground stays flat while the moped leans
+    g.add(body, schatten(T));
     body.add(Z.tilt);
     // four contact points for the physics (two per wheel, a hand apart); the wheels one sees turn in update()
     const wheels = [];

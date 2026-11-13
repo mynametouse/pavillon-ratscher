@@ -114,7 +114,7 @@ with lib.browser() as b:
         steps(0.3)
         pic('00_vorher')
         P0.extend(progs())
-        ok = E("GRENZLAND.start()")
+        do("GRENZLAND.start()")
         for _ in range(6):
             steps(0.3); time.sleep(0.3)
         fr = E(FREI)
@@ -126,7 +126,7 @@ with lib.browser() as b:
         info0.update(st)
         note('after the start: %s' % st)
         ck('the mode starts, the player\'s moped is there with its name and small line for the HUD',
-           ok and st['on'] and st['moped'] and st['name'] == 'Simson S 51' and 'PS' in (st['sub'] or '') and 'Tank' in (st['sub'] or ''), str(st))
+           st['on'] and st['moped'] and st['name'] == 'Simson S 51' and 'PS' in (st['sub'] or '') and 'Tank' in (st['sub'] or ''), str(st))
     part('start', start)
 
     # ---- the line-up: every type ----
