@@ -96,6 +96,8 @@ def main():
     ap.add_argument('--skip-terrain', action='store_true')
     ap.add_argument('--skip-imagery', action='store_true')
     ap.add_argument('--wms-threads', type=int, default=2)
+    ap.add_argument('--roads', default='', help='road profiles of suhl-strassen to cut into the ground: file(s) in the format of the drive data, comma separated')
+    ap.add_argument('--roh', default='', help='folder for the terrain tiles before the cut (levels 10-12, with a meta.json) - for suhl-strassen')
     ap.add_argument('--max-mb', type=float, default=0)
     ap.add_argument('--cut', type=int, default=0, help='mode probe: 1 = level 12 only for the quads touching zentrum, 2 = only the four tiles around the Markt')
     a = ap.parse_args()
@@ -130,7 +132,20 @@ def main():
         if not providers:
             log('DGM1 über easygeodata: übersprungen (' + ('kein Schlüssel EASYGEODATA_KEY' if not os.environ.get('EASYGEODATA_KEY') else
                                                          'der Client tools/suhl/lib fehlt noch') + ')')
-        tinfo = gelaende.build(a.raw, a.out, T, jobs=a.jobs, use_dgm=not a.no_dgm, providers=providers, use_trees=not a.no_trees)
+        roads = [p for p in a.roads.split(',') if p]
+        tinfo = gelaende.build(a.raw, a.out, T, jobs=a.jobs, use_dgm=not a.no_dgm, providers=providers, use_trees=not a.no_trees,
+                               roads=roads, roh=a.roh or None)
+        if a.roh:      # a small meta.json so that the folder is a tile set of its own (hoehe.py, suhl-strassen --tiles <roh>/t)
+            fine = {L: T[L] for L in (10, 11, 12)}
+            os.makedirs(a.roh, exist_ok=True)
+            json.dump({'format': 'welt-test/1', 'generated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'plan': 'suhl-' + a.mode + '-roh',
+                       'H0': wlib.H0, 'note': 'Gelände VOR dem Straßeneinschnitt (nur Stufen 10-12): darauf rechnet suhl-strassen seine Profile. '
+                                               'Nicht für die App.',
+                       'tiling': {'root': [wlib.ROOT_E0, wlib.ROOT_N0, wlib.ROOT_SIZE], 'terrain': 't/{z}/{x}/{y}.bin', 'terrain_n': wlib.TERR_N,
+                                  'levels': {str(L): {'size': tsize(L), 'rect': rect_of(v), 'has': sorted(list(t) for t in v)} for L, v in fine.items()}},
+                       'sources': {'terrain_source': tinfo['source'], 'dgm1_tiles_km': tinfo['dgm_tiles_km'], 'canopy_m': tinfo['canopy_m'],
+                                   'copernicus_offset_m': tinfo['copernicus_offset_m']}},
+                      open(os.path.join(a.roh, 'meta.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
     # ---- imagery ----
     iinfo = None
@@ -172,13 +187,13 @@ def main():
                 'terrain_source': tinfo['source'], 'dgm1': tinfo['dgm'], 'dgm1_tiles_km': tinfo['dgm_tiles_km'],
                 'dgm1_level10_tiles': sum(lv['10']['dgm']), 'copernicus_offset_m': tinfo['copernicus_offset_m'],
                 'canopy_m': tinfo['canopy_m'], 'canopy_fit_m': tinfo['canopy_fit_m'], 'canopy_fit_window': tinfo['canopy_fit_window'],
-                'worldcover': tinfo['worldcover'],
+                'worldcover': tinfo['worldcover'], 'roads': tinfo['roads'],
                 'terrain_method': {'block_level': tinfo['block_level'], 'margin_m': tinfo['margin_m'], 'blend_m': tinfo['blend_m'],
                                    'coarse_cell_m': tinfo['coarse_cell_m'], 'blocks': len(tinfo['blocks']), 'seconds': tinfo['seconds']}}
         hm = {'hmin': round(tinfo['hmin'] - H0, 2), 'hmax': round(tinfo['hmax'] - H0, 2)}
     else:
         terr = {k: src_old[k] for k in ('terrain', 'terrain_source', 'dgm1', 'dgm1_tiles_km', 'dgm1_level10_tiles', 'copernicus_offset_m', 'canopy_m',
-                                        'canopy_fit_m', 'canopy_fit_window', 'worldcover', 'terrain_method') if k in src_old}
+                                        'canopy_fit_m', 'canopy_fit_window', 'worldcover', 'roads', 'terrain_method') if k in src_old}
         hm = {k: old['tiling'][k] for k in ('hmin', 'hmax') if k in (old.get('tiling') or {})}
         if 'dgm' in (oldlv.get('10') or {}) and oldlv['10'].get('has') == lv['10']['has']:
             lv['10']['dgm'] = oldlv['10']['dgm']

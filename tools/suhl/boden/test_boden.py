@@ -169,6 +169,61 @@ with tempfile.TemporaryDirectory() as td:
     gg = co.grid(9, x10 >> 1, 541 >> 1)
     ck('coarse: a level-9 tile from the 8 m mosaic', gg.shape == (101, 101) and np.isfinite(gg).all())
 
+# ---- the road cut from the profiles of suhl-strassen (its sample file, when the branch is merged) ----
+RF = os.path.join(blib.REPO, 'tools', 'suhl', 'out', 'strassen', 'probe', 'fahrt', 'suhl-zentrum.json')
+if os.path.exists(RF):
+    import roads as wroads
+    with tempfile.TemporaryDirectory() as td:
+        g = FakeGround()
+        g.cop = lambda E, N: (440 + 0.004 * (np.asarray(E, float) - 619762) + 0.006 * (np.asarray(N, float) - 5607680)).astype(np.float32)
+        g.raw = os.path.join(td, 'raw')
+        gelaende.G, gelaende.ROH = g, os.path.join(td, 'roh')
+        R = gelaende.load_roads([RF])
+        ck('roads: profiles loaded, bridges and tunnels marked, some ways left out by flag', len(R['chains']) > 1000 and R['bridges'] > 0 and R['tunnels'] > 0
+           and R['skipped_by_flag'] > 50 and not any(w['fl'] & gelaende.SKIP_BITS for w, _ in R['chains']), f"{len(R['chains'])} ways")
+        ck('roads: our own bild and lauf are not shadowed by the modules of tools/suhl/strassen', bild.__file__.startswith(blib.HERE)
+           and not any(os.path.abspath(p_) == os.path.join(blib.REPO, 'tools', 'suhl', 'strassen') for p_ in sys.path))
+        # the two blocks of the sample meet at E 619100: tiles on both sides, cut by the same roads
+        lists = {10: [(495, 541), (496, 541), (495, 542), (496, 542)]}
+        lists[11] = sorted(kids(set(lists[10])))
+        lists[12] = sorted(kids(set(lists[11])))
+        o = os.path.join(td, 'out')
+        res = {}
+        for b in sorted({gelaende.block_of(L, x, y) for L, v in lists.items() for x, y in v}):
+            res[b] = gelaende.do_block((b[0], b[1], {L: [t for t in v if gelaende.block_of(L, *t) == b] for L, v in lists.items()}, o, os.path.join(td, 'work')))[0]
+        rd = lambda base, k: np.round(wtiles.decode_heights(open(os.path.join(base, 't', str(k[0]), str(k[1]), f'{k[2]}.bin'), 'rb').read()) * 100).astype(int)
+        H = {(L, x, y): rd(o, (L, x, y)) for L, v in lists.items() for x, y in v}
+        H0_ = {(L, x, y): rd(gelaende.ROH, (L, x, y)) for L, v in lists.items() for x, y in v}
+        worst = 0
+        for (L, x, y), h in H.items():
+            if (L, x + 1, y) in H:
+                worst = max(worst, int(np.abs(h[:, -1] - H[(L, x + 1, y)][:, 0]).max()))
+            if (L, x, y + 1) in H:
+                worst = max(worst, int(np.abs(h[-1, :] - H[(L, x, y + 1)][0, :]).max()))
+        ck('roads: after the cut the tiles of two blocks still agree on every common edge', worst == 0 and len(res) == 2, f'worst {worst} cm')
+        ch = sum(int((np.abs(H[k] - H0_[k]) > 0).sum()) for k in H if k[0] == 12)
+        ck('roads: the cut changed the ground, the tiles before the cut are kept apart', ch > 10000 and all(r['cut'] and r['cut']['pixel'] > 0 for r in res.values()), f'{ch} level-12 samples differ')
+        # on the axis of a main road the ground lies UNDER (6 cm) below the profile
+        hq = hoehe.Hoehe.__new__(hoehe.Hoehe)
+        hq.base, hq.url, hq.H0, hq._t, hq._keep = o, False, wlib.H0, {}, 400
+        hq.has = {L: set(v) for L, v in lists.items()}
+        hq.levels = [12, 11, 10]
+        dz = []
+        for w, ids in R['chains']:
+            if w['kind'] == 'main' and not (w['fl'] & 3):
+                for i in ids[::10]:
+                    z = hq.nhn(*R['pos'][i])
+                    if z is not None:
+                        dz.append(R['h'][i] - z)
+        dz = np.array(dz)
+        ck('roads: on the axis of the main roads the ground lies 6 cm below the profile', len(dz) > 50 and abs(float(np.median(dz)) - wroads.UNDER) < 0.03
+           and float(np.percentile(np.abs(dz - wroads.UNDER), 90)) < 0.25, f'{len(dz)} points, median {np.median(dz):.3f} m')
+        fit = res[sorted(res)[-1]]['cut']['fit']
+        ck('roads: fit of the profiles to the ground before the cut is counted', fit and fit['n'] > 100 and len(fit['hist']) == 200)
+    gelaende.ROADS = gelaende.ROH = None
+else:
+    print('SKIP roads: tools/suhl/out/strassen/probe/fahrt/suhl-zentrum.json not there (merge origin/suhl/strassen)')
+
 # ---- image requests ----
 ts = [(1984, 2160), (1985, 2160), (1991, 2167), (1992, 2168)]
 rq = bild.requests_of(12, ts)

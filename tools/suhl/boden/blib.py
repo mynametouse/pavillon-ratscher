@@ -141,3 +141,19 @@ def routes():
     from shapely.geometry import LineString
     j = json.load(open(KORRIDOR, encoding='utf-8'))
     return {k: LineString(v) for k, v in j['routes'].items()}
+
+
+# ---------------- the road profiles of suhl-strassen ----------------
+def load_profil():
+    """tools/suhl/strassen/profil.py (package S2-3, the owner of the road heights; imported, never edited). Its folder also holds a
+    bild.py and a lauf.py, so it must not stay on sys.path: our own modules of the same name would be shadowed."""
+    d = os.path.join(REPO, 'tools', 'suhl', 'strassen')
+    if not os.path.exists(os.path.join(d, 'profil.py')):
+        raise SystemExit('tools/suhl/strassen/profil.py is missing: merge origin/suhl/strassen')
+    saved = list(sys.path)
+    try:
+        sys.path.insert(0, d)
+        import profil
+    finally:
+        sys.path[:] = saved
+    return profil
