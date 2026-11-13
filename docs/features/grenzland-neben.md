@@ -162,8 +162,16 @@ fisch: { art: 'karpfen', kg: 3.4 }, auto: true })`, `GLWAGEN.kaufen({ mais: 1 })
   zu sehen) – vermutlich ein Betriebsgebäude aus OSM, dessen Fuß auf der Wasserfläche liegt. Für den Kern-Chat.
 - **`#glwahl` auf dem Handy**: das Feld der Auswahl hat keine größte Höhe; bei mehr als ~6 Knöpfen im Querformat läuft es oben aus dem
   Bild. Der Laden zeigt deshalb Regale mit höchstens 5 Einträgen. Wunsch: `max-height` + `overflow:auto` in `gl_hud.js`.
-- **Tat `angeln`** (für `grenzland-polizei`): `CRIMES.angeln = { h: 0.4, name: 'Fischwilderei' }` und `GLDATA.TATEN.angeln =
-  'Angeln ohne Erlaubnisschein'`, dazu ein Satz für den Polizeibericht im Radio. `gl_angeln.js` nimmt die Tat, sobald es sie gibt.
+- **Tat `angeln`**: im zusammengeführten Stand gibt es `GLLOGIK.CRIMES.angeln` („Angeln ohne Erlaubnisschein“) – `gl_angeln.js` nimmt
+  sie, sobald sie da ist (auf meinem Zweig allein ersatzweise ein leichtes `rempeln`). Mit der echten Polizei telefoniert der Zeuge
+  erst; die Sterne kommen, wenn der Anruf durch ist. Offen: ein Satz dazu für den Polizeibericht im Radio.
+- **Spielfeld `#glspiel`** (`gl_kegeln.js`, auch vom Angeln benutzt): solange es offen ist, schiebt eine CSS-Regel die Untertitel
+  `#glsub` darüber (`body.glspiel #glsub`), und es blendet sich aus, solange `#glwahl` offen ist. Wenn `gl_hud.js` die Untertitel
+  umbaut, bitte diese eine Regel mitnehmen.
+- **`GL.folgt`** schalte ich während einer Kegelpartie aus und danach wieder so, wie es war (der Begleiter liefe sonst dem Auge auf
+  die Bahn nach).
+- **`GLORTE.zeit()`** (nur für Tests): übernimmt `GL.era` für meine Orte, ohne das Ereignis `grenzland:era` zu senden – im
+  zusammengeführten Spiel würde das Ereignis das ganze Dorf umstellen. Im Spiel selbst hören die Orte weiter auf das Ereignis.
 - **`GLDATA.WAGEN`** wird von mir nicht mehr gelesen (Waren stehen in `GLNLOGIK.WAREN`, mit Kaffee, Gastkarte und Kanister); die Liste
   im Kern kann bleiben oder entfallen. Neue Dinge in `GL.inv`: `angelkarte`, `kanister`, `karpfen_gross`, `silberkarpfen`, … (oben).
 - **`GL.m.karpfen`** ist der Stand der Nebenmission (Form `{ st, i, n }` wie die Missionen) – bitte in `gl_mission.js` nicht als
@@ -185,4 +193,20 @@ fisch: { art: 'karpfen', kg: 3.4 }, auto: true })`, `GLWAGEN.kaufen({ mais: 1 })
 
 ## Getestet
 
-(wird nach dem Browser-Lauf nachgetragen)
+- **Regeln ohne Browser**: `viz3/test/unit/grenzland_neben.test.mjs`, 5 Tests (Kegeln: Bahn, Gasse neben dem Vorderkegel, Alle Neune,
+  Gegner; Angeln: Arten, Gewichte, November, Wartezeit, Drill; Laden: Zeiten, Korb, Waren, Ankauf) – grün in `bash tools/check.sh`
+  (157 Unit-Tests insgesamt).
+- **Module in node** (Werkzeug des Agenten, nicht im Repo): `gl_orte`, `gl_wagen`, `gl_kegeln`, `gl_angeln`, `gl_neben` mit Attrappen
+  für Kern und Szene durch Laden, Kegelpartie (allein, von Hand, gegen Timo), Angeln, die Nebenmission von der SMS nach
+  `grenzland:mission { id: 'clique', st: 'erledigt' }` bis zur Notiz im Handy, 1989 und „Beenden“ (nichts bleibt in Szene, Aktionen,
+  `VEH.extra`).
+- **Browser-Test** `viz3/test/grenzland_neben.py` (33 Prüfungen, 28 Bilder):
+  - GitHub Actions, Stand `66174983` (03:31): `smoke` grün, `grenzland_neben` grün, „33 checks ok“.
+  - Lokal (Lauf 2, Bau von 03:15): 28 von 33 – die fünf übrigen hingen alle an einer Ursache: die Uhr des Spiels war während der
+    Kegelpartien über 18:30 gelaufen, der Wagen hatte zu, also kein Köder und keine Zutaten. Der Test stellt die Uhr seitdem vor dem
+    Laden zurück (im Spiel selbst ist das richtig so: der Wagen schließt um halb sieben).
+  - Bilder angesehen (echte Engine): der Platz vom Feldweg, Scheune von vorn und innen, Kegelbahn, die Sicht beim Kegeln mit dem
+    Spielfeld, 1989, der geschlossene Wagen am Anger, der Steg, die Nacht mit Glühbirnen und geliehenem Licht, Yuki an der Haltestelle.
+- **Zusammengeführter Stand** (`feat/grenzland-probe`): der Test dort lief mit meinem Stand von vor 03:31 (noch ohne freies Spiel nach
+  dem Start) und war rot; seitdem angepasst (freies Spiel nach dem Start, Knöpfe nach ihren Worten, Nebenmission über `GLNEBEN.start()`,
+  nur meine Orte wechseln die Zeit, der Anruf des Zeugen zählt als Meldung). Ergebnis des neuen Probelaufs: siehe Bericht an den Lead.
