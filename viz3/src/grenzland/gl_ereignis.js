@@ -1001,7 +1001,11 @@ export const GLEREIGNIS = (() => {
     if (!E) return;
     S.E = null;
     for (const c of E.cars) {
-      if (c.schleife && c.schleife.parent) c.schleife.parent.remove(c.schleife);
+      if (c.schleife) {
+        if (c.schleife.parent) c.schleife.parent.remove(c.schleife);
+        c.schleife.geometry.dispose();
+        c.schleife = null;
+      }
       c.horn = false;
       GLAUTO.remove(c);
     }

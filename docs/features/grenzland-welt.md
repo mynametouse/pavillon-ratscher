@@ -146,7 +146,7 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
   dieselben Sätze; Falko und Sarah ihre Antworten), `GLEREIGNIS.linien()`. Die Stimme `gl_funk` meldet das Modul selbst an
   (`STIMME.person`), solange es keine Aufnahme gibt.
 - **Radar:** `GLEREIGNIS` meldet eine Quelle an (`GLKARTE.src`): `{ x, y, k: 'ereignis', name: 'Blitzer' | 'Traktor' | 'Kirmes' |
-  'Korso' | 'Böller' | 'Reh' }` – das eigene Zeichen dafür kommt vom Lead (13:58).
+  'Korso' | 'Böller' | 'Reh' }` – mit eigenem Zeichen im Radar (Lead, 76152081).
 - **Wünsche der anderen umgesetzt:** das geborgte blaue Licht der Streife pulst im Takt von `GLAUTO.blauPuls` (`licht`; Farbe 0x2a5cff
   bleibt, Reichweite 12 m, Abfall 2); die Gerätestimme der Zentrale (`gl_funk`) ist eine Frau wie die Aufnahmen (`stimmen`).
 - **`modules.txt`:** drei Zeilen am Ende des Blocks `# feat/grenzland` (nach `gl_modus.js`): `gl_reaktion_data.js`, `gl_reaktion.js`,
@@ -173,5 +173,9 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
   `viz3/extra/grenzland-welt/tests.txt`, also drei Jobs auf GitHub Actions). Bilder in `out/grenzland_welt/`: `01_warnjacke`, `01b_haube`,
   `02_helm`, `03_gesehen(_hud)`, `04_filmt(_hud)`, `05_feed` (der Post im Handy; das Bild zeigt erst das neue Handy), `06_wahl(_hud)`,
   `10_blitzer` … `15_wildunfall`.
-- Stand 12:46 auf Actions (9aed1bb4): `wissen,funk` 19/19, `film,wahl` 14/14 grün; `ereignis`: der Korso fand keine Strecke (behoben:
-  kürzere Strecken, notfalls in die andere Richtung).
+- Verlauf: 12:46 (9aed1bb4) der Korso fand keine Strecke – behoben; afcfff67 alles grün (19 + 15 + 30); nach Merge 1 (250a60b3) auf
+  dem zusammengeführten Stand hier 64/64 (14:13). Zwei Fehler, die erst mit den anderen sichtbar wurden: der Fahndungsaufruf hing an den
+  *gezeigten* Sternen (einer weniger, solange Falko und Sarah getrennt sind) – jetzt an der Stufe selbst; und mit dem Rennen der Figuren
+  holte der ABV von 1989 den Spieler ein, bevor der Test den Wartburg der Volkspolizei sah – gerannt wird jetzt nur von der Polizei von
+  heute. Danach: f5fb5bd3 auf Actions grün (23 + 15 + 30), `grenzland_polizei:1989,patrol,escape` hier 22/22 (mit dem Rennen der
+  Figuren).
