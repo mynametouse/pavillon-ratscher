@@ -292,11 +292,11 @@ export const ZKWELT = (() => {
         S.wt = sh.uniforms.uWT;
       };
       m.customProgramCacheKey = () => 'brook';
-      m.color.setRGB(...L(0.3, 0.27, 0.2));
-      m.opacity = 0.97;
-      m.roughness = 0.26;
-      m.envMapIntensity = 0.32;
-      if (m.normalScale) m.normalScale.set(0.32, 0.32);
+      m.color.setRGB(...L(0.36, 0.29, 0.18));
+      m.opacity = 0.98;
+      m.roughness = 0.42;
+      m.envMapIntensity = 0.2;
+      if (m.normalScale) m.normalScale.set(0.11, 0.11);
       return m;
     }
     return new THREE.MeshStandardMaterial({
@@ -350,17 +350,19 @@ export const ZKWELT = (() => {
     if (kind === 'shore') {
       g.fillStyle = 'rgb(92,78,58)';
       g.fillRect(0, 0, N, N);
-      for (let i = 0; i < 900; i++) {
+      // short, muted blades laid flat (not long light lines)
+      g.filter = 'blur(0.6px)';
+      for (let i = 0; i < 1400; i++) {
         const x = rnd() * N,
           y = rnd() * N,
-          l = 18 + rnd() * 60,
-          w = 0.8 + rnd() * 1.8,
+          l = 6 + rnd() * 20,
+          w = 0.6 + rnd() * 0.8,
           k = rnd(),
-          c = k < 0.45 ? [168, 148, 96] : k < 0.75 ? [96, 102, 58] : k < 0.9 ? [130, 116, 80] : [66, 55, 40],
-          al = 0.35 + rnd() * 0.5;
+          c = k < 0.4 ? [134, 118, 80] : k < 0.75 ? [86, 90, 54] : k < 0.9 ? [112, 100, 70] : [60, 50, 38],
+          al = 0.22 + rnd() * 0.28;
         g.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${al})`;
         g.lineWidth = w;
-        const bend = (rnd() - 0.5) * 6;
+        const bend = (rnd() - 0.5) * 3;
         wrap((dx, dy) => {
           g.beginPath();
           g.moveTo(x + dx, y + dy);
@@ -370,15 +372,16 @@ export const ZKWELT = (() => {
       }
     } else {
       g.clearRect(0, 0, N, N);
-      // lines of foam along the current, broken; flecks and small clusters of bubbles
+      // lines of foam along the current, broken and soft; flecks and small clusters of bubbles (loam-coloured, not white)
+      g.filter = 'blur(1.2px)';
       for (let i = 0; i < 40; i++) {
         const x = rnd() * N,
           y = rnd() * N,
           l = 40 + rnd() * 150,
           w = 1 + rnd() * 3.5,
-          al = 0.3 + rnd() * 0.4,
+          al = 0.2 + rnd() * 0.25,
           bend = (rnd() - 0.5) * 14;
-        g.strokeStyle = `rgba(236,232,220,${al})`;
+        g.strokeStyle = `rgba(206,194,166,${al})`;
         g.lineWidth = w;
         g.setLineDash([4 + rnd() * 16, 2 + rnd() * 10]);
         wrap((dx, dy) => {
@@ -394,7 +397,7 @@ export const ZKWELT = (() => {
           y = rnd() * N,
           rx = 1 + rnd() * 5,
           al = 0.25 + rnd() * 0.5;
-        g.fillStyle = `rgba(228,222,206,${al})`;
+        g.fillStyle = `rgba(200,188,160,${al})`;
         wrap((dx, dy) => {
           g.beginPath();
           g.ellipse(x + dx, y + dy, rx * 2.2, rx * 0.7, 0, 0, 6.283);
@@ -2349,7 +2352,7 @@ export const ZKWELT = (() => {
       vi[k] = pos.length / 3;
       pos.push(x0 + i * CELL, W[k] + 0.02, -(y0 + j * CELL));
       // the ripples drawn out along the current and moving downstream (the brook's program moves them towards −u)
-      uv.push(-Sv[k] / 4, Dv[k] / 2.6);
+      uv.push(-Sv[k] / 3.2, Dv[k] / 2.6);
       return vi[k];
     };
     let nCells = 0,
@@ -2522,10 +2525,10 @@ export const ZKWELT = (() => {
       const dep = W[k] - Z[k],
         x = x0 + (k % NX) * CELL,
         y = y0 + ((k / NX) | 0) * CELL,
-        shoreF = 0.45 * (1 - smooth(0.05, 0.5, dep)),
-        main = 0.3 * (1 - smooth(4, 10, Math.abs(Dv[k]))),
-        wallF = foamNear[k] === 2 ? 0.65 : foamNear[k] === 1 ? 0.35 : 0,
-        a = Math.max(0.14 * smooth(0.55, 0.8, noise(x / 30, y / 30)), shoreF, main, wallF);
+        shoreF = 0.22 * (1 - smooth(0.03, 0.25, dep)),
+        main = 0.08 * (1 - smooth(4, 10, Math.abs(Dv[k]))),
+        wallF = foamNear[k] === 2 ? 0.45 : foamNear[k] === 1 ? 0.22 : 0,
+        a = Math.max(0.1 * smooth(0.55, 0.8, noise(x / 30, y / 30)), shoreF, main, wallF);
       return { z: W[k] + 0.035, c: [1, 1, 1, Math.min(0.8, a)], u: Sv[k] / 14, v: Dv[k] / 3.5 };
     });
     // flotsam: twigs and straw along the waterline (cells with wet and dry corners)
@@ -3581,10 +3584,23 @@ export const ZKWELT = (() => {
   // young broadleaf trees above sapling size: the garden's ez-tree kinds (garden/trees.js – built at load, real bark and leaf cards,
   // lit like the garden's trees, their programs exist): beech as the rounder oak, oak as oak, maple and rowan (pinnate leaves) as ash,
   // birch and sallow (Salweide) as aspen
-  const EZ = { buche: 'oakB', eiche: 'oakA', ahorn: 'ash', birke: 'aspen', eberesche: 'ash', weide: 'aspen' };
+  // young spruce and fir saplings: the garden's generated conifer (pine kind: a stem with whorls of drooping needle branches), the fir
+  // darker by its instance colour
+  const EZ = {
+    buche: 'oakB',
+    eiche: 'oakA',
+    ahorn: 'ash',
+    birke: 'aspen',
+    eberesche: 'ash',
+    weide: 'aspen',
+    fichte: 'pine',
+    tanne: 'pine',
+  };
   const ezKind = k => (EZ[k] && TREES[EZ[k]] && TREES[EZ[k]].lg ? EZ[k] : null);
   // the season's leaf colour as a factor on the green leaf cards (instance colour): beech and oak keep dry brown leaves in winter
   function leafMul(kind) {
+    if (kind === 'fichte') return [0.78, 0.92, 0.72];
+    if (kind === 'tanne') return [0.6, 0.76, 0.66];
     const doy = doyNow();
     if (doy >= 135 && doy < 275) return [1, 1, 1];
     // the fresh leaves of late April and May
@@ -3643,7 +3659,7 @@ export const ZKWELT = (() => {
       const E = S.ez[key];
       g.forEach((t, i) => {
         const s = t.h / E.H,
-          w = s * 0.78;
+          w = s * (CONIFER[t.kind] ? 0.62 : 0.78);
         _qq.setFromAxisAngle(up, t.rot);
         _m.compose(T3(t.x, t.y, t.z - 0.05), _qq, _s.set(w, s, w));
         E.bark.setMatrixAt(i, _m);
@@ -3827,7 +3843,7 @@ export const ZKWELT = (() => {
     const tall = [];
     // broadleaf from 0,7 m on as the garden's kinds (real near the camera, their far picture beyond); saplings and conifers simple
     for (const t of Y.out) {
-      if (t.h >= 0.7 && !CONIFER[t.kind] && ezKind(t.kind)) tall.push(t);
+      if (t.h >= 0.7 && ezKind(t.kind)) tall.push(t);
       else by[t.kind].push(t);
     }
     const ts = byDist(tall, cx, cy);

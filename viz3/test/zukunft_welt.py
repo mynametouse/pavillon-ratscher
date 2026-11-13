@@ -232,16 +232,22 @@ def run():
                     ck(f'the flood ({vid}) stays in the valley (nothing farther than 160 m from the river)', far[0] == 0, str(far))
                     look(330, -175, 60, 320, -27); pic(f'41-hochwasser-{tag}-dorf-60m')
                     look(196, -40, 1.7, 30, -2); pic(f'42-hochwasser-{tag}-bruecke-zu-fuss')
-                    # on the bank: the water's edge nearest to the bridge, from 10 m on the dry side
-                    sh = J("""(() => { const g = ZKWELT.S.floodMesh.geometry.attributes.position; let b = null, bd = 1e9;
-                      for (let i = 0; i < g.count; i++) { const x = g.getX(i), y = -g.getZ(i), d = Math.hypot(x - 196, y + 40);
-                        if (d < bd && d > 15 && (KERN.terrain(x, y) || 0) < g.getY(i) - 0.15) { bd = d; b = [x, y]; } } return b; })()""")
-                    if sh:
-                        import math
-                        dx, dy = 196 - sh[0], -40 - sh[1]; l = math.hypot(dx, dy) or 1
-                        cx, cy = sh[0] + dx / l * 10, sh[1] + dy / l * 10
-                        yaw = (math.degrees(math.atan2(sh[0] - cx, sh[1] - cy)) + 360) % 360
-                        look(cx, cy, 1.7, yaw, -8); pic(f'42-hochwasser-{tag}-ufer-zu-fuss')
+                    # on the bank: the biggest sheet of water within 400 m of the bridge, seen from 4 m inside the nearest dry ground, turned
+                    # to it and a little down (a third of the picture water)
+                    bank = J("""(() => { const g = ZKWELT.S.floodMesh.geometry.attributes.position, W = new Map(), key = (x, y) => Math.round(x / 3) + ',' + Math.round(y / 3);
+                      for (let i = 0; i < g.count; i++) { const x = g.getX(i), y = -g.getZ(i), d = g.getY(i) - (KERN.terrain(x, y) || 0); if (d > 0.12) W.set(key(x, y), [x, y]); }
+                      const wet = (x, y) => W.has(key(x, y)), pts = [...W.values()].filter(p => Math.hypot(p[0] - 196, p[1] + 40) < 400);
+                      let best = null, bn = 0;
+                      for (let k = 0; k < pts.length; k += 3) { const [x, y] = pts[k]; let n = 0; for (let a = -6; a <= 6; a++) for (let b = -6; b <= 6; b++) if (wet(x + a * 3, y + b * 3)) n++; if (n > bn) { bn = n; best = [x, y]; } }
+                      if (!best) return null;
+                      let cam = null, cd = 1e9;
+                      for (let k = 0; k < 24; k++) { const a = k / 24 * Math.PI * 2, ux = Math.sin(a), uy = Math.cos(a);
+                        for (let d = 3; d < 90; d += 1.5) { const x = best[0] + ux * d, y = best[1] + uy * d;
+                          if (!wet(x, y) && !wet(x + ux * 3, y + uy * 3)) { if (d < cd) { cd = d; cam = [x + ux * 4, y + uy * 4, (Math.atan2(-ux, -uy) * 180 / Math.PI + 360) % 360]; } break; } } }
+                      return cam && { cam, best, n: bn, d: cd }; })()""")
+                    print('bank view', tag, bank, flush=True)
+                    if bank:
+                        c = bank['cam']; look(c[0], c[1], 1.6, c[2], -11); pic(f'42-hochwasser-{tag}-ufer-zu-fuss')
                     look(560, -420, 60, 340, -28); pic(f'43-hochwasser-{tag}-unter-damm-60m')
                 world('klima', 'heute', 2026)
                 look(196, -40, 1.7, 30, -2); pic('44-bruecke-heute')

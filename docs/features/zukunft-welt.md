@@ -33,10 +33,10 @@ Falko: „es muss möglichst realistisch werden“ – lieber wenige Zukünfte, 
     fällt talab; im Bild stehen 37 Häuser des Dorfs im Wasser (so rechnet seit b3520cb1 auch `zk_data.js`).
   - *Wie im Dezember 2023*: die Talsperre hielt etwa 900 000 m³ zurück; gezeigt wird die Schleuse randvoll und die tiefsten Wiesen bis
     35 m neben ihr innerhalb der amtlichen Fläche, so tief, dass höchstens so viele Häuser nass werden, wie die Variante annimmt (Annahme).
-  - Der Fluss selbst als randvolles Band (~10 m; das 10-m-Gelände hat kein Bett). Trübes braungraues Wasser (das Programm des Bachs,
-    `garden/stream.js`): der Himmel nur schwach und verschwommen darin, im flachen Blick etwas mehr; Wellen in Fließrichtung gestreckt,
-    die talab wandern. Darauf Schaum: Linien und Flocken, die mit der Strömung treiben (etwa 0,4 m/s), dicht am Ufer, in Linien in der
-    Hauptströmung und dort, wo das Wasser an Hauswände stößt. Am Ufer ein Saum aus nassem Schlamm mit vom Wasser flachgelegtem Gras
+  - Der Fluss selbst als randvolles Band (~10 m; das 10-m-Gelände hat kein Bett). Ocker- bis braungraues Lehmwasser (das Programm des
+    Bachs, `garden/stream.js`), matt: der Himmel nur schwach darin, im flachen Blick etwas mehr, zum Betrachter hin dunkler; schwache
+    Wellen, die talab wandern. Darauf wenig, weicher lehmfarbener Schaum, der mit der Strömung treibt (etwa 0,4 m/s), am Ufer und dort,
+    wo das Wasser an Hauswände stößt. Am Ufer ein Saum aus nassem Schlamm mit vom Wasser flachgelegtem Gras
     (Streifen in Fließrichtung), Treibgut (Zweige, Stroh, Treibholz); an Häusern im Wasser die Wände dunkel und nass bis ~0,3 m über dem
     Wasser.
 - **Starkregen und Dürre:** Wetter (`WETTER.preset`), nasser bzw. trockener Boden (`WXBODEN`), der Bach im Garten höher bzw. niedriger.
@@ -58,8 +58,9 @@ Falko: „es muss möglichst realistisch werden“ – lieber wenige Zukünfte, 
     Pioniere schneller, Tanne langsamer). Junge Laubbäume über 2,5 m: in der Nähe der Kamera die echten Baumarten des Gartens
     (`garden/trees.js`: Eiche, Esche, Espe – Rinde und Blattkarten; Laubfarbe nach dem Datum der Welt: frisch im Mai, bunt im Herbst,
     im Winter kahl, junge Buchen und Eichen mit trockenem Laub), weiter weg deren Fernbild (die gekreuzten Bildtafeln der Bäume des Dorfs,
-    `world/ratscher.js`, dasselbe Programm); ab 0,7 m Höhe; junge Nadelbäume über 2,5 m wieder die Bäume des Waldmodells, darunter
-    einfache Formen. Was nah ist, wird neu gewählt, wenn die Kamera 12 m weiter ist.
+    `world/ratscher.js`, dasselbe Programm); ab 0,7 m Höhe. Junge Fichten und Tannen von 0,7 bis 2,5 m: der Nadelbaum des Gartens
+    (Quirle hängender Nadelzweige; die Tanne dunkler), darüber wieder die Bäume des Waldmodells; nur Sämlinge darunter sind einfache
+    Formen. Was nah ist, wird neu gewählt, wenn die Kamera 12 m weiter ist.
   - Bei natürlicher Verjüngung bleiben die umgefallenen Stämme liegen (Totholz, über die Jahre bemoost, ~30 Jahre).
 
 ## Grenzen (ehrlich)
