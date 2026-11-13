@@ -1,0 +1,74 @@
+# suhl-publish: puts Suhl data into the data repo mynametouse/pavillon-daten (branch main, GitHub Pages from the root:
+# https://mynametouse.github.io/pavillon-daten/suhl/...). Stage 2 of the Suhl plan, package S2-0 (agent suhl-daten);
+# how to use it: docs/features/suhl-daten.md, section "Veröffentlichen".
+#
+#   jobs:
+#     publish:
+#       concurrency: { group: suhl-daten-publish, cancel-in-progress: false }     # one group for every publishing job of the repo
+#       steps:
+#         - uses: actions/checkout@v4
+#         - ...                                                                    # produce out/suhl/g/v1/ (tiles + index.json)
+#         - uses: ./.github/actions/suhl-publish
+#           with:
+#             folder: out/suhl/g/v1
+#             token: ${{ secrets.DATEN_TOKEN }}
+#
+# If the secret or the repo is missing nothing is published; the action says so in the log, in the job summary and in its outputs
+# (published=false, reason=...) and uploads the folder as a workflow artifact instead. The run does not fail for that.
+# It never writes to this repository (not to gh-pages either).
+name: suhl-publish
+description: Commit a Suhl product version (or the probe file) into the data repo pavillon-daten and update suhl/aktuell.json
+inputs:
+  mode:
+    description: "'product' (default): publish the folder; 'hallo': only write suhl/_probe/hallo.json to prove the path works"
+    default: product
+  folder:
+    description: a product version folder <...>/suhl/<product>/v<N> with its index.json (mode product)
+    default: ''
+  token:
+    description: the write token of the data repo - pass secrets.DATEN_TOKEN (may be empty)
+    default: ''
+  replace:
+    description: "'true': an existing version folder may be replaced (sample sets v0 only); otherwise published versions are never touched"
+    default: 'false'
+  aktuell:
+    description: "'false': do not point suhl/aktuell.json at this version yet"
+    default: 'true'
+  artifact:
+    description: name of the workflow artifact that holds the folder when nothing could be published ('' = suhl-<product>-v<N>)
+    default: ''
+outputs:
+  published:
+    description: "'true' when the data repo holds the data now"
+    value: ${{ steps.pub.outputs.published }}
+  reason:
+    description: what happened, in one sentence (never contains the token)
+    value: ${{ steps.pub.outputs.reason }}
+  commit:
+    description: the commit in the data repo
+    value: ${{ steps.pub.outputs.commit }}
+  url:
+    description: where GitHub Pages serves it
+    value: ${{ steps.pub.outputs.url }}
+runs:
+  using: composite
+  steps:
+    - name: Veröffentlichen ins Daten-Repo
+      id: pub
+      shell: bash
+      env:
+        PUB_MODE: ${{ inputs.mode }}
+        PUB_FOLDER: ${{ inputs.folder }}
+        PUB_REPLACE: ${{ inputs.replace }}
+        PUB_AKTUELL: ${{ inputs.aktuell }}
+        DATEN_TOKEN: ${{ inputs.token }}
+        PUB_REPO_ROOT: ${{ github.workspace }}
+      run: python3 -I "$GITHUB_ACTION_PATH/publish.py"
+    - name: Stattdessen als Artefakt aufheben (nichts veröffentlicht)
+      if: ${{ steps.pub.outputs.published != 'true' && inputs.mode == 'product' && inputs.folder != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact != '' && inputs.artifact || 'suhl-daten-unveroeffentlicht' }}
+        path: ${{ inputs.folder }}
+        retention-days: 30
+        if-no-files-found: warn
