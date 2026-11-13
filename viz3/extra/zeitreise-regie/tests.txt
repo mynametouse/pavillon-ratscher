@@ -1,0 +1,4 @@
+# feat/zeitreise-regie: the director of the time journey (one test name per line, as for viz3/test/run.py)
+smoke
+zeitreise
+zukunft
