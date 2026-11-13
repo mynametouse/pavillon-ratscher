@@ -310,14 +310,16 @@ export const GLKAMERA = (() => {
       if (!p) return null;
       return mk('ots', boden(p), [x[0] - n[0] * 0.14, x[1] - n[1] * 0.14, x[2] - 0.13], fov0 - 6, sec, 0.06);
     }
-    // 'nah': in front of the speaker, turned some thirty degrees off the listener towards the camera's side
+    // 'nah': in front of the speaker, turned some thirty degrees off the listener towards the camera's side ('frei': close to the
+    // line between the two, where nothing stands – they look at each other – and without asking the walls)
     const d = norm([l[0] - x[0], l[1] - x[1]]),
       n = seite(d),
-      a = (30 + (S.n % 2) * 8) * (PI / 180),
-      r = 1.55,
+      fr = kind === 'frei',
+      a = (fr ? 14 : 30 + (S.n % 2) * 8) * (PI / 180),
+      r = fr ? Math.max(0.9, Math.min(1.4, 0.6 * hyp(l[0] - x[0], l[1] - x[1]))) : 1.55,
       dir = [d[0] * Math.cos(a) + n[0] * Math.sin(a), d[1] * Math.cos(a) + n[1] * Math.sin(a)];
     let p = [x[0] + dir[0] * r, x[1] + dir[1] * r, x[2] - 0.06];
-    p = kurz(p, x, 0.95);
+    if (!fr) p = kurz(p, x, 0.95);
     if (!p) return null;
     // the face a little off the middle, towards the side the speaker looks to (the listener's side of the picture)
     const t = [x[0] + d[0] * 0.18, x[1] + d[1] * 0.18, x[2] - 0.1];
@@ -348,8 +350,15 @@ export const GLKAMERA = (() => {
     }
     let s = null;
     if (kind) {
-      for (const k of [kind, kind === 'ots' ? 'nah' : kind === 'nah' ? 'ots' : 'zwei', 'zwei']) {
-        s = X && L ? shot(k, X, L, sec) : k === 'zwei' ? shot('zwei', null, null, sec) : null;
+      // what to try when the view is blocked; at last the face from the free space between the two (they see each other)
+      const alt =
+        kind === 'zwei'
+          ? ['zwei', 'nah', 'ots', 'frei']
+          : kind === 'ots'
+            ? ['ots', 'nah', 'zwei', 'frei']
+            : ['nah', 'ots', 'zwei', 'frei'];
+      for (const k of X && L ? alt : ['gruppe']) {
+        s = k === 'gruppe' ? shot('zwei', null, null, sec) : shot(k, X, L, sec);
         if (s) break;
       }
     }
