@@ -8,7 +8,7 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - **Gespräche als Zwischensequenz** (`viz3/src/grenzland/gl_kamera.js`, GLKAMERA). Läuft ein Gespräch einer Mission und der Spieler
   steht (zu Fuß; steht er mit dem Moped still, steigt er ab), keine Fahndung läuft, das Gespräch mindestens zwei Sätze hat und jemand aus dem
   Gespräch in der Nähe steht, übernimmt eine Filmkamera:
-  - **Eröffnung mit einer Totalen** der Gruppe von der Seite, auf Augenhöhe (Spieler, Partnerin, die anderen).
+  - **Eröffnung mit einer Halbtotalen** von der Seite, auf Augenhöhe: Sprecher und Zuhörer (bei Erzählersätzen die ganze Gruppe).
   - **Je Satz ein Schnitt auf den Sprecher**: über die Schulter des Zuhörers (Gegenschuss) oder halbnah auf das Gesicht, leicht aus der
     Mitte, mit Blickraum. Wechselt der Sprecher zur anderen Seite: Schuss–Gegenschuss; spricht derselbe weiter: ein Schnitt näher heran.
   - **180°-Regel**: die Kamera bleibt auf einer Seite der Linie zwischen den Gruppen; die Seite wird beim Start gewählt (freie Sicht, nahe
@@ -26,9 +26,10 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
     Moped oder bei Fahndung – wie in GTA.
 - **Taktung der Sätze** (`gl_mission.js`): ein Satz dauert so lange wie seine Aufnahme (Länge aus dem Manifest von Agent stimmen, sonst bis
   das Sprechen endet), höchstens 1,6 × die Lesezeit, mindestens 1,6 s; ohne Stimme die Lesezeit; 0,25 s Pause zwischen den Sätzen.
-- **Missionstitel mit Stich**: beim Start jeder Mission der Titel (`GLHUD.titel(Titel, Ort, 5)` des Leads, solange es fehlt die große Zeile
-  `GLHUD.say`) mit Ort darunter („Schleusingen · Freitagabend“, „Untere Klinge · nachts“ …), sobald der Bildschirm ruhig ist (nach der
-  Blende, nicht über „Mission bestanden“), dazu der Stich `start`. Das alte „Neue Mission“-Banner des Grundspiels ist weg.
+- **Missionstitel mit Stich**: beim Start jeder Mission der Titel (`GLHUD.titel(Titel, 'Kapitel 1 · Mission n', 5, Ort)` des Leads,
+  solange es fehlt die große Zeile `GLHUD.say`) mit Ort und Zeit darunter („Schleusingen · Freitagabend“, „Untere Klinge · nachts“ …), sobald
+  der Bildschirm ruhig ist (nach der Blende, nicht über „Mission bestanden“), dazu der Stich `start`. Das alte „Neue Mission“-Banner des
+  Grundspiels ist weg.
 - **Musik nach Lage** (`viz3/src/grenzland/gl_score.js`, GLSCORE) – selbst komponiert, live in WebAudio erzeugt, d-Moll, über den
   Musik-Bus des Spiels:
   - `spannung` (Rennen-Start, Klinge, Coup): tiefer Puls in Achteln, dunkle Fläche (i – VI – iv – V), ein leises Ticken.
@@ -57,8 +58,8 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 
 - Szene „Grenzland“: das erste Gespräch an der Zentralhaltestelle ist schon eine Zwischensequenz. Konsole: `GLMISSION.debug.go('gerhard')`
   und zu Gerhard unter die Linde gehen. `window.GLKINO_AUS = true` schaltet die Zwischensequenzen ab (Vergleich).
-- Test: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9012 --serve grenzland_kino:m1` (Abschnitte `m1`, `m3`, `score`; eine
-  Mission je Seite). Bilder in `out/grenzland_kino/`. In Actions je Abschnitt ein Job (`viz3/extra/grenzland-kino/tests.txt`).
+- Test: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9012 --serve grenzland_kino:m1` (Abschnitte `m1`, `m3`, `coup`,
+  `score`; eine Mission je Seite). Bilder in `out/grenzland_kino/`. In Actions je Abschnitt ein Job (`viz3/extra/grenzland-kino/tests.txt`).
 
 ## Entscheidungen (Falko schlief)
 
@@ -71,19 +72,17 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - **Ego-Sicht**: wer die Ich-Sicht gewählt hat, sieht in der Zwischensequenz seine Figur (die Sicht kommt danach zurück).
 - **Rennen bekommt `flucht`** (Stufe 2) statt `spannung` – ein Rennen braucht Schlagzeug; der Startcountdown hat `spannung`.
 - **Kein Score unter freiem Spiel**, auch nicht bei Fahndung ohne Mission (wie GTA: Verfolgungsmusik nur in Missionen).
-- **Stich „bestanden“** kommt von hier (`grenzland:mission` erledigt); der Jingle `GLTON.fx('frei')` in `gl_modus.js` klingt zusätzlich.
+- **Stich „bestanden“** spielt `gl_modus.js` (Lead) mit „Mission bestanden“ (statt des Jingles); hier nur `start` und `gescheitert`.
 
 ## Für den Lead
 
-- `GLHUD.kino(on)`, `GLHUD.titel(name, unter, sec)`, `GLHUD.ruhig()` werden genutzt, sobald es sie gibt (bis dahin eigene Balken bzw.
-  `GLHUD.say`, und ein eigener Ruhe-Test: keine Blende, `#glpass`, `#glmsg`, `#glbust` verborgen).
+- `GLHUD.kino(on)`, `GLHUD.titel(name, ueber, sec, unter)`, `GLHUD.ruhig()` (Stand 28c6b702, in den Zweig gemischt) werden genutzt; fehlen
+  sie, gibt es eigene Balken, `GLHUD.say` und einen eigenen Ruhe-Test (keine Blende, `#glpass`, `#glmsg`, `#glbust` verborgen). Titel:
+  `ueber` = „Kapitel 1 · Mission n“, `unter` = Ort und Zeit.
 - Zum Überspringen (Esc) wäre `GLHUD.subAus()` gut (Untertitel sofort weg); bis dahin setze ich `GLHUD.subEl.hidden`.
-- Bitte in `gl_modus.js` bei „Mission bestanden“ `GLTON.fx('frei')` weglassen, wenn `GLSCORE` da ist (sonst zwei Klänge übereinander).
-- `GLHUD.sub` als Warteschlange: meine Sätze kommen in ihrer Taktung (Dauer = erwartete Satzlänge); beim Überspringen (E, Leertaste) muss
-  ein neuer Gesprächssatz den alten **ersetzen**, nicht warten.
+- `GLHUD.sub`: meine Sätze kommen in ihrer Taktung (Dauer = erwartete Satzlänge); Leute ersetzen einander sofort – passt so.
 - In `modules.txt` stehen `gl_kamera.js` und `gl_score.js` direkt vor `gl_mission.js`.
-- `GLHUD.titel(name, ueber, sec, unter)`: ich gebe `ueber` leer und den Ort als `unter`.
-- `viz3/extra/grenzland-kino/tests.txt` enthält vorübergehend auch `grenzland_mission:m1,m3,m4,m5` (Regressionsnetz, weil die Gespräche aller
+- `viz3/extra/grenzland-kino/tests.txt` enthält vorübergehend auch `grenzland_mission:m1…m5` (Regressionsnetz, weil die Gespräche aller
   Missionen jetzt Zwischensequenzen sind) – beim Zusammenführen gern wieder auf die drei `grenzland_kino`-Zeilen kürzen.
 
 ## Offen

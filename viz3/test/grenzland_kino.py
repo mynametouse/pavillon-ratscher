@@ -1,6 +1,7 @@
 # feat/grenzland-kino (Falko, 13.11.2026, package B „Kino-Gefühl“): talks as cutscenes, mission title cards with a sting, the score.
 # Sections (second argument, comma separated; one mission per page – memory): m1 (the first talks in Schleusingen: two-shot, cuts,
-# bars, the walk held, Space, Esc, back behind the player), m3 (Gerhard under the lime), score (title card of a jumped-to mission,
+# bars, the walk held, Space, Esc, back behind the player), m3 (Gerhard under the lime), coup (the office door: a look inside),
+# score (title card of a jumped-to mission,
 # the score's layers: spannung, flucht with a wanted level, silent with the radio on). Pictures in out/grenzland_kino/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9012 --serve grenzland_kino:m1
 import sys, os, json, time, math
@@ -160,6 +161,34 @@ with lib.browser() as b:
         ck('no new shader programs (± 1)', abs(p1 - p0) <= 1, f'{p0} → {p1}')
       except Exception as e:
         ck('m3 ran through without an error of the test', False, str(e)[:300])
+
+    # ================================================================ coup · the office door gives way: a look inside ================================================================
+    if 'coup' in SECT:
+      try:
+        frei()
+        E("GLMISSION.debug.go('coup', 'tuer')"); steps(0.5)
+        ok = until("!!(GLLAGER.on && GLLAGER.Y)", 30, 0.3, 0.2)
+        Y = J("(Y => ({ vorTuer: Y.vorTuer, karte: Y.karte, imBuero: Y.imBuero, hd: Y.kamera.hd }))(GLLAGER.Y)")
+        yawIn = (math.degrees(math.atan2(Y['imBuero'][0] - Y['vorTuer'][0], Y['imBuero'][1] - Y['vorTuer'][1]))) % 360
+        E(f"GLLAGER.lenke(GLLAGER.Y.vorTor[0], GLLAGER.Y.vorTor[1], 600)")
+        E(f"GAME.view({Y['vorTuer'][0]}, {Y['vorTuer'][1]}, KERN.ground({Y['vorTuer'][0]}, {Y['vorTuer'][1]}) + 1.62, {yawIn}, -4)"); steps(0.3)
+        pic('50_tuer_zu', False)
+        a = E("(() => { const a = KERN.acts().find(a => a.id === 'gl:tuer'); if (!a || !a.label()) return false; PLAY.run(a); return true })()")
+        steps(4.4)
+        ok2 = until("GLMISSION.debug.info().step === 'karte'", 5, 0.1)
+        steps(0.6)
+        E("GAME.shot()")
+        st = J("(() => { const I = GLKAMERA.info(), K = GLLAGER.Y.karte, z = GLLAGER.zF + 1.5; const v = new THREE.Vector3(K[0], z, -K[1]); const d = v.distanceTo(GAME.cam ? GAME.cam.position : new THREE.Vector3(I.cam[0], I.cam[2], -I.cam[1])); "
+               "return { on: I.on, kind: I.kind, bars: I.bars, offen: GLLAGER.offen, d }; })()")
+        ck('the office door gives way: a short look through it at the framed map on the back wall (black bars)', a and ok2 and st['on'] and st['kind'] == 'insert' and st['offen'] and st['bars'], str(st))
+        pic('51_blick_ins_buero')
+        steps(4)
+        st = J("({ on: GLKAMERA.on(), blend: GLKAMERA.info().blend })")
+        ck('after the insert the follow camera again', not st['on'], str(st))
+        E(f"GAME.view({Y['vorTuer'][0] - math.sin(Y['hd']) * 1.6}, {Y['vorTuer'][1] - math.cos(Y['hd']) * 1.6}, KERN.ground({Y['vorTuer'][0]}, {Y['vorTuer'][1]}) + 1.62, {yawIn}, -4)"); steps(0.3)
+        pic('52_buero_von_aussen')
+      except Exception as e:
+        ck('coup ran through without an error of the test', False, str(e)[:300])
 
     # ================================================================ score · title card, layers ================================================================
     if 'score' in SECT:

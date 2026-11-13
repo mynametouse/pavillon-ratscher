@@ -374,7 +374,10 @@ export const GLMISSION = (() => {
     } catch (e) {}
     try {
       if (GLHUD.subAus) GLHUD.subAus();
-      else if (GLHUD.subEl) GLHUD.subEl.hidden = true;
+      else if (GLHUD.subEl) {
+        GLHUD.subEl.hidden = true;
+        GLHUD.subT = 0;
+      }
     } catch (e) {}
     k.i = k.lines.length - 1;
     zeile();
@@ -488,9 +491,9 @@ export const GLMISSION = (() => {
       if (name === 'mission' && d.st === 'erledigt') {
         const m = M.find(q => q.id === d.id);
         d = Object.assign({ titel: GLMDATA.M[d.id].title, lohn: (m && m.lohn) || '' }, d);
+        // (the sting „bestanden“ plays the mode with „Mission bestanden“, grenzland/gl_modus.js)
         GLSCORE.lage('');
         GLSCORE.mission('');
-        GLSCORE.stich('bestanden');
       } else if (name === 'schritt') {
         const m = M.find(q => q.id === d.id);
         d = Object.assign({ schritt: m && m.steps[d.i] ? m.steps[d.i].id : '' }, d);
@@ -546,7 +549,8 @@ export const GLMISSION = (() => {
       if (g !== St.titelN || !GL.on || GL.cur !== m.id || St.busy) return;
       const D = GLMDATA.M[m.id];
       try {
-        if (GLHUD.titel) GLHUD.titel(D.title, '', 5, D.unter || '');
+        if (GLHUD.titel)
+          GLHUD.titel(D.title, 'Kapitel 1 · Mission ' + (GLMDATA.ORDER.indexOf(m.id) + 1), 5, D.unter || '');
         else GLHUD.say(D.title, D.unter || '', 5);
       } catch (e) {}
       GLSCORE.stich('start');

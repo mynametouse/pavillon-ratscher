@@ -13,7 +13,7 @@
 //   zeile(i, who, sec) a line begins (the cut) · ende() the talk is over · tick(dt) after the walk physics · weg() the player was put
 //   elsewhere (no blend) · stop() everything back · on() · info() (tests) · BARK: talks that never become cutscenes (shouts of the action)
 import * as THREE from 'three';
-import { cam, stage, V } from '../core/head.js';
+import { cam, COARSE, stage, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
@@ -65,6 +65,7 @@ export const GLKAMERA = (() => {
     hook: null, // the vehicles' own applyCam while ours is in
     view: null, // the player's view setting while the cutscene shows his figure
     bars: null,
+    tipp: null,
     css: false,
     keys: false,
     lineT: 0, // seconds since the line began (taps right after a cut are not counted)
@@ -296,8 +297,9 @@ export const GLKAMERA = (() => {
       if (hyp(x[0] - l[0], x[1] - l[1]) > 2.9 || (L.F !== 'P' && (L.F.sitzt || L.F.reitet))) return null;
       const d = norm([x[0] - l[0], x[1] - l[1]]),
         n = seite(d),
-        b = 0.75 + (S.n % 3) * 0.08;
-      let p = [l[0] - d[0] * b + n[0] * 0.48, l[1] - d[1] * b + n[1] * 0.48, l[2] + 0.04];
+        b = 0.8 + (S.n % 3) * 0.08;
+      // (not closer than 0.8 m to the listener: the mode hides the other one of the two when the camera comes that close)
+      let p = [l[0] - d[0] * b + n[0] * 0.52, l[1] - d[1] * b + n[1] * 0.52, l[2] + 0.04];
       p = kurz(p, x, 1.4);
       if (!p) return null;
       return mk('ots', boden(p), [x[0] - n[0] * 0.14, x[1] - n[1] * 0.14, x[2] - 0.13], fov0 - 6, sec, 0.06);
@@ -414,7 +416,20 @@ export const GLKAMERA = (() => {
     S.who = besetzen(o.lines, o.figOf);
     const main = S.who.find(e => e.party === 1);
     if (!main) return false;
-    aufstellen(main);
+    // at talking distance: the player goes to the person he talks to – only the other one of the two comes to him instead
+    if (main.F !== 'P' && main.F.partner) {
+      const F = main.F,
+        d = hyp(F.x - P.x, F.y - P.y);
+      if ((d > 3.2 || d < 1.0) && F.st !== 'geht' && !F.sitzt) {
+        const ux = d > 0.01 ? (F.x - P.x) / d : 0,
+          uy = d > 0.01 ? (F.y - P.y) / d : 1,
+          q = [P.x + ux * 1.7, P.y + uy * 1.7];
+        try {
+          KERN.pushOut(q, 0.35);
+          GLFIG.place(F, q[0], q[1], Math.atan2(P.x - q[0], P.y - q[1]));
+        } catch (e) {}
+      }
+    } else aufstellen(main);
     seiteWaehlen();
     S.on = true;
     S.n = 0;
@@ -698,6 +713,22 @@ export const GLKAMERA = (() => {
       window.removeEventListener('pointerdown', onTap, true);
     }
     document.body.dataset.glSchnitt = on ? '1' : '';
+    // the way out, small in the corner of the bottom bar (as GTA shows „Überspringen“)
+    if (!S.css) {
+      S.css = true;
+      const st = document.createElement('style');
+      st.textContent = CSS;
+      document.head.appendChild(st);
+    }
+    if (!S.tipp && on) {
+      const d = document.createElement('div');
+      d.id = 'glkinotipp';
+      d.innerHTML = COARSE ? 'Tippen: weiter' : '<kbd>Leertaste</kbd>weiter · <kbd>Esc</kbd>überspringen';
+      (stage || document.body).appendChild(d);
+      S.tipp = d;
+      void d.offsetWidth;
+    }
+    if (S.tipp) S.tipp.classList.toggle('on', !!on);
   }
   // ---------------- the black bars: the lead's GLHUD.kino, else our own ----------------
   const CSS = `
@@ -706,6 +737,9 @@ export const GLKAMERA = (() => {
 #glkinobar i:first-child{top:0} #glkinobar i:last-child{bottom:0}
 #glkinobar.on i{height:11vh}
 body[data-gl-schnitt="1"] :is(#joy,.pad,#actrow,.hint){display:none!important}
+#glkinotipp{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(3vh + env(safe-area-inset-bottom,0px));z-index:10;
+  pointer-events:none;color:#fff;opacity:0;transition:opacity .6s;font:500 11px/1.3 var(--f-mono,monospace);letter-spacing:.06em}
+#glkinotipp.on{opacity:.55} #glkinotipp kbd{font:inherit;border:1px solid rgba(255,255,255,.5);border-radius:4px;padding:0 4px;margin:0 3px}
 body[data-gl-schnitt-eigen="1"] :is(#glhud,#gltouch,#glmap,#glmaplab,#qtrack,#glort,#glfunk){visibility:hidden!important}
 body[data-gl-schnitt-eigen="1"] #glsub{bottom:calc(11vh + 12px + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,.35)}
 `;
