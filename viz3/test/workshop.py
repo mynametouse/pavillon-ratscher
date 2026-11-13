@@ -68,7 +68,7 @@ def run():
             ck('Stimmen on: volume back', J("WORKSHOP.vols().stimmen") > 0)
             ck('the choices are remembered per browser', 'stimmen' in E("localStorage.getItem('pav-workshop-v1') || ''"), E("localStorage.getItem('pav-workshop-v1')"))
             E("WORKSHOP.layers.reset()")
-            ck('Voreinstellung: Leute, Verkehr, Busse, Tiere off, the overlays on', J("WORKSHOP.layers.list().filter(l => l.on).map(l => l.id)") == ['ortsnamen', 'untertitel', 'stimmen', 'umgebungston', 'jahr', 'kennzahlen'])
+            ck('Voreinstellung: Leute, Verkehr, Busse, Tiere off, the overlays on', J("WORKSHOP.layers.list().filter(l => l.on && l.id !== 'testlayer').map(l => l.id)") == ['ortsnamen', 'untertitel', 'stimmen', 'umgebungston', 'jahr', 'kennzahlen'])
             E("document.querySelector('#ws-lay [data-a=layers-close]').click()")
             ck('Fertig closes the panel', not vis('#ws-lay'))
         if 'spiel' in want:
@@ -86,6 +86,13 @@ def run():
             time.sleep(0.5)
             ck('the pause screen shows', vis('#ws-pause'))
             pic('04-pause')
+            ck('slots: phone slot on the right third, card-extra exists', J("(() => { const e = WORKSHOP.slot('phone'), r = e.getBoundingClientRect(); return r.left > innerWidth * 0.6 && r.height > innerHeight * 0.6 && !!WORKSHOP.slot('card-extra'); })()"))
+            ck('the page header is invisible', E("getComputedStyle(document.querySelector('header.top')).visibility") == 'hidden')
+            ck('the view label „Modellansicht – Entwurfsstudie“ is not shown', not vis('.ov.where small') and (not vis('.ov.where') or not E("/^Modellansicht/.test(document.getElementById('where').textContent)")), E("document.getElementById('where').textContent"))
+            E("WORKSHOP.layers.define({ id: 'testlayer', label: 'Testebene', text: 'Eine Ebene eines anderen Moduls', on: false, set: v => { window.__tl = v; } })")
+            ck('layers.define adds a layer and calls set', E("window.__tl") is False and 'testlayer' in J("WORKSHOP.layers.list().map(l => l.id)"))
+            E("WORKSHOP.layers.set('testlayer', true)")
+            ck('the defined layer switches', E("window.__tl") is True)
             key(' ')
             ck('Space plays again', J("WORKSHOP.regie().state().playing"))
             key('b')
@@ -99,6 +106,8 @@ def run():
             if vis('#ws-card'):
                 ck('the chapter-end card has numbers of both worlds, a source line and questions', E("document.querySelectorAll('#ws-card th').length") == 3 and 'Quellen' in E("document.getElementById('ws-card').textContent") and vis('#ws-card .q'))
                 ck('card figures ≥ 3 vh', px('#ws-card td.v') >= vh(3) - 0.5)
+                ck('the card does not show the year', E("getComputedStyle(document.getElementById('ws-year')).visibility") == 'hidden')
+                ck('the card-extra area sits inside the card', E("document.getElementById('ws-card').contains(document.getElementById('ws-card-extra'))"))
                 pic('05-karte')
         if 'ende' in want:
             E("WORKSHOP.key({ key: 'Escape', preventDefault() {}, stopImmediatePropagation() {} })")

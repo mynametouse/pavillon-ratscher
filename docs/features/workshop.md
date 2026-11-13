@@ -52,3 +52,8 @@ Jahre, darum kein Alltag; die ruhigen Bilder sparen Rechenzeit der geteilten Ans
 
 ## Test
 `viz3/test/workshop.py` (Abschnitte `start,ebenen,spiel,ende,strategie,telefon`), `viz3/extra/workshop/tests.txt`; Bilder in `out/workshop/`.
+
+## Für andere Module (Runde 2)
+- `WORKSHOP.slot('phone')`: Fläche rechts (~30 vw × 70 vh), über der Szene, unter den Karten. `WORKSHOP.slot('card-extra')`: Bereich in der Kapitelkarte (für ein, zwei Video-Kacheln; bleibt beim Neuaufbau der Karte erhalten).
+- `WORKSHOP.layers.define({ id, icon, label, text, on, set })`: eine eigene Ebene im Ebenen-Feld (`on` = Voreinstellung, `set(bool)` schaltet).
+- Im Modus unsichtbar: Seitenkopf mit Reitern und die Ansichtsangabe „Modellansicht“. Bei der Kapitelkarte verschwinden Jahr und Kapitelname dahinter.

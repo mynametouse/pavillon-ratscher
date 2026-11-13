@@ -93,7 +93,30 @@ export const WORKSHOP = (() => {
   function hold() {
     for (const id of Object.keys(HIDE)) if (lay[id] === false) for (const g of HIDE[id]()) if (g) g.visible = false;
   }
+  // feat/workshop round 2: places for other helpers (zeitreise-medien): the phone on the right third (above the scene, below the cards) and an
+  // area inside the chapter-end card for video tiles. The elements persist; the card's text is rebuilt around the extra area.
+  const cardExtra = document.createElement('div');
+  cardExtra.id = 'ws-card-extra';
+  function slot(name) {
+    build();
+    if (name === 'phone') return $('ws-slot-phone');
+    if (name === 'card-extra') return cardExtra;
+    return null;
+  }
   const layers = {
+    // another module adds its layer to the panel: { id, icon, label, text, on (default), set(bool) }
+    define(d) {
+      if (!d || !d.id || typeof d.set !== 'function') return false;
+      const L = { id: d.id, icon: d.icon || '•', label: d.label || d.id, text: d.text || '', def: d.on !== false, why: d.why || '', apply: d.set };
+      const i = LAYERS.findIndex(x => x.id === d.id);
+      i >= 0 ? (LAYERS[i] = L) : LAYERS.push(L);
+      if (S.on) {
+        const sv = savedLayers();
+        layers.set(L.id, L.id in sv ? !!sv[L.id] : L.def, true);
+        renderLayers();
+      }
+      return true;
+    },
     list: () => LAYERS.map(L => ({ id: L.id, label: L.label, text: L.text, on: lay[L.id] !== false, def: L.def })),
     on: id => lay[id] !== false,
     set(id, v, quiet) {
@@ -173,6 +196,13 @@ export const WORKSHOP = (() => {
   const CSS = `
 body.ws-on ${HUDIDS.split(',').join(',body.ws-on ')}{display:none!important}
 body.ws-on.ws-werk #zk{display:flex!important}
+body.ws-on header.top{visibility:hidden}
+body.ws-on .ov.where small,body.ws-where-none .ov.where{display:none!important}
+body.ws-card-on #ws-year,body.ws-card-on #ws-chap{visibility:hidden}
+#ws-slot-phone{position:absolute;right:5vw;top:15vh;width:30vw;height:70vh;pointer-events:none}
+#ws-slot-phone>*{pointer-events:auto}
+#ws-card-extra:empty{display:none}
+#ws-card-extra{display:flex;gap:2vh;margin-top:1.4vh}
 body.ws-on:not(.ws-no-where) .ov.where{display:block!important;top:19vh!important;left:auto!important;right:5vw!important;font-size:3vh!important;text-align:right;z-index:66}
 #ws{position:fixed;inset:0;z-index:70;pointer-events:none;color:#f6f1e6;font:600 2.8vh/1.3 var(--f-body,system-ui,sans-serif);text-shadow:0 .2vh .8vh rgba(0,0,0,.85)}
 #ws[hidden]{display:none}
@@ -272,7 +302,7 @@ body.ws-start #ws-start{display:block}
     root.innerHTML = `
 <div id="ws-top"></div><div id="ws-bot"></div><div id="ws-split"></div>
 <div id="ws-year"></div><div id="ws-chap"></div><div id="ws-titles"></div><div id="ws-evt"></div>
-<div id="ws-sub"></div><div id="ws-tl" aria-label="Zeitleiste"></div>
+<div id="ws-slot-phone"></div><div id="ws-sub"></div><div id="ws-tl" aria-label="Zeitleiste"></div>
 <div id="ws-pause" class="wsplate"></div><div id="ws-end" class="wsplate"></div><div id="ws-card" class="wsplate"></div>
 <div id="ws-badge"><b>Workshop</b><button type="button" class="wsb" data-a="leave">Zurück ins Spiel</button></div>
 <div id="ws-ctl">
@@ -329,7 +359,7 @@ body.ws-start #ws-start{display:block}
     if (!el) return;
     const items = LAYERS.map(L => `<label><i>${L.icon}</i><b>${esc(L.label)}</b><input type="checkbox" data-lay="${L.id}" ${lay[L.id] !== false ? 'checked' : ''} aria-label="${esc(L.label)}"><small>${esc(L.text)}</small></label>`);
     el.innerHTML = `<h2>Ebenen</h2><div>Was im Workshop zu sehen und zu hören ist. Alles lässt sich jederzeit ein- und ausschalten; der Browser merkt sich die Auswahl.</div>
-<div class="cols"><div>${items.slice(0, 6).join('')}</div><div>${items.slice(6).join('')}</div></div>
+<div class="cols"><div>${items.slice(0, Math.ceil(items.length / 2)).join('')}</div><div>${items.slice(Math.ceil(items.length / 2)).join('')}</div></div>
 <div class="rowb"><button type="button" class="wsb" data-a="layers-close">Fertig</button><button type="button" class="wsb" data-a="layers-reset">Voreinstellung</button></div>`;
     el.classList.toggle('on', S.layersOpen);
   }
@@ -525,7 +555,7 @@ body.ws-start #ws-start{display:block}
     S.sub = null;
     root.hidden = true;
     const b = document.body.classList;
-    for (const c of ['ws-on', 'ws-start', 'ws-werk', 'ws-playing', 'ws-two', 'ws-ctl', 'ws-no-where', 'ws-no-sub', 'ws-no-year', 'ws-no-card']) b.remove(c);
+    for (const c of ['ws-on', 'ws-start', 'ws-werk', 'ws-playing', 'ws-two', 'ws-ctl', 'ws-no-where', 'ws-no-sub', 'ws-no-year', 'ws-no-card', 'ws-card-on', 'ws-where-none']) b.remove(c);
     restore(S.snap);
     S.snap = null;
     KERN.emit('workshop:modus', { on: false });
@@ -600,8 +630,12 @@ body.ws-start #ws-start{display:block}
     const cardCh = s.card && (s.card.chapter || (typeof s.card === 'string' ? s.card : s.chapter));
     if (playing && cardCh) {
       put('ws-card', cardHtml(cardCh, s.pair || ['allein', 'gewappnet']));
+      const cd = $('ws-card');
+      if (cardExtra.parentNode !== cd) cd.querySelector('.src').before(cardExtra);
       show('ws-card', true);
     } else show('ws-card', false);
+    document.body.classList.toggle('ws-card-on', !!(playing && cardCh));
+    document.body.classList.toggle('ws-where-none', /^Modellansicht/.test(($('where') || {}).textContent || ''));
     // pause (for discussion) and the end
     const pause = playing && !s.playing && !s.card && !s.ev && !S.ended;
     put('ws-pause', pause ? `<h2>Pause</h2><p>Zeit zum Reden.</p>${chap ? chap.questions.map(q => `<p>${esc(q)}</p>`).join('') : ''}<p style="font-size:2.6vh;opacity:.8">Leertaste oder Bild ab: weiter</p>` : '');
@@ -668,6 +702,7 @@ body.ws-start #ws-start{display:block}
     key,
     regie: R,
     chronik: C,
+    slot,
     vols: () => audio.vols(),
     state: () => ({ on: S.on, screen: S.screen, sel: S.sel, chapter: S.chapter, black: S.black, layers: S.layersOpen }),
   };
