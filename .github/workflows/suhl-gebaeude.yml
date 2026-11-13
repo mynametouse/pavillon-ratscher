@@ -2,12 +2,12 @@
 # Stadt Suhl in Kacheln der Stufe 10 (suhl/g/v<N>/10/<x>/<y>.json, Schema docs/features/suhl-daten.md) aus
 #   ETHOS.BUILDA (Zenodo, 882 MB im Strom gefiltert) · Kataster-WFS „ALKIS vereinfacht“ (nur ave:GebaeudeBauwerk, in Kästen, mit Pausen) ·
 #   OpenStreetMap (Geofabrik-Auszug, osmium) · Luftbild des Landes (WMS, je Kachel ein Bild 0,4 m: Dachdeckung und Dachfarbe) ·
-#   Oberflächenmodell DOM1 und Gelände DGM1 über easygeodata.de (secrets.EASYGEODATA_KEY: Dachform, First, Traufe gemessen) ·
+#   Oberflächenmodell DOM1 und Objekthöhen nDOM1 über easygeodata.de (secrets.EASYGEODATA_KEY: Dachform, First, Traufe gemessen) ·
 #   Zensus-Gitter 2022 (Baualter) · Gelände für die Fußhöhen (Kacheln von suhl-boden, sonst Copernicus).
-# Dazu die Prüfungen (Plan 5.3) und der Prüfer des Datenvertrags. Ergebnis: Artefakt „suhl-gebaeude-kacheln“, Zahlen nach
-# tools/suhl/out/gebaeude/actions/ und der Probesatz des Zentrums nach tools/suhl/out/gebaeude/probe/suhl/g/v<N>/ auf suhl/gebaeude;
-# der zweite Job gibt die Kacheln an die Aktion suhl-publish (Daten-Repo pavillon-daten). Fehlt ein Geheimnis oder eine Quelle, wird
-# der Schritt mit einer klaren Zeile übersprungen – nie ein roter Lauf deswegen.
+# Dazu die Prüfungen (Plan 5.3) und der Prüfer des Datenvertrags. Ergebnis: Artefakt „suhl-g-v<N>“ (der Versionsordner), Zahlen nach
+# tools/suhl/out/gebaeude/actions/ und der Probesatz des Zentrums nach tools/suhl/out/gebaeude/probe/suhl/g/v<N>/ auf suhl/gebaeude.
+# Veröffentlicht wird hier nicht: suhl-daten bringt Sätze von Produkten durch eine Tür ins Daten-Repo (Lauf-Nummer + Artefakt nennen).
+# Fehlt ein Geheimnis oder eine Quelle, wird der Schritt mit einer klaren Zeile übersprungen – nie ein roter Lauf deswegen.
 # Läuft nur auf suhl/gebaeude und nur, wenn diese Datei oder tools/suhl/gebaeude/lauf.txt sich ändert (lauf.txt ändern = neuen Lauf
 # bestellen; dort stehen Version und easygeodata-Umfang). Ein neuer Lauf bricht einen älteren ab; alle Downloads liegen im Actions-Cache.
 name: Suhl – Gebäude (ganze Stadt)
@@ -31,7 +31,6 @@ jobs:
     timeout-minutes: 110
     outputs:
       version: ${{ steps.auftrag.outputs.version }}
-      publish: ${{ steps.auftrag.outputs.publish }}
       gueltig: ${{ steps.vertrag.outputs.gueltig }}
     env:
       SUHL_RAW: /home/runner/suhl-raw
@@ -51,7 +50,6 @@ jobs:
           P=$(grep -E '^easygeodata:' tools/suhl/gebaeude/lauf.txt | sed 's/^easygeodata: *//' | tr -d ' ' | tail -1)
           echo "VERSION=v${V:-1}" >> "$GITHUB_ENV"; echo "version=v${V:-1}" >> "$GITHUB_OUTPUT"
           echo "EGD_PRIO=${P:-P1}" >> "$GITHUB_ENV"
-          if grep -qE '^veroeffentlichen: *ja' tools/suhl/gebaeude/lauf.txt; then echo "publish=ja" >> "$GITHUB_OUTPUT"; else echo "publish=nein" >> "$GITHUB_OUTPUT"; fi
           cat tools/suhl/gebaeude/lauf.txt
           pip install --quiet numpy shapely pyproj pillow mapbox_earcut tifffile imagecodecs requests
           sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
@@ -97,16 +95,16 @@ jobs:
         run: |
           set -o pipefail
           python -I -u tools/suhl/gebaeude/alkis.py --area stadt --summary tools/suhl/out/gebaeude/actions/alkis_stadt.json 2>&1 | tee logs/alkis.log
-      - name: Oberflächenmodell DOM1 und Gelände DGM1 über easygeodata.de (übersprungen, wenn der Schlüssel fehlt)
+      - name: Oberflächenmodell DOM1 und Objekthöhen nDOM1 über easygeodata.de (übersprungen, wenn der Schlüssel fehlt)
         timeout-minutes: 30
         continue-on-error: true
         env:
           EASYGEODATA_KEY: ${{ secrets.EASYGEODATA_KEY }}
         run: |
           set -o pipefail
-          python -I -u tools/suhl/lib/easygeodata.py --product dgm,dom --prio "$EGD_PRIO" --raw "$SUHL_RAW" --report logs/egd.json 2>&1 | tee logs/egd.log
+          python -I -u tools/suhl/lib/easygeodata.py --product dom,ndom --prio "$EGD_PRIO" --raw "$SUHL_RAW" --report logs/egd.json 2>&1 | tee logs/egd.log
           cp logs/egd.json tools/suhl/out/gebaeude/actions/easygeodata.json 2>/dev/null || true
-          ls "$SUHL_RAW/dom1" 2>/dev/null | wc -l; ls "$SUHL_RAW/dgm1" 2>/dev/null | wc -l
+          for d in dom1 ndom1 dgm1; do echo "$d: $(ls "$SUHL_RAW/$d" 2>/dev/null | wc -l) Kacheln"; done
       - name: Zensus-Gitter 2022 – Gebäude nach Baujahr (100 m), auf Suhl geschnitten (übersprungen, wenn die Datei nicht zu finden ist)
         timeout-minutes: 15
         continue-on-error: true
@@ -213,15 +211,14 @@ jobs:
         with:
           path: ~/suhl-raw
           key: suhl-gebaeude-raw-v1-${{ env.RAWKEY }}
-      - name: Kacheln als Artefakt
+      - name: Kacheln als Artefakt suhl-g-v<N> (der Versionsordner; suhl-daten veröffentlicht ihn – dieses Paket veröffentlicht nicht selbst)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: suhl-gebaeude-kacheln
-          path: ${{ runner.temp }}/suhl-g-*.tar.gz
+          name: suhl-g-${{ env.VERSION }}
+          path: ${{ env.OUT }}/suhl/g/${{ env.VERSION }}
           if-no-files-found: ignore
           retention-days: 30
-          compression-level: 0
       - name: Zahlen und Probesatz nach suhl/gebaeude (nur tools/suhl/out/gebaeude/actions/ und …/probe/suhl/g/)
         if: always()
         run: |
@@ -250,29 +247,3 @@ jobs:
           if-no-files-found: ignore
           retention-days: 10
 
-  veroeffentlichen:
-    name: Kacheln ins Daten-Repo (Aktion suhl-publish von suhl-daten)
-    needs: gebaeude
-    if: ${{ needs.gebaeude.outputs.gueltig == 'true' && needs.gebaeude.outputs.publish == 'ja' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    concurrency:
-      group: suhl-daten-publish
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: suhl/gebaeude
-      - uses: actions/download-artifact@v4
-        with:
-          name: suhl-gebaeude-kacheln
-          path: ${{ runner.temp }}/art
-      - name: Auspacken
-        run: |
-          mkdir -p out && tar -xzf "$RUNNER_TEMP"/art/suhl-g-*.tar.gz -C out
-          ls out/suhl/g; du -sh out/suhl/g/*
-      - uses: ./.github/actions/suhl-publish
-        with:
-          folder: out/suhl/g/${{ needs.gebaeude.outputs.version }}
-          token: ${{ secrets.DATEN_TOKEN }}
-          artifact: suhl-g-${{ needs.gebaeude.outputs.version }}-unveroeffentlicht

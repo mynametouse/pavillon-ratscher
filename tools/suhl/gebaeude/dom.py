@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """suhl-gebaeude: the roof MEASURED on the state's surface model. DOM1 (laser surface, 1 m) and DGM1 (terrain, 1 m) of Thuringia
 ((c) GDI-Th, CC BY 4.0), fetched through easygeodata.de by tools/suhl/lib/easygeodata.py (GitHub Actions only) into the raw folder:
-<raw>/dom1/dom1_32_<E>_<N>.zip, <raw>/dgm1/dgm1_32_<E>_<N>.zip.
+<raw>/dom1/dom1_32_<E>_<N>.zip and the terrain as <raw>/dgm1/... or, in its place, the object heights <raw>/ndom1/... (DOM1 - DGM1).
 
 Per building: the surface cells inside the footprint (0.7 m in from its edge), as heights above the building's foot (the lowest
 terrain height along its outline, the level ETHOS / LoD2 count the height from). To these cells the roof models are fitted - flat,
@@ -110,7 +110,11 @@ class Dom:
                 q = ring.interpolate(float(s))
                 PE.append(q.x)
                 PN.append(q.y)
-        h = self.at('dgm', np.array(PE), np.array(PN))
+        PE, PN = np.array(PE), np.array(PN)
+        h = self.at('dgm', PE, PN)
+        if not np.isfinite(h).any():
+            # without the terrain tile: the surface minus the object height above ground (nDOM1 = DOM1 - DGM1) is the terrain
+            h = self.at('dom', PE, PN) - self.at('ndom', PE, PN)
         if not np.isfinite(h).any():
             return None
         return float(np.nanmin(h))
@@ -173,15 +177,22 @@ def fit(X, Y, Z, ctr, ux, Wd, Lr, h=None, k=0):
     rms_p = best[0]
     why = []
     # flat: the cells lie in one level (parapets, lift rooms and chimneys are the robust error's outliers)
-    if rms_flat <= 0.30 or span < 0.8 or rms_flat <= 1.12 * rms_p + 0.04:
+    if rms_flat <= 0.30 or span < 0.8:
         form = 0
     elif rms_p <= max(0.5, 0.14 * span) and rms_p < 0.7 * rms_flat:
         form = best[1]
-    elif rms_flat <= 0.55:
+    elif rms_flat <= 0.55 and rms_flat <= 1.12 * rms_p + 0.04:
         form = 0
         why.append('eher flach')
     else:
-        return None             # nothing fits: trees over the roof, a roof of many parts, a building that changed
+        # no simple roof fits (an L-shaped roof, a roof of many parts, trees above it) - but it is not flat: only the heights are taken,
+        # the eave from the lowest cells, the top from the highest; the caller keeps the form of its rule
+        ev, tp = float(np.percentile(Z, 8)), float(np.percentile(Z, 97))
+        if h is not None and (tp > h + 1.5 or tp < 0.5 * h - 0.5):
+            return None
+        if tp - ev < 0.8 or ev < 1.6:
+            return None
+        return dict(partial=True, eave=ev, top=tp if h is None else min(tp, h), rms=rms_p, rms_flat=rms_flat, n=n, span=span)
     if form == 0:
         zr = z_med
         if h is not None and (zr > h + 1.0 or zr < 0.45 * h - 0.5):

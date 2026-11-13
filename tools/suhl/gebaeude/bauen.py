@@ -366,10 +366,10 @@ def main():
             G.log('census grid not usable:', repr(ex)[:200])
     zstat = Counter()
     dom = None
-    if a.dom and (os.path.isdir(os.path.join(a.dom, 'dom1')) and os.path.isdir(os.path.join(a.dom, 'dgm1'))):
+    if a.dom and os.path.isdir(os.path.join(a.dom, 'dom1')) and (os.path.isdir(os.path.join(a.dom, 'dgm1')) or os.path.isdir(os.path.join(a.dom, 'ndom1'))):
         import dom as DM
         dom = DM.Dom(a.dom)
-        G.log('surface model: tiles in', a.dom, len(os.listdir(os.path.join(a.dom, 'dom1'))), 'DOM1,', len(os.listdir(os.path.join(a.dom, 'dgm1'))), 'DGM1')
+        G.log('surface model: tiles in', a.dom, {k_: len(os.listdir(os.path.join(a.dom, k_))) for k_ in ('dom1', 'dgm1', 'ndom1') if os.path.isdir(os.path.join(a.dom, k_))})
     elif a.dom:
         G.log('no DOM1 / DGM1 tiles in', a.dom, '- the roofs stay estimates by rule')
     dstat = {'why': Counter(), 'form': Counter(), 'flat_flip': Counter(), 'ridge_turned': 0, 'both_pitched': 0, 'de': [], 'dp': [], 'h_new': 0, 'gone': 0,
@@ -471,6 +471,19 @@ def main():
                     fitd, info = DM.fit_building(dom, p, sh, h if hq >= 1 else None, k, cells)
                     if fitd is None:
                         dstat['why'][info['why']] += 1
+                    elif fitd.get('partial'):
+                        # not flat, but no simple roof fits: eave and top from the surface, the form stays the rule's (a flat rule becomes pitched)
+                        dstat['why']['nur Höhen'] += 1
+                        f_new = est['form'] if est['form'] != 0 else (3 if (typ == 'block' and sh['A'] >= 300) else 2)
+                        if est['form'] == 0:
+                            dstat['flat_flip']['regel flach -> gemessen geneigt (nur Höhen)'] += 1
+                        top_ = min(h, fitd['top']) if hq >= 1 else fitd['top']
+                        ev_ = min(max(fitd['eave'], 2.2), top_ - 0.5)
+                        span_ = est['Wd'] if f_new == 1 else est['Wd'] / 2
+                        dstat['de'].append(abs(est['eave'] - ev_))
+                        est = dict(est, form=f_new, eave=ev_, rise=top_ - ev_, pitch=math.degrees(math.atan2(top_ - ev_, max(span_, 0.5))), rq=1)
+                        est.pop('planes', None)
+                        r_src, e_dom = 'dom1', True
                     else:
                         dstat['why']['gemessen'] += 1
                         dstat['form'][(est['form'], fitd['form'])] += 1
@@ -487,7 +500,7 @@ def main():
             # floors that do not fit the eave we now have (1.9 to 6.5 m per floor): kept aside, estimated below
             gs_unfit = bool(gs and k == 0 and not (1.9 * gs <= max(est['eave'], 2.0) + 1.0 and est['eave'] <= 6.5 * gs + 3.0))
             faces, walls, rings = D.build(rel, est, sid, k, bool(others))
-            # floors that do not fit under the measured height (a low part of a taller house): kept aside as x_lv, estimated from the eave
+            # floors that do not fit under the measured height (a low part of a taller house): kept aside as lvk, estimated from the eave
             gs_src = None
             if gs and (est['gs_fit'] is None or gs_unfit):
                 gs_src, gs, gsq = gs, None, 0
@@ -664,7 +677,7 @@ def main():
             Fw, So, any_s, sq = [], [], False, 0
             fa_out = None
             if fa is not None:
-                # what is the same for all houses of a kind goes into the tile's table x_fat, the house keeps its own values
+                # what is the same for all houses of a kind goes into the tile's table fat, the house keeps its own values
                 common = {'mat': F.MAT[fa['mat']], 'col2': rgb(fa['col2']), 'sock': fa['sock']}
                 if fa.get('win'):
                     common['win'] = fa['win']
@@ -694,7 +707,7 @@ def main():
                         o_['sd'] = G.r1(s_[9])     # an unnamed road; the distance of every wall is also the last number of its row in F
                     q_ = 1
                 if s_[8] & 4:
-                    o_['x_hof'] = 1
+                    o_['hof'] = 1
                 sp = Sp.get(i_)
                 if sp:
                     if sp.get('eg'):
@@ -714,13 +727,13 @@ def main():
                 fq = 1 if (gsq >= 1 or fa.get('q')) else 0
                 if fq:
                     fa_out['q'] = fq
-                rec['x_fa'] = fa_out      # the facade parameters of all sides by rule (with x_fat[t] of the tile); a side of S overrides single values
+                rec['fas'] = fa_out      # the facade parameters of all sides by rule (merged over fat[t] of the tile); a side of S overrides single values
             if rec['r'] == 0:
                 rec['fl'] = 1
             if gs:
                 rec['lv'] = int(gs)
             if gs_src:
-                rec['x_lv'] = int(gs_src)
+                rec['lvk'] = int(gs_src)
             uw, egw = RG.use_word(use, fn, ot, k)
             rec['use'] = uw
             shop_zone = any(v.get('eg') for v in Sp.values())
@@ -745,11 +758,11 @@ def main():
             if fg:
                 rec['fg'] = fg
             if 'lm' in fl:
-                rec['x_lm'] = fl['lm']
+                rec['lm'] = fl['lm']
             if rec_bt:
-                rec['x_teil'] = rec_bt
+                rec['teil'] = rec_bt
             if b['kat'] != 2:
-                rec['x_kat'] = b['kat']
+                rec['kat'] = b['kat']
             if Sp:
                 n_shop += 1
             if front:
@@ -808,14 +821,14 @@ def main():
             stats['r_out'][rec['r']] += 1
             if h >= 25:
                 tall.append({'id': sid, 'h': G.r1(h), 'fa': round(gf), 'lv': gs, 'q_lv': gsq if gs else None, 'use': rec['use'], 'fkt': fn, 'bt': rec['bt'], 'k': rec['k'],
-                             'r': rec['r'], 'n': name, 'adr': adr[:60], 'utm': [round(b['rp'][0]), round(b['rp'][1])], 'x_kat': b['kat']})
+                             'r': rec['r'], 'n': name, 'adr': adr[:60], 'utm': [round(b['rp'][0]), round(b['rp'][1])], 'kat': b['kat']})
         recs.sort(key=lambda r_: r_['id'])
         fr = G.S.tile_frame(G.LEVEL, tx, ty)
         if not recs and not tief:
             continue
-        doc = {'v': G.S.SCHEMA, 'p': 'g', 'key': fr.key, 'o': fr.o_json(), 'made': made, 'n': len(recs), 'src': SRC0, 'x_fat': fat, 'b': recs}
+        doc = {'schema': G.S.SCHEMA, 'product': 'g', 'key': fr.key, 'o': fr.o_json(), 'made': made, 'n': len(recs), 'src': SRC0, 'fat': fat, 'b': recs}
         if tief:
-            doc['x_tief'] = tief        # underground car parks: footprints only, not drawn
+            doc['tief'] = tief          # underground car parks: footprints only, not drawn
             n_tief += len(tief)
         fn_out = os.path.join(out_root, str(G.LEVEL), str(tx), f'{ty}.json')
         G.write_json(fn_out, doc)
@@ -838,18 +851,10 @@ def main():
                             'attribution': '© Statistische Ämter des Bundes und der Länder, Zensus 2022'})
     if dom is not None and dstat['why'].get('gemessen'):
         sources = sources[:-2] + [IX.source('dom1', via='bezogen über easygeodata.de'), IX.source('dgm1', via='bezogen über easygeodata.de')] + sources[-2:]
-    note = ('Ein Datensatz je Gebäudekörper des Katasters/LoD2. Dach geschätzt (rq 0 Regel, 1 mit Luftbild oder OSM-Angabe); Dachdeckung und -farbe '
-            'aus dem Luftbild; Fassaden nach Regeln (x_fa, Güte 0-1). Private Felder: x_fa (Fassaden-Parameter des Hauses), x_teil (Kennung des '
-            'Hauptgebäudes eines Bauteils), x_fat (Kachel-Tabelle zu x_fa), x_lm (Nummer in wahrzeichen.md), x_kat (1 = dem Kataster nach Lage zugeordnet, 0 = nicht mehr im '
-            'Kataster), x_zv (Gelände über z0 an den Ecken), x_hof (Hofseite), Kachel: x_tief (Tiefgaragen).')
-    extra = {'counts': index, 'centre_tile': [cx, cy], 'osm': (osm['source'] + ' ' + osm['stamp']).strip(),
-             'x_fields': {'x_fa': 'facade parameters of the whole building by rule: {t, col, q, lv (only when the building has no lv)} merged over the tile table x_fat[t] = {mat, col2, sock, win, balk}; storey height hf = (e - sock) / lv, ground floor h0 = hf; a side of S overrides single values',
-                          'x_fat': 'tile: table of the facade parameters that houses of a kind share',
-                          'x_teil': 'id of the bigger building a small part (stair tower, bay, balcony stack, annex) is attached to',
-                          'x_lv': 'floors of the cadastre that do not fit under the measured height of this body (lv is then an estimate)',
-                          'x_lm': 'number of the landmark in docs/plans/suhl/wahrzeichen.md', 'x_kat': '1 = joined to the cadastre by position, 0 = not in the cadastre',
-                          'x_zv': 'ground above z0 at every corner of f, then of the holes fh (metres)', 'x_hof': 'side of S: faces a courtyard',
-                          'x_tief': 'tile: underground car parks [{id, f, fkt, adr, fa}], not drawn'}}
+    note = ('Ein Datensatz je Gebäudekörper des Katasters/LoD2. Dach: gemessen am Oberflächenmodell (src.r dom1), sonst OSM-Angabe, Luftbild oder '
+            'Regel (rq 0); Dachdeckung und -farbe aus dem Luftbild; Fassaden nach Regeln (fas + Kachel-Tabelle fat, Güte 0-1). Die Kachel nennt in '
+            'src die übliche Quelle je Feld, ein Gebäude nur Abweichungen. fg 32 = nicht mehr im Kataster (nicht zeichnen), 64 = nur im Kataster.')
+    extra = {'counts': index, 'centre_tile': [cx, cy], 'osm': (osm['source'] + ' ' + osm['stamp']).strip()}
     idx = IX.make_index(out_root, 'g', a.version, a.area, sources, note=note, extra=extra,
                         run=os.environ.get('GITHUB_RUN_ID') and {'id': os.environ['GITHUB_RUN_ID'], 'workflow': 'suhl-gebaeude.yml'})
     res = {'made': idx['made'], 'area': a.area, 'version': a.version, 'seconds': round(time.time() - t_start, 1), 'tiles': len(index), 'buildings': nb,

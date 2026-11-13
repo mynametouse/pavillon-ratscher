@@ -41,7 +41,7 @@ def main():
     idx = json.load(open(os.path.join(a.tiles, 'index.json'), encoding='utf-8'))
     files = sorted(glob.glob(os.path.join(a.tiles, str(G.LEVEL), '*', '*.json')))
     keys = {'%d/%d' % S.parse_key(f)[1:] for f in files}
-    ck('index lists the files', keys == set(idx['counts']) and sorted(S.tileset_decode(idx['tiles'][''][str(G.LEVEL)])) == sorted(
+    ck('index lists the files', keys == set(idx['counts']) and sorted(S.tileset_decode(idx['has'][str(G.LEVEL)])) == sorted(
         tuple(int(v) for v in k.split('/')) for k in keys), f'{len(files)} files, {len(idx["counts"])} in the index')
     cx, cy = G.tile_of(*G.CENTRE)
     ck('centre of Suhl inside', f'{cx}/{cy}' in keys, f'tile {cx}/{cy}')
@@ -109,8 +109,8 @@ def main():
                 bad_sides.append((b['id'], len(b['F']), ne))
             if b['k'] == 0 and b.get('lv') and not (1.9 * b['lv'] <= max(b['e'], 2.0) + 1.0 and b['e'] <= 6.5 * b['lv'] + 3.0):
                 bad_floor.append((b['id'], b['lv'], b['e']))
-            if 'x_fa' in b and not (0 <= b['x_fa']['t'] < len(doc.get('x_fat', []))):
-                bad_field.append((b['id'], 'x_fa.t'))
+            if 'fas' in b and not (0 <= b['fas']['t'] < len(doc.get('fat', []))):
+                bad_field.append((b['id'], 'fas.t'))
             if 'z0' not in b:
                 no_z0 += 1
             if b['h'] >= 25:

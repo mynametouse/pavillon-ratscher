@@ -11,7 +11,7 @@ and written into the building tiles WITHOUT touching anything else of a record. 
 Per record:  z0    the lowest ground height under the outline of the footprint (outer ring and courtyards), as model z = NHN - H0 in
                    true metres - the level all heights of the record count from (e, h, the roof rv, the wall tops of F). This is how
                    LoD2 / ETHOS define the height of a building: from its lowest ground point to its highest roof point.
-             x_zv  the ground above z0 at every corner of the footprint, in the order of `f` and then the holes `fh` (metres, >= 0;
+             zv  the ground above z0 at every corner of the footprint, in the order of `f` and then the holes `fh` (metres, >= 0;
                    left out when the ground is level within 0.4 m): on a slope a house stands deeper in the ground on its uphill side.
              q.z0  1 = from a surface model or terrain derived from it (Copernicus GLO-30: preliminary), 2 = from terrain with DGM1 (1 m)
              src.z0  cop30 | dgm1
@@ -115,7 +115,7 @@ def patch(doc, ground, q, src_id):
                     PN.append(nn[i] + (nn[j] - nn[i]) * k / m)
         hz = ground(np.array(PE), np.array(PN))
         hc = ground(E, N)
-        for key in ('z0', 'x_zv'):
+        for key in ('z0', 'zv'):
             rec.pop(key, None)
         rec.get('q', {}).pop('z0', None)
         if 'src' in rec:
@@ -134,7 +134,7 @@ def patch(doc, ground, q, src_id):
             if kk == 'e':       # z0 follows the heights h, e
                 new['z0'] = round(z0 - wlib.H0, 2)
                 if float(zv.max()) >= 0.4:
-                    new['x_zv'] = [round(float(v), 1) for v in zv]
+                    new['zv'] = [round(float(v), 1) for v in zv]
         new.setdefault('q', {})['z0'] = q
         rec.clear()
         rec.update(new)
@@ -187,10 +187,7 @@ def main():
         idx = json.load(open(ip, encoding='utf-8'))
         idx['x_z0'] = {'src': src, 'q': q, 'made': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'with_z0': n - miss, 'without': miss,
                        'z0_min': round(min(zs), 1) if zs else None, 'z0_max': round(max(zs), 1) if zs else None, 'H0': wlib.H0}
-        if a.boden is not None:
-            idx['based_on'] = {'boden': a.boden}
-        else:
-            idx.pop('based_on', None)
+        idx['based_on'] = {'boden': a.boden} if a.boden is not None else {}
         srcs = [s_ for s_ in idx.get('sources', []) if s_.get('id') not in ('cop30', 'dgm1')]
         srcs.append(IX.source(src_id))
         idx['sources'] = srcs
