@@ -23,6 +23,7 @@ Solange die Zeitreise aus ist, sind beide `null`: nichts läuft, nichts wird gel
 ## Ablauf
 
 - **Kapitel nacheinander**, jedes durch seine eigenen Jahre (Wald 2026–2050, Wasser 2026–2050, Energie 2026–2060).
+- **Erste Einstellung jedes Zeitraffers:** der Überblick 90 m über dem Anger (Richtung 195°, 10° nach unten), dann die Orte des Kapitels.
 - **Zeitraffer:** 2 s je Jahr bei Tempo 1 (`speed(k)`), eine feste Uhrzeit je Kapitel (Wald 11:30, Wasser 12:00, Energie 12:30). Die Tage
   laufen weiter, Jahreszeiten und Sonnenhöhe wechseln, ohne Tag-Nacht-Flackern. Wetter „heiter“. Etwa alle 10 s ein anderer Ort des
   Kapitels mit 1 s Überblendung. Die Kamera bewegt sich langsam: einige Meter Fahrt oder ein langsamer Schwenk.
@@ -35,7 +36,12 @@ Solange die Zeitreise aus ist, sind beide `null`: nichts läuft, nichts wird gel
   5. Die Phase läuft über `ev.halt` Sekunden. Dabei gilt `ZKCHRONIK.at(ev, phase)` → `state()`: Wasser steigt, Licht geht aus, die
      Story-Uhr läuft `ev.dur` Stunden. Die Sätze kommen nacheinander. Danach geht es im Zeitraffer weiter.
 
-  Im Halt bewegt sich die Kamera nie (später steht dort eine VR-Brille). Ist die Gewitterzelle der Chronik vorbei (`water.rain` wieder
+  Im Halt bewegt sich die Kamera nie (später steht dort eine VR-Brille).
+
+  **Zwei Einstellungen nacheinander (geteiltes Bild, Familienwald an der Klinge):** Die Bäume vorn sind für beide Welten ein Satz, so
+  zeigten beide Hälften dieselbe Welt. Ein Halt an `waldrand` zeigt darum erst die linke Welt auf dem ganzen Bild, dann (vor dem ersten
+  Satz der rechten Welt, bei gleichen Sätzen nach der Hälfte) die rechte. `state()` meldet dann `pair` = diese eine Welt, `split: false`,
+  `take: 'L'|'R'`, `fullPair` = das Paar; Ereignis `{ type:'take', take, world }`. Der Zeitraffer lässt `waldrand` im geteilten Bild aus. Ist die Gewitterzelle der Chronik vorbei (`water.rain` wieder
   `null`), hört der Starkregen auf (Wetter „bedeckt“).
 - **Ereignisse ohne Halt** ziehen vorbei: Ereignis `{ type:'event', state:'pass' }` und 5 s `state().note`.
 - **Kapitelende:** `card` mit `{ chapter, title, sub, kpi: { welt: [...] }, questions, last }`. Die Wiedergabe pausiert, `next()` oder
