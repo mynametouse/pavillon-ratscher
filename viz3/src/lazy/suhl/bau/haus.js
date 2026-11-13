@@ -466,6 +466,8 @@ export function building(b, id, z0, WB, RB, segs) {
         [ex, ey]
       );
   }
+  if (!flat && b.k === 0 && GAUBE_BT[b.typ] && (b.era === 1 || b.era === 2 || (b.era === 0 && b.typ === 'stadthaus')))
+    dormers(b, id, RB, T, o);
   // edges: once and outside the walls = the outline (fascia, gutter); twice with a bend = ridge or hip (ridge tiles)
   const E = new Map(),
     kf = v => v[0].toFixed(2) + ',' + v[1].toFixed(2);
@@ -690,6 +692,132 @@ function balcony(RB, s, uc, w, fb, pc) {
       uq(PT, D)
     );
   }
+}
+// ---- dormers (stage 2, a rule): the town houses, village houses, villas and blocks up to 1948 carry gabled dormers on the roof faces
+// over their eave walls – over every other bay of the facade below (a short wall: one in the middle), the street side always, the back
+// in half of the houses; only where the whole dormer lies on that face (hips and ridges stay clear) and the roof is steep enough
+// (30–65°). A front in the wall's colour with its window (white frame, dark glass), the cheeks, two roof slopes in the cover of the
+// face – faces of the roof program, no new program. ----
+const GAUBE_BT = { stadthaus: 1, dorfhaus: 1, villa: 1, block: 1 };
+function dormers(b, id, RB, T, o) {
+  const wallK = [4, ...o.col],
+    glassK = [4, 0.018, 0.022, 0.026],
+    frameK = [4, 0.72, 0.72, 0.7],
+    back = hh(id + 53) < 0.5;
+  b.F.forEach((f, k) => {
+    const [ax, ay, bx, by, t0, , tA0, t1, fl, sd] = f,
+      L = Math.hypot(bx - ax, by - ay);
+    if (fl & 1 || L < 4.5 || Math.abs(t0 - t1) > 1.0 || tA0 > Math.max(t0, t1) + 0.6) return;
+    if ((sd ?? 99) > 15 && !back) return;
+    const e = [(bx - ax) / L, (by - ay) / L],
+      n = [e[1], -e[0]],
+      // the face above this wall: triangles turned the wall's way, steep enough, over the wall
+      G = T.filter(t => {
+        const hz = Math.hypot(t.n[0], t.n[1]);
+        if (hz < 0.05 || (t.n[0] * n[0] + t.n[1] * n[1]) / hz < 0.95) return false;
+        const sl = hz / t.n[2];
+        if (sl < 0.58 || sl > 2.1) return false;
+        const cx = (t.v[0][0] + t.v[1][0] + t.v[2][0]) / 3 - ax,
+          cy = (t.v[0][1] + t.v[1][1] + t.v[2][1]) / 3 - ay,
+          u = cx * e[0] + cy * e[1],
+          d = -(cx * n[0] + cy * n[1]);
+        return u > -1 && u < L + 1 && d > -1 && d < 14;
+      });
+    if (!G.length) return;
+    const P0 = G[0].v[0],
+      N = G[0].n,
+      slope = Math.hypot(N[0], N[1]) / N[2],
+      zAt = (x, y) => P0[2] - (N[0] * (x - P0[0]) + N[1] * (y - P0[1])) / N[2],
+      inTri = (t, x, y) => {
+        const [A, B, C] = t.v,
+          d1 = (x - B[0]) * (A[1] - B[1]) - (A[0] - B[0]) * (y - B[1]),
+          d2 = (x - C[0]) * (B[1] - C[1]) - (B[0] - C[0]) * (y - C[1]),
+          d3 = (x - A[0]) * (C[1] - A[1]) - (C[0] - A[0]) * (y - A[1]);
+        return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+      },
+      onFace = (x, y) => G.some(t => inTri(t, x, y)),
+      nb = Math.max(1, Math.floor((L - 0.6) / o.sp)),
+      bw = L / nb,
+      w = Math.min(1.6, Math.max(1.0, bw * 0.55)),
+      hf = 1.45,
+      s0 = 0.6,
+      rise = w / 2,
+      dB = hf / slope,
+      dR = (hf + rise) / slope,
+      us = nb >= 3 ? Array.from({ length: Math.floor((nb - 1) / 2) }, (q, j) => (2 * j + 1.5) * bw) : [L / 2];
+    for (const u of us) {
+      const P = (uu, d) => [ax + e[0] * uu - n[0] * d, ay + e[1] * uu - n[1] * d],
+        corners = [
+          P(u - w / 2 - 0.1, s0),
+          P(u + w / 2 + 0.1, s0),
+          P(u - w / 2 - 0.1, s0 + dB + 0.1),
+          P(u + w / 2 + 0.1, s0 + dB + 0.1),
+          P(u, s0 + dR + 0.1),
+        ];
+      if (!corners.every(c => onFace(c[0], c[1]))) continue;
+      const fc = P(u, s0),
+        zB = zAt(fc[0], fc[1]),
+        zT = zB + hf,
+        zR = zT + rise,
+        at = (uu, d, z) => [...P(uu, d), z],
+        FL = uu => at(u - w / 2, s0, uu),
+        FR = uu => at(u + w / 2, s0, uu),
+        out = [n[0], n[1], 0],
+        tg = e,
+        flat2 = [
+          [0, 0],
+          [0, 0],
+          [0, 0],
+          [0, 0],
+        ];
+      // the front with its gable, the window in it (frame strips round dark glass, a little before the wall)
+      RB.quad(FL(zB - 0.15), FR(zB - 0.15), FR(zT), FL(zT), out, wallK, tg, flat2);
+      RB.tri(FL(zT), FR(zT), at(u, s0, zR), out, flat2, wallK, tg);
+      const gw = w - 0.36,
+        g0 = zB + 0.28,
+        g1 = zT - 0.18,
+        W = (u0, u1, z0q, z1q, off, kc) =>
+          RB.quad(
+            at(u0, s0 - off, z0q),
+            at(u1, s0 - off, z0q),
+            at(u1, s0 - off, z1q),
+            at(u0, s0 - off, z1q),
+            out,
+            kc,
+            tg,
+            flat2
+          );
+      W(u - gw / 2, u + gw / 2, g0, g1, 0.025, glassK);
+      W(u - gw / 2 - 0.07, u - gw / 2, g0 - 0.07, g1 + 0.07, 0.035, frameK);
+      W(u + gw / 2, u + gw / 2 + 0.07, g0 - 0.07, g1 + 0.07, 0.035, frameK);
+      W(u - gw / 2, u + gw / 2, g0 - 0.07, g0, 0.035, frameK);
+      W(u - gw / 2, u + gw / 2, g1, g1 + 0.07, 0.035, frameK);
+      W(u - 0.03, u + 0.03, g0, g1, 0.035, frameK);
+      // the cheeks, from the front back to where the dormer's eaves meet the roof
+      RB.tri(FL(zB - 0.15), FL(zT), at(u - w / 2, s0 + dB, zT), [-e[0], -e[1], 0], flat2, wallK, tg);
+      RB.tri(FR(zB - 0.15), FR(zT), at(u + w / 2, s0 + dB, zT), [e[0], e[1], 0], flat2, wallK, tg);
+      // the two slopes of its roof in the cover of the face, a hand's breadth over the front
+      const kc = G[0].kc,
+        o2 = 0.12,
+        sl2 = (sg, uE) => {
+          const A = at(uE + sg * o2, s0 - o2, zT - o2),
+            B = at(u, s0 - o2, zR),
+            C = at(u, s0 + dR, zR),
+            D = at(uE + sg * o2, s0 + dB - o2 / slope, zT - o2),
+            nx = sg * e[0] * 0.7 + 0,
+            ny = sg * e[1] * 0.7;
+          RB.quad(A, B, C, D, [nx, ny, 0.7], kc, tg, [
+            [0, 0],
+            [rise * 1.41, 0],
+            [rise * 1.41, dR],
+            [0, dR],
+          ]);
+        };
+      sl2(-1, u - w / 2);
+      sl2(1, u + w / 2);
+      b.dormers = (b.dormers || 0) + 1;
+    }
+  });
 }
 function chimney(RB, cx, cy, z0, w, d, z1, ang, kk, col) {
   const c = Math.cos(ang),
