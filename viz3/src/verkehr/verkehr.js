@@ -39,6 +39,7 @@ import { VAUTO } from './verkehr_auto.js';
 // feat/verkehr-real: the types of today and their models (the drivers' own cars)
 import { VKTYPEN } from './vk_typen.js';
 import { VKMOD } from './vk_modelle.js';
+import { VKSTROM } from './vk_strom.js';
 export const VERKEHR = (() => {
   // feat/verkehr-real: each driver of the cast has a car of today of his own (by his name: the same type every time; the colour stays
   // his, VLEUTE) – the cars by their share of the stock (VKTYPEN.PKW); their models asked for at once, in the order of that share
@@ -594,7 +595,15 @@ export const VERKEHR = (() => {
     VNETZ.at(line, s, _a);
     if (!opt.prime && opt.s === undefined && seen(_a.x, _a.y) && Math.hypot(_a.x - o[0], _a.y - o[1]) < 120)
       return null;
-    const c = VAUTO.spawn({ place: Pl.id, line, s, who, typ: typFor(who), col: PP[who].car, v: Math.min(line.S[Math.round(s)] || 8, 9) });
+    const c = VAUTO.spawn({
+      place: Pl.id,
+      line,
+      s,
+      who,
+      typ: typFor(who),
+      col: PP[who].car,
+      v: Math.min(line.S[Math.round(s)] || 8, 9),
+    });
     c.vk = 0.92 + rnd() * 0.12;
     c.laneOff = 1.2;
     S.busy[who] = 'car';
@@ -1394,6 +1403,14 @@ export const VERKEHR = (() => {
     }
     if (S.lent) lentTick(dt);
     fahrTick(dt, o);
+    // feat/verkehr-real: the traffic on every road round the observer (verkehr/vk_strom.js) – not while a test fixes the place traffic
+    // (VERKEHR.force) unless it fixes the flow too (VKSTROM.force)
+    try {
+      VKSTROM.tick(dt, o, S.auto && (!S.force || !!VKSTROM.force));
+    } catch (e) {
+      if (!S.errStrom) console.warn('verkehr strom', e);
+      S.errStrom = String((e && e.message) || e);
+    }
     // figures nobody needs any more: freed after a while (memory on the phone)
     for (const k of Object.keys(VFIG.figs)) {
       // feat/bus: or a passenger at a bus stop (bus/bus_leute.js marks them busy 'bus')

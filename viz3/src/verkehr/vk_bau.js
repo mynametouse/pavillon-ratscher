@@ -285,7 +285,8 @@ export const VKBAU = (() => {
   // what to hand over without copying
   const buffers = g => {
     const out = [];
-    for (const o of [g.op, g.gl]) if (o) for (const k of ['pos', 'nor', 'col', 'vk', 'idx']) if (o[k]) out.push(o[k].buffer);
+    for (const o of [g.op, g.gl])
+      if (o) for (const k of ['pos', 'nor', 'col', 'vk', 'idx']) if (o[k]) out.push(o[k].buffer);
     return out;
   };
   return { geo, geo12, merge, cluster, buffers, KIND };

@@ -200,5 +200,135 @@ with lib.browser() as b:
         except Exception as ex:
             ck('section ran: zug', False, repr(ex)[:400])
 
+    # ---- the flow: as many as counted at this hour, on the roads, out of sight when they come; fewer at night; no lorries on Sundays ----
+    def at_day(iso, h):
+        E(pg, f"(() => {{ const d = Date.UTC({iso[0]}, {iso[1] - 1}, {iso[2]}) / 864e5; CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + {h} * 60;"
+              f" DN.e0 = d - Math.floor(CLOCK.t / 1440); if (DN.active) DN.update(true); }})()")
+
+    def run_flow(secs, real=0.08):
+        for i in range(int(secs / 0.5)):
+            E(pg, "GAME.step(0.5)")
+            if real:
+                time.sleep(real)
+
+    if want('strom') or want('dichte') or want('oben') or want('perf'):
+        E(pg, "for (const t of Object.keys(VKTYPEN.TYP)) VKMOD.need(t, 1)")
+        for k in range(200):
+            E(pg, "GAME.step(0.05)")
+            if E(pg, "Object.keys(VKTYPEN.TYP).every(t => VKMOD.ready(t))"):
+                break
+            time.sleep(0.25)
+
+    if want('strom'):
+        try:
+            E(pg, "__vr.clear(); VERKEHR.clear(); VERKEHR.autoOn(true); VERKEHR.force({ peds: 0, cars: 0 }); VKSTROM.force = { mult: 1 }")
+            at_day((2026, 11, 13), 16.5)
+            lib.settle_light(pg)
+            # the observer on the country road west of the village (as the oncoming test of verkehr.py)
+            E(pg, "GAME.view(-430, -230, KERN.ground(-430, -230) + 1.7, 120, -3)")
+            run_flow(90)
+            st = J(pg, "VKSTROM.state()")
+            print('flow Fr 16:30', json.dumps(st), flush=True)
+            ck('the flow has its roads round the observer', st['edges'] > 20, f"{st['edges']} edges, src {st['src']}")
+            ck('Friday 16:30: vehicles on the roads as counted (± 40 %)', st['n'] > 0 and abs(st['n'] - st['want']) <= max(2, 0.4 * st['want']),
+               f"{st['n']} of {st['want']} wanted ({st['counted']} counted)")
+            # all on a road, none inside another
+            pos = J(pg, "VAUTO.cars.filter(c => c.place === 'strom' && c.st !== 'weg').map(c => [c.x, c.y, c.typ, !!KERN.surface(c.x, c.y), c.D.HL])")
+            off = [p for p in pos if not p[3]]
+            ck('every vehicle of the flow stands on a road', not off, str(off[:3]))
+            close = []
+            for i in range(len(pos)):
+                for j in range(i + 1, len(pos)):
+                    d = math.hypot(pos[i][0] - pos[j][0], pos[i][1] - pos[j][1])
+                    if d < 2.5:
+                        close.append((pos[i][2], pos[j][2], round(d, 2)))
+            ck('no two vehicles in one another', not close, str(close[:3]))
+            # a picture along the road
+            ids = J(pg, "VAUTO.cars.filter(c => c.place === 'strom' && c.st !== 'weg').map(c => [c.id, Math.hypot(c.x + 430, c.y + 230)]).sort((a, b) => a[1] - b[1]).map(q => q[0])")
+            if ids:
+                E(pg, f"__vr.look({ids[0]}, 14, 30, 2.4)")
+                E(pg, "GAME.step(0.05)")
+                shot(pg, 'strom_abend')
+            # at night much less; on a Sunday no lorries
+            at_day((2026, 11, 13), 3.2)
+            lib.settle_light(pg)
+            run_flow(120, 0.02)
+            sn = J(pg, "VKSTROM.state()")
+            print('flow Fr 3:12', json.dumps(sn), flush=True)
+            ck('at 3 at night far fewer', sn['want'] < st['want'] * 0.25 and sn['n'] <= max(2, st['n'] * 0.5), f"{sn['n']} (want {sn['want']}) against {st['n']}")
+            at_day((2026, 11, 15), 11)
+            lib.settle_light(pg)
+            E(pg, "VERKEHR.clear()")
+            run_flow(90, 0.02)
+            ss = J(pg, "VKSTROM.state()")
+            print('flow Su 11:00', json.dumps(ss), flush=True)
+            heavy = sum(v for k, v in ss['types'].items() if k in ('lkw', 'sattel', 'muell', 'traktor'))
+            ck('Sunday: no lorries, no tractors', heavy == 0 and ss['when']['day'] == 'so', json.dumps(ss['types']))
+        except Exception as ex:
+            ck('section ran: strom', False, repr(ex)[:400])
+
+    if want('dichte'):
+        try:
+            # the wanted count through a weekday at one place: low at night, peaks morning and afternoon
+            E(pg, "VERKEHR.clear(); VKSTROM.force = { mult: 1 }")
+            row = []
+            for h in (3, 6, 7.5, 10, 13, 16.5, 20, 23):
+                at_day((2026, 11, 11), h)
+                E(pg, "GAME.step(0.5)")
+                row.append(round(J(pg, "VKSTROM.state().counted"), 2))
+            print('counted by hour (Wed)', row, flush=True)
+            ck('the count follows the day: night < morning peak, afternoon peak the highest', row[0] < row[2] / 5 and row[5] >= max(row[3], row[4]) and row[7] < row[5] / 2, str(row))
+        except Exception as ex:
+            ck('section ran: dichte', False, repr(ex)[:400])
+
+    if want('oben'):
+        try:
+            # the top view's layer: one shape per vehicle (and trailer) in its paint, in its true size near by, bigger than true far up
+            at_day((2026, 11, 13), 11)
+            E(pg, "VERKEHR.clear()")
+            run_flow(40, 0.02)
+            r = J(pg, """(() => { const L = STRAT.layer.list().find(l => l.id === 'verkehr'); const cars = VAUTO.cars.filter(c => c.st !== 'weg');
+              const c0 = cars[0]; if (!L || !c0) return null; const out = {};
+              for (const [name, k] of [['near', 4], ['far', 0.05]]) {
+                const pr = (x, y) => [600 + (x - c0.x) * k, 360 - (y - c0.y) * k, 0];
+                const svg = L.draw(pr, 1200, 720);
+                const polys = (svg.match(/<polygon/g) || []).length;
+                const m = /points="([^"]+)"/.exec(svg), p = m ? m[1].split(' ').map(q => q.split(',').map(Number)) : [];
+                out[name] = { polys, edge: p.length ? Math.hypot(p[0][0] - p[1][0], p[0][1] - p[1][1]) : 0, fill: (/fill="(#[0-9a-f]+)"/i.exec(svg) || [])[1] }; }
+              out.n = cars.length + cars.filter(c => c.trailer && c.trailer.init).length; return out; })()""")
+            print('top view', json.dumps(r), flush=True)
+            ck('the top view draws every vehicle (and trailer) as its shape', r and r['near']['polys'] >= 1 and r['far']['polys'] == r['n'], json.dumps(r))
+            ck('near in its true size, far up bigger than true (still to be seen)', r and r['far']['edge'] >= 4.5, json.dumps(r))
+        except Exception as ex:
+            ck('section ran: oben', False, repr(ex)[:400])
+
+    if want('perf'):
+        try:
+            # the time per frame with the computer's full budget in sight, the draw calls; no new program in all of this
+            E(pg, "VKSTROM.force = { n: 36 }; VERKEHR.clear()")
+            at_day((2026, 11, 13), 16.5)
+            E(pg, "GAME.view(-430, -230, KERN.ground(-430, -230) + 1.7, 120, -3)")
+            run_flow(60, 0.03)
+            # the frame's time and its draw calls with all vehicles shown and with them hidden (the camera looking along the road)
+            r = J(pg, """(() => { const R = GAME.R, f0 = R.renderBufferDirect; let n = 0;
+              R.renderBufferDirect = function () { n++; return f0.apply(this, arguments); };
+              const vis = on => { for (const c of VAUTO.cars) { if (c.g) c.g.visible = on; if (c.trailer) c.trailer.g.visible = on; } VKMOD.SH.im.visible = on; };
+              const frame = () => { const t = []; let calls = 0; for (let i = 0; i < 5; i++) { n = 0; const a = performance.now(); GAME.shot(); t.push(performance.now() - a); calls = n; } t.sort((a, b) => a - b); return [t[2], calls]; };
+              try { GAME.step(0.05); const [ms1, c1] = frame(); vis(false); const [ms0, c0] = frame(); vis(true);
+                return { ms: +ms1.toFixed(1), ms0: +ms0.toFixed(1), calls: c1, calls0: c0, n: VKSTROM.state().n,
+                  shown: VAUTO.cars.filter(c => c.vm && c.vm.body.visible).length,
+                  lod: VAUTO.cars.filter(c => c.vm).reduce((m, c) => (m[c.vm.lod] = (m[c.vm.lod] || 0) + 1, m), {}) }; }
+              finally { R.renderBufferDirect = f0; } })()""")
+            print('perf', json.dumps(r), flush=True)
+            ck('the vehicles cost few draw calls (≤ 2 per vehicle shown, + 2 for the shadows)', r['calls'] - r['calls0'] <= 2 * max(1, r['shown']) + 2,
+               f"{r['calls0']} → {r['calls']} for {r['shown']} shown of {r['n']}")
+            ck('and little time per frame (SwiftShader: ≤ 12 ms more)', r['ms'] - r['ms0'] <= 12, f"{r['ms0']} → {r['ms']} ms")
+            E(pg, "VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
+            p2 = E(pg, "__vr.progs()")
+            new = [n for n in J(pg, "__vr.pnames()") if n not in n0]
+            ck('still no new shader program (flow, levels, shadows, pools)', not [n for n in new if 'verkehr' in n or 'vk-1' in n], str(new[:6]))
+        except Exception as ex:
+            ck('section ran: perf', False, repr(ex)[:400])
+
     ck.errors(errs)
 ck.done()

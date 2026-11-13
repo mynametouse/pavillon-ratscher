@@ -87,7 +87,17 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 210,
       name: 'Kompaktwagen',
-      p: { heck: 'schraeg', belt: 0.675, ws: 0.36, run: 0.86, tail: 0.36, nose: 0.53, grille: 'schmal', lamp: 'schmal', spokes: 5 },
+      p: {
+        heck: 'schraeg',
+        belt: 0.675,
+        ws: 0.36,
+        run: 0.86,
+        tail: 0.36,
+        nose: 0.53,
+        grille: 'schmal',
+        lamp: 'schmal',
+        spokes: 5,
+      },
     }),
     // after the Ford Focus IV: 4378 × 1825 × 1454, 2700, 215/55 R 17
     kompakt2: mass({
@@ -104,7 +114,17 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 205,
       name: 'Kompaktwagen',
-      p: { heck: 'schraeg', belt: 0.65, ws: 0.3, run: 0.92, tail: 0.38, nose: 0.52, grille: 'trapez', lamp: 'keil', spokes: 10 },
+      p: {
+        heck: 'schraeg',
+        belt: 0.65,
+        ws: 0.3,
+        run: 0.92,
+        tail: 0.38,
+        nose: 0.52,
+        grille: 'trapez',
+        lamp: 'keil',
+        spokes: 10,
+      },
     }),
     // after the VW Polo VI: 4053 × 1751 × 1461, 2552, 185/65 R 15
     klein: mass({
@@ -121,7 +141,17 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 190,
       name: 'Kleinwagen',
-      p: { heck: 'schraeg', belt: 0.66, ws: 0.32, run: 0.82, tail: 0.28, nose: 0.54, grille: 'schmal', lamp: 'schmal', spokes: 0 },
+      p: {
+        heck: 'schraeg',
+        belt: 0.66,
+        ws: 0.32,
+        run: 0.82,
+        tail: 0.28,
+        nose: 0.54,
+        grille: 'schmal',
+        lamp: 'schmal',
+        spokes: 0,
+      },
     }),
     // after the Opel Corsa F: 4060 × 1765 × 1435, 2538, 195/55 R 16
     klein2: mass({
@@ -138,7 +168,17 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 195,
       name: 'Kleinwagen',
-      p: { heck: 'schraeg', belt: 0.655, ws: 0.28, run: 0.88, tail: 0.36, nose: 0.53, grille: 'wabe', lamp: 'keil', spokes: 5 },
+      p: {
+        heck: 'schraeg',
+        belt: 0.655,
+        ws: 0.28,
+        run: 0.88,
+        tail: 0.36,
+        nose: 0.53,
+        grille: 'wabe',
+        lamp: 'keil',
+        spokes: 5,
+      },
     }),
     // after the VW up!: 3600 × 1641 × 1489, 2420, 165/70 R 14
     mini: mass({
@@ -155,7 +195,17 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 170,
       name: 'Kleinstwagen',
-      p: { heck: 'steil', belt: 0.62, ws: 0.2, run: 0.78, tail: 0.1, nose: 0.55, grille: 'schmal', lamp: 'rund', spokes: 0 },
+      p: {
+        heck: 'steil',
+        belt: 0.62,
+        ws: 0.2,
+        run: 0.78,
+        tail: 0.1,
+        nose: 0.55,
+        grille: 'schmal',
+        lamp: 'rund',
+        spokes: 0,
+      },
     }),
     // after the Škoda Octavia IV Combi: 4689 × 1829 × 1468, 2686, 205/55 R 16
     kombi: mass({
@@ -172,7 +222,18 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 220,
       name: 'Kombi',
-      p: { heck: 'kombi', belt: 0.645, ws: 0.4, run: 0.88, tail: 0.15, nose: 0.53, grille: 'breit', lamp: 'keil', spokes: 5, rails: true },
+      p: {
+        heck: 'kombi',
+        belt: 0.645,
+        ws: 0.4,
+        run: 0.88,
+        tail: 0.15,
+        nose: 0.53,
+        grille: 'breit',
+        lamp: 'keil',
+        spokes: 5,
+        rails: true,
+      },
     }),
     // after the VW Passat Variant B8: 4767 × 1832 × 1477, 2786, 215/60 R 16
     kombi2: mass({
@@ -218,7 +279,18 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 235,
       name: 'Mittelklasse-Limousine',
-      p: { heck: 'stufe', belt: 0.64, ws: 0.62, run: 0.98, tail: 0.5, boot: 0.5, nose: 0.5, grille: 'breit', lamp: 'keil', spokes: 5 },
+      p: {
+        heck: 'stufe',
+        belt: 0.64,
+        ws: 0.62,
+        run: 0.98,
+        tail: 0.5,
+        boot: 0.5,
+        nose: 0.5,
+        grille: 'breit',
+        lamp: 'keil',
+        spokes: 5,
+      },
     }),
     // after the VW Tiguan II: 4486 × 1839 × 1673, 2681, 215/65 R 17
     suv: mass({
@@ -235,7 +307,20 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 200,
       name: 'SUV',
-      p: { heck: 'suv', belt: 0.67, ws: 0.4, run: 0.84, tail: 0.2, nose: 0.56, grille: 'leisten', lamp: 'schmal', spokes: 10, rails: true, clad: true, zb: 0.19 },
+      p: {
+        heck: 'suv',
+        belt: 0.67,
+        ws: 0.4,
+        run: 0.84,
+        tail: 0.2,
+        nose: 0.56,
+        grille: 'leisten',
+        lamp: 'schmal',
+        spokes: 10,
+        rails: true,
+        clad: true,
+        zb: 0.19,
+      },
     }),
     // after the Dacia Duster II: 4341 × 1804 × 1693, 2676, 215/65 R 16
     suv2: mass({
@@ -252,7 +337,20 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 180,
       name: 'SUV',
-      p: { heck: 'suv', belt: 0.655, ws: 0.36, run: 0.8, tail: 0.18, nose: 0.57, grille: 'wabe', lamp: 'keil', spokes: 5, rails: true, clad: 2, zb: 0.21 },
+      p: {
+        heck: 'suv',
+        belt: 0.655,
+        ws: 0.36,
+        run: 0.8,
+        tail: 0.18,
+        nose: 0.57,
+        grille: 'wabe',
+        lamp: 'keil',
+        spokes: 5,
+        rails: true,
+        clad: 2,
+        zb: 0.21,
+      },
     }),
     // after the VW ID.3: 4261 × 1809 × 1568, 2771, 215/55 R 18 (short bonnet, closed nose, the roof dark)
     elektro: mass({
@@ -269,7 +367,18 @@ export const VKTYPEN = (() => {
       cls: 'pkw',
       vmax: 160,
       name: 'Elektroauto',
-      p: { heck: 'schraeg', belt: 0.6, ws: -0.02, run: 1.02, tail: 0.24, nose: 0.5, grille: 'zu', lamp: 'schmal', spokes: 10, roof2: true },
+      p: {
+        heck: 'schraeg',
+        belt: 0.6,
+        ws: -0.02,
+        run: 1.02,
+        tail: 0.24,
+        nose: 0.5,
+        grille: 'zu',
+        lamp: 'schmal',
+        spokes: 10,
+        roof2: true,
+      },
     }),
     // ---- vans ----
     // after the VW Caddy V: 4500 × 1855 × 1797, 2755, 205/60 R 16
@@ -617,7 +726,7 @@ export const VKTYPEN = (() => {
       R.push(row);
     }
     // rows go up, columns along x: outside is +y when x grows; the rear's patches run the other way
-    const flip = (xb > xa) !== dir > 0;
+    const flip = xb > xa !== dir > 0;
     k.grid(R, () => [part, col], { flip });
   }
   // the plan of an end: [y, half width] keys from the full width (y0) to the cap (y1), rounded by the exponent e
@@ -793,26 +902,75 @@ export const VKTYPEN = (() => {
               ? u => [zl - 0.07 + 0.02 * Math.sin(u * Math.PI), zl + 0.06 - 0.02 * Math.sin(u * Math.PI)]
               : u => [zl - 0.03 + 0.012 * u, zl + 0.03 + 0.012 * u];
       patch(k, 'head', C.lens, EF, 1, xi, xo, band, 0.006, 16, 2);
-      patch(k, 'chrom', C.silver, EF, 1, mix(xi, xo, 0.1), mix(xi, xo, 0.92), u => {
-        const [z0, z1] = band(mix(0.1, 0.92, u));
-        return [mix(z0, z1, 0.3), mix(z0, z1, 0.85)];
-      }, 0.009, 8, 1);
-      patch(k, 'head', [1, 1, 1], EF, 1, mix(xi, xo, 0.06), mix(xi, xo, 0.8), u => {
-        const z0 = band(mix(0.06, 0.8, u))[0];
-        return [z0 + 0.006, z0 + 0.018];
-      }, 0.012, 8, 1);
-      patch(k, 'blink', C.amber, EF, 1, mix(xi, xo, 0.82), mix(xi, xo, 0.97), u => {
-        const [z0, z1] = band(mix(0.82, 0.97, u));
-        return [mix(z0, z1, 0.25), mix(z0, z1, 0.75)];
-      }, 0.011, 2, 1);
+      patch(
+        k,
+        'chrom',
+        C.silver,
+        EF,
+        1,
+        mix(xi, xo, 0.1),
+        mix(xi, xo, 0.92),
+        u => {
+          const [z0, z1] = band(mix(0.1, 0.92, u));
+          return [mix(z0, z1, 0.3), mix(z0, z1, 0.85)];
+        },
+        0.009,
+        8,
+        1
+      );
+      patch(
+        k,
+        'head',
+        [1, 1, 1],
+        EF,
+        1,
+        mix(xi, xo, 0.06),
+        mix(xi, xo, 0.8),
+        u => {
+          const z0 = band(mix(0.06, 0.8, u))[0];
+          return [z0 + 0.006, z0 + 0.018];
+        },
+        0.012,
+        8,
+        1
+      );
+      patch(
+        k,
+        'blink',
+        C.amber,
+        EF,
+        1,
+        mix(xi, xo, 0.82),
+        mix(xi, xo, 0.97),
+        u => {
+          const [z0, z1] = band(mix(0.82, 0.97, u));
+          return [mix(z0, z1, 0.25), mix(z0, z1, 0.75)];
+        },
+        0.011,
+        2,
+        1
+      );
       // the fog lamps' recesses at the bumper's corners
-      patch(k, 'matt', C.black, EF, 1, s * hw * 0.62, s * hw * 0.8, u => [zb0 + 0.12 + 0.02 * u, zb0 + 0.21 + 0.01 * u], 0.005, 4, 1);
+      patch(
+        k,
+        'matt',
+        C.black,
+        EF,
+        1,
+        s * hw * 0.62,
+        s * hw * 0.8,
+        u => [zb0 + 0.12 + 0.02 * u, zb0 + 0.21 + 0.01 * u],
+        0.005,
+        4,
+        1
+      );
     }
     // the grille between the lamps (none on the electric car: a dark band joins its lamps)
     if (ga === 'zu') patch(k, 'matt', C.black, EF, 1, -hw * 0.42, hw * 0.42, [zl - 0.015, zl + 0.03], 0.005, 8, 1);
     else {
       const gw = ga === 'trapez' ? 0.5 : ga === 'schmal' ? 0.42 : 0.44,
-        gz = ga === 'schmal' ? [zl - 0.03, zl + 0.028] : ga === 'breit' ? [zl - 0.09, zl + 0.03] : [zl - 0.075, zl + 0.03];
+        gz =
+          ga === 'schmal' ? [zl - 0.03, zl + 0.028] : ga === 'breit' ? [zl - 0.09, zl + 0.03] : [zl - 0.075, zl + 0.03];
       patch(
         k,
         'matt',
@@ -831,15 +989,52 @@ export const VKTYPEN = (() => {
       for (let i = 0; i < bars; i++) {
         const t = (i + 1) / (bars + 1),
           z = mix(gz[0], gz[1], t);
-        patch(k, ga === 'leisten' || ga === 'schmal' ? 'chrom' : 'matt', ga === 'leisten' || ga === 'schmal' ? C.alu : C.grey, EF, 1, -hw * (gw - 0.03), hw * (gw - 0.03), [z - 0.004, z + 0.004], 0.009, 10, 1);
+        patch(
+          k,
+          ga === 'leisten' || ga === 'schmal' ? 'chrom' : 'matt',
+          ga === 'leisten' || ga === 'schmal' ? C.alu : C.grey,
+          EF,
+          1,
+          -hw * (gw - 0.03),
+          hw * (gw - 0.03),
+          [z - 0.004, z + 0.004],
+          0.009,
+          10,
+          1
+        );
       }
     }
     // the lower intake across the bumper with two bars, the black lip under it
     {
       const z0 = zb0 + 0.06,
         z1 = zb0 + (ga === 'zu' ? 0.14 : 0.2);
-      patch(k, 'matt', C.black, EF, 1, -hw * 0.58, hw * 0.58, u => [z0 + 0.015 * Math.abs(u * 2 - 1), z1 - 0.01 * Math.abs(u * 2 - 1)], 0.005, 10, 2);
-      for (const t of [0.35, 0.68]) patch(k, 'matt', C.grey, EF, 1, -hw * 0.54, hw * 0.54, [mix(z0, z1, t) - 0.004, mix(z0, z1, t) + 0.004], 0.008, 10, 1);
+      patch(
+        k,
+        'matt',
+        C.black,
+        EF,
+        1,
+        -hw * 0.58,
+        hw * 0.58,
+        u => [z0 + 0.015 * Math.abs(u * 2 - 1), z1 - 0.01 * Math.abs(u * 2 - 1)],
+        0.005,
+        10,
+        2
+      );
+      for (const t of [0.35, 0.68])
+        patch(
+          k,
+          'matt',
+          C.grey,
+          EF,
+          1,
+          -hw * 0.54,
+          hw * 0.54,
+          [mix(z0, z1, t) - 0.004, mix(z0, z1, t) + 0.004],
+          0.008,
+          10,
+          1
+        );
       patch(k, 'matt', C.plastic, EF, 1, -hw * 0.86, hw * 0.86, [zb0 + 0.005, zb0 + 0.045], 0.004, 12, 1);
       if (suv) patch(k, 'chrom', C.silver, EF, 1, -hw * 0.4, hw * 0.4, [zb0 + 0.02, zb0 + 0.05], 0.008, 6, 1);
     }
@@ -851,16 +1046,41 @@ export const VKTYPEN = (() => {
       // the tail lamp: a band from the boot or tailgate out round the corner, deeper on the estates and SUVs
       const xi = s * hw * (P.heck === 'stufe' ? 0.36 : 0.48),
         xo = s * hw * 0.97,
-        band = u => (kombiLike ? [zt - 0.08 + 0.03 * u, zt + 0.045 + 0.015 * u] : [zt - 0.045 + 0.02 * u, zt + 0.04 + 0.01 * u]);
+        band = u =>
+          kombiLike ? [zt - 0.08 + 0.03 * u, zt + 0.045 + 0.015 * u] : [zt - 0.045 + 0.02 * u, zt + 0.04 + 0.01 * u];
       patch(k, 'tail', C.red, ER, -1, xi, xo, band, 0.006, 18, 2);
-      patch(k, 'blink', C.amber, ER, -1, mix(xi, xo, 0.55), mix(xi, xo, 0.75), u => {
-        const [z0, z1] = band(mix(0.55, 0.75, u));
-        return [z0 + 0.012, mix(z0, z1, 0.4)];
-      }, 0.009, 2, 1);
-      patch(k, 'head', [0.85, 0.85, 0.85], ER, -1, mix(xi, xo, 0.3), mix(xi, xo, 0.48), u => {
-        const [z0, z1] = band(mix(0.3, 0.48, u));
-        return [z0 + 0.012, mix(z0, z1, 0.4)];
-      }, 0.009, 2, 1);
+      patch(
+        k,
+        'blink',
+        C.amber,
+        ER,
+        -1,
+        mix(xi, xo, 0.55),
+        mix(xi, xo, 0.75),
+        u => {
+          const [z0, z1] = band(mix(0.55, 0.75, u));
+          return [z0 + 0.012, mix(z0, z1, 0.4)];
+        },
+        0.009,
+        2,
+        1
+      );
+      patch(
+        k,
+        'head',
+        [0.85, 0.85, 0.85],
+        ER,
+        -1,
+        mix(xi, xo, 0.3),
+        mix(xi, xo, 0.48),
+        u => {
+          const [z0, z1] = band(mix(0.3, 0.48, u));
+          return [z0 + 0.012, mix(z0, z1, 0.4)];
+        },
+        0.009,
+        2,
+        1
+      );
       // the reflectors low in the bumper
       patch(k, 'tail', C.red, ER, -1, s * hw * 0.72, s * hw * 0.9, [zb0 + 0.2, zb0 + 0.23], 0.006, 3, 1);
     }
@@ -954,7 +1174,12 @@ export const VKTYPEN = (() => {
       D = {
         y0: yR,
         y1: yF,
-        hw: [...ende(yR + 0.3, yR, hw, 0.05, 3).reverse(), [b, hw], [a - 0.6, hw], ...ende(yF - 0.7, yF, hw, car ? 0.24 : 0.17, 2.4)],
+        hw: [
+          ...ende(yR + 0.3, yR, hw, 0.05, 3).reverse(),
+          [b, hw],
+          [a - 0.6, hw],
+          ...ende(yF - 0.7, yF, hw, car ? 0.24 : 0.17, 2.4),
+        ],
         zb: [
           [yR, zb0 + 0.18],
           [yR + 0.2, zb0 + 0.06],
@@ -1047,19 +1272,55 @@ export const VKTYPEN = (() => {
         xo = s * hw * L.xo,
         band = L.band;
       patch(k, 'head', C.lens, EF, 1, xi, xo, band, 0.006, 10, 2);
-      patch(k, 'chrom', C.silver, EF, 1, mix(xi, xo, 0.08), mix(xi, xo, 0.9), u => {
-        const [z0, z1] = band(mix(0.08, 0.9, u));
-        return [mix(z0, z1, 0.3), mix(z0, z1, 0.86)];
-      }, 0.012, 10, 1);
+      patch(
+        k,
+        'chrom',
+        C.silver,
+        EF,
+        1,
+        mix(xi, xo, 0.08),
+        mix(xi, xo, 0.9),
+        u => {
+          const [z0, z1] = band(mix(0.08, 0.9, u));
+          return [mix(z0, z1, 0.3), mix(z0, z1, 0.86)];
+        },
+        0.012,
+        10,
+        1
+      );
       // the day light: a white strip along the lamp's lower edge
-      patch(k, 'head', [1, 1, 1], EF, 1, mix(xi, xo, 0.05), mix(xi, xo, 0.78), u => {
-        const z0 = band(mix(0.05, 0.78, u))[0];
-        return [z0 + 0.007, z0 + (big ? 0.03 : 0.022)];
-      }, 0.017, 10, 1);
-      patch(k, 'blink', C.amber, EF, 1, mix(xi, xo, 0.83), mix(xi, xo, 0.97), u => {
-        const [z0, z1] = band(mix(0.83, 0.97, u));
-        return [mix(z0, z1, 0.25), mix(z0, z1, 0.75)];
-      }, 0.014, 3, 1);
+      patch(
+        k,
+        'head',
+        [1, 1, 1],
+        EF,
+        1,
+        mix(xi, xo, 0.05),
+        mix(xi, xo, 0.78),
+        u => {
+          const z0 = band(mix(0.05, 0.78, u))[0];
+          return [z0 + 0.007, z0 + (big ? 0.03 : 0.022)];
+        },
+        0.017,
+        10,
+        1
+      );
+      patch(
+        k,
+        'blink',
+        C.amber,
+        EF,
+        1,
+        mix(xi, xo, 0.83),
+        mix(xi, xo, 0.97),
+        u => {
+          const [z0, z1] = band(mix(0.83, 0.97, u));
+          return [mix(z0, z1, 0.25), mix(z0, z1, 0.75)];
+        },
+        0.014,
+        3,
+        1
+      );
       // the fog lamps in the bumper's corners: a recess, a clear lens
       if (!car) {
         patch(k, 'matt', C.black, EF, 1, s * hw * 0.66, s * hw * 0.86, [zb0 + 0.24, zb0 + 0.34], 0.008, 4, 1);
@@ -1070,12 +1331,36 @@ export const VKTYPEN = (() => {
     {
       const gw = L.xi + 0.012,
         gz = car ? [zl - 0.028, zl + 0.03] : big ? [zl - 0.22, zl + 0.05] : [zl - 0.075, zl + 0.048];
-      patch(k, 'matt', C.black, EF, 1, -hw * gw, hw * gw, big ? u => [gz[0] + 0.05 * Math.abs(u * 2 - 1), gz[1]] : gz, 0.006, 10, 2);
+      patch(
+        k,
+        'matt',
+        C.black,
+        EF,
+        1,
+        -hw * gw,
+        hw * gw,
+        big ? u => [gz[0] + 0.05 * Math.abs(u * 2 - 1), gz[1]] : gz,
+        0.006,
+        10,
+        2
+      );
       const bars = car ? 1 : big ? 2 : 3;
       for (let i = 0; i < bars; i++) {
         const z = mix(gz[0], gz[1], (i + 1) / (bars + 1)),
           w = big ? gw - 0.06 : gw - 0.01;
-        patch(k, 'chrom', C.alu, EF, 1, -hw * w, hw * w, [z - (big ? 0.012 : 0.006), z + (big ? 0.012 : 0.006)], 0.009, 10, 1);
+        patch(
+          k,
+          'chrom',
+          C.alu,
+          EF,
+          1,
+          -hw * w,
+          hw * w,
+          [z - (big ? 0.012 : 0.006), z + (big ? 0.012 : 0.006)],
+          0.009,
+          10,
+          1
+        );
       }
     }
     // the bumper: black plastic on the panel vans (painted on the estate, a black lip under it), the intake with its bar, the plate
@@ -1084,9 +1369,33 @@ export const VKTYPEN = (() => {
     {
       const i0 = zb0 + (car ? 0.19 : 0.2),
         i1 = zb0 + (car ? 0.31 : big ? 0.42 : 0.37);
-      patch(k, 'matt', C.black, EF, 1, -hw * 0.58, hw * 0.58, u => [i0 + 0.015 * Math.abs(u * 2 - 1), i1 - 0.012 * Math.abs(u * 2 - 1)], 0.007, 10, 2);
+      patch(
+        k,
+        'matt',
+        C.black,
+        EF,
+        1,
+        -hw * 0.58,
+        hw * 0.58,
+        u => [i0 + 0.015 * Math.abs(u * 2 - 1), i1 - 0.012 * Math.abs(u * 2 - 1)],
+        0.007,
+        10,
+        2
+      );
       for (const t of car ? [0.4, 0.7] : [0.5])
-        patch(k, 'matt', C.grey, EF, 1, -hw * 0.54, hw * 0.54, [mix(i0, i1, t) - 0.005, mix(i0, i1, t) + 0.005], 0.01, 10, 1);
+        patch(
+          k,
+          'matt',
+          C.grey,
+          EF,
+          1,
+          -hw * 0.54,
+          hw * 0.54,
+          [mix(i0, i1, t) - 0.005, mix(i0, i1, t) + 0.005],
+          0.01,
+          10,
+          1
+        );
       const zp = car ? zb0 + 0.39 : mix(i0, i1, 0.5);
       kennzeichen(k, 0, EF(0, zp) + 0.016, zp, 1, 0.52, 0.11);
     }
@@ -1098,8 +1407,32 @@ export const VKTYPEN = (() => {
         const xi = s * (hw - (big ? 0.21 : 0.17)),
           xo = s * hw * 0.995;
         patch(k, 'tail', C.red, ER, -1, xi, xo, [zt0, zt1], 0.006, 6, 6);
-        patch(k, 'blink', C.amber, ER, -1, mix(xi, xo, 0.1), mix(xi, xo, 0.9), [mix(zt0, zt1, 0.4), mix(zt0, zt1, 0.58)], 0.009, 3, 1);
-        patch(k, 'head', [0.86, 0.86, 0.86], ER, -1, mix(xi, xo, 0.1), mix(xi, xo, 0.9), [mix(zt0, zt1, 0.1), mix(zt0, zt1, 0.27)], 0.009, 3, 1);
+        patch(
+          k,
+          'blink',
+          C.amber,
+          ER,
+          -1,
+          mix(xi, xo, 0.1),
+          mix(xi, xo, 0.9),
+          [mix(zt0, zt1, 0.4), mix(zt0, zt1, 0.58)],
+          0.009,
+          3,
+          1
+        );
+        patch(
+          k,
+          'head',
+          [0.86, 0.86, 0.86],
+          ER,
+          -1,
+          mix(xi, xo, 0.1),
+          mix(xi, xo, 0.9),
+          [mix(zt0, zt1, 0.1), mix(zt0, zt1, 0.27)],
+          0.009,
+          3,
+          1
+        );
         // a reflector low in the bumper's corner
         patch(k, 'tail', C.red, ER, -1, s * hw * 0.74, s * hw * 0.9, [zb0 + 0.22, zb0 + 0.25], 0.008, 3, 1);
       }
@@ -1271,7 +1604,8 @@ export const VKTYPEN = (() => {
     }
     // the sun visor over the screen, the roof's spoiler on a tall cab
     k.pad('lack0', [0, yF - 0.05, zt - 0.02], [w * 1.9, 0.12, 0.06], 0.02, [1, 1, 1]);
-    if (high) k.pad('lack0', [0, yR + 0.6, zt + 0.25], [w * 1.8, 1.1, 0.45], 0.12, [1, 1, 1]);
+    // (as high as the trailer behind: 4 m)
+    if (high) k.pad('lack0', [0, yR + 0.6, zt + 0.07], [w * 1.8, 1.1, 0.2], 0.08, [1, 1, 1]);
     kennzeichen(k, 0, yF + 0.05, zbm - 0.05, 1, 0.52, 0.11);
     if (o.lod) return { B, yR, zf, zt, w };
     wischer(k, B, -w * 0.7, -w * 0.05, y3 + 0.02, y3 - 0.1);
@@ -1304,12 +1638,14 @@ export const VKTYPEN = (() => {
   function koffer(k, y0, y1, z0, z1, hw, col = [1, 1, 1], part = 'lack1') {
     k.pad(part, [0, (y0 + y1) / 2, (z0 + z1) / 2], [2 * hw, y1 - y0, z1 - z0], 0.03, col);
     // the rails at the bottom and the top, the doors' frame and hinges
-    for (const zz of [z0 + 0.04, z1 - 0.03]) k.box('matt', [0, (y0 + y1) / 2, zz], [2 * hw + 0.02, y1 - y0 + 0.02, 0.06], C.grey);
+    for (const zz of [z0 + 0.04, z1 - 0.03])
+      k.box('matt', [0, (y0 + y1) / 2, zz], [2 * hw + 0.02, y1 - y0 + 0.02, 0.06], C.grey);
     k.box('matt', [0, y0 - 0.008, (z0 + z1) / 2], [2 * hw - 0.02, 0.016, z1 - z0 - 0.06], C.grey);
     k.box(part, [0, y0 - 0.018, (z0 + z1) / 2], [2 * hw - 0.16, 0.012, z1 - z0 - 0.2], col);
     k.box('matt', [0, y0 - 0.026, (z0 + z1) / 2], [0.025, 0.01, z1 - z0 - 0.2], C.black);
     for (const s of [-1, 1]) {
-      for (const t of [0.15, 0.5, 0.85]) k.box('matt', [s * (hw - 0.06), y0 - 0.03, mix(z0, z1, t)], [0.08, 0.03, 0.06], C.dark);
+      for (const t of [0.15, 0.5, 0.85])
+        k.box('matt', [s * (hw - 0.06), y0 - 0.03, mix(z0, z1, t)], [0.08, 0.03, 0.06], C.dark);
       for (const t of [0.35, 0.7]) k.box('matt', [s * 0.32, y0 - 0.035, mix(z0, z1, t)], [0.03, 0.02, 0.5], C.alu);
     }
   }
@@ -1341,11 +1677,18 @@ export const VKTYPEN = (() => {
     } else if (P.aufbau === 'sattel') {
       rahmen(k, T, T.yr + 0.1, Cb.yR + 0.4, zr);
       // the fifth wheel at the hitch, the air lines, the mudguards over the drive axle
-      k.lathe('matt', [0, T.hitch, zr + 0.22], [0, 0, 1], [
-        [0.42, 0],
-        [0.42, 0.06],
-        [0.001, 0.08],
-      ], 18, C.dark);
+      k.lathe(
+        'matt',
+        [0, T.hitch, zr + 0.22],
+        [0, 0, 1],
+        [
+          [0.42, 0],
+          [0.42, 0.06],
+          [0.001, 0.08],
+        ],
+        18,
+        C.dark
+      );
       for (const s of [-1, 1]) {
         k.pad('matt', [s * (T.hw - 0.32), T.b, T.rw * 2 + 0.08], [0.6, T.rw * 2.3, 0.05], 0.02, C.black);
         k.pad('matt', [s * (T.hw - 0.3), (T.a + T.b) / 2 + 0.3, zr - 0.1], [0.55, 1.1, 0.55], 0.08, C.tank);
@@ -1357,7 +1700,13 @@ export const VKTYPEN = (() => {
       const y1 = Cb.yR - 0.1,
         y0 = T.yr + 1.1;
       rahmen(k, T, T.yr + 0.3, Cb.yR + 0.4, zr);
-      k.pad('lack1', [0, (y0 + y1) / 2, (zr + 0.25 + T.h) / 2], [2 * T.hw - 0.06, y1 - y0, T.h - zr - 0.25], 0.18, [1, 1, 1]);
+      k.pad(
+        'lack1',
+        [0, (y0 + y1) / 2, (zr + 0.25 + T.h) / 2],
+        [2 * T.hw - 0.06, y1 - y0, T.h - zr - 0.25],
+        0.18,
+        [1, 1, 1]
+      );
       k.pad('lack1', [0, y0 - 0.5, (zr + T.h) / 2 - 0.1], [2 * T.hw - 0.1, 1.0, T.h - zr - 0.5], 0.12, [1, 1, 1]);
       k.box('matt', [0, y0 - 1.0, zr + 0.1], [2 * T.hw - 0.3, 0.2, 0.5], C.dark);
       for (const s of [-1, 1]) {
@@ -1384,14 +1733,22 @@ export const VKTYPEN = (() => {
       seitenschutz(k, s, T.b + 2.0, T.kp - 2.2, z0 - 0.55, T.hw);
       k.pad('matt', [s * (T.hw - 0.25), T.b, T.rw * 2 + 0.06], [0.45, 3.4, 0.04], 0.02, C.black);
       // the marker lamps along the side
-      for (let y = y0 + 1; y < y1 - 1; y += 2.5) k.box('blink', [s * (T.hw + 0.005), y, z0 + 0.05], [0.012, 0.06, 0.04], C.amber);
+      for (let y = y0 + 1; y < y1 - 1; y += 2.5)
+        k.box('blink', [s * (T.hw + 0.005), y, z0 + 0.05], [0.012, 0.06, 0.04], C.amber);
     }
     k.box('matt', [0, (y0 + y1) / 2, z0 - 0.08], [1.0, y1 - y0, 0.05], C.frame);
-    k.lathe('matt', [0, T.kp, z0 - 0.15], [0, 0, -1], [
-      [0.05, 0],
-      [0.05, 0.08],
-      [0.001, 0.09],
-    ], 8, C.steel);
+    k.lathe(
+      'matt',
+      [0, T.kp, z0 - 0.15],
+      [0, 0, -1],
+      [
+        [0.05, 0],
+        [0.05, 0.08],
+        [0.001, 0.09],
+      ],
+      8,
+      C.steel
+    );
     heckLkw(k, y0, z0 - 0.45, T.hw);
     return {};
   }
@@ -1428,7 +1785,8 @@ export const VKTYPEN = (() => {
     for (const s of [-1, 1]) {
       k.pad('head', [s * (wB - 0.12), yN - 0.035, 1.66], [0.16, 0.05, 0.07], 0.02, C.lens);
       k.box('chrom', [s * (wB - 0.12), yN - 0.01, 1.66], [0.12, 0.012, 0.04], C.silver);
-      for (let i = 0; i < 4; i++) k.box('matt', [s * (wB + 0.002), mix(yc1, yN, 0.2 + i * 0.07), 1.62], [0.006, 0.12, 0.04], C.black);
+      for (let i = 0; i < 4; i++)
+        k.box('matt', [s * (wB + 0.002), mix(yc1, yN, 0.2 + i * 0.07), 1.62], [0.006, 0.12, 0.04], C.black);
     }
     // under the bonnet: the engine and the frame, the front axle's beam, the front linkage with its weight
     k.box('matt', [0, mix(yc1, yN, 0.5), 0.72], [0.62, yc1 - yN - 0.2, 0.42], C.frame);
@@ -1460,7 +1818,12 @@ export const VKTYPEN = (() => {
       K.COL.GLASS,
       12
     );
-    k.box('glas', [0, (yc0 + yc1) / 2, (zc + zR + 0.25) / 2], [2 * xin - 0.1, yc1 - yc0 - 0.06, zR + 0.25 - zc], K.COL.GLASS);
+    k.box(
+      'glas',
+      [0, (yc0 + yc1) / 2, (zc + zR + 0.25) / 2],
+      [2 * xin - 0.1, yc1 - yc0 - 0.06, zR + 0.25 - zc],
+      K.COL.GLASS
+    );
     // the floor and the doors' lower frame, the roof wider than the cab, the visor and the work lamps under its front edge
     k.box('matt', [0, (yc0 + yc1) / 2, zc - 0.04], [2 * xin + 0.04, yc1 - yc0 + 0.06, 0.08], C.frame);
     k.pad('lack0', [0, (yc0 + yc1) / 2 + 0.04, zt - 0.06], [1.86, yc1 - yc0 + 0.36, 0.14], 0.06, [1, 1, 1]);
@@ -1471,13 +1834,32 @@ export const VKTYPEN = (() => {
         k.box('chrom', [s * x, yc1 + 0.205, zt - 0.2], [0.1, 0.008, 0.035], C.silver);
       }
     // the exhaust up the right front post, the mirrors on long arms, the steps up to the door (left)
-    k.tube('matt', [[0.36, yc1 + 0.06, 1.95], [0.4, yc1 + 0.06, zt + 0.12]], 0.05, 8, C.black);
+    k.tube(
+      'matt',
+      [
+        [0.36, yc1 + 0.06, 1.95],
+        [0.4, yc1 + 0.06, zt + 0.12],
+      ],
+      0.05,
+      8,
+      C.black
+    );
     for (const s of [-1, 1]) {
-      k.tube('matt', [[s * 0.86, yc1 - 0.02, zt - 0.45], [s * 1.2, yc1 + 0.08, zt - 0.42]], 0.016, 5, C.black);
+      k.tube(
+        'matt',
+        [
+          [s * 0.86, yc1 - 0.02, zt - 0.45],
+          [s * 1.2, yc1 + 0.08, zt - 0.42],
+        ],
+        0.016,
+        5,
+        C.black
+      );
       k.pad('matt', [s * 1.22, yc1 + 0.06, zt - 0.62], [0.05, 0.18, 0.34], 0.015, C.black);
       k.box('chrom', [s * 1.22, yc1 + 0.06 - 0.095, zt - 0.62], [0.04, 0.005, 0.3], C.alu, 'f');
     }
-    for (let i = 0; i < 3; i++) k.box('matt', [-(xin - 0.12), yc1 - 0.2, zc - 0.32 - i * 0.3], [0.26, 0.3, 0.04], C.dark);
+    for (let i = 0; i < 3; i++)
+      k.box('matt', [-(xin - 0.12), yc1 - 0.2, zc - 0.32 - i * 0.3], [0.26, 0.3, 0.04], C.dark);
     // the mudguards over the rear wheels: wide shells from the cab's sides, the lamps and indicators at their rear ends
     for (const s of [-1, 1]) {
       const r = zR + 0.07,
@@ -1487,12 +1869,18 @@ export const VKTYPEN = (() => {
         arc.push([s * (T.trackR / 2), b + Math.cos(t) * r, zR + Math.sin(t) * r]);
       }
       const hw2 = T.twR / 2 + 0.05;
-      k.sweep('lack0', arc, [
-        [-hw2, 0],
-        [hw2, 0],
-        [hw2, 0.02],
-        [-hw2, 0.02],
-      ], [1, 1, 1], { out: () => [0, 0, 1] });
+      k.sweep(
+        'lack0',
+        arc,
+        [
+          [-hw2, 0],
+          [hw2, 0],
+          [hw2, 0.02],
+          [-hw2, 0.02],
+        ],
+        [1, 1, 1],
+        { out: () => [0, 0, 1] }
+      );
       // the fender over the front wheel: a short shell
       const rf = T.rw + 0.08,
         arcF = [];
@@ -1501,12 +1889,18 @@ export const VKTYPEN = (() => {
         arcF.push([s * (T.track / 2), a + Math.cos(t) * rf, T.rw + Math.sin(t) * rf]);
       }
       const hf = T.tw / 2 + 0.05;
-      k.sweep('lack0', arcF, [
-        [-hf, 0],
-        [hf, 0],
-        [hf, 0.016],
-        [-hf, 0.016],
-      ], [1, 1, 1], { out: () => [0, 0, 1] });
+      k.sweep(
+        'lack0',
+        arcF,
+        [
+          [-hf, 0],
+          [hf, 0],
+          [hf, 0.016],
+          [-hf, 0.016],
+        ],
+        [1, 1, 1],
+        { out: () => [0, 0, 1] }
+      );
       // the rear lamps on the mudguards' ends, the indicators beside them, the plate holder on the left
       const yl = b - Math.cos(Math.PI * 0.12) * r * 0.86;
       k.pad('tail', [s * (T.trackR / 2 + 0.12), yl, zR + 0.62], [0.16, 0.05, 0.1], 0.02, C.red);
@@ -1515,15 +1909,64 @@ export const VKTYPEN = (() => {
     // the seat, the wheel and the console inside
     k.pad('matt', [0, b + 0.12, zc + 0.52], [0.52, 0.48, 0.14], 0.05, C.cloth);
     k.pad('matt', [0, b - 0.16, zc + 0.86], [0.52, 0.12, 0.62], 0.05, C.cloth);
-    k.tube('matt', [[0, b + 0.62, zc + 0.86], [0, b + 0.82, zc + 0.36]], 0.03, 6, C.dark);
-    k.lathe('matt', [0, b + 0.6, zc + 0.9], [0, -0.35, 1], [[0.19, -0.015], [0.19, 0.015]], 16, C.dark);
+    k.tube(
+      'matt',
+      [
+        [0, b + 0.62, zc + 0.86],
+        [0, b + 0.82, zc + 0.36],
+      ],
+      0.03,
+      6,
+      C.dark
+    );
+    k.lathe(
+      'matt',
+      [0, b + 0.6, zc + 0.9],
+      [0, -0.35, 1],
+      [
+        [0.19, -0.015],
+        [0.19, 0.015],
+      ],
+      16,
+      C.dark
+    );
     k.box('matt', [0.48, b + 0.2, zc + 0.6], [0.2, 0.7, 0.14], C.dark);
     // the back: the axle's housing, the three-point hitch, the shaft, the hitch for the trailer, the plate
     k.box('matt', [0, b, zR], [2 * xin - 0.1, 0.5, 0.42], C.frame);
     k.box('matt', [0, yr + 0.45, 0.85], [0.9, 0.5, 0.5], C.dark);
-    for (const s of [-1, 1]) k.tube('matt', [[s * 0.32, yr + 0.62, 0.62], [s * 0.42, yr + 0.02, 0.55]], 0.04, 6, C.frame);
-    k.tube('matt', [[0, yr + 0.7, 1.1], [0, yr + 0.1, 1.02]], 0.035, 6, C.frame);
-    k.lathe('matt', [0, yr + 0.18, 0.72], [0, -1, 0], [[0.03, 0], [0.03, 0.12], [0.001, 0.13]], 8, C.steel);
+    for (const s of [-1, 1])
+      k.tube(
+        'matt',
+        [
+          [s * 0.32, yr + 0.62, 0.62],
+          [s * 0.42, yr + 0.02, 0.55],
+        ],
+        0.04,
+        6,
+        C.frame
+      );
+    k.tube(
+      'matt',
+      [
+        [0, yr + 0.7, 1.1],
+        [0, yr + 0.1, 1.02],
+      ],
+      0.035,
+      6,
+      C.frame
+    );
+    k.lathe(
+      'matt',
+      [0, yr + 0.18, 0.72],
+      [0, -1, 0],
+      [
+        [0.03, 0],
+        [0.03, 0.12],
+        [0.001, 0.13],
+      ],
+      8,
+      C.steel
+    );
     k.box('matt', [0, T.hitch + 0.12, 0.62], [0.22, 0.24, 0.16], C.frame);
     kennzeichen(k, -0.55, yc0 - 0.16, zR + 0.45, -1, 0.34, 0.2);
     return {};
@@ -1539,14 +1982,47 @@ export const VKTYPEN = (() => {
     k.box('lack1', [0, ym, T.h - 0.035], [2 * T.hw, y1 - y0 + 0.05, 0.07], [0.82, 0.82, 0.82]);
     k.box('lack1', [0, ym, z0 + 0.04], [2 * T.hw, y1 - y0 + 0.05, 0.08], [0.82, 0.82, 0.82]);
     for (let y = y0 + 0.4; y < y1 - 0.2; y += 0.75)
-      for (const s of [-1, 1]) k.box('lack1', [s * (T.hw - 0.012), y, (z0 + T.h) / 2], [0.035, 0.08, T.h - z0 - 0.1], [0.85, 0.85, 0.85]);
-    for (const z of [z0 + 0.45, z0 + 0.95]) k.box('lack1', [0, y0 - 0.01, z], [2 * T.hw - 0.1, 0.04, 0.06], [0.85, 0.85, 0.85]);
+      for (const s of [-1, 1])
+        k.box('lack1', [s * (T.hw - 0.012), y, (z0 + T.h) / 2], [0.035, 0.08, T.h - z0 - 0.1], [0.85, 0.85, 0.85]);
+    for (const z of [z0 + 0.45, z0 + 0.95])
+      k.box('lack1', [0, y0 - 0.01, z], [2 * T.hw - 0.1, 0.04, 0.06], [0.85, 0.85, 0.85]);
     // the frame, the axles' beams, the drawbar's two tubes to its eye
     k.box('matt', [0, ym, z0 - 0.16], [0.95, y1 - y0 - 0.3, 0.24], C.frame);
     for (const d of [-0.65, 0.65]) k.box('matt', [0, T.b + d, T.rw], [T.track - T.tw - 0.04, 0.14, 0.14], C.frame);
-    k.tube('matt', [[-0.42, y1 - 0.35, z0 - 0.22], [-0.05, T.kp - 0.15, 0.8], [0, T.kp, 0.78]], 0.055, 6, C.frame);
-    k.tube('matt', [[0.42, y1 - 0.35, z0 - 0.22], [0.05, T.kp - 0.15, 0.8], [0, T.kp, 0.78]], 0.055, 6, C.frame);
-    k.lathe('matt', [0, T.kp, 0.78], [0, 1, 0], [[0.07, -0.05], [0.07, 0.05], [0.001, 0.06]], 8, C.steel);
+    k.tube(
+      'matt',
+      [
+        [-0.42, y1 - 0.35, z0 - 0.22],
+        [-0.05, T.kp - 0.15, 0.8],
+        [0, T.kp, 0.78],
+      ],
+      0.055,
+      6,
+      C.frame
+    );
+    k.tube(
+      'matt',
+      [
+        [0.42, y1 - 0.35, z0 - 0.22],
+        [0.05, T.kp - 0.15, 0.8],
+        [0, T.kp, 0.78],
+      ],
+      0.055,
+      6,
+      C.frame
+    );
+    k.lathe(
+      'matt',
+      [0, T.kp, 0.78],
+      [0, 1, 0],
+      [
+        [0.07, -0.05],
+        [0.07, 0.05],
+        [0.001, 0.06],
+      ],
+      8,
+      C.steel
+    );
     k.box('matt', [0, y1 - 0.6, 0.55], [0.08, 0.08, 0.6], C.frame); // the jack
     for (const s of [-1, 1]) {
       // the lamps at the rear, the side markers, the mudguards over the tandem
@@ -1562,12 +2038,20 @@ export const VKTYPEN = (() => {
   // the wheel's look by class: alloys with spokes, steel wheels with a cover, the lorries' steel rims, the tractor's yellow ones
   function radOpts(T, o, rear) {
     const P = T.p;
-    if (T.cls === 'lkw' || T.cls === 'zug') return { rim: T.rimR * 0.98, col: C.silver, cap: C.dark, capR: 0.12, dish: 0.07, seg: 24 };
+    if (T.cls === 'lkw' || T.cls === 'zug')
+      return { rim: T.rimR * 0.98, col: C.silver, cap: C.dark, capR: 0.12, dish: 0.07, seg: 24 };
     if (T.cls === 'trak')
       return rear
         ? { r: T.rwR, w: T.twR, rim: T.rimRR, col: C.steel, cap: C.dark, capR: 0.18, dish: 0.12, seg: 28 }
         : { rim: T.rimR, col: C.steel, cap: C.dark, capR: 0.12, dish: 0.1, seg: 24 };
-    if (P.spokes) return { rim: T.rimR + 0.012, col: C.dark, spokes: P.spokes, spokeCol: o.rim === 'dark' ? C.grey : C.silver, dish: 0.02 };
+    if (P.spokes)
+      return {
+        rim: T.rimR + 0.012,
+        col: C.dark,
+        spokes: P.spokes,
+        spokeCol: o.rim === 'dark' ? C.grey : C.silver,
+        dish: 0.02,
+      };
     return { rim: T.rimR + 0.01, col: C.silver, cap: C.grey, capR: T.rimR * 0.85, dish: 0.025 };
   }
   // an axle: two wheels at the track's ends (twin tyres on a lorry's drive axle, the trailer's axles), tread between them for the far views

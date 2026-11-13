@@ -124,7 +124,10 @@ if (vkL > 0.5) {
         .replace('#include <common>', '#include <common>\n' + VS_HEAD)
         .replace('#include <beginnormal_vertex>', VS_WHEEL)
         .replace('#include <begin_vertex>', 'vec3 transformed = vkM * (vec3( position ) - vkC) + vkC;')
-        .replace('#include <color_vertex>', '#include <color_vertex>\n#ifdef USE_COLOR\nvColor = vkLin(color);\n#endif');
+        .replace(
+          '#include <color_vertex>',
+          '#include <color_vertex>\n#ifdef USE_COLOR\nvColor = vkLin(color);\n#endif'
+        );
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', '#include <common>\n' + FS_HEAD)
         .replace('#include <color_fragment>', '#include <color_fragment>\n' + FS_KIND)
@@ -185,12 +188,14 @@ if (vkL > 0.5) {
       toneMapped: false,
     }),
     pool: new THREE.MeshBasicMaterial({
-      map: tex(64, 128, (u, v) => {
-        // 0 near the car, 1 far ahead: a soft cone
-        const w = 0.35 + 0.65 * v,
+      map: tex(64, 128, (u, j) => {
+        // the canvas' rows from the top, the texture's v from the bottom (flipY): v 0 near the car, 1 far ahead – a soft cone, brightest
+        // a few metres ahead, fading to the sides and far out
+        const v = 1 - j,
+          w = 0.3 + 0.7 * v,
           side = Math.max(0, 1 - Math.pow(Math.abs(u * 2 - 1) / w, 2)),
-          along = Math.pow(Math.sin(Math.min(1, v * 1.25) * Math.PI * 0.5), 0.6) * (1 - Math.pow(v, 2.2));
-        return side * along;
+          along = Math.pow(Math.sin(Math.min(1, v * 2.2) * Math.PI * 0.5), 0.8) * Math.pow(1 - v, 1.6);
+        return side * side * along;
       }),
       color: 0xffe2b0,
       transparent: true,
@@ -200,7 +205,7 @@ if (vkL > 0.5) {
       polygonOffsetFactor: -2,
       polygonOffsetUnits: -2,
       toneMapped: false,
-      opacity: 0.5,
+      opacity: 0.42,
     }),
     N: COARSE ? 32 : 72,
     on: [], // the vehicles shown with a shadow, in instance order
@@ -239,7 +244,10 @@ if (vkL > 0.5) {
   {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(9), 3));
-    g.setAttribute('normal', new THREE.BufferAttribute(new Int16Array([0, 32767, 0, 0, 32767, 0, 0, 32767, 0]), 3, true));
+    g.setAttribute(
+      'normal',
+      new THREE.BufferAttribute(new Int16Array([0, 32767, 0, 0, 32767, 0, 0, 32767, 0]), 3, true)
+    );
     g.setAttribute('color', new THREE.BufferAttribute(new Uint8Array(9).fill(255), 3, true));
     g.setAttribute('vk', new THREE.BufferAttribute(new Uint8Array(12), 4));
     g.setIndex([0, 1, 2]);
@@ -272,7 +280,11 @@ if (vkL > 0.5) {
     let L = S.geo.get(geo.typ);
     if (!L) S.geo.set(geo.typ, (L = [null, null, null]));
     if (L[geo.lod]) return;
-    L[geo.lod] = { op: toGeo(geo.op, false), gl: geo.gl ? toGeo(geo.gl, true) : null, tris: geo.op.tris + (geo.gl ? geo.gl.tris : 0) };
+    L[geo.lod] = {
+      op: toGeo(geo.op, false),
+      gl: geo.gl ? toGeo(geo.gl, true) : null,
+      tris: geo.op.tris + (geo.gl ? geo.gl.tris : 0),
+    };
     S.stats.built++;
     S.stats.ms += geo.ms || 0;
     // vehicles waiting for this level take it at their next placing
@@ -358,7 +370,8 @@ if (vkL > 0.5) {
         console.warn('verkehr-bau (main)', e);
       }
       S.asked.delete(typ + '|' + lod);
-      if (S.queue.length) idleT = (window.requestIdleCallback || setTimeout)(step, window.requestIdleCallback ? { timeout: 400 } : 60);
+      if (S.queue.length)
+        idleT = (window.requestIdleCallback || setTimeout)(step, window.requestIdleCallback ? { timeout: 400 } : 60);
     };
     idleT = (window.requestIdleCallback || setTimeout)(step, window.requestIdleCallback ? { timeout: 400 } : 60);
   }
@@ -414,7 +427,22 @@ if (vkL > 0.5) {
     });
     const st = ax.find(a => a.steer);
     U.uSteer.value.set(0, st ? T.track / 2 : 0);
-    const m = { typ, T, g, body, glas, mat, U, ax, lod: -1, lodT: -1, d: 1e9, spin: [0, 0, 0, 0], shade: true, pool: false };
+    const m = {
+      typ,
+      T,
+      g,
+      body,
+      glas,
+      mat,
+      U,
+      ax,
+      lod: -1,
+      lodT: -1,
+      d: 1e9,
+      spin: [0, 0, 0, 0],
+      shade: true,
+      pool: false,
+    };
     paint(m, o);
     S.live.add(m);
     scene.add(g);
@@ -551,11 +579,31 @@ if (vkL > 0.5) {
         ],
         r
       );
-      return { col: e[0], metal: 0.1, col2: pick([['#8b2a1f', 3], ['#3f6b3c', 2], ['#9aa0a4', 2]], (r * 7.31) % 1)[0] };
+      return {
+        col: e[0],
+        metal: 0.1,
+        col2: pick(
+          [
+            ['#8b2a1f', 3],
+            ['#3f6b3c', 2],
+            ['#9aa0a4', 2],
+          ],
+          (r * 7.31) % 1
+        )[0],
+      };
     }
     if (T.cls === 'lkw' || T.cls === 'zug') {
-      const e = pick([['#eceee9', 5], ['#24406b', 2], ['#8e1a1a', 2], ['#5f6366', 2], ['#2e4a37', 1]], r);
-      return { col: e[0], metal: 0.15, col2: ((r * 13.7) % 1) < 0.7 ? '#eceee9' : '#b4b8bb' };
+      const e = pick(
+        [
+          ['#eceee9', 5],
+          ['#24406b', 2],
+          ['#8e1a1a', 2],
+          ['#5f6366', 2],
+          ['#2e4a37', 1],
+        ],
+        r
+      );
+      return { col: e[0], metal: 0.15, col2: (r * 13.7) % 1 < 0.7 ? '#eceee9' : '#b4b8bb' };
     }
     const e = pick(FARBEN, r);
     return { col: e[0], metal: e[2] };

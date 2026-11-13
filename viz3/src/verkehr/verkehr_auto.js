@@ -661,7 +661,7 @@ export const VAUTO = (() => {
       look = Math.min(60, 14 + (c.v * c.v) / 4);
     // the limit of the line, a little ahead (the front sees the curve before the middle is in it)
     const i = Math.min(R.n - 1, Math.max(0, Math.round((s + 2) / R.step)));
-    let vT = R.S[i] * (c.vk || 1),
+    let vT = Math.min(R.S[i] * (c.vk || 1), c.vcap || 99),
       stopAt = Infinity,
       latNeed = 0,
       why = null;
@@ -683,6 +683,17 @@ export const VAUTO = (() => {
         same = Math.cos(o.hd - c.hd);
       if (ahead < 0) continue;
       if (same < -0.5 && ahead < 45) oncoming = true;
+      // feat/verkehr-real: one crossing my way ahead (at a junction): in my lane it stops me like anything standing there; waited 3 s
+      // for one that waits for me as well, I go (the rules of right of way come with stage 2)
+      if (Math.abs(same) <= 0.5 && d < 32 && !(c.crossT > 0)) {
+        const k0 = own.length;
+        circles(o, own);
+        for (let k = k0; k < own.length; k++) {
+          own[k].moving = true;
+          own[k].cross = true;
+        }
+        continue;
+      }
       if (same > 0.3 && (o.st === 'steht' || o.st === 'parkt') && o.v < 0.1) {
         // a car standing in front (stopped for someone, letting someone out): like a parked vehicle – wait, then round it
         circles(o, own);
@@ -732,6 +743,7 @@ export const VAUTO = (() => {
       if (stopS < stopAt) {
         stopAt = stopS;
         why = o.kind;
+        c.whyCross = !!o.cross;
       }
       if (o.kind === 'player') playerBlocks = true;
     }
@@ -793,6 +805,14 @@ export const VAUTO = (() => {
       }
     } else if ((why === 'veh' || why === 'dcar') && c.v < 0.5) c.blockT += dt;
     else if (!playerBlocks) c.blockT = Math.max(0, c.blockT - dt * 0.5);
+    // a crossing deadlock: after 3 s waiting for a crossing vehicle, the crossing ones are ignored for 2 s
+    if (c.whyCross && c.v < 0.3) c.crossW = (c.crossW || 0) + dt;
+    else c.crossW = 0;
+    if (c.crossW > 3) {
+      c.crossT = 2;
+      c.crossW = 0;
+    }
+    c.crossT = Math.max(0, (c.crossT || 0) - dt);
     c.honkT -= dt;
     // the stop is reached
     if (c.stop && c.v < 0.05 && c.stop.s - c.s < 0.6) {
