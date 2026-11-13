@@ -177,7 +177,9 @@ export const GLRADIO = (() => {
     }
     const sg = S.sig;
     const lade = !S.item || S.item.k === 'lade';
-    A.out.gain.setTargetAtTime(S.id ? Mo.g : 0, t, 0.12);
+    // (somebody in the world is speaking – a talk's subtitle is up: the radio steps back, as it does in GTA)
+    const talk = GLHUD.funk && GLHUD.subT > 0.1;
+    A.out.gain.setTargetAtTime(S.id ? Mo.g * (talk ? 0.4 : 1) : 0, t, 0.12);
     A.sig.gain.setTargetAtTime(0.1 + 0.9 * sg * sg, t, 0.2);
     A.nzG.gain.setTargetAtTime(S.id ? (1 - sg) * 0.12 + (lade ? 0.035 : 0) + (S.tuneT > 0 ? 0.1 : 0) : 0, t, 0.04);
     A.duck.gain.setTargetAtTime(S.over ? 0.18 : 1, t, 0.18);
@@ -392,8 +394,15 @@ export const GLRADIO = (() => {
       GLHUD.subT = 0.01;
     S.subMine = '';
   }
+  // read aloud? Not through an engine that costs credit unless asked, not while a mission runs or somebody in the world is
+  // speaking (the story's voices come first – the radio then shows its words only), not in a test
   const speakOk = text =>
-    S.speak && (S.paid || STIMME.engineName !== 'eleven') && STIMME.speaks('gl_r_' + S.id, text) && !window.FREEZE;
+    S.speak &&
+    (S.paid || STIMME.engineName !== 'eleven') &&
+    !GL.cur &&
+    !(GLHUD.subT > 0.2) &&
+    STIMME.speaks('gl_r_' + S.id, text) &&
+    !window.FREEZE;
   function sayLine(W) {
     // (without the panel's own line for the radio: wait a few seconds while somebody in the world is speaking)
     const other =
