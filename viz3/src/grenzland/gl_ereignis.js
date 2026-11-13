@@ -117,10 +117,12 @@ export const GLEREIGNIS = (() => {
     blitzerSub: 'Mobile Geschwindigkeitsmessung',
     geblitzt: kmh => 'Geblitzt! ' + kmh + ' km/h, erlaubt sind 50.',
     brav: 'Am Blitzer vorbei mit Tempo 50. Vorbildlich.',
-    brief: kmh =>
+    brief: (kmh, ort) =>
       'Verwarnungsgeld: ' +
       kmh +
-      ' km/h statt 50 km/h bei Ratscher. 30 € wurden abgebucht. Das Foto ist übrigens gut geworden.',
+      ' km/h statt 50 km/h bei ' +
+      ort +
+      '. 30 € wurden abgebucht. Das Foto ist übrigens gut geworden.',
     briefVon: 'Bußgeldstelle',
     stau: 'Stau hinter dem Erntewagen',
     stauSub: 'Die Agrargenossenschaft fährt Ernte ein',
@@ -219,12 +221,16 @@ export const GLEREIGNIS = (() => {
   }
   // a line on a road: from where the car stands, the way it faces, to a point further on
   function linie(A, weit) {
-    const N = A.N,
-      to = [A.x + Math.sin(A.hd) * weit, A.y + Math.cos(A.hd) * weit],
-      B = strasse(to[0], to[1], 120);
-    if (!N || !B) return null;
-    const R = N.linie({ x: A.x, y: A.y, hd: A.hd }, [B.x, B.y], { k: 1, aLat: 3.3, vEnd: 0 });
-    return R && R.line && R.line.L > 60 ? R.line : null;
+    const N = A.N;
+    if (!N) return null;
+    // (as far as the network goes: shorter if the far point is off it)
+    for (const w of [weit, weit * 0.6, weit * 0.35]) {
+      const B = strasse(A.x + Math.sin(A.hd) * w, A.y + Math.cos(A.hd) * w, 120);
+      if (!B) continue;
+      const R = N.linie({ x: A.x, y: A.y, hd: A.hd }, [B.x, B.y], { k: 1, aLat: 3.3, vEnd: 0 });
+      if (R && R.line && R.line.L > 60) return R.line;
+    }
+    return null;
   }
   // ------------------------------------------------------------------ the events ------------------------------------------------------------------
   const DEF = {
@@ -269,7 +275,8 @@ export const GLEREIGNIS = (() => {
             blitzen();
             GLTON.fx('foto');
             PLAY.think(TX.geblitzt(kmh), 3400);
-            S.briefe.push({ t: 60, von: TX.briefVon, text: TX.brief(kmh), geld: 30, why: 'Verwarnungsgeld' });
+            const ort = hyp(E.x + 1340, E.y - 1243) < 900 ? 'Schleusingen' : 'Ratscher';
+            S.briefe.push({ t: 60, von: TX.briefVon, text: TX.brief(kmh, ort), geld: 30, why: 'Verwarnungsgeld' });
             E.ende = 'geblitzt';
             GL.emit('geblitzt', { kmh });
           } else {
@@ -452,7 +459,8 @@ export const GLEREIGNIS = (() => {
         const B = Object.assign({}, A, { hd: A.hd + Math.PI });
         B.dx = Math.sin(B.hd);
         B.dy = Math.cos(B.hd);
-        const line = linie(B, 600);
+        // (towards him; where the road does not go on behind him, they drive on ahead)
+        const line = linie(B, 600) || linie(A, 600);
         E.x = A.x;
         E.y = A.y;
         if (!line) return false;
@@ -554,7 +562,7 @@ export const GLEREIGNIS = (() => {
           'boellermann',
           bx + Math.cos(A.hd) * 1.1,
           by - Math.sin(A.hd) * 1.1,
-          A.hd + Math.PI / 2,
+          A.hd - Math.PI / 2,
           F => (E.mann = F)
         );
       },

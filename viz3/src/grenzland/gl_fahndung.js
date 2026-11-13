@@ -439,6 +439,10 @@ export const GLFAHNDUNG = (() => {
           q.hd = p.v > 0.5 ? p.hd : null;
           q.quiet = !!o.quiet;
           if (z.ref && z.ref.F && z.ref.F.st !== 'geht') GLFIG.face(z.ref.F, p.x, p.y);
+          // (the phone at the ear while the call is made – the figures of round 2)
+          try {
+            if (z.ref && z.ref.F && GLFIG.geste) GLFIG.geste(z.ref.F, 'telefon', { sec: q.t + 0.8 });
+          } catch (e) {}
           if (!o.quiet) PLAY.think(TX.ruft(z.name, tatName(id)), 3600);
           GL.emit('zeuge', { id, wer: z.name, sek: Math.round(q.t * 10) / 10, beredbar: GLLOGIK.beredbar(id) });
         }
@@ -517,6 +521,13 @@ export const GLFAHNDUNG = (() => {
       if (!q) return;
       const i = Math.floor(Math.random() * TX.redeIch.length);
       GLLOGIK.still(GL.W, q.key);
+      // (the phone goes down; a nod)
+      try {
+        if (q.ref && q.ref.F && GLFIG.geste) {
+          GLFIG.geste(q.ref.F, null);
+          setTimeout(() => !q.ref.F.gone && GLFIG.geste(q.ref.F, 'nicken'), 2400);
+        }
+      } catch (e) {}
       GLHUD.sub(GL.name(), TX.redeIch[i], 2200);
       setTimeout(() => GL.on && GLHUD.sub(q.name, TX.redeEr[i], 2600), 2300);
       GL.emit('zeuge', { id: q.id, wer: q.name, still: true });

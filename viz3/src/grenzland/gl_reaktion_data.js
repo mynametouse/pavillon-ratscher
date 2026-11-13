@@ -91,6 +91,7 @@ export const GLRXDATA = (() => {
     jagd: [
       'Polizei mit Blaulicht durch {ort} – und vorneweg einer, der es eilig hat 🚨 #{tag}',
       'Verfolgungsjagd in {ort}?! Ich steh hier mit meinem Einkauf. #{tag}',
+      'Polizei auf der L 1625 … und keiner weiß, warum 🚨 #{tag}',
     ],
     markt: ['Mit Vollgas über den Markt in {ort}. Die Tauben sind jetzt in Suhl. #{tag}'],
     raserei: ['Tempo 30 ist in {ort} eher so eine Empfehlung, oder? #{tag}'],

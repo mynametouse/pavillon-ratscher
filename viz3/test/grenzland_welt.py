@@ -193,13 +193,14 @@ with lib.browser() as b:
         X("GLFAHNDUNG.clear()")
         base = J("({ cars: GLAUTO.cars.length, figs: GLFIG.figs.length, meshes: (() => { let n = 0; GAME.scene.traverse(o => { if (o.name === 'grenzland ereignis') n++ }); return n })() })")
         # each where it belongs: the roads east of the Anger (country road towards the dam) for the road ones, the Anger for the fair
+        # (the long straight road east of the Anger for the road ones, the Anger itself for the fair)
         SPOTS = {
-            'blitzer': (300, -150, 120), 'traktorstau': (300, -150, 120), 'korso': (300, -150, 120), 'wildunfall': (300, -150, 120),
-            'boeller': (230, -112, 100), 'kirmes': (205, -125, 30),
+            'blitzer': (AN[0], AN[1], 100), 'traktorstau': (AN[0], AN[1], 100), 'korso': (AN[0], AN[1], 100), 'wildunfall': (AN[0], AN[1], 100),
+            'boeller': (AN[0], AN[1], 100), 'kirmes': (246, -84, 250),
         }
         for k in ['blitzer', 'traktorstau', 'kirmes', 'korso', 'boeller', 'wildunfall']:
             x, y, az = SPOTS[k]
-            X(f"GLEREIGNIS.stop(); GAME.view({x}, {y}, KERN.ground({x}, {y}) + 1.62, {az}, -4); GAME.setView3(true)")
+            X(f"GLEREIGNIS.stop(); GAME.setView3(false); GAME.view({x}, {y}, KERN.ground({x}, {y}) + 1.62, {az}, -4)")
             steps(0.3)
             ok = E(f"GLEREIGNIS.debug.start('{k}')")
             info = J("GLEREIGNIS.debug.info()")
@@ -211,7 +212,8 @@ with lib.browser() as b:
             # let it show (figures load), look at it
             for _ in range(10): steps(0.3); time.sleep(0.4)
             info = J("GLEREIGNIS.debug.info()")
-            X(f"const i = GLEREIGNIS.debug.info(); if (i) {{ const a = Math.atan2(i.x - {x}, i.y - ({y})) * 180 / Math.PI; GAME.view({x}, {y}, KERN.ground({x}, {y}) + 1.62, a, -4) }}")
+            # the picture: from the player's side, some 16 m off and a little above, looking at it
+            X(f"const i = GLEREIGNIS.debug.info(); if (i) {{ const a = Math.atan2(i.x - {x}, i.y - ({y})) * 180 / Math.PI, d = Math.min(16, Math.hypot(i.x - {x}, i.y - ({y}))); TW.look(i.x, i.y, d, a, 3.2) }}")
             steps(0.3)
             pic(f'1{["blitzer", "traktorstau", "kirmes", "korso", "boeller", "wildunfall"].index(k)}_{k}')
             ck(f'ereignis {k}: shows (cars, figures or props)', info and (info['cars'] + info['figs'] + info['meshes']) > 0, str(info))

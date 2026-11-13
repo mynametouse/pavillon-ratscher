@@ -81,7 +81,8 @@ export const GLHANDY = (() => {
 #glhandy .hk{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px 8px}
 #glhandy .hk b{font:700 17px/1.2 var(--f-body,system-ui)} #glhandy .hk small{display:block;font:400 11px/1.3 var(--f-body,system-ui);opacity:.65}
 #glhandy .hk button{width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font:400 19px/1 system-ui;cursor:pointer;flex:none}
-#glhandy .hb{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:14px;background:#151920;padding:8px}
+#glhandy .hb{display:block;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:14px;background:#151920;padding:8px;
+  gap:0;cursor:auto;backdrop-filter:none;border:0;font:inherit;color:inherit}
 #glhandy .hn{display:flex;gap:1px;padding-top:7px}
 #glhandy .hn button{position:relative;flex:1;min-width:0;overflow:hidden;white-space:nowrap;border:0;background:none;color:#aab0b8;padding:5px 0 3px;border-radius:9px;cursor:pointer;font:500 9px/1.2 var(--f-body,system-ui)}
 #glhandy .hn button svg{display:block;width:21px;height:21px;margin:0 auto 2px;fill:currentColor}
