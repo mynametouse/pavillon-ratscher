@@ -157,12 +157,24 @@ Themen-Tests in `viz3/extra/zeitreise-regie/tests.txt`: `smoke`, `zeitreise`, `z
 | `bruecke` | an der Schleusebrücke auf der Linie des Flusses, flussaufwärts zum Dorf | gleich |
 | `strasse`, `heizhaus`, `windrad`, `kahlflaeche` | von `ZKZEITWELT.place(id)` (`windrad`: die Lichtung 255 m nördlich), sonst die Tabelle in `zk_regie_orte.js` | gleich |
 
+## Bildkosten (CI, SwiftShader, 1920×1080, Stufe „mittel“)
+
+Dieselbe Ansicht (am Anger), gemessen mit `R.info` über das ganze Bild einschließlich Schattenkarte:
+
+| | Draw-Calls | Dreiecke |
+|---|---|---|
+| eine Welt | 349–359 | 0,56–0,57 Mio. |
+| geteiltes Bild | 638–642 | 1,07–1,08 Mio. |
+
+Die Draw-Calls steigen also auf etwa das 1,8-Fache, die Pixel bleiben gleich (halbe Breite je Hälfte).
+Programme: beim Start +0 (165 → 165, die Programme der Welt kompiliert `ZKZEITWELT.warm()`), beim Abspielen, Teilen, in Regen und Nacht +0.
+
 ## Offen
 
-- Die Orte nach dem nächsten Kontaktbogen (`out/zeitreise/orte.jpg`) weiter nachstellen: `anger`, `bruecke`, `waldrand` sind noch nicht im
-  Bild geprüft.
-- Bildkosten auf einer Onboard-Grafik messen; Ziel sind 30 fps bei 1080p in Stufe „mittel“. Gemessen in CI, SwiftShader:
-  - geteiltes Bild: 638 Draw-Calls, 1,08 Mio. Dreiecke;
-  - eine Welt: 349 Draw-Calls, 0,56 Mio. Dreiecke;
-  - der Zeitraffer hat höchstens zwei neue Schattenkarten je Sekunde.
+- Die Orte im nächsten CI-Kontaktbogen prüfen (`out/zeitreise/orte.jpg`): `fern` und `hang` mit langer Brennweite, `waldrand` mit 35°.
+  Lokal fehlen Häuser und Wald (die Assets kommen von der Website), so lassen sich dort nur die Geländeausschnitte beurteilen.
+- `kahlflaeche` (Ort von `ZKZEITWELT`) schaut noch in Augenhöhe über ein Feld. `heizhaus` und `windrad` werden mit dem nächsten Stand
+  der Welt richtig: bisher steht die Kamera dort vor einer Wand bzw. unter einem Dach.
+- 30 fps auf einer Onboard-Grafik prüfen (Ziel: 1080p, Stufe „mittel“) – am Laptop vor dem Workshop.
 - Telefon im Hochformat: Das geteilte Bild wird dort sehr schmal (der Workshop ist für große Bildschirme).
+- Später (Stufe 5): Einzelbildschirme folgen `state()`, eine VR-Brille steht an den Orten der Halte (Augenhöhe, keine Kamerafahrt im Halt).
