@@ -21,6 +21,7 @@ import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { HUD } from '../game/hud.js';
 import { CLOCK } from '../time/clock.js';
+import { VEH } from '../vehicles/vehicle.js';
 import { STIMME } from '../audio/stimme.js';
 import { GLDATA } from './gl_data.js';
 import { GL } from './gl_state.js';
@@ -643,8 +644,14 @@ export const GLHANDY = (() => {
       camShow(false);
     } else unlock('nov89');
   });
-  KERN.on('grenzland:radio', () => {
+  KERN.on('grenzland:radio', d => {
     S.dirty = true;
+    // a car radio in the village does not go unnoticed (once in a while)
+    if (!GL.on || !d || !d.id || !VEH.cur || VEH.cur.id === 'gl-moped' || S.evT.radio > 0) return;
+    const w = KERN.where();
+    if (!/Ratscher|Anger|Dorf/.test(String(KERN.place(w[0], w[1], 0) || ''))) return;
+    react('radio', 14);
+    S.evT.radio = 300;
   });
   KERN.on('grenzland:radio:sendung', () => {
     if (S.tab === 'radio') S.dirty = true;
