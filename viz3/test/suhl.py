@@ -296,6 +296,22 @@ def desktop():
             fu = J("""(() => { const s = SUHL.status().strassen, sets = window.STRDAT ? [...STRDAT.sets.keys()].filter(k => k.startsWith('suhl/m/')) : [],
                 R = window.STRASSEN && STRASSEN.state ? STRASSEN.state() : null;
                 return { furn: s.furn, err: s.furnErr, sets: sets.length, n: R && R.n, shown: R && R.shown }; })()""")
+            am = J("""(() => { const a = SUHL.status().ampeln, out = { a, lit: 0, mast: null };
+                GAME.scene.traverse(o => { if (o.name === 'suhl ampeln lichter' && o.instanceColor) { const c = o.instanceColor.array;
+                  for (let i = 0; i < o.count; i++) if (c[i * 3] + c[i * 3 + 1] + c[i * 3 + 2] > 1) out.lit++; }
+                  if (o.name === 'suhl ampeln maste' && o.count) { const m = new THREE.Matrix4(); o.getMatrixAt(0, m); out.mast = [m.elements[12], -m.elements[14], m.elements[13]]; } });
+                return out; })()""")
+            ck('traffic lights near the Markt: masts, heads facing the drivers, one lit lens per head (two at red and yellow)',
+               am['a'] and am['a']['heads'] >= 2 and am['a']['lenses'] >= am['a']['heads'] * 2 and am['a']['heads'] <= am['lit'] <= am['a']['heads'] * 2,
+               json.dumps(am))
+            if am.get('mast'):
+                mx, my, mz = am['mast']
+                E(f"GAME.view({mx} - 9, {my} - 9, KERN.ground({mx} - 9, {my} - 9) + 1.7, 45, 6, 55)")
+                for _ in range(6):
+                    E("GAME.step(0.5)")
+                lib.shot(pg, OUT, 'suhl_ampel')
+                E("GAME.go('suhl')")
+                wait(QUIET, 60)
             ck('street furniture of Suhl in the roads system: lamps, signs and lines of every street tile, the lamps around the Markt built',
                fu['furn'] > 0 and fu['sets'] == fu['furn'] and fu['err'] == 0 and fu['n'] and fu['n'].get('lamps', 0) > 300 and fu['shown'] and fu['shown'].get('lamps', 0) > 5,
                json.dumps(fu))

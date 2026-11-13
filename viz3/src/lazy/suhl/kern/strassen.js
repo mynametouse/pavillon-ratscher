@@ -181,6 +181,7 @@ export function strassen(ctx, G, IX) {
         t.furn = sd.add('suhl/m/' + t.k, set) !== false ? 'in' : 'off';
         if (t.furn === 'in') S.n.furn++;
         t.own = { ampeln: j.ampeln || [], querungen: j.querungen || [], halte: j.halte || [], namen: j.namen || [], o };
+        ownRev++;
       })
       .catch(e => {
         t.furn = 'err';
@@ -188,7 +189,11 @@ export function strassen(ctx, G, IX) {
         S.lastErr = 'm: ' + String((e && e.message) || e);
       });
   }
+  let ownRev = 0; // counts the tiles whose own lists (traffic lights, street names …) came or went
+  S.rev = () => ownRev;
   function unfurnish(t) {
+    if (t.own) ownRev++;
+    t.own = null;
     const sd = D();
     if (t.furn === 'in' && sd) sd.drop('suhl/m/' + t.k);
     t.furn = null;
