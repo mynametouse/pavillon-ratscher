@@ -1257,6 +1257,9 @@ export const GLORTE = (() => {
     F.beam([-AN.hw + 0.06, AN.sB - 0.9, zd + 0.5], [-AN.hw + 0.06, AN.sB + 0.24, zd + 0.5], 0.05, 0.05, C.balken);
     F.box(-AN.hw + 0.24, AN.sB - 2.4, zd + 0.4, 0.3, 1.1, 0.04, plank, true);
     for (const ff of [-2.85, -1.95]) F.box(-AN.hw + 0.24, AN.sB + ff, zd, 0.26, 0.05, 0.4, C.balken, false);
+    // the angler's stool at the end (gl_angeln.js seats one there)
+    F.box(0.22, AN.sB - 0.62, zd, 0.36, 0.3, 0.4, L(92, 110, 84), false);
+    F.box(0.22, AN.sB - 0.62, zd + 0.4, 0.4, 0.34, 0.04, L(70, 84, 64), false);
     // a bucket, a rod rest at the end, a tin for the bait
     F.cyl(AN.hw - 0.2, AN.sB - 1.9, zd, zd + 0.26, 0.11, 0.13, 10, L(60, 100, 150), false);
     F.cyl(AN.hw - 0.2, AN.sB - 1.9, zd + 0.02, zd + 0.2, 0.1, 0.12, 10, L(40, 52, 60), true);
