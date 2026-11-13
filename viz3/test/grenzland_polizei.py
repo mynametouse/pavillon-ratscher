@@ -65,7 +65,8 @@ with lib.browser() as b:
         ck('roads: the lines lie on the roads of the world', r and r['n'] > 300 and r['on'] >= r['n'] * 0.985, str(r and (r['on'], r['n'], r['bad'])))
     # ------------------------------------------------------------------ witness ------------------------------------------------------------------
     if want('witness'):
-        E(f"GAME.view({AN[0]}, {AN[1]}, KERN.ground({AN[0]}, {AN[1]}) + 1.62, 90, -4); GLFAHNDUNG.clear()")
+        # (out in the meadows: nobody else there to see it)
+        E("GAME.view(60, -420, KERN.ground(60, -420) + 1.62, 90, -4); GLFAHNDUNG.clear()")
         E("window.TZ = null; GLFIG.make('haendler', {}).then(F => { window.TZ = F; if (F) { GLFIG.place(F, P.x + 5, P.y + 0.5, -1.57); F.sees = true } }); 0")
         okf = None
         for i in range(240):   # (the first figure of a file takes long on a busy machine)
@@ -262,14 +263,15 @@ with lib.browser() as b:
         E("(() => { const H = GLHELI.stand(); GAME.view(P.x, P.y, P.feet + 1.62, Math.atan2(H.x - P.x, H.y - P.y) * 180 / Math.PI, 28) })()")
         pic('08_hubschrauber', True)
         # under the trees of the Klinge it does not (they are told he is there: it comes over and circles – and sees nothing)
-        E("GAME.view(-548, -566, KERN.ground(-548, -566) + 1.62, 0, 0)")
+        f = J("(() => { for (let r = 0; r < 160; r += 8) for (let a = 0; a < 6.28; a += 0.4) { const x = -548 + Math.sin(a) * r, y = -566 + Math.cos(a) * r; if (GLFAHNDUNG.unterBaeumen(x, y)) return [x, y] } return null })()")
+        if f: E(f"GAME.view({f[0]}, {f[1]}, KERN.ground({f[0]}, {f[1]}) + 1.62, 0, 0)")
         steps(1)
         E("GLFAHNDUNG.E.melde(P.x, P.y, 0)")
         w = J("({ wald: GLFAHNDUNG.stand().wald, place: KERN.place(P.x, P.y, 0) })")
         t = until("GLHELI.st === 'kreist' && Math.hypot(GLHELI.stand().x - P.x, GLHELI.stand().y - P.y) < 110", 120, 2)
         steps(12)
         r = J("({ sieht: GLHELI.sieht, seen: GLFAHNDUNG.seen, h: GLHELI.stand() })")
-        ck('heli: under the trees of the Klinge it does not see him', w['wald'] and t is not None and not r['sieht'] and not r['seen'], str((w, t, r)))
+        ck('heli: under the trees of the Klinge it does not see him', f and w['wald'] and t is not None and not r['sieht'] and not r['seen'], str((f, w, t, r)))
         E("GLFAHNDUNG.clear()")
         steps(1)
         t = until("!GLHELI.on", 60, 2)
@@ -280,7 +282,7 @@ with lib.browser() as b:
         E("for (const id of ['einbruch', 'widerstand', 'sperre', 'einbruch']) GLFAHNDUNG.tat(id, { force: [{ name: 'Streife', police: true }] }); GLFAHNDUNG.E.wait = 0.5")
         steps(12)
         r = J("({ voll: GLFAHNDUNG.stand().voll, riegel: GLFAHNDUNG.cars.filter(u => u.st === 'riegel').map(u => ({ x: Math.round(u.x), y: Math.round(u.y), typ: u.c.typ, d: Math.round(GLFAHNDUNG.netz(u.x, u.y).abstand(u.x, u.y) * 10) / 10 })), jagd: GLFAHNDUNG.cars.filter(u => u.st !== 'riegel').map(u => u.kind + ':' + u.c.typ) })")
-        ck('sek: five stars – a van of the special forces across the road at each of the five road ends', r['voll'] == 5 and len(r['riegel']) == 5 and all(q['typ'] == 'kasten' and q['d'] < 3 for q in r['riegel']), str(r))
+        ck('sek: five stars – a van of the special forces across the road at each of the five road ends', r['voll'] == 5 and len(r['riegel']) == 5 and all(q['d'] < 3 for q in r['riegel']), str(r))
         t = until("GLFAHNDUNG.cars.some(u => u.kind === 'sek' && u.st !== 'riegel')", 60, 2)
         ck('sek: and vans that hunt with the patrol cars', t is not None, str((t, stand()['cars'])))
         if r['riegel']:

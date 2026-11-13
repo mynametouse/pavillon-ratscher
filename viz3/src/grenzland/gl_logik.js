@@ -1436,6 +1436,10 @@ export const GLLOGIK = (() => {
           const u = send(cars < K.cars ? (era89 ? 'vopo' : 'streife') : 'sek', p);
           E.wait = u ? 9 + active.length * 5 : 6;
         }
+        // he is somewhere the cars of another place's roads cannot go (the town, the village): they go home, others come there
+        if (N)
+          for (const u of active)
+            if (u.net !== N && u.st !== 'steht' && u.st !== 'verfolgt' && u.lost > 20 && E.lastT < 30) leave(u);
         // too many for the stars that are left: the farthest goes home
         if (cars > K.cars || vans > K.vans) {
           const kind = vans > K.vans ? 'sek' : null;

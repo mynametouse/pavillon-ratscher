@@ -163,21 +163,37 @@ export const GLFAHNDUNG = (() => {
     if (!free || L < 30) return free;
     // through a wood: more than some twenty metres of it on the way (a row of trees along a road hides nobody)
     let wald = 0;
-    for (let d = 8; d < L - 6; d += 8) if (imWald(ax + (sx * d) / L, ay + (sy * d) / L) && ++wald >= 3) return false;
+    for (let d = 8; d < L - 6; d += 8) {
+      const x = ax + (sx * d) / L,
+        y = ay + (sy * d) / L;
+      // (along a road that runs through a wood one sees as far as the road is straight)
+      if (imWald(x, y) && !aufStrasse(x, y) && ++wald >= 3) return false;
+    }
     return true;
   }
-  // in a wood: trees standing close all round (four grown trunks within six metres; a row along a road or a garden has fewer)
-  function imWald(x, y) {
+  // on a real road (not a track or a path)
+  const aufStrasse = (x, y) => {
+    try {
+      const s = KERN.surface(x, y);
+      return !!s && s.kind <= 5 && s.e > -0.5;
+    } catch (e) {
+      return false;
+    }
+  };
+  // grown trunks within six metres of a point
+  function staemme(x, y) {
     let n = 0;
     try {
       WCOL.each(x - 6, y - 6, x + 6, y + 6, null, (t, A) => {
         if (A[t * 3 + 2] >= 0.19 && hyp(A[t * 3] - x, A[t * 3 + 1] - y) < 6) n++;
       });
     } catch (e) {}
-    return n >= 4;
+    return n;
   }
+  // in a wood: trees standing close all round (four trunks within six metres; a row along a road or a garden has fewer)
+  const imWald = (x, y) => staemme(x, y) >= 4;
   // under the trees of a forest (the helicopter does not see through the canopy, a patrol only from close by)
-  const unterBaeumen = (x, y) => !!WCOL && WCOL.ready && inSquare(x, y) && imWald(x, y);
+  const unterBaeumen = (x, y) => !!WCOL && WCOL.ready && inSquare(x, y) && imWald(x, y) && !aufStrasse(x, y);
   // indoors, or a place a mission names (the barn)
   function drinnen(x, y, z) {
     try {
@@ -189,7 +205,8 @@ export const GLFAHNDUNG = (() => {
   function versteckt(x, y, z) {
     if (drinnen(x, y, z)) return true;
     try {
-      if (/Wald|Klinge|Forst/.test(String(KERN.place(x, y, z || 0) || ''))) return true;
+      if (/Wald|Klinge|Forst/.test(String(KERN.place(x, y, z || 0) || '')) && !aufStrasse(x, y) && staemme(x, y) >= 2)
+        return true;
     } catch (e) {}
     return unterBaeumen(x, y);
   }
@@ -468,6 +485,7 @@ export const GLFAHNDUNG = (() => {
   // ---- the officers' figures: made once per search and kept (hidden while they sit in the car), freed when it is over ----
   const pool = [], // { key, F, busy }
     POOL = { pool: true };
+  let pending = 0;
   const wer = (kind, i) => {
     const ids = WHO[kind] || WHO.streife,
       id = ids[i % ids.length],
@@ -485,7 +503,9 @@ export const GLFAHNDUNG = (() => {
       q.busy = true;
       return Promise.resolve(q);
     }
+    pending++;
     return GLFIG.make(id, o).then(F => {
+      pending--;
       if (!F) return null;
       if (!GL.on) {
         GLFIG.drop(F);
@@ -519,7 +539,7 @@ export const GLFAHNDUNG = (() => {
     netz,
     los,
     rnd: Math.random,
-    maxCops: 4,
+    maxCops: COARSE ? 2 : 4,
     frei: q => {
       try {
         KERN.pushOut(q, 0.4);
@@ -533,7 +553,8 @@ export const GLFAHNDUNG = (() => {
       if (u.st !== 'riegel')
         for (let i = 0; i < (era89() ? 1 : 2); i++) {
           const [id, o, key] = wer(u.kind, i);
-          if (!pool.some(q => q.key === key && !q.busy)) figur(id, o, key).then(q => q && (q.busy = false));
+          if (pool.length + pending < 4 && !pool.some(q => q.key === key && !q.busy))
+            figur(id, o, key).then(q => q && (q.busy = false));
         }
     },
     remove(u) {
@@ -831,7 +852,9 @@ export const GLFAHNDUNG = (() => {
       try {
         wald = /Wald|Klinge|Forst/.test(String(KERN.place(q.x, q.y, 0) || ''));
       } catch (e) {}
-      S.cover = !S.hidden && (unterBaeumen(q.x, q.y) || (wald && !q.veh));
+      // (where the map says forest, a few trees near are enough – on foot; never on a real road)
+      S.cover =
+        !S.hidden && (unterBaeumen(q.x, q.y) || (wald && !q.veh && !aufStrasse(q.x, q.y) && staemme(q.x, q.y) >= 2));
     }
     // the reports that are through
     for (const r of GLLOGIK.reif(W, dt)) {
