@@ -1,23 +1,23 @@
 {
- "made": "2026-11-13T02:23:52Z",
+ "made": "2026-11-13T02:27:32Z",
  "area": "probe",
  "g_folder": "v1",
  "g_version": 1,
  "tiles": 11,
  "buildings": 2479,
  "dropped_not_standing_or_unreadable": 23,
- "bytes": 736208,
+ "bytes": 736211,
  "bytes_viertel": 102266,
  "roof_check": {
   "planes": 3885,
   "n_az": 2377,
   "az_here_minus_g_deg_p5_p50_p95": [
-   -0.096,
+   -0.095,
    -0.0,
    0.097
   ],
   "slope_here_minus_g_deg_p5_p50_p95": [
-   -0.095,
+   -0.092,
    0.0,
    0.068
   ],
@@ -44,33 +44,33 @@
   "byUse": {
    "wohnen": [
     1461,
-    148166,
-    564815
+    148168,
+    564190
    ],
    "kultur": [
     14,
-    26714,
-    100979
+    26706,
+    100951
    ],
    "verwaltung": [
     54,
-    20566,
-    78320
+    20565,
+    78319
    ],
    "handel": [
     39,
-    25660,
-    45321
+    25656,
+    45308
    ],
    "buero": [
     18,
     8027,
-    29686
+    29685
    ],
    "sonst": [
     81,
     11302,
-    26599
+    26598
    ],
    "hotel": [
     7,
@@ -80,7 +80,7 @@
    "neben": [
     491,
     14627,
-    21788
+    21790
    ],
    "schule": [
     19,
@@ -105,7 +105,7 @@
    "garage": [
     177,
     8138,
-    8697
+    8698
    ],
    "kirche": [
     9,
@@ -131,11 +131,11 @@
   "byEra": {
    "0": [
     755,
-    203930
+    203927
    ],
    "1": [
     530,
-    184025
+    183406
    ],
    "2": [
     199,
@@ -143,42 +143,42 @@
    ],
    "3": [
     212,
-    403675
+    403631
    ],
    "4": [
     115,
-    71061
+    71059
    ]
   },
-  "footprint": 296769,
-  "floorArea": 964930,
-  "floorAreaHousing": 564815,
-  "attic": 68394,
-  "volume": 3489259,
-  "roofArea": 328929,
+  "footprint": 296759,
+  "floorArea": 964264,
+  "floorAreaHousing": 564190,
+  "attic": 68474,
+  "volume": 3488894,
+  "roofArea": 328937,
   "roofBy": {
-   "flach": 155730,
-   "N": 10820,
-   "NO": 27276,
-   "O": 5646,
-   "SO": 41575,
-   "S": 11708,
-   "SW": 27165,
-   "W": 5833,
-   "NW": 43175
+   "flach": 155719,
+   "N": 10790,
+   "NO": 27304,
+   "O": 5725,
+   "SO": 41608,
+   "S": 11679,
+   "SW": 27191,
+   "W": 5721,
+   "NW": 43200
   },
-  "roofUsable": 140510,
-  "pvKwp": 28102,
-  "pvKwh": 23767608,
+  "roofUsable": 140522,
+  "pvKwp": 28104,
+  "pvKwh": 23767712,
   "pvKwpToday": null,
-  "heatDemand": 98783864,
+  "heatDemand": 98708883,
   "listed": 18,
   "vacant": 0,
   "quality": {
    "lv": [
-    430,
+    431,
     118,
-    1931,
+    1930,
     0
    ],
    "roof": [
@@ -194,28 +194,28 @@
   "byUse": {
    "wohnen": [
     657,
-    74567,
-    294368
+    74569,
+    294376
    ],
    "kultur": [
     14,
-    26714,
-    100979
+    26706,
+    100951
    ],
    "verwaltung": [
     22,
-    10064,
-    38597
+    10063,
+    38596
    ],
    "buero": [
     16,
-    7206,
-    27351
+    7205,
+    27350
    ],
    "handel": [
     21,
-    12111,
-    25778
+    12106,
+    25765
    ],
    "hotel": [
     7,
@@ -235,7 +235,7 @@
    "neben": [
     144,
     5509,
-    6572
+    6574
    ],
    "sonst": [
     23,
@@ -281,11 +281,11 @@
   "byEra": {
    "0": [
     332,
-    107520
+    107518
    ],
    "1": [
     275,
-    124587
+    124592
    ],
    "2": [
     50,
@@ -293,35 +293,35 @@
    ],
    "3": [
     120,
-    243015
+    242981
    ],
    "4": [
     43,
-    43603
+    43601
    ]
   },
-  "footprint": 160558,
-  "floorArea": 553382,
-  "floorAreaHousing": 294368,
-  "attic": 37115,
-  "volume": 2071595,
-  "roofArea": 178414,
+  "footprint": 160548,
+  "floorArea": 553350,
+  "floorAreaHousing": 294376,
+  "attic": 37195,
+  "volume": 2071442,
+  "roofArea": 178405,
   "roofBy": {
-   "flach": 83395,
-   "N": 5068,
-   "NO": 13966,
+   "flach": 83383,
+   "N": 5067,
+   "NO": 13967,
    "O": 2374,
    "SO": 25600,
    "S": 5702,
-   "SW": 13685,
+   "SW": 13687,
    "W": 2560,
    "NW": 26065
   },
-  "roofUsable": 78506,
-  "pvKwp": 15701,
-  "pvKwh": 13255353,
+  "roofUsable": 78502,
+  "pvKwp": 15700,
+  "pvKwh": 13254764,
   "pvKwpToday": null,
-  "heatDemand": 58093712,
+  "heatDemand": 58101828,
   "listed": 16,
   "vacant": 0,
   "quality": {
@@ -348,11 +348,11 @@
   "mitte": {
    "area": 2.35,
    "buildings": 1903,
-   "floorArea": 745311,
-   "floorAreaHousing": 428066,
-   "roofArea": 255969,
-   "pvKwp": 21995,
-   "heatDemand": 78659478,
+   "floorArea": 744654,
+   "floorAreaHousing": 427449,
+   "roofArea": 255977,
+   "pvKwp": 21998,
+   "heatDemand": 78585123,
    "official": {
     "residents": 5943,
     "year": 2022,
@@ -594,11 +594,11 @@
   "aue": {
    "area": 3.57,
    "buildings": 217,
-   "floorArea": 160293,
-   "floorAreaHousing": 108118,
-   "roofArea": 44094,
+   "floorArea": 160283,
+   "floorAreaHousing": 108108,
+   "roofArea": 44093,
    "pvKwp": 3973,
-   "heatDemand": 13235618,
+   "heatDemand": 13234766,
    "official": {
     "residents": 3179,
     "year": 2022,
@@ -838,11 +838,11 @@
   "ilmenauer": {
    "area": 2.7,
    "buildings": 56,
-   "floorArea": 5433,
+   "floorArea": 5434,
    "floorAreaHousing": 4837,
    "roofArea": 3170,
    "pvKwp": 224,
-   "heatDemand": 753123,
+   "heatDemand": 753129,
    "official": {
     "residents": 5503,
     "year": 2022,
@@ -1001,11 +1001,11 @@
   "neundorf": {
    "area": 5.47,
    "buildings": 303,
-   "floorArea": 53893,
-   "floorAreaHousing": 23794,
-   "roofArea": 25695,
+   "floorArea": 53894,
+   "floorAreaHousing": 23795,
+   "roofArea": 25697,
    "pvKwp": 1910,
-   "heatDemand": 6135645,
+   "heatDemand": 6135865,
    "official": {
     "residents": 770,
     "year": 2022,

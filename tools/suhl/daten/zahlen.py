@@ -412,7 +412,7 @@ def g_version(folder):
         return None
 
 
-def run(g_folder, out, version, area='stadt', census=None, report=None, quiet=False, min_buildings=50):
+def run(g_folder, out, version, area='stadt', census=None, report=None, quiet=False, min_buildings=50, g_from=None):
     """g tiles -> d tiles, viertel.json, index.json; returns the report dict"""
     lv, _ = S.scan_tiles(g_folder, 'json')
     tiles = sorted(lv.get(L10, []))
@@ -533,7 +533,8 @@ def run(g_folder, out, version, area='stadt', census=None, report=None, quiet=Fa
                         note='Szenario-Zahlen je Gebäude (Schätzungen mit Güte) und Summen je Stadtteil (viertel.json). Flächen in echten m², '
                              'in UTM gerechnet; Richtungen von geografisch Nord.',
                         extra={'fields': {'R': list(R_COLS)}, 'viertel': 'viertel.json',
-                               'counts': {'buildings': len(exs), 'dropped': dropped}})
+                               'counts': {'buildings': len(exs), 'dropped': dropped},
+                               'g_from': g_from or (f'run {gi["run"]["id"]}' if isinstance(gi.get('run'), dict) and gi['run'].get('id') else None)})
     rep = {'made': made, 'area': area, 'g_folder': os.path.basename(os.path.abspath(g_folder)), 'g_version': gv, 'tiles': len(tiles),
            'buildings': len(exs), 'dropped_not_standing_or_unreadable': dropped, 'bytes': idx['n']['bytes'],
            'bytes_viertel': os.path.getsize(os.path.join(out, 'viertel.json')), 'roof_check': stats.json(),
@@ -562,8 +563,9 @@ if __name__ == '__main__':
     ap.add_argument('--area', default='stadt', choices=('stadt', 'kernstadt', 'zentrum', 'probe'))
     ap.add_argument('--zensus', default=None, help='folder with the census cells of Suhl (tools/suhl/out/daten/zensus)')
     ap.add_argument('--report', default=None)
+    ap.add_argument('--g-from', dest='g_from', default=None, help='where the g folder came from (branch and commit, or run and artifact) - written into the index')
     a = ap.parse_args()
     v = a.version if a.version is not None else os.path.basename(os.path.abspath(a.out))
     if SC.version_of(v) is None:
         raise SystemExit(f'zahlen: cannot tell the version from {a.out!r} - name the folder v<N> or pass --version')
-    run(a.g, a.out, SC.version_of(v), a.area, census=a.zensus, report=a.report)
+    run(a.g, a.out, SC.version_of(v), a.area, census=a.zensus, report=a.report, g_from=a.g_from)

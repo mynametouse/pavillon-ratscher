@@ -418,7 +418,8 @@ def check_tile_file(path, rep, product=None, sub='', key=None):
 
 def check_product(folder, rep, probe=False):
     """a folder <...>/suhl/<product>/v<N>: its index, every tile file, lists against files. probe=True: the rules of a sample set
-    (only tiles of the Probesatz and their parents and children; at most 3 MB, the ground 8 MB)."""
+    (only tiles of the Probesatz, their children and parents - the ground also one ring of coarse tiles around the parents;
+    at most 3 MB, the ground 8 MB)."""
     parts = os.path.abspath(folder).replace('\\', '/').rstrip('/').split('/')
     product, vname = parts[-2], parts[-1]
     where = f'{product}/{vname}'
@@ -460,8 +461,14 @@ def check_product(folder, rep, probe=False):
         for L, tl in sorted(lv.items()):
             for x, y in tl:
                 if probe_set is not None:
-                    rel = (S.tile_parent(L, x, y, L - S.CONTENT_LEVEL) in probe_set) if L >= S.CONTENT_LEVEL else \
-                        any(S.tile_parent(*t, S.CONTENT_LEVEL - L) == (L, x, y) for t in probe_set)
+                    if L >= S.CONTENT_LEVEL:
+                        rel = S.tile_parent(L, x, y, L - S.CONTENT_LEVEL) in probe_set
+                    else:
+                        # coarse tiles: the parents of the sample tiles - and for the ground also the ring of tiles around them
+                        # (the far ground the runtime draws around the sample)
+                        ring = 1 if product == 'boden' else 0
+                        rel = any(abs(a[1] - x) <= ring and abs(a[2] - y) <= ring
+                                  for a in {S.tile_parent(*t, S.CONTENT_LEVEL - L) for t in probe_set})
                     if not rel:
                         rep.err(f'{where}/{sub + "/" if sub else ""}{S.tile_key(L, x, y)}', 'not a tile of the sample set (suhllib.probe_tiles(), '
                                 'their children and parents)', 'not probe')

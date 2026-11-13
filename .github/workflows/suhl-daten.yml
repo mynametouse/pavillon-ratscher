@@ -371,10 +371,11 @@ jobs:
         env:
           V: ${{ steps.auftrag.outputs.version }}
           AREA: ${{ steps.auftrag.outputs.area }}
+          GFROM: ${{ steps.auftrag.outputs.run != '' && format('run {0}, artifact {1}', steps.auftrag.outputs.run, steps.auftrag.outputs.artifact) || format('commit {0}, {1}', steps.auftrag.outputs.commit, steps.auftrag.outputs.path) }}
         run: |
           set -o pipefail
           python3 -I -u tools/suhl/daten/zahlen.py --g "$RUNNER_TEMP/g" --out "$RUNNER_TEMP/aus/suhl/d/v$V" --area "$AREA" \
-            --zensus "$RUNNER_TEMP/zensus" --report "$RUNNER_TEMP/zahlen_bericht.json" 2>&1 | cut -c1-600 | tee "$RUNNER_TEMP/zahlen.log"
+            --zensus "$RUNNER_TEMP/zensus" --report "$RUNNER_TEMP/zahlen_bericht.json" --g-from "$GFROM" 2>&1 | cut -c1-600 | tee "$RUNNER_TEMP/zahlen.log"
           du -sh "$RUNNER_TEMP/aus/suhl/d/v$V"
       - name: Prüfer des Datenvertrags
         env:
