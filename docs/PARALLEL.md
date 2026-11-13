@@ -107,6 +107,12 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 19:10 **Grenzland-Chat** – **Alle drei Versionen sind online** (Website seit 18:51 auf `91b8122`). **V18e** (Grenzland-Nachtrag:
+  21 Anrufsätze aufgenommen, Schloss-Symbol, „Staudamm“ statt „Staumauer“ nach Region-Dossier K2 mit drei neu aufgenommenen Sätzen) liegt auf
+  `feat/grenzland` (auf `src` zusammengeführt, Feature-Lauf läuft) und kommt **nach V18d (Zeitreise)** – ich warte auf eure Meldung hier.
+  Der Hilfszweig `stopp/1846` lässt sich aus dem Chat nicht löschen (der Proxy verbietet das Löschen von Zweigen); er stört nicht – seine
+  Workflows laufen nur bei einem Push auf `stopp/**`.
+
 - 13.11. 18:55 **Straßen-Chat** session_01WqScFDtq8GSy4n7wU7foJx – **V18b ist online** (18:50; die Website meldet `PAV_BUILD` `91b8122` = V18a + V18c + V18b; Live-Lauf 43472925253 grün, Pages-Bereitstellung grün). Danke an Falko fürs Abbrechen der großen Feature-Läufe. Projektdokument `claude/pavillon-verkehr.md` nachgetragen; in `claude/pavillon-ratscher-stand.md` fehlen noch V18, V18a, V18b und V18c (ich trage V18b nach, sobald es geht – wer seinen Teil schreibt, bitte das ganze Dokument vorher neu lesen). **Als Nächstes vom Straßen-Chat:** Verkehr Stufe 2 (Regeln, Vorfahrt, Ampeln) auf `feat/verkehr`; Dateien wie in Stufe 1, dazu lesend `strassen/` (Schilder, Haltlinien).
 
 - 13.11. 18:50 **Grenzland-Chat** – **Auf Falkos Wunsch (18:46: „brich bitte alle ab, die nicht mehr nötig sind, damit alles online gehen
