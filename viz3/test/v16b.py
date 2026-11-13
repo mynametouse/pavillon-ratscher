@@ -14,7 +14,28 @@ def check(name, cond, info=''):
 with lib.browser() as b:
     errs = []; pg = lib.page(b, 1100, 680, errs, tier='mittel'); lib.boot(pg, port, figures=True); E = pg.evaluate
     # the wall time at every picture (the test machines took twice as long with the traffic of V18b, the chat PC not – where is it spent?)
-    T0 = time.time(); _shot = lib.shot; lib.shot = lambda p, d, n, q=0.88: (_shot(p, d, n, q), print(f'  {n} at {time.time() - T0:.1f} s', flush=True))
+    T0 = time.time(); _shot = lib.shot
+    # the first picture: where the WebGL calls wait (the time each call blocks, by the program in use) – the first picture after loading
+    # took minutes on the test machines with V18b (13.11.2026), seconds before
+    GLT = """(() => { const gl = GAME.R.getContext(), P = new Map(), T = {}; let cur = null;
+      const names = () => { for (const p of GAME.R.info.programs || []) P.set(p.program, (p.name || '') + ' ' + String(p.cacheKey || '').slice(0, 30)); };
+      names(); window.__glNames = names; window.__glT = T;
+      for (const k of ['useProgram', 'drawElements', 'drawArrays', 'drawElementsInstanced', 'drawArraysInstanced', 'getProgramInfoLog', 'getProgramParameter', 'getShaderInfoLog', 'readPixels', 'texImage2D', 'texSubImage2D', 'compressedTexImage2D', 'texImage3D', 'bufferData', 'linkProgram', 'getUniformLocation']) {
+        if (!gl[k]) continue; const f = gl[k].bind(gl);
+        gl[k] = (...a) => { const t = performance.now(), r = f(...a), d = performance.now() - t; if (k === 'useProgram') cur = a[0];
+          if (d > 3) { const key = k + ' | ' + (cur ? P.get(cur) || 'new' : '-'); const e = T[key] || (T[key] = [0, 0]); e[0] += d; e[1]++; } return r; }; }
+    })()"""
+    FIRST = [True]
+    def shot_t(p, d, n, q=0.88):
+        if FIRST[0]:
+            try: p.evaluate(GLT)
+            except Exception as ex: print('gl probe', repr(ex)[:120], flush=True)
+        t = time.time(); _shot(p, d, n, q); print(f'  {n} at {time.time() - T0:.1f} s (+{time.time() - t:.1f} s)', flush=True)
+        if FIRST[0]:
+            FIRST[0] = False
+            try: print('gl waits in the first picture', p.evaluate("(() => { __glNames(); return JSON.stringify(Object.entries(__glT).sort((a, b) => b[1][0] - a[1][0]).slice(0, 14).map(([k, v]) => [k, Math.round(v[0]), v[1]])); })()"), flush=True)
+            except Exception as ex: print('gl probe', repr(ex)[:120], flush=True)
+    lib.shot = shot_t
     # one frame drawn and waited for (a pixel read back): the second of two
     FRAME = "(() => { const gl = GAME.R.getContext(), px = new Uint8Array(4); let ms = 0; for (let i = 0; i < 2; i++) { const a = performance.now(); GAME.shot(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); ms = performance.now() - a; } return +ms.toFixed(1); })()"
     def frame_cost(where):   # the frame with the vehicles of verkehr/vk_modelle.js and without them

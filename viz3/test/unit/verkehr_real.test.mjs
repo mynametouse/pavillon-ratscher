@@ -165,3 +165,113 @@ test('the rates: the motorway busiest, a village street at night nearly empty, S
   }
   assert.ok(lkw > 4000 * 0.12 && lkw < 4000 * 0.3, 'the motorway on a weekday morning: ' + lkw / 40 + ' % heavy');
 });
+
+// ---- stage 2: the rules of the road (verkehr/vk_regeln.js) ----
+import { VKREGELN } from '../../src/verkehr/vk_regeln.js';
+import { VNETZ } from '../../src/verkehr/verkehr_netz.js';
+const R2 = VKREGELN;
+// a junction at (0, 0): ways given as [kind, [x0, y0, x1, y1, …]]
+const junction = ways => VNETZ.graph(ways.map(([kind, p, w]) => ({ kind, w: w || 6, p })), { kinds: new Set([0, 1, 2, 3, 4, 5]) });
+const nodeAt = (G, x, y) => G.nodes.findIndex(n => Math.hypot(n.x - x, n.y - y) < 0.5);
+const appFrom = (G, r, x, y) => r.app.find(a => { const e = G.edges[a.e], p = e.pts, far = e.a === nodeAt(G, 0, 0) ? p[p.length - 1] : p[0]; return Math.hypot(far[0] - x, far[1] - y) < 1; });
+
+test('stage 2: who has the way at a junction – the bigger road, signs, right before left, roundabouts', () => {
+  // a main road west–east, a street joining from the south (T)
+  let G = junction([[1, [-100, 0, 0, 0, 100, 0]], [3, [0, -100, 0, 0]]]),
+    ni = nodeAt(G, 0, 0),
+    r = R2.rule(G, ni, null, null);
+  assert.equal(r.app.length, 3);
+  assert.equal(appFrom(G, r, -100, 0).role, 'prio');
+  assert.equal(appFrom(G, r, 100, 0).role, 'prio');
+  assert.equal(appFrom(G, r, 0, -100).role, 'yield');
+  // four streets of one rank: right before left
+  G = junction([[3, [-100, 0, 0, 0, 100, 0]], [3, [0, -100, 0, 0, 0, 100]]]);
+  r = R2.rule(G, nodeAt(G, 0, 0), null, null);
+  assert.ok(r.app.every(a => a.role === 'rvl'), r.app.map(a => a.role).join());
+  // a drive (service) joining a street: it gives way, the street keeps right before left among its own
+  G = junction([[3, [-100, 0, 0, 0, 100, 0]], [5, [0, -60, 0, 0]]]);
+  r = R2.rule(G, nodeAt(G, 0, 0), null, null);
+  assert.equal(appFrom(G, r, 0, -60).role, 'yield');
+  // a stop sign on the street from the south (read northwards, 10 m before the node, beside the lane), a stop line 6 m before
+  G = junction([[3, [-100, 0, 0, 0, 100, 0]], [3, [0, -100, 0, 0]]]);
+  const S = R2.index(R2.signs([['206', 25, -100, 0]])),
+    L = R2.index(R2.lines([['halt', 15, -60, 0, 15]]));
+  r = R2.rule(G, nodeAt(G, 0, 0), S, L);
+  const south = appFrom(G, r, 0, -100);
+  assert.equal(south.role, 'stop');
+  assert.equal(appFrom(G, r, -100, 0).role, 'prio');
+  assert.ok(Math.abs(south.stopD - 6.2) < 0.3, 'stops at its line: ' + south.stopD);
+  assert.ok(appFrom(G, r, -100, 0).stopD >= 3.5);
+  // a roundabout entry: 205 + 215 on the approach from the south, the ring has the way
+  const S2 = R2.index(R2.signs([['205+215', 25, -80, 0]]));
+  r = R2.rule(G, nodeAt(G, 0, 0), S2, null);
+  assert.equal(appFrom(G, r, 0, -100).role, 'rb');
+  assert.equal(appFrom(G, r, 100, 0).role, 'rbc');
+});
+
+test('stage 2: whom one waits for – the window, the right, the left turn, the junction occupied, four waiting', () => {
+  const N = 0, E = Math.PI / 2, S_ = Math.PI, W = -Math.PI / 2;
+  // heading north on a street that gives way; one on the main road eastwards (coming from the west) in 3 s: wait; in 8 s: go
+  const me = { role: 'yield', h: N, turn: 0, wait: 0, id: 1, v: 0 };
+  assert.ok(R2.waitFor(me, [{ role: 'prio', h: E, turn: 0, eta: 3, inBox: false, wait: 0, v: 10, id: 2 }], 4.5));
+  assert.equal(R2.waitFor(me, [{ role: 'prio', h: E, turn: 0, eta: 8, inBox: false, wait: 0, v: 10, id: 2 }], 4.5), null);
+  // right before left: heading north, one heading west comes from my right (from the east) – wait; one heading east comes from my left – go
+  const rv = { role: 'rvl', h: N, turn: 0, wait: 0, id: 1, v: 3 };
+  assert.ok(R2.waitFor(rv, [{ role: 'rvl', h: W, turn: 0, eta: 2, inBox: false, wait: 0, v: 5, id: 2 }], 3.5));
+  assert.equal(R2.waitFor(rv, [{ role: 'rvl', h: E, turn: 0, eta: 2, inBox: false, wait: 0, v: 5, id: 2 }], 3.5), null);
+  // the one from the left must wait for me
+  assert.ok(R2.waitFor({ role: 'rvl', h: E, turn: 0, wait: 0, id: 2, v: 5 }, [{ role: 'rvl', h: N, turn: 0, eta: 2, inBox: false, wait: 0, v: 3, id: 1 }], 3.5));
+  // turning left on the priority road: wait for the oncoming that goes straight, not for one that turns left too
+  const lt = { role: 'prio', h: N, turn: -1.5, wait: 0, id: 1, v: 5 };
+  assert.ok(R2.waitFor(lt, [{ role: 'prio', h: S_, turn: 0, eta: 3, inBox: false, wait: 0, v: 10, id: 2 }], 4));
+  assert.equal(R2.waitFor(lt, [{ role: 'prio', h: S_, turn: -1.5, eta: 3, inBox: false, wait: 0, v: 10, id: 2 }], 4), null);
+  // on the priority road going straight: nobody, unless one is in the junction
+  const st = { role: 'prio', h: N, turn: 0, wait: 0, id: 1, v: 10 };
+  assert.equal(R2.waitFor(st, [{ role: 'yield', h: E, turn: 0, eta: 1, inBox: false, wait: 0, v: 3, id: 2 }], 4), null);
+  assert.ok(R2.waitFor(st, [{ role: 'yield', h: E, turn: 0, eta: 0, inBox: true, wait: 0, v: 3, id: 2 }], 4));
+  // four at a crossing of equals, all standing: the one waiting longest goes; equal waits – the lowest id
+  const a = { wait: 3, id: 5, v: 0 },
+    others = [{ wait: 1, id: 2, v: 0, inBox: false }, { wait: 2, id: 3, v: 0, inBox: false }];
+  assert.ok(R2.goFirst(a, others));
+  assert.ok(!R2.goFirst({ wait: 1, id: 2, v: 0 }, [{ wait: 3, id: 5, v: 0, inBox: false }]));
+  assert.ok(R2.goFirst({ wait: 2, id: 1, v: 0 }, [{ wait: 2.2, id: 4, v: 0, inBox: false }]));
+  assert.ok(!R2.goFirst({ wait: 2, id: 1, v: 0 }, [{ wait: 2, id: 4, v: 2, inBox: false }]), 'not while the other moves');
+});
+
+test('stage 2: the junctions of a route, the indicator, limits by sign', () => {
+  // west → east along the main road, at (0, 0) left into the street northwards
+  // (points every 50 m: a segment of the line takes the lower limit of its two ends)
+  const G = junction([[1, [-200, 0, -150, 0, -100, 0, -50, 0, 0, 0, 50, 0, 100, 0, 150, 0, 200, 0]], [3, [0, 0, 0, 50, 0, 100, 0, 150]]]),
+    ni = nodeAt(G, 0, 0),
+    ew = G.edges.find(e => e.kind === 1 && Math.min(e.pts[0][0], e.pts[e.pts.length - 1][0]) < -100),
+    north = G.edges.find(e => e.kind === 3),
+    path = [{ e: ew, fwd: ew.b === ni }, { e: north, fwd: north.a === ni }],
+    line = VNETZ.line(path, { off: () => 1.5, vmax: e => (e.kind === 1 ? 27 : 13.9), cut: 6, aLat: 2, aBrk: 2, vMin: 2.6 }),
+    rules = new Map(),
+    ruleOf = n => rules.get(n) || (rules.set(n, R2.rule(G, n, null, null)), rules.get(n));
+  const ev = R2.events(G, path, line, ruleOf, VNETZ.project);
+  assert.equal(ev.length, 1);
+  assert.equal(ev[0].role, 'prio');
+  assert.ok(ev[0].turn < -1.2 && ev[0].turn > -1.9, 'a left turn: ' + ev[0].turn.toFixed(2));
+  assert.ok(Math.abs(ev[0].sN - 200) < 8, 'the node about 200 m along: ' + ev[0].sN.toFixed(1));
+  assert.ok(ev[0].sStop < ev[0].sN);
+  assert.equal(R2.blink(ev[0], ev[0].sN - 30), -1);
+  assert.equal(R2.blink(ev[0], ev[0].sN - 80), 0);
+  // the other way round: from the street southwards, right turn onto the main road westwards? (south, then west: a right turn)
+  const p2 = [{ e: north, fwd: north.b === ni }, { e: ew, fwd: ew.a === ni }],
+    l2 = VNETZ.line(p2, { off: () => 1.5, vmax: () => 13.9, cut: 6, aLat: 2, aBrk: 2, vMin: 2.6 }),
+    e2 = R2.events(G, p2, l2, ruleOf, VNETZ.project);
+  assert.equal(e2[0].role, 'yield');
+  assert.ok(e2[0].turn > 1.2, 'a right turn: ' + e2[0].turn.toFixed(2));
+  // a 30 limit 100 m along the main road (read eastwards, beside the right lane) – the speeds after it at most 30 km/h, before it more
+  const SI = R2.index(R2.signs([['274-30', -1000, -40, 90]])),
+    used = R2.limits(G, path, line, SI, VNETZ.project);
+  assert.equal(used, 1);
+  assert.ok(line.V[50] > 20 && line.V[130] <= 30 / 3.6 + 1e-6, `${line.V[50]} ${line.V[130]}`);
+  // read the other way (westwards) it is not ours
+  const line3 = VNETZ.line(path, { off: () => 1.5, vmax: e => (e.kind === 1 ? 27 : 13.9), cut: 6, aLat: 2, aBrk: 2, vMin: 2.6 });
+  assert.equal(R2.limits(G, path, line3, R2.index(R2.signs([['274-30', -1000, -40, 270]])), VNETZ.project), 0);
+  // the limit ends with the turn into the street
+  const after = Math.round(ev[0].sN + 30);
+  assert.ok(line.V[after] > 30 / 3.6 + 0.5 || line.V[after] === 13.9, 'after the turn the street’s own limit: ' + line.V[after]);
+});

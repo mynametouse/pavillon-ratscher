@@ -169,6 +169,7 @@ grenzland/gl_typen.js       # feat/grenzland-auto the cars, vans and the lorry i
 verkehr/vk_typen.js         # feat/verkehr-real today's vehicles after real measures, without makers' marks – pure geometry (VKTYPEN)
 verkehr/vk_bau.js           # feat/verkehr-real a type as one welded mesh per level of detail (also in the worker lazy/verkehr-bau.js) – pure (VKBAU)
 verkehr/vk_modelle.js       # feat/verkehr-real the vehicles as meshes: one material, three levels, shadows; built in a worker (VKMOD)
+verkehr/vk_regeln.js        # feat/verkehr-real stage 2: right of way at junctions, stop lines, limits by sign, indicators – pure (VKREGELN)
 verkehr/verkehr_auto.js     # feat/verkehr cars: model, driving and braking on their line, lamps at night, the car one may drive (VAUTO)
 verkehr/vk_dichte.js        # feat/verkehr-real how much traffic: daily counts by road, the day lines by weekday and hour, holidays – pure (VKDICHTE)
 verkehr/vk_strom.js         # feat/verkehr-real the traffic on every road round the observer, as much as is counted there now (VKSTROM)

@@ -56,6 +56,26 @@ ohne Logos, Unfallfolgen harmlos, Dichte wie echt gezählt. 13:03: „Ja, bitte 
 - **Draufsicht** (Ebene „Verkehr“, `strategie/st_ebenen.js`): jedes Fahrzeug in seiner echten Größe und seinem Lack, der Anhänger dahinter,
   die Front erkennbar (beim Lkw das Fahrerhaus); von weit oben etwas größer als echt, damit man es noch sieht; Tooltip mit der Art.
 
+## Stufe 2a: Vorfahrt, Haltlinien, Tempolimits nach Schild, Blinker (`verkehr/vk_regeln.js`, `VKREGELN`)
+
+Falko (13.11. 12:14): „Sie sollen sich natürlich an Ampeln und Verkehrsregeln halten.“
+
+- **Die Regel jeder Kreuzung** (rein, Unit-Tests): jede Zufahrt bekommt ihre Rolle – **Vorfahrt**, **Vorfahrt gewähren** (Zeichen 205 von
+  `strassen/`; ohne Zeichen gibt die kleinere Straße Vorfahrt: Wege und Zufahrten den Straßen, Straßen den Land- und Kreisstraßen –
+  StVO § 8, § 10), **Halt** (Zeichen 206: erst an der Linie halten), **Kreisverkehr** (205 + 215: der Ring hat Vorfahrt), **rechts vor
+  links** (gleichrangige Straßen ohne Zeichen). Gehalten wird an der gemalten Warte- oder Haltlinie, sonst vor der breitesten anderen Straße.
+- **Wen ein Fahrzeug abwartet:** wer schon in der Kreuzung ist; wer die höhere Rolle hat; von gleichem Rang der von rechts (nicht auf der
+  Vorfahrtstraße); beim Linksabbiegen der Gegenverkehr, der geradeaus fährt oder rechts abbiegt (§ 9 (3)). Nur wer in den nächsten ~4 s
+  ankommt (rechts vor links 3,5 s). Vier an einer Kreuzung, alle wartend: der am längsten wartet, fährt.
+- **Wer mitzählt:** die Fahrzeuge des Flusses und der Orte (ihre Route kennt ihre Kreuzungen), dazu aus Lage und Richtung das Spielerauto,
+  der Traktor, die Busse und Autos ohne Route – ihre Rolle nach der Zufahrt, aus der sie kommen.
+- **Tempolimits nach Schild** (274, 274.1 Zone, 278 Ende) entlang der Route: ab dem Schild bis zum Ende-Schild, einem neuen Limit oder dem
+  Abbiegen; die Kurven- und Bremsgeschwindigkeiten danach neu.
+- **Blinker** vor jeder Abbiegung von mehr als ~25°: 45 m vor der Kreuzung bis 6 m danach (am Anhänger mit).
+- Test `verkehr_real:regeln`: an der Einmündung östlich von Ratscher (Zeichen 205, Wartelinie) wartet das Auto der Straße an seiner Linie,
+  bis das auf der Kreisstraße durch ist, nie beide zugleich in der Kreuzung, dann fährt es, links blinkend; an einer Kreuzung gleicher
+  Straßen fährt der von rechts zuerst.
+
 ## Messungen (13.11.2026, SwiftShader im Chat-Rechner)
 
 | | Wert |
@@ -69,13 +89,13 @@ ohne Logos, Unfallfolgen harmlos, Dichte wie echt gezählt. 13:03: „Ja, bitte 
 ## Tests
 
 - `viz3/test/unit/verkehr_real.test.mjs`: Maße aller Typen, Achsen, Lampenarten, Stufen, Tagesganglinien, Ostern und Feiertage,
-  Raten, kein Lkw am Sonntag.
-- `viz3/test/verkehr_real.py` (Abschnitte `bau,bild,nacht,lod,zug,strom,dichte,oben,perf`): Worker, Bilder in `out/verkehr_real/`,
+  Raten, kein Lkw am Sonntag; Stufe 2: Rollen an Kreuzungen (größere Straße, Zeichen, rechts vor links, Kreisverkehr, Haltlinie), wen man
+  abwartet (Zeitfenster, von rechts, Linksabbieger, besetzte Kreuzung, vier Wartende), Kreuzungen einer Route, Blinker, Tempolimits.
+- `viz3/test/verkehr_real.py` (Abschnitte `bau,bild,nacht,lod,zug,strom,regeln,dichte,oben,perf`): Worker, Bilder in `out/verkehr_real/`,
   Lampen nachts, die drei Stufen, Sattelzug in der Kurve, die Zahl je Stunde, Draufsicht, Zeichenaufrufe, keine neuen Shader-Programme.
 - Bilder ohne Browser: `node viz3/extra/verkehr-real/werkzeug/bild.mjs <typ> out/verkehr_real/<typ>.png --col '#…' [--col2 '#…'] [--zug]`.
 
-## Was als Nächstes kommt (Plan, Stufen 2–4)
+## Was als Nächstes kommt (Plan, Stufen 2b–4)
 
-Regeln und Ampeln (Tempolimits nach Schild, rechts vor links, Vorfahrt, Kreisverkehr, Fußgängerampeln, Blinker beim Abbiegen,
-Überholen außerorts), Zusammenstöße mit harmlosen Folgen (alle Verkehrsteilnehmer fest, auch Busse, Räder, Fußgänger), Räder und
+Ampeln (Fußgängerampeln der Region aus OpenStreetMap mit Phasen, in Suhl über dieselbe Schnittstelle), Überholen außerorts, Zusammenstöße mit harmlosen Folgen (alle Verkehrsteilnehmer fest, auch Busse, Räder, Fußgänger), Räder und
 Fußgänger im Verkehr, Ampelphasen in der Draufsicht.
