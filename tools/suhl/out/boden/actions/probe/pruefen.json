@@ -1,0 +1,187 @@
+{
+ "set": "site/suhl/boden/v1",
+ "checks": {
+  "lists: every listed tile has terrain and image": {
+   "ok": true,
+   "info": "131 tiles in 7 levels"
+  },
+  "lists: no file besides the lists": {
+   "ok": true,
+   "info": ""
+  },
+  "lists: rect is the frame of has": {
+   "ok": true,
+   "info": ""
+  },
+  "lists: levels 11 and 12 in complete quads": {
+   "ok": true,
+   "info": ""
+  },
+  "lists: every tile has its parent": {
+   "ok": true,
+   "info": ""
+  },
+  "lists: equal to the plan of mode probe": {
+   "ok": true,
+   "info": "cut: level 12 only for the level-11 tiles of the sample within 300 m of the centre of Suhl"
+  },
+  "centre of Suhl inside every level": {
+   "ok": true,
+   "info": "(619762.0, 5607680.0)"
+  },
+  "edges: neighbouring terrain tiles agree": {
+   "ok": true,
+   "info": "201 pairs, worst 0 cm"
+  },
+  "centre: ground height plausible": {
+   "ok": true,
+   "info": "436.5 m NHN (level 12)"
+  },
+  "heights: inside what Suhl has": {
+   "ok": true,
+   "info": "362.4 .. 981.9 m NHN"
+  },
+  "heights: meta hmin/hmax hold every tile": {
+   "ok": true,
+   "info": "meta -12.18 .. 607.32, tiles -12.18 .. 607.32 (relative to H0)"
+  },
+  "sizes: terrain bytes per tile in range": {
+   "ok": true,
+   "info": "6: 15092, 7: 12858, 8: 10494, 9: 8836, 10: 8153, 11: 7086, 12: 5646"
+  },
+  "sizes: image bytes per tile in range": {
+   "ok": true,
+   "info": "6: 70987, 7: 81846, 8: 79315, 9: 82511, 10: 68752, 11: 47869, 12: 26749"
+  },
+  "images: 512 x 512 RGB": {
+   "ok": true,
+   "info": ""
+  },
+  "images: none blank": {
+   "ok": true,
+   "info": ""
+  }
+ },
+ "fails": [],
+ "counts": {
+  "6": 4,
+  "7": 4,
+  "8": 12,
+  "9": 8,
+  "10": 11,
+  "11": 44,
+  "12": 48
+ },
+ "edges": {
+  "pairs": 201,
+  "worst_cm": 0,
+  "differ": 0
+ },
+ "level_to_parent": {
+  "7": {
+   "median_m": 1.07,
+   "p95_m": 3.72,
+   "max_m": 9.76
+  },
+  "8": {
+   "median_m": 0.42,
+   "p95_m": 1.57,
+   "max_m": 4.06
+  },
+  "9": {
+   "median_m": 0.14,
+   "p95_m": 0.71,
+   "max_m": 4.19
+  },
+  "10": {
+   "median_m": 0.08,
+   "p95_m": 0.51,
+   "max_m": 2.61
+  },
+  "11": {
+   "median_m": 0.04,
+   "p95_m": 0.29,
+   "max_m": 2.11
+  },
+  "12": {
+   "median_m": 0.01,
+   "p95_m": 0.14,
+   "max_m": 1.69
+  }
+ },
+ "heights_nhn": {
+  "centre": 436.5,
+  "min": 362.4,
+  "max": 981.9
+ },
+ "sizes": {
+  "6": {
+   "n": 4,
+   "terrain_bytes": 60369,
+   "image_bytes": 283948,
+   "terrain_mean": 15092,
+   "image_mean": 70987,
+   "image_min": 69416,
+   "image_max": 74774
+  },
+  "7": {
+   "n": 4,
+   "terrain_bytes": 51433,
+   "image_bytes": 327386,
+   "terrain_mean": 12858,
+   "image_mean": 81846,
+   "image_min": 77504,
+   "image_max": 85662
+  },
+  "8": {
+   "n": 12,
+   "terrain_bytes": 125923,
+   "image_bytes": 951776,
+   "terrain_mean": 10494,
+   "image_mean": 79315,
+   "image_min": 68748,
+   "image_max": 95114
+  },
+  "9": {
+   "n": 8,
+   "terrain_bytes": 70686,
+   "image_bytes": 660086,
+   "terrain_mean": 8836,
+   "image_mean": 82511,
+   "image_min": 71516,
+   "image_max": 90114
+  },
+  "10": {
+   "n": 11,
+   "terrain_bytes": 89680,
+   "image_bytes": 756270,
+   "terrain_mean": 8153,
+   "image_mean": 68752,
+   "image_min": 59356,
+   "image_max": 77666
+  },
+  "11": {
+   "n": 44,
+   "terrain_bytes": 311802,
+   "image_bytes": 2106226,
+   "terrain_mean": 7086,
+   "image_mean": 47869,
+   "image_min": 36756,
+   "image_max": 56656
+  },
+  "12": {
+   "n": 48,
+   "terrain_bytes": 271019,
+   "image_bytes": 1283934,
+   "terrain_mean": 5646,
+   "image_mean": 26749,
+   "image_min": 17000,
+   "image_max": 33856
+  }
+ },
+ "total": {
+  "tiles": 131,
+  "terrain_mb": 0.98,
+  "image_mb": 6.37
+ }
+}

@@ -1,0 +1,386 @@
+{
+ "made": "2026-11-13T01:37:16Z",
+ "mode": "probe",
+ "run": {
+  "id": "43345897029",
+  "attempt": "1",
+  "sha": "9afed2aa86eec5ec9a10f546ecd680c9848ed4f4",
+  "ref": "suhl/boden",
+  "url": "https://github.com/mynametouse/pavillon-ratscher/actions/runs/43345897029"
+ },
+ "ok": true,
+ "version": "v1",
+ "levels": {
+  "6": {
+   "tile_m": 6400.0,
+   "n": 4,
+   "terrain_bytes": 60369,
+   "image_bytes": 283948
+  },
+  "7": {
+   "tile_m": 3200.0,
+   "n": 4,
+   "terrain_bytes": 51433,
+   "image_bytes": 327386
+  },
+  "8": {
+   "tile_m": 1600.0,
+   "n": 12,
+   "terrain_bytes": 125923,
+   "image_bytes": 951776
+  },
+  "9": {
+   "tile_m": 800.0,
+   "n": 8,
+   "terrain_bytes": 70686,
+   "image_bytes": 660086
+  },
+  "10": {
+   "tile_m": 400.0,
+   "n": 11,
+   "terrain_bytes": 89680,
+   "image_bytes": 756270
+  },
+  "11": {
+   "tile_m": 200.0,
+   "n": 44,
+   "terrain_bytes": 311802,
+   "image_bytes": 2106226
+  },
+  "12": {
+   "tile_m": 100.0,
+   "n": 48,
+   "terrain_bytes": 271019,
+   "image_bytes": 1283934
+  }
+ },
+ "total": {
+  "tiles": 131,
+  "files": 262,
+  "terrain_mb": 0.98,
+  "image_mb": 6.37,
+  "mb": 7.35
+ },
+ "sources": {
+  "terrain_source": "dgm1+cop30",
+  "dgm1": {
+   "asked": 228,
+   "have": 8,
+   "from_cache": 8,
+   "from_state_host": 0,
+   "from_providers": 0,
+   "state_host_down": true,
+   "offset_m": -4.896,
+   "via": "easygeodata"
+  },
+  "dgm1_tiles_km": [
+   "618_5606",
+   "618_5607",
+   "618_5608",
+   "619_5606",
+   "619_5607",
+   "619_5608",
+   "620_5607",
+   "620_5608"
+  ],
+  "dgm1_level10_tiles": 11,
+  "copernicus_offset_m": -4.896,
+  "canopy_m": 9.33,
+  "terrain_method": {
+   "block_level": 7,
+   "margin_m": 320.0,
+   "blend_m": 300.0,
+   "coarse_cell_m": 8.0,
+   "blocks": 4,
+   "seconds": 20.2
+  },
+  "imagery_method": {
+   "quality": 74,
+   "requests": 17,
+   "seconds": 57.9,
+   "key": "th_dop-f2024-05-15-p2025-02-garten-2024-04-07-q74",
+   "store": true,
+   "note": "jede Stufe in ihrer eigenen Auflösung vom Dienst geholt"
+  },
+  "imagery_balance": {
+   "balance": "garten-2024-04-07",
+   "model": "tools/welt/tiles.py Harmonizer: je Flugtag eine 3-D-Farbübertragung, Bezug ist der Bildflug am Garten; gelernt am Kontextquadrat des Testblocks (Stufe 7), auf jede 1-km-Zelle nach ihrem Flugtag angewandt",
+   "context": [
+    612700.0,
+    5582800.0,
+    638300.0,
+    5608400.0
+   ],
+   "flights": {
+    "2024-04-07": 298,
+    "2024-05-15": 317,
+    "2025-05-12": 107
+   },
+   "boundaries": {
+    "2024-04-07|2025-05-12": {
+     "pairs": 8947,
+     "step_before": 3.0,
+     "step_after": 5.0,
+     "contrast_before": 1.14,
+     "contrast_after": 0.91
+    },
+    "2024-05-15|2025-05-12": {
+     "pairs": 4664,
+     "step_before": 46.0,
+     "step_after": 7.0,
+     "contrast_before": 1.64,
+     "contrast_after": 1.28
+    },
+    "2024-04-07|2024-05-15": {
+     "pairs": 12352,
+     "step_before": 39.0,
+     "step_after": 1.0,
+     "contrast_before": 1.08,
+     "contrast_after": 1.0
+    }
+   },
+   "tables": [
+    "2024-04-07",
+    "2024-05-15",
+    "2025-05-12"
+   ],
+   "cells_used_by_day": {
+    "2024-05-15": 344
+   },
+   "cells_day_from_nearest": 29
+  },
+  "roads": {
+   "files": [
+    {
+     "file": "tools/suhl/out/strassen/probe/fahrt/suhl-zentrum.json",
+     "sha1": "9f2258f96c3b",
+     "made": "2026-11-13",
+     "ways": 1328,
+     "solved_on": "ungeschnittene Geländekacheln von suhl-boden (DGM1 Thüringen (1 m) unter 100 % der Kacheln des Laufs, sonst Copernicus GLO-30; Stand 2026-11-13T01:10:23Z, origin/suhl/boden d262745d, tools/suhl/out/boden/probe/roh/v1/t; 737194 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 96179 Stützwerte – nur am Rand außerhalb der Kacheln)"
+    }
+   ],
+   "ways_cut": 1197,
+   "bridges_kept": 13,
+   "tunnels_skipped": 27,
+   "fit_before_cut": {
+    "nodes": 40861,
+    "mean_m": 0.01,
+    "median_abs_m": 0.2,
+    "p95_abs_m": 0.7,
+    "note": "Straßenhöhe minus Gelände an den Achspunkten vor dem Einschnitt (ohne Brücken und Tunnel); Meter statt Dezimeter heißt: die Profile sind auf einem anderen Gelände gerechnet"
+   },
+   "skipped_by_flag": 131,
+   "skip_bits": 63616,
+   "blocks": 4,
+   "changed_m2": 629748,
+   "clamped": {
+    "limit_m": 2.5,
+    "spots": 13,
+    "length_m": 196.3,
+    "worst": [
+     {
+      "id": 1359641174,
+      "name": "",
+      "kind": "foot",
+      "E": 618845.4,
+      "N": 5606929.9,
+      "dz_m": 5.97,
+      "len_m": 22.2
+     },
+     {
+      "id": 1392733394,
+      "name": "",
+      "kind": "foot",
+      "E": 618864.4,
+      "N": 5606933.3,
+      "dz_m": 5.75,
+      "len_m": 17.2
+     },
+     {
+      "id": 259632989,
+      "name": "",
+      "kind": "track",
+      "E": 619774.6,
+      "N": 5608275.5,
+      "dz_m": -3.09,
+      "len_m": 27.9
+     },
+     {
+      "id": 185635149,
+      "name": "",
+      "kind": "path",
+      "E": 619498.5,
+      "N": 5608193.9,
+      "dz_m": 2.98,
+      "len_m": 13.8
+     },
+     {
+      "id": 32085251,
+      "name": "",
+      "kind": "path",
+      "E": 619791.8,
+      "N": 5608269.1,
+      "dz_m": 2.83,
+      "len_m": 13.9
+     },
+     {
+      "id": 1573896303,
+      "name": "",
+      "kind": "foot",
+      "E": 619698.4,
+      "N": 5607893.3,
+      "dz_m": 2.77,
+      "len_m": 5.8
+     },
+     {
+      "id": 32085104,
+      "name": "",
+      "kind": "path",
+      "E": 619632.9,
+      "N": 5608133.8,
+      "dz_m": 2.74,
+      "len_m": 11.7
+     },
+     {
+      "id": 259630705,
+      "name": "",
+      "kind": "track",
+      "E": 619549.1,
+      "N": 5608241.8,
+      "dz_m": -2.74,
+      "len_m": 16.6
+     },
+     {
+      "id": 259649610,
+      "name": "",
+      "kind": "track",
+      "E": 619503.6,
+      "N": 5608243.6,
+      "dz_m": 2.74,
+      "len_m": 28.9
+     },
+     {
+      "id": 128965011,
+      "name": "",
+      "kind": "track",
+      "E": 619305.0,
+      "N": 5608321.8,
+      "dz_m": 2.64,
+      "len_m": 12.1
+     },
+     {
+      "id": 70120186,
+      "name": "",
+      "kind": "foot",
+      "E": 619639.6,
+      "N": 5607846.5,
+      "dz_m": -2.58,
+      "len_m": 6.0
+     },
+     {
+      "id": 44498422,
+      "name": "",
+      "kind": "path",
+      "E": 619475.5,
+      "N": 5608336.7,
+      "dz_m": -2.53,
+      "len_m": 10.1
+     },
+     {
+      "id": 128965011,
+      "name": "",
+      "kind": "track",
+      "E": 619438.4,
+      "N": 5608305.4,
+      "dz_m": 2.51,
+      "len_m": 10.1
+     }
+    ],
+    "note": "Wegstücke auf echtem 1-m-Gelände, deren Profil weiter als limit_m vom Gelände liegt (neben Brücken, an Mauern): nicht eingeschnitten; dz_m = Profil minus Gelände am schlimmsten Punkt"
+   },
+   "mean_change_m": 0.399,
+   "max_fill_m": 6.31,
+   "max_cut_m": 7.51,
+   "method": "tools/welt/roads.py carve: Fahrbahn mit Querneigung, Bankett, Böschungen 1 : 1,5; Breite mit Bord und Gehwegen (profil.load town=True); Brücken behalten ihren Korridor, Tunnel bleiben draußen"
+  }
+ },
+ "plan": {
+  "mode": "probe",
+  "centre_utm": [
+   619765.1,
+   5607674.3
+  ],
+  "counts": {
+   "6": 4,
+   "7": 4,
+   "8": 12,
+   "9": 8,
+   "10": 11,
+   "11": 44,
+   "12": 48
+  },
+  "km2": {
+   "6": 163.84,
+   "7": 40.96,
+   "8": 30.72,
+   "9": 5.12,
+   "10": 1.76,
+   "11": 1.76,
+   "12": 1.76
+  }
+ },
+ "cut": "level 12 only for the level-11 tiles of the sample within 300 m of the centre of Suhl",
+ "build": {
+  "files": 264,
+  "bytes": 7362239,
+  "seconds": 101
+ },
+ "seconds_all_steps": 148,
+ "checks": {
+  "ok": true,
+  "fails": [],
+  "n": 15,
+  "edges": {
+   "pairs": 201,
+   "worst_cm": 0,
+   "differ": 0
+  },
+  "heights_nhn": {
+   "centre": 436.5,
+   "min": 362.4,
+   "max": 981.9
+  },
+  "level_to_parent": {
+   "7": {
+    "median_m": 1.07,
+    "p95_m": 3.72,
+    "max_m": 9.76
+   },
+   "8": {
+    "median_m": 0.42,
+    "p95_m": 1.57,
+    "max_m": 4.06
+   },
+   "9": {
+    "median_m": 0.14,
+    "p95_m": 0.71,
+    "max_m": 4.19
+   },
+   "10": {
+    "median_m": 0.08,
+    "p95_m": 0.51,
+    "max_m": 2.61
+   },
+   "11": {
+    "median_m": 0.04,
+    "p95_m": 0.29,
+    "max_m": 2.11
+   },
+   "12": {
+    "median_m": 0.01,
+    "p95_m": 0.14,
+    "max_m": 1.69
+   }
+  }
+ }
+}
