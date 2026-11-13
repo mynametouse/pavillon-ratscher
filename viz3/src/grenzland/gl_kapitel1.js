@@ -86,6 +86,14 @@ export const GLKAP1 = (() => {
     }
   };
   const sleep = ms => new Promise(res => setTimeout(res, window.FREEZE ? 0 : ms));
+  // black with words, and light again – a sequence whose step has gone meanwhile (the debug jump, the end) lights up only its own dark
+  let fadeN = 0;
+  async function dunkel(a, b) {
+    const n = ++fadeN;
+    await GLHUD.fade(true, a, b);
+    return n;
+  }
+  const hell = n => (n === fadeN ? GLHUD.fade(false) : null);
   // (what the wanted system offers beyond its named interface is asked carefully: another agent rebuilds it tonight)
   const sneak = () => (GLFAHNDUNG.sneak ? !!GLFAHNDUNG.sneak() : !VEH.cur && P.stance !== 'stand');
   const gesehen = () => {
@@ -124,11 +132,11 @@ export const GLKAP1 = (() => {
       S.n = 1;
       const g = St.gen;
       (async () => {
-        await GLHUD.fade(true, a, b);
-        if (St.gen !== g) return;
+        const n = await dunkel(a, b);
+        if (St.gen !== g) return void hell(n);
         morgen();
         await sleep(1200);
-        await GLHUD.fade(false);
+        await hell(n);
         if (St.gen === g) S.n = 2;
       })();
     }
@@ -155,8 +163,9 @@ export const GLKAP1 = (() => {
     const g = St.gen;
     if (St.busy || MI.redet()) return;
     St.busy = true;
+    let n = 0;
     try {
-      await GLHUD.fade(true, T.mitfahrA, T.mitfahrB);
+      n = await dunkel(T.mitfahrA, T.mitfahrB);
       if (St.gen === g && GL.on) {
         CLOCK.t += 30;
         try {
@@ -167,7 +176,7 @@ export const GLKAP1 = (() => {
         GL.emit('mitfahrt', {});
       }
       await sleep(700);
-      await GLHUD.fade(false);
+      await hell(n);
     } finally {
       St.busy = false;
     }
@@ -196,19 +205,19 @@ export const GLKAP1 = (() => {
           const g = St.gen,
             zh = ORT.zh();
           (async () => {
-            await GLHUD.fade(true, 'Freitagabend', GLDATA.T.intro);
-            if (St.gen !== g) return;
+            const n = await dunkel('Freitagabend', GLDATA.T.intro);
+            if (St.gen !== g) return void hell(n);
             MI.hin(zh[0], zh[1], O.zh.yaw || 0);
             try {
               await KERN.until(() => zoneDa('schleusingen') || St.gen !== g, 90);
             } catch (e) {}
-            if (St.gen !== g) return;
+            if (St.gen !== g) return void hell(n);
             // the ground may have changed with the town: stand on it again, the stranger too
             MI.hin(zh[0], zh[1], O.zh.yaw || 0);
             const p = fremderPos();
             MI.A.fig('fremder', 'fremder', p[0], p[1], Math.atan2(zh[0] - p[0], zh[1] - p[1]), { neu: true });
             await sleep(900);
-            await GLHUD.fade(false);
+            await hell(n);
             if (St.gen === g) S.da = true;
           })();
         },
