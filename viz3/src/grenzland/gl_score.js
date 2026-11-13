@@ -9,12 +9,17 @@
 // Stings: 'start' (a mission begins – with the title card), 'bestanden', 'gescheitert' (under the failure's fade).
 // Silent in free play and whenever the car radio plays (GTA has no score over the radio); ducked by 8 dB while a voice speaks (our own
 // talks, STIMME, and GLSCORE.duck from agent stimmen). Nothing is built before the first wish; GLSCORE.stop() ends everything.
+// ton-radio (13.11.2026): the layers and stings come from files where the sound repository has them (GLMEDIEN, index.json of agent
+// ton-musik: kind 'score', schicht 'spannung' | 'flucht' | '1989' | 'szene' – looped, streamed –, the stings 'start', 'bestanden',
+// 'gescheitert' – short, decoded); 'flucht' with two files: the first up to two stars, the second from three. The same crossfades; a layer
+// without a file, no repository or a file that fails: the synthesised layer as before. The stings' files are fetched when a mission starts.
 //   GLSCORE.lage(name | '') the mission's wish · mission(id | '') · szene(on) · stich(name) · duck(on) · tick(dt) · stop() · stand() (tests)
 import { audio } from '../audio/audio.js';
 import { STIMME } from '../audio/stimme.js';
 import { GL } from './gl_state.js';
 import { GLLOGIK } from './gl_logik.js';
 import { GLRADIO } from './gl_radio.js';
+import { GLMEDIEN } from './gl_medien.js';
 export const GLSCORE = (() => {
   const S = {
     lage: '', // the mission's wish (a step's lage)
@@ -32,7 +37,55 @@ export const GLSCORE = (() => {
     spricht: false,
     lvl: -1, // the master's level set last
     lvlA: null,
+    bad: {}, // files that failed (id → true)
+    sb: {}, // the stings' decoded files (id → AudioBuffer)
+    warte: 0, // since when a wish waits for the repository's list (performance.now())
+    dateiStiche: 0,
   };
+  // the files of the sound repository (gl_medien.js): a layer's loops and the stings
+  const FILEGAIN = 0.5;
+  const STICHE = ['start', 'bestanden', 'gescheitert'];
+  const h32 = s => {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    return h >>> 0;
+  };
+  const nachStufe = (a, b) => (+a.stufe || 0) - (+b.stufe || 0) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  function dateiFuer(name) {
+    if (GLMEDIEN.stand() !== 'ok') return null;
+    const L = GLMEDIEN.liste(e => e.kind === 'score' && e.schicht === name && !S.bad[e.id]).sort(nachStufe);
+    if (!L.length) return null;
+    if (name === 'flucht' && L.length > 1) return S.stufe >= 3 ? L[L.length - 1] : L[0];
+    return L[h32(S.mission || 'x') % L.length];
+  }
+  function stichDatei(name) {
+    if (GLMEDIEN.stand() !== 'ok') return null;
+    return (
+      GLMEDIEN.liste(
+        e => (e.kind === 'score' || e.kind === 'stich') && (e.schicht === name || e.stich === name) && !S.bad[e.id]
+      ).sort(nachStufe)[0] || null
+    );
+  }
+  function stichHolen() {
+    GLMEDIEN.index().then(() => {
+      for (const n of STICHE) {
+        const e = stichDatei(n);
+        if (e && !S.sb[e.id]) GLMEDIEN.buffer(e.id).then(b => b && (S.sb[e.id] = b));
+      }
+    });
+  }
+  // the key of what should sound: 'datei:<id>' for a file, else the synthesised layer's name ('' while the list is on its way – 2 s at most)
+  function schluessel(name) {
+    if (!name) return '';
+    const st = GLMEDIEN.stand();
+    if (st === '' || st === 'laedt') {
+      if (st === '') GLMEDIEN.index();
+      if (!S.warte) S.warte = performance.now();
+      if (performance.now() - S.warte < 2000) return '';
+    } else S.warte = 0;
+    const e = dateiFuer(name);
+    return e ? 'datei:' + e.id : name;
+  }
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
   const raw = () => {
     try {
@@ -348,29 +401,59 @@ export const GLSCORE = (() => {
       A.master.gain.setTargetAtTime(lvl, now, 0.12);
     }
     S.spricht = duck;
-    for (const name of Object.keys(LAYER)) {
-      const D = LAYER[name],
-        on = S.ziel === name;
+    // (a layer is a synthesised one by its name or a file by 'datei:<id>'; the one wanted fades in, the others out)
+    const wantKey = schluessel(S.ziel),
+      keys = Object.keys(S.L);
+    if (wantKey && !keys.includes(wantKey)) keys.push(wantKey);
+    for (const name of keys) {
+      const fe = name.startsWith('datei:') ? GLMEDIEN.eintrag(name.slice(6)) : null,
+        D = fe ? null : LAYER[name],
+        on = wantKey === name;
       let l = S.L[name];
+      if (!fe && !D) {
+        if (l) delete S.L[name];
+        continue;
+      }
       if (on && !l) {
-        l = S.L[name] = { g: c.createGain(), on: true, next: now + 0.08, n: 0, nodes: null, off: 0 };
+        l = {
+          g: c.createGain(),
+          on: true,
+          next: now + 0.08,
+          n: 0,
+          nodes: null,
+          off: 0,
+          datei: fe,
+          gain: fe ? FILEGAIN : D.g,
+        };
         l.g.gain.value = 0.0001;
         l.g.connect(A.master);
-        if (D.on)
+        if (fe) {
+          l.h = GLMEDIEN.stream(fe.id, l.g, { loop: true });
+          if (!l.h) {
+            S.bad[fe.id] = true;
+            try {
+              l.g.disconnect();
+            } catch (e) {}
+            continue;
+          }
+          l.h.ende.then(ok => !ok && (S.bad[fe.id] = true));
+        } else if (D.on)
           try {
             l.nodes = D.on(A, l.g);
           } catch (e) {}
+        S.L[name] = l;
       }
       if (!l) continue;
       if (on !== l.want) {
         l.want = on;
         l.g.gain.cancelScheduledValues(now);
-        l.g.gain.setTargetAtTime(on ? D.g : 0.0001, now, on ? 0.6 : 0.55);
+        l.g.gain.setTargetAtTime(on ? l.gain : 0.0001, now, on ? 0.6 : 0.55);
         l.off = on ? 0 : now + 2.8;
       }
       // faded out: gone
       if (!on && l.off && now > l.off) {
         try {
+          if (l.h) l.h.stop();
           for (const q of l.nodes || []) {
             if (q.stop) q.stop();
             q.disconnect();
@@ -381,6 +464,7 @@ export const GLSCORE = (() => {
         continue;
       }
       l.on = on || now < l.off;
+      if (l.datei) continue;
       if (c.state !== 'running') {
         l.next = now + 0.05;
         continue;
@@ -467,8 +551,26 @@ export const GLSCORE = (() => {
       A.master.gain.cancelScheduledValues(t);
       A.master.gain.setTargetAtTime(S.lvl, t, 0.05);
     }
+    // a sting of the repository when its file is already here (fetched when the mission began), else the synthesised one
+    const fe = stichDatei(name),
+      b = fe ? S.sb[fe.id] : null;
+    if (fe && !b) stichHolen();
     try {
-      STICH[name](A, A.stich, t);
+      if (b) {
+        const n = A.ctx.createBufferSource(),
+          g = A.ctx.createGain();
+        n.buffer = b;
+        g.gain.value = FILEGAIN * 1.2;
+        n.connect(g);
+        g.connect(A.stich);
+        n.onended = () => {
+          try {
+            g.disconnect();
+          } catch (e) {}
+        };
+        n.start(t);
+        S.dateiStiche++;
+      } else STICH[name](A, A.stich, t);
     } catch (e) {}
     return true;
   }
@@ -479,6 +581,9 @@ export const GLSCORE = (() => {
     S.szene = false;
     S.duckApi = S.duckTalk = false;
     S.ziel = '';
+    S.sb = {};
+    S.bad = {};
+    S.warte = 0;
     const A = S.A;
     S.lvl = -1;
     if (!A) return;
@@ -491,6 +596,7 @@ export const GLSCORE = (() => {
     setTimeout(() => {
       try {
         for (const l of Object.values(L)) {
+          if (l.h) l.h.stop();
           for (const q of l.nodes || []) {
             if (q.stop) q.stop();
             q.disconnect();
@@ -545,7 +651,10 @@ export const GLSCORE = (() => {
   return {
     probe,
     lage: n => void (S.lage = LAYER[n] || n === 'flucht' ? n : ''),
-    mission: id => void (S.mission = id || ''),
+    mission(id) {
+      S.mission = id || '';
+      if (S.mission) stichHolen();
+    },
     szene: on => void (S.szene = !!on),
     duck: on => void (S.duckApi = !!on),
     rede: on => void (S.duckTalk = !!on),
@@ -560,6 +669,8 @@ export const GLSCORE = (() => {
       radio: radioAn(),
       duck: S.spricht,
       layers: Object.keys(S.L),
+      quelle: Object.fromEntries(Object.entries(S.L).map(([k, l]) => [k, l.datei ? 'datei' : 'synth'])),
+      dateiStiche: S.dateiStiche,
       stiche: S.stiche,
       letzter: S.letzter,
       ctx: S.A ? S.A.ctx.state : '',

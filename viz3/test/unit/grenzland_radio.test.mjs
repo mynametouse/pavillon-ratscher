@@ -174,8 +174,8 @@ test('rendering is deterministic and can be done in slices', () => {
   );
 });
 
-test('the dial: six stations today, three in 1989, invented names, nobody real in the texts', () => {
-  assert.equal(D.SENDER.heute.length, 6);
+test('the dial: seven stations today (ton-radio: Funkloch FM), three in 1989, invented names, nobody real in the texts', () => {
+  assert.equal(D.SENDER.heute.length, 7);
   assert.equal(D.SENDER[1989].length, 3);
   for (const era of ['heute', 1989]) {
     const l = D.SENDER[era];

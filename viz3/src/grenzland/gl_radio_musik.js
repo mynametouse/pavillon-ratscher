@@ -707,6 +707,7 @@ export const GLRMUSIK = (() => {
     'rock@grenzland': { vers: 'git' },
     ballade: { bass: 'ebass', comp: 'klavier', pad: 'streich', lead: 'geige' },
     synth: { bass: 'sbass', comp: 'arp', pad: 'pad', lead: 'synlead', gegen: 'glocke' },
+    'synth@funkloch': { lead: 'glocke', gegen: 'synlead', pad: '' },
     pop: { bass: 'ebass', comp: 'git', pad: 'epiano', lead: 'pfeif' },
     'pop@west': { lead: 'synlead', pad: 'pad' },
     swing: { bass: 'kbass', comp: 'git', pad: 'sax', lead: 'klar', lead2: 'dtrp' },
@@ -715,6 +716,7 @@ export const GLRMUSIK = (() => {
     'kennung@kirmes': { bass: 'tuba', comp: 'akk', lead: 'akk' },
     'kennung@zweitakt': { comp: 'egit', pad: 'orgel', lead: 'lead' },
     'kennung@neon': { bass: 'sbass', comp: 'arp', pad: 'pad', lead: 'synlead' },
+    'kennung@funkloch': { bass: 'sbass', comp: 'arp', pad: '', lead: 'glocke' },
     'kennung@klassik': { bass: 'klavier', comp: 'klavier', pad: '', lead: 'klavier' },
     'kennung@blasius': { bass: 'tuba', comp: 'horn', pad: '', lead: 'trp' },
     'kennung@republik': { bass: 'tuba', comp: 'horn', pad: '', lead: 'trp' },
@@ -747,6 +749,15 @@ export const GLRMUSIK = (() => {
       T('Landstraße bei Nacht', 'Kolbenfresser', 'rock'),
       T('Schichtwechsel', 'Die Kettenspanner', 'rock'),
       T('Stausee im Regen', 'Stahlblau', 'ballade'),
+    ],
+    // ton-radio: Funkloch FM's own pieces – they play only when the sound repository's songs cannot be reached
+    funkloch: [
+      T('Null Balken', 'Funkmast Ost', 'synth'),
+      T('Tal der Bässe', 'DJ Schleusenwärter', 'synth'),
+      T('Nachtschicht im Funkloch', 'Funkmast Ost', 'synth'),
+      T('Rennsteig-Rave', 'Kollektiv Kammweg', 'synth'),
+      T('Signal verloren', 'DJ Schleusenwärter', 'synth'),
+      T('Staudamm-Techno', 'Kollektiv Kammweg', 'synth'),
     ],
     neon: [
       T('Neon über dem Stausee', 'Kassette C90', 'synth'),
