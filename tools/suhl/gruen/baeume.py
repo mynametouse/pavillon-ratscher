@@ -44,6 +44,7 @@ H_SHRUB = 3.0        # m: a measured crown lower than this is a shrub or a very 
 R_NEW_MAX = 2.5      # m: an image crown wider than this without any height in the laser data is no tree planted since
 R_SHRUB = 1.6        # m, below this a crown counts as a shrub or a very small tree
 BAND = 6.0           # m around a tile kept for the merge of neighbours
+GM_CELL = 2.0        # m, cell of the green mask
 KINDS = {
     0: 'Laubbaum (Art unbestimmt)', 1: 'Nadelbaum (Art unbestimmt)', 2: 'Fichte', 3: 'Kiefer', 4: 'Lärche', 5: 'Tanne/Douglasie',
     10: 'Linde', 11: 'Ahorn', 12: 'Eiche', 13: 'Buche', 14: 'Birke', 15: 'Esche', 16: 'Rosskastanie', 17: 'Platane', 18: 'Pappel',
@@ -204,7 +205,10 @@ def woody(cir, water=None, shade_ok=None, chm=None):
     wood = ndi.binary_opening(wood, structure=disk(3))       # strips thinner than ~1.4 m go (hedge lines, lawn edges)
     wood = ndi.binary_closing(wood, structure=disk(3)) & veg
     wood = ndi.binary_fill_holes(wood) & (ndi.uniform_filter(vf, 5) > 0.5)
-    wood |= ndi.binary_dilation(wood, structure=disk(2)) & veg & (texs > 0.6 * TEX_MIN)  # the shaded side of a crown
+    core = wood
+    wood = ndi.binary_dilation(core, structure=disk(2)) & veg & (texs > 0.6 * TEX_MIN)   # the shaded side of a crown; smooth
+    if chm is not None:                                                                  # green that the filling took in goes
+        wood |= core & (chm >= H_TREE)                 # again – unless the laser confirms it (calm or shaded canopy)
     return wood, nd, texs, veg
 
 
@@ -363,8 +367,12 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
         if np.isfinite(w1).mean() > 0.02:
             chm1 = w1
             chm = np.repeat(np.repeat(w1, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]     # on the image grid, NaN = no data
+    near_b = None
+    if chm is not None:
+        near_b = ndi.distance_transform_edt(~bld) * PX < 1.7                    # within 2 m of a wall the model shows the house:
     # in the mapped forest shaded canopy counts too (slopes turned away from the sun; there is no lawn to mistake it for)
-    wood, nd, tex, veg = woody(cir, water, shade_ok=forest, chm=chm)
+    wood, nd, tex, veg = woody(cir, water, shade_ok=forest,                     # there the laser cannot tell lawn from tree
+                               chm=np.where(near_b, np.nan, chm) if chm is not None else None)
     skip1 = None
     if chm1 is not None:
         skip1 = ndi.binary_dilation(bld[k5 // 2::k5, k5 // 2::k5][:chm1.shape[0], :chm1.shape[1]], iterations=2)   # houses + 2 m
@@ -372,11 +380,19 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     st = {'kronen_roh': int(n), 'kronen_aus_hoehenmodell': int(n_chm), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean()),
           'ndom_anteil': float(np.isfinite(chm).mean()) if chm is not None else 0.0}
     out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk', 'hm', 'hcap')}
+    # the green mask for the ground: 2 m cells of the tile itself (rows from the north) – 0 no green, 1 low green (lawn, meadow,
+    # beds), 2 woody (crown cover); what the map does not know (lawn between the blocks) the image shows
+    mg = int(round(MARGIN / PX))
+    g = int(round(GM_CELL / PX))
+    vv, ww = veg[mg:-mg, mg:-mg], wood[mg:-mg, mg:-mg]
+    nc = vv.shape[0] // g
+    wsh = ww[:nc * g, :nc * g].reshape(nc, g, nc, g).mean(axis=(1, 3))
+    vsh = vv[:nc * g, :nc * g].reshape(nc, g, nc, g).mean(axis=(1, 3))
+    st['gruenmaske'] = np.where(wsh >= 0.5, 2, np.where(vsh >= 0.5, 1, 0)).astype(np.uint8)
     med20 = None
     if chm is not None:
         med = ndi.median_filter(np.nan_to_num(chm1, nan=0.0), 3)                # one cell (a lamp, a wire) makes no height
         med20 = np.repeat(np.repeat(med, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]
-        near_b = ndi.distance_transform_edt(~bld) * PX < 1.7                    # within 2 m of a wall the model shows the house
         # the time between laser and image, in numbers: green with a tall laser value but no crown in the image (lawn where a
         # tree stood, or the blocky edge of the 1 m cells), and tall things without green outside buildings (felled, mast, bridge)
         tall = np.nan_to_num(chm, nan=0.0) >= 5.0
@@ -575,8 +591,9 @@ def run(tiles, work, U, redo=False, ndom=None):
             continue
         t0 = time.time()
         T, st = tile_trees(tx, ty, U, ndom=ndom)
+        gm = st.pop('gruenmaske')
         st['sekunden'] = round(time.time() - t0, 1)
-        np.savez_compressed(p + '.part.npz', st=json.dumps(st), **T)
+        np.savez_compressed(p + '.part.npz', st=json.dumps(st), gm=gm, **T)
         os.replace(p + '.part.npz', p)
         glib.log(f'{k + 1}/{len(tiles)} tile {tx}_{ty}: {len(T["E"])} trees with band, {st}')
 
@@ -595,7 +612,7 @@ def merge(tiles, work):
         n = len(z['E'])
         if not n:
             continue
-        T = {k: z[k] for k in z.files if k != 'st'}
+        T = {k: z[k] for k in z.files if k not in ('st', 'gm')}
         e0, n0, e1, n1 = glib.wlib.tbounds(glib.L, tx, ty)
         T['own'] = ((T['E'] >= e0) & (T['E'] < e1) & (T['N'] >= n0) & (T['N'] < n1)).astype(int)
         parts.append(T)

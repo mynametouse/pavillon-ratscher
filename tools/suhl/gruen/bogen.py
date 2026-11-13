@@ -156,12 +156,41 @@ def _font():
         return ImageFont.load_default()
 
 
-def _window(tx, ty, window):
-    bb = gbild.tile_box(tx, ty)
-    rgb, cir = gbild.fetch(tx, ty)
-    c0, c1 = int(round((window[0] - bb[0]) / gbild.PX)), int(round((window[2] - bb[0]) / gbild.PX))
-    r0, r1 = int(round((bb[3] - window[3]) / gbild.PX)), int(round((bb[3] - window[1]) / gbild.PX))
-    return rgb[r0:r1, c0:c1], cir[r0:r1, c0:c1]
+def window_images(window):
+    """(rgb, cir) of any window on the 20 cm grid, put together from the tile images of the cache (fetched where missing)"""
+    e0, n0, e1, n1 = window
+    px = gbild.PX
+    W, H = int(round((e1 - e0) / px)), int(round((n1 - n0) / px))
+    rgb, cir = np.zeros((H, W, 3), np.uint8), np.zeros((H, W, 3), np.uint8)
+    x0, y0, x1, y1 = glib.wlib.trange(glib.L, window)
+    for ty in range(y0, y1 + 1):
+        for tx in range(x0, x1 + 1):
+            te0, tn0, te1, tn1 = glib.wlib.tbounds(glib.L, tx, ty)
+            oe0, oe1, on0, on1 = max(e0, te0), min(e1, te1), max(n0, tn0), min(n1, tn1)
+            if oe0 >= oe1 or on0 >= on1:
+                continue
+            a, c = gbild.fetch(tx, ty)
+            bb = gbild.tile_box(tx, ty)
+            sc0, sr0 = int(round((oe0 - bb[0]) / px)), int(round((bb[3] - on1) / px))
+            w, h = int(round((oe1 - oe0) / px)), int(round((on1 - on0) / px))
+            dc0, dr0 = int(round((oe0 - e0) / px)), int(round((n1 - on1) / px))
+            rgb[dr0:dr0 + h, dc0:dc0 + w] = a[sr0:sr0 + h, sc0:sc0 + w]
+            cir[dr0:dr0 + h, dc0:dc0 + w] = c[sr0:sr0 + h, sc0:sc0 + w]
+    return rgb, cir
+
+
+def window_trees(bdir, window, margin=15.0):
+    """the trees of a product folder in and around a window (from every tile that touches it)"""
+    x0, y0, x1, y1 = glib.wlib.trange(glib.L, (window[0] - margin, window[1] - margin, window[2] + margin, window[3] + margin))
+    parts = []
+    for ty in range(y0, y1 + 1):
+        for tx in range(x0, x1 + 1):
+            p = os.path.join(bdir, str(glib.L), str(tx), f'{ty}.bin')
+            if os.path.exists(p):
+                parts.append(baeume.unpack(open(p, 'rb').read(), tx, ty))
+    if not parts:
+        return {k: np.zeros(0, int if k in ('kind', 'flags') else float) for k in ('E', 'N', 'h', 'r', 'kind', 'flags')}
+    return {k: np.concatenate([q[k] for q in parts]) for k in parts[0]}
 
 
 def _inside(T, w):
@@ -178,17 +207,17 @@ def height_colours(h):
     return out
 
 
-def v0v1_sheet(tx, ty, T0, T1, U, window, title, width=500):
+def v0v1_sheet(T0, T1, window, title, width=500):
     """the same place twice: the trees estimated from the image alone (v0) | with the object-height model (v1)"""
     from PIL import Image, ImageDraw
-    rgb, _ = _window(tx, ty, window)
+    rgb, _ = window_images(window)
     sc = width / rgb.shape[1]
     a = draw(rgb, window, T0, (), scale=sc)
     b = draw(rgb, window, T1, (), scale=sc, mode='mess')
     m0, m1 = _inside(T0, window), _inside(T1, window)
     meas = (T1['flags'][m1] & baeume.F_H) > 0
     q = lambda v: (f'{np.median(v):.1f}' if len(v) else '–')
-    lines = [f'{title} – Kachel 10/{tx}/{ty}, UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}',
+    lines = [f'{title} – UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}',
              f'links v0 (nur Luftbild): {int(m0.sum())} Bäume, Höhe geschätzt, Median {q(T0["h"][m0])} m, Kronenradius Median {q(T0["r"][m0])} m (gelb Laub, blau Nadel, orange Strauch)',
              f'rechts v1 (Luftbild + Höhenmodell nDOM1): {int(m1.sum())} Bäume, davon {int(meas.sum())} mit gemessener Höhe (hellblau), Median {q(T1["h"][m1][meas])} m; '
              f'{int((~meas).sum())} geschätzt (orange); Kronenradius Median {q(T1["r"][m1])} m',
@@ -199,16 +228,16 @@ def v0v1_sheet(tx, ty, T0, T1, U, window, title, width=500):
     d = ImageDraw.Draw(out)
     for i, t in enumerate(lines):
         d.text((5, a.height + 3 + 17 * i), t, fill=(235, 235, 235), font=_font())
-    res = {'ort': title, 'kachel': f'{tx}_{ty}', 'v0_baeume': int(m0.sum()), 'v1_baeume': int(m1.sum()), 'v1_hoehe_gemessen': int(meas.sum()),
+    res = {'ort': title, 'fenster_utm': [round(v) for v in window], 'v0_baeume': int(m0.sum()), 'v1_baeume': int(m1.sum()), 'v1_hoehe_gemessen': int(meas.sum()),
            'v0_hoehe_median_m': float(np.median(T0['h'][m0])) if m0.any() else None,
            'v1_hoehe_median_gemessen_m': float(np.median(T1['h'][m1][meas])) if meas.any() else None}
     return out, res
 
 
-def hoehen_sheet(tx, ty, T, U, nd, window, title, width=500):
+def hoehen_sheet(T, nd, window, title, width=500):
     """orthophoto with the crowns | the object-height model in colours with the same crowns – to look whether tops and crowns fit"""
     from PIL import Image, ImageDraw
-    rgb, _ = _window(tx, ty, window)
+    rgb, _ = window_images(window)
     sc = width / rgb.shape[1]
     a = draw(rgb, window, T, (), scale=sc, mode='mess')
     chm = nd.window(window)
@@ -218,7 +247,7 @@ def hoehen_sheet(tx, ty, T, U, nd, window, title, width=500):
     b = draw(hc, window, T, (), scale=sc, mode='mess')
     m = _inside(T, window)
     meas = (T['flags'][m] & baeume.F_H) > 0
-    lines = [f'{title} – Kachel 10/{tx}/{ty}, UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}: links Luftbild, rechts Höhenmodell nDOM1 (1 m)',
+    lines = [f'{title} – UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}: links Luftbild, rechts Höhenmodell nDOM1 (1 m)',
              f'{int(m.sum())} Bäume, {int(meas.sum())} mit gemessener Höhe (links hellblau), {int((~meas).sum())} geschätzt (orange) · Farben rechts: 0 m dunkelblau, 5 m grün, 15 m gelb, 30 m rot, grau = keine Daten',
              CREDIT + ' · Höhenmodell nDOM1 © GDI-Th, bezogen über easygeodata.de']
     out = Image.new('RGB', (2 * width + 4, a.height + 17 * len(lines) + 6), (20, 20, 20))
@@ -233,16 +262,17 @@ def hoehen_sheet(tx, ty, T, U, nd, window, title, width=500):
 WALD_COL = {0: (90, 90, 90), 1: (120, 220, 90), 2: (10, 90, 40), 3: (120, 150, 40), 5: (250, 230, 80), 6: (170, 110, 70)}
 
 
-def wald_sheet(bx, by, U, width=510):
+def wald_sheet(bx, by, U, width=510, nd=None):
     """forest stands of one image block (4 km): infrared orthophoto at 1 m | classes of the 20 m cells"""
     from PIL import Image, ImageDraw, ImageFont
     import wald
-    C = wald.cells_of_block(bx, by, U)
+    C = wald.cells_of_block(bx, by, U, nd)
     img, (e0, n0) = wald.block_image(bx, by)
     A = C['art']
     rgb = np.zeros(A.shape + (3,), np.uint8)
     for k, c in WALD_COL.items():
         rgb[A == k] = c
+    rgb[C['geraeumt']] = (230, 60, 60)          # forest in the laser data, none in the image of 2024
     a = Image.fromarray(img).resize((width, width), Image.LANCZOS)
     b = Image.fromarray(rgb).resize((width, width), Image.NEAREST)
     try:
@@ -254,13 +284,32 @@ def wald_sheet(bx, by, U, width=510):
     lines = [f'Waldbestände, Bildblock {bx}/{by}: UTM32 E {e0:.0f}–{e0 + 4000:.0f}, N {n0:.0f}–{n0 + 4000:.0f} (4 km) – links Infrarot-Luftbild 1 m, rechts Zellen 20 m',
              'hellgrün Laubwald %.0f ha · dunkelgrün Nadelwald %.0f ha · oliv Mischwald %.0f ha · gelb Jungbestand/Schlagflur %.0f ha · braun Blöße %.0f ha · grau kein kartierter Wald'
              % tuple(ha.get(k, 0) for k in (1, 2, 3, 5, 6)),
-             'Luftbild © GDI-Th (TLBG), CC BY 4.0, Bildflug 15.05.2024 · Waldflächen © OpenStreetMap-Mitwirkende · Klassen: suhl-gruen (Schätzung)']
+             ('rot: seit dem Laserflug geräumt %.0f ha · ' % (float(C['geraeumt'].sum()) * 0.04) if nd else '') +
+             'Luftbild © GDI-Th (TLBG), CC BY 4.0, Bildflug 15.05.2024 · Waldflächen © OpenStreetMap-Mitwirkende · Klassen: suhl-gruen'
+             + (' · Höhenmodell nDOM1 © GDI-Th, über easygeodata.de' if nd else ' (Schätzung)')]
     out = Image.new('RGB', (2 * width + 4, width + 17 * len(lines) + 6), (20, 20, 20))
     out.paste(a, (0, 0))
     out.paste(b, (width + 4, 0))
     d = ImageDraw.Draw(out)
     for i, t in enumerate(lines):
         d.text((5, width + 3 + 17 * i), t, fill=(235, 235, 235), font=font)
+    return out
+
+
+def fenster():
+    """the windows of the sheets v0 against v1 and orthophoto against height model: the three places of the comparison and the
+    box the lead can judge (Steinweg / Markt and the park at the Herrenteich, E 619 500–619 900, N 5 607 500–5 607 900) in
+    quarters of 200 m, plus that box as a whole -> [(name for the file, title, window)]"""
+    out = []
+    for tx, ty, (x0, y0, x1, y1), title in ORTE:
+        e0, n0, _, _ = glib.wlib.tbounds(glib.L, tx, ty)
+        out.append((f'{tx}_{ty}', title, (e0 + x0, n0 + y0, e0 + x1, n0 + y1)))
+    E, N = 619500.0, 5607500.0
+    out += [('herrenteich', 'Park am Herrenteich (Nordwest-Viertel des Fensters Steinweg/Markt)', (E, N + 200, E + 200, N + 400)),
+            ('markt_steinweg', 'Markt (Südteil) und Steinweg Nord (Nordost-Viertel)', (E + 200, N + 200, E + 400, N + 400)),
+            ('suedwest', 'südlich des Herrenteichs (Südwest-Viertel)', (E, N, E + 200, N + 200)),
+            ('steinweg_sued', 'Steinweg Süd (Südost-Viertel)', (E + 200, N, E + 400, N + 200)),
+            ('steinweg_markt_400', 'Steinweg, Markt, Herrenteich – das ganze Fenster (400 m)', (E, N, E + 400, N + 400))]
     return out
 
 
@@ -290,35 +339,37 @@ def main():
     if not tiles:
         import json
         tiles = [tuple(int(v) for v in k.split('_')) for k in json.load(open(os.path.join(a.b, 'index.json')))['kacheln']]
+    if a.wald:
+        nd = None
+        if a.hoehen:
+            import ndom
+            nd = ndom.Ndom(a.hoehen) or None
+        for blk in a.wald.split(','):
+            bx, by = (int(v) for v in blk.split('_'))
+            wald_sheet(bx, by, U, nd=nd).save(os.path.join(a.out, f'wald_{bx}_{by}.jpg'), quality=82)
+        return
     if a.v0v1 or a.hoehen:
-        import pruefen
         res = []
-        for tx, ty, (x0, y0, x1, y1), title in ORTE:
-            e0, n0, _, _ = glib.wlib.tbounds(glib.L, tx, ty)
-            w = (e0 + x0, n0 + y0, e0 + x1, n0 + y1)
-            p1 = os.path.join(a.b, str(glib.L), str(tx), f'{ty}.bin')
-            if not os.path.exists(p1):
+        nd = None
+        if a.hoehen:
+            import ndom
+            nd = ndom.Ndom(a.hoehen)
+        for name, title, w in fenster():
+            T1 = window_trees(a.b, w)
+            if not len(T1['E']):
                 continue
-            T1 = baeume.unpack(open(p1, 'rb').read(), tx, ty)
             if a.v0v1:
-                T0 = baeume.unpack(open(os.path.join(a.v0v1, str(glib.L), str(tx), f'{ty}.bin'), 'rb').read(), tx, ty)
-                im, r = v0v1_sheet(tx, ty, T0, T1, U, w, title)
-                im.save(os.path.join(a.out, f'v0v1_{tx}_{ty}.jpg'), quality=85)
+                im, r = v0v1_sheet(window_trees(a.v0v1, w), T1, w, title)
+                im.save(os.path.join(a.out, f'v0v1_{name}.jpg'), quality=85)
                 res.append(r)
-            if a.hoehen:
-                import ndom
-                nd = ndom.Ndom(a.hoehen)
-                hoehen_sheet(tx, ty, T1, U, nd, w, title).save(os.path.join(a.out, f'hoehen_{tx}_{ty}.jpg'), quality=85)
-                wz = (w[0] + 50, w[1] + 50, w[2] - 50, w[3] - 50)        # the middle 100 m at 20 cm: do tops and crowns sit on each other?
-                hoehen_sheet(tx, ty, T1, U, nd, wz, title + ', Mitte').save(os.path.join(a.out, f'hoehen_{tx}_{ty}_mitte.jpg'), quality=88)
+            if nd:
+                hoehen_sheet(T1, nd, w, title).save(os.path.join(a.out, f'hoehen_{name}.jpg'), quality=85)
+                if w[2] - w[0] <= 200:
+                    wz = (w[0] + 50, w[1] + 50, w[2] - 50, w[3] - 50)    # the middle 100 m at 20 cm: do tops and crowns sit on each other?
+                    hoehen_sheet(T1, nd, wz, title + ', Mitte').save(os.path.join(a.out, f'hoehen_{name}_mitte.jpg'), quality=88)
         if res:
             glib.write_json(os.path.join(a.out, 'v0v1.json'), res, indent=1)
             print(json.dumps(res, ensure_ascii=False, indent=1))
-        return
-    if a.wald:
-        for blk in a.wald.split(','):
-            bx, by = (int(v) for v in blk.split('_'))
-            wald_sheet(bx, by, U).save(os.path.join(a.out, f'wald_{bx}_{by}.jpg'), quality=82)
         return
     if a.vergleich:
         res = []

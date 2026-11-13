@@ -15,7 +15,33 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import glib, kontext, klassen
 
 
-def build(K, gebiet, rows, out):
+GM_KLASSEN = {0: 'kein Grün (versiegelt, Dach, Wasser, kahler Boden)', 1: 'niedriges Grün (Rasen, Wiese, Beete)', 2: 'Gehölz (Kronendach)'}
+
+
+def masks(work, tiles, out):
+    """the green masks the tree search left in its work folder (2 m cells from the infrared image) -> gr/10/{x}/{y}.png, 8-bit grey
+    with the class numbers 0, 1, 2 as pixel values, 200 x 200, row 0 = NORTH edge. -> (tiles written, hectares per class)"""
+    from PIL import Image
+    n, ha = 0, {1: 0.0, 2: 0.0}
+    for tx, ty in tiles:
+        p = os.path.join(work, 't', f'{tx}_{ty}.npz')
+        if not os.path.exists(p):
+            continue
+        z = np.load(p)
+        if 'gm' not in z.files:
+            continue
+        gm = z['gm']
+        q = os.path.join(out, str(glib.L), str(tx), f'{ty}.png')
+        os.makedirs(os.path.dirname(q), exist_ok=True)
+        Image.fromarray(gm, 'L').save(q, optimize=True)
+        cell = (400.0 / gm.shape[0]) ** 2 / 1e4
+        for k in ha:
+            ha[k] += float((gm == k).sum()) * cell
+        n += 1
+    return n, ha
+
+
+def build(K, gebiet, rows, out, work=None, mask_tiles=()):
     from shapely.geometry import Polygon, box
     from shapely import STRtree
     F = klassen.Flaechen(K)
@@ -69,6 +95,7 @@ def build(K, gebiet, rows, out):
             json.dump({'f': feats}, f, separators=(',', ':'))
         tiles[f'{tx}_{ty}'] = len(feats)
         n_poly += len(feats)
+    n_gm, ha_gm = masks(work, mask_tiles, out) if work else (0, {})
     idx = {
         'produkt': 'gr', 'name': 'Grünflächen (kartierte Flächen mit Belag)', 'schema': 1, 'made': glib.now(), 'level': glib.L, 'kachel_m': 400.0,
         'pfad': '{level}/{x}/{y}.json',
@@ -77,11 +104,16 @@ def build(K, gebiet, rows, out):
         'klassen': {str(k): klassen.KLASSEN[k] for k in klassen.GREEN}, 'belag': {str(k): v for k, v in klassen.BELAG.items()},
         'belag_sportplaetze_osm': belag,
         'kacheln': tiles, 'flaechen': n_poly, 'flaeche_ha_im_gebiet': {klassen.KLASSEN[k]: round(v, 1) for k, v in sorted(area.items())},
+        'gruenmaske': {'pfad': '{level}/{x}/{y}.png', 'kacheln': n_gm, 'zelle_m': 2.0, 'klassen': {str(k): v for k, v in GM_KLASSEN.items()},
+                       'format': 'PNG, 8 Bit Grau, 200 x 200, Pixelwert = Klasse, Zeile 0 = Nordrand; gemessen im Infrarot-Luftbild (und im Höhenmodell, wo vorhanden)',
+                       'flaeche_ha': {GM_KLASSEN[k]: round(v, 1) for k, v in ha_gm.items()},
+                       'hinweis': 'nur für die Kacheln mit Einzelbäumen (Luftbild 20 cm); zeigt auch das Grün, das in OSM nicht kartiert ist'},
         'hinweis': 'Nur was in OpenStreetMap als Fläche kartiert ist. Rasen zwischen Wohnblöcken ist oft nicht kartiert – dafür zeigt das Luftbild selbst das Grün.',
         'attribution': '© OpenStreetMap-Mitwirkende, ODbL 1.0',
     }
     glib.write_json(os.path.join(out, 'index.json'), idx, indent=1)
-    return {'kacheln': len(tiles), 'flaechen': n_poly, 'flaeche_ha_im_gebiet': idx['flaeche_ha_im_gebiet']}
+    return {'kacheln': len(tiles), 'flaechen': n_poly, 'flaeche_ha_im_gebiet': idx['flaeche_ha_im_gebiet'],
+            'gruenmaske_kacheln': n_gm, 'gruenmaske_flaeche_ha': idx['gruenmaske']['flaeche_ha']}
 
 
 def main():

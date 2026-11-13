@@ -81,18 +81,25 @@ def single_tree_tiles(rows, gebiet):
 
 
 def schema_check(out, gebiet, skip, version=0):
-    """the shared keys of index.json and the validation of suhl-daten (tools/suhl/lib/validate.py), where that library is on the
-    branch; the products w and gr are not in the schema yet (proposal), the validator names them as unknown folders"""
+    """the common part of the three index files and the validation of suhl-daten (tools/suhl/lib/validate.py, the judge of the
+    contract docs/features/suhl-daten.md), where that library is on the branch. The trees were kept off roofs and carriageways
+    with footprints and road axes from OpenStreetMap and ETHOS, not with a generation of the products g or s: no based_on."""
     import subprocess
     val = os.path.join(glib.REPO, 'tools', 'suhl', 'lib', 'validate.py')
     if not os.path.exists(val):
         return {'geprueft': False, 'grund': 'tools/suhl/lib/validate.py fehlt auf diesem Zweig'}
-    res = {'geprueft': True}
-    b = os.path.join(out, 'suhl', 'b', f'v{version}')
-    if 'baeume' not in skip and os.path.exists(os.path.join(b, 'index.json')):
-        src = 'dop,osm,ethos' + (',ndom1' if json.load(open(os.path.join(b, 'index.json'), encoding='utf-8')).get('ndom_kacheln') else '')
-        r = subprocess.run([sys.executable, '-I', val, '--index', b, '--area', gebiet, '--sources', src], capture_output=True, text=True)
-        res['index_b'] = (r.stdout + r.stderr).strip()[-300:]
+    res = {'geprueft': True, 'index': {}}
+    area = 'probe' if gebiet == 'zentrum' else gebiet
+    for prod, src in (('b', 'dop,osm,ethos'), ('w', 'dop,osm'), ('gr', 'osm,dop')):
+        d = os.path.join(out, 'suhl', prod, f'v{version}')
+        ip = os.path.join(d, 'index.json')
+        if not os.path.exists(ip):
+            continue
+        doc = json.load(open(ip, encoding='utf-8'))
+        if prod in ('b', 'w') and (doc.get('ndom_kacheln') or doc.get('hoehe_gemessen_ha')):
+            src += ',ndom1'
+        r = subprocess.run([sys.executable, '-I', val, '--index', d, '--area', area, '--sources', src], capture_output=True, text=True)
+        res['index'][prod] = (r.stdout + r.stderr).strip()[-240:]
     r = subprocess.run([sys.executable, '-I', val, out] + (['--probe'] if gebiet == 'zentrum' else []), capture_output=True, text=True)
     lines = (r.stdout + r.stderr).strip().splitlines()
     res['gueltig'] = r.returncode == 0
@@ -193,7 +200,8 @@ def main():
     if 'flaechen' not in skip:
         import flaechen
         t0 = time.time()
-        res['flaechen'] = flaechen.build(K, gebiet, rows, os.path.join(a.out, 'suhl', 'gr', 'v0'))
+        res['flaechen'] = flaechen.build(K, gebiet, rows, os.path.join(a.out, 'suhl', 'gr', f'v{version}'),
+                                         work=a.work if 'baeume' not in skip else None, mask_tiles=tiles)
         res['schritte']['flaechen'] = {'sekunden': round(time.time() - t0)}
     res['schema'] = schema_check(a.out, gebiet, skip, version)
     res['sekunden'] = round(time.time() - t00)
