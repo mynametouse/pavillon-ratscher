@@ -174,7 +174,9 @@ export const GLFIG = (() => {
       av = (a, b, i) => (J[a] && J[b] ? (J[a][i] + J[b][i]) / 2 : null),
       G = {
         H,
-        neck: J.Neck ? J.Neck[1] : 0.855 * H,
+        neck: J.Neck ? J.Neck[1] : 0.84 * H,
+        // the jaw's line (above it nothing is cloth) – the bind pose's head joint sits a finger above the chin
+        kinn: J.Head ? J.Head[1] - 0.012 : 0.868 * H,
         shY: av('LeftArm', 'RightArm', 1) ?? 0.81 * H,
         shX: J.LeftArm && J.RightArm ? Math.abs(J.LeftArm[0] - J.RightArm[0]) / 2 : 0.105 * H,
         shZ: av('LeftArm', 'RightArm', 2) ?? 0,
@@ -215,13 +217,14 @@ export const GLFIG = (() => {
       a = G.arm[i];
     if (a) {
       const [t, d] = armAt(a, x, y, z);
-      if (t > 0.1 && d < 0.15 && (y > G.hip - 0.12 || t > 0.5)) {
+      if (t > 0.1 && d < (t < 0.35 ? 0.07 : 0.11) && (y > G.hip - 0.12 || t > 0.5)) {
         if (t > 0.985) return 0; // the hand
         if (K.aermel !== undefined && t > K.aermel) return 0; // short sleeves: the forearm stays as it is
         return 3 + i;
       }
     }
-    if (y > G.neck + (K.hals ?? 0.04)) return 0; // head and throat
+    // the head; the throat above the collar (the neck joint is where a shirt's collar sits; hals: a collar standing higher, m)
+    if (y > G.kinn || (y > G.neck - 0.012 + (K.hals || 0) && Math.abs(x) < 0.058 * G.H)) return 0;
     if (y < G.ankle + (K.schaft ?? 0.035)) return 5;
     const hem = K.rock ? K.rock * G.H : G.hip - (K.saum ?? 0.03);
     return y < hem ? 2 : 1;
@@ -367,6 +370,8 @@ export const GLFIG = (() => {
       for (const gr of groups) {
         const m = list[gr.materialIndex] || list[0];
         if (!m || !m.map || !m.map.image || !(m.map.image.width > 8)) continue;
+        // hair cards, lashes, glasses: never painted (long hair over a shoulder would take the jacket's colour)
+        if (m.alphaTest > 0 || m.transparent || /opacity|hair|lash|brow|glass/i.test(m.name || '')) continue;
         if (!jobs.has(m.map)) jobs.set(m.map, { tris: [], mats: new Set(), any: false });
         const Jb = jobs.get(m.map);
         Jb.mats.add(m);
@@ -480,7 +485,8 @@ export const GLFIG = (() => {
     }
     const ref = z => (cnt[z] > 20 ? sum[z] / cnt[z] : 110);
     const hem = K.rock ? K.rock * G.H : G.hip - (K.saum ?? 0.03),
-      vT = K.hemd ? G.neck - (K.vtief ?? 0.17) : 1e9,
+      yc = G.neck - 0.012 + (K.hals || 0),
+      vT = K.hemd ? yc - (K.vtief ?? 0.17) : 1e9,
       vW = K.vweit ?? 0.42,
       mOb = MUSTER[K.oberM] || null,
       mUn = MUSTER[K.unterM] || null,
@@ -527,12 +533,12 @@ export const GLFIG = (() => {
             // the opening of a jacket: shirt, tie
             col = K.hemd;
             fac = 1;
-            if (K.schlips && ax < 0.019 + (G.neck - by < 0.035 ? 0.008 : 0)) col = K.schlips;
-          } else if (K.kragenC && by > G.neck - 0.02) {
+            if (K.schlips && ax < 0.019 + (yc - by < 0.035 ? 0.008 : 0)) col = K.schlips;
+          } else if (K.kragenC && by > yc - 0.035) {
             col = K.kragenC;
             fac = 1;
           }
-          if (K.kragen && front && by > G.neck - 0.04 && by < G.neck + 0.03 && ax > 0.022 && ax < 0.075) {
+          if (K.kragen && front && by > yc - 0.05 && by < yc + 0.03 && ax > 0.024 && ax < 0.08) {
             col = K.kragen;
             fac = 1;
           }
@@ -544,11 +550,11 @@ export const GLFIG = (() => {
             col = K.streifen;
             fac = 1;
           }
-          if (K.koppel && by > G.hip + 0.085 && by < G.hip + 0.128) {
+          if (K.koppel && by > G.hip + 0.135 && by < G.hip + 0.182) {
             col = front && ax < 0.03 ? K.schnalle || [186, 180, 160] : K.koppel;
             fac = 1;
           }
-          if (front && by < Math.min(vT, G.neck - 0.045) && by > hem + 0.035) {
+          if (front && by < Math.min(vT, yc - 0.045) && by > hem + 0.035) {
             if (K.reissv && ax < 0.0045) {
               col = K.reissv;
               fac = 1;
@@ -590,7 +596,13 @@ export const GLFIG = (() => {
             col = K.band;
             fac = 1;
           }
-          if (K.abz && z === 3 && t > 0.2 && t < 0.31 && by - (a.A[1] + a.d[1] * t) > 0.012) {
+          if (
+            K.abz &&
+            z === 3 &&
+            t > 0.2 &&
+            t < 0.31 &&
+            bx - (a.A[0] + a.d[0] * t) + by - (a.A[1] + a.d[1] * t) > 0.03
+          ) {
             const u = (t - 0.255) / 0.055,
               v = (bz - (a.A[2] + a.d[2] * t)) / 0.034;
             if (u * u + v * v < 1) {
@@ -653,7 +665,7 @@ export const GLFIG = (() => {
       vv = v - Math.floor(v),
       y = Math.min(95, Math.max(0, Math.floor((flipY ? 1 - vv : vv) * 96))),
       i = (y * 96 + x) * 4;
-    return [d[i], d[i + 1], d[i + 2]];
+    return [d[i], d[i + 1], d[i + 2], d[i + 3]];
   }
   function headOf(model) {
     const F = frameOf(model);
@@ -674,8 +686,11 @@ export const GLFIG = (() => {
       jz = F.J.Head[2];
     // the vertices that go with the head (its bone or one below it), relative to the head joint
     const pts = [],
-      src = [];
+      src = [],
+      face = [];
     for (const { x, Wp } of F.parts) {
+      const mn = Array.isArray(x.material) ? x.material[0] : x.material,
+        isFace = !!mn && /head/i.test(mn.name || '') && !(mn.alphaTest > 0) && !mn.transparent;
       const g = x.geometry,
         si = g.attributes.skinIndex,
         sw = g.attributes.skinWeight;
@@ -699,6 +714,7 @@ export const GLFIG = (() => {
         if (!under[b]) continue;
         pts.push(Wp[i * 3] - jx, Wp[i * 3 + 1] - jy, Wp[i * 3 + 2] - jz);
         src.push(x, i);
+        face.push(isFace);
       }
     }
     if (pts.length < 60) return null;
@@ -720,10 +736,17 @@ export const GLFIG = (() => {
       rx = Math.max(0.07, Math.min(0.11, (x1 - x0) / 2)),
       rz = Math.max(0.08, Math.min(0.125, (z1 - z0) / 2));
     // the tip of the nose: the foremost point of the middle of the face
+    const anyFace = face.some(Boolean);
     let nz = -1e9,
       ny = top - 0.14;
-    for (let i = 0; i < pts.length; i += 3)
-      if (Math.abs(pts[i] - cx) < 0.016 && pts[i + 1] < top - 0.085 && pts[i + 1] > top - 0.215 && pts[i + 2] > nz) {
+    for (let i = 0, q = 0; i < pts.length; i += 3, q++)
+      if (
+        (face[q] || !anyFace) &&
+        Math.abs(pts[i] - cx) < 0.016 &&
+        pts[i + 1] < top - 0.085 &&
+        pts[i + 1] > top - 0.215 &&
+        pts[i + 2] > nz
+      ) {
         nz = pts[i + 2];
         ny = pts[i + 1];
       }
@@ -740,6 +763,7 @@ export const GLFIG = (() => {
         m = Array.isArray(x.material) ? x.material[0] : x.material;
       if (!ua || !m || !m.map || !m.map.image) continue;
       const c = texel(m.map.image, ua.getX(src[k + 1]), ua.getY(src[k + 1]), !!m.map.flipY);
+      if (c[3] < 140) continue;
       hr += c[0];
       hg += c[1];
       hb += c[2];
@@ -1001,8 +1025,8 @@ export const GLFIG = (() => {
   };
   const BART = {
     schnauzer(K, D, c) {
-      const y = D.nose[0] - 0.017,
-        z = D.nose[1] - 0.021;
+      const y = D.nose[0] - 0.021,
+        z = D.nose[1] - 0.024;
       for (const sx of [-1, 1]) {
         K.box(sx * 0.013, y, z, 0.027, 0.012, 0.011, sx * -0.28, c, true);
         K.box(sx * 0.03, y - 0.006, z - 0.004, 0.012, 0.011, 0.01, sx * -0.6, c, true);
@@ -1012,8 +1036,9 @@ export const GLFIG = (() => {
   const BRILLE = {
     // the big frames of the eighties
     gross(K, D, c) {
-      const y = D.nose[0] - 0.02,
-        zc = D.nose[1] + 0.036,
+      const y = D.nose[0] - 0.021,
+        zc = D.nose[1] + 0.04,
+        xe = Math.max(0.068, Math.min(0.08, D.rx * 0.86)),
         w = 0.054,
         h = 0.046,
         t = 0.0045;
@@ -1023,8 +1048,9 @@ export const GLFIG = (() => {
         K.box(x, y, zc - h / 2, w, t, t, 0, c, true);
         K.box(x - w / 2 + t / 2, y, zc - h / 2, t, t, h, 0, c, true);
         K.box(x + w / 2 - t / 2, y, zc - h / 2, t, t, h, 0, c, true);
-        // the temple back to the ear
-        K.box(sx * (0.033 + w / 2 + 0.004), y - 0.05, zc + h / 2 - 0.012, t, 0.1, t, 0, c, true);
+        // the hinge and the temple back to the ear
+        K.box(sx * (0.033 + w / 2 + (xe - 0.06) / 2), y, zc + h / 2 - 0.012, xe - 0.06 + t, t, t, 0, c, true);
+        K.box(sx * xe, y - 0.05, zc + h / 2 - 0.012, t, 0.1, t, 0, c, true);
       }
       K.box(0, y, zc + h / 2 - 0.016, 0.014, t, t, 0, c, true);
     },

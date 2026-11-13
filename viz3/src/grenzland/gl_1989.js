@@ -456,6 +456,7 @@ export const GL89 = (() => {
       : null,
     welt: GL89WELT.state(),
     datum: DN && DN.dateShort ? DN.dateShort() : '',
+    jahr: new Date((DN.e0 + Math.floor(CLOCK.t / 1440)) * 864e5).getUTCFullYear(),
     m: ((Math.floor(CLOCK.t) % 1440) + 1440) % 1440,
   });
   return Object.assign(S, { enter, leave, tick, hol, state, stop: () => (S.on || S.busy) && restore() });

@@ -19,7 +19,7 @@ export const GL89DATA = (() => {
   //      armC: the sleeves' colour (a jumper under an apron); knopf: a button row; reissv: a zip; hemd/schlips/vtief/vweit: shirt and tie
   //      in the opening; kragenC: the collar; kragen: collar patches; schulter: shoulder boards; koppel: a belt; band: a cuff band on
   //      the left sleeve; abz: a badge on the left upper arm; passe: a yoke in another colour; bund: knitted hem and cuffs; taschen:
-  //      patch pockets; falte: a trouser crease; naht: the seams of jeans; galon: a stripe down the leg; schaft: boots up the calf (m) ----
+  //      patch pockets; hals: a collar standing up the throat (m); falte: a trouser crease; naht: the seams of jeans; galon: a stripe down the leg; schaft: boots up the calf (m) ----
   const KLEID = {
     // a Dederon apron dress with small flowers over a brown cardigan, thick stockings
     kittel: {
@@ -67,6 +67,7 @@ export const GL89DATA = (() => {
     },
     // the wadded work jacket, corduroy trousers, boots
     watte: {
+      hals: 0.03,
       ober: [84, 96, 92],
       oberM: 'stepplaengs',
       kragenC: [66, 56, 46],
@@ -80,6 +81,7 @@ export const GL89DATA = (() => {
     },
     // an anorak of the time: quilted, a light yoke, knitted hem and cuffs; stone-washed jeans, white trainers
     anorak: {
+      hals: 0.03,
       ober: [126, 50, 70],
       oberM: 'steppquer',
       passe: [206, 194, 166],
@@ -126,6 +128,7 @@ export const GL89DATA = (() => {
     },
     // the young teacher: a parka over a checked shirt, corduroy trousers, brown shoes
     parka: {
+      hals: 0.03,
       ober: [94, 100, 72],
       kragenC: [124, 108, 80],
       hemd: [86, 100, 124],
@@ -141,6 +144,7 @@ export const GL89DATA = (() => {
     },
     // an overcoat in herringbone, a scarf, pressed trousers of „Präsent 20“
     mantel89: {
+      hals: 0.03,
       ober: [104, 96, 86],
       oberM: 'fischgrat',
       kragenC: [128, 44, 48],
@@ -154,6 +158,7 @@ export const GL89DATA = (() => {
     },
     // a dark loden coat, corduroy trousers
     loden: {
+      hals: 0.03,
       ober: [62, 74, 62],
       kragenC: [50, 58, 50],
       knopf: [150, 130, 90],
@@ -165,6 +170,7 @@ export const GL89DATA = (() => {
     },
     // a winter coat with a fur collar
     wintermantel: {
+      hals: 0.03,
       ober: [86, 66, 96],
       kragenC: [70, 50, 36],
       knopf: [40, 30, 44],
@@ -196,6 +202,7 @@ export const GL89DATA = (() => {
     },
     // the ABV in the uniform coat of the cold season
     vopomantel: {
+      hals: 0.03,
       ober: [98, 112, 96],
       unter: [98, 112, 96],
       falte: true,
