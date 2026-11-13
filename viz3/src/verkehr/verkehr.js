@@ -926,7 +926,8 @@ export const VERKEHR = (() => {
     const eye = () => {
       const r = [Math.cos(c.hd), -Math.sin(c.hd)],
         f = [Math.sin(c.hd), Math.cos(c.hd)];
-      return { x: c.x + r[0] * 0.36 - f[0] * 0.22, y: c.y + r[1] * 0.36 - f[1] * 0.22, z: c.z + 1.17 };
+      // (feat/verkehr-real: in a car of today the eye a hand under its roof – higher in an SUV, lower in a small car)
+      return { x: c.x + r[0] * 0.36 - f[0] * 0.22, y: c.y + r[1] * 0.36 - f[1] * 0.22, z: c.z + (c.vm ? c.D.H - 0.32 : 1.17) };
     };
     PLAY.sit({
       kind: 'ride',
@@ -1353,7 +1354,7 @@ export const VERKEHR = (() => {
       walkers: W,
       onHonk: c => {
         S.stats.honk++;
-        UI.subtitle({ key: c.who }, pick(VLEUTE.DRIVE.hupe), 2400);
+        if (c.who) UI.subtitle({ key: c.who }, pick(VLEUTE.DRIVE.hupe), 2400);
       },
     });
     // a car coming towards the player: „Auto anhalten“ (5 times a second)
@@ -1372,7 +1373,8 @@ export const VERKEHR = (() => {
         !KERN.inside(P.x, P.y, P.feet + 1)
       )
         for (const c of VAUTO.cars) {
-          if (c.st !== 'fahren' || !c.g.visible) continue;
+          // (feat/verkehr-real: only a car of the cast stops – the flow's strangers drive on)
+          if (c.st !== 'fahren' || !c.g.visible || !c.who) continue;
           const d = Math.hypot(c.x - P.x, c.y - P.y);
           if (d > 48 || d < 7) continue;
           const pr = VNETZ.project(c.line, P.x, P.y, c.s + 6, c.s + 46);

@@ -600,6 +600,7 @@ export const VAUTO = (() => {
     VKMOD.place(c.vm, Math.hypot(c.x - cam.position.x, c.y + cam.position.z));
     const ds = c.v * dt;
     c.dist += ds;
+    c.spin += ds / c.D.RW; // (the front wheels' turn, as the old model counts it)
     if (ds > 1e-3) {
       const want = Math.max(-0.6, Math.min(0.6, Math.atan((wrap(c.hd - h0) / ds) * c.D.WB)));
       c.steer += (want - c.steer) * Math.min(1, dt * 6);

@@ -137,7 +137,9 @@ with lib.browser() as b:
             p1 = E(pg, "__vr.progs()")
             new = [n for n in J(pg, "__vr.pnames()") if n not in n0]
             print('new programs', new, flush=True)
-            ck('no new shader program for the new vehicles', p1 == p0, f'{p0} → {p1} {new}')
+            # (a villager's figure coming into sight may bring its own – only the traffic's count: 'verkehr …' materials, 'vk-1')
+            mine = [n for n in new if n.startswith('verkehr') or 'vk-1' in n]
+            ck('no new shader program for the new vehicles', not mine, f'{p0} → {p1} {new}')
         except Exception as ex:
             ck('section ran: bild', False, repr(ex)[:400])
 
@@ -148,6 +150,8 @@ with lib.browser() as b:
             ids = J(pg, "VAUTO.cars.filter(c => c.place === 'test').map(c => c.id)")
             if not ids:
                 ids = J(pg, f"__vr.park(['kompakt', 'suv', 'kombi'], {ANGER[0]}, {ANGER[1]}, -20, 2.5)")
+            # waiting in the street with the engine on (a parked car is dark)
+            E(pg, f"for (const id of {json.dumps(ids)}) __vr.car(id).st = 'steht'")
             for k in range(4):
                 E(pg, "GAME.step(0.05)")
             E(pg, f"__vr.look({ids[0]}, 9, 30, 1.7)")
