@@ -184,8 +184,13 @@ export const GLREAKTION = (() => {
       n = frei ? Math.min(figs.length, 1 + Math.floor(Math.random() * 3)) : 0;
     for (let i = 0; i < n; i++) filmen(figs[i], 5 + Math.random() * 3);
     // the moment: from the nearest filmer's eyes (when the player can be seen), else his own view
+    // (the picture from just in front of the phone: half a metre from the filmer's eyes towards the player)
     const F = figs[0],
-      von = F && frei && sichtbar() ? [F.x, F.y, (F.z || KERN.ground(F.x, F.y)) + 1.55] : null,
+      fl = F ? hyp(p[0] - F.x, p[1] - F.y) || 1 : 1,
+      von =
+        F && frei && sichtbar()
+          ? [F.x + ((p[0] - F.x) / fl) * 0.5, F.y + ((p[1] - F.y) / fl) * 0.5, (F.z || KERN.ground(F.x, F.y)) + 1.5]
+          : null,
       img = knips(von ? { von, auf: [p[0], p[1], p[2] + 1.1] } : {});
     const ort = ortName(p[0], p[1]),
       stars = GLLOGIK.stars(GL.W),

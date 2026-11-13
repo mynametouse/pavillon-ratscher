@@ -1114,8 +1114,9 @@ export const GLFAHNDUNG = (() => {
       if (F.downT > 0) return;
       if (c.goal) {
         const far = hyp(c.goal[0] - F.x, c.goal[1] - F.y),
-          // after him: they run (the figures' run of round 2, GLFIG.go(F, pts, { renn }) – with the old figures they walk fast)
-          renn = c.st === 'jagt' && !!GLFIG.geste,
+          // after him: today's police run (the figures' run of round 2, GLFIG.go(F, pts, { renn }) – with the old figures they walk
+          // fast); the ABV and the Volkspolizei of 1989 keep their pace
+          renn = c.st === 'jagt' && !!GLFIG.geste && GL.era === 'heute',
           v = renn ? Math.max(c.v, 3.2) : c.v;
         if (far > 0.5 && (F.st !== 'geht' || !c.went || hyp(c.goal[0] - c.went[0], c.goal[1] - c.went[1]) > 0.45)) {
           c.went = [c.goal[0], c.goal[1]];
