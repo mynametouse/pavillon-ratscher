@@ -39,8 +39,10 @@ Aufnahmen sprechen sie ab sofort mit echten Stimmen, ohne dass jemand etwas änd
 
 ## Entscheidungen (Falko schlief, alle Freigaben)
 
-- **Rangfolge und Budget (alle Dateien ≤ 6 MB, Ziel 5,8 MB):** welts Reaktionen geben jedem von zehn Kommentatoren jeden Satz (350 Zeilen) –
-  zusammen mit allem anderen wären das gut 12 MB. Deshalb:
+- **Rangfolge und Budget:** zuerst ≤ 6 MB; welts Reaktionen geben aber jedem von zehn Kommentatoren jeden Satz (370 Zeilen), alles zusammen
+  sind gut 11 MB. **Der Lead hat um 14:00 12 MB erlaubt** (`GL_BUDGET`, MP3 11,6 MB, mit den beiden Listen < 12 MB; jede Datei < 5 MB; die
+  Dateien laden erst, wenn ein Satz gesagt wird – die Seite wird nicht schwerer). Damit ist **alles** aufgenommen. Die Rangfolge bleibt für
+  den Fall, dass es wieder enger wird:
   1 = Geschichte (Gespräche der Missionen) – immer;
   2 = Welt (Polizeifunk und Rufe, die Zufallsereignisse, die Straße 1989, die eigenen Sätze des Spielers) – immer;
   2.5 = die Reaktionen der Leute, die auch in der Geschichte sprechen (Gerhard, Jule, Timo, Basti) – ihre Stimme darf nicht zwischen
@@ -50,8 +52,8 @@ Aufnahmen sprechen sie ab sofort mit echten Stimmen, ohne dass jemand etwas änd
   3.5 = die Reaktionen aller anderen (Verkäuferin, Yuki, Böller-Mann, Bratwurst-Uwe, Kirmesbursche, Kirmesmädchen);
   4 = die anderen Sender.
   2.5, 3.5 und 4 gehen **nur als ganze Person** (ein Sender oder ein Nachbar mit einem echten Satz zwischen lauter Gerätestimmen klingt
-  falsch). Kommen nach einem Merge neue Zeilen dazu, fällt zuerst das Ende der Stufe 3 heraus – es spricht dann wieder die Gerätestimme.
-  Die Reaktionen klingen etwas dumpfer (16 kHz, 24 kbit/s) – man hört sie auf der Straße, meist aus ein paar Metern.
+  falsch); was über dem Budget liegt, spricht mit der Gerätestimme. Die Reaktionen klingen etwas dumpfer (16 kHz, 24 kbit/s) – man hört
+  sie auf der Straße, meist aus ein paar Metern.
 - **Klang:** Personen 24 kHz mono, MP3 40 kbit/s, −17 LUFS, Stille an den Enden weg. Radiosprecher: Sendeklang (Hochpass 120 Hz, Tiefpass
   7 kHz, Kompressor, etwas Präsenz), 16 kHz, 24 kbit/s, −18 LUFS. Polizeifunk: Telefonband 300–3400 Hz, stark komprimiert, leicht
   übersteuert, 16 kHz, 24 kbit/s, −19 LUFS, ein Rauschstoß („Squelch“) dort, wo eine Durchsage beginnt und endet – die Beschreibung des

@@ -6,7 +6,7 @@
 #                                                             (viz3/build.py appends vx_add to the village's VOICEX.lines)
 #   viz3/extra/grenzland-stimmen/aufnahmen.json               per id: voice settings, seconds, loudness, bytes (what to record again)
 # Only what is new or changed is recorded (same id = same words; same voice, pace, pitch and sound: the file stays); lines no longer in the
-# list go. The budget (all files ≤ 6 MB): the story (prio 1) and the world (2) always, then as far as it goes the reactions of the story's
+# list go. The budget (all files ≤ 12 MB, each < 5 MB): the story (prio 1) and the world (2) always, then as far as it goes the reactions of the story's
 # people (2.5), the talk stations (3), the reactions of everybody else (3.5), the other stations (4) – 2.5, 3.5 and 4 a whole person each.
 #   python3 tools/voices/grenzland_record.py        (GL_BUDGET=bytes, GL_ONLY=<who,…> to try a few people, GL_DRY=1 nothing recorded)
 import asyncio, json, os, re, subprocess, sys, zlib
@@ -14,7 +14,7 @@ from itertools import groupby
 H = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(H, '..', '..'))
 EX = os.path.join(ROOT, 'viz3', 'extra', 'grenzland-stimmen'); OUT = os.path.join(EX, 'dist', 'snd', 'voice', 'gl')
 TMP = os.path.join(ROOT, 'out', 'grenzland-stimmen')
-BUDGET = int(os.environ.get('GL_BUDGET', 5_750_000))   # the MP3 files; with the two lists the folder stays under 6 MB
+BUDGET = int(os.environ.get('GL_BUDGET', 11_600_000))   # the MP3 files; with the two lists the folder stays under 12 MB (lead, 13.11. ~14:00)
 FX = 'fx1'   # the version of the sound chains below: a new one records everything again
 
 # ---- the cast: who → (voices, the first one edge-tts offers; rate; pitch; kind) ----
@@ -224,7 +224,7 @@ async def main():
                     take(*e)
         return want, todo, cut, total
     want, todo, cut, total = plan()
-    print(f'{len(want)} lines wanted ({len(todo)} to record), ≈ {total / 1e6:.2f} MB of {BUDGET / 1e6:.2f} MB; {len(cut)} radio lines over the budget', flush=True)
+    print(f'{len(want)} lines wanted ({len(todo)} to record), ≈ {total / 1e6:.2f} MB of {BUDGET / 1e6:.2f} MB; {len(cut)} lines over the budget (they keep the device voice)', flush=True)
     if os.environ.get('GL_DRY'):
         for k in todo[:12]: l, voice, rate, pitch, kind, *_ = want[k]; print('  would record', l['who'], voice, rate, pitch, kind, l['text'][:60])
         per = {}
@@ -320,7 +320,7 @@ async def main():
     summary(lines, want, old, todo, failed, cut, size)
     folder = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(EX) for f in fs)
     print(f'the folder viz3/extra/grenzland-stimmen: {folder / 1e6:.2f} MB')
-    if folder > 6_000_000: print('::warning title=grenzland_record::the folder is over 6 MB – lower GL_BUDGET')
+    if folder > 12_000_000: print('::warning title=grenzland_record::the folder is over 12 MB – lower GL_BUDGET')
 
 def summary(lines, want, old, todo, failed, cut, size):
     """the job summary: the new lines (line, voice, seconds, loudness), per person, what is over the budget"""
