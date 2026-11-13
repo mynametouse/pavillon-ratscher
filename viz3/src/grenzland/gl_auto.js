@@ -463,6 +463,8 @@ export const GLAUTO = (() => {
       zweitakt: 105,
     };
     schattenwurf(model.g);
+    // hidden far out until it is fetched – wherever an earlier visit left it (vehicles/vehicle.js remembers places)
+    VEH.place('gl-trabi', HIDE[0] + 14, HIDE[1], 0);
     model.g.visible = false;
     S.trabi = v;
     return v;

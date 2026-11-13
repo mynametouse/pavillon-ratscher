@@ -122,6 +122,10 @@ Sirene, Antenne dahinter); de.wikipedia.org/wiki/Streifenwagen („hellelfenbein
   aus, es ist nichts zu ändern; wer in 1989 die Verbrauchsrechnung des Mopeds auch für den Trabant will, braucht dort eine Zeile.
 - **Kastenwagen der Spedition:** `GLAUTO.spawn('kasten', { col: '#f1f1ee', text: 'Spedition Krähwinkel' })` schreibt den Namen auf
   beide Seiten.
+- **Reiter auf den Mopeds der Missionen** (`gl_mission.js` `reiterTick`): der Sitz der S 51 liegt 0,79 m hoch und 0,42 m hinter
+  dem Ursprung (`c.T.seat = [0, −0.42, 0.79]`), bei der Schwalbe `[0, −0.4, 0.78]` – die Hüfte der Figur also etwa bei
+  `c.z + 0.88` und 0,40 m hinter dem Ursprung (die erste Fassung hatte 0,84 und 0,22).
+- **Kastenwagen des SEK** (`{ col, band, bar: 'balken' }` aus dem Polizei-Modul): bekommt den Lichtbalken und das Band in `band`.
 - **Radio:** benutzt wird `window.GLRADIO.stations()` → `[{ id, name, freq }]` und `GLRADIO.cur()` → `id | null` (die Schnittstelle
   der ersten Fassung), dazu das Ereignis `grenzland:radio`. Heißen sie nach dem Umbau anders: `gl_cockpit.js`, Abschnitt „the
   radio's dial“.

@@ -1155,7 +1155,8 @@ export const GLTYPEN = (() => {
           { y: b, r: T.rw + 0.08, zc: T.rw + 0.01 },
         ],
         seams: [a - 0.38, yB, yB - 1.3],
-        zone: { schweller: ['matt', C.dark], seite: ['lack0'], sims: ['lack0'] },
+        // a second colour (o.band): a band along the sides between the rub strip and the belt
+        zone: { schweller: ['matt', C.dark], seite: ['lack0'], seite2: [o.band ? 'lack2' : 'lack0'], sims: ['lack0'] },
         inner: { trim: C.vinylGrey, liner: rgb(196, 194, 188), y0: yB - 0.1 },
       };
     const B = K.body(k, D),
@@ -1192,6 +1193,15 @@ export const GLTYPEN = (() => {
     wischer(k, B, -hw * 0.6, -hw * 0.1, y3 - 0.03, y3 - 0.33);
     wischer(k, B, hw * 0.02, hw * 0.52, y3 - 0.03, y3 - 0.33);
     if (o.text) for (const s of [-1, 1]) schriftzug(k, B, s, b + 0.25, yB - 0.25, belt + 0.28, belt + 0.56);
+    if (o.bar === 'balken') {
+      // a light bar over the cab (the police's van)
+      const yb = y2 - 0.25,
+        zr = B.top(yb, 0.3);
+      k.pad('matt', [0, yb, zr + 0.035], [1.3, 0.3, 0.05], 0.02, C.black);
+      k.pad('blau', [-0.36, yb, zr + 0.095], [0.58, 0.27, 0.085], 0.03, [1, 1, 1]);
+      k.pad('blau2', [0.36, yb, zr + 0.095], [0.58, 0.27, 0.085], 0.03, [1, 1, 1]);
+      k.pad('matt', [0, yb, zr + 0.09], [0.13, 0.26, 0.075], 0.02, C.silver);
+    }
     innen(k, B, D, T, o, {
       floor: 0.5,
       seat: C.cloth,
