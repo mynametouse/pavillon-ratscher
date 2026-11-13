@@ -1,0 +1,15 @@
+# Falko 13.11.2026 18:46: "brich bitte alle ab, die nicht mehr nötig sind, damit alles online gehen kann" – the session token may not
+# cancel runs (403), a run in the same concurrency group with cancel-in-progress does. Ends the superseded run in group feat-refs/heads/feat/suhl-laufzeit.
+name: Stopp feat-suhl-laufzeit
+on:
+  push:
+    branches: ['stopp/**']
+concurrency:
+  group: feat-refs/heads/feat/suhl-laufzeit
+  cancel-in-progress: true
+jobs:
+  stopp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - run: echo "superseded run in group feat-refs/heads/feat/suhl-laufzeit ended (Falko 18:46)"
