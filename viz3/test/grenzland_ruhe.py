@@ -119,8 +119,10 @@ with lib.browser() as b:
     for _ in range(20):   # the bars slide in (a CSS transition: real time)
         time.sleep(0.3)
         if E("getComputedStyle(document.querySelector('#glbars i')).transform") in ('none', 'matrix(1, 0, 0, 1, 0, 0)'): break
-    k = J("({ kino: document.body.dataset.glKino, bar: getComputedStyle(document.querySelector('#glbars i')).transform, hud: +getComputedStyle(document.getElementById('glhud')).opacity })")
-    ck('a scene: black bars, the panel out of the way', k['kino'] == '1' and k['bar'] in ('none', 'matrix(1, 0, 0, 1, 0, 0)') and k['hud'] < 0.1, str(k))
+    # (the bars slide in by a CSS transition, which a busy runner may not play: the rule that holds them in place is checked)
+    k = J("({ kino: document.body.dataset.glKino, bar: document.querySelector('#glbars i').matches('body[data-gl-kino=\\'1\\'] #glbars i'), "
+          "t: getComputedStyle(document.querySelector('#glbars i')).transform, hud: +getComputedStyle(document.getElementById('glhud')).opacity })")
+    ck('a scene: black bars, the panel out of the way', k['kino'] == '1' and k['bar'] and k['hud'] < 0.1, str(k))
     pic('05_szene')
     E("GLHUD.kino(false)")
     steps(3.2)

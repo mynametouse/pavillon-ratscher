@@ -161,6 +161,9 @@ body[data-gl="1"] #vhud .vrpm{display:none}
 @media (pointer:fine){body[data-gl="1"] #vhud .vbtns{display:none}}
 /* the game's free view (the eye, key O): the mode's panel goes too */
 body[data-gl="1"][data-clean="1"] :is(#glhud,#glort,#glvoll){display:none!important}
+/* the phone's body shares the class name .hb with the game's round buttons (shell/css/hud.css: display:flex) – its entries stood side by
+   side; stacked again (found by agent welt; the shared phone of agent handy replaces this panel) */
+#glhandy .hb{display:block;gap:0;min-height:0;font:inherit;color:inherit;cursor:auto;backdrop-filter:none;-webkit-backdrop-filter:none}
 /* the game's own speech line (a villager, a thought) gives way while a subtitle of the mode shows */
 body[data-gl="1"]:has(#glsub:not([hidden])) #npcsub{visibility:hidden}
 body:has(#npcpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),body:has(#dorfpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),
