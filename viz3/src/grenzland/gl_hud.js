@@ -62,7 +62,9 @@ body[data-gl-era="1989"] #glhud .gt b{color:#d8c79a}
   color:#f4ecd6;font:italic 400 13px/1.4 var(--f-body,system-ui);text-align:center;pointer-events:none;text-shadow:0 1px 6px rgba(0,0,0,.95)}
 #glfunk b{font-style:normal;font-weight:600;color:#f3c64f;margin-right:6px} #glfunk[hidden]{display:none!important}
 #glwahl{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:8;width:min(460px,92vw);
-  background:rgba(14,18,22,.9);color:#eef1f2;border-radius:12px;padding:12px;font:400 14px/1.4 var(--f-body,system-ui);pointer-events:auto}
+  background:rgba(14,18,22,.9);color:#eef1f2;border-radius:12px;padding:12px;font:400 14px/1.4 var(--f-body,system-ui);pointer-events:auto;
+  max-height:calc(100% - 190px - env(safe-area-inset-bottom,0px));overflow:auto;-webkit-overflow-scrolling:touch}
+@media (orientation:landscape) and (max-height:500px){#glwahl{bottom:calc(64px + env(safe-area-inset-bottom,0px));max-height:calc(100% - 84px)}}
 #glwahl h4{margin:0 0 4px;font:600 15px/1.3 var(--f-body,system-ui);color:#f3c64f}
 #glwahl p{margin:0 0 9px;opacity:.9;font-size:13px}
 #glwahl button{display:block;width:100%;text-align:left;margin-top:6px;font:500 14px/1.3 var(--f-body,system-ui);color:#eef1f2;background:rgba(255,255,255,.12);

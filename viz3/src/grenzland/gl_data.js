@@ -372,7 +372,7 @@ export const GLDATA = (() => {
       'Rolf Anschütz (1932–2008) leitete ab 1964 die HO-Gaststätte „Waffenschmied“ in Suhl. 1966 kochte er für einen Stammtisch zum ersten Mal Sukiyaki.',
       'Daraus wurde das einzige Japan-Restaurant der DDR, mit 40 Plätzen. Vor dem Essen badeten die Gäste gemeinsam; 1977 kam ein kleines Sentō-Bad dazu. Auf einen Tisch wartete man bis zu zwei Jahre.',
       'Zutaten wurden ersetzt: Berichte zum Film nennen Milchreis für den Sushi-Reis, Karpfen statt Lachs, Worcestersauce statt Sojasauce.',
-      '1979 reiste Anschütz vier Wochen nach Japan. Im Sommer 1986 verließ er den „Waffenschmied“; das Lokal schloss 1993. 1991 eröffnete er in Oberhof das Japanhotel „Sakura“.',
+      '1979 durfte Anschütz – nach anfänglicher Ablehnung – für vier Wochen nach Japan reisen. Im Sommer 1986 verließ er den „Waffenschmied“; das Lokal schloss nach einem Zeitungsbericht 1993. 1991 eröffnete er in Oberhof das Japanhotel „Sakura“.',
       '2012 kam der Film „Sushi in Suhl“ ins Kino; seit dem 14. Oktober 2012 hängt in der Gothaer Straße 8 in Suhl eine Gedenktafel.',
     ],
     quellen: [
@@ -415,7 +415,7 @@ export const GLDATA = (() => {
     radio: [
       'Hier ist der Sender. Seit gestern Abend können Bürger der DDR über alle Grenzübergangsstellen ausreisen.',
       'An den Übergängen nach Bayern bilden sich lange Schlangen. Die Volkspolizei bittet um Besonnenheit.',
-      'Und nun zum Wetter: neblig-trüb, um fünf Grad.',
+      'Und nun zum Wetter: nach frostiger Nacht heiter und trocken, am Nachmittag dunstig.',
     ],
     leute: {
       erna: [
