@@ -62,8 +62,11 @@ Guss; die Karosserien des Verkehrs bleiben beim Straßen-Chat.
 - **Navi statt Eckkarte** (Einstellung, an): in der Fahrersicht weicht die kleine Karte oben links, solange das Navi zu sehen ist.
 
 ### Teil 6 – die anderen Fahrzeuge
-- **Fremdes Auto** (das man im Verkehr anhalten und fahren darf, `verkehr/verkehr_auto.js` `id: 'verkehr'`, gleiche Fahrwerte und
-  Augenhöhe wie der Kombi): dasselbe Cockpit, eigener Kilometerstand (nicht gespeichert).
+- **Fremdes Auto** (das man im Verkehr anhalten und fahren darf, `verkehr/verkehr_auto.js` `id: 'verkehr'`): **vorerst ohne dieses
+  Cockpit** (13.11. abends) – seine Karosserie bringt ein einfaches Inneres im selben Mesh mit (Boden in 0,8 m Höhe, Armaturenbrett,
+  ein Lenkrad aus Balken, Sitze, seit 26.10.), das das Cockpit nicht ausblenden kann: zwei Lenkräder übereinander, der Boden durch die
+  Sitze (`k_verkehr_driver` vorher). Es kommt zurück (eine Zeile in `KIND`, `vehicles/cockpit.js`), sobald dieses Innere ein eigener Teil
+  ist (`model.inside` wie in `car.js`) – Bitte an den Straßen-Chat. Bis dahin fährt es mit seinem eigenen Inneren und dem Auge von heute.
 - **Traktor** (`vehicles/tractor.js`): eigenes Lenkrad (dünner Kranz, drei Metallspeichen, Lenkradknauf) dreht mit dem Einschlag × 18 –
   das feste Lenkrad der Karosserie wird ausgeblendet (die Gruppe mit dem Ring, ohne Änderung an `tractor.js`) –, eine Instrumententafel auf
   der Säule (Drehzahl 0–3000, rot ab 2350; Geschwindigkeit, Gang F/R, Betriebsstunden, Tank, Licht, Handbremse), Blinkpfeile, die Hände am
@@ -100,8 +103,8 @@ x 0,745 }, `ws` { y0 0,82, z0 0,97, w0 0,8, y1 −0,05, z1 1,55, w1 0,64 }, `flo
 `head: null`), `heads` (eigene Spiegelköpfe, true), `apil` (eigene A-Säulen-Verkleidung, true), `mirBack` (Spiegelkopf-Mitte bis Glas).
 In `head` außerdem `inset` (Band schmaler als die Scheibe), `fh`/`fw`/`fx` (Höhe, Breite, Lage der Dachrahmen über den Türen).
 **Die neue Karosserie** (`vehicles/kombi.js`) nennt ihre Werte in `spec.cockpit` mit `body: 'kombi'` – sie gelten nur, wenn dieser Teil
-in `model.body` steckt; das fremde Auto im Verkehr kopiert die Spec des Kombi (`verkehr/verkehr_auto.js`) und behält so die Werte und das
-Auge von heute. Für den Kombi: `eye` [−0,36, −0,30, 1,17] (Dachvorderkante ~0,5 m davor, Kranz oben ~0,33 m), `hp` [−0,36, −0,19, 0,6],
+in `model.body` steckt; das fremde Auto im Verkehr kopiert die Spec des Kombi (`verkehr/verkehr_auto.js`) – das Cockpit setzt dort das
+Auge von heute zurück und nimmt die Werte des Kombi weg (`COCKPIT`, `frame`). Für den Kombi: `eye` [−0,36, −0,30, 1,17] (Dachvorderkante ~0,5 m davor, Kranz oben ~0,33 m), `hp` [−0,36, −0,19, 0,6],
 `wheel` { c [−0,36, 0,11, 0,875] }, `dash` { face 0,47, top 0,97, ws 0,84, x 0,77 }, `ws` aus der Karosserie (Fuß y 0,82, Oberkante
 y 0,21), `floor` 0,315, `door` 0,78, `mirL`/`mirR` in den Gehäusen der Karosserie, `mirI` [0, 0,30, 1,31] (25 × 7 cm, Mitte des Autos,
 0,36 m rechts vom Auge, 0,6 m davor), `head` { z0/z1 aus der Scheibenoberkante, `fh` 0,1 }, `heads` false, `apil` false.
