@@ -27,7 +27,8 @@ S.guard(buildings=n, area='stadt')                      # plausible Menge? (stad
 | `index.json` schreiben | `python3 -I tools/suhl/lib/validate.py --index <…/suhl/<produkt>/v<N>> --area zentrum --sources ethos,alkis,osm,dop` (eigene Schlüssel eines vorhandenen Index bleiben erhalten) |
 | Quellen-Kürzel ansehen | `python3 -I tools/suhl/lib/validate.py --sources-list` |
 | Feldliste (englisch, aus dem Code) | `python3 -I tools/suhl/lib/validate.py --doc` |
-| Tests der Bibliothek | `python3 -I tools/suhl/lib/test_lib.py` und `python3 -I tools/suhl/lib/test_schema.py` (zusammen 2 s, ohne Netz) |
+| Tests der Bibliothek | `python3 -I tools/suhl/lib/test_lib.py`, `test_schema.py`, `test_easygeodata.py` (zusammen 3 s, ohne Netz) |
+| Höhen von easygeodata holen (nur im Workflow) | `python3 -I tools/suhl/lib/easygeodata.py --product dgm --prio P1 --raw ~/suhl-raw` (Abschnitt 9) |
 | Erfundenes Beispiel aller Produkte | `tools/suhl/lib/beispiel/suhl/…` (zum Einlesen, bevor echte Daten da sind; Kennungen `BEISPIEL_…`) |
 | Probekacheln | `tools/suhl/lib/probe.json` – die 11 Kacheln der Stufe 10, die `zentrum` berühren, mit Grenzen in UTM und Modellmetern |
 
@@ -288,12 +289,52 @@ der Lauf schlägt deshalb nicht fehl. Der Schlüssel erscheint nie im Protokoll.
 Achtung GitHub: In einer `concurrency`-Gruppe wartet höchstens **ein** Lauf; ein dritter verdrängt den wartenden. Die Aktion schützt
 sich deshalb selbst: abgelehnter Push → holen, umsetzen, noch einmal (bis zu 8 Versuche).
 
-## 9 easygeodata (DGM1, DOM1, nDOM1)
+## 9 easygeodata: DGM1, DOM1, nDOM1 (1 m)
 
-Stand 13.11.2026, 01:52: Falko meldet das Geheimnis `EASYGEODATA_KEY` als gesetzt. Die Probe aus GitHub Actions (funktioniert der
-Schlüssel, was bietet die Schnittstelle, eine Kachel als Beweis) und danach der Client `tools/suhl/lib/easygeodata.py` folgen; dieser
-Abschnitt wird dann ersetzt. Benutzt wird der Dienst nur über seine Schnittstelle mit Schlüssel, nur aus GitHub Actions, so wie seine
-Dokumentation es beschreibt. Jeder Workflow holt mit eigenem Cache (Actions-Caches gelten je Zweig).
+Geprüft am 13.11.2026 aus GitHub Actions (Läufe 43340656226 und 43341000214): Das Geheimnis `EASYGEODATA_KEY` ist gesetzt und gilt.
+Gelesen wurde die Beschreibung der Schnittstelle selbst (`/api/docs`, „easygeodata Extract API 1.0“), mit Schlüssel.
+
+| Frage | Antwort (gemessen oder aus der Beschreibung der Schnittstelle) |
+|---|---|
+| Wie meldet man sich an? | Kopfzeile `X-API-Key`. Ohne Schlüssel bekommen Programme 401. |
+| Was gibt es für Suhl (Gemeinde, AGS 16054000)? | je **193 Kacheln** von 1 km: DGM1 282,1 MB (1,2–1,6 MB je Kachel), DOM1 361,5 MB (1,4–2,0 MB), nDOM1 189,9 MB (0,2–1,3 MB) – zusammen 833,5 MB. Es sind genau die Kacheln P1–P3 aus `kacheln.csv`. |
+| Datenstand | bei allen Kacheln der Zeitraum 2020–2025 des Landes; der genaue Flugtag steht nicht dabei. DOM1 ist das Laser-Original; nDOM1 = DOM1 − DGM1 aus demselben Zeitraum. |
+| Dateiformat | GeoTIFF, 1000 × 1000 Zellen zu 1 m, Float32, EPSG:25832, Zellflächen, linke obere Ecke = (E km · 1000, N km · 1000 + 1000), leer = −9999, gekachelt 512, eine Übersicht, **LERC-gepackt** (DGM1/DOM1 höchstens 1 mm Abweichung, nDOM1 höchstens 5 cm) |
+| Probe-Kachel 619/5607 (Markt) | DGM1 1 243 568 Bytes, 413,62–510,18 m NHN, keine leere Zelle; nDOM1 692 899 Bytes, 0–69,86 m über Gelände |
+| Liest die vorhandene Pipeline das? | Ja, unverändert: als `<raw>/dgm1/dgm1_32_619_5607.zip` (das GeoTIFF unverpackt im ZIP) findet `tools/welt/fetch.py` `fetch_dgm1` die Datei, `read_dgm1` liefert 1000 × 1000, Ecke 619 000 / 5 608 000, 1 m. **Nötig: `pip install imagecodecs`** neben `tifffile` (LERC). |
+| Wie kommt die Datei? | Die Liste nennt je Kachel eine Adresse `/api/file/…`. Sie prüft Schlüssel und Kontingent und leitet auf eine 15 Minuten gültige Adresse eines anderen Servers weiter. Der Client schickt den Schlüssel nur an easygeodata.de, nie an den zweiten Server. |
+| Grenzen | kostenloses Konto: **20 GB im Monat**; Mosaik und Höhenlinien bis 150 Kacheln je Abruf. Fehler tragen ein Feld `grund` (`kontingent`, `tageslimit`, `tageslimit_server`, `schluessel` …) – es gibt also auch Tagesgrenzen, Zahlen nennt die Beschreibung nicht. Antworten ohne Zähler in den Kopfzeilen. |
+| Lizenz, Nennung | Daten des Landes: „© GDI-Th“ (das Land nennt CC BY 4.0, die Seite für Höhendaten dl-de/by-2-0 – gleiche Nennung). Die Beschreibung verlangt, die Quellenvermerke der Länder zu beachten. Wir nennen zusätzlich „bezogen über easygeodata.de“ (`egd.sources_entry('dgm')`). |
+| Straßen-Korridore (P4, 35 Kacheln außerhalb der Gemeinde) | nicht in der Gemeinde-Liste; der Client fragt sie einzeln über einen Rahmen ab (noch nicht am echten Dienst geprüft) |
+
+**So holt ein Workflow, was er braucht** (jeder mit eigenem Cache – Actions-Caches gelten je Zweig, einen gemeinsamen Rohdaten-Ordner gibt es nicht):
+
+```yaml
+      - uses: actions/cache@v4
+        with: { path: ~/suhl-raw, key: 'suhl-raw-egd-v1-${{ github.run_id }}', restore-keys: 'suhl-raw-egd-v1-' }
+      - run: pip install --quiet numpy tifffile imagecodecs
+      - name: Höhen von easygeodata (übersprungen, wenn der Schlüssel fehlt)
+        env: { EASYGEODATA_KEY: '${{ secrets.EASYGEODATA_KEY }}' }
+        run: python3 -I tools/suhl/lib/easygeodata.py --product dgm --prio P1 --raw ~/suhl-raw --report egd.json
+```
+
+| Wahl | Bedeutung |
+|---|---|
+| `--product dgm,dom,ndom` | DGM1, DOM1, nDOM1 – mehrere mit Komma |
+| `--prio P1` / `P1,P2` / `P1,P2,P3` | Kacheln aus `tools/suhl/out/bestand/kacheln.csv`: P1 = 8 um das Zentrum, P2 = 49 Kernstadt, P3 = 136 Rest der Gemeinde, P4 = 35 Korridore |
+| `--tiles 619_5607,620_5607` | einzelne Kacheln (linke untere Ecke in km) |
+| `--area zentrum --margin 300` | die 1-km-Kacheln, die dem Gebiet auf 300 m nahe kommen (zentrum 8, kernstadt 60, stadt ohne Rand 193) |
+| `--max-mb 1000` | Obergrenze je Lauf und Produkt |
+| Ergebnis | `<raw>/dgm1/dgm1_32_{E}_{N}.zip`, `<raw>/dom1/dom1_32_{E}_{N}.zip`, `<raw>/ndom1/ndom1_32_{E}_{N}.zip`; `<raw>/egd/manifest.json` (was wann kam, Datenstand); `--report` als JSON; Ausgaben `dgm_present`, `dgm_wanted`, `dgm_complete` |
+
+In Python: `import easygeodata as EG; egd = EG.Easygeodata(raw=RAW); rep = egd.fetch_many('ndom', EG.prio_tiles(['P1'])); a, e0, n1, px = egd.read('ndom', 619, 5607)`
+(`a[0]` ist die Nordzeile, Zellmitte von `a[r, c]` = (e0 + c + 0,5, n1 − r − 0,5)).
+
+**Abrufe und Kontingent:** je Produkt 1 Abruf für die Liste und 2 je Kachel. P1: 17 Abrufe, etwa 11 MB (DGM1). Ganze Gemeinde: 387 Abrufe
+je Produkt, bei 2 s Pause etwa 15 Minuten. Alle drei Produkte einmal sind 833,5 MB = 4,2 % der 20 GB im Monat. Der Client holt
+nichts doppelt (Dateien im Rohdaten-Ordner bleiben), hält bei `kontingent` oder Tagesgrenze sauber an und macht im nächsten Lauf
+weiter; ein Lauf schlägt deshalb nie fehl – das Ergebnis sagt, was fehlt. Geht ein Cache verloren, kostet es dieselbe Menge noch einmal:
+deshalb den Cache-Schlüssel nicht ohne Grund ändern. Benutzt wird der Dienst nur aus GitHub Actions (der Client verweigert sich sonst).
 
 ## 10 Was auf Falko wartet
 
@@ -301,7 +342,7 @@ Dokumentation es beschreibt. Jeder Workflow holt mit eigenem Cache (Actions-Cach
 |---|---|
 | Daten-Repo `mynametouse/pavillon-daten` mit GitHub Pages | ✔ angelegt, Pages antwortet |
 | Geheimnis `DATEN_TOKEN` | ✔ vorhanden, schreibt (Lauf 43339309234) |
-| Geheimnis `EASYGEODATA_KEY` | laut Falko gesetzt – wird als Nächstes geprüft |
+| Geheimnis `EASYGEODATA_KEY` | ✔ vorhanden, gilt (Läufe 43340656226, 43341000214); 20 GB im Monat frei |
 | LoD2 (echte Dachformen) | weiter von Hand, später |
 
 ## 11 Für den Suhl-Chat
