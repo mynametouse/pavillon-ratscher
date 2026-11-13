@@ -166,6 +166,23 @@ export const STEBENEN = (() => {
               h += `<text x="${f1(q[0] + 7)}" y="${f1(q[1] + 3)}" style="fill:#fff3b0;font:600 10px system-ui;paint-order:stroke;stroke:rgba(0,0,0,.7);stroke-width:3px">${String(b.line).replace(/[<&]/g, '')}</text>`;
           }
         } catch (e) {}
+      // feat/verkehr-real stage 2b: the traffic lights in the colour their main road has now (a junction: the side road's as a ring)
+      const A = window.VKAMPEL;
+      if (A && A.dots && P.th < 1500) {
+        const C = { gruen: '#35d46a', gelb: '#ffb21a', rot: '#ff3b2f', rotgelb: '#ff7a1a' },
+          N = { gruen: 'grün', gelb: 'gelb', rot: 'rot', rotgelb: 'rot-gelb' };
+        for (const d of A.dots()) {
+          const q = pr(d.x, d.y, 3);
+          if (q[2] >= 1 || q[0] < -20 || q[1] < -20 || q[0] > W + 20 || q[1] > H + 20) continue;
+          const tip =
+            d.kind === 'k'
+              ? `Ampel – Hauptstraße ${N[d.a]}, Nebenstraße ${N[d.b]}`
+              : `Fußgängerampel – Autos ${N[d.a]}`;
+          if (d.kind === 'k')
+            h += `<circle cx="${f1(q[0])}" cy="${f1(q[1])}" r="8.5" fill="none" stroke="${C[d.b]}" stroke-width="2.5"/>`;
+          h += `<circle cx="${f1(q[0])}" cy="${f1(q[1])}" r="5" fill="${C[d.a]}" stroke="#111" stroke-width="1.2"><title>${tip}</title></circle>`;
+        }
+      }
       return h;
     },
   });

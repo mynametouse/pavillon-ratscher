@@ -285,9 +285,63 @@ export const VKREGELN = (() => {
     }
     return used;
   }
+  // ---- stage 2b: traffic lights ----
+  // a junction's two groups (A: the main road, B: the rest) over a cycle of 50 s, as German lights run: red and yellow together for a
+  // second before green, yellow 3 s, all red 2 s between the groups. t: seconds (with the light's own offset). → { A, B }
+  const CYC = 50;
+  function phaseK(t) {
+    const u = ((t % CYC) + CYC) % CYC,
+      A = u < 1 ? 'rotgelb' : u < 25 ? 'gruen' : u < 28 ? 'gelb' : u >= 49 ? 'rotgelb' : 'rot',
+      B = u >= 29 && u < 30 ? 'rotgelb' : u >= 30 && u < 44 ? 'gruen' : u >= 44 && u < 47 ? 'gelb' : 'rot';
+    return { A: u >= 49 ? 'rotgelb' : A, B };
+  }
+  // a crossing for walkers (button operated): green for the cars until someone presses; then (after at least 20 s of green) yellow 3 s,
+  // red 12 s (the walkers' green in the middle 8 s), red and yellow 1 s. st: { ph, t, req } → changed in place
+  function crossStep(st, dt, req) {
+    st.t += dt;
+    if (req) st.req = true;
+    if (st.ph === 'gruen') {
+      if (st.req && st.t >= 20) ((st.ph = 'gelb'), (st.t = 0), (st.req = false));
+    } else if (st.ph === 'gelb') {
+      if (st.t >= 3) ((st.ph = 'rot'), (st.t = 0));
+    } else if (st.ph === 'rot') {
+      if (st.t >= 12) ((st.ph = 'rotgelb'), (st.t = 0));
+    } else if (st.ph === 'rotgelb') {
+      if (st.t >= 1) ((st.ph = 'gruen'), (st.t = 0));
+    }
+    return st;
+  }
+  // the walkers' signal of a crossing: green in the middle of the cars' red
+  const walkGreen = st => st.ph === 'rot' && st.t >= 2 && st.t < 10;
+  // stop at a light? state, the distance of the front to the line (m), the speed (m/s): red and red-yellow stop; yellow stops whoever can
+  // without braking hard (3 m/s²), a car too close goes on
+  function atLight(state, d, v) {
+    if (state === 'rot' || state === 'rotgelb') return d > -0.5;
+    if (state === 'gelb') return d > (v * v) / 6 + 1;
+    return false;
+  }
   // the indicator for a car at s before an event: −1 left, +1 right, 0 none (from 45 m before the node to 6 m after it)
   const blink = (ev, s) =>
     !ev || Math.abs(ev.turn) < 0.45 || s < ev.sN - 45 || s > ev.sN + 6 ? 0 : ev.turn < 0 ? -1 : 1;
-  return { index, signs, lines, rule, waitFor, goFirst, events, limits, blink, inHead, outHead, wrap, RANK };
+  return {
+    index,
+    signs,
+    lines,
+    rule,
+    waitFor,
+    goFirst,
+    events,
+    limits,
+    blink,
+    inHead,
+    outHead,
+    wrap,
+    RANK,
+    phaseK,
+    crossStep,
+    walkGreen,
+    atLight,
+    CYC,
+  };
 })();
 if (typeof window !== 'undefined') window.VKREGELN = VKREGELN; // tests and the console

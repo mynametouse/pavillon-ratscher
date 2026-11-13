@@ -743,6 +743,20 @@ export const VAUTO = (() => {
     c.blinkR = VKREGELN.blink(ev, c.s) || VKREGELN.blink(prev, c.s);
     if (!ev || ev.go) return Infinity;
     const front = c.s + c.D.YF;
+    // stage 2b: a traffic light – red and red-yellow stop at the line, yellow when it can; a crossing for walkers is only its light
+    if (ev.lt) {
+      const st = ev.lt.L.shows(ev.lt.g),
+        dl = ev.sStop - front;
+      ev.light = st;
+      if (dl < Math.max(30, (c.v * c.v) / 4 + 12) && VKREGELN.atLight(st, dl, c.v)) {
+        if (c.v < 0.3) ev.wait += dt;
+        return ev.sStop - c.D.YF - 0.15;
+      }
+      if (ev.crossing) {
+        if (front > ev.sStop + 0.6) ev.go = true;
+        return Infinity;
+      }
+    }
     // decided only near the line: ahead of it as far as it takes to stop comfortably
     if (ev.sStop - front > Math.max(22, (c.v * c.v) / 5 + 10)) return Infinity;
     const stopS = ev.sStop - c.D.YF - 0.15;

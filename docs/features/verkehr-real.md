@@ -76,6 +76,24 @@ Falko (13.11. 12:14): „Sie sollen sich natürlich an Ampeln und Verkehrsregeln
   bis das auf der Kreisstraße durch ist, nie beide zugleich in der Kreuzung, dann fährt es, links blinkend; an einer Kreuzung gleicher
   Straßen fährt der von rechts zuerst.
 
+## Stufe 2b: Ampeln (`verkehr/vk_ampel.js`, `VKAMPEL`)
+
+- **Die Ampeln von OpenStreetMap** in Schleusingen (Stand 13.11.2026; © OpenStreetMap-Mitwirkende, ODbL): die Kreuzungsampel (Knoten
+  10789356, mit der Fußgängerampel 19 m daneben) und die Fußgängerampel (393862429, auf Anforderung). Dazu die eines Satzes von
+  `strassen/`: `STRDAT.add(name, { …, ampeln: [['k' | 'f', x dm, y dm]] })` – so bekommt z. B. Suhl Masten, Phasen und haltende Autos.
+- **Masten mit Köpfen** an jeder Zufahrt (rechts vor der Kreuzung, der Kopf zum Verkehr; Rot, Gelb, Grün mit Schute), an einer
+  Fußgängerampel je Richtung einer und die Fußgängerköpfe quer zur Straße; gebaut, wenn der Beobachter auf 400 m herankommt, ein Netz für
+  Masten und Gehäuse und eines je Gruppe und Farbe für die Lampen (eine Kreuzung 7 Zeichenaufrufe), Programme beim Laden übersetzt.
+- **Phasen wie in Deutschland:** an der Kreuzung zwei Gruppen (die Hauptstraße und der Rest) in 50 s – Rot-Gelb 1 s vor Grün, Gelb
+  3 s, alles Rot 2 s zwischen den Gruppen; jede Kreuzung ihr eigener Versatz. Die Fußgängerampel ist grün für die Autos, bis jemand
+  drückt (im Mittel alle 70 s, oder der Spieler steht an der Furt), dann nach mindestens 20 s Grün: Gelb 3 s, Rot 12 s (Fußgänger
+  grün dazwischen 8 s), Rot-Gelb 1 s.
+- **Die Autos:** Rot und Rot-Gelb halten an der Linie, Gelb hält, wer es ohne starkes Bremsen schafft (3 m/s²); an einer Ampelkreuzung
+  sind alle Zufahrten gleich, Linksabbieger warten auf den Gegenverkehr. Draufsicht: jede Ampel als Punkt in der Farbe der Hauptstraße,
+  der Ring in der der Nebenstraße.
+- Test `verkehr_real:ampel`: die Kreuzungsampel gebaut, die Gruppen wechseln sich ab, ein Auto auf Rot wartet an der Linie und fährt bei
+  Grün; die Fußgängerampel schaltet auf Anforderung; die Draufsicht zeigt die Ampeln.
+
 ## Messungen (13.11.2026, SwiftShader im Chat-Rechner)
 
 | | Wert |
@@ -86,6 +104,13 @@ Falko (13.11. 12:14): „Sie sollen sich natürlich an Ampeln und Verkehrsregeln
 | Zeichenaufrufe | 1 je Fahrzeug (nah 2) + 2 für alle Schatten und Lichtkegel |
 | Fr 16:30 am Rand von Ratscher | 6 Fahrzeuge von 5,9 gezählt; um 3 Uhr 1 von 0,9; So 11 Uhr 4, kein Lkw |
 
+**Die Test-Rechner von GitHub** (Chrome 158 mit SwiftShader/Subzero, reine Software-Grafik) brauchen für das **erste Bild nach dem
+Laden** mehrere Minuten: beim ersten Zeichnen werden dort alle Shader-Pipelines übersetzt, und V18b bringt zwei große neue mit (der Lack
+mit Klarlack und das Glas der Fahrzeuge). Im Chat-Rechner mit demselben Chrome gemessen: erstes Bild `src` ohne Verkehr 142 s, mit V18b
+387 s; alle weiteren Bilder gleich teuer (v16b auf `src` mit V18b: erstes Bild nach 300 s, danach 7–12 s je Bild wie vorher). Mit dem
+älteren Chrome 141 kein Unterschied. Auf echten Grafikkarten kostet das Übersetzen Sekundenbruchteile und geschieht beim Laden. `v16b`
+schreibt die blockierenden WebGL-Aufrufe des ersten Bilds ins Protokoll.
+
 ## Tests
 
 - `viz3/test/unit/verkehr_real.test.mjs`: Maße aller Typen, Achsen, Lampenarten, Stufen, Tagesganglinien, Ostern und Feiertage,
@@ -95,7 +120,7 @@ Falko (13.11. 12:14): „Sie sollen sich natürlich an Ampeln und Verkehrsregeln
   Lampen nachts, die drei Stufen, Sattelzug in der Kurve, die Zahl je Stunde, Draufsicht, Zeichenaufrufe, keine neuen Shader-Programme.
 - Bilder ohne Browser: `node viz3/extra/verkehr-real/werkzeug/bild.mjs <typ> out/verkehr_real/<typ>.png --col '#…' [--col2 '#…'] [--zug]`.
 
-## Was als Nächstes kommt (Plan, Stufen 2b–4)
+## Was als Nächstes kommt (Plan, Stufen 3–4)
 
-Ampeln (Fußgängerampeln der Region aus OpenStreetMap mit Phasen, in Suhl über dieselbe Schnittstelle), Überholen außerorts, Zusammenstöße mit harmlosen Folgen (alle Verkehrsteilnehmer fest, auch Busse, Räder, Fußgänger), Räder und
+Überholen außerorts, Zusammenstöße mit harmlosen Folgen (alle Verkehrsteilnehmer fest, auch Busse, Räder, Fußgänger), Räder und
 Fußgänger im Verkehr, Ampelphasen in der Draufsicht.
