@@ -68,7 +68,12 @@ Falko: „es muss möglichst realistisch werden“ – lieber wenige Zukünfte, 
 - **Wald:** junge Bäume unter 2,5 m sind einfache Formen; Buche, Ahorn, Eberesche und Salweide haben die Form von Eiche, Esche bzw. Espe;
   der Boden unter Gras und Kräutern bleibt Nadelstreu mit Moos; Rinde schält sich nicht; Weidenröschen und Fingerhut sind einfache
   Formen (aus der Nähe als Modell zu erkennen); die Rückegassen gehen nicht um die gepflanzten Gruppen herum.
-- **Hochwasser:** kein Abflussmodell; Schaum und Strömung sind ein Bild, kein Wirbel an einzelnen Pfosten oder Stämmen.
+- **Hochwasser:** kein Abflussmodell; Schaum und Strömung sind ein Bild, kein Wirbel an einzelnen Pfosten oder Stämmen. Aus sehr flachem Blick spiegelt ein schmaler
+  Wasserstreifen in der Ferne noch den grauen Himmel.
+- **Wald von heute:** wo die Kronenkarte dünn ist, zeigt der Waldboden blaugraue Flecken aus dem Luftbild. In den Zukünften verhindert das die
+  Untergrenze im Haken `S.canopy` (`world/forest.js`); für die Welt von heute bräuchte `forest.js` dieselbe Untergrenze.
+- **Dach-PV:** von den Dorfdächern werden nur rund 200 Ebenen erkannt, 62 davon belegt – viele Dorfhäuser bleiben ohne Module (Ursache offen).
+- **Mehr Fahrten** (Mobilität) zeigt nichts in der Welt.
 - **Dürre:** `WXBODEN.setDry` (Haken von `zukunft` in `wetter/wx_boden.js`) mischt die Farbe der Bodenbilder mit Stroh – das macht grüne
   Felder nur dunkler, nicht gelb. Ein Faktor über 1 im Rot (etwa `DRYC` = 1,7 / 1,15 / 0,75 multiplikativ) wäre nötig.
 - „Mehr Fahrten“ (Takt) zeigt nichts in der Welt (die Busse fahren nach dem echten Fahrplan).
