@@ -185,7 +185,8 @@ def desktop():
         if want('sprung'):
             st, bo = s.get('stadt') or {}, s.get('boden') or {}
             ck('the jump to Suhl: the zone built, the package and the index loaded', s['state'] == 'ready' and s['zone'] == 'ready' and s['loaded'] and not s['err'], json.dumps({k: s.get(k) for k in ('state', 'zone', 'err', 'versions', 'products', 'times')}))
-            ck('at the Markt, on Suhl\'s own ground', math.hypot(p['x'] - MARKT[0], p['y'] - MARKT[1]) < 3 and p['free'] is True and (p['place'] or '').startswith('Suhl'), json.dumps(p, ensure_ascii=False))
+            sp = J("SUHL.SPOTS.suhl[0]")   # the arrival on the Markt (facing the fountain and the Rathaus since 13.11.2026)
+            ck('at the Markt, on Suhl\'s own ground', math.hypot(p['x'] - sp[0], p['y'] - sp[1]) < 3 and math.hypot(p['x'] - MARKT[0], p['y'] - MARKT[1]) < 30 and p['free'] is True and (p['place'] or '').startswith('Suhl'), json.dumps(p, ensure_ascii=False))
             ck('ground under the feet: the near tiles of Suhl\'s set in WELT', p['w'] is not None and abs(p['feet'] - p['g']) < 0.05 and abs(p['g'] - p['w']) < 0.01 and '+suhl/' in s['boden'].get('sets', J("WELT.state().sets")), json.dumps(p) + ' ' + J("WELT.state().sets"))
             ck('buildings in full around the Markt (level 1), from the records', st.get('l1', 0) >= 4 and st.get('buildings', 0) > 500 and st.get('err') == 0 and st.get('mats'), json.dumps(st))
             for _ in range(4):
