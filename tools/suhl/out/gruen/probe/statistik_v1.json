@@ -1,0 +1,350 @@
+{
+ "made": "2026-11-13T01:39:01Z",
+ "gebiet": "zentrum",
+ "kacheln_gebiet": 11,
+ "kacheln_einzelbaeume": 11,
+ "schritte": {
+  "luftbild": {
+   "kacheln": 11,
+   "fehlgeschlagen": 0,
+   "sekunden": 0
+  },
+  "baeume": {
+   "anzahl": 12714,
+   "kacheln": 11,
+   "sekunden": 34
+  },
+  "wald": {
+   "sekunden": 3
+  },
+  "flaechen": {
+   "sekunden": 0
+  }
+ },
+ "kontext": {
+  "osm": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
+  "osm_stand": "2026-11-13T01:38:08Z",
+  "gebaeude_osm_ringe": 35667,
+  "gebaeude_ethos": 53938,
+  "strassen": 10630,
+  "osm_baeume": 1137,
+  "osm_baumreihen": 27
+ },
+ "ndom": {
+  "kacheln_1km": 8,
+  "ordner": true
+ },
+ "kachel_summen": {
+  "geruecket": 1092,
+  "gruen_hoch_ohne_krone_m2": 1517.6,
+  "hoch_ohne_gruen_m2": 7996.9,
+  "hoehe_gemessen": 11297,
+  "kronen_aus_hoehenmodell": 9040,
+  "kronen_roh": 15689,
+  "ohne_hoehe_im_laser_behalten": 3093,
+  "osm_baeume": 505,
+  "osm_mit_krone": 389,
+  "osm_neu_gepflanzt": 25,
+  "osm_nicht_sichtbar": 59,
+  "osm_ohne_krone_gesetzt": 32,
+  "verworfen_dach_fahrbahn": 186,
+  "verworfen_klein": 0,
+  "verworfen_ohne_hoehe": 1102,
+  "hinweis": "Summen über die Kacheln samt 12 m Rand – am Rand doppelt gezählt (etwa 6 %); die Zahlen der Bäume stehen unter \"baeume\""
+ },
+ "baeume": {
+  "anzahl": 12714,
+  "kacheln": 11,
+  "flaeche_ha": 176.0,
+  "baeume_je_ha": 72.2,
+  "nach_art": {
+   "Laubbaum (Art unbestimmt)": 9048,
+   "Nadelbaum (Art unbestimmt)": 340,
+   "Fichte": 6,
+   "Buche": 13,
+   "Erle": 1,
+   "Strauch/Hecke/sehr kleiner Baum": 3306
+  },
+  "nadel_anteil_prozent": 2.7,
+  "merker": {
+   "lage_luftbild": 4704,
+   "lage_osm": 53,
+   "lage_ndom": 7957,
+   "hoehe_gemessen": 10946,
+   "radius_gemessen": 12661,
+   "art_kartiert": 335,
+   "geruecket": 912,
+   "in_osm_kartiert": 393,
+   "im_wald": 2767
+  },
+  "hoehe_m_quantile_5_25_50_75_95": [
+   1.1,
+   2.9,
+   5.7,
+   13.1,
+   23.2
+  ],
+  "kronenradius_m_quantile_5_25_50_75_95": [
+   1.25,
+   2.39,
+   3.65,
+   4.97,
+   7.06
+  ],
+  "kronenflaeche_ha": 71.2,
+  "nach_standort_ohne_straeucher": {
+   "Wald": {
+    "baeume": 2735,
+    "kronenradius_median_m": 4.4
+   },
+   "Straßenbaum": {
+    "baeume": 1264,
+    "kronenradius_median_m": 2.8
+   },
+   "Park, Grünanlage, Friedhof": {
+    "baeume": 802,
+    "kronenradius_median_m": 3.9
+   },
+   "Garten, Hof, Kleingarten": {
+    "baeume": 2980,
+    "kronenradius_median_m": 3.7
+   },
+   "sonst": {
+    "baeume": 1627,
+    "kronenradius_median_m": 3.7
+   }
+  },
+  "nach_nutzung": {
+   "sonst / nicht kartiert": {
+    "flaeche_ha": 3.6,
+    "baeume": 454,
+    "baeume_je_ha": 125.7
+   },
+   "Wald": {
+    "flaeche_ha": 21.5,
+    "baeume": 2773,
+    "baeume_je_ha": 129.2
+   },
+   "Gebüsch": {
+    "flaeche_ha": 8.9,
+    "baeume": 1405,
+    "baeume_je_ha": 157.1
+   },
+   "Wiese": {
+    "flaeche_ha": 2.4,
+    "baeume": 232,
+    "baeume_je_ha": 98.2
+   },
+   "Rasen": {
+    "flaeche_ha": 7.4,
+    "baeume": 838,
+    "baeume_je_ha": 112.8
+   },
+   "Park": {
+    "flaeche_ha": 2.5,
+    "baeume": 320,
+    "baeume_je_ha": 125.5
+   },
+   "Kleingarten": {
+    "flaeche_ha": 3.9,
+    "baeume": 521,
+    "baeume_je_ha": 132.1
+   },
+   "Friedhof": {
+    "flaeche_ha": 0.4,
+    "baeume": 26,
+    "baeume_je_ha": 74.3
+   },
+   "Sportplatz": {
+    "flaeche_ha": 0.2,
+    "baeume": 0,
+    "baeume_je_ha": 0.0
+   },
+   "Spielplatz": {
+    "flaeche_ha": 0.4,
+    "baeume": 22,
+    "baeume_je_ha": 56.5
+   },
+   "Wohngebiet": {
+    "flaeche_ha": 103.5,
+    "baeume": 5466,
+    "baeume_je_ha": 52.8
+   },
+   "Gewerbe, Industrie, Handel": {
+    "flaeche_ha": 7.0,
+    "baeume": 246,
+    "baeume_je_ha": 34.9
+   },
+   "Bahngelände": {
+    "flaeche_ha": 2.4,
+    "baeume": 70,
+    "baeume_je_ha": 28.9
+   },
+   "Wasser": {
+    "flaeche_ha": 1.0,
+    "baeume": 6,
+    "baeume_je_ha": 6.0
+   },
+   "Parkplatz": {
+    "flaeche_ha": 8.8,
+    "baeume": 242,
+    "baeume_je_ha": 27.5
+   },
+   "Schule, Kindergarten": {
+    "flaeche_ha": 2.0,
+    "baeume": 93,
+    "baeume_je_ha": 46.1
+   }
+  },
+  "max_je_kachel": 1877
+ },
+ "pruefung": {
+  "baeume": 12714,
+  "auf_gebaeude_grundriss": 0,
+  "in_fahrbahn": 0,
+  "auf_wasser": 0,
+  "doppelte_unter_0_75_m": 0,
+  "mittelpunkt_suhl_in_kachel": "497_542",
+  "mittelpunkt_im_satz": true,
+  "kacheln_mit_fund": [],
+  "ok": true
+ },
+ "wald": {
+  "kacheln": 3,
+  "zellen": 536,
+  "flaeche_ha": {
+   "Laubwald": 20.0,
+   "Mischwald": 0.9,
+   "Jungbestand / Schlagflur (glatte Krone)": 0.5,
+   "Blöße / Kahlfläche": 0.0
+  },
+  "flaeche_ha_summe": 21.4,
+  "bestaende": 7,
+  "bildbloecke": 1,
+  "hoehe_gemessen_ha": 21.4,
+  "seit_laserflug_geraeumt_ha": 0.0,
+  "baeume_in_bestaenden": 2699
+ },
+ "flaechen": {
+  "kacheln": 11,
+  "flaechen": 225,
+  "flaeche_ha_im_gebiet": {
+   "Wald": 3.6,
+   "Gebüsch": 2.6,
+   "Wiese": 0.0,
+   "Rasen": 2.1,
+   "Park": 1.1,
+   "Kleingarten": 0.0,
+   "Friedhof": 0.0,
+   "Sportplatz": 0.1,
+   "Spielplatz": 0.2
+  },
+  "gruenmaske_kacheln": 11,
+  "gruenmaske_flaeche_ha": {
+   "niedriges Grün (Rasen, Wiese, Beete)": 9.7,
+   "Gehölz (Kronendach)": 75.5
+  }
+ },
+ "schema": {
+  "geprueft": true,
+  "index": {
+   "b": "n-ratscher/out/suhl/b/v1/index.json: 11 tiles, 12714 items, 101712 bytes; Luftbild (DOP20 RGB und CIR, Bildflug 15.05.2024): © GDI-Th, CC BY 4.0 (dl-de/by-2-0); Bäume, Baumreihen, Wald- und Grünflächen: © OpenStreetMap-Mitwirkende, ODbL 1.0",
+   "w": "villon-ratscher/out/suhl/w/v1/index.json: 3 tiles, 536 items, 7200 bytes; Luftbild (DOP20 RGB und CIR, Bildflug 15.05.2024): © GDI-Th, CC BY 4.0 (dl-de/by-2-0); Bäume, Baumreihen, Wald- und Grünflächen: © OpenStreetMap-Mitwirkende, ODbL 1.0",
+   "gr": "/home/runner/work/pavillon-ratscher/pavillon-ratscher/out/suhl/gr/v1/index.json: 11 tiles, 225 items, 30752 bytes; © OpenStreetMap-Mitwirkende, ODbL 1.0"
+  },
+  "gueltig": true,
+  "meldung": "VALID: out - schema 1 (rev 1.1), 0 errors, 0 warnings",
+  "zeilen": []
+ },
+ "sekunden": 40,
+ "kachel_tabelle": [
+  [
+   495,
+   540,
+   199,
+   1358,
+   0.0,
+   1
+  ],
+  [
+   496,
+   540,
+   495,
+   1721,
+   0.0,
+   1
+  ],
+  [
+   495,
+   541,
+   210,
+   1588,
+   0.0,
+   1
+  ],
+  [
+   496,
+   541,
+   456,
+   3378,
+   0.0,
+   1
+  ],
+  [
+   497,
+   541,
+   505,
+   2670,
+   0.0,
+   1
+  ],
+  [
+   496,
+   542,
+   147,
+   3062,
+   0.0,
+   1
+  ],
+  [
+   497,
+   542,
+   500,
+   3062,
+   0.0,
+   1
+  ],
+  [
+   498,
+   542,
+   536,
+   2097,
+   0.089,
+   1
+  ],
+  [
+   496,
+   543,
+   77,
+   225,
+   0.529,
+   1
+  ],
+  [
+   497,
+   543,
+   169,
+   1303,
+   0.716,
+   1
+  ],
+  [
+   498,
+   543,
+   594,
+   3037,
+   0.004,
+   1
+  ]
+ ]
+}
