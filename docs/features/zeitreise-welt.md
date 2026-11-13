@@ -34,7 +34,7 @@ verzogenen Ebene, Nester ~100 m, keine Rasterquadrate) plus Zufall; Wald ist, wa
 ist (ganze Bestände, nicht einzelne Kronen);
 die Anteile des Zustands – in der Reihenfolge jung, geräumt, liegend, grau, rot – werden über die gemessene Verteilung der Ränge zu
 Schwellen. So stimmen die Anteile auf dem Bildschirm mit der Chronik überein; die ältesten Nester liegen innen (jung, geräumt), das frische
-Rot an ihren Rändern – wie sich ein Befall ausbreitet. Karten: rotbraun, grau und licht (Totholz), weg (geräumt/liegend: das Gelände zeigt
+Rot an ihren Rändern – wie sich ein Befall ausbreitet. Karten: rostrot im Befallsjahr, silbergrau und licht (Totholz), weg (geräumt/liegend: das Gelände zeigt
 es), klein und von anderer Art (jung: Pionierbaum Birke/Fichte oder die gepflanzte Mischung Buche, Ahorn, Tanne). Gelände: dunkle
 Waldpixel außerhalb des Dorfs (12 Kreise um die Häuser ausgespart) in der Farbe der Stufe – auch die Hügel bis 12 km, für die es keine
 Baumdaten gibt. Zwei frühe Nester sind gesetzt: die Käferfläche mit der Pflanzung (120, −980) und die Windrad-Fläche auf dem Rücken
@@ -56,7 +56,7 @@ Annahme 3 × der Pegel der Straße).
 | Windrad: Bau (Zufahrt, Kranstellfläche, Fundament, Turmstück, Kran, Blätter) / Anlage (Nabe 160 m, Rotor 160 m, roter Turmring, rot-weiß-rote Blattspitzen, dreht ~9/min) | `energy.windrad` 1 / 2 | Rücken südlich des Dorfs (230, −1290), ~1 km vom letzten Haus |
 | Rotmilan kreist über der Fläche | `windrad = 2` | zwischen Pflanzung und Windrad |
 | Holzernte: Harvester, Forwarder, Polter am Waldweg; Holzlaster durchs Dorf | `forest.harvest` > 0,04 / > 0,25 | Käferfläche (120, −980), Laster auf der Grabenstrecke |
-| Käferfläche nah: Stubben, Reisig, liegende graue Stämme, junge Bäume, Wuchshüllen | Stufen des Fleckenfelds dort | um (120, −980) |
+| Käferfläche nah: runde Stubben mit hellem Schnitt, Reisig (Äste kreuz und quer), liegende graue Stämme, Brombeer-Büsche, junge Bäume als die erzeugten Bäume des Gartens (Kiefer-Art für Fichte und Tanne, Espe, Esche, Eichen; Sämlinge unter 0,7 m einfach), die Pflanzung in Reihen 3 × 2 m mit Wuchshüllen (1,25 m) | Stufen des Fleckenfelds dort; nur im Umkreis von 600 m um die Kamera neu gebaut | um (120, −980), die Jungen im Umkreis von 50 m um die Kamera |
 | Wasser in der Straße (braun, fließt, Schaumstreifen) | `water.level` | die Dorfstraße westlich des Angers („Straße am Bach“, tiefster Teil) |
 | Feuerwehr mit Blaulicht (zwei Blitze je halbe Sekunde) | `water.rain` oder `level` > 3 cm | oberes Ende der Straße |
 | Schlamm / Sperrmüll (Sofa, Matratze, Teppich, Kühlschrank, Säcke) | `water.mud` / `water.debris` | Straße / vor den Häusern an ihr |
