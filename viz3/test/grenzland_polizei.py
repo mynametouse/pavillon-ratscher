@@ -11,7 +11,9 @@
 #   heli       four stars: the helicopter flies in, circles, sees him in the open and not under the trees
 #   sek        five stars: vans of the special forces across the road ends, others hunt
 #   stadt      Schleusingen: a patrol car over the town's streets (its own run: the town takes memory)
-# Pictures in out/grenzland_polizei/.   python3 viz3/test/grenzland_polizei.py 9016 [scenes, comma separated]   (~8 min here)
+# Pictures in out/grenzland_polizei/.   python3 viz3/test/grenzland_polizei.py 9016 [scenes, comma separated]
+# It runs in two parts (viz3/extra/grenzland-polizei/tests.txt): roads,witness,patrol,escape and moped,block,night,1989,heli – each
+# ~4 min of loading and ~1 min of scenes here; sek and stadt on their own.
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
