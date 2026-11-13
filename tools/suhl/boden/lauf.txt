@@ -3,7 +3,7 @@
 # (eine Änderung am Workflow allein stößt so keinen teuren Lauf an). Stadt- und Probe-Läufe haben je ihre eigene
 # Warteschlange: ein Probe-Lauf bricht einen laufenden Stadt-Lauf nicht ab.
 # Zeilen "name = wert"; alles hinter # ist Kommentar.
-lauf = 6                      # fortlaufende Nummer (nur damit sich die Datei ändert)
+lauf = 7                      # fortlaufende Nummer (nur damit sich die Datei ändert)
 
 # ---- [stadt]: die ganze Gemeinde und die Straßenkorridore; Artefakte suhl-boden-<version> (Produkt) und suhl-boden-roh ----
 stadt.version = v2

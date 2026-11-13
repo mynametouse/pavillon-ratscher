@@ -277,5 +277,33 @@ rq = bild.requests_of(12, ts)
 ck('image requests: tiles grouped by chunk, only their bounding box', len(rq) == 2 and rq[0][1:3] == (8 * 512, 8 * 512) and rq[1][1:3] == (512, 512)
    and rq[0][0] == tbounds(12, 1984, 2160)[:2] + tbounds(12, 1991, 2167)[2:], str([r[:3] for r in rq]))
 ck('image requests: never more than 4096 px', all(max(r[1], r[2]) <= 4096 for L in bild.CHUNK for r in bild.requests_of(L, [(x, y) for x in range(40) for y in range(40)])))
+# ---- seams at block borders ----
+with tempfile.TemporaryDirectory() as td:
+    rng = np.random.default_rng(7)
+    N = wlib.TERR_N
+    # four level-10 tiles around the corner of four blocks (8 tiles per block side) plus one inside a block
+    quad = [(7, 7), (8, 7), (7, 8), (8, 8), (6, 7)]
+    base = rng.integers(40000, 60000, (N * 3, N * 3)).astype(np.int64)        # one consistent surface in cm, then cut out per tile
+
+    def cut_out(x, y):
+        c0, r0 = (x - 6) * (N - 1), (y - 7) * (N - 1)
+        return base[r0:r0 + N, c0:c0 + N].copy()
+    for x, y in quad:
+        q = cut_out(x, y)
+        if (x, y) == (8, 7):
+            q[30, 0] += 1                           # one centimetre off on the west edge (from another block)
+        if (x, y) == (8, 8):
+            q[0, 0] -= 1                            # the corner shared by four tiles
+            q[0, 55] += 1                           # and the south edge
+        gelaende.write_tile(td, 10, x, y, wtiles.encode_heights(q / 100.0 + wtiles.H0))
+    st = gelaende.seam(td, {10: set(quad)})
+    H = {t: np.round(wtiles.decode_heights(open(os.path.join(td, 't', '10', str(t[0]), f'{t[1]}.bin'), 'rb').read()) * 100).astype(np.int64) for t in quad}
+    ok = (np.array_equal(H[(7, 7)][:, -1], H[(8, 7)][:, 0]) and np.array_equal(H[(7, 8)][:, -1], H[(8, 8)][:, 0])
+          and np.array_equal(H[(7, 7)][-1, :], H[(7, 8)][0, :]) and np.array_equal(H[(8, 7)][-1, :], H[(8, 8)][0, :])
+          and np.array_equal(H[(6, 7)][:, -1], H[(7, 7)][:, 0]))
+    ck('seam: tiles of different blocks agree on every common edge and corner', ok, json.dumps(st))
+    ck('seam: the west / south tile wins, untouched tiles stay as they were', np.array_equal(H[(7, 7)], cut_out(7, 7)) and np.array_equal(H[(8, 7)], cut_out(8, 7))
+       and np.array_equal(H[(8, 8)], cut_out(8, 8)) and st['aligned'] == 3 and st['max_cm'] == 1 and st['tiles_written'] == 2, json.dumps(st))
+
 print('test_boden:', 'ok' if not fails else f'{fails} FAILED')
 sys.exit(1 if fails else 0)

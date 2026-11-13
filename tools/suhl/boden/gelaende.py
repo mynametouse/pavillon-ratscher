@@ -403,6 +403,63 @@ class Coarse:
         return v.astype(np.float32)
 
 
+def seam(out, T, levels=(10, 11, 12)):
+    """make the shared edges of neighbouring terrain tiles of the fine levels bit-exact where two blocks meet.
+
+    Every block cuts the roads into its own 1 m mosaic. At a block border two mosaics meet, and the float32 arithmetic of the cut
+    can leave a centimetre between them (whole city v2, run 43355525248: 3 of 11 930 pairs, 1 cm). Here the west / south tile wins:
+    first every east tile takes the west tile's last column as its first column, then every north tile takes the south tile's last
+    row as its first row. A pass only writes columns (rows) that the same pass never reads, and the second pass carries the corners
+    of the first, so the corner points shared by four tiles agree as well. Tiles are rewritten only where something changed.
+    Returns the counts for meta.json."""
+    st = {'pairs': 0, 'aligned': 0, 'max_cm': 0, 'tiles_written': 0}
+    for L in levels:
+        v = set(T.get(L, ()))
+        if not v:
+            continue
+        n = 1 << (L - BLOCK_L)                       # tiles per block side
+        near = lambda t: t[0] % n in (0, n - 1) or t[1] % n in (0, n - 1)
+        Q, dirty = {}, set()
+
+        def q_of(t):
+            if t not in Q:
+                p = os.path.join(out, 't', str(L), str(t[0]), f'{t[1]}.bin')
+                Q[t] = np.round(wtiles.decode_heights(open(p, 'rb').read()) * 100).astype(np.int64)     # cm above H0, row 0 = south
+            return Q[t]
+        border = sorted(t for t in v if near(t))
+        for t in border:                             # east-west pairs across a block border
+            e = (t[0] + 1, t[1])
+            if e in v and e[0] % n == 0:
+                a, b = q_of(t), q_of(e)
+                st['pairs'] += 1
+                d = int(np.abs(a[:, -1] - b[:, 0]).max())
+                if d:
+                    st['aligned'] += 1
+                    st['max_cm'] = max(st['max_cm'], d)
+                    b[:, 0] = a[:, -1]
+                    dirty.add(e)
+        for t in border:                             # south-north pairs across a block border
+            nn = (t[0], t[1] + 1)
+            if nn in v and nn[1] % n == 0:
+                a, b = q_of(t), q_of(nn)
+                st['pairs'] += 1
+                d = int(np.abs(a[-1, :] - b[0, :]).max())
+                if d:
+                    st['aligned'] += 1
+                    st['max_cm'] = max(st['max_cm'], d)
+                    b[0, :] = a[-1, :]
+                    dirty.add(nn)
+        for t in sorted(dirty):
+            b = wtiles.encode_heights(Q[t] / 100.0 + wtiles.H0)
+            if not np.array_equal(np.round(wtiles.decode_heights(b) * 100).astype(np.int64), Q[t]):
+                raise RuntimeError(f'seam: tile {L}/{t[0]}/{t[1]} does not survive encoding')
+            write_tile(out, L, t[0], t[1], b)
+            st['tiles_written'] += 1
+    log(f"Nähte an den Blockgrenzen: {st['pairs']} Kachelpaare geprüft, {st['aligned']} angeglichen (höchstens {st['max_cm']} cm), "
+        f"{st['tiles_written']} Kacheln neu geschrieben")
+    return st
+
+
 def dgm_km_list():
     """the 1 km tiles of the state data in the order Falko was given (P1 Zentrum, P2 Kernstadt, P3 Stadt, P4 corridors):
     tools/suhl/out/bestand/kacheln.csv"""
@@ -512,6 +569,11 @@ def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads
             info[L]['n'] += 1
             info[L]['bytes'] += len(b)
             hmin, hmax = min(hmin, float(g.min())), max(hmax, float(g.max()))
+    seams = seam(out, T)
+    if seams['tiles_written']:          # rewritten tiles may differ in size by a few bytes
+        for L in (10, 11, 12):
+            if T.get(L):
+                info[L]['bytes'] = sum(os.path.getsize(os.path.join(out, 't', str(L), str(x), f'{y}.bin')) for x, y in T[L])
     for L in sorted(T):
         log(f"Gelände Stufe {L}: {info[L]['n']} Kacheln, {info[L]['bytes'] / 1e6:.2f} MB")
     src = 'cop30' if not G.dgm else ('dgm1+cop30')
@@ -539,5 +601,5 @@ def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads
             'roads': rinfo, 'roh': bool(ROH), 'roh_lists': {L: sorted(v) for L, v in rT.items()}, 'roh_levels': rinfo_roh,
             'dgm10': dgm10, 'canopy_m': round(G.canopy, 2), 'canopy_fit_m': None if G.canopy_fit is None else round(G.canopy_fit, 2),
             'canopy_fit_window': list(FIT), 'copernicus_offset_m': round(G.off, 3), 'blocks': sorted(bstat, key=lambda b: b['block']),
-            'block_level': BLOCK_L, 'margin_m': MARGIN, 'blend_m': BLEND, 'coarse_cell_m': CPX, 'seconds': round(time.time() - t0, 1),
+            'block_level': BLOCK_L, 'margin_m': MARGIN, 'blend_m': BLEND, 'coarse_cell_m': CPX, 'seam': seams, 'seconds': round(time.time() - t0, 1),
             'worldcover': G.trees is not None}

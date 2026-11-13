@@ -227,7 +227,8 @@ def main():
                 'canopy_m': tinfo['canopy_m'], 'canopy_fit_m': tinfo['canopy_fit_m'], 'canopy_fit_window': tinfo['canopy_fit_window'],
                 'worldcover': tinfo['worldcover'], 'roads': tinfo['roads'],
                 'terrain_method': {'block_level': tinfo['block_level'], 'margin_m': tinfo['margin_m'], 'blend_m': tinfo['blend_m'],
-                                   'coarse_cell_m': tinfo['coarse_cell_m'], 'blocks': len(tinfo['blocks']), 'seconds': tinfo['seconds']}}
+                                   'coarse_cell_m': tinfo['coarse_cell_m'], 'blocks': len(tinfo['blocks']), 'seam': tinfo.get('seam'),
+                                   'seconds': tinfo['seconds']}}
         hm = {'hmin': round(tinfo['hmin'] - H0, 2), 'hmax': round(tinfo['hmax'] - H0, 2)}
     else:
         terr = {k: src_old[k] for k in ('terrain', 'terrain_source', 'dgm1', 'dgm1_tiles_km', 'dgm1_level10_tiles', 'copernicus_offset_m', 'canopy_m',
