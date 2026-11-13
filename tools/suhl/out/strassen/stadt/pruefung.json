@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:22:38Z",
+ "made": "2026-11-13T01:31:57Z",
  "run": "out/stadt",
  "drive_file": "suhl.json",
  "tiles": 1129,
@@ -275,7 +275,7 @@
  "gebaeude_in_fahrbahn": {
   "quelle_gebaeude": "OpenStreetMap (building=*, ohne Dächer und Carports, ohne Unterirdisches) – die Grundrisse von suhl-gebaeude folgen",
   "gebaeude": 23809,
-  "strassen_geprueft": 4884,
+  "strassen_geprueft": 4894,
   "fuehren_in_ein_gebaeude": 45,
   "grenze_m": 0.3,
   "treffer": 80,
@@ -650,7 +650,7 @@
   "uebergaenge": 5458,
   "lage_ueber_0_1_m": 0,
   "hoehe_ungleich": 0,
-  "groesster_abstand_m": 0.1,
+  "groesster_abstand_m": 0.0,
   "ok": true
  },
  "ok": {

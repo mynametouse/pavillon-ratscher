@@ -1,8 +1,8 @@
 {
- "made": "2026-11-13T01:22:36Z",
+ "made": "2026-11-13T01:31:56Z",
  "tiles": 1129,
  "counts": {
-  "pfosten": 3413,
+  "pfosten": 3411,
   "planken": 403,
   "schilder": 603,
   "lampen": 5237,
@@ -83,7 +83,7 @@
    "village"
   ]
  ],
- "bytes_tiles": 828619,
+ "bytes_tiles": 2181258,
  "tool": "viz3/extra/strassen/daten.py of feat/strassen, unchanged: guard_rails, delineators, signs, lamps, power",
- "bytes_one_file": 816280
+ "bytes_one_file": 816298
 }

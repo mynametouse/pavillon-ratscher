@@ -1,9 +1,9 @@
 {
- "made": "2026-11-13T01:22:13Z",
+ "made": "2026-11-13T01:31:36Z",
  "gebiet": "stadt",
  "tiles": 1129,
  "osm": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
- "osm_stamp": "2026-11-13T01:20:40Z",
+ "osm_stamp": "2026-11-13T01:30:22Z",
  "box_utm": [
   609500,
   5594800,
@@ -83,7 +83,7 @@
    "m2": 30489
   }
  },
- "bridges": 177,
+ "bridges": 179,
  "tunnels": 49,
  "rail_km": {
   "in Betrieb, Nebengleis": 2.96,
@@ -504,10 +504,10 @@
   "own_sampling_share": 0.0079,
   "zaehlt": true
  },
- "bytes_tiles": 4685256,
+ "bytes_tiles": 5642475,
  "korridor": {
   "tiles": 116,
-  "ways": 229,
+  "ways": 241,
   "km_by_kind": {
    "motorway": 14.88,
    "street": 10.76,
@@ -518,7 +518,9 @@
   },
   "km": 40.9,
   "pinned_nodes": 3,
-  "bytes": 113672
+  "bytes": 115298,
+  "km_auf_suhls_boden": 27.1,
+  "km_ausserhalb": 13.7
  },
  "bytes_drive": 4222733
 }
