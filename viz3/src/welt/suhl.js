@@ -177,6 +177,33 @@ export const SUHL = (() => {
   // Suhl keeps its own ground (the road cut and fill are in its terrain tiles): 0 on it, 1 from 100 m outside – welt/fahrt.js must not
   // carve there (its ownFade for Kloster Veßra; hook F1). Before the package is there nothing of Suhl is drawn: 1.
   S.ownFade = (x, y) => (api ? api.ownFade(x, y) : 1);
+  // ---- the way there (S2-7): once the drive wakes (a vehicle heads out of the square, or one stands outside it), the approach ways
+  // and the named routes garden → Suhl come into welt/fahrt.js from the data repo – "Suhl" becomes a destination on the small map, the
+  // A 73 with its viaducts and the country road lead there. Two small files of the street product (anfahrt.json: the ways outside
+  // Suhl's ground, carved as the region's; anfahrt-grund.json: the ways on Suhl's corridor tiles, whose ground already holds the cut),
+  // never at the start. Only with ?suhl=… until the city is released (Falko, 13.11.2026: preview first). ----
+  const approach = { state: S.MENU ? 'waiting' : 'off', err: '', sets: [] };
+  S.approach = approach;
+  if (S.MENU)
+    KERN.until(() => window.FAHRT && FAHRT.add && FAHRT.active, 1e9)
+      .then(() => {
+        approach.state = 'loading';
+        const json = u => fetch(u).then(r => (r.ok ? r.json() : null));
+        return json(S.BASE + 'aktuell.json').then(a => {
+          const p = a && a.products && a.products.s;
+          if (!p || !p.path) return [null, null];
+          return Promise.all([json(S.BASE + p.path + 'anfahrt.json'), json(S.BASE + p.path + 'anfahrt-grund.json')]);
+        });
+      })
+      .then(([out, own]) => {
+        if (out && FAHRT.add('suhl/anfahrt', out)) approach.sets.push('suhl/anfahrt');
+        if (own && FAHRT.add('suhl/anfahrt-grund', own, { carve: false })) approach.sets.push('suhl/anfahrt-grund');
+        approach.state = approach.sets.length ? 'in' : 'none';
+      })
+      .catch(e => {
+        approach.state = 'error';
+        approach.err = String((e && e.message) || e);
+      });
   // ---- the zone: the smallest circle around the municipality plus 1.5 km (the garden, Schleusingen and Kloster Veßra stay outside) ----
   KERN.zone({
     id: 'suhl',

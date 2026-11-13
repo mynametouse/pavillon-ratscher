@@ -5,13 +5,14 @@
 # the data repo); this test copies it to viz3/dist/suhl/, which the test server serves.
 # Sections (optional second argument, comma-separated): start,sprung,stufen,boden,fahrt,oben,nacht,frei,zahlen,telefon,uebergabe
 #   uebergabe  the streets handed to the region's road system (FAHRT.add/drop/ground, round 2 of the roads chat) – a page of its own
+#   anfahrt    the way there: with ?suhl=1 the approach ways and the named routes garden → Suhl come into the drive once it wakes
 #   tag1   the checks of the first day (not in the default run): package and worker, the sky and the top view at Suhl, precision
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
 port = sys.argv[1]
-ALL = ['start', 'sprung', 'stufen', 'boden', 'fahrt', 'oben', 'nacht', 'frei', 'zahlen', 'telefon', 'uebergabe']
+ALL = ['start', 'sprung', 'stufen', 'boden', 'fahrt', 'oben', 'nacht', 'frei', 'zahlen', 'telefon', 'uebergabe', 'anfahrt']
 ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else ALL
 want = lambda k: k in ONLY
 ck = lib.Checks('suhl')
@@ -523,10 +524,43 @@ def uebergabe():
         ck.errors(errs)
 
 
-if [k for k in ONLY if k not in ('telefon', 'uebergabe')]:
+def anfahrt():
+    """the way there (S2-7): with ?suhl=1 nothing comes at the start; once the drive wakes (one stands outside the square) the two
+    approach files of the street product come into welt/fahrt.js – the ways outside Suhl's ground carved as the region's, the ways on
+    its corridor tiles without carving – and the two named routes make "Suhl" a destination on the small map. A page of its own."""
+    with lib.browser() as b:
+        errs = []
+        pg = lib.page(b, 1100, 680, errs, tier='mittel')
+        net = []
+        pg.on('response', lambda r: net.append(r.url) if 'anfahrt' in r.url else None)
+        lib.boot(pg, port, '?suhl=1')
+        E = pg.evaluate
+        J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
+        a0 = J("({ st: SUHL.approach.state, asked: %d, sets: FAHRT.sets ? FAHRT.sets() : null, active: !!FAHRT.active })" % len(net))
+        ck('way there: nothing of it at the start (it waits for the drive)', a0['st'] == 'waiting' and a0['asked'] == 0 and not a0['active'], json.dumps(a0))
+        E("GAME.go('suhl_bahnhof')")            # outside the square: the drive wakes
+        t0 = time.time()
+        while time.time() - t0 < 300:
+            E("GAME.step(0.5)")
+            if E("SUHL.approach.state !== 'waiting' && SUHL.approach.state !== 'loading' && FAHRT.ready"):
+                break
+            time.sleep(0.2)
+        r = J("""(() => { const D = FAHRT.data, rt = k => { const p = D.routes[k]; return p ? [p.length / 2, Math.hypot(p[0], p[1]), Math.hypot(p[p.length - 2] + 4701, p[p.length - 1] - 12262)] : null; };
+            return { st: SUHL.approach.state, err: SUHL.approach.err, sets: FAHRT.sets(), dests: D.dests, land: rt('suhl_land'), ab: rt('suhl_ab'), back: rt('suhl_land_rueck') }; })()""")
+        ck('way there: the ways outside Suhl\'s ground (carved) and on its corridor (not carved) come in as two sets',
+           r['st'] == 'in' and 'suhl/anfahrt' in r['sets'] and 'suhl/anfahrt-grund' in r['sets'], json.dumps({k: r[k] for k in ('st', 'err', 'sets')}))
+        ck('way there: "Suhl" is a destination on the small map – the country road and the motorway from the garden to the Markt',
+           list(r['dests'].values()).count('Suhl') == 2 and r['land'] and r['ab'] and r['land'][1] < 120 and r['land'][2] < 400 and r['ab'][1] < 120 and r['ab'][2] < 400
+           and 'suhl_land_rueck' not in r['dests'], json.dumps({k: r[k] for k in ('dests', 'land', 'ab', 'back')}))
+        ck.errors(errs)
+
+
+if [k for k in ONLY if k not in ('telefon', 'uebergabe', 'anfahrt')]:
     desktop()
 if want('telefon'):
     telefon()
 if want('uebergabe'):
     uebergabe()
+if want('anfahrt'):
+    anfahrt()
 ck.done()

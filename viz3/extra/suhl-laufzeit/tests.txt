@@ -1,7 +1,7 @@
 # tests of the Suhl runtime, one 'name[:args]' per line (feat.yml runs each line as a job of its own, side by side)
 suhl:start,sprung,stufen,boden,fahrt
 suhl:zahlen,oben,frei,nacht
-suhl:telefon,uebergabe
+suhl:telefon,uebergabe,anfahrt
 # the hooks in shared files (welt/welt.js W1–W4, garden/env.js S1, game/camera.js K1) must not change the others
 schleusingen
 vessra
