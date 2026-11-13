@@ -212,14 +212,16 @@ def run():
 
         # ---------------- the places per chapter: a contact sheet ----------------
         if 'orte' in want:
+            # one sheet: every place once (the time-lapse's pose; 'hang' also as a halt stands), in the forest chapter ten years on
             E("ZKREGIE.start({ pair: ['allein'], split: false, chapter: 'wald', play: false, instant: true })"); steps(0.4)
-            for ch in J("ZKCHRONIK.CHAPTERS.map(c => c.id)"):
-                E(f"ZKREGIE.seek(ZKCHRONIK.CHAPTERS.find(c => c.id === '{ch}').from + 10)"); steps(0.4)
-                items = []
-                for pid in ['ueberblick'] + J(f"ZKCHRONIK.CHAPTERS.find(c => c.id === '{ch}').places"):
-                    E(f"ZKREGIE.view('{pid}')"); steps(0.6)
-                    items.append([pid + ' · ' + str(J(f"ZKREGIE.pose('{pid}').pos.map(v => Math.round(v))")), E(SHOT)])
-                save('orte_' + ch, E(f"({SHEET})({json.dumps(items)})"))
+            E("ZKREGIE.seek(2036)"); steps(0.4)
+            ids = J("ZKREGIE.places()")
+            items = []
+            for pid, still in [(p, False) for p in ids] + [('hang', True)]:
+                E(f"ZKREGIE.view('{pid}', {{ still: {'true' if still else 'false'} }})"); steps(0.6)
+                q = J(f"ZKREGIE.pose('{pid}', {{ halt: {'true' if still else 'false'} }})")
+                items.append([pid + (' (Halt)' if still else '') + ' · ' + str([round(v) for v in q['pos']]), E(SHOT)])
+            save('orte', E(f"({SHEET})({json.dumps(items)})"))
             E("ZKREGIE.start({ pair: ['allein', 'gewappnet'], split: true, chapter: 'energie', play: false, instant: true })"); steps(0.4)
             E("ZKREGIE.seek(2045)"); E("ZKREGIE.view('anger')"); steps(0.6)
             save('split_anger_2045', E(SHOT))

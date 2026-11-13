@@ -211,9 +211,9 @@ export const ZKBILD = (() => {
     }
   }
   // ---- stills: one view for one side, read as a JPEG (about 1080 px high at most) ----
-  function stillOf(pose, side, apply) {
+  function stillOf(pose, side, apply, o = {}) {
     return new Promise((res, rej) => {
-      S.stills.push({ pose, side, res, rej, apply });
+      S.stills.push({ pose, side, res, rej, apply, full: !!o.full });
       markDirty();
     });
   }
@@ -222,7 +222,7 @@ export const ZKBILD = (() => {
     try {
       const bh = Math.round(h * S.bars),
         vh = Math.max(2, h - 2 * bh),
-        vw = S.split ? Math.floor(w / 2) : w,
+        vw = S.split && !q.full ? Math.floor(w / 2) : w,
         aspect = vw / vh,
         pr = R.getPixelRatio(),
         H = Math.min(h, Math.max(2, Math.round(Math.min(1080 / pr, h)))),

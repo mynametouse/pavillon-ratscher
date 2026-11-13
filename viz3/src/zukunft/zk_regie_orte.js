@@ -18,17 +18,36 @@ export const ZKORTE = (() => {
   const P = {
     // the establishing shot of each chapter's time-lapse: 90 m above the Anger towards the forests south and south-west, the lime below
     ueberblick: { pos: [232, -92], h: 90, yaw: 195, pitch: -10, fov: 60, move: { truck: 10 }, label: 'Über dem Dorf' },
-    // the Anger: the Dorflinde (217, −109; 21 m) to the right of the view, the forested slopes south of the village behind (~5° high)
-    anger: { pos: [240, -60], h: EYE, yaw: 195, pitch: 4, fov: 55, move: { dolly: 4 }, label: 'Am Anger' },
-    // on the slope north-east of the village: the village below, the forests south and south-west (the Klinge lobe) behind
-    // (zeitreise-welt checked the line of sight on the terrain model, 13.11.: ~100 % of the conifers S/SW visible)
-    hang: { pos: [430, 90], h: EYE, yaw: 199, pitch: -2, fov: 55, move: { pan: -6 }, label: 'Am Hang über dem Dorf' },
-    // at the edge of the family forest at the Klinge, ~20 m before the first spruces (the what-if mode's „Untere Klinge“)
-    waldrand: {
-      pos: [-137, -473],
+    // the Anger from the game's own spot there (world/village_props.js „Dorf (Anger)“): the Dorflinde (217, −109; 21 m) to the right,
+    // past it to the south-west, where the slopes rise ~5° over the roofs
+    anger: {
+      pos: [241.5, -101.5],
       h: EYE,
-      look: [-160, -523],
-      lh: 6,
+      yaw: 235,
+      pitch: 7,
+      fov: 55,
+      move: { dolly: 3 },
+      label: 'Am Anger bei der Dorflinde',
+    },
+    // the overview from the slope north-east of the village over the roofs to the forests south and south-west (the Klinge lobe)
+    hang: {
+      pos: [470, 120],
+      h: 85,
+      look: [120, -330],
+      lh: 20,
+      fov: 44,
+      move: { truck: 14 },
+      label: 'Am Hang über dem Dorf',
+      // a halt there stands on the slope at eye height (zeitreise-welt's line-of-sight check: ~100 % of the conifers S/SW in view)
+      halt: { pos: [430, 90], h: EYE, yaw: 199, pitch: -2, fov: 55 },
+    },
+    // outside the family forest's north-east edge (world/forest.js CORE: the tip of the lobe, its edge (−518, −536)–(−423, −494)), ~20 m
+    // from the first spruces, looking across the edge into the stand – the sun from the right in the afternoon
+    waldrand: {
+      pos: [-479, -497],
+      h: EYE,
+      look: [-464, -529],
+      lh: 7,
       fov: 55,
       move: { dolly: 3 },
       label: 'Am Waldrand an der Klinge',
@@ -53,14 +72,15 @@ export const ZKORTE = (() => {
       move: { dolly: 2 },
       label: 'In der Straße',
     },
-    // on the bridge over the Schleuse (the what-if mode's „Schleusebrücke“), looking down the river
+    // by the bridge over the Schleuse (the what-if mode's „Schleusebrücke“), on the river's line (zukunft/zk_welt.js RIVER), looking
+    // upstream to the south-east, towards the village – where the flood comes from
     bruecke: {
-      pos: [222, 12],
+      pos: [208, 9],
       h: EYE + 0.4,
-      look: [284, -14],
-      lh: -2,
+      look: [240, -15],
+      lh: -1,
       fov: 52,
-      move: { pan: 7 },
+      move: { pan: 6 },
       label: 'An der Schleusebrücke',
     },
     // the heating house at the edge of the village (zeitreise-welt builds it)
@@ -91,8 +111,10 @@ export const ZKORTE = (() => {
     return Number.isFinite(g) ? g : KERN.terrain(x, y) || 0;
   };
   // a pose { pos:[x,y,z], look:[x,y,z], fov, near, foot } – z absolute; `welt` is ZKZEITWELT (or its stand-in)
-  function pose(id, welt) {
-    const d = P[id] || P.anger;
+  // o.halt: the pose of a halt (on foot where the place has one of its own)
+  function pose(id, welt, o = {}) {
+    const d0 = P[id] || P.anger,
+      d = o.halt && d0.halt ? { ...d0, ...d0.halt } : d0;
     let pos, look;
     const w = welt && typeof welt.place === 'function' ? safe(() => welt.place(id)) : null;
     if (w && Array.isArray(w.pos) && Array.isArray(w.look)) {
