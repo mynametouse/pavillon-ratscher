@@ -14,6 +14,17 @@ Grenzland-Chat (Lead) und sechs Hilfs-Agenten; ihre Teile stehen in eigenen Doku
 
 Gemeinsame Regeln für alle Teile: `docs/plans/auftraege/grenzland-gemeinsam.md`.
 
+## Stand (13.11.2026, 9:30)
+
+- **V17x**: Kern und die Endstände der sechs Hilfs-Agenten (sie sind gegen 4 Uhr am Nutzungslimit stehen geblieben) zusammen mit
+  `src` (V17w). Prüfpaket auf `kern/grenzland`: alle Pflicht-Tests grün; die 14 Grenzland-Tests in Actions (Stand 2a38294a: Kern,
+  Fahrzeuge, Radio, Nebenbei, Polizei, Missionen 1–5, Lager und Neu laden; 1989 nach einer Testkorrektur).
+- **Was die Agenten offen ließen**, steht in ihren Dokumenten jeweils unter „Offen“ bzw. „Für den Lead“.
+- **Speicher:** im Chat-Rechner beendet der Container Chrome (Software-Grafik) bei ~3,7 GB – ein Rundgang durch Stadt und Dorf in
+  einer Seite schafft das nicht; in Actions laufen alle Teile. Die Messung im iPhone-Profil macht `viz3/test/grenzland_speicher.py`.
+- **Neue Werkzeuge:** `viz3/test/grenzland_ci.py` schreibt Fehlschläge als öffentliche Anmerkungen an den Actions-Job (die Logs sind
+  ohne Anmeldung nicht lesbar), `viz3/test/grenzland_blick.py` macht Bilder für das Auge.
+
 ## Was es gibt (Kern)
 
 - **Start:** Menü → Erleben → Szenen → „Grenzland“ oder `?szenario=grenzland`. Eine eigene Welt wie die Zombie-Nacht: eigener Spielstand

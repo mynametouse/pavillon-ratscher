@@ -16,6 +16,19 @@ veröffentlicht.
 
 ## Stand
 
+- **13.11.2026 nachts/morgens: Grenzland – der GTA-Modus, Kapitel 1 (V17x; Grenzland-Chat session_01L6Yrpf75YEUJPnMQdXevjQ,
+  `docs/features/grenzland.md` und `grenzland-auto|radio|1989|neben|polizei|mission.md`, Plan `docs/plans/plan_grenzland.md`).**
+  Falko 13.11. 0:21–1:25 (wörtlich im Plan): GTA-6-Vibes passend zur Region; Geschichte „Grenzland“, Duo Falko und Sarah, Ton wie GTA,
+  Rückblende 1989 mit Kleidung und Stil der Zeit, „Sushi in Suhl“ einbauen, Fahrzeuge realistisch mit Cockpit, mehrere Radiosender,
+  bis zu sechs Hilfs-Agenten, live stellen; 8:57 „Du hast alle Freigaben“. Alles in `viz3/src/grenzland/` (33 Module), gemeinsame
+  Dateien nur ein Block in `modules.txt` und `pav-grenzland-v1` in `core/save.js`. **Die Hilfs-Agenten sind gegen 4 Uhr am
+  Fable-Nutzungslimit stehen geblieben** (Reset 18.11.); ihre Zweige `feat/grenzland-<thema>` sind gesichert und zusammengeführt, ihre
+  Feature-Dokumente nennen, was offen ist. Tests: 14 Browser-Tests in `viz3/extra/grenzland/tests.txt` (Kern, Fahrzeuge, Radio, 1989,
+  Nebenbei, Polizei in drei Teilen, Missionen in sechs), Unit-Tests `viz3/test/unit/grenzland*.test.mjs`, Bilder-Rundgang
+  `viz3/test/grenzland_blick.py`, Speicher im Handy-Profil `viz3/test/grenzland_speicher.py` (läuft nur in Actions – der Chat-Rechner
+  beendet Chrome bei ~3,7 GB; die Probe auf dem Zweig `feat/grenzland-speicher`). Fehlermeldungen der Browser-Tests stehen als
+  öffentliche Anmerkungen am Job (`viz3/test/grenzland_ci.py`). Offen: Sarahs Einverständnis; Speicher auf älteren iPhones; Kapitel 2
+  (Detailzone an der alten Grenze); zu zweit über das Internet; Coups von oben planen.
 - **13.11.2026 nachts: Zukünfte erproben (V17w, live seit 13.11. 8:45 nach Falkos OK; Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, `docs/features/zukunft.md`, `zukunft-welt.md`).** Falko 12.11.: Geschäftsmodell 1 „virtuelles Reallabor / Szenario-Werkstatt“ – erste Fassung für Kommune/Dorf, halber Tag vor Ort, Themen Mobilität, Energie, Klimaanpassung, Wald nach dem Käfer, „möglichst realistisch“. Daten und Rechnung rein in `zukunft/zk_data.js` (Unit-Test `viz3/test/unit/zukunft.test.mjs`), Oberfläche `zk_modus.js`, Welt `zk_welt.js` (Haken `WXBODEN.setDry`, `FOREST.canopy`); Tests `zukunft.py`, `zukunft_welt.py` (Programme: Start +4, Umschalten 0). Entscheidungen: Stimmen als Rollen („Sicht …“, erfundene Stimme), Ereignisse ohne Votum, Regler ab 2030, HQ100 = amtliches Gebiet (37 Gebäude, Schaden als Spanne), Solarpark-Platz ist Annahme. **Offen:** Mitmach-Schicht (Stimmen der Teilnehmenden am Telefon), Ablaufplan für den halben Tag, Gespräch mit Ratscher/Schleusingen über einen Piloten; zu Fuß spiegelt ein schmaler Streifen fernes Hochwasser noch den Himmel; blau-graue Bodenflecken im heutigen Wald, wo die Kronenkarte dünn ist (Abhilfe in `world/forest.js` wie im Modus).
 - **13.11.2026 nachts: Straßen realistischer (Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx, Zweig `feat/strassen`,
   `docs/features/strassen.md`).** Falko 12.11. 23:10/23:13: die Region „noch realistischer“, „starte mit Paket 1“ (die Straßen).
