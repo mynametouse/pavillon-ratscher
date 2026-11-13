@@ -1,0 +1,6 @@
+# The roads (feat/strassen): styles in the road map, furniture beside the roads, lamps at night, wet roads, the window map on a drive
+strassen
+# what the road shader and the window map touch: driving out of the square, the tiles' ground, the weather's wet ground
+fahrt
+wetter
+v16b:car,drive,crash,route

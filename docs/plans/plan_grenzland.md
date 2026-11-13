@@ -15,6 +15,16 @@ Chat session_01L6Yrpf75YEUJPnMQdXevjQ, Branch `feat/grenzland`, Ordner `viz3/src
 - **0:30:** „Okay, bitte setzt das Ganze richtig gut um. Achte darauf, nicht mit den anderen Chats in die Quere zu kommen.“
 - **0:32:** „Super, und achte bei den Rückblenden auf 1989 auch auf entsprechende Anpassungen von Umfeld, Kleidung, Stil, Fashion und
   sonstigen, sodass es wirklich gut ankommt und realistisch wirkt.“
+- **0:34:** „Integriere auch an passender Stelle die Sushi in Soul Story in diese GTA-Variante. Sushi in Soul. S-U-H-L. Recherchiere die
+  Story.“ – und: „Bei Fragen stell mir Fragen zum Anklicken.“ → Nebenmission **„Karpfen für Suhl“** (erfundene Köchin Yuki, Gedenkessen;
+  die wahre Geschichte von Rolf Anschütz und dem „Waffenschmied“ mit Quellen als Notiz im Handy und als Radio-Beitrag).
+- **1:14:** „Ach ja, und nur weil ich gerade die sehr simplen Fahrzeuge sehe, bitte achte darauf, dass die Fahrzeuge möglichst realistisch
+  aussehen und auch die Innenansicht, also die Cockpit-Variante, schön detailreich ist und auch verschiedene Radiosender eingestellt werden
+  können. Ähnlich wie bei GTA. […] versuch Fragen zu stellen, wenn du Fragen hast, dann jetzt gleich. Ansonsten arbeite bitte die Nacht durch
+  und bereite alles vor, dass du ohne weitere Freigaben durcharbeiten kannst.“
+- **1:25, angeklickt:** Hilfs-Agenten **ja, bis zu 6 parallel** · Veröffentlichen **auch live stellen** (wenn das Prüfpaket grün ist) ·
+  Fahrzeuge der Rückblende **erkennbar, mit Namen im Text** (Trabant, Wartburg, Simson, Barkas, W 50 – keine Logos) · Radiomusik **selbst
+  erzeugt und Gemeinfreies** (keine lizenzierten Titel).
 
 ## Leitlinien
 
@@ -73,3 +83,20 @@ Chat session_01L6Yrpf75YEUJPnMQdXevjQ, Branch `feat/grenzland`, Ordner `viz3/src
 - Kapitel 2 mit einer neuen Detailzone an der alten Grenze (Kolonnenweg, Grünes Band) – Abstimmung mit dem Welt-Chat.
 - Nebenstränge Käferholz, Simson-Sommer, Kirmes-Krimi; Coups von oben planen (Linse „Ratscher von oben“); zu zweit über das Internet;
   mehr Sender, Besitz kaufen, Jagd, Schützenfest.
+
+## Aufteilung der Nacht 13.11. (Lead und sechs Hilfs-Agenten)
+
+Aufträge wörtlich in `docs/plans/auftraege/grenzland-*.md` (gemeinsamer Teil `grenzland-gemeinsam.md`), Zweige `feat/grenzland-<thema>`.
+
+| Thema | Dateien in `viz3/src/grenzland/` | Port |
+|---|---|---|
+| Lead: Zustand, Texte, Töne, Anzeige, Modus, Zusammenführen, Veröffentlichen | `gl_state`, `gl_data`, `gl_ton`, `gl_hud`, `gl_modus` | 9011 |
+| `auto`: Fahrzeuge realistisch, Cockpits, fahrbares Moped und Trabant | `gl_modelle`, `gl_auto`, `gl_cockpit` | 9012 |
+| `radio`: mehrere Sender, Handy | `gl_radio_data`, `gl_radio_musik`, `gl_radio`, `gl_handy` | 9013 |
+| `1989`: Dorf, Kleidung, Leute, Ton der Rückblende | `gl_1989_data`, `gl_1989_welt`, `gl_1989`, `gl_fig` | 9014 |
+| `neben`: Feldscheune, Kegelbahn, Verkaufswagen, Angeln, „Karpfen für Suhl“ | `gl_neben_logik`, `gl_orte`, `gl_wagen`, `gl_kegeln`, `gl_angeln` | 9015 |
+| `polizei`: Fahndung, Streifen, Sperre, Hubschrauber, Volkspolizei | `gl_logik`, `gl_fahndung`, `gl_heli` | 9016 |
+| `mission`: Kapitel 1, Außenlager | `gl_mission_data`, `gl_lager`, `gl_mission` | 9017 |
+
+Ablauf: Agenten liefern auf ihre Zweige → Lead führt in `feat/grenzland` zusammen, spielt das Kapitel durch, sieht die Bilder an → Ankündigung
+in `docs/PARALLEL.md` → frisches `origin/src` einmischen → Prüfpaket auf `kern/grenzland` → `src` (Vorschau) → live.
