@@ -34,6 +34,9 @@ BIG = {'barn', 'farm_auxiliary', 'agricultural', 'industrial', 'warehouse', 'sta
        'sports_hall', 'supermarket', 'storage_tank', 'silo', 'train_station', 'retail', 'commercial'}
 STREET_KIND = {'motorway': 0, 'trunk': 1, 'primary': 1, 'secondary': 1, 'tertiary': 2, 'unclassified': 3, 'residential': 3, 'living_street': 3,
                'pedestrian': 3, 'service': 5, 'track': 6, 'path': 7, 'footway': 8, 'steps': 8, 'cycleway': 7, 'tertiary_link': 2}
+# places the game names nowhere (no sign, no label, no destination): a venue with a documented far-right background
+# (docs/plans/region_dossier.md, correction K6) - the building itself stays
+NO_SIGN = {'Goldener Löwe'}
 
 
 def r2(v):
@@ -467,7 +470,7 @@ def main():
         elif t.get('amenity') == 'bench':
             benches.append([r2(x), r2(y)])
         kind = t.get('shop') or t.get('amenity') or t.get('tourism') or t.get('historic') or t.get('craft') or t.get('office')
-        if kind and t.get('name'):
+        if kind and t.get('name') and t['name'] not in NO_SIGN:
             pois.append({'n': t['name'], 't': kind, 'x': r2(x), 'y': r2(y)})
     for wid, (refs, tags) in ways.items():
         if tags.get('natural') == 'tree_row':

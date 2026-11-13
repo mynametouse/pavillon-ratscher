@@ -1,0 +1,3 @@
+# feat/zeitreise-chronik: the chronicle (ZKCHRONIK) – its unit test viz3/test/unit/zeitreise.test.mjs runs in the quick check of the first job (smoke)
+smoke
+zukunft

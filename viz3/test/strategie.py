@@ -77,6 +77,16 @@ with lib.browser() as b:
         E("STHUD.refresh()")
         ck('the calendar says Saturday', day['wd'] == 6 and 'Sa' in E("document.getElementById('stdate').textContent"), str(day) + ' ' + E("document.getElementById('stdate').textContent"))
         page_pic('01_von_oben')
+        # the Ebenen panel: every checkbox with its name in light, readable text (Falko 13.11.: „Häkchen ohne Schrift“, twice)
+        E("document.querySelector('#sthud [data-a=layers], [data-a=layers]').click()"); steps(0.2)
+        lay = J("""(() => { const L = document.getElementById('stlayers'), rgb = e => getComputedStyle(e).color.match(/\\d+/g).slice(0, 3).map(Number);
+          const labs = [...L.querySelectorAll('label')];
+          return { open: !L.hidden, n: labs.length, named: labs.every(l => l.textContent.trim().length > 2),
+            light: [L.querySelector('b'), ...labs.map(l => l.querySelector('span'))].every(e => e && Math.min(...rgb(e)) > 170),
+            size: parseFloat(getComputedStyle(labs[0] || L).fontSize) }; })()""")
+        ck('Ebenen: every checkbox has its name, light and readable on the dark box', lay['open'] and lay['n'] > 0 and lay['named'] and lay['light'] and lay['size'] >= 11, str(lay))
+        page_pic('01b_ebenen')
+        E("document.querySelector('#sthud [data-a=layers], [data-a=layers]').click()"); steps(0.2)
     print('page errors before leute:', len(errs), errs[-1:] if errs else '', flush=True)
     if 'leute' in want:
         pres = J("Object.fromEntries(Object.keys(STRAT.S.people).map(id => [id, STRAT.present(id).ok]))")

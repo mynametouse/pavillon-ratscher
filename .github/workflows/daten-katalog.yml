@@ -1,0 +1,47 @@
+# feat/daten (agent daten-katalog): checks the sources that the chat machine cannot reach, collects Wikimedia/Wikidata metadata, and lists the
+# Mapillary coverage once the secret MAPILLARY_TOKEN exists (skipped cleanly without it). Nothing is pushed or published: the result is the
+# artifact 'daten-katalog' (gh run download <id> -n daten-katalog). Runs when these scripts change, or by hand.
+name: Daten-Katalog – Quellen prüfen, Mapillary
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['feat/daten']
+    paths: ['tools/daten/quellen_probe.py', 'tools/daten/mapillary_abdeckung.py', 'tools/daten/wikidata_orte.py', 'tools/daten/abdeckung.py', '.github/workflows/daten-katalog.yml']
+
+concurrency:
+  group: daten-katalog
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  daten:
+    name: Quellen und Abdeckung
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Quellen abrufen (Kopf)
+        continue-on-error: true
+        run: python -u tools/daten/quellen_probe.py out
+      - name: Wikidata – Orte
+        continue-on-error: true
+        run: python -u tools/daten/wikidata_orte.py out
+      - name: Panoramax und Wikimedia Commons – Abdeckung
+        continue-on-error: true
+        run: python -u tools/daten/abdeckung.py out
+      - name: Mapillary – Abdeckung (ohne Schlüssel wird übersprungen)
+        continue-on-error: true
+        env:
+          MAPILLARY_TOKEN: ${{ secrets.MAPILLARY_TOKEN }}
+        run: python -u tools/daten/mapillary_abdeckung.py out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: daten-katalog
+          path: out
+          retention-days: 14
