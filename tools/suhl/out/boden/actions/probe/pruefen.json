@@ -47,7 +47,7 @@
   },
   "sizes: terrain bytes per tile in range": {
    "ok": true,
-   "info": "6: 15092, 7: 12858, 8: 10494, 9: 8836, 10: 8153, 11: 7086, 12: 5646"
+   "info": "6: 15091, 7: 12856, 8: 10492, 9: 8834, 10: 8161, 11: 7108, 12: 5659"
   },
   "sizes: image bytes per tile in range": {
    "ok": true,
@@ -86,12 +86,12 @@
   "8": {
    "median_m": 0.42,
    "p95_m": 1.57,
-   "max_m": 4.06
+   "max_m": 4.27
   },
   "9": {
    "median_m": 0.14,
    "p95_m": 0.71,
-   "max_m": 4.19
+   "max_m": 4.12
   },
   "10": {
    "median_m": 0.08,
@@ -117,63 +117,63 @@
  "sizes": {
   "6": {
    "n": 4,
-   "terrain_bytes": 60369,
+   "terrain_bytes": 60363,
    "image_bytes": 283948,
-   "terrain_mean": 15092,
+   "terrain_mean": 15091,
    "image_mean": 70987,
    "image_min": 69416,
    "image_max": 74774
   },
   "7": {
    "n": 4,
-   "terrain_bytes": 51433,
+   "terrain_bytes": 51426,
    "image_bytes": 327386,
-   "terrain_mean": 12858,
+   "terrain_mean": 12856,
    "image_mean": 81846,
    "image_min": 77504,
    "image_max": 85662
   },
   "8": {
    "n": 12,
-   "terrain_bytes": 125923,
+   "terrain_bytes": 125908,
    "image_bytes": 951776,
-   "terrain_mean": 10494,
+   "terrain_mean": 10492,
    "image_mean": 79315,
    "image_min": 68748,
    "image_max": 95114
   },
   "9": {
    "n": 8,
-   "terrain_bytes": 70686,
+   "terrain_bytes": 70676,
    "image_bytes": 660086,
-   "terrain_mean": 8836,
+   "terrain_mean": 8834,
    "image_mean": 82511,
    "image_min": 71516,
    "image_max": 90114
   },
   "10": {
    "n": 11,
-   "terrain_bytes": 89680,
+   "terrain_bytes": 89775,
    "image_bytes": 756270,
-   "terrain_mean": 8153,
+   "terrain_mean": 8161,
    "image_mean": 68752,
    "image_min": 59356,
    "image_max": 77666
   },
   "11": {
    "n": 44,
-   "terrain_bytes": 311802,
+   "terrain_bytes": 312732,
    "image_bytes": 2106226,
-   "terrain_mean": 7086,
+   "terrain_mean": 7108,
    "image_mean": 47869,
    "image_min": 36756,
    "image_max": 56656
   },
   "12": {
    "n": 48,
-   "terrain_bytes": 271019,
+   "terrain_bytes": 271616,
    "image_bytes": 1283934,
-   "terrain_mean": 5646,
+   "terrain_mean": 5659,
    "image_mean": 26749,
    "image_min": 17000,
    "image_max": 33856
