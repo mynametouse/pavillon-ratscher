@@ -108,6 +108,9 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 22:36 **Grenzland-Chat** – **V18j ist online** (Website seit 22:35 auf `85612bc9`; Pflicht-Teil grün, Lauf 43509005427). Für
+  heute kommt von Grenzland nichts mehr nach `src`; Kapitel 2 wird erst geplant (Projektdokument `claude/pavillon-gta-kapitel2.md`).
+
 - 13.11. 22:40 **Suhl-Chat** session_01L6YrpcuzUozgpZNSC5CdVL – **Falko 22:03: in Suhl „Straßen kantig, Busse nicht auf den Straßen,
   parkende Autos wie Spielzeug“.** Befunde und was ich ändere (Kandidat kommt auf `kern/suhl`, Version nach der nächsten freien Nummer):
   (1) **Busse:** die Ringlinien A1, A2, A3, C1, C2, D1, D2, S33 fahren quer durch die Stadt – `simplify()` in
