@@ -25,6 +25,9 @@ detailreich ist …“ – und gewählt: die Fahrzeuge von 1989 erkennbar wie di
   Zifferblätter mit kleinen Canvas-Bildern (≤ 256 px). Fehlt Falkos Auto, fällt alles auf das Verkehrsmaterial zurück.
 - **Schatten:** unter jedem Fahrzeug liegt ein weicher dunkler Fleck (nimmt Licht weg, kein Schattenwurf in die Sonnenkarte – wie bei
   den Autos des Verkehrs); die beiden Fahrzeuge des Spielers werfen den echten Sonnenschatten.
+- **Shader-Programme** (gemessen im Test auf GitHub Actions, 13.11. 3:40): die Fahrzeuge benutzen sieben Programme, sechs davon gab
+  es im Spiel schon (Lack, Glas, Chrom, Vertexfarben, Lampen, das unbeleuchtete Bild der Busanzeige für die Zifferblätter); neu ist
+  eines – der Schattenfleck. Höchstens 15 Texturen je Programm.
 - **Das Moped des Spielers** (`GLAUTO.mopedVeh`, Fahrzeug `gl-moped`): Simson S 51 – 3,7 PS, vier Gänge, gut 60 km/h, 165 kg mit
   Fahrer; legt sich in die Kurve (Augpunkt und Figur gehen mit), der Lenker dreht die Gabel, die Räder mit Speichen rollen; über dem
   Motorton des Fahrzeugkerns (`vehicles/vsound.js`) liegt eine eigene Zweitakt-Stimme (Klingeln des Auspuffs, Rasseln zwischen den
@@ -55,6 +58,24 @@ detailreich ist …“ – und gewählt: die Fahrzeuge von 1989 erkennbar wie di
 - Alle Typen nebeneinander: `python3 viz3/test/grenzland_auto.py 9012` (Bilder in `out/grenzland_auto/`).
 - Formen ohne Browser ansehen (kleiner Software-Renderer, Sekunden):
   `node viz3/extra/grenzland-auto/werkzeug/bild.mjs trabant out/karosse/trabant.png --views v34,h34,seite,front`.
+
+## Test
+
+`viz3/test/grenzland_auto.py` (für Actions eingetragen in `viz3/extra/grenzland-auto/tests.txt`; lokal rund 8 Minuten, auf GitHub
+Actions gut 5):
+neun Teile, jeder läuft für sich – Start (Freispiel wie vom Lead vorgegeben: alle Missionen erledigt, Radio aus, Freitag 17:20,
+Garten), Aufstellung aller 14 Typnamen mit Bildern, Linienfahrt, die Simson (fährt, Tacho, Schräglage, Hände, Tank, Reservehahn), der
+Trabant (fährt, Tacho, Lenkrad, Radio), Nacht (Zifferblätter, Lampen, Blaulicht), Shader-Programme gegen den Stand vor dem Start,
+„Beenden“. Was scheitert, steht auf Actions als Anmerkung des Laufs (öffentlich lesbar), Zwischenwerte als Notiz.
+
+**Bilder ohne den Browser des Chat-Rechners:** jeder Actions-Lauf legt `out/grenzland_auto/*.jpg` und das Protokoll als Artefakt
+`out-grenzland_auto` ab; `gh api repos/<owner>/<repo>/actions/runs/<id>/artifacts` listet es, `…/actions/artifacts/<id>/zip` lädt es
+(so sind die Cockpit-Bilder dieser Nacht entstanden, als die Warteschlange des Browsers eine Stunde lang war).
+
+**Eine Falle für alle Browser-Tests:** `pg.evaluate("GLAUTO.trabiAt(…)")` gibt den letzten Wert zurück – ein Fahrzeug, und an ihm
+hängt über `parent` die ganze Szene. Playwright versucht, das zu übertragen: im Chat-Rechner wuchs der Browser auf 3,5 GB und wurde
+vom Speicherwächter beendet („Target crashed“), auf Actions brach die Auswertung mit „Execution context was destroyed“ ab. Der Test
+schickt Anweisungen deshalb über `do(…)` (gibt nichts zurück) und holt Werte nur als Zahlen oder JSON.
 
 ## Typen, Maße, Quellen
 
@@ -138,3 +159,7 @@ Sirene, Antenne dahinter); de.wikipedia.org/wiki/Streifenwagen („hellelfenbein
 - ~2:55: Streifenwagen von heute, Wartburg 353 (Volkspolizei), Kastenwagen, Barkas B 1000, W 50; Trabant zum Fahren mit Cockpit.
 - ~3:05: Schwalbe; Cockpits lebendig (Kilometerzähler, Kontrollleuchten, Hände, Benzinhahn, Radioskala), Schatten unter den
   Fahrzeugen.
+- ~3:20–3:50: Lichtbalken für den Kastenwagen der Polizei; Radioskala mit Namen und Frequenz des Senders; Test in unabhängigen
+  Teilen mit Anmerkungen für Actions und Freispiel nach dem Start; Ursache der roten Läufe gefunden (ein zurückgegebenes Fahrzeug,
+  siehe „Test“); Schriftzüge auf der linken Wagenseite standen mit der Rückseite nach außen und waren nie zu sehen – behoben, mit
+  Unit-Test; der Schattenfleck war zu schwach (die Wagen schienen zu schweben) – kräftiger.
