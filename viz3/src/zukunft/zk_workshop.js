@@ -897,8 +897,9 @@ body.ws-start #ws-start{display:block}
   }
   // ---------------- entry points ----------------
   KERN.scenario('workshop', { label: 'Workshop: Zukünfte erproben', order: 4, run: () => enter() });
+  // the tile stands at the top of Menü → Erleben (the start page keeps its few buttons and fits a phone without scrolling)
   function tile() {
-    const page = document.querySelector('#menu .mpage[data-page="start"]');
+    const page = document.querySelector('#menu .mpage[data-page="erleben"]');
     if (!page || page.querySelector('#workshopbtn')) return !!page;
     const b = document.createElement('button');
     b.type = 'button';
@@ -909,7 +910,7 @@ body.ws-start #ws-start{display:block}
       document.querySelector('#menu .mresume')?.click();
       enter();
     });
-    page.querySelector('.mnav')?.before(b);
+    page.prepend(b);
     return true;
   }
   if (!tile()) document.addEventListener('DOMContentLoaded', tile, { once: true });

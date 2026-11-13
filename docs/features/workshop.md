@@ -6,7 +6,8 @@ Ereignisse (später kann ein zweiter Bildschirm folgen) und `ZKCHRONIK` für Dat
 beim ersten Eintritt; zur Ladezeit nur die Menükachel, die Szene und der URL-Test).
 
 ## Ein- und Ausstieg
-- Kachel „Workshop: Zukünfte erproben“ auf der Startseite des Menüs; Menü → Erleben → Szenen → „Workshop: Zukünfte erproben“;
+- Kachel „Workshop: Zukünfte erproben“ oben auf der Seite Menü → Erleben (seit V18i; auf der Startseite brach sie die Grenze von elf Knöpfen
+  und passte am Handy nicht mehr ohne Scrollen); Menü → Erleben → Szenen → „Workshop: Zukünfte erproben“;
   URL `?workshop`, `?workshop=allein-gewappnet&autoplay=1` (Beamer: startet gleich), `?workshop=allein` oder `=gewappnet`.
 - Im Modus ein Abzeichen „Workshop“ mit „Zurück ins Spiel“. Beim Verlassen kommt alles zurück: Spiel-Oberfläche, angehaltene Systeme,
   Uhr (Zeit, Takt), Lautstärken, Spielerstellung (Pose), Werkbank-Tafel.
