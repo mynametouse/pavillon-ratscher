@@ -212,20 +212,44 @@ def main():
         axis = axis - lift
     res = WR.metrics(pos, chains, h, axis)
     WR.print_metrics(res, f'(Suhl {a.gebiet}: vorher = Gelände an der Achse, nachher = geglättetes Längsprofil)')
+    # how far the profiles lie from the ground they were solved on (profile minus terrain at the axis; no bridges, tunnels, steps)
+    fit = {}
+    for lab, cond in (('alle', lambda w: True), ('fahrstrassen', lambda w: w['kind'] in ('motorway', 'main', 'county', 'street', 'lane', 'service')),
+                      ('wege', lambda w: w['kind'] in ('track', 'path', 'foot')), ('bahn', lambda w: w['kind'] == 'rail')):
+        ii = [ids for w, ids in chains if cond(w) and not w['fl'] & (3 | NZ.FL['steps'])]
+        if not ii:
+            continue
+        ii = np.unique(np.concatenate(ii))
+        dv = (h - axis)[ii]
+        dv = dv[np.isfinite(dv)]
+        fit[lab] = {'punkte': int(len(dv)), 'mittel_m': round(float(dv.mean()), 2), 'median_m': round(float(np.median(dv)), 2),
+                    'mittel_betrag_m': round(float(np.abs(dv).mean()), 2), 'p95_betrag_m': round(float(np.percentile(np.abs(dv), 95)), 2),
+                    'max_auftrag_m': round(float(dv.max()), 2), 'max_abtrag_m': round(float(-dv.min()), 2)}
+    S.log('profile minus ground:', fit.get('alle'), '· roads for cars:', fit.get('fahrstrassen'))
     jst = NZ.junction_stats(pos, chains, h)
     clr = NZ.clearance(pos, chains, h)
     S.log('junctions', jst, '· bridges', {k: v for k, v in clr.items() if k != 'lowest'})
     # ---------------- places: the built-up area as a town (the style of the road map follows it) ----------------
     areas_g, orte_g = S.gebiete()
-    kern = areas_g['kernstadt'].simplify(10.0)
-    kc = S.u2m(*S.CENTRE_UTM)
-    rings = [list(g.exterior.coords)[:-1] for g in (kern.geoms if hasattr(kern, 'geoms') else [kern])]
-    places = [{'n': 'Suhl', 'k': 'town', 'x': int(round(float(kc[0]))), 'y': int(round(float(kc[1]))), 'm': '',
-               'a': [[int(round(v / 10)) for v in model_ring(r)] for r in rings]}]
-    orte = [{'n': 'Suhl', 't': 2, 'a': [model_ring(r) for r in rings]}]
+    BU = NZ.built_up(o, areas_g, orte_g)
+    places, orte, pstyle = [], [], []
     from shapely.geometry import Point
     from shapely.prepared import prep
-    pkern = prep(areas_g['kernstadt'])
+    for n_, k_, (E_, N_), g_ in BU:
+        x_, y_ = S.u2m(E_, N_)
+        places.append({'n': n_, 'k': k_, 'x': int(round(float(x_))), 'y': int(round(float(y_))), 'm': '' if n_ == 'Suhl' else 'Stadt Suhl', 'a': NZ.rings_model(g_)})
+        orte.append({'n': n_, 't': 2 if k_ == 'town' else 1, 'a': NZ.rings_model(g_, dm=True)})
+        pstyle.append((2 if k_ == 'town' else 3, prep(g_)))
+    S.log('places:', [(p['n'], p['k'], len(p['a'])) for p in places])
+
+    def style_at(E_, N_):
+        pt, best = Point(E_, N_), 0
+        for st_, pg_ in pstyle:
+            if (st_ == 2 or best == 0) and pg_.contains(pt):
+                best = st_ if st_ == 2 else max(best, st_)
+                if best == 2:
+                    break
+        return best
     # ---------------- ways: simplified, cut at the tile edges ----------------
     mx, my = S.u2m(pos[:, 0], pos[:, 1])
     mz = h - S.H0
@@ -303,7 +327,7 @@ def main():
         U = np.stack(S.m2u(P[:, 0], P[:, 1]), 1)
         mid = P[len(P) // 2]
         me, mn = S.m2u(mid[0], mid[1])
-        style = 2 if pkern.contains(Point(float(me), float(mn))) else 0
+        style = style_at(float(me), float(mn))
         k_i, s_i = KINDS.index(w['kout']), SURF.index(w['surf'])
         w10 = int(round(w['w'] * 10))
         nm = name_i(w['name'] or w['bname'])
@@ -484,7 +508,7 @@ def main():
         'water_km': {k: round(v, 2) for k, v in sorted(km_water.items(), key=lambda kv: -kv[1]) if not k.startswith('Name')},
         'water_named_km': {k[6:]: round(v, 2) for k, v in sorted(km_water.items(), key=lambda kv: -kv[1]) if k.startswith('Name')},
         'water_areas': {'n': len(f_wareas), 'm2': round(wa_m2)},
-        'metric': res, 'junctions': jst, 'clearance': clr, 'heights': heights, 'bytes_tiles': nbytes,
+        'metric': res, 'junctions': jst, 'clearance': clr, 'fit_to_ground': fit, 'heights': heights, 'bytes_tiles': nbytes,
     }
     index = {'v': VERSION, 'schema': L.SCHEMA, 'product': 's', 'title': 'Straßenraum Suhl', 'made': made, 'level': S.LEVEL,
              'tiles': {str(S.LEVEL): L.tileset_encode(T)}, 'attribution': ATTR,

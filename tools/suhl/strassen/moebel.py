@@ -39,47 +39,6 @@ def load_daten(path):
     return m
 
 
-def built_up(o, areas_g, orte_g):
-    """the places of Suhl for the style of the road map: the Kernstadt as a town; the villages that lie in it (Goldlauter, Heidersbach,
-    Mäbendorf) and outside it (Albrechts, Dietzhausen …) as villages -> [(name, 'town' | 'village', (E, N), shapely geometry UTM)]"""
-    from shapely.geometry import Point
-    from shapely.ops import unary_union
-    kern = areas_g['kernstadt']
-    vill = [(n, pl, E, N) for n, pl, E, N in orte_g if pl == 'village']
-    lu = []
-    for kind, i, t, p in o.areas(lambda t: t.get('landuse') in ('residential', 'farmyard', 'commercial', 'retail', 'industrial')):
-        lu.append(p)
-    out, cut = [], []
-    for n, pl, E, N in vill:
-        c = Point(E, N)
-        near = [p for p in lu if p.distance(c) < 1200 and not (kern.contains(p.centroid) and c.distance(p.centroid) > 800)]
-        if not near:
-            continue
-        u = unary_union([p.buffer(60) for p in near]).buffer(-45)
-        gs = [g for g in (u.geoms if hasattr(u, 'geoms') else [u]) if g.area > 2000 and g.distance(c) < 700]
-        if not gs:
-            continue
-        g = unary_union(gs)
-        out.append((n, 'village', (E, N), g))
-        cut.append(g.buffer(15))
-    town = kern.difference(unary_union(cut)) if cut else kern
-    town = town.buffer(-8).buffer(8)
-    out.insert(0, ('Suhl', 'town', S.CENTRE_UTM, town))
-    return out
-
-
-def rings_model(g, tol=6.0, dm=False):
-    rs = []
-    for pg in (g.geoms if hasattr(g, 'geoms') else [g]):
-        if pg.area < 2000:
-            continue
-        c = np.array(pg.simplify(tol).exterior.coords)[:-1]
-        x, y = S.u2m(c[:, 0], c[:, 1])
-        k = 10 if dm else 1
-        rs.append([int(round(float(v) * k)) for xy in zip(x, y) for v in xy])
-    return rs
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--daten', required=True)
@@ -126,13 +85,9 @@ def main():
         kk = 3 if hws and hws[F['hw'][n]] in ('pedestrian', 'living_street') else k
         N.add(kk, sf, w10 / 20.0, fl, P, 'f', F['names'][ri] or F['names'][ni])
     # ---------------- places ----------------
-    areas_g, orte_g = S.gebiete()
-    BU = built_up(o, areas_g, orte_g)
-    places = []
-    for n, k, (E, Nn), g in BU:
-        x, y = S.u2m(E, Nn)
-        places.append({'n': n, 'k': k, 'x': int(round(float(x))), 'y': int(round(float(y))), 'm': '' if n == 'Suhl' else 'Stadt Suhl', 'a': rings_model(g)})
-    FF = dict(F, places=places)
+    # the places come with the drive file (lauf.py: the Kernstadt as a town, the villages as villages)
+    places = F['places']
+    FF = F
     PL = D.Places(FF)
     S.log('places:', [(p['n'], p['k'], len(p['a'])) for p in places])
     # ---------------- OpenStreetMap as the tool reads it (its fetch replaced by the data at hand) ----------------

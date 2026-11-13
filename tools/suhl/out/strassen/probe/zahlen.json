@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:14:26Z",
+ "made": "2026-11-13T01:18:15Z",
  "gebiet": "probe",
  "tiles": 11,
  "osm": "OSM API 0.6 map calls (2 boxes, cached by stage 1)",
@@ -25,9 +25,9 @@
   "buildings": 7970
  },
  "km_by_kind": {
-  "foot": 22.61,
-  "service": 19.62,
-  "street": 14.43,
+  "foot": 21.72,
+  "street": 17.83,
+  "service": 17.11,
   "path": 7.5,
   "main": 5.05,
   "track": 2.2,
@@ -36,9 +36,9 @@
  },
  "km": 73.1,
  "ways_by_kind": {
-  "foot": 539,
-  "service": 388,
-  "street": 182,
+  "foot": 518,
+  "service": 339,
+  "street": 252,
   "path": 94,
   "main": 68,
   "lane": 25,
@@ -323,6 +323,44 @@
    }
   ]
  },
+ "fit_to_ground": {
+  "alle": {
+   "punkte": 89623,
+   "mittel_m": 0.01,
+   "median_m": 0.01,
+   "mittel_betrag_m": 0.38,
+   "p95_betrag_m": 1.54,
+   "max_auftrag_m": 13.14,
+   "max_abtrag_m": 9.33
+  },
+  "fahrstrassen": {
+   "punkte": 50240,
+   "mittel_m": 0.02,
+   "median_m": 0.02,
+   "mittel_betrag_m": 0.27,
+   "p95_betrag_m": 0.9,
+   "max_auftrag_m": 9.29,
+   "max_abtrag_m": 6.64
+  },
+  "wege": {
+   "punkte": 32951,
+   "mittel_m": -0.0,
+   "median_m": -0.0,
+   "mittel_betrag_m": 0.25,
+   "p95_betrag_m": 0.87,
+   "max_auftrag_m": 8.7,
+   "max_abtrag_m": 6.64
+  },
+  "bahn": {
+   "punkte": 7008,
+   "mittel_m": 0.05,
+   "median_m": 0.0,
+   "mittel_betrag_m": 1.76,
+   "p95_betrag_m": 6.32,
+   "max_auftrag_m": 13.14,
+   "max_abtrag_m": 9.33
+  }
+ },
  "heights": {
   "tiles": 737194,
   "copernicus": 96179,
@@ -358,6 +396,6 @@
   "own_sampling_share": 0.1154,
   "zaehlt": true
  },
- "bytes_tiles": 226172,
- "bytes_drive": 270184
+ "bytes_tiles": 226174,
+ "bytes_drive": 277413
 }

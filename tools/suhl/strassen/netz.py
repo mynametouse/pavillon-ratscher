@@ -111,15 +111,12 @@ def record(wid, nd, t, nodes):
         f |= FL['sidewalk']
     if t.get('footway') == 'crossing' or t.get('cycleway') == 'crossing' or t.get('path') == 'crossing':
         f |= FL['crossing']
-    # what the drive data say: until the road map knows 'no kerb' (wish W1) a pedestrian street goes as 'foot' and a living street
-    # as 'service' – the shader draws neither with kerb and pavement; the OSM class stays in 'hw'
+    # what the drive data say: the class of the region (classify). A pedestrian street and a living street are 'street' with the
+    # bit 'level' (64): the road map of feat/strassen draws that as its kind 9 – no kerb, gutter, pavement, line (answer of the
+    # roads chat to wish W1, 13.11.2026 2:00); the OSM class stays in 'hw'
     kout = kind
-    if hw == 'pedestrian':
-        kout = 'foot'
-        if 'surface' not in t:
-            surf = 'paving'
-    elif hw == 'living_street':
-        kout = 'service'
+    if hw == 'pedestrian' and 'surface' not in t:
+        surf = 'paving'
     ms = _num(t.get('maxspeed', ''))
     try:
         layer = int(t.get('layer', '0'))
@@ -559,6 +556,47 @@ def clearance(pos, chains, h, clear=4.5):
     worst.sort()
     return {'bridges': nb, 'crossings': ncross, 'low': nlow, 'clear_m': clear,
             'lowest': [{'gap_m': g, 'bridge_way': a, 'name': n, 'below_way': b} for g, a, n, b in worst[:12]]}
+
+
+# ---------------- places ----------------
+def built_up(o, areas_g, orte_g):
+    """the places of Suhl for the style of the road map: the Kernstadt as a town; the villages that lie in it (Goldlauter, Heidersbach,
+    Mäbendorf) and outside it (Albrechts, Dietzhausen …) as villages -> [(name, 'town' | 'village', (E, N), shapely geometry UTM)]"""
+    from shapely.geometry import Point
+    from shapely.ops import unary_union
+    kern = areas_g['kernstadt']
+    vill = [(n, pl, E, N) for n, pl, E, N in orte_g if pl == 'village']
+    lu = [p for kind, i, t, p in o.areas(lambda t: t.get('landuse') in ('residential', 'farmyard', 'commercial', 'retail', 'industrial'))]
+    out, cut_ = [], []
+    for n, pl, E, N in vill:
+        c = Point(E, N)
+        near = [p for p in lu if p.distance(c) < 1200 and not (kern.contains(p.centroid) and c.distance(p.centroid) > 800)]
+        if not near:
+            continue
+        u = unary_union([p.buffer(60) for p in near]).buffer(-45)
+        gs = [g for g in (u.geoms if hasattr(u, 'geoms') else [u]) if g.area > 2000 and g.distance(c) < 700]
+        if not gs:
+            continue
+        g = unary_union(gs)
+        out.append((n, 'village', (E, N), g))
+        cut_.append(g.buffer(15))
+    town = kern.difference(unary_union(cut_)) if cut_ else kern
+    town = town.buffer(-8).buffer(8)
+    out.insert(0, ('Suhl', 'town', S.CENTRE_UTM, town))
+    return out
+
+
+def rings_model(g, tol=6.0, dm=False):
+    """the outer rings of a UTM geometry as flat lists in model metres (or dm), small parts left out"""
+    rs = []
+    for pg in (g.geoms if hasattr(g, 'geoms') else [g]):
+        if pg.area < 2000:
+            continue
+        c = np.array(pg.simplify(tol).exterior.coords)[:-1]
+        x, y = S.u2m(c[:, 0], c[:, 1])
+        k = 10 if dm else 1
+        rs.append([int(round(float(v) * k)) for xy in zip(x, y) for v in xy])
+    return rs
 
 
 # ---------------- areas ----------------
