@@ -173,5 +173,8 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
   `viz3/extra/grenzland-welt/tests.txt`, also drei Jobs auf GitHub Actions). Bilder in `out/grenzland_welt/`: `01_warnjacke`, `01b_haube`,
   `02_helm`, `03_gesehen(_hud)`, `04_filmt(_hud)`, `05_feed` (der Post im Handy; das Bild zeigt erst das neue Handy), `06_wahl(_hud)`,
   `10_blitzer` … `15_wildunfall`.
-- Stand 12:46 auf Actions (9aed1bb4): `wissen,funk` 19/19, `film,wahl` 14/14 grün; `ereignis`: der Korso fand keine Strecke (behoben:
-  kürzere Strecken, notfalls in die andere Richtung).
+- Verlauf: 12:46 (9aed1bb4) der Korso fand keine Strecke – behoben; afcfff67 alles grün (19 + 15 + 30); nach Merge 1 (250a60b3) auf
+  dem zusammengeführten Stand hier 64/64 (14:13). Zwei Fehler, die erst mit den anderen sichtbar wurden: der Fahndungsaufruf hing an den
+  *gezeigten* Sternen (einer weniger, solange Falko und Sarah getrennt sind) – jetzt an der Stufe selbst; und mit dem Rennen der Figuren
+  holte der ABV von 1989 den Spieler ein, bevor der Test den Wartburg der Volkspolizei sah – gerannt wird jetzt nur von der Polizei von
+  heute.

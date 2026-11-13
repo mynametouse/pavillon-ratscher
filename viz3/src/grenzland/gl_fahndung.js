@@ -1301,8 +1301,11 @@ export const GLFAHNDUNG = (() => {
     if (n === 'gesehen') {
       GLHUD.say(T.gesehen, '', 2.5);
       GLTON.fx('stern');
-    } else if (n === 'erkannt') PLAY.think(T.erkannt, 3000);
-    else if (n === 'verloren') PLAY.think(d.hidden ? T.versteck : T.verloren, 3000);
+    } else if (n === 'erkannt') {
+      PLAY.think(T.erkannt, 3000);
+      // (the radio gives the name now: „Gesucht wird Falko, …“)
+      funkBild('neu');
+    } else if (n === 'verloren') PLAY.think(d.hidden ? T.versteck : T.verloren, 3000);
     else if (n === 'stern') {
       PLAY.think(T.stern, 2400);
       GL.emit('sterne', { n: GLLOGIK.stars(W), bekannt: W.known });
