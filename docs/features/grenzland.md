@@ -14,6 +14,43 @@ Grenzland-Chat (Lead) und sechs Hilfs-Agenten; ihre Teile stehen in eigenen Doku
 
 Gemeinsame Regeln für alle Teile: `docs/plans/auftraege/grenzland-gemeinsam.md`.
 
+## Runde 2 (13.11.2026 ab ~12:00): GTA-Gefühl und Immersion
+
+Falko hat um 10:59 eine Durchsicht von Kapitel 1 erbeten („Verbesserungsvorschläge für gta6 vibes und immersivität“) und gegen 11:25 die
+Pakete **A** (Störendes raus), **B** (Kino-Gefühl) und **C** (lebendige Welt) gewählt; um 13:09 kam das **gemeinsame Handy** dazu. A baut der
+Lead, B und C fünf Hilfs-Agenten (`kino`, `stimmen`, `licht`, `figuren`, `welt`), das Handy der Agent `handy` (Aufträge
+`docs/plans/auftraege/grenzland2-*.md`, ihre Dokumente `docs/features/grenzland-<thema>.md` und `docs/features/handy.md`).
+
+### Paket A – ruhig wie bei GTA (Lead, `gl_hud.js`, `gl_modus.js`, Test `grenzland_ruhe.py`)
+
+- **Weg im Modus:** Kopfzeile der Seite mit den Reitern, die Leiste der Dinge (1–8), die Knöpfe des Hundes, Uhrzeit-, Figur- und
+  Sicht-Knopf (die Tasten bleiben), die Hinweise und „Neu im Entdeckerbuch“ des Spiels, das Banner „Neue Aufgabe“, die Tastenhilfe beim
+  Fahren; am Rechner auch die Knöpfe der Fahrzeugtafel (Tempo und Gang bleiben). Oben rechts bleiben nur das Auge (freie Sicht) und das Menü
+  als kleine runde Knöpfe.
+- **Tafel oben rechts:** nur noch die fünf Sterne und das Geld (wie GTA); gesucht zusätzlich, **was die Polizei weiß** – Gesicht, Kleidung,
+  Fahrzeug als drei Zeichen (rot, wenn bekannt; aus `GLFAHNDUNG.stand().wissen`, Agent `welt`) – und eine kurze Zeile („Sie sehen dich!“).
+  Ein Tipp auf Sterne oder Geld (oder ⋯) öffnet die alte Tafel mit Wechseln, Handy, Radio, Warte hier, Böller, Stoßen, „Anzeigen“ und
+  Beenden; sie klappt nach ein paar Sekunden von selbst zu. Ein Knopf einer Mission steht gelb unter dem Geld.
+- **Taste O** (oder „Anzeigen“): alles aus – Tafel und Radar weg (die freie Sicht des Spiels); O noch einmal holt sie zurück. Beim Start
+  wird **Vollbild** angeboten, wo der Browser es kann.
+- **Titelkarte:** der Modus beginnt mit „Kapitel 1 · Grenzland“ und den Tasten groß in der Mitte; Missionen bekommen ihre eigene Karte
+  (`GLHUD.titel(name, über, sek, unter)`, Agent `kino`), Karten warten aufeinander und auf „Mission bestanden“; `GLHUD.ruhig()` wartet, bis
+  keine Karte mehr steht (davor kommt die Abschlusskarte des Kapitels nicht mehr über „Bestanden“).
+- **Szenen:** `GLHUD.kino(an)` legt schwarze Balken über und unter das Bild, die Untertitel stehen im unteren Balken, Tafel, Radar,
+  Aufgabenkarte gehen aus dem Weg (Gespräche als Filmszenen: Agent `kino`).
+- **Eine Zeile zur Zeit:** Untertitel stehen untereinander statt übereinander; der Polizeifunk wartet, solange jemand spricht (und verfällt
+  nach 9 s Spielzeit), Menschen sprechen sofort; die Worte des Autoradios treten zurück, solange jemand spricht; die Sprechzeile des Spiels
+  (Dorfbewohner) weicht einem Untertitel.
+- **Leiser:** das Aufgabenbuch zeigt im Modus nur die Aufgaben des Modus (die Gartenaufgaben „Futter für die Ziegen“ usw. ruhen); Gedanken
+  des Spiels über gesehene Tiere, Gartenaufgaben und neue Funktionen („Neu: …“) kommen nicht, die eigenen Gedanken des Modus warten, bis
+  kein Untertitel und keine Karte mehr steht.
+- **Hasso bleibt daheim:** war der Hund dabei, ist er während des Modus weg und kommt beim Beenden zurück (`GL.hund`).
+- **Kamera und Mitspieler:** steht die Kamera in der oder dem anderen des Duos (nach einer Fahrt, eng), blendet die Figur aus, statt das Bild
+  mit Haaren zu füllen.
+- **Radar:** eine Streife oder ein Beamter steht nur auf dem Radar, solange sie dich sehen oder eben gesehen haben (`gesehen`, wie GTA 6).
+- **Altes Handy:** seine Einträge standen nebeneinander (die Klasse `.hb` teilt es mit den runden Knöpfen des Spiels) – wieder
+  untereinander, bis das gemeinsame Handy (Agent `handy`) es ersetzt.
+
 ## Stand (13.11.2026, 9:30)
 
 - **V17x**: Kern und die Endstände der sechs Hilfs-Agenten (sie sind gegen 4 Uhr am Nutzungslimit stehen geblieben) zusammen mit

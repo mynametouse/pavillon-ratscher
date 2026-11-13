@@ -37,6 +37,7 @@ def _merge(a, b):
         if isinstance(v, dict) and isinstance(a.get(k), dict): _merge(a[k], v)
         else: a[k] = v
 import shutil as _sh
+_vx_add = []   # recorded lines an extra adds to the fixed ones ('vx_add', below)
 for _fx in sorted(glob.glob(os.path.join(H, 'extra', '*'))):
     _src_d = os.path.join(_fx, 'dist')
     for _f in glob.glob(os.path.join(_src_d, '**', '*'), recursive=True):
@@ -44,7 +45,7 @@ for _fx in sorted(glob.glob(os.path.join(H, 'extra', '*'))):
             _dst = os.path.join(D, os.path.relpath(_f, _src_d)); os.makedirs(os.path.dirname(_dst), exist_ok=True); _sh.copy2(_f, _dst)
     _mf = os.path.join(_fx, 'manifest.json')
     if os.path.exists(_mf):
-        _x = json.load(open(_mf)); _add = _x.pop('credits_add', '')
+        _x = json.load(open(_mf)); _add = _x.pop('credits_add', ''); _vx_add += _x.pop('vx_add', [])
         _merge(M, _x)
         if _add:   # into the list of sources (before its </ul>), not behind the licence texts
             _c = M.get('credits', ''); _i = _c.rfind('</ul>')
@@ -54,6 +55,9 @@ for _l in M.pop('vm_replace', []):
     _L = M['vm']['lines']; _i = next((i for i, x in enumerate(_L) if x['id'] == _l['id']), None)
     if _i is None: _L.append(_l)
     else: _L[_i] = _l
+# an extra may add recorded lines to window.VOICEX.lines ('vx_add'; viz3/extra/grenzland-stimmen) – a list 'lines' of its own would replace
+# the village's (lists in extra manifests replace each other)
+M.setdefault('vx', {}).setdefault('lines', []).extend(_vx_add)
 # GPU-compressed textures (KTX2): the transcoder into dist/basis/, the names of the usable tex2/ files inline (buildlib/assets.py)
 TEX2 = BA.tex2_manifest(D) if BA.copy_basis(H, D) else {'t': [], 'g': {}}
 site = open(os.path.join(H, 'site.js')).read().strip()

@@ -21,13 +21,15 @@ Hier das, was Hilfs-Agenten und spätere Chats im Repo brauchen. Aufträge der S
 - Stresstests in allen Welten (Blackout-Nacht, Preisschock, Dürresommer, Starkregennacht, Sturm/Waldbrand); Welten gleichen Klimas erleben
   dieselben Ereignisse in denselben Jahren.
 - Energiedorf („Energieautarkie … ziemlich stark“): Kern schon in Stufe 1.
+- Medien (Falko 13:06, gewählt 13:30): in Stufe 1 **Handy-Übergänge** (Eilmeldung, Dorfgruppe mit Fotos aus der Welt, Anrufe, Warnung, kein Netz im Blackout), **Radio als Tonbrücke**, **echte Videos von heute** (erst nach Klick geladen, mit Quelle). Alles realistisch in der Form, erfunden in Namen und Marken, markiert „mögliche Zukunft“; der Warnton unterscheidbar vom echten.
+- Politik (gewählt 13:30, gebaut **nach Stufe 1**): Entscheidungswege an jeder Gabelung, Planspiel im Workshop (Gruppen als Ortsteilrat, Stadtrat, Genossenschaft, Landratsamt, Naturschutz), Kampagne „Dorf im Wandel“ im Spiel (als Ortsvorsteher die Projekte durchbringen), „Post aus 2045“ aufs Handy im Spiel; dafür ein Handy im Spiel – möglichst gemeinsam mit dem Grenzland-Chat.
 - Zwölf Kapitel: Wald, Wasser, Energie, Mobilität, Wasser wird knapp, Alt werden, Neue Leute und leere Häuser, Feuerwehr, Dorfladen und
   Treffpunkt, Biber und Wolf, Uwes Hof 2050, Holz baut das Dorf.
 
 ## Stufen
 1. **Wald, Wasser und der Kern des Energiedorfs – „Allein im Sturm“ gegen „Gewappnet“**, vorne am großen Bildschirm vorführbar, mit klarem
-   Workshop-Modus (Ebenen mit Beschriftung, Menüführung). Gestartet 13.11. ~13:30 mit vier Hilfs-Agenten (`zeitreise-chronik`,
-   `zeitreise-regie`, `zeitreise-welt`, `workshop`), Integrationszweig `feat/zeitreise`.
+   Workshop-Modus (Ebenen mit Beschriftung, Menüführung). Gestartet 13.11. ~13:30 mit fünf Hilfs-Agenten (`zeitreise-chronik`,
+   `zeitreise-regie`, `zeitreise-welt`, `workshop`, `zeitreise-medien`), Integrationszweig `feat/zeitreise`.
 2. Alle vier Welten, Energiedorf ganz, Mobilität, Neue Leute/leere Häuser, Alt werden, Dorfladen; Generationen; Dorfzeitung, Fahrplan, Rechnung.
 3. Wasser wird knapp, Feuerwehr, Biber und Wolf, Uwes Hof 2050, Holz baut das Dorf; alle Stresstests.
 4. Echte Vergangenheit ab etwa 2016; „Ein Tag im Jahr 2045“ mit Gesprächen.

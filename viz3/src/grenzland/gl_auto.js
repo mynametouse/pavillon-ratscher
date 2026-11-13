@@ -190,8 +190,11 @@ export const GLAUTO = (() => {
       const d = stopAt - c.s;
       vT = Math.min(vT, d <= 0.05 ? 0 : Math.sqrt(2 * 4 * d));
     }
-    const dv = vT - c.v;
+    const dv = vT - c.v,
+      v0 = c.v;
     c.v = Math.max(0, c.v + (dv > 0 ? Math.min(dv, (o.acc || 2.4) * dt) : Math.max(dv, -7 * dt)));
+    // feat/grenzland-licht: braking (the brake lamps light): slowing down hard, or held in front of something
+    c.bremst = (dt > 0 && v0 - c.v > 1.1 * dt) || (c.v < 0.3 && vT < 0.3 && !c.ende);
     c.s = Math.min(R.L, c.s + c.v * dt);
     c.ende = c.s >= R.L - 0.6;
     pose(c);
@@ -608,6 +611,12 @@ export const GLAUTO = (() => {
     tgt(N.gate.gain, 0.16 + 0.3 * thr + 0.18 * k, 0.05);
     tgt(N.out.gain, s.engine ? (0.05 + 0.1 * thr + 0.05 * k) * (CAM3.want ? 1 : 0.8) : 0, 0.08);
   }
+  // ---- feat/grenzland-licht: the beacons of today's patrol cars flash twice left, twice right (0.84 s, each flash 70 ms) – [left, right] ----
+  function blauPuls(t) {
+    const c = (((t % 0.84) + 0.84) % 0.84) / 0.84,
+      f = (a, b) => (c >= a && c < b ? 1 : 0);
+    return [Math.max(f(0, 0.085), f(0.17, 0.255)), Math.max(f(0.5, 0.585), f(0.67, 0.755))];
+  }
   // ---- per frame: lamps by the hour, the beacons, the nearest horn ----
   let night = null;
   function tick(dt, ox, oy) {
@@ -615,6 +624,7 @@ export const GLAUTO = (() => {
     if (dk !== night) {
       night = dk;
       LM.head.emissiveIntensity = dk ? 3.2 : 0;
+      if (LM.head89) LM.head89.emissiveIntensity = dk ? 3.0 : 0;
       LM.tail.emissiveIntensity = dk ? 1.4 : 0;
       GLMOD.SCHATTEN.tag(dk);
       markDirty();
@@ -635,9 +645,9 @@ export const GLAUTO = (() => {
       }
       if (c.v > 0.05 && d < 300) markDirty();
     }
-    const ph = Math.floor(S.blink * 5.5) % 2;
-    const a = any ? (ph ? 7 : 0.3) : 0,
-      b = any ? (ph ? 0.3 : 7) : 0;
+    const [pl, pr] = blauPuls(S.blink);
+    const a = any ? 0.25 + 7 * pl : 0,
+      b = any ? 0.25 + 7 * pr : 0;
     if (LM.blau.emissiveIntensity !== a || LM.blau2.emissiveIntensity !== b) {
       LM.blau.emissiveIntensity = a;
       LM.blau2.emissiveIntensity = b;
@@ -672,6 +682,7 @@ export const GLAUTO = (() => {
     trabiHide,
     zweitakt,
     tick,
+    blauPuls,
     LM,
     VMAX,
     HIDE,

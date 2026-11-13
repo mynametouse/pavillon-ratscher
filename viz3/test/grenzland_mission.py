@@ -346,7 +346,7 @@ with lib.browser() as b:
         E("GAME.P.stance = 'stand'")
         ck('three photos from cover, ducked in the dark, unseen', all(got) and ok and E("GLSTATE.inv.fotos") == 3 and E("GLKAP1.K4().job") != 'jagt', str(got) + info()['step'])
         steps(4)
-        st = J("({ n: GLLOGIK.stars(GLSTATE.W), known: GLSTATE.W.known, leucht: !!GLMISSION.D('leucht'), chat: GLSTATE.feed.slice(-9).map(q => q.text).join(' | '), van: (c => c ? Math.round(c.v * 10) / 10 : -1)(GLMISSION.C('van')), figs: GLMISSION.debug.info().figs.length })")
+        st = J("({ n: GLLOGIK.stars(GLSTATE.W), known: GLSTATE.W.known, leucht: !!GLMISSION.D('leucht') || !!(window.GLLICHT && GLLICHT.stand && GLLICHT.stand().flare), chat: GLSTATE.feed.slice(-9).map(q => q.text).join(' | '), van: (c => c ? Math.round(c.v * 10) / 10 : -1)(GLMISSION.C('van')), figs: GLMISSION.debug.info().figs.length })")
         ck('a flare over the forest, „Schüsse an der Klinge?!“ in the village chat: three hollow stars, the men drive off',
            st['n'] == 3 and not st['known'] and st['leucht'] and 'Schüsse an der Klinge' in st['chat'] and st['van'] > 0.5 and st['figs'] == 0, str(st))
         E(f"GAME.view({p[0]}, {p[1]}, KERN.ground({p[0]}, {p[1]}) + 1.62, {yawTo(p, KL['van'])}, 28)"); steps(0.2)
