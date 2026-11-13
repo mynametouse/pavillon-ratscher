@@ -1,31 +1,31 @@
 {
- "made": "2026-11-13T01:43:22Z",
+ "made": "2026-11-13T01:58:52Z",
  "area": "stadt",
  "version": "v1",
- "seconds": 132.9,
+ "seconds": 135.7,
  "tiles": 397,
- "buildings": 31708,
- "bytes": 33991114,
- "kb_per_building": 1.05,
+ "buildings": 31709,
+ "bytes": 33674597,
+ "kb_per_building": 1.04,
  "centre_tile_present": true,
  "ethos_in_frame": 52737,
- "cadastre_in_frame": 33296,
+ "cadastre_in_frame": 33297,
  "join": {
   "kataster_nur_ueberdeckt": 324
  },
  "kat": {
-  "2": 30960,
+  "2": 30961,
   "1": 488,
   "0": 271
  },
  "src": {
   "e": 30928,
-  "k": 791
+  "k": 792
  },
  "hq": {
   "2": 30928,
-  "0": 403,
-  "1": 388
+  "0": 405,
+  "1": 387
  },
  "kind": {
   "0": 15470,
@@ -33,7 +33,7 @@
   "2": 13059,
   "3": 2378,
   "4": 65,
-  "5": 62,
+  "5": 63,
   "6": 18,
   "8": 11
  },
@@ -55,7 +55,7 @@
   "gesundheit": 41,
   "gastro": 40,
   "buero": 38,
-  "turm": 36,
+  "turm": 37,
   "kultur": 34,
   "kirche": 30,
   "friedhof": 18,
@@ -75,63 +75,63 @@
   "villa": 203,
   "zeile": 165,
   "tank": 65,
-  "turm": 62,
+  "turm": 63,
   "hochhaus": 47,
   "kirche": 19,
   "tief": 11
  },
  "roof_form": {
-  "0": 17432,
-  "1": 1871,
-  "2": 11961,
+  "0": 17423,
+  "1": 1877,
+  "2": 11965,
   "3": 455
  },
  "roof_rq": {
-  "0": 15689,
-  "1": 15091,
-  "2": 939
+  "0": 15708,
+  "1": 15074,
+  "2": 938
  },
  "floors_gsq": {
-  "-1": 5095,
+  "-1": 5096,
   "0": 2854,
   "1": 531,
   "2": 23239
  },
  "era": {
-  "0": 22396,
+  "0": 22397,
   "1": 4311,
   "2": 1987,
   "3": 1628,
   "4": 1397
  },
  "era_q": {
-  "0": 26797,
+  "0": 26798,
   "1": 4922
  },
  "roof_class": {
-  "0": 7288,
+  "0": 7292,
   "1": 480,
-  "2": 8833,
-  "3": 4468,
-  "4": 20089,
-  "5": 3242,
-  "6": 705
+  "2": 8835,
+  "3": 4469,
+  "4": 20090,
+  "5": 3243,
+  "6": 702
  },
  "roof_class_q": {
-  "0": 405,
-  "1": 44609,
+  "0": 406,
+  "1": 44614,
   "2": 91
  },
- "with_address": 31445,
+ "with_address": 31446,
  "with_name": 469,
- "with_osm": 23834,
- "with_street_side": 19629,
+ "with_osm": 23833,
+ "with_street_side": 19631,
  "with_shop_zone": 547,
  "landmarks": 75,
  "monuments": 63,
- "footprint_ha": 251.96,
- "floor_area_ha": 480.66,
- "roof_area_ha": 279.73,
+ "footprint_ha": 251.95,
+ "floor_area_ha": 480.59,
+ "roof_area_ha": 279.74,
  "function_to_use": {
   "Wohngebäude": [
    12946,
@@ -206,7 +206,7 @@
    "bildung"
   ],
   "Funkmast": [
-   23,
+   24,
    "turm"
   ],
   "Betriebsgebäude zu Verkehrsanlagen (allgemein)": [
@@ -350,37 +350,37 @@
   "tiles_read_missing": 108,
   "fit": {
    "kein dom": 6762,
-   "gemessen": 13688,
-   "passt nicht": 1869,
-   "zu klein": 6523,
-   "nur Höhen": 361
+   "gemessen": 13671,
+   "passt nicht": 1888,
+   "zu klein": 6520,
+   "nur Höhen": 362
   },
   "form_rule_to_measured": {
-   "0->0": 3741,
-   "0->1": 178,
-   "0->2": 1141,
+   "0->0": 3735,
+   "0->1": 177,
+   "0->2": 1142,
    "0->3": 42,
-   "1->0": 1195,
+   "1->0": 1188,
    "1->1": 5,
-   "1->2": 15,
-   "2->0": 1908,
+   "1->2": 14,
+   "2->0": 1904,
    "2->1": 133,
    "2->2": 4848,
    "2->3": 174,
    "3->0": 59,
    "3->1": 7,
-   "3->2": 163,
+   "3->2": 164,
    "3->3": 79
   },
-  "form_changed": 5015,
-  "form_same": 8673,
+  "form_changed": 5004,
+  "form_same": 8667,
   "flat_or_pitched_changed": {
    "regel flach -> gemessen geneigt": 1361,
-   "regel geneigt -> gemessen flach": 3162,
+   "regel geneigt -> gemessen flach": 3151,
    "regel flach -> gemessen geneigt (nur Höhen)": 116
   },
   "both_pitched": 5424,
-  "ridge_turned": 941,
+  "ridge_turned": 939,
   "eave_change_m": {
    "median": 0.88,
    "p90": 2.86
@@ -393,9 +393,10 @@
    "median": 0.14,
    "p10": -0.31,
    "p90": 2.35,
-   "n": 16443
+   "n": 16446
   },
-  "heights_measured_for_cadastre_only": 388,
+  "heights_measured_for_cadastre_only": 387,
+  "cadastre_only_not_in_surface_model": 4,
   "not_in_cadastre_seen": 112,
   "not_in_cadastre_flat_ground": 61
  },
@@ -415,7 +416,7 @@
  "use_out": {
   "wohnen": 13299,
   "neben": 11580,
-  "sonst": 2385,
+  "sonst": 2386,
   "garage": 2294,
   "gewerbe": 931,
   "handel": 255,
@@ -447,18 +448,18 @@
   "villa": 203,
   "zeilenbau": 165,
   "behaelter": 65,
-  "turm": 62,
+  "turm": 63,
   "punkthochhaus": 47,
   "kirche": 19
  },
  "rk": {
-  "0": 3511,
-  "2": 1992,
+  "0": 3513,
+  "2": 1993,
   "3": 2393,
   "4": 18558,
-  "5": 248,
-  "6": 4305,
-  "7": 701
+  "5": 247,
+  "6": 4307,
+  "7": 698
  },
  "fg": {
   "0": 30542,
@@ -468,12 +469,13 @@
   "5": 40,
   "7": 10,
   "32": 271,
-  "64": 780
+  "64": 777,
+  "192": 4
  },
  "r_out": {
-  "0": 17420,
-  "1": 1864,
-  "2": 11816,
+  "0": 17411,
+  "1": 1870,
+  "2": 11820,
   "3": 409,
   "4": 85,
   "5": 103,

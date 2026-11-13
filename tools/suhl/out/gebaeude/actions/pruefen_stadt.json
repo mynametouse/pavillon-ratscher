@@ -14,7 +14,7 @@
   },
   "ids unique": {
    "ok": true,
-   "info": "31708 records, 0 ids more than once []"
+   "info": "31709 records, 0 ids more than once []"
   },
   "footprints valid": {
    "ok": true,
@@ -29,8 +29,8 @@
    "info": "0 reach more than 250 m beyond their tile []"
   },
   "heights plausible": {
-   "ok": false,
-   "info": "3 outside 0.3..120 m or eave above the top [('DETHL57P00017p0P', 0.03, 6.0), ('DETHL57P00017p0Q', 0.07, 3.0), ('DETHL57P0001CYxS', 0.07, 6.0)]"
+   "ok": true,
+   "info": "0 outside 0.3..120 m or eave above the top []"
   },
   "roof mesh": {
    "ok": true,
@@ -58,7 +58,7 @@
   },
   "footprints do not overlap": {
    "ok": true,
-   "info": "73 pairs overlap by more than 1 m² (largest [(48.0, 'DETHL57P00000OFl', 'DETHL57P0001zkhi'), (41.4, 'DETHL57P00008Cce', 'DETHL57P0001yuPl'), (40.5, 'DETHL57P0001CZ46', 'DETHL57P0001nvtJ')])"
+   "info": "79 pairs overlap by more than 1 m² (largest [(48.0, 'DETHL57P00000OFl', 'DETHL57P0001zkhi'), (41.4, 'DETHL57P00008Cce', 'DETHL57P0001yuPl'), (40.5, 'DETHL57P0001CZ46', 'DETHL57P0001nvtJ')])"
   },
   "tall buildings against stage 1": {
    "ok": true,
@@ -66,11 +66,11 @@
   },
   "count against stage 1": {
    "ok": true,
-   "info": "30928 records from ETHOS bodies, stage 1 counted 30929 in stadt; 31708 records in all (with buildings only the cadastre knows)"
+   "info": "30928 records from ETHOS bodies, stage 1 counted 30929 in stadt; 31709 records in all (with buildings only the cadastre knows)"
   },
   "more than 10 000 buildings": {
    "ok": true,
-   "info": "31708"
+   "info": "31709"
   },
   "inside the municipality": {
    "ok": true,
@@ -450,7 +450,7 @@
    "adr": "Auenstraße 9",
    "fg": null,
    "q_lv": 2,
-   "fa": 349.4,
+   "fa": 348.6,
    "stage1_m": 35.3
   },
   {
@@ -950,11 +950,9 @@
   }
  ],
  "tiles": 397,
- "buildings": 31708,
- "bytes": 35337494,
- "kb_per_building": 1.09,
- "failed": [
-  "heights plausible"
- ],
+ "buildings": 31709,
+ "bytes": 35018885,
+ "kb_per_building": 1.08,
+ "failed": [],
  "warnings": []
 }

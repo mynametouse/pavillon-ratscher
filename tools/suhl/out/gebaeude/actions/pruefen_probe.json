@@ -58,7 +58,7 @@
   },
   "footprints do not overlap": {
    "ok": false,
-   "info": "37 pairs overlap by more than 1 m² (largest [(19.7, 'DETHL57P00006G2t', 'DETHL57P00006G3j'), (18.7, 'DETHL57P00006G0F', 'DETHL57P00006G0X'), (14.5, 'DETHL57P00002jO1', 'DETHL57P00002jOX')])"
+   "info": "39 pairs overlap by more than 1 m² (largest [(19.7, 'DETHL57P00006G2t', 'DETHL57P00006G3j'), (19.1, 'DETHL57P00006G0F', 'DETHL57P00006G0X'), (14.5, 'DETHL57P00002jO1', 'DETHL57P00002jOX')])"
   },
   "tall buildings against stage 1": {
    "ok": true,
@@ -66,7 +66,7 @@
   },
   "size limit": {
    "ok": true,
-   "info": "2999489 bytes, limit 3000000"
+   "info": "2963501 bytes, limit 3000000"
   }
  },
  "tall": [
@@ -277,7 +277,7 @@
    "adr": "Auenstraße 9",
    "fg": null,
    "q_lv": 2,
-   "fa": 349.4,
+   "fa": 348.6,
    "stage1_m": 35.3
   },
   {
@@ -613,8 +613,8 @@
  ],
  "tiles": 11,
  "buildings": 2502,
- "bytes": 2999489,
- "kb_per_building": 1.17,
+ "bytes": 2963501,
+ "kb_per_building": 1.16,
  "failed": [],
  "warnings": [
   "footprints do not overlap"
