@@ -26,7 +26,7 @@ export const ZKHANG = (() => {
     uZkOn: { value: 0 },
     uZkT: { value: new THREE.Vector4(-1, -1, -1, -1) }, // rank thresholds: young, cleared, fallen, grey (cumulative)
     uZkT2: { value: new THREE.Vector4(-1, 0, 0, 0) }, // red threshold, young height (m), pioneer 1 / mixed 0, debug (1 mask, 2 stages)
-    uZkM: { value: new THREE.Vector4(0.055, 0.085, 0.045, 0) }, // forest by the photo: dark below x…y (albedo), mean albedo z
+    uZkM: { value: new THREE.Vector4(0.075, 0.105, 0.06, 0) }, // forest by the photo: dark below x…y (albedo), mean albedo z
     uZkHole: { value: Array.from({ length: NH }, () => new THREE.Vector3(0, 0, 0)) },
     // early nests (x, y, radius): the first big clearing with the planting and the turbine's clearing on the ridge (zk_zeitwelt_dinge.js)
     uZkSeed: { value: [new THREE.Vector3(120, -980, 95), new THREE.Vector3(230, -1290, 115)] },
@@ -172,7 +172,9 @@ export const ZKHANG = (() => {
       vec2 uO = gUV( p, bGO );
       vec3 cs = geoAlb( ( uO.x > 0.0 && uO.y > 0.0 && uO.x < 1.0 && uO.y < 1.0 ) ? texture2D( tGO, uO, 2.5 ).rgb : texture2D( tGF, gUV( p, bGF ), 1.0 ).rgb, uGGain );
       float ls = dot( cs, vec3( 0.3, 0.55, 0.15 ) );
-      float fm = ( 1.0 - smoothstep( uZkM.x, uZkM.y, ls ) ) * ( 1.0 - smoothstep( 0.0, 0.025, cs.b - cs.g ) );
+      // spruce stands in these photos are dark and a little bluish (albedo blue − green ≈ +0.018), fields and meadows yellowish (−0.012),
+      // broadleaf woods in between (measured on ortho_outer/ortho_far at the trees of the canopy model): dark and bluish = conifers
+      float fm = ( 1.0 - smoothstep( uZkM.x, uZkM.y, ls ) ) * smoothstep( -0.004, 0.012, cs.b - cs.g );
       for ( int i = 0; i < ${NH}; i++ ) { vec3 h = uZkHole[ i ]; if ( h.z > 0.0 ) fm *= smoothstep( h.z - 25.0, h.z, distance( p, h.xy ) ); }
       if ( uZkT2.w > 0.5 && uZkT2.w < 1.5 ) return mix( c, vec3( 0.9, 0.0, 0.9 ), fm );
       if ( fm < 0.01 ) return c;

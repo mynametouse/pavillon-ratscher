@@ -23,8 +23,8 @@ export const ZKNACHT = (() => {
     tyre: C(0x1e1e1f),
     blue: [0.25, 0.45, 2.6],
     head: [2.2, 2.1, 1.8],
-    win: [2.1, 1.35, 0.62],
-    winIsl: [1.6, 0.95, 0.42],
+    win: [1.25, 0.72, 0.28],
+    winIsl: [0.95, 0.55, 0.22],
     sand: C(0xc9b98a),
     sandDk: C(0xa89a72),
     alu: C(0xa7adb3),
@@ -369,8 +369,8 @@ export const ZKNACHT = (() => {
           hh = d.h * (0.9 + 0.2 * K.hash(fr.b.id * 31 + i)),
           p = (u, zz) => [f.mx + f.f.dx * u + f.nx * 0.04, f.my + f.f.dy * u + f.ny * 0.04, z + zz];
         // a dark wet band below the line, a sharper dirt edge at it
-        B.quad(p(u0, -0.1), p(u1, -0.1), p(u1, hh), p(u0, hh), [0.09, 0.075, 0.055, 0.42]);
-        B.quad(p(u0, hh - 0.03), p(u1, hh - 0.03), p(u1, hh + 0.02), p(u0, hh + 0.02), [0.07, 0.055, 0.04, 0.7]);
+        B.quad(p(u0, -0.1), p(u1, -0.1), p(u1, hh), p(u0, hh), [0.1, 0.085, 0.06, 0.55]);
+        B.quad(p(u0, hh - 0.035), p(u1, hh - 0.035), p(u1, hh + 0.025), p(u0, hh + 0.025), [0.065, 0.05, 0.035, 0.85]);
       }
     }
     if (B.n()) g.add(K.inst(B.geo(), K.mats().decal, 1, 'zeitreise schmutzrand'));
@@ -604,14 +604,17 @@ export const ZKNACHT = (() => {
         y = st.kahl.y + 33;
         face = Math.PI / 2;
       } else if (sg.place === 'heizhaus') {
-        const h = st.heiz;
-        x = h.road[0] + (h.x - h.road[0]) * 0.3;
-        y = h.road[1] + (h.y - h.road[1]) * 0.3;
-        face = Math.atan2(h.road[1] - h.y, h.road[0] - h.x);
+        // between the heating house and the camera before it, facing the camera
+        const h = st.heiz,
+          c = st.heizCam;
+        x = h.x + (c[0] - h.x) * 0.55;
+        y = h.y + (c[1] - h.y) * 0.55;
+        face = Math.atan2(c[1] - y, c[0] - x);
       } else if (sg.place === 'windrad') {
-        // the building board at the edge of the clearing where the camera stands, facing it
-        x = st.wind.x - 14;
-        y = st.wind.y + 288;
+        // the building board 12 m in front of the clearing's camera, facing it
+        const c = st.windCam;
+        x = c[0] + 3;
+        y = c[1] - 12;
         face = Math.PI / 2;
       } else if (sg.place === 'schule' && nt.schoolFront) {
         const f = nt.schoolFront;

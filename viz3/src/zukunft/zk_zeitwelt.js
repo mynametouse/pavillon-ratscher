@@ -62,18 +62,8 @@ export const ZKZEITWELT = (() => {
     // in front of the heating house, from the lane: hall, bunker with the chips, chimney, the sign
     heizhaus: () => {
       const h = ZKDINGE.sites().heiz,
-        dx = h.road[0] - h.x,
-        dy = h.road[1] - h.y,
-        l = Math.hypot(dx, dy) || 1,
-        d = 24;
-      return [
-        h.x + (dx / l) * d + (h.y - h.road[1]) * 0.25,
-        h.y + (dy / l) * d - (h.x - h.road[0]) * 0.25,
-        EYE,
-        h.x + 3,
-        h.y,
-        4.5,
-      ];
+        c = ZKDINGE.sites().heizCam;
+      return [c[0], c[1], EYE, h.x + 3, h.y, 4.5];
     },
     // at the lower edge of the clearing with the planting, looking up into it
     kahlflaeche: () => {
@@ -82,8 +72,9 @@ export const ZKZEITWELT = (() => {
     },
     // on the clearing below the ridge, ~300 m from the turbine (with fov ~60 the whole rotor and the forest below fit the picture)
     windrad: () => {
-      const w = ZKDINGE.sites().wind;
-      return [w.x - 20, w.y + 300, EYE, w.x, w.y, ZKDINGE.HUB * 0.6];
+      const w = ZKDINGE.sites().wind,
+        c = ZKDINGE.sites().windCam;
+      return [c[0], c[1], EYE, w.x, w.y, ZKDINGE.HUB * 0.62];
     },
   };
   function place(id) {

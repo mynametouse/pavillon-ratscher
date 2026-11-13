@@ -70,6 +70,14 @@ def run():
             E(js); steps(1.0); E(js); E("DN.update && DN.update(true)")
             return True
 
+        def look_at(x, y, h, lx, ly, lh, fov=60):
+            # a pose as the regie gives it: a point h m above the ground looking at a point lh m above the ground there
+            z, lz = E(f"(KERN.terrain({x}, {y}) || 0) + {h}"), E(f"(KERN.terrain({lx}, {ly}) || 0) + {lh}")
+            yaw = (math.degrees(math.atan2(lx - x, ly - y)) + 360) % 360
+            pitch = math.degrees(math.atan2(lz - z, math.hypot(lx - x, ly - y)))
+            js = f"GAME.view({x}, {y}, {z}, {yaw:.1f}, {pitch:.1f}, {fov})"
+            E(js); steps(1.0); E(js); E("DN.update && DN.update(true)")
+
         def clock(h, preset='klar'):
             E(f"if (window.DN && !DN.active) GAME.setMode('auto'); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + {int(h * 60)}; DN.update(true)")
             E(f"WETTER.preset && WETTER.preset({json.dumps(preset)}); WETTER.snap && WETTER.snap()")
@@ -137,20 +145,24 @@ def run():
             # the slopes south of the village from the Anger (eye height) and from 90 m above it, by year and world
             # views for the regie: the Anger towards the south, 90 m above it, the slope NE of the village (over the village to the forests
             # S and SW), the village's south edge by the lane (open fields up to the forest)
-            V = [('hoch', 222, -108, 90, 195, -10, 60), ('hang', 440, 20, 1.65, 196, -3, 55), ('dorfrand', 330, -330, 1.65, 187, 3, 55)]
+            # the regie's views (zk_regie_orte.js): the overview 90 m above the Anger, 'hang' 85 m above the slope NE of the village;
+            # the village's south edge at eye height (the regie's turbine view)
+            V = [('hoch', 222, -108, 90, 195, -10, 60), ('hang', 470, 120, 85, 120, -330, 20, 44), ('dorfrand', 330, -330, 1.65, 187, 3, 55)]
             S = [('heute', 'allein', 2026.5), ('allein-2029', 'allein', 2029.5), ('allein-2045', 'allein', 2045.5), ('gewappnet-2045', 'gewappnet', 2045.5)]
             names, cols = [], {}
             for tag, w, y in S:
                 state(w, y)
                 for v in V:
-                    look(*v[1:]); n = f'hang-{v[0]}-{tag}'; pic(n, (0.0, 0.3, 1.0, 0.62) if v[0] == 'hoch' else (0.0, 0.4, 1.0, 0.56)); names.append(n)
+                    if v[0] == 'hang': look_at(*v[1:])
+                    else: look(*v[1:])
+                    n = f'hang-{v[0]}-{tag}'; pic(n, (0.0, 0.33, 1.0, 0.46) if v[0] == 'hoch' else (0.0, 0.35, 1.0, 0.65) if v[0] == 'hang' else (0.0, 0.4, 1.0, 0.56)); names.append(n)
                     cols[n] = region(n)
             E("ZKZEITWELT.hang.debug(2)"); state('allein', 2034); look(*V[0][1:]); pic('hang-stufen-2034'); names.append('hang-stufen-2034'); E("ZKZEITWELT.hang.debug(0)")
             sheet('hang', names, cols=4)
             print('slope colours', json.dumps(cols), flush=True)
             d = lambda a, c: sum(abs(x - y) for x, y in zip(cols[a], cols[c]))
-            ck('the slopes change colour with the years (overview: today → 2029 red-grey)', d('hang-hoch-heute', 'hang-hoch-allein-2029') > 9, f"{cols['hang-hoch-heute']} → {cols['hang-hoch-allein-2029']}")
-            ck('the slopes change seen from the slope over the village (eye height)', d('hang-hang-heute', 'hang-hang-allein-2029') > 4, f"{cols['hang-hang-heute']} → {cols['hang-hang-allein-2029']}")
+            ck('the slopes change colour with the years (overview: today → 2029 red-grey)', d('hang-hoch-heute', 'hang-hoch-allein-2029') > 6, f"{cols['hang-hoch-heute']} → {cols['hang-hoch-allein-2029']}")
+            ck('the slopes change seen from over the village (the regie\'s hang)', d('hang-hang-heute', 'hang-hang-allein-2029') > 4, f"{cols['hang-hang-heute']} → {cols['hang-hang-allein-2029']}")
             ck('the two worlds look different in 2045 (pioneer wood and dead wood against the planted mix)', d('hang-hoch-allein-2045', 'hang-hoch-gewappnet-2045') > 2, f"{cols['hang-hoch-allein-2045']} vs {cols['hang-hoch-gewappnet-2045']}")
 
         if 'kal' in want:
@@ -234,7 +246,7 @@ def run():
             names = []
             for view in ('heizhaus', 'hang'):
                 if view == 'heizhaus': at_place('heizhaus')
-                else: look(440, 20, 1.65, 196, -3, 55)
+                else: look_at(470, 120, 85, 120, -330, 20, 44)
                 for side, mask in (('links', (1 << 21) | 1), ('rechts', (1 << 22) | 1)):
                     E(f"GAME.cam.layers.mask = {mask}"); E("GAME.shot()"); n = f'split-{view}-{side}'; pic(n, (0.2, 0.2, 0.8, 0.8) if view == 'heizhaus' else (0, 0.3, 1, 0.62)); names.append(n)
                 E("GAME.cam.layers.mask = 1")

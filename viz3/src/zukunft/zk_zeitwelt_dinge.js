@@ -63,6 +63,16 @@ export const ZKDINGE = (() => {
       ha = Math.atan2(p[i + 3] - p[i + 1], p[i + 2] - p[i]);
     }
     st.heiz = { x: hx, y: hy, a: ha, road: nw ? [nw.x, nw.y] : [hx, hy - 12] };
+    // the camera before the heating house: 24 m from it towards the lane, a little to the side (zk_zeitwelt.js place 'heizhaus')
+    {
+      const dx = st.heiz.road[0] - hx,
+        dy = st.heiz.road[1] - hy,
+        l = Math.hypot(dx, dy) || 1;
+      st.heizCam = [
+        hx + (dx / l) * 24 + (hy - st.heiz.road[1]) * 0.25,
+        hy + (dy / l) * 24 - (hx - st.heiz.road[0]) * 0.25,
+      ];
+    }
     // the trench: from the way by the heating house along the village streets to the school by the Anger
     const streets = K.ways(['street', 'lane']);
     const A = K.nearestOn(streets, st.heiz.road[0], st.heiz.road[1]);
@@ -84,6 +94,8 @@ export const ZKDINGE = (() => {
     st.trench = pts.length > 1 ? K.resample(pts, 2) : [];
     // the wind turbine and the clearing (seeded beetle nests in the slope field)
     st.wind = { x: 230, y: -1290, yaw: (240 * Math.PI) / 180 };
+    // the camera on the clearing below it, 255 m to the north: no broadleaf crown of the canopy model between it and the rotor
+    st.windCam = [230, -1035];
     const tr = K.nearestOn(K.ways(['track']), st.wind.x, st.wind.y);
     st.windRoad = tr ? [tr.x, tr.y] : [st.wind.x - 80, st.wind.y + 10];
     st.kahl = { x: 120, y: -980 };

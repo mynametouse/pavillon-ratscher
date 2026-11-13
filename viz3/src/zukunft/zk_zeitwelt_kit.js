@@ -55,12 +55,12 @@ export const ZKKIT = (() => {
         polygonOffsetUnits: -6,
       }),
       water: new THREE.MeshStandardMaterial({
-        color: new THREE.Color(0x6b5a44),
-        roughness: 0.1,
+        color: new THREE.Color(0x4f4234),
+        roughness: 0.07,
         metalness: 0,
         transparent: true,
-        opacity: 0.93,
-        envMapIntensity: 1.5,
+        opacity: 0.94,
+        envMapIntensity: 0.75,
       }),
       band: new THREE.MeshBasicMaterial({
         vertexColors: true,
@@ -96,7 +96,7 @@ export const ZKKIT = (() => {
             '#include <emissivemap_fragment>',
             // at night the moving foam catches what light there is, and the blue lights flash on the water
             `#include <emissivemap_fragment>
-            totalEmissiveRadiance += ( vec3( 0.03, 0.029, 0.026 ) * zkFoam + vec3( 0.004, 0.004, 0.005 ) ) * uZkNight
+            totalEmissiveRadiance += ( vec3( 0.012, 0.0115, 0.0105 ) * zkFoam + vec3( 0.0012, 0.0012, 0.0015 ) ) * uZkNight
               + vec3( 0.002, 0.005, 0.03 ) * uZkBlue * ( 0.4 + 0.6 * zkFoam ) * exp( - distance( vWp, uZkBlueP ) / 14.0 );`
           )
           .replace(
