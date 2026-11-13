@@ -398,23 +398,27 @@ export const ZKMEDIEN = (() => {
     g.fillText(place || 'Foto', 14, 200);
     return c.toDataURL('image/jpeg', 0.7);
   }
-  async function snap(place, side) {
-    const key = place + ':' + side;
+  // the cache holds promises: play() asks for every photo of a sequence at once (a still costs a render; the phone's first steps hide it)
+  function snap(place, side) {
+    const key = place + ':' + (side === 'R' ? 'R' : 'L');
     if (S.cache[key]) return S.cache[key];
-    let url = null;
-    const r = R();
-    try {
-      if (r && typeof r.snapshot === 'function') {
-        cue('snapshot:' + place);
-        url = await Promise.race([
-          Promise.resolve(r.snapshot(place, side === 'R' ? 'R' : 'L')),
-          new Promise(res => setTimeout(() => res(null), 6000)),
-        ]);
-      }
-    } catch (e) {}
-    if (!url) url = fallbackPhoto(place);
-    S.cache[key] = url;
-    return url;
+    S.cache[key] = (async () => {
+      let url = null;
+      const r = R();
+      try {
+        if (r && typeof r.snapshot === 'function') {
+          cue('snapshot:' + place);
+          url = await Promise.race([
+            Promise.resolve(r.snapshot(place, side === 'R' ? 'R' : 'L')),
+            new Promise(res => setTimeout(res, 6000, null)),
+          ]);
+        }
+      } catch (e) {}
+      return url || fallbackPhoto(place);
+    })();
+    // a still is a moment: it is taken anew for the next sequence
+    setTimeout(() => delete S.cache[key], 90000);
+    return S.cache[key];
   }
 
   // ------------------------------------------------------------------ the phone
@@ -698,7 +702,7 @@ export const ZKMEDIEN = (() => {
       }
       box.tx.append(document.createTextNode(it.text));
       duck(0.2);
-      await say('zk_sprecherin', (it.w ? worldInfo(it.w).title + ': ' : '') + it.text);
+      await say('zk_sprecherin', it.text);
       duck(1);
     }
   }
@@ -803,6 +807,11 @@ export const ZKMEDIEN = (() => {
         steps: stepsFor(entry, hasWorlds(entry) && !split ? (worlds && worlds[0]) || w : w),
       });
     }
+    for (const p of plan)
+      for (const st of p.steps) {
+        if (st.ph) snap(st.ph, p.side);
+        for (const m of st.msgs || []) if (m.ph) snap(m.ph, p.side);
+      }
     const radios = [];
     const t0 = performance.now();
     S.nom = 0;
@@ -998,25 +1007,6 @@ export const ZKMEDIEN = (() => {
     S.noNet = false;
     S.played = {};
   }
-  // the lines for the recording pipeline (id, who, text)
-  function lines() {
-    const out = [];
-    let n = 0;
-    const add = (who, text, tag) => out.push({ id: 'zkm-' + tag + '-' + ++n, who, text });
-    for (const e of D.SCRIPT)
-      for (const k of ['all', ...WORLDKEYS])
-        for (const s of e[k] || []) {
-          for (const m of s.msgs || []) if (m.v) add(m.who, m.v, e.tag);
-          for (const l of s.lines || []) {
-            if (s.t === 'call') add(s.who, l.v, e.tag);
-            else add('zk_sprecherin', l, e.tag);
-          }
-        }
-    for (const [k, r] of Object.entries(D.RADIO))
-      if (r && typeof r === 'object')
-        for (const kk of ['all', ...WORLDKEYS]) for (const t of r[kk] || []) add('zk_sprecherin', t, 'radio-' + k);
-    return out;
-  }
   // a gentle poll until regie and workshop exist (a few cheap ticks, then it stops)
   const iv = setInterval(() => {
     S.tries++;
@@ -1033,7 +1023,7 @@ export const ZKMEDIEN = (() => {
     radio: playRadio,
     batteryRadio: playBattery,
     layer,
-    lines,
+    lines: D.lines,
     state: () => ({
       nom: S.lastNom || 0,
       layers: { ...S.layers },

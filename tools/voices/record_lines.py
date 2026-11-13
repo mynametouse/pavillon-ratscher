@@ -25,6 +25,8 @@ WHO = {
     'katrin': (['de-DE-KatjaNeural', 'de-DE-AmalaNeural'], '+2%', '+0Hz', 'highpass=f=90'),
     'ingrid': (['de-DE-ElkeNeural', 'de-DE-AmalaNeural', 'de-DE-SeraphinaMultilingualNeural'], '-4%', '-6Hz', 'highpass=f=90'),
     'heike': (['de-DE-TanjaNeural', 'de-DE-SeraphinaMultilingualNeural', 'de-DE-AmalaNeural'], '+0%', '-2Hz', 'highpass=f=90'),
+    # feat/zeitreise-medien: the newsreader of the fictional radio station
+    'zk_sprecherin': (['de-DE-SeraphinaMultilingualNeural', 'de-DE-AmalaNeural'], '+4%', '+0Hz', 'highpass=f=100'),
 }
 
 async def voices():

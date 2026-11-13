@@ -27,6 +27,8 @@ STUB = """
     document.body.append(WORKSHOP.slot('phone'));
     window.__stubWorkshop = true;
   }
+  // a still costs a software-rendered frame here: the test takes the photos from a drawn stand-in (the photo flow is what is tested)
+  if (window.ZKREGIE) window.ZKREGIE.snapshot = async () => { const c = document.createElement('canvas'); c.width = 320; c.height = 213; const g = c.getContext('2d'); g.fillStyle = '#6a8a5a'; g.fillRect(0, 0, 320, 213); return c.toDataURL('image/jpeg', 0.6); };
   ZKMEDIEN.attach();
   window.__seen = {};
   const sel = { push: '.zkm-pushc', art: '.zkm-art .h', photo: '.zkm-photo', alert: '.zkm-alert .sd', call: '.zkm-call .nm', nonet: '.zkm-status .net.off', radio: '.zkm-radio.on', callst: '.zkm-call .st' };

@@ -441,5 +441,27 @@ export const ZKMEDIENDATA = (() => {
   // which video groups a chapter's end card offers
   const CARD_VIDEOS = { wald: ['wald'], wasser: ['wasser'], energie: ['energie'] };
 
-  return { NAMES, WHO, SCRIPT, RADIO, VIDEOS, CARD_VIDEOS };
+  // every spoken line for the recording pipeline (tools/voices/linien.mjs): voice notes, calls and the newsreader (person 'zk_sprecherin')
+  const WORLDKEYS = ['allein', 'gewappnet', 'rueckenwind', 'glueck'];
+  function lines() {
+    const out = [];
+    let n = 0;
+    const add = (who, text, tag) => out.push({ id: 'zkm-' + tag + '-' + ++n, who, text });
+    for (const e of SCRIPT)
+      for (const k of ['all', ...WORLDKEYS])
+        for (const s of e[k] || []) {
+          for (const m of s.msgs || []) if (m.v) add(m.who, m.v, e.tag);
+          for (const l of s.lines || []) {
+            if (s.t === 'call') add(s.who, l.v, e.tag);
+            else add('zk_sprecherin', l, e.tag);
+          }
+        }
+    for (const [k, r] of Object.entries(RADIO))
+      if (r && typeof r === 'object') {
+        for (const kk of ['all', ...WORLDKEYS]) for (const t of r[kk] || []) add('zk_sprecherin', t, 'radio-' + k);
+        if (r.wetter) add('zk_sprecherin', r.wetter, 'radio-' + k);
+      }
+    return out;
+  }
+  return { NAMES, WHO, SCRIPT, RADIO, VIDEOS, CARD_VIDEOS, lines };
 })();

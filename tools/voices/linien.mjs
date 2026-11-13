@@ -107,6 +107,10 @@ for (const [who, part] of [
 const { ZKCHRONIK } = await import(path.join(SRC, "zukunft", "zk_chronik.js"));
 for (const l of ZKCHRONIK.lines()) add(l.who, l.text);
 
+// feat/zeitreise-medien: the phone's voice notes and calls and the radio newsreader (zukunft/zk_medien_data.js, ZKMEDIENDATA.lines())
+const { ZKMEDIENDATA } = await import(path.join(SRC, "zukunft", "zk_medien_data.js"));
+for (const l of ZKMEDIENDATA.lines()) add(l.who, l.text);
+
 fs.writeFileSync(
   path.join(here, "linien.json"),
   JSON.stringify(out, null, 1) + "\n",
