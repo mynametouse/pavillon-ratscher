@@ -642,7 +642,7 @@ export const BUSMOD = (() => {
     };
     // the indicators: side -1 left, 1 right, 0 none; lit: the phase of the blinking
     B.blink = (side, lit) => {
-      const l = side < 0 && lit,
+      const l = (side < 0 || side > 1) && lit, // (feat/verkehr-real: side 2 – both, the hazard lights)
         r = side > 0 && lit;
       if (blinkL.visible === l && blinkR.visible === r) return false;
       blinkL.visible = l;

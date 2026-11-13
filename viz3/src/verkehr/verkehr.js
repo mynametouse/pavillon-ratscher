@@ -45,6 +45,8 @@ import { VKAMPEL } from './vk_ampel.js';
 // stage 3: harmless accidents – the other driver's lines (VKUNFALL); stage 4a: the walkers solid, a fall and up again (VKFUSS)
 import { VKUNFALL } from './vk_unfall.js';
 import { VKFUSS } from './vk_fuss.js';
+// stage 3b: a bus knocked by the player – its driver's word (VKBUS; the bus itself stands in bus/bus.js)
+import { VKBUS } from './vk_bus.js';
 export const VERKEHR = (() => {
   // feat/verkehr-real: each driver of the cast has a car of today of his own (by his name: the same type every time; the colour stays
   // his, VLEUTE) – the cars by their share of the stock (VKTYPEN.PKW); their models asked for at once, in the order of that share
@@ -1593,6 +1595,17 @@ export const VERKEHR = (() => {
         if (c.who) UI.subtitle({ key: c.who }, pick(VLEUTE.DRIVE.hupe), 2400);
       },
       onUnfall,
+    });
+    // stage 3b: a bus knocked by the player: its driver complains from his seat (a stranger's voice)
+    VKBUS.flush((I, label, text) => {
+      if (Math.hypot(I.x - P.x, I.y - P.y) > 70) return;
+      UI.subtitle(null, label + ': ' + text, Math.max(3200, text.length * 70));
+      const k = 'vk_fremd_' + (I.drvG === 'f' ? 'f' : 'm');
+      if (STIMME && STIMME.speaks && STIMME.speaks(k, text)) STIMME.say(k, text, { at: [I.x, I.y] });
+      S.stats.said = (S.stats.said || 0) + 1;
+      S.lastSaid = text;
+      const U = (S.stats.unfall = S.stats.unfall || {});
+      U.bus = (U.bus || 0) + 1;
     });
     // stage 3: the driver after a knock (his last word, his figure outside)
     try {
