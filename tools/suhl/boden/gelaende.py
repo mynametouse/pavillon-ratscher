@@ -30,13 +30,18 @@ MARGIN = 320.0
 BLEND = 300.0
 CPX = 8.0                                            # cell size of the coarse mosaic = the step of level 9
 FIT = (608800.0, 5601300.0, 631400.0, 5617800.0)     # canopy fit window: bounding box of the municipality + ~1 km (fixed for every run)
-VERSION = 'g3'                                       # part of the block cache key: raise when the method changes
+VERSION = 'g5'                                       # part of the block cache key: raise when the method changes
 G = None                                             # the run's Ground (set before the worker pool forks)
 ROADS = None                                         # the run's road profiles (load_roads), None = nothing is cut
 ROH = None                                           # folder for the terrain tiles BEFORE the cut (levels 10-12), None = not written
 # ways that are not cut into the ground (flags of suhl-strassen, docs/features/suhl-strassen.md 3.3); bridges (1) and tunnels (2)
-# are left out by tools/welt/roads.py carve itself: steps, house passages, covered ways, pavements mapped beside a road, crossings
-SKIP_BITS = 128 | 2048 | 4096 | 8192 | 16384
+# are left out by tools/welt/roads.py carve itself: steps, house passages, covered ways, pavements mapped beside a road, crossings,
+# ways whose axis enters a building (car-park ramps, passages without a tunnel tag)
+SKIP_BITS = 128 | 2048 | 4096 | 8192 | 16384 | 32768
+# on real 1 m ground a road lies within decimetres of its own profile. Where a profile is further off than this (beside bridges,
+# where DGM1 drops into the valley under the deck; where the OSM axis runs along a wall), that piece of the way is not cut - a pit
+# or a dam would be dug there - and the spot is listed in meta.json (sources.roads.clamped). No limit on Copernicus ground.
+CLAMP_M = 2.5
 
 
 def load_roads(paths):
@@ -88,8 +93,42 @@ def cut_roads(d, area):
         if m.any():
             dz = ROADS['h'][ids][m] - d.sample(P[m, 0], P[m, 1])
             fit = {'n': int(m.sum()), 'sum': float(dz.sum()), 'hist': np.histogram(np.abs(dz), bins=200, range=(0, 20))[0].tolist()}
-    n, st = wroads.carve(d, ROADS['pos'], sel, ROADS['h'], area)
-    return {'ways': int(len(hit)), 'fit': fit, **st} if st else {'ways': int(len(hit)), 'pixel': 0, 'fit': fit}
+    # leave out the pieces that lie more than CLAMP_M off real ground
+    H, W = d.mos.shape
+    keep, spots = [], []
+    for w, i in sel:
+        if w['fl'] & 3:
+            keep.append((w, i))
+            continue
+        P = ROADS['pos'][i]
+        r, c = np.floor(d.n1 - P[:, 1]).astype(int), np.floor(P[:, 0] - d.e0).astype(int)
+        ins = (r >= 0) & (r < H) & (c >= 0) & (c < W)
+        on = np.zeros(len(i), bool)
+        on[ins] = d.have[r[ins], c[ins]]
+        if not on.any():
+            keep.append((w, i))
+            continue
+        dz = np.zeros(len(i))
+        dz[on] = ROADS['h'][i][on] - d.sample(P[on, 0], P[on, 1])
+        bad = on & (np.abs(dz) > CLAMP_M)
+        if not bad.any():
+            keep.append((w, i))
+            continue
+        out = np.convolve(bad.astype(int), np.ones(7, int), 'same') > 0          # three nodes (about 6 m) to both sides as well
+        edge = np.flatnonzero(np.diff(np.r_[False, out, False].astype(int)))
+        cuts = [0] + list(edge) + [len(i)]
+        for a, b in zip(cuts[:-1], cuts[1:]):
+            if b <= a:
+                continue
+            if out[a]:
+                k = a + int(np.argmax(np.abs(dz[a:b])))
+                if area[0] + MARGIN <= P[k, 0] < area[2] - MARGIN and area[1] + MARGIN <= P[k, 1] < area[3] - MARGIN:     # counted once: in the core
+                    spots.append({'id': w.get('id'), 'name': w.get('name') or '', 'kind': w['kind'], 'E': round(float(P[k, 0]), 1), 'N': round(float(P[k, 1]), 1),
+                                  'dz_m': round(float(dz[k]), 2), 'len_m': round(float(np.hypot(*np.diff(P[a:b], axis=0).T).sum()), 1)})
+            elif b - a >= 2:
+                keep.append((w, i[a:b]))
+    n, st = wroads.carve(d, ROADS['pos'], keep, ROADS['h'], area)
+    return {'ways': int(len(hit)), 'fit': fit, 'spots': spots, **st} if st else {'ways': int(len(hit)), 'pixel': 0, 'fit': fit, 'spots': spots}
 
 
 class Ground(wdem.CopGround):
@@ -239,16 +278,18 @@ def _init_worker():
 
 def do_block(job):
     """build one block: the level 10-12 tiles of the lists inside it -> files; returns the statistics and the 8 m means of its core"""
-    bx, by, lists, out, work = job
+    bx, by, lists, rlists, out, work = job       # lists: the product's tiles; rlists: the tiles written before the cut (to ROH)
     t0 = time.time()
     core = tbounds(BLOCK_L, bx, by)
     key = hashlib.sha1(json.dumps([VERSION, bx, by, sorted((L, sorted(v)) for L, v in lists.items()), round(G.off, 4), round(G.canopy, 4),
-                                   ROADS['key'] if ROADS else None, bool(ROH),
+                                   ROADS['key'] if ROADS else None, sorted((L, sorted(v)) for L, v in rlists.items()) if ROH else None,
                                    sorted((k, os.path.getsize(p)) for k, p in G.dgm.items()
                                           if k[0] * 1000 < core[2] + MARGIN and (k[0] + 1) * 1000 > core[0] - MARGIN
                                           and k[1] * 1000 < core[3] + MARGIN and (k[1] + 1) * 1000 > core[1] - MARGIN)]).encode()).hexdigest()[:16]
     cache = os.path.join(work, f'block_{bx}_{by}_{key}.npz')
-    files = [os.path.join(o, 't', str(L), str(x), f'{y}.bin') for o in ([out, ROH] if ROH else [out]) for L, v in lists.items() for x, y in v]
+    files = [os.path.join(out, 't', str(L), str(x), f'{y}.bin') for L, v in lists.items() for x, y in v]
+    if ROH:
+        files += [os.path.join(ROH, 't', str(L), str(x), f'{y}.bin') for L, v in rlists.items() for x, y in v]
     if os.path.exists(cache) and all(os.path.exists(f) for f in files):
         z = np.load(cache, allow_pickle=False)
         st = json.loads(str(z['stats']))
@@ -258,12 +299,20 @@ def do_block(job):
     d = BlockDem(area, G)
     st = {'block': [bx, by], 'source': d.source, 'dgm_share': round(d.dgm_share, 4), 'dgm_tiles': list(d.dgm_tiles), 'levels': {},
           'hmin': 1e9, 'hmax': -1e9, 'dgm10': {}, 'cut': None}
-    if ROH:                      # the ground before the cut: what suhl-strassen solves its profiles on
+    if ROH and rlists:           # the ground before the cut: what suhl-strassen solves its profiles on
         d.build_mips(2)
-        for L in sorted(lists):
-            for x, y in sorted(lists[L]):
-                e0, n0 = tbounds(L, x, y)[:2]
-                write_tile(ROH, L, x, y, wtiles.encode_heights(d.grid(e0, n0, tsize(L) / (wlib.TERR_N - 1), wlib.TERR_N)))
+        st['roh'] = {}
+        for L in sorted(rlists):
+            tot = 0
+            for x, y in sorted(rlists[L]):
+                e0, n0, e1, n1 = tbounds(L, x, y)
+                b = wtiles.encode_heights(d.grid(e0, n0, tsize(L) / (wlib.TERR_N - 1), wlib.TERR_N))
+                write_tile(ROH, L, x, y, b)
+                tot += len(b)
+                if L == 10:
+                    r0, c0 = int(round(d.n1 - n1)), int(round(e0 - d.e0))
+                    st['dgm10'][f'{x}/{y}'] = round(float(d.have[r0:r0 + 400, c0:c0 + 400].mean()), 3)
+            st['roh'][str(L)] = {'n': len(rlists[L]), 'bytes': tot}
     if ROADS:
         st['cut'] = cut_roads(d, area)
     d.build_mips(3)
@@ -343,9 +392,10 @@ def dgm_km_list():
     return [(int(r['e_km']), int(r['n_km'])) for r in rows]
 
 
-def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads=(), roh=None):
+def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads=(), roh=None, roh_extra=None):
     """terrain tiles of every level of the lists T -> out/t/; returns the statistics for meta.json.
-    roads: files with the road profiles of suhl-strassen to cut into the ground; roh: folder for the tiles before the cut"""
+    roads: files with the road profiles of suhl-strassen to cut into the ground; roh: folder for the tiles before the cut
+    (levels 10-12 of T, plus the tiles of roh_extra = {level: tiles} - a ring around, for the margin of the road solver)"""
     global G, ROADS, ROH
     t0 = time.time()
     ROADS, ROH = None, roh
@@ -359,23 +409,28 @@ def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads
     if use_dgm:
         G.collect_dgm(dgm_km_list(), providers)
     # the blocks: every level-7 tile that holds a fine tile, or that a DGM1 tile (+ margin) reaches
-    blocks = {}
+    blocks = {}                  # block -> (the product's lists, the lists before the cut)
+    rT = {L: set(T.get(L, ())) | set((roh_extra or {}).get(L, ())) for L in (10, 11, 12)} if roh else {}
     for L in (10, 11, 12):
         for x, y in T.get(L, ()):
-            blocks.setdefault(block_of(L, x, y), {}).setdefault(L, []).append((x, y))
+            blocks.setdefault(block_of(L, x, y), ({}, {}))[0].setdefault(L, []).append((x, y))
+        for x, y in rT.get(L, ()):
+            blocks.setdefault(block_of(L, x, y), ({}, {}))[1].setdefault(L, []).append((x, y))
     s7 = tsize(BLOCK_L)
     for ex, ny in G.dgm:
         for bx in range(int((ex * 1000 - MARGIN - wlib.ROOT_E0) // s7), int(((ex + 1) * 1000 + MARGIN - wlib.ROOT_E0) // s7) + 1):
             for by in range(int((ny * 1000 - MARGIN - wlib.ROOT_N0) // s7), int(((ny + 1) * 1000 + MARGIN - wlib.ROOT_N0) // s7) + 1):
-                blocks.setdefault((bx, by), {})
+                blocks.setdefault((bx, by), ({}, {}))
     coarse = Coarse(G, cbox)
     log(f'Gelände: {len(blocks)} Blöcke (Stufe {BLOCK_L}, {s7:.0f} m + {MARGIN:.0f} m Rand), grobes Mosaik {coarse.m.shape[1]} x {coarse.m.shape[0]} Zellen à {CPX:.0f} m')
     work = os.path.join(raw, 'work')
-    todo = [(bx, by, lists, out, work) for (bx, by), lists in sorted(blocks.items())]
+    todo = [(bx, by, lists, rlists, out, work) for (bx, by), (lists, rlists) in sorted(blocks.items())]
+    rinfo_roh = {}
     info = {L: {'n': 0, 'bytes': 0} for L in sorted(T)}
     hmin, hmax = 1e9, -1e9
     dgm10, bstat = {}, []
-    cut = {'blocks': 0, 'pixel': 0, 'max_auftrag_m': 0.0, 'max_abtrag_m': 0.0, 'sum_abs': 0.0, 'fit_n': 0, 'fit_sum': 0.0, 'fit_hist': np.zeros(200)}
+    cut = {'blocks': 0, 'pixel': 0, 'max_auftrag_m': 0.0, 'max_abtrag_m': 0.0, 'sum_abs': 0.0, 'fit_n': 0, 'fit_sum': 0.0, 'fit_hist': np.zeros(200),
+           'spots': []}
 
     def take(res):
         nonlocal hmin, hmax
@@ -388,7 +443,13 @@ def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads
             info[int(L)]['bytes'] += v['bytes']
         hmin, hmax = min(hmin, st['hmin']), max(hmax, st['hmax'])
         dgm10.update(st['dgm10'])
+        for L, v in (st.get('roh') or {}).items():
+            q = rinfo_roh.setdefault(L, {'n': 0, 'bytes': 0})
+            q['n'] += v['n']
+            q['bytes'] += v['bytes']
         c = st.get('cut')
+        if c and c.get('spots'):
+            cut['spots'] += c['spots']
         if c and c.get('fit'):
             cut['fit_n'] += c['fit']['n']
             cut['fit_sum'] += c['fit']['sum']
@@ -433,11 +494,15 @@ def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads
                                     'note': 'Straßenhöhe minus Gelände an den Achspunkten vor dem Einschnitt (ohne Brücken und Tunnel); '
                                             'Meter statt Dezimeter heißt: die Profile sind auf einem anderen Gelände gerechnet'},
                  'skipped_by_flag': ROADS['skipped_by_flag'], 'skip_bits': SKIP_BITS, 'blocks': cut['blocks'], 'changed_m2': cut['pixel'],
+                 'clamped': {'limit_m': CLAMP_M, 'spots': len(cut['spots']), 'length_m': round(sum(q['len_m'] for q in cut['spots']), 1),
+                             'worst': sorted(cut['spots'], key=lambda q: -abs(q['dz_m']))[:40],
+                             'note': 'Wegstücke auf echtem 1-m-Gelände, deren Profil weiter als limit_m vom Gelände liegt (neben Brücken, an Mauern): '
+                                     'nicht eingeschnitten; dz_m = Profil minus Gelände am schlimmsten Punkt'},
                  'mean_change_m': round(cut['sum_abs'] / max(cut['pixel'], 1), 3), 'max_fill_m': cut['max_auftrag_m'], 'max_cut_m': cut['max_abtrag_m'],
                  'method': 'tools/welt/roads.py carve: Fahrbahn mit Querneigung, Bankett, Böschungen 1 : 1,5; Breite mit Bord und Gehwegen '
                            '(profil.load town=True); Brücken behalten ihren Korridor, Tunnel bleiben draußen'}
     return {'levels': info, 'hmin': hmin, 'hmax': hmax, 'source': src, 'dgm': G.dgm_log, 'dgm_tiles_km': sorted(f'{e}_{n}' for e, n in G.dgm),
-            'roads': rinfo, 'roh': bool(ROH),
+            'roads': rinfo, 'roh': bool(ROH), 'roh_lists': {L: sorted(v) for L, v in rT.items()}, 'roh_levels': rinfo_roh,
             'dgm10': dgm10, 'canopy_m': round(G.canopy, 2), 'canopy_fit_m': None if G.canopy_fit is None else round(G.canopy_fit, 2),
             'canopy_fit_window': list(FIT), 'copernicus_offset_m': round(G.off, 3), 'blocks': sorted(bstat, key=lambda b: b['block']),
             'block_level': BLOCK_L, 'margin_m': MARGIN, 'blend_m': BLEND, 'coarse_cell_m': CPX, 'seconds': round(time.time() - t0, 1),

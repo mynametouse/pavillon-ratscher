@@ -81,20 +81,55 @@ def build_level(raw, out, L, ts, quality=74, pool=None, harm=None, threads=2, pa
     return n, tot, made[0]
 
 
-def build(raw, out, T, quality=74, jobs=1, harm=None, threads=2):
+def flight_at(E, N):
+    """what the service says about the image at a point (layer th_dop_info): {'Erstellung': '15.05.2024', 'Publikation': '2025-02', ...}"""
+    import re
+    url = (f'{wfetch.WMS_TH}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=th_dop_info&QUERY_LAYERS=th_dop_info&STYLES='
+           f'&CRS=EPSG:25832&BBOX={E - 50:.0f},{N - 50:.0f},{E + 50:.0f},{N + 50:.0f}&WIDTH=101&HEIGHT=101&I=50&J=50&INFO_FORMAT=text/plain')
+    st, b, _ = wlib.http_get(url, timeout=60)
+    t = b.decode('utf-8', 'replace') if st == 200 else ''
+    return {k: v.strip() for k, v in re.findall(r'(Erstellung|Publikation|Bezug|Name)=([^\r\n$]*)', t)}
+
+
+def link_tiles(store, out, L, ts):
+    """put the tiles of a level from the store of encoded images into a product folder (hard link, else a copy): the same bytes
+    in every product that is built from the same image inputs"""
+    import shutil
+    n = 0
+    for x, y in ts:
+        src, dst = path(store, L, x, y), path(out, L, x, y)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        if os.path.exists(dst):
+            if os.path.samefile(src, dst) or os.path.getsize(src) == os.path.getsize(dst):
+                continue
+            os.remove(dst)
+        try:
+            os.link(src, dst)
+        except OSError:
+            shutil.copyfile(src, dst)
+        n += 1
+    return n
+
+
+def build(raw, out, T, quality=74, jobs=1, harm=None, threads=2, store=None):
+    """the image tiles of every level. With `store` (a folder kept between runs, one per set of image inputs) the tiles are encoded
+    there once and only linked into `out`: a later run that changes the terrain but not the images delivers the same bytes."""
     t0 = time.time()
     info, nreq = {}, 0
+    work = store or out
     pool = None
     if jobs > 1:
         import multiprocessing as mp
         pool = mp.get_context('fork').Pool(jobs)
     try:
         for L in sorted(T, reverse=True):
-            n, tot, made = build_level(raw, out, L, T[L], quality, pool, harm, threads)
+            n, tot, made = build_level(raw, work, L, T[L], quality, pool, harm, threads)
+            if store:
+                link_tiles(store, out, L, T[L])
             info[L] = {'n': n, 'bytes': tot}
             nreq += made
     finally:
         if pool:
             pool.close()
             pool.join()
-    return {'levels': info, 'requests': nreq, 'seconds': round(time.time() - t0, 1), 'quality': quality, 'layer': LAYER}
+    return {'levels': info, 'requests': nreq, 'seconds': round(time.time() - t0, 1), 'quality': quality, 'layer': LAYER, 'store': bool(store)}

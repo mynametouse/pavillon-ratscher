@@ -7,10 +7,13 @@ The app (viz3/src/welt/welt.js) starts from level-10 tiles within 760 m of the c
 only when all four exist. So the lists obey three rules:
   1. level 10 covers every place one can stand on (the municipality and the road corridors);
   2. levels 11 and 12 come in complete quads: the level-(L+1) list is the set of all four children of chosen level-L tiles;
-  3. every tile of the levels 7..12 has its parent in the list above it (the far ground of levels 6-9 never has a hole under a finer tile).
+  3. every tile of the levels 7..12 has its parent in the list above it (the far ground of levels 6-9 never has a hole under a finer tile);
+  4. the far ground (levels 6-9, drawn by Suhl's own code) is a quadtree too: a tile of level 6, 7 or 8 has all four children or
+     none. Only the step from level 9 to level 10 is free (level 10 is the list of rule 1).
 
-mode probe (the sample set for the runtime agent): the level-10 tiles touching `zentrum`, all their children (levels 11, 12), their
-  parents (levels 9..6).
+mode probe (the sample set for the runtime agent): the level-10 tiles touching `zentrum`, all their children (levels 11, 12); the far
+  levels reach beyond them: level 9 = all children of their level-8 parents, level 8 = those parents and their eight neighbours,
+  levels 7 and 6 = the parents. (Rule 4 does not hold in the sample: it would take too many tiles.)
 mode probe-roh (the ground BEFORE the road cut, for suhl-strassen to solve its profiles on): level 12 as in probe (all 176), levels 10
   and 11 one ring of level-10 tiles wider - the frame of its computation is the sample tiles + 300 m.
 mode stadt (the whole city, GitHub Actions):
@@ -19,8 +22,9 @@ mode stadt (the whole city, GitHub Actions):
   level 11  the children of the level-10 tiles that are built-up or driven on: touching `kernstadt`; in a road corridor; holding
             at least BUILT buildings (bebaut10.json); around a village centre of gebiete.geojson (VILLAGE_R)
   level 12  the children of the level-11 tiles touching `kernstadt`
-  level 9, 8  the parents            level 7, 6  the parents and, where the existing world has no outer terrain (north of model
-            y = 11 864 and west of model x = -11 832), one ring of neighbours for the horizon
+  level 9, 8, 7  the parents of the level-10 tiles, filled up to complete quads (rule 4)
+  level 6   the parents and, where the existing world has no outer terrain (north of model y = 11 864 and west of model
+            x = -11 832), one ring of neighbours for the horizon
 """
 import argparse, json, os, sys, time
 
@@ -56,9 +60,13 @@ def make(mode):
         T[10] = touching(10, G['zentrum'])
         T[11] = kids(T[10])
         T[12] = kids(T[11])
-        for L in (9, 8, 7, 6):
-            T[L] = parents(T[L + 1])
-        info['rule'] = 'level 10: tiles touching zentrum; 11, 12: all their children; 9..6: their parents'
+        p8 = parents(parents(T[10]))
+        T[9] = kids(p8)            # the far ground reaches beyond the sample tiles (else the runtime looks into the void behind them):
+        T[8] = ring(p8)            # level 9 in complete quads of the level-8 parents, level 8 one ring of tiles wider
+        T[7] = parents(T[8])
+        T[6] = parents(T[7])
+        info['rule'] = ('level 10: tiles touching zentrum; 11, 12: all their children; 9: all children of their level-8 parents; '
+                        '8: those parents and their eight neighbours; 7, 6: the parents')
     elif mode == 'probe-roh':
         z10 = touching(10, G['zentrum'])
         T[10] = ring(z10)
@@ -84,13 +92,13 @@ def make(mode):
         k11 = touching(11, G['kernstadt'])
         T[12] = kids(k11)
         assert k11 <= T[11]
-        T[9] = parents(T[10])
-        T[8] = parents(T[9])
+        need9 = parents(T[10])
+        p8 = parents(need9)
+        p7 = parents(p8)
+        p6 = parents(p7)
+        T[9], T[8], T[7] = kids(p8), kids(p7), kids(p6)
         outer = blib.outer_square()
         beyond = lambda L, ts: {t for t in ts if not outer.contains(Point(*[(a + b) / 2 for a, b in zip(tbounds(L, *t)[:2], tbounds(L, *t)[2:])]))}
-        p7 = parents(T[8])
-        T[7] = p7 | beyond(7, ring(p7) - p7)
-        p6 = parents(T[7])
         T[6] = p6 | beyond(6, ring(p6) - p6)
         info.update({
             'rule': __doc__.split('mode stadt (the whole city, GitHub Actions):')[1].strip(),
@@ -100,7 +108,7 @@ def make(mode):
                                 'only_corridor': len(c10 - k10 - b10 - v10), 'only_built': len(b10 - k10 - c10 - v10),
                                 'only_village': len(v10 - k10 - c10 - b10)},
             'level12_parents': {'kernstadt_level11': len(k11)},
-            'ring': {'7': len(T[7] - p7), '6': len(T[6] - p6)}})
+            'far': {'needed': {'9': len(need9), '8': len(p8), '7': len(p7), '6': len(p6)}, 'ring6': len(T[6] - p6)}})
     else:
         raise SystemExit('mode?')
     blib.guard(T)
@@ -109,6 +117,9 @@ def make(mode):
         assert T[L] == kids(parents(T[L])) and parents(T[L]) <= T[L - 1], f'level {L}: no complete quads'
     for L in (7, 8, 9, 10):
         assert parents(T[L]) <= T[L - 1], f'level {L}: a tile without its parent'
+    if mode == 'stadt':
+        for L in (7, 8, 9):
+            assert T[L] == kids(parents(T[L])), f'level {L}: the far ground is no quadtree'
     info['counts'] = {str(L): len(T[L]) for L in sorted(T)}
     info['km2'] = {str(L): round(len(T[L]) * tsize(L) ** 2 / 1e6, 2) for L in sorted(T)}
     return T, info

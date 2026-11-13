@@ -24,7 +24,8 @@ def ck(name, cond, info=''):
 # ---- the plan ----
 T, info = planmod.make('probe')
 ck('probe: 11 level-10 tiles, the bounding box of the sample', len(T[10]) == 11 and blib.bbox_of(10, T[10]) == (618700.0, 5606800.0, 620300.0, 5608400.0))
-ck('probe: children and parents', T[11] == kids(T[10]) and T[12] == kids(T[11]) and all(T[L] == parents(T[L + 1]) for L in (9, 8, 7, 6)), str(info['counts']))
+ck('probe: children, parents, and a far ground that reaches beyond the sample tiles', T[11] == kids(T[10]) and T[12] == kids(T[11])
+   and all(parents(T[L + 1]) <= T[L] for L in (9, 8, 7, 6)) and blib.bbox_of(8, T[8])[3] >= 5608400.0 + 1600 and len(T[8]) == 12 and len(T[9]) == 8, str(info['counts']))
 try:
     sys.path.insert(0, os.path.join(blib.REPO, 'tools', 'suhl', 'lib'))
     import suhllib as S
@@ -38,6 +39,7 @@ if os.path.exists(planmod.BEBAUT):
     ck('stadt: level 10 holds every tile touching the municipality', info['level10']['stadt'] == 1013 and c['10'] >= 1013, str(c))
     ck('stadt: quads and parents', all(T[L] == kids(parents(T[L])) and parents(T[L]) <= T[L - 1] for L in (11, 12))
        and all(parents(T[L]) <= T[L - 1] for L in (7, 8, 9, 10)))
+    ck('stadt: the far ground is a quadtree (a tile of level 6-8 has four children or none)', all(T[L] == kids(parents(T[L])) for L in (7, 8, 9)), str(info['far']))
     old = blib.in_rect(10, blib.BLOCK_B) | blib.in_rect(10, blib.BLOCK_V)
     ck('stadt: no level-10 tile inside the existing blocks (test block B, Kloster Vessra)', not (T[10] & old))
     ck('stadt: sizes as planned (level 12 ~ 2 600-3 000, level 11 ~ 1 300-2 200)', 2600 <= len(T[12]) <= 3000 and 1300 <= len(T[11]) <= 2200, str(c))
@@ -102,7 +104,7 @@ with tempfile.TemporaryDirectory() as td:
         o = os.path.join(out, tag)
         res = {}
         for b in sorted({gelaende.block_of(L, x, y) for L, v in lists.items() for x, y in v}):
-            st, core8 = gelaende.do_block((b[0], b[1], {L: [t for t in v if gelaende.block_of(L, *t) == b] for L, v in lists.items()}, o, os.path.join(raw, 'work')))
+            st, core8 = gelaende.do_block((b[0], b[1], {L: [t for t in v if gelaende.block_of(L, *t) == b] for L, v in lists.items()}, {}, o, os.path.join(raw, 'work')))
             res[b] = (st, core8)
         H = {(L, x, y): np.round(wtiles.decode_heights(open(os.path.join(o, 't', str(L), str(x), f'{y}.bin'), 'rb').read()) * 100).astype(int)
              for L, v in lists.items() for x, y in v}
@@ -121,7 +123,7 @@ with tempfile.TemporaryDirectory() as td:
     ck('blocks without DGM1: level 12 is the ground itself', np.abs(H[(12,) + tuple(lists[12][0])] / 100.0 - want).max() < 0.03)
     c8 = res[(bx, by)][1]
     ck('block: 8 m means of the core', c8.shape == (400, 400) and abs(float(c8[0, 0]) - float(g.cop(core[0] + 4, core[3] - 4))) < 0.05, str(c8.shape))
-    st2, _ = gelaende.do_block((bx, by, {L: [t for t in v if gelaende.block_of(L, *t) == (bx, by)] for L, v in lists.items()}, o1, os.path.join(raw, 'work')))
+    st2, _ = gelaende.do_block((bx, by, {L: [t for t in v if gelaende.block_of(L, *t) == (bx, by)] for L, v in lists.items()}, {}, o1, os.path.join(raw, 'work')))
     ck('block: a second start takes the finished block', st2.get('resumed') is True)
 
     # DGM1: real ground 3 m below the surface model and with small detail; tiles on both sides of the block edge and one hole
@@ -180,7 +182,8 @@ if os.path.exists(RF):
         gelaende.G, gelaende.ROH = g, os.path.join(td, 'roh')
         R = gelaende.load_roads([RF])
         ck('roads: profiles loaded, bridges and tunnels marked, some ways left out by flag', len(R['chains']) > 1000 and R['bridges'] > 0 and R['tunnels'] > 0
-           and R['skipped_by_flag'] > 50 and not any(w['fl'] & gelaende.SKIP_BITS for w, _ in R['chains']), f"{len(R['chains'])} ways")
+           and R['skipped_by_flag'] > 50 and not any(w['fl'] & gelaende.SKIP_BITS for w, _ in R['chains'])
+           and gelaende.SKIP_BITS & 32768, f"{len(R['chains'])} ways")
         ck('roads: our own bild and lauf are not shadowed by the modules of tools/suhl/strassen', bild.__file__.startswith(blib.HERE)
            and not any(os.path.abspath(p_) == os.path.join(blib.REPO, 'tools', 'suhl', 'strassen') for p_ in sys.path))
         # the two blocks of the sample meet at E 619100: tiles on both sides, cut by the same roads
@@ -190,7 +193,8 @@ if os.path.exists(RF):
         o = os.path.join(td, 'out')
         res = {}
         for b in sorted({gelaende.block_of(L, x, y) for L, v in lists.items() for x, y in v}):
-            res[b] = gelaende.do_block((b[0], b[1], {L: [t for t in v if gelaende.block_of(L, *t) == b] for L, v in lists.items()}, o, os.path.join(td, 'work')))[0]
+            mine = {L: [t for t in v if gelaende.block_of(L, *t) == b] for L, v in lists.items()}
+            res[b] = gelaende.do_block((b[0], b[1], mine, mine, o, os.path.join(td, 'work')))[0]
         rd = lambda base, k: np.round(wtiles.decode_heights(open(os.path.join(base, 't', str(k[0]), str(k[1]), f'{k[2]}.bin'), 'rb').read()) * 100).astype(int)
         H = {(L, x, y): rd(o, (L, x, y)) for L, v in lists.items() for x, y in v}
         H0_ = {(L, x, y): rd(gelaende.ROH, (L, x, y)) for L, v in lists.items() for x, y in v}
@@ -220,6 +224,31 @@ if os.path.exists(RF):
            and float(np.percentile(np.abs(dz - wroads.UNDER), 90)) < 0.25, f'{len(dz)} points, median {np.median(dz):.3f} m')
         fit = res[sorted(res)[-1]]['cut']['fit']
         ck('roads: fit of the profiles to the ground before the cut is counted', fit and fit['n'] > 100 and len(fit['hist']) == 200)
+    # the clamp: on real 1 m ground a piece of a way that lies more than CLAMP_M off its profile is not cut, and the spot is listed
+    with tempfile.TemporaryDirectory() as td:
+        g = FakeGround()
+        g.cop = lambda E, N: (440 + 0.004 * (np.asarray(E, float) - 619762) + 0.006 * (np.asarray(N, float) - 5607680)).astype(np.float32)
+        g.raw = os.path.join(td, 'raw')
+        wfetch._host_down['th'] = True
+        for ex, ny in ((619, 5607),):
+            dgm_zip(wfetch.dgm1_path(g.raw, 'dgm', ex, ny), ex, ny, lambda E, N: g.cop(E, N) + 0.0)
+        g.collect_dgm([(619, 5607)])
+        gelaende.G, gelaende.ROH = g, os.path.join(td, 'roh')
+        R = gelaende.load_roads([RF])
+        lists = {10: [(496, 541), (497, 541), (496, 542), (497, 542)]}
+        lists[11] = sorted(kids(set(lists[10])))
+        lists[12] = sorted(kids(set(lists[11])))
+        o = os.path.join(td, 'out')
+        b = gelaende.block_of(10, 496, 541)
+        st = gelaende.do_block((b[0], b[1], lists, lists, o, os.path.join(td, 'work')))[0]
+        sp = st['cut']['spots']
+        ck('clamp: pieces far off real ground are listed', len(sp) > 3 and all(abs(q['dz_m']) > gelaende.CLAMP_M for q in sp), f"{len(sp)} spots")
+        hq = hoehe.Hoehe.__new__(hoehe.Hoehe)
+        hq.base, hq.url, hq.H0, hq._t, hq._keep, hq.has, hq.levels = o, False, wlib.H0, {}, 400, {L: set(v) for L, v in lists.items()}, [12, 11, 10]
+        hr = hoehe.Hoehe.__new__(hoehe.Hoehe)
+        hr.base, hr.url, hr.H0, hr._t, hr._keep, hr.has, hr.levels = gelaende.ROH, False, wlib.H0, {}, 400, {L: set(v) for L, v in lists.items()}, [12, 11, 10]
+        same = [abs(hq.nhn(q['E'], q['N']) - hr.nhn(q['E'], q['N'])) for q in sp if hq.nhn(q['E'], q['N']) is not None and 619000 <= q['E'] < 620000 and 5607000 <= q['N'] < 5608000]
+        ck('clamp: the ground at such a spot stays as it was', len(same) > 0 and float(np.median(same)) < 0.02, f'{len(same)} spots, median change {np.median(same) if same else None}')
     gelaende.ROADS = gelaende.ROH = None
 else:
     print('SKIP roads: tools/suhl/out/strassen/probe/fahrt/suhl-zentrum.json not there (merge origin/suhl/strassen)')

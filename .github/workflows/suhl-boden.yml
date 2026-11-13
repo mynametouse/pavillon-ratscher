@@ -2,8 +2,10 @@
 # als Kacheln (Stufen 6–12, Kachel-Listen statt Rechtecke) – tools/suhl/boden/boden.py, aufgebaut auf tools/welt/ (nur importiert).
 #
 # Ein Lauf wird über tools/suhl/boden/lauf.txt bestellt, und die Commit-Nachricht des Pushs sagt, was gebaut wird:
-#   [stadt]  die ganze Gemeinde und die Straßenkorridore Garten → Suhl; das Produkt bleibt als Artefakt suhl-boden-<version> und geht
-#            mit „stadt.veroeffentlichen = ja“ über die Aktion suhl-publish von suhl-daten ins Daten-Repo pavillon-daten
+#   [stadt]  die ganze Gemeinde und die Straßenkorridore Garten → Suhl; Artefakte mit festen Namen: suhl-boden-<version> (das Produkt:
+#            meta.json, index.json, t/, i/) und suhl-boden-roh (nur das Gelände VOR dem Straßeneinschnitt, Stufen 10–12 und ein Ring
+#            Stufe-10-Kacheln mehr – davon nimmt suhl-strassen sein Gelände). Veröffentlicht wird hier nichts: das macht allein der
+#            Workflow von suhl-daten, der die Artefakte der Besitzer über die Laufnummer holt.
 #   [probe]  der Probesatz Zentrum: „probe.schritt = roh“ schreibt nur das Gelände VOR dem Straßeneinschnitt nach
 #            tools/suhl/out/boden/probe/roh/<version>/ (darauf rechnet suhl-strassen seine Profile), „probe.schritt = produkt“ den
 #            Probesatz nach tools/suhl/out/boden/probe/suhl/boden/<version>/ – beides auf suhl/boden
@@ -15,6 +17,8 @@
 # DGM1 (1 m): zuerst die alte Landes-Adresse (zeigt seit 22.10.2026 die Wartungsseite), dann easygeodata mit dem Geheimnis
 # EASYGEODATA_KEY über den Client von suhl-daten (tools/suhl/lib/easygeodata.py). Fehlt der Schlüssel, steht das im Protokoll und in
 # der Zusammenfassung – der Lauf schlägt nicht fehl und rechnet mit Copernicus.
+# Das Luftbild ist ein eigenes Bauprodukt: es wird nur neu kodiert, wenn sich SEINE Eingaben ändern (Bildflug, Farbausgleich,
+# Qualität); die kodierten Kacheln liegen im Actions-Cache und kommen Byte für Byte gleich in jeden Satz (meta.json: image.key).
 # Dazu: Kurztests, Prüfungen (Kanten, Listen, Größen, Mittelpunkt, Schema), Zahlen nach tools/suhl/out/boden/actions/ auf suhl/boden,
 # Bildbögen auf den Wegwerf-Zweig ref/suhl-boden. Sonst wird nichts angefasst; nichts geht nach gh-pages.
 # Läuft nur auf suhl/boden und nur, wenn diese Datei oder tools/suhl/boden/lauf.txt sich ändert. Der Lauf nimmt beim Start den
@@ -41,11 +45,11 @@ jobs:
     outputs:
       order: ${{ steps.lauf.outputs.order }}
       version: ${{ steps.lauf.outputs.version }}
-      veroeffentlichen: ${{ steps.lauf.outputs.veroeffentlichen }}
       gebaut: ${{ steps.bau.outcome }}
     env:
       SUHL_RAW: /home/runner/suhl-boden-raw
       DGM_DIR: /home/runner/suhl-boden-dgm
+      BILD_DIR: /home/runner/suhl-boden-bild
       MSG: ${{ github.event.head_commit.message }}
     steps:
       - uses: actions/checkout@v4
@@ -67,17 +71,17 @@ jobs:
           g = lambda k, d='': kv.get(f'{order}.{k}', d)
           version, dgm, roads = g('version', 'v1'), g('dgm'), g('strassen')
           schritt = g('schritt', 'produkt') if order == 'probe' else 'produkt'
-          roh = 'ja' if (order == 'probe' and schritt == 'roh') else g('roh', 'nein')
-          pub = g('veroeffentlichen', 'nein') if order == 'stadt' else 'nein'
-          assert re.fullmatch(r'v\d+', version) and schritt in ('roh', 'produkt') and roh in ('ja', 'nein') and pub in ('ja', 'nein'), kv
+          farbe, tv, iv = g('farbe', 'garten'), g('t', version.lstrip('v')), g('i', version.lstrip('v'))
+          assert re.fullmatch(r'v\d+', version) and schritt in ('roh', 'produkt') and farbe in ('garten', 'wie-geflogen'), kv
+          assert re.fullmatch(r'\d+', tv) and re.fullmatch(r'\d+', iv), kv
           assert re.fullmatch(r'(P[1-4](,P[1-4])*)?', dgm), dgm
           assert re.fullmatch(r'[A-Za-z0-9_./,-]*', roads) and '..' not in roads, roads
           mode = {'stadt': 'stadt', 'probe': 'probe-roh' if schritt == 'roh' else 'probe', 'ohne': ''}[order]
-          out = {'ORDER': order, 'MODE': mode, 'SCHRITT': schritt, 'VERSION': version, 'DGM': dgm, 'STRASSEN': roads, 'ROH': roh, 'PUBLISH': pub}
+          out = {'ORDER': order, 'MODE': mode, 'SCHRITT': schritt, 'VERSION': version, 'DGM': dgm, 'STRASSEN': roads, 'FARBE': farbe, 'TV': tv, 'IV': iv}
           with open(os.environ['GITHUB_ENV'], 'a') as o:
               o.write(''.join(f'{k}={v}\n' for k, v in out.items()))
           with open(os.environ['GITHUB_OUTPUT'], 'a') as o:
-              o.write(f'order={order}\nversion={version}\nveroeffentlichen={pub}\n')
+              o.write(f'order={order}\nversion={version}\n')
           print(out)
           if order == 'ohne':
               with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as o:
@@ -92,7 +96,7 @@ jobs:
         if: env.ORDER != 'ohne'
         run: |
           pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests rasterio
-          mkdir -p "$SUHL_RAW" "$DGM_DIR" logs results sheets
+          mkdir -p "$SUHL_RAW" "$DGM_DIR" "$BILD_DIR" logs results sheets
       - name: Kurztests (Sekunden, ohne Netz)
         if: env.ORDER != 'ohne'
         run: python -I tools/suhl/boden/test_boden.py
@@ -112,6 +116,14 @@ jobs:
           key: suhl-boden-dgm-v1-${{ github.run_id }}
           restore-keys: |
             suhl-boden-dgm-v1-
+      - name: Kodierte Luftbild-Kacheln aus dem Cache (je Satz von Bild-Eingaben; Byte für Byte wiederverwendet)
+        if: env.ORDER != 'ohne'
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/suhl-boden-bild
+          key: suhl-boden-bild-v1-${{ env.ORDER }}-${{ github.run_id }}
+          restore-keys: |
+            suhl-boden-bild-v1-${{ env.ORDER }}-
       - name: DGM1 über easygeodata (Client von suhl-daten; ohne Schlüssel übersprungen)
         if: env.ORDER != 'ohne'
         timeout-minutes: 40
@@ -148,13 +160,12 @@ jobs:
         timeout-minutes: 120
         run: |
           set -o pipefail
-          EXTRA=""
+          EXTRA="--farbe $FARBE --bild-store $BILD_DIR --t-version $TV --i-version $IV"
           if [ -f "$DGM_DIR/egd/manifest.json" ]; then EXTRA="$EXTRA --dgm-via easygeodata"; fi
           if [ -n "$STRASSEN" ]; then EXTRA="$EXTRA --roads $STRASSEN"; fi
           case "$MODE" in
             stadt)
-              if [ "$ROH" = ja ]; then EXTRA="$EXTRA --roh site/roh/$VERSION"; fi
-              python -I -u tools/suhl/boden/boden.py --mode stadt --raw "$SUHL_RAW" --out "site/suhl/boden/$VERSION" --jobs 4 $EXTRA 2>&1 | tee logs/build.log
+              python -I -u tools/suhl/boden/boden.py --mode stadt --raw "$SUHL_RAW" --out "site/suhl/boden/$VERSION" --roh site/roh --jobs 4 $EXTRA 2>&1 | tee logs/build.log
               echo "SET=site/suhl/boden/$VERSION" >> "$GITHUB_ENV" ;;
             probe)
               python -I -u tools/suhl/boden/boden.py --mode probe --cut 1 --max-mb 7.9 --raw "$SUHL_RAW" --out "site/suhl/boden/$VERSION" --jobs 4 $EXTRA 2>&1 | tee logs/build.log
@@ -163,9 +174,18 @@ jobs:
               python -I -u tools/suhl/boden/boden.py --mode probe-roh --skip-imagery --raw "$SUHL_RAW" --out "site/tmp/suhl/boden/$VERSION" --roh "site/roh/$VERSION" --jobs 4 $EXTRA 2>&1 | tee logs/build.log
               echo "SET=site/roh/$VERSION" >> "$GITHUB_ENV" ;;
           esac
-      - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
+      - name: Inhalt der Rohdaten und der Bild-Ablage (neuer Cache nur, wenn etwas dazukam)
         if: ${{ always() && env.ORDER != 'ohne' }}
-        run: echo "RAWKEY=$(cd "$SUHL_RAW" 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+        run: |
+          echo "RAWKEY=$(cd "$SUHL_RAW" 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+          echo "BILDKEY=$(cd "$BILD_DIR" 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+          echo "Bild-Ablage: $(find "$BILD_DIR" -type f | wc -l) Kacheln, $(du -sm "$BILD_DIR" | cut -f1) MB in $(ls "$BILD_DIR" | tr '\n' ' ')"
+      - name: Kodierte Luftbild-Kacheln in den Cache
+        if: ${{ always() && env.ORDER != 'ohne' && env.MODE != 'probe-roh' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ~/suhl-boden-bild
+          key: suhl-boden-bild-v1-${{ env.ORDER }}-${{ env.BILDKEY }}
       - name: Rohdaten in den Cache
         if: ${{ always() && env.ORDER != 'ohne' }}
         uses: actions/cache/save@v4
@@ -182,8 +202,14 @@ jobs:
           else
             python -I -u tools/suhl/boden/pruefen.py --set "$SET" --mode "$MODE" --json results/pruefen.json 2>&1 | tee logs/pruefen.log
             if [ -f tools/suhl/lib/validate.py ]; then
-              P=""; if [ "$MODE" = probe ]; then P="--probe"; fi
-              python -I tools/suhl/lib/validate.py site $P --json results/validate.json 2>&1 | tee logs/validate.log | tail -25
+              # without --probe: the sample's far levels reach one ring beyond the parents of the sample tiles (asked for by the
+              # runtime, so that it does not look into the void) - the probe rule of validate.py would call those tiles foreign
+              python -I tools/suhl/lib/validate.py site --json results/validate.json 2>&1 | tee logs/validate.log | tail -25
+              if [ "$MODE" = probe ]; then
+                python -I tools/suhl/lib/validate.py site --probe --json results/validate_probe.json > logs/validate_probe.log 2>&1 \
+                  || echo "::notice::validate.py --probe: $(grep -c 'not a tile of the sample set' logs/validate_probe.log) Kacheln der Fernstufen liegen außerhalb der Probe-Regel (der Ring um den Probesatz); sonstige Fehler: $(grep -c '^ERROR' logs/validate_probe.log | xargs -I{} expr {} - $(grep -c 'not a tile of the sample set' logs/validate_probe.log))"
+                tail -3 logs/validate_probe.log
+              fi
             fi
           fi
       - name: Bildbögen
@@ -238,12 +264,12 @@ jobs:
           path: site/suhl/boden/${{ env.VERSION }}
           retention-days: 14
           compression-level: 0
-      - name: Gelände vor dem Einschnitt als Artefakt (für suhl-strassen)
-        if: ${{ always() && steps.bau.outcome == 'success' && env.MODE == 'stadt' && env.ROH == 'ja' }}
+      - name: Gelände vor dem Einschnitt als Artefakt suhl-boden-roh (davon nimmt suhl-strassen sein Gelände)
+        if: ${{ always() && steps.bau.outcome == 'success' && env.MODE == 'stadt' }}
         uses: actions/upload-artifact@v4
         with:
-          name: suhl-boden-roh-${{ env.VERSION }}
-          path: site/roh/${{ env.VERSION }}
+          name: suhl-boden-roh
+          path: site/roh
           retention-days: 14
           compression-level: 0
       - name: Protokolle, Zahlen, Bögen
@@ -258,29 +284,3 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  veroeffentlichen:
-    name: Ins Daten-Repo (Aktion suhl-publish von suhl-daten)
-    needs: boden
-    if: ${{ needs.boden.outputs.veroeffentlichen == 'ja' && needs.boden.outputs.order == 'stadt' && needs.boden.outputs.gebaut == 'success' && needs.boden.result == 'success' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-    concurrency:
-      group: suhl-daten-publish        # eine Gruppe für alle veröffentlichenden Jobs des Repos, nie abbrechen
-      cancel-in-progress: false
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: suhl/boden
-          persist-credentials: false
-      - uses: actions/download-artifact@v4
-        with:
-          name: suhl-boden-${{ needs.boden.outputs.version }}
-          path: pub/suhl/boden/${{ needs.boden.outputs.version }}
-      - name: Veröffentlichen
-        uses: ./.github/actions/suhl-publish
-        with:
-          folder: pub/suhl/boden/${{ needs.boden.outputs.version }}
-          token: ${{ secrets.DATEN_TOKEN }}
-          artifact: suhl-boden-${{ needs.boden.outputs.version }}-unveroeffentlicht

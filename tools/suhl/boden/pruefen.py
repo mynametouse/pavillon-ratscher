@@ -69,6 +69,8 @@ def main():
     ck('lists: no file besides the lists', not extra, f'{len(extra)} extra {extra[:5]}' if extra else '')
     ck('lists: rect is the frame of has', all(lv[str(L)]['rect'] == rect_of(T[L]) for L in T))
     ck('lists: levels 11 and 12 in complete quads', all(T[L] == kids(parents(T[L])) for L in (11, 12) if L in T))
+    if a.mode == 'stadt':
+        ck('lists: the far ground is a quadtree (levels 7, 8, 9 in complete quads)', all(T[L] == kids(parents(T[L])) for L in (7, 8, 9) if L in T))
     orphan = {L: len(parents(T[L]) - T[L - 1]) for L in sorted(T) if L - 1 in T}
     ck('lists: every tile has its parent', not any(orphan.values()), str(orphan) if any(orphan.values()) else '')
     if a.mode:

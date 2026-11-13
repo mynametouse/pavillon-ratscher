@@ -52,10 +52,10 @@ def shrink_probe(T, step):
     if step == 1:
         T[12] = kids(parents(blib.touching(12, G['zentrum'])))
         return 'level 12 only for the quads of the level-12 tiles touching zentrum'
-    if step == 2:
+    if step == 2:      # every step keeps a part of the step before
         from shapely.geometry import Point
-        T[12] = kids(blib.touching(11, Point(*blib.CENTRE).buffer(300)))
-        return 'level 12 only for the level-11 tiles within 300 m of the centre of Suhl'
+        T[12] = kids(blib.touching(11, Point(*blib.CENTRE).buffer(300)) & parents(T[12]))
+        return 'level 12 only for the level-11 tiles of the sample within 300 m of the centre of Suhl'
     c = blib.tile_of(11, *blib.CENTRE)
     T[12] = kids({c})
     return 'level 12 only for the four tiles around the Markt'
@@ -100,38 +100,6 @@ def prune(out, T):
     return gone
 
 
-def write_index(out, version, mode, meta, T):
-    """index.json of the common Suhl schema (tools/suhl/lib, docs/features/suhl-daten.md): the tile sets of t/ and i/ as bit fields,
-    the mark `dgm` (level-10 tiles on real 1 m terrain), sources, numbers. meta.json stays what WELT reads."""
-    try:
-        sys.path.insert(0, os.path.join(blib.REPO, 'tools', 'suhl', 'lib'))
-        from schema import index as IX
-    except Exception as e:
-        log('index.json nicht geschrieben (tools/suhl/lib/schema fehlt):', repr(e)[:120])
-        return None
-    finally:
-        sys.path.pop(0)
-    s = meta['sources']
-    src = ['dop', 'cop30', 'worldcover', 'osm']
-    if s.get('dgm1_tiles_km'):
-        src.insert(1, IX.source('dgm1', via=IX.VIA_EASYGEODATA) if (s.get('dgm1') or {}).get('via') == 'easygeodata' else IX.source('dgm1'))
-    lv = meta['tiling']['levels']
-    dgm = [tuple(t) for t, f in zip(lv['10']['has'], lv['10'].get('dgm') or []) if f]
-    r = s.get('roads')
-    e = os.environ
-    return IX.make_index(
-        out, 'boden', version, 'probe' if mode.startswith('probe') else 'stadt', src,
-        marks={'dgm': {10: dgm}} if dgm else None,
-        stats={'levels': {L: {'n': len(v['has']), 'terrain_bytes': (v.get('terrain') or {}).get('bytes'), 'image_bytes': (v.get('image') or {}).get('bytes')}
-                          for L, v in lv.items()},
-               'terrain_source': s.get('terrain_source'), 'dgm1_tiles_km': len(s.get('dgm1_tiles_km') or []), 'canopy_m': s.get('canopy_m'),
-               'roads_cut': bool(r), 'roads_fit_before_cut': (r or {}).get('fit_before_cut')},
-        run={'id': e.get('GITHUB_RUN_ID'), 'sha': e.get('GITHUB_SHA'), 'ref': e.get('GITHUB_REF_NAME')} if e.get('GITHUB_RUN_ID') else None,
-        note='Boden von Suhl: Gelände t/ (WTH1) und Luftbild i/ (WebP 512 px); meta.json ist das Format, das WELT liest (mit has-Listen). '
-             + ('Straßen aus den Profilen von suhl-strassen eingeschnitten.' if r else 'Ohne Straßeneinschnitt.'),
-        extra={'meta': 'meta.json', 'cut': (meta.get('suhl') or {}).get('cut')})
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--mode', default='probe')
@@ -151,6 +119,12 @@ def main():
     ap.add_argument('--cut', type=int, default=0, help='mode probe: 1 = level 12 only for the quads touching zentrum, 2 = only within 300 m of the centre, '
                                                        '3 = only the four tiles around the Markt')
     ap.add_argument('--dgm-via', default='', help="how the DGM1 tiles of the raw folder came: 'easygeodata' adds 'bezogen über easygeodata.de' to the sources")
+    ap.add_argument('--farbe', default='garten', choices=('garten', 'wie-geflogen'),
+                    help='garten = colours balanced to the garden flight like the rest of the world (farbe.py); wie-geflogen = as the service delivers')
+    ap.add_argument('--bild-store', default='', help='folder kept between runs: encoded image tiles per set of image inputs, reused byte for byte')
+    ap.add_argument('--s-version', type=int, default=None, help='version of the product s whose profiles are cut in (default: the newest v<N> beside the road file)')
+    ap.add_argument('--t-version', type=int, default=None, help='version of the terrain part (default: the number of --version)')
+    ap.add_argument('--i-version', type=int, default=None, help='version of the image part (default: the number of --version)')
     a = ap.parse_args()
     t0 = time.time()
     os.makedirs(a.out, exist_ok=True)
@@ -174,12 +148,14 @@ def main():
         import gelaende
         providers = []      # DGM1 comes into <raw>/dgm1/ before the build: the workflow fetches it with tools/suhl/lib/easygeodata.py
         roads = [p for p in a.roads.split(',') if p]
+        # the uncut set carries one more ring of level-10 tiles: the road solver's margin then lies on this ground too
+        roh_extra = {10: blib.ring(T[10]) - T[10]} if (a.roh and a.mode == 'stadt') else None
         tinfo = gelaende.build(a.raw, a.out, T, jobs=a.jobs, use_dgm=not a.no_dgm, providers=providers, use_trees=not a.no_trees,
-                               roads=roads, roh=a.roh or None)
+                               roads=roads, roh=a.roh or None, roh_extra=roh_extra)
         if a.dgm_via and tinfo['dgm'].get('from_cache'):
             tinfo['dgm']['via'] = a.dgm_via
         if a.roh:      # a small meta.json so that the folder is a tile set of its own (hoehe.py, suhl-strassen --tiles <roh>/t)
-            fine = {L: T[L] for L in (10, 11, 12)}
+            fine = {L: [tuple(t) for t in v] for L, v in tinfo['roh_lists'].items() if v}
             os.makedirs(a.roh, exist_ok=True)
             json.dump({'format': 'welt-test/1', 'generated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'plan': 'suhl-' + a.mode.replace('-roh', '') + '-roh',
                        'H0': wlib.H0, 'note': 'Gelände VOR dem Straßeneinschnitt (nur Stufen 10-12): darauf rechnet suhl-strassen seine Profile. '
@@ -199,7 +175,19 @@ def main():
     iinfo = None
     if not a.skip_imagery:
         import bild
-        iinfo = bild.build(a.raw, a.out, T, quality=a.quality, jobs=a.jobs, threads=a.wms_threads)
+        harm = None
+        if a.farbe == 'garten':
+            import farbe
+            harm = farbe.Balance(a.raw)
+        fl = bild.flight_at(*blib.CENTRE)
+        day = '-'.join(reversed(fl.get('Erstellung', '').split('.'))) or 'unbekannt'
+        bname = harm.name if harm else 'wie-geflogen'
+        ikey = f"{bild.LAYER}-f{day}-p{fl.get('Publikation', 'x')}-{bname}-q{a.quality}"
+        store = os.path.join(a.bild_store, ikey) if a.bild_store else None
+        log(f'Luftbild: {ikey}' + (f' (Ablage {store})' if store else ''))
+        iinfo = bild.build(a.raw, a.out, T, quality=a.quality, jobs=a.jobs, harm=harm, threads=a.wms_threads, store=store)
+        iinfo.update({'key': ikey, 'balance': bname, 'flight': day, 'publication': fl.get('Publikation'), 'bezug': fl.get('Bezug'),
+                      'balance_info': harm.info() if harm else None})
         if a.mode == 'probe' and a.max_mb:
             while tile_bytes(a.out) > a.max_mb * 1e6 and step < 3:
                 step += 1
@@ -245,12 +233,32 @@ def main():
         hm = {k: old['tiling'][k] for k in ('hmin', 'hmax') if k in (old.get('tiling') or {})}
         if 'dgm' in (oldlv.get('10') or {}) and oldlv['10'].get('has') == lv['10']['has']:
             lv['10']['dgm'] = oldlv['10']['dgm']
-    img = ({'imagery': 'DOP Thüringen, WMS TH DOP (th_dop, 20 cm), © GDI-Th, CC BY 4.0', 'imagery_flight': '2024-05-15 über der ganzen Gemeinde '
-            '(th_dop_info, tools/suhl/out/bestand/luftbild.json); Bezug bDOM', 'imagery_balance': None,
-            'imagery_method': {'quality': iinfo['quality'], 'requests': iinfo['requests'], 'seconds': iinfo['seconds'],
-                               'note': 'jede Stufe in ihrer eigenen Auflösung vom Dienst geholt'}}
+    img = ({'imagery': 'DOP Thüringen, WMS TH DOP (th_dop, 20 cm), © GDI-Th, CC BY 4.0', 'imagery_flight': f"{iinfo['flight']} über der ganzen Gemeinde "
+            f"(th_dop_info, tools/suhl/out/bestand/luftbild.json); Veröffentlichung {iinfo['publication']}; Bezug {iinfo['bezug']}",
+            'imagery_balance': iinfo['balance_info'],
+            'imagery_method': {'quality': iinfo['quality'], 'requests': iinfo['requests'], 'seconds': iinfo['seconds'], 'key': iinfo['key'],
+                               'store': iinfo['store'], 'note': 'jede Stufe in ihrer eigenen Auflösung vom Dienst geholt'}}
            if iinfo else {k: src_old[k] for k in ('imagery', 'imagery_flight', 'imagery_balance', 'imagery_method') if k in src_old})
+    vnum = int(version.lstrip('v')) if version.lstrip('v').isdigit() else 0
+    tver = a.t_version if a.t_version is not None else vnum
+    iver = a.i_version if a.i_version is not None else vnum
+    image = ({'version': iver, 'balance': iinfo['balance'], 'key': iinfo['key'], 'quality': iinfo['quality'], 'flight': iinfo['flight'],
+              'publication': iinfo['publication'], 'path': 'i/'} if iinfo else old.get('image'))
+    terrain = ({'version': tver, 'source': tinfo['source'], 'roads_cut': bool(tinfo['roads']), 'dgm1_tiles_km': len(tinfo['dgm_tiles_km']), 'path': 't/'}
+               if tinfo else old.get('terrain'))
     cx, cy = wlib.model_from_utm(*blib.CENTRE)
+    # which generation of the roads is cut in: the version of the product s the profiles belong to ({} = no roads cut)
+    based_on = {}
+    rds = terr.get('roads')
+    if rds:
+        sv = a.s_version
+        if sv is None:
+            import glob, re as _re
+            f0 = os.path.join(blib.REPO, rds['files'][0]['file'])
+            vs = [int(_re.search(r'v(\d+)$', q).group(1)) for q in glob.glob(os.path.join(os.path.dirname(os.path.dirname(f0)), 'suhl', 's', 'v*'))
+                  if _re.search(r'v(\d+)$', q)]
+            sv = max(vs) if vs else 0
+        based_on = {'s': int(sv)}
     has_dgm = bool(terr.get('dgm1_tiles_km'))
     meta = {
         'format': 'welt-test/1', 'generated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'commit': commit, 'plan': 'suhl-' + a.mode,
@@ -258,7 +266,13 @@ def main():
         'origin': {'E': XF['ex'], 'N': XF['ey'], 'H': H0, 'latlon': list(wlib.ORIGIN_LATLON),
                    'note': 'Ursprung des App-Modells (Garten): Modell (0, 0, 0) = UTM (E, N), Höhe H0'},
         'model_xf': {**XF, 'note': 'Modellmeter (x Ost, y Nord) -> UTM: E = a x - b y + ex, N = b x + a y + ey; z = H - H0. Die Kacheln sind echte UTM-Meter.'},
-        'suhl': {'product': 'boden', 'version': version, 'schema': SCHEMA, 'mode': a.mode, 'centre_utm': list(blib.CENTRE),
+        'terrain': terrain, 'image': image,
+        'suhl': {'product': 'boden', 'version': version, 'schema': SCHEMA, 'area': 'probe' if a.mode.startswith('probe') else 'stadt',
+                 'balanced': bool(image and str(image.get('balance', '')).startswith('garten')), 'based_on': based_on,
+                 'mode': a.mode, 'centre_utm': list(blib.CENTRE),
+                 'parts': 'Gelände (t/) und Luftbild (i/) haben je eine eigene Version: terrain.version, image.version. Das Luftbild ändert sich '
+                          'nur, wenn image.key sich ändert (Bildflug, Farbausgleich, Qualität); bei gleichem image.key sind die Dateien i/ Byte '
+                          'für Byte dieselben wie im vorigen Satz.',
                  'centre_model': [round(cx, 1), round(cy, 1)], 'plan': {k: v for k, v in pinfo.items() if k not in ('rule',)}, 'cut': cut,
                  'has': 'tiling.levels[L].has = sortierte Liste [x, y] der vorhandenen Kacheln der Stufe L; rect ist nur ihr Rahmen. '
                         'Stufen 11 und 12 stehen in ganzen Vierern (alle vier Kinder einer Kachel), jede Kachel der Stufen 7-12 hat ihre '
@@ -276,7 +290,8 @@ def main():
     json.dump(meta, open(mp, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     via = ', bezogen über easygeodata.de' if (terr.get('dgm1') or {}).get('via') == 'easygeodata' else ''
     open(os.path.join(a.out, 'ATTRIBUTION.md'), 'w', encoding='utf-8').write(ATTR_DE.replace('{via}', via))
-    write_index(a.out, version, a.mode, meta, T)
+    if os.path.exists(os.path.join(a.out, 'index.json')):      # schema rev 1.1: the ground has no index.json, meta.json is its index
+        os.remove(os.path.join(a.out, 'index.json'))
     nf, tot = total_bytes(a.out)
     log(f'fertig in {time.time() - t0:.0f} s: {nf} Dateien, {tot / 1e6:.2f} MB in {a.out}')
     for L in sorted(T):
