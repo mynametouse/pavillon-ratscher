@@ -52,7 +52,12 @@ def pruefe(M, K):
 def statistik(M, K, rows=None):
     """counts by kind, flags, size; trees per hectare by mapped land use (areas from a 2 m class raster of the tiles, UTM)"""
     F = klassen.Flaechen(K)
+    U = baeume.Umfeld(K)
     kinds, by_class, area_class = {}, {}, {}
+    # setting of a tree (not in the tile file; a proposal for the schema): forest, street (trunk within 6 m of the edge of a public
+    # carriageway), park / green / cemetery / playground, garden / yard / allotment (also: residential land), other
+    standort = {'Wald': 0, 'Straßenbaum': 0, 'Park, Grünanlage, Friedhof': 0, 'Garten, Hof, Kleingarten': 0, 'sonst': 0}
+    st_r = {k: [] for k in standort}
     fl = {'lage_luftbild': 0, 'lage_osm': 0, 'lage_ndom': 0, 'hoehe_gemessen': 0, 'radius_gemessen': 0, 'art_kartiert': 0,
           'geruecket': 0, 'in_osm_kartiert': 0, 'im_wald': 0}
     hs, rs = [], []
@@ -73,6 +78,17 @@ def statistik(M, K, rows=None):
         for k, c in zip(*np.unique(cl[iy, ix], return_counts=True)):
             by_class[int(k)] = by_class.get(int(k), 0) + int(c)
         f = T['flags']
+        _, near, _ = U.raster(bb, 2.0, grow_bld=0.0, grow_road=6.0, public_only=True)
+        c = cl[iy, ix]
+        tree = T['kind'] != 30
+        sw = ((f & 128) > 0) | (c == 1)
+        ss = near[iy, ix] & ~sw
+        sp = np.isin(c, (4, 5, 8, 9, 10, 3, 12)) & ~sw & ~ss
+        sg = np.isin(c, (6, 7, 13, 20)) & ~sw & ~ss & ~sp
+        for name, m in (('Wald', sw), ('Straßenbaum', ss), ('Park, Grünanlage, Friedhof', sp), ('Garten, Hof, Kleingarten', sg),
+                        ('sonst', ~(sw | ss | sp | sg))):
+            standort[name] += int((m & tree).sum())
+            st_r[name].append(T['r'][m & tree])
         fl['lage_luftbild'] += int(((f & 3) == 1).sum()); fl['lage_osm'] += int(((f & 3) == 2).sum()); fl['lage_ndom'] += int(((f & 3) == 3).sum())
         fl['hoehe_gemessen'] += int(((f & 4) > 0).sum()); fl['radius_gemessen'] += int(((f & 8) > 0).sum())
         fl['art_kartiert'] += int(((f & 16) > 0).sum()); fl['geruecket'] += int(((f & 32) > 0).sum())
@@ -92,6 +108,8 @@ def statistik(M, K, rows=None):
             'nadel_anteil_prozent': round(100.0 * sum(v for k, v in kinds.items() if k in baeume.CONIFER) / max(1, n_all), 1),
             'merker': fl, 'hoehe_m_quantile_5_25_50_75_95': q(hs), 'kronenradius_m_quantile_5_25_50_75_95': q(rs),
             'kronenflaeche_ha': round(float((np.pi * rs ** 2).sum() / 1e4), 1),
+            'nach_standort_ohne_straeucher': {k: {'baeume': v, 'kronenradius_median_m': round(float(np.median(np.concatenate(st_r[k]))), 1)
+                                                  if v else None} for k, v in standort.items()},
             'nach_nutzung': dens, 'max_je_kachel': max(per_tile.values()) if per_tile else 0}
 
 

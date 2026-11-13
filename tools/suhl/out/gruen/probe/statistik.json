@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T00:57:41Z",
+ "made": "2026-11-13T01:03:03Z",
  "gebiet": "zentrum",
  "kacheln_gebiet": 11,
  "kacheln_einzelbaeume": 11,
@@ -12,10 +12,10 @@
   "baeume": {
    "anzahl": 9730,
    "kacheln": 11,
-   "sekunden": 50
+   "sekunden": 1
   },
   "wald": {
-   "sekunden": 2
+   "sekunden": 3
   },
   "flaechen": {
    "sekunden": 0
@@ -71,6 +71,28 @@
    8.43
   ],
   "kronenflaeche_ha": 72.2,
+  "nach_standort_ohne_straeucher": {
+   "Wald": {
+    "baeume": 1695,
+    "kronenradius_median_m": 5.9
+   },
+   "Straßenbaum": {
+    "baeume": 1249,
+    "kronenradius_median_m": 3.1
+   },
+   "Park, Grünanlage, Friedhof": {
+    "baeume": 897,
+    "kronenradius_median_m": 3.9
+   },
+   "Garten, Hof, Kleingarten": {
+    "baeume": 3892,
+    "kronenradius_median_m": 4.0
+   },
+   "sonst": {
+    "baeume": 1347,
+    "kronenradius_median_m": 4.2
+   }
+  },
   "nach_nutzung": {
    "sonst / nicht kartiert": {
     "flaeche_ha": 3.6,
@@ -194,7 +216,17 @@
    "Spielplatz": 0.2
   }
  },
- "sekunden": 53,
+ "schema": {
+  "geprueft": true,
+  "index_b": "/home/claude/wt-suhl-gruen/tools/suhl/out/gruen/probe/suhl/b/v0/index.json: 11 tiles, 9730 items, 77840 bytes; Luftbild (DOP20 RGB und CIR, Bildflug 15.05.2024): © GDI-Th, CC BY 4.0 (dl-de/by-2-0); Bäume, Baumreihen, Wald- und Grünflächen: © OpenStreetMap-Mitwirkende, ODbL 1.0",
+  "gueltig": true,
+  "meldung": "VALID: tools/suhl/out/gruen/probe - schema 1 (rev 1.0), 0 errors, 2 warnings",
+  "zeilen": [
+   "WARNING suhl/gr: unknown product folder (known: _probe, b, boden, d, da, f, g, m, s)",
+   "WARNING suhl/w: unknown product folder (known: _probe, b, boden, d, da, f, g, m, s)"
+  ]
+ },
+ "sekunden": 6,
  "kachel_tabelle": [
   [
    495,

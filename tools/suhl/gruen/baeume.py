@@ -93,7 +93,7 @@ class Umfeld:
     def _hit(bx, bb):
         return np.flatnonzero((bx[:, 0] <= bb[2]) & (bx[:, 2] >= bb[0]) & (bx[:, 1] <= bb[3]) & (bx[:, 3] >= bb[1])) if len(bx) else []
 
-    def raster(self, bb, px, grow_bld=0.3, grow_road=0.5):
+    def raster(self, bb, px, grow_bld=0.3, grow_road=0.5, public_only=False):
         """-> building mask, carriageway mask, water mask (bool arrays, rows from the north) for the box at px metres per pixel"""
         from PIL import Image, ImageDraw
         e0, n0, e1, n1 = bb
@@ -119,7 +119,7 @@ class Umfeld:
         d = ImageDraw.Draw(ir)
         for i in self._hit(self.rbox, bb):
             c, hw, kind, bridge = self.roads[i]
-            if hw <= 0:
+            if hw <= 0 or (public_only and kind in ('service', 'track')):
                 continue
             d.line(xy(c), fill=1, width=max(1, int(round(2 * (hw + grow_road) / px))), joint='curve')
         road = np.asarray(ir, bool)

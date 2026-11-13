@@ -80,6 +80,27 @@ def single_tree_tiles(rows, gebiet):
     return [r['t'] for r in rows if r['kern'] or r['geb'] >= 3 or (r['str_m'] > 100 and r['wald'] < 0.85)]
 
 
+def schema_check(out, gebiet, skip):
+    """the shared keys of index.json and the validation of suhl-daten (tools/suhl/lib/validate.py), where that library is on the
+    branch; the products w and gr are not in the schema yet (proposal), the validator names them as unknown folders"""
+    import subprocess
+    val = os.path.join(glib.REPO, 'tools', 'suhl', 'lib', 'validate.py')
+    if not os.path.exists(val):
+        return {'geprueft': False, 'grund': 'tools/suhl/lib/validate.py fehlt auf diesem Zweig'}
+    res = {'geprueft': True}
+    b = os.path.join(out, 'suhl', 'b', 'v0')
+    if 'baeume' not in skip and os.path.exists(os.path.join(b, 'index.json')):
+        r = subprocess.run([sys.executable, '-I', val, '--index', b, '--area', gebiet, '--sources', 'dop,osm,ethos'], capture_output=True, text=True)
+        res['index_b'] = (r.stdout + r.stderr).strip()[-300:]
+    r = subprocess.run([sys.executable, '-I', val, out] + (['--probe'] if gebiet == 'zentrum' else []), capture_output=True, text=True)
+    lines = (r.stdout + r.stderr).strip().splitlines()
+    res['gueltig'] = r.returncode == 0
+    res['meldung'] = lines[-1] if lines else ''
+    res['zeilen'] = [ln for ln in lines if ln.startswith(('ERROR', 'WARNING'))][:20]
+    glib.log('schema:', res['meldung'])
+    return res
+
+
 def _work(args):
     tiles, work, kpath = args
     U = baeume.Umfeld(kontext.load(kpath))
@@ -151,6 +172,7 @@ def main():
         t0 = time.time()
         res['flaechen'] = flaechen.build(K, gebiet, rows, os.path.join(a.out, 'suhl', 'gr', 'v0'))
         res['schritte']['flaechen'] = {'sekunden': round(time.time() - t0)}
+    res['schema'] = schema_check(a.out, gebiet, skip)
     res['sekunden'] = round(time.time() - t00)
     res['kachel_tabelle'] = [[r['t'][0], r['t'][1], r['geb'], r['str_m'], r['wald'], int(r['t'] in set(tiles))] for r in rows]
     glib.write_json(os.path.join(a.out, 'statistik.json'), res, indent=1)
