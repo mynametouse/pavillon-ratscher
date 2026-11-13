@@ -766,35 +766,36 @@ export const GLPOSE = (() => {
     });
   // ------------------------------------------------------------------ the run ------------------------------------------------------------------
   // the clip set's sprint, decoded once per set, sampled by interpolants and laid over rbPerson's walk (slerp by the run's weight)
+  // (two of them: the jog for 2–3.6 m/s – welt's officers chase at 3.2 –, the sprint above 4)
   const RUN = new WeakMap();
-  function runClip(set) {
-    if (!set || !set.clips || !set.clips.sprint) return null;
-    let C = RUN.get(set);
-    if (C) return C;
-    const clip = decodeClip(set.clips.sprint);
-    C = {
+  function runClip(set, k = 'sprint') {
+    if (!set || !set.clips || !set.clips[k]) return null;
+    let M = RUN.get(set);
+    if (!M) RUN.set(set, (M = {}));
+    if (M[k]) return M[k];
+    const clip = decodeClip(set.clips[k]);
+    const C = (M[k] = {
+      k,
       d: clip.duration,
-      speed: set.clips.sprint.speed || 5.5,
+      speed: set.clips[k].speed || (k === 'jog' ? 2.4 : 5.5),
       hip: (set.meta && set.meta.restHip) || 0.9,
       tracks: clip.tracks.map(tr => ({
         bone: tr.name.split('.')[0],
         pos: tr.name.endsWith('.position'),
         ip: tr.createInterpolant(),
       })),
-    };
-    RUN.set(set, C);
+    });
     return C;
   }
   const _rv = V(),
     _rqq = Q();
   function lauf(R, C, t, w) {
-    if (!R.runB || R.runC !== C) {
-      R.runC = C;
-      R.runB = C.tracks.map(tr => R.model.getObjectByName(tr.bone) || null);
-    }
+    if (!R.runB) R.runB = new Map();
+    let BB = R.runB.get(C);
+    if (!BB) R.runB.set(C, (BB = C.tracks.map(tr => R.model.getObjectByName(tr.bone) || null)));
     const tt = ((t % C.d) + C.d) % C.d;
     for (let i = 0; i < C.tracks.length; i++) {
-      const b = R.runB[i],
+      const b = BB[i],
         tr = C.tracks[i];
       if (!b) continue;
       const r = tr.ip.evaluate(tt);
@@ -1250,15 +1251,22 @@ export const GLPOSE = (() => {
     if (F.g.position.distanceToSquared(cam.position) > 4900) return;
     const t0 = performance.now();
     try {
-      // the run
-      const runT = F.renn && sp > 0 ? smooth((sp - 1.8) / 1.6) : 0;
-      st.runW = (st.runW || 0) + (runT - (st.runW || 0)) * Math.min(1, dt * 8);
-      if (st.runW > 0.01 && F.set) {
-        const C = runClip(F.set);
-        if (C) {
-          const v = C.speed * ((R.hipH || C.hip) / C.hip);
-          st.runT = (st.runT || 0) + (dt * Math.max(sp, 1)) / v;
-          lauf(R, C, st.runT, st.runW);
+      // the run: over 2 m/s the jog comes in over the walk, over 3.6 the sprint over the jog (each at the pace of its own stride)
+      const fast = sp > 0 ? sp : 0,
+        jT = smooth((fast - 2.0) / 0.5),
+        sT = smooth((fast - 3.6) / 0.8);
+      st.jogW = (st.jogW || 0) + (jT - (st.jogW || 0)) * Math.min(1, dt * 8);
+      st.runW = (st.runW || 0) + (sT - (st.runW || 0)) * Math.min(1, dt * 8);
+      if (F.set && st.jogW > 0.01) {
+        const CJ = runClip(F.set, 'jog'),
+          CS = st.runW > 0.01 ? runClip(F.set, 'sprint') : null;
+        if (CJ) {
+          st.jogT = (st.jogT || 0) + (dt * Math.max(fast, 1)) / (CJ.speed * ((R.hipH || CJ.hip) / CJ.hip));
+          lauf(R, CJ, st.jogT, st.jogW);
+        }
+        if (CS) {
+          st.runT = (st.runT || 0) + (dt * Math.max(fast, 1)) / (CS.speed * ((R.hipH || CS.hip) / CS.hip));
+          lauf(R, CS, st.runT, st.runW);
         }
       }
       // sitting: the feet down
