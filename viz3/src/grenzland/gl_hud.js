@@ -138,6 +138,10 @@ body[data-gl-era="1989"] #gldatum{display:block}
 #glmtitel em{display:block;margin-top:12px;font:400 clamp(12px,1.6vw,15px)/1.4 var(--f-body,system-ui);font-style:normal;opacity:.9;text-shadow:0 1px 8px rgba(0,0,0,.95)}
 @keyframes gltit{from{letter-spacing:.14em;opacity:0;filter:blur(3px)}to{letter-spacing:.01em;opacity:1;filter:blur(0)}}
 /* scenes: black bars over and under the picture, the rest of the screen out of the way */
+/* a title during a scene: small at the lower left above the bar, like a film's credit – the faces stay free */
+body[data-gl-kino="1"] #glmtitel{left:max(4vw,16px);top:auto;bottom:calc(12vh + 14px);transform:none;width:auto;max-width:62vw;text-align:left}
+body[data-gl-kino="1"] #glmtitel b{font-size:clamp(22px,3.3vw,38px)} body[data-gl-kino="1"] #glmtitel em{display:none}
+body[data-gl-kino="1"] #glmtitel::before{inset:-30px -60px -30px -40px;background:radial-gradient(ellipse at 30% 50%,rgba(0,0,0,.55),rgba(0,0,0,0) 70%)}
 #glbars{position:absolute;inset:0;z-index:9;pointer-events:none}
 #glbars i{position:absolute;left:0;right:0;height:12vh;background:#000;transition:transform .6s ease}
 #glbars i:first-child{top:0;transform:translateY(-101%)} #glbars i:last-child{bottom:0;transform:translateY(101%)}
