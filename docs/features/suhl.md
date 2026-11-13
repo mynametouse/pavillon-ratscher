@@ -20,6 +20,11 @@ Generation v1 der Daten-Agenten: 1-m-Gelände mit eingeschnittenen Straßen, Geb
 | `viz3/src/lazy/suhl/kern/stadt.js` | Gebäude und Bäume je Kachel der Stufe 10: Stufen nach Entfernung, ein fertiges Stück je Bild, Kollision, Datensätze für `SUHL.building` |
 | `viz3/src/lazy/suhl/kern/strassen.js` | Straßen, alles an einer Stelle: Übergabe jeder `s`-Kachel an das Straßensystem (`FAHRT.add`), solange es das nicht gibt eine gemalte Karte im Boden; Straßennamen, `SUHL.ways` (Abschnitt 8) |
 | `viz3/src/lazy/suhl/bau/haus.js`, `kachel.js` | im Rechner: ein Datensatz → Wände und Dach in der Anordnung von `world/village.js` (übertragen aus `gebaeude/gebaeude.js`), die schlanke Fernstufe, Regeln für das Aussehen |
+| `viz3/src/lazy/suhl/bau/marken.js` | die Wahrzeichen nach Fotos (Stufe 3 „Fassaden nach Fotos“): je Gebäude-ID Farbe, Material (`putz`, `schiefer`, `schiefer_og`, `fachwerk`, `fachwerk_og`, `klinker`, `platte`), Fensterrahmen, helle Laibungen, Dachfarbe, steileres Dach (`rise`), niedrigeres Flachdach (`e`), Gauben ja/nein, Balkone nein, Balkonbrüstungen (`balkCol`), Vordach an Ladenseiten (`vordach`), einzelne Wände in eigener Farbe (`wand`), dazu Name und Foto mit Urheber und Lizenz; der Rechner wendet es an (`bau/kachel.js`), `SUHL.building(id).look` gibt es heraus |
+| `viz3/src/lazy/suhl/kern/tuerme.js` | was die Gebäudedaten nicht tragen: die Türme von Kreuzkirche und St. Marien, der Dachreiter des Rathauses (auf dem First seines Hauses), die Trommel des Großen Saals im CCS (Kreis aus dem Grundriss), die Krone des Hotelturms mit Mast; erst wenn das zugehörige Haus da ist |
+| `viz3/src/lazy/suhl/kern/brunnen.js`, `wasser.js` | Brunnen aus den Straßenkacheln (`wareas` 'fountain') mit Figuren in einfachen Formen und den Blumenbeeten am Waffenschmied; offenes Wasser (Lauter, Teiche, Becken) auf dem Boden, Ecke für Ecke |
+| `viz3/src/lazy/suhl/kern/zeichen.js`, `laeden.js`, `ampeln.js` | Straßennamensschilder und Haltestellen; Ladenfronten mit Namen aus OpenStreetMap (ohne Personennamen); Ampeln |
+| `viz3/src/lazy/suhl/kern/autos.js` | parkende Autos auf den Parkplätzen (`areas` vom Typ 'parken'): Reihen längs der längsten Seite, sieben von zehn Plätzen belegt, eine instanzierte Form auf dem gezeichneten Gelände |
 | `viz3/src/lazy/suhl/kern/geo.js`, `probe.js` | Kachel-Rechnung, WTH1-Höhen, das Buch über alles Erzeugte (`LIVE`); die Prüfungen des ersten Tages |
 | `viz3/extra/suhl-laufzeit/probe/` | der Probesatz (10,9 MB): `boden/v1`, `g/v1`, `b/v1`, `s/v1` (dazu `gr`, `w`, `m`, noch nicht gelesen) und ein vorläufiges `aktuell.json`. Herkunft steht in `aktuell.json` (`sources`): `suhl/boden` 8d5bffbc, `suhl/gebaeude` bacb45ed, `suhl/gruen` 92f47feb, `suhl/strassen` 7ef29c0e. |
 | `viz3/extra/suhl-laufzeit/probe_holen.py` | holt die Probesätze von `origin/suhl/<paket>` neu: von jedem Produkt die zuletzt erzeugte Version; schreibt `aktuell.json` in der Form des Vertrags |
@@ -29,7 +34,8 @@ Generation v1 der Daten-Agenten: 1-m-Gelände mit eingeschnittenen Straßen, Geb
 ## 2 Ausprobieren
 
 - Bauen: `cd viz3 && python3 build.py --fast`; den Probesatz legt der Test `viz3/test/suhl.py` nach `dist/suhl/` (die Website trägt ihn nicht, sie liest das Daten-Repo), Testserver `bash tools/csp/start8951.sh`.
-- `…/index.html?szenario=suhl` – Start auf dem Suhler Markt. `?suhl=1` zeigt zusätzlich den Menüknopf „Suhl“ unter Hingehen → Weiter weg.
+- `…/index.html?szenario=suhl` – Start auf dem Suhler Markt. `?suhl=1` zeigt zusätzlich oben im Menü die Karte „Nach Suhl“ (seit V18) und den Chip „Suhl“ unter Hingehen → Weiter weg.
+- Fotovergleich: das Modell vom Kamerastandort eines Commons-Fotos aus (`SUHL.toModel(lat, lon)`, Blickrichtung zur Lage des Wahrzeichens), neben das Foto gelegt – so sind die Einträge in `bau/marken.js` entstanden; im Test `suhl:boden` die Bilder `suhl_rathaus`, `suhl_ccs`, `suhl_hotel`, `suhl_wasser`.
 - `?suhl=<Adresse>` – andere Daten-Basis. Ohne Angabe: auf der Website `https://mynametouse.github.io/pavillon-daten/suhl/`, am
   Testserver `suhl/` (also `dist/suhl/`).
 - In der Konsole: `SUHL.status()` (Zustand, Versionen, Kacheln je Stufe, Zeiten, Fehler), `SUHL.building('DETHL57P00006FVC')`,

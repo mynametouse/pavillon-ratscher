@@ -194,7 +194,7 @@ export const GLNEBEN = (() => {
         text =
           'Für ihr Gedenkessen „Sukiyaki wie im Waffenschmied“ braucht Yuki: ' +
           hat('karpfen_gross') +
-          ' einen Karpfen ab 2 kg (Angelstelle an der Staumauer: abends, auf Mais), ' +
+          ' einen Karpfen ab 2 kg (Angelstelle am Staudamm: abends, auf Mais), ' +
           hat('milchreis') +
           ' Milchreis und ' +
           hat('worcester') +

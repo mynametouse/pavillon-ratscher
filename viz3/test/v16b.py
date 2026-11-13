@@ -13,7 +13,19 @@ def check(name, cond, info=''):
     (ok if cond else fails).append(name); print(('OK   ' if cond else 'FAIL ') + name, info, flush=True)
 with lib.browser() as b:
     errs = []; pg = lib.page(b, 1100, 680, errs, tier='mittel'); lib.boot(pg, port, figures=True); E = pg.evaluate
+    # the wall time at every picture (the test machines took twice as long with the traffic of V18b, the chat PC not – where is it spent?)
+    T0 = time.time(); _shot = lib.shot; lib.shot = lambda p, d, n, q=0.88: (_shot(p, d, n, q), print(f'  {n} at {time.time() - T0:.1f} s', flush=True))
+    # one frame drawn and waited for (a pixel read back): the second of two
+    FRAME = "(() => { const gl = GAME.R.getContext(), px = new Uint8Array(4); let ms = 0; for (let i = 0; i < 2; i++) { const a = performance.now(); GAME.shot(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); ms = performance.now() - a; } return +ms.toFixed(1); })()"
+    def frame_cost(where):   # the frame with the vehicles of verkehr/vk_modelle.js and without them
+        try:
+            a = E(FRAME); E("GAME.scene.traverse(o => { if (o.name && o.name.startsWith('verkehr')) { o.userData._vis = o.visible; o.visible = false; } })")
+            b2 = E(FRAME); E("GAME.scene.traverse(o => { if (o.userData && '_vis' in o.userData) { o.visible = o.userData._vis; delete o.userData._vis; } })")
+            print(f'frame {where}: {a} ms with the vehicles, {b2} ms without', E("JSON.stringify({ vk: window.VKMOD ? VKMOD.stats : null, cars: window.VAUTO ? VAUTO.cars.length : -1, calls: GAME.R.info.render.calls, tris: GAME.R.info.render.triangles })"), f'at {time.time() - T0:.1f} s', flush=True)
+        except Exception as ex: print('frame cost', where, repr(ex)[:200], flush=True)
     E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
+    # the flow of traffic (verkehr/vk_strom.js) off: the car is driven on fixed routes here, a vehicle ahead would hold the test's driver
+    E("window.VKSTROM && (VKSTROM.off = true)")
     st = lambda: json.loads(E("JSON.stringify(VEH.state())"))
     steps = lambda secs: E(f"for (let i = 0; i < {int(secs / 0.025)}; i++) GAME.step(0.025)")
     def drive(secs, thr=0, brk=0, steer=0, hand=False):
@@ -63,7 +75,8 @@ with lib.browser() as b:
         T = 0; places = set()
         for secs, shot in [(8, 'c_bridge'), (10, 'c_anger'), (16, 'c_village'), (24, 'c_fields'), (20, 'c_l1625'), (30, 'c_forest_edge'), (40, None), (30, None)]:
             for k in range(int(secs / 0.5)): steps(0.5); places.add(E("document.getElementById('where').textContent"))
-            T += secs; s = st()[0]; fs = E("window._fs"); print(T, 's', s, fs, flush=True)
+            T += secs; s = st()[0]; fs = E("window._fs"); print(T, 's', s, fs, f'at {time.time() - T0:.1f} s', flush=True)
+            if shot == 'c_village': frame_cost('in the village')
             if shot: lib.shot(pg, OUT, shot)
             if fs['done']: break
         print('places', sorted(places))
@@ -118,7 +131,7 @@ with lib.browser() as b:
         ctx = b.new_context(viewport={'width': 390, 'height': 780}, device_scale_factor=2, is_mobile=True, has_touch=True)
         mp = ctx.new_page(); lib.preset(mp); mp.on('pageerror', lambda e: errs.append('M PAGEERR ' + str(e)))
         mp.goto(f'http://localhost:{port}/index.html', timeout=300000, wait_until='domcontentloaded')
-        mp.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); time.sleep(2); M = mp.evaluate; M("window.FREEZE = true")
+        mp.wait_for_function("window.GAME && GAME.loaded && GAME.loaded()", timeout=1500000, polling=2000); time.sleep(2); M = mp.evaluate; M("window.FREEZE = true"); M("window.VKSTROM && (VKSTROM.off = true)")
         M("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
         mp.wait_for_function("!window.AVATAR || AVATAR.ready || AVATAR.failed", timeout=900000, polling=1000); M("GAME.step(0.1)")   # the figure loaded: no long busy frames any more
         # since V16v the menu has pages: the car's chip is on „Hingehen“
@@ -133,7 +146,10 @@ with lib.browser() as b:
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': cx, 'y': cy - jr['h'] * 0.42, 'id': 1}]})
         M("for (let i = 0; i < 160; i++) GAME.step(0.025)"); ph = json.loads(M("JSON.stringify(VEH.state()[0])"))
         u = rects(M, ['vhud', 'vmap', 'vmaplab', 'where', 'hudtr', 'actrow', 'joy', 'moves', 'menubtn']); print('phone', ph, u, flush=True)
-        M("GAME.shot()"); mp.screenshot(path=os.path.join(OUT, 'h_phone_drive.png')); print('shot h_phone_drive', flush=True)
+        # (the picture with a longer wait, as the other tests' heavy pictures: the software renderer of the test machines is slow at the
+        # phone's double resolution; the times and the vehicles' state printed, should it ever be slow again)
+        t0 = time.time(); M("GAME.shot()"); t1 = time.time(); mp.screenshot(path=os.path.join(OUT, 'h_phone_drive.png'), timeout=120000); t2 = time.time()
+        print(f'shot h_phone_drive (frame {t1 - t0:.1f} s, picture {t2 - t1:.1f} s)', M("JSON.stringify({ progs: (GAME.R.info.programs || []).length, calls: GAME.R.info.render.calls, vk: window.VKMOD ? VKMOD.stats : null, cars: window.VAUTO ? VAUTO.cars.length : -1 })"), flush=True)
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
         check('phone: the circle drives', ph['kmh'] > 8, f"{ph['kmh']} km/h")
         bad = [f"{a}/{c}" for a, c in [('vhud', 'joy'), ('vhud', 'actrow'), ('vmap', 'where'), ('vmap', 'hudtr'), ('vmap', 'menubtn'), ('vmaplab', 'where'), ('vhud', 'moves')] if overlap(u[a], u[c])]
