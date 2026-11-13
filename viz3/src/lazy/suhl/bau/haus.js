@@ -86,7 +86,7 @@ export function styleOf(b, id, old) {
     if (b.r === 0 && A >= 14 && A <= 120) {
       const brick = k < 0.25;
       return Object.assign(o, {
-        style: brick ? ST.BRICK : ST.PLASTER,
+        style: ST.PLASTER, // brick in its colour: the facade program draws its style BRICK as boards (it belongs to its barns)
         col: brick ? BRICKC : GREY[Math.floor(k2 * GREY.length)],
         noWin: true,
         door: [4, 4, 3, 0, 5, 4][Math.floor(hh(id + 9) * 6)],
@@ -96,7 +96,7 @@ export function styleOf(b, id, old) {
       });
     }
     return Object.assign(o, {
-      style: k < 0.6 ? ST.SHED : ST.BRICK,
+      style: k < 0.6 ? ST.SHED : ST.PLASTER,
       col: k < 0.6 ? linC(BOARDS[Math.floor(k2 * 3)], 0.8) : BRICKC,
       sp: 3.2,
       doorW: A < 12 ? 0.9 : 1.2,
@@ -104,8 +104,8 @@ export function styleOf(b, id, old) {
   }
   if (b.k === 1) {
     if (A >= 350) return Object.assign(o, { style: ST.HALL, col: SHEET[Math.floor(k * 4)], sp: 4.5 });
-    o.style = k < 0.3 ? ST.BARN : k < 0.5 ? ST.BARN_FULL : ST.BRICK;
-    o.col = o.style === ST.BRICK ? BRICKC : linC(BOARDS[Math.floor(k2 * 3)], 0.8);
+    o.style = k < 0.3 ? ST.BARN : k < 0.5 ? ST.BARN_FULL : ST.PLASTER;
+    o.col = o.style === ST.PLASTER ? BRICKC : linC(BOARDS[Math.floor(k2 * 3)], 0.8);
     o.sp = 3.4;
     return o;
   }
@@ -161,9 +161,10 @@ export const hex = h => [
 ];
 const rgbOf = c => (typeof c === 'string' && c.length === 7 ? hex(c) : Array.isArray(c) && c.length >= 3 ? c : null);
 // the style of a material word (or its number in the list of tools/suhl/gebaeude/fassade.py) for a building type
+const isBrick = mat => (typeof mat === 'number' ? MATNR[mat] : mat) === 'klinker';
 export function matStyle(mat, bt, k) {
   let st = MATST[typeof mat === 'number' ? MATNR[mat] : mat];
-  if (st === undefined) st = ST.PLASTER;
+  if (st === undefined || st === ST.BRICK) st = ST.PLASTER; // brick: plaster in its colour (the program's BRICK is its barns' boards)
   if (st === ST.PLASTER && MODERN_BT[bt]) st = ST.MODERN;
   if (st === ST.SHED && k === 1) st = ST.BARN_FULL;
   return st;
@@ -185,6 +186,7 @@ export function styleFa(b, id, fa, bt) {
     c = rgbOf(fa.col);
   o.style = matStyle(fa.mat, bt, b.k);
   if (c) o.col = linC(c, 0.82);
+  if (isBrick(fa.mat) && !c) o.col = BRICKC;
   o.orn = o.style === ST.SLATE && hh(id + 17) < 0.35;
   o.shutters = false;
   o.raised = bt === 'stadthaus' || bt === 'villa' ? fa.sock >= 0.5 : false;
@@ -340,7 +342,7 @@ export function building(b, id, z0, WB, RB, segs) {
     // a wall may have a material and colour of its own (the record's S[i])
     const own = f[10],
       style = own && own.mat !== undefined ? matStyle(own.mat, b.typ, b.k) : o.style,
-      wcol = own && rgbOf(own.col) ? linC(rgbOf(own.col), 0.82) : o.col,
+      wcol = own && rgbOf(own.col) ? linC(rgbOf(own.col), 0.82) : own && isBrick(own.mat) ? BRICKC : o.col,
       F = { dx: (bx - ax) / L, dy: (by - ay) / L },
       gable = tA0 > Math.max(t0, t1) + 0.6 && uA0 > 0.3 && uA0 < L - 0.3,
       blind = fl & 1 || o.noWin,
