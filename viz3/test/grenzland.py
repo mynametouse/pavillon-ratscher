@@ -5,8 +5,9 @@
 #   python3 viz3/test/grenzland.py 9011        (~6 min in the chat machine)
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
+import grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-ck = lib.Checks('grenzland')
+ck = grenzland_ci.wrap(lib.Checks('grenzland'), 'grenzland')
 OUT = lib.out('grenzland')
 with lib.browser() as b:
     errs = []
