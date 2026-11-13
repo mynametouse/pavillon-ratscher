@@ -155,14 +155,33 @@ export const SUHL = (() => {
   KERN.scenario('suhl', { label: 'Suhl, Markt', order: 33, menu: S.MENU, run: () => go('suhl') });
   if (S.MENU) {
     // the menu entry until the city is released: only with ?suhl=… (game/input.js has bound its chips before this module runs)
+    // the menu was bound before this chip existed (game/hud.js closes it for every data-spot it found): close it here as well
+    const there = () => {
+      if (window.HUD && HUD.open) HUD.setMenu(false);
+      go('suhl');
+    };
     const v = document.querySelector('#menu [data-spot="vessra"]');
     if (v) {
       const b = v.cloneNode(false);
       b.dataset.spot = 'suhl';
       b.title = 'Suhl: die Stadt aus Daten (Stufe 2) – wird erst dort geladen';
       b.textContent = 'Suhl';
-      b.addEventListener('click', () => go('suhl'));
+      b.addEventListener('click', there);
       v.after(b);
+    }
+    // and a card at the top of the menu's start page (Falko, 13.11.2026: „ich finde nirgendwo einen Button, wo ich nach Suhl
+    // kommen kann“ – the chip sits under Hingehen → Weiter weg)
+    const r = document.querySelector('#menu [data-page="start"] .mresume');
+    if (r) {
+      const c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'mtut';
+      c.id = 'suhlbtn';
+      c.innerHTML =
+        '<b>Nach Suhl</b><span>Vorschau: die Stadt aus Daten – Markt mit Rotem Rathaus, Dianabrunnen, Congress Centrum. ' +
+        'Lädt beim ersten Mal etwas.</span>';
+      c.addEventListener('click', there);
+      r.after(c);
     }
   }
   // one may walk where Suhl's ground is; walls, place names and the ground come from the package (the near ground itself is a tile

@@ -19,6 +19,9 @@
 // Loaded only when somebody is needed, freed again (geometry, textures) when they are let go.
 //   GLFIG.make(castId, { kleid, hut, haar, bart, brille, ding, era }) → F (async) · place(F, x, y, hd) · go(F, pts, v, done) · stop · down
 //   face · drop · dropAll · near · talking · pose(F, kind | null) · F.x/y/z/hd/st · F.sees · F.r · F.era
+//   Round 2 (feat/grenzland-figuren, the poses themselves in grenzland/gl_pose.js): go(F, x, y, { renn: true, v, done }) runs ·
+//   geste(F, art, { ziel, sec, halten }) · geste(F, null) · blick(F, x, y, z) | blick(F, figure | 'spieler' | [x, y, z]) · blick(F, null) ·
+//   sitz(F, x, y, hd, z) (z: the seat's height over the ground) · steh(F) · reite(F, moped | null) · F.sitzt · F.reitet · F.gest · F.look
 //   GLFIG.dress(model, KLEID entry, restoreList) → textures made · hatOn(model, headBone, kind) → group · kopf(model, { haar, bart,
 //   brille }) → groups · MUSTER · HUTC
 import * as THREE from 'three';
@@ -30,6 +33,7 @@ import { CHL, rbPerson } from '../npc/npc_real.js';
 import { VPROPS } from '../world/village_props.js';
 import { VFIG } from '../verkehr/verkehr_fig.js';
 import { GLDATA } from './gl_data.js';
+import { GLPOSE } from './gl_pose.js';
 export const GLFIG = (() => {
   const S = { figs: [], loads: 0, drops: 0, err: null, clips: {}, paints: 0, last: null };
   const CH = window.CHARMAN || {},
@@ -1481,6 +1485,8 @@ export const GLFIG = (() => {
         sees: true,
         era: o.era || 'heute',
       };
+      F.set = set;
+      F.rig = GLPOSE.rig(f.bones || {}, f.model, f.g);
       const dg = pick('ding');
       if (dg) thing(F, dg);
       S.figs.push(F);
@@ -1508,6 +1514,7 @@ export const GLFIG = (() => {
     const i = S.figs.indexOf(F);
     if (i < 0) return;
     S.figs.splice(i, 1);
+    GLPOSE.handy(F, false);
     scene.remove(F.g);
     F.g.traverse(freeObj);
     for (const t of F.tex || []) t.dispose();
@@ -1525,9 +1532,17 @@ export const GLFIG = (() => {
     if (!Number.isFinite(F.z)) F.z = 0;
     F.hd = hd;
     F.v = 0;
+    F.vNow = 0;
+    F.renn = false;
     F.st = 'steht';
     F.path = null;
     F.done = null;
+    // placed means standing (a seat is taken again by sitz, or by grenzland/gl_mission.js after placing)
+    if (F.sitzt) {
+      F.sitzt = false;
+      if (F.f && 'mode' in F.f) F.f.mode = 'stand';
+    }
+    F.boden = null;
     F.g.visible = true;
     pose(F);
     markDirty(true);
@@ -1537,15 +1552,35 @@ export const GLFIG = (() => {
     F.g.rotation.set(0, -F.hd, 0);
     if (F.tilt > 0.01) F.g.rotateX(-F.tilt * 1.45);
   }
-  // walk to a point, or along points; v in m/s (the walk clip carries up to about 2.2); done() on arrival
+  // walk to a point, or along points; v in m/s (the walk clip carries up to about 2.2); done() on arrival.
+  // Also go(F, x, y, { renn, v, done }) and go(F, pts, { renn, v, done }): renn runs – 4.6 m/s after a short start, the clip set's
+  // sprint laid over the walk (grenzland/gl_pose.js); a speed over 2.6 m/s runs as well
   function go(F, pts, v = 1.3, done = null) {
+    if (!F) return;
+    let o = {};
+    if (typeof pts === 'number') {
+      pts = [pts, typeof v === 'number' ? v : F.y];
+      o = done && typeof done === 'object' ? done : {};
+      v = o.v || (o.renn ? 4.6 : 1.3);
+      done = o.done || null;
+    } else if (v && typeof v === 'object') {
+      o = v;
+      v = o.v || (o.renn ? 4.6 : 1.3);
+      done = o.done || (typeof done === 'function' ? done : null);
+    }
+    if (!pts || !pts.length) return;
+    if (F.sitzt) steh(F, true);
     F.path = (Array.isArray(pts[0]) ? pts : [pts]).map(q => [q[0], q[1]]);
     F.v = v;
+    const renn = !!o.renn || v > 2.6;
+    if (renn && !F.renn) F.vNow = Math.min(F.vNow || 0, 1.4);
+    F.renn = renn;
     F.st = 'geht';
     F.done = done;
     F.stuck = 0;
   }
   function stop(F) {
+    F.renn = false;
     F.path = null;
     F.st = F.downT > 0 ? 'liegt' : 'steht';
     F.done = null;
@@ -1591,7 +1626,9 @@ export const GLFIG = (() => {
           if (fn) fn(F);
         }
       } else {
-        const s = Math.min(d, F.v * dt);
+        // running starts with a few quick steps (about 5.5 m/s²); walking is at its speed at once
+        const vNow = F.renn ? (F.vNow = Math.min(F.v, (F.vNow || 0) + 5.5 * dt)) : F.v;
+        const s = Math.min(d, vNow * dt);
         _w[0] = F.x + (dx / d) * s;
         _w[1] = F.y + (dy / d) * s;
         try {
@@ -1617,8 +1654,15 @@ export const GLFIG = (() => {
         }
         const z = KERN.ground(F.x, F.y, F.z + 0.6);
         if (Number.isFinite(z)) F.z = z;
-        sp = F.v;
+        sp = vNow;
       }
+    }
+    if (!sp && F.vNow) F.vNow = Math.max(0, F.vNow - 9 * dt);
+    // seated by somebody else (grenzland/gl_mission.js): where the floor is and how high the seat
+    if (F.sitzt && F.boden == null) {
+      const gz = KERN.ground(F.x, F.y);
+      F.boden = Number.isFinite(gz) ? gz : F.z;
+      F.sitzH = F.z + hipOf(F) - SITZ - F.boden;
     }
     pose(F);
     // a work pose while standing (its own clock)
@@ -1627,7 +1671,10 @@ export const GLFIG = (() => {
       if (!F.f.pose || F.f.pose.k !== F.pk) F.f.pose = { k: F.pk, t: F.pt };
       else F.f.pose.t = F.pt;
     } else if (F.f.pose) F.f.pose = null;
+    // the turns of the last frame back, the clips, then what the clips cannot do (grenzland/gl_pose.js)
+    GLPOSE.back(F.rig);
     F.f.anim(dt, sp);
+    GLPOSE.nach(F, F.rig, dt, sp);
     return sp;
   }
   function tick(dt) {
@@ -1635,13 +1682,118 @@ export const GLFIG = (() => {
     for (const F of S.figs) {
       if (!F.g.visible) continue;
       const sp = step(F, dt);
-      if (sp > 0 || F.tilt > 0 || F.f.walker.talking || F.pk) any = true;
+      if (sp > 0 || F.tilt > 0 || F.f.walker.talking || F.pk || F.gest || F.look || F.reitet) any = true;
     }
     if (any) markDirty();
   }
   const talking = (F, on) => {
     if (F && F.f.walker) F.f.walker.talking = !!on;
+    // seated, the chair pose of npc/npc_real.js gestures when it speaks
+    if (F && F.f && 'speak' in F.f) F.f.speak = !!on && !!F.sitzt;
   };
+  // ------------------------------------------------------------------ round 2: gestures, looks, seats, the moped ------------------------------------------------------------------
+  const SITZ = 0.1; // how far the seat lies under the hip joints of a sitting figure (as grenzland/gl_mission.js)
+  const hipOf = F => (F.f && F.f.hipH) || 0.95;
+  // a gesture: 'zeigen' (o.ziel: [x, y, z] | a figure | 'spieler'), 'nicken', 'kopf', 'achsel', 'arme' (held), 'winken', 'telefon'
+  // (held, a phone at the ear), 'filmen' (held, the phone up in front), 'haende' (held, hands up), 'abwinken'; o.sec: how long (0: held),
+  // o.halten: held until geste(F, null). Eased in and out over a quarter second. Returns its length in seconds (0: held).
+  function geste(F, art, o) {
+    if (!F) return 0;
+    if (!art) {
+      if (F.gest) F.gest.end = true;
+      return 0;
+    }
+    const A = GLPOSE.ARTEN[art];
+    if (!A) return 0;
+    o = o || {};
+    const sec = o.sec != null ? Math.max(0, +o.sec || 0) : o.halten ? 0 : A.d,
+      old = F.gest;
+    if (old && old.art !== art && (GLPOSE.ARTEN[old.art] || {}).handy && !A.handy) GLPOSE.handy(F, false);
+    F.gest = {
+      art,
+      t: 0,
+      w: old && !old.end ? old.w * (old.art === art ? 1 : 0.4) : 0,
+      sec,
+      ziel: GLPOSE.ort(o.ziel),
+      end: false,
+    };
+    markDirty();
+    return sec;
+  }
+  // head, neck and chest toward a point (blick(F, x, y, z), z the height in the world – without it eye height over the ground there),
+  // toward [x, y, z], a figure (its head, followed), 'spieler'; blick(F, null) looks ahead again
+  function blick(F, x, y, z) {
+    if (!F) return;
+    const o = GLPOSE.ort(x, y, z),
+      was = F.look;
+    if (!o) {
+      if (was) was.end = true;
+      return;
+    }
+    F.look = Object.assign(o, {
+      w: was ? was.w : 0,
+      yaw: was ? was.yaw : null,
+      pitch: was ? was.pitch : null,
+      end: false,
+    });
+    markDirty();
+  }
+  // sit at (x, y) facing hd on a chair, a bench, a wall: z = the seat's height over the ground (default 0.45 m) – the hips onto it, the
+  // feet onto the floor in front (a seat higher than 0.62 m: onto a bar stool's rung)
+  function sitz(F, x, y, hd = 0, z = 0.45) {
+    if (!F) return;
+    place(F, x, y, hd);
+    const h = Number.isFinite(z) ? z : 0.45;
+    F.boden = F.z;
+    F.sitzt = true;
+    F.sitzH = h;
+    if (F.f && 'mode' in F.f) F.f.mode = 'sit';
+    F.z = F.boden + h - hipOf(F) + SITZ;
+    pose(F);
+  }
+  // up again: standing (a small step forward off the seat unless still)
+  function steh(F, still = false) {
+    if (!F) return;
+    const was = F.sitzt;
+    F.sitzt = false;
+    F.boden = null;
+    if (F.f && 'mode' in F.f) F.f.mode = 'stand';
+    if (F.f) F.f.speak = false;
+    if (was && !still) {
+      F.x += Math.sin(F.hd) * 0.32;
+      F.y += Math.cos(F.hd) * 0.32;
+    }
+    const gz = KERN.ground(F.x, F.y);
+    if (Number.isFinite(gz)) F.z = gz;
+    pose(F);
+    markDirty();
+  }
+  // on a moped of the mode (a car of GLAUTO with form 'moped'): he sits on it as a rider wherever it goes; null: off again, beside it.
+  // (grenzland/gl_mission.js has its own riders – F.reitet –, posed the same way; this ties a figure to a moped without the runner)
+  function reite(F, c) {
+    if (!F) return;
+    if (c) {
+      F.ritt = c;
+      F.rittFest = true;
+      F.reitet = true;
+      F.st = 'steht';
+      F.path = null;
+      F.sitzt = false;
+      if (F.f && 'mode' in F.f) F.f.mode = 'sit';
+      F.x = c.x;
+      F.y = c.y;
+      F.g.visible = true;
+      markDirty();
+      return;
+    }
+    const m = F.ritt;
+    F.ritt = null;
+    F.rittFest = false;
+    F.reitet = false;
+    if (F.f && 'mode' in F.f) F.f.mode = 'stand';
+    if (m && !m.gone) place(F, m.x + Math.cos(m.hd) * 0.8, m.y - Math.sin(m.hd) * 0.8, m.hd);
+    else place(F, F.x, F.y, F.hd);
+  }
   const near = (x, y, r, era) =>
     S.figs.filter(F => F.g.visible && (!era || F.era === era) && hyp(F.x - x, F.y - y) < r);
   Object.assign(S, {
@@ -1657,6 +1809,12 @@ export const GLFIG = (() => {
     tick,
     talking,
     near,
+    geste,
+    blick,
+    sitz,
+    steh,
+    reite,
+    platz: (x, y, r) => GLPOSE.platz(x, y, r),
     dress,
     pixels,
     forget,

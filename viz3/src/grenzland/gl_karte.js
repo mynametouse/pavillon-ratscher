@@ -7,7 +7,7 @@
 // no radar: the map is a sheet of paper, drawn by hand in brown ink. Drawn on a 2D canvas ten times a second; nothing in the 3D scene.
 //   GLKARTE.src(fn)     a source of blips: fn(out) pushes { x, y, k, name?, r?, hd? } – k: 'ziel' | 'ziel2' | 'partner' | 'polizei' |
 //                       'beamter' | 'heli' | 'sperre' | 'such' (r: radius in metres) | 'clique' | 'feind' | 'punkt' (a waypoint) |
-//                       'ort' (name's first letter is drawn)
+//                       'ort' (name's first letter is drawn) | 'ereignis' (something on the way: an orange „!“, kept on the rim)
 //   GLKARTE.show(on) · GLKARTE.tick(dt) · GLKARTE.blips() (tests: what was drawn last)
 import { stage } from '../core/head.js';
 import { P } from '../game/walkable.js';
@@ -186,7 +186,7 @@ body[data-gl-era="1989"] #glmaplab{color:#f0e3c0}
     let ziel = null;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    const RIM = { ziel: 1, punkt: 1, partner: 1, polizei: 1, heli: 1, clique: 1 };
+    const RIM = { ziel: 1, punkt: 1, partner: 1, polizei: 1, heli: 1, clique: 1, ereignis: 1 };
     // areas first, then the marks
     for (const b of out) {
       if (b.k !== 'such') continue;
@@ -286,6 +286,18 @@ body[data-gl-era="1989"] #glmaplab{color:#f0e3c0}
         g.arc(x, y, 3.3, 0, 7);
         g.fill();
         g.stroke();
+      } else if (b.k === 'ereignis') {
+        // something happens on the way (agent welt, gl_ereignis.js): an orange disc with „!“
+        g.fillStyle = old ? '#8a5a20' : '#ff9a2e';
+        g.strokeStyle = 'rgba(0,0,0,0.75)';
+        g.lineWidth = 1.2;
+        g.beginPath();
+        g.arc(x, y, 6, 0, 7);
+        g.fill();
+        g.stroke();
+        g.fillStyle = '#1d1b16';
+        g.font = '800 10px system-ui, sans-serif';
+        g.fillText('!', x, y + 0.5);
       } else if (b.k === 'ort') {
         g.fillStyle = old ? 'rgba(90,68,38,0.9)' : 'rgba(255,255,255,0.92)';
         g.beginPath();
