@@ -13,6 +13,7 @@ const R = 900;
 const TUERME = [
   {
     name: 'Kreuzkirche',
+    gate: 'DETHL57P00006FVy',
     at: [-4854.0, 12236.2],
     az: 49,
     w: 7.4,
@@ -25,6 +26,7 @@ const TUERME = [
   },
   {
     name: 'Hauptkirche St. Marien',
+    gate: 'DETHL57P00006G2Q',
     at: [-4611.0, 12394.0],
     az: 92,
     w: 7.6,
@@ -61,6 +63,7 @@ const TUERME = [
 const TROMMELN = [
   {
     name: 'Congress Centrum Suhl, Großer Saal',
+    gate: 'DETHL57P00006G0F',
     at: [-5018.48, 12480.07],
     r: 32.8,
     top: 18.1,
@@ -86,9 +89,26 @@ const TROMMELN = [
     mast: 15,
   },
 ];
-export function tuerme(ctx) {
+// pediments the records lack: the Haus der Geschichte (the former Kulturhaus, its portico of columns facing the Platz der Deutschen
+// Einheit; the photos: a wide triangle over the columns, its tip a little above the roof behind). at: the middle of the portico's
+// outer edge drawn 1.5 m in, az: the direction of that edge, w: its length, d: the depth, base and h: from the foot of the building
+// it crowns (on) – the portico record ends flat at 23.3 m
+const GIEBEL = [
+  {
+    name: 'Haus der Geschichte, Giebel der Säulenvorhalle',
+    on: 'DETHL57P00006Ibz',
+    at: [-4965.5, 12300.5],
+    az: 252,
+    w: 27.6,
+    d: 3.4,
+    base: 23.27,
+    h: 4.8,
+    col: 0xd9a47e,
+  },
+];
+export function tuerme(ctx, C) {
   const { THREE, scene, markDirty, KERN } = ctx,
-    S = { on: true, built: false, at: [1e9, 1e9], n: 0, ref: [], wait: 0 };
+    S = { on: true, built: false, at: [1e9, 1e9], n: 0, ref: [], wait: 0, rev: -1 };
   let K = null;
   const M = new THREE.Matrix4(),
     Q = new THREE.Quaternion(),
@@ -104,6 +124,20 @@ export function tuerme(ctx) {
       disc: new THREE.CylinderGeometry(1, 1, 1, 20),
       drum: new THREE.CylinderGeometry(1, 1, 1, 72, 1, true),
       lid: new THREE.CylinderGeometry(1, 1, 1, 72),
+      prism: (() => {
+        // a triangle in the plane across x (z along, y up; tip at z 0, y 1), drawn out from x −0.5 to 0.5
+        const A = [-0.5, 0, -0.5],
+          B = [-0.5, 0, 0.5],
+          T = [-0.5, 1, 0],
+          A2 = [0.5, 0, -0.5],
+          B2 = [0.5, 0, 0.5],
+          T2 = [0.5, 1, 0],
+          tris = [A, B, T, A2, T2, B2, A, T2, A2, A, T, T2, B, T2, T, B, B2, T2, A, B2, B, A, A2, B2], // counter-clockwise from outside
+          g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(tris.flat(), 3));
+        g.computeVertexNormals();
+        return g;
+      })(),
     };
   function kit() {
     if (K) return K;
@@ -149,10 +183,14 @@ export function tuerme(ctx) {
       wait = false;
     for (const t of TUERME) {
       if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
+      if (t.gate && !C.building(t.gate)) {
+        wait = true; // its building's tile is not in yet: no tower over an empty town
+        continue;
+      }
       let zg = null;
       if (t.on) {
         // the ridge of its building: the foot as the worker placed it, the eave and the top of the record, the roof raised by rise
-        const v = ctx.SUHL && ctx.SUHL.building ? ctx.SUHL.building(t.on) : null,
+        const v = C.building(t.on),
           e = v ? (v.eave ?? v.h) : null,
           h = v ? (v.h ?? v.eave) : null;
         if (v && Number.isFinite(v.z0) && Number.isFinite(e) && Number.isFinite(h))
@@ -208,9 +246,13 @@ export function tuerme(ctx) {
       if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
       // the reference height: the foot of the building it sits on (as the worker placed it), else the lowest of the ground at the
       // centre and on the rim, the wall reaching a little below it (a slope must not show a gap)
+      if (t.gate && !C.building(t.gate)) {
+        wait = true;
+        continue;
+      }
       let zr = null;
       if (t.on) {
-        const v = ctx.SUHL && ctx.SUHL.building ? ctx.SUHL.building(t.on) : null;
+        const v = C.building(t.on);
         if (v && Number.isFinite(v.z0)) zr = v.z0;
         else wait = true;
       } else {
@@ -258,6 +300,20 @@ export function tuerme(ctx) {
       }
       n++;
     }
+    for (const t of GIEBEL) {
+      if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
+      const v = C.building(t.on);
+      if (!v || !Number.isFinite(v.z0)) {
+        wait = true;
+        continue;
+      }
+      ref.push([t.at[0], t.at[1], KERN.ground(t.at[0], t.at[1])]);
+      if (!walls.has(t.col)) walls.set(t.col, buf());
+      // the triangle: its base along the edge (local along = az), drawn out across by the depth; a cornice under it
+      part(walls.get(t.col), 'prism', t, v.z0, 0, 0, t.base, t.w, t.d, t.h);
+      part(B.white, 'box', t, v.z0, 0, 0, t.base + 0.15, t.w + 0.4, t.d + 0.4, 0.3);
+      n++;
+    }
     const put = (me, b) => {
       me.geometry.dispose();
       me.geometry = geometry(THREE, b);
@@ -291,6 +347,10 @@ export function tuerme(ctx) {
   }
   S.tick = (dt, o) => {
     if (S.wait > 0 && (S.wait -= dt) <= 0) S.built = false; // a crown waited for its building: try again
+    if (C.n.built !== S.rev) {
+      S.rev = C.n.built; // a tile of the city came (again): feet and gates may have changed
+      S.built = false;
+    }
     if (
       S.built &&
       Math.hypot(o[0] - S.at[0], o[1] - S.at[1]) < 200 &&
