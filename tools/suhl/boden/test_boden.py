@@ -248,6 +248,9 @@ if os.path.exists(RF):
         hr = hoehe.Hoehe.__new__(hoehe.Hoehe)
         hr.base, hr.url, hr.H0, hr._t, hr._keep, hr.has, hr.levels = gelaende.ROH, False, wlib.H0, {}, 400, {L: set(v) for L, v in lists.items()}, [12, 11, 10]
         same = [abs(hq.nhn(q['E'], q['N']) - hr.nhn(q['E'], q['N'])) for q in sp if hq.nhn(q['E'], q['N']) is not None and 619000 <= q['E'] < 620000 and 5607000 <= q['N'] < 5608000]
+        ck('clamp: on real ground no square metre moves by more than the limit', st['cut'].get('dgm_pixel', 0) > 1000
+           and max(st['cut']['dgm_max_auftrag_m'], st['cut']['dgm_max_abtrag_m']) <= gelaende.CLAMP_M + 1e-6 and st['cut']['restored_m2'] > 0,
+           f"fill {st['cut'].get('dgm_max_auftrag_m')} cut {st['cut'].get('dgm_max_abtrag_m')} restored {st['cut'].get('restored_m2')} m2")
         ck('clamp: the ground at such a spot stays as it was', len(same) > 0 and float(np.median(same)) < 0.02, f'{len(same)} spots, median change {np.median(same) if same else None}')
     gelaende.ROADS = gelaende.ROH = None
 else:

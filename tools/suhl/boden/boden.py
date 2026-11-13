@@ -268,6 +268,7 @@ def main():
         'model_xf': {**XF, 'note': 'Modellmeter (x Ost, y Nord) -> UTM: E = a x - b y + ex, N = b x + a y + ey; z = H - H0. Die Kacheln sind echte UTM-Meter.'},
         'terrain': terrain, 'image': image,
         'suhl': {'product': 'boden', 'version': version, 'schema': SCHEMA, 'area': 'probe' if a.mode.startswith('probe') else 'stadt',
+                 't_version': (terrain or {}).get('version'), 'i_version': (image or {}).get('version'), 'i_key': (image or {}).get('key'),
                  'balanced': bool(image and str(image.get('balance', '')).startswith('garten')), 'based_on': based_on,
                  'mode': a.mode, 'centre_utm': list(blib.CENTRE),
                  'parts': 'Gelände (t/) und Luftbild (i/) haben je eine eigene Version: terrain.version, image.version. Das Luftbild ändert sich '

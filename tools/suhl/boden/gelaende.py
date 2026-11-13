@@ -30,7 +30,7 @@ MARGIN = 320.0
 BLEND = 300.0
 CPX = 8.0                                            # cell size of the coarse mosaic = the step of level 9
 FIT = (608800.0, 5601300.0, 631400.0, 5617800.0)     # canopy fit window: bounding box of the municipality + ~1 km (fixed for every run)
-VERSION = 'g5'                                       # part of the block cache key: raise when the method changes
+VERSION = 'g6'                                       # part of the block cache key: raise when the method changes
 G = None                                             # the run's Ground (set before the worker pool forks)
 ROADS = None                                         # the run's road profiles (load_roads), None = nothing is cut
 ROH = None                                           # folder for the terrain tiles BEFORE the cut (levels 10-12), None = not written
@@ -127,8 +127,28 @@ def cut_roads(d, area):
                                   'dz_m': round(float(dz[k]), 2), 'len_m': round(float(np.hypot(*np.diff(P[a:b], axis=0).T).sum()), 1)})
             elif b - a >= 2:
                 keep.append((w, i[a:b]))
-    n, st = wroads.carve(d, ROADS['pos'], keep, ROADS['h'], area)
-    return {'ways': int(len(hit)), 'fit': fit, 'spots': spots, **st} if st else {'ways': int(len(hit)), 'pixel': 0, 'fit': fit, 'spots': spots}
+    before = d.mos.copy()
+    wroads.carve(d, ROADS['pos'], keep, ROADS['h'], area)
+    # the same limit for every square metre: on real 1 m ground the cut never moves the ground by more than CLAMP_M (beside a
+    # retaining wall or a bridge abutment the level strip of the street would bury the drop or dig into the wall) - there the
+    # ground stays as DGM1 has it
+    dz = d.mos - before
+    back = d.have & (np.abs(dz) > CLAMP_M)
+    nback = int(back.sum())
+    if nback:
+        d.mos[back] = before[back]
+        dz[back] = 0
+    ch = np.abs(dz) > 0.005
+    st = {'pixel': int(ch.sum()), 'restored_m2': nback}
+    if st['pixel']:
+        v = dz[ch]
+        st.update(mittel_m=round(float(np.mean(np.abs(v))), 3), p95_m=round(float(np.percentile(np.abs(v), 95)), 2),
+                  max_auftrag_m=round(float(v.max()), 2), max_abtrag_m=round(float(-v.min()), 2))
+        on = ch & d.have                      # the same numbers on real ground alone
+        if on.any():
+            st.update(dgm_pixel=int(on.sum()), dgm_mittel_m=round(float(np.mean(np.abs(dz[on]))), 3),
+                      dgm_max_auftrag_m=round(float(dz[on].max()), 2), dgm_max_abtrag_m=round(float(-dz[on].min()), 2))
+    return {'ways': int(len(hit)), 'fit': fit, 'spots': spots, **st}
 
 
 class Ground(wdem.CopGround):
@@ -404,7 +424,11 @@ def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads
     r100 = lambda v, up: (np.ceil(v / 100) if up else np.floor(v / 100)) * 100
     cb = blib.bbox_of(6, T[6])
     cbox = (cb[0] - 128, cb[1] - 128, cb[2] + 128, cb[3] + 128)
-    ctx = (r100(min(FIT[0], cbox[0] - 300), 0), r100(min(FIT[1], cbox[1] - 300), 0), r100(max(FIT[2], cbox[2] + 300), 1), r100(max(FIT[3], cbox[3] + 300), 1))
+    ctx = [min(FIT[0], cbox[0] - 300), min(FIT[1], cbox[1] - 300), max(FIT[2], cbox[2] + 300), max(FIT[3], cbox[3] + 300)]
+    for t in (roh_extra or {}).get(10, ()):       # the ring of the uncut set may reach beyond the far tiles: its blocks need the ground too
+        b = tbounds(BLOCK_L, *block_of(10, *t))
+        ctx = [min(ctx[0], b[0] - MARGIN - 300), min(ctx[1], b[1] - MARGIN - 300), max(ctx[2], b[2] + MARGIN + 300), max(ctx[3], b[3] + MARGIN + 300)]
+    ctx = (r100(ctx[0], 0), r100(ctx[1], 0), r100(ctx[2], 1), r100(ctx[3], 1))
     G = Ground(raw, ctx, use_trees)
     if use_dgm:
         G.collect_dgm(dgm_km_list(), providers)
@@ -430,7 +454,7 @@ def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads
     hmin, hmax = 1e9, -1e9
     dgm10, bstat = {}, []
     cut = {'blocks': 0, 'pixel': 0, 'max_auftrag_m': 0.0, 'max_abtrag_m': 0.0, 'sum_abs': 0.0, 'fit_n': 0, 'fit_sum': 0.0, 'fit_hist': np.zeros(200),
-           'spots': []}
+           'spots': [], 'restored': 0, 'dgm_pixel': 0, 'dgm_sum': 0.0, 'dgm_fill': 0.0, 'dgm_cut': 0.0}
 
     def take(res):
         nonlocal hmin, hmax
@@ -454,6 +478,12 @@ def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads
             cut['fit_n'] += c['fit']['n']
             cut['fit_sum'] += c['fit']['sum']
             cut['fit_hist'] += np.array(c['fit']['hist'])
+        if c:
+            cut['restored'] += c.get('restored_m2', 0)
+        if c and c.get('dgm_pixel'):
+            cut['dgm_pixel'] += c['dgm_pixel']
+            cut['dgm_sum'] += c['dgm_mittel_m'] * c['dgm_pixel']
+            cut['dgm_fill'], cut['dgm_cut'] = max(cut['dgm_fill'], c['dgm_max_auftrag_m']), max(cut['dgm_cut'], c['dgm_max_abtrag_m'])
         if c and c.get('pixel'):
             cut['blocks'] += 1
             cut['pixel'] += c['pixel']
@@ -499,6 +529,10 @@ def build(raw, out, T, jobs=1, use_dgm=True, providers=(), use_trees=True, roads
                              'note': 'Wegstücke auf echtem 1-m-Gelände, deren Profil weiter als limit_m vom Gelände liegt (neben Brücken, an Mauern): '
                                      'nicht eingeschnitten; dz_m = Profil minus Gelände am schlimmsten Punkt'},
                  'mean_change_m': round(cut['sum_abs'] / max(cut['pixel'], 1), 3), 'max_fill_m': cut['max_auftrag_m'], 'max_cut_m': cut['max_abtrag_m'],
+                 'on_dgm1': {'changed_m2': cut['dgm_pixel'], 'mean_change_m': round(cut['dgm_sum'] / max(cut['dgm_pixel'], 1), 3),
+                             'max_fill_m': cut['dgm_fill'], 'max_cut_m': cut['dgm_cut'], 'kept_as_dgm1_m2': cut['restored'],
+                             'note': f'auf echtem 1-m-Gelände bewegt der Einschnitt den Boden nie um mehr als {CLAMP_M} m; wo er es täte '
+                                     '(Stützmauern, Brückenwiderlager), bleibt das DGM1 (kept_as_dgm1_m2)'},
                  'method': 'tools/welt/roads.py carve: Fahrbahn mit Querneigung, Bankett, Böschungen 1 : 1,5; Breite mit Bord und Gehwegen '
                            '(profil.load town=True); Brücken behalten ihren Korridor, Tunnel bleiben draußen'}
     return {'levels': info, 'hmin': hmin, 'hmax': hmax, 'source': src, 'dgm': G.dgm_log, 'dgm_tiles_km': sorted(f'{e}_{n}' for e, n in G.dgm),

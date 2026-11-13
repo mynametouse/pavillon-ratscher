@@ -3,14 +3,14 @@
 # (eine Änderung am Workflow allein stößt so keinen teuren Lauf an). Stadt- und Probe-Läufe haben je ihre eigene
 # Warteschlange: ein Probe-Lauf bricht einen laufenden Stadt-Lauf nicht ab.
 # Zeilen "name = wert"; alles hinter # ist Kommentar.
-lauf = 3                      # fortlaufende Nummer (nur damit sich die Datei ändert)
+lauf = 4                      # fortlaufende Nummer (nur damit sich die Datei ändert)
 
 # ---- [stadt]: die ganze Gemeinde und die Straßenkorridore; Artefakte suhl-boden-<version> (Produkt) und suhl-boden-roh ----
 stadt.version = v1
 stadt.t = 1                   # Version des Geländes t/ (steigt mit DGM1, Straßeneinschnitt)
 stadt.i = 1                   # Version des Luftbilds i/ (steigt nur, wenn Bildflug, Farbausgleich, Qualität oder Kachel-Plan sich ändern)
 stadt.farbe = garten          # garten = Farben wie die übrige Welt (Bezug: Bildflug am Garten, 7.4.2024) | wie-geflogen
-stadt.dgm = P1,P2,P3          # DGM1 (1 m) über easygeodata für diese Prioritäten aus tools/suhl/out/bestand/kacheln.csv; leer = keins holen
+stadt.dgm = P1,P2,P3,P4       # DGM1 (1 m) über easygeodata für diese Prioritäten aus tools/suhl/out/bestand/kacheln.csv; leer = keins holen
 stadt.strassen =              # Datei(en) mit den Straßenprofilen von suhl-strassen (Format der Fahrtdaten, Komma-getrennt); leer = kein Einschnitt
 
 # ---- [probe]: der Probesatz Zentrum; das Ergebnis wird auf den Zweig geschrieben ----
