@@ -119,6 +119,31 @@ with lib.browser() as b:
         steps(0.5)
         ok = J("({ x: AVATAR.fig.g.rotation.x, z: AVATAR.fig.g.rotation.z, on: !!VEH.cur })")
         ck('off the moped the figure stands upright again', abs(ok['x']) < 1e-6 and abs(ok['z']) < 1e-6 and not ok['on'], str(ok))
+        # Sarah (the other of the two, a smaller figure) on the same moped
+        do("AVATAR.setKind('f')")
+        for _ in range(60):
+            steps(0.2)
+            if J("!!(AVATAR.fig && AVATAR.fig.kind === 'f')"): break
+            time.sleep(0.5)
+        if J("!!(AVATAR.fig && AVATAR.fig.kind === 'f')"):
+            do("VEH.enter('gl-moped'); VEH.auto = () => ({ thr: 0.7, brk: 0, steer: 0, hand: false })")
+            steps(2.5, 0.05)
+            c = J("GLPOSE.stand()").get('chk') or {}
+            note('Sarah riding: %s' % c)
+            ck('Sarah rides too: feet on the pegs, hands at the grips', max(c.get('feet', [9, 9])) < 0.06 and max(c.get('hands', [9, 9])) < 0.06, str(c))
+            side('2_moped_sarah', 90, -6, 1.8)
+            do(BRAKE)
+            steps(2.5, 0.05)
+            side('1_moped_sarah_stand', 120, -6, 1.8)
+            do("VEH.auto = null; VEH.exit()")
+            steps(0.3)
+        else:
+            note('Sarah\'s figure did not load')
+        do("AVATAR.setKind('m')")
+        for _ in range(30):
+            steps(0.2)
+            if J("!!(AVATAR.fig && AVATAR.fig.kind === 'm')"): break
+            time.sleep(0.3)
         do("CAM3.want = false; CAM3.d = 3.3")
     part('moped', moped)
 
@@ -277,6 +302,14 @@ with lib.browser() as b:
             shots.append(art)
             do("GLFIG.geste(GT.timo, null)")
             steps(0.5)
+        # talking, standing: the free hands move now and then
+        do("GLFIG.talking(GT.timo, true)")
+        steps(1.3)
+        look_at(x, y, hd, 2.6, 0.25, 1.3, 40, -6)
+        pic('7_g_reden')
+        ck('a talker moves the hands (weight up)', J("GT.timo.rig.st.talkW > 0.7"), str(J("GT.timo.rig.st.talkW")))
+        do("GLFIG.talking(GT.timo, false)")
+        steps(0.8)
         # a torch (grenzland/gl_licht.js: F.lampe) is held up in front of the chest
         do("GT.timo.lampe = true")
         steps(0.8)
@@ -335,5 +368,6 @@ with lib.browser() as b:
 
     ck.errors(errs)
     ck('no error in the poses', not J("GLPOSE.stand().err"), str(J("GLPOSE.stand().err")))
+    note('slowest pose work of the last frames (ms): %s' % J("GLPOSE.stand().ms"))
     for n in NOTES[-6:]: print('note', n[:300])
     ck.done()

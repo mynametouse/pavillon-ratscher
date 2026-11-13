@@ -60,11 +60,16 @@ Dateien: `viz3/src/grenzland/gl_fig.js` (die Schnittstelle `GLFIG`), neu `viz3/s
 
 ## Getestet
 
+Stand 13:36: lokal 42/42 (`grenzland_figuren`, alle Teile), auf GitHub Actions grün (Lauf 43424172075 auf 2c18ef10: smoke, beide
+Teile des Tests – 17 und 26 Prüfungen).
+
+
 `viz3/test/grenzland_figuren.py` (eine Seite, freies Spiel in Ratscher; Teile `moped,reiter,rennen,sitzen,gesten,blick`), Bilder in
 `out/grenzland_figuren/`: Spieler auf der Simson von links/vorn im Stand (linker Fuß unten), in Fahrt von links und rechts, in der
 Kurve von hinten und vorn; Reiter auf S 51 (`GLFIG.reite`) und Schwalbe (`F.reitet` wie `gl_mission.js`); Rennen von der Seite und von
 vorn; Gerhard auf einer Bank der Dorflinde (auch redend), ein Barhocker; ein Kontaktbogen aller Gesten (`7_gesten.jpg`); der Blick.
-Geprüft: Hüfthöhe auf der Sitzbank, Fußballen an den Rasten (unter 6–8 cm), Handgelenke an den Griffen (unter 6 cm), Lehnen mit dem
+Dazu Sarah auf der Simson (kleiner: sie rutscht 3 cm nach vorn), der Trabant von außen (Hände am Lenkrad, auch beim Lenken), eine
+redende Figur, eine Figur mit Taschenlampe. Geprüft: Hüfthöhe auf der Sitzbank, Fußballen an den Rasten (unter 6–8 cm), Handgelenke an den Griffen (unter 6 cm), Lehnen mit dem
 Moped, Rennen ≥ 3,5 m/s, Sitzhöhe und Füße am Boden, jede Geste läuft, das Handy kommt und geht, der Kopf dreht zum Ziel (von 1,25 auf
 0,03 rad), keine Seitenfehler, keine neuen Shader-Programme.
 

@@ -27,7 +27,7 @@ import { VPROPS } from '../world/village_props.js';
 import { VFIG } from '../verkehr/verkehr_fig.js';
 import { GL } from './gl_state.js';
 export const GLPOSE = (() => {
-  const S = { n: 0, err: null, player: null, riders: 0, last: null, props: 0 };
+  const S = { n: 0, err: null, player: null, riders: 0, last: null, props: 0, msRide: 0, msNach: 0 };
   const V = () => new THREE.Vector3(),
     Q = () => new THREE.Quaternion();
   const clamp = THREE.MathUtils.clamp,
@@ -595,9 +595,12 @@ export const GLPOSE = (() => {
   if (VEH && Array.isArray(VEH.after))
     VEH.after.push(dt => {
       if (!GL.on) return;
+      const t0 = performance.now();
       try {
         playerRide(dt);
         ridersTick(dt);
+        // the slowest of the last frames (decaying), in ms
+        S.msRide = Math.max(S.msRide * 0.995, performance.now() - t0);
       } catch (e) {
         if (!S.err) console.warn('grenzland pose ride', e);
         S.err = 'ride: ' + ((e && e.message) || e);
@@ -1080,6 +1083,7 @@ export const GLPOSE = (() => {
     const st = R.st;
     // far from the camera rbPerson does not pose (70 m): nor does this
     if (F.g.position.distanceToSquared(cam.position) > 4900) return;
+    const t0 = performance.now();
     try {
       // the run
       const runT = F.renn && sp > 0 ? smooth((sp - 1.8) / 1.6) : 0;
@@ -1150,6 +1154,7 @@ export const GLPOSE = (() => {
         }
       }
       S.n++;
+      S.msNach = Math.max(S.msNach * 0.995, performance.now() - t0);
     } catch (e) {
       if (!S.err) console.warn('grenzland pose', F.id, e);
       S.err = (F.id || '') + ': ' + ((e && e.message) || e);
@@ -1235,6 +1240,7 @@ export const GLPOSE = (() => {
       props: S.props,
       avatar: !!AF,
       chk: S.player && S.player.R ? S.player.R.st.chk || null : null,
+      ms: { ride: +S.msRide.toFixed(3), nach: +S.msNach.toFixed(3) },
     };
   }
   Object.assign(S, {
