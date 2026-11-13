@@ -109,6 +109,7 @@ export const MARKEN = {
     col: '#e9e9e6',
     frame: 3,
     balk: false,
+    e: 50.4, // the record's 56.6 m reach over the round crown on top (kern/tuerme.js draws it with its mast)
     foto: 'Friedrich-König-Straße 1 Suhl mit City Hotel am CCS 2023-12-27 (Strubbl, CC BY-SA 4.0)',
   },
   DETHL57P00006G0c: {
