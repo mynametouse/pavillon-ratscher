@@ -161,7 +161,8 @@ export const GLKAP1 = (() => {
   // the journey nobody has to wait for: a fade, half an hour later at the school bus stop of Ratscher
   async function mitfahren() {
     const g = St.gen;
-    if (St.busy || MI.redet()) return;
+    if (St.busy) return;
+    if (MI.redet()) return void MI.denk('Gleich – erst ausreden lassen.', 2000);
     St.busy = true;
     let n = 0;
     try {
@@ -1251,7 +1252,7 @@ export const GLKAP1 = (() => {
         },
         tick(dt, S) {
           if (MI.fern(ORT.klinge()) > 95) return false;
-          if (GLMLOGIK.nacht(CLOCK.t) && dark()) return true;
+          if (dark()) return true;
           if (!S.hell) {
             S.hell = true;
             MI.denk(T.nochHell, 4000);
@@ -1286,7 +1287,7 @@ export const GLKAP1 = (() => {
             K4.W = [];
             K4.job = 'laden';
             K4.lure = null;
-            if (!GLMLOGIK.nacht(CLOCK.t) || !dark()) MI.uhr(23, 5);
+            if (!dark()) MI.uhr(23, 5);
             MI.hin(K.vorn[0], K.vorn[1], yawTo(K.vorn, K.van));
             for (const [key, , p, hd] of K.men) {
               const f = MI.F(key);
@@ -1352,7 +1353,7 @@ export const GLKAP1 = (() => {
         an(S, why) {
           const K = szeneKlinge();
           if (why !== 'weiter') {
-            if (!GLMLOGIK.nacht(CLOCK.t) || !dark()) MI.uhr(23, 10);
+            if (!dark()) MI.uhr(23, 10);
             MI.hin(K.vorn[0], K.vorn[1], yawTo(K.vorn, K.van));
           }
           MI.rede('leucht');

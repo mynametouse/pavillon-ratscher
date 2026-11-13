@@ -2,7 +2,7 @@
 // „Außenlager Krähwinkel“ – invented, built by the mode beside a field track towards the motorway (GLDATA.ORTE.lager; which side of the
 // track and how far off it is measured on the ground when it is built), gone when the mode ends, hidden in 1989: a rod-mesh fence with a
 // gate towards the track and a gap at the back, four sea containers, an office container one can enter (a door to break open, a window
-// lit at night, the framed half of the map on its wall), a lorry, pallets, a floodlight on a mast (one borrowed light, KERN.lights),
+// lit at night, the framed half of the map on its wall), the haulier's van, pallets, a floodlight on a mast (one borrowed light, KERN.lights),
 // a camera at the gate – a witness that knows nobody (GLFAHNDUNG.hooks.zeuge) –, and two guards who come when one is near: one walks the
 // round along the fence, one stands at the gate. They see with GLLOGIK.sieht (their back is blind, the dark and ducking help, under the
 // floodlight the dark does not), containers hide (GLMDATA.lager().sicht). Who is seen inside is shouted at and chased as far as the fence;
@@ -390,10 +390,10 @@ export const GLLAGER = (() => {
       S.Y = GLMDATA.lager(m.pos, O.az || 0, m.side);
       bauen(S.Y);
       boxenAn(S.Y);
-      // the lorry (the flatbed of the old type if the models have it, else the van)
+      // the haulier's van (the one of the night at the Klinge; a tree without the van type takes the flatbed)
       try {
-        const typ = GLAUTO.TYP.lkw89 ? 'lkw89' : 'kasten';
-        S.lkw = GLAUTO.spawn(typ, { col: '#5d6f7a', plane: '#4a5046' });
+        const typ = GLAUTO.TYP.kasten ? 'kasten' : 'lkw89';
+        S.lkw = GLAUTO.spawn(typ, { col: '#d9d9d2', plane: '#4a5046' });
         if (S.lkw) GLAUTO.park(S.lkw, S.Y.lkw.pos[0], S.Y.lkw.pos[1], S.Y.lkw.hd);
       } catch (e) {
         S.lkw = null;
