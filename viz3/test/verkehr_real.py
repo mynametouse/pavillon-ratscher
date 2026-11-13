@@ -451,7 +451,10 @@ with lib.browser() as b:
         # drives on. A parked car is only pushed; a touch only makes the driver honk; a lorry hardly moves but stops; a person of the place
         # gets out and back in; a car behind one after a knock waits and does not drive into it; the top view marks it
         try:
+            # (the village must be there: back to the Anger, whatever the sections before left)
+            E(pg, f"GAME.view({ANGER[0] - 16}, {ANGER[1] - 9}, KERN.ground({ANGER[0] - 16}, {ANGER[1] - 9}) + 1.7, 75, -2)")
             E(pg, "__vr.clear(); VERKEHR.force({ peds: 0, cars: 0 }); VERKEHR.clear(); VERKEHR.autoOn(true); VKSTROM.force = { n: 0 }")
+            E(pg, "__vr.until(() => VERKEHR.state().places.dorf.on, 60)")
             at_day((2026, 11, 13), 11)
             lib.settle_light(pg)
             UF = """window.__uf = {
@@ -577,9 +580,10 @@ with lib.browser() as b:
             ck('F: the car behind stops before the one after a knock (never into it)', not bad and min(r[4] for r in recf) < 0.5, str(bad[:2]))
             k1 = J(pg, "({ knocks: VAUTO.knocks, honks: VAUTO.honks, said: VERKEHR.state().stats.said || 0, unfall: VERKEHR.state().stats.unfall })")
             print('totals', json.dumps(k0), '→', json.dumps(k1), flush=True)
-            E(pg, "__uf.drop(); VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
         except Exception as ex:
             ck('section ran: unfall', False, repr(ex)[:400])
+        finally:
+            E(pg, "VEH.auto = null; if (VEH.cur) VEH.exit(); window.__uf && __uf.drop(); VERKEHR.autoOn(true); VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
 
     if want('dichte'):
         try:
