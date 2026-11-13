@@ -3,4 +3,4 @@
 # easygeodata: Prioritäten aus tools/suhl/out/bestand/kacheln.csv, für die DOM1 und nDOM1 geholt werden (P1 Zentrum, P2 Kernstadt, P3 Rest)
 version: 1
 easygeodata: P1,P2
-lauf: 3 - 2026-11-13 - Schema 1 Fassung 1.1, Dächer aus dem Oberflächenmodell für Zentrum und Kernstadt (P1, P2), Zensus-Gitter Baujahr
+lauf: 4 - 2026-11-13 - Schema 1 Fassung 1.1, Dächer aus dem Oberflächenmodell für Zentrum und Kernstadt (P1, P2), Zensus-Gitter Baujahr; Gebäude, die das Oberflächenmodell noch nicht zeigt

@@ -195,6 +195,8 @@ def fit(X, Y, Z, ctr, ux, Wd, Lr, h=None, k=0):
         return dict(partial=True, eave=ev, top=tp if h is None else min(tp, h), rms=rms_p, rms_flat=rms_flat, n=n, span=span)
     if form == 0:
         zr = z_med
+        if zr < 1.8:
+            return None         # the surface is the ground: the building is not in the surface model (newer than the flight, or gone)
         if h is not None and (zr > h + 1.0 or zr < 0.45 * h - 0.5):
             return None         # the surface model and the height of the building disagree
         return dict(form=0, ux=ux, Wd=Wd, Lr=Lr, planes=[(0.0, 0.0, zr)], eave=zr, rise=0.0, pitch=0.0, zr=zr, d0=0.0, rms=rms_flat, rms_flat=rms_flat,

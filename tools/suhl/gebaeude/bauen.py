@@ -133,7 +133,7 @@ def footprint(rings):
         g = max(g.geoms, key=lambda q: q.area)
     if g.geom_type != 'Polygon' or g.area < 1.0:
         return None
-    s = g.simplify(0.12, preserve_topology=True)
+    s = g.simplify(0.15, preserve_topology=True)
     if s.is_valid and not s.is_empty and s.geom_type == 'Polygon' and s.area > 0.9 * g.area:
         g = s
     g = Polygon(clean_ring(list(g.exterior.coords)[:-1]), [clean_ring(list(r.coords)[:-1]) for r in g.interiors if Polygon(r).area >= 1.5])
@@ -373,7 +373,7 @@ def main():
     elif a.dom:
         G.log('no DOM1 / DGM1 tiles in', a.dom, '- the roofs stay estimates by rule')
     dstat = {'why': Counter(), 'form': Counter(), 'flat_flip': Counter(), 'ridge_turned': 0, 'both_pitched': 0, 'de': [], 'dp': [], 'h_new': 0, 'gone': 0,
-             'gone_seen': 0, 'dh': []}
+             'gone_seen': 0, 'dh': [], 'newer': 0}
     photo = None
     if a.dop:
         import dachbild as LB
@@ -440,6 +440,7 @@ def main():
                 typ = RG.type_of(pm['k'], pm['use'], pm['sh'], pm['hh'], pm['gs'], 1, village, oldtown)
             # the surface model: the cells of this footprint as heights above its foot
             cells = None
+            newer = False
             h_src = 'ethos' if hq == 2 else 'regel'
             if dom is not None and k != 8:
                 cells = DM.measure(dom, p)
@@ -453,6 +454,9 @@ def main():
                     if hq == 0 and top >= 2.2:
                         h, hq, h_src = float(top) + 0.2, 1, 'dom1'      # a building only the cadastre knows: its height measured
                         dstat['h_new'] += 1
+                    elif hq == 0 and b['src'] == 'k' and top < 1.5 and k not in (3, 8):
+                        newer = True        # in the cadastre, but the surface model shows the ground: built after the laser flight
+                        dstat['newer'] += 1
             # the roof (estimate)
             ridge = D.ridge_from_neighbours(p, mains, sh) if k in (0, 6) and mains else None
             iv = None
@@ -626,6 +630,8 @@ def main():
             ee_ = min(G.r2(est['eave']), hh_)
             rec['h'], rec['e'] = hh_, ee_
             rec['r'] = RG.ROOF_FORM_OSM.get(est['rs'], form) if est['rs'] else form
+            if rec['r'] == 0:
+                rec['fl'] = 1
             if form != 0:
                 mx, my = G.local(est['ux'][0], est['ux'][1])
                 az_ = round(math.degrees(math.atan2(mx, my)) % 180.0, 1)
@@ -728,8 +734,6 @@ def main():
                 if fq:
                     fa_out['q'] = fq
                 rec['fas'] = fa_out      # the facade parameters of all sides by rule (merged over fat[t] of the tile); a side of S overrides single values
-            if rec['r'] == 0:
-                rec['fl'] = 1
             if gs:
                 rec['lv'] = int(gs)
             if gs_src:
@@ -754,7 +758,8 @@ def main():
             if oid_:
                 rec['osm'] = oid_
                 n_osm += 1
-            fg = (1 if 'lm' in fl else 0) | (2 if 'dm' in fl else 0) | (4 if 'in' in fl else 0) | (32 if b['kat'] == 0 else 0) | (64 if b['src'] == 'k' else 0)
+            fg = (1 if 'lm' in fl else 0) | (2 if 'dm' in fl else 0) | (4 if 'in' in fl else 0) | (32 if b['kat'] == 0 else 0) | (64 if b['src'] == 'k' else 0) \
+                | (128 if newer else 0)
             if fg:
                 rec['fg'] = fg
             if 'lm' in fl:
@@ -773,7 +778,7 @@ def main():
             d = {'fa': max(1.0, G.r1(gf))}
             dq = {'rf': rec['rq'], 'ro': rec['rq'], 'vol': 1 if (hq == 2 and form == 0) else 0}
             if gs and k in (0, 1, 6):
-                d['lv'], d['gfa'] = int(gs), max(1, int(round(gf * gs)))      # gross floor area above ground = footprint x floors
+                d['gfa'] = max(1, int(round(gf * gs)))      # gross floor area above ground = footprint x floors (lv)
                 dq['lv'] = dq['gfa'] = gsq
             d['rf'] = max(1.0, rf)
             # (the roof area by direction is not repeated here: every face of R carries its area `a` and its direction `az`)
@@ -789,8 +794,7 @@ def main():
             src = {'f': 'alkis' if b['src'] == 'k' else 'ethos', 'h': h_src}
             if r_src != 'regel':
                 src['r'] = r_src
-            if e_dom:
-                src['e'] = 'dom1'
+            # (the eave measured on the surface model has q.e 1; its source is that of the roof, src.r)
             for kk, q_ in (('k', b['kq']), ('use', q.get('use', 0)), ('lv', q.get('lv', 0)), ('adr', q.get('adr', 0))):
                 src[kk] = 'alkis' if q_ == 2 else 'osm' if q_ == 1 else 'regel'
             if not gs:
@@ -878,7 +882,7 @@ def main():
                'pitch_change_deg': {'median': round(float(np.median(dstat['dp'])), 1), 'p90': round(float(np.percentile(dstat['dp'], 90)), 1)} if dstat['dp'] else None,
                'height_surface_minus_ethos_m': {'median': round(float(np.median(dstat['dh'])), 2), 'p10': round(float(np.percentile(dstat['dh'], 10)), 2),
                                                 'p90': round(float(np.percentile(dstat['dh'], 90)), 2), 'n': len(dstat['dh'])} if dstat['dh'] else None,
-               'heights_measured_for_cadastre_only': dstat['h_new'], 'not_in_cadastre_seen': dstat['gone_seen'], 'not_in_cadastre_flat_ground': dstat['gone']},
+               'heights_measured_for_cadastre_only': dstat['h_new'], 'cadastre_only_not_in_surface_model': dstat['newer'], 'not_in_cadastre_seen': dstat['gone_seen'], 'not_in_cadastre_flat_ground': dstat['gone']},
            'zensus': None if zgrid is None else dict(zstat, cells=zgrid.n),
            'underground': n_tief, 'floors_not_fitting_height': {str(k): v for k, v in sorted(stats['lv_unfit'].items())},
            'use_out': dict(stats['use_out'].most_common()), 'bt': dict(stats['bt'].most_common()), 'rk': {str(k): v for k, v in sorted(stats['rk'].items())},

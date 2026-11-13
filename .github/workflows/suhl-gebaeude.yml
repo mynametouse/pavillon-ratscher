@@ -158,6 +158,7 @@ jobs:
             --out tools/suhl/out/gebaeude/actions/pruefen_stadt.json 2>&1 | tee logs/pruefen.log
       - name: Prüfer des Datenvertrags (tools/suhl/lib/validate.py)
         id: vertrag
+        if: always()        # the judge of the contract speaks even when a check of plan 5.3 has failed
         timeout-minutes: 15
         run: |
           set -o pipefail
