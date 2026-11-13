@@ -1,6 +1,7 @@
 Lauf bestellt 2026-11-13T00:44Z: Probe des Veroeffentlichens (suhl/_probe/hallo.json), erster Versuch mit DATEN_TOKEN -> Lauf 43339309234 gruen
 Lauf bestellt 2026-11-13T00:55Z: easygeodata, Phase docs (Schluessel pruefen, Dokumentation der Schnittstelle lesen) -> Lauf 43340656226 gruen
 Lauf bestellt 2026-11-13T01:00Z: easygeodata, alle Phasen (Kachellisten fuer Suhl, eine Kachel DGM1 und nDOM1 619/5607) -> Lauf 43341000214 gruen
-Lauf bestellt 2026-11-13T01:05Z: egd-client (der Client mit P1, drei Produkte, Cache)
+Lauf bestellt 2026-11-13T01:05Z: egd-client (der Client mit P1, drei Produkte, Cache) -> Lauf 43341830636 gruen
+Lauf bestellt 2026-11-13T01:40Z: satz - Trockenlauf mit dem Boden der ganzen Stadt (Artefakt suhl-boden-v1 aus Lauf 43340569202)
 phase: docs
-lauf: egd-client
+lauf: satz

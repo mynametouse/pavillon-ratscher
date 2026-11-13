@@ -5,6 +5,9 @@
 #                Suhl (DGM1, DOM1, nDOM1), eine Kachel als Beweis. Nur über die Schnittstelle, höflich, nichts wird veröffentlicht.
 #   egd-client   der Client tools/suhl/lib/easygeodata.py so, wie ihn die anderen Workflows benutzen: die 8 Kacheln P1 von DGM1,
 #                DOM1 und nDOM1 in einen Rohdaten-Ordner mit Cache, dann jede Kachel mit tools/welt/fetch.py gelesen.
+#   satz         DIE EINE TÜR ins Daten-Repo: bringt den Satz aus tools/suhl/daten/satz.json (je Produkt Lauf, Artefakt, Version)
+#                als EINEN Commit nach mynametouse/pavillon-daten und schaltet suhl/aktuell.json um - oder macht, solange dort
+#                dry_run: true steht, alles außer dem Push und druckt den Bericht. Die Daten-Workflows veröffentlichen nicht selbst.
 # Fehlt ein Geheimnis, sagt der Lauf das klar (Protokoll und Zusammenfassung) und schlägt nicht fehl. In dieses Repo schreibt er nichts.
 # Läuft nur auf suhl/daten und nur, wenn tools/suhl/daten/lauf.txt sich ändert (lauf.txt ändern = neuen Lauf bestellen); die letzte
 # Zeile "lauf: <job> <job> …" nennt die Jobs. Der Lauf nimmt den neuesten Stand des Zweigs.
@@ -27,6 +30,7 @@ jobs:
       hallo: ${{ steps.p.outputs.hallo }}
       easygeodata: ${{ steps.p.outputs.easygeodata }}
       egd-client: ${{ steps.p.outputs.egd-client }}
+      satz: ${{ steps.p.outputs.satz }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,7 +40,7 @@ jobs:
         run: |
           line=$(grep -E '^lauf:' tools/suhl/daten/lauf.txt | tail -1 || true)
           echo "bestellt: $line"
-          for j in hallo easygeodata egd-client; do
+          for j in hallo easygeodata egd-client satz; do
             if echo " ${line#lauf:} " | grep -q " $j "; then echo "$j=true" >> "$GITHUB_OUTPUT"; else echo "$j=false" >> "$GITHUB_OUTPUT"; fi
           done
           echo "Bestellt: \`$line\`" >> "$GITHUB_STEP_SUMMARY"
@@ -179,4 +183,55 @@ jobs:
           path: egd.json
           retention-days: 30
           if-no-files-found: warn
+
+  satz:
+    name: Satz ins Daten-Repo (oder Trockenlauf)
+    needs: plan
+    if: ${{ needs.plan.outputs.satz == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read                    # Artefakte anderer Läufe dieses Repos holen
+    concurrency:
+      group: suhl-daten-publish        # eine Gruppe für alles, was ins Daten-Repo schreibt, nie abbrechen
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: suhl/daten
+          persist-credentials: false
+      - name: Tests (Bibliothek, Schema, Veröffentlicher – ohne Netz)
+        run: |
+          python3 -I tools/suhl/lib/test_lib.py
+          python3 -I tools/suhl/lib/test_schema.py
+          python3 -I .github/actions/suhl-publish/test_publish.py
+      - name: Satz veröffentlichen
+        id: pub
+        uses: ./.github/actions/suhl-publish
+        with:
+          mode: set
+          set: tools/suhl/daten/satz.json
+          token: ${{ secrets.DATEN_TOKEN }}
+          github-token: ${{ github.token }}
+      - name: Liefert GitHub Pages den neuen Stand aus?
+        if: ${{ steps.pub.outputs.published == 'true' }}
+        env:
+          URL: ${{ steps.pub.outputs.url }}
+          COMMIT: ${{ steps.pub.outputs.commit }}
+        run: |
+          want=$(python3 -c "import json;print(json.load(open('$RUNNER_TEMP/pavillon-daten/suhl/aktuell.json'))['made'])")
+          ok=0
+          for i in $(seq 1 36); do
+            code=$(curl -sS -o /tmp/aktuell.json -w '%{http_code}' -H 'Cache-Control: no-cache' "$URL?t=$i" || echo 000)
+            if [ "$code" = "200" ] && grep -q "\"made\": \"$want\"" /tmp/aktuell.json; then ok=1; break; fi
+            echo "Versuch $i: HTTP $code – noch nicht der Stand von $COMMIT; warte 10 s"
+            sleep 10
+          done
+          if [ "$ok" = "1" ]; then
+            echo "- GitHub Pages liefert aktuell.json mit dem neuen Stand aus (nach etwa $((i * 10 - 10)) s): $URL" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::Pages liefert $URL nach 6 Minuten noch nicht mit dem neuen Stand (zuletzt HTTP $code)."
+            echo "- ⚠️ GitHub Pages liefert aktuell.json nach 6 Minuten noch nicht mit dem neuen Stand (zuletzt HTTP $code)" >> "$GITHUB_STEP_SUMMARY"
+          fi
 

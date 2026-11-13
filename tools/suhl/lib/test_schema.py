@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Unit tests of the schemas and the validator (no network, a few seconds):  python3 -I tools/suhl/lib/test_schema.py"""
-import copy, filecmp, json, os, shutil, sys, tempfile, unittest
+"""Unit tests of the schemas and the validator (schema 1, revision 1.1; no network, a few seconds):
+    python3 -I tools/suhl/lib/test_schema.py"""
+import copy, filecmp, os, shutil, subprocess, sys, tempfile, unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -9,8 +10,7 @@ import schema         # noqa: E402
 import beispiel       # noqa: E402
 import validate       # noqa: E402
 
-REPO = S.REPO
-DOC = os.path.join(REPO, 'docs', 'features', 'suhl-daten.md')
+DOC = os.path.join(S.REPO, 'docs', 'features', 'suhl-daten.md')
 
 
 class Base(unittest.TestCase):
@@ -21,6 +21,10 @@ class Base(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.root)
+
+    def fresh(self):
+        shutil.rmtree(self.root)
+        self.setUp()
 
     def kinds(self, rep):
         return {k for (e, k), n in rep.count.items() if e}
@@ -35,7 +39,7 @@ class Base(unittest.TestCase):
             else:
                 b[k] = v
         rep = schema.Report()
-        schema.check_building(b, S.tile_frame(10, 497, 542), rep, 'test')
+        schema.check_building(b, S.tile_frame(10, 497, 542), rep, 'test', doc)
         return rep
 
     def rewrite(self, rel, fn):
@@ -49,10 +53,8 @@ class Example(Base):
     def test_example_is_valid(self):
         rep = validate.validate(self.root)
         self.assertEqual((rep.errors, rep.warnings), ([], []))
-        self.assertEqual(rep.stats['g: buildings'], 3)
-        self.assertEqual(rep.stats['b: trees'], 3)
-        rep = validate.validate(self.root, probe=True)
-        self.assertTrue(rep.ok(strict=True), rep.errors)
+        self.assertEqual((rep.stats['g: buildings'], rep.stats['b: trees'], rep.stats['w: forest cells'], rep.stats['gr: areas']), (3, 3, 3, 1))
+        self.assertTrue(validate.validate(self.root, probe=True).ok(strict=True))
         for t in (os.path.join(self.root, 'suhl'), os.path.join(self.root, 'suhl', 'g'), os.path.join(self.root, 'suhl', 'g', 'v0'), self.gt,
                   os.path.join(self.root, 'suhl', 'g', 'v0', 'index.json'), os.path.join(self.root, 'suhl', 'aktuell.json')):
             self.assertTrue(validate.validate(t).ok(strict=True), t)
@@ -76,10 +78,11 @@ class Example(Base):
     def test_doc_names_every_field(self):
         self.assertTrue(os.path.exists(DOC), 'docs/features/suhl-daten.md is missing')
         txt = S.read_bytes(DOC).decode('utf-8')
-        for f in schema.BUILDING_FIELDS:
-            self.assertIn(f'`{f[0]}`', txt, f'docs/features/suhl-daten.md does not name the building field {f[0]}')
-        for word in ('aktuell.json', 'index.json', 'validate.py', 'suhl-publish', 'DATEN_TOKEN', 'EASYGEODATA_KEY', 'based_on'):
-            self.assertIn(word, txt)
+        missing = [f[0] for f in schema.BUILDING_FIELDS if f'`{f[0]}`' not in txt]
+        self.assertEqual(missing, [], 'docs/features/suhl-daten.md does not name these building fields')
+        missing = [w for w in ('aktuell.json', 'index.json', 'validate.py', 'suhl-publish', 'DATEN_TOKEN', 'EASYGEODATA_KEY', 'based_on', '`has`',
+                               '`schema`', '`product`', 'easygeodata.py', f'Fassung {schema.REV}') if w not in txt]
+        self.assertEqual(missing, [], 'docs/features/suhl-daten.md does not mention these')
 
 
 class Building(Base):
@@ -89,8 +92,8 @@ class Building(Base):
     def test_required(self):
         for k in ('id', 'f', 'k', 'h', 'e', 'r', 'rq', 'rk', 'rc', 'rv', 'rt', 'F', 'q'):
             self.assertIn('missing ' + k, self.kinds(self.building(**{k: None})), k)
-        for k in ('z0', 'az', 'R', 'S', 'd', 'use', 'era', 'n', 'adr', 'lv', 'src'):
-            self.assertEqual(self.building(**{k: None}).n_errors(), 0, k)
+        for k in ('z0', 'az', 'R', 'S', 'd', 'use', 'era', 'n', 'adr', 'lv', 'src', 'fas'):
+            self.assertEqual(self.building(**{k: None, **({'zv': None} if k == 'z0' else {})}).n_errors(), 0, k)
 
     def test_frame_and_rings(self):
         b = S.read_json(self.gt)['b'][0]
@@ -102,7 +105,7 @@ class Building(Base):
         self.assertIn('f closed', self.kinds(self.building(f=b['f'] + b['f'][:2])))
         self.assertIn('f', self.kinds(self.building(f=b['f'][:4])))
         self.assertIn('outside tile', self.kinds(self.building(f=[v + 400.0 for v in b['f']])))
-        self.assertEqual(self.building(fh=[cw]).n_errors(), 0)
+        self.assertEqual(self.building(fh=[cw], zv=None).n_errors(), 0)
         self.assertIn('fh orientation', self.kinds(self.building(fh=[b['f']])))
 
     def test_codes_and_ranges(self):
@@ -114,7 +117,28 @@ class Building(Base):
                             ({'d': {'fa': -3}}, 'd fa'), ({'d': {'ro': {'Nord': 3}}}, 'd ro')):
             self.assertIn(kind, self.kinds(self.building(**patch)), patch)
         self.assertIn('prep.py', self.building(rq='foto').errors[0])
-        self.assertEqual(self.building(osm='way/44124199', fg=3, yr=1974, bt='wbs70', fkt='Wohnhaus', eg='handel').n_errors(), 0)
+        self.assertEqual(self.building(osm='way/44124199', fg=3 | 32 | 64, yr=1974, bt='wbs70', fkt='Wohnhaus', eg='handel').n_errors(), 0)
+
+    def test_fields_of_revision_1_1(self):
+        b = S.read_json(self.gt)['b'][0]
+        self.assertEqual(self.building(lm='Z10', kat=1, teil='BEISPIEL_2', lvk=4).n_errors(), 0)
+        for patch, kind in (({'fas': {'t': 7, 'q': 0}}, 'fas t'), ({'fas': {'t': 0, 'col': '#ffffff'}}, 'fas col'), ({'fas': {'t': 0, 'mat': 'marmor'}}, 'fas mat'),
+                            ({'fas': {'t': 0, 'balk': 'ja'}}, 'fas balk'), ({'fas': 3}, 'fas'), ({'kat': 2}, 'kat'), ({'lm': ''}, 'lm'), ({'lvk': 0}, 'lvk'),
+                            ({'zv': [0.0, 0.1]}, 'zv'), ({'zv': b['zv'], 'z0': None}, 'zv z0'), ({'fg': 256}, 'fg')):
+            self.assertIn(kind, self.kinds(self.building(**patch)), patch)
+        s = [dict(b['S'][0]), None, None, None]
+        for patch, kind in (({'eg': 'shop'}, 'S eg'), ({'sign': 'Laden'}, 'S sign'), ({'hof': 0}, 'S hof')):
+            self.assertIn(kind, self.kinds(self.building(S=[dict(s[0], **patch), None, None, None])), patch)
+        self.assertTrue(self.building(S=[dict(s[0], hof=1), None, None, None]).ok(strict=True))
+        rep = self.check_tile(lambda d: d['b'][0].update(f='abc', fh=12.4, R=[3], F='x', S=7, q=[1], d=5, rv=None, zv='hoch'))
+        self.assertGreater(rep.n_errors(), 5)                                     # wrong types are errors of the record, never a crash
+
+    def check_tile(self, fn):
+        doc = S.read_json(self.gt)
+        fn(doc)
+        rep = schema.Report()
+        schema.check_g_tile(doc, (10, 497, 542), rep, 'test')
+        return rep
 
     def test_roof(self):
         b = S.read_json(self.gt)['b'][0]
@@ -158,14 +182,15 @@ class Building(Base):
 
 
 class Tiles(Base):
-    def test_envelope(self):
-        for fn, kind in ((lambda d: d.update(o=[0, 0]), 'o'), (lambda d: d.update(key='10/498/542'), 'key'), (lambda d: d.update(v=2), 'v'),
-                         (lambda d: d.update(p='s'), 'p'), (lambda d: d.pop('o'), 'o'), (lambda d: d.update(b={}), 'b')):
-            self.setUp()
+    def test_head(self):
+        for fn, kind in ((lambda d: d.update(o=[0, 0]), 'o'), (lambda d: d.update(key='10/498/542'), 'key'), (lambda d: d.update(schema=2), 'schema'),
+                         (lambda d: d.update(product='s'), 'product'), (lambda d: d.pop('o'), 'o'), (lambda d: d.update(b={}), 'b'),
+                         (lambda d: d.update(n=7), 'n')):
             self.rewrite('suhl/g/v0/10/497/542.json', fn)
             self.assertIn(kind, self.kinds(validate.validate(self.gt)), kind)
-            shutil.rmtree(self.root)
-        self.setUp()
+            self.fresh()
+        self.rewrite('suhl/g/v0/10/497/542.json', lambda d: d.update(eigenes={'a': 1}, frame='tile local'))   # own head fields are welcome
+        self.assertTrue(validate.validate(self.gt).ok(strict=True))
 
     def test_id_twice(self):
         def dup(d):
@@ -176,50 +201,70 @@ class Tiles(Base):
     def test_index_against_files(self):
         os.remove(os.path.join(self.root, 'suhl', 'g', 'v0', '10', '496', '542.json'))
         self.assertIn('listed, missing', self.kinds(validate.validate(self.root)))
-        self.setUp()
+        self.fresh()
         shutil.copy(self.gt, os.path.join(self.root, 'suhl', 'g', 'v0', '10', '497', '543.json'))
         k = self.kinds(validate.validate(self.root))
         self.assertTrue({'file, not listed', 'key'} <= k, k)
-        self.setUp()
+        self.fresh()
         os.remove(os.path.join(self.root, 'suhl', 'm', 'v0', 'index.json'))
         self.assertIn('no index', self.kinds(validate.validate(self.root)))
-        self.setUp()
+        self.fresh()
         self.rewrite('suhl/g/v0/index.json', lambda d: d.update(version=3))
         self.assertIn('version', self.kinds(validate.validate(self.root)))
-        self.setUp()
-        self.rewrite('suhl/g/v0/index.json', lambda d: (d.pop('sources'), d.pop('tiles')))
-        self.assertIn('index core', self.kinds(validate.validate(self.root)))
-        self.setUp()
-        self.rewrite('suhl/g/v0/index.json', lambda d: d.update(kacheln={'497_542': 2}, based_on={'boden': 1}))   # own keys are welcome
+        self.fresh()
+        self.rewrite('suhl/g/v0/index.json', lambda d: d.update(version='v0', sources={'ethos': 'ETHOS.BUILDA, ODbL 1.0'}, counts={'497/542': [2, 2000]},
+                                                                based_on={'boden': 'v0'}))        # "v0", a dict of sources, own keys: all fine
         self.assertTrue(validate.validate(self.root).ok(strict=True))
+        self.rewrite('suhl/g/v0/index.json', lambda d: d.update(based_on={'boden': 'neu'}))
+        self.assertIn('based_on', self.kinds(validate.validate(self.root)))
+        self.rewrite('suhl/g/v0/index.json', lambda d: (d.pop('sources'), d.pop('has')))
+        rep = validate.validate(self.root)
+        self.assertIn('index core', self.kinds(rep))
+        self.assertIn('--index', rep.errors[0])
 
-    def test_make_index_keeps_own_keys(self):
+    def test_normalise_index_keeps_own_keys(self):
         f = os.path.join(self.root, 'suhl', 'b', 'v0')
-        doc = schema.make_index(f, 'b', 0, 'probe', ['dop', 'osm', schema.source('ndom1', via=schema.index.VIA_EASYGEODATA)],
-                                extra={'arten': {'0': 'Laubbaum'}, 'v': 99}, based_on={'boden': 1})
-        self.assertEqual((doc['v'], doc['p'], doc['version'], doc['n']['items'], doc['arten'], doc['based_on']),
-                         (1, 'b', 0, 3, {'0': 'Laubbaum'}, {'boden': 1}))
-        self.assertIn('© GDI-Th', doc['attribution'])
-        self.assertIn('OpenStreetMap', doc['attribution'])
-        self.assertIn('easygeodata.de', doc['attribution'])
+        S.write_json(os.path.join(f, 'index.json'), {'produkt': 'b', 'schema': 1, 'made': '2026-11-13T00:36:50Z', 'gebiet': 'probe',
+                                                     'kacheln': {'497_542': 3}, 'arten': {'0': 'Laubbaum'},
+                                                     'quellen': [{'name': 'DOP20', 'lizenz': 'CC BY 4.0, © GDI-Th'}], 'attribution': 'Luftbild © GDI-Th'})
+        self.assertIn('index core', self.kinds(validate.validate(f)))
+        doc = schema.normalise_index(f)
+        self.assertEqual((doc['schema'], doc['product'], doc['version'], doc['area'], doc['made'], doc['n']['items'], doc['arten'], doc['kacheln']),
+                         (1, 'b', 0, 'probe', '2026-11-13T00:36:50Z', 3, {'0': 'Laubbaum'}, {'497_542': 3}))
+        self.assertEqual((doc['attribution'], doc['sources'][0]['name']), ('Luftbild © GDI-Th', 'DOP20'))
+        self.assertEqual((schema.index_has(doc), doc['based_on']), ({10: [(497, 542)]}, {}))
         self.assertTrue(validate.validate(f).ok(strict=True))
+        S.write_json(os.path.join(f, 'index.json'), {'v': 1, 'p': 'b', 'rev': '1.0', 'version': 0, 'made': '2026-11-13T00:36:50Z', 'area': 'probe', 'ext': {'': 'bin'},
+                                                     'tiles': {'': {'10': doc['has']['10']}}, 'sources': [schema.source('dop')], 'attribution': 'x',
+                                                     'note': 'bleibt', 'based_on': {'boden': 0}, 'x_z0': {'q': 1}})     # an index of revision 1.0
+        doc = schema.normalise_index(f)
+        self.assertEqual((doc['based_on'], doc['note'], doc['x_z0'], 'tiles' in doc, 'v' in doc, 'ext' in doc), ({'boden': 0}, 'bleibt', {'q': 1}, False, False, False))
+        doc = schema.normalise_index(f, based_on={'boden': 1, 's': 1})
+        self.assertEqual(doc['based_on'], {'boden': 1, 's': 1})
+        os.remove(os.path.join(f, 'index.json'))
+        with self.assertRaises(S.SuhlError):
+            schema.normalise_index(f)                                              # nothing to take area and sources from
+        doc = schema.normalise_index(f, area='probe', sources=['dop', 'osm', schema.source('ndom1', via=schema.VIA_EASYGEODATA)])
+        self.assertIn('© GDI-Th', doc['attribution'])
+        self.assertIn('easygeodata.de', doc['attribution'])
         with self.assertRaises(S.SuhlError):
             schema.source('google')
 
     def test_aktuell(self):
         a = S.read_json(os.path.join(self.root, 'suhl', 'aktuell.json'))
-        self.assertEqual(sorted(a['products']), ['_probe', 'b', 'd', 'g', 'm', 's'])
+        self.assertEqual(sorted(a['products']), ['_probe', 'b', 'd', 'g', 'gr', 'm', 's', 'w'])
         self.assertEqual(a['products']['g'], {'version': 0, 'schema': 1, 'path': 'g/v0/', 'index': 'g/v0/index.json', 'made': beispiel.MADE,
-                                              'area': 'probe', 'tiles': 2, 'bytes': a['products']['g']['bytes']})
-        idx = S.read_json(os.path.join(self.root, 'suhl', 'g', 'v0', 'index.json'))
-        idx['version'] = 1
+                                              'area': 'probe', 'tiles': 2, 'bytes': a['products']['g']['bytes'], 'based_on': {}})
+        idx = schema.index_doc_of(os.path.join(self.root, 'suhl', 'g', 'v0'))
+        idx['version'], idx['based_on'] = 'v1', {'boden': 1}
         b = schema.make_aktuell(a, idx)
-        self.assertEqual((b['products']['g']['version'], b['products']['g']['path'], b['products']['b']['version']), (1, 'g/v1/', 0))
+        self.assertEqual((b['products']['g']['version'], b['products']['g']['path'], b['products']['g']['based_on'], b['products']['b']['version']),
+                         (1, 'g/v1/', {'boden': 1}, 0))
         self.assertEqual(a['products']['g']['version'], 0)                      # the old document is not changed
         S.write_json(os.path.join(self.root, 'suhl', 'aktuell.json'), b)
         self.assertIn('aktuell missing', self.kinds(validate.validate(self.root)))
 
-    def test_trees(self):
+    def test_trees_forest_green(self):
         t = [(0.0, 0.0, 12.0, 3.5, 13, 1 | 8), (399.99, 123.45, 30.0, 4.0, 2, 3 | 4)]
         b = schema.tree_pack(t)
         self.assertEqual(len(b), 16)
@@ -234,35 +279,86 @@ class Tiles(Base):
             rep = schema.Report()
             schema.check_b_tile(data, (10, 497, 542), rep, 't')
             self.assertIn(kind, self.kinds(rep), kind)
+        for data, kind in ((bytes(2399), 'w size'), (bytes([9]) + bytes(2399), 'w kind'), (bytes(400) + bytes([150]) + bytes(1999), 'w percent')):
+            rep = schema.Report()
+            schema.check_w_tile(data, (10, 497, 542), rep, 't')
+            self.assertIn(kind, self.kinds(rep), kind)
+        for doc, kind in (({'f': [[99, 'w1', [[0, 0, 10, 0, 10, 10]]]]}, 'gr class'), ({'f': [[4, 'w1', [[0, 0, 10, 0]]]]}, 'gr ring'),
+                          ({'f': [[4, 'w1', [[-47000, 0, 10, 0, 10, 10]]]]}, 'gr frame'), ({'flaechen': []}, 'gr')):
+            rep = schema.Report()
+            schema.check_gr_tile(doc, (10, 497, 542), rep, 't')
+            self.assertIn(kind, self.kinds(rep), kind)
 
     def test_streets_and_furniture(self):
-        def local(d):
-            d['ways'][0][6] = [v % 1000 for v in d['ways'][0][6]]
-        self.rewrite('suhl/s/v0/10/497/542.json', local)
+        fr = S.tile_frame(10, 497, 542)
+
+        def absolute(d):
+            p = d['ways'][0][6]
+            d['ways'][0][6] = [v + (int(fr.o[0] * 10) if i % 3 == 0 else int(fr.o[1] * 10) if i % 3 == 1 else 0) for i, v in enumerate(p)]
+        self.rewrite('suhl/s/v0/10/497/542.json', absolute)
         self.assertIn('s way frame', self.kinds(validate.validate(self.root)))
-        self.setUp()
+        self.fresh()
         self.rewrite('suhl/s/v0/10/497/542.json', lambda d: d.pop('unit'))
         self.assertIn('s unit', self.kinds(validate.validate(self.root)))
-        self.setUp()
-        self.rewrite('suhl/m/v0/10/497/542.json', lambda d: d['items'].append({'t': 'ufo', 'x': -4700.0, 'y': 12300.0}))
+        self.fresh()
+        self.rewrite('suhl/s/v0/10/497/542.json', lambda d: d['ways'][0].__setitem__(4, 9))
+        self.assertIn('s way index', self.kinds(validate.validate(self.root)))
+        self.fresh()
+        self.rewrite('suhl/m/v0/10/497/542.json', lambda d: (d['lampen'].extend([-47000, 123000, 0, 0]), d['schilder'].append(['205']), d.update(pfosten=[1, 2])))
         k = self.kinds(validate.validate(self.root))
-        self.assertTrue({'m t', 'm frame'} <= k, k)
+        self.assertTrue({'m frame', 'm row', 'm flat'} <= k, k)
+        self.fresh()
+        self.rewrite('suhl/m/v0/10/497/542.json', lambda d: d.pop('unit'))
+        rep = validate.validate(self.root)
+        self.assertEqual((rep.n_errors(), rep.n_warnings()), (0, 1))
+        self.assertEqual(rep.stats['m: things'], 6)
+
+    def test_ground_meta(self):
+        f = os.path.join(self.root, 'suhl', 'boden', 'v0')
+        for sub, ext, head in (('t', 'bin', b'WTH1' + bytes(20)), ('i', 'webp', b'RIFF\x10\x00\x00\x00WEBPVP8 ')):
+            for L, x, y in ((10, 497, 542), (9, 248, 271)):
+                p = os.path.join(f, sub, str(L), str(x), f'{y}.{ext}')
+                os.makedirs(os.path.dirname(p), exist_ok=True)
+                with open(p, 'wb') as fh:
+                    fh.write(head)
+        meta = {'format': 'welt-test/1', 'generated': beispiel.MADE,
+                'suhl': {'product': 'boden', 'version': 'v0', 'schema': 1, 'mode': 'probe', 'balanced': False, 'based_on': {'s': 0}},
+                'tiling': {'levels': {'9': {'rect': [248, 271, 248, 271], 'has': [[248, 271]]}, '10': {'rect': [497, 542, 497, 542], 'has': [[497, 542]]}}},
+                'sources': {'terrain': 'erfunden'}, 'attribution': beispiel.NOTE}
+        S.write_json(os.path.join(f, 'meta.json'), meta)
+        self.assertTrue(validate.validate(self.root, probe=True).ok(strict=True), validate.validate(self.root).errors)
+        self.assertEqual(schema.index_doc_of(f)['n']['tiles'], 4)
+        akt = schema.make_aktuell(None, schema.index_doc_of(f))
+        self.assertEqual((akt['products']['boden']['index'], akt['products']['boden']['based_on']), ('boden/v0/meta.json', {'s': 0}))
+        del meta['suhl']['balanced'], meta['suhl']['based_on']
+        S.write_json(os.path.join(f, 'meta.json'), meta)
+        rep = validate.validate(self.root)
+        self.assertEqual((rep.n_errors(), rep.n_warnings()), (0, 2))                      # balanced and based_on are asked for
+        meta['suhl'].update(balanced=True, based_on={})
+        S.write_json(os.path.join(f, 'meta.json'), meta)
+        os.remove(os.path.join(f, 'i', '9', '248', '271.webp'))
+        self.assertIn('listed, missing', self.kinds(validate.validate(self.root)))
+        with open(os.path.join(f, 't', '10', '497', '542.bin'), 'wb') as fh:
+            fh.write(b'<html>Wartung</html>')
+        self.assertIn('magic', self.kinds(validate.validate(self.root)))
+        meta['suhl']['schema'] = 2
+        S.write_json(os.path.join(f, 'meta.json'), meta)
+        self.assertIn('meta suhl', self.kinds(validate.validate(self.root)))
 
     def test_probe_rules_and_centre(self):
         far = os.path.join(self.root, 'suhl', 'm', 'v0', '10', '520', '560.json')
         fr = S.tile_frame(10, 520, 560)
-        S.write_json(far, {'v': 1, 'p': 'm', 'key': fr.key, 'o': fr.o_json(), 'items': []})
-        schema.make_index(os.path.join(self.root, 'suhl', 'm', 'v0'), 'm', 0, 'probe', ['osm'])
+        S.write_json(far, {'schema': 1, 'product': 'm', 'key': fr.key, 'o': fr.o_json(), 'unit': 'dm', 'lampen': [0, 0, 0, 0]})
+        schema.normalise_index(os.path.join(self.root, 'suhl', 'm', 'v0'))
         self.assertNotIn('not probe', self.kinds(validate.validate(self.root)))
         self.assertIn('not probe', self.kinds(validate.validate(self.root, probe=True)))
-        self.setUp()
+        self.fresh()
         os.remove(self.gt)                                           # a "city" without the Markt tile
-        schema.make_index(os.path.join(self.root, 'suhl', 'g', 'v0'), 'g', 0, 'stadt', ['ethos'])
+        schema.normalise_index(os.path.join(self.root, 'suhl', 'g', 'v0'), area='stadt')
         k = self.kinds(validate.validate(self.root))
         self.assertTrue({'centre of Suhl', 'plausible count'} <= k, k)
 
     def test_cli(self):
-        import subprocess
         v = os.path.join(HERE, 'validate.py')
         r = subprocess.run([sys.executable, '-I', v, self.root, '--probe', '--json', os.path.join(self.root, 'r.json')], capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
@@ -274,6 +370,8 @@ class Tiles(Base):
         self.assertIn('NOT VALID', r.stdout)
         r = subprocess.run([sys.executable, '-I', v, '--doc'], capture_output=True, text=True)
         self.assertIn('| `id` | R |', r.stdout)
+        r = subprocess.run([sys.executable, '-I', v, '--index', os.path.join(self.root, 'suhl', 's', 'v0')], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
         r = subprocess.run([sys.executable, '-I', v], capture_output=True, text=True)
         self.assertEqual(r.returncode, 2)
 

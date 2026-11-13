@@ -1,0 +1,9 @@
+{
+ "was": "Der Satz der Suhl-Daten, den der Job satz (.github/workflows/suhl-daten.yml) ins Daten-Repo mynametouse/pavillon-daten bringt. Geändert wird diese Datei nur auf Ansage des Suhl-Chats. Je Produkt: run = Lauf, der das Artefakt erzeugt hat, artifact = sein Name, version = das N von suhl/<produkt>/v<N>. dry_run: true = alles außer dem Push. remove: Versionsordner, die dieser Satz löscht (z. B. \"g/v0\").",
+ "name": "trockenlauf-boden-v1",
+ "dry_run": true,
+ "products": {
+  "boden": {"run": 43340569202, "artifact": "suhl-boden-v1", "version": 1}
+ },
+ "remove": []
+}
