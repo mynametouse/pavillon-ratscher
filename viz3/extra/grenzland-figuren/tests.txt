@@ -1,0 +1,2 @@
+grenzland_figuren:moped,reiter
+grenzland_figuren:rennen,sitzen,gesten,blick

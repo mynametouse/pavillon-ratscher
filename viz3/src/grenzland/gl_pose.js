@@ -332,10 +332,10 @@ export const GLPOSE = (() => {
     L = L / 2 || 0.55;
     // in the moped's frame (three's axes: x right, y up, -z forward); the lean turns the shoulders about the hips
     const hipL = v3(P.hip, _w1),
-      want = 0.9 * L;
+      want = 0.93 * L;
     let best = 0.2,
       bestE = 1e9;
-    for (let th = 0.04; th <= 0.75; th += 0.03) {
+    for (let th = 0.04; th <= 0.5; th += 0.03) {
       let e = 0;
       for (let i = 0; i < 2; i++) {
         _w2.copy(_sh[i]).applyMatrix4(_mi).sub(hipL);
@@ -421,7 +421,74 @@ export const GLPOSE = (() => {
       handTo(R, sd, _w1, _w2);
       curl(R, sd, [1.05, 1.0, 0.55], 0.9);
     }
-    S.last = { lean: th, down: kd, L, err: bestE };
+    // what came of it (the tests read it): the hip joint's height over the moped's ground, how far the balls of the feet are from the
+    // pegs (or the ground) and the wrists from the grips
+    const chk = { lean: +th.toFixed(3), down: +kd.toFixed(2), hip: 0, feet: [0, 0], hands: [0, 0] };
+    B.Hips.getWorldPosition(_w1).applyMatrix4(_mi);
+    chk.hip = +_w1.y.toFixed(3);
+    for (let i = 0; i < 2; i++) {
+      const sd = i ? 'Right' : 'Left',
+        s = i ? 1 : -1,
+        Tb = B[sd + 'ToeBase'],
+        H = B[sd + 'Hand'];
+      if (Tb) {
+        v3([s * P.ball[0], P.ball[1], P.ball[2]], _ball).applyMatrix4(Fw);
+        if (!i && kd > 0.5) v3(P.down, _ball).applyMatrix4(Fw);
+        chk.feet[i] = +Tb.getWorldPosition(_w2).distanceTo(_ball).toFixed(3);
+      }
+      if (H) chk.hands[i] = +H.getWorldPosition(_w2).distanceTo(_gl[i]).toFixed(3);
+    }
+    st.chk = chk;
+    S.last = chk;
+    return true;
+  }
+  // ------------------------------------------------------------------ at the Trabant's wheel ------------------------------------------------------------------
+  // The player driving the Trabant of 1989, seen from outside through the windows: on the driver's seat of this frame's car (the avatar
+  // places itself by last frame's eyes – and by the eyes of the view from outside, higher and further forward than the seat), the hands
+  // at ten and two on the rim; they go with the wheel for a part of a turn, as the cockpit's own hands (grenzland/gl_modelle.js).
+  const TRABI = { hip: [-0.33, -0.45, 0.4], wrist: [0.185, 0.07, 0.07] };
+  function drive(R, v) {
+    const B = R.B,
+      ck = v.model && v.model.cockpit,
+      Hg = ck && ck.hands,
+      body = v.model && v.model.body;
+    if (!B.Hips || !Hg || !body) return false;
+    v.g.updateMatrixWorld(true);
+    body.getWorldQuaternion(_rq);
+    R.g.quaternion.copy(_rq);
+    R.g.updateMatrixWorld(true);
+    B.Hips.getWorldPosition(_rh);
+    v3(TRABI.hip, _rt).applyMatrix4(body.matrixWorld);
+    R.g.position.add(_rt.sub(_rh));
+    R.g.updateMatrixWorld(true);
+    axes(body, _r, _u, _f);
+    const chk = { hands: [0, 0] };
+    for (let i = 0; i < 2; i++) {
+      const sd = i ? 'Right' : 'Left',
+        s = i ? 1 : -1;
+      Hg.localToWorld(_gl[i].set(s * TRABI.wrist[0], TRABI.wrist[1], TRABI.wrist[2]));
+      _pole
+        .copy(_r)
+        .multiplyScalar(s * 0.6)
+        .addScaledVector(_u, -0.8)
+        .addScaledVector(_f, -0.2);
+      ik2(R, B[sd + 'Arm'], B[sd + 'ForeArm'], B[sd + 'Hand'], _gl[i], _pole);
+      // the fingers forward over the rim and inward, the back of the hand out
+      _w1
+        .copy(_f)
+        .multiplyScalar(0.6)
+        .addScaledVector(_u, 0.45)
+        .addScaledVector(_r, -s * 0.45);
+      _w2
+        .copy(_r)
+        .multiplyScalar(s * 0.8)
+        .addScaledVector(_u, 0.35)
+        .addScaledVector(_f, -0.2);
+      handTo(R, sd, _w1, _w2);
+      curl(R, sd, [1.0, 0.9, 0.6], 0.7);
+      if (B[sd + 'Hand']) chk.hands[i] = +B[sd + 'Hand'].getWorldPosition(_w2).distanceTo(_gl[i]).toFixed(3);
+    }
+    R.st.chk = chk;
     return true;
   }
   // ------------------------------------------------------------------ the player on the moped ------------------------------------------------------------------
@@ -431,7 +498,17 @@ export const GLPOSE = (() => {
   function playerRide(dt) {
     const v = VEH.cur,
       AF = AVATAR.fig;
-    const on = !!(GL.on && v && v.id === 'gl-moped' && AF && AF.g && AF.g.visible && AF.B && v.model && v.model.body);
+    const on = !!(
+      GL.on &&
+      v &&
+      (v.id === 'gl-moped' || v.id === 'gl-trabi') &&
+      AF &&
+      AF.g &&
+      AF.g.visible &&
+      AF.B &&
+      v.model &&
+      v.model.body
+    );
     if (!on) {
       if (S.player) {
         // off the moped: upright again (the avatar sets only the turn about the vertical)
@@ -450,7 +527,7 @@ export const GLPOSE = (() => {
     R.sv = AF.sv;
     // whatever is still turned (a frame the avatar did not pose) back first: the turns below are computed from the clip's pose
     back(R);
-    if (ride(R, moped(v), dt)) S.player.n++;
+    if (v.id === 'gl-trabi' ? drive(R, v) : ride(R, moped(v), dt)) S.player.n++;
   }
   // ------------------------------------------------------------------ the figures that ride ------------------------------------------------------------------
   // grenzland/gl_mission.js puts a rider on his moped (F.reitet: hung behind it, upright); here, after the vehicles of the frame, he sits
@@ -555,7 +632,7 @@ export const GLPOSE = (() => {
   const _sa = V(),
     _sb = V(),
     _sc = V();
-  function sitzBeine(R, boden, hoch, w = 1) {
+  function sitzBeine(R, boden, hoch, w = 1, speak = false) {
     const B = R.B;
     axes(R.g, _r, _u, _f);
     for (let i = 0; i < 2; i++) {
@@ -582,6 +659,35 @@ export const GLPOSE = (() => {
         .addScaledVector(_r, s * 0.12);
       ik2(R, UL, LL, Ft, _sc, _pole, w);
       if (Tb) aim(R, Ft, Tb.getWorldPosition(_w1), _sb, w);
+    }
+    // the hands on the thighs, a little behind the knees (the right one stays free while the chair pose talks)
+    for (let i = 0; i < 2; i++) {
+      const sd = i ? 'Right' : 'Left',
+        s = i ? 1 : -1,
+        UL = B[sd + 'UpLeg'],
+        LL = B[sd + 'Leg'];
+      if (!UL || !LL || (i && speak)) continue;
+      UL.getWorldPosition(_sa);
+      LL.getWorldPosition(_sb);
+      _sc
+        .copy(_sb)
+        .lerp(_sa, 0.38)
+        .addScaledVector(_u, 0.085)
+        .addScaledVector(_r, s * 0.02);
+      _pole
+        .copy(_r)
+        .multiplyScalar(s * 0.7)
+        .addScaledVector(_f, -0.6)
+        .addScaledVector(_u, -0.3);
+      ik2(R, B[sd + 'Arm'], B[sd + 'ForeArm'], B[sd + 'Hand'], _sc, _pole, w);
+      _w1
+        .copy(_f)
+        .multiplyScalar(0.85)
+        .addScaledVector(_u, -0.45)
+        .addScaledVector(_r, -s * 0.15);
+      _w2.copy(_u).addScaledVector(_f, 0.3);
+      handTo(R, sd, _w1, _w2, w);
+      curl(R, sd, [0.35, 0.3, 0.2], 0.2, w);
     }
   }
   // ------------------------------------------------------------------ the look ------------------------------------------------------------------
@@ -731,10 +837,10 @@ export const GLPOSE = (() => {
         const e = env(2.4);
         _gt
           .copy(_gs[1])
-          .addScaledVector(_r, 0.24 + 0.09 * Math.sin(2 * Math.PI * 1.7 * t) * e)
-          .addScaledVector(_u, 0.42)
-          .addScaledVector(_f, 0.1);
-        _pole.copy(_r).addScaledVector(_u, -0.8);
+          .addScaledVector(_r, 0.3 + 0.1 * Math.sin(2 * Math.PI * 1.7 * t) * e)
+          .addScaledVector(_u, 0.24)
+          .addScaledVector(_f, 0.14);
+        _pole.copy(_r).multiplyScalar(0.6).addScaledVector(_u, -1);
         _w1.copy(_u);
         _w2.copy(_f).multiplyScalar(-1);
         arm('Right', _gt, _pole, _w1, _w2);
@@ -757,16 +863,16 @@ export const GLPOSE = (() => {
         break;
       }
       case 'telefon': {
-        _gt.copy(_gh).addScaledVector(_r, 0.085).addScaledVector(_u, -0.11).addScaledVector(_f, 0.03);
-        _pole.copy(_u).multiplyScalar(-1).addScaledVector(_r, 0.7).addScaledVector(_f, 0.25);
-        _w1.copy(_u).addScaledVector(_f, 0.15);
+        _gt.copy(_gh).addScaledVector(_r, 0.105).addScaledVector(_u, -0.06).addScaledVector(_f, -0.015);
+        _pole.copy(_u).multiplyScalar(-1).addScaledVector(_r, 0.55).addScaledVector(_f, 0.45);
+        _w1.copy(_u).addScaledVector(_f, -0.1);
         _w2.copy(_r);
         arm('Right', _gt, _pole, _w1, _w2);
         curl(R, 'Right', [0.45, 0.35, 0.25], 0.3, w);
         break;
       }
       case 'filmen': {
-        _gt2.copy(_gh).addScaledVector(_u, -0.06).addScaledVector(_f, 0.36);
+        _gt2.copy(_gh).addScaledVector(_u, -0.16).addScaledVector(_f, 0.4);
         _gt.copy(_gt2).addScaledVector(_r, 0.045);
         _pole.copy(_u).multiplyScalar(-1).addScaledVector(_r, 0.6);
         _w1.copy(_u);
@@ -944,7 +1050,7 @@ export const GLPOSE = (() => {
         }
       }
       // sitting: the feet down
-      if (F.sitzt && !F.reitet && F.boden != null) sitzBeine(R, F.boden, (F.sitzH || 0.45) > 0.62, 1);
+      if (F.sitzt && !F.reitet && F.boden != null) sitzBeine(R, F.boden, (F.sitzH || 0.45) > 0.62, 1, !!F.f.speak);
       // the gesture
       const G = F.gest;
       let armsBusy = '';
@@ -995,6 +1101,51 @@ export const GLPOSE = (() => {
       S.err = (F.id || '') + ': ' + ((e && e.message) || e);
     }
   }
+  // ------------------------------------------------------------------ seats ------------------------------------------------------------------
+  // the benches one can sit on in Ratscher: the ring round the Dorflinde (world/village_props.js) and the benches of the village centre
+  // (world/dorfkern_data.js) – two seats each; { x, y, hd: the way one looks sitting, z: the seat's height over the ground }
+  let SEATS = null;
+  function seats() {
+    if (SEATS) return SEATS;
+    const out = [],
+      VP = window.VPROPS,
+      DK = window.DKDATA;
+    const add = (cx, cy, a, len, back) => {
+      // a: the way the bench faces (radians, counter-clockwise from east); the hips a little behind the seat's middle
+      const c = Math.cos(a),
+        s = Math.sin(a),
+        hd = Math.atan2(c, s);
+      for (const t of [-len / 4, len / 4])
+        out.push({ x: cx - s * t - c * back, y: cy + c * t - s * back, hd, z: 0.455 });
+    };
+    try {
+      if (VP && VP.LINDE)
+        for (let k = 0; k < 6; k++) {
+          const a = (k / 6) * Math.PI * 2 + 0.3;
+          add(VP.LINDE[0] + Math.cos(a) * 2.25, VP.LINDE[1] + Math.sin(a) * 2.25, a, 1.7, 0.04);
+        }
+      if (DK && DK.open && DK.open.benches)
+        for (const [x, y, az, len] of DK.open.benches) add(x, y, ((90 - az) * Math.PI) / 180, len, 0.05);
+    } catch (e) {
+      S.err = 'seats: ' + ((e && e.message) || e);
+    }
+    return (SEATS = out);
+  }
+  // the nearest seat to (x, y) within r metres that nobody of GLFIG sits on
+  function platz(x, y, r = 25) {
+    const G = window.GLFIG,
+      busy = ((G && G.figs) || []).filter(F => F.sitzt && F.g.visible);
+    let best = null,
+      bd = r;
+    for (const q of seats()) {
+      const d = Math.hypot(q.x - x, q.y - y);
+      if (d < bd && !busy.some(F => Math.hypot(F.x - q.x, F.y - q.y) < 0.45)) {
+        bd = d;
+        best = q;
+      }
+    }
+    return best ? Object.assign({}, best) : null;
+  }
   // a target of a look or a gesture: [x, y, z] or (x, y, z) in the world's metres (z: the height in the world; without it eye height
   // over the ground there), a figure of GLFIG (its head), 'spieler' (the player's eyes), { x, y, z }; null: none
   function ort(a, b, c) {
@@ -1007,6 +1158,18 @@ export const GLPOSE = (() => {
       return { x: a.x, y: a.y, z: a.z ?? null };
     return null;
   }
+  // the angle (rad) between where a figure's face points and the way to the point p ([x, y, z] in the world) – for the tests
+  function winkel(F, p) {
+    const R = F && F.rig,
+      H = R && R.B.Head;
+    if (!H || !R.hf) return null;
+    const d = R.hf.clone().applyQuaternion(H.getWorldQuaternion(Q())),
+      h = H.getWorldPosition(V()),
+      t = V().set(p[0], p[2], -p[1]).sub(h);
+    return d.angleTo(t);
+  }
+  // the rider's checks of the last pose (the player: GLPOSE.stand().chk)
+  const chk = F => (F && F.rig && F.rig.st.chk) || null;
   function stand() {
     const AF = AVATAR.fig;
     return {
@@ -1017,6 +1180,7 @@ export const GLPOSE = (() => {
       last: S.last,
       props: S.props,
       avatar: !!AF,
+      chk: S.player && S.player.R ? S.player.R.st.chk || null : null,
     };
   }
   Object.assign(S, {
@@ -1034,6 +1198,10 @@ export const GLPOSE = (() => {
     turnW,
     lookPoint,
     ort,
+    winkel,
+    chk,
+    seats,
+    platz,
   });
   return S;
 })();

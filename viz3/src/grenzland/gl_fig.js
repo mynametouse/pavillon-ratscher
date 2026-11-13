@@ -1781,6 +1781,8 @@ export const GLFIG = (() => {
       if (F.f && 'mode' in F.f) F.f.mode = 'sit';
       F.x = c.x;
       F.y = c.y;
+      F.g.visible = true;
+      markDirty();
       return;
     }
     const m = F.ritt;
@@ -1810,6 +1812,7 @@ export const GLFIG = (() => {
     sitz,
     steh,
     reite,
+    platz: (x, y, r) => GLPOSE.platz(x, y, r),
     dress,
     pixels,
     forget,
