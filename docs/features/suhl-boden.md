@@ -344,7 +344,10 @@ Ein zweiter Start macht dort weiter, wo der erste aufgehört hat.
 - **Probesatz v1 ist der Stand für alle:** `02a4b9be`. `suhl-gebaeude` liest die Hausfüße davon, `suhl-gruen` und `suhl-laufzeit` den Boden.
 - **Veröffentlicht wird hier nichts.** Die Artefakte heißen `suhl-boden-v1` (Produkt) und `suhl-boden-roh` (nur für `suhl-strassen`).
 - **Nächster Schritt der ganzen Stadt:** `suhl-strassen` rechnet auf `suhl-boden-roh` des Laufs 43347038164 (in
-  `tools/suhl/strassen/lauf.txt`: `boden_run=43347038164`, `boden_artifact=suhl-boden-roh`). Danach `origin/suhl/strassen` hier
+  `tools/suhl/strassen/lauf.txt`: `boden_run=43347038164`, `boden_artifact=suhl-boden-roh`). Stand 13.11. 03:08: die Stadt-Profile
+  von `suhl-strassen` (Lauf 43347302266, `origin/suhl/strassen` `5d38f16c`) sind noch auf dem Copernicus-Boden von Lauf 1 gerechnet
+  – mit ihnen wird hier **nicht** eingeschnitten (Reihenfolge a bis d). Die Laufnummer konnte ich `suhl-strassen` nicht mehr selbst
+  nennen (Nachrichten-Grenze der Agenten erreicht) – bitte weitergeben. Danach `origin/suhl/strassen` hier
   hineinmergen und einen Lauf bestellen: in `lauf.txt` bei `stadt.strassen` die beiden Dateien
   `tools/suhl/out/strassen/stadt/fahrt/suhl.json.gz` und `…/suhl-anfahrt.json.gz` mit Komma und ohne Leerzeichen, dazu
   `stadt.version = v2`, `stadt.t = 2`, und `[stadt]` in die Commit-Nachricht.
