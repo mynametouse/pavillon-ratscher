@@ -148,7 +148,15 @@ export const GLMOD = (() => {
   // ---- the shadow under a vehicle: a soft dark patch on the ground (the sun's shadow map is not asked for – as with the traffic's
   //      cars – but without any shadow a car seems to hover). It takes light away (subtractive blending), so it needs no alpha;
   //      an unlit textured material like the traffic's pools of light ----
-  const SCHATTEN = { mat: null, geo: new Map() };
+  const SCHATTEN = {
+    mat: null,
+    geo: new Map(),
+    // how much light the patch takes away under the middle of a vehicle (linear): most of it by day, little of the little at night
+    tag(night) {
+      const k = night ? 0.3 : 0.62;
+      if (SCHATTEN.mat) SCHATTEN.mat.color.setRGB(k, k, k);
+    },
+  };
   function schatten(T) {
     if (!SCHATTEN.mat) {
       const cv = document.createElement('canvas');
@@ -169,7 +177,6 @@ export const GLMOD = (() => {
       x.putImageData(im, 0, 0);
       SCHATTEN.mat = new THREE.MeshBasicMaterial({
         map: new THREE.CanvasTexture(cv),
-        color: 0x6e6e6e,
         transparent: true,
         blending: THREE.SubtractiveBlending,
         depthWrite: false,
@@ -179,6 +186,7 @@ export const GLMOD = (() => {
         toneMapped: false,
       });
       SCHATTEN.mat.name = 'grenzland schatten';
+      SCHATTEN.tag(false);
     }
     const moped = T.form === 'moped',
       w = moped ? 0.75 : 2 * T.hw + 0.5,

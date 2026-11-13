@@ -592,9 +592,8 @@ export const GLTYPEN = (() => {
           [u1, 1],
           [u0, 1],
         ];
-      // counter-clockwise seen from outside: on the right side a → b runs forward
-      if (s > 0) k.quad('schrift', q[0], q[1], q[2], q[3], C.white, uv);
-      else k.quad('schrift', q[1], q[0], q[3], q[2], C.white, [uv[1], uv[0], uv[3], uv[2]]);
+      // counter-clockwise seen from outside on both sides: a → b runs forward on the right side, backward on the left
+      k.quad('schrift', q[0], q[1], q[2], q[3], C.white, uv);
     }
   }
   // a mirror on a door: a housing on a foot, the glass facing back

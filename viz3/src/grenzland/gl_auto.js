@@ -616,7 +616,7 @@ export const GLAUTO = (() => {
       night = dk;
       LM.head.emissiveIntensity = dk ? 3.2 : 0;
       LM.tail.emissiveIntensity = dk ? 1.4 : 0;
-      if (GLMOD.SCHATTEN.mat) GLMOD.SCHATTEN.mat.color.setHex(dk ? 0x1c1c1c : 0x6e6e6e);
+      GLMOD.SCHATTEN.tag(dk);
       markDirty();
     }
     S.blink += dt;

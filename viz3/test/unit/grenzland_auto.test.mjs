@@ -127,3 +127,27 @@ test('the needle: 0 km/h at the lower left, 100 at the lower right, over the top
   assert.equal(w(500), w(104));
   for (let v = 0; v < 100; v += 5) assert.ok(w(v + 5) < w(v));
 });
+
+test('lettering on the doors looks outward on both sides and reads from the left (police, Volkspolizei, a firm\'s van)', () => {
+  for (const [typ, o] of [
+    ['streife', { band: '#1f4fa8', band2: '#cfe23c', bar: 'balken' }],
+    ['wartburg', { band: '#2f6b3a', bar: 'rundum' }],
+    ['kasten', { text: 'Spedition' }],
+  ]) {
+    const M = GLTYPEN.bau(typ, o),
+      q = M.pieces.find(p => p.name === 'body').parts.schrift;
+    assert.ok(M.schrift && q && q.uv, typ + ' has lettering with texture coordinates');
+    const c = corners(q);
+    let left = 0,
+      right = 0;
+    c.forEach((v, i) => {
+      assert.ok(Math.sign(v.p[0]) === Math.sign(v.n[0]) && Math.abs(v.n[0]) > 0.7, typ + ': a face of the lettering looks inward');
+      if (v.p[0] < 0) left++;
+      else right++;
+      // the reader's left (u = 0) is the front on the left side, the rear on the right side
+      const u = q.uv[i * 2];
+      if (u === 0) assert.ok(v.p[0] < 0 ? v.p[1] > 0.2 * M.T.yr : v.p[1] < 0.6 * M.T.yf, typ + ': the word starts at the wrong end');
+    });
+    assert.ok(left === right && left >= 6, typ + ': both sides');
+  }
+});
