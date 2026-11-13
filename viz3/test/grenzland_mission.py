@@ -392,7 +392,7 @@ with lib.browser() as b:
         ck('the framed half of the map is taken from the wall', a3 and ok and E("GLSTATE.inv.karte2") == 1 and not E("GLLAGER.karte"), info()['step'])
         talk()
         # a guard sees you inside: he reports the burglary and comes running; caught → again from outside the fence
-        E("GLLAGER.wachen.forEach(w => GLLAGER.heim(w, true)); (w => { const F = w.F; GAME.view(F.x + Math.sin(F.hd) * 3, F.y + Math.cos(F.hd) * 3, KERN.ground(F.x, F.y) + 1.62, 0, 0) })(GLLAGER.wachen[0])")
+        E("GLLAGER.wachen.forEach(w => GLLAGER.heim(w, true)); (w => { const F = w.F, c = GLLAGER.Y.pos, d = Math.hypot(c[0] - F.x, c[1] - F.y); GAME.view(F.x + (c[0] - F.x) / d * 3, F.y + (c[1] - F.y) / d * 3, KERN.ground(F.x, F.y) + 1.62, 0, 0) })(GLLAGER.wachen[0])")
         ok = until("GLLAGER.wachen.some(w => w.job === 'jagt')", 4, 0.1)
         st1 = J("({ log: GLSTATE.W.log.map(l => l.id), n: GLLOGIK.stars(GLSTATE.W) })")
         ok2 = until("GLMISSION.debug.info().n >= 1 && GLMISSION.debug.info().step === 'rein' && !GLMISSION.St.busy", 20, 0.25, 0.2)

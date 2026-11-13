@@ -54,6 +54,7 @@ export const GLLAGER = (() => {
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
   const L = (r, g, b) => [lin(r / 255), lin(g / 255), lin(b / 255)];
   const dark = () => !!(VAUTO.dark && VAUTO.dark());
+  const sneak = () => (GLFAHNDUNG.sneak ? !!GLFAHNDUNG.sneak() : !VEH.cur && P.stance !== 'stand');
   const gz = (x, y) => {
     const z = KERN.ground(x, y);
     return Number.isFinite(z) ? z : 0;
@@ -306,7 +307,7 @@ export const GLLAGER = (() => {
     const grp = new THREE.Group();
     grp.name = 'grenzland lager';
     const mesh = own(new THREE.Mesh(k.geo(), VFIG.mat()));
-    S.lamp = GLAUTO.LM.head.clone();
+    S.lamp = VAUTO.LM.head.clone();
     S.lamp.emissive.setHex(0xffe2b0);
     S.lamp.emissiveIntensity = 0;
     const glow = own(new THREE.Mesh(kl.geo(), S.lamp));
@@ -581,7 +582,7 @@ export const GLLAGER = (() => {
     return (
       GLLOGIK.sieht({ x: F.x, y: F.y, hd: F.hd, r: 30 }, p.x, p.y, {
         dark: dark() && !lit,
-        sneak: GLFAHNDUNG.sneak(),
+        sneak: sneak(),
       }) && Y.sicht(F.x, F.y, p.x, p.y, !S.offen)
     );
   }

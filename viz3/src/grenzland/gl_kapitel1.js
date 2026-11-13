@@ -86,6 +86,24 @@ export const GLKAP1 = (() => {
     }
   };
   const sleep = ms => new Promise(res => setTimeout(res, window.FREEZE ? 0 : ms));
+  // (what the wanted system offers beyond its named interface is asked carefully: another agent rebuilds it tonight)
+  const sneak = () => (GLFAHNDUNG.sneak ? !!GLFAHNDUNG.sneak() : !VEH.cur && P.stance !== 'stand');
+  const gesehen = () => {
+    try {
+      return !!GLFAHNDUNG.stand().seen;
+    } catch (e) {
+      return !!GLFAHNDUNG.seen;
+    }
+  };
+  // the weight that makes a deed worth n stars at once
+  const gewicht = (id, n) => {
+    try {
+      const k = (GLLOGIK.STEPS[n - 1] + 0.05) / GLLOGIK.CRIMES[id].h;
+      return Number.isFinite(k) && k > 0 ? k : 3.7;
+    } catch (e) {
+      return 3.7;
+    }
+  };
   // a talk as part of a step: starts once, the step goes on when it is over. S.r: 0 not yet, 1 running, 2 done
   function sag(S, key) {
     if (!S.r) {
@@ -100,6 +118,22 @@ export const GLKAP1 = (() => {
     GL.tage++;
     GL.save();
   };
+  // the night passes: black, the next morning, light – true once it is over (S.n: 0 not yet, 1 running, 2 done)
+  function schlaf(S, a = T.morgenA, b = T.morgenB) {
+    if (!S.n) {
+      S.n = 1;
+      const g = St.gen;
+      (async () => {
+        await GLHUD.fade(true, a, b);
+        if (St.gen !== g) return;
+        morgen();
+        await sleep(1200);
+        await GLHUD.fade(false);
+        if (St.gen === g) S.n = 2;
+      })();
+    }
+    return S.n === 2;
+  }
   // ================================================================ 1 · Ein Gefallen ================================================================
   // where the stranger waits: some fifteen metres off on open ground, in plain sight of where the two arrive
   function fremderPos() {
@@ -294,21 +328,7 @@ export const GLKAP1 = (() => {
         text: TX.gefallen.nacht,
         ort: 'Garten',
         ziel: () => ORT.garten(),
-        tick(dt, S) {
-          if (!S.r && MI.zuFuss() && MI.fern(ORT.garten()) < 14) {
-            S.r = 1;
-            const g = St.gen;
-            (async () => {
-              await GLHUD.fade(true, T.morgenA, T.morgenB);
-              if (St.gen !== g) return;
-              morgen();
-              await sleep(1200);
-              await GLHUD.fade(false);
-              if (St.gen === g) S.r = 2;
-            })();
-          }
-          return S.r === 2;
-        },
+        tick: (dt, S) => (S.n || (MI.zuFuss() && MI.fern(ORT.garten()) < 14)) && schlaf(S),
       },
     ],
   });
@@ -783,10 +803,11 @@ export const GLKAP1 = (() => {
       KERN.unact('gl:stroh');
     },
     szene(i, A) {
-      if (i === 0 || i === 6) {
+      // (he stays on his bench until the picture is dark: the memory takes him away, not the step)
+      if (i === 0 || i === 6 || (i === 1 && GL.era === 'heute')) {
         const b = bank();
-        A.fig('gerhard', 'gerhard', b.p[0], b.p[1], b.hd, { sitz: 0.47 });
-        return;
+        A.fig('gerhard', 'gerhard', b.p[0], b.p[1], b.hd, { sitz: 0.47, era: 'heute' });
+        if (i !== 1) return;
       }
       // 1989: the crate, the ABV, and – while the village of the time has no people of its own – two neighbours as witnesses
       if (i <= 4) {
@@ -841,7 +862,9 @@ export const GLKAP1 = (() => {
             } catch (e) {
               console.warn('grenzland 1989', e);
             }
-            if (St.gen === g) S.da = true;
+            if (St.gen !== g) return;
+            MI.figWeg('gerhard');
+            S.da = true;
           })();
         },
         tick: (dt, S) => !!S.da && sag(S, 'damals'),
@@ -916,7 +939,7 @@ export const GLKAP1 = (() => {
             prio: 3,
             gest3: 'pickupLow',
             run() {
-              if (GLFAHNDUNG.seen) return void MI.denk(T.kisteSicht, 2500);
+              if (gesehen()) return void MI.denk(T.kisteSicht, 2500);
               S.fertig = true;
             },
           });
@@ -1071,7 +1094,7 @@ export const GLKAP1 = (() => {
   function maenner(dt, S) {
     const w = MI.wo(),
       dk = dark(),
-      sneak = GLFAHNDUNG.sneak();
+      snk = sneak();
     let alarm = false,
       near = 1e9;
     K4.men.forEach(([key], i) => {
@@ -1082,7 +1105,7 @@ export const GLKAP1 = (() => {
         // a rattling moped is heard long before it is seen
         sees = w.veh
           ? d < 45
-          : GLLOGIK.sieht({ x: f.x, y: f.y, hd: f.hd, r: 36 }, w.x, w.y, { dark: dk, sneak }) &&
+          : GLLOGIK.sieht({ x: f.x, y: f.y, hd: f.hd, r: 36 }, w.x, w.y, { dark: dk, sneak: snk }) &&
             GLFAHNDUNG.los(f.x, f.y, w.x, w.y);
       near = Math.min(near, d);
       if (GLMLOGIK.wachsam(W, dt, { sees, d }) === 'alarm' && K4.job !== 'jagt') {
@@ -1166,7 +1189,7 @@ export const GLKAP1 = (() => {
   const leuchtkugel = () => {
     const k = VPROPS.kit();
     k.ball(0, 0, 0, 0.5, [1, 1, 1], 8);
-    const mat = GLAUTO.LM.tail.clone();
+    const mat = VAUTO.LM.tail.clone();
     mat.emissive.setHex(0xff3a20);
     mat.emissiveIntensity = 9;
     const m = new THREE.Mesh(k.geo(), mat);
@@ -1359,7 +1382,7 @@ export const GLKAP1 = (() => {
             chat('klinge');
             GLFAHNDUNG.tat('hausfrieden', {
               force: [{ name: T.anwohner, knows: false }],
-              k: (GLLOGIK.STEPS[2] + 0.05) / GLLOGIK.CRIMES.hausfrieden.h,
+              k: gewicht('hausfrieden', 3),
             });
           }
           const c = MI.C('van');
@@ -1374,7 +1397,11 @@ export const GLKAP1 = (() => {
           return !!S.frei && MI.fern(ORT.garten()) < 24 && MI.wo().v < 3;
         },
       },
-      { id: 'heim', text: TX.klinge.heim, rede: 'heim4' },
+      {
+        id: 'heim',
+        text: TX.klinge.heim,
+        tick: (dt, S) => sag(S, 'heim4') && schlaf(S, T.morgenA, 'Die Fotos sind scharf. Der Kaffee ist es nicht.'),
+      },
     ],
   });
   // ================================================================ 5 · Der Coup ================================================================
@@ -1640,7 +1667,7 @@ export const GLKAP1 = (() => {
           const y = Y();
           if (why !== 'weiter' && y) MI.hin(y.hinten[0], y.hinten[1], yawTo(y.drin, y.hinten));
         },
-        tick: () => MI.fern(ORT.scheune()) < 16 && !GLFAHNDUNG.seen && MI.wo().v < 3,
+        tick: () => MI.fern(ORT.scheune()) < 16 && !gesehen() && MI.wo().v < 3,
       },
       {
         id: 'ende',
@@ -1653,7 +1680,7 @@ export const GLKAP1 = (() => {
         tick(dt, S) {
           const f = MI.F('jule'),
             w = MI.wo();
-          return (S.r || (w.v < 2 && (f ? hyp(f.x - w.x, f.y - w.y) < 7 : true))) && sag(S, 'ende');
+          return (S.r || (w.v < 2 && (f ? hyp(f.x - w.x, f.y - w.y) < 7 : S.t > 10))) && sag(S, 'ende');
         },
         ab() {
           GL.earn(250, 'Der Coup');
