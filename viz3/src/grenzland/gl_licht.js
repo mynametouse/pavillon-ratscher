@@ -221,8 +221,8 @@ export const GLLICHT = (() => {
   function mats() {
     if (MAT.kegel) return MAT;
     // the beams and pools: today white, 1989 and the Simson warm (a bulb of the time)
-    MAT.kegel = karte('kegel', 0xeef3ff, 0.16);
-    MAT.kegel89 = karte('kegel 1989', 0xffcf86, 0.18);
+    MAT.kegel = karte('kegel', 0xeef3ff, 0.12);
+    MAT.kegel89 = karte('kegel 1989', 0xffcf86, 0.13);
     MAT.glanz = karte('glanz', 0xf4f7ff, 0.6);
     MAT.glanz89 = karte('glanz 1989', 0xffd79a, 0.6);
     MAT.pool = karte('pool', 0xeef3ff, 0.075);
@@ -237,6 +237,7 @@ export const GLLICHT = (() => {
     MAT.fackelBoden = karte('fackel boden', 0xffeccc, 0.14);
     MAT.blauRund = karte('blau rundum', 0x2f63ff, 0);
     MAT.heli = karte('heli', 0xe6efff, 0.3);
+    MAT.heliStrahl = karte('heli strahl', 0xdfe8ff, 0.09);
     MAT.dunst = karte('leuchtkugel dunst', 0xff3018, 0.2);
     MAT.glut = karte('leuchtkugel glut', 0xff4020, 1);
     MAT.kern = karte('leuchtkugel kern', 0xffd8cc, 1);
@@ -775,9 +776,9 @@ export const GLLICHT = (() => {
     // the shared materials follow the dusk (in the rain the beams show more); the beacons flash
     if (MAT.kegel) {
       const k = Math.max(0, lk),
-        nass = S.regnet ? 1.6 : 1;
-      MAT.kegel.opacity = 0.16 * k * nass;
-      MAT.kegel89.opacity = 0.18 * k * nass;
+        nass = S.regnet ? 1.25 : 1;
+      MAT.kegel.opacity = 0.12 * k * nass;
+      MAT.kegel89.opacity = 0.13 * k * nass;
       MAT.glanz.opacity = 0.6 * k;
       MAT.glanz89.opacity = 0.6 * k;
       MAT.pool.opacity = 0.075 * k;
@@ -809,7 +810,11 @@ export const GLLICHT = (() => {
       }
   }
   // ================================================================ the helicopter's light ================================================================
-  const HELI = { spot: null, glanz: null };
+  // (grenzland/gl_heli.js draws a cone of its own – a mesh that stood as a hard pale wedge across the sky; while our lights are on it is
+  // hidden after its update and a soft card turned to the camera goes from the lamp to the patch instead)
+  const HELI = { spot: null, glanz: null, strahl: null },
+    _hs = new V3(),
+    _hd = new V3();
   function heli(show) {
     const H = GLHELI && GLHELI.H,
       lit = !!(show && H && GLHELI.on && GLHELI.st === 'kreist' && S.lampK > 0.3);
@@ -817,10 +822,13 @@ export const GLLICHT = (() => {
       if (HELI.spot && HELI.spot.visible) {
         HELI.spot.visible = false;
         HELI.glanz.visible = false;
+        HELI.strahl.begin();
+        HELI.strahl.end();
         markDirty();
       }
       return;
     }
+    if (GLHELI.cone && GLHELI.cone.visible) GLHELI.cone.visible = false;
     if (!HELI.spot) {
       mats();
       const K = bau();
@@ -829,7 +837,9 @@ export const GLLICHT = (() => {
       const G = bau();
       G.facing(new V3(), new V3(0, 0, 1), 1.6, REG.glow);
       HELI.glanz = own(new THREE.Mesh(G.geo(), MAT.heli), 'heli glanz');
-      scene.add(HELI.spot, HELI.glanz);
+      HELI.strahl = schar(1, MAT.heliStrahl);
+      HELI.strahl.m.name = 'grenzland licht heli strahl';
+      scene.add(HELI.spot, HELI.glanz, HELI.strahl.m);
     }
     const z = KERN.ground(H.lx, H.ly),
       z0 = Number.isFinite(GLHELI.z0) ? GLHELI.z0 : 0;
@@ -839,6 +849,19 @@ export const GLLICHT = (() => {
     HELI.glanz.position.set(H.x, z0 + H.h + 0.25, -H.y);
     HELI.glanz.quaternion.copy(cam.quaternion);
     HELI.glanz.visible = true;
+    // the beam: from the lamp to the patch, soft, as wide as the patch at its end (none while the camera stands in it)
+    _hs.copy(HELI.glanz.position);
+    _hd.set(H.lx, (Number.isFinite(z) ? z : z0) + 0.1, -H.ly).sub(_hs);
+    const len = _hd.length();
+    HELI.strahl.begin();
+    if (len > 3) {
+      _hd.multiplyScalar(1 / len);
+      _m1.copy(cam.position).sub(_hs);
+      const along = Math.max(0, Math.min(len, _m1.dot(_hd)));
+      if (_m1.addScaledVector(_hd, -along).length() > 1 + (6.5 * along) / len)
+        HELI.strahl.strahl(_hs, _hd, len, 0.35, 6.5, REG.beam);
+    }
+    HELI.strahl.end();
     markDirty();
   }
   // ================================================================ torches ================================================================
@@ -929,7 +952,7 @@ export const GLLICHT = (() => {
         L.boden.visible = true;
         // seen from close by, along the beam, the cards would add up to a white wedge: fainter near the camera
         const nah = Math.max(0.12, Math.min(1, (_h.distanceTo(cam.position) - 1.2) / 6));
-        L.licht.m.material.opacity = 0.16 * S.lampK * nah;
+        L.licht.m.material.opacity = 0.1 * S.lampK * nah;
         L.boden.material.opacity = 0.055 * S.lampK * (0.4 + 0.6 * nah);
       }
     for (const [F, L] of S.fackeln) if (!seen.has(F)) fackelWeg(F, L);
@@ -1405,8 +1428,9 @@ export const GLLICHT = (() => {
     S.autos.length = 0;
     for (const [F, L] of [...S.fackeln]) fackelWeg(F, L);
     if (HELI.spot) {
-      scene.remove(HELI.spot, HELI.glanz);
-      HELI.spot = HELI.glanz = null;
+      scene.remove(HELI.spot, HELI.glanz, HELI.strahl.m);
+      HELI.strahl.m.geometry.dispose();
+      HELI.spot = HELI.glanz = HELI.strahl = null;
     }
     if (SB) {
       for (const b of [SB.w, SB.y]) {

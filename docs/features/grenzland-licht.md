@@ -32,7 +32,10 @@ Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo ech
   `welt` das ändert, setzt `gl_licht.js` dieses geliehene Licht nach dessen Takt jeden Frame auf 12 m, Abfall 2 und zwischen den
   Blitzen 0 (siehe „Für den Lead“).
 - **Hubschrauber:** wo der Suchscheinwerfer auf den Boden fällt, ein heller Fleck (dreht sich langsam), am Hubschrauber der Glanz
-  der Lampe (der Lichtkegel und das geliehene Licht sind schon in `gl_heli.js`).
+  der Lampe, dazwischen ein weicher Strahl (eine zur Kamera gedrehte Karte). Der eigene Kegel von `gl_heli.js` (Datei von `welt`)
+  stand als harter, blasser Keil quer über dem Himmel (Bild `out/grenzland_licht/14_heli_vergleich.jpg`, links): solange die Lichter
+  dieses Moduls an sind, wird er nach dessen Takt ausgeblendet (Wunsch an `welt`: den Kegel weglassen, wenn `window.GLLICHT` da ist).
+  Das geliehene Licht am Boden bleibt.
 - **Taschenlampen:** Jede Figur von `gl_fig.js` mit `F.lampe = true` trägt eine: Glanz an der Hand (die linke, wenn die rechte etwas
   hält), ein schwacher Lichtkegel nach vorn unten (eine zur Kamera gedrehte Karte), der beim Gehen und Umsehen pendelt (nahe an
   der Kamera blasser), und ein Lichtfleck auf dem Boden, der mitgeht. Ohne die
