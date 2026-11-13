@@ -560,6 +560,9 @@ export const VERKEHR = (() => {
   function spawnCar(Pl, o, opt = {}) {
     const who = driverFor(Pl, opt.who);
     if (!who || Pl.exits.length < 2) return null;
+    // feat/verkehr-real: the first seconds of play the models are still built in the worker – wait for the driver's own car rather
+    // than send the old plain one (after 25 s it may, should the worker never answer)
+    if (!opt.who && !VKMOD.ready(typFor(who)) && S.t < 25) return null;
     // a route between two exits that passes near the observer; it starts out of sight, some 150–260 m before that point
     const cands = [];
     for (const a of Pl.exits)
