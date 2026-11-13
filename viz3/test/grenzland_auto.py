@@ -76,6 +76,9 @@ with lib.browser() as b:
     E = pg.evaluate
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
     steps = lambda secs, dt=0.1: E(f"for (let i = 0; i < {max(1, int(secs / dt))}; i++) GAME.step({dt})")
+    # statements: nothing comes back. (An evaluation hands back its last value – a vehicle is the whole scene behind it; sending
+    # that to the test took the page's memory here and broke the evaluation on Actions.)
+    do = lambda js: E("(() => { " + js + "; })()") and None
     def pic(name):
         try:
             lib.shot(pg, OUT, name)
@@ -90,8 +93,8 @@ with lib.browser() as b:
         # out of whatever one sits in, standing
         try:
             if E("!!VEH.cur"):
-                E(BRAKE); steps(5, 0.05); E("VEH.auto = null; VEH.exit()"); steps(0.4)
-            E("VEH.auto = null")
+                do(BRAKE); steps(5, 0.05); do("VEH.auto = null; VEH.exit()"); steps(0.4)
+            do("VEH.auto = null")
         except Exception as e:
             print('off failed', e)
     progs = lambda: J("GAME.R.info.programs.map(p => p.name + '#' + p.id)")
@@ -102,12 +105,12 @@ with lib.browser() as b:
         # the baseline of the shader programs: the normal game with the player's car in view (the vehicles' paint, glass and chrome
         # are copies of its materials), then the field of the line-up
         try:
-            E("(() => { const s = VEH.by.car.st; GAME.view(s.x - 5, s.y - 5, KERN.ground(s.x - 5, s.y - 5) + 1.7, 45, -8); })()")
+            do("(() => { const s = VEH.by.car.st; GAME.view(s.x - 5, s.y - 5, KERN.ground(s.x - 5, s.y - 5) + 1.7, 45, -8); })()")
             steps(0.3)
-            E("GAME.shot()")
+            do("GAME.shot()")
         except Exception as e:
             note('no look at the player\'s car before the baseline: %s' % str(e)[:200])
-        E("CAM3.want = false; GAME.view(%f, %f, KERN.ground(%f, %f) + 1.6, 0, -6)" % (X0 + 20, Y0 - 9, X0 + 20, Y0 - 9))
+        do("CAM3.want = false; GAME.view(%f, %f, KERN.ground(%f, %f) + 1.6, 0, -6)" % (X0 + 20, Y0 - 9, X0 + 20, Y0 - 9))
         steps(0.3)
         pic('00_vorher')
         P0.extend(progs())
@@ -117,7 +120,7 @@ with lib.browser() as b:
         fr = E(FREI)
         if fr: note('free play, not there on this branch: ' + fr)
         steps(1)
-        E("GLAUTO.mopedVeh()")
+        do("GLAUTO.mopedVeh()")
         st = J("({ on: GLSTATE.on, moped: !!GLAUTO.moped, name: GLAUTO.moped && GLAUTO.moped.name, sub: GLAUTO.moped && GLAUTO.moped.gl && GLAUTO.moped.gl.sub, "
                "cars: GLAUTO.cars.length, w: KERN.where().slice(0, 2).map(Math.round) })")
         info0.update(st)
@@ -128,7 +131,7 @@ with lib.browser() as b:
 
     # ---- the line-up: every type ----
     def reihe():
-        E("window.GLT = {}")
+        do("window.GLT = {}")
         for i, (typ, o, _) in enumerate(TYPES):
             x = X0 + i * DX
             info[typ] = J("(() => { const c = GLAUTO.spawn(%s, %s); if (!c) return null; GLAUTO.park(c, %f, %f, %f); GLT[%s] = c; let n = 0, m = 0; "
@@ -155,9 +158,9 @@ with lib.browser() as b:
             for name, ax in (('', HD - 0.62),) + ((('_heck', HD + math.pi + 0.62),) if rear else ()):
                 cx, cy = x + math.sin(ax) * d, Y0 + math.cos(ax) * d
                 yaw = math.degrees(math.atan2(x - cx, Y0 - cy))
-                E("GAME.view(%f, %f, KERN.ground(%f, %f) + %f, %f, %f, 34)" % (cx, cy, x, Y0, 2.4 if big else 1.7, yaw, -7 if big else -9))
+                do("GAME.view(%f, %f, KERN.ground(%f, %f) + %f, %f, %f, 34)" % (cx, cy, x, Y0, 2.4 if big else 1.7, yaw, -7 if big else -9))
                 pic('1_%02d_%s%s' % (i, typ, name))
-        E("GAME.view(%f, %f, KERN.ground(%f, %f) + 6, 8, -14, 60)" % (X0 + 6 * DX, Y0 - 26, X0 + 6 * DX, Y0))
+        do("GAME.view(%f, %f, KERN.ground(%f, %f) + 6, 8, -14, 60)" % (X0 + 6 * DX, Y0 - 26, X0 + 6 * DX, Y0))
         pic('2_reihe')
     part('line-up', reihe)
 
@@ -170,54 +173,54 @@ with lib.browser() as b:
 
     # ---- the player's Simson ----
     def simson():
-        E("GAME.view(104, -316, KERN.ground(104, -316) + 1.6, 30, -5); GLAUTO.mopedAt(108, -312, 0.5); GLSTATE.tank = 3")
+        do("GAME.view(104, -316, KERN.ground(104, -316) + 1.6, 30, -5); GLAUTO.mopedAt(108, -312, 0.5); GLSTATE.tank = 3")
         steps(0.5)
-        E("CAM3.want = true; VEH.enter('gl-moped')")
+        do("CAM3.want = true; VEH.enter('gl-moped')")
         steps(1.2)
         pic('3_moped_aussen')
-        E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
+        do("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
         steps(8, 0.05)
         m1 = J("({ id: VEH.cur && VEH.cur.id, u: VEH.cur.st.u, gear: VEH.cur.st.gear, c: GLCOCKPIT.stand(), want: GLCOCKPIT.winkel(Math.abs(VEH.cur.st.u) * 3.6, 100) })")
         note('Simson after 8 s on the field: %.1f km/h, gear %s' % (m1['u'] * 3.6, m1['gear']))
         ck('the Simson rides (over 20 km/h after 8 s on the field)', m1['id'] == 'gl-moped' and m1['u'] * 3.6 > 20, str(m1))
         ck('the speedometer reads the truth (needle within 4 km/h of the speed)', m1['c']['on'] and abs(m1['c']['kmh'] - m1['u'] * 3.6) < 4 and abs(m1['c']['winkel'] - m1['want']) < 0.25, str(m1))
-        E("CAM3.want = false")
+        do("CAM3.want = false")
         steps(0.3, 0.05)
         pic('4_cockpit_tag')
-        E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0.35, hand: false })")
+        do("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0.35, hand: false })")
         steps(1.6, 0.05)
         m2 = J("({ lean: VEH.cur.model.lean(), steer: VEH.cur.st.steer, q: VEH.cur.model.cockpit.steer.quaternion.w, ex: VEH.cur.spec.eye[0], u: VEH.cur.st.u, c: GLCOCKPIT.stand() })")
         ck('it leans into the curve, the handlebar turns, the eyes go with the lean', m2['lean'] > 0.04 and m2['steer'] > 0.02 and m2['q'] < 0.99999 and m2['ex'] > 0.03, str(m2))
         ck('from the saddle one sees the rider\'s hands on the grips', m2['c']['haende'], str(m2['c']))
         pic('5_cockpit_kurve')
-        E("CAM3.want = true")
+        do("CAM3.want = true")
         steps(0.2, 0.05)
         pic('6_moped_kurve_aussen')
         top = E(TOP + "('gl-moped')")
         note('Simson top speed on the flat from its data: %.1f km/h' % top)
         ck('the Simson\'s data give about 60 km/h on the flat', 56 <= top <= 68, '%.1f km/h' % top)
-        E(BRAKE)
+        do(BRAKE)
         steps(5, 0.05)
         tk = J("({ tank: GLSTATE.tank, c: GLCOCKPIT.stand(), sub: VEH.cur.gl.sub })")
         ck('the tank went down, the odometer counted, the small line tells the tank', tk['tank'] < 3 and tk['c']['km'] > 27418.31 and 'Tank ' in tk['sub'] and ' l' in tk['sub'], str(tk))
-        E("GLSTATE.tank = 0.5")
+        do("GLSTATE.tank = 0.5")
         steps(0.2, 0.05)
         tk = J("({ tap: VEH.cur.model.cockpit.tap.rotation.x, sub: VEH.cur.gl.sub })")
         ck('under 0.8 l the fuel tap stands on reserve', tk['tap'] < -1 and 'Reserve' in tk['sub'], str(tk))
-        E("GLSTATE.tank = 3")
+        do("GLSTATE.tank = 3")
     part('the Simson', simson)
     off()
 
     # ---- the Trabant of 1989 ----
     def trabant():
-        E("GLAUTO.mopedAt(96, -318, 0.5); GLAUTO.trabiAt(108, -312, 0.5)")
+        do("GLAUTO.mopedAt(96, -318, 0.5); GLAUTO.trabiAt(108, -312, 0.5)")
         steps(0.5)
-        E("CAM3.want = true; VEH.enter('gl-trabi')")
+        do("CAM3.want = true; VEH.enter('gl-trabi')")
         steps(1.2)
         t0 = J("({ id: VEH.cur && VEH.cur.id, name: VEH.cur && VEH.cur.name, sub: VEH.cur && VEH.cur.gl && VEH.cur.gl.sub, z: VEH.cur ? VEH.cur.st.z - KERN.ground(VEH.cur.st.x, VEH.cur.st.y) : 9 })")
         ck('the Trabant stands there, one gets in, its name and small line for the HUD', t0['id'] == 'gl-trabi' and t0['name'] == 'Trabant 601' and 'PS' in (t0['sub'] or '') and abs(t0['z']) < 0.4, str(t0))
         pic('9a_trabi_aussen')
-        E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
+        do("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
         steps(7, 0.05)
         t1 = J("({ u: VEH.cur.st.u, gear: VEH.cur.st.gear, c: GLCOCKPIT.stand(), want: GLCOCKPIT.winkel(Math.abs(VEH.cur.st.u) * 3.6, 120) })")
         note('Trabant after 7 s on the field: %.1f km/h, gear %s' % (t1['u'] * 3.6, t1['gear']))
@@ -227,10 +230,10 @@ with lib.browser() as b:
         top = E(TOP + "('gl-trabi')")
         note('Trabant top speed on the flat from its data: %.1f km/h' % top)
         ck('the Trabant\'s data give about 105 km/h on the flat', 96 <= top <= 114, '%.1f km/h' % top)
-        E("CAM3.want = false; if (window.GLRADIO && GLRADIO.stations && GLRADIO.stations().length) GLRADIO.tune(GLRADIO.stations()[0].id)")
+        do("CAM3.want = false; if (window.GLRADIO && GLRADIO.stations && GLRADIO.stations().length) GLRADIO.tune(GLRADIO.stations()[0].id)")
         steps(0.4, 0.05)
         pic('9b_trabi_cockpit_tag')
-        E("VEH.auto = () => ({ thr: 0.4, brk: 0, steer: 0.5, hand: false })")
+        do("VEH.auto = () => ({ thr: 0.4, brk: 0, steer: 0.5, hand: false })")
         steps(1.0, 0.05)
         t2 = J("({ rad: VEH.cur.model.cockpit.wheel.rotation.z, steer: VEH.cur.st.steer, radio: GLCOCKPIT.stand().radio, cur: window.GLRADIO && GLRADIO.cur ? GLRADIO.cur() : null, "
                "haende: GLCOCKPIT.stand().haende, hz: VEH.cur.model.cockpit.hands.rotation.z })")
@@ -243,29 +246,29 @@ with lib.browser() as b:
     # ---- at night: the cockpits lit, the lamps, the beacons ----
     def nacht():
         if not E("!!VEH.cur"):
-            E("GLAUTO.trabiAt(108, -312, 0.5)"); steps(0.3); E("VEH.enter('gl-trabi')"); steps(1)
-        E(BRAKE)
+            do("GLAUTO.trabiAt(108, -312, 0.5)"); steps(0.3); do("VEH.enter('gl-trabi')"); steps(1)
+        do(BRAKE)
         steps(4, 0.05)
-        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 23 * 60 + 10; if (window.DN && DN.active) DN.update(true)")
+        do("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 23 * 60 + 10; if (window.DN && DN.active) DN.update(true)")
         lib.settle_light(pg)
-        E("CAM3.want = false; VEH.auto = () => ({ thr: 0.5, brk: 0, steer: 0, hand: false })")
+        do("CAM3.want = false; VEH.auto = () => ({ thr: 0.5, brk: 0, steer: 0, hand: false })")
         steps(2.5, 0.05)
         n0 = J("({ id: VEH.cur.id, c: GLCOCKPIT.stand(), head: VEH.cur.model.lamps.head[0].emissiveIntensity, dark: VAUTO.dark() })")
         ck('at night the Trabant\'s lamps are on and its instruments lit', n0['dark'] and n0['head'] > 1 and n0['c']['hell'] > 0.3, str(n0))
         pic('9d_trabi_cockpit_nacht')
         off()
-        E("GLSTATE.tank = 3; VEH.enter('gl-moped'); VEH.auto = () => ({ thr: 0.6, brk: 0, steer: 0, hand: false })")
+        do("GLSTATE.tank = 3; VEH.enter('gl-moped'); VEH.auto = () => ({ thr: 0.6, brk: 0, steer: 0, hand: false })")
         steps(3, 0.05)
         n1 = J("({ id: VEH.cur && VEH.cur.id, c: GLCOCKPIT.stand(), head: VEH.cur.model.lamps.head[0].emissiveIntensity })")
         ck('at night the Simson\'s lamp is on and the speedometer is lit', n1['id'] == 'gl-moped' and n1['head'] > 1 and n1['c']['hell'] > 0.3, str(n1))
         pic('7_cockpit_nacht')
         off()
         i = [t for t, _, _ in TYPES].index('streife')
-        E("for (const t of ['streife', 'limo89']) { const c = GLT[t]; GLAUTO.park(c, %f + (t === 'streife' ? 0 : 5.6), %f, %f); c.blau = true; }" % (X0 + i * DX, Y0, HD))
+        do("for (const t of ['streife', 'limo89']) { const c = GLT[t]; GLAUTO.park(c, %f + (t === 'streife' ? 0 : 5.6), %f, %f); c.blau = true; }" % (X0 + i * DX, Y0, HD))
         steps(0.4)
         ax = HD - 0.5
         cx, cy = X0 + i * DX + 2.8 + math.sin(ax) * 9.5, Y0 + math.cos(ax) * 9.5
-        E("CAM3.want = false; GAME.view(%f, %f, KERN.ground(%f, %f) + 1.7, %f, -7, 40)" % (cx, cy, X0 + i * DX, Y0, math.degrees(math.atan2(X0 + i * DX + 2.8 - cx, Y0 - cy))))
+        do("CAM3.want = false; GAME.view(%f, %f, KERN.ground(%f, %f) + 1.7, %f, -7, 40)" % (cx, cy, X0 + i * DX, Y0, math.degrees(math.atan2(X0 + i * DX + 2.8 - cx, Y0 - cy))))
         pic('8_streifen_nacht')
         bl = J("({ a: GLMOD.LM.blau.emissiveIntensity, b: GLMOD.LM.blau2.emissiveIntensity, head: GLMOD.LM.head.emissiveIntensity })")
         ck('the beacons flash, the lamps glow at night', max(bl['a'], bl['b']) > 3 and bl['head'] > 1, str(bl))
@@ -289,9 +292,9 @@ with lib.browser() as b:
 
     # ---- the end ----
     def ende():
-        E("GRENZLAND.stop()")
+        do("GRENZLAND.stop()")
         steps(0.5)
-        st = J("({ on: GLSTATE.on, cars: GLAUTO.cars.length, mine: Object.values(window.GLT || {}).filter(c => c && (GLAUTO.cars.includes(c) || c.g.visible)).length, "
+        st = J("({ on: GLSTATE.on, cars: GLAUTO.cars.length, mine: Object.values(window.GLT || {}).filter(c => c && (GLAUTO.cars.includes(c) || (c.g.parent && c.g.visible))).length, "
                "moped: GLAUTO.moped ? GLAUTO.moped.g.visible : false, trabi: GLAUTO.trabi ? GLAUTO.trabi.g.visible : false, zt: !!GLAUTO.zt })")
         ck('„Beenden“ takes the vehicles away', not st['on'] and st['mine'] == 0 and not st['moped'] and not st['trabi'] and not st['zt'], str(st))
     part('the end', ende)
