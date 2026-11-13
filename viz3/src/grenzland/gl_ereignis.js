@@ -4,8 +4,8 @@
 // over or left behind (and with „Beenden“):
 //   blitzer      a mobile speed camera in a parked estate at the roadside: past it faster than 50 km/h – a white flash, and a minute
 //                later a letter in the phone (30 €)
-//   traktorstau  the harvest lorry of the agricultural cooperative (an IFA W 50 – the mode has no tractor model) crawling along the
-//                country road, two cars queueing behind it and honking; overtake it, or wait
+//   traktorstau  a tractor of the agricultural cooperative with a trailer of straw bales crawling along the road (built here of the
+//                props kit and driven along the road's line), two cars queueing behind it and honking; overtake it, or wait
 //   kirmes       the fair on the Anger: the Kirmesbaum, a stall with Rostbratwurst (3 €), two young people of the fair, a polka
 //   korso        a wedding convoy – four cars with white bows, honking through the town; who follows it a while gets a tenner from the
 //                bride's father
@@ -24,6 +24,7 @@ import { VEH } from '../vehicles/vehicle.js';
 import { VPROPS } from '../world/village_props.js';
 import { VFIG } from '../verkehr/verkehr_fig.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
+import { VNETZ } from '../verkehr/verkehr_netz.js';
 import { STIMME } from '../audio/stimme.js';
 import { GLLOGIK } from './gl_logik.js';
 import { GLDATA } from './gl_data.js';
@@ -124,9 +125,9 @@ export const GLEREIGNIS = (() => {
       ort +
       '. 30 € wurden abgebucht. Das Foto ist übrigens gut geworden.',
     briefVon: 'Bußgeldstelle',
-    stau: 'Stau hinter dem Erntewagen',
-    stauSub: 'Die Agrargenossenschaft fährt Ernte ein',
-    ueberholt: 'Überholt. Der Fahrer des Erntewagens tippt sich an die Mütze.',
+    stau: 'Traktorstau',
+    stauSub: 'Die Agrargenossenschaft fährt Stroh ein',
+    ueberholt: 'Überholt. Der Traktorfahrer tippt sich an die Mütze.',
     kirmes: 'Kirmes in Ratscher',
     kirmesSub: 'Mit Kirmesbaum, Rostbratwurst und Blasmusik',
     wurst: 'Rostbratwurst kaufen (3 €)',
@@ -288,54 +289,82 @@ export const GLEREIGNIS = (() => {
         return E.t > 300;
       },
     },
-    // ---- the harvest lorry crawling along, two cars behind it, honking ----
+    // ---- a tractor with a trailer of straw crawling along the road, two cars behind it, honking ----
     traktorstau: {
       titel: TX.stau,
       sub: TX.stauSub,
-      radar: 'Stau',
+      radar: 'Traktor',
       wo: () => vorn(170, 320),
       start(E, A) {
         const line = linie(A, 700);
         E.x = A.x;
         E.y = A.y;
         if (!line) return false;
-        const w = auto(E, 'w50', { col: '#5d6b45', col2: '#3a3f33' }),
-          a = auto(E, 'trabant', { col: '#d8d2bf' }),
+        E.line = line;
+        E.s = 40;
+        E.v = 4;
+        E.zug = mesh(traktor, A.x, A.y, A.hd);
+        E.anh = mesh(haenger, A.x, A.y, A.hd);
+        E.meshes.push(E.zug, E.anh);
+        // solid for the player's vehicle and the walker, as the mode's cars are (vehicles/vehicle.js VEH.extra)
+        E.boxes = [
+          { q: E.zug, ey: 1.9, ex: 1.05, cy: 0.9 },
+          { q: E.anh, ey: 2.5, ex: 1.15, cy: -3.4 },
+        ].map(b => ({
+          box: () => {
+            const m = b.q,
+              hd = -m.rotation.y;
+            return m.parent
+              ? {
+                  c: [m.position.x + Math.sin(hd) * b.cy, -m.position.z + Math.cos(hd) * b.cy],
+                  ax: [Math.cos(hd), -Math.sin(hd)],
+                  ay: [Math.sin(hd), Math.cos(hd)],
+                  ex: b.ex,
+                  ey: b.ey,
+                  z0: m.position.y,
+                  z1: m.position.y + 2.4,
+                }
+              : null;
+          },
+          grenzland: { ereignis: true },
+        }));
+        if (VEH.extra) VEH.extra.push(...E.boxes);
+        const a = auto(E, 'trabant', { col: '#d8d2bf' }),
           b = auto(E, 'kombi', { col: '#7a2a2a' });
-        const row = [w, a, b].filter(Boolean);
-        row.forEach((c, i) => GLAUTO.onLine(c, line, 34 - i * 11, i ? 4.5 : 5));
-        E.row = row;
+        E.row = [a, b].filter(Boolean);
+        E.row.forEach((c, i) => GLAUTO.onLine(c, line, E.s - 15 - i * 11, 4));
         E.hornT = 2;
+        zugSetzen(E);
       },
       tick(E, dt, p) {
-        const row = E.row || [];
-        if (!row.length) return true;
-        row.forEach((c, i) => {
-          const ahead = row[i - 1];
+        // the tractor: 19 km/h, a gentle start
+        E.v = Math.min(5.2, E.v + dt * 0.8);
+        E.s = Math.min(E.line.L - 2, E.s + E.v * dt);
+        zugSetzen(E);
+        const tail = E.tail;
+        E.row.forEach((c, i) => {
+          const ahead = i ? E.row[i - 1] : null;
           GLAUTO.drive(c, dt, {
-            vmax: i ? 12 : 5.2,
+            vmax: 12,
             k: 1,
-            halt: ahead ? [{ x: ahead.x, y: ahead.y, r: 0.6, gap: 3.5 }] : [],
+            halt: [ahead ? { x: ahead.x, y: ahead.y, r: 0.6, gap: 3.5 } : { x: tail[0], y: tail[1], r: 0.6, gap: 3 }],
           });
           c.horn = false;
         });
         if ((E.hornT -= dt) <= 0) {
           E.hornT = 3 + Math.random() * 5;
-          E.hupe = row[1 + Math.floor(Math.random() * (row.length - 1))];
+          E.hupe = E.row[Math.floor(Math.random() * E.row.length)];
           E.hupeT = 0.6;
         }
         if (E.hupe && (E.hupeT -= dt) > 0) E.hupe.horn = true;
-        const L0 = row[0];
-        E.x = L0.x;
-        E.y = L0.y;
-        // overtaken: he is ahead of the lorry on its way
-        const along = (p.x - L0.x) * Math.sin(L0.hd) + (p.y - L0.y) * Math.cos(L0.hd);
-        if (!E.vorbei && VEH.cur && along > 6 && hyp(p.x - L0.x, p.y - L0.y) < 30) {
+        // overtaken: he is ahead of the tractor on its way
+        const along = (p.x - E.x) * Math.sin(E.hd) + (p.y - E.y) * Math.cos(E.hd);
+        if (!E.vorbei && VEH.cur && along > 6 && hyp(p.x - E.x, p.y - E.y) < 30) {
           E.vorbei = true;
           E.ende = 'ueberholt';
           PLAY.think(TX.ueberholt, 3000);
         }
-        return L0.ende || E.t > 240 || (E.vorbei && hyp(p.x - L0.x, p.y - L0.y) > 220);
+        return E.s >= E.line.L - 3 || E.t > 240 || (E.vorbei && hyp(p.x - E.x, p.y - E.y) > 220);
       },
     },
     // ---- the fair on the Anger ----
@@ -628,6 +657,76 @@ export const GLEREIGNIS = (() => {
       },
     },
   };
+  // the tractor and its trailer on the line: the tractor's rear axle at E.s, the trailer's drawbar eye just behind it, the trailer
+  // turned along the road behind
+  const _p = {},
+    _q = {};
+  function zugSetzen(E) {
+    VNETZ.at(E.line, E.s, _p);
+    VNETZ.at(E.line, E.s + 1.2, _q);
+    const hd = Math.atan2(_q.x - _p.x, _q.y - _p.y),
+      z = KERN.ground(_p.x, _p.y) || 0;
+    E.zug.position.set(_p.x, z, -_p.y);
+    E.zug.rotation.y = -hd;
+    E.x = _p.x;
+    E.y = _p.y;
+    E.hd = hd;
+    const ex = _p.x - Math.sin(hd) * 0.9,
+      ey = _p.y - Math.cos(hd) * 0.9;
+    VNETZ.at(E.line, Math.max(0, E.s - 4.3), _q);
+    const ha = Math.atan2(ex - _q.x, ey - _q.y);
+    E.anh.position.set(ex, KERN.ground(ex, ey) || z, -ey);
+    E.anh.rotation.y = -ha;
+    E.tail = [ex - Math.sin(ha) * 5.7, ey - Math.cos(ha) * 5.7];
+    markDirty();
+  }
+  // a tractor of the East (after the Fortschritt ZT 300: the red bonnet, the big rear wheels, an open cab) – kit frame: x right, y
+  // ahead, z up; the rear axle at the origin
+  function traktor(K) {
+    const rot = L(178, 40, 30),
+      dk = L(28, 28, 30),
+      grau = L(96, 98, 100),
+      fel = L(196, 174, 70),
+      R = GLORTE.rolle;
+    for (const s of [-1, 1]) {
+      R(K, [s * 0.6, 0, 0.74], [s * 1.0, 0, 0.74], 0.74, dk, 16);
+      R(K, [s * 0.58, 0, 0.74], [s * 0.6, 0, 0.74], 0.44, fel, 12);
+      R(K, [s * 0.52, 2.3, 0.44], [s * 0.8, 2.3, 0.44], 0.44, dk, 12);
+      R(K, [s * 0.5, 2.3, 0.44], [s * 0.52, 2.3, 0.44], 0.24, fel, 10);
+      K.box(s * 0.8, 0, 1.4, 0.46, 1.3, 0.06, 0, rot);
+    }
+    K.box(0, 1.45, 0.62, 0.78, 2.0, 0.8, 0, rot);
+    K.box(0, 2.46, 0.66, 0.7, 0.04, 0.72, 0, dk);
+    K.box(0, 0.05, 0.55, 1.1, 0.9, 0.4, 0, grau);
+    for (const [x, y] of [
+      [-0.62, -0.42],
+      [0.62, -0.42],
+      [-0.62, 0.5],
+      [0.62, 0.5],
+    ])
+      K.box(x, y, 0.95, 0.05, 0.05, 1.55, 0, dk);
+    K.box(0, 0.04, 2.5, 1.36, 1.05, 0.07, 0, rot);
+    K.box(0, -0.12, 0.95, 0.5, 0.45, 0.42, 0, dk);
+    K.cyl(0.28, 1.9, 1.42, 2.6, 0.045, 0.04, 8, dk, true);
+    K.box(0, -0.72, 0.5, 0.14, 0.5, 0.1, 0, grau);
+  }
+  // its trailer with straw bales – the drawbar eye at the origin, the bed behind it
+  function haenger(K) {
+    const gr = L(72, 104, 66),
+      dk = L(28, 28, 30),
+      holz = L(150, 116, 80),
+      stroh = L(216, 188, 112);
+    K.box(0, -0.6, 0.5, 0.1, 1.2, 0.08, 0, dk);
+    K.box(0, -3.4, 0.95, 2.2, 4.4, 0.12, 0, holz);
+    for (const s of [-1, 1]) K.box(s * 1.08, -3.4, 1.07, 0.05, 4.4, 0.5, 0, gr);
+    K.box(0, -5.58, 1.07, 2.2, 0.05, 0.5, 0, gr);
+    K.box(0, -1.22, 1.07, 2.2, 0.05, 0.5, 0, gr);
+    for (const y of [-2.1, -4.6])
+      for (const s of [-1, 1]) GLORTE.rolle(K, [s * 0.78, y, 0.46], [s * 1.06, y, 0.46], 0.46, dk, 12);
+    for (let i = 0; i < 4; i++)
+      for (let j = 0; j < 2; j++)
+        for (let l = 0; l < 2; l++) K.box(-0.5 + j * 1.0, -1.8 - i * 1.05, 1.07 + l * 0.48, 0.95, 1.0, 0.46, 0, stroh);
+  }
   // a deer of boxes (it is seen at dusk and from a vehicle): body, legs, neck, head with ears, the white rump
   function reh(K) {
     const b = L(122, 84, 52),
@@ -741,6 +840,10 @@ export const GLEREIGNIS = (() => {
       GLAUTO.remove(c);
     }
     for (const F of E.figs) if (!F.gone) GLFIG.drop(F);
+    for (const b of E.boxes || []) {
+      const j = VEH.extra ? VEH.extra.indexOf(b) : -1;
+      if (j >= 0) VEH.extra.splice(j, 1);
+    }
     for (const m of E.meshes) {
       if (m.parent) m.parent.remove(m);
       if (m.geometry) m.geometry.dispose();

@@ -85,7 +85,7 @@ Punkt auf dem Radar (`GLKARTE.src`, Art `ort`) und wird weggeräumt, wenn es vor
 | Ereignis | Was | Folge |
 |---|---|---|
 | Blitzer | ein Kombi am Straßenrand, die Kamera auf dem Stativ daneben | schneller als 50 km/h: weißer Blitz, eine Minute später der Brief im Handy, 30 € |
-| Traktorstau | der Erntewagen der Agrargenossenschaft (IFA W 50 – ein Traktormodell gibt es im Modus nicht), 19 km/h, zwei Autos dahinter, die hupen | überholen: der Fahrer tippt sich an die Mütze |
+| Traktorstau | ein roter Traktor nach Art des Fortschritt ZT 300 mit Strohballen-Hänger (hier aus dem Bausatz gebaut, fährt auf der Linie der Straße, fest für Fahrzeug und Fußgänger), 19 km/h, zwei Autos dahinter, die hupen | überholen: der Fahrer tippt sich an die Mütze |
 | Kirmes | Kirmesbaum, Bratwurststand „ROSTBRATWURST“, Bank, Wirt, Kirmesbursche und -mädchen, Polka | Rostbratwurst für 3 € |
 | Hochzeitskorso | vier Autos mit weißen Schleifen kommen entgegen und hupen | 20 s mitfahren: 10 € vom Brautvater |
 | Böller aus dem Kofferraum | ein Kombi, bunte Kisten, der Böller-Mann in Ballonseide | drei Böller für 5 € |
@@ -112,7 +112,9 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
 - **HUD aus `wissen`:** drei Symbole (Gesicht, Kleidung/Jacke, Fahrzeug), an = die Polizei weiß es und es passt noch. Hilfreich als
   Zeile darunter: `stand().beschreibung` (z. B. „Gesucht wird eine Person, männlich, rotes Karohemd, auf einem Moped. Richtung
   Schleusingen.“). Ereignis `grenzland:wissen` `{ wissen, neu?, weg? }` bei jeder Änderung – gut für ein kurzes Aufblinken.
-- **Radar:** `cars[i].gesehen` (ohne das Feld: immer zeigen). Ereignis `grenzland:funk` hat jetzt auch `k: 'bild' | 'bild-alt'` und
+- `wissen.fahrzeug` ist nur an, solange der Spieler im bekannten Fahrzeug sitzt; dass die Polizei das Moped überhaupt kennt (auch wenn
+  er zu Fuß ist), sagt weiter `stand().fz` – falls das Symbol zu Fuß gedimmt statt aus sein soll.
+- **Radar:** `cars[i].gesehen` und `cops[i].gesehen` (ohne das Feld: immer zeigen). Ereignis `grenzland:funk` hat jetzt auch `k: 'bild' | 'bild-alt'` und
   `teile`.
 - **Von `GLHUD` gebraucht:** `GLHUD.sub` als Warteschlange (der Funksatz ist lang, ~5 s); `body[data-gl-kino]` wird gelesen.
 - **Für `stimmen`:** `GLFAHNDUNG.linien()` (Sprecher `funk`, `polizei1`, `polizei2`, `vopo`, `abv`), `GLREAKTION.linien()` (je Sprecher
@@ -125,8 +127,16 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
 - **Ereignisse:** `grenzland:gefilmt`, `grenzland:post`, `grenzland:feedpost`, `grenzland:reaktion`, `grenzland:antwort`,
   `grenzland:ereignis` `{ name, ende? }`, `grenzland:geblitzt`, `grenzland:wildunfall`, `grenzland:kleid`.
 
+- **Handy, Fehler von vorher behoben:** Der Inhaltsbereich des Handys hat die Klasse `.hb`, die auch die Kopfleisten-Knöpfe des
+  Spiels haben (`viz3/shell/css/hud.css`: `display:flex`, runde Ecken, Zeiger). Dadurch standen alle Einträge (Feed, Nachrichten, Chat)
+  **nebeneinander** statt untereinander. Jetzt setzt `#glhandy .hb` das zurück (`display:block` usw.).
+
 ## Tests
 
-- `node --test viz3/test/unit/grenzland_welt.test.mjs` – die Regeln des Wissens (7 Tests).
-- `python3 viz3/test/grenzland_welt.py 9016 wissen,funk` – im Spiel: Bilder in `out/grenzland_welt/` (`01_warnjacke`, `02_helm`,
-  `03_gesehen`).
+- `node --test viz3/test/unit/grenzland_welt.test.mjs` – die Regeln des Wissens und der Plan der Ereignisse (8 Tests).
+- `python3 viz3/test/grenzland_welt.py 9016 wissen,funk` · `film,wahl` · `ereignis` – im Spiel (je eine Zeile in
+  `viz3/extra/grenzland-welt/tests.txt`, also drei Jobs auf GitHub Actions). Bilder in `out/grenzland_welt/`: `01_warnjacke`,
+  `02_helm`, `03_gesehen(_hud)`, `04_filmt(_hud)`, `05_feed` (der Post mit Bild im Handy), `06_wahl(_hud)`, `10_blitzer` …
+  `15_wildunfall`.
+- Stand 12:46 auf Actions (9aed1bb4): `wissen,funk` 19/19, `film,wahl` 14/14 grün; `ereignis`: der Korso fand keine Strecke (behoben:
+  kürzere Strecken, notfalls in die andere Richtung).

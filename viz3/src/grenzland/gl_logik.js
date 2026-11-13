@@ -1169,7 +1169,7 @@ export const GLLOGIK = (() => {
       E.t += dt;
       let seen = !!(env.air && env.air.seen),
         close = false,
-        sd = seen ? 60 : Infinity; // (how near the nearest who sees him is: what they can make out – the helicopter from above, 60 m)
+        sd = seen ? 30 : Infinity; // (how near the nearest who sees him is: what they can make out – the helicopter's camera: the clothes)
       const sight = () => {
         E.last = [p.x, p.y];
         E.lastT = 0;
