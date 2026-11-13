@@ -1,7 +1,8 @@
 # Suhl (welt/suhl.js, lazy/suhl.js, lazy/suhl-worker.js): nothing of the city at the start; the zone loads the package; the jump to the
 # Markt; ground, buildings and trees of the sample area by distance; ground under the feet and a wall that stops; the drive; the view
 # from above; night; leaving frees everything; counts against the budgets of docs/plans/plan_suhl.md 3.4; the phone tier.
-# The sample set lies in viz3/extra/suhl-laufzeit/dist/suhl/ (copied into dist by the build; the test server serves dist).
+# The sample set lies in viz3/extra/suhl-laufzeit/probe/ – outside the extras' dist/, so the website does not carry it (the site reads
+# the data repo); this test copies it to viz3/dist/suhl/, which the test server serves.
 # Sections (optional second argument, comma-separated): start,sprung,stufen,boden,fahrt,oben,nacht,frei,zahlen,telefon,uebergabe
 #   uebergabe  the streets handed to the region's road system (FAHRT.add/drop/ground, round 2 of the roads chat) – a page of its own
 #   tag1   the checks of the first day (not in the default run): package and worker, the sky and the top view at Suhl, precision
@@ -14,6 +15,10 @@ ALL = ['start', 'sprung', 'stufen', 'boden', 'fahrt', 'oben', 'nacht', 'frei', '
 ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else ALL
 want = lambda k: k in ONLY
 ck = lib.Checks('suhl')
+_probe = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'extra', 'suhl-laufzeit', 'probe')
+if os.path.isdir(_probe):
+    import shutil
+    shutil.copytree(_probe, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dist', 'suhl'), dirs_exist_ok=True)
 OUT = lib.out('suhl')
 O = (-4698.2, 12255.7)     # SUHL.O, the centre of Suhl in model metres
 MARKT = (-4638.5, 12474.5)   # the place 'suhl' (SUHL.SPOTS.suhl)

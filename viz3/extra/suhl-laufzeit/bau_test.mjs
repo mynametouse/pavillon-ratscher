@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url)),
   ROOT = path.resolve(HERE, '..', '..', '..'),
-  D = path.join(HERE, 'dist', 'suhl'),
+  D = path.join(HERE, 'probe'),
   { frame, wth1, tsize, ROOT_E0, ROOT_N0 } = await import(path.join(ROOT, 'viz3/src/lazy/suhl/kern/geo.js')),
   { kachel, baeume, ears, bridge } = await import(path.join(ROOT, 'viz3/src/lazy/suhl/bau/kachel.js')),
   { loadIndex, tileSet } = await import(path.join(ROOT, 'viz3/src/lazy/suhl/kern/index.js'));

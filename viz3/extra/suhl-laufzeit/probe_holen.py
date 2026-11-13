@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The sample set of the Zentrum for the Suhl runtime: copies what the data agents pushed to their branches
-(origin/suhl/<paket>: tools/suhl/out/<paket>/probe/suhl/<produkt>/v<N>/**) into viz3/extra/suhl-laufzeit/dist/suhl/ – the build copies
+(origin/suhl/<paket>: tools/suhl/out/<paket>/probe/suhl/<produkt>/v<N>/**) into viz3/extra/suhl-laufzeit/probe/ – the test copies
 that folder into dist/, the test server serves it, the app reads it as SUHL.BASE = 'suhl/'.
 
     python3 viz3/extra/suhl-laufzeit/probe_holen.py            # fetch the branches (depth 1) and copy
@@ -20,7 +20,7 @@ import io, json, math, os, shutil, subprocess, sys, tarfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
-DIST = os.path.join(HERE, 'dist', 'suhl')
+DIST = os.path.join(HERE, 'probe')        # not dist/: the build would carry it onto the website (the site reads the data repo)
 PAKETE = ['boden', 'gebaeude', 'gruen', 'strassen', 'daten']
 XF = json.load(open(os.path.join(ROOT, 'viz3', 'manifests.json')))['geoman']['xf']
 ROOT_E0, ROOT_N0, ROOT_S = 420700.0, 5390800.0, 409600.0
@@ -179,7 +179,7 @@ def main():
               open(os.path.join(DIST, 'aktuell.json'), 'w'), indent=1, ensure_ascii=False)
     print('aktuell.json written:', ', '.join(f'{k} v{v["version"]}' + (' based on ' + json.dumps(v['based_on']) if v['based_on'] else '') for k, v in prod.items()))
     tot = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(DIST) for f in fs)
-    print(f'dist/suhl: {tot / 1e6:.2f} MB')
+    print(f'probe: {tot / 1e6:.2f} MB')
     if tot > 15e6:
         sys.exit('more than 15 MB – too much for git')
 

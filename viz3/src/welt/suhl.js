@@ -5,7 +5,7 @@
 // lazy/suhl-worker.js): index, streaming by distance, detail levels, ground and collisions for KERN. A package cannot import modules
 // of the app (it is bundled on its own – a second three.js otherwise), so everything it needs is handed in here (ctx).
 // Data: SUHL.BASE – the data repo's GitHub Pages (same origin as the site), ?suhl=<url> for another base, the local test server
-// serves dist/suhl/ (viz3/extra/suhl-laufzeit/dist). ?suhl=1 shows the menu entry (hidden until Falko has seen the city).
+// serves dist/suhl/ (the test puts viz3/extra/suhl-laufzeit/probe there). ?suhl=1 shows the menu entry (hidden until Falko has seen the city).
 // Contract and plan: docs/features/suhl.md, docs/plans/plan_suhl.md (sections 3 and 6).
 import * as THREE from 'three';
 import { COARSE, QS, R, cam, scene } from '../core/head.js';

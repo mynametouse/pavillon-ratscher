@@ -21,14 +21,14 @@ Generation v1 der Daten-Agenten: 1-m-Gelände mit eingeschnittenen Straßen, Geb
 | `viz3/src/lazy/suhl/kern/strassen.js` | Straßen, alles an einer Stelle: Übergabe jeder `s`-Kachel an das Straßensystem (`FAHRT.add`), solange es das nicht gibt eine gemalte Karte im Boden; Straßennamen, `SUHL.ways` (Abschnitt 8) |
 | `viz3/src/lazy/suhl/bau/haus.js`, `kachel.js` | im Rechner: ein Datensatz → Wände und Dach in der Anordnung von `world/village.js` (übertragen aus `gebaeude/gebaeude.js`), die schlanke Fernstufe, Regeln für das Aussehen |
 | `viz3/src/lazy/suhl/kern/geo.js`, `probe.js` | Kachel-Rechnung, WTH1-Höhen, das Buch über alles Erzeugte (`LIVE`); die Prüfungen des ersten Tages |
-| `viz3/extra/suhl-laufzeit/dist/suhl/` | der Probesatz (10,9 MB): `boden/v1`, `g/v1`, `b/v1`, `s/v1` (dazu `gr`, `w`, `m`, noch nicht gelesen) und ein vorläufiges `aktuell.json`. Herkunft steht in `aktuell.json` (`sources`): `suhl/boden` 8d5bffbc, `suhl/gebaeude` bacb45ed, `suhl/gruen` 92f47feb, `suhl/strassen` 7ef29c0e. |
+| `viz3/extra/suhl-laufzeit/probe/` | der Probesatz (10,9 MB): `boden/v1`, `g/v1`, `b/v1`, `s/v1` (dazu `gr`, `w`, `m`, noch nicht gelesen) und ein vorläufiges `aktuell.json`. Herkunft steht in `aktuell.json` (`sources`): `suhl/boden` 8d5bffbc, `suhl/gebaeude` bacb45ed, `suhl/gruen` 92f47feb, `suhl/strassen` 7ef29c0e. |
 | `viz3/extra/suhl-laufzeit/probe_holen.py` | holt die Probesätze von `origin/suhl/<paket>` neu: von jedem Produkt die zuletzt erzeugte Version; schreibt `aktuell.json` in der Form des Vertrags |
 | `viz3/extra/suhl-laufzeit/lint.mjs`, `bau_test.mjs` | Lint für das Paket; Test des Rechners ohne Browser |
 | `viz3/test/suhl.py`, `viz3/extra/suhl-laufzeit/tests.txt` | Browser-Test in Abschnitten; die Läufe bei GitHub |
 
 ## 2 Ausprobieren
 
-- Bauen: `cd viz3 && python3 build.py --fast` (kopiert den Probesatz nach `dist/suhl/`), Testserver `bash tools/csp/start8951.sh`.
+- Bauen: `cd viz3 && python3 build.py --fast`; den Probesatz legt der Test `viz3/test/suhl.py` nach `dist/suhl/` (die Website trägt ihn nicht, sie liest das Daten-Repo), Testserver `bash tools/csp/start8951.sh`.
 - `…/index.html?szenario=suhl` – Start auf dem Suhler Markt. `?suhl=1` zeigt zusätzlich den Menüknopf „Suhl“ unter Hingehen → Weiter weg.
 - `?suhl=<Adresse>` – andere Daten-Basis. Ohne Angabe: auf der Website `https://mynametouse.github.io/pavillon-daten/suhl/`, am
   Testserver `suhl/` (also `dist/suhl/`).
@@ -401,5 +401,5 @@ Lokal auf demselben Stand (03:04–03:18): dieselben drei Suhl-Zeilen mit 26/26,
 - **Für den Kern-Chat:** three.js zählt Geometrien und Texturen erst beim ersten Zeichnen. Ein Vergleich „vorher/nachher“ nach
   einem Besuch weit draußen zählt deshalb Dinge mit, die es schon gab (Baum-Zellen um Ratscher, aus 13 km zum ersten Mal im Bild).
   Der Test `frei` vergleicht darum zwei gleiche Besuche.
-- Der Probesatz liegt in `viz3/extra/suhl-laufzeit/dist/suhl/` (10,9 MB in git). Sobald das Daten-Repo den Probesatz hält, kann
+- Der Probesatz liegt in `viz3/extra/suhl-laufzeit/probe/` (10,9 MB in git). Sobald das Daten-Repo den Probesatz hält, kann
   er dort heraus; die Tests bräuchten dann `viz3/test/suhl_tiles.py` (wie `vessra_tiles.py`) – noch nicht geschrieben.
