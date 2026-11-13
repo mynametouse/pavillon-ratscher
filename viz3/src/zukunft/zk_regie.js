@@ -51,6 +51,9 @@ export const ZKREGIE = (() => {
   const HOUR = { wald: 11.5, wasser: 12, energie: 12.5 },
     WX = { wald: 'heiter', wasser: 'heiter', energie: 'heiter' };
   const FEM = new Set(['katrin', 'ingrid', 'heike']);
+  // places whose near things are one set for both worlds (the family forest at the Klinge – zeitreise-welt, 13.11.): in the split the
+  // time-lapse leaves them out and a halt there shows the two worlds one after the other (two takes, each world on the whole screen)
+  const TAKES = new Set(['waldrand']);
   // ---- the journey's own saved key: the clock and calendar of before, while it runs (a crash is undone at the next start) ----
   const KS = SAVE.key('pav-zeitreise-v1', {
     owner: 'zeitreise',
@@ -224,7 +227,12 @@ export const ZKREGIE = (() => {
     };
     return m.info;
   }
-  const shown = () => (S.side === 'both' ? S.pair.slice(0, 2) : [S.side === 'R' ? S.pair[1] : S.pair[0]]);
+  const shown = () =>
+    S.take
+      ? [S.pair[S.take === 'R' ? 1 : 0]]
+      : S.side === 'both'
+        ? S.pair.slice(0, 2)
+        : [S.side === 'R' ? S.pair[1] : S.pair[0]];
   // ---------------- clock, calendar, weather ----------------
   // game day d0 (the day the journey started on) is 1 January of the span's first year; the date moves through CLOCK.t
   function clockAt(yf, hour) {
@@ -440,11 +448,12 @@ export const ZKREGIE = (() => {
     S.segT = 0;
     S.lapseHour = ch.hour ?? HOUR[ch.id] ?? 12;
     S.lapseWx = ch.weather ?? WX[ch.id] ?? 'heiter';
-    const places = ch.places && ch.places.length ? ch.places : ['anger'];
+    const places = lapsePlaces();
     S.pi = 0;
     cutTo(places[0], {
       hard: o.hard,
       swap: () => {
+        if (S.take) setTake(null);
         weather(S.lapseWx);
         setClock(clockAt(S.y, S.lapseHour));
         dnNow();
@@ -498,7 +507,7 @@ export const ZKREGIE = (() => {
     // the next place after a while
     const s = S.shot;
     if (s && s.t >= s.T && !ZKBILD.S.cut) {
-      const places = ch.places && ch.places.length ? ch.places : ['anger'];
+      const places = lapsePlaces();
       if (places.length > 1) {
         S.pi = (S.pi + 1) % places.length;
         cutTo(places[S.pi]);
@@ -508,6 +517,7 @@ export const ZKREGIE = (() => {
   // an event with a halt: the clock goes on to its hour and its weather comes, then the media's before() hooks, then the halt
   function enterEvent(m) {
     hush();
+    if (S.take) setTake(null);
     S.mode = 'prelude';
     S.pend = m;
     S.segT = 0;
@@ -516,8 +526,11 @@ export const ZKREGIE = (() => {
       cur = CLOCK.t,
       // forward to the event's hour: from the clock as it is when the event follows soon (the morning after a night), else from the
       // time-lapse's hour of that day (the evening falls, the night comes)
-      from = t1 - cur > 0 && t1 - cur < 1.5 * 1440 ? cur : t1 - ((((m.hour - S.lapseHour) % 24) + 24) % 24) * 60,
-      h = (t1 - from) / 60;
+      fwd = ((((m.hour - S.lapseHour) % 24) + 24) % 24) * 60,
+      // up to three hours earlier than the time-lapse's hour: back a little; else forward (the evening, the night, the next morning)
+      dh = fwd > 21 * 60 ? fwd - 1440 : fwd,
+      from = t1 - cur > 0 && t1 - cur < 1.5 * 1440 ? cur : t1 - dh,
+      h = Math.abs(t1 - from) / 60;
     S.pre = { t: 0, T: h > 1 ? clamp(1.2 + h * 0.08, 1.2, 2.8) : 0.9, from, to: t1 };
     weather(m.weather || S.lapseWx);
     emit({ type: 'event', ev: info(m), state: 'prelude' });
@@ -563,12 +576,14 @@ export const ZKREGIE = (() => {
     }
     hush();
     // a phone photo of this place was taken for the media: they dissolve it into the live view themselves – a hard cut under it
-    const hard = S.snapFor === m.place;
+    const hard = S.snapFor === m.place,
+      take = S.side === 'both' && TAKES.has(m.place) && m.L && m.R ? 'L' : null;
     S.snapFor = null;
     cutTo(m.place, {
       still: true,
       hard,
       swap: () => {
+        if (take) setTake('L');
         weather(m.weather || S.lapseWx);
         setClock(clockAt(C.at(evOf(m), 0)));
         dnNow();
@@ -588,6 +603,12 @@ export const ZKREGIE = (() => {
         S.line = null;
         S.nextLineT = S.ht + 0.7;
       }
+    } else if (S.take === 'L' && takeTurn()) {
+      // the second take: the right world on the whole screen, from the same place
+      const gen = S.gen;
+      S.nextLineT = S.ht + 1.4;
+      setTake('R+');
+      ZKBILD.cut(() => gen === S.gen && S.take && setTake('R'));
     } else if (S.li + 1 < S.lines.length && S.ht >= S.nextLineT) sayLine(S.lines[++S.li]);
     if (S.ht >= S.hdur && !S.line && S.li + 1 >= S.lines.length) endHalt();
   }
@@ -611,6 +632,30 @@ export const ZKREGIE = (() => {
       console.warn('ZKZEITWELT.cue', e);
     }
   }
+  // the turn from the left take to the right one: before the first line of the right world, or halfway when both say the same
+  function takeTurn() {
+    if (S.ht < S.nextLineT) return false;
+    const nl = S.lines[S.li + 1];
+    if (S.lines.some(l => l.side === 'R')) return !!nl && nl.side === 'R';
+    // the same words in both worlds: half of them in each take
+    const n = S.lines.length;
+    return n ? S.li + 1 >= Math.ceil(n / 2) && S.phase >= 0.3 : S.phase >= 0.5;
+  }
+  // t: 'L' | 'R' (one world on the whole screen) | 'R+' (the turn is asked for, the cut not yet made) | null (back to the split)
+  function setTake(t) {
+    S.take = t;
+    if (t === 'R+') return;
+    S.wkey = '';
+    ZKBILD.set(t ? { split: false, side: 'L' } : { split: S.split, side: 'L' });
+    emit({ type: 'take', take: t, world: t ? S.pair[t === 'R' ? 1 : 0] : null });
+  }
+  function lapsePlaces() {
+    const ch = S.ch,
+      own = (ch && ch.places) || [],
+      out = ['ueberblick'];
+    for (const p of own) if (!out.includes(p) && !(S.side === 'both' && TAKES.has(p))) out.push(p);
+    return out.length > 1 ? out : ['ueberblick', 'anger'];
+  }
   function endHalt() {
     const m = S.ev;
     hush();
@@ -626,17 +671,18 @@ export const ZKREGIE = (() => {
       const k2 = haltIdx(S.ni, S.evs.length),
         n = S.evs[k2];
       if (n && n.t - C.at(evOf(m), 1) < 1.5 / 365) {
+        if (S.take) setTake(null);
         for (let j = S.ni; j < k2; j++) pass(S.evs[j], true);
         S.ni = k2;
         S.y = n.t;
         return enterEvent(n);
       }
     }
-    const ch = S.ch,
-      places = ch.places && ch.places.length ? ch.places : ['anger'];
+    const places = lapsePlaces();
     S.pi = (S.pi + 1) % places.length;
     cutTo(places[S.pi], {
       swap: () => {
+        if (S.take) setTake(null);
         weather(S.lapseWx);
         setClock(clockAt(S.y, S.lapseHour));
         dnNow();
@@ -737,12 +783,14 @@ export const ZKREGIE = (() => {
       yf = m ? C.at(evOf(m), S.mode === 'halt' ? S.phase : 0) : S.y;
     try {
       // the states only when the time or the shown worlds changed (state() is ~0.07 ms per world)
-      const key = S.side + ':' + yf;
+      const tk = S.take === 'R' ? 'R' : S.take ? 'L' : '',
+        key = S.side + tk + ':' + yf;
       if (key !== S.wkey) {
         S.wkey = key;
         S.stL = S.side !== 'R' && wl ? C.state(wl, yf) : null;
         S.stR = S.side !== 'L' && wr ? C.state(wr, yf) : null;
-        if (S.side === 'both') W.set(S.stL, S.stR);
+        if (tk) W.set(tk === 'R' ? S.stR : S.stL, null);
+        else if (S.side === 'both') W.set(S.stL, S.stR);
         else W.set(S.side === 'R' ? S.stR : S.stL, null);
         // a storm cell that has passed in the chronicle (water.rain null again): the rain stops, the sky stays grey
         if (m && S.mode === 'halt' && S.rainEv) {
@@ -752,7 +800,8 @@ export const ZKREGIE = (() => {
       }
       if (S.rt - S.sndT > 0.25) {
         S.sndT = S.rt;
-        W.sound(S.stL, S.side === 'both' ? S.stR : null, S.side);
+        if (tk) W.sound(tk === 'R' ? S.stR : S.stL, null, tk);
+        else W.sound(S.stL, S.side === 'both' ? S.stR : null, S.side);
       }
     } catch (e) {
       if (!S.werr) {
@@ -792,6 +841,7 @@ export const ZKREGIE = (() => {
     S.mediaDuck = 1;
     S.voxSet = 1;
     S.werr = 0;
+    S.take = null;
     S.wkey = '';
     S.rainEv = false;
     // everything that is put back at the end
@@ -858,6 +908,7 @@ export const ZKREGIE = (() => {
     S.mode = 'off';
     S.wait = null;
     S.pre = null;
+    S.take = null;
     CAMSET.fn = null;
     ZKBILD.on(false);
     try {
@@ -1095,9 +1146,11 @@ export const ZKREGIE = (() => {
       d = C.date(m ? C.at(evOf(m), S.mode === 'halt' ? S.phase : 0) : S.y);
     return {
       on: S.on,
-      pair: S.pair.slice(),
-      split: S.split,
+      pair: S.take ? shown() : S.pair.slice(),
+      split: S.split && !S.take,
       side: S.side,
+      take: S.take === 'R+' ? 'L' : S.take,
+      fullPair: S.pair.slice(),
       worlds: shown(),
       chapter: S.ch ? S.ch.id : null,
       chapterIndex: S.ci,
