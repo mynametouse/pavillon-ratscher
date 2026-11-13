@@ -43,7 +43,10 @@ def main():
                                               'terrain_method', 'imagery_method', 'imagery_balance', 'roads')}
         R['plan'] = (meta.get('suhl') or {}).get('plan')
         R['cut'] = (meta.get('suhl') or {}).get('cut')
-        shutil.copyfile(mp, os.path.join(a.out, 'meta.json'))
+        if os.path.abspath(mp) != os.path.abspath(os.path.join(a.out, 'meta.json')):
+            shutil.copyfile(mp, os.path.join(a.out, 'meta.json'))
+        if os.path.exists(os.path.join(a.set, 'index.json')):
+            shutil.copyfile(os.path.join(a.set, 'index.json'), os.path.join(a.out, 'index.json'))
     bp = os.path.join(a.raw, f'build_{a.mode}.json') if a.raw else ''
     if bp and os.path.exists(bp):
         R['build'] = {k: v for k, v in json.load(open(bp)).items() if k in ('files', 'bytes', 'seconds')}
@@ -53,7 +56,8 @@ def main():
         P = json.load(open(a.pruefen, encoding='utf-8'))
         R['checks'] = {'ok': not P['fails'], 'fails': P['fails'], 'n': len(P['checks']), 'edges': P.get('edges'), 'heights_nhn': P.get('heights_nhn'),
                        'level_to_parent': P.get('level_to_parent')}
-        shutil.copyfile(a.pruefen, os.path.join(a.out, 'pruefen.json'))
+        if os.path.abspath(a.pruefen) != os.path.abspath(os.path.join(a.out, 'pruefen.json')):
+            shutil.copyfile(a.pruefen, os.path.join(a.out, 'pruefen.json'))
         R['ok'] = 'error' not in R and not P['fails']
     json.dump(R, open(os.path.join(a.out, 'lauf.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     md = [f"### Suhl – Boden, Modus `{a.mode}`" + (f", Version `{R.get('version')}`" if R.get('version') else ''), '']
