@@ -1,11 +1,14 @@
 # Suhl – Grün (Stufe 2, Paket S2-4, Auftrag docs/plans/auftraege/suhl-gruen.md): Bäume, Waldbestände und Grünflächen für das Gebiet,
 # das tools/suhl/gruen/lauf.txt bestellt (zentrum | kernstadt | stadt). Einzelbäume aus dem Infrarot-Luftbild (20 cm, WMS des Landes,
 # höchstens zwei Abrufe zugleich, mit Pausen, Bilder im Actions-Cache), OpenStreetMap aus dem Geofabrik-Auszug (osmium), Gebäude-
-# Grundrisse aus ETHOS.BUILDA (nur zum Ausschluss von Dächern). Ergebnis: die Produkte b, w, gr als Artefakt „suhl-gruen-produkte“
-# (bis das Daten-Repo steht), Zahlen und Prüfungen nach tools/suhl/out/gruen/actions/ auf suhl/gruen (sonst wird nichts angefasst).
+# Grundrisse aus ETHOS.BUILDA (nur zum Ausschluss von Dächern). Ergebnis: die Produkte b, w, gr als Artefakte suhl-b-v<N>, suhl-w-v<N>,
+# suhl-gr-v<N> (suhl-daten veröffentlicht sie als Satz), Zahlen und Prüfungen nach tools/suhl/out/gruen/ auf suhl/gruen (sonst nichts).
 # Läuft nur auf suhl/gruen und nur, wenn diese Datei oder lauf.txt sich ändert; der Lauf nimmt beim Start den neuesten Stand des Zweigs.
+# Höhenmodell nDOM1 (1 m, Laser 2020–2025) über easygeodata.de mit dem Client von suhl-daten (tools/suhl/lib/easygeodata.py): nur hier
+# in Actions, einmal geholt und im Cache dieses Workflows behalten (Kontingent 20 GB im Monat). lauf.txt bestellt die Kacheln (ndom=P1 …).
 # Geheimnisse dürfen fehlen: ohne EASYGEODATA_KEY bleiben die Höhen geschätzt, ohne DATEN_TOKEN wird nichts veröffentlicht – der Lauf
-# sagt das im Protokoll und im Ergebnis und bleibt grün.
+# sagt das im Protokoll und im Ergebnis und bleibt grün. Für gebiet=zentrum legt der Lauf den Probesatz (b, w, gr) nach
+# tools/suhl/out/gruen/probe/ auf den Zweig, sonst nur Zahlen nach tools/suhl/out/gruen/actions/<gebiet>/.
 name: Suhl – Grün (Bäume, Wald, Grünflächen)
 
 on:
@@ -19,6 +22,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: write      # only to delete this workflow's own older caches (the repository's caches are shared: 10 GB)
 
 jobs:
   gruen:
@@ -29,7 +33,6 @@ jobs:
       SUHL_RAW: /home/runner/suhl-raw
       UA: 'PavillonRatscher-Suhl/0.1 (+https://github.com/mynametouse/pavillon-ratscher)'
       HAS_EGD: ${{ secrets.EASYGEODATA_KEY != '' }}
-      HAS_DATEN: ${{ secrets.DATEN_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,10 +42,15 @@ jobs:
           python-version: '3.12'
       - name: Werkzeuge
         run: |
-          pip install --quiet numpy scipy scikit-image shapely pyproj pillow tifffile
+          pip install --quiet numpy scipy scikit-image shapely pyproj pillow tifffile imagecodecs
           sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
           mkdir -p "$SUHL_RAW" logs out
           cat tools/suhl/gruen/lauf.txt
+          val() { grep -E "^$1=" tools/suhl/gruen/lauf.txt | tail -1 | cut -d= -f2 | tr -d '[:space:]'; }
+          G=$(val gebiet); V=$(val version); N=$(val ndom)
+          echo "GEBIET=${G:-zentrum}" >> "$GITHUB_ENV"
+          echo "VERSION=${V:-0}" >> "$GITHUB_ENV"
+          echo "NDOM_PRIO=${N}" >> "$GITHUB_ENV"
       - name: Rohdaten aus dem Cache (Luftbilder und Auszüge früherer Läufe)
         uses: actions/cache/restore@v4
         with:
@@ -83,56 +91,110 @@ jobs:
           set -o pipefail
           python -I -u tools/suhl/gruen/kontext.py --opl "$SUHL_RAW/geofabrik/suhl.opl.gz" --ethos "$SUHL_RAW/ethos/suhl.jsonl" \
             --out "$SUHL_RAW/kontext.pkl" 2>&1 | tee logs/kontext.log
-      - name: Höhenmodell nDOM1 (easygeodata) – nur mit Schlüssel
+      - name: Höhenmodell nDOM1 von easygeodata (übersprungen ohne Schlüssel oder ohne Bestellung)
+        env:
+          EASYGEODATA_KEY: ${{ secrets.EASYGEODATA_KEY }}
+        timeout-minutes: 40
         run: |
-          if [ "$HAS_EGD" != "true" ]; then
+          set -o pipefail
+          if [ -z "$NDOM_PRIO" ]; then
+            echo "lauf.txt bestellt kein nDOM1 (ndom=): Baumhöhen bleiben geschätzt." | tee logs/ndom.log
+          elif [ "$HAS_EGD" != "true" ]; then
             echo "EASYGEODATA_KEY fehlt: kein nDOM1 – Baumhöhen bleiben geschätzt (Merker Bit 2 = 0)." | tee logs/ndom.log
           elif [ ! -f tools/suhl/lib/easygeodata.py ]; then
-            echo "Schlüssel vorhanden, aber der Abruf (tools/suhl/lib von suhl-daten) ist auf diesem Zweig noch nicht eingebunden – Höhen bleiben geschätzt." | tee logs/ndom.log
+            echo "Der Client tools/suhl/lib/easygeodata.py (suhl-daten) fehlt auf diesem Zweig – Höhen bleiben geschätzt." | tee logs/ndom.log
           else
-            echo "Schlüssel und Bibliothek vorhanden – der Abruf wird mit dem nächsten Stand von suhl-gruen eingehängt (stadt.py --ndom)." | tee logs/ndom.log
+            # files that are in the raw folder are never asked again; a quota or daily limit ends the fetch without failing the run
+            python -I -u tools/suhl/lib/easygeodata.py --product ndom --prio "$NDOM_PRIO" --raw "$SUHL_RAW" --max-mb 400 --report logs/egd.json 2>&1 | tee logs/ndom.log || true
           fi
+          echo "nDOM1-Kacheln im Rohdaten-Ordner: $(ls "$SUHL_RAW/ndom1" 2>/dev/null | wc -l)" | tee -a logs/ndom.log
       - name: Bäume, Waldbestände, Grünflächen
         run: |
           set -o pipefail
-          NDOM=""; [ -d "$SUHL_RAW/ndom1" ] && NDOM="--ndom $SUHL_RAW/ndom1"
-          python -I -u tools/suhl/gruen/stadt.py --out out --work "$SUHL_RAW/work-${{ github.run_id }}" --kontext "$SUHL_RAW/kontext.pkl" --jobs 3 $NDOM 2>&1 \
+          NDOM=""; [ -n "$NDOM_PRIO" ] && [ -d "$SUHL_RAW/ndom1" ] && [ -n "$(ls "$SUHL_RAW/ndom1" 2>/dev/null)" ] && NDOM="--ndom $SUHL_RAW/ndom1"
+          if [ "$GEBIET" = "zentrum" ] && [ -n "$NDOM" ] && [ "$VERSION" != "0" ]; then
+            # the sample twice from the same code and inputs: v0 from the image alone, v<N> with the height model – for the comparison
+            python -I -u tools/suhl/gruen/stadt.py --out out0 --work "$RUNNER_TEMP/work0" --kontext "$SUHL_RAW/kontext.pkl" --jobs 3 --version 0 --skip wald,flaechen 2>&1 \
+              | grep -v -E "RuntimeWarning|results = \[sum_labels" | tee logs/stadt_v0.log
+            mkdir -p out/suhl/b && cp -r out0/suhl/b/v0 out/suhl/b/v0 && cp out0/statistik.json out/statistik_v0.json
+          fi
+          python -I -u tools/suhl/gruen/stadt.py --out out --work "$RUNNER_TEMP/work" --kontext "$SUHL_RAW/kontext.pkl" --jobs 3 --version "$VERSION" $NDOM 2>&1 \
             | grep -v -E "RuntimeWarning|results = \[sum_labels" | tee logs/stadt.log
-          rm -rf "$SUHL_RAW/work-${{ github.run_id }}"
-          du -sh out/suhl/* || true
+          du -sh out/suhl/*/* || true
       - name: Bilderbögen (Luftbild mit Bäumen, drei Orte) – nur ins Artefakt
         continue-on-error: true
         run: |
-          python -I -u tools/suhl/gruen/bogen.py --b out/suhl/b/v0 --out out/bogen --tiles 497_542,495_541,496_543 --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | tail -5
-      - name: Veröffentlichen ins Daten-Repo – nur mit DATEN_TOKEN
-        run: |
-          if [ "$HAS_DATEN" != "true" ]; then
-            echo "DATEN_TOKEN fehlt: nichts veröffentlicht – die Produkte liegen im Artefakt suhl-gruen-produkte." | tee logs/publish.log
-          elif [ ! -d .github/actions/suhl-publish ]; then
-            echo "DATEN_TOKEN vorhanden, aber die Aktion .github/actions/suhl-publish (suhl-daten) fehlt auf diesem Zweig – nichts veröffentlicht." | tee logs/publish.log
-          else
-            echo "DATEN_TOKEN und Aktion vorhanden – das Veröffentlichen hängt der Suhl-Chat ein, wenn suhl/daten eingemischt ist." | tee logs/publish.log
+          B="out/suhl/b/v$VERSION"
+          python -I -u tools/suhl/gruen/bogen.py --b "$B" --out out/bogen --tiles 497_542,495_541,496_543 --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | tail -3
+          python -I -u tools/suhl/gruen/bogen.py --b "$B" --out out/bogen --vergleich --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | grep -v -E "RuntimeWarning|results = " | tail -40
+          if [ -n "$NDOM_PRIO" ] && [ -d "$SUHL_RAW/ndom1" ]; then
+            V0=""; [ "$VERSION" != "0" ] && [ -f out/suhl/b/v0/index.json ] && V0="--v0v1 out/suhl/b/v0"
+            python -I -u tools/suhl/gruen/bogen.py --b "$B" --out out/bogen --hoehen "$SUHL_RAW/ndom1" $V0 --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | tail -40
+            python -I -u tools/suhl/gruen/bogen.py --b "$B" --out out/bogen --wald 49_54 --hoehen "$SUHL_RAW/ndom1" --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | tail -3
           fi
+          if [ "$GEBIET" = "stadt" ]; then
+            W=""; [ -n "$NDOM_PRIO" ] && [ -d "$SUHL_RAW/ndom1" ] && W="--hoehen $SUHL_RAW/ndom1"
+            python -I -u tools/suhl/gruen/bogen.py --b "$B" --out out/bogen --wald 51_55,50_55,51_54 $W --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | tail -3
+          fi
+      - name: Veröffentlichen – nicht hier
+        run: |
+          echo "Dieser Workflow veröffentlicht nichts: suhl-daten veröffentlicht Sätze durch eine Tür (Aktion suhl-publish, Zweig suhl/daten)." | tee logs/publish.log
+          echo "Artefakte dieses Laufs ${GITHUB_RUN_ID}: suhl-b-v$VERSION, suhl-w-v$VERSION, suhl-gr-v$VERSION" | tee -a logs/publish.log
       - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
         if: always()
         run: |
           rm -rf "$SUHL_RAW"/work-* || true
           echo "RAWKEY=$(cd "$SUHL_RAW" 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
-          du -sh "$SUHL_RAW" || true
+          du -sh "$SUHL_RAW" "$SUHL_RAW"/* || true
       - name: Rohdaten in den Cache
         if: always()
         uses: actions/cache/save@v4
         with:
           path: ~/suhl-raw
           key: suhl-gruen-raw-v1-${{ env.RAWKEY }}
-      - name: Produkte als Artefakt
+      - name: Ältere Caches dieses Workflows löschen (nur der neueste bleibt)
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh cache list --repo "$GITHUB_REPOSITORY" --key suhl-gruen-raw-v1- --sort created_at --order desc --limit 30 --json id,key,createdAt \
+            | python -c "import json,sys; [print(c['id']) for c in json.load(sys.stdin)[1:]]" \
+            | while read -r id; do gh cache delete "$id" --repo "$GITHUB_REPOSITORY" && echo "gelöscht: $id"; done
+      # one artifact per product version, with the stable names suhl-daten's publisher takes (it publishes sets through one door;
+      # this workflow never publishes): the artifact holds the content of suhl/<produkt>/v<N>/ (index.json and the tiles)
+      - name: Produkt b (Bäume) als Artefakt suhl-b-v<N>
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: suhl-gruen-produkte
+          name: suhl-b-v${{ env.VERSION }}
+          path: out/suhl/b/v${{ env.VERSION }}
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Produkt w (Waldbestände) als Artefakt suhl-w-v<N>
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-w-v${{ env.VERSION }}
+          path: out/suhl/w/v${{ env.VERSION }}
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Produkt gr (Grünflächen) als Artefakt suhl-gr-v<N>
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-gr-v${{ env.VERSION }}
+          path: out/suhl/gr/v${{ env.VERSION }}
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Zahlen als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-gruen-zahlen
           path: |
-            out/suhl/
             out/statistik.json
+            out/statistik_v0.json
             out/kachel_statistik.json
           if-no-files-found: ignore
           retention-days: 30
@@ -146,22 +208,40 @@ jobs:
             out/bogen/
           if-no-files-found: ignore
           retention-days: 10
-      - name: Zahlen nach suhl/gruen (nur tools/suhl/out/gruen/actions/)
+      - name: Zahlen (und für das Zentrum der Probesatz) nach suhl/gruen – nur tools/suhl/out/gruen/
         if: always()
         run: |
-          G=$(grep -E '^gebiet=' tools/suhl/gruen/lauf.txt | cut -d= -f2 | tr -d '[:space:]')
-          D="tools/suhl/out/gruen/actions/${G:-lauf}"
-          mkdir -p "$D"
-          [ -f out/statistik.json ] && cp out/statistik.json "$D/statistik.json"
-          for p in b w gr; do [ -f "out/suhl/$p/v0/index.json" ] && cp "out/suhl/$p/v0/index.json" "$D/index_$p.json"; done
-          [ -f out/suhl/w/v0/bestaende.geojson.gz ] && cp out/suhl/w/v0/bestaende.geojson.gz "$D/bestaende.geojson.gz"
-          { echo "lauf: ${GITHUB_RUN_ID}"; echo "commit: $(git rev-parse HEAD)"; cat logs/ndom.log logs/publish.log 2>/dev/null; } > "$D/lauf.txt"
+          G="$GEBIET"; V="$VERSION"
+          if [ "$G" = "zentrum" ] && [ -f "out/suhl/b/v$V/index.json" ]; then
+            # the sample set of the Zentrum in the final layout (suhl-stufe2.md): at most 3 MB per product
+            D="tools/suhl/out/gruen/probe"
+            mkdir -p "$D/suhl/b" "$D/suhl/w" "$D/suhl/gr"
+            rm -rf "$D/suhl/b/v$V" "$D/suhl/w/v$V" "$D/suhl/gr/v$V"
+            cp -r "out/suhl/b/v$V" "$D/suhl/b/v$V"
+            if [ "$V" != "0" ] && [ -d out/suhl/b/v0 ]; then rm -rf "$D/suhl/b/v0"; cp -r out/suhl/b/v0 "$D/suhl/b/v0"; cp out/statistik_v0.json "$D/statistik_v0.json"; fi
+            [ -f out/bogen/v0v1.json ] && cp out/bogen/v0v1.json "$D/v0v1.json"
+            [ -d "out/suhl/w/v$V" ] && cp -r "out/suhl/w/v$V" "$D/suhl/w/v$V"
+            [ -d "out/suhl/gr/v$V" ] && cp -r "out/suhl/gr/v$V" "$D/suhl/gr/v$V"
+            cp out/statistik.json "$D/statistik_v$V.json"
+            [ -f out/kachel_statistik.json ] && cp out/kachel_statistik.json "$D/kachel_statistik_v$V.json"
+            [ -f out/bogen/vergleich.json ] && cp out/bogen/vergleich.json "$D/vergleich_v$V.json"
+            du -sh "$D"/suhl/*/*
+          else
+            D="tools/suhl/out/gruen/actions/${G:-lauf}"
+            mkdir -p "$D"
+            [ -f out/statistik.json ] && cp out/statistik.json "$D/statistik.json"
+            [ -f out/kachel_statistik.json ] && gzip -9 -c out/kachel_statistik.json > "$D/kachel_statistik.json.gz"
+            for p in b w gr; do [ -f "out/suhl/$p/v$V/index.json" ] && cp "out/suhl/$p/v$V/index.json" "$D/index_$p.json"; done
+            [ -f "out/suhl/w/v$V/bestaende.geojson.gz" ] && cp "out/suhl/w/v$V/bestaende.geojson.gz" "$D/bestaende.geojson.gz"
+            [ -f out/bogen/vergleich.json ] && cp out/bogen/vergleich.json "$D/vergleich.json"
+          fi
+          { echo "lauf: ${GITHUB_RUN_ID}"; echo "commit: $(git rev-parse HEAD)"; echo "gebiet: $G, version: $V, ndom: ${NDOM_PRIO:-keins}"; cat logs/ndom.log logs/publish.log 2>/dev/null | tail -12; } > "$D/lauf_${G}_v$V.txt"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f "$D"
+          git add -f tools/suhl/out/gruen
           if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
-          if git diff --cached --name-only | grep -v '^tools/suhl/out/gruen/actions/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
-          printf '%s\n\n%s\n%s\n' "suhl-gruen: numbers of the Actions run ${GITHUB_RUN_ID} (area ${G})" \
+          if git diff --cached --name-only | grep -v '^tools/suhl/out/gruen/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
+          printf '%s\n\n%s\n%s\n' "suhl-gruen: results of the Actions run ${GITHUB_RUN_ID} (area ${G}, version ${V}, nDOM1 ${NDOM_PRIO:-none})" \
             "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>" \
             "Claude-Session: https://claude.ai/code/session_01L6YrpcuzUozgpZNSC5CdVL" > "$RUNNER_TEMP/msg.txt"
           git commit -q -F "$RUNNER_TEMP/msg.txt"
