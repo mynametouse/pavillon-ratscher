@@ -28,7 +28,7 @@ ALL functions take and return (lon, lat) - x first, like GeoJSON - and refuse sw
 """
 import base64, hashlib, json, math, os, sys, time, urllib.error, urllib.parse, urllib.request
 
-VERSION = '0.1.0'          # of this library
+VERSION = '0.2.0'          # of this library
 SCHEMA = 1                 # schema number of the Suhl products (docs/features/suhl-daten.md); raised when a reader must change
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -66,12 +66,14 @@ PROBE_JSON = os.path.join(HERE, 'probe.json')
 
 # the products of plan 2.4. 'tiles': sub folder -> (levels, extension); '' = the tiles lie directly in the version folder.
 PRODUCTS = {
-    'boden': {'title': 'Gelände und Luftbild', 'owner': 'suhl-boden', 'index': 'index.json',     # plus meta.json in the layout WELT reads
+    'boden': {'title': 'Gelände und Luftbild', 'owner': 'suhl-boden', 'index': 'meta.json',      # the layout WELT reads, with lists `has`
               'tiles': {'t': ((6, 12), 'bin'), 'i': ((6, 12), 'webp')}},
     'g': {'title': 'Gebäude', 'owner': 'suhl-gebaeude', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     'da': {'title': 'Dach-Atlas', 'owner': 'suhl-dach (Stufe 3)', 'index': 'index.json', 'tiles': {'': ((10, 10), 'webp')}},
     's': {'title': 'Straßenraum', 'owner': 'suhl-strassen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     'b': {'title': 'Bäume', 'owner': 'suhl-gruen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'bin')}},
+    'gr': {'title': 'Grünflächen', 'owner': 'suhl-gruen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
+    'w': {'title': 'Waldbestände (Zellen 20 m)', 'owner': 'suhl-gruen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'bin')}},
     'm': {'title': 'Möbel der Straße', 'owner': 'suhl-strassen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     'f': {'title': 'Fernmodell', 'owner': 'suhl-fern', 'index': 'index.json', 'tiles': {'': ((8, 8), 'bin')}},
     'd': {'title': 'Szenario-Zahlen', 'owner': 'suhl-daten', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
