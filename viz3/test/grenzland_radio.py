@@ -95,8 +95,8 @@ with lib.browser() as b:
     arts = [q['art'] or q['k'] for q in s['log']]
     ck('the programme goes on: pieces, the presenter, an ident, an advert', s['count']['musik'] >= 4 and s['count']['wort'] >= 3
        and 'musik' in arts and any(a in arts for a in ('mod', 'kenn', 'werb', 'gruss', 'news')), str(s['count']) + ' ' + str(arts))
-    sub = E("document.getElementById('glsub').textContent")
-    print('subtitle now:', sub[:90], flush=True)
+    sub = E("(document.getElementById('glfunk') || document.getElementById('glsub')).textContent")
+    print('the radio\'s line now:', sub[:90], flush=True)
     # ---------------- the police report of the player's own deeds ----------------
     E("GLRADIO.tune('grenzland')"); steps(1)
     E("GAME.go('dorf')"); steps(1)
@@ -107,8 +107,8 @@ with lib.browser() as b:
     pol = [q['text'] for q in s['log'] if q['art'] == 'polizei']
     ck('a deed somebody saw: the radio tells it at once – the police report', p0['pend'] == 1 and ok and any('Fahrzeug' in t for t in pol) and s['pend'] == 0, str(pol)[:300])
     steps(0.25)
-    sub = E("document.getElementById('glsub').textContent")
-    ck('as a subtitle, with the station\'s name', 'Radio Grenzland' in sub, sub[:120])
+    sub = E("(document.getElementById('glfunk') || document.getElementById('glsub')).textContent")
+    ck('as a line on the screen, with the station\'s name', 'Radio Grenzland' in sub and not E("(document.getElementById('glfunk') || document.getElementById('glsub')).hidden"), sub[:120])
     pic('03_polizeibericht', True)
     ok = until("GLRADIO.stand().log.some(q => /sucht Zeugen/.test(q.text))", 40)
     ck('„Die Polizei sucht Zeugen …“ while one is wanted', ok, str([q['text'][:50] for q in ST()['log'][-4:]]))

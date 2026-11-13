@@ -44,8 +44,9 @@ Programm), `gl_handy.js` (`GLHANDY`: das Handy). Tests: `viz3/test/unit/grenzlan
   niemand gesehen: „Keine besonderen Vorkommnisse. Jedenfalls keine, die jemand gesehen hätte.“ Ab **drei Sternen** oder bei einer Sperre
   unterbricht eine **Eilmeldung** die Musik (die Musik läuft leise darunter weiter); Festnahme und Entkommen werden gemeldet. Jeder Sender
   gibt es in seinem Ton weiter, 1989 bittet die Volkspolizei „die Bevölkerung um Mithilfe“.
-- **Gesprochen** wird als Untertitel (`GLHUD.sub`, mit dem Sendernamen) und – wo die Stimmen an sind – mit einer eigenen Stimme je
-  Moderator (`STIMME`, Schlüssel `gl_r_<sender>`). Spricht gerade jemand in der Welt, wartet das Radio ein paar Sekunden.
+- **Gesprochen** wird als eigene Zeile über den Untertiteln (`GLHUD.funk`: „♪ Sender …“) und – wo die Stimmen an sind – mit einer
+  eigenen Stimme je Moderator (`STIMME`, Schlüssel `gl_r_<sender>`). Die Moderation spricht in den Anfang des nächsten Stücks hinein,
+  die Musik duckt sich darunter.
 
 ### Die Musik (`gl_radio_musik.js`)
 
@@ -109,22 +110,21 @@ Bildschirm hochkant fast ganz, quer steht es rechts. Gespeichert über `GL`: `GL
 ## Offen
 
 - Hören: Falkos Ohren (Laptop, iPhone, im Auto leise) – was nicht gefällt, lässt sich je Stil und Instrument in `GLRMUSIK.STIL`/`INS` drehen.
-- „Moderation über das Vorspiel“ (der Sprecher redet in den Anfang des nächsten Stücks) gibt es noch nicht; die Musik duckt sich bisher
-  nur unter der Eilmeldung.
 - Das Autoradio im Cockpit (`gl_cockpit.js`, Agent `grenzland-auto`) kann `GLRADIO.now()` (Name, Frequenz, Titel) und
   `grenzland:radio` / `grenzland:radio:sendung` anzeigen; verbunden ist es noch nicht.
 - Zwiefacher (Taktwechsel) für Radio Blasius, mehr Stücke je Sender, Zeitansagen zur vollen Stunde.
 
 ## Für den Lead
 
-- **Zähler am Knopf „Handy“** des Panels: `GLHANDY.unread()` (ungelesene SMS) – z. B. „Handy (2)“ in `GLHUD.refresh`.
-- **1989 blendet das Panel den Knopf „Radio“ aus** (`gl_hud.js`, Zeile mit `[data-g="radio"]`): das Radio gibt es dort aber (Taste `R`
-  geht). Den Knopf 1989 bitte sichtbar lassen; „Handy“ bleibt zu Recht weg.
-- **`grenzland:ziel { pos, name }`** hat noch keinen Empfänger: ein Marker im Radar `GLKARTE` wäre der Platz dafür (`GLHANDY.ziel()` gibt
-  das letzte Ziel).
-- `GLDATA.RADIO.polizei.boeller` sagt „Knallkörper im November“ – die Geschichte spielt jetzt im September.
-- Untertitel: das Radio schreibt in `GLHUD.sub`. Wenn Missionen lange Dialoge haben, könnte `GLHUD` eine zweite Zeile für das Radio
-  bekommen; bisher wartet das Radio, solange ein fremder Untertitel steht.
+Erledigt mit dem Stand 6f5ef354 von `feat/grenzland` (13.11. ~3:05, hier gemergt): Zähler am Knopf „Handy“ (`GLHUD.neu`), der Knopf
+„Radio“ bleibt 1989, `grenzland:ziel` setzt einen Wegpunkt im Radar, der Böller-Bericht sagt September, und das Radio hat seine eigene
+Zeile `GLHUD.funk` über den Untertiteln (das Radio nutzt sie; ohne sie fällt es auf `GLHUD.sub` zurück und wartet auf fremde Untertitel).
+
+Offen:
+- Das Radio schaltet sich beim ersten Einsteigen in ein Fahrzeug von selbst ein (`GLRADIO.tick`). Wenn eine Mission das nicht will
+  (z. B. eine stille Szene), kann sie vorher `GLRADIO.S.touched = true` setzen oder danach `GLRADIO.off()` rufen.
+- Missionen können eigene Meldungen ins Programm geben, indem sie eine Tat melden (`GLFAHNDUNG.tat`) – eine freie Durchsage
+  („Sondermeldung“) gibt es noch nicht; bei Bedarf baue ich `GLRADIO.melde(text)`.
 
 ## Für Falko
 

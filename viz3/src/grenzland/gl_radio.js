@@ -9,7 +9,7 @@
 //   the display  top centre for a few seconds: frequency, name, the dial with its needle, what is on; a tap opens the list
 // The radio plays in a car through its speakers, on foot and on the moped from the phone (thin, quieter), in 1989 from the car's set or
 // a portable one; a station from across the border comes in clearly only in the south of the map, the Western station of 1989 always
-// with noise. Words are subtitles (GLHUD.sub) and, where the player has the voices on, spoken (audio/stimme.js) – not through a paid
+// with noise. Words are a line of their own above the subtitles (GLHUD.funk) and, where the player has the voices on, spoken (audio/stimme.js) – not through a paid
 // engine unless asked (GLRADIO.stimme). Everything hangs on its own gain under the game's music bus; nothing is built before a station
 // is tuned, „Beenden“ takes all of it away.
 // Interface (the core's, kept): GLRADIO.stations() → [{ id, name, freq, art }] · cur() → id | null · tune(id | null) · next() · prev() ·
@@ -363,11 +363,20 @@ export const GLRADIO = (() => {
     }
     if (raw() && !S.bufs['kenn:' + S.id]) want('kenn:' + S.id, M.kennung(S.id));
   }
+  // what the radio says: the panel's own line for it (above the subtitles), else a subtitle
+  const zeile = (name, text, ms) => (GLHUD.funk ? GLHUD.funk(name, text, ms) : GLHUD.sub(name, text, ms));
+  function still() {
+    if (GLHUD.funk) GLHUD.funk('', '');
+    else if (GLHUD.subT > 0 && S.subMine && GLHUD.subEl && GLHUD.subEl.textContent.endsWith(S.subMine))
+      GLHUD.subT = 0.01;
+    S.subMine = '';
+  }
   const speakOk = text =>
     S.speak && (S.paid || STIMME.engineName !== 'eleven') && STIMME.speaks('gl_r_' + S.id, text) && !window.FREEZE;
   function sayLine(W) {
-    // (somebody in the world is speaking: the radio waits its turn for a few seconds)
-    const other = GLHUD.subT > 0.3 && GLHUD.subEl && !(S.subMine && GLHUD.subEl.textContent.endsWith(S.subMine));
+    // (without the panel's own line for the radio: wait a few seconds while somebody in the world is speaking)
+    const other =
+      !GLHUD.funk && GLHUD.subT > 0.3 && GLHUD.subEl && !(S.subMine && GLHUD.subEl.textContent.endsWith(S.subMine));
     if (other && (W.defer = (W.defer || 0) + 1) < 8) {
       W.left = 1;
       W.li--;
@@ -378,7 +387,7 @@ export const GLRADIO = (() => {
     W.left = D.dauer(text) + 0.35;
     W.max = W.left * 1.7 + 4;
     W.busy = false;
-    GLHUD.sub(s.name, text, W.left * 1000);
+    zeile(s.name, text, W.left * 1000);
     S.subMine = text;
     note('wort', W.it.art, text);
     if (speakOk(text)) {
@@ -483,10 +492,7 @@ export const GLRADIO = (() => {
       GL.radio = s ? lst.indexOf(s) + 1 : 0;
       GL.save();
     }
-    if (GLHUD.subT > 0 && S.subMine && GLHUD.subEl && GLHUD.subEl.textContent.endsWith(S.subMine)) {
-      GLHUD.subT = 0.01;
-      S.subMine = '';
-    }
+    still();
     if (s) {
       voices();
       chain();
@@ -856,6 +862,7 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
   function stop() {
     stopSrc(0.1);
     if (S.item && S.item.busy) STIMME.stop();
+    if (S.id) still();
     S.said++;
     S.id = null;
     S.item = S.over = null;
