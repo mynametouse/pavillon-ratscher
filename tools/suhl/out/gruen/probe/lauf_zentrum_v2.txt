@@ -1,0 +1,7 @@
+lauf: 43355112319
+commit: 7c4e77e41f1ac071bd3cf7f0986fd33a3a5604b5
+gebiet: zentrum, version: 2, ndom: P1,P2,P3
+02:53:23 easygeodata nDOM1: 193 of 193 tiles present (0 fetched, 0.0 MB; 193 were there; 0 not offered; 0 failed)
+nDOM1-Kacheln im Rohdaten-Ordner: 193
+Dieser Workflow veröffentlicht nichts: suhl-daten veröffentlicht Sätze durch eine Tür (Aktion suhl-publish, Zweig suhl/daten).
+Artefakte dieses Laufs 43355112319: suhl-b-v2, suhl-w-v2, suhl-gr-v2

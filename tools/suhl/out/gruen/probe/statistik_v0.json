@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:57:04Z",
+ "made": "2026-11-13T02:53:25Z",
  "gebiet": "zentrum",
  "kacheln_gebiet": 11,
  "kacheln_einzelbaeume": 11,
@@ -12,12 +12,12 @@
   "baeume": {
    "anzahl": 9724,
    "kacheln": 11,
-   "sekunden": 23
+   "sekunden": 27
   }
  },
  "kontext": {
   "osm": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
-  "osm_stand": "2026-11-13T01:57:00Z",
+  "osm_stand": "2026-11-13T02:53:18Z",
   "gebaeude_osm_ringe": 35667,
   "gebaeude_ethos": 53938,
   "strassen": 10630,
@@ -201,6 +201,44 @@
   "kacheln_mit_fund": [],
   "ok": true
  },
+ "nach_gebiet": {
+  "zentrum": {
+   "flaeche_km2": 0.68,
+   "baeume": 2749,
+   "laub": 2417,
+   "nadel": 89,
+   "straeucher": 243,
+   "im_wald": 301,
+   "ausserhalb_wald_ohne_straeucher": 2205,
+   "hoehe_gemessen": 0,
+   "hoehe_median_gemessen_m": null,
+   "je_ha": 40.3
+  },
+  "kernstadt": {
+   "flaeche_km2": 22.04,
+   "baeume": 8594,
+   "laub": 7699,
+   "nadel": 248,
+   "straeucher": 647,
+   "im_wald": 594,
+   "ausserhalb_wald_ohne_straeucher": 7353,
+   "hoehe_gemessen": 0,
+   "hoehe_median_gemessen_m": null,
+   "je_ha": 3.9
+  },
+  "stadt": {
+   "flaeche_km2": 141.81,
+   "baeume": 9724,
+   "laub": 8828,
+   "nadel": 249,
+   "straeucher": 647,
+   "im_wald": 1686,
+   "ausserhalb_wald_ohne_straeucher": 7391,
+   "hoehe_gemessen": 0,
+   "hoehe_median_gemessen_m": null,
+   "je_ha": 0.7
+  }
+ },
  "schema": {
   "geprueft": true,
   "index": {
@@ -210,7 +248,7 @@
   "meldung": "VALID: out0 - schema 1 (rev 1.1), 0 errors, 0 warnings",
   "zeilen": []
  },
- "sekunden": 25,
+ "sekunden": 30,
  "kachel_tabelle": [
   [
    495,
