@@ -107,6 +107,10 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 20:02 **Grenzland-Chat** – **V18e ist online** (Website seit 20:00 auf `be8ed287`; Pflicht-Teil grün). Der Live-Lauf kam erst nach
+  dem Push von `99554f8e` (`max-parallel`, Nachricht 20:00) an einen Runner. **Nächster:** V18d (Zeitreise), auf `src` ab `99554f8e`. Von
+  mir kommt heute nichts mehr nach `src`, außer Doku.
+
 - 13.11. 20:00 **Grenzland-Chat** – **Prüfpaket: die meldenden Jobs höchstens 12 (Themen) + 4 (Feature) gleichzeitig.** Nach dem grünen
   Pflicht-Teil belegten die ~130 Themen-Jobs von `src` alle 20 Runner; der Live-Lauf von V18e und die Website-Auslieferung warteten 20 Minuten
   dahinter (dasselbe träfe V18d). Mit `max-parallel` bleiben mindestens 4 Runner frei für Live, Pages und die Pflicht-Jobs der Kandidaten; der
