@@ -163,7 +163,9 @@ HANDY.welt(null);   // kein Handy (Ende der Welt)
 1. **Esc legt das Handy weg** (wie vorher und wie die Tests es erwarten); „zurück“ ist Backspace oder der Pfeil oben links, „Start“ der
    untere Balken. Der Auftrag nannte Esc für „App schließen“ – ein Tastendruck zum schnellen Wegstecken ist im Spiel wichtiger.
 2. **Entsperren von selbst** nach ~0,6 s: der Sperrbildschirm ist zu sehen (Echtheit, Mitteilungen), hält aber nicht auf.
-3. **Die Kamera ist der Sucher über dem Bild** (wie bei GTA), nicht ein kleines Bild im Handy. Esc führt zurück ins Handy, T steckt weg.
+3. **Die Kamera ist der Sucher über dem Bild** (wie bei GTA), nicht ein kleines Bild im Handy. Die Maus schaut dabei umher (Zeiger
+   gefangen); **ein Linksklick löst aus** (sonst ginge jeder Klick ins 3D-Bild), ebenso E, Enter, Leertaste oder der runde Auslöser
+   (Touch). Esc führt zurück ins Handy – ohne dass das Menü des Spiels aufgeht –, T steckt weg.
 4. **Dunkles Design**, Akzent je Welt; keine echten App-Namen oder -Farben nachgebaut.
 5. **Querformat am Handy:** das Gerät wird seitlich gehalten (sonst wäre es dort kaum lesbar).
 6. **Die Dorfgruppe ist stumm** (kein Zähler) – sonst stünde am Nachrichten-Symbol ständig eine Zahl.
@@ -174,6 +176,10 @@ HANDY.welt(null);   // kein Handy (Ende der Welt)
    die passende App). Sobald der Test auf `GLHANDY.open('chat')` usw. umgestellt ist, kann `compat()` in `gl_handy.js` weg.
 
 ## Tests
+
+Stand 13.11. 14:45: GitHub-Runde 2 (6d1824ab) – `handy` 28/29 (nur der Klick auf den Auslöser unter gefangenem Zeiger, seither behoben),
+`grenzland_radio`, `grenzland`, `grenzland_mission:m1,m4`, `smoke` grün. Bilder der Haltung und des Anrufs: `out/handy/14_halten.png`,
+`11_anruf.png`, `15_halten_tippen.png`; hochkant/quer `18_*.png`.
 
 `viz3/test/handy.py` (Grenzland, freies Spiel, Abschnitte `app,anruf,kamera,halten,format`): T → Sperrbildschirm → Start; Nachrichten
 aus dem Symbol, Dorfgruppe scrollt senkrecht (Mausrad), Sprechblasen untereinander, Backspace zurück und heim; Banner, Zähler, Antwort-
