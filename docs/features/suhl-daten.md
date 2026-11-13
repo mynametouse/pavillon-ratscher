@@ -29,7 +29,8 @@ S.guard(buildings=n, area='stadt')                      # plausible Menge? (stad
 | Feldliste (englisch, aus dem Code) | `python3 -I tools/suhl/lib/validate.py --doc` |
 | Tests der Bibliothek | `python3 -I tools/suhl/lib/test_lib.py`, `test_schema.py`, `test_easygeodata.py` (zusammen 3 s, ohne Netz) |
 | Höhen von easygeodata holen (nur im Workflow) | `python3 -I tools/suhl/lib/easygeodata.py --product dgm --prio P1 --raw ~/suhl-raw` (Abschnitt 9) |
-| Erfundenes Beispiel aller Produkte | `tools/suhl/lib/beispiel/suhl/…` (zum Einlesen, bevor echte Daten da sind; Kennungen `BEISPIEL_…`) |
+| Veröffentlichen | nicht selbst: den Ordner `…/suhl/<produkt>/v<N>` als Artefakt mit festem Namen hochladen (`suhl-g-v1` …) und dem Suhl-Chat den Lauf nennen – Abschnitt 8 |
+| Erfundenes Beispiel aller Produkte | `tools/suhl/lib/beispiel/suhl/…` (kleinstes Beispiel in der Form der Fassung 1.1; Kennungen `BEISPIEL_…`) |
 | Probekacheln | `tools/suhl/lib/probe.json` – die 11 Kacheln der Stufe 10, die `zentrum` berühren, mit Grenzen in UTM und Modellmetern |
 
 ## 2 Koordinaten: welcher Rahmen in welcher Datei
@@ -367,7 +368,8 @@ Gelesen wurde die Beschreibung der Schnittstelle selbst (`/api/docs`, „easygeo
 | Wie kommt die Datei? | Die Liste nennt je Kachel eine Adresse `/api/file/…`. Sie prüft Schlüssel und Kontingent und leitet auf eine 15 Minuten gültige Adresse eines anderen Servers weiter. Der Client schickt den Schlüssel nur an easygeodata.de, nie an den zweiten Server. |
 | Grenzen | kostenloses Konto: **20 GB im Monat**; Mosaik und Höhenlinien bis 150 Kacheln je Abruf. Fehler tragen ein Feld `grund` (`kontingent`, `tageslimit`, `tageslimit_server`, `schluessel` …) – es gibt also auch Tagesgrenzen, Zahlen nennt die Beschreibung nicht. Antworten ohne Zähler in den Kopfzeilen. |
 | Lizenz, Nennung | Daten des Landes: „© GDI-Th“ (das Land nennt CC BY 4.0, die Seite für Höhendaten dl-de/by-2-0 – gleiche Nennung). Die Beschreibung verlangt, die Quellenvermerke der Länder zu beachten. Wir nennen zusätzlich „bezogen über easygeodata.de“ (`egd.sources_entry('dgm')`). |
-| Straßen-Korridore (P4, 35 Kacheln außerhalb der Gemeinde) | nicht in der Gemeinde-Liste; der Client fragt sie einzeln über einen Rahmen ab (noch nicht am echten Dienst geprüft) |
+| Straßen-Korridore (P4, 35 Kacheln außerhalb der Gemeinde) | nicht in der Gemeinde-Liste; der Client fragt sie mit **einer** Abfrage über den Rahmen um alle fehlenden Kacheln ab. Geprüft am echten Dienst (Lauf 43345805762): die Kacheln 618/5611 und 626/5594 kamen so (2,4 MB, 3 Abrufe), je 1000 × 1000 Zellen, keine leere Zelle. |
+| Hält der Cache? | Ja: der zweite Lauf desselben Workflows (43345805762) fand alle 24 P1-Kacheln im wiederhergestellten Cache und holte nichts. |
 
 **So holt ein Workflow, was er braucht** (jeder mit eigenem Cache – Actions-Caches gelten je Zweig, einen gemeinsamen Rohdaten-Ordner gibt es nicht):
 
@@ -402,10 +404,11 @@ deshalb den Cache-Schlüssel nicht ohne Grund ändern. Benutzt wird der Dienst n
 
 | Was | Stand |
 |---|---|
-| Daten-Repo `mynametouse/pavillon-daten` mit GitHub Pages | ✔ angelegt, Pages antwortet |
+| Daten-Repo `mynametouse/pavillon-daten` mit GitHub Pages | ✔ angelegt, Pages antwortet; `.nojekyll` liegt an der Wurzel |
 | Geheimnis `DATEN_TOKEN` | ✔ vorhanden, schreibt (Lauf 43339309234) |
-| Geheimnis `EASYGEODATA_KEY` | ✔ vorhanden, gilt (Läufe 43340656226, 43341000214); 20 GB im Monat frei |
+| Geheimnis `EASYGEODATA_KEY` | ✔ vorhanden, gilt (Läufe 43340656226, 43341000214, 43341830636, 43345805762); 20 GB im Monat frei, bisher etwa 35 MB verbraucht |
 | LoD2 (echte Dachformen) | weiter von Hand, später |
+| Platz bei GitHub Pages | nichts zu tun – zur Kenntnis: 1 GB je Seite. Der Boden der ganzen Stadt hat 265 MB (mit echtem Gelände etwa 290 MB). Solange alte und neue Generation kurz nebeneinander liegen, ist mehr als die Hälfte belegt; die Tür warnt ab 700 MB und lehnt ab 900 MB ab. |
 
 ## 11 Für den Suhl-Chat
 
@@ -429,7 +432,7 @@ Sonst:
   Boden-Version passt.
 - Veröffentlicht wird nur an einer Stelle: Job `satz` auf `suhl/daten` (Abschnitt 8). Zuerst geht der Probesatz Zentrum v1 hinaus,
   sobald der Suhl-Chat die Läufe und Artefakte nennt.
-- Die 35 Korridor-Kacheln P4 (außerhalb der Gemeinde) sind am echten Dienst noch nicht abgerufen worden.
+- Die Korridor-Kacheln P4 (außerhalb der Gemeinde) gehen über eine Rahmen-Abfrage; an zwei Kacheln am echten Dienst geprüft (Abschnitt 9).
 
 ## 12 Änderungen am Schema
 

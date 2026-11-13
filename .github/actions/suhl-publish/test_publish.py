@@ -11,7 +11,7 @@ import suhllib as S   # noqa: E402
 import beispiel       # noqa: E402
 import schema         # noqa: E402
 
-SECRET = 'ghp_TESTtokenTESTtokenTESTtoken123456'
+SECRET = 'TESTSECRET-kein-echter-Schluessel-0123456789'      # stands for the token: must never show up in any output
 
 
 def sh(*a, cwd=None):
