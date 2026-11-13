@@ -277,10 +277,10 @@
 },
 {
 "who": "gl_jule",
-"id": "gl_jule_lqgnuc",
-"text": "Bevor ich euch mehr erzähle, will ich wissen, ob ihr was taugt. Rennen bis zur Staumauer. Wer vor mir da ist, dem trau ich.",
-"file": "voice/gl/gl_jule_lqgnuc.mp3",
-"dur": 8.59
+"id": "gl_jule_15oxkj0",
+"text": "Bevor ich euch mehr erzähle, will ich wissen, ob ihr was taugt. Rennen bis zum Staudamm. Wer vor mir da ist, dem trau ich.",
+"file": "voice/gl/gl_jule_15oxkj0.mp3",
+"dur": 8.6
 },
 {
 "who": "gl_falko",
@@ -4540,10 +4540,10 @@
 },
 {
 "who": "gl_r_grenzland",
-"id": "gl_r_grenzland_ls6ncc",
-"text": "Verkehr: An der Staumauer parken Mopeds in zweiter Reihe. In erster Reihe steht der Grill.",
-"file": "voice/gl/gl_r_grenzland_ls6ncc.mp3",
-"dur": 5.91
+"id": "gl_r_grenzland_1jmq9th",
+"text": "Verkehr: Am Staudamm parken Mopeds in zweiter Reihe. In erster Reihe steht der Grill.",
+"file": "voice/gl/gl_r_grenzland_1jmq9th.mp3",
+"dur": 5.71
 },
 {
 "who": "gl_r_grenzland",
@@ -4869,10 +4869,10 @@
 },
 {
 "who": "gl_r_zweitakt",
-"id": "gl_r_zweitakt_1piksyh",
-"text": "Meldung für Schrauber: Die Moped-Clique trifft sich an der Staumauer. Wer nicht anspringt, wird geschoben.",
-"file": "voice/gl/gl_r_zweitakt_1piksyh.mp3",
-"dur": 6.2
+"id": "gl_r_zweitakt_13o6z0m",
+"text": "Meldung für Schrauber: Die Moped-Clique trifft sich am Staudamm. Wer nicht anspringt, wird geschoben.",
+"file": "voice/gl/gl_r_zweitakt_13o6z0m.mp3",
+"dur": 6.05
 },
 {
 "who": "gl_r_zweitakt",
