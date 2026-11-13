@@ -579,6 +579,7 @@ export const GLFAHNDUNG = (() => {
     spawn(u) {
       const L = LOOK[u.kind] || LOOK.streife;
       u.c = GLAUTO.spawn(L[0], L[1]) || GLAUTO.spawn('streife', LOOK.streife[1]);
+      if (u.c) u.c.pol = true; // (the police's own: other modules have vehicles of the mode too)
       // its crew's figures are loaded now, while it is still far (loading and painting a figure takes a moment)
       if (u.st !== 'riegel')
         for (let i = 0; i < (era89() ? 1 : 2); i++) {
@@ -745,6 +746,7 @@ export const GLFAHNDUNG = (() => {
         hd + Math.PI / 2 + s * 0.35
       );
       c.blau = true;
+      c.pol = true;
       cars.push(c);
     }
     const m = new THREE.Mesh(cones(), VFIG.mat());

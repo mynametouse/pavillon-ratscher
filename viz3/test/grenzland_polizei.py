@@ -76,9 +76,15 @@ with lib.browser() as b:
       onRoad(x, y) { const s = KERN.surface(x, y); return !!s && s.e > -1.5 },
       figs() { return GLFIG.figs.filter(F => F.cop).length },
       figsVis() { return GLFIG.figs.filter(F => F.cop && F.g.visible).length },
+      // the police's own cars and their solid boxes (other modules of the mode have vehicles and walls too)
+      polCars() { return GLAUTO.cars.filter(c => c.pol).length }, polSolid() { return VEH.extra.filter(e => e.grenzland && e.grenzland.pol).length },
       events: [],
       get x() { return KERN.where()[0] }, get y() { return KERN.where()[1] }, get z() { return KERN.ground(KERN.where()[0], KERN.where()[1]) },
     }; KERN.on('grenzland:erwischt', d => TP.events.push(['erwischt', d])); KERN.on('grenzland:sperre', d => TP.events.push(['sperre', d])); KERN.on('grenzland:zeuge', d => TP.events.push(['zeuge', d])); 0""")
+    # free play: no mission runs, the two stand in the garden on Friday evening (in the merged game the scene starts mission 1)
+    for _ in range(6): steps(0.3); time.sleep(0.3)
+    X("GLMISSION.stop(); const d = GLMISSION.debug; if (d) for (const id of Object.keys(d.info().st)) GLSTATE.m[id] = { st: 'erledigt', i: 0, n: 0 }; GLSTATE.cur = ''; GLSTATE.kap1 = true; GLHUD.fade(false); if (window.GLRADIO && GLRADIO.off) GLRADIO.off(); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 17 * 60 + 20; GAME.go('garten'); GLSTATE.save(true)")
+    steps(1)
     ok = E("GLSTATE.on")
     ck('the scene runs', ok)
     X("GRENZLAND.folgen(false)")   # (Sarah waits in the garden: she is not part of these scenes)
@@ -152,7 +158,7 @@ with lib.browser() as b:
         X(f"GAME.view({AN[0]}, {AN[1]}, KERN.ground({AN[0]}, {AN[1]}) + 1.62, Math.atan2(GLFAHNDUNG.cops[0].x - {AN[0]}, GLFAHNDUNG.cops[0].y - {AN[1]}) * 180 / Math.PI, -4)")
         pic('03_beamte', True)
         t = until("TP.events.some(e => e[0] === 'erwischt')", 60, 0.5)
-        st = J("({ bust: !document.getElementById('glbust').hidden, geld: GLSTATE.geld, sterne: GLLOGIK.stars(GLSTATE.W), cars: GLFAHNDUNG.cars.length, cops: GLFAHNDUNG.cops.length, figs: TP.figs(), glcars: GLAUTO.cars.length, ev: TP.events.filter(e => e[0] === 'erwischt') })")
+        st = J("({ bust: !document.getElementById('glbust').hidden, geld: GLSTATE.geld, sterne: GLLOGIK.stars(GLSTATE.W), cars: GLFAHNDUNG.cars.length, cops: GLFAHNDUNG.cops.length, figs: TP.figs(), glcars: TP.polCars(), ev: TP.events.filter(e => e[0] === 'erwischt') })")
         ck('patrol: they walk over and whoever stands is caught (the screen, the fine)', t is not None and t > 3 and st['bust'] and st['geld'] < 300 and st['sterne'] == 0, str((t, st)))
         ck('patrol: after the arrest nothing of the police is left', st['cars'] == 0 and st['cops'] == 0 and st['figs'] == 0 and st['glcars'] == 0, str(st))
         X("document.getElementById('glbust').hidden = true; TP.events.length = 0")
@@ -182,7 +188,7 @@ with lib.browser() as b:
         ck('escape: the cars drive off, lights out', all(c['st'] == 'abzug' for c in st['cars']) and E("GLFAHNDUNG.cars.every(u => !u.c.blau && !u.c.horn)"), str(st['cars']))
         t = until("GLFAHNDUNG.cars.length === 0", 260, 4)
         steps(1)
-        ck('escape: and are gone, the officers\' figures freed', t is not None and E("GLAUTO.cars.length") == 0 and E("TP.figs()") == 0, str((t, stand()['cars'], E("TP.figs()"))))
+        ck('escape: and are gone, the officers\' figures freed', t is not None and E("TP.polCars()") == 0 and E("TP.figs()") == 0, str((t, stand()['cars'], E("TP.polCars()"), E("TP.figs()"))))
     # ------------------------------------------------------------------ moped ------------------------------------------------------------------
     if want('moped'):
         # on the main road south of the village, heading north; the car comes up the same road from the south
@@ -225,7 +231,7 @@ with lib.browser() as b:
         steps(5, 0.05)
         B = J("""(() => { const B = GLFAHNDUNG.block; if (!B) return null; const v = VEH.cur.st; return { x: B.x, y: B.y, hd: B.hd, cars: B.cars.length, vis: B.cars.every(c => c.g.visible && c.blau), mesh: !!B.mesh && !!B.mesh.parent,
           road: TP.onRoad(B.x, B.y), d: Math.hypot(B.x - v.x, B.y - v.y), ahead: (B.x - v.x) * Math.sin(v.psi) + (B.y - v.y) * Math.cos(v.psi), sterne: GLLOGIK.starsOf(GLSTATE.W.heat), ev: TP.events.filter(e => e[0] === 'sperre').length,
-          solid: VEH.extra.filter(e => e.grenzland).length } })()""")
+          solid: TP.polSolid() } })()""")
         ck('block: three stars put a road block ahead on the road he rides', t is not None and B and B['sterne'] >= 3 and B['cars'] == 2 and B['vis'] and B['mesh'] and B['road'] and B['ahead'] > 120 and B['d'] < 420 and B['ev'] == 1, str((t, B)))
         if B:
             # up to it on the moped (the picture), then past it: another deed (the moped set beyond the block, as if he had gone round over the field)
@@ -241,7 +247,7 @@ with lib.browser() as b:
             ck('block: riding past it is another deed', r['heat'] > h0 and 'sperre' in r['log'], str((h0, r)))
         X("VEH.auto = null; if (VEH.cur) VEH.exit(); GLFAHNDUNG.clear()")
         steps(0.5)
-        r = J("({ cars: GLFAHNDUNG.cars.length, cops: GLFAHNDUNG.cops.length, block: !!GLFAHNDUNG.block, glcars: GLAUTO.cars.length, figs: TP.figs(), solid: VEH.extra.filter(e => e.grenzland).length, sterne: GLLOGIK.stars(GLSTATE.W), offen: GLSTATE.W.offen.length })")
+        r = J("({ cars: GLFAHNDUNG.cars.length, cops: GLFAHNDUNG.cops.length, block: !!GLFAHNDUNG.block, glcars: TP.polCars(), figs: TP.figs(), solid: TP.polSolid(), sterne: GLLOGIK.stars(GLSTATE.W), offen: GLSTATE.W.offen.length })")
         ck('block: clear() leaves nothing behind', r['cars'] == 0 and r['cops'] == 0 and not r['block'] and r['glcars'] == 0 and r['figs'] == 0 and r['solid'] == 0 and r['sterne'] == 0, str(r))
     # ------------------------------------------------------------------ night ------------------------------------------------------------------
     if want('night'):
@@ -321,7 +327,7 @@ with lib.browser() as b:
             pic('09_riegel')
         X("GLFAHNDUNG.clear()")
         steps(0.5)
-        ck('sek: clear() leaves nothing', E("GLFAHNDUNG.cars.length + GLFAHNDUNG.cops.length + GLAUTO.cars.length") == 0)
+        ck('sek: clear() leaves nothing', E("GLFAHNDUNG.cars.length + GLFAHNDUNG.cops.length + TP.polCars() + TP.polSolid()") == 0)
     # ------------------------------------------------------------------ stadt ------------------------------------------------------------------
     if want('stadt'):
         X("GLFAHNDUNG.clear(); GAME.go('schleusingen')")
@@ -350,8 +356,8 @@ with lib.browser() as b:
     # ------------------------------------------------------------------ the end ------------------------------------------------------------------
     X("GRENZLAND.stop()")
     steps(0.5)
-    st = J("({ on: GLSTATE.on, figs: GLFIG.figs.length, cars: GLAUTO.cars.length, units: GLFAHNDUNG.cars.length, solid: VEH.extra.filter(e => e.grenzland).length, heli: !!(window.GLHELI && GLHELI.on) })")
-    ck('„Beenden“ leaves nothing of the police', not st['on'] and st['figs'] == 0 and st['cars'] == 0 and st['units'] == 0 and st['solid'] == 0 and not st['heli'], str(st))
+    st = J("({ on: GLSTATE.on, figs: TP.figs(), cars: TP.polCars(), units: GLFAHNDUNG.cars.length, cops: GLFAHNDUNG.cops.length, solid: TP.polSolid(), heli: !!(window.GLHELI && GLHELI.on), block: !!GLFAHNDUNG.block })")
+    ck('„Beenden“ leaves nothing of the police', not st['on'] and st['figs'] == 0 and st['cars'] == 0 and st['units'] == 0 and st['cops'] == 0 and st['solid'] == 0 and not st['heli'] and not st['block'], str(st))
     okgl, rep = lib.check_gl(pg)
     ck('at most 16 textures per shader program, none broken', okgl, str({k: rep[k] for k in ('maxFrag', 'maxVert')}))
     ck.errors(errs)
