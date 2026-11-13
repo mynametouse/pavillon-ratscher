@@ -23,20 +23,21 @@ FX = 'fx1'   # the version of the sound chains below: a new one records everythi
 # pace and pitch. Falko and Sarah are real people (Sarah agreed 13.11.2026 10:44): the most natural German voices, unchanged.
 CAST = {
     # the two one plays
-    'gl_falko': (['de-DE-FlorianMultilingualNeural', 'de-DE-KillianNeural'], '+0%', '-1Hz', 'p'),
+    # (Florian gave no audio for most lines on 13.11.2026 – then Conrad takes all of Falko's lines; the stranger is therefore not Conrad)
+    'gl_falko': (['de-DE-FlorianMultilingualNeural', 'de-DE-ConradNeural'], '+0%', '-1Hz', 'p'),
     'gl_sarah': (['de-DE-SeraphinaMultilingualNeural', 'de-DE-KatjaNeural'], '+0%', '+0Hz', 'p'),
     # today
-    'gl_fremder': (['de-DE-ConradNeural'], '-6%', '-9Hz', 'p'),                       # 55, calm, a little too friendly
+    'gl_fremder': (['de-DE-KillianNeural'], '-8%', '-12Hz', 'p'),                     # 55, calm, a little too friendly
     'gl_jule': (['de-DE-KatjaNeural', 'de-DE-AmalaNeural'], '+5%', '+1Hz', 'p'),     # 26, leads the clique, quick
     'gl_timo': (['de-DE-KillianNeural'], '+6%', '+2Hz', 'p'),                         # 24, the joker
     'gl_basti': (['de-AT-JonasNeural', 'de-DE-KillianNeural'], '-8%', '-6Hz', 'p'),  # 22, says four words a day
-    'gl_gerhard': (['en-US-AndrewMultilingualNeural', 'de-DE-KillianNeural'], '-10%', '-6Hz', 'p'),   # 72: his voice in the village (record_lines.py)
-    'gl_gerhard89': (['en-US-AndrewMultilingualNeural', 'de-DE-KillianNeural'], '-2%', '-1Hz', 'p'),  # the same man at 35, in 1989
+    'gl_gerhard': (['en-US-AndrewMultilingualNeural'], '-10%', '-6Hz', 'p'),   # 72: his voice in the village (record_lines.py), no other
+    'gl_gerhard89': (['en-US-AndrewMultilingualNeural'], '-2%', '-1Hz', 'p'),  # the same man at 35, in 1989
     'gl_kraeh': (['en-US-BrianMultilingualNeural', 'de-DE-ConradNeural'], '-6%', '-8Hz', 'p'),
     'gl_wache1': (['de-CH-JanNeural', 'de-DE-KillianNeural'], '-4%', '-8Hz', 'p'),
-    'gl_wache2': (['de-DE-ConradNeural'], '+4%', '-3Hz', 'p'),
+    'gl_wache2': (['en-US-BrianMultilingualNeural', 'de-DE-KillianNeural'], '-2%', '-6Hz', 'p'),
     'gl_wache3': (['de-AT-JonasNeural', 'de-DE-KillianNeural'], '-4%', '-9Hz', 'p'),
-    'gl_polizei1': (['de-DE-KillianNeural'], '-3%', '-6Hz', 'p'),
+    'gl_polizei1': (['de-CH-JanNeural', 'de-DE-KillianNeural'], '+0%', '-3Hz', 'p'),
     'gl_polizei2': (['de-AT-IngridNeural', 'de-DE-AmalaNeural'], '+2%', '+0Hz', 'p'),
     'gl_yuki': (['de-CH-LeniNeural', 'de-DE-AmalaNeural'], '+2%', '+2Hz', 'p'),
     'gl_haendler': (['de-DE-AmalaNeural'], '-4%', '-4Hz', 'p'),
@@ -45,7 +46,7 @@ CAST = {
     'gl_abv': (['de-DE-ConradNeural'], '-4%', '-6Hz', 'p'),
     'gl_vopo': (['de-AT-JonasNeural', 'de-DE-KillianNeural'], '+2%', '+0Hz', 'p'),
     'gl_horst': (['de-CH-JanNeural', 'de-DE-ConradNeural'], '-6%', '-5Hz', 'p'),
-    'gl_werner': (['de-DE-FlorianMultilingualNeural'], '-4%', '-5Hz', 'p'),
+    'gl_werner': (['de-DE-KillianNeural'], '-6%', '-8Hz', 'p'),
     'gl_kurt': (['en-US-BrianMultilingualNeural', 'de-DE-ConradNeural'], '-14%', '-10Hz', 'p'),
     'gl_maik': (['de-DE-KillianNeural'], '+10%', '+5Hz', 'p'),
     'gl_erna': (['de-DE-AmalaNeural'], '-8%', '-8Hz', 'p'),
@@ -74,11 +75,17 @@ CAST = {
     'gl_r_neon': (['en-US-EmmaMultilingualNeural', 'de-DE-SeraphinaMultilingualNeural'], '+4%', '+2Hz', 'r'),  # Synthia, 31
     'gl_r_republik': (['de-DE-ConradNeural'], '-4%', '-4Hz', 'r'),                                      # 1989: the GDR's news reader
     'gl_r_impuls': (['de-DE-AmalaNeural'], '+8%', '+4Hz', 'r'),                                         # 1989: Kati, 24, youth radio
-    'gl_r_west': (['en-US-AndrewMultilingualNeural', 'de-DE-FlorianMultilingualNeural'], '+6%', '+3Hz', 'r'),  # 1989: Wolfi, the West
+    'gl_r_west': (['en-US-AndrewMultilingualNeural', 'de-DE-KillianNeural'], '+6%', '+3Hz', 'r'),  # 1989: Wolfi, the West
 }
 # a patrol on the police radio („Schleuse 12 …“, „Bussard 1 …“, „Verstanden …“) – the control room says the rest
 FUNK_PATROL = (['de-DE-KillianNeural'], '+2%', '-5Hz')
 PATROL = re.compile(r'^(Schleuse \d+|Bussard \d+|Verstanden)\b')
+# the squelch: before a line that opens a transmission (a call sign first), after one that closes it – a description told in fragments
+# (grenzland/gl_fahndung.js: „Zentrale an alle Streifen.“ · „Gesucht wird …,“ · … · „Kommen.“) clicks only at its two ends
+CALL = re.compile(r'^(Rennsteig|Zentrale|Hier Zentrale|Schleuse \d+|Bussard \d+|Verstanden)\b')
+def squelch(text):
+    t = text.strip(); i = bool(CALL.match(t)); o = t == 'Kommen.' or (i and not t.endswith('an alle Streifen.'))
+    return 'f' if i and o else 'fi' if i else 'fo' if o else 'fm'
 # someone not in the table (a module's new speaker): a voice of the right gender, by the name's hash; pace and pitch by age
 POOL = {'m': ['de-DE-KillianNeural', 'de-AT-JonasNeural', 'de-CH-JanNeural', 'de-DE-ConradNeural', 'de-DE-FlorianMultilingualNeural'],
         'f': ['de-DE-KatjaNeural', 'de-DE-AmalaNeural', 'de-AT-IngridNeural', 'de-CH-LeniNeural', 'de-DE-SeraphinaMultilingualNeural']}
@@ -102,20 +109,22 @@ def setting(l, cast, have):
     w = l['who']
     if w in CAST:
         pref, rate, pitch, kind = CAST[w]
-        if kind == 'f' and PATROL.match(l['text']): pref, rate, pitch = FUNK_PATROL
+        if kind == 'f':
+            if PATROL.match(l['text']): pref, rate, pitch = FUNK_PATROL
+            kind = squelch(l['text'])
     else:
         c = cast.get(w, {}); g = c.get('g') if c.get('g') in POOL else ('f' if h32(w) % 2 else 'm'); age = c.get('age') or 40
         pool = POOL[g]; pref = [pool[h32(w) % len(pool)]] + pool
         j = h32(w) % 7 - 3
         rate = '%+d%%' % ((-8 if age >= 65 else 6 if age < 30 else 0) + j); pitch = '%+dHz' % ((-6 if age >= 65 else 3 if age < 30 else 0) + j)
-        kind = 'r' if w.startswith('gl_r_') else 'f' if w.startswith('gl_funk') else 'p'
+        kind = 'r' if w.startswith('gl_r_') else squelch(l['text']) if w.startswith('gl_funk') else 'p'
     g = 'f' if FEM.search(pref[0]) else 'm'
     voice = next((v for v in pref if v in have), None) or next((v for v in POOL[g] if v in have), None)
     return voice, rate, pitch, kind
 
-async def tts(text, voice, rate, pitch, raw):
+async def tts(text, voice, rate, pitch, raw, tries=4):
     import edge_tts
-    for k in range(4):
+    for k in range(tries):
         try:
             await edge_tts.Communicate(text, voice, rate=rate, pitch=pitch).save(raw)
             if os.path.getsize(raw) > 1000: return True
@@ -124,18 +133,24 @@ async def tts(text, voice, rate, pitch, raw):
         await asyncio.sleep(3 + 4 * k)
     return False
 
+KIND.update({k: KIND['f'] for k in ('fi', 'fo', 'fm')})
 def encode(raw, mp3, kind):
     K = KIND[kind]
-    if kind == 'f':
-        fc = ('anoisesrc=d=0.07:c=white:a=0.3:r=24000,aformat=sample_fmts=fltp:channel_layouts=mono[n1];'
-              'anoisesrc=d=0.16:c=white:a=0.3:r=24000,afade=t=out:st=0.05:d=0.11,aformat=sample_fmts=fltp:channel_layouts=mono[n2];'
-              f'[0:a]{TRIM},aresample=24000,aformat=sample_fmts=fltp:channel_layouts=mono[v];'
-              f'[n1][v][n2]concat=n=3:v=0:a=1,{K["af"]}[o]')
+    if kind.startswith('f'):
+        MONO = 'aformat=sample_fmts=fltp:channel_layouts=mono'
+        parts = [f'[0:a]{TRIM},aresample=24000,{MONO}[v]']; seq = '[v]'
+        if kind in ('f', 'fi'): parts.append(f'anoisesrc=d=0.07:c=white:a=0.3:r=24000,{MONO}[n1]'); seq = '[n1]' + seq
+        if kind in ('f', 'fo'): parts.append(f'anoisesrc=d=0.16:c=white:a=0.3:r=24000,afade=t=out:st=0.05:d=0.11,{MONO}[n2]'); seq += '[n2]'
+        fc = ';'.join(parts) + f';{seq}concat=n={seq.count("[")}:v=0:a=1,{K["af"]}[o]'
         cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-filter_complex', fc, '-map', '[o]']
     else:
         cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-af', TRIM + ',' + K['af']]
     subprocess.run(cmd + ['-ac', '1', '-ar', str(K['ar']), '-b:a', K['br'], mp3], check=True)
 
+# seconds a line should take at this pace (14 characters a second at +0 %, as the village's recordings)
+def expect(text, rate): return max(0.4, len(text) / 14 / (1 + int(rate.rstrip('%')) / 100))
+# a recording that is sound: not silent, not cut short (the service sometimes sends a stump)
+def sound(a, text, rate): return a.get('lufs') is not None and a['lufs'] > -45 and a.get('dur', 0) >= max(0.25, 0.3 * expect(text, rate))
 def dur(f): return float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], capture_output=True, text=True).stdout.strip() or 0)
 def lufs(f):
     e = subprocess.run(['ffmpeg', '-hide_banner', '-nostats', '-i', f, '-af', 'ebur128=framelog=quiet', '-f', 'null', '-'], capture_output=True, text=True).stderr
@@ -155,41 +170,71 @@ async def main():
         print('German and multilingual voices:', ' '.join(sorted(v for v in have if v.startswith('de-') or 'Multilingual' in v)), flush=True)
     af = os.path.join(EX, 'aufnahmen.json')
     old = json.load(open(af)) if os.path.exists(af) else {}
-    # the budget: in the order of prio (the collector's order within one), the files that stay count with their size, new ones estimated
-    order = sorted(range(len(lines)), key=lambda i: (lines[i].get('prio', 2), i))
-    want, total, cut, todo = {}, 0, [], []
-    for i in order:
-        l = lines[i]
-        voice, rate, pitch, kind = setting(l, cast, have)
-        if not voice: print('no voice for', l['who']); continue
-        sig = '|'.join([voice, rate, pitch, kind, FX])
-        mp3 = os.path.join(OUT, l['id'] + '.mp3')
-        keep = old.get(l['id'], {}).get('sig') == sig and os.path.exists(mp3)
-        if only and l['who'] not in only and not keep: continue
-        pace = 1 + int(rate.rstrip('%')) / 100
-        size = os.path.getsize(mp3) if keep else int(len(l['text']) / 14 / pace * KIND[kind]['bps']) + 800
-        if l.get('prio', 2) >= 3 and total + size > BUDGET: cut.append(l); continue
-        total += size
-        want[l['id']] = (l, voice, rate, pitch, kind, sig, mp3, keep)
-        if not keep: todo.append(l['id'])
+    # a voice that gave no audio for a person: the person's next voice, for all their lines (kept in aufnahmen.json '_bad')
+    bad = old.pop('_bad', {})
+    def plan():
+        """the budget: in the order of prio (the collector's order within one), the files that stay count with their size, new ones
+        estimated → want {id: (line, voice, rate, pitch, kind, sig, mp3, keep)}, the ids to record, the radio lines over the budget"""
+        order = sorted(range(len(lines)), key=lambda i: (lines[i].get('prio', 2), i))
+        want, total, cut, todo = {}, 0, [], []
+        for i in order:
+            l = lines[i]
+            voice, rate, pitch, kind = setting(l, cast, have - set(bad.get(l['who'], [])))
+            if not voice: print('no voice for', l['who']); continue
+            sig = '|'.join([voice, rate, pitch, kind, FX])
+            mp3 = os.path.join(OUT, l['id'] + '.mp3')
+            a = old.get(l['id'], {})
+            keep = a.get('sig') == sig and os.path.exists(mp3) and sound(a, l['text'], rate)
+            if only and l['who'] not in only and not keep: continue
+            size = os.path.getsize(mp3) if keep else int(expect(l['text'], rate) * KIND[kind]['bps']) + 800
+            if l.get('prio', 2) >= 3 and total + size > BUDGET: cut.append(l); continue
+            total += size
+            want[l['id']] = (l, voice, rate, pitch, kind, sig, mp3, keep)
+            if not keep: todo.append(l['id'])
+        return want, todo, cut, total
+    want, todo, cut, total = plan()
     print(f'{len(want)} lines wanted ({len(todo)} to record), ≈ {total / 1e6:.2f} MB of {BUDGET / 1e6:.2f} MB; {len(cut)} radio lines over the budget', flush=True)
     if os.environ.get('GL_DRY'):
         for k in todo[:12]: l, voice, rate, pitch, kind, *_ = want[k]; print('  would record', l['who'], voice, rate, pitch, kind, l['text'][:60])
         return
-    sem = asyncio.Semaphore(4)
-    async def one(k):
+    async def one(k, sem, tries):
         l, voice, rate, pitch, kind, sig, mp3, keep = want[k]
         raw = os.path.join(TMP, k + '.raw.mp3')
         async with sem:
-            ok = await tts(l['text'].replace('…', ','), voice, rate, pitch, raw)
-        if not ok: print('FAILED', k, flush=True); return False
+            ok = await tts(l['text'].replace('…', ','), voice, rate, pitch, raw, tries)
+        if not ok: print('FAILED', k, voice, flush=True); return False
         await asyncio.to_thread(encode, raw, mp3, kind)
-        old[k] = {'sig': sig, 'voice': voice, 'rate': rate, 'pitch': pitch, 'kind': kind, 'dur': round(dur(mp3), 2),
-                  'lufs': lufs(mp3), 'bytes': os.path.getsize(mp3)}
-        print('ok', k, old[k]['dur'], 's', old[k]['lufs'], 'LUFS', flush=True)
+        a = {'sig': sig, 'voice': voice, 'rate': rate, 'pitch': pitch, 'kind': kind, 'dur': round(dur(mp3), 2), 'lufs': lufs(mp3),
+             'bytes': os.path.getsize(mp3)}
+        if not sound(a, l['text'], rate):
+            print('BROKEN', k, voice, a['dur'], 's', a['lufs'], 'LUFS', flush=True); os.remove(mp3); return False
+        old[k] = a
+        print('ok', k, a['dur'], 's', a['lufs'], 'LUFS', flush=True)
         return True
-    res = await asyncio.gather(*(one(k) for k in todo))
-    failed = [k for k, r in zip(todo, res) if not r]
+    async def runs(ids, par, tries):
+        sem = asyncio.Semaphore(par)
+        res = await asyncio.gather(*(one(k, sem, tries) for k in ids))
+        return [k for k, r in zip(ids, res) if not r]
+    # 1: four at a time; 2: what failed, one at a time and more patient; 3: who still has a line without audio gets the next voice of
+    # the list for all their lines (one voice per person), recorded the same way
+    failed = await runs(todo, 4, 4)
+    if failed: failed = await runs(failed, 1, 6)
+    switch = {}
+    for k in failed:
+        l, voice = want[k][0], want[k][1]
+        pref = CAST.get(l['who'], ([],))[0]
+        rest = [v for v in pref if v in have and v != voice and v not in bad.get(l['who'], [])]
+        if rest and l['who'] not in switch: switch[l['who']] = voice
+    if switch:
+        for w, v in switch.items(): bad.setdefault(w, []).append(v); print('voice switched for', w, 'from', v, flush=True)
+        want, todo2, cut, total = plan()
+        todo += [k for k in todo2 if k not in todo]
+        again = [k for k in todo2 if want[k][0]['who'] in switch]
+        failed = [k for k in failed if want.get(k) and want[k][0]['who'] not in switch]
+        f3 = await runs(again, 2, 4)
+        if f3: f3 = await runs(f3, 1, 6)
+        failed += f3
+    for k in failed: print(f'::warning title=grenzland_record::no audio for {k} ({want[k][1]}): {want[k][0]["text"][:80]}', flush=True)
     # what is no longer wanted goes
     for f in os.listdir(OUT):
         if f.endswith('.mp3') and f[:-4] not in want: os.remove(os.path.join(OUT, f)); old.pop(f[:-4], None); print('removed', f)
@@ -206,13 +251,17 @@ async def main():
     vx_add, voices = [], {}
     for l in lines:
         w = want.get(l['id'])
-        if not w or l['id'] in failed or not os.path.exists(w[6]): continue
+        if not w or l['id'] in failed or not os.path.exists(w[6]) or l['id'] not in old: continue
         vx_add.append({'who': l['who'], 'id': l['id'], 'text': l['text'], 'file': 'voice/gl/' + l['id'] + '.mp3', 'dur': old[l['id']]['dur']})
-        if not (w[4] == 'f' and PATROL.match(l['text'])): voices.setdefault(l['who'], w[1])
+        if not (w[4].startswith('f') and PATROL.match(l['text'])): voices.setdefault(l['who'], w[1])
     json.dump({'vx': {'voices': voices}, 'vx_add': vx_add}, open(os.path.join(EX, 'manifest.json'), 'w'), ensure_ascii=False, indent=1)
+    if bad: old['_bad'] = bad
     json.dump(old, open(af, 'w'), ensure_ascii=False, indent=1, sort_keys=True)
+    old.pop('_bad', None)
     size = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT))
     print(f'DONE {len(vx_add)} lines, {len(todo) - len(failed)} new, {len(failed)} failed, {size / 1e6:.2f} MB', flush=True)
+    print(f'::notice title=grenzland_record::{len(vx_add)} lines recorded, {len(todo) - len(failed)} new, {len(failed)} without audio, '
+          f'{len(cut)} radio lines over the budget, {size / 1e6:.2f} MB' + (f'; voices switched: {switch}' if switch else ''), flush=True)
     summary(lines, want, old, todo, failed, cut, size)
     if size > 6_000_000: print('WARNING: over 6 MB – the story and the world alone (prio 1, 2) are too much')
 

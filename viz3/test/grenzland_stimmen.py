@@ -41,12 +41,14 @@ with lib.browser() as b:
     # ---- 3 · the share spoken and recorded; what is missing ----
     cov = J("(() => { const L = GLSTIMMEN.linien(), F = GLSTIMMEN.fehlend(), f = new Set(F.map(l => l.id)), by = {}; "
             "for (const l of L) { const b = by[l.prio] || (by[l.prio] = [0, 0]); b[0]++; if (!f.has(l.id)) b[1]++; } "
-            "return { n: L.length, sp: L.filter(l => STIMME.speaks(l.who, l.text)).length, by, fehlend: F.map(l => [l.prio, l.who, l.text, l.src]) }; })()")
+            "return { n: L.length, ids: L.map(l => l.id), sp: L.filter(l => STIMME.speaks(l.who, l.text)).length, by, fehlend: F.map(l => [l.prio, l.who, l.text, l.src]) }; })()")
     json.dump(cov['fehlend'], open(os.path.join(OUT, 'fehlend.json'), 'w'), ensure_ascii=False, indent=1)
     by = {int(k): v for k, v in cov['by'].items()}
     n12 = sum(by.get(p, [0, 0])[0] for p in (1, 2)); r12 = sum(by.get(p, [0, 0])[1] for p in (1, 2))
     print('recorded per prio (lines, recorded):', by, flush=True)
-    ck('the collector in the page finds what the list for the recordings has', abs(cov['n'] - len(LIN)) <= max(5, len(LIN) // 20), f"{cov['n']} in the page, {len(LIN)} in the list")
+    lin = {l['id'] for l in LIN}; neu = [i for i in cov['ids'] if i not in lin]
+    ck('every line the game collects is in the list for the recordings (else: node tools/voices/grenzland_linien.mjs)', not neu,
+       f"{cov['n']} in the page, {len(LIN)} in the list, not in it: {neu[:6]}")
     ck('≥ 95 % of the lines are spoken (STIMME.speaks)', cov['sp'] >= 0.95 * cov['n'], f"{cov['sp']} of {cov['n']}")
     ck('≥ 95 % of the story and the world are recordings (prio 1, 2)', r12 >= 0.95 * n12, f"{r12} of {n12}; missing: {[f[2][:40] for f in cov['fehlend'] if f[0] <= 2][:6]}")
     ck('every talk of the missions is recorded', by.get(1, [0, 0])[1] == by.get(1, [0, 0])[0], str(by.get(1)))

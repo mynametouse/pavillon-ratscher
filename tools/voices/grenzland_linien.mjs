@@ -7,6 +7,7 @@
 // Run again after a merge (new linien() of the other agents) and push the changed JSON – the workflow records what is new:
 //   node tools/voices/grenzland_linien.mjs           writes the JSON, prints what it found
 //   node tools/voices/grenzland_linien.mjs --check   exit 1 when the JSON is not up to date
+//   GL_SRC=<a viz3/src elsewhere> … --out <file>      the lines of another checkout (e.g. the branches of a round put together)
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -14,9 +15,9 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const SRC = path.join(here, '..', '..', 'viz3', 'src');
+const SRC = process.env.GL_SRC ? path.resolve(process.env.GL_SRC) : path.join(here, '..', '..', 'viz3', 'src');
 const GLD = path.join(SRC, 'grenzland');
-const OUT = path.join(here, 'grenzland_linien.json');
+const OUT = process.argv.includes('--out') ? path.resolve(process.argv[process.argv.indexOf('--out') + 1]) : path.join(here, 'grenzland_linien.json');
 
 // ---------------- a stub that answers anything (the scene's modules, the page) ----------------
 function deep(name) {
@@ -116,7 +117,7 @@ function collect(G, mods, how, failed) {
     mods,
     extra,
   });
-  const linien = mods.filter(([n, X]) => X && typeof X.linien === 'function').map(([n]) => n);
+  const linien = mods.filter(([n, X]) => n !== 'GLSTIMMEN' && X && typeof X.linien === 'function').map(([n]) => n);
   return { how, linien, failed, cast: castOf(lines, G.GLDATA, G.GLRDATA), lines };
 }
 

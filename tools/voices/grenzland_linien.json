@@ -56,6 +56,31 @@
    "g": "m",
    "age": 47
   },
+  "gl_funk": {
+   "name": "funk",
+   "g": "?",
+   "age": 0
+  },
+  "gl_polizei1": {
+   "name": "Polizist",
+   "g": "m",
+   "age": 38
+  },
+  "gl_polizei2": {
+   "name": "Polizistin",
+   "g": "f",
+   "age": 33
+  },
+  "gl_vopo": {
+   "name": "Volkspolizist",
+   "g": "m",
+   "age": 28
+  },
+  "gl_abv": {
+   "name": "Der ABV",
+   "g": "m",
+   "age": 50
+  },
   "gl_erna": {
    "name": "Erna",
    "g": "f",
@@ -100,16 +125,6 @@
    "name": "Kurt",
    "g": "m",
    "age": 74
-  },
-  "gl_abv": {
-   "name": "Der ABV",
-   "g": "m",
-   "age": 50
-  },
-  "gl_funk": {
-   "name": "funk",
-   "g": "?",
-   "age": 0
   },
   "gl_r_republik": {
    "name": "Der Sprecher",
@@ -803,6 +818,384 @@
    "src": "R.ende"
   },
   {
+   "who": "gl_funk",
+   "id": "gl_funk_1obfdg7",
+   "text": "Zentrale an alle Streifen.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_ad1jx4",
+   "text": "Gesucht wird eine Person,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1e05o5z",
+   "text": "Gesucht wird Falko,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_4xkxoh",
+   "text": "Gesucht wird Sarah,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_63cv2t",
+   "text": "Weiterhin gesucht wird eine Person,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1qh3y9u",
+   "text": "Weiterhin gesucht wird Falko,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1vnb84g",
+   "text": "Weiterhin gesucht wird Sarah,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_tjbvxh",
+   "text": "männlich,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1hsvvzq",
+   "text": "weiblich,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1g4d4bx",
+   "text": "rotes Karohemd,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_jwhzng",
+   "text": "dunkle Jacke,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1twz45x",
+   "text": "helle Jacke,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_15upc6z",
+   "text": "orange Warnjacke,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_apmzkx",
+   "text": "grüner Parka,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1bqao11",
+   "text": "mit Helm,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_10lw4rf",
+   "text": "mit Sturmhaube,",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_o50f9i",
+   "text": "auf einem Moped.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1xqwntk",
+   "text": "in einem Trabant.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_iwlwhz",
+   "text": "in einem Auto.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_nmz51o",
+   "text": "auf einem Traktor.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1nuxpgj",
+   "text": "zu Fuß.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1b67sup",
+   "text": "Richtung Schleusingen.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1br0jxx",
+   "text": "Richtung Ratscher.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1v1jh9v",
+   "text": "Richtung Talsperre.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1k5e9xl",
+   "text": "Richtung Klinge.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_9m8m2t",
+   "text": "Zuletzt gesehen in Schleusingen.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_19fm6td",
+   "text": "Zuletzt gesehen in Ratscher.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_2g4gbu",
+   "text": "Zuletzt gesehen an der Talsperre.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_y69nau",
+   "text": "Zuletzt gesehen an der Klinge.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_gjl1ja",
+   "text": "Letzter Standort unbekannt.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_gq3zlk",
+   "text": "Kommen.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_4aj7y8",
+   "text": "Rennsteig für Schleuse 12: Hinweis aus Ratscher. Fahren Sie mal hin.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_9wwfr0",
+   "text": "Schleuse 12 verstanden. Wir brauchen ein bisschen – Landstraße.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_83qdgs",
+   "text": "Schleuse 12 am Ort. Wir schauen uns um.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1hj0gii",
+   "text": "Rennsteig von Schleuse 12: vor Ort. Bisher nur Hühner.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_11uh0bc",
+   "text": "Schleuse 12: Sichtkontakt!",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_b4l5db",
+   "text": "Rennsteig, wir haben ihn. Fahren nach.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_sqdw5m",
+   "text": "Schleuse 12: Sicht verloren. Suchen den Bereich ab.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1bfg98l",
+   "text": "Rennsteig, der ist weg. Wir drehen eine Runde.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_ad2dfz",
+   "text": "Rennsteig an alle: Kontrollstelle auf der Landstraße einrichten.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_18mp73r",
+   "text": "Schleuse 14 steht quer. Hier kommt keiner durch. Hoffentlich.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_big1il",
+   "text": "Schleuse 14: Der ist über den Acker! Der Bauer wird sich freuen.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1vrmfi3",
+   "text": "Rennsteig für Bussard 1: Sie haben Freigabe. Suchgebiet Ratscher.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_vco6je",
+   "text": "Bussard 1 im Anflug. Bleiben Sie, wo Sie sind – das gilt nicht Ihnen, Rennsteig.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1f4nsk2",
+   "text": "Rennsteig an alle: Spezialkräfte übernehmen. Zufahrten dicht machen.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1ilmiwd",
+   "text": "Rennsteig an alle: Fahndung eingestellt. Kaffee ist fertig.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_1vzbs5w",
+   "text": "Schleuse 12 rückt ein. War wohl wieder nichts.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_tdup3b",
+   "text": "Hier Zentrale. Genosse Hauptwachtmeister, klären Sie das in Ratscher.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_funk",
+   "id": "gl_funk_21w4oa",
+   "text": "Verstanden. Bin mit dem Wartburg unterwegs.",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_polizei1",
+   "id": "gl_polizei1_1boylrm",
+   "text": "Halt! Polizei!",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_polizei2",
+   "id": "gl_polizei2_1boylrm",
+   "text": "Halt! Polizei!",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_polizei1",
+   "id": "gl_polizei1_osvl3g",
+   "text": "Polizei! Auf den Boden!",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_vopo",
+   "id": "gl_vopo_ij18nw",
+   "text": "Stehenbleiben!",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_abv",
+   "id": "gl_abv_ij18nw",
+   "text": "Stehenbleiben!",
+   "prio": 2,
+   "src": "GLFAHNDUNG.linien"
+  },
+  {
    "who": "gl_erna",
    "id": "gl_erna_swt49a",
    "text": "Gerhard! Morgen nach Suhl in den Waffenschmied, ja? Zwei Jahre habt ihr auf den Tisch gewartet!",
@@ -1018,139 +1411,6 @@
    "text": "Was ist in der Kiste?",
    "prio": 2,
    "src": "SAGT.abv"
-  },
-  {
-   "who": "gl_abv",
-   "id": "gl_abv_ij18nw",
-   "text": "Stehenbleiben!",
-   "prio": 2,
-   "src": "SAGT.abv"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_4aj7y8",
-   "text": "Rennsteig für Schleuse 12: Hinweis aus Ratscher. Fahren Sie mal hin.",
-   "prio": 2,
-   "src": "FUNK.los"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_9wwfr0",
-   "text": "Schleuse 12 verstanden. Wir brauchen ein bisschen – Landstraße.",
-   "prio": 2,
-   "src": "FUNK.los"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_83qdgs",
-   "text": "Schleuse 12 am Ort. Wir schauen uns um.",
-   "prio": 2,
-   "src": "FUNK.ort"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1hj0gii",
-   "text": "Rennsteig von Schleuse 12: vor Ort. Bisher nur Hühner.",
-   "prio": 2,
-   "src": "FUNK.ort"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_11uh0bc",
-   "text": "Schleuse 12: Sichtkontakt!",
-   "prio": 2,
-   "src": "FUNK.sicht"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_b4l5db",
-   "text": "Rennsteig, wir haben ihn. Fahren nach.",
-   "prio": 2,
-   "src": "FUNK.sicht"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_sqdw5m",
-   "text": "Schleuse 12: Sicht verloren. Suchen den Bereich ab.",
-   "prio": 2,
-   "src": "FUNK.verloren"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1bfg98l",
-   "text": "Rennsteig, der ist weg. Wir drehen eine Runde.",
-   "prio": 2,
-   "src": "FUNK.verloren"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_ad2dfz",
-   "text": "Rennsteig an alle: Kontrollstelle auf der Landstraße einrichten.",
-   "prio": 2,
-   "src": "FUNK.sperre"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_18mp73r",
-   "text": "Schleuse 14 steht quer. Hier kommt keiner durch. Hoffentlich.",
-   "prio": 2,
-   "src": "FUNK.sperre"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_big1il",
-   "text": "Schleuse 14: Der ist über den Acker! Der Bauer wird sich freuen.",
-   "prio": 2,
-   "src": "FUNK.durch"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1vrmfi3",
-   "text": "Rennsteig für Bussard 1: Sie haben Freigabe. Suchgebiet Ratscher.",
-   "prio": 2,
-   "src": "FUNK.heli"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_vco6je",
-   "text": "Bussard 1 im Anflug. Bleiben Sie, wo Sie sind – das gilt nicht Ihnen, Rennsteig.",
-   "prio": 2,
-   "src": "FUNK.heli"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1f4nsk2",
-   "text": "Rennsteig an alle: Spezialkräfte übernehmen. Zufahrten dicht machen.",
-   "prio": 2,
-   "src": "FUNK.sek"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1ilmiwd",
-   "text": "Rennsteig an alle: Fahndung eingestellt. Kaffee ist fertig.",
-   "prio": 2,
-   "src": "FUNK.ende"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1vzbs5w",
-   "text": "Schleuse 12 rückt ein. War wohl wieder nichts.",
-   "prio": 2,
-   "src": "FUNK.ende"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_tdup3b",
-   "text": "Hier Zentrale. Genosse Hauptwachtmeister, klären Sie das in Ratscher.",
-   "prio": 2,
-   "src": "FUNK.vopo"
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_21w4oa",
-   "text": "Verstanden. Bin mit dem Wartburg unterwegs.",
-   "prio": 2,
-   "src": "FUNK.vopo"
   },
   {
    "who": "gl_r_republik",

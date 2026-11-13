@@ -160,6 +160,7 @@ export const GLSTIMMEN = (() => {
     radioT: 0,
     radioItem: null,
     ducks: 0, // how often a duck was asked of the score or the radio
+    funk: false, // the police radio's lines are fetched ahead
   };
   const base = () => (W && W.ASSET_BASE) || '';
   function pump() {
@@ -205,6 +206,12 @@ export const GLSTIMMEN = (() => {
     const MI = W && W.GLMISSION;
     if (!St.on || !MI || !MI.St || !MI.St.m || (d && d.id && MI.St.m.id !== d.id)) return;
     voraus(MI.St.m, d && Number.isFinite(d.i) ? d.i : MI.St.m.steps.indexOf(MI.St.step));
+  }
+  // the first star: the police radio's lines (a description is told in fragments, one after another – each must be there at once)
+  function funkVoraus(d) {
+    if (!St.on || St.funk || !d || !(d.n > 0)) return;
+    St.funk = true;
+    for (const l of (W && W.VOICEX && W.VOICEX.lines) || []) if (/^gl_funk/.test(l.who)) hol(l.who, l.text);
   }
   // is a voice speaking? (STIMME.whenIdle calls at once when nobody does, else when the last one has finished)
   function spricht() {
@@ -262,6 +269,7 @@ export const GLSTIMMEN = (() => {
     St.on = true;
     St.voc = false;
     St.vocT = 0;
+    St.funk = false;
     St.pend = false;
     St.radioT = 0;
     St.radioItem = null;
@@ -279,6 +287,7 @@ export const GLSTIMMEN = (() => {
     K.on('grenzland:stop', aus);
     K.on('grenzland:schritt', schritt);
     K.on('grenzland:mission', d => d && d.st === 'läuft' && schritt({ id: d.id, i: NaN }));
+    K.on('grenzland:sterne', funkVoraus);
     K.tick(tick, 'grenzland/stimmen');
     // (the mode may already run: a reload of the page goes on where one stood)
     if (W.GLSTATE && W.GLSTATE.on) an();
