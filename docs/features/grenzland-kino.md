@@ -55,7 +55,7 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - Szene „Grenzland“: das erste Gespräch an der Zentralhaltestelle ist schon eine Zwischensequenz. Konsole: `GLMISSION.debug.go('gerhard')`
   und zu Gerhard unter die Linde gehen. `window.GLKINO_AUS = true` schaltet die Zwischensequenzen ab (Vergleich).
 - Test: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9012 --serve grenzland_kino:m1` (Abschnitte `m1`, `m3`, `coup`,
-  `score`; eine Mission je Seite). Bilder in `out/grenzland_kino/`. In Actions je Abschnitt ein Job (`viz3/extra/grenzland-kino/tests.txt`).
+  `score`; eine Mission je Seite); ohne Browser `node --test viz3/test/unit/grenzland_kino.test.mjs` (Titelzeilen, Musiktabelle, Taktung). Bilder in `out/grenzland_kino/`. In Actions je Abschnitt ein Job (`viz3/extra/grenzland-kino/tests.txt`).
 
 ## Entscheidungen (Falko schlief)
 
