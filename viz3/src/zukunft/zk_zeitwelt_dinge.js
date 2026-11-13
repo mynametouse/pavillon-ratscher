@@ -743,16 +743,19 @@ export const ZKDINGE = (() => {
           const bx = x - 1.1,
             by = y + 0.9,
             bz = K.ter(bx, by);
-          for (let b = 0; b < 4; b++)
+          // a clump of arching canes and leaves: many small dented blobs, 0.5–1.1 m high
+          for (let b = 0; b < 8; b++) {
+            const hb = K.hash((gx * 5 + gy * 3 + b * 17) | 0);
             bramble.blob(
-              bx + (K.hash((gx + b) * 13) - 0.5) * 1.6,
-              by + (K.hash((gy + b) * 17) - 0.5) * 1.6,
-              bz,
-              0.55 + 0.4 * K.hash(b * 7 + gx),
-              0.45 + 0.6 * K.hash(b * 11 + gy),
-              b % 2 ? C(0x3a5228) : C(0x2f4522),
+              bx + (K.hash((gx + b) * 13) - 0.5) * 2.0,
+              by + (K.hash((gy + b) * 17) - 0.5) * 2.0,
+              bz - 0.05,
+              0.22 + 0.22 * hb,
+              0.35 + 0.65 * K.hash(b * 11 + gy),
+              hb < 0.33 ? C(0x2e4420) : hb < 0.66 ? C(0x3a5228) : C(0x45582c),
               (gx * 7 + gy * 13 + b) | 0
             );
+          }
         }
         // pioneers where the stand was left: birch, rowan and spruce come by themselves, irregular
         if (sg === 5 && !d.mix && d.h > 0.15 && near(x, y) < 52) {

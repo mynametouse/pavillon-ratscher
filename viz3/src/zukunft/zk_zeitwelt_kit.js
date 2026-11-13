@@ -237,7 +237,7 @@ export const ZKKIT = (() => {
           ];
         const pt = (v, k) => {
           const l = Math.hypot(v[0], v[1], v[2]) || 1,
-            j = 0.75 + 0.5 * hash(seed * 31 + k * 7);
+            j = 0.6 + 0.8 * hash(seed * 31 + k * 7);
           return [x + (v[0] / l) * r * j, y + (v[1] / l) * r * j, z + h * 0.5 + (v[2] / l) * h * 0.5 * j];
         };
         let k = 0;
