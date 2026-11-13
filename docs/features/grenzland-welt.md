@@ -1,9 +1,10 @@
 # Grenzland, Runde 2 – eine Welt, die einen bemerkt (Hilfs-Agent `welt`, 13.11.2026)
 
 Auftrag: `docs/plans/auftraege/grenzland2-welt.md` (gemeinsamer Teil `grenzland2-gemeinsam.md`). Branch `feat/grenzland-welt`.
-Dateien: `viz3/src/grenzland/gl_fahndung.js`, `gl_logik.js`, `gl_heli.js`, `gl_handy.js`, neu `gl_reaktion.js`, `gl_reaktion_data.js`,
+Dateien: `viz3/src/grenzland/gl_fahndung.js`, `gl_logik.js`, `gl_heli.js`, neu `gl_reaktion.js`, `gl_reaktion_data.js`,
 `gl_ereignis.js`; Test `viz3/test/grenzland_welt.py`, Unit-Test `viz3/test/unit/grenzland_welt.test.mjs`, CI-Zeilen
-`viz3/extra/grenzland-welt/tests.txt`.
+`viz3/extra/grenzland-welt/tests.txt`. (`gl_handy.js` gehört seit 13:09 dem Agenten `handy` – meine Änderungen daran sind
+zurückgenommen, die Posts gehen über die öffentliche Schnittstelle.)
 
 ## 1. Was die Polizei weiß (Gesicht, Kleidung, Fahrzeug)
 
@@ -47,7 +48,7 @@ oder Ort („Zuletzt gesehen in Ratscher.“ …) · „Kommen.“
 - Die bisherigen Funksprüche (Rennsteig/Schleuse) werden jetzt auch mit `gl_funk` gesprochen.
 - `GLFAHNDUNG.linien()` liefert alle Sätze als `[wer, text]` (Funk, dazu „Halt! Polizei!“ usw. der Beamten).
 
-## 3. Zeugen filmen, der Feed postet (`gl_reaktion.js`, `gl_handy.js`)
+## 3. Zeugen filmen, der Feed postet (`gl_reaktion.js`)
 
 - **Was „wild“ ist:** eine Tat, die jemand gesehen hat (außer „Fahren ohne Helm“ und der Pöbelei), ein Böller, ein Zusammenstoß (das
   Fahrzeug verliert auf einmal mehr als 6,5 m/s), eine Verfolgung mit Blaulicht an Leuten vorbei (ab zwei Sternen, höchstens alle 50 s),
@@ -58,10 +59,12 @@ oder Ort („Zuletzt gesehen in Ratscher.“ …) · „Kommen.“
 - **Das Bild:** im selben Augenblick ein echtes Bild – aus den Augen der nächsten filmenden Figur auf den Spieler (wenn er zu sehen ist:
   im Fahrzeug oder in der Ansicht von hinten), sonst die eigene Sicht. Ein zusätzliches Bild wird sofort gezeichnet (`renderFrame`) und
   im selben Takt gelesen (320 × 180, JPEG, ~15 kB), danach steht die Kamera wieder, wie sie war. Einmal pro Post.
-- **Der Post:** ~20 s später im Feed (`GLHANDY.post`), mit Bild, Text im Ton der Gegend („Was ist denn in Ratscher los?? 😳
-  #Ratscher“), erfundene Absender, Likes und Kommentare zählen hoch, während man schaut. Großes wird ein LIVE-Post von
-  „suedthueringen.live“. Die Bilder bleiben nur im Speicher (höchstens zwölf; der Spielstand behält die Worte). Die eigene Feed-Reaktion
-  des Handys auf dasselbe Ereignis bleibt dann weg (ein Post pro Moment). Der Polizeibericht im Radio bleibt, wie er ist.
+- **Der Post:** ~20 s später im Feed über die öffentliche Schnittstelle des Handys:
+  `GLHANDY.feed(wer, text, '', { img, live, likes, kom })` – `img` ein Bild als Data-URL (~15 kB), `live` ein großes Ereignis (der Text
+  beginnt dann auch mit „LIVE: “, das zeigt schon das alte Handy als Abzeichen), `likes` eine Zahl zum Hochzählen, `kom` zwei bis vier
+  Kommentare `[[wer, text], …]`. Das Handy (Agent `handy`) zeigt Bild, Likes und Kommentare. Text im Ton der Gegend („Was ist denn in
+  Ratscher los?? 😳 #Ratscher“), erfundene Absender; Großes ist ein LIVE-Post von „suedthueringen.live“. `GLREAKTION.gepostet` hält die
+  letzten zwölf Posts mit Bild (für Tests). Der Polizeibericht im Radio bleibt, wie er ist.
 
 ## 4. Blicke, Sprüche, vier Antworten (`gl_reaktion.js`, `gl_reaktion_data.js`)
 
@@ -145,16 +148,19 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
 - **Ereignisse:** `grenzland:gefilmt`, `grenzland:post`, `grenzland:feedpost`, `grenzland:reaktion`, `grenzland:antwort`,
   `grenzland:ereignis` `{ name, ende? }`, `grenzland:geblitzt`, `grenzland:wildunfall`, `grenzland:kleid`.
 
-- **Handy, Fehler von vorher behoben:** Der Inhaltsbereich des Handys hat die Klasse `.hb`, die auch die Kopfleisten-Knöpfe des
-  Spiels haben (`viz3/shell/css/hud.css`: `display:flex`, runde Ecken, Zeiger). Dadurch standen alle Einträge (Feed, Nachrichten, Chat)
-  **nebeneinander** statt untereinander. Jetzt setzt `#glhandy .hb` das zurück (`display:block` usw.).
+- **Für den Agenten `handy` (Fehler im alten Handy, gefunden an meinen Bildern):** Der Inhaltsbereich des Handys hat die Klasse `.hb`,
+  die auch die Kopfleisten-Knöpfe des Spiels haben (`viz3/shell/css/hud.css`: `.hb{display:flex;align-items:center;border-radius:999px;
+  cursor:pointer;…}`). Dadurch stehen alle Einträge (Feed, Nachrichten, Chat) **nebeneinander** statt untereinander. Abhilfe, die ich
+  hatte: `#glhandy .hb{display:block;gap:0;cursor:auto;backdrop-filter:none;border:0;font:inherit;color:inherit;…}` (oder eine andere
+  Klasse). Und: die eigene Feed-Reaktion des Handys auf Böller/Streife/Sperre (`FEEDEV`) doppelt sich mit einem gefilmten Post – gern
+  weglassen, wenn kurz vorher ein Post mit `img` kam.
 
 ## Tests
 
 - `node --test viz3/test/unit/grenzland_welt.test.mjs` – die Regeln des Wissens und der Plan der Ereignisse (8 Tests).
 - `python3 viz3/test/grenzland_welt.py 9016 wissen,funk` · `film,wahl` · `ereignis` – im Spiel (je eine Zeile in
   `viz3/extra/grenzland-welt/tests.txt`, also drei Jobs auf GitHub Actions). Bilder in `out/grenzland_welt/`: `01_warnjacke`,
-  `02_helm`, `03_gesehen(_hud)`, `04_filmt(_hud)`, `05_feed` (der Post mit Bild im Handy), `06_wahl(_hud)`, `10_blitzer` …
-  `15_wildunfall`.
+  `02_helm`, `03_gesehen(_hud)`, `04_filmt(_hud)`, `05_feed` (der Post im Handy; das Bild zeigt erst das neue Handy), `06_wahl(_hud)`,
+  `10_blitzer` … `15_wildunfall`.
 - Stand 12:46 auf Actions (9aed1bb4): `wissen,funk` 19/19, `film,wahl` 14/14 grün; `ereignis`: der Korso fand keine Strecke (behoben:
   kürzere Strecken, notfalls in die andere Richtung).

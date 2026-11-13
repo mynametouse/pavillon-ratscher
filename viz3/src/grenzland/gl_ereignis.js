@@ -182,6 +182,7 @@ export const GLEREIGNIS = (() => {
       if (s && s.kind <= 7 && s.e > -2.5) return false;
       if (KERN.inside(x, y, (KERN.ground(x, y) || 0) + 1)) return false;
     } catch (e) {}
+    // (the walls' segments [x1, y1, x2, y2] and the trunks [x, y, r] of the grid cells near: measured, not just found)
     let hit = false;
     try {
       if (WCOL && WCOL.ready)
@@ -190,8 +191,19 @@ export const GLEREIGNIS = (() => {
           y - r,
           x + r,
           y + r,
-          () => (hit = true),
-          () => (hit = true)
+          (k, A) => {
+            if (hit) return;
+            const ax = A[k * 4],
+              ay = A[k * 4 + 1],
+              dx = A[k * 4 + 2] - ax,
+              dy = A[k * 4 + 3] - ay,
+              l2 = dx * dx + dy * dy || 1e-9,
+              u = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2));
+            if (hyp(x - ax - dx * u, y - ay - dy * u) < r) hit = true;
+          },
+          (k, A) => {
+            if (!hit && A[k * 3 + 2] > 0 && hyp(A[k * 3] - x, A[k * 3 + 1] - y) < Math.min(r, 6)) hit = true;
+          }
         );
     } catch (e) {}
     return !hit;
@@ -411,8 +423,8 @@ export const GLEREIGNIS = (() => {
           L0 = (GLDATA.ORTE.linde && GLDATA.ORTE.linde.pos) || [213.5, -112.5];
         if (hyp(p.x - a[0], p.y - a[1]) > 700) return null;
         // on the green by the Anger: room for the tree, the stall and a bench (9 m free all round), not under the Linde's crown
-        const q = freierPlatz(a[0], a[1], 9, [L0[0], L0[1], 13]);
-        if (!q) return null;
+        const q = freierPlatz(a[0], a[1], 9, [L0[0], L0[1], 13]) ||
+          freierPlatz(a[0], a[1], 6, [L0[0], L0[1], 11]) || [a[0] + 10, a[1] + 8];
         // the stall faces where the player comes from
         return { x: q[0], y: q[1], hd: Math.atan2(p.x - q[0], p.y - q[1]) + Math.PI };
       },

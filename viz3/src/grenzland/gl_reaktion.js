@@ -4,8 +4,9 @@
 //   filming   something wild near people (a deed somebody saw, a banger, a crash, a chase with the police passing, full speed over a
 //             market square): one to three of the mode's figures nearby raise their phones for a few seconds (GLFIG.geste 'filmen'
 //             when the figures' module has it); the moment is photographed from the nearest one's eyes – one extra frame, drawn once
-//             into a 320 × 180 picture –, and some twenty seconds later it is a post in the phone's feed (GLHANDY.post) with likes and
-//             comments counting up; a big one (three stars, a road block broken, the helicopter) is a LIVE post
+//             into a 320 × 180 picture –, and some twenty seconds later it is a post in the phone's feed (the phone's public API
+//             GLHANDY.feed(wer, text, ort, { img, live, likes, kom }) – the phone, agent `handy`, shows the picture); a big one (three
+//             stars, a road block broken, the helicopter) is a LIVE post. S.gepostet keeps the last posts with their pictures (tests)
 //   looking   whoever of the mode's people stands near looks at the player when he stops or looks at them (GLFIG.blick, or the figure
 //             turns), and after a while says something (free play only): the clothes, the vehicle, what he just did, that he is wanted
 //   answers   by a named person: „Ansprechen“ – Grüßen · Sprüche klopfen · Beruhigen · Provozieren (keys 1–4 or taps): a friendly answer;
@@ -19,6 +20,7 @@ import { markDirty } from '../core/assets.js';
 import { renderFrame } from '../render/render.js';
 import { P } from '../game/walkable.js';
 import { CAM3 } from '../game/player.js';
+import { PLAY } from '../game/play.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { STIMME } from '../audio/stimme.js';
 import { CLOCK } from '../time/clock.js';
@@ -39,6 +41,7 @@ export const GLREAKTION = (() => {
     filmT: 0, // until the next wild moment may be filmed
     filmer: [], // [{ F, t }] the figures filming now
     posts: [], // the posts to come: { t, kind, text, wer, img, live }
+    gepostet: [], // the posts made (the newest twelve, with their pictures)
     snaps: 0,
     lastImg: '',
     stillT: 0, // how long the player has stood
@@ -197,8 +200,6 @@ export const GLREAKTION = (() => {
       live,
       ort,
     });
-    // (the phone's own feed reaction to the same thing stays away for a while: one post per moment)
-    if (GLHANDY.S) GLHANDY.S.fotoT = 60;
     S.n.film++;
     GL.emit('gefilmt', { kind, n, img: !!img, ort });
     return true;
@@ -209,8 +210,17 @@ export const GLREAKTION = (() => {
     const pool = D.KOMMENTAR.slice();
     for (let i = 0, k = 2 + Math.floor(Math.random() * 3); i < k && pool.length; i++)
       kom.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
-    if (GLHANDY.post) GLHANDY.post({ wer: q.wer, text: q.text, img: q.img, live: q.live, likes, kom });
-    else GLHANDY.feed(q.wer, q.text, '');
+    GLHANDY.feed(q.wer, q.text, '', { img: q.img || '', live: !!q.live, likes, kom });
+    S.gepostet.push({ wer: q.wer, text: q.text, img: q.img || '', live: !!q.live, likes, kom });
+    if (S.gepostet.length > 12) S.gepostet.shift();
+    try {
+      GLTON.fx('sms');
+    } catch (e) {}
+    if (!(GLHANDY.isOpen && GLHANDY.isOpen()))
+      PLAY.think(
+        q.live ? 'Du bist live im Feed. (Handy: T)' : 'Jemand hat dich gefilmt – jetzt im Feed. (Handy: T)',
+        3200
+      );
     S.n.post++;
     GL.emit('post', { kind: q.kind, live: q.live, img: !!q.img });
   }
@@ -407,6 +417,7 @@ export const GLREAKTION = (() => {
     for (const q of S.filmer) q.F.filmt = 0;
     S.filmer.length = 0;
     S.posts.length = 0;
+    S.gepostet.length = 0;
     S.blick.clear();
     S.gemerkt = {};
     S.sagVon = {};
