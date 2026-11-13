@@ -2,12 +2,12 @@
 // (open face) as worn on a Simson today – an oval shell longer than wide, smooth (the surface's own normals, no facets), the cut line just
 // above the brows at the forehead, down over the ears to below the lobes and up a little at the nape, a soft dark rubber trim along the
 // whole edge with the shell's thickness and the dark liner inside, a chin strap (two straps meeting under the chin, a buckle), either a
-// snap-on peak or a clear visor raised over the forehead (hinge buttons at the temples). The special forces wear a high-cut tactical
+// snap-on peak or a smoked visor raised over the forehead (hinge buttons at the temples). The special forces wear a high-cut tactical
 // helmet instead (the ears free, rails, a mount in front, matte).
-// Built once per kind, colour and head (GLFIG.headOf: the crown's top at the origin, x right, y ahead, z up, metres) and shared. Materials:
-// the shell's paint a clone of the traffic's material (VFIG.mat(): the same shader program, only less rough), trim, liner and straps the
-// traffic's material itself, the visor a glass as the cars' glass (the same program). ≈ 2.5 k triangles, two or three draw calls.
-//   GLHELM.on(H, art, c) → group on the head bone · GLHELM.build(H, art, c) → { glanz, matt, glas, n, fit } · GLHELM.ARTEN
+// Built once per kind, colour and head (GLFIG.headOf: the crown's top at the origin, x right, y ahead, z up, metres; the eyes and brows
+// from the rig's bones) and shared. Materials: the shell's paint the mode's vehicles' clear-coated paint (GLMOD.paint: the same program),
+// trim, liner, straps, black peaks and the visor the traffic's material (VFIG.mat()). ≈ 2.4 k triangles, two draw calls.
+//   GLHELM.on(H, art, c) → group on the head bone · GLHELM.build(H, art, c, eye) → { glanz, matt, n, fit } · GLHELM.ARTEN
 import * as THREE from 'three';
 import { VFIG } from '../verkehr/verkehr_fig.js';
 export const GLHELM = (() => {
@@ -89,15 +89,17 @@ export const GLHELM = (() => {
     return A;
   }
   // ---- the head's measure → the helmet's (GLFIG.headOf: rx, rz half width and depth of the crown's 10 cm; nose: [ahead, down]) ----
-  // eye: the eyes' centre in the helmet's frame [x, ahead, up] from the rig's eye bones (Rocketbox heads have them), else ≈ 4.5 cm over
-  // the nose's tip (measured on the cast: 4.2–5.2 cm); the brows 2 cm over the eyes; the head's widest a little over half way to the nose
+  // eye: the eyes' centre in the helmet's frame [x, ahead, up, the brows' height] from the rig's eye and eyebrow bones (Rocketbox heads
+  // have them), else ≈ 4.5 cm over the nose's tip (measured on the cast: 4.2–5.2 cm) and the brows 2 cm over the eyes; the head's widest a
+  // little over half way down to the nose
   function fit(H, eye) {
     const nz = clamp(H.nose ? H.nose[1] : -0.145, -0.19, -0.11),
       ny = clamp(H.nose ? H.nose[0] : 0.1, 0.06, 0.15),
       rx = clamp(H.rx || 0.08, 0.068, 0.084),
       rz = clamp(H.rz || 0.1, 0.088, 0.11),
-      ez = eye ? clamp(eye[2], nz + 0.025, nz + 0.075) : nz + 0.045;
-    return { nz, ny, rx, rz, eye: ez, brow: ez + 0.02, zc: clamp(nz * 0.55, -0.1, -0.066) };
+      ez = eye ? clamp(eye[2], nz + 0.025, nz + 0.075) : nz + 0.045,
+      bz = eye && eye[3] != null ? clamp(eye[3], ez + 0.008, ez + 0.035) : ez + 0.02;
+    return { nz, ny, rx, rz, eye: ez, brow: bz, zc: clamp(nz * 0.55, -0.1, -0.066) };
   }
   // ---- a shell: an egg over the head, its lower part (below the widest) going down almost straight over the ears ----
   // (a: round the head, 0 ahead, + to the right; t: down from the top; the same t on every a has the same height)
@@ -142,7 +144,7 @@ export const GLHELM = (() => {
   const ARTEN = {
     // the jet helmet: the forehead free above the brows, the face open, the ears covered down below the lobes, the nape a little higher
     jet: f => {
-      const zF = f.brow + 0.016,
+      const zF = f.brow + 0.018,
         zT = zF - 0.012,
         zS = f.nz - 0.036,
         zN = f.nz - 0.01;
@@ -191,7 +193,7 @@ export const GLHELM = (() => {
     GURT = [0.016, 0.016, 0.018],
     SCHNALLE = [0.045, 0.045, 0.05],
     KNOPF = [0.11, 0.11, 0.115];
-  // ---- build one helmet for a head: { glanz, matt, glas } geometries, the triangle count, the measures (for the tests) ----
+  // ---- build one helmet for a head: { glanz, matt } geometries, the triangle count, the measures (for the tests) ----
   function build(H, art, c = {}, eye = null) {
     const f = fit(H, eye),
       K = ARTEN[art](f),
@@ -204,7 +206,6 @@ export const GLHELM = (() => {
       trim = c.band || DUNKEL,
       G = acc(),
       M = acc(),
-      V = acc(),
       shellTo = art === 'takt' ? M : G,
       NR = 11,
       az = K.az,
@@ -231,7 +232,7 @@ export const GLHELM = (() => {
           hu = Math.hypot(u0[0], u0[1], u0[2]) || 1e-4,
           u = mul(u0, 1 / hu),
           dt = nrm(sub(O.P(a, t + 0.01), po)),
-          b = art === 'takt' ? 0.004 : 0.0065,
+          b = art === 'takt' ? 0.004 : 0.005,
           r = [];
         rim.push(po);
         for (let k = 0; k <= 5; k++) {
@@ -309,11 +310,11 @@ export const GLHELM = (() => {
       for (let i = 0; i <= 16; i++) {
         const a = -a1 + (2 * a1 * i) / 16,
           q = Math.abs(a) / a1,
-          L = 0.052 * Math.pow(Math.max(0, Math.cos(q * HP)), 0.55) + 0.004,
+          L = 0.045 * Math.pow(Math.max(0, Math.cos(q * HP)), 0.55) + 0.004,
           t = O.tOf(K.rim(a) + 0.013),
           b = O.V(a, t, 0.002),
           ho = nrm([b.n[0], b.n[1], 0]),
-          d = nrm(add(mul(ho, Math.cos(0.2)), [0, 0, Math.sin(0.2)])),
+          d = nrm(add(mul(ho, Math.cos(0.14)), [0, 0, Math.sin(0.14)])),
           tip = add(b.p, mul(d, L)),
           up = nrm(crs(d, [Math.cos(a), -Math.sin(a), 0])),
           upn = up[2] < 0 ? mul(up, -1) : up,
@@ -364,7 +365,8 @@ export const GLHELM = (() => {
         for (let j = 0; j <= 4; j++) r.push(VS.V(a, VS.tOf(mix(lo, hi, j / 4))));
         rows.push(r);
       }
-      V.grid(rows, [1, 1, 1], false);
+      // (smoked plastic over the paint: the paint darkened, no transparency – a raised visor shows little more than that and its edge)
+      M.grid(rows, [paint[0] * 0.42 + 0.004, paint[1] * 0.42 + 0.005, paint[2] * 0.42 + 0.006], false);
       // the hinge buttons
       for (const sx of [-1, 1]) {
         const a = sx * aH,
@@ -415,15 +417,14 @@ export const GLHELM = (() => {
     const out = {
       glanz: G.geo(),
       matt: M.geo(),
-      glas: V.geo(),
-      n: G.n + M.n + V.n,
+      n: G.n + M.n,
       strap: [strapFrom * 3, strapTo * 3],
       fit: Object.assign({}, f, { zF: K.zF, zT: K.zT, zS: K.zS, rim: rim.map(p => p.map(v => +v.toFixed(4))) }),
     };
     return out;
   }
   // ---- the materials: the paint as the mode's vehicles' paint (grenzland/gl_modelle.js: the player's car's clear-coated paint, one
-  // material per colour, the same program), the visor the vehicles' glass itself; without them the traffic's material ----
+  // material per colour, the same program); without it the traffic's material ----
   const MOD = () => window.GLMOD || null;
   function lack(c) {
     const G = MOD();
@@ -432,13 +433,6 @@ export const GLHELM = (() => {
     } catch (e) {}
     return VFIG.mat();
   }
-  function glas() {
-    const G = MOD();
-    try {
-      if (G && G.glass) return G.glass();
-    } catch (e) {}
-    return null;
-  }
   const key = (H, art, c, eye) =>
     [
       art,
@@ -446,28 +440,36 @@ export const GLHELM = (() => {
       (H.rx || 0).toFixed(3),
       (H.rz || 0).toFixed(3),
       H.nose ? H.nose.map(v => v.toFixed(3)).join(',') : '',
-      eye ? eye.map(v => v.toFixed(3)).join(',') : '',
+      eye ? eye.map(v => (v === null ? '-' : v.toFixed(3))).join(',') : '',
       JSON.stringify(c),
     ].join(':');
-  // the eyes' centre in the frame of the group g (hung on the head already): kit frame [x, ahead, up]
+  // the eyes' centre and the brows' height in the frame of the group g (hung on the head already): kit frame [x, ahead, up, brows]
   const _v = new THREE.Vector3();
   function eyes(H, g) {
-    const B = [];
+    const E = [],
+      B = [];
     H.head.traverse(o => {
-      if (o.isBone && /eye/i.test(o.name || '') && !/lid|brow|lash/i.test(o.name)) B.push(o);
+      if (!o.isBone) return;
+      if (/[LR]_?Eye$/i.test(o.name || '')) E.push(o);
+      else if (/eyebrow/i.test(o.name || '')) B.push(o);
     });
-    if (!B.length) return null;
+    if (!E.length) return null;
     g.updateWorldMatrix(true, false);
     let x = 0,
       y = 0,
-      z = 0;
-    for (const b of B) {
-      g.worldToLocal(b.getWorldPosition(_v));
+      z = 0,
+      b = null;
+    for (const o of E) {
+      g.worldToLocal(o.getWorldPosition(_v));
       x += _v.x;
       y += _v.y;
       z += _v.z;
     }
-    return [x / B.length, -z / B.length, y / B.length];
+    for (const o of B) {
+      g.worldToLocal(o.getWorldPosition(_v));
+      b = b === null ? _v.y : Math.max(b, _v.y);
+    }
+    return [x / E.length, -z / E.length, y / E.length, b];
   }
   // ---- put one on a head (H of GLFIG.headOf): a group on the head bone, the meshes shared; remove the group to take it off ----
   function on(H, art, c = {}) {
@@ -482,15 +484,11 @@ export const GLHELM = (() => {
     try {
       eye = eyes(H, g);
     } catch (e) {}
-    // (a visor only where the vehicles' glass is there to share)
-    const gl = c.visier ? glas() : null,
-      cc = gl || !c.visier ? c : Object.assign({}, c, { visier: false }),
-      k = key(H, art, cc, eye);
-    const B = S.geo[k] || (S.geo[k] = build(H, art, cc, eye));
+    const k = key(H, art, c, eye);
+    const B = S.geo[k] || (S.geo[k] = build(H, art, c, eye));
     const parts = [
       [B.glanz, B.glanz ? lack(c.top || [0.7, 0.7, 0.66]) : null, 0, 'lack'],
       [B.matt, VFIG.mat(), 0, 'matt'],
-      [B.glas, gl, 2, 'glas'],
     ];
     for (const [geo, mat, ro, part] of parts) {
       if (!geo || !mat) continue;

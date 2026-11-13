@@ -169,8 +169,8 @@ Test `viz3/test/grenzland_helm.py`, `viz3/extra/grenzland-helm/tests.txt`.
   Augenbrauen (an den Augen-Knochen des Rigs ausgerichtet: Rand ≈ 3,6 cm über der Augenmitte), an den Schläfen schräg hinab vor das Ohr,
   unter den Ohrläppchen entlang und im Nacken etwas höher; ein weicher dunkler Gummi-Kantenschutz rundum, man sieht die Dicke von Schale
   und Polster, innen das dunkle Futter; ein Kinnriemen (zwei Riemen aus den Ohrteilen unter das Kinn, eine Steckschnalle); entweder ein
-  kurzer **Druckknopf-Schirm** (gebogen, leicht hoch, drei Knöpfe) oder ein **klares, leicht getöntes Visier**, hochgeklappt über der
-  Stirnpartie, mit Scharnierknöpfen an den Schläfen.
+  kurzer **Druckknopf-Schirm** (gebogen, leicht hoch, drei Knöpfe) oder ein **getöntes Visier**, hochgeklappt über der Stirnpartie, mit
+  Scharnierknöpfen an den Schläfen.
 - Lack in glaubhaften Farben, je Person einer (Schlüssel in `HUTC`): `helm` (creme, Schirm – der bisherige Standard der Darstellerdaten),
   `helmcreme` (creme, Visier), `helmweiss` (weiß, schwarzer Schirm), `helmrot` (rot, Schirm – die Spielfigur), `helmrotvisier`,
   `helmoliv` (oliv, schwarzer Schirm), `helmblau` (hellblau, Visier), `helmjetschwarz` (schwarz glänzend, Visier).
@@ -187,9 +187,12 @@ Test `viz3/test/grenzland_helm.py`, `viz3/extra/grenzland-helm/tests.txt`.
   4,2–5,2 cm). Breite und Tiefe sind begrenzt (die Krone von `headOf` schließt Ohren und Haar ein – ein Helm sitzt auf dem Schädel; Haar
   darf unten heraushängen, wie bei echten Helmen). Gebaut wird einmal je Art, Farbe und Kopf; alle teilen die Geometrie.
 - **Kein neues Shader-Programm:** der Lack ist der Lack der Fahrzeuge des Modus (`GLMOD.paint(Farbe, 0)` – der klarlackierte Lack des
-  Spielerautos, ein Material je Farbe, dasselbe Programm), Kante, Futter, Riemen, Schnalle, schwarze Schirme und der taktische Helm das
-  Material des Verkehrs (`VFIG.mat()`), das Visier das Glas der Fahrzeuge selbst (`GLMOD.glass()`). Ohne `GLMOD` fällt der Lack auf
-  `VFIG.mat()` zurück und das Visier weg. Zwei bis drei Draw-Calls, ≈ 2,4–2,5 k Dreiecke je Helm.
+  Spielerautos, ein Material je Farbe, dasselbe Programm), Kante, Futter, Riemen, Schnalle, schwarze Schirme, das Visier und der
+  taktische Helm das Material des Verkehrs (`VFIG.mat()`). Ohne `GLMOD` fällt der Lack auf `VFIG.mat()` zurück. Zwei Draw-Calls
+  (der taktische Helm einer), ≈ 2,4–2,5 k Dreiecke je Helm.
+- **Visier ohne Durchsicht:** ein hochgeklapptes Visier liegt auf der Schale; man sieht von ihm vor allem die Tönung über dem Lack und
+  die Kante. Ein erster Versuch mit dem Glas der Fahrzeuge (`GLMOD.glass()`, durchsichtig) zeigte durch die Schale hindurch die Stirn
+  (`out/grenzland_helm_v2/4_jule_nah.jpg`) – deshalb ist das Visier jetzt getönter Kunststoff im Material des Verkehrs.
 - **Haare:** bei den Figuren des Modus bleiben die Haare des Modells; die Schale ist so groß, dass nichts durchsticht; was unten
   herausschaut (Zopf, Nacken, Stirnfransen), ist wie bei echten Helmen. Bei der Spielfigur drückt `gl_fahndung.js` das Haar wie unter dem
   Forsthelm des Grundspiels (`helmU`) – unverändert.

@@ -1,2 +1,4 @@
 grenzland_helm:stehen,reiten
 grenzland_helm:nacht
+grenzland_figuren:moped,trabi,reiter
+grenzland_figuren:rennen,sitzen,gesten,blick

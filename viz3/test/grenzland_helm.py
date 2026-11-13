@@ -36,9 +36,10 @@ INFO = r"""(F) => {
   const w = (x, y, z) => g.localToWorld(new V3(x, z, -y));
   let low = 1e9, lowK = 1e9;
   for (const p of f.rim) if (Math.abs(p[0]) < 0.045 && p[1] > 0) { low = Math.min(low, w(p[0], p[1], p[2]).y); lowK = Math.min(lowK, p[2]); }
-  // the eyes: a bone of the eyes if the rig has one, else 3.4 cm over the nose's tip (GLHELM.fit)
-  let eyeB = null;
-  F.f.model.traverse(o => { if (o.isBone && /eye/i.test(o.name) && !/lid|brow|lash/i.test(o.name)) { const p = o.getWorldPosition(new V3()); eyeB = eyeB === null ? p.y : Math.max(eyeB, p.y); } });
+  // the eyes: the eyeballs' bones if the rig has them (the higher of the two), else the helmet's own guess (GLHELM.fit)
+  let eyeB = null, eyeBK = null;
+  F.f.model.traverse(o => { if (o.isBone && /[LR]_?Eye$/i.test(o.name)) { const p = o.getWorldPosition(new V3()); eyeB = eyeB === null ? p.y : Math.max(eyeB, p.y);
+    const q = g.worldToLocal(p.clone()); eyeBK = eyeBK === null ? q.y : Math.max(eyeBK, q.y); } });
   const eyeF = w(0, f.ny - 0.025, f.eye).y;
   // vertices of the helmet (not the strap) in the box before the eyes and brows
   let inFace = 0, tris = 0;
@@ -52,7 +53,7 @@ INFO = r"""(F) => {
     }
   }
   return { art: h.art, tris, meshes: g.children.length, low: +low.toFixed(4), lowK: +lowK.toFixed(4), eyeK: +f.eye.toFixed(4),
-    eyeBone: eyeB === null ? null : +eyeB.toFixed(4), eyeFit: +eyeF.toFixed(4), inFace, top: +w(0, 0, 0).y.toFixed(3),
+    eyeBone: eyeB === null ? null : +eyeB.toFixed(4), eyeBoneK: eyeBK === null ? null : +eyeBK.toFixed(4), eyeFit: +eyeF.toFixed(4), inFace, top: +w(0, 0, 0).y.toFixed(3),
     nose: f.nz, rx: f.rx, rz: f.rz };
 }"""
 with lib.browser() as b:
@@ -137,7 +138,8 @@ with lib.browser() as b:
         if not r:
             ck('%s wears a helmet' % id, False, 'none'); continue
         eye = r['eyeBone'] if r['eyeBone'] is not None else r['eyeFit']
-        ck('%s: the rim\'s lowest point in front is over the eyes (≥ 1.5 cm)' % id, r['low'] > eye + 0.015 and r['lowK'] > r['eyeK'] + 0.015,
+        eyeK = r['eyeBoneK'] if r['eyeBoneK'] is not None else r['eyeK']
+        ck('%s: the rim\'s lowest point in front is over the eyes (≥ 1.5 cm)' % id, r['low'] > eye + 0.015 and r['lowK'] > eyeK + 0.015,
            'rim %.3f, eye %.3f (bone %s, fit %.3f)' % (r['low'], eye, r['eyeBone'], r['eyeFit']))
         ck('%s: nothing of the helmet before the eyes and brows' % id, r['inFace'] == 0, str(r['inFace']))
         ck('%s: ≤ 3000 triangles in ≤ 3 meshes' % id, r['tris'] <= 3000 and r['meshes'] <= 3, '%d tris, %d meshes' % (r['tris'], r['meshes']))
@@ -200,8 +202,9 @@ with lib.browser() as b:
         note('the player riding: %s' % pl)
         ck('the player wears his helmet on the moped (a jet helmet of gl_helm.js)', bool(pl) and pl['art'] == 'jet', str(pl))
         if pl:
-            eye = pl['eyeBone'] if pl['eyeBone'] is not None else pl['eyeFit']
-            ck('the player: the rim in front over the eyes', pl['low'] > eye + 0.015, 'rim %.3f, eye %.3f' % (pl['low'], eye))
+            # (riding, the head leans: measured in the head's own frame)
+            eye = pl['eyeBoneK'] if pl['eyeBoneK'] is not None else pl['eyeK']
+            ck('the player: the rim in front over the eyes (in the head\'s frame, ≥ 1.5 cm)', pl['lowK'] > eye + 0.015, 'rim %.3f, eye %.3f' % (pl['lowK'], eye))
         def side(name, k=90, pitch=-6, d=1.7):
             do("CAM3.d = %f; GAME.P.yaw = VEH.cur.st.psi * 180 / Math.PI + %f; GAME.P.pitch = %f" % (d, k, pitch))
             pic(name)
