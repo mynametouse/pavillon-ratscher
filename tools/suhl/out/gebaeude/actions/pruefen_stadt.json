@@ -29,8 +29,8 @@
    "info": "0 reach more than 250 m beyond their tile []"
   },
   "heights plausible": {
-   "ok": true,
-   "info": "0 outside 0.3..120 m or eave above the top []"
+   "ok": false,
+   "info": "3 outside 0.3..120 m or eave above the top [('DETHL57P00017p0P', 0.03, 6.0), ('DETHL57P00017p0Q', 0.07, 3.0), ('DETHL57P0001CYxS', 0.07, 6.0)]"
   },
   "roof mesh": {
    "ok": true,
@@ -939,20 +939,22 @@
    "k": 0,
    "bt": "block",
    "use": "gesundheit",
-   "lv": 6,
-   "r": 0,
+   "lv": 2,
+   "r": 3,
    "n": "Zentralklinikum",
    "adr": "Albert-Schweitzer-Straße 6,4,2",
    "fg": null,
-   "q_lv": 2,
+   "q_lv": 0,
    "fa": 4984.1,
    "stage1_m": 25.2
   }
  ],
  "tiles": 397,
  "buildings": 31708,
- "bytes": 35208870,
- "kb_per_building": 1.08,
- "failed": [],
+ "bytes": 35337494,
+ "kb_per_building": 1.09,
+ "failed": [
+  "heights plausible"
+ ],
  "warnings": []
 }

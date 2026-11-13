@@ -53,8 +53,8 @@
    "info": "0 houses whose floors do not fit their eave (1.9 m to 6.5 m per floor) []"
   },
   "foot heights": {
-   "ok": false,
-   "info": "2 records without z0 (run fuss.py)"
+   "ok": true,
+   "info": "0 records without z0 (run fuss.py)"
   },
   "footprints do not overlap": {
    "ok": false,
@@ -66,7 +66,7 @@
   },
   "size limit": {
    "ok": true,
-   "info": "2993389 bytes, limit 3000000"
+   "info": "2999489 bytes, limit 3000000"
   }
  },
  "tall": [
@@ -613,11 +613,10 @@
  ],
  "tiles": 11,
  "buildings": 2502,
- "bytes": 2993389,
+ "bytes": 2999489,
  "kb_per_building": 1.17,
  "failed": [],
  "warnings": [
-  "foot heights",
   "footprints do not overlap"
  ]
 }
