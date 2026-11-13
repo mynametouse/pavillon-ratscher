@@ -155,6 +155,9 @@ export function systemFixed(who) {
   const C = PEOPLE[who],
     O = C.other ? nameOf(C.other) : '';
   const tell = O ? `erzählst du es ${O}, wenn ihr das nächste Mal am Tisch sitzt` : 'erzählst du es im Dorf weiter';
+  // (feat/grenzland-partner) optional per person: ohne – tools left out; klatsch: false – nothing is passed on (default unchanged)
+  const ohne = C.ohne || [];
+  const tellS = C.klatsch === false ? '' : ` Mit weitererzaehlen = true ${tell}.`;
   return `${C.sheet}
 
 Was du über die Gegend weißt:
@@ -168,8 +171,12 @@ So läuft das Gespräch:
 - Duzen: Im Dorf duzen sich alle, du duzt dein Gegenüber.
 - Du hast Werkzeuge. Sag erst, was du sagen willst, und benutze dann die Werkzeuge; schreib nie über die Werkzeuge selbst. Wenn kein Werkzeug passt, versprich nichts, was das Spiel nicht kann.
   • meinung_aendern, wenn dich etwas wirklich freut oder ärgert (Hilfe, Lob, Frechheit, Lügen) – nicht bei jedem Satz.
-  • merken für Dinge, die du dir über dein Gegenüber merken willst (Pläne, Vorlieben, Versprechen, was er erzählt hat). Mit weitererzaehlen = true ${tell}.
-  • aufgabe_geben, wenn du um Hilfe bittest oder dein Gegenüber etwas für dich tun will. Nur aus den Orten und Tätigkeiten, die das Werkzeug kennt; danach soll er zu dir zurückkommen. Höchstens eine neue Aufgabe pro Gespräch, und nur, wenn es passt.${
+  • merken für Dinge, die du dir über dein Gegenüber merken willst (Pläne, Vorlieben, Versprechen, was er erzählt hat).${tellS}${
+    ohne.includes('aufgabe_geben')
+      ? ''
+      : `
+  • aufgabe_geben, wenn du um Hilfe bittest oder dein Gegenüber etwas für dich tun will. Nur aus den Orten und Tätigkeiten, die das Werkzeug kennt; danach soll er zu dir zurückkommen. Höchstens eine neue Aufgabe pro Gespräch, und nur, wenn es passt.`
+  }${
     C.quests
       ? `
   • spielaufgabe, wenn das Gespräch zu einem der Themen in <lage> unter „Spielaufgaben“ führt – dann startet oder erledigt das die Aufgabe im Spiel; sag sinngemäß, was im Ergebnis steht.`
@@ -194,7 +201,11 @@ export function systemMemory(mem, who, player = 'Falko') {
   const talks = w.gespraeche.map(g => '- ' + g.text);
   return [
     `Dein Gegenüber ist ${P}. Deine Meinung über ihn: ${w.meinung} von 100 – ${meinungWort(w.meinung)}. Danach richtet sich, wie freundlich und geduldig du bist.`,
-    w.n ? `Ihr habt schon ${w.n}-mal miteinander geredet.` : 'Ihr redet heute zum ersten Mal richtig miteinander.',
+    w.n
+      ? `Ihr habt schon ${w.n}-mal miteinander geredet.`
+      : PEOPLE[who] && PEOPLE[who].vertraut
+        ? ''
+        : 'Ihr redet heute zum ersten Mal richtig miteinander.',
     talks.length ? 'Frühere Gespräche:\n' + talks.join('\n') : '',
     own.length ? 'Was du dir gemerkt hast:\n' + own.join('\n') : '',
     heard.length ? 'Was man dir erzählt hat:\n' + heard.join('\n') : '',
@@ -210,10 +221,12 @@ export function systemBlocks(mem, who, player) {
   ];
 }
 // the situation before the player's words in each turn: { zeit, ort, haelt, phase, aufgaben: [text], themen: [{ k, label }],
-// begruessung, meinung, neu: [text] (just finished tasks of this neighbour) }
+// begruessung, meinung, neu: [text] (just finished tasks of this neighbour), lage: [text] (feat/grenzland-partner: an adapter's own lines,
+// e.g. the mission and the wanted level – npc/ki.js leaves out the place, the hand, the building phase and the base tasks then) }
 export function situation(s) {
   const L = [];
   if (s.zeit) L.push('Zeit: ' + s.zeit);
+  if (Array.isArray(s.lage)) for (const l of s.lage) if (l) L.push(String(l));
   if (s.ort) L.push('Ort: ' + s.ort);
   if (s.haelt) L.push('Er hat in der Hand: ' + s.haelt);
   if (s.phase) L.push('Baustand drüben: ' + s.phase);
@@ -304,7 +317,10 @@ export function tools(who) {
     },
   ];
   // the tool inputs are small, but streamed requests with client tools get eager input streaming (the inputs are checked here anyway)
-  return T.filter(t => (t.name !== 'taetigkeit' || act) && (t.name !== 'spielaufgabe' || C.quests)).map(t => ({
+  const ohne = C.ohne || [];
+  return T.filter(
+    t => (t.name !== 'taetigkeit' || act) && (t.name !== 'spielaufgabe' || C.quests) && !ohne.includes(t.name)
+  ).map(t => ({
     ...t,
     eager_input_streaming: true,
   }));

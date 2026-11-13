@@ -494,7 +494,11 @@ export const VKSTROM = (() => {
       if (
         c.st === 'ende' ||
         d > S.R + 140 ||
-        (!vis && (c.st === 'parkt' || st.stuck > 40 || d > S.R + 20)) ||
+        (!vis &&
+          (c.st === 'parkt' ||
+            st.stuck > 40 ||
+            d > S.R + 20 ||
+            (c.st === 'unfall' && c.crash && c.crash.phase === 'liegt'))) ||
         (c.st === 'ende' && d > 260)
       )
         drop(c);

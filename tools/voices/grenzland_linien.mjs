@@ -4,6 +4,8 @@
 // the radio's presenters. To reach the linien() of modules that need the scene (gl_fahndung.js, gl_reaktion.js, …), the modules of
 // viz3/src/grenzland are copied into a temporary folder with every import from outside the folder replaced by a stub that answers
 // anything, and loaded one by one in a child process with a time limit; if that fails, only the pure data modules are read.
+// (feat/grenzland-partner: GLPARTNER.linien() and GLPDATA.linien() of gl_partner.js / gl_partner_data.js – the talk with the other of
+// the two, both voices – are found like every other module's; the data module also in the fallback of the pure data modules.)
 // Run again after a merge (new linien() of the other agents) and push the changed JSON – the workflow records what is new:
 //   node tools/voices/grenzland_linien.mjs           writes the JSON, prints what it found
 //   node tools/voices/grenzland_linien.mjs --check   exit 1 when the JSON is not up to date

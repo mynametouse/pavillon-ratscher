@@ -28,8 +28,10 @@ import { VFIG } from './verkehr_fig.js';
 import { VKTYPEN } from './vk_typen.js';
 import { VKMOD } from './vk_modelle.js';
 import { VKREGELN } from './vk_regeln.js';
+// feat/verkehr-real stage 3: a knock moves the car after its mass, the driver complains (verkehr/vk_unfall.js)
+import { VKUNFALL } from './vk_unfall.js';
 export const VAUTO = (() => {
-  const S = { cars: [], n: 0, honks: 0 };
+  const S = { cars: [], n: 0, honks: 0, knocks: 0, crashes: 0, ev: [] };
   // the measures of the player's car (vehicles/car.js): axles, overhangs, width, wheels
   const A = 1.25,
     B = 1.655,
@@ -292,7 +294,7 @@ export const VAUTO = (() => {
     VNETZ.at(R, c.s - D.B, _q);
     const rx = _q.x + Math.cos(_q.hd) * off,
       ry = _q.y - Math.sin(_q.hd) * off,
-      hd = Math.atan2(fx - rx, fy - ry),
+      hd = Math.atan2(fx - rx, fy - ry) + (c.hdOff || 0), // stage 3: turned against its road after a knock
       x = rx + (fx - rx) * (D.B / D.WB),
       y = ry + (fy - ry) * (D.B / D.WB);
     c.x = x;
@@ -389,11 +391,35 @@ export const VAUTO = (() => {
       z0: b.z,
       z1: b.z + D.H,
     });
-    c.box = { box: () => (c.g.visible && c.st !== 'geliehen' ? boxOf(c, c.D) : null), verkehr: c };
+    // stage 3: a body of its mass in the knock (VKUNFALL: dyn gives it to vehicles/vehicle.js, knock takes the result back); its own boxes
+    // are not in its way when it slides (tow: VEH.boxHits skips them for it)
+    const T0 = typ ? VKTYPEN.TYP[typ] : null,
+      m0 = VKUNFALL.massOf(T0);
+    c.M = m0.M;
+    c.Iz = m0.Iz;
+    c.drvG = Math.random() < VKUNFALL.womenShare(T0 ? T0.cls : 'pkw') ? 'f' : 'm';
+    const alive = () => c.st !== 'weg' && c.st !== 'geliehen';
+    c.box = {
+      box: () => (c.g.visible && c.st !== 'geliehen' ? boxOf(c, c.D) : null),
+      verkehr: c,
+      tow: c,
+      dyn: () => {
+        if (!alive()) return null;
+        const b = VKUNFALL.body(c);
+        b.knock = (v, h) => knocked(c, b, v, h);
+        return b;
+      },
+    };
     if (VEH && VEH.extra) VEH.extra.push(c.box);
     if (c.trailer) {
       const t = c.trailer;
-      c.tbox = { box: () => (t.g.visible && t.init ? boxOf(t, t.D) : null), verkehr: c };
+      t.M = VKUNFALL.massOf(t.T).M;
+      c.tbox = {
+        box: () => (t.g.visible && t.init ? boxOf(t, t.D) : null),
+        verkehr: c,
+        tow: c,
+        dyn: () => (alive() && t.init ? trailerBody(c, t) : null),
+      };
       if (VEH && VEH.extra) VEH.extra.push(c.tbox);
     }
     S.cars.push(c);
@@ -551,6 +577,8 @@ export const VAUTO = (() => {
   function tick(dt, ctx) {
     sound(dt);
     const night = dark();
+    // stage 3: what the knocks of this frame brought (the physics of vehicles/vehicle.js ran first): the driver's turn
+    if (S.ev.length) events(ctx);
     if (!S.cars.length) {
       VKMOD.tick(night);
       return;
@@ -569,7 +597,13 @@ export const VAUTO = (() => {
     for (const c of S.cars) {
       if (c.st === 'weg' || c.st === 'geliehen') continue;
       c.age += dt;
-      drive(c, dt, obs, ctx);
+      if (c.touchT > 0) c.touchT -= dt;
+      // stage 3: after a knock the car is off its path for a while (crashTick); driving on, it straightens (afterCrash)
+      if (c.st === 'unfall') crashTick(c, dt);
+      else {
+        drive(c, dt, obs, ctx);
+        if (c.crash && c.crash.phase === 'weiter') afterCrash(c, dt);
+      }
       if (c.st !== 'weg') {
         const h0 = c.hd;
         pose(c);
@@ -584,13 +618,15 @@ export const VAUTO = (() => {
         }
         // V17g: a new frame only for a car that can be seen – within 60 m, or within 250 m ahead of the camera (cars anywhere in the village
         // kept the picture redrawing while standing still)
-        if ((c.v > 0.01 || c.moved) && c.g.visible) {
+        // (stage 3: also while it slides after a knock, and while its hazard lights blink)
+        const mv = Math.abs(c.v) > 0.01 || c.st === 'unfall' || (!!c.crash && c.blink === 2);
+        if ((mv || c.moved) && c.g.visible) {
           const dx = c.x - cam.position.x,
             dy = c.y + cam.position.z,
             d2 = dx * dx + dy * dy;
           if (d2 < 3600 || (d2 < 62500 && dx * camF.x - dy * camF.z > Math.sqrt(d2) * 0.4)) markDirty();
         }
-        c.moved = c.v > 0.01;
+        c.moved = mv;
       }
     }
     VKMOD.tick(night);
@@ -603,7 +639,7 @@ export const VAUTO = (() => {
     const ds = c.v * dt;
     c.dist += ds;
     c.spin += ds / c.D.RW; // (the front wheels' turn, as the old model counts it)
-    if (ds > 1e-3) {
+    if (ds > 1e-3 && c.st !== 'unfall') {
       const want = Math.max(-0.6, Math.min(0.6, Math.atan((wrap(c.hd - h0) / ds) * c.D.WB)));
       c.steer += (want - c.steer) * Math.min(1, dt * 6);
     }
@@ -666,7 +702,7 @@ export const VAUTO = (() => {
   function junctions(dt) {
     JP.length = 0;
     for (const c of S.cars) {
-      if (!c.jn || c.st === 'weg' || c.st === 'geliehen') continue;
+      if (!c.jn || c.st === 'weg' || c.st === 'geliehen' || c.st === 'unfall') continue;
       while (c.jk < c.jn.length && c.s > c.jn[c.jk].sN + 4) c.jn[c.jk++].passed = true;
       const ev = c.jn[c.jk];
       if (!ev || ev.sN - c.s > 160) continue;
@@ -730,7 +766,7 @@ export const VAUTO = (() => {
       }
     }
     for (const o of S.cars)
-      if (!o.jn && o !== me && o.st !== 'weg' && o.st !== 'geliehen' && o.st !== 'parkt')
+      if (!o.jn && o !== me && o.st !== 'weg' && o.st !== 'geliehen' && o.st !== 'parkt' && o.st !== 'unfall')
         add(o.x, o.y, o.hd, o.v, o.id);
     return GEN;
   }
@@ -796,7 +832,7 @@ export const VAUTO = (() => {
       look = Math.min(60, 14 + (c.v * c.v) / 4);
     // the limit of the line, a little ahead (the front sees the curve before the middle is in it)
     const i = Math.min(R.n - 1, Math.max(0, Math.round((s + 2) / R.step)));
-    let vT = Math.min(R.S[i] * (c.vk || 1), c.vcap || 99),
+    let vT = Math.min(R.S[i] * (c.vk || 1), c.vcap || 99, c.capU || 99),
       stopAt = Infinity,
       latNeed = 0,
       why = null;
@@ -817,6 +853,11 @@ export const VAUTO = (() => {
         ahead = dx * fx + dy * fy,
         same = Math.cos(o.hd - c.hd);
       if (ahead < 0) continue;
+      // stage 3: one after a knock (or its trailer) stands in the way like a parked car, however it is turned: wait, then round it
+      if (o.st === 'unfall') {
+        circles(o, own);
+        continue;
+      }
       if (same < -0.5 && ahead < 45) oncoming = true;
       // feat/verkehr-real: one crossing my way ahead (at a junction): in my lane it stops me like anything standing there; waited 3 s
       // for one that waits for me as well, I go (the rules of right of way come with stage 2)
@@ -985,6 +1026,212 @@ export const VAUTO = (() => {
     c.stop = stop || null;
     c.blockT = 0;
   }
+  // ---- feat/verkehr-real stage 3: harmless accidents (verkehr/vk_unfall.js) ----
+  // The knock of vehicles/vehicle.js (v: the vehicle that hit it – the player's – or null when a sliding car passed it on; h: the hit, h.n
+  // the push direction for v; b: the car as a body, after the knock; M: the mass that took it): the car takes its share – a touch only
+  // nudges it within its lane (the driver honks), a bump or more and it leaves its path for a moment (crashTick), the scene follows.
+  function knocked(c, b, v, h, M = c.M) {
+    if (c.st === 'weg' || c.st === 'geliehen') return;
+    const s2 = b.st,
+      sp = Math.sin(s2.psi),
+      cp = Math.cos(s2.psi),
+      Wc = [s2.u * sp + s2.v * cp, s2.u * cp - s2.v * sp], // its velocity after the knock
+      v0 = c.v;
+    const dv = VKUNFALL.commit(c, b);
+    // the other one before the knock: its momentum changed by as much as the car's, the other way
+    let fault = 'car',
+      closing = 0;
+    if (v && v.st && v.spec && h && h.n) {
+      const f = VEH.fwd(v.st.psi),
+        r = VEH.rgt(v.st.psi),
+        k = M / v.spec.mass,
+        Wp = [v.st.u * f[0] + v.st.v * r[0] + k * (Wc[0] - b.Wx), v.st.u * f[1] + v.st.v * r[1] + k * (Wc[1] - b.Wy)];
+      fault = VKUNFALL.fault(Wp, [b.Wx, b.Wy], h.n);
+      closing = (b.Wx - Wp[0]) * h.n[0] + (b.Wy - Wp[1]) * h.n[1];
+    }
+    const g = VKUNFALL.grade(dv, closing),
+      mine = !!v && v === VEH.cur;
+    if (g === 'touch') {
+      if (c.st === 'unfall') {
+        // pushed a little after the knock: while it slides that is part of it, standing it stays standing where it is pushed to
+        if (c.crash && c.crash.phase !== 'rutscht') c.v = c.vlat = c.rOff = 0;
+        return;
+      }
+      // a touch: it keeps its way, pushed a little within its lane; the driver honks
+      c.v = Math.max(0, c.v);
+      c.vlat = 0;
+      c.rOff = 0;
+      if (mine && c.st !== 'parkt' && !(c.touchT > 0)) {
+        c.touchT = 6;
+        S.ev.push([c, 'touch']);
+      }
+      return;
+    }
+    const k0 = c.crash,
+      n0 = k0 ? k0.n : 0,
+      parked = c.st === 'parkt' || !!(k0 && k0.parked && c.st === 'unfall'),
+      k = VKUNFALL.start(c, g, { v0, fault, parked });
+    if (k !== k0 || k.n !== n0) S.knocks++;
+    if (k !== k0) {
+      // a new accident: whatever it was about to do (a stop for someone) is off
+      k.mine = mine;
+      if (g === 'crash') S.crashes++;
+      c.stop = null;
+      c.capU = 0;
+      S.ev.push([c, 'stoss']);
+    } else if (mine) k.mine = true;
+    c.st = 'unfall';
+  }
+  // the scene's moments for verkehr/verkehr.js (ctx.onUnfall(c, kind, crash)): 'touch' (a honk), 'stoss' (the knock), 'steht' (at rest:
+  // the driver has his say), 'weiter' (drives on), 'liegt' (stays off the road); the honk is the car's own; others hear of it by an event
+  function events(ctx) {
+    const E = S.ev.splice(0);
+    for (const [c, kind] of E) {
+      if (c.st === 'weg') continue;
+      if ((kind === 'touch' || kind === 'steht') && c.honkT <= 0) {
+        honk(c);
+        c.honkT = 5;
+      }
+      const k = c.crash;
+      if (kind === 'stoss' && k && k.mine)
+        KERN.emit('verkehr:unfall', {
+          id: c.id,
+          who: c.who || null,
+          typ: c.typ,
+          x: +c.x.toFixed(1),
+          y: +c.y.toFixed(1),
+          grade: k.grade,
+          fault: k.fault,
+        });
+      if (ctx && ctx.onUnfall)
+        try {
+          ctx.onUnfall(c, kind, k);
+        } catch (e) {
+          if (!S.errU) console.warn('verkehr unfall', e);
+          S.errU = String((e && e.message) || e);
+        }
+    }
+  }
+  // a trailer (a semi's, a tractor's): the whole train takes the knock – it hardly moves, but the driver felt it
+  function trailerBody(c, t) {
+    const st = { x: t.x, y: t.y, psi: t.hd, u: c.v * Math.cos(t.hd - c.hd), v: 0, r: 0, sleep: 0 },
+      b = { spec: { mass: c.M + t.M, Iz: 1e7 }, st, u0: st.u, x0: t.x, y0: t.y };
+    b.knock = (v, h) => {
+      const du = st.u - b.u0,
+        a = t.hd - c.hd,
+        cb = VKUNFALL.body(c);
+      cb.st.u += du * Math.cos(a);
+      cb.st.v += du * Math.sin(a);
+      cb.st.x += st.x - b.x0;
+      cb.st.y += st.y - b.y0;
+      knocked(c, cb, v, h, c.M + t.M);
+    };
+    return b;
+  }
+  // a car after the knock, each frame: it rolls and slides on, brakes, stands; then its driver (verkehr/verkehr.js: ctx.onUnfall) has his
+  // say, and it turns back into its lane – or, far off the road or turned round, it waits until nobody sees it
+  function crashTick(c, dt) {
+    const k = c.crash;
+    if (!k) {
+      c.st = 'fahren';
+      return;
+    }
+    if (k.phase === 'rutscht') {
+      // the hazard lights a moment after the knock (a parked car: nobody in it)
+      if (!k.parked && k.t > (k.grade === 'crash' ? 0.9 : 0.4)) c.blink = 2;
+      const rest = VKUNFALL.step(c, dt);
+      slideHits(c);
+      c.s = Math.max(c.D.B, Math.min(c.line.L - 0.3, c.s));
+      c.brake = !k.parked;
+      if (rest) {
+        k.phase = 'steht';
+        k.rest = 0;
+        if (k.parked) {
+          // pushed only: it stays parked where it is now (its place on the road kept: s, lat, the turn)
+          c.st = 'parkt';
+          c.crash = null;
+          return;
+        }
+        c.blink = 2;
+        if (k.mine && !k.said) {
+          k.said = true;
+          S.ev.push([c, 'steht']);
+        }
+      }
+      return;
+    }
+    if (k.phase === 'steht') {
+      k.rest += dt;
+      if (k.rest > k.hold && !k.busy) {
+        if (VKUNFALL.back(c)) {
+          // back into its lane, slowly at first, the body turning back with the road (afterCrash)
+          k.phase = 'weiter';
+          k.t = 0;
+          c.st = 'fahren';
+          c.capU = 2.2;
+          c.v = 0;
+          c.vlat = 0;
+          c.rOff = 0;
+          S.ev.push([c, 'weiter']);
+        } else {
+          k.phase = 'liegt';
+          S.ev.push([c, 'liegt']);
+        }
+      }
+    }
+    // 'liegt': it waits (hazard lights) until its owner lets it go unseen (vk_strom.js, verkehr.js)
+  }
+  // driving on after the accident: the body straightens with the road, the hazard lights go off, then it is an ordinary car again
+  function afterCrash(c, dt) {
+    const k = c.crash;
+    k.t += dt;
+    VKUNFALL.straighten(c, c.v * dt);
+    if (k.t > 2.5 && c.blink === 2) c.blink = 0;
+    // full speed again once nearly straight in its lane; an ordinary car again once straight and the hazard lights off
+    if (Math.abs(c.hdOff || 0) < 0.05 && Math.abs(c.lat) < 0.6) c.capU = 0;
+    if (!c.hdOff && k.t > 2.5 && Math.abs(c.lat) < 0.6) c.crash = null;
+  }
+  // the sliding car against walls, trunks, the garden (fixed: pushed out, its speed into them gone), against other traffic cars (the knock
+  // passed on: both bodies, VEH.resolve), against a vehicle of the player's that stands asleep (it wakes and takes the knock itself)
+  function slideHits(c) {
+    if (!VEH || !VEH.boxHits || !c.box) return;
+    const B = c.box.box();
+    if (!B) return;
+    const hits = VEH.boxHits(B, c.z + 0.3, c.z + c.D.H, c);
+    for (const [h, o] of hits) {
+      if (!h || !(h.d > 0.002)) continue;
+      if (o && o.knock) {
+        if (!VEH.resolve) continue;
+        const me = VKUNFALL.body(c);
+        VEH.resolve(me, h, o, 0.12);
+        o.knock(null, { n: [-h.n[0], -h.n[1]], d: h.d, p: h.p });
+        VKUNFALL.commit(c, me);
+        continue;
+      }
+      if (o) {
+        if (o !== VEH.cur && o.st) o.st.sleep = 0;
+        continue;
+      }
+      const ht = c.hd - (c.hdOff || 0),
+        t = [Math.sin(ht), Math.cos(ht)],
+        nr = [Math.cos(ht), -Math.sin(ht)],
+        dx = h.n[0] * h.d,
+        dy = h.n[1] * h.d;
+      c.s += dx * t[0] + dy * t[1];
+      c.lat += dx * nr[0] + dy * nr[1];
+      c.x += dx;
+      c.y += dy;
+      const W = [c.v * t[0] + c.vlat * nr[0], c.v * t[1] + c.vlat * nr[1]],
+        vn = W[0] * h.n[0] + W[1] * h.n[1];
+      if (vn < 0) {
+        W[0] -= 1.1 * vn * h.n[0];
+        W[1] -= 1.1 * vn * h.n[1];
+        c.v = W[0] * t[0] + W[1] * t[1];
+        c.vlat = W[0] * nr[0] + W[1] * nr[1];
+        c.rOff *= 0.5;
+      }
+    }
+  }
   // ---- the car the player may drive: an extra vehicle of vehicles/vehicle.js with the physics of the player's car ----
   const HIDE = [-905, -1215]; // out in the fields, far from everything, while nobody has it
   let BV = null;
@@ -1151,7 +1398,22 @@ export const VAUTO = (() => {
   }
   S.where = () => (BV ? { x: BV.st.x, y: BV.st.y, psi: BV.st.psi, z: BV.st.z, shown: BV.g.visible } : null);
   S.veh = () => BV;
-  Object.assign(S, { spawn, remove, tick, halt, go, pose, honk, lend, unlend, borrowVeh, dark, HIDE });
+  Object.assign(S, {
+    spawn,
+    remove,
+    tick,
+    halt,
+    go,
+    pose,
+    honk,
+    lend,
+    unlend,
+    borrowVeh,
+    dark,
+    HIDE,
+    knocked,
+    crashTick,
+  });
   return S;
 })();
 window.VAUTO = VAUTO;

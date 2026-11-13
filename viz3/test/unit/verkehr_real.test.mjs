@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { VKTYPEN } from '../../src/verkehr/vk_typen.js';
 import { VKBAU } from '../../src/verkehr/vk_bau.js';
 import { VKDICHTE } from '../../src/verkehr/vk_dichte.js';
+import { VKUNFALL as U } from '../../src/verkehr/vk_unfall.js';
 
 // the extent of a merged mesh in the vehicle's frame (x right, y forward, z up; three's frame is x, z, −y)
 function extent(op, axle = null) {
@@ -310,4 +311,98 @@ test('stage 2b: the lights – a junction cycle of two groups, a crossing on req
   assert.ok(R2.atLight('gelb', 40, 10));
   assert.ok(!R2.atLight('gelb', 8, 10));
   assert.ok(!R2.atLight('gruen', 5, 10));
+});
+
+test('stage 3: the knock – grades, masses, the car as a body and back into the frame of its road', () => {
+  // grades: the car's change of speed, or how fast the two came together (a heavy lorry hardly moves)
+  assert.equal(U.grade(0.1), 'touch');
+  assert.equal(U.grade(0.4), 'knock');
+  assert.equal(U.grade(1.4), 'crash');
+  assert.equal(U.grade(0.1, 1.5), 'knock', 'a lorry hit at 5 km/h');
+  assert.equal(U.grade(0.4, 4), 'crash', 'a lorry hit at 15 km/h');
+  // masses and moments of inertia: the type's mass, a plausible Iz (the player's car: 1230 kg, 2150 kg m²)
+  const K = U.massOf(VKTYPEN.TYP.kombi),
+    L = VKTYPEN.TYP.kombi.yf - VKTYPEN.TYP.kombi.yr;
+  assert.equal(K.M, VKTYPEN.TYP.kombi.mass);
+  assert.ok(K.Iz > (K.M * L * L) / 16 && K.Iz < (K.M * L * L) / 8, 'Iz ' + K.Iz.toFixed(0));
+  assert.deepEqual(U.massOf(null), { M: 1230, Iz: 2150 });
+  assert.ok(U.massOf(VKTYPEN.TYP.sattel).M > 5 * K.M);
+  // the body and back: unchanged → nothing changes
+  const car = () => ({ x: 10, y: 20, hd: 0.3, hdOff: 0, s: 50, lat: 0, v: 8, vlat: 0, rOff: 0, M: 1450, Iz: 2600 });
+  let c = car(),
+    b = U.body(c);
+  assert.ok(Math.abs(b.st.u - 8) < 1e-9 && Math.abs(b.st.v) < 1e-9, 'a car on its road: all speed along its body');
+  assert.ok(U.commit(c, b) < 1e-9);
+  assert.ok(Math.abs(c.v - 8) < 1e-9 && Math.abs(c.s - 50) < 1e-9 && Math.abs(c.lat) < 1e-9);
+  // pushed along its body: faster along the road
+  c = car();
+  b = U.body(c);
+  b.st.u += 2;
+  assert.ok(Math.abs(U.commit(c, b) - 2) < 1e-9);
+  assert.ok(Math.abs(c.v - 10) < 1e-9 && Math.abs(c.vlat) < 1e-9);
+  // turned across its road (90° to the right): a push along its body is a push to the right of the road
+  c = Object.assign(car(), { v: 0, hd: 0.3 + Math.PI / 2, hdOff: Math.PI / 2 });
+  b = U.body(c);
+  b.st.u += 2;
+  U.commit(c, b);
+  assert.ok(Math.abs(c.vlat - 2) < 1e-9 && Math.abs(c.v) < 1e-9, 'vlat ' + c.vlat);
+  // moved: the road runs north (hd 0) – a metre east is a metre to the right, a metre north a metre on
+  c = Object.assign(car(), { hd: 0 });
+  b = U.body(c);
+  b.st.x += 1;
+  b.st.y += 0.5;
+  U.commit(c, b);
+  assert.ok(Math.abs(c.lat - 1) < 1e-9 && Math.abs(c.s - 50.5) < 1e-9 && c.x === 11 && c.y === 20.5);
+  // who ran into whom: the faster towards the other along the push (n: from the car to the player)
+  assert.equal(U.fault([0, 8], [0, 0], [0, -1]), 'player', 'the player drove into a standing car');
+  assert.equal(U.fault([0, 0], [0, -8], [0, -1]), 'car', 'a car drove into the standing player');
+});
+
+test('stage 3: after the knock – it rolls, slides, brakes and stands; it turns back into its lane or stays', () => {
+  // a car at 50 km/h knocked: the driver brakes after 0.8 s – it stands after ~3 s, some 25 m on (11 m before he brakes, 14 m braking)
+  const c = { s: 100, lat: 0, hdOff: 0, v: 13.9, vlat: 1.5, rOff: 0.6 };
+  let k = U.start(c, 'crash', { v0: 13.9, fault: 'player' });
+  assert.equal(k.phase, 'rutscht');
+  assert.equal(k.react, 0.8);
+  let t = 0;
+  while (!U.step(c, 1 / 60) && t < 10) t += 1 / 60;
+  assert.ok(t > 2.4 && t < 3.6, 'stands after ' + t.toFixed(2) + ' s');
+  assert.ok(c.s - 100 > 20 && c.s - 100 < 28, 'on ' + (c.s - 100).toFixed(1) + ' m');
+  assert.ok(c.lat > 0.1 && c.lat < 0.4, 'slid sideways ' + c.lat.toFixed(2) + ' m');
+  assert.ok(c.hdOff > 0.05 && c.hdOff < 0.4, 'turned ' + c.hdOff.toFixed(2));
+  assert.ok(U.back(c), 'near its lane: it drives on');
+  // pushed on while it still slides: the same knock; knocked again after a moment at rest: the same scene, one more word
+  assert.equal(U.start(c, 'knock', { v0: 0 }), k);
+  assert.equal(k.n, 1);
+  k.phase = 'steht';
+  k.rest = 2;
+  const k2 = U.start(c, 'knock', { v0: 0 });
+  assert.equal(k2, k);
+  assert.equal(k.n, 2);
+  assert.equal(k.phase, 'rutscht');
+  assert.equal(k.grade, 'crash');
+  // a standing car (the foot on the brake): brakes at once – a bump of 1.2 m/s moves it some 10 cm
+  const d = { s: 50, lat: 0, hdOff: 0, v: 1.2, vlat: 0, rOff: 0 };
+  k = U.start(d, 'knock', { v0: 0 });
+  assert.equal(k.react, 0);
+  assert.ok(k.stood);
+  t = 0;
+  while (!U.step(d, 1 / 60) && t < 5) t += 1 / 60;
+  assert.ok(t < 0.3 && d.s - 50 < 0.15, t.toFixed(2) + ' s, ' + (d.s - 50).toFixed(2) + ' m');
+  // far off the road, or turned round: it stays
+  assert.ok(!U.back({ lat: 7, hdOff: 0 }));
+  assert.ok(!U.back({ lat: 1, hdOff: 2.6 }));
+  // driving on: the body turns back with the road within some 5 m
+  const e = { hdOff: 0.5 };
+  U.straighten(e, 2.5);
+  assert.ok(Math.abs(e.hdOff - 0.15) < 1e-9, 'half of it, and 0.1 more: ' + e.hdOff);
+  for (let i = 0; i < 40; i++) U.straighten(e, 0.25);
+  assert.equal(e.hdOff, 0);
+  // the lines and who says them
+  for (const kind of ['knock', 'crash', 'stood', 'rear', 'again', 'end', 'endDorf', 'liegt'])
+    assert.ok(U.LINES[kind].length && U.line(kind, 0.99), kind);
+  assert.equal(U.who('lkw', 'lkw', 'm'), 'Der Lkw-Fahrer');
+  assert.equal(U.who('pkw', 'muell', 'f'), 'Die Müllfahrerin');
+  assert.equal(U.who('trak', 'traktor', 'f'), 'Die Landwirtin');
+  assert.equal(U.who('pkw', 'kombi', 'm'), 'Der Fahrer');
 });

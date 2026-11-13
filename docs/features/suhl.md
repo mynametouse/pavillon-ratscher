@@ -24,7 +24,7 @@ Generation v1 der Daten-Agenten: 1-m-Gelände mit eingeschnittenen Straßen, Geb
 | `viz3/src/lazy/suhl/kern/tuerme.js` | was die Gebäudedaten nicht tragen: die Türme von Kreuzkirche und St. Marien, der Dachreiter des Rathauses (auf dem First seines Hauses), die Trommel des Großen Saals im CCS (Kreis aus dem Grundriss), die Krone des Hotelturms mit Mast; erst wenn das zugehörige Haus da ist |
 | `viz3/src/lazy/suhl/kern/brunnen.js`, `wasser.js` | Brunnen aus den Straßenkacheln (`wareas` 'fountain') mit Figuren in einfachen Formen und den Blumenbeeten am Waffenschmied; offenes Wasser (Lauter, Teiche, Becken) auf dem Boden, Ecke für Ecke |
 | `viz3/src/lazy/suhl/kern/zeichen.js`, `laeden.js`, `ampeln.js` | Straßennamensschilder und Haltestellen; Ladenfronten mit Namen aus OpenStreetMap (ohne Personennamen); Ampeln |
-| `viz3/src/lazy/suhl/kern/autos.js` | parkende Autos auf den Parkplätzen (`areas` vom Typ 'parken'): Reihen längs der längsten Seite, sieben von zehn Plätzen belegt, eine instanzierte Form auf dem gezeichneten Gelände |
+| `viz3/src/lazy/suhl/kern/autos.js` | parkende Autos auf den Parkplätzen (`areas` vom Typ 'parken'): Reihen längs der längsten Seite, sieben von zehn Plätzen belegt; seit V18k die Automodelle der Stellplätze der Welt (`DMOD`: Klein-, Kompakt-, Kombi, SUV, Transporter; je Typ ein instanziertes Netz, weiche Schatten), die 16 nächsten in 40 m (Handy 6 in 22 m) als die genauen Modelle des Verkehrs (`VKMOD`); beide über `ctx` von `welt/suhl.js` |
 | `viz3/src/lazy/suhl/kern/geo.js`, `probe.js` | Kachel-Rechnung, WTH1-Höhen, das Buch über alles Erzeugte (`LIVE`); die Prüfungen des ersten Tages |
 | `viz3/extra/suhl-laufzeit/probe/` | der Probesatz (10,9 MB): `boden/v1`, `g/v1`, `b/v1`, `s/v1` (dazu `gr`, `w`, `m`, noch nicht gelesen) und ein vorläufiges `aktuell.json`. Herkunft steht in `aktuell.json` (`sources`): `suhl/boden` 8d5bffbc, `suhl/gebaeude` bacb45ed, `suhl/gruen` 92f47feb, `suhl/strassen` 7ef29c0e. |
 | `viz3/extra/suhl-laufzeit/probe_holen.py` | holt die Probesätze von `origin/suhl/<paket>` neu: von jedem Produkt die zuletzt erzeugte Version; schreibt `aktuell.json` in der Form des Vertrags |
@@ -176,6 +176,8 @@ Ein eigener Commit: `b0d40d80` („the hooks in shared files“), 4 Dateien, 23 
 | S1 | `garden/env.js` | Himmelskugel folgt der Kamera, wird nicht weggeschnitten | nein |
 | K1 | `game/camera.js`, `applyCam` | Mitte der Draufsicht bis x −16 km, y +23 km | nein |
 | H2 | – | **nicht nötig:** der Menüknopf entsteht im Anmelde-Modul (seit V18h ohne Zusatz, `?suhl=0` ohne) | |
+| B2 | `bus/bus_fahrplan.js`, `parse`/`lane` | trägt ein Muster `o` (Versatz des Fahrstreifens je Punkt, dm), gilt der statt fest 1,55 m – nur `fahrplan_suhl.json` trägt ihn (Einbahnstraßen mittig, schmale Straßen ohne Überhang; V18k) | nein |
+| S-R1 | `world/roads.js`, `roadShade` (`rdCode`) | der Belagscode aus den vier Texeln des bilinearen Fußabdrucks, gewichtet: Grenzen Platz ↔ Fahrbahn, Pflaster ↔ Asphalt glatt statt in Treppen des 1,5-m-Rasters (V18k) | nein |
 | F1 | – | **nicht von mir:** der Straßen-Chat hat `FAHRT.add/drop/ground` gebaut (Runde 2, `kern/strassen` 4d69fa03). Die Laufzeit ruft nur diese Funktionen und fasst `welt/fahrt.js` nicht an (Abschnitt 8). | |
 
 Der Straßen-Chat ändert in `welt/welt.js` den Shader-Text und `tileMat`; die Haken liegen an anderen Stellen (Zeilen 65–69,

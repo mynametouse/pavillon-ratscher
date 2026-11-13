@@ -152,6 +152,12 @@ export const STEBENEN = (() => {
         const t = c.trailer;
         if (t && t.init) h += shape(t, t.D, (c.paint && c.paint.col2) || '#e8e8e4', CLS.zug, pr, W, H, false);
         h += shape(c, D, col, name, pr, W, H, lorry);
+        // feat/verkehr-real stage 3: after a knock, a warning triangle beside it while its hazard lights blink
+        if (c.crash && c.blink === 2) {
+          const q = pr(c.x, c.y, 1.2);
+          if (q[2] < 1 && q[0] > -20 && q[1] > -20 && q[0] < W + 20 && q[1] < H + 20)
+            h += `<path d="M${f1(q[0] + 10)} ${f1(q[1] - 16)} l7 12 h-14 z" fill="#ffd21a" stroke="#d01c14" stroke-width="2.2" stroke-linejoin="round"><title>Unfall – Warnblinker an</title></path>`;
+        }
       }
       // feat/bus: its buses when it is there (BUS.state().inst → [{ x, y, line }])
       const B = window.BUS;
