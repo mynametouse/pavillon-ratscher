@@ -22,7 +22,7 @@ Programm), `gl_handy.js` (`GLHANDY`: das Handy). Tests: `viz3/test/unit/grenzlan
 - **Drei Sender in der Rückblende** (`GL.era === '1989'`): **Radio Republik I 90,2** (Nachrichten, Marsch- und Tanzmusik), **Jugendwelle
   Impuls 93,8** (Rock und Elektronik, Kati moderiert ohne Manuskript), **Frankenwelle 3 96,4** (Westsender, immer verrauscht). Die Namen
   sind erfunden, **die Meldungen nicht**: was am Freitag, 10. November 1989 wirklich gemeldet wurde – neue Reiseregelung, Visum bei den
-  Volkspolizeikreisämtern, starker Verkehr an den Grenzübergangsstellen Eisfeld und Meiningen, der Aufruf des Ministerrats („keine
+  Volkspolizeikreisämtern, starker Verkehr an den Grenzübergangsstellen (im Bezirk Suhl: Eisfeld und Meiningen), der Aufruf des Ministerrats („keine
   übereilten Entschlüsse“), Ende der ZK-Tagung mit Aktionsprogramm und Kundgebung im Lustgarten, Ablösung Shiwkows in Sofia; im Westen
   Trabant und Wartburg über Rottenbach nach Coburg, 100 Mark Begrüßungsgeld, die Kundgebung am Rathaus Schöneberg. Quellen stehen in
   `GLRDATA.QUELLEN89` und im Handy unter Notizen.

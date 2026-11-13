@@ -265,7 +265,7 @@ export const GLRMUSIK = (() => {
       if (C.last && C.nx.d !== C.ch.d && C.lvl >= 0.9) {
         E('bass', 1, 0.45, C.bs(0), 0.8);
         E('bass', 1.5, 0.45, C.walk, 0.8);
-      } else E('bass', 1, 0.8, C.bs(2), 0.85);
+      } else E('bass', 1, 0.8, C.bs(C.v === 2 && C.bar % 4 === 1 ? 1 : 2), 0.85);
       for (const b of [0.5, 1.5]) for (let i = 0; i < 3; i++) E('comp', b, 0.3, C.ct(i, 55), 0.62);
       if (C.lvl < 0.55) return;
       D(m ? DR.bd : DR.kick, 0, 0.8);
@@ -279,7 +279,9 @@ export const GLRMUSIK = (() => {
     // a waltz: bass on one, chords on two and three
     oom3(E, D, C) {
       E('bass', 0, 1.6, C.bs(C.bar % 2 ? 2 : 0), 0.9);
-      for (const b of [1, 2]) for (let i = 0; i < 3; i++) E('comp', b, 0.42, C.ct(i, 55), b === 1 ? 0.6 : 0.52);
+      for (const b of C.v === 1 ? [1, 2, 2.5] : [1, 2])
+        for (let i = 0; i < 3; i++)
+          E('comp', b, b === 2.5 ? 0.3 : 0.42, C.ct(i, 55), b === 1 ? 0.6 : b === 2 ? 0.52 : 0.4);
       if (C.lvl < 0.55) return;
       D(DR.kick, 0, 0.45);
       D(DR.brush, 1, 0.4);
@@ -291,7 +293,7 @@ export const GLRMUSIK = (() => {
       const full = C.lvl >= 1;
       for (let b = 0; b < 4; b++) {
         E('bass', b, 0.45, C.bs(0), 0.9);
-        if (full) E('bass', b + 0.5, 0.4, C.bs(0) + 12, 0.7);
+        if (full) E('bass', b + 0.5, 0.4, C.v === 1 ? C.bs(2) + (C.bs(2) < C.bs(0) ? 12 : 0) : C.bs(0) + 12, 0.7);
         for (let i = 0; i < 3; i++) E('comp', b + 0.5, 0.32, C.ct(i, 57), 0.5);
       }
       if (C.lvl >= 0.9) for (let i = 0; i < 3; i++) E('pad', 0, 3.9, C.ct(i, 60), 0.55);
@@ -320,8 +322,9 @@ export const GLRMUSIK = (() => {
       else for (let i = 0; i < 3; i++) E('pad', 0, 3.9, C.ct(i, 57), 0.55);
       if (C.lvl < 0.65) return;
       D(DR.kick, 0, 0.9);
-      D(DR.kick, 2, 0.85);
-      if (C.bar % 2) D(DR.kick, 2.5, 0.6);
+      D(DR.kick, C.v === 1 ? 1.5 : 2, 0.85);
+      if (C.v === 1) D(DR.kick, 2.5, 0.7);
+      else if (C.bar % 2 || C.v === 2) D(DR.kick, 2.5, 0.6);
       D(DR.snare, 1, 0.8);
       if (C.last && full) {
         D(DR.tomh, 3, 0.6);
@@ -360,7 +363,11 @@ export const GLRMUSIK = (() => {
     synth(E, D, C) {
       const full = C.lvl >= 1,
         r = C.bs(0),
-        seq = [0, 0, 12, 0, 0, 12, 0, 12, 0, 0, 12, 0, 7, 12, 0, 12];
+        seq = [
+          [0, 0, 12, 0, 0, 12, 0, 12, 0, 0, 12, 0, 7, 12, 0, 12],
+          [0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 7, 12],
+          [0, 0, 0, 12, 0, 0, 0, 12, 0, 0, 0, 12, 0, 7, 12, 7],
+        ][C.v];
       for (let k = 0; k < 16; k++)
         if (C.lvl >= 0.7 || k % 4 === 0) E('bass', k / 4, 0.2, r + seq[k], k % 4 ? 0.7 : 0.95);
       for (let i = 0; i < 3; i++) E('pad', 0, 3.95, C.ct(i, 57), 0.6);
@@ -371,7 +378,8 @@ export const GLRMUSIK = (() => {
       }
       if (C.lvl < 0.6) return;
       for (let b = 0; b < 4; b++) {
-        D(DR.kick, b, 0.85);
+        if (C.v !== 1 || b % 2 === 0) D(DR.kick, b, 0.85);
+        if (C.v === 1 && b === 2) D(DR.kick, 2.5, 0.6);
         if (b % 2) {
           D(DR.gate, b, 0.75);
           if (full) D(DR.clap, b, 0.4);
@@ -401,7 +409,10 @@ export const GLRMUSIK = (() => {
         C.ct(1, 60),
         C.ct(2, 60),
       ];
-      for (let k = 0; k < 8; k++) E('comp', k / 2, 0.9, pk[k], k % 4 ? 0.55 : 0.75);
+      if (C.v === 1)
+        for (const b of [0, 1, 1.5, 2.5, 3, 3.5])
+          for (let i = 0; i < 3; i++) E('comp', b + i * 0.012, 0.6, C.ct(i, 55), b % 1 ? 0.45 : 0.62);
+      else for (let k = 0; k < 8; k++) E('comp', k / 2, 0.9, pk[k], k % 4 ? 0.55 : 0.75);
       if (C.lvl >= 0.8) for (let i = 0; i < 3; i++) for (const b of [0, 2]) E('pad', b, 1.8, C.ct(i, 60), 0.5);
       if (C.lvl < 0.7) return;
       D(DR.kick, 0, 0.75);
@@ -416,7 +427,8 @@ export const GLRMUSIK = (() => {
     swing(E, D, C) {
       const w = [C.bs(0), C.bs(1), C.bs(2), C.walk];
       for (let b = 0; b < 4; b++) E('bass', b, 0.85, w[b], b ? 0.8 : 0.95);
-      for (const b of [1, 3]) for (let i = 0; i < 3; i++) E('comp', b, 0.3, C.ct(i, 55), 0.6);
+      for (const b of C.v === 1 ? [0, 1, 2, 3] : [1, 3])
+        for (let i = 0; i < 3; i++) E('comp', b, 0.3, C.ct(i, 55), C.v === 1 ? (b % 2 ? 0.5 : 0.36) : 0.6);
       if (C.lvl >= 0.9) for (let i = 0; i < 3; i++) E('pad', 0, 3.6, C.ct(i, 55), 0.6);
       if (C.lvl < 0.55) return;
       for (let b = 0; b < 4; b++) {
@@ -552,7 +564,7 @@ export const GLRMUSIK = (() => {
         [3, 1],
         [1.5, 1.5, 1],
       ],
-      form: 'I4 V8 C8 S8 C8 E2',
+      form: ['I4 V8 C8 S8 C8 E2', 'I4 V8 C8 V8 C8 E2', 'I2 C8 V8 C8 S8 E2'],
       sek: {
         I: ['1 1 6 7', 0.75],
         V: ['1 1 6 7 1 1 6 7', 0.8, 'a', 0, 'vers'],
@@ -594,7 +606,7 @@ export const GLRMUSIK = (() => {
         [3, 1],
         [0.5, 0.5, 0.5, 0.5, 2],
       ],
-      form: 'I4 V8 C8 B4 C8 E2',
+      form: ['I4 V8 C8 B4 C8 E2', 'I2 V8 C8 B4 C8 E2', 'I2 C8 V8 B4 C8 E2'],
       sek: {
         I: ['1 1 6 6', 0.7],
         V: ['1 1 6 6 3 3 7 7', 0.85, 'a'],
@@ -873,7 +885,9 @@ export const GLRMUSIK = (() => {
       bes = Object.assign({}, BES[meta.s], BES[meta.s + '@' + sender]),
       bpb = stil.bpb,
       spb = 60 / bpm,
-      sw = stil.swing || 0;
+      sw = stil.swing || 0,
+      // which of a feel's patterns this piece uses (so that two pieces of one style are not the same groove)
+      vari = Math.floor(r() * 3);
     const insNames = [],
       insOf = name => {
         let k = insNames.indexOf(name);
@@ -885,7 +899,9 @@ export const GLRMUSIK = (() => {
     const sek = [],
       seen = {};
     let bar = 0;
-    for (const tok of stil.form.split(' ')) {
+    const forms = [].concat(stil.form),
+      form = forms[Math.floor(r() * forms.length)];
+    for (const tok of form.split(' ')) {
       const name = tok[0],
         bars = +tok.slice(1),
         def = stil.sek[name];
@@ -933,6 +949,7 @@ export const GLRMUSIK = (() => {
           lvl: s.lvl,
           bar: b,
           bpb,
+          v: vari,
           erst: b === 0,
           last: b % 4 === 3 || b === s.bars - 1,
           // chord tone i (0 root, 1 third, 2 fifth, 3 seventh) at or above lo
