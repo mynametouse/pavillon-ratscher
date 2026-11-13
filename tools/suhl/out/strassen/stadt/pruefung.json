@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:31:57Z",
+ "made": "2026-11-13T01:48:09Z",
  "run": "out/stadt",
  "drive_file": "suhl.json",
  "tiles": 1129,
@@ -650,7 +650,7 @@
   "uebergaenge": 5458,
   "lage_ueber_0_1_m": 0,
   "hoehe_ungleich": 0,
-  "groesster_abstand_m": 0.0,
+  "groesster_abstand_m": 0.1,
   "ok": true
  },
  "ok": {
