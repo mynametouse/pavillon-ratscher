@@ -145,7 +145,9 @@ Die Tabelle steht als `CAST` in `tools/voices/grenzland_record.py`; eine Änderu
   drauf). Der Unit-Test `grenzland_stimmen` schlägt fehl, solange ein Gespräch aus `GLMDATA.R` nicht in der Liste steht (mit Befehl in der
   Meldung); der Browser-Test, solange das Spiel eine Zeile sammelt, die nicht in der Liste steht.
 - **Danke für `GLRADIO.duck(on)` und das Radio im Konsum** (`STIMME.say('gl_r_republik', …)`): `GLSTIMMEN` ruft `GLRADIO.duck` auf, sobald
-  es da ist – außer der Radiosprecher spricht gerade selbst; die Konsum-Sätze sind als `gl_r_republik` aufgenommen.
+  es da ist – außer der Radiosprecher spricht gerade selbst; die Konsum-Sätze sind als `gl_r_republik` aufgenommen. **Bitte in
+  `gl_1989.js` `talk()` kein `STIMME.say` ergänzen:** die Sätze der Leute von 1989 spricht schon `GLSTIMMEN` auf das Ereignis
+  `grenzland:sagt` hin – zweimal wäre doppelt.
 - **Polizeifunk:** welt meldet für die Gerätestimme `STIMME.person('gl_funk', { g: 'm', age: 46 })` an; die Aufnahmen sprechen die Leitstelle
   mit einer Frau. Für Sätze ohne Aufnahme passender wäre `g: 'f'` (ein Wort in `gl_fahndung.js`, welt). Beobachtung: welt ruft die Stimme
   des Funks sofort, der Untertitel „Funk“ wartet aber in deiner Schlange, solange jemand spricht – Stimme und Untertitel können
