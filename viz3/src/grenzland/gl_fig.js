@@ -34,6 +34,7 @@ import { VPROPS } from '../world/village_props.js';
 import { VFIG } from '../verkehr/verkehr_fig.js';
 import { GLDATA } from './gl_data.js';
 import { GLPOSE } from './gl_pose.js';
+import { GLHELM } from './gl_helm.js';
 export const GLFIG = (() => {
   const S = { figs: [], loads: 0, drops: 0, err: null, clips: {}, paints: 0, last: null };
   const CH = window.CHARMAN || {},
@@ -1047,22 +1048,6 @@ export const GLFIG = (() => {
       dome(K, -R * 0.9, R * 1.08, R * 1.12, R * 1.06, 1.42, c.top, 14, 6);
       K.box(0, R + 0.045, -R * 0.9 + 0.012, 0.15, 0.11, 0.012, 0, c.band, true);
     },
-    // a moped helmet (jet shape): a shell down to the ears, a darker edge
-    helm(K, R, c) {
-      dome(K, -R * 0.78, R * 1.3, R * 1.36, R * 1.3, 1.95, c.top, 16, 8);
-      K.lathe(
-        0,
-        0,
-        -R * 0.78 + Math.cos(1.95) * R * 1.3 - 0.012,
-        [
-          [R * 1.24, 0],
-          [R * 1.27, 0.02],
-        ],
-        16,
-        c.band
-      );
-      K.box(0, R * 1.32, -R * 0.55, 0.19, 0.03, 0.014, 0, c.band, true);
-    },
   };
   const HUTC = {
     vopo: ['schirm', { top: L(104, 116, 100), band: L(52, 96, 62), peak: L(16, 16, 16), badge: L(190, 170, 70) }],
@@ -1077,9 +1062,17 @@ export const GLFIG = (() => {
     strick: ['strick', { top: L(196, 70, 150), band: L(236, 232, 224) }],
     strickblau: ['strick', { top: L(60, 96, 150), band: L(232, 228, 216) }],
     basecap: ['basecap', { top: L(30, 34, 40), band: L(30, 34, 40) }],
-    helm: ['helm', { top: L(222, 220, 212), band: L(26, 26, 28) }],
-    helmrot: ['helm', { top: L(170, 30, 28), band: L(26, 26, 28) }],
-    helmschwarz: ['helm', { top: L(24, 24, 26), band: L(60, 60, 62) }],
+    // helmets (grenzland/gl_helm.js): jet helmets of today in a few paints, with a snap-on peak or a raised clear visor; the special
+    // forces' tactical helmet. helm: the cast's default (Jule, Timo), helmrot: the player's (grenzland/gl_fahndung.js)
+    helm: ['jet', { top: L(226, 220, 200) }],
+    helmcreme: ['jet', { top: L(226, 220, 200), visier: true }],
+    helmweiss: ['jet', { top: L(236, 236, 234), peak: L(22, 22, 24) }],
+    helmrot: ['jet', { top: L(160, 24, 26) }],
+    helmrotvisier: ['jet', { top: L(160, 24, 26), visier: true }],
+    helmoliv: ['jet', { top: L(82, 88, 58), peak: L(22, 22, 24) }],
+    helmblau: ['jet', { top: L(150, 186, 210), visier: true }],
+    helmjetschwarz: ['jet', { top: L(20, 20, 22), visier: true }],
+    helmschwarz: ['takt', { top: L(30, 31, 33) }],
   };
   // ---- hair, moustache, glasses: built in the head's own measure (D of headOf; kit frame: x right, y forward, z up from the crown) ----
   const tone = (c, f) => [Math.min(1, c[0] * f), Math.min(1, c[1] * f), Math.min(1, c[2] * f)];
@@ -1240,6 +1233,7 @@ export const GLFIG = (() => {
     if (!def) return null;
     H = H || headOf(model);
     if (!H) return null;
+    if (GLHELM.ARTEN[def[0]]) return GLHELM.on(H, def[0], def[1]);
     const R = Math.max(0.085, Math.min(0.125, H.R));
     return hang(H, 'hut:' + kind + ':' + R.toFixed(3), K => HUT[def[0]](K, R, def[1]));
   }

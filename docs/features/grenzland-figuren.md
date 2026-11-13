@@ -141,3 +141,56 @@ Noch offen: siehe unten.
 - Ein Barhocker oder Sitzplätze an der Kegelbahn stehen nicht in den Daten (`GLDATA.ORTE`); `GLFIG.platz` kennt nur die Bänke des
   Dorfkerns und den Ring der Dorflinde.
 - Füße gleiten beim Rennen kaum; sehr kleine oder sehr große Figuren etwas (die Schrittlänge folgt der Hüfthöhe).
+
+---
+
+# Grenzland, Runde 3: Helme, wie sie sind (Hilfs-Agent `helm`, 13.11.2026)
+
+Auftrag: `docs/plans/auftraege/grenzland3-helm.md` (Falko 20:44: „Die Helme sehen leider völlig unrealistisch aus“, zwei Fotos).
+Dateien: neu `viz3/src/grenzland/gl_helm.js` (`GLHELM`, eine Zeile in `viz3/src/modules.txt` vor `gl_fig.js`), in
+`viz3/src/grenzland/gl_fig.js` nur `HUTC` (die Helm-Schlüssel) und `hatOn` (Helme gehen an `GLHELM`), der alte `HUT.helm` ist weg;
+Test `viz3/test/grenzland_helm.py`, `viz3/extra/grenzland-helm/tests.txt`.
+
+## Was falsch war (Falkos Fotos)
+
+- Die Schale war eine grobe Halbkugel (16 × 8 Facetten, jede sichtbar – das Bau-Kit der Hüte rechnet je Dreieck eine eigene Normale),
+  blassgrau bei allen, matt, ohne Dicke und Kantenschutz, und saß zu tief: der Rand lag rundum auf Augenhöhe.
+- Der schwarze Balken über Stirn/Augen war ein Kasten als „Schirm“ – auf Timo eine Augenbinde, auf Jule ein Strich über die Stirn.
+- Kein Kinnriemen, kein Ohrteil, kein Visier. Die Frau mit Helm auf beiden Fotos ist übrigens Jule (`hut: 'helm'` in den Darstellerdaten),
+  nicht Sarah – Sarah und Falko tragen als Figuren keinen Helm, nur die Spielfigur auf dem Moped (`gl_fahndung.js`, `'helmrot'`).
+- Falkos Kopf auf dem ersten Foto (dunkles Gesicht, graues Band): das ist die **Sturmhaube** aus `gl_fahndung.js` (`sturmhaube()`): ein
+  dunkles Ei aus dem Hut-Kit über dem ganzen Kopf bis zum Hals mit Augenschlitz, die Oberseite spiegelt den Himmel grau. Kein Helm-Fehler
+  – siehe „Für den Lead“.
+
+## Was es jetzt gibt
+
+- **Jethelm** (offenes Gesicht, der Helm der Clique auf der Simson): eine ovale Schale, länger als breit, glatt (die Normalen der Fläche,
+  nicht der Facetten), unterhalb der breitesten Stelle fast senkrecht über die Ohren hinab; die Schnittkante vorn knapp über den
+  Augenbrauen (an den Augen-Knochen des Rigs ausgerichtet: Rand ≈ 3,6 cm über der Augenmitte), an den Schläfen schräg hinab vor das Ohr,
+  unter den Ohrläppchen entlang und im Nacken etwas höher; ein weicher dunkler Gummi-Kantenschutz rundum, man sieht die Dicke von Schale
+  und Polster, innen das dunkle Futter; ein Kinnriemen (zwei Riemen aus den Ohrteilen unter das Kinn, eine Steckschnalle); entweder ein
+  kurzer **Druckknopf-Schirm** (gebogen, leicht hoch, drei Knöpfe) oder ein **klares, leicht getöntes Visier**, hochgeklappt über der
+  Stirnpartie, mit Scharnierknöpfen an den Schläfen.
+- Lack in glaubhaften Farben, je Person einer (Schlüssel in `HUTC`): `helm` (creme, Schirm – der bisherige Standard der Darstellerdaten),
+  `helmcreme` (creme, Visier), `helmweiss` (weiß, schwarzer Schirm), `helmrot` (rot, Schirm – die Spielfigur), `helmrotvisier`,
+  `helmoliv` (oliv, schwarzer Schirm), `helmblau` (hellblau, Visier), `helmjetschwarz` (schwarz glänzend, Visier).
+- **Taktischer Helm** der Spezialkräfte (`helmschwarz`, `gl_fahndung.js`): hoch geschnitten (die Ohren frei), vorn über den Brauen,
+  hinten bis zum Nacken, Schienen an den Seiten, eine Halterung vorn, Vierpunkt-Riemen, matt schwarz.
+
+## Wie es gemacht ist (Entscheidungen)
+
+- **Eigene Geometrie statt Hut-Kit:** `gl_helm.js` baut die Schale als Fläche über (Winkel um den Kopf, Winkel von oben) mit Normalen aus
+  den Ableitungen – deshalb glatt bei ≈ 1 400 Dreiecken. Die Kante folgt einer Höhenlinie je Winkel; wo sie steil fällt (vor dem Ohr),
+  liegen die Stützstellen dichter.
+- **Passform je Kopf:** `GLFIG.headOf` liefert Breite/Tiefe der Schädelkrone und die Nasenspitze; die Augenhöhe kommt von den
+  Augen-Knochen des Rocketbox-Rigs (alle Darsteller haben sie; sonst 4,5 cm über der Nasenspitze – an den Darstellern gemessen
+  4,2–5,2 cm). Breite und Tiefe sind begrenzt (die Krone von `headOf` schließt Ohren und Haar ein – ein Helm sitzt auf dem Schädel; Haar
+  darf unten heraushängen, wie bei echten Helmen). Gebaut wird einmal je Art, Farbe und Kopf; alle teilen die Geometrie.
+- **Kein neues Shader-Programm:** der Lack ist der Lack der Fahrzeuge des Modus (`GLMOD.paint(Farbe, 0)` – der klarlackierte Lack des
+  Spielerautos, ein Material je Farbe, dasselbe Programm), Kante, Futter, Riemen, Schnalle, schwarze Schirme und der taktische Helm das
+  Material des Verkehrs (`VFIG.mat()`), das Visier das Glas der Fahrzeuge selbst (`GLMOD.glass()`). Ohne `GLMOD` fällt der Lack auf
+  `VFIG.mat()` zurück und das Visier weg. Zwei bis drei Draw-Calls, ≈ 2,4–2,5 k Dreiecke je Helm.
+- **Haare:** bei den Figuren des Modus bleiben die Haare des Modells; die Schale ist so groß, dass nichts durchsticht; was unten
+  herausschaut (Zopf, Nacken, Stirnfransen), ist wie bei echten Helmen. Bei der Spielfigur drückt `gl_fahndung.js` das Haar wie unter dem
+  Forsthelm des Grundspiels (`helmU`) – unverändert.
+- **1989:** in der Rückblende trägt niemand einen Helm (die Darstellerdaten von 1989 haben keinen) – nichts gebaut.
