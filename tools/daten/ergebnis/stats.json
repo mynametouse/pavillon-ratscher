@@ -1,0 +1,65 @@
+{
+ "ratscher": {
+  "gebaeude": 150,
+  "mit_etagen": 0,
+  "mit_dachform": 0,
+  "mit_hoehe": 0,
+  "mit_adresse": 0,
+  "mit_baujahr": 0,
+  "mit_dachfarbe": 0,
+  "mit_fassadenmaterial_oder_farbe": 0,
+  "pois": 3,
+  "pois_mit_oeffnungszeiten": 0,
+  "pois_mit_eingang_25m": 0,
+  "eingaenge": 0,
+  "eingaenge_an_adresse": 0,
+  "durchgaenge": 0,
+  "hoefe": 0,
+  "hoefe_ohne_zugang_in_osm": 0
+ },
+ "schleusingen": {
+  "gebaeude": 1752,
+  "mit_etagen": 44,
+  "mit_dachform": 23,
+  "mit_hoehe": 0,
+  "mit_adresse": 701,
+  "mit_baujahr": 0,
+  "mit_dachfarbe": 1,
+  "mit_fassadenmaterial_oder_farbe": 2,
+  "pois": 176,
+  "pois_mit_oeffnungszeiten": 43,
+  "pois_mit_eingang_25m": 18,
+  "eingaenge": 31,
+  "eingaenge_an_adresse": 10,
+  "durchgaenge": 6,
+  "hoefe": 4,
+  "hoefe_ohne_zugang_in_osm": 3
+ },
+ "vessra": {
+  "gebaeude": 168,
+  "mit_etagen": 13,
+  "mit_dachform": 15,
+  "mit_hoehe": 0,
+  "mit_adresse": 7,
+  "mit_baujahr": 0,
+  "mit_dachfarbe": 1,
+  "mit_fassadenmaterial_oder_farbe": 10,
+  "pois": 32,
+  "pois_mit_oeffnungszeiten": 2,
+  "pois_mit_eingang_25m": 22,
+  "eingaenge": 17,
+  "eingaenge_an_adresse": 0,
+  "durchgaenge": 0,
+  "hoefe": 0,
+  "hoefe_ohne_zugang_in_osm": 0
+ },
+ "_meta": {
+  "quelle": "© OpenStreetMap-Mitwirkende, ODbL 1.0 (OSM-API, Abruf 13.11.2026)",
+  "neuester_objektstand": "2026-11-12",
+  "elemente": {
+   "nodes": 32056,
+   "ways": 4152,
+   "relations": 92
+  }
+ }
+}
