@@ -193,6 +193,7 @@ export const ZKCHRONIK = (() => {
       sub: 'Der Käfer und die Hänge',
       from: 2026,
       to: 2050,
+      hour: 14, // the time of day of the time-lapse (stable light; events bring their own)
       places: ['anger', 'hang', 'waldrand', 'kahlflaeche', 'schule'],
       questions: [
         'Wem gehört der Wald um Ratscher – und wer entscheidet, was nach dem Käfer kommt?',
@@ -205,6 +206,7 @@ export const ZKCHRONIK = (() => {
       sub: 'Starkregen und Hochwasser',
       from: 2026,
       to: 2050,
+      hour: 12,
       places: ['bruecke', 'hang', 'strasse'],
       questions: [
         'Wo im Dorf steht bei Starkregen zuerst Wasser – und wer weiß das heute schon?',
@@ -217,6 +219,7 @@ export const ZKCHRONIK = (() => {
       sub: 'Wärme, Strom und die Nacht ohne Strom',
       from: 2026,
       to: 2060,
+      hour: 15,
       places: ['anger', 'schule', 'strasse', 'heizhaus', 'windrad'],
       questions: [
         'Was müsste passieren, damit Sie Wärme oder Strom gemeinsam mit den Nachbarn machen?',
@@ -506,6 +509,13 @@ export const ZKCHRONIK = (() => {
       allein: {
         title: 'Die Starkregennacht',
         text: 'Über dem Hang bleibt ein Gewitter hängen: rund 55 Liter Regen je Quadratmeter in einer Stunde, mehr als ein Jahrhundertregen nach heutiger Statistik. Die Warnung kam aufs Handy, aber kaum einer wusste, was tun. Das Wasser schießt vom kahlen Hang in die Straße, Keller laufen voll.',
+        cues: [
+          [0, 'regen'],
+          [0.1, 'donner'],
+          [0.45, 'sirene'],
+          [0.5, 'blaulicht'],
+          [1.2, 'pumpe'],
+        ],
         lines: [
           ['manfred', 'Die Sirene! Und das Wasser steht schon in der Straße.'],
           ['katrin', 'Bei uns läuft es durchs Kellerfenster. Wo gibt es Sandsäcke?'],
@@ -515,6 +525,13 @@ export const ZKCHRONIK = (() => {
       gewappnet: {
         title: 'Die Starkregennacht',
         text: 'Über dem Hang bleibt ein Gewitter hängen: rund 55 Liter Regen je Quadratmeter in einer Stunde, mehr als ein Jahrhundertregen nach heutiger Statistik. Die Mulden am Hang bremsen das Wasser, Schwellen und Sandsäcke halten es aus den Häusern.',
+        cues: [
+          [0, 'regen'],
+          [0.02, 'sirene'],
+          [0.05, 'blaulicht'],
+          [0.1, 'donner'],
+          [0.3, 'pumpe'],
+        ],
         lines: [
           ['manfred', 'Die Sirene, genau wie geübt. Sandsäcke an die Kellerfenster, die Pumpe an die Senke!'],
           ['katrin', 'Die Warnung kam schon um elf aufs Handy. Bei uns ist die Schwelle drin, es bleibt draußen.'],
@@ -577,6 +594,11 @@ export const ZKCHRONIK = (() => {
       allein: {
         title: 'Das große Hochwasser',
         text: 'Tauwetter auf viel Schnee und drei Tage Regen: Die Schleuse steigt höher als im Dezember 2023, fast wie ein hundertjährliches Hochwasser. Im Überschwemmungsgebiet steht Wasser in Kellern und Erdgeschossen, Öltanks schwimmen auf.',
+        cues: [
+          [0, 'blaulicht'],
+          [0.3, 'pumpe'],
+          [2, 'oel'],
+        ],
         lines: [
           ['jens', 'Der Öltank in der Nummer zwölf ist aufgeschwommen. Jetzt haben wir auch noch Öl im Wasser.'],
           ['uwe', 'So hoch hab ich die Schleuse noch nie gesehen. Mein Vater auch nicht.'],
@@ -585,6 +607,10 @@ export const ZKCHRONIK = (() => {
       gewappnet: {
         title: 'Das große Hochwasser',
         text: 'Tauwetter auf viel Schnee und drei Tage Regen: Die Schleuse steigt höher als im Dezember 2023, fast wie ein hundertjährliches Hochwasser. Mobile Wände stehen, Öltanks gibt es kaum noch: Wasser in Höfen und Gärten, in wenigen Kellern.',
+        cues: [
+          [0, 'blaulicht'],
+          [0.3, 'pumpe'],
+        ],
         lines: [
           ['jens', 'Die Wände stehen seit gestern Abend. Wir haben das Wasser kommen sehen.'],
           ['ingrid', 'Gut, dass kaum noch Öltanks in den Kellern stehen.'],
@@ -811,11 +837,16 @@ export const ZKCHRONIK = (() => {
       kind: 'stresstest',
       place: 'schule',
       halt: 50,
-      dur: 6,
+      dur: 2,
       weather: 'klar',
       allein: {
         title: 'Die Nacht ohne Strom',
         text: 'Eisregen und Sturm haben Leitungen und Masten zerstört, Südthüringen ist ohne Strom, in dieser möglichen Zukunft 30 Stunden. Ohne Strom laufen weder Ölbrenner noch Wärmepumpe. Nur wenige Häuser mit eigenem Speicher haben Licht.',
+        cues: [
+          [0, 'licht-aus'],
+          [0.03, 'stille'],
+          [0.5, 'aggregat-feuerwehr'],
+        ],
         lines: [
           ['katrin', 'Bei meiner Patientin läuft das Sauerstoffgerät mit Strom. Der Akku hält noch drei Stunden.'],
           [
@@ -828,6 +859,12 @@ export const ZKCHRONIK = (() => {
       gewappnet: {
         title: 'Die Nacht ohne Strom',
         text: 'Eisregen und Sturm haben Leitungen und Masten zerstört, Südthüringen ist ohne Strom, in dieser möglichen Zukunft 30 Stunden. Nach wenigen Minuten brennt Licht in der alten Schule. Das Heizhaus läuft mit Notstrom, Akkustationen treiben die Heizungspumpen.',
+        cues: [
+          [0, 'licht-aus'],
+          [0.03, 'stille'],
+          [0.12, 'aggregat'],
+          [0.2, 'schule-licht'],
+        ],
         lines: [
           ['katrin', 'Wir bringen sie in die Schule. Da läuft ihr Gerät die ganze Nacht.'],
           ['jens', 'Funk steht, die Liste ist durch: Wer allein wohnt, haben wir besucht.'],
@@ -949,14 +986,25 @@ export const ZKCHRONIK = (() => {
         weather: b.weather || null,
         same,
       };
+      ev.cues = ((part && part.cues) || b.cues || []).map(([h, id]) => ({ h, id, p: ev.dur ? clamp(h / ev.dur) : 0 }));
       if (b.fork) ev.fork = { q: b.fork.q, options: b.fork.options.slice(), pick: part ? part.pick : 0 };
       out.push(ev);
     }
     out.sort((a, b) => CH[a.chapter] - CH[b.chapter] || a.t - b.t);
     return out;
   }
-  const events = w => (CACHE[w] = CACHE[w] || build(w)).map(e => ({ ...e }));
-  const find = (w, id) => (CACHE[w] = CACHE[w] || build(w)).find(e => e.id === id) || null;
+  const copy = e => ({
+    ...e,
+    lines: e.lines.map(l => ({ ...l })),
+    cues: e.cues.map(c => ({ ...c })),
+    ...(e.fork ? { fork: { ...e.fork, options: e.fork.options.slice() } } : {}),
+  });
+  const list = w => (CACHE[w] = CACHE[w] || build(w));
+  const events = w => list(w).map(copy);
+  const find = (w, id) => {
+    const e = list(w).find(x => x.id === id);
+    return e ? copy(e) : null;
+  };
   // the float year of an event's phase p (0..1) and back
   const at = (ev, p) => ev.t + (clamp(p) * (ev.dur || 0)) / (days(ev.y) * 24);
   const phase = (ev, t) => (ev.dur ? clamp(hours(ev.t, t) / ev.dur) : t >= ev.t ? 1 : 0);
@@ -1098,7 +1146,7 @@ export const ZKCHRONIK = (() => {
     if (heavy) {
       const h = hours(T.dark, t);
       if (h >= 0 && h < DARK_H)
-        blackout = { school: gem && h >= 0.12, islands: (gem ? 0.25 : 0.12) * ss(h, 0.01, 0.06) };
+        blackout = { school: gem && h >= 0.2, islands: (gem ? 0.25 : 0.12) * ss(h, 0.01, 0.06) };
     }
     return { heatNet, oilTruck: winter && heatNet < 2, chips, windrad, pvRoof, battery, blackout };
   }
@@ -1118,6 +1166,27 @@ export const ZKCHRONIK = (() => {
     notpunkt: { place: 'schule', text: 'Notfall-Treffpunkt Alte Schule · Licht, Wärme, Hilfe bei Stromausfall' },
   };
   const SIGN_NOTE = 'Mögliche Zukunft';
+  // cues of the stress tests (ev.cues: [{ h hours after the start, p phase 0..1, id }]) – sound and light for the regie and the world
+  const CUES = {
+    regen: 'Starkregen setzt ein',
+    donner: 'Donner',
+    sirene: 'Sirene der Feuerwehr',
+    blaulicht: 'Blaulicht der Feuerwehr',
+    pumpe: 'Pumpe läuft',
+    oel: 'Ölfilm auf dem Wasser',
+    'licht-aus': 'Licht geht aus: Straßenlampen, Fenster, der Schein der Städte',
+    stille: 'Stille: kein Brummen, kein Kühlschrank',
+    aggregat: 'Notstromaggregat an der Schule springt an',
+    'schule-licht': 'Licht in der alten Schule',
+    'aggregat-feuerwehr': 'Aggregat am Gerätehaus',
+  };
+  // short notes for the screen (the workshop shows them where they fit)
+  const NOTES = {
+    jahre: 'Die Jahre der Ereignisse sind Beispiele – ein mögliches Jahr, keine Vorhersage.',
+    zukunft: 'Mögliche Zukunft',
+    klima: 'Beide Welten: heftiges Klima (hohe Emissionen) – dieselben Wetterereignisse in denselben Jahren.',
+    zahlen: 'Zahlen mit Spannen; „Annahme“ heißt Überschlag der Chronik.',
+  };
   function signs(W, t) {
     if (W.klima !== 'heftig') return [];
     const gem = W.handeln === 'gemeinsam',
@@ -1406,6 +1475,8 @@ export const ZKCHRONIK = (() => {
     SRC,
     SIGNS,
     SIGN_NOTE,
+    NOTES,
+    CUES,
     events,
     find,
     state,

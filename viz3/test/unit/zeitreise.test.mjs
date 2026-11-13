@@ -36,6 +36,8 @@ test('contract: worlds, pairs, span, chapters, places', () => {
     for (const q of c.questions) assert.ok(q.endsWith('?') && q.length < 140, q);
   }
   assert.deepEqual(Object.keys(C.PLACES).sort(), [...PLACES].sort());
+  for (const c of C.CHAPTERS) assert.ok(c.hour >= 8 && c.hour <= 18, c.id + ': a daylight hour for the time-lapse');
+  assert.ok(C.NOTES.jahre && C.NOTES.zukunft === C.SIGN_NOTE);
 });
 
 test('events: playback order, inside SPAN and the chapter, known places and kinds, readable lengths', () => {
@@ -75,6 +77,8 @@ test('events: playback order, inside SPAN and the chapter, known places and kind
         assert.ok(e.fork.pick >= 0 && e.fork.pick < e.fork.options.length, e.id + ' pick');
       }
       if (e.kind === 'stresstest') assert.ok(e.halt > 0 && e.dur > 0, e.id + ': a stress test halts and has a phase');
+      for (const c of e.cues) assert.ok(C.CUES[c.id] && c.h >= 0 && c.p >= 0 && c.p <= 1, e.id + ' cue ' + c.id);
+      if (e.kind === 'stresstest') assert.ok(e.cues.length >= 2, e.id + ': cues');
     }
     for (const c of C.CHAPTERS)
       assert.ok(

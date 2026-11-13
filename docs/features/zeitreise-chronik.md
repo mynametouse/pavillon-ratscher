@@ -24,6 +24,12 @@ Der Vertrag steht im gemeinsamen Auftrag. Zusätzlich (Entscheidungen der Chroni
 - **Weitere Daten:** `PLACES` (Ortsnamen für die Oberfläche), `WHO` (Sprecher mit Rolle und Geburtsjahr – niemand spricht älter als 86),
   `SIGNS` und `SIGN_NOTE` (Schilder aus der Zukunft, „Mögliche Zukunft“), `SRC`, `find(w, id)`.
 - **`kpi(w, kapitel)`**: je Eintrag zusätzlich `text` und `rangeText` (deutsch formatiert) und `annahme` (Überschlag).
+- **Stresstests** tragen `cues: [{ h, p, id }]` (Stunden nach Beginn, Phase 0..1, Id aus `CUES`): Regen, Donner, Sirene, Blaulicht, Pumpe,
+  Ölfilm, Licht aus, Stille, Aggregat, Licht in der Schule – je Welt verschieden (in „Allein im Sturm“ heult die Sirene erst, wenn das Wasser
+  schon in der Straße steht). Blackout-Phase 2 h ab 17:15: Licht aus bei 0, Häuser mit Speicher nach Sekunden, die Schule nach 12 Minuten.
+- **Kapitel** haben `hour`: die feste Tageszeit des Zeitraffers (Wald 14, Wasser 12, Energie 15 Uhr); Ereignisse bringen ihre eigene.
+- **`NOTES`**: kurze Hinweise für den Bildschirm („ein mögliches Jahr“, „Mögliche Zukunft“, gleiches Klima, Zahlen mit Spannen).
+- `events()` und `find()` geben Kopien zurück (die Chronik hält ihre Liste fest).
 
 ## STATE v1 – wie die Werte gemeint sind
 
@@ -94,6 +100,20 @@ Wärmeplanung (`energie-waermeplan`), Windrad auf der Käferfläche (`energie-wi
 - Die Hochwassermarke von 2023 an der Hauswand (10 cm) ist eine Annahme: 2023 blieb das Dorf dank der Talsperren weitgehend verschont; eine
   gemessene Höhe an einem Haus ist nicht belegt.
 - Geldwerte (Schäden, Vorsorge, Geld im Dorf, Wärmepreise) sind Überschläge mit Spannen.
+
+## Stimmen
+
+67 Sätze (66 verschiedene: der erste Satz des Epilogs ist in beiden Welten gleich) von Gerhard, Manfred, Wolfgang, Uwe, Katrin, Ingrid, Jens
+und Heike; niemand spricht älter als 86 (Gerhard bis 2037, danach Jens als Chronist). Jeder Satz hat `rec` = `x_<wer>_<FNV-1a der Wörter,
+Basis 36>`, so wie `tools/voices/linien.mjs` die Ids bildet – `linien.mjs` sammelt `ZKCHRONIK.lines()` (Haken `// feat/zeitreise-chronik`),
+`tools/voices/linien.json` enthält sie, der Einheitentest prüft das. Aufgenommen auf `stimmen/zeitreise` (`.github/workflows/stimmen.yml`,
+`record_lines.py`, Edge-Stimmen je Person) und zurückgeführt nach `feat/zeitreise-chronik`:
+
+- Dateien: `viz3/extra/saetze/dist/snd/voice/x/<rec>.mp3`, Liste `viz3/extra/saetze/manifest.json` (`vx.lines`: `who, id, text, file, dur`),
+  im Spiel als `window.VOICEX`.
+- Abspielen: `STIMME.say(who, text)` (audio/stimme.js) findet die Aufnahme über Person und Wörter, sonst die Browserstimme; per Id:
+  `VOICEX.lines.find(l => l.id === line.rec)` → `file`, `dur`.
+- Wer einen Satz ändert: `node tools/voices/linien.mjs`, dann auf einem `stimmen/*`-Zweig neu aufnehmen lassen (neue Wörter = neue Id).
 
 ## Stand
 
