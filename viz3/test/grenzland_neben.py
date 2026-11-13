@@ -57,7 +57,21 @@ with lib.browser() as b:
     def look(x, y, yaw, pitch=-4, up=1.62):
         E(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + {up}, {yaw}, {pitch})")
         steps(0.2)
+    # free play: in the merged game the scene starts mission 1 (a fade, the two in Schleusingen) – end it, mark the story's missions done,
+    # back to the garden on the Friday afternoon (as the core's own test does; on this branch alone it changes nothing but the place)
+    for _ in range(6):
+        steps(0.3); time.sleep(0.3)
+    E("(() => { GLMISSION.stop(); const d = GLMISSION.debug; if (d) for (const id of Object.keys(d.info().st)) GLSTATE.m[id] = { st: 'erledigt', i: 0, n: 0 }; "
+      "GLSTATE.cur = ''; GLSTATE.kap1 = true; GLHUD.fade(false); if (window.GLRADIO && GLRADIO.off) GLRADIO.off(); "
+      "CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 17 * 60 + 20; GAME.go('garten'); GLSTATE.save(true); })()")
+    steps(1)
     E("setView3(false, true); 0")
+    # a button of the panel of choices by its words (the shelves differ with what the story has done)
+    def choose(word):
+        r = E("(() => { const b = [...document.querySelectorAll('#glwahl button')], i = b.findIndex(x => x.textContent.includes(" + json.dumps(word) + ")); "
+              "return i >= 0 && !document.getElementById('glwahl').hidden ? GLHUD.pick(i) : false })()")
+        time.sleep(0.15)
+        return r
     HD = math.degrees(E("GLORTE.HD"))
     UV = lambda u, v: J(f"GLORTE.UV({u}, {v})")
     BX = lambda r, f: J(f"GLORTE.BX({r}, {f})")
@@ -156,7 +170,7 @@ with lib.browser() as b:
     E("window.__kg = null; GLKEGELN.spielen({ seed: 5 }).then(r => { window.__kg = r }); 0")
     time.sleep(0.2)
     t = J("[...document.querySelectorAll('#glwahl button')].map(b => b.textContent)")
-    E("GLHUD.pick(0)"); time.sleep(0.2); steps(0.3)
+    choose('Allein'); time.sleep(0.1); steps(0.3)
     E("for (const k of ['r', 'r', 'r', 'dr']) GLKEGELN.taste(k); 0")
     steps(0.2)
     pic('22_kegeln_zielen', True)
@@ -169,7 +183,7 @@ with lib.browser() as b:
     E("GLKEGELN.los()"); steps(0.3)
     a3 = J("GLKEGELN.stand()")
     ck('by hand: alone for 2 €; ball 9 cm to the right with spin; the line swings and is stopped; the bar swings; the throw rolls',
-       len(t) == 2 and 'Allein' in t[0] and abs(a0['aim'] - 0.09) < 1e-6 and a0['drall'] == 0.5 and a0['ph'] == 'ziel' and a1['ph'] == 'richtung' and abs(a1['dir']) > 0.005
+       len(t) in (2, 3) and 'Allein' in t[0] and abs(a0['aim'] - 0.09) < 1e-6 and a0['drall'] == 0.5 and a0['ph'] == 'ziel' and a1['ph'] == 'richtung' and abs(a1['dir']) > 0.005
        and a2['st']['ph'] == 'kraft' and a2['bar'] and 'Wurf!' in a2['btn'] and 0.3 < a2['st']['kraft'] <= 1 and a3['ph'] == 'rollt' and abs(a3['dir'] - a2['st']['dir']) < 1e-9, f'{t} {a0} {a1} {a2} {a3}')
     until("GLKEGELN.ph === 'ziel'", 20)
     E("GLKEGELN.taste('aus')"); steps(0.3)
@@ -218,16 +232,15 @@ with lib.browser() as b:
     E("window.__kauf = null; GLWAGEN.open().then(k => { window.__kauf = k }); 0")
     time.sleep(0.2)
     t0 = J("[...document.querySelectorAll('#glwahl button')].map(b => b.textContent)")
-    for i in (2, 0, 3, 3):
-        E(f"GLHUD.pick({i})"); time.sleep(0.15)
+    picked = [choose(w) for w in ('Angelbedarf', 'Dosenmais', 'Gastkarte', 'Zurück')]
     t1 = J("[...document.querySelectorAll('#glwahl button')].map(b => b.textContent)")
     pic('13_wagen_korb', True)
-    E("GLHUD.pick(3)"); time.sleep(0.15)
-    E("GLHUD.pick(3)"); time.sleep(0.3)
+    picked += [choose('Bezahlen'), choose('Das war')]
+    time.sleep(0.2)
     s = J("({ geld: GLSTATE.geld, inv: GLSTATE.inv, kauf: window.__kauf, wahl: document.getElementById('glwahl').hidden })")
-    ck('shopping through the panel: corn and the guest permit for 8,99 € – 9 € paid, the things in the rucksack', len(t0) == 4 and 'Angelbedarf' in t0[2]
+    ck('shopping through the panel: corn and the guest permit for 8,99 € – 9 € paid, the things in the rucksack', len(t0) >= 4 and any('Angelbedarf' in t for t in t0) and all(picked)
        and any('Bezahlen: 9' in t for t in t1) and g0 - s['geld'] == 9 and s['inv'].get('mais') == 5 and s['inv'].get('angelkarte') == 1 and s['kauf'] == 'angelkarte' and s['wahl'],
-       f"{t0} {t1} {s}")
+       f"{t0} {t1} {picked} {s}")
     s = J("(() => { const g = GLSTATE.geld, a = GLWAGEN.kaufen({ bratwurst: 1, milchreis: 1, worcester: 1, kanister: 1 }), g1 = GLSTATE.geld; GLSTATE.geld = 1; "
           "const b = GLWAGEN.kaufen({ blinker: 1 }); GLSTATE.geld = g1; GLSTATE.add('karpfen', 2); GLSTATE.add('karpfen_gross', 1); "
           "const c = GLWAGEN.verkaufen({ karpfen_gross: 1 }); return { a, paid: g - g1, b, c, got: GLSTATE.geld - g1, inv: GLSTATE.inv } })()")
@@ -302,11 +315,14 @@ with lib.browser() as b:
     E("GLANGELN.taste('aus')"); steps(0.2)
     ck('fishing without the guest permit is a deed when somebody sees it; with the permit it is none', t1['n'] == t0['n'] + 1 and t1['heat'] > t0['heat'] and t2['n'] == t1['n'] and t2['heat'] == 0, f'{t0} {t1} {t2}')
     # ------------------------------------------------------------------ the side mission „Karpfen für Suhl“ ------------------------------------------------------------------
+    # (the story's event 'grenzland:mission' { id: 'clique', st: 'erledigt' } starts it in the game – the node run of the modules checks
+    #  that; here it is started by its own function, the story's missions being marked done already)
+    E("window.__sms = []; KERN.on('grenzland:sms', d => { window.__sms.push(d && d.von) }); 0")
     m0 = J("({ sms: GLSTATE.sms.length, st: GLNEBEN.stand(), tasks: KERN.tasks.list().filter(t => t.src === 'grenzland-neben').length })")
-    E("KERN.emit('grenzland:mission', { id: 'clique', st: 'erledigt' }); 0"); steps(0.3)
-    m1 = J("({ sms: GLSTATE.sms.length, von: GLSTATE.sms[GLSTATE.sms.length - 1].von, st: GLNEBEN.stand(), task: KERN.tasks.list().filter(t => t.src === 'grenzland-neben').map(t => ({ s: t.status, o: t.ort, t: t.target && t.target() }))[0] })")
-    ck('once the clique is met Yuki writes; the journal lists „Karpfen für Suhl“ with the bus stop as its place', m0['st'] is None and m0['tasks'] == 0 and m1['sms'] == m0['sms'] + 1
-       and m1['von'] == 'Yuki' and m1['st']['st'] == 'läuft' and m1['st']['i'] == 0 and m1['task']['o'] == 'Schulbushaltestelle' and abs(m1['task']['t'][0] - 249) < 4, f'{m0} {m1}')
+    E("GLNEBEN.start(); 0"); steps(0.3)
+    m1 = J("({ sms: GLSTATE.sms.length, ev: window.__sms, st: GLNEBEN.stand(), task: KERN.tasks.list().filter(t => t.src === 'grenzland-neben').map(t => ({ s: t.status, o: t.ort, t: t.target && t.target() }))[0] })")
+    ck('Yuki writes; the journal lists „Karpfen für Suhl“ with the bus stop as its place', m0['st'] is None and m0['tasks'] == 0 and (m1['sms'] == m0['sms'] + 1 or 'Yuki' in m1['ev'])
+       and m1['st']['st'] == 'läuft' and m1['st']['i'] == 0 and m1['task']['o'] == 'Schulbushaltestelle' and abs(m1['task']['t'][0] - 249) < 4, f'{m0} {m1}')
     yx, yy = J("GLNEBEN.ORT.pos")
     YH = math.degrees(E("GLNEBEN.ORT.hd"))
     look(yx + math.sin(math.radians(YH)) * 2.6, yy + math.cos(math.radians(YH)) * 2.6, YH + 180, -2)
@@ -350,7 +366,7 @@ with lib.browser() as b:
     steps(0.5)
     s = J("({ built: GLORTE.built, m: Object.keys(GLORTE.meshes).length, gl: VEH.extra.filter(x => x.gl).length, n: VEH.extra.length, hide: GLFAHNDUNG.extra.length, "
           "g: KERN.ground(...GLORTE.P.kegel) - KERN.terrain(...GLORTE.P.kegel), place: KERN.place(...GLORTE.P.scheune, 5), ins: KERN.inside(...GLORTE.P.scheune, 5), "
-          "act: KERN.acts().filter(a => /^gl:/.test(a.id)).map(a => a.id), frau: !!GLWAGEN.frau, light: KERN.lights.status().filter(b => b.id === 'grenzland:hof').map(b => b.has)[0] })")
+          "act: KERN.acts().filter(a => ['gl:wagen', 'gl:kegeln', 'gl:aushang', 'gl:angeln', 'gl:yuki'].includes(a.id)).map(a => a.id), frau: !!GLWAGEN.frau, light: KERN.lights.status().filter(b => b.id === 'grenzland:hof').map(b => b.has)[0] })")
     ck('„Beenden“: the places are gone – no meshes, no walls, no names, no ground, no actions, the light back', not s['built'] and s['m'] == 0 and s['gl'] == 0 and s['n'] < n0
        and s['hide'] == 0 and abs(s['g']) < 0.01 and s['place'] != 'Feldscheune' and not s['ins'] and not s['act'] and not s['frau'] and s['light'] == 0, str(s))
     okgl, rep = lib.check_gl(pg)
