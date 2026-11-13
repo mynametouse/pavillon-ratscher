@@ -188,6 +188,13 @@ def desktop():
             ck('at the Markt, on Suhl\'s own ground', math.hypot(p['x'] - MARKT[0], p['y'] - MARKT[1]) < 3 and p['free'] is True and (p['place'] or '').startswith('Suhl'), json.dumps(p, ensure_ascii=False))
             ck('ground under the feet: the near tiles of Suhl\'s set in WELT', p['w'] is not None and abs(p['feet'] - p['g']) < 0.05 and abs(p['g'] - p['w']) < 0.01 and '+suhl/' in s['boden'].get('sets', J("WELT.state().sets")), json.dumps(p) + ' ' + J("WELT.state().sets"))
             ck('buildings in full around the Markt (level 1), from the records', st.get('l1', 0) >= 4 and st.get('buildings', 0) > 500 and st.get('err') == 0 and st.get('mats'), json.dumps(st))
+            for _ in range(4):
+                E("GAME.step(0.5)")
+            nt = J("""(() => { const ms = []; GAME.scene.traverse(o => { if (o.isInstancedMesh && /^suhl baeume nah/.test(o.name) && o.visible) ms.push([o.name, o.count]); });
+                let folded = 0; GAME.scene.traverse(o => { if (o.isInstancedMesh && /^suhl baeume \\d/.test(o.name)) { const m = o.instanceMatrix.array; for (let i = 0; i < o.count; i++) if (m[i * 16] === 0 && m[i * 16 + 5] === 0) folded++; } });
+                return { near: SUHL.status().stadt.near3d, ms, folded }; })()""")
+            ck('the nearest trees in 3D (the garden\'s generated trees), their cards folded away', 8 <= nt['near'] <= 48 and nt['folded'] == nt['near'] and sum(c for _, c in nt['ms']) == nt['near'] * 2,
+               json.dumps(nt))
             ck('the records as the data contract writes them (schema 1, revision 1.1): none unreadable, buildings no longer standing left out, the feet from the records because they were read on this ground',
                st.get('bad') == 0 and st.get('gone', 0) >= 0 and st.get('z0') is True and st.get('offGround', 99) <= st.get('buildings', 0) * 0.02,
                f"unreadable {st.get('bad')}, no longer standing {st.get('gone')}, foot from the record {st.get('z0')} (g based on {json.dumps((s.get('basedOn') or {}).get('g'))}, ground v{(s.get('versions') or {}).get('boden')}), {st.get('offGround')} of {st.get('buildings')} more than 2.5 m off the tiles")

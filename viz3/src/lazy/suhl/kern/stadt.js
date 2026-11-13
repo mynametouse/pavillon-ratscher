@@ -4,7 +4,7 @@
 // Level 2 (to 3 500 m, phones 2 000 m): walls and roof faces with one colour each, one lean program for the whole city.
 // From above the level follows the height of the picture (to 600 m level 1, beyond level 2).
 // Trees (to 600 m): crossed cards from the atlas of the garden's tree models (world/ratscher.js far trees: its material and
-// geometry, no new program), instanced per tile.
+// geometry, no new program), instanced per tile; the nearest ones (to 60 m, phones 40 m) as the garden's generated 3D trees instead.
 // Nothing is built in a long frame: the worker makes the buffers, the main thread takes one finished tile per frame.
 // Collisions: the wall feet of the level-1 tiles and the trunks in an 8 m hash (KERN.pushOut).
 import { tsize, hh, inRing, own, ROOT_E0, ROOT_N0 } from './geo.js';
@@ -200,6 +200,7 @@ export function stadt(ctx, G, IX, worker, opt) {
       });
   }
   // ---- trees: crossed cards of the tree atlas (the far trees of world/ratscher.js), one instanced mesh per tile ----
+  let treeRev = 0; // counts the tiles whose trees came or went (the near trees are chosen again then)
   const TK = ['oakA', 'ash', 'oakB', 'aspen', 'pine'];
   let atlas = null;
   function treeKit() {
@@ -279,7 +280,8 @@ export function stadt(ctx, G, IX, worker, opt) {
     im.updateMatrixWorld();
     im.computeBoundingSphere();
     scene.add(im);
-    t.tr = { mesh: im, n, xy };
+    t.tr = { mesh: im, n, xy, a };
+    treeRev++;
     gridDirty = true;
     markDirty(true);
   }
@@ -304,6 +306,8 @@ export function stadt(ctx, G, IX, worker, opt) {
   }
   function freeTrees(t) {
     if (!t.tr) return;
+    for (const k of [...NEAR.hidden.keys()]) if (NEAR.hidden.get(k).t === t) NEAR.hidden.delete(k);
+    treeRev++;
     if (t.tr.mesh) {
       scene.remove(t.tr.mesh);
       t.tr.mesh.geometry.dispose();
@@ -312,6 +316,124 @@ export function stadt(ctx, G, IX, worker, opt) {
     t.tr = null;
     gridDirty = true;
     markDirty(true);
+  }
+  // ---- near trees in 3D: within NEAR_R of the observer the nearest NEAR_N trees as the garden's generated trees (TREES[k]: the mid
+  // bark and the thinned crown the village draws near its houses – their materials, no new program); their cards are folded away. One
+  // instanced pair per kind (bark and crown share the matrices), filled again when the observer moved; not from above. ----
+  const NEAR_R = COARSE ? 40 : 60,
+    NEAR_N = COARSE ? 24 : 48,
+    NEAR = { by: new Map(), hidden: new Map(), key: '', n: 0, at: [1e9, 1e9] },
+    ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
+  function nearKind(k) {
+    let m = NEAR.by.get(k);
+    if (m) return m;
+    const K = TREES[TK[k]];
+    if (!K || !K.bark || !K.leaf) return null;
+    const ib = new THREE.InstancedMesh(K.bgMid || K.bg, K.bark, NEAR_N),
+      il = new THREE.InstancedMesh(K.lgFar || K.lg, K.leaf, NEAR_N);
+    il.instanceMatrix = ib.instanceMatrix;
+    for (const im of [ib, il]) {
+      im.count = 0;
+      im.visible = false;
+      im.frustumCulled = false; // the pair moves with the observer; a few dozen trees around it are in view anyway
+      im.castShadow = im.receiveShadow = false;
+      im.userData.noMerge = true;
+      im.name = 'suhl baeume nah ' + TK[k];
+      scene.add(im);
+    }
+    il.setColorAt(0, new THREE.Color(1, 1, 1));
+    m = { K, ib, il };
+    NEAR.by.set(k, m);
+    return m;
+  }
+  function nearTrees(o, off) {
+    const [ox, oy] = o;
+    if (off ? !NEAR.n && !NEAR.hidden.size : Math.hypot(ox - NEAR.at[0], oy - NEAR.at[1]) < 3 && NEAR.key === treeRev) return;
+    NEAR.at = [ox, oy];
+    NEAR.key = treeRev;
+    const pick = [];
+    if (!off)
+      for (const t of S.tiles.values()) {
+        if (!t.tr || !t.tr.mesh || t.d > NEAR_R + 300) continue;
+        const a = t.tr.a;
+        for (let i = 0; i < t.tr.n; i++) {
+          if (a[i * 7 + 5] === 30) continue; // shrubs stay cards
+          const d = Math.hypot(t.T.cx + a[i * 7] - ox, t.T.cy + a[i * 7 + 1] - oy);
+          if (d < NEAR_R) pick.push([d, t, i]);
+        }
+      }
+    pick.sort((p, q) => p[0] - q[0]);
+    if (pick.length > NEAR_N) pick.length = NEAR_N;
+    const want = new Map(pick.map(([, t, i]) => [t.k + ':' + i, [t, i]])),
+      dirty = new Set();
+    // the cards: back where a tree left the near ring, folded away where one came
+    for (const [key, h] of NEAR.hidden)
+      if (!want.has(key)) {
+        if (h.t.tr && h.t.tr.mesh) {
+          h.t.tr.mesh.setMatrixAt(h.i, h.m);
+          dirty.add(h.t.tr.mesh);
+        }
+        NEAR.hidden.delete(key);
+      }
+    const m4 = new THREE.Matrix4();
+    for (const [key, [t, i]] of want)
+      if (!NEAR.hidden.has(key)) {
+        t.tr.mesh.getMatrixAt(i, m4);
+        NEAR.hidden.set(key, { t, i, m: m4.clone() });
+        t.tr.mesh.setMatrixAt(i, ZERO);
+        dirty.add(t.tr.mesh);
+      }
+    for (const im of dirty) im.instanceMatrix.needsUpdate = true;
+    // the 3D trees, kind by kind
+    const cnt = new Map(),
+      q = new THREE.Quaternion(),
+      up = new THREE.Vector3(0, 1, 0),
+      sv = new THREE.Vector3(),
+      pv = new THREE.Vector3(),
+      c = new THREE.Color();
+    for (const [, t, i] of pick) {
+      const a = t.tr.a,
+        art = a[i * 7 + 5],
+        hs = a[i * 7 + 6],
+        kind = art >= 1 && art <= 5 ? 4 : Math.floor(hs * 3.999),
+        M = nearKind(kind);
+      if (!M) continue;
+      const j = cnt.get(kind) || 0;
+      if (j >= NEAR_N) continue;
+      const h = a[i * 7 + 3],
+        rr = a[i * 7 + 4],
+        sy = h / M.K.H,
+        sx = THREE.MathUtils.clamp(rr / M.K.R, sy * 0.75, sy * 1.3);
+      q.setFromAxisAngle(up, hs * 6.283);
+      m4.compose(pv.set(t.T.cx + a[i * 7], a[i * 7 + 2] - 0.1, -(t.T.cy + a[i * 7 + 1])), q, sv.set(sx, sy, sx));
+      M.ib.setMatrixAt(j, m4);
+      M.il.setColorAt(j, c.setRGB(1, 1, 1).multiplyScalar(0.84 + hs * 0.2));
+      cnt.set(kind, j + 1);
+    }
+    let n = 0;
+    for (const [k, M] of NEAR.by) {
+      M.ib.count = M.il.count = cnt.get(k) || 0;
+      M.ib.visible = M.il.visible = M.ib.count > 0; // an empty pair costs no draw call
+      n += M.ib.count;
+      M.ib.instanceMatrix.needsUpdate = true;
+      if (M.il.instanceColor) M.il.instanceColor.needsUpdate = true;
+    }
+    NEAR.n = n;
+    markDirty(true);
+  }
+  function freeNear() {
+    for (const h of NEAR.hidden.values()) if (h.t.tr && h.t.tr.mesh) h.t.tr.mesh.setMatrixAt(h.i, h.m);
+    NEAR.hidden.clear();
+    for (const M of NEAR.by.values()) {
+      scene.remove(M.ib);
+      scene.remove(M.il);
+      M.ib.dispose();
+      M.il.dispose(); // (the geometries and materials are the garden's: not disposed)
+    }
+    NEAR.by.clear();
+    NEAR.key = '';
+    NEAR.n = 0;
+    NEAR.at = [1e9, 1e9];
   }
   // ---- collisions: wall feet (level 1) and trunks in an 8 m hash, rebuilt when a tile came or went ----
   let gridDirty = false;
@@ -429,6 +551,7 @@ export function stadt(ctx, G, IX, worker, opt) {
         else if (w && !t.tr && !t.trBusy) cand.push([d + 2500, t, 'tr']);
       }
     }
+    nearTrees(o, !!top);
     cand.sort((a, b) => a[0] - b[0]);
     for (const [, t, w] of cand) {
       if (jobs >= 3 || READY.length > 4) break;
@@ -687,6 +810,7 @@ export function stadt(ctx, G, IX, worker, opt) {
     }
   };
   S.leave = () => {
+    freeNear();
     for (const t of S.tiles.values()) {
       t.gen++;
       free(t);
@@ -715,6 +839,7 @@ export function stadt(ctx, G, IX, worker, opt) {
       l2: lv(2),
       trees: L.filter(t => t.tr && t.tr.mesh).length,
       nTrees: L.reduce((n, t) => n + (t.tr ? t.tr.n : 0), 0),
+      near3d: NEAR.n,
       buildings: L.reduce((n, t) => n + (t.lvl ? t.nb || 0 : 0), 0),
       bad: L.reduce((n, t) => n + (t.lvl ? t.bad || 0 : 0), 0),
       gone: L.reduce((n, t) => n + (t.lvl ? t.gone || 0 : 0), 0),
