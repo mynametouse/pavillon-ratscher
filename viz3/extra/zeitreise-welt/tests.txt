@@ -1,0 +1,5 @@
+# feat/zeitreise-welt: what the futures of the Zeitreise look and sound like (one test name per line, as for viz3/test/run.py)
+smoke
+zeitreise_welt
+zukunft
+zukunft_welt

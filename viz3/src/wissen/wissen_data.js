@@ -768,7 +768,7 @@ export const WDATA = (() => {
       ch: 'geschichte',
       icon: '🕊️',
       title: 'Nach der Wende: Land, Kreis, Stadt',
-      text: 'Mit der friedlichen Revolution 1989 und der Einheit 1990 endete der Bezirk Suhl: Am 14. Oktober 1990 wurde das Land Thüringen wiedergegründet. 1994 ordnete Thüringen seine Kreise und Gemeinden neu.',
+      text: 'Mit der friedlichen Revolution 1989 und der Einheit 1990 endete der Bezirk Suhl: Mit der Einheit am 3. Oktober 1990 entstand das Land Thüringen wieder, am 14. Oktober wurde der erste Landtag gewählt. 1994 ordnete Thüringen seine Kreise und Gemeinden neu.',
       here: 'Seit 1994 gehört Ratscher zur Stadt Schleusingen im Landkreis Hildburghausen. In der alten Schule saß einmal die Gemeindeverwaltung des Dorfs – geblieben ist der Ortsteil mit seinem Ortsteilrat.',
       src: [wiki('Thüringen'), wiki('Landkreis Hildburghausen'), Q.schl, Q.ratscher],
       find: { talk: ['gerhard:wende'] },

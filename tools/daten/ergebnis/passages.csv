@@ -1,0 +1,7 @@
+ort;id;lat;lon;highway;tunnel;covered;name;access;foot;vehicle;surface;breite;hoehe;laenge_m;osm_stand
+schleusingen;w69969287;50.5128;10.774465;path;;yes;;;;;;;;52.5;2021-11-30
+schleusingen;w1007645833;50.512601;10.774692;service;;yes;;;;;;;;29.8;2021-11-30
+schleusingen;w1007645835;50.513004;10.774234;footway;;yes;;;yes;;unpaved;;;32.5;2021-11-30
+schleusingen;w1007644697;50.520833;10.757911;path;;yes;Hainstraße;yes;;no;;;;32.2;2021-11-30
+schleusingen;w267264309;50.505358;10.742271;service;;yes;;;;;;;;10.8;2014-03-19
+schleusingen;w1436251497;50.509275;10.74959;footway;building_passage;;;;;;paving_stones;;;10.5;2025-10-07

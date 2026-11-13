@@ -16,6 +16,25 @@ veröffentlicht.
 
 ## Stand
 
+- **13.11.2026 nachts: Kombi neu, innen und außen (V18i; Hilfs-Agent `cockpit` des Chats session_01Mmpsvp11QsXpPSQRRbZ4Jv,
+  `docs/features/cockpit.md`, Auftrag `docs/plans/auftraege/cockpit.md` mit der Erweiterung von 18:05).** Karosserie `vehicles/kombi.js`
+  (gebaut mit `grenzland/gl_karosse.js`, nur lesend), Cockpit `vehicles/cockpit*.js`, Grafik beim Bewegen `cockpit_set.js` mit dem Haken
+  `MOTION.user` in `render/render.js`; markierte Haken in `car.js`, `vehicle.js` (Blickwinkel), `minimap.js`, `core/save.js`
+  (`pav-cockpit-v1`), `zombie/z_fp.js` (`makeBody`). Tests `viz3/extra/cockpit/tests.txt`. Offen: die Beine der Figur auf den Pedalen; eine
+  Taste für den Warnblinker; die fahrbaren Verkehrsautos bekommen das Cockpit wieder, sobald der Straßen-Chat ihr eingeschweißtes Innenleben
+  nach `model.inside` legt (dann eine Zeile `KIND` in `vehicles/cockpit.js`).
+- **13.11.2026 abends: Zeitreise durch vier Welten, Stufe 1, und der Workshop-Modus (V18d; Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, Plan
+  `docs/plans/plan_zeitreise.md`, `docs/features/zeitreise-chronik|regie|welt|medien.md`, `workshop.md`).** Falko 12:15–13:30: ein
+  immersives Zeitsprung-Gefühl statt leicht verfärbter Bäume, ein klar umschaltbarer Workshop-Modus für den großen Bildschirm (Ebenen mit
+  Schrift), Handy-Übergänge, Radio, echte Videos. Fünf Hilfs-Agenten (`zeitreise-chronik`, `-regie`, `-welt`, `-medien`, `workshop`) auf
+  eigenen Zweigen, zusammengeführt auf `feat/zeitreise`; Tests `viz3/extra/zeitreise/tests.txt` (smoke, zukunft, zukunft_welt, strategie,
+  zeitreise, zeitreise_welt, workshop, zeitreise_medien). Offen: Stufe 2 Politik (Entscheidungswege, Planspiel im Workshop, Kampagne „Dorf im
+  Wandel“, „Post aus 2045“); das gemeinsame Handy `HANDY` des Grenzland-Chats statt des eigenen Overlays (`docs/features/handy.md`);
+  Brombeeren der Kahlfläche als Karten statt Körper; der Ort `windrad` vor dem Bau zeigt nur Himmel; Leistung am Laptop und iPhone prüfen
+  (geteiltes Bild ~640 Draw Calls); die Welten „Rückenwind“ und „Glück gehabt“ sind Platzhalter. Daten-Katalog und Region-Dossier:
+  `docs/plans/daten_*.md`, `region_dossier.md` (Projektdokumente `pavillon-daten`, `pavillon-region`); Mapillary wartet auf Falkos Secret
+  `MAPILLARY_TOKEN`. Cockpit und Karosserie des Kombis: Hilfs-Agent `cockpit` auf `feat/cockpit` (Falko 17:59: „Sofort selbst bauen“).
+  Das Prüfpaket prüft Kandidaten auf `kern/*` nur im Pflicht-Teil, meldende Tests nur auf `src` nach grünem Pflicht-Teil (Falko 18:12).
 - **13.11.2026 nachts/morgens: Grenzland – der GTA-Modus, Kapitel 1 (V17x; Grenzland-Chat session_01L6Yrpf75YEUJPnMQdXevjQ,
   `docs/features/grenzland.md` und `grenzland-auto|radio|1989|neben|polizei|mission.md`, Plan `docs/plans/plan_grenzland.md`).**
   Falko 13.11. 0:21–1:25 (wörtlich im Plan): GTA-6-Vibes passend zur Region; Geschichte „Grenzland“, Duo Falko und Sarah, Ton wie GTA,
@@ -36,8 +55,9 @@ veröffentlicht.
   `docs/plans/auftraege/grenzland2-*.md`), Einzelheiten in `docs/features/grenzland.md` (Runde 2). Neu: `viz3/src/handy/` (`HANDY`,
   `HANDYPOSE`, Adapter `GLHANDY`), Aufnahmen in `viz3/extra/grenzland-stimmen` (Workflow `stimmen_grenzland.yml`, Liste
   `tools/voices/grenzland_linien.json`, sammeln mit `node tools/voices/grenzland_linien.mjs`), 29 Testzeilen in
-  `viz3/extra/grenzland/tests.txt`. **Nachtrag auf `feat/grenzland`** (kommt nach V18d): 21 Anrufsätze aufgenommen, Schloss-Symbol
-  freigeschalteter Apps, „Staudamm“ statt „Staumauer“ (Region-Dossier K2; drei Sätze nimmt der Workflow beim Push neu auf). Offen: K4
+  `viz3/extra/grenzland/tests.txt`. **Nachtrag V18e (online 13.11. 20:00, vor V18d):** 21 Anrufsätze aufgenommen, Schloss-Symbol
+  freigeschalteter Apps, „Staudamm“ statt „Staumauer“ (Region-Dossier K2; der Workflow nahm drei Sätze beim Push neu auf). Seit 20:00
+  belegen die nur meldenden Jobs des Prüfpakets höchstens 12 + 4 Runner (`max-parallel`), damit Live und Pages nicht warten. Offen: K4
   (keine A 73 in der Rückblende 1989 – prüfen, ob sie zu sehen ist; K5 passt: keine Grenzposten im Dorf, „Grenzgebiet“ steht nur auf der
   alten Karte), Paket D (Autos knacken, Nahkampf, Coup), Kapitel 2.
 - **13.11.2026 nachts: Zukünfte erproben (V17w, live seit 13.11. 8:45 nach Falkos OK; Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, `docs/features/zukunft.md`, `zukunft-welt.md`).** Falko 12.11.: Geschäftsmodell 1 „virtuelles Reallabor / Szenario-Werkstatt“ – erste Fassung für Kommune/Dorf, halber Tag vor Ort, Themen Mobilität, Energie, Klimaanpassung, Wald nach dem Käfer, „möglichst realistisch“. Daten und Rechnung rein in `zukunft/zk_data.js` (Unit-Test `viz3/test/unit/zukunft.test.mjs`), Oberfläche `zk_modus.js`, Welt `zk_welt.js` (Haken `WXBODEN.setDry`, `FOREST.canopy`); Tests `zukunft.py`, `zukunft_welt.py` (Programme: Start +4, Umschalten 0). Entscheidungen: Stimmen als Rollen („Sicht …“, erfundene Stimme), Ereignisse ohne Votum, Regler ab 2030, HQ100 = amtliches Gebiet (37 Gebäude, Schaden als Spanne), Solarpark-Platz ist Annahme. **Offen:** Mitmach-Schicht (Stimmen der Teilnehmenden am Telefon), Ablaufplan für den halben Tag, Gespräch mit Ratscher/Schleusingen über einen Piloten; zu Fuß spiegelt ein schmaler Streifen fernes Hochwasser noch den Himmel; blau-graue Bodenflecken im heutigen Wald, wo die Kronenkarte dünn ist (Abhilfe in `world/forest.js` wie im Modus).

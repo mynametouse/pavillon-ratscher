@@ -1210,7 +1210,8 @@ export const VEH = (() => {
       cam.lookAt(_v2);
     } else {
       const e = eyeW(v);
-      cam.fov = window.FOVX || (window.innerWidth < 760 ? 76 : 70);
+      // feat/cockpit: a narrower view from the driver's seat on wider screens (70° stretched the pillars and the dashboard)
+      cam.fov = window.FOVX || (window.innerWidth < 760 ? 76 : 62);
       cam.near = 0.04;
       cam.far = FAR0();
       cam.updateProjectionMatrix();

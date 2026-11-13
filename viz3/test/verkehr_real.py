@@ -3,7 +3,7 @@
 # road, weekday and hour (verkehr/vk_dichte.js), the flow on every road round the observer (verkehr/vk_strom.js), the top view.
 # Pictures in out/verkehr_real/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 8962 --serve verkehr_real      (or: python3 viz3/test/verkehr_real.py 8962 bau,bild)
-# Sections (second argument, comma-separated): bau,bild,nacht,lod,zug,leih,dichte,strom,oben,perf
+# Sections (second argument, comma-separated): bau,bild,nacht,lod,zug,leih,dichte,strom,regeln,ampel,oben,perf
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
@@ -215,7 +215,7 @@ with lib.browser() as b:
             if real:
                 time.sleep(real)
 
-    if want('strom') or want('dichte') or want('oben') or want('perf'):
+    if want('strom') or want('dichte') or want('regeln') or want('ampel') or want('oben') or want('perf'):
         E(pg, "for (const t of Object.keys(VKTYPEN.TYP)) VKMOD.need(t, 1)")
         for k in range(200):
             E(pg, "GAME.step(0.05)")
@@ -273,6 +273,177 @@ with lib.browser() as b:
             ck('Sunday: no lorries, no tractors', heavy == 0 and ss['when']['day'] == 'so', json.dumps(ss['types']))
         except Exception as ex:
             ck('section ran: strom', False, repr(ex)[:400])
+
+    if want('regeln'):
+        # stage 2: right of way. A junction of the flow's graph where a street gives way (sign 205 of strassen/, by rule where a street
+        # joins a county road); one car on the street, one on the priority road arriving at the same time: the one on the street waits at
+        # its line until the other is through, then goes; the indicator before its turn; on equal streets the one from the right first
+        try:
+            E(pg, "__vr.clear(); VERKEHR.force({ peds: 0, cars: 0 }); VERKEHR.clear(); VERKEHR.autoOn(true); VKSTROM.force = { n: 0 }")
+            at_day((2026, 11, 13), 11)
+            lib.settle_light(pg)
+            RG = """window.__rg = {
+              // junctions near (x, y) with roles wanted: [{ ni, x, y, app }]
+              find(x, y, r) { const G = VKSTROM.G, out = []; if (!G) return out;
+                G.nodes.forEach((N, ni) => { if (N.edges.length < 3 || Math.hypot(N.x - x, N.y - y) > r) return; const R = G.ruleOf(ni); if (R) out.push({ ni, x: N.x, y: N.y, R }); });
+                return out; },
+              roles() { const G = VKSTROM.G, n = {}; if (!G) return n; G.nodes.forEach((N, ni) => { if (N.edges.length < 3) return; const R = G.ruleOf(ni); if (R) for (const a of R.app) n[a.role] = (n[a.role] || 0) + 1; }); return n; },
+              // a car on edge a into node ni, then on along edge b; its front d metres before its stop line
+              put(ni, a, b, d, typ) { const G = VKSTROM.G, ea = G.edges[a], eb = G.edges[b];
+                const path = [{ e: ea, fwd: ea.b === ni }, { e: eb, fwd: eb.a === ni }];
+                const c = VKSTROM.put(path, 'exit', typ || 'kompakt', 0, false); if (!c) return null;
+                const ev = c.jn.find(q => q.ni === ni); if (!ev) return { id: c.id, noev: true };
+                c.s = Math.max(c.D.B, ev.sStop - c.D.YF - d); c.jk = 0; while (c.jk < c.jn.length && c.jn[c.jk].sN < c.s + 2) c.jn[c.jk++].passed = true;
+                c.v = Math.min(c.line.S[Math.round(c.s)] || 8, 13); return { id: c.id, role: ev.role, sStop: ev.sStop, sN: ev.sN, turn: ev.turn }; },
+              // the limits along a route past the sign at (x, y) read in heading hdg (°): the line's speeds before and after it
+              limit(x, y, hdg) { const G = VKSTROM.G, h = hdg * Math.PI / 180; let best = null;
+                for (const e of G.edges) for (let k = 0; k + 1 < e.pts.length; k++) { const a = e.pts[k], b = e.pts[k + 1], dx = b[0] - a[0], dy = b[1] - a[1], l2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / l2)), d = Math.hypot(x - a[0] - dx * t, y - a[1] - dy * t);
+                  if (d < 12 && (!best || d < best.d)) best = { e, d, fwd: Math.sin(h) * dx + Math.cos(h) * dy >= 0 }; }
+                if (!best) return null;
+                const e = best.e, fwd = best.fwd, n0 = fwd ? e.a : e.b, n1 = fwd ? e.b : e.a, path = [];
+                const prev = G.nodes[n0].edges.find(q => q !== e); if (prev) path.push({ e: prev, fwd: prev.b === n0 });
+                path.push({ e, fwd });
+                const next = G.nodes[n1].edges.find(q => q !== e); if (next) path.push({ e: next, fwd: next.a === n1 });
+                const c = VKSTROM.put(path, 'exit', 'kompakt', 0, false); if (!c) return null;
+                const L = c.line; let bi = 0, bd = 1e9;
+                for (let i = 0; i < L.n; i++) { const d = Math.hypot(L.X[i] - x, L.Y[i] - y); if (d < bd) { bd = d; bi = i; } }
+                const mx = (a, b) => { let m = 0; for (let i = Math.max(0, a); i < Math.min(L.n, b); i++) m = Math.max(m, L.V[i]); return m; };
+                const out = { lim: L.lim, i: bi, d: Math.round(bd * 10) / 10, before: Math.round(mx(bi - 80, bi - 8) * 36) / 10, after: Math.round(mx(bi + 8, bi + 90) * 36) / 10, kind: e.kind, style: e.style, ev: Math.round(e.v * 36) / 10, n: L.n };
+                c.st = 'weg'; VAUTO.remove(c); return out; },
+              // step the world, record each car's way to the node
+              run(ids, ni, secs) { const G = VKSTROM.G, N = G.nodes[ni], cars = ids.map(i => VAUTO.cars.find(c => c.id === i)), rec = cars.map(() => []);
+                for (let t = 0; t < secs; t += 0.05) { GAME.step(0.05);
+                  cars.forEach((c, k) => { const ev = c.jn && c.jn.find(q => q.ni === ni); rec[k].push([+t.toFixed(2), +(c.s + c.D.YF - (ev ? ev.sStop : 0)).toFixed(2), +c.v.toFixed(2), +Math.hypot(c.x - N.x, c.y - N.y).toFixed(1), c.blinkR || 0, c.st]); }); }
+                return rec; },
+            };"""
+            E(pg, RG)
+            # the junction east of the village where a street joins the county road (sign 205 at (394, -455))
+            E(pg, "GAME.view(380, -470, KERN.ground(380, -470) + 1.7, 330, -10)")
+            run_flow(3, 0.02)
+            print('roles round the observer', json.dumps(J(pg, "__rg.roles()")), flush=True)
+            js = J(pg, "__rg.find(390, -452, 40).map(j => ({ ni: j.ni, x: Math.round(j.x), y: Math.round(j.y), app: j.R.app.map(a => [a.e, a.role, Math.round(a.stopD * 10) / 10, a.line, Math.round(VKSTROM.G.edges[a.e].len)]) }))")
+            print('junctions there', json.dumps(js), flush=True)
+            jy = next((j for j in js if any(a[1] == 'yield' for a in j['app']) and sum(1 for a in j['app'] if a[1] == 'prio') >= 2), None)
+            ck('a junction where the street gives way to the county road (sign 205 there)', jy is not None, json.dumps(js)[:300])
+            if jy:
+                ya = next(a for a in jy['app'] if a[1] == 'yield')
+                pa = [a for a in jy['app'] if a[1] == 'prio']
+                ni = jy['ni']
+                # the street's car turns onto the priority road (towards the first priority edge); the priority car comes along the other one
+                # and goes on along the first: they meet
+                A = J(pg, f"__rg.put({ni}, {ya[0]}, {pa[0][0]}, 30, 'kompakt')")
+                B = J(pg, f"__rg.put({ni}, {pa[1][0]}, {pa[0][0]}, 52, 'kombi')")
+                print('put', json.dumps(A), json.dumps(B), flush=True)
+                ck('both cars on their routes with the junction', A and B and not A.get('noev') and not B.get('noev') and A['role'] == 'yield' and B['role'] == 'prio', f"{A} {B}")
+                rec = J(pg, f"__rg.run([{A['id']}, {B['id']}], {ni}, 22)")
+                ra, rb = rec
+                # A: stopped before its line while B came by; never in the junction while B was in it; through at the end
+                b_in = [r[0] for r in rb if r[3] < 7]
+                a_wait = [r for r in ra if r[2] < 0.3 and r[1] <= 0.4]
+                # (A in the junction: its front over its line)
+                a_in_with_b = [r for r in ra if r[1] > 0.5 and any(abs(r[0] - t) < 0.05 for t in b_in)]
+                a_through = [r for r in ra if r[3] > 12 and r[1] > 5]
+                print('A (street)', ra[::40], flush=True)
+                print('B (priority)', rb[::40], flush=True)
+                ck('the street car waits at its line for the priority car', bool(a_wait) and bool(b_in) and min(r[0] for r in a_wait) <= max(b_in), f"waited {len(a_wait)} steps, B in the junction {b_in[:1]}–{b_in[-1:] }")
+                ck('never in the junction together', not a_in_with_b, str(a_in_with_b[:2]))
+                ck('the priority car does not stop', min(r[2] for r in rb if r[0] < (b_in[0] if b_in else 99)) > 3, str([r[2] for r in rb[::20]]))
+                ck('the street car goes once the way is free', bool(a_through), str(ra[-1]))
+                if abs(A['turn']) > 0.45:
+                    bl = [r[4] for r in ra if r[1] > -40 and r[1] < 0]
+                    ck('its indicator before the turn', bl and all(b == (1 if A['turn'] > 0 else -1) for b in bl[-20:]), f"turn {A['turn']:.2f} blink {set(bl)}")
+            # right before left: a crossing of equal streets in the village
+            E(pg, "VERKEHR.clear(); GAME.view(95, -95, KERN.ground(95, -95) + 1.7, 120, -10)")
+            run_flow(3, 0.02)
+            js2 = J(pg, "__rg.find(95, -95, 260).filter(j => j.R.app.length >= 3 && j.R.app.every(a => a.role === 'rvl')).map(j => ({ ni: j.ni, x: Math.round(j.x), y: Math.round(j.y), app: j.R.app.map(a => [a.e, a.role, Math.round(a.h * 100) / 100, Math.round(VKSTROM.G.edges[a.e].len)]) }))")
+            print('equal junctions', len(js2), json.dumps(js2[:3]), flush=True)
+            jr = next((j for j in js2 if all(a[3] >= 25 for a in j['app'])), None)
+            ck('a junction of equal streets (right before left)', jr is not None, str(len(js2)))
+            if jr:
+                import math as _m
+                # two approaches at about a right angle: A, and B coming from A's right (B's heading A's minus 90°)
+                pair = None
+                for a in jr['app']:
+                    for b in jr['app']:
+                        rel = _m.atan2(_m.sin(b[2] - a[2]), _m.cos(b[2] - a[2]))
+                        if a is not b and -2.2 < rel < -0.9:
+                            pair = (a, b)
+                if pair:
+                    a, b = pair
+                    third = next(q for q in jr['app'] if q is not a and q is not b)
+                    # both go straight on or into the third street; they arrive together (fronts 18 m before their lines)
+                    A = J(pg, f"__rg.put({jr['ni']}, {a[0]}, {third[0]}, 18, 'klein')")
+                    B = J(pg, f"__rg.put({jr['ni']}, {b[0]}, {third[0] if third[0] != b[0] else a[0]}, 18, 'kombi')")
+                    if A and B and not A.get('noev') and not B.get('noev'):
+                        rec = J(pg, f"__rg.run([{A['id']}, {B['id']}], {jr['ni']}, 18)")
+                        ra, rb = rec
+                        ta = next((r[0] for r in ra if r[1] > 0.8), 99)
+                        tb = next((r[0] for r in rb if r[1] > 0.8), 99)
+                        print('right before left: A over its line at', ta, 'B (from the right) at', tb, flush=True)
+                        ck('right before left: the one from the right goes first', tb < ta and ta < 99, f"A {ta} s, B {tb} s")
+                else:
+                    ck('right before left: two approaches at a right angle', False, json.dumps(jr))
+            # a limit by sign: the 60 on the county road north-east of the village (274-60 of strassen/ at (469, -194), read northwards)
+            E(pg, "VERKEHR.clear(); GAME.view(450, -240, KERN.ground(450, -240) + 1.7, 0, -10)")
+            run_flow(3, 0.02)
+            lm = J(pg, "__rg.limit(469, -194, 357)")
+            print('limit 60', json.dumps(lm), flush=True)
+            ck('a speed limit by sign: after the 60 at most 60 km/h, below the road’s own', lm and lm['lim'] >= 1 and lm['after'] <= 60.5 and (lm['ev'] <= 60 or lm['after'] < lm['ev']), json.dumps(lm))
+            E(pg, "VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
+        except Exception as ex:
+            ck('section ran: regeln', False, repr(ex)[:400])
+
+    if want('ampel'):
+        # stage 2b: the traffic lights of OpenStreetMap in Schleusingen – the junction light built near the observer (a pole on every
+        # approach), the phases of its two groups; a car on a red approach waits at its line until green, then goes; the walkers' crossing
+        # switches when someone presses; the top view shows the lights
+        try:
+            E(pg, "__vr.clear(); VERKEHR.force({ peds: 0, cars: 0 }); VERKEHR.clear(); VERKEHR.autoOn(true); VKSTROM.force = { n: 0 }")
+            at_day((2026, 11, 13), 11)
+            lib.settle_light(pg)
+            if not E(pg, "!!window.__rg"):
+                raise RuntimeError('needs the section regeln first (its helpers)')
+            E(pg, "GAME.view(-1034, 1630, KERN.ground(-1034, 1630) + 1.7, 0, -8)")
+            run_flow(8, 0.1)
+            lt = J(pg, "VKAMPEL.lights.map(L => ({ id: L.id, kind: L.kind, built: !!L.g, failed: !!L.failed, axis: L.axis, parts: L.g ? L.g.children.length : 0, lamps: L.mat ? Object.keys(L.mat).sort() : [] }))")
+            print('lights', json.dumps(lt), flush=True)
+            k = next((l for l in lt if l['kind'] == 'k'), None)
+            ck('the junction light in Schleusingen is built near the observer (poles, heads, lamps per group)', k and k['built'] and {'Ar', 'Ay', 'Ag', 'Br', 'By', 'Bg'} <= set(k['lamps']), json.dumps(k))
+            # the phases over one cycle: both groups see green, never at once
+            ph = J(pg, "(() => { const L = VKAMPEL.lights.find(q => q.kind === 'k'), out = []; for (let t = 0; t < 50; t += 1) { const p = VKREGELN.phaseK(t + L.off); out.push(p.A[0] + p.B[0]); } return out; })()")
+            ck('its two groups take turns (green for each, never both)', any(p[0] == 'g' for p in ph) and any(p[1] == 'g' for p in ph) and not any(p == 'gg' for p in ph), ''.join(p[0] for p in ph))
+            # a car on a red approach: the light set so that its group has red for the next ~18 s
+            js = J(pg, "__rg.find(-1034, 1677, 18).map(j => ({ ni: j.ni, x: Math.round(j.x), y: Math.round(j.y), app: j.R.app.map(a => [a.e, a.role, Math.round(a.h * 100) / 100, Math.round(VKSTROM.G.edges[a.e].len)]) }))")
+            print('junction at the light', json.dumps(js), flush=True)
+            if js:
+                j = js[0]
+                a0 = max(j['app'], key=lambda a: a[3])
+                out = next(a for a in j['app'] if a is not a0)
+                # the moment: this approach's group red for 18 s (A red 28–49 s of the cycle, B red 0–29 and 47–50)
+                E(pg, f"(() => {{ const L = VKAMPEL.lights.find(q => q.kind === 'k'), g = VKAMPEL.grpOf(L, {a0[2]}); window.__ag = g; VKAMPEL.t = (g === 'A' ? 30 : 5) - L.off; }})()")
+                A = J(pg, f"__rg.put({j['ni']}, {a0[0]}, {out[0]}, 35, 'kompakt')")
+                print('car at the light', json.dumps(A), flush=True)
+                ck('the car’s route knows the light of its approach', A and not A.get('noev'), json.dumps(A))
+                if A and not A.get('noev'):
+                    rec = J(pg, f"(() => {{ const c = VAUTO.cars.find(q => q.id === {A['id']}), L = VKAMPEL.lights.find(q => q.kind === 'k'), out = []; for (let t = 0; t < 32; t += 0.05) {{ GAME.step(0.05); const ev = c.jn && c.jn.find(q => q.ni === {j['ni']}); out.push([+t.toFixed(2), +(c.s + c.D.YF - ev.sStop).toFixed(2), +c.v.toFixed(2), VKAMPEL.state(L, __ag), !!ev.lt, c.st]); }} return out; }})()")
+                    red_cross = [r for r in rec if r[3] in ('rot', 'rotgelb') and r[1] > 0.5 and r[5] != 'weg']
+                    waited = [r for r in rec if r[3] in ('rot', 'rotgelb') and r[2] < 0.3 and r[1] <= 0.3]
+                    went = [r for r in rec if r[3] == 'gruen' and r[1] > 2]
+                    print('at the light', rec[::40], flush=True)
+                    ck('it waits at the line while its light is red', bool(waited) and not red_cross, f"waited {len(waited)} steps, over the line at red {red_cross[:2]}")
+                    ck('and goes at green', bool(went), str(rec[-1]))
+            # the walkers' crossing at the Markt: someone presses – yellow, then red for the cars, the walkers green in between
+            E(pg, "GAME.view(-702, 1400, KERN.ground(-702, 1400) + 1.7, 0, -8)")
+            run_flow(8, 0.1)
+            cr = J(pg, "(() => { const L = VKAMPEL.lights.find(q => q.kind === 'f'); if (!L) return null; L.st.ph = 'gruen'; L.st.t = 25; L.st.req = true; const seq = []; for (let t = 0; t < 22; t += 0.5) { GAME.step(0.5); seq.push({ gruen: 'G', gelb: 'Y', rot: 'R', rotgelb: 'O' }[L.st.ph] + (VKREGELN.walkGreen(L.st) ? '*' : '')); } return { built: !!L.g, lamps: L.mat ? Object.keys(L.mat).sort() : [], seq: seq.join(' ') }; })()")
+            print('crossing', json.dumps(cr), flush=True)
+            ck('the walkers’ crossing switches on request (yellow, red with the walkers’ green, back to green)', cr and cr['built'] and 'G R' not in cr['seq'] and 'Y' in cr['seq'] and 'R*' in cr['seq'] and cr['seq'].strip().endswith('G'), json.dumps(cr))
+            # the top view: the lights as dots
+            svg = J(pg, "(() => { const L = STRAT.layer.list().find(l => l.id === 'verkehr'); if (!L) return ''; const pr = (x, y) => [600 + (x + 870) * 0.5, 360 - (y - 1550) * 0.5, 0]; return L.draw(pr, 1200, 720); })()")
+            ck('the top view shows the lights', svg and svg.count('mpel –') >= 2, str(svg.count('mpel –') if svg else None))
+            E(pg, "VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
+        except Exception as ex:
+            ck('section ran: ampel', False, repr(ex)[:400])
 
     if want('dichte'):
         try:

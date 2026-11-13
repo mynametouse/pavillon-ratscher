@@ -27,6 +27,7 @@ import { VFIG } from './verkehr_fig.js';
 // feat/verkehr-real: today's vehicles after real measures (verkehr/vk_typen.js) as meshes of one material (verkehr/vk_modelle.js)
 import { VKTYPEN } from './vk_typen.js';
 import { VKMOD } from './vk_modelle.js';
+import { VKREGELN } from './vk_regeln.js';
 export const VAUTO = (() => {
   const S = { cars: [], n: 0, honks: 0 };
   // the measures of the player's car (vehicles/car.js): axles, overhangs, width, wheels
@@ -564,6 +565,7 @@ export const VAUTO = (() => {
     const obs = obstacles(ctx.walkers || [], ctx.skipVeh);
     bodies();
     cam.getWorldDirection(camF);
+    junctions(dt);
     for (const c of S.cars) {
       if (c.st === 'weg' || c.st === 'geliehen') continue;
       c.age += dt;
@@ -608,7 +610,8 @@ export const VAUTO = (() => {
     const sp = SP;
     for (let i = 0; i < 4; i++) sp[i] = i < c.vm.ax.length ? c.dist / c.vm.ax[i].r : 0;
     VKMOD.wheels(c.vm, sp, -c.steer);
-    const blink = c.blink ? (performance.now() % 760 < 380 ? 2.4 : 0) : 0,
+    const bl = c.blink || c.blinkR || 0,
+      blink = bl ? (performance.now() % 760 < 380 ? 2.4 : 0) : 0,
       L = LMP;
     // a parked car is dark (its engine off)
     const on = c.st !== 'parkt';
@@ -616,8 +619,8 @@ export const VAUTO = (() => {
     L.tail = night && on ? 1.4 : 0;
     L.brake = brk ? 3.2 : 0;
     L.drl = night || !on || c.vm.T.cls === 'trak' ? 0 : 2.2;
-    L.left = c.blink && c.blink !== 1 ? blink : 0;
-    L.right = c.blink && c.blink !== -1 ? blink : 0;
+    L.left = bl && bl !== 1 ? blink : 0;
+    L.right = bl && bl !== -1 ? blink : 0;
     L.rev = 0;
     VKMOD.lamps(c.vm, L);
     c.vm.pool = night && on;
@@ -654,6 +657,137 @@ export const VAUTO = (() => {
       const off = D.CY - half + (2 * half * i) / (n - 1);
       out.push({ x: o.x + Math.sin(o.hd) * off, y: o.y + Math.cos(o.hd) * off, r: D.HW, kind: 'veh', moving: false });
     }
+  }
+  // ---- feat/verkehr-real stage 2: right of way (verkehr/vk_regeln.js) ----
+  // c.jn: the junctions of the car's route (VKREGELN.events: node, where it stops, its role there, its turn), c.jk the next one.
+  // Each frame: who comes to which junction – the cars with rules (their own event), and, worked out from where they are and go, the
+  // player's vehicles, the buses and the cars without rules (their role from the approach they come along).
+  const JP = [];
+  function junctions(dt) {
+    JP.length = 0;
+    for (const c of S.cars) {
+      if (!c.jn || c.st === 'weg' || c.st === 'geliehen') continue;
+      while (c.jk < c.jn.length && c.s > c.jn[c.jk].sN + 4) c.jn[c.jk++].passed = true;
+      const ev = c.jn[c.jk];
+      if (!ev || ev.sN - c.s > 160) continue;
+      const front = c.s + c.D.YF,
+        rear = c.s + c.D.YR;
+      JP.push({
+        c,
+        ev,
+        x: ev.x,
+        y: ev.y,
+        role: ev.role,
+        h: ev.h,
+        turn: ev.turn,
+        eta: front >= ev.sStop ? 0 : (ev.sStop - front) / Math.max(c.v, 0.6),
+        inBox: front > ev.sStop + 0.8 && rear < ev.sN + 4,
+        wait: ev.wait,
+        v: c.v,
+        id: c.id,
+      });
+    }
+  }
+  const GEN = [];
+  // the vehicles without rules near a junction: whoever is heading for it (or stands in it) – role by the approach it comes along
+  function generic(ev, me) {
+    GEN.length = 0;
+    const R = ev.rule,
+      add = (x, y, hd, v, id) => {
+        const dx = ev.x - x,
+          dy = ev.y - y,
+          d = Math.hypot(dx, dy);
+        if (d > 120) return;
+        if (d < 6.5) {
+          // moving through the junction: wait for it; one standing there is an obstacle like any other (drive() goes round or waits)
+          if (v > 0.5) GEN.push({ role: 'prio', h: hd, turn: 0, eta: 0, inBox: true, wait: 0, v, id });
+          return;
+        }
+        if ((dx * Math.sin(hd) + dy * Math.cos(hd)) / d < 0.85) return;
+        let role = 'prio';
+        if (R)
+          for (const a of R.app)
+            if (Math.abs(VKREGELN.wrap(a.h - hd)) < 0.6) {
+              role = a.role;
+              break;
+            }
+        GEN.push({ role, h: hd, turn: 0, eta: Math.max(0, d - 6) / Math.max(v, 0.6), inBox: false, wait: 0, v, id });
+      };
+    if (VEH && VEH.list)
+      for (const v of VEH.list) {
+        if (v.g && !v.g.visible) continue;
+        const st = v.st,
+          sp = Math.hypot(st.u, st.v);
+        if (sp > 0.5 || Math.hypot(st.x - ev.x, st.y - ev.y) < 6.5) add(st.x, st.y, st.psi, sp, 1e6);
+      }
+    if (window.BUS && window.BUS.obstacles) {
+      const B = window.BUS.obstacles();
+      for (let i = 0; i + 3 < B.length; i += 4) {
+        if (!B[i].bus) continue;
+        const x = (B[i].x + B[i + 3].x) / 2,
+          y = (B[i].y + B[i + 3].y) / 2;
+        add(x, y, Math.atan2(B[i + 3].x - B[i].x, B[i + 3].y - B[i].y), B[i].moving ? 8 : 0, 2e6 + i);
+      }
+    }
+    for (const o of S.cars)
+      if (!o.jn && o !== me && o.st !== 'weg' && o.st !== 'geliehen' && o.st !== 'parkt')
+        add(o.x, o.y, o.hd, o.v, o.id);
+    return GEN;
+  }
+  const BLK = [];
+  // the stop of the rules for car c (s of the car, Infinity: none)
+  function rules(c, dt) {
+    let ev = c.jn[c.jk];
+    // the indicator: before the next turn, or just after the last one
+    const prev = c.jk > 0 ? c.jn[c.jk - 1] : null;
+    c.blinkR = VKREGELN.blink(ev, c.s) || VKREGELN.blink(prev, c.s);
+    if (!ev || ev.go) return Infinity;
+    const front = c.s + c.D.YF;
+    // stage 2b: a traffic light – red and red-yellow stop at the line, yellow when it can; a crossing for walkers is only its light
+    if (ev.lt) {
+      const st = ev.lt.L.shows(ev.lt.g),
+        dl = ev.sStop - front;
+      ev.light = st;
+      if (dl < Math.max(30, (c.v * c.v) / 4 + 12) && VKREGELN.atLight(st, dl, c.v)) {
+        if (c.v < 0.3) ev.wait += dt;
+        return ev.sStop - c.D.YF - 0.15;
+      }
+      if (ev.crossing) {
+        if (front > ev.sStop + 0.6) ev.go = true;
+        return Infinity;
+      }
+    }
+    // decided only near the line: ahead of it as far as it takes to stop comfortably
+    if (ev.sStop - front > Math.max(22, (c.v * c.v) / 5 + 10)) return Infinity;
+    const stopS = ev.sStop - c.D.YF - 0.15;
+    // over the line: in the junction (it goes on)
+    if (front > ev.sStop + 0.6) {
+      ev.go = true;
+      return Infinity;
+    }
+    // sign 206: halt at the line first
+    if (ev.role === 'stop' && ev.halted < 0.7) {
+      if (c.v < 0.25 && ev.sStop - front < 2.5) ev.halted += dt;
+      return stopS;
+    }
+    const me = {
+      role: ev.role,
+      h: ev.h,
+      turn: ev.turn,
+      wait: ev.wait,
+      id: c.id,
+      v: c.v,
+    };
+    const T = ev.role === 'rvl' ? 3.5 : ev.role === 'prio' ? 4 : 4.5;
+    BLK.length = 0;
+    for (const o of JP) {
+      if (o.c === c || Math.abs(o.x - ev.x) > 6 || Math.abs(o.y - ev.y) > 6) continue;
+      if (VKREGELN.waitFor(me, [o], T)) BLK.push(o);
+    }
+    for (const o of generic(ev, c)) if (VKREGELN.waitFor(me, [o], T)) BLK.push(o);
+    if (!BLK.length || VKREGELN.goFirst(me, BLK)) return Infinity;
+    if (c.v < 0.3) ev.wait += dt;
+    return stopS;
   }
   // speed and lane: the line's limit, a stop ahead (waved down, letting someone out), the car in front, whoever stands in the way
   function drive(c, dt, obs, ctx) {
@@ -769,6 +903,14 @@ export const VAUTO = (() => {
       }
     }
     c.yieldT = Math.max(0, (c.yieldT || 0) - dt);
+    // feat/verkehr-real stage 2: the right of way at the next junction of the route (VKREGELN), and the indicators before a turn
+    if (c.jn) {
+      const r = rules(c, dt);
+      if (r < stopAt) {
+        stopAt = r;
+        why = why || 'vorfahrt';
+      }
+    }
     if (c.yieldT > 0 && !yieldLat) yieldLat = Math.max(0.8, 1.9 - (c.laneOff || 1.2));
     // lane: back to the middle of the lane when nothing needs passing; at a stop to the kerb (a little to the right)
     // (standing it keeps its place; sideways only while it rolls – or makes room for the player's car)
@@ -938,6 +1080,7 @@ export const VAUTO = (() => {
     VEH.place('verkehr', HIDE[0], HIDE[1], 0);
     if (line) {
       c.line = line;
+      c.jn = null; // (the junctions of the old route do not belong to this one)
       c.s = Math.max(c.D.B, s || c.D.B);
       c.lat = 0;
       c.v = 0;

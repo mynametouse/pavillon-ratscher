@@ -1,0 +1,49 @@
+ort;id;lat;lon;entrance;door;access;strasse;hausnr;name;ebene;rollstuhl;an_gebaeudekante;gebaeude;gebaeude_art;gebaeude_adresse;abstand_m;osm_stand
+schleusingen;n13766066495;50.510254;10.764568;main;;;;;;;;nein;;;;;2026-04-27
+schleusingen;n5119048144;50.510587;10.755177;yes;;;;;;;;ja;w521433036;yes;Bertholdstraße 19;0.0;2017-09-21
+schleusingen;n5119048145;50.510424;10.754769;yes;;;;;;;;ja;w524488452;yes;Bertholdstraße 17;0.0;2017-09-21
+schleusingen;n5119048155;50.50967;10.75352;yes;;;;;;;;ja;w456423939;yes;Markt 1;0.0;2017-09-21
+schleusingen;n5119048156;50.509439;10.75471;yes;;;;;;;;ja;w34211586;school;;0.0;2017-09-21
+schleusingen;n5119048157;50.509514;10.754259;main;;;Klosterstraße;2;;;;ja;w34211586;school;;0.0;2023-02-24
+schleusingen;n5119048158;50.50943;10.754874;yes;;;;;;;;ja;w481095284;yes;;0.0;2017-09-21
+schleusingen;n5119048159;50.509615;10.754876;yes;;;;;;;;ja;w481095285;office;;0.0;2017-09-21
+schleusingen;n5119048164;50.509285;10.754307;yes;;;;;;;;ja;w34211586;school;;0.0;2017-09-21
+schleusingen;n5119048166;50.509715;10.754874;yes;;;;;;;;ja;w481095285;office;;0.0;2017-09-21
+schleusingen;n5119048167;50.509365;10.753875;yes;;;;;;;;ja;w34211586;school;;0.0;2017-09-21
+schleusingen;n9423643848;50.514238;10.752312;main;;;;;;;;ja;w128886071;yes;Kurhausstraße 1a;0.0;2022-01-16
+schleusingen;n5079734728;50.508763;10.759559;yes;;;;;;;;ja;w521347512;school;Helmut-Kohl-Straße 7;0.0;2017-09-04
+schleusingen;n5079734730;50.508894;10.759953;yes;;;;;;;;ja;w521347512;school;Helmut-Kohl-Straße 7;0.0;2017-09-04
+schleusingen;n5079734735;50.508839;10.760232;yes;;;;;;;;ja;w300440600;yes;;0.0;2017-09-04
+schleusingen;n5079734736;50.508417;10.759157;yes;;;;;;;;ja;w34211817;school;Helmut-Kohl-Straße 5;0.0;2017-09-04
+schleusingen;n5079734737;50.508613;10.759002;yes;;;;;;;;ja;w34211817;school;Helmut-Kohl-Straße 5;0.0;2017-09-04
+schleusingen;n5079734740;50.508447;10.758791;yes;;;;;;;;ja;w34211817;school;Helmut-Kohl-Straße 5;0.0;2017-09-04
+schleusingen;n5119048168;50.509222;10.75384;yes;;;;;;;;ja;w456423946;school;;0.0;2017-09-21
+schleusingen;n5119048169;50.509118;10.753447;yes;;;;;;;;ja;w456423946;school;;0.0;2017-09-21
+schleusingen;n2725921022;50.506609;10.743124;main;;;;;;;;ja;w55463189;yes;Hildburghäuser Straße 32;0.0;2022-01-18
+schleusingen;n3012914416;50.502991;10.742283;main;;;Gartenstraße;56;;;;ja;w96135205;yes;;0.0;2023-04-16
+schleusingen;n3012914417;50.502876;10.742268;main;;;Gartenstraße;58;;;;ja;w96135205;yes;;0.0;2023-04-16
+schleusingen;n3012914418;50.502738;10.74225;main;;;Gartenstraße;60;;;;ja;w96135205;yes;;0.0;2023-04-16
+schleusingen;n7412118989;50.504293;10.744059;main;;;Straße des Friedens;1;;;;ja;w96135210;apartments;;0.0;2021-06-10
+schleusingen;n7412118990;50.504177;10.74406;main;;;Straße des Friedens;3;;;;ja;w96135210;apartments;;0.0;2021-06-10
+schleusingen;n7412118991;50.504091;10.744061;main;;;Straße des Friedens;5;;;;ja;w96135210;apartments;;0.0;2021-06-10
+schleusingen;n7412118992;50.503841;10.744035;main;;;Straße des Friedens;7;;;;ja;w96135195;apartments;;0.0;2021-06-10
+schleusingen;n7412118993;50.503718;10.744037;main;;;Straße des Friedens;9;;;;ja;w96135195;apartments;;0.0;2021-06-10
+schleusingen;n7412118994;50.503634;10.744038;main;;;Straße des Friedens;11;;;;ja;w96135195;apartments;;0.0;2021-06-10
+schleusingen;n5078828040;50.501959;10.737062;yes;;;;;;;;ja;w438147640;yes;Themarer Straße 16c;0.0;2017-09-04
+vessra;n8775889784;50.492069;10.645165;yes;;;;;;;;ja;w117931131;yes;;0.0;2021-11-05
+vessra;n411831587;50.492199;10.644324;exit;;;;;;;;nein;w117931157;yes;;3.1;2024-05-12
+vessra;n1020955880;50.491441;10.6437;yes;;;;;;;;ja;w121648570;yes;;0.0;2021-05-28
+vessra;n1327348191;50.49232;10.643695;yes;;;;;;;;ja;w117931177;yes;;0.0;2021-05-28
+vessra;n8775745911;50.491345;10.641955;yes;;;;;;;;ja;w117931139;yes;;0.0;2021-11-05
+vessra;n8775745916;50.490915;10.64237;main;;;;;;;;ja;w117931175;yes;;0.0;2021-05-28
+vessra;n8775745919;50.491075;10.642767;main;;;;;;;no;ja;w121649699;yes;;0.0;2021-05-28
+vessra;n8775745936;50.491083;10.64246;yes;;;;;;;;ja;w117931162;yes;;0.0;2021-05-28
+vessra;n8775745937;50.491361;10.643262;main;;;;;;;no;ja;w117931132;yes;;0.0;2021-05-28
+vessra;n8775745938;50.491354;10.643093;yes;;;;;;;;ja;w117931132;yes;;0.0;2021-11-05
+vessra;n8775745943;50.491621;10.642341;main;;;;;;;no;ja;w317636181;yes;;0.0;2021-05-28
+vessra;n8775745944;50.491631;10.642328;yes;;;;;;;;ja;w317636181;yes;;0.0;2021-05-28
+vessra;n8775745950;50.49108;10.641772;main;;;;;;;;ja;w117931156;yes;;0.0;2021-05-28
+vessra;n8775745964;50.491525;10.6427;main;;;;;;;no;ja;w117931176;yes;;0.0;2021-05-28
+vessra;n8775745965;50.491527;10.642639;yes;;;;;;;;ja;w117931176;yes;;0.0;2021-05-28
+vessra;n8775889791;50.491723;10.645275;main;;;;;;;;ja;w117931159;yes;;0.0;2021-05-28
+vessra;n8775889796;50.491635;10.645195;main;;;;;;;yes;ja;w948084433;toilets;;0.0;2021-05-28

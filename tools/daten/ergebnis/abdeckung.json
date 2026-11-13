@@ -1,0 +1,32 @@
+{
+ "ratscher": {
+  "panoramax_bilder": 92,
+  "panoramax_zellen_100m": 26,
+  "sammlungen": [
+   "635ef304"
+  ],
+  "jahre": [
+   "2025"
+  ]
+ },
+ "schleusingen": {
+  "panoramax_bilder": 30,
+  "panoramax_zellen_100m": 11,
+  "sammlungen": [
+   "635ef304"
+  ],
+  "jahre": [
+   "2025"
+  ]
+ },
+ "vessra": {
+  "panoramax_bilder": 100,
+  "panoramax_zellen_100m": 21,
+  "sammlungen": [
+   "635ef304"
+  ],
+  "jahre": [
+   "2025"
+  ]
+ }
+}

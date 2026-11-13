@@ -1,0 +1,4 @@
+# feat/zeitreise-medien: phone transitions, radio as sound bridge, real videos of today (one test name per line, as for viz3/test/run.py)
+smoke
+zeitreise_medien
+zukunft

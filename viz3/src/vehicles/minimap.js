@@ -10,8 +10,9 @@ export const MMAP = (() => {
   const cv = $('vmap'),
     lab = $('vmaplab');
   if (!cv || !window.ROADS || !ROADS.on) return null;
-  const g = cv.getContext('2d'),
-    S = { t: 0, R: 160, bb: null }; // R: metres from the centre to the rim
+  // feat/cockpit: g is let – S.drawTo draws the same map into the navi's canvas (vehicles/cockpit.js)
+  let g = cv.getContext('2d');
+  const S = { t: 0, R: 160, bb: null }; // R: metres from the centre to the rim
   const COLK = {
     motorway: '#f2a07a',
     main: '#ffd27a',
@@ -61,15 +62,19 @@ export const MMAP = (() => {
     S.css = w;
     S.D = n / w;
   }
-  function draw() {
+  // feat/cockpit: o – another canvas (the navi in the centre console): { w, h, D, R } – a rectangle, the vehicle low in it, the
+  // destination handed back in o.label instead of the label under the corner map
+  function draw(o) {
     const v = VEH.cur;
     if (!v) return;
-    fit();
-    g.setTransform(S.D, 0, 0, S.D, 0, 0);
-    const W = S.css,
-      H = W,
+    if (!o) fit();
+    const D = o ? o.D || 1 : S.D;
+    g.setTransform(D, 0, 0, D, 0, 0);
+    const W = o ? o.w : S.css,
+      H = o ? o.h : W,
       r0 = W / 2,
-      k = r0 / S.R,
+      c0 = o ? H * 0.66 : r0,
+      k = (o ? H * 0.66 : r0) / (o ? o.R : S.R),
       cx = v.st.x,
       cy = v.st.y,
       psi = v.st.psi,
@@ -81,17 +86,18 @@ export const MMAP = (() => {
         dy = y - cy,
         rx = dx * cs - dy * sn,
         ry = dx * sn + dy * cs;
-      return [r0 + rx * k, r0 - ry * k];
+      return [r0 + rx * k, c0 - ry * k];
     };
     g.save();
     g.clearRect(0, 0, W, H);
     g.beginPath();
-    g.arc(r0, r0, r0 - 1, 0, 7);
+    if (o) g.rect(0, 0, W, H);
+    else g.arc(r0, r0, r0 - 1, 0, 7);
     g.clip();
     g.fillStyle = 'rgba(28,32,24,0.78)';
     g.fillRect(0, 0, W, H);
     const B = bbox(),
-      R2 = S.R * 1.45;
+      R2 = (o ? o.R : S.R) * 1.45;
     g.lineCap = 'round';
     g.lineJoin = 'round';
     for (const kind of ORDER) {
@@ -136,9 +142,9 @@ export const MMAP = (() => {
       g.fillStyle = o.id === 'tractor' ? '#7fd36b' : '#e8dcc0';
       g.fillRect(q[0] - 3.5, q[1] - 3.5, 7, 7);
     }
-    // north on the rim, me in the middle
+    // north on the rim, me in the middle (feat/cockpit: on the navi north in a corner, me low in the picture)
     {
-      const q = [r0 - sn * (r0 - 10), r0 - cs * (r0 - 10)];
+      const q = o ? [W - 16 - sn * 9, 16 - cs * 9] : [r0 - sn * (r0 - 10), r0 - cs * (r0 - 10)];
       g.fillStyle = '#fff';
       g.font = '600 11px system-ui, sans-serif';
       g.textAlign = 'center';
@@ -147,20 +153,33 @@ export const MMAP = (() => {
     }
     g.fillStyle = '#ffd36b';
     g.beginPath();
-    g.moveTo(r0, r0 - 8);
-    g.lineTo(r0 + 5.5, r0 + 6);
-    g.lineTo(r0, r0 + 3);
-    g.lineTo(r0 - 5.5, r0 + 6);
+    g.moveTo(r0, c0 - 8);
+    g.lineTo(r0 + 5.5, c0 + 6);
+    g.lineTo(r0, c0 + 3);
+    g.lineTo(r0 - 5.5, c0 + 6);
     g.closePath();
     g.fill();
     g.restore();
-    g.strokeStyle = 'rgba(255,255,255,0.35)';
-    g.lineWidth = 1.5;
-    g.beginPath();
-    g.arc(r0, r0, r0 - 1, 0, 7);
-    g.stroke();
+    if (!o) {
+      g.strokeStyle = 'rgba(255,255,255,0.35)';
+      g.lineWidth = 1.5;
+      g.beginPath();
+      g.arc(r0, r0, r0 - 1, 0, 7);
+      g.stroke();
+    }
     // the next destination (feat/fahrt: S.dest – out there where the vehicle heads: the Markt, the nursery, the garden)
     const dst = S.dest && S.dest(cx, cy, psi);
+    if (o) {
+      // feat/cockpit: the navi writes the destination itself
+      o.label = dst ? [dst[0], dst[1]] : null;
+      if (!dst && rt) {
+        const J = rt[rt.length - 1],
+          dG = Math.hypot(cx - 2, cy - 2),
+          dJ = Math.hypot(cx - J[0], cy - J[1]);
+        o.label = dG < dJ ? ['Klinge', dJ] : ['Garten', dG];
+      }
+      return;
+    }
     if (lab && dst) {
       const txt =
         dst[0] +
@@ -185,8 +204,18 @@ export const MMAP = (() => {
       }
     }
   }
+  // feat/cockpit: the same map into another canvas (the navi), and the corner map away while the navi is in view (S.hide)
+  S.drawTo = o => {
+    const g0 = g;
+    g = o.g;
+    try {
+      draw(o);
+    } finally {
+      g = g0;
+    }
+  };
   window.TICKS.push(dt => {
-    const on = !!VEH.cur && P.mode === 'walk';
+    const on = !!VEH.cur && P.mode === 'walk' && !(S.hide && S.hide());
     if (cv.hidden === on) {
       cv.hidden = !on;
       if (lab) lab.hidden = !on;

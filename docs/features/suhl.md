@@ -34,7 +34,11 @@ Generation v1 der Daten-Agenten: 1-m-Gelände mit eingeschnittenen Straßen, Geb
 ## 2 Ausprobieren
 
 - Bauen: `cd viz3 && python3 build.py --fast`; den Probesatz legt der Test `viz3/test/suhl.py` nach `dist/suhl/` (die Website trägt ihn nicht, sie liest das Daten-Repo), Testserver `bash tools/csp/start8951.sh`.
-- `…/index.html?szenario=suhl` – Start auf dem Suhler Markt. `?suhl=1` zeigt zusätzlich oben im Menü die Karte „Nach Suhl“ (seit V18) und den Chip „Suhl“ unter Hingehen → Weiter weg.
+- `…/index.html?szenario=suhl` – Start auf dem Suhler Markt. **Seit V18h (13.11.2026) gehört Suhl zur Standard-Version:** ohne Zusatz die
+  Karte „Nach Suhl“ oben im Menü (eine Karte zur Zeit mit „Neu hier?“, die Startseite bleibt bei 11 Knöpfen), der Chip „Suhl“ unter
+  Hingehen → Weiter weg, „Suhl“ in der Zeile von Hingehen, die Busse mit `bus/fahrplan_suhl.json` und die Anfahrt-Wege, sobald die Fahrt
+  erwacht. `?suhl=0` schaltet das alles ab (Notschalter); `?suhl=1` ändert nichts mehr – nur am Testserver holt es die Anfahrt-Wege aus
+  `dist/suhl/` (ohne Zusatz fragt ein Testserver nicht danach, damit fremde Tests keine 404 sehen).
 - Fotovergleich: das Modell vom Kamerastandort eines Commons-Fotos aus (`SUHL.toModel(lat, lon)`, Blickrichtung zur Lage des Wahrzeichens), neben das Foto gelegt – so sind die Einträge in `bau/marken.js` entstanden; im Test `suhl:boden` die Bilder `suhl_rathaus`, `suhl_ccs`, `suhl_hotel`, `suhl_wasser`.
 - `?suhl=<Adresse>` – andere Daten-Basis. Ohne Angabe: auf der Website `https://mynametouse.github.io/pavillon-daten/suhl/`, am
   Testserver `suhl/` (also `dist/suhl/`).
@@ -171,7 +175,7 @@ Ein eigener Commit: `b0d40d80` („the hooks in shared files“), 4 Dateien, 23 
 | **W4** | `welt/welt.js` | `WELT.tileMat` – das Material der Kacheln | **neu, nicht im Plan.** Ja, mit einem eigenen Programm für den Fernboden; dann aber anderes Aussehen an der Naht und ein Programm mehr. So folgt der Fernboden allem, was der Straßen-Chat am Kachel-Material ändert. |
 | S1 | `garden/env.js` | Himmelskugel folgt der Kamera, wird nicht weggeschnitten | nein |
 | K1 | `game/camera.js`, `applyCam` | Mitte der Draufsicht bis x −16 km, y +23 km | nein |
-| H2 | – | **nicht nötig:** der Menüknopf entsteht mit `?suhl=1` im Anmelde-Modul | |
+| H2 | – | **nicht nötig:** der Menüknopf entsteht im Anmelde-Modul (seit V18h ohne Zusatz, `?suhl=0` ohne) | |
 | F1 | – | **nicht von mir:** der Straßen-Chat hat `FAHRT.add/drop/ground` gebaut (Runde 2, `kern/strassen` 4d69fa03). Die Laufzeit ruft nur diese Funktionen und fasst `welt/fahrt.js` nicht an (Abschnitt 8). | |
 
 Der Straßen-Chat ändert in `welt/welt.js` den Shader-Text und `tileMat`; die Haken liegen an anderen Stellen (Zeilen 65–69,
@@ -356,7 +360,7 @@ Kacheln).
 
 | Abschnitt | Prüft |
 |---|---|
-| `start` | kein Abruf, kein Paket, Zone ruht; Szene und Sprungziele da, kein Menüknopf ohne `?suhl=1`; Umrechnungen; der Vertrag antwortet |
+| `start` | kein Abruf, kein Paket, Zone ruht; Szene und Sprungziele da, Menüeintrag in der Standard-Version; Umrechnungen; der Vertrag antwortet |
 | `sprung` | Sprung zum Markt: Zone, Index, eigener Boden, Gebäude voll, Datensätze nach Fassung 1.1, Bäume, Fernboden, Datenmenge, keine fehlgeschlagene Anfrage; sechs Bilder |
 | `stufen` | Stufen nach Entfernung; aus 2 km nur die schlanke Stufe und kein Nahboden; zurück am Markt wieder voll |
 | `boden` | Boden an fünf Punkten; `buildingsIn`/`building`/`data.building`; eine Hauswand hält auf; Wandfüße und Stämme; Ortsnamen, Wege, Straßenkarte |
@@ -367,6 +371,8 @@ Kacheln).
 | `nacht` | Fenster, keine neuen Lichter |
 | `telefon` | iPhone-13-Kontext: kürzere Radien, Datenmenge, Bilder-Speicher, Programme |
 | `uebergabe` | die Straßen gehen an das Straßensystem (Abschnitt 8); eigene Seite |
+| `anfahrt` | mit `?suhl=1`: die Anfahrt-Wege kommen in die Fahrt, sobald sie erwacht; die Karte „Nach Suhl“ (eine Karte zur Zeit mit „Neu hier?“), der Chip, „Suhl“ unter Hingehen; die Karte schließt das Menü und führt hin; eigene Seite |
+| `bus` | Standard-Version: Linie 203 fährt von Ratscher nach Suhl, die Stadtbusse fahren, Haltestelle Zentrum; mit `?suhl=0` der Fahrplan der Welt; eigene Seiten |
 | `tag1` | die Prüfungen des ersten Tages (nicht im Standardlauf) |
 
 Bei GitHub (`feat.yml`, je Zeile von `tests.txt` ein Job): `suhl` in drei Jobs, dazu `schleusingen`, `vessra`, `fahrt`, `gpu`,

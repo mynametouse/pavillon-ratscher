@@ -34,6 +34,9 @@ export const RENDER = {
   rp: null,
   smaa: null,
   bench: null,
+  // feat/zeitreise-regie: a frame drawn by someone else (the split screen of the time journey, zukunft/zk_regie_bild.js) – true when it drew
+  /** @type {null | ((kind?: string) => boolean)} */
+  draw: null,
   get hq() {
     return this.tier !== 'schnell';
   },
@@ -105,6 +108,9 @@ export const MOTION = {
   upWait: 5000,
   sig: new Float64Array(8),
   frames: 0,
+  // feat/cockpit: the player's choice „Beim Bewegen“ (null: automatic) and the level the automatic chose at load (setMotionUser)
+  user: null,
+  auto: 2,
 };
 function buildMotion() {
   const comp = new EffectComposer(R);
@@ -128,6 +134,15 @@ function setMotionLevel(l) {
   MOTION.level = l;
   sizeMotion();
 }
+// feat/cockpit: Menü → Einstellungen → Grafik „Beim Bewegen“ (vehicles/cockpit_set.js): null = automatic (the level follows the frame rate,
+// motionTrack), else a fixed level of MLEVELS – at once after the load, during it at the end of prepareGPU (the motion path is compiled first)
+export function setMotionUser(l) {
+  MOTION.user = l == null || !Number.isFinite(l) ? null : Math.max(0, Math.min(MLEVELS.length - 1, Math.round(l)));
+  if (!LOAD.ready || OFFLINE) return;
+  setMotionLevel(MOTION.user != null ? MOTION.user : MOTION.auto);
+  MOTION.buf = [];
+  markDirty(true);
+}
 // camera signature: did the view change since the last frame?
 export function camMoved() {
   const s = MOTION.sig,
@@ -150,7 +165,7 @@ export function motionTrack(now) {
   const b = MOTION.buf.sort((p, q) => p - q),
     med = b[b.length >> 1];
   MOTION.buf = [];
-  if (TIER_USER === 'fix') return;
+  if (TIER_USER === 'fix' || MOTION.user != null) return; // feat/cockpit: a level chosen by hand stays
   // V17g: a step up that has to be taken back within 4 s doubles the wait before the next try (up to a minute) – the level swung between two
   // steps every few seconds, each change a new render target (a stutter) and a jump in sharpness
   if (med > 20.5 && MOTION.level < MLEVELS.length - 1) {
@@ -211,8 +226,10 @@ export function nextTier() {
 }
 applyTier(RENDER.tier, false);
 export function renderFrame(kind) {
+  MOTION.frames++; // feat/cockpit: frames drawn (the frame-rate counter, vehicles/cockpit_set.js)
   if (window.PREFRAME) window.PREFRAME();
   if (window.FIGSHADOW) window.FIGSHADOW();
+  if (RENDER.draw && RENDER.draw(kind)) return; // feat/zeitreise-regie: the time journey draws its frame (one world or the split)
   if (kind === 'motion' && MOTION.level > 0 && MOTION.comp) MOTION.comp.render();
   else if (RENDER.composer) RENDER.composer.render();
   else R.render(scene, cam);
@@ -544,7 +561,9 @@ export async function prepareGPU(say) {
   {
     const ms = soft ? 999 : (RENDER.bench && Object.values(RENDER.bench).pop()) || 30;
     MOTION.stillMs = Math.min(ms, 400);
-    setMotionLevel(OFFLINE ? 0 : ms <= 12 ? 0 : ms <= 18 ? 1 : ms <= 26 ? 2 : ms <= 36 ? 3 : 4);
+    MOTION.auto = OFFLINE ? 0 : ms <= 12 ? 0 : ms <= 18 ? 1 : ms <= 26 ? 2 : ms <= 36 ? 3 : 4;
+    // feat/cockpit: or the level chosen by hand (Menü → Einstellungen → Grafik „Beim Bewegen“)
+    setMotionLevel(MOTION.user != null && !OFFLINE ? MOTION.user : MOTION.auto);
   }
   if (window.GLCHECK) GLCHECK.guard(); // V16b1: a program with more textures than this GPU allows → plain ground instead of none
   RENDER.prepMs = Math.round(performance.now() - t0);
