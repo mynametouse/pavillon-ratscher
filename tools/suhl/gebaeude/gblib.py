@@ -13,9 +13,12 @@ import json, math, os, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
-sys.path.insert(0, os.path.join(REPO, 'tools', 'welt'))
-sys.path.insert(0, os.path.join(REPO, 'tools', 'suhl', 'bestand'))
-sys.path.insert(0, os.path.join(REPO, 'tools', 'suhl', 'lib'))
+# the tools we read from other packages come AFTER our own folder on the path (stage 1 has modules with everyday names of its own)
+for _d in (HERE, os.path.join(REPO, 'tools', 'suhl', 'lib'), os.path.join(REPO, 'tools', 'suhl', 'bestand'), os.path.join(REPO, 'tools', 'welt')):
+    while _d in sys.path:
+        sys.path.remove(_d)
+    sys.path.append(_d)
+sys.path.insert(0, HERE)
 import wlib      # the quadtree and the model frame (read only)
 import sblib     # stage 1: polite HTTP, the OSM model, WGS84 <-> UTM (read only)
 import suhllib as S   # the common ground of the Suhl data tools (suhl-daten): tile frame, guards, tile sets, paths

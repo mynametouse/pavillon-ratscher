@@ -329,7 +329,7 @@ def main():
 
     photo = None
     if a.dop:
-        import luftbild as LB
+        import dachbild as LB
         photo = LB.Tiles(os.path.join(G.RAW, 'dop'))
 
     tiles = defaultdict(list)
@@ -460,12 +460,13 @@ def main():
                     if nm not in sg and len(sg) < 4:
                         sg.append(nm)
             # roof class and colour per face from the aerial image
-            for f_ in faces:
-                cls, col, cq = None, None, 0
-                if img is not None and f_['_pg'] is not None:
-                    cls, col, cq = img.roof_class(affinity.translate(f_['_pg'], ec, nc), f_['sl'], k, ot)
+            rc = None
+            if img is not None:
+                rc = LB.roof_classes(img, [(affinity.translate(f_['_pg'], ec, nc) if f_['_pg'] is not None else None, f_['sl'], f_['a']) for f_ in faces], k, ot)
+            for fi_, f_ in enumerate(faces):
+                cls, col, cq = rc[fi_] if rc is not None else (None, None, 0)
                 if cls is None:
-                    cls, col = (4, '#6f6f6c') if est['form'] == 0 else (5, '#9a9c9e') if k == 1 else (0, '#a8523a')
+                    cls, col, cq = (4, '#6f6f6c', 0) if est['form'] == 0 else (5, '#9a9c9e', 0) if k == 1 else (0, '#a8523a', 0)
                     if k == 2 and est['form'] != 0:
                         cls, col = 4, '#5f5d5a'
                 f_['c'], f_['col'], f_['cq'] = cls, col, cq

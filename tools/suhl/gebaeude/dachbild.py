@@ -8,7 +8,7 @@ colour (the middle of the pixels inside the face - shadows, glints and tree crow
 alike, no tiles) and which way the ridge runs (the two slopes of a gable are lit differently) - ideas of tools/welt-gebaeude/prep.py.
 Everything here is an estimate from one picture; the record marks it (`cq` 1, `rq` 1).
 
-  python3 -I tools/suhl/gebaeude/luftbild.py --fetch probe        # fetch the pictures of the sample tiles (polite, cached)
+  python3 -I tools/suhl/gebaeude/dachbild.py --fetch probe        # fetch the pictures of the sample tiles (polite, cached)
 """
 import io, math, os, sys, time
 import numpy as np
@@ -104,61 +104,103 @@ class Img:
             out['ridge'] = a1
         return out
 
-    def roof_class(self, pg, slope, k, osm_tags):
-        """class, colour '#rrggbb' and flag of one roof face (pg: the face seen from above, a shapely polygon in UTM): (cls, col, cq) -
-        cq 1 from the picture, 2 material tagged in OpenStreetMap (the colour still from the picture); (None, None, 0) when the
-        picture does not show it"""
+    def face_colour(self, pg):
+        """the colour of one roof face seen from above (pg: shapely polygon in UTM): the middle of its pixels - the darkest quarter
+        (shadows) and the brightest 15 % (glints) left out, tree crowns (infrared) left out. -> (rgb 0..1, share of vegetation, its
+        median NDVI) or None when the picture does not show the face"""
         if pg is None or pg.is_empty:
-            return None, None, 0
+            return None
         s = self.sample(pg, 0.5) or self.sample(pg, 0.15)
         if s is None:
-            return None, None, 0
+            return None
         P, C, nd = s
-        veg = 0.0
+        veg, vnd = 0.0, 0.0
         if nd is not None:
             vm = nd > 0.18
             veg = float(vm.mean())
+            vnd = float(np.median(nd[vm])) if vm.any() else 0.0
             if (~vm).sum() >= 6 and veg < 0.6:
                 C = C[~vm]
         if len(C) < 4:
-            return None, None, 0
+            return None
         L = C @ LUMA
         o = np.argsort(L)
         mid = C[o[len(o) // 4: max(len(o) // 4 + 1, int(len(o) * 0.85))]]
-        c = mid.mean(axis=0)
-        H, S, Lt = hsl(c)
-        flat = slope < 6.0
-        t = osm_tags or {}
-        mat = (t.get('roof:material') or '').lower()
-        cq = 1
-        warm = (H < 45 or H > 335)
-        if flat:
-            if veg >= 0.6:
-                cls = 6
-            elif Lt > 0.62 and S < 0.16:
-                cls = 5
-            else:
-                cls = 4
-        else:
-            if warm and S > 0.20 and Lt > 0.22:
-                cls = 0
-            elif warm and S > 0.10:
-                cls = 1 if Lt < 0.42 else 0 if S > 0.16 else 2
-            elif Lt < 0.30:
-                cls = 3
-            elif Lt < 0.55:
-                cls = 2 if k in (0, 6) else 4 if k == 2 else 5
-            else:
-                cls = 5
-        m_ = {'roof_tiles': None, 'tile': None, 'tiles': None, 'slate': 3, 'metal': 5, 'metal_sheet': 5, 'zinc': 5, 'copper': 5, 'tin': 5,
-              'concrete': 2 if not flat else 4, 'tar_paper': 4, 'bitumen': 4, 'gravel': 4, 'glass': 7, 'grass': 6, 'eternit': 2, 'asbestos': 2}
-        if mat in m_:
+        return mid.mean(axis=0), veg, vnd
+
+
+def classify(c, flat, k, veg=0.0, vnd=0.0):
+    """the roof class from a colour in the sun: 0 tile red, 1 tile dark, 2 concrete tile or other grey cover, 3 slate, 4 bitumen / gravel
+    / membrane, 5 metal, 6 green roof; None = the picture shows trees, not the roof"""
+    H, S, Lt = hsl(c)
+    warm = (H < 45 or H > 335)
+    if flat:
+        if veg >= 0.6:
+            return None if vnd > 0.45 else 6      # a dense crown above the roof is a tree, an even low green is a green roof
+        if Lt > 0.62 and S < 0.16 and k in (1, 3):
+            return 5
+        return 4
+    if veg >= 0.6 and vnd > 0.45:
+        return None
+    if warm and S > 0.20 and Lt > 0.22:
+        return 0
+    if warm and S > 0.10:
+        return 1 if Lt < 0.42 else 0 if S > 0.16 else 2
+    if Lt < 0.36 and S < 0.2:
+        return 3
+    if Lt < 0.58:
+        return 2 if k in (0, 6) else 4 if k == 2 else 5
+    return 5
+
+
+OSM_MAT = {'roof_tiles': -1, 'tile': -1, 'tiles': -1, 'slate': 3, 'metal': 5, 'metal_sheet': 5, 'zinc': 5, 'copper': 5, 'tin': 5, 'concrete': 2,
+           'tar_paper': 4, 'bitumen': 4, 'gravel': 4, 'glass': 7, 'grass': 6, 'eternit': 2, 'asbestos': 2}
+
+
+def roof_classes(img, faces, k, osm_tags):
+    """class, colour and flag of every roof face of one building: [(cls, '#rrggbb', cq)] - cq 1 from the picture, 2 material tagged in
+    OpenStreetMap (colour still from the picture), (None, None, 0) where the picture does not show the face.
+    faces: [(polygon in UTM, slope in degrees, area)]. The slopes of one roof are lit differently by the sun: a face in the shade takes
+    the class and colour of the sunlit face of the same roof when both have the same kind of colour (one roof, one cover)."""
+    info = []
+    for pg, slope, area in faces:
+        fc = img.face_colour(pg)
+        if fc is None:
+            info.append(None)
+            continue
+        c, veg, vnd = fc
+        cls = classify(c, slope < 6.0, k, veg, vnd)
+        info.append(None if cls is None else {'c': c, 'cls': cls, 'hsl': hsl(c), 'a': area, 'flat': slope < 6.0})
+    seen = [q for q in info if q is not None and not q['flat']]
+    if len(seen) >= 2:
+        tot = sum(q['a'] for q in seen)
+        big = [q for q in seen if q['a'] >= 0.15 * tot] or seen
+        ref = max(big, key=lambda q: q['hsl'][2])
+        for q in seen:
+            if q is ref or q['hsl'][2] > ref['hsl'][2] - 0.04:
+                continue
+            dh = abs(q['hsl'][0] - ref['hsl'][0])
+            dh = min(dh, 360 - dh)
+            if (q['hsl'][1] < 0.13 and ref['hsl'][1] < 0.13) or (dh < 30 and q['hsl'][1] >= 0.08 and ref['hsl'][1] >= 0.10):
+                q['cls'], q['c'] = ref['cls'], ref['c']
+    mat = ((osm_tags or {}).get('roof:material') or '').lower()
+    out = []
+    for q in info:
+        if q is None:
+            out.append((None, None, 0))
+            continue
+        cls, cq = q['cls'], 1
+        if mat in OSM_MAT:
             cq = 2
-            if m_[mat] is not None:
-                cls = m_[mat]
-            elif cls not in (0, 1):
-                cls = 1 if Lt < 0.42 else 0
-        return cls, G.hexcol(c), cq
+            m_ = OSM_MAT[mat]
+            if m_ == -1:
+                cls = cls if cls in (0, 1) else (1 if q['hsl'][2] < 0.42 else 0)
+            elif m_ == 2 and q['flat']:
+                cls = 4
+            else:
+                cls = m_
+        out.append((cls, G.hexcol(q['c']), cq))
+    return out
 
 
 class Tiles:
