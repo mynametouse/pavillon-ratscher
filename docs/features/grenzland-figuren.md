@@ -214,6 +214,8 @@ Test `viz3/test/grenzland_helm.py`, `viz3/extra/grenzland-helm/tests.txt`.
   vorn im Kopf-Rahmen 3,2–3,6 cm über der Augenmitte, beim Fahren 3,2 cm). Auf Actions (Stand `e1ac32afb`): `grenzland_figuren`
   beide Teile grün, `smoke` grün; `grenzland_helm` dort rot an einer Stelle – Falko stand mit leicht geneigtem Kopf (Leerlauf-Clip), die
   Kante lag in der Welt nur 1,4 cm über dem Auge. Seitdem misst der Test die 1,5 cm im Kopf-Rahmen und in der Welt nur „über dem Auge“.
+- Der alte Figuren-Test lokal (21:52, Stand `d23a2b1cb`): `grenzland_figuren:moped,trabi,reiter` **21/21** – Timo auf der Schwalbe
+  mit dem Standard-`helm` in `out/grenzland_figuren/4_reiter_schwalbe_stand.jpg`.
 - Bilder: `out/grenzland_helm/uebersicht.jpg` (alle sechs aus fünf Richtungen), `6_gespraech_timo_jule.jpg`, `7_nacht_*.jpg`,
   `8_jule_reitet_*.jpg`, `9_spieler_moped_*.jpg`, `9_spieler_sturmhaube.jpg`. Vorher: Falkos Fotos (13.11. 20:44).
 
