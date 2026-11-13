@@ -56,6 +56,11 @@
    "g": "m",
    "age": 47
   },
+  "gl_yuki": {
+   "name": "Yuki",
+   "g": "f",
+   "age": 29
+  },
   "gl_funk": {
    "name": "funk",
    "g": "?",
@@ -85,11 +90,6 @@
    "name": "Verkäuferin",
    "g": "f",
    "age": 52
-  },
-  "gl_yuki": {
-   "name": "Yuki",
-   "g": "f",
-   "age": 29
   },
   "gl_boellermann": {
    "name": "Der Böller-Mann",
@@ -846,6 +846,153 @@
    "text": "Passiert.",
    "prio": 1,
    "src": "R.ende"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_so5h8v",
+   "text": "Ja? Ich bin noch im Garten.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1pxitn5",
+   "text": "Brauchst du was vom Wagen am Anger?",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1pxitn5",
+   "text": "Brauchst du was vom Wagen am Anger?",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_x1hd8d",
+   "text": "Milch. Und komm nicht wieder mit Blaulicht hinter dir heim.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_h3ivoe",
+   "text": "Na? Ich steh an der Werkstatt.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_qhnlcd",
+   "text": "Wollte nur hören, wo du steckst.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_qhnlcd",
+   "text": "Wollte nur hören, wo du steckst.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_g7fbyj",
+   "text": "Hier. Mit Sägespänen bis zum Hals. Bis nachher.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_phb58q",
+   "text": "Was gibt’s? Ich schraub gerade, mach’s kurz.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1nunc9f",
+   "text": "Läuft alles?",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1nunc9f",
+   "text": "Läuft alles?",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1qknwqk",
+   "text": "Läuft. Wie ’ne Schwalbe nach dem Vergaserputzen.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_s0amj3",
+   "text": "Jo. Kann grad nicht, Mutti steht daneben. Später.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_vpum81",
+   "text": "Ey! Nee, ich hab nix gesehen.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_vatgzq",
+   "text": "Und wenn, dann nicht von hier.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_tincxx",
+   "text": "Ach, du bist’s! Ich stehe am Herd.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_12adow0",
+   "text": "Ruf später nochmal an, ja?",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1bs0ghg",
+   "text": "Gerhard. Wer ist da?",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_437y8e",
+   "text": "Ich bin’s.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_437y8e",
+   "text": "Ich bin’s.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_7jrkvu",
+   "text": "Ach so. Am Telefon hör ich schlecht, Junge. Komm vorbei, dann reden wir.",
+   "prio": 2,
+   "src": "GLHANDY.linien"
   },
   {
    "who": "gl_funk",
