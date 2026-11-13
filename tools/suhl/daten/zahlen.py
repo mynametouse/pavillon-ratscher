@@ -516,11 +516,19 @@ def run(g_folder, out, version, area='stadt', census=None, report=None, quiet=Fa
     viertel = {'schema': S.SCHEMA, 'product': 'd', 'version': SC.version_of(version), 'made': made, 'area': area, 'partial': not whole,
                'crs': 'EPSG:25832', 'meta': meta, 'raster': Q.raster_json(), 'viertel': vq, 'gebiete': va}
     S.write_json(os.path.join(out, 'viertel.json'), viertel)
-    sources = [s for s in (gi.get('sources') or []) if isinstance(s, dict)] or ['ethos', 'alkis', 'osm']
+    # the sources of g travel on (its buildings are the base); the census gets the entry of this run: licence and day of retrieval
+    sources = [s for s in (gi.get('sources') or []) if isinstance(s, dict) and not (cz and s.get('id') == 'zensus')] or ['ethos', 'alkis', 'osm']
     have = {s.get('id') for s in sources if isinstance(s, dict)}
-    for sid in ('osm', 'wissen', 'regel') + (('zensus',) if cz else ()):
+    for sid in ('osm', 'wissen', 'regel'):
         if sid not in have:
             sources.append(sid)
+    if cz:
+        zs = SC.source('zensus')
+        day = cz.meta()['abruf']
+        zs.update({'retrieved': day, 'attribution': zs['attribution'].rstrip(')') + f'; Abruf {day})',
+                   'note': 'Einwohner, Alter, Haushalte, Heizung, Wohnungen je 100-m-Zelle; je Gebäude nur als Modell-Schätzung verteilt; '
+                           'Baualter der Gebäude: suhl-gebaeude aus demselben Zensus'})
+        sources.append(zs)
     idx = SC.make_index(out, 'd', version, area, sources, based_on=({'g': gv} if gv is not None else {}),
                         note='Szenario-Zahlen je Gebäude (Schätzungen mit Güte) und Summen je Stadtteil (viertel.json). Flächen in echten m², '
                              'in UTM gerechnet; Richtungen von geografisch Nord.',

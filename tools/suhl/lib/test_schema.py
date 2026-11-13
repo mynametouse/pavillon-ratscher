@@ -83,6 +83,10 @@ class Example(Base):
         missing = [w for w in ('aktuell.json', 'index.json', 'validate.py', 'suhl-publish', 'DATEN_TOKEN', 'EASYGEODATA_KEY', 'based_on', '`has`',
                                '`schema`', '`product`', 'easygeodata.py', f'Fassung {schema.REV}') if w not in txt]
         self.assertEqual(missing, [], 'docs/features/suhl-daten.md does not mention these')
+        missing = [f[0] for f in schema.D_FIELDS if f'`{f[0]}`' not in txt]
+        self.assertEqual(missing, [], 'docs/features/suhl-daten.md (section 13) does not name these fields of the product d')
+        missing = [k for k in schema.QUARTER_SUMS + ('raster', 'viertel.json', 'SUHL.data', 'vacancyMin') if k not in txt]
+        self.assertEqual(missing, [], 'docs/features/suhl-daten.md (section 13) does not name these parts of viertel.json')
 
 
 class Building(Base):

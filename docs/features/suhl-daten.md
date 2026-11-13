@@ -1,8 +1,9 @@
 # Suhl – Datenhaus: der Vertrag der Suhl-Daten (Schema 1), Prüfen, Veröffentlichen
 
-Stand 13.11.2026, Agent `suhl-daten` (Zweig `suhl/daten`), Stufe 2 des Suhl-Plans, Paket S2-0. Auftrag: `docs/plans/auftraege/suhl-daten.md`.
+Stand 13.11.2026, Agent `suhl-daten` (Zweig `suhl/daten`), Stufe 2 des Suhl-Plans, Pakete S2-0 (Datenhaus) und S2-9 (Szenario-Zahlen,
+Abschnitt 13 – dort steht auch der Vertrag für `SUHL.data`). Auftrag: `docs/plans/auftraege/suhl-daten.md`.
 Dieses Dokument ist der **Vertrag**: Die Daten-Agenten liefern so, die Laufzeit (`suhl-laufzeit`) liest so. Der Prüfer
-`tools/suhl/lib/validate.py` prüft genau das, was hier steht (Schema 1, Fassung 1.1 vom 13.11.2026, 02:25). Wer ein Feld anders braucht, sagt es `suhl-daten`
+`tools/suhl/lib/validate.py` prüft genau das, was hier steht (Schema 1, Fassung 1.2 vom 13.11.2026, 03:25; für `g`, `s`, `m`, `b`, `gr`, `w`, `boden` unverändert seit Fassung 1.1). Wer ein Feld anders braucht, sagt es `suhl-daten`
 oder dem Suhl-Chat; dann ändert sich Schema und Dokument zusammen (Abschnitt 12).
 
 ## 1 Kurz für Agenten
@@ -27,7 +28,10 @@ S.guard(buildings=n, area='stadt')                      # plausible Menge? (stad
 | `index.json` schreiben oder ergänzen | `python3 -I tools/suhl/lib/validate.py --index <…/suhl/<produkt>/v<N>> [--area probe] [--sources ethos,alkis,osm,dop] [--based-on boden=1,s=1]` – schreibt den gemeinsamen Teil aus den Dateien; alle eigenen Schlüssel eines vorhandenen Index bleiben, Gebiet, Quellen und Namensnennung werden von dort übernommen |
 | Quellen-Kürzel ansehen | `python3 -I tools/suhl/lib/validate.py --sources-list` |
 | Feldliste (englisch, aus dem Code) | `python3 -I tools/suhl/lib/validate.py --doc` |
-| Tests der Bibliothek | `python3 -I tools/suhl/lib/test_lib.py`, `test_schema.py`, `test_easygeodata.py` (zusammen 3 s, ohne Netz) |
+| Tests | `python3 -I tools/suhl/lib/test_lib.py`, `test_schema.py`, `test_easygeodata.py`, `tools/suhl/daten/test_zahlen.py`, `test_zensus.py` (zusammen 4 s, ohne Netz) |
+| Szenario-Zahlen rechnen (Abschnitt 13) | `python3 -I tools/suhl/daten/zahlen.py --g <…/suhl/g/v1> --out <wurzel>/suhl/d/v1 --area stadt --zensus tools/suhl/out/daten/zensus` |
+| Stadtteil eines Punkts | `import viertel; viertel.build().at(E, N)` (aus `tools/suhl/daten/`) – oder das Raster in `viertel.json` |
+| Zensus-Zelle eines Punkts | `S.census_cell(E, N)` → (Spalte, Zeile) im 100-m-Gitter EPSG:3035; `S.laea_from_utm`, `S.utm_from_laea` |
 | Höhen von easygeodata holen (nur im Workflow) | `python3 -I tools/suhl/lib/easygeodata.py --product dgm --prio P1 --raw ~/suhl-raw` (Abschnitt 9) |
 | Veröffentlichen | nicht selbst: den Ordner `…/suhl/<produkt>/v<N>` als Artefakt mit festem Namen hochladen (`suhl-g-v1` …) und dem Suhl-Chat den Lauf nennen – Abschnitt 8 |
 | Erfundenes Beispiel aller Produkte | `tools/suhl/lib/beispiel/suhl/…` (kleinstes Beispiel in der Form der Fassung 1.1; Kennungen `BEISPIEL_…`) |
@@ -288,8 +292,10 @@ in `s` (Warnung, wenn sie fehlt).
 
 ### `d` Szenario-Zahlen
 
-`{"schema": 1, "product": "d", "key": "…", "d": {"<Gebäude-Kennung>": {fa, lv, gfa, …}}}` – dieselben Zahlen wie das Feld `d` eines
-Gebäudes; dazu später `viertel.json` (Summen je Viertel). Kommt mit Paket S2-9.
+Je Gebäude die Zahlen für Szenarien (Flächen, Geschosse, Dachebenen mit Richtung von geografisch Nord, Solar-Potenzial, Wärmebedarf,
+Bewohner- und Heizungs-Schätzung aus dem Zensus) auf denselben Kacheln wie `g`, dazu `viertel.json` (Stadtteile: Raster, Umrisse,
+Summen, amtliche Zahlen, Annahmen). **Felder, Regeln, Ergebnisse und der Vertrag für `SUHL.data`: Abschnitt 13.** Das kleine Feld `d` im
+Gebäude-Datensatz (`fa`, `lv`, `gfa`, `rf`) bleibt erlaubt.
 
 ### `boden`
 
@@ -449,13 +455,242 @@ Sonst:
   sobald der Suhl-Chat die Läufe und Artefakte nennt.
 - Die Korridor-Kacheln P4 (außerhalb der Gemeinde) gehen über eine Rahmen-Abfrage; an zwei Kacheln am echten Dienst geprüft (Abschnitt 9).
 
+**Paket S2-9 (Stand 13.11.2026, 03:25) – das Wichtigste für den Suhl-Chat:**
+
+- Produkt `d` und `viertel.json` stehen (Abschnitt 13); Probesatz Zentrum `tools/suhl/out/daten/probe/suhl/d/v1` gültig; die ganze Stadt
+  rechnet der Job `zahlen` (Artefakt `suhl-d-v1`). In einen Satz gehört `d` erst, wenn sein `g` mit hinausgeht (`based_on: {"g": 1}`).
+- **Dachrichtungen:** `R[].az` von `suhl-gebaeude` ist von geografisch Nord (nachgerechnet, Abweichung in der Mitte 0,004°). Keine
+  Umrechnung nötig; nur das Gebäude-Feld `az` (First) steht im Modellrahmen.
+- **Dachüberstand:** Das Dach-Netz von `g` ist bei geneigten Dächern 13–24 % größer als der Grundriss. Flächen für Szenarien kommen aus
+  `R[].a` (ohne Überstand). `suhl-laufzeit` sollte Solarmodule nicht nach der Netz-Fläche zählen.
+- **Zensus-Gitter sind vom Chat-Rechner abrufbar** (`www.destatis.de/static/DE/zensus/gitterdaten/…`), Lizenz dl-de/by-2-0 mit
+  Abrufdatum. Zwölf Themen liegen geschnitten unter `tools/suhl/out/daten/zensus/` – auch für andere Agenten (`zensus.Grid`).
+- **Schwachstelle:** die Umrisse der Stadtteile in der Kernstadt (Annahme, Abweichungen −29 % bis +65 % zu den Zahlen der Stadt,
+  Abschnitt 13.5). Für Falko: Gibt es von der Stadt ein Straßenverzeichnis der 17 Stadtteile oder eine Karte?
+- Der Job `satz` meldet nach dem ersten echten Push, was ein Browser bekommt (Status, `access-control-allow-origin`, `cache-control`,
+  `content-type`, `content-encoding`, Bytes) für `aktuell.json`, jeden Index und eine Kachel je Produkt. An `_probe/hallo.json` geprüft:
+  200, `*`, `max-age=600`, `application/json`, gzip, 332 von 464 Byte.
+
 ## 12 Änderungen am Schema
 
 | Fassung | Datum | Was |
 |---|---|---|
 | 1.0 | 13.11.2026, 01:50 | erste Fassung: `g` (Gebäude), `b` (Bäume, Format von `suhl-gruen`), `m`, `s`, `d`, `index.json`, `aktuell.json`; Kopf `v`, `p` |
 | 1.1 | 13.11.2026, 02:25 | **Kopf einheitlich `schema`, `product`, `key`, `o`** (statt `v`, `p`). Index: `has` (statt `tiles`), `based_on` Pflicht, `sources` auch als Objekt. `g`: Datensatz wie 1.0, dazu `fas` + Kachel-Tabelle `fat`, `teil`, `zv`, `lvk`, `lm`, `kat`, `S[].hof`, `S[].eg`/`sign`, Kachel `tief`, `n`, `src`; `fg` 32 = steht nicht mehr, 64 = nur im Kataster, 128 = neu. `s` und `m` im Format von `suhl-strassen` (Kachel-lokale Dezimeter). Neu: `gr`, `w` (`suhl-gruen`). Boden: `meta.json` mit `has`-Listen ist sein Index; `suhl.balanced`, `suhl.based_on`. |
+| 1.2 | 13.11.2026, 03:25 | **Produkt `d` neu gefasst (Paket S2-9)**: Kachel mit Kopf `o`, Datensatz je Gebäude mit `vt`, `m`, `use`, `era`, `k`, `bt`, `fa`, `lv`, `gfa`, `dg`, `h`, `e`, `vol`, `rf`, `R` (Zeilen aus 8 Zahlen), `ru`, `pv`, `pe`, `res`, `heat {k, p, d}`, `fg`, `q`; neu `viertel.json` (Pflicht im Ordner von `d`). Quelle `zensus` im Katalog (dl-de/by-2-0). `suhllib` 0.3.0: EPSG:3035 (`laea_from_utm`, `census_cell`). Alle anderen Produkte unverändert – ein Index mit `rev: "1.1"` bleibt gültig. |
 
 Regel: Die Schema-Nummer bleibt 1, solange nur Probesätze (`v0`) existieren und nichts veröffentlicht ist; die Fassung zählt hoch. Ab
 der ersten Veröffentlichung gilt: ein neues freiwilliges Feld erhöht die Fassung, die Schema-Nummer steigt nur, wenn ein Leser
 umgebaut werden muss; `aktuell.json` nennt sie je Produkt.
+
+## 13 Szenario-Zahlen (Paket S2-9): Produkt `d`, `viertel.json`, Vertrag für `SUHL.data`
+
+Stand 13.11.2026, 03:25. Werkzeuge in `tools/suhl/daten/`: `zahlen.py` (rechnet), `viertel.py` + `viertel_saat.json` (Stadtteile),
+`zensus.py` (Zensus-Gitter), Tests `test_zahlen.py`, `test_zensus.py` (18 Tests, ohne Netz). Probesatz Zentrum:
+`tools/suhl/out/daten/probe/suhl/d/v1/` (11 Kacheln, 2 479 Gebäude, 0,74 MB + `viertel.json` 102 kB, gültig mit `--probe`).
+Die ganze Stadt rechnet der Job `zahlen` in `suhl-daten.yml` (Auftrag `tools/suhl/daten/zahlen.json`) und lädt den Ordner als
+Artefakt `suhl-d-v<N>` hoch – hinaus geht er wie alles durch die eine Tür (Abschnitt 8).
+
+```
+python3 -I tools/suhl/daten/zahlen.py --g <…/suhl/g/v1> --out <wurzel>/suhl/d/v1 --area stadt --zensus tools/suhl/out/daten/zensus --report bericht.json
+python3 -I tools/suhl/daten/zensus.py --fetch --raw ~/suhl-raw/zensus --out tools/suhl/out/daten/zensus      # Zensus-Gitter holen und schneiden
+python3 -I tools/suhl/daten/viertel.py                                                                        # die Stadtteile ansehen
+```
+
+**Grundsätze (so prüft es der Prüfer, so steht es in jeder Datei):**
+
+- **Flächen sind echte Quadratmeter**, in UTM (EPSG:25832) aus den Modellkoordinaten von `g` gerechnet (1 Modellmeter = 1,0157 m);
+  Höhen echte Meter. Dachflächen **ohne Dachüberstand**: Das Dach-Netz von `g` trägt einen gezeichneten Überstand (seine Grundfläche ist
+  bei geneigten Dächern 13–24 % größer als der Grundriss); gerechnet wird mit den Flächen `R[].a`/`ap` von `g`, deren Grundflächen sich
+  auf ±0,3 % zum Grundriss summieren.
+- **Richtungen sind Grad von geografisch Nord** (180 = die Fläche schaut nach Süden): hier aus dem Dach-Netz gerechnet (Fallrichtung im
+  UTM-Gitter + Meridiankonvergenz am Gebäude, bei Suhl +1,31°). Geprüft gegen `g`: Dessen `R[].az` ist ebenfalls von geografisch Nord
+  (Abweichung in der Mitte 0,004°, 5 %/95 %: −0,11°/+0,12° über 24 732 geneigte Flächen). Nur das Gebäude-Feld `az` (Firstrichtung) von
+  `g` steht im Modellrahmen (3,05° daneben).
+- **Was nicht gemessen ist, ist eine Schätzung nach einer genannten Regel** und trägt seine Güte in `q` (0 Regel/Annahme, 1 aus Daten
+  abgeleitet, 2 gemessen/amtlich, 3 geprüft). Alle Regeln mit ihren Zahlen stehen in `viertel.json` → `meta.annahmen` und `meta.regeln`
+  (für das „Warum?“ der App).
+- **Zensus:** Zahlen je Gebäude sind **Modell-Schätzungen** aus den Werten der 100-m-Zellen. Was eine Zelle nicht zeigt, bleibt
+  unbekannt – nichts wird aus Summen oder Nachbarn zurückgerechnet. Nichts über Personen, Eigentümer oder Flurstücke.
+
+### 13.1 Kachel `d/v<N>/10/<x>/<y>.json`
+
+`{"schema": 1, "product": "d", "key": "10/497/542", "o": [x, y], "made": …, "n": 325, "d": {"<Gebäude-Kennung>": {…}}}` – dieselben
+Kacheln und Kennungen wie `g` (`based_on: {"g": N}` im Index), ohne Gebäude mit `fg & 32` (stehen nicht mehr). 280 Byte je Gebäude.
+
+| Feld | P/F | Einheit | Bedeutung |
+|---|---|---|---|
+| `vt` | P | Nummer | Stadtteil: `nr` aus `viertel.json` (1…17), 0 = außerhalb der Gemeinde |
+| `m` | P | Kachel-lokal, m | Mitte des Grundrisses `[x, y]` im Rahmen von `g` (Modellmeter relativ zu `o`) |
+| `use`, `era`, `k`, `bt` | P (`bt` F) | wie `g` | Nutzung, Baualter (0 unbekannt … 4 ab 1991; Güte `q.era`), Art, Haustyp |
+| `fa` | P | m² | Grundfläche (ohne Innenhöfe) |
+| `lv` | P | – | Geschosse über Gelände: Kataster (`q.lv` 2), von `g` geschätzt (1) oder Regel Traufhöhe / 2,9 m (0) |
+| `gfa` | P | m² | Geschossfläche = `fa` × `lv` (brutto, ohne Keller und Dachgeschoss) |
+| `dg` | F | m² | Dachgeschoss nach Regel (geneigtes Dach ab 2,5 m über der Traufe: 60 % der Grundfläche); nicht in `gfa` |
+| `h`, `e` | P | m | Höhe und Traufhöhe über dem Fuß, wie `g` |
+| `vol` | P | m³ | Raum zwischen Fußebene und Dach (`q.vol` 0, wo das Dach-Netz den Grundriss nicht deckt: Regel) |
+| `rf` | P | m² | Dachfläche (geneigt gemessen, ohne Überstand) = Summe der Flächen in `R` |
+| `R` | P | Liste | **Dachebenen in der Reihenfolge von `g.R`** (gleiche Nummern): `[a, ap, az, sl, c, us, kwp, ir]` = Fläche m², Grundfläche m², Richtung in Grad von geografisch Nord (`null` = flach, unter 10°), Neigung °, Deckung (Klasse von `g`), belegbare Fläche m² (Regel), deren Leistung kWp, Einstrahlung in % der besten Fläche |
+| `ru`, `pv`, `pe` | F | m², kWp, kWh/Jahr | belegbare Fläche, **Solar-Potenzial** und Jahresertrag auf den geeigneten Ebenen (`ir` ≥ 75). Was heute auf dem Dach liegt, ist nicht bekannt. |
+| `res` | F | Personen | Bewohner – **Modell-Schätzung** (13.4); fehlt, wo der Zensus für die Zelle nichts zeigt |
+| `heat` | F | `{k, p, d}` | `k` wahrscheinlicher Energieträger der Heizung (nur Wohngebäude; der häufigste seiner Zensus-Zelle: `fern`, `gas`, `oel`, `holz`, `bio`, `wp`, `strom`, `kohle`, `kein`), `p` dessen Anteil in der Zelle (`q.heat` 1 ab 0,6), `d` Wärmebedarf in kWh/Jahr – immer nach Regel |
+| `fg` | F | Bits | Merker von `g` (2 Denkmal, 8 Leerstand, 16 Abriss geplant, 64 nur im Kataster, 128 neu) |
+| `q` | P | `{Feld: 0…3}` | Güte von `lv`, `rf` (Dachebenen: wie `rq` von `g`), `pv`, `era`, `vol`, `res`, `heat` |
+
+### 13.2 `d/v<N>/viertel.json` (115 kB für die ganze Stadt)
+
+| Schlüssel | Inhalt |
+|---|---|
+| `schema`, `product`, `version`, `made`, `area` | Kopf; `partial: true` heißt: nur ein Teil der Stadt (Probesatz) – dann gilt `complete` je Eintrag |
+| `raster` | die **eine Festlegung der Stadtteile**: `{level: 12, cell: 100, x0, y0, w, h, e0, n0, data}` – ein Byte je 100-m-Zelle (= Kachel der Stufe 12), Zeile 0 im Süden, Spalte 0 im Westen, Wert = `nr` des Stadtteils, 0 = außerhalb der Gemeinde; `data` ist Base64. Nachschlagen: `spalte = floor((E − e0) / 100)`, `zeile = floor((N − n0) / 100)`, `nr = data[zeile · w + spalte]` |
+| `viertel[]` | die 17 Stadtteile: `nr`, `id` (`mitte`, `nord`, `lautenberg`, `aue`, `friedberg`, `doellberg`, `ilmenauer`, `goldlauter`, `neundorf`, `heinrichs`, `maebendorf`, `albrechts`, `dietzhausen`, `wichtshausen`, `vesser`, `schmiedefeld`, `gehlberg`), `name`, `kind` (`viertel` \| `ortsteil`), `area` km², `center` `[E, N]`, `r` m, `poly` (Umriss-Ringe in UTM, aus dem Raster nachgezogen und geglättet), `outline: {q, src, how}`, `tiles` (Kacheln der Stufe 10 mit Gebäuden des Stadtteils, `"x/y"`), `official: {residents, year, date, src}`, dazu die Summen |
+| `gebiete[]` | dieselben Summen für `zentrum`, `kernstadt`, `stadt` |
+| Summen je Eintrag | `buildings`, `byUse: {Nutzung: [Zahl, Grundfläche, Geschossfläche]}`, `byEra: {"0"…"4": [Zahl ohne Nebengebäude und Garagen, Geschossfläche]}`, `footprint`, `floorArea`, `floorAreaHousing`, `attic`, `volume`, `roofArea`, `roofBy: {flach, N, NO, O, SO, S, SW, W, NW}`, `roofUsable`, `pvKwp` (Potenzial), `pvKwh`, `pvKwpToday: null` (nicht bekannt), `heatDemand`, `listed`, `vacant`, `quality`, `complete` |
+| `residents` | `{model, q, buildings, unassigned, how}` – Summe der Schätzungen der Gebäude (+ Einwohner von Zellen ohne passendes Gebäude) |
+| `census` | Zensus 2022 der Zellen, deren Mitte im Stadtteil liegt: `residents`, `cells`, `age: {u18, 18_29, 30_49, 50_64, 65plus, shown, share65, shareU18}`, `households: {1 … 6plus, n, share1}`, `housingBuildings`, `heatBy` (Gebäude mit Wohnraum nach Energieträger), `heatType`, `buildingTypes`, `dwellings`, `vacantShown`, `vacancyMin`, `ownerShown`, `ownerRateMin`, `livingArea`, `livingAreaPerResident` |
+| `meta` | `stand`, `g` (Version der Gebäude), `annahmen: [{id, text}]`, `regeln` (die Zahlen), `einstrahlung` (Tabelle), `felder`, `zensus` (Quelle, Lizenz, Abrufdatum), `hinweise` |
+
+`vacancyMin` und `ownerRateMin` sind **Untergrenzen**: leere bzw. vom Eigentümer bewohnte Wohnungen der Zellen mit Angabe, geteilt durch
+alle Wohnungen – Zellen ohne Angabe (unter 3 Fälle) fehlen im Zähler.
+
+### 13.3 Vertrag für `SUHL.data` (Plan 6.3) – woraus die Laufzeit jeden Aufruf bedient
+
+Weg: `aktuell.json` → `products.d.version` → `d/v<N>/viertel.json` (einmal laden, 115 kB) und die Kacheln `d/v<N>/10/<x>/<y>.json` bei Bedarf.
+
+| Aufruf | Quelle |
+|---|---|
+| `SUHL.data.building(id)` | Eintrag der `d`-Kachel: `quarter` = `viertel[vt − 1].id`, `use`, `era`, `levels` = `lv`, `footprint` = `fa`, `floorArea` = `gfa`, `height` = `h`, `volume` = `vol`, `roof[i]` = `{area: R[i][0], areaPlan: R[i][1], az: R[i][2], slope: R[i][3], cls: R[i][4], usable: R[i][5], pvKwpPotential: R[i][6], irradiation: R[i][7], pvKwp: null}`, `roofFlat` = Summe der Flächen mit `az == null`, `residents` = `res`, `heat` = `{kind: heat.k, share: heat.p, demand: heat.d}`, `listed` = `fg & 2`, `vacant` = `fg & 8`, `q`, `src` (Quellen aus `index.json`). **`pvKwp` („heute vorhanden“) ist `null`** – das Register nennt Anlagen unter 30 kW ohne Adresse. |
+| `SUHL.data.roofPlanes(id)` | aus `g`: Ebene `i` = die Dreiecke `R[i].ti` über `rv`/`rt` – dieselben Nummern wie `roof[i]`. Achtung Überstand: Wer Module auf die Polygone des Netzes legt, zählt 13–24 % zu viel; maßgeblich ist `usable`. |
+| `SUHL.data.quarter(id)` | Eintrag aus `viertel.json` (`viertel[]` oder `gebiete[]`): `area`, `buildings`, `byUse`, `byEra`, `floorArea`, `roofArea`, `roofUsable`, `pvKwpToday` (null), `residents.model`, `official`, dazu `census` |
+| `SUHL.data.each(area, fn)` | Kacheln aus `viertel[].tiles` laden, Einträge mit passendem `vt` durchlaufen (keine Geometrie nötig; Lage aus `m`) |
+| `SUHL.data.meta` | `viertel.json` → `meta` + `sources`/`attribution` aus `index.json` |
+| `SUHL.areaAt(x, y)`, `SUHL.quarters()` | Modell → UTM, dann das `raster`; Umrisse zum Zeichnen: `poly` |
+
+### 13.4 Zensus 2022 (Gitter 100 m)
+
+Quelle: Statistische Ämter des Bundes und der Länder, Zensus 2022, Stichtag 15.05.2022, Gitter in EPSG:3035; **Datenlizenz Deutschland –
+Namensnennung – Version 2.0**, zu nennen mit Abrufdatum (steht in jeder Datei und im Index). Werte sind zur Geheimhaltung leicht
+verändert; Zahlen unter 3 werden nicht gezeigt. Die Dateien nennt die amtliche Download-Seite
+(`destatis.de/…/Zensus2022/_inhalt.html`, 51 Gitter-Dateien unter `www.destatis.de/static/DE/zensus/gitterdaten/`); **dieser Host
+antwortet auch vom Chat-Rechner** (anders als `static.destatis.de`, das die Bestandsaufnahme nannte). `zensus.py --fetch` holt zwölf
+Themen (je 15–37 MB, bleiben außerhalb von git) und behält die Zellen, die die Gemeinde berühren: `tools/suhl/out/daten/zensus/<thema>.json`
+(zusammen 1,3 MB; `abruf.json` nennt Datei, Zeilen, Zellen).
+
+| Thema | Datei | Zellen | Verwendung |
+|---|---|---|---|
+| `einwohner` | Zensus2022_Bevoelkerungszahl | 1 346 | **je Gebäude verteilt** (`res`), Summe je Stadtteil |
+| `alter`, `alter10` | Alter_in_5_Altersklassen, Alter_in_10er-Jahresgruppen | 1 346 | nur je Stadtteil |
+| `haushalte` | Zensus2022_Groesse_des_privaten_Haushalts_in_Gitterzellen | 1 161 | nur je Stadtteil |
+| `energietraeger` | Gebaeude_mit_Wohnraum_nach_Energietraeger_der_Heizung | 1 126 | je Stadtteil gezählt; je Gebäude der häufigste der Zelle als Schätzung (`heat.k`) |
+| `heizungsart`, `gebaeudetyp` | Gebaeude_mit_Wohnraum_nach_ueberwiegender_Heizungsart, …_nach_Gebaeudetyp_Groesse | 1 126 | nur je Stadtteil |
+| `wohnungen`, `leerstand`, `eigentum`, `wohnflaeche` | Wohnungen_nach_Gebaeudetyp_Groesse, Leerstandsquote_…, Eigentuemerquote_…, Durchschnittliche_Wohnflaeche_je_Bewohner_… | 1 149–1 209 | nur je Stadtteil (Leerstand und Eigentum als Untergrenze) |
+| `baujahr` | Gebaeude_nach_Baujahr_in_Mikrozensus_Klassen | 1 126 | bei `suhl-gebaeude` (Baualter `era`) |
+
+**Bewohner je Gebäude:** Die Einwohner jeder Zelle werden auf die Wohngebäude verteilt, die in die Zelle hineinreichen – nach
+Wohn-Geschossfläche (`gfa` + `dg`, ein Ladengeschoss abgezogen, Nebengebäude und leer gemeldete Häuser 0) mal Anteil des Grundrisses in
+der Zelle. So zählt ein langer Block mit jedem Eingang in seiner Zelle. Güte `q.res` 1; steht in der Zelle kein Wohngebäude, nehmen
+andere Häuser die Einwohner auf (`q.res` 0: Heim, Unterkunft, anders benanntes Haus); gibt es gar keines, bleiben sie beim Stadtteil
+(`unassigned`). Ergebnis für die Stadt: 35 199 der 35 234 Einwohner liegen auf 11 403 Gebäuden, 27 in 6 Zellen ohne Gebäude.
+
+**Nie:** einen Wert, den eine Zelle nicht zeigt, aus „Insgesamt minus die anderen“ oder aus Nachbarzellen bilden; Alter, Haushalte,
+Eigentum oder Leerstand einem einzelnen Gebäude zuschreiben.
+
+### 13.5 Stadtteile: woher die Umrisse kommen – und wie gut sie sind
+
+Die Stadt führt 17 statistische Stadtteile (`docs/plans/suhl/stadt.md`), **Grenzen gibt es nicht als Geodaten**. `viertel.py` legt
+deshalb fest: Jede 100-m-Zelle der Gemeinde gehört zu Gehlberg oder Schmiedefeld, wenn ihre Mitte in deren Grenze aus OpenStreetMap
+liegt (`outline.q` 2), sonst zum Stadtteil des **nächsten Saatpunkts** aus `viertel_saat.json` (`outline.q` 0 – eine **Annahme**).
+Saatpunkte: Ortspunkte aus OpenStreetMap und Schwerpunkte der Gebäude an Straßen, die dem Namen nach zum Stadtteil gehören. Das Raster
+(206 × 146 Zellen, 141,67 km²) ist die eine Festlegung für Gebäude, Zensus-Zellen und Laufzeit.
+
+Probe: Einwohner des Zensus in diesen Umrissen gegen die Zahlen der Stadt (Melderegister 31.12.2022; es liegt in der Summe 4,8 % über dem
+Zensus vom 15.5.2022, die Reihen sind nicht dieselbe Zählung):
+
+| Nr. | Stadtteil | Umriss | km² | Gebäude | Geschossfläche ha | davon Wohnen ha | Einwohner Stadt 2022 | Zensus 2022 im Umriss | Abweichung | Modell (Summe der Gebäude) | 65 und älter | Leerstand mindestens | Gas / Öl / Fernwärme (Gebäude mit Wohnraum) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 01 | Suhl-Mitte | Annahme | 2,35 | 2 751 | 90,6 | 52,4 | 5 943 | 5 496 | −8 % | 5 564 | 35 % | 7,4 % | 641 / 28 / 168 |
+| 02 | Suhl-Nord | Annahme | 7,84 | 2 590 | 59,9 | 25,0 | 3 375 | 2 933 | −13 % | 2 988 | 26 % | 19,4 % | 269 / 18 / 113 |
+| 03 | Suhl-Lautenberg | Annahme | 5,94 | 4 443 | 39,6 | 29,3 | 3 988 | 3 529 | −12 % | 3 556 | 35 % | 1,3 % | 835 / 124 / 57 |
+| 04 | Suhl-Aue | Annahme | 3,57 | 1 759 | 43,0 | 24,6 | 3 179 | 3 934 | +24 % | 3 812 | 42 % | 7,5 % | 201 / 23 / 161 |
+| 05 | Suhl-Friedberg | Annahme | 5,18 | 1 950 | 48,0 | 11,2 | 2 609 | 1 863 | −29 % | 1 851 | 16 % | 12,9 % | 101 / 82 / 9 |
+| 06 | Suhl-Döllberg | Annahme | 2,18 | 1 366 | 31,2 | 17,1 | 2 346 | 2 863 | +22 % | 2 489 | 43 % | 7,9 % | 394 / 13 / 64 |
+| 07 | Suhl-Ilmenauer Straße | Annahme | 2,70 | 852 | 42,0 | 33,7 | 5 503 | 4 406 | −20 % | 4 870 | 38 % | 11,9 % | 154 / 3 / 231 |
+| 08 | Goldlauter-Heidersbach | Annahme | 21,07 | 3 548 | 36,1 | 22,0 | 2 403 | 2 439 | +1 % | 2 436 | 34 % | 5,5 % | 493 / 128 / 44 |
+| 09 | Neundorf | Annahme | 5,47 | 1 735 | 19,8 | 11,4 | 770 | 1 274 | +65 % | 1 219 | 33 % | 5,6 % | 331 / 24 / 18 |
+| 10 | Heinrichs | Annahme | 9,09 | 2 021 | 28,9 | 10,3 | 1 288 | 1 074 | −17 % | 1 024 | 30 % | 9,9 % | 301 / 22 / 19 |
+| 11 | Mäbendorf | Annahme | 5,64 | 1 186 | 17,5 | 6,2 | 591 | 608 | +3 % | 607 | 28 % | 1,0 % | 107 / 37 / 16 |
+| 12 | Albrechts | Annahme | 9,37 | 1 470 | 20,0 | 10,2 | 1 217 | 1 135 | −7 % | 1 132 | 28 % | 6,1 % | 229 / 94 / 21 |
+| 13 | Dietzhausen | Annahme | 6,73 | 1 498 | 14,8 | 10,0 | 1 032 | 1 038 | +1 % | 1 038 | 26 % | 2,4 % | 178 / 109 / 3 |
+| 14 | Wichtshausen | Annahme | 5,41 | 831 | 9,8 | 5,1 | 486 | 434 | −11 % | 433 | 38 % | 2,1 % | 62 / 59 / 0 |
+| 15 | Vesser | Annahme | 10,24 | 306 | 3,3 | 2,0 | 165 | 143 | −13 % | 143 | 31 % | 9,5 % | 20 / 40 / 0 |
+| 16 | Schmiedefeld am Rennsteig | OSM | 18,27 | 2 141 | 21,7 | 12,3 | 1 641 | 1 600 | −2 % | 1 600 | 32 % | 8,0 % | 454 / 19 / 9 |
+| 17 | Gehlberg | OSM | 20,62 | 990 | 8,3 | 3,7 | 463 | 465 | +0 % | 465 | 39 % | 9,9 % | 157 / 3 / 0 |
+|  | **Zentrum (Pilotquartier)** |  | 0,68 | 1 019 | 55,3 | 29,4 |  | 2 749 |  | 2 854 | 37 % | 9,4 % | 224 / 3 / 101 |
+|  | **Kernstadt** |  | 22,04 | 23 653 | 437,8 | 243,1 |  | 30 390 |  | 30 384 | 35 % | 9,0 % | 3 822 / 502 / 900 |
+|  | **Stadt Suhl** |  | 141,81 | 31 437 | 534,6 | 286,8 | 36 999 | 35 228 |  | 35 220 | 34 % | 8,6 % | 4 927 / 826 / 933 |
+
+Lesart: Wo ein Dorf für sich liegt oder eine echte Grenze hat, stimmen die Umrisse (Goldlauter, Mäbendorf, Dietzhausen, Schmiedefeld,
+Gehlberg: innerhalb von 3 %). **In der Kernstadt reichen die angenommenen Umrisse noch nicht für Aussagen je Stadtteil** (Aue +24 %,
+Döllberg +22 %, Neundorf +65 % zu viel; Ilmenauer Straße −20 %, Friedberg −29 % zu wenig – dort zählt das Register die Erstaufnahme mit).
+Die Saatpunkte sind bewusst nicht an die Zahlen angepasst worden. Abhilfe: ein Straßenverzeichnis der 17 Stadtteile oder eine Karte der
+Stadt ersetzt `viertel_saat.json`; Raster, Summen und Kacheln entstehen dann neu, das Format bleibt.
+
+### 13.6 Die Regeln und ihre Zahlen (`zahlen.py` → `RULES`, in `viertel.json` → `meta.regeln`)
+
+| Regel | Wert |
+|---|---|
+| Flach heißt eine Dachebene | unter 10° Neigung |
+| Geschosse ohne Kataster-Angabe | Traufhöhe / 2,9 m, mindestens 1; Nebengebäude und Garagen 1 |
+| Dachgeschoss | geneigtes Dach ab 2,5 m über der Traufe: 60 % der Grundfläche (Feld `dg`) |
+| Belegbare Dachfläche | 70 % einer geneigten Ebene, 45 % eines Flachdachs; unter 10 m² zählt nichts; nichts auf Glasdächern, Gartenlauben, Behältern, Türmen |
+| Solar-Leistung | 0,20 kWp je m² belegbarer Fläche; „geeignet“ ab 75 % der besten Einstrahlung (Tabelle `meta.einstrahlung`: Süd 30–40° = 100, flach 87, Ost/West 30° 84, Nord 30° 61); Ertrag 950 kWh je kWp und Jahr auf der besten Fläche |
+| Solar – nicht berücksichtigt | Schatten von Bäumen, Nachbarn und Talhängen, Statik, Denkmalschutz (`fg & 2` nennt die Denkmale), vorhandene Anlagen |
+| Wärmebedarf | 80 % von (Geschossfläche + Dachgeschoss) × Kennwert in kWh/m² und Jahr: Wohnen nach Baualter 150 (unbekannt) / 165 (bis 1918) / 170 (1919–1948) / 140 (1949–1990) / 90 (ab 1991), Plattenbau 1949–1990: 110; Hotel 150, Gastronomie 200, Handel/Büro/Verwaltung/Schule 110, Kita 130, Gesundheit 180, Kultur 100, Sport 120, Gewerbe/Industrie 90, Verkehr 50, Kirche 50, Lager 40; Nebengebäude, Garagen, Versorgung, Landwirtschaft, Unbekanntes 0 |
+
+Alle Werte sind **eigene Annahmen in der Größenordnung üblicher Kennwerte**, keine Messwerte und keinem Gutachten entnommen; sie stehen an
+einer Stelle und lassen sich tauschen.
+
+### 13.7 Ergebnisse und Prüfungen (ganze Stadt, `tools/suhl/out/daten/zahlen_stadt.json`, `viertel_stadt.json`)
+
+Gerechnet aus dem Artefakt `suhl-g-v1` des Laufs 43345898563 von `suhl-gebaeude` (397 Kacheln, 31 708 Datensätze), 9 Sekunden:
+
+| Größe | Wert | Güte, Anmerkung |
+|---|---|---|
+| Gebäude (Baukörper) | 31 437 | 271 nicht mehr stehende (`fg` 32) ausgelassen |
+| Grundfläche | 249,8 ha | gemessen (Kataster/LoD2) |
+| Geschossfläche | 534,6 ha, davon Wohnen 286,8 ha | Geschosse: 23 239 aus dem Kataster, 524 von `g` geschätzt, 7 674 nach Regel |
+| Volumen | 20,0 Mio. m³ | aus Traufe und Dach-Netz |
+| Dachfläche | 277,5 ha, davon flach 133,9 ha; N 18,6 · NO 16,9 · O 16,0 · SO 20,3 · S 18,7 · SW 16,5 · W 16,0 · NW 20,7 ha | Dächer: 15 991 aus Daten (Oberflächenmodell, OSM, Luftbild), 15 446 nach Regel |
+| Solar-Potenzial | 224,7 MWp auf 112,4 ha, 189 GWh/Jahr | Regel, ohne Verschattung – eine Obergrenze |
+| Wärmebedarf | 494 GWh/Jahr | Regel; zum Vergleich: die Stadtwerke gaben 2025 78,7 GWh Fernwärme ab |
+| Einwohner (Zensus-Zellen) | 35 234 in 1 346 Zellen; auf Gebäuden 35 199 | Stadt nennt 36 999 (Melderegister 31.12.2022), Land 34 685 (31.12.2024) |
+| Haushalte (Zensus-Zellen) | 18 732, davon 46 % mit einer Person | amtlich 18 968 und 47,25 % – die Zellen unter 3 fehlen |
+| 65 und älter | 34,1 % | Stadt: 31,27 % sind 66 oder älter (2022) |
+| Wohnungen, Leerstand | 21 792; mindestens 8,6 % leer (Suhl-Nord mindestens 19,4 %) | Zensus 2011: 8 % |
+| Gebäude mit Wohnraum nach Energieträger | Gas 4 927 · Fernwärme 933 · Heizöl 826 · Holz 272 · Wärmepumpe/Solar 161 · Strom 152 · Kohle 93 · ohne 111 | von 8 179; der Wärmeplan nennt „über 1 000 Ölheizungen“ |
+| Wohnfläche laut Zensus / Wohn-Geschossfläche des Modells | 168 ha / 287 ha = 0,58 | üblich wären 0,6–0,75 bei 9 % Leerstand: die Geschossfläche des Modells liegt wohl 10–20 % zu hoch (jeder Baukörper zählt mit allen Geschossen) |
+
+Prüfungen im Lauf: Dachrichtungen und Neigungen gegen `g` (oben), Grundflächen der Dachebenen gegen den Grundriss (5 %/95 %: 0,997/1,003),
+wahre Fläche × cos(Neigung) gegen Grundfläche (0,998/1,002), Wächter (Mitte von Suhl im Rahmen, plausible Gebäudezahl), der Prüfer des
+Vertrags (0 Fehler, 0 Warnungen). Der Prüfer hat dabei einen eigenen Fehler gefunden und behoben: Schwerpunkte mit UTM-Zahlen ohne
+lokalen Bezug gerechnet lagen bei schmalen Grundrissen hunderte Meter daneben.
+
+### 13.8 Die fünf Szenario-Themen (`docs/plans/suhl/planungen.md`): was jetzt beantwortbar ist, was fehlt
+
+| Thema | Jetzt da | Fehlt |
+|---|---|---|
+| 1 Suhl-Nord | je Gebäude Nutzung, Typ (Platte/Block), Geschossfläche, Dach, Bewohner-Schätzung; Stadtteil: mindestens 19,4 % Leerstand, 26 % über 64, 113 Gebäude an Fernwärme | Umriss des Stadtteils ist eine Annahme; die Blöcke mit Abriss-Stand (LEG 2022) sind nicht mit Kennungen verknüpft (`fg` 16 setzt bisher niemand) |
+| 2 Schrumpfen und Altern | je Stadtteil Einwohner, Altersklassen, Haushaltsgrößen (Zensus 2022), dazu die Zahlen der Stadt; je Gebäude Bewohner-Schätzung – ein Szenario „−28 % bis 2042“ kann je Gebäude oder Stadtteil rechnen | Vorausberechnung gibt es nur für die ganze Stadt; Umrisse der Kernstadt-Stadtteile |
+| 3 Innenstadt, Herrenteich | Zentrum vollständig im Probesatz: 1 019 Gebäude, 55,3 ha Geschossfläche, 2 854 Bewohner (Modell), 61 % Ein-Personen-Haushalte, 37 % über 64, mindestens 9,4 % Leerstand | Flächen des Wettbewerbs (Park) als Geometrie; Verkaufsflächen der Einkaufszentren |
+| 4 Wärmewende | je Stadtteil Gebäude nach Energieträger und Heizungsart; je Gebäude Wärmebedarf (Regel) und wahrscheinlicher Energieträger mit Anteil | Karte des Wärmeplan-Entwurfs (Gebietstypen), Fernwärme-Netz; Ölheizungen sind je Gebäude nur eine Zellen-Schätzung |
+| 5 Friedberg | Gebäude, Flächen, Dächer des Stadtteils; Zensus 1 863 Einwohner im Umriss gegen 2 609 im Register (mit Erstaufnahme) | welche Baukörper zur Erstaufnahme gehören (Kennungen), Umriss |
+
+### 13.9 Offen
+
+- **Stadtteilgrenzen der Kernstadt** (13.5) – der größte Mangel.
+- Der Job `zahlen` rechnet die Stadt aus dem Artefakt eines Laufs von `suhl-gebaeude`; ein neuer Stand von `g` braucht einen neuen
+  Lauf (`zahlen.json` ändern, `lauf: zahlen`). `d` wird mit `based_on: {"g": N}` veröffentlicht; der Veröffentlicher lehnt einen Satz
+  ab, dessen `d` auf einem anderen `g` steht.
+- Das Feld `d` im Gebäude-Datensatz von `g` (`fa`, `lv`, `gfa`, `rf`) bleibt erlaubt; maßgeblich für Szenarien ist das Produkt `d`.
+- Geschossfläche: Baukörper eines Hauses (Anbau, Veranda) zählen einzeln mit ihren Geschossen – daher die Abweichung zur Wohnfläche.
+- Wünsche des Was-wäre-wenn-Chats (Plan 6.3: Stellplätze, Baujahr genauer, Fernwärme-Anschluss) sind nicht enthalten.

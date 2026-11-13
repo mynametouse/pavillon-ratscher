@@ -4,6 +4,7 @@ Lauf bestellt 2026-11-13T01:00Z: easygeodata, alle Phasen (Kachellisten fuer Suh
 Lauf bestellt 2026-11-13T01:05Z: egd-client (der Client mit P1, drei Produkte, Cache) -> Lauf 43341830636 gruen
 Lauf bestellt 2026-11-13T01:29Z: satz - Trockenlauf mit dem Boden der ganzen Stadt (Artefakt suhl-boden-v1 aus Lauf 43340569202) -> Lauf 43345327046 gruen, 264.8 MB, nichts geschrieben
 Lauf bestellt 2026-11-13T01:36Z: egd-client - zweiter Lauf (Cache muss greifen) und zwei Korridor-Kacheln P4 ueber einen Rahmen -> Lauf 43345805762 gruen (Cache greift, 0 geholt; 618/5611 und 626/5594 ueber einen Rahmen)
-Lauf bestellt 2026-11-13T02:19Z: zahlen - Paket S2-9: Zensus-Gitter holen und schneiden, Szenario-Zahlen der ganzen Stadt aus dem Artefakt suhl-g-v1 des Laufs 43345898563 (tools/suhl/daten/zahlen.json) -> Artefakt suhl-d-v1
+Lauf bestellt 2026-11-13T02:19Z: zahlen - Paket S2-9: Zensus-Gitter holen und schneiden, Szenario-Zahlen der ganzen Stadt aus dem Artefakt suhl-g-v1 des Laufs 43345898563 (tools/suhl/daten/zahlen.json) -> Artefakt suhl-d-v1 -> Lauf 43351295880 gruen: 12 von 12 Zensus-Themen geholt, 396 Kacheln, 31437 Gebaeude, 8.75 MB, gueltig; Ergebnis gleich der Rechnung auf dem Chat-Rechner
+Lauf bestellt 2026-11-13T02:24Z: zahlen - zweiter Lauf mit Fassung 1.2 (Index nennt die Zensus-Lizenz dl-de/by-2-0 mit Abrufdatum); sein Artefakt suhl-d-v1 ist das fuer die Tuer
 phase: docs
 lauf: zahlen

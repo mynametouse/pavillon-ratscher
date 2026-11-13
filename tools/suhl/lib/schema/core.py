@@ -4,7 +4,7 @@ import math, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import suhllib as S   # noqa: E402
 
-REV = '1.1'            # revision of schema 1: raised with every compatible change; see docs/features/suhl-daten.md, section 12
+REV = '1.2'            # revision of schema 1: raised with every compatible change; see docs/features/suhl-daten.md, section 12
 MAX_NOTES = 40         # at most this many errors and warnings are kept per kind of problem
 
 
