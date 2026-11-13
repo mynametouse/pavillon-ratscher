@@ -152,6 +152,31 @@ class Publish(unittest.TestCase):
         self.assertEqual(rc, 1)
         self.assertIn('could not be downloaded', out['reason'])
 
+    def test_product_from_a_branch_at_a_commit(self):
+        other = os.path.join(self.t, 'repo.git')                                  # stands for origin: a branch that holds a sample
+        sh('git', 'init', '-q', '--bare', '-b', 'main', other)
+        sh('git', 'config', 'uploadpack.allowAnySHA1InWant', 'true', cwd=other)
+        w = os.path.join(self.t, 'w')
+        sh('git', 'clone', '-q', other, w)
+        shutil.copytree(os.path.join(self.data, 'suhl', 'b', 'v0'), os.path.join(w, 'tools', 'suhl', 'out', 'gruen', 'probe', 'suhl', 'b', 'v0'))
+        for c in (['config', 'user.email', 't@example.org'], ['config', 'user.name', 't'], ['add', '.'], ['commit', '-q', '-m', 'sample'],
+                  ['push', '-q', 'origin', 'HEAD:refs/heads/suhl/gruen']):
+            sh('git', *c, cwd=w)
+        sha = sh('git', 'rev-parse', 'HEAD', cwd=w).strip()
+        sh('git', 'init', '-q', self.src)
+        sh('git', 'remote', 'add', 'origin', 'file://' + other, cwd=self.src)
+        src = {'branch': 'suhl/gruen', 'commit': sha, 'path': 'tools/suhl/out/gruen/probe/suhl/b/v0', 'version': 0}
+        rc, out, rep, log = self.run_set({'b': src})
+        self.assertEqual((rc, out['published']), (0, 'true'), log)
+        self.assertIn('suhl/gruen at ' + sha[:8], rep['products']['b']['from'])
+        self.assertIn('suhl/b/v0/10/497/542.bin', self.files())
+        rc, out, rep, log = self.run_set({'b': dict(src, path='tools/suhl/out/gruen/probe/suhl/w/v0')})
+        self.assertEqual(rc, 1)
+        self.assertIn('does not exist at commit', out['reason'])
+        rc, out, rep, log = self.run_set({'b': dict(src, commit='HEAD; rm -rf /')})
+        self.assertEqual(rc, 1)
+        self.assertIn('need a commit id', out['reason'])
+
     def test_no_secret_is_not_a_failed_run(self):
         h0 = self.head()
         rc, out, rep, log = self.run_set({'b': self.prod('b')}, token='')

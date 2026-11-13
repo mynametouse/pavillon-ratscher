@@ -4,8 +4,9 @@
 Called by the composite action next to this file (action.yml). Reads its inputs from the environment:
     PUB_MODE      'hallo' -> writes suhl/_probe/hallo.json (time, run id, commit): the proof that the path works
                   'set'   -> publishes a SET of products as one commit (PUB_SET = the set file, tools/suhl/daten/satz.json):
-                             fetch every product (a workflow artifact of this repository: gh run download, or a folder of the
-                             checkout), validate it (tools/suhl/lib/validate.py), check that the products of the set were computed
+                             fetch every product (a workflow artifact of this repository: {run, artifact}; a folder of another
+                             branch at a named commit: {branch, commit, path}; or a folder of the checkout: {folder}),
+                             validate it (tools/suhl/lib/validate.py), check that the products of the set were computed
                              on each other's generations (based_on), put them under suhl/<product>/v<N>/, switch suhl/aktuell.json,
                              remove the version folders the set names, write ATTRIBUTION.md, report - and push, unless it is a dry run.
     PUB_DRY       'true' = dry run: everything except the push (needs no secret)
@@ -239,9 +240,32 @@ def fetch_product(product, entry, version, root, work, S):
     if entry.get('folder'):
         src = os.path.join(root, entry['folder'])
         return (src, f'folder {entry["folder"]}') if os.path.isdir(src) else (None, f'the folder {entry["folder"]} does not exist in the checkout')
+    if entry.get('commit') and entry.get('path'):
+        # a folder of another branch of this repository at a named commit (the samples are committed on the owners' branches)
+        commit, path = str(entry['commit']), str(entry['path']).strip('/')
+        if not re.fullmatch(r'[0-9a-f]{7,40}', commit) or '..' in path.split('/') or path.startswith('-'):
+            return None, f'commit {commit!r} / path {path!r}: need a commit id (7 to 40 hex digits) and a path inside the repository'
+        dl = os.path.join(work, 'satz-dl', product)
+        shutil.rmtree(dl, ignore_errors=True)
+        os.makedirs(dl)
+        rc, out = git(['fetch', '--quiet', '--depth', '1', 'origin', commit], cwd=root, quiet=True)
+        if rc != 0:
+            return None, f'commit {commit} could not be fetched from origin: {out[-200:]}'
+        rc, out = git(['rev-parse', '--verify', '--quiet', 'FETCH_HEAD^{commit}'], cwd=root, quiet=True)
+        full = out.strip().splitlines()[-1] if rc == 0 and out.strip() else commit
+        ar = subprocess.run(['git', 'archive', '--format=tar', full, '--', path], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if ar.returncode != 0:
+            return None, f'{path} does not exist at commit {commit}: {scrub(ar.stderr.decode("utf-8", "replace"))[-200:]}'
+        import io, tarfile
+        with tarfile.open(fileobj=io.BytesIO(ar.stdout)) as tf:
+            tf.extractall(dl, filter='data')
+        src = locate(dl, product, version, S.PRODUCTS[product]['index'])
+        if src is None:
+            return None, f'{path} at commit {commit} holds no {S.PRODUCTS[product]["index"]} - not a product version folder'
+        return src, f'{entry.get("branch") or "branch ?"} at {full[:8]}, {path}'
     run, art = entry.get('run'), entry.get('artifact')
     if not run or not art:
-        return None, 'the set names neither a folder nor run + artifact'
+        return None, 'the set names no source: {run, artifact} or {branch, commit, path} (or a folder of the checkout)'
     dl = os.path.join(work, 'satz-dl', product)
     shutil.rmtree(dl, ignore_errors=True)
     os.makedirs(dl)
@@ -394,7 +418,7 @@ def mode_set(work):
             new_akt = schema.make_aktuell(new_akt, f)
     if akt is not None and new_akt is not None and new_akt.get('products') == akt.get('products'):
         new_akt = akt                    # nothing switched: aktuell.json keeps its date
-    for r in st.get('remove') or []:
+    for r in (st.get('remove') or []) + (st.get('entfernen') or []):
         m = re.fullmatch(r'([a-z_]+)/v([0-9]+)', str(r))
         if not m:
             problems.append(f'remove: {r!r} is not "<product>/v<N>"')

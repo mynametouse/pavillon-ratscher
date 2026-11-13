@@ -36,8 +36,9 @@ def tif_bytes(e_km, n_km, base=400.0):
     return buf.getvalue()
 
 
-TILES = [(618, 5607), (619, 5607), (620, 5607), (619, 5608)]
-FILES = {f'dgm1_32_{e}_{n}.tif': tif_bytes(e, n) for e, n in TILES}
+TILES = [(618, 5607), (619, 5607), (620, 5607), (619, 5608)]            # what the list of the municipality names
+OUTSIDE = [(625, 5596), (626, 5597)]                                    # corridor tiles: only a box query names them
+FILES = {f'dgm1_32_{e}_{n}.tif': tif_bytes(e, n) for e, n in TILES + OUTSIDE}
 
 
 class Api(http.server.BaseHTTPRequestHandler):
@@ -60,8 +61,9 @@ class Api(http.server.BaseHTTPRequestHandler):
             base = f'http://127.0.0.1:{self.server.server_address[1]}'
             tl = [{'state': 'TH', 'tile_key': f'32_{e}_{n}', 'url': f'{base}/api/file/dgm/TH/dgm1_32_{e}_{n}.tif', 'aktualitaet': '2020-01-01',
                    'size_bytes': len(FILES[f'dgm1_32_{e}_{n}.tif']) + (1 if (e, n) == (620, 5607) else 0), 'epsg': 25832,
-                   'befliegung_von': '2020-01-01', 'befliegung_bis': '2025-12-31', 'befliegung_quelle': 'zeitraum'} for e, n in TILES
-                  if 'bbox' not in query]
+                   'befliegung_von': '2020-01-01', 'befliegung_bis': '2025-12-31', 'befliegung_quelle': 'zeitraum'}
+                  for e, n in (TILES + OUTSIDE if 'bbox' in query else TILES)]
+            STATE['bbox_queries'] = STATE.get('bbox_queries', 0) + ('bbox' in query)
             return self._json(200, {'count': len(tl), 'size_bytes': sum(t['size_bytes'] for t in tl), 'angemeldet': True, 'tiles': tl})
         if path.startswith('/api/file/dgm/TH/'):
             if STATE['quota_after'] is not None and STATE['files_served'] >= STATE['quota_after']:
@@ -188,6 +190,14 @@ class Client(unittest.TestCase):
         rep = self.client().fetch_many('dgm', [(618, 5607), (619, 5607), (619, 5608)], max_mb=0.001)
         self.assertEqual(rep['fetched'], 1)
         self.assertIn('limit of this run', rep['stopped'])
+
+    def test_tiles_outside_the_municipality_by_box(self):
+        STATE['bbox_queries'] = 0
+        rep = self.client().fetch_many('dgm', [(619, 5607)] + OUTSIDE + [(700, 5700)])
+        self.assertEqual((rep['present'], rep['fetched'], rep['missing'], rep['failed'], rep['stopped']), (3, 3, ['700_5700'], {}, None))
+        self.assertEqual((STATE['api_hits'].count('/api/dgm/tiles'), STATE['bbox_queries']), (2, 1))      # one list, one box - not one per tile
+        self.assertTrue(os.path.exists(EG.raw_path(self.raw, 'dgm', 625, 5596)))
+        self.assertTrue(any('outside the municipality list' in ln for ln in self.lines))
 
     def test_only_from_actions(self):
         old = os.environ.pop('GITHUB_ACTIONS', None)
