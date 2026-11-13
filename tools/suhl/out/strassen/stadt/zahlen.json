@@ -1,9 +1,9 @@
 {
- "made": "2026-11-13T01:17:48Z",
+ "made": "2026-11-13T01:22:13Z",
  "gebiet": "stadt",
  "tiles": 1129,
  "osm": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
- "osm_stamp": "2026-11-13T01:16:34Z",
+ "osm_stamp": "2026-11-13T01:20:40Z",
  "box_utm": [
   609500,
   5594800,
@@ -27,9 +27,9 @@
  "km_by_kind": {
   "track": 784.39,
   "path": 337.03,
-  "service": 229.28,
-  "street": 166.88,
-  "foot": 77.31,
+  "service": 223.09,
+  "street": 174.02,
+  "foot": 76.35,
   "main": 73.35,
   "motorway": 58.13,
   "lane": 24.61,
@@ -37,11 +37,11 @@
  },
  "km": 1773.4,
  "ways_by_kind": {
-  "service": 3132,
+  "service": 3049,
   "track": 1997,
-  "foot": 1524,
+  "foot": 1501,
   "path": 1464,
-  "street": 1030,
+  "street": 1136,
   "main": 427,
   "motorway": 227,
   "lane": 172,
@@ -440,6 +440,44 @@
    }
   ]
  },
+ "fit_to_ground": {
+  "alle": {
+   "punkte": 1129003,
+   "mittel_m": -0.01,
+   "median_m": -0.0,
+   "mittel_betrag_m": 0.62,
+   "p95_betrag_m": 1.92,
+   "max_auftrag_m": 13.44,
+   "max_abtrag_m": 13.8
+  },
+  "fahrstrassen": {
+   "punkte": 313354,
+   "mittel_m": -0.01,
+   "median_m": -0.01,
+   "mittel_betrag_m": 0.73,
+   "p95_betrag_m": 2.11,
+   "max_auftrag_m": 12.15,
+   "max_abtrag_m": 8.97
+  },
+  "wege": {
+   "punkte": 792815,
+   "mittel_m": -0.0,
+   "median_m": -0.0,
+   "mittel_betrag_m": 0.53,
+   "p95_betrag_m": 1.65,
+   "max_auftrag_m": 9.71,
+   "max_abtrag_m": 11.05
+  },
+  "bahn": {
+   "punkte": 25071,
+   "mittel_m": -0.09,
+   "median_m": 0.07,
+   "mittel_betrag_m": 2.21,
+   "p95_betrag_m": 6.69,
+   "max_auftrag_m": 13.44,
+   "max_abtrag_m": 13.8
+  }
+ },
  "heights": {
   "tiles": 9800808,
   "copernicus": 78270,
@@ -466,15 +504,15 @@
   "own_sampling_share": 0.0079,
   "zaehlt": true
  },
- "bytes_tiles": 4685253,
+ "bytes_tiles": 4685256,
  "korridor": {
   "tiles": 116,
   "ways": 229,
   "km_by_kind": {
    "motorway": 14.88,
-   "street": 10.13,
+   "street": 10.76,
    "main": 7.51,
-   "service": 6.72,
+   "service": 6.09,
    "lane": 1.45,
    "county": 0.17
   },
@@ -482,5 +520,5 @@
   "pinned_nodes": 3,
   "bytes": 113672
  },
- "bytes_drive": 4181675
+ "bytes_drive": 4222733
 }
