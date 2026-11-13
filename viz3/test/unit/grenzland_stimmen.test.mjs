@@ -61,6 +61,7 @@ test('the street of 1989 and the radio are collected, each line once', () => {
 
 test('every module’s own linien() joins – both forms, with the prefix or without; a broken one is skipped', () => {
   const welt = { linien: () => [['funk', 'Rennsteig für Schleuse 12: kommen.'], { who: 'gl_ingrid', text: 'Die schon wieder.' }] };
+  const reakt = { linien: () => [['gerhard', 'Ist was?'], ['haendler', 'Ist was?'], ['falko', 'Nichts.']] };
   const kino = { linien: () => [['falko', 'Und jetzt?']] };
   const kaputt = {
     linien: () => {
@@ -68,13 +69,27 @@ test('every module’s own linien() joins – both forms, with the prefix or wit
     },
   };
   const radio = { linien: () => [['r_neon', 'Neon. Nachts.', 2]] };
-  const L = V.sammeln(Q([['GLREAKTION', welt], ['GLKAMERA', kino], ['GLKAPUTT', kaputt], ['GLX', radio]]));
+  const L = V.sammeln(Q([['GLFAHNDUNG', welt], ['GLKAMERA', kino], ['GLKAPUTT', kaputt], ['GLX', radio], ['GLREAKTION', reakt]]));
   const f = (who, t) => L.find(l => l.who === who && l.text === t);
   assert.equal(f('gl_funk', 'Rennsteig für Schleuse 12: kommen.').prio, 2);
   assert.equal(f('gl_ingrid', 'Die schon wieder.').prio, 2);
   assert.equal(f('gl_falko', 'Und jetzt?').prio, 1, 'kino’s lines are the story');
   assert.equal(f('gl_r_neon', 'Neon. Nachts.').prio, 2, 'a line may bring its own prio');
-  assert.equal(f('gl_funk', 'Rennsteig für Schleuse 12: kommen.').src, 'GLREAKTION.linien');
+  assert.equal(f('gl_funk', 'Rennsteig für Schleuse 12: kommen.').src, 'GLFAHNDUNG.linien');
+  // the many small reactions: of a person who speaks in the story 2.5, of anybody else 3.5 (person by person), the player's own 2
+  assert.equal(f('gl_gerhard', 'Ist was?').prio, 2.5);
+  assert.equal(f('gl_haendler', 'Ist was?').prio, 3.5);
+  assert.equal(f('gl_falko', 'Nichts.').prio, 2);
+});
+
+test('the radio: today’s talk station first, its feature last', () => {
+  const L = V.sammeln(Q()).filter(l => l.who.startsWith('gl_r_'));
+  assert.equal(L[0].who, 'gl_r_grenzland');
+  const g = L.filter(l => l.who === 'gl_r_grenzland');
+  assert.deepEqual(
+    g.slice(-GLDATA.RADIO.sushi.length).map(l => l.text),
+    GLDATA.RADIO.sushi
+  );
 });
 
 test('what cannot be recorded is left out: variable parts, empty lines, no speaker', () => {

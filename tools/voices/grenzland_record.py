@@ -6,9 +6,11 @@
 #                                                             (viz3/build.py appends vx_add to the village's VOICEX.lines)
 #   viz3/extra/grenzland-stimmen/aufnahmen.json               per id: voice settings, seconds, loudness, bytes (what to record again)
 # Only what is new or changed is recorded (same id = same words; same voice, pace, pitch and sound: the file stays); lines no longer in the
-# list go. The budget (all files ≤ 6 MB): the story (prio 1) and the world (2) always, the radio's presenters (3, 4) as far as it goes.
+# list go. The budget (all files ≤ 6 MB): the story (prio 1) and the world (2) always, then as far as it goes the reactions of the story's
+# people (2.5), the talk stations (3), the reactions of everybody else (3.5), the other stations (4) – 2.5, 3.5 and 4 a whole person each.
 #   python3 tools/voices/grenzland_record.py        (GL_BUDGET=bytes, GL_ONLY=<who,…> to try a few people, GL_DRY=1 nothing recorded)
 import asyncio, json, os, re, subprocess, sys, zlib
+from itertools import groupby
 H = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(H, '..', '..'))
 EX = os.path.join(ROOT, 'viz3', 'extra', 'grenzland-stimmen'); OUT = os.path.join(EX, 'dist', 'snd', 'voice', 'gl')
 TMP = os.path.join(ROOT, 'out', 'grenzland-stimmen')
@@ -104,6 +106,7 @@ KIND = {
 
 FEM = re.compile(r'Katja|Amala|Seraphina|Ingrid|Leni|Emma|Ava|Elke|Tanja')
 def h32(s): return zlib.crc32(s.encode('utf8'))
+def unit(p): return p >= 4 or p % 1 == 0.5   # a whole person or nothing
 def setting(l, cast, have):
     """(voice, rate, pitch, kind) of a line"""
     w = l['who']
@@ -118,6 +121,7 @@ def setting(l, cast, have):
         j = h32(w) % 7 - 3
         rate = '%+d%%' % ((-8 if age >= 65 else 6 if age < 30 else 0) + j); pitch = '%+dHz' % ((-6 if age >= 65 else 3 if age < 30 else 0) + j)
         kind = 'r' if w.startswith('gl_r_') else squelch(l['text']) if w.startswith('gl_funk') else 'p'
+    if kind == 'p' and l.get('prio', 2) % 1 == 0.5: kind = 'pq'
     g = 'f' if FEM.search(pref[0]) else 'm'
     voice = next((v for v in pref if v in have), None) or next((v for v in POOL[g] if v in have), None)
     return voice, rate, pitch, kind
@@ -134,6 +138,8 @@ async def tts(text, voice, rate, pitch, raw, tries=4):
     return False
 
 KIND.update({k: KIND['f'] for k in ('fi', 'fo', 'fm')})
+# the many small reactions (welt): a person's sound at 16 kHz, 24 kbit/s (heard in the street, often from a few metres)
+KIND['pq'] = dict(KIND['p'], ar=16000, br='24k', bps=3000)
 def encode(raw, mp3, kind):
     K = KIND[kind]
     if kind.startswith('f'):
@@ -174,11 +180,11 @@ async def main():
     bad = old.pop('_bad', {})
     def plan():
         """the budget: in the order of prio (the collector's order within one), the files that stay count with their size, new ones
-        estimated → want {id: (line, voice, rate, pitch, kind, sig, mp3, keep)}, the ids to record, the radio lines over the budget.
-        The other stations (prio 4) go in whole or not at all – one station with one natural line among device-voice ones sounds wrong"""
+        estimated → want {id: (line, voice, rate, pitch, kind, sig, mp3, keep)}, the ids to record, the lines over the budget.
+        Prio 2.5, 3.5 and 4 go person by person – all of one's lines or none (one station or one villager with a natural line among
+        device-voice ones sounds wrong)"""
         order = sorted(range(len(lines)), key=lambda i: (lines[i].get('prio', 2), i))
-        want, total, cut, todo = {}, 0, [], []
-        units = {}   # prio 4: who → [(line, setting, size)]
+        want, total, cut, todo, items = {}, 0, [], [], []
         def take(l, st, size):
             nonlocal total
             total += size
@@ -194,19 +200,30 @@ async def main():
             keep = a.get('sig') == sig and os.path.exists(mp3) and sound(a, l['text'], rate)
             if only and l['who'] not in only and not keep: continue
             size = os.path.getsize(mp3) if keep else int(expect(l['text'], rate) * KIND[kind]['bps']) + 800
-            st = (voice, rate, pitch, kind, sig, mp3, keep)
-            p = l.get('prio', 2)
-            if p >= 4: units.setdefault(l['who'], []).append((l, st, size)); continue
-            if p >= 3 and total + size > BUDGET: cut.append(l); continue
-            take(l, st, size)
-        for w, U in units.items():
-            if total + sum(u[2] for u in U) > BUDGET: cut += [u[0] for u in U]; continue
-            for u in U: take(*u)
+            items.append((l, (voice, rate, pitch, kind, sig, mp3, keep), size))
+        for p, grp in groupby(items, key=lambda e: e[0].get('prio', 2)):
+            grp = list(grp)
+            if unit(p):
+                persons = {}
+                for e in grp: persons.setdefault(e[0]['who'], []).append(e)
+                for w, U in persons.items():
+                    if total + sum(u[2] for u in U) > BUDGET: cut += [u[0] for u in U]; continue
+                    for u in U: take(*u)
+            else:
+                # (a talk station's lines in their order – the claims, the presenter, the police report first, adverts last – until
+                # the first that does not fit; no gaps filled with a later short line)
+                full = False
+                for e in grp:
+                    if p >= 3 and (full or total + e[2] > BUDGET): full = True; cut.append(e[0]); continue
+                    take(*e)
         return want, todo, cut, total
     want, todo, cut, total = plan()
     print(f'{len(want)} lines wanted ({len(todo)} to record), ≈ {total / 1e6:.2f} MB of {BUDGET / 1e6:.2f} MB; {len(cut)} radio lines over the budget', flush=True)
     if os.environ.get('GL_DRY'):
         for k in todo[:12]: l, voice, rate, pitch, kind, *_ = want[k]; print('  would record', l['who'], voice, rate, pitch, kind, l['text'][:60])
+        per = {}
+        for l in lines: per.setdefault((l.get('prio', 2), l['who']), [0, 0])[0 if l['id'] in want else 1] += 1
+        print('  (prio, who): [wanted, over the budget]', sorted(per.items()))
         return
     async def one(k, sem, tries):
         l, voice, rate, pitch, kind, sig, mp3, keep = want[k]
@@ -266,8 +283,8 @@ async def main():
         if f.endswith('.mp3') and f[:-4] not in want: os.remove(os.path.join(OUT, f)); old.pop(f[:-4], None); print('removed', f)
     for k in list(old):
         if k not in want: old.pop(k)
-    # the estimate was a guess: over the budget, the radio goes again from the end – a whole other station (prio 4), else the talk
-    # stations' last lines
+    # the estimate was a guess: over the budget, the last ones go again – a whole person of prio 2.5, 3.5, 4, else the talk stations'
+    # last lines
     size = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT))
     def drop(k):
         nonlocal size
@@ -275,7 +292,7 @@ async def main():
         cut.append(want.pop(k)[0]); old.pop(k, None)
     for k in sorted(want, key=lambda k: (want[k][0].get('prio', 2), lines.index(want[k][0])), reverse=True):
         if size <= BUDGET or k not in want or want[k][0].get('prio', 2) < 3: continue
-        if want[k][0].get('prio', 2) >= 4:
+        if unit(want[k][0].get('prio', 2)):
             w = want[k][0]['who']
             for j in [j for j in want if want[j][0]['who'] == w]: drop(j)
         else: drop(k)

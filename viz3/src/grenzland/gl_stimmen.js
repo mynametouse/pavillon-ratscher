@@ -7,8 +7,10 @@
 // string, and every module with spoken lines offers X.linien() → [[who, text], …] for the recordings.
 //   GLSTIMMEN.sammeln(Q)   pure: every fixed spoken line of the mode → [{ who: 'gl_…', id, text, prio, src }] – the mission talks
 //                          (GLMDATA.R), every module's own linien(), the street of 1989 (GL89DATA.SAGT), the radio's presenters (GLRDATA);
-//                          prio 1 the story, 2 the world, 3 the radio's talk stations, 4 the other stations (the recordings' budget is
-//                          spent in this order). tools/voices/grenzland_linien.mjs runs the same in Node – one source for both.
+//                          prio 1 the story, 2 the world, 2.5 the many small reactions of people who also speak in the story, 3 the
+//                          radio's talk stations, 3.5 the reactions of everybody else, 4 the other stations (the recordings' budget is
+//                          spent in this order; 2.5, 3.5 and 4 per person: all of one's lines or none). tools/voices/grenzland_linien.mjs
+//                          runs the same in Node – one source for both.
 //   GLSTIMMEN.id(who, text)   the recording's stable id: who + FNV-1a of the words (as tools/voices/linien.mjs: x_gerhard_1gxnwae)
 //   GLSTIMMEN.linien()     sammeln() over what is loaded now · fehlend() the lines without a recording (tests, Falko) · stand()
 // While the mode runs (nothing before its scene starts, nothing after „Beenden“): when a mission step starts, the recordings of its talks
@@ -36,6 +38,10 @@ export const GLSTIMMEN = (() => {
   // ---------------- collecting ----------------
   // whose linien() belong to the story (prio 1); every other module's lines are the world (2), a radio presenter's the radio (3)
   const STORY = ['GLMISSION', 'GLKAP1', 'GLKAMERA', 'GLSCORE', 'GLLAGER', 'GLMDATA'];
+  // modules with many small variants per person (welt's reactions: every commenter has every line) – recorded person by person, as far
+  // as the budget goes; the player's own lines from there are the world (2)
+  const MENGE = ['GLREAKTION'];
+  const SPIELER = ['gl_falko', 'gl_sarah'];
   // the police reports of 1989 (gl_radio_data.js POLIZEI): said by the stations of the flashback, the others by today's
   const P89 = ['kiste', 'ausweis'];
   const str = o => Object.values(o || {}).filter(v => typeof v === 'string');
@@ -55,6 +61,17 @@ export const GLSTIMMEN = (() => {
     const R = (Q.GLMDATA && Q.GLMDATA.R) || {};
     for (const [key, lines] of Object.entries(R))
       for (const l of lines || []) if (Array.isArray(l) && l[0]) add(l[0], l[1], 1, 'R.' + key);
+    const story = new Set(out.map(l => l.who));
+    const prioOf = (name, who) =>
+      who.startsWith('gl_r_')
+        ? 3
+        : STORY.includes(name)
+          ? 1
+          : MENGE.includes(name) && !SPIELER.includes(who)
+            ? story.has(who)
+              ? 2.5
+              : 3.5
+            : 2;
     // every module's own lines (kino, welt, the lead …): X.linien() → [[who, text(, prio)], …] or [{ who, text, prio }]
     for (const [name, X] of Q.mods || []) {
       if (name === 'GLSTIMMEN') continue;
@@ -67,7 +84,7 @@ export const GLSTIMMEN = (() => {
       if (!Array.isArray(L)) continue;
       for (const l of L) {
         const [w, t, p] = Array.isArray(l) ? l : l && typeof l === 'object' ? [l.who, l.text, l.prio] : [];
-        add(w, t, p || (wer(w).startsWith('gl_r_') ? 3 : STORY.includes(name) ? 1 : 2), name + '.linien');
+        add(w, t, p || prioOf(name, wer(w)), name + '.linien');
       }
     }
     // 2 · the world: the street of 1989 (what the people say when Gerhard comes near, grenzland/gl_1989.js)
@@ -87,7 +104,11 @@ export const GLSTIMMEN = (() => {
         for (const t of list) add('r_' + s.id, t, prio, 'radio.' + s.id);
       };
       const talk = { grenzland: 1, republik: 1 };
-      for (const era of Object.keys(RD.SENDER))
+      // (today first: Object.keys puts '1989' before 'heute')
+      const eras = ['heute', '1989']
+        .filter(e => RD.SENDER[e])
+        .concat(Object.keys(RD.SENDER).filter(e => e !== 'heute' && e !== '1989'));
+      for (const era of eras)
         for (const s of RD.SENDER[era]) {
           const prio = talk[s.id] ? 3 : 4,
             k89 = era === '1989';
@@ -116,12 +137,13 @@ export const GLSTIMMEN = (() => {
             const T = k89 ? RD.T89 : RD.TH;
             each(s, str(T), prio);
             if (!k89 && typeof R0.gesucht === 'function') each(s, [R0.gesucht(1), R0.gesucht(3)], prio);
-            if (!k89) each(s, R0.sushi || [], prio);
           }
           each(s, s.news || [], prio);
           each(s, s.verkehr || [], prio);
           each(s, s.werb || [], prio);
           each(s, s.gruss || [], prio);
+          // the feature in four long parts last (all of it or none of it in one voice, as the budget allows)
+          if (talk[s.id] && !k89) each(s, R0.sushi || [], prio);
           // the radio through the shop's open window in 1989 (grenzland/gl_1989.js): the GDR's news
           if (s.id === 'republik')
             each(s, [].concat((D.J89 && D.J89.radio89) || [], (Q.GL89DATA && Q.GL89DATA.RADIO) || []), prio);

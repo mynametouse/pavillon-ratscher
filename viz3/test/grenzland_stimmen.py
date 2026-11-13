@@ -45,7 +45,7 @@ with lib.browser() as b:
             "for (const l of L) { const b = by[l.prio] || (by[l.prio] = [0, 0]); b[0]++; if (!f.has(l.id)) b[1]++; } "
             "return { n: L.length, ids: L.map(l => l.id), sp: L.filter(l => STIMME.speaks(l.who, l.text)).length, by, fehlend: F.map(l => [l.prio, l.who, l.text, l.src]) }; })()")
     json.dump(cov['fehlend'], open(os.path.join(OUT, 'fehlend.json'), 'w'), ensure_ascii=False, indent=1)
-    by = {int(k): v for k, v in cov['by'].items()}
+    by = {float(k): v for k, v in cov['by'].items()}
     n12 = sum(by.get(p, [0, 0])[0] for p in (1, 2)); r12 = sum(by.get(p, [0, 0])[1] for p in (1, 2))
     print('recorded per prio (lines, recorded):', by, flush=True)
     lin = {l['id'] for l in LIN}; neu = [i for i in cov['ids'] if i not in lin]
