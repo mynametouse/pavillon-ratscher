@@ -443,6 +443,8 @@ export const ZKREGIE = (() => {
     const ch = S.ch;
     S.y = y == null ? ch.from : clamp(+y, ch.from, ch.to);
     S.evs = S.tl.filter(m => m.chapter === ch.id);
+    // the chapter runs until its last event has played (the epilogue lies in May 2060, after the energy chapter's „to“)
+    S.chEnd = Math.max(ch.to, ...S.evs.map(m => m.t + 0.02));
     S.ni = S.evs.findIndex(m => (y == null ? m.t >= S.y - 1e-9 : m.t > S.y));
     if (S.ni < 0) S.ni = S.evs.length;
     S.mode = 'lapse';
@@ -475,8 +477,7 @@ export const ZKREGIE = (() => {
     emit({ type: 'event', ev: info(m), state: 'pass', skipped: !!quiet });
   }
   function lapse(dt) {
-    const ch = S.ch,
-      yps = S.spd / SPY;
+    const yps = S.spd / SPY;
     let k = S.ni;
     while (k < S.evs.length && !(S.evs[k].halt > 0)) k++;
     const nx = S.evs[k];
@@ -497,8 +498,8 @@ export const ZKREGIE = (() => {
       pass(m);
       S.ni++;
     }
-    if (y1 >= ch.to) {
-      S.y = ch.to;
+    if (y1 >= S.chEnd) {
+      S.y = S.chEnd;
       enterCard();
       return;
     }
@@ -1027,7 +1028,7 @@ export const ZKREGIE = (() => {
         S.y = S.evs[k].t;
         enterEvent(S.evs[k]);
       } else {
-        S.y = S.ch.to;
+        S.y = S.chEnd;
         enterCard();
       }
     } else if (md === 'prelude') {
