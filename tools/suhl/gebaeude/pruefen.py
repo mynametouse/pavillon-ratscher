@@ -7,8 +7,10 @@ Checks (beside the shared validator tools/suhl/lib/validate.py, which checks the
 has our fields; ids unique over all tiles; footprints valid and
 inside (or close to) their tile, the representative point of every footprint in its own tile (no building in two tiles); heights
 plausible; the roof is closed (the faces cover the footprint) and its areas fit the footprint; sides match the edges of the rings;
-floors x storey height fits the eave; footprints do not overlap; for the city: the count against stage 1 (30,929 ETHOS bodies in
-`stadt`) and the centre of Suhl inside. Exit status 1 when a hard check fails.
+floors x storey height fits the eave; footprints do not overlap; the directions are in the frames of the contract (the ridge `az`
+in the model frame, the faces `R[].az` from true north - measured on long gable roofs against the long axis of their footprint and
+against their own roof mesh); for the city: the count against stage 1 (30,929 ETHOS bodies in `stadt`) and the centre of Suhl
+inside. Exit status 1 when a hard check fails.
 """
 import argparse, glob, json, math, os, sys
 from collections import Counter
@@ -19,6 +21,51 @@ import gblib as G
 from gblib import wlib, S
 
 NEED = ('id', 'f', 'k', 'h', 'e', 'r', 'rq', 'rk', 'rc', 'rv', 'rt', 'R', 'F', 'q', 'use', 'era', 'bt', 'd')      # the contract's required fields and ours
+# the two frames of the directions (contract, product g): the ridge `az` of a building is measured clockwise from the model's +y
+# axis; the downhill direction `az` of a roof face from TRUE north. At Suhl: true north = model - (rotation of the model axes
+# against the UTM grid - meridian convergence) = model - (4.36 - 1.31) = model - 3.05 degrees.
+TRUE_OFFSET = G.ROT - G.CONV
+
+
+def fold(d, period):
+    """an angle difference folded into [-period / 2, period / 2)"""
+    return (d + period / 2.0) % period - period / 2.0
+
+
+def long_axis(fx, fy):
+    """the long axis of a footprint given in tile-local model metres: (direction clockwise from the model's +y axis in 0..180, long
+    side, short side, share of the smallest rectangle around it that the footprint fills) - or None"""
+    from shapely.geometry import Polygon
+    try:
+        pm = Polygon(list(zip(fx, fy)))
+        rr = pm.minimum_rotated_rectangle
+        c = list(rr.exterior.coords)
+    except Exception:
+        return None
+    if len(c) < 5 or rr.area <= 0:
+        return None
+    e1, e2 = (c[1][0] - c[0][0], c[1][1] - c[0][1]), (c[2][0] - c[1][0], c[2][1] - c[1][1])
+    l1, l2 = math.hypot(*e1), math.hypot(*e2)
+    lo, sh, ev = (l1, l2, e1) if l1 >= l2 else (l2, l1, e2)
+    return math.degrees(math.atan2(ev[0], ev[1])) % 180.0, lo, sh, abs(pm.area) / rr.area
+
+
+def face_downhill(b, fc):
+    """the downhill direction of one roof face from its own triangles, clockwise from the model's +y axis (0..360), or None"""
+    rv, rt = b['rv'], b['rt']
+    t0, cnt = fc['ti']
+    nx = ny = nz = 0.0
+    for t in range(t0, t0 + cnt):
+        i, j, k = rt[3 * t], rt[3 * t + 1], rt[3 * t + 2]
+        ax, ay, az = rv[3 * j] - rv[3 * i], rv[3 * j + 1] - rv[3 * i + 1], rv[3 * j + 2] - rv[3 * i + 2]
+        bx, by, bz = rv[3 * k] - rv[3 * i], rv[3 * k + 1] - rv[3 * i + 1], rv[3 * k + 2] - rv[3 * i + 2]
+        cx, cy, cz = ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx
+        if cz < 0:
+            cx, cy, cz = -cx, -cy, -cz          # every triangle counted with its normal upward
+        nx, ny, nz = nx + cx, ny + cy, nz + cz
+    if math.hypot(nx, ny) < 1e-6 * max(nz, 1e-9) or nz <= 0:
+        return None
+    return math.degrees(math.atan2(nx, ny)) % 360.0     # the horizontal part of the upward normal points downhill
 
 
 def main():
@@ -48,6 +95,10 @@ def main():
     ids, n, bytes_ = Counter(), 0, 0
     bad_field, bad_geom, out_tile, far, bad_h, open_roof, bad_area, bad_sides, bad_floor, no_z0 = [], [], [], [], [], [], [], [], [], 0
     tall, bad_mesh = [], []
+    d_ridge, d_face, d_cross, ex_dir = [], [], [], []
+    d_ridge_globe, d_face_globe = [], []
+    from pyproj import Transformer, Geod
+    to_ll, geod = Transformer.from_crs(25832, 4326, always_xy=True), Geod(ellps='GRS80')
     polys, pid = [], []
     stadt = G.areas()['stadt']
     from shapely.prepared import prep
@@ -113,6 +164,30 @@ def main():
                 bad_field.append((b['id'], 'fas.t'))
             if 'z0' not in b:
                 no_z0 += 1
+            # the frames of the directions, on long gable roofs over a clean rectangle: the ridge against the long axis of the footprint
+            # (both in the model frame; a ridge across the house counts as well, hence folded to 90 degrees), every face against the
+            # downhill direction of its own mesh turned to true north, and the faces against the ridge
+            if b['r'] == 2 and 'az' in b and not b.get('fh') and len(fx) <= 8:
+                la = long_axis(fx, fy)
+                if la and la[1] >= 8.0 and la[1] >= 2.0 * la[2] and la[3] >= 0.9:
+                    dr = fold(b['az'] - la[0], 90.0)
+                    d_ridge.append(dr)
+                    # the same long axis on the globe (geodesic azimuth from true north) - independent of this package's constants
+                    vx, vy = math.sin(math.radians(la[0])) * la[1] / 2.0, math.cos(math.radians(la[0])) * la[1] / 2.0
+                    mx_, my_ = float(np.mean(fx)), float(np.mean(fy))
+                    aE, aN = fr.to_utm(np.array([mx_ - vx, mx_ + vx]), np.array([my_ - vy, my_ + vy]))
+                    lon, lat = to_ll.transform(aE, aN)
+                    t_axis = geod.inv(lon[0], lat[0], lon[1], lat[1])[0] % 180.0
+                    d_ridge_globe.append(fold(b['az'] - t_axis, 90.0))
+                    for fc in b['R']:
+                        if 'az' in fc and fc.get('sl', 0) >= 10 and 'ti' in fc:
+                            dm = face_downhill(b, fc)
+                            if dm is not None:
+                                d_face.append(fold(fc['az'] - (dm - TRUE_OFFSET), 360.0))
+                                d_cross.append(fold(fc['az'] + TRUE_OFFSET - b['az'], 90.0))
+                                d_face_globe.append(fold(fc['az'] - t_axis, 90.0))
+                    if len(ex_dir) < 3 and abs(fold(b['az'] - la[0], 180.0)) < 1.0:
+                        ex_dir.append((b['id'], b['az'], round(la[0], 1), [fc.get('az') for fc in b['R']]))
             if b['h'] >= 25:
                 tall.append(b)
             polys.append(p)
@@ -130,6 +205,30 @@ def main():
     ck('sides match the edges', not bad_sides, f'{len(bad_sides)} {bad_sides[:3]}')
     ck('floors fit the eave', len(bad_floor) <= 0.01 * n, f'{len(bad_floor)} houses whose floors do not fit their eave (1.9 m to 6.5 m per floor) {bad_floor[:3]}')
     ck('foot heights', no_z0 == 0, f'{no_z0} records without z0 (run fuss.py)', hard=False)
+
+    def med(v):
+        return float(np.median(v)) if len(v) else 0.0
+
+    def p90(v):
+        return float(np.percentile(np.abs(v), 90)) if len(v) else 0.0
+    res['directions'] = {'true_north_is_model_minus_deg': round(TRUE_OFFSET, 4), 'long_gable_roofs': len(d_ridge), 'faces': len(d_face),
+                         'ridge_minus_long_axis_deg': {'median': round(med(d_ridge), 2), 'p90_abs': round(p90(d_ridge), 2)},
+                         'face_minus_mesh_deg': {'median': round(med(d_face), 2), 'p90_abs': round(p90(d_face), 2)},
+                         'face_against_ridge_deg': {'median': round(med(d_cross), 2), 'p90_abs': round(p90(d_cross), 2)},
+                         'on_the_globe': {'ridge_minus_long_axis_from_true_north_deg': round(med(d_ridge_globe), 2),
+                                          'face_minus_long_axis_from_true_north_deg_folded_90': round(med(d_face_globe), 2),
+                                          'note': 'geodesic azimuth of the long axis (pyproj, GRS80): the ridge must show the offset of the model frame, the faces zero'},
+                         'examples': ex_dir}
+    few = len(d_ridge) < 20
+    ck('ridge az in the model frame', few or (abs(med(d_ridge)) <= 1.0 and abs(med(d_ridge_globe) - TRUE_OFFSET) <= 0.5),
+       f'{len(d_ridge)} long gable roofs: az minus the long axis of the footprint (both clockwise from the model +y axis) median {med(d_ridge):+.2f} deg, '
+       f'90 % within {p90(d_ridge):.2f}; a value from true north would show {-TRUE_OFFSET:+.2f}. On the globe: az minus the geodesic azimuth of the long '
+       f'axis median {med(d_ridge_globe):+.2f} (the model frame is {TRUE_OFFSET:+.2f} off true north)' + (' - too few roofs to judge' if few else ''))
+    ck('face az from true north', few or (abs(med(d_face)) <= 1.0 and abs(med(d_cross)) <= 1.0 and abs(med(d_face_globe)) <= 0.5),
+       f'{len(d_face)} faces of these roofs: az minus the downhill direction of their own mesh turned to true north (model - {TRUE_OFFSET:.2f}) median '
+       f'{med(d_face):+.2f} deg, 90 % within {p90(d_face):.2f}; a value in the model frame would show {TRUE_OFFSET:+.2f}; faces against the ridge '
+       f'(az + {TRUE_OFFSET:.2f} - ridge az, folded to 90) median {med(d_cross):+.2f}. On the globe: az minus the geodesic azimuth of the long axis, '
+       f'folded to 90, median {med(d_face_globe):+.2f}' + (' - too few roofs to judge' if few else ''))
     # footprints do not overlap (the sources are cadastre parts: they touch, they must not cover each other)
     tree = STRtree(polys)
     ov, worst = 0, []

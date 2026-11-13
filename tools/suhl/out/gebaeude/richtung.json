@@ -1,0 +1,212 @@
+{
+ "made": "2026-11-13T02:37:50Z",
+ "question": "which frame do the directions of product g carry? (Suhl-Chat, 13.11.2026)",
+ "answer": {
+  "az (building, ridge)": "model frame: clockwise from the model +y axis, 0 <= az < 180 - as schema g.py defines it",
+  "R[].az (roof face, downhill)": "from true north, 0 <= az < 360 - as schema g.py defines it",
+  "true_north_is_model_minus_deg": 3.0484,
+  "why": "model axes turned 4.3566 deg against the UTM grid, meridian convergence at Suhl +1.3082 deg"
+ },
+ "how": "tools/suhl/gebaeude/pruefen.py, checks \"ridge az in the model frame\" and \"face az from true north\": long gable roofs (r = 2) over a clean rectangle (long side >= 8 m and >= 2 x the short side, footprint fills >= 90 % of its smallest rectangle); the ridge against the long axis of the footprint in tile-local model metres; every face against the downhill direction of its own triangles (rv/rt); and both against the geodesic azimuth of the long axis (pyproj, GRS80), which does not use the constants of this package",
+ "sets": {
+  "stadt_lauf_43348109758": {
+   "tiles": "the tiles of the artifact suhl-g-v1 of run 43348109758, checked on the chat machine",
+   "buildings": 31709,
+   "failed": [],
+   "directions": {
+    "true_north_is_model_minus_deg": 3.0484,
+    "long_gable_roofs": 855,
+    "faces": 1684,
+    "ridge_minus_long_axis_deg": {
+     "median": 0.0,
+     "p90_abs": 0.06
+    },
+    "face_minus_mesh_deg": {
+     "median": -0.0,
+     "p90_abs": 0.07
+    },
+    "face_against_ridge_deg": {
+     "median": -0.05,
+     "p90_abs": 0.05
+    },
+    "on_the_globe": {
+     "ridge_minus_long_axis_from_true_north_deg": 3.05,
+     "face_minus_long_axis_from_true_north_deg_folded_90": -0.01,
+     "note": "geodesic azimuth of the long axis (pyproj, GRS80): the ridge must show the offset of the model frame, the faces zero"
+    },
+    "examples": [
+     [
+      "DETHL57P00000rRV",
+      3.8,
+      3.9,
+      [
+       270.8,
+       90.8
+      ]
+     ],
+     [
+      "DETHL57P00000rGd",
+      77.4,
+      77.4,
+      [
+       344.4,
+       164.4
+      ]
+     ],
+     [
+      "DETHL57P00000rJE",
+      70.7,
+      70.7,
+      [
+       337.6,
+       157.6
+      ]
+     ]
+    ]
+   },
+   "checks": {
+    "ridge az in the model frame": {
+     "ok": true,
+     "info": "855 long gable roofs: az minus the long axis of the footprint (both clockwise from the model +y axis) median +0.00 deg, 90 % within 0.06; a value from true north would show -3.05. On the globe: az minus the geodesic azimuth of the long axis median +3.05 (the model frame is +3.05 off true north)"
+    },
+    "face az from true north": {
+     "ok": true,
+     "info": "1684 faces of these roofs: az minus the downhill direction of their own mesh turned to true north (model - 3.05) median -0.00 deg, 90 % within 0.07; a value in the model frame would show +3.05; faces against the ridge (az + 3.05 - ridge az, folded to 90) median -0.05. On the globe: az minus the geodesic azimuth of the long axis, folded to 90, median -0.01"
+    }
+   }
+  },
+  "probe_v1": {
+   "tiles": "tools/suhl/out/gebaeude/probe/suhl/g/v1",
+   "buildings": 2502,
+   "failed": [],
+   "directions": {
+    "true_north_is_model_minus_deg": 3.0484,
+    "long_gable_roofs": 57,
+    "faces": 114,
+    "ridge_minus_long_axis_deg": {
+     "median": -0.0,
+     "p90_abs": 0.07
+    },
+    "face_minus_mesh_deg": {
+     "median": -0.0,
+     "p90_abs": 0.1
+    },
+    "face_against_ridge_deg": {
+     "median": 0.05,
+     "p90_abs": 0.05
+    },
+    "on_the_globe": {
+     "ridge_minus_long_axis_from_true_north_deg": 3.04,
+     "face_minus_long_axis_from_true_north_deg_folded_90": 0.01,
+     "note": "geodesic azimuth of the long axis (pyproj, GRS80): the ridge must show the offset of the model frame, the faces zero"
+    },
+    "examples": [
+     [
+      "DETHL57P00002lP1",
+      141.3,
+      141.3,
+      [
+       228.3,
+       48.3
+      ]
+     ],
+     [
+      "DETHL57P00002jQh",
+      40.8,
+      40.8,
+      [
+       307.7,
+       127.7
+      ]
+     ],
+     [
+      "DETHL57P00002jQj",
+      40.7,
+      40.6,
+      [
+       127.7,
+       307.7
+      ]
+     ]
+    ]
+   },
+   "checks": {
+    "ridge az in the model frame": {
+     "ok": true,
+     "info": "57 long gable roofs: az minus the long axis of the footprint (both clockwise from the model +y axis) median -0.00 deg, 90 % within 0.07; a value from true north would show -3.05. On the globe: az minus the geodesic azimuth of the long axis median +3.04 (the model frame is +3.05 off true north)"
+    },
+    "face az from true north": {
+     "ok": true,
+     "info": "114 faces of these roofs: az minus the downhill direction of their own mesh turned to true north (model - 3.05) median -0.00 deg, 90 % within 0.10; a value in the model frame would show +3.05; faces against the ridge (az + 3.05 - ridge az, folded to 90) median +0.05. On the globe: az minus the geodesic azimuth of the long axis, folded to 90, median +0.01"
+    }
+   }
+  },
+  "probe_v0": {
+   "tiles": "tools/suhl/out/gebaeude/probe/suhl/g/v0",
+   "buildings": 2502,
+   "failed": [],
+   "directions": {
+    "true_north_is_model_minus_deg": 3.0484,
+    "long_gable_roofs": 82,
+    "faces": 164,
+    "ridge_minus_long_axis_deg": {
+     "median": -0.0,
+     "p90_abs": 0.06
+    },
+    "face_minus_mesh_deg": {
+     "median": 0.01,
+     "p90_abs": 0.08
+    },
+    "face_against_ridge_deg": {
+     "median": 0.05,
+     "p90_abs": 0.05
+    },
+    "on_the_globe": {
+     "ridge_minus_long_axis_from_true_north_deg": 3.05,
+     "face_minus_long_axis_from_true_north_deg_folded_90": 0.01,
+     "note": "geodesic azimuth of the long axis (pyproj, GRS80): the ridge must show the offset of the model frame, the faces zero"
+    },
+    "examples": [
+     [
+      "DETHL57P00002lP1",
+      141.3,
+      141.3,
+      [
+       228.3,
+       48.3
+      ]
+     ],
+     [
+      "DETHL57P00002jP0",
+      38.2,
+      38.2,
+      [
+       125.2,
+       305.2
+      ]
+     ],
+     [
+      "DETHL57P00002jP9",
+      40.8,
+      40.8,
+      [
+       307.7,
+       127.7
+      ]
+     ]
+    ]
+   },
+   "checks": {
+    "ridge az in the model frame": {
+     "ok": true,
+     "info": "82 long gable roofs: az minus the long axis of the footprint (both clockwise from the model +y axis) median -0.00 deg, 90 % within 0.06; a value from true north would show -3.05. On the globe: az minus the geodesic azimuth of the long axis median +3.05 (the model frame is +3.05 off true north)"
+    },
+    "face az from true north": {
+     "ok": true,
+     "info": "164 faces of these roofs: az minus the downhill direction of their own mesh turned to true north (model - 3.05) median +0.01 deg, 90 % within 0.08; a value in the model frame would show +3.05; faces against the ridge (az + 3.05 - ridge az, folded to 90) median +0.05. On the globe: az minus the geodesic azimuth of the long axis, folded to 90, median +0.01"
+    }
+   }
+  }
+ },
+ "negative_test": "a copy of sample v1 with the ridge written from true north fails the first check (median -3.00 deg); a copy with the faces written in the model frame fails the second (median +3.00 deg)"
+}

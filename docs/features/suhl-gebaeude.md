@@ -1,6 +1,6 @@
 # Suhl – Gebäude: ein Datensatz je Gebäude der ganzen Stadt (Stufe 2, Paket S2-2)
 
-Stand: 13.11.2026, 03:05 Uhr, Hilfs-Agent `suhl-gebaeude` (Auftrag `docs/plans/auftraege/suhl-gebaeude.md`, gemeinsam `suhl-gemeinsam.md`,
+Stand: 13.11.2026, 03:40 Uhr, Hilfs-Agent `suhl-gebaeude` (Auftrag `docs/plans/auftraege/suhl-gebaeude.md`, gemeinsam `suhl-gemeinsam.md`,
 `suhl-stufe2.md`). Zweig `suhl/gebaeude`. Das Format ist das des Datenvertrags: `docs/features/suhl-daten.md`, Abschnitt 5
 (Schema 1, Fassung 1.1; Prüfer `tools/suhl/lib/validate.py`). Dieses Dokument sagt, **woher jedes Feld kommt und wie gut es ist**.
 Alle Zahlen stehen maschinenlesbar in `tools/suhl/out/gebaeude/actions/` (ganze Stadt und Probesatz v1, aus GitHub Actions) und in
@@ -122,6 +122,23 @@ Die Kachel nennt in `src` die übliche Quelle je Feld; ein Gebäude nennt in `sr
 | `fg` | 1 Wahrzeichen, 2 Denkmal (OSM `heritage` oder Liste – kein amtlicher Nachweis), 4 betretbar, 32 steht nicht mehr, 64 nur im Kataster, 128 neu | `wahrzeichen.md`, OSM, Abgleich ETHOS–Kataster–Oberflächenmodell | – | 75 / 63 / 50 / 271 / 781 / 4 |
 | `lm`, `teil`, `kat` | Nummer in `wahrzeichen.md`; Hauptgebäude eines Bauteils; 1 = dem Kataster nach Lage zugeordnet, 0 = nicht im Kataster | – | – | `teil` 7 130; `kat` 1: 488, 0: 271 |
 | `d` | `fa` Grundfläche, `gfa` Geschossfläche = Grundfläche × Geschosse (`lv`), `rf` Dachfläche – echte m², in UTM gerechnet | gerechnet | wie `lv`, `rq` | Grundfläche 252,0 ha, Geschossfläche 480,6 ha |
+
+**Richtungen – zwei Rahmen, so wie der Vertrag sie festlegt** (`tools/suhl/lib/schema/g.py`):
+
+- `az` des Gebäudes ist die Richtung des Firsts **im Modellrahmen**: im Uhrzeigersinn von der y-Achse des Modells, 0 ≤ `az` < 180.
+- `R[].az` ist die Fallrichtung jeder Dachfläche **von geografisch Nord**, 0 ≤ `az` < 360 (180 = die Fläche schaut nach Süden). Das
+  ist die Zahl für den Solarertrag; sie braucht keine Umrechnung.
+- In Suhl gilt: geografisch Nord = Modell − 3,05°. Die Achsen des Modells sind 4,36° gegen das UTM-Gitter gedreht, die
+  Meridiankonvergenz beträgt +1,31°. Wer den First von geografisch Nord braucht, rechnet `az` − 3,05.
+- **Nachgemessen** (`pruefen.py`, Zahlen in `tools/suhl/out/gebaeude/richtung.json`), an 855 langen Satteldächern der Stadt über
+  sauberen Rechtecken: `az` weicht in der Mitte um 0,00° von der Längsachse des Grundrisses im Modellrahmen ab (90 % auf 0,06°). Gegen
+  dieselbe Achse, auf der Erdkugel von geografisch Nord gemessen, liegt `az` +3,05° daneben – das ist der Modellrahmen. Die 1 684
+  Flächen dieser Dächer weichen in der Mitte um 0,00° von der Fallrichtung ihres eigenen Dach-Netzes ab, auf geografisch Nord gedreht
+  (90 % auf 0,07°), und um −0,01° von der Messung auf der Erdkugel. `suhl-daten` hat die Flächen unabhängig nachgerechnet und kommt
+  auf dasselbe (0,004° über 24 732 Flächen, `docs/features/suhl-daten.md`).
+- Nur der allererste Probesatz (Commit 13e3db02, vor dem Vertrag) nannte auch den First von geografisch Nord. Seit der Umstellung
+  auf den Vertrag (Commit 4c9e9722, alle Läufe ab Lauf 2, Probesätze v0 und v1) gilt die Aufteilung oben.
+- Das Dach-Netz (`rv`, `rt`) liegt in Modellmetern der Kachel; gezeichnete Dächer hängen von `az` nicht ab.
 
 ## 4 Dächer
 
@@ -266,6 +283,7 @@ Alle Downloads liegen im Actions-Cache (ETHOS, Kataster, Luftbilder, Oberfläche
 | Grundrisse überlappen nicht | 79 Paare über 1 m² (größte 48 m²: Kataster-Neubau über altem ETHOS-Körper) – Hinweis |
 | Hochhäuser gegen Stufe 1 | 58 von 59, alle Höhen gleich; der fehlende hat 1 m² |
 | Menge gegen Stufe 1 (30 929) | 30 928 aus ETHOS; mehr als 10 000 Gebäude |
+| **Richtungen in den Rahmen des Vertrags:** First `az` im Modellrahmen, Flächen `R[].az` von geografisch Nord (neu, 13.11. 03:35) | ja – 855 lange Satteldächer, 1 684 Flächen; an den Kacheln des Artefakts von Lauf 4 am Chat-Rechner geprüft (`richtung.json`), ab dem nächsten Lauf im Workflow. Gegenprobe: eine Kopie des Probesatzes mit vertauschtem Rahmen fällt durch. |
 | **Prüfer des Datenvertrags** (`validate.py`, `vertrag_stadt.json`) | gültig, Fassung 1.1, 0 Fehler, 0 Warnungen |
 
 Nicht geprüft (braucht andere Pakete): kein Gebäude in einer Fahrbahn (`suhl-strassen`), Hausfuß auf dem eingeschnittenen Gelände
@@ -323,6 +341,9 @@ Jeder `index.json` trägt die Quellen und die Zeile für die App. Rohdaten und L
    `tools/suhl/out/gebaeude/probe/suhl/g/v1/` auf `suhl/gebaeude` (Stand des Laufs: Commit 60e89c49). Die Stadt hat noch
    vorläufige Fußhöhen (Punkt 3) – das gehört in den Hinweis zur Veröffentlichung.
 2. **Nicht zeichnen:** `fg` & 32 und `tief`. `fg` 128 heißt hier: steht im Kataster, im Oberflächenmodell noch nicht.
+   **Richtungen:** `R[].az` ist von geografisch Nord, das Gebäude-Feld `az` (First) im Modellrahmen – so wie im Vertrag, nachgemessen
+   (Abschnitt 3). Für `suhl-daten` (S2-9): Die Stadtzahlen in `docs/features/suhl-daten.md` sind noch aus dem Artefakt des roten
+   Laufs 43345898563 gerechnet (31 708 Datensätze); der gültige Lauf ist 43348109758 (31 709).
 3. **Fußhöhen der Stadt:** Sobald `suhl-boden` das eingeschnittene Gelände der Stadt veröffentlicht, genügt eine neue Zeile `lauf:` in
    `tools/suhl/gebaeude/lauf.txt` (etwa 4 Minuten); der Lauf liest `z0`/`zv` dann von dort und setzt `based_on`.
 4. **`tools/welt/QUELLEN.md`:** WFS „ALKIS vereinfacht“, easygeodata (DOM1, nDOM1) und das Zensus-Gitter als Quellen eintragen
