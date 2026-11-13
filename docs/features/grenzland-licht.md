@@ -14,9 +14,11 @@ Mischart gehört nicht zum Programm), mit einem kleinen Atlas, den das Modul sel
 Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo echtes Licht nötig ist, wird es geliehen
 (`KERN.lights.borrow`). Am Tag wird nichts gezeigt; bei „Beenden“ ist alles weg und jeder Wert wieder genau wie vorher.
 
-- **Fahrzeuge:** Sobald die Lampen brennen (Dämmerung, Nacht): weiche Lichtkegel vor den Scheinwerfern (drei Karten je Lampe, eine
-  flach und zwei um 38° gekippt – eine senkrechte stand von hinten als heller Strich im Bild), ein schwacher Lichtfleck auf der Straße
-  voraus, ein Glanz auf dem Glas, rotes Glühen der Rückleuchten, beim Bremsen größer und heller
+- **Fahrzeuge:** Sobald die Lampen brennen (Dämmerung, Nacht): ein weicher Lichtkegel vor jedem Scheinwerfer – eine Karte, die
+  sich jedes Bild um die Achse des Strahls zur Kamera dreht (gekreuzte Karten addierten sich von oben gesehen zu weißen Keilen); alle
+  Kegel aller Fahrzeuge sind zwei Zeichenaufrufe (heute weiß, 1989 warm); im Regen etwas kräftiger –, ein schwacher Lichtfleck auf
+  der Straße voraus, der beim Fahren auf den Boden gelegt wird (ein Gitter von 5 × 9 Punkten; ein ebener Fleck wurde an Kuppen und
+  Gräben in harten Linien abgeschnitten), ein Glanz auf dem Glas, rotes Glühen der Rückleuchten, beim Bremsen größer und heller
   – auch das Glas der Bremsleuchten selbst (eine hellere Kopie des Rückleuchten-Materials). Warm (Glühlampe der Zeit) für 1989 und
   die Simson, weißer für die Autos von heute. Das gilt für alle Fahrzeuge von `gl_auto.js` (Streife, Kombi, Kasten, Trabant, Wartburg,
   Barkas, W 50, Mopeds der Clique) und für Moped und Trabant des Spielers; beim Moped hängt der Kegel an der Gabel (lenkt und legt
@@ -32,8 +34,8 @@ Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo ech
 - **Hubschrauber:** wo der Suchscheinwerfer auf den Boden fällt, ein heller Fleck (dreht sich langsam), am Hubschrauber der Glanz
   der Lampe (der Lichtkegel und das geliehene Licht sind schon in `gl_heli.js`).
 - **Taschenlampen:** Jede Figur von `gl_fig.js` mit `F.lampe = true` trägt eine: Glanz an der Hand (die linke, wenn die rechte etwas
-  hält), ein schwacher Lichtkegel nach vorn unten, der beim Gehen und Umsehen pendelt (nahe an der Kamera blasser – von nah gesehen
-  addierten sich die Karten zu einem weißen Keil), und ein Lichtfleck auf dem Boden, der mitgeht. Ohne die
+  hält), ein schwacher Lichtkegel nach vorn unten (eine zur Kamera gedrehte Karte), der beim Gehen und Umsehen pendelt (nahe an
+  der Kamera blasser), und ein Lichtfleck auf dem Boden, der mitgeht. Ohne die
   Angabe tragen nachts von sich aus eine: die Beamten der Polizei (`F.cop`), die Wachleute (`kleid: 'wache'`), Volkspolizei und Grenzer
   1989. `F.lampe = false` schaltet das ab.
 - **Leuchtkugel** (`KERN.emit('grenzland:flare', { x, y, z })` oder `GLLICHT.flare(x, y, z)`): steigt in 3 s auf etwa 60 m
@@ -45,7 +47,9 @@ Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo ech
 - **Lesbare Nächte:** Solange der Modus läuft, gibt es nachts mehr Himmelslicht (das Halbkugel-Licht, mondblau, unten ein dunkles
   Blaugrau) und etwas mehr Belichtung (bis ×1,28), die Lichtflecken der Straßenlaternen sind heller (1989 oranger). Alles wird auf
   den Wert gesetzt, den der Tageslauf gerade will, plus unseren Teil – und beim Beenden genau zurück.
-- **Regen an der Klinge:** In „Nachts an der Klinge“ vom Ansehen des Umladeplatzes bis zur Flucht (Schritte 1–4), nachts: der Regen
+- **Regen an der Klinge:** In „Nachts an der Klinge“ vom Ansehen des Umladeplatzes bis zur Flucht (jeder Schritt außer `abend` und
+  `heim`, nach dem Namen des Schritts, den der Ablauf von `gl_mission.js` gerade spielt – kommen Schritte dazu, regnet es auch dort),
+  nachts, nie in einer Rückblende oder während eine beginnt: der Regen
   des Wetters (`WETTER.preset('regen')`: Regenstriche um die Kamera, nasse, glänzende Straßen, Regengeräusch – alles schon da, nichts
   neu übersetzt), danach das Wetter von vorher.
 - **Farbstimmung für heute:** etwas mehr Kontrast und Farbe, dunklere Ecken (nachts mehr) über den Farbausgleich, den der Renderer
@@ -95,8 +99,10 @@ neue Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden�
 ## Kosten (Telefon)
 
 - Texturen: Atlas 256 × 128 und Rauch 512 × 64 (zusammen mit Mipmaps unter 0,5 MB), Zweige 1989 256 × 256.
-- Zeichenaufrufe nachts: je Fahrzeug mit Licht 2–4 (Kegel und Glanz, Fleck, Rücklicht, beim Bremsen 1 mehr; Streife +3),
-  je Taschenlampe 2, die Leuchtkugel 4 (solange sie brennt). Am Tag 0.
+- Zeichenaufrufe nachts: die Kegel aller Fahrzeuge zusammen 2; je Fahrzeug mit Licht 3 (Glanz, Fleck, Rücklicht; beim Bremsen 1
+  mehr; Streife +3 für Blaulicht und Boden), je Taschenlampe 3, die Leuchtkugel 4 (solange sie brennt). Am Tag 0.
+- Je Frame nachts: die Kegelkarten (4 Ecken je Lampe) auf der CPU, der Fleck eines Fahrzeugs nur, wenn es sich bewegt hat
+  (45 Bodenabfragen).
 - Arbeit je Frame: ein Blick auf die Uhr; nachts eine Schleife über die Fahrzeuge und Figuren (wenige), die Leuchtkugel ~200 Karten
   auf der CPU (nur solange sie brennt).
 - Keine neuen Lichter (das geliehene Licht der Leuchtkugel kommt aus dem gemeinsamen Vorrat), keine neuen Shader-Programme.
