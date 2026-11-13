@@ -236,7 +236,7 @@ export const RATSCHER = (() => {
           )
           .replace(
             '#include <lights_fragment_end>',
-            '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= 0.35;\n' +
+            '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= mix( 0.35, 0.8, max( gRdGloss * 0.5, gRdPud ) );\n' + // feat/strassen: a wet road shines
               (window.FOREST && LATE.FOREST.LIGHT ? LATE.FOREST.LIGHT : '')
           ) // grass and soil scatter: no pale sky sheen at grazing angles (V16b, low driving views)
           .replace(
@@ -246,6 +246,7 @@ export const RATSCHER = (() => {
           { vec2 ed = abs( vGeo - uGEdge.xy ); gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, smoothstep( uGEdge.z - 3200.0, uGEdge.z, max( ed.x, ed.y ) ) ); }   // the end of the data fades into the haze
           #endif`
           );
+      sh.fragmentShader = LATE.ROADS.gloss(sh.fragmentShader); // feat/strassen: the roughness of a wet road
     };
     m.customProgramCacheKey = () => 'geoterrain';
     return m;
