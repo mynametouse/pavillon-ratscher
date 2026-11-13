@@ -27,6 +27,7 @@ export const GLHELI = (() => {
     st: 'weg',
     sieht: false,
     fly: true,
+    err: null,
     g: null,
     rotor: null,
     tail: null,
@@ -259,8 +260,20 @@ export const GLHELI = (() => {
   });
   const _d = new THREE.Vector3(),
     _up = new THREE.Vector3(0, -1, 0);
+  // (an error in here must not stop the frame for the modules that tick after this one)
   function tick(dt) {
     if (!GL.on) return;
+    try {
+      flug(dt);
+    } catch (e) {
+      if (!S.err) console.warn('grenzland heli', e);
+      S.err = String((e && e.stack) || e).slice(0, 400);
+      try {
+        stop();
+      } catch (e2) {}
+    }
+  }
+  function flug(dt) {
     const W = GL.W,
       q = GLFAHNDUNG.wo(),
       K = GLLOGIK.kraefte(GLLOGIK.starsOf(W.heat), GL.era),

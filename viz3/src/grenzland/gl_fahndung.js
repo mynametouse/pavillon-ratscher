@@ -57,6 +57,7 @@ export const GLFAHNDUNG = (() => {
     hooks: { zeuge: null }, // a mission may add witnesses (cameras)
     luft: null, // what the helicopter sees (grenzland/gl_heli.js): { seen } – read each frame
     heli: null, // where it flies: [x, y] (for the radar)
+    err: null, // an error of the police's frame (tests: must stay null)
     zeugeT: 0,
     coverT: 0,
     speedT: 0,
@@ -881,8 +882,20 @@ export const GLFAHNDUNG = (() => {
     else if (n === 'fest') console.warn('grenzland: a patrol car stood for ever and was taken away', JSON.stringify(d));
   }
   // ---- per frame ----
+  // (an error in here must not stop the frame for the modules that tick after this one: it is noted once, and the police are called off)
   function tick(dt) {
     if (!GL.on) return;
+    try {
+      lauf(dt);
+    } catch (e) {
+      if (!S.err) console.warn('grenzland police', e);
+      S.err = String((e && e.stack) || e).slice(0, 400);
+      try {
+        clear(true);
+      } catch (e2) {}
+    }
+  }
+  function lauf(dt) {
     const W = GL.W,
       q = wo(),
       n = GLLOGIK.stars(W),

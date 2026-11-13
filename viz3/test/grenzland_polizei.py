@@ -358,6 +358,8 @@ with lib.browser() as b:
     steps(0.5)
     st = J("({ on: GLSTATE.on, figs: TP.figs(), cars: TP.polCars(), units: GLFAHNDUNG.cars.length, cops: GLFAHNDUNG.cops.length, solid: TP.polSolid(), heli: !!(window.GLHELI && GLHELI.on), block: !!GLFAHNDUNG.block })")
     ck('„Beenden“ leaves nothing of the police', not st['on'] and st['figs'] == 0 and st['cars'] == 0 and st['units'] == 0 and st['cops'] == 0 and st['solid'] == 0 and not st['heli'] and not st['block'], str(st))
+    er = J("[GLFAHNDUNG.err, window.GLHELI ? GLHELI.err : null]")
+    ck('no error in the police\'s frames', er[0] is None and er[1] is None, str(er))
     okgl, rep = lib.check_gl(pg)
     ck('at most 16 textures per shader program, none broken', okgl, str({k: rep[k] for k in ('maxFrag', 'maxVert')}))
     ck.errors(errs)
