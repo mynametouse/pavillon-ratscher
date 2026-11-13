@@ -10,7 +10,14 @@ Dateien: `viz3/src/grenzland/gl_fig.js` (die Schnittstelle `GLFIG`), neu `viz3/s
   die reitet (`F.reitet` aus `gl_mission.js`, oder `GLFIG.reite(F, moped)`): Hüfte auf der Sitzbank, Oberschenkel nach vorn und unten,
   Knie gebeugt, Fußballen auf den Rasten (Schwalbe: auf den Trittbrettern), Arme nach vorn, Hände um die Griffe (sie drehen mit dem
   Lenker), so weit nach vorn gebeugt, dass die Ellbogen leicht gebeugt bleiben, Kopf oben zur Straße. Die Figur neigt sich mit dem Moped
-  in die Kurve. Steht das Moped (unter 0,7 m/s), kommt der linke Fuß auf den Boden – angehoben auf dem Weg dorthin.
+  in die Kurve. Steht das Moped (unter 0,7 m/s), kommt der linke Fuß auf den Boden – angehoben auf dem Weg dorthin. Wer kurze Arme hat
+  (Sarah, Jule), rutscht bis 12 cm auf der Sitzbank nach vorn, statt sich auf den Tank zu legen. Beim Aufsteigen geht die Haltung in
+  einer Drittelsekunde aus dem Sitz des Grundspiels in die Fahrerhaltung über.
+- **Zu zweit unterwegs** (meine Entscheidung, abschaltbar): `gl_modus.js` versteckt den anderen der beiden, solange man fährt
+  („fährt mit“). Wie Jason und Lucia in GTA 6 sieht man ihn jetzt: auf der Simson hinten auf der langen Sitzbank (Hüfte auf der hinteren
+  Hälfte, Füße auf den Soziusrasten, Hände an der Taille des Fahrers, ab und zu ein Blick an dessen Schulter vorbei), im Trabant auf dem
+  Beifahrersitz. Nur von außen gesehen (in der Fahreransicht bleibt er wie bisher unsichtbar); `GLPOSE.sozius = false` stellt das alte
+  Verhalten wieder her.
 - **Am Steuer des Trabant** (1989, Ansicht von außen): auf dem Fahrersitz des Wagens dieses Bildes, die Hände auf zehn vor zwei am
   Lenkrad; sie gehen ein Stück mit dem Lenkrad mit wie die Hände der Fahreransicht.
 - **Rennen**: `GLFIG.go(F, x, y, { renn: true })` – nach einem kurzen Antritt (5,5 m/s²) 4,6 m/s, dazu der Sprint aus dem
@@ -53,7 +60,8 @@ Dateien: `viz3/src/grenzland/gl_fig.js` (die Schnittstelle `GLFIG`), neu `viz3/s
   [±0,205, −0,07, 0,335], Handgelenk hinter dem Griff relativ zum Lenkkopf [±0,262, −0,116, 0,132] (dort sitzen auch die Hände der
   Fahreransicht); Schwalbe: Hüfte [0, −0,36, 0,905], Füße auf den Trittbrettern, Griffe [±0,25, −0,12, 0,19].
 - **Kein neues Shader-Programm**: das Handy nimmt das Material der Straßenleute (`VFIG.mat()`), der Bildschirm eine Kopie davon mit
-  eigenem Leuchten. Geprüft im Test (169 → 169 Programme).
+  eigenem Leuchten. Geprüft im Test (169 → 169 Programme). Das Handy hängt in der Gruppe der Figur: wird sie versteckt oder
+  freigegeben, ist es mit weg.
 - **Fern ab**: weiter als 70 m von der Kamera stellt `rbPerson` keine Pose mehr – die Aufsätze auch nicht.
 - **`place()` heißt jetzt stehen**: wer gesetzt wird, steht (vorher blieb eine sitzende Figur nach einem neuen `place` im Sitzen).
   `gl_mission.js` setzt nach `place` selbst wieder `F.sitzt` – das funktioniert weiter.
@@ -109,6 +117,9 @@ Hinweise an die Besitzer anderer Dateien (ich habe sie nicht angefasst):
 - **`licht`**: der Lichtkegel sitzt an der Hand (`gl_licht.js`, `fackeln`) – passt zur hochgehaltenen Lampe. Schön wäre
   `GLLICHT.hatLampe = hatLampe` (die eigene Entscheidung, wer nachts eine Lampe trägt): dann halten auch Wachen und Volkspolizisten ohne
   `F.lampe` ihre Lampe hoch. Ohne das gilt nur `F.lampe === true`.
+- **`gl_modus.js` (Lead), der Mitfahrer:** `partnerTick` setzt den Partner beim Fahren unsichtbar; ich setze ihn nach den Fahrzeugen
+  (`VEH.after`) wieder sichtbar und auf den Soziussitz bzw. Beifahrersitz (nur Ansicht von außen, nur „heute“). Wer das nicht will:
+  `GLPOSE.sozius = false`. Der Radar zeigt den Partner beim Mitfahren weiterhin nicht (`F.rides`) – das passt.
 - **`welt`**: Polizisten zu Fuß rennen ab 2,6 m/s von selbst; für Zeugen `GLFIG.geste(F, 'filmen')`, zum Gaffen
   `GLFIG.blick(F, 'spieler')`, Kopfschütteln `GLFIG.geste(F, 'kopf')`.
 
