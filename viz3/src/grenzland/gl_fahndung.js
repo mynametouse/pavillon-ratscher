@@ -1,23 +1,35 @@
 // ===================== feat/grenzland: the wanted level in the world – witnesses, patrol cars, officers on foot, the road block, hiding (GLFAHNDUNG) =====================
-// The rules are grenzland/gl_logik.js (GTA 6: a deed counts only when somebody sees it; hollow stars until the police know who it is).
-// Here is who sees: the people of the mode (grenzland/gl_fig.js), the villagers and the walkers and drivers of the traffic – a villager
-// knows Falko and Sarah by name, a stranger gives only a description –, and the police themselves. And what the police do, as in the
-// country: a patrol car comes over the roads from where they leave the square (it takes its time), with blue light and horn, to where
-// one was last seen; it searches there, follows on the road what it sees, stops near somebody on foot and two officers get out and walk
-// after him (they do not run – whoever runs, gets away; whoever stands, is caught). From three stars a road block of two cars stands on
-// the road ahead; driving past it is another deed. Out of sight the stars go (sooner in a hiding place: the forest, a building, the
-// barn; sooner while they have only a description); while Falko and Sarah are apart, one star less. In 1989 the Volkspolizei comes
-// in its saloon with one blue beacon, and the ABV on foot knows everybody.
+// The rules and every decision of the police are grenzland/gl_logik.js (pure, tested without a browser on the real road graph: GLLOGIK.
+// einsatz). Here is the world side: who sees (the people of the mode, the villagers, the walkers and drivers of the traffic, the police
+// themselves, cameras a mission adds) and what a witness does – a villager knows Falko and Sarah by name, a stranger gives only a
+// description; a witness takes out the phone, and the report reaches the police after a few seconds (talk to him in that time and a
+// small thing is forgotten; knocked down, he reports that as well when he is up again – hurting people never pays). Then the police as
+// in the country: a patrol car comes over the roads from where they leave the square (it takes its time), with blue light and horn, to
+// where one was last seen; it looks around there, cruises the roads near it, follows on the road what it sees – a moped off the road it
+// cannot follow –, stops near somebody on foot, and two officers get out and walk after him (whoever runs, gets away; whoever stands, is
+// caught), go to where he was last seen, come back and get in again. From three stars a road block stands ahead on the road one drives;
+// passing it is another deed. Out of sight the stars go (sooner under the trees of a forest, indoors, in the barn; sooner while they
+// have only a description; new clothes at the bungalow end a description at once); while Falko and Sarah are apart, one star less.
+// In 1989 the Volkspolizei comes in its saloon with one blue beacon, and the ABV on foot knows everybody.
+//   GLFAHNDUNG.tat(id, { force, laut, quiet, k, sofort }) → stars gained now · zeugen(o) · wo() · los(ax, ay, bx, by) · versteckt(x, y, z)
+//   clear() · stand() · erwischt() · umziehen() · off · extra: [{ x, y, r }] · hooks.zeuge: () => [{ x, y, hd, r, name, knows, police }]
+//   Events: grenzland:tat, :zeuge, :sterne, :erwischt, :entkommen, :streife, :sperre, :funk
+import * as THREE from 'three';
+import { COARSE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { WCOL } from '../world/worldcol.js';
 import { RATSCHER } from '../world/ratscher.js';
+import { FOREST } from '../world/forest.js';
+import { VPROPS } from '../world/village_props.js';
+import { SCHL } from '../welt/schleusingen.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { DTEXT } from '../dorf/dorf_text.js';
 import { DPEOPLE } from '../dorf/dorf_people.js';
 import { VLEUTE } from '../verkehr/verkehr_leute.js';
+import { VFIG } from '../verkehr/verkehr_fig.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
 import { VERKEHR } from '../verkehr/verkehr.js';
 import { CLOCK } from '../time/clock.js';
@@ -30,28 +42,89 @@ import { GLAUTO } from './gl_auto.js';
 import { GLHUD } from './gl_hud.js';
 export const GLFAHNDUNG = (() => {
   const S = {
-    cars: [], // { c (GLAUTO car), st: 'anfahrt' | 'suche' | 'verfolgt' | 'steht' | 'abzug', t, routeT, crew: bool (the officers are out) }
-    cops: [], // officers on foot: figures of GLFIG with .cop = { car, st }
-    block: null, // the road block: { cars: [c, c], x, y, passed }
+    cars: [], // the units of the police (GLLOGIK.einsatz): { st: 'anfahrt' | 'suche' | 'verfolgt' | 'steht' | 'abzug', x, y, v, c (GLAUTO car) … }
+    cops: [], // the officers on foot: { st, x, y, F (figure of GLFIG) … }
+    block: null, // the road block: { x, y, hd, cars: [c, c] … }
     last: null, // where the player was last seen or reported: [x, y]
-    lastT: 0,
     wait: 0, // seconds until the next car is sent
-    sent: 0,
     seen: false,
     close: false,
-    catchT: 0,
-    speedT: 0,
-    chaseT: 0,
-    hidden: false,
-    busy: false, // officers are being loaded
+    hidden: false, // indoors or in a hiding place a mission named
+    cover: false, // in a wood (crowns overhead and all round)
+    krone: false, // under a tree's crown (the helicopter does not see one there)
     off: false, // missions may switch the police off (the flashback's first minute)
     extra: [], // further places that hide (the barn): [{ x, y, r }]
-    hooks: { zeuge: null }, // a mission may add witnesses
+    hooks: { zeuge: null }, // a mission may add witnesses (cameras)
+    luft: null, // what the helicopter sees (grenzland/gl_heli.js): { seen } – read each frame
+    heli: null, // where it flies: [x, y] (for the radar)
+    err: null, // an error of the police's frame (tests: must stay null)
+    zeugeT: 0,
+    coverT: 0,
+    speedT: 0,
+    helmT: 0,
+    funkT: 0,
   };
   const T = GLDATA.T;
+  // texts of this module (the core's are GLDATA.T)
+  const TX = {
+    ruft: (wer, was) => wer + ' hat es gesehen (' + was + ') und greift zum Telefon.',
+    ruftNicht: wer => wer + ' steckt das Telefon wieder ein.',
+    reden: wer => 'Mit ' + wer + ' reden',
+    redeIch: ['War keine Absicht. Wirklich.', 'Das bleibt unter uns, ja?', 'Ich bring das in Ordnung. Versprochen.'],
+    redeEr: [
+      'Na gut. Aber ich hab dich im Auge.',
+      'Beim nächsten Mal ruf ich an.',
+      'Schon gut. Mach, dass du weiterkommst.',
+    ],
+    redeNein: 'Das melde ich. Da gibt es nichts zu reden.',
+    opfer: wer => wer + ' ist wieder auf den Beinen – und ruft die Polizei.',
+    fahrzeug: 'Jetzt kennen sie das Moped.',
+    umziehen: 'Umziehen',
+    umFrei: 'Andere Jacke, andere Mütze – die Beschreibung passt nicht mehr.',
+    umBekannt: 'Umziehen hilft nicht mehr: Sie wissen, wer du bist.',
+    umGesehen: 'Nicht jetzt – da schaut jemand zu.',
+    schild: 'Kennzeichen tauschen',
+    schildOk: 'Das Versicherungskennzeichen vom Vorjahr dran: Dieses Moped kennt keiner.',
+    halt: 'Halt! Polizei!',
+    halt89: 'Stehenbleiben!',
+    haltSek: 'Polizei! Auf den Boden!',
+    helm: 'Ohne Helm – und die Streife hat es gesehen.',
+    durch: 'Durch die Sperre!',
+    zuFuss: 'Zwei Beamte zu Fuß – sie kommen um die Ecke.',
+    abv: 'Der ABV ist unterwegs. Der kennt hier jeden.',
+  };
+  // the police radio as subtitles (invented call signs: „Rennsteig“ is the control room, „Schleuse“ the patrol cars)
+  const FUNK = {
+    los: [
+      'Rennsteig für Schleuse 12: Hinweis aus Ratscher. Fahren Sie mal hin.',
+      'Schleuse 12 verstanden. Wir brauchen ein bisschen – Landstraße.',
+    ],
+    ort: ['Schleuse 12 am Ort. Wir schauen uns um.', 'Rennsteig von Schleuse 12: vor Ort. Bisher nur Hühner.'],
+    sicht: ['Schleuse 12: Sichtkontakt!', 'Rennsteig, wir haben ihn. Fahren nach.'],
+    verloren: ['Schleuse 12: Sicht verloren. Suchen den Bereich ab.', 'Rennsteig, der ist weg. Wir drehen eine Runde.'],
+    sperre: [
+      'Rennsteig an alle: Kontrollstelle auf der Landstraße einrichten.',
+      'Schleuse 14 steht quer. Hier kommt keiner durch. Hoffentlich.',
+    ],
+    durch: ['Schleuse 14: Der ist über den Acker! Der Bauer wird sich freuen.'],
+    heli: [
+      'Rennsteig für Bussard 1: Sie haben Freigabe. Suchgebiet Ratscher.',
+      'Bussard 1 im Anflug. Bleiben Sie, wo Sie sind – das gilt nicht Ihnen, Rennsteig.',
+    ],
+    sek: ['Rennsteig an alle: Spezialkräfte übernehmen. Zufahrten dicht machen.'],
+    ende: [
+      'Rennsteig an alle: Fahndung eingestellt. Kaffee ist fertig.',
+      'Schleuse 12 rückt ein. War wohl wieder nichts.',
+    ],
+    vopo: [
+      'Hier Zentrale. Genosse Hauptwachtmeister, klären Sie das in Ratscher.',
+      'Verstanden. Bin mit dem Wartburg unterwegs.',
+    ],
+  };
   const hyp = Math.hypot;
   const dark = () => !!(VAUTO.dark && VAUTO.dark());
-  // where the player is: on foot, or his vehicle
+  const era89 = () => GL.era === '1989';
+  // ---- where the player is: on foot, or his vehicle ----
   function wo() {
     const v = VEH && VEH.cur;
     if (v) return { x: v.st.x, y: v.st.y, v: hyp(v.st.u, v.st.v), veh: v, hd: v.st.psi };
@@ -61,68 +134,158 @@ export const GLFAHNDUNG = (() => {
     const B = RATSCHER && RATSCHER.box;
     return !!B && x > B[0] + 30 && x < B[2] - 30 && y > B[1] + 30 && y < B[3] - 30;
   };
-  // nothing solid between two points (the walls of the buildings)
+  // ---- nothing solid between two points: the walls of the buildings (the square: WCOL; the town: its own segments) – and no forest:
+  //      a few trunks do not hide anybody, a wood does ----
+  let townW = null,
+    townN = -1;
+  function town() {
+    if (!SCHL || SCHL.state !== 'ready' || !SCHL.segs || !SCHL.segs.length) return null;
+    if (townN !== SCHL.segs.length) {
+      townN = SCHL.segs.length;
+      townW = GLLOGIK.waende(SCHL.segs);
+    }
+    return townW;
+  }
   function los(ax, ay, bx, by) {
+    if (!inSquare(ax, ay) || !inSquare(bx, by)) {
+      const Wd = town();
+      return Wd ? Wd.frei(ax, ay, bx, by) : true;
+    }
     if (!WCOL || !WCOL.ready) return true;
     let free = true;
     const sx = bx - ax,
-      sy = by - ay;
+      sy = by - ay,
+      L = Math.hypot(sx, sy);
     try {
       WCOL.each(Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by), (s, A) => {
-        if (!free) return;
-        const cx = A[s * 4],
-          cy = A[s * 4 + 1],
-          dx = A[s * 4 + 2] - cx,
-          dy = A[s * 4 + 3] - cy,
-          den = sx * dy - sy * dx;
-        if (Math.abs(den) < 1e-9) return;
-        const t = ((cx - ax) * dy - (cy - ay) * dx) / den,
-          u = ((cx - ax) * sy - (cy - ay) * sx) / den;
-        if (t > 0.02 && t < 0.98 && u >= 0 && u <= 1) free = false;
+        if (free && GLLOGIK.kreuzt(ax, ay, sx, sy, A[s * 4], A[s * 4 + 1], A[s * 4 + 2], A[s * 4 + 3])) free = false;
       });
     } catch (e) {
       return true;
     }
-    return free;
+    if (!free || L < 30) return free;
+    // through a wood: more than some twenty metres under crowns on the way (a tree or a row of them hides nobody; along a road
+    // that runs through a wood one sees as far as the road is straight)
+    let wald = 0;
+    for (let d = 8; d < L - 6; d += 8) {
+      const x = ax + (sx * d) / L,
+        y = ay + (sy * d) / L;
+      if (unterKrone(x, y) && !aufStrasse(x, y) && ++wald >= 3) return false;
+    }
+    return true;
   }
-  // a hiding place: indoors, the forest, a place a mission names
-  function versteckt(x, y, z) {
+  // on a real road (not a track or a path)
+  const aufStrasse = (x, y) => {
+    try {
+      const s = KERN.surface(x, y);
+      return !!s && s.kind <= 5 && s.e > -0.5;
+    } catch (e) {
+      return false;
+    }
+  };
+  // ---- the canopy: the measured crowns of the square (world/ratscher.js: place, height, crown radius) in a grid, and the forest at
+  //      the Klinge (world/forest.js) ----
+  let KR = null;
+  function kronen() {
+    if (KR) return KR;
+    const R = RATSCHER && RATSCHER.treeRecs;
+    if (!R || !R.length) return null;
+    KR = new Map();
+    for (const t of R) {
+      if (!(t.h > 4) || !(t.r > 0.8)) continue;
+      const k = (Math.floor(t.x / 16) + 512) * 4096 + Math.floor(t.y / 16) + 512;
+      let a = KR.get(k);
+      if (!a) KR.set(k, (a = []));
+      a.push(t.x, t.y, t.r);
+    }
+    return KR;
+  }
+  // under a tree's crown (what the helicopter cannot look through)
+  function unterKrone(x, y) {
+    try {
+      if (FOREST && FOREST.owns && FOREST.owns(x, y)) return true;
+    } catch (e) {}
+    const K = kronen();
+    if (!K) return false;
+    for (let i = Math.floor((x - 8) / 16); i <= Math.floor((x + 8) / 16); i++)
+      for (let j = Math.floor((y - 8) / 16); j <= Math.floor((y + 8) / 16); j++) {
+        const a = K.get((i + 512) * 4096 + j + 512);
+        if (a) for (let k = 0; k < a.length; k += 3) if (hyp(a[k] - x, a[k + 1] - y) < a[k + 2]) return true;
+      }
+    return false;
+  }
+  // in a wood: crowns overhead and all round (a patrol sees one there only from close by) – not under a single tree, not on a road
+  const WIND = [
+    [7, 0],
+    [-7, 0],
+    [0, 7],
+    [0, -7],
+  ];
+  function unterBaeumen(x, y) {
+    if (!inSquare(x, y) || !unterKrone(x, y) || aufStrasse(x, y)) return false;
+    let n = 0;
+    for (const [dx, dy] of WIND) if (unterKrone(x + dx, y + dy)) n++;
+    return n >= 3;
+  }
+  // indoors, or a place a mission names (the barn)
+  function drinnen(x, y, z) {
     try {
       if (KERN.inside(x, y, (z || 0) + 1)) return true;
-      const pl = String(KERN.place(x, y, z || 0) || '');
-      if (/Wald|Klinge|Forst/.test(pl)) return true;
     } catch (e) {}
     return S.extra.some(q => hyp(q.x - x, q.y - y) < q.r);
   }
+  // a hiding place: indoors, the forest, a place a mission names
+  function versteckt(x, y, z) {
+    if (drinnen(x, y, z)) return true;
+    return unterBaeumen(x, y);
+  }
   const sneak = () => !VEH.cur && (P.stance === 'crouch' || P.stance === 'crawl' || P.stance === 'prone');
+  // ---- the roads the police can come by: the square's graph, the town's (the traffic's network there) ----
+  let netSq = null,
+    netTown = null,
+    netTownG = null;
+  function netz(x, y) {
+    if (inSquare(x, y)) {
+      if (!netSq) {
+        const G = GLAUTO.netz();
+        if (!G || !G.edges.length) return null;
+        netSq = GLLOGIK.netz(G, { box: RATSCHER.box });
+      }
+      return netSq.exits.length ? netSq : null;
+    }
+    const Pl = VERKEHR && VERKEHR.places && VERKEHR.places.stadt;
+    if (!Pl || !Pl.on || !Pl.G || !Pl.exits || hyp(x - Pl.c[0], y - Pl.c[1]) > Pl.carR - 40) return null;
+    if (netTownG !== Pl.G) {
+      netTownG = Pl.G;
+      netTown = GLLOGIK.netz(Pl.G, { exits: Pl.exits, vmax: [14, 13.9, 13.9, 9, 8, 5.6, 5] });
+    }
+    return netTown.exits.length ? netTown : null;
+  }
   // ---- who sees the player right now (o.laut: a bang – heard through walls within o.laut metres) ----
+  // the crooks of the story do not call the police (a mission may still make one a witness: F.zeuge = true)
+  const STUMM = new Set(['fremder', 'jule', 'timo', 'basti', 'kraeh', 'wache1', 'wache2', 'lutz']);
   function zeugen(o = {}) {
     const p = wo(),
       dk = dark(),
       opt = { dark: dk, sneak: sneak() },
       out = [];
-    const sees = (w, name, knows, police) => {
+    const sees = (w, name, knows, police, ref) => {
       const d = hyp(w.x - p.x, w.y - p.y);
       if (o.laut ? d < o.laut : GLLOGIK.sieht(w, p.x, p.y, opt) && los(w.x, w.y, p.x, p.y))
-        out.push({ name, knows: !!knows, police: !!police, d });
+        out.push({ name, knows: !!knows, police: !!police, d, ref: ref || null });
     };
     for (const F of GLFIG.figs) {
       if (!F.g.visible || F.era !== GL.era || F.partner || F.downT > 0 || !F.sees) continue;
-      sees(
-        { x: F.x, y: F.y, hd: F.st === 'geht' ? F.hd : null, r: F.r },
-        F.name,
-        F.knows ?? GL.era === '1989',
-        !!F.cop
-      );
+      if (STUMM.has(F.id) && !F.zeuge) continue;
+      sees({ x: F.x, y: F.y, hd: F.st === 'geht' ? F.hd : null, r: F.r }, F.name, F.knows ?? era89(), !!F.cop, {
+        k: 'fig',
+        F,
+      });
     }
     for (const u of S.cars)
-      if (u.c.g.visible)
-        sees(
-          { x: u.c.x, y: u.c.y, hd: null, r: 60 },
-          GL.era === '1989' ? 'Die Volkspolizei' : 'Die Streife',
-          false,
-          true
-        );
+      if (u.c && u.c.g.visible && u.st !== 'abzug')
+        sees({ x: u.x, y: u.y, hd: null, r: 60 }, era89() ? 'Die Volkspolizei' : 'Die Streife', false, true);
+    if (S.block) sees({ x: S.block.x, y: S.block.y, hd: null, r: 60 }, 'Die Sperre', false, true);
     if (GL.era === 'heute') {
       for (const k in (DPEOPLE && DPEOPLE.figs) || {}) {
         const f = DPEOPLE.figs[k];
@@ -130,7 +293,9 @@ export const GLFAHNDUNG = (() => {
           sees(
             { x: f.at.x, y: f.at.y, hd: null, r: 30 },
             (DTEXT.P[k] && DTEXT.P[k].name) || 'Jemand aus dem Dorf',
-            true
+            true,
+            false,
+            { k: 'dorf', id: k, at: f.at }
           );
       }
       for (const d of (VERKEHR && VERKEHR.S && VERKEHR.S.peds) || [])
@@ -138,21 +303,67 @@ export const GLFAHNDUNG = (() => {
           sees(
             { x: d.x, y: d.y, hd: d.hd, r: 28 },
             (VLEUTE.P[d.key] && VLEUTE.P[d.key].name) || 'Eine Passantin',
-            false
+            false,
+            false,
+            { k: 'ped', id: d.key, at: d }
           );
       for (const c of (VAUTO && VAUTO.cars) || [])
-        if (c.g.visible && c.st !== 'geliehen') sees({ x: c.x, y: c.y, hd: c.hd, r: 34 }, 'Ein Autofahrer', false);
+        if (c.g.visible && c.st !== 'geliehen')
+          sees({ x: c.x, y: c.y, hd: c.hd, r: 34 }, 'Ein Autofahrer', false, false, { k: 'auto', id: 'auto' + c.id });
     }
-    if (S.hooks.zeuge) for (const w of S.hooks.zeuge() || []) sees(w, w.name, w.knows, w.police);
+    if (S.hooks.zeuge)
+      for (const w of S.hooks.zeuge() || []) sees(w, w.name, w.knows, w.police, { k: 'hook', id: w.name });
     out.sort((a, b) => a.d - b.d);
     return out;
   }
-  // ---- a deed: counted if somebody saw it. o: { laut, quiet, k, force: [{ name, knows, police }] } → the stars gained ----
+  const keyOf = z => (z.ref ? z.ref.k + ':' + (z.ref.F ? z.ref.F.id : z.ref.id) : 'x:' + z.name);
+  const tatName = id => GLDATA.TATEN[id] || (GLLOGIK.CRIMES[id] || {}).name || id;
+  // ---- a deed: counted if somebody saw it. o: { laut, quiet, k, force: [{ name, knows, police }], sofort } → the stars gained now.
+  //      The police see for themselves and a forced witness has reported already: these count at once. Anybody else takes out the
+  //      phone first – the stars come when the call is through (GLLOGIK.meldeZeit: a few seconds). ----
   function tat(id, o = {}) {
     if (!GL.on) return 0;
     const W = GL.W,
       Z = o.force || zeugen(o),
       p = wo(),
+      police = Z.some(z => z.police),
+      now = !!o.force || !!o.sofort || police || !Z.length;
+    GL.stats.taten++;
+    GL.save();
+    let gained = 0;
+    if (now) gained = zaehlen(id, Z, p, o);
+    else {
+      // the nearest witness makes the call (what he reports, all of them saw)
+      const z = Z[0],
+        key = keyOf(z);
+      if (!W.offen.some(q => q.key === key && q.id === id)) {
+        const q = GLLOGIK.melden(W, id, {
+          seen: Z.length,
+          knows: Z.some(a => a.knows),
+          k: o.k,
+          t: CLOCK.t,
+          fz: !!p.veh,
+          key,
+        });
+        if (q) {
+          q.name = z.name;
+          q.ref = z.ref;
+          q.x = p.x;
+          q.y = p.y;
+          q.quiet = !!o.quiet;
+          if (z.ref && z.ref.F && z.ref.F.st !== 'geht') GLFIG.face(z.ref.F, p.x, p.y);
+          if (!o.quiet) PLAY.think(TX.ruft(z.name, tatName(id)), 3600);
+          GL.emit('zeuge', { id, wer: z.name, sek: Math.round(q.t * 10) / 10, beredbar: GLLOGIK.beredbar(id) });
+        }
+      }
+    }
+    if (!Z.length && !o.quiet) PLAY.think(T.keinZeuge, 2200);
+    GL.emit('tat', { id, zeugen: Z.length, wer: Z[0] ? Z[0].name : '', sterne: GLLOGIK.stars(W), bekannt: W.known });
+    return gained;
+  }
+  // the deed reaches the police: the level, where to come, what one is told
+  function zaehlen(id, Z, p, o = {}) {
+    const W = GL.W,
       before = GLLOGIK.stars(W);
     const gained = GLLOGIK.crime(W, id, {
       seen: Z.filter(z => !z.police).length,
@@ -160,163 +371,450 @@ export const GLFAHNDUNG = (() => {
       knows: Z.some(z => z.knows),
       k: o.k,
       t: CLOCK.t,
+      fz: !!p.veh,
     });
-    GL.stats.taten++;
-    GL.save();
     if (Z.length) {
-      S.last = [p.x, p.y];
-      S.lastT = 0;
-      if (!S.cars.length && S.wait <= 0)
-        S.wait = GLLOGIK.antwort(GLLOGIK.stars(W)).delay * (GL.era === '1989' ? 0.6 : 1);
-      if (!o.quiet) PLAY.think(T.zeuge(Z[0].name, GLDATA.TATEN[id] || id), 3600);
+      const full = GLLOGIK.starsOf(W.heat);
+      E.melde(p.x, p.y, GLLOGIK.kraefte(full, GL.era).delay);
+      S.last = E.last;
+      S.wait = Math.max(0, E.wait);
+      if (!o.quiet) PLAY.think(T.zeuge(Z[0].name, tatName(id)), 3600);
       if (GLLOGIK.stars(W) > before) {
         GLTON.fx('stern');
-        if (before === 0) setTimeout(() => GL.on && GLLOGIK.stars(GL.W) > 0 && PLAY.think(T.streife, 3800), 3800);
+        if (before === 0) {
+          setTimeout(() => GL.on && GLLOGIK.stars(GL.W) > 0 && PLAY.think(T.streife, 3800), 3800);
+          funk(era89() ? 'vopo' : 'los', 6);
+        }
       }
-    } else if (!o.quiet) PLAY.think(T.keinZeuge, 2200);
-    GL.emit('tat', { id, zeugen: Z.length, wer: Z[0] ? Z[0].name : '', sterne: GLLOGIK.stars(W), bekannt: W.known });
+    }
     if (gained) GL.emit('sterne', { n: GLLOGIK.stars(W), bekannt: W.known });
     return gained;
   }
-  // ---- the cars ----
-  const LOOK = {
-    streife: { col: '#c9cdd2', band: '#1f4fa8', band2: '#cfe23c', bar: 'balken' },
-    vopo: { col: '#f1f0e8', band: '#2f6b3a', bar: 'rundum' },
+  // ---- a witness on the phone can be talked to (small things only) – the action button near him ----
+  const ortVon = q => {
+    const r = q.ref;
+    if (!r) return null;
+    if (r.F) return r.F.gone ? null : [r.F.x, r.F.y, r.F.z];
+    if (r.at) return [r.at.x, r.at.y, KERN.ground(r.at.x, r.at.y)];
+    return null;
   };
-  function send(to) {
-    // from the road end with the shortest way that nobody looks at (not within 150 m of the player)
-    const p = wo();
-    let best = null,
-      bl = 1e9;
-    for (const z of GLAUTO.zufahrten()) {
-      if (hyp(z[0] - p.x, z[1] - p.y) < 150) continue;
-      const line = GLAUTO.route(z, to, { k: 1.3, aLat: 3.2 });
-      if (line && line.L < bl) {
-        bl = line.L;
-        best = line;
-      }
+  const reden = () => GL.W.offen.find(q => !q.quiet && GLLOGIK.beredbar(q.id) && ortVon(q));
+  KERN.act({
+    id: 'gl-zeuge',
+    prio: 6,
+    r: 2.6,
+    label: () => {
+      if (!GL.on || VEH.cur) return null;
+      const q = reden();
+      return q ? TX.reden(q.name) : null;
+    },
+    pos: () => {
+      const q = GL.on ? reden() : null;
+      return q ? ortVon(q) : [0, 0, -999];
+    },
+    run: () => {
+      const q = reden();
+      if (!q) return;
+      const i = Math.floor(Math.random() * TX.redeIch.length);
+      GLLOGIK.still(GL.W, q.key);
+      GLHUD.sub(GL.name(), TX.redeIch[i], 2200);
+      setTimeout(() => GL.on && GLHUD.sub(q.name, TX.redeEr[i], 2600), 2300);
+      GL.emit('zeuge', { id: q.id, wer: q.name, still: true });
+    },
+  });
+  // somebody knocked down reports it himself when he is up again (GTA 6: victims report) – unless he is one of the story's crooks
+  KERN.on('grenzland:schlag', d => {
+    if (!GL.on || !d) return;
+    const F = GLFIG.figs.find(f => f.id === d.id);
+    if (!F || F.cop || STUMM.has(F.id)) return;
+    const key = 'fig:' + F.id,
+      cut = GLLOGIK.still(GL.W, key); // the call he was making is cut short …
+    const q = GLLOGIK.melden(GL.W, 'schlag', {
+      seen: 1,
+      knows: F.knows ?? era89(),
+      key,
+      sec: Math.max(6, F.downT || 7) + 4, // … and made again with more to tell, once he is up
+      t: CLOCK.t,
+    });
+    if (q) {
+      q.name = F.name;
+      q.ref = { k: 'fig', F };
+      q.x = F.x;
+      q.y = F.y;
+      q.opfer = true;
+      q.quiet = false;
     }
-    if (!best) return null;
-    const era = GL.era === '1989',
-      c = GLAUTO.spawn(era ? 'limo89' : 'streife', era ? LOOK.vopo : LOOK.streife);
-    GLAUTO.onLine(c, best, 2, 14);
-    c.blau = true;
-    c.horn = true;
-    GLAUTO.hornAlt = era;
-    const u = { c, st: 'anfahrt', t: 0, routeT: 0, crew: false, lost: 0 };
-    S.cars.push(u);
-    S.sent++;
-    GL.emit('streife', { n: S.cars.length });
-    return u;
+    if (cut) PLAY.think(TX.ruftNicht(F.name), 2200);
+  });
+  // ---- new clothes at the bungalow: a description is worth nothing any more; the moped's plate at the carport ----
+  function umziehen() {
+    if (!GL.on) return '';
+    const r = GLLOGIK.umziehen(GL.W, { seen: S.seen || zeugen().length > 0 });
+    if (r === 'frei') {
+      // (the police drive home by themselves once the level is calm: GLLOGIK.einsatz)
+      PLAY.think(TX.umFrei, 3600);
+      GLTON.fx('frei');
+      GL.emit('entkommen', { umgezogen: true });
+      GL.emit('sterne', { n: 0, bekannt: false });
+    } else if (r === 'bekannt') PLAY.think(TX.umBekannt, 3000);
+    else if (r === 'gesehen') PLAY.think(TX.umGesehen, 2600);
+    return r;
   }
-  function reroute(u, to, k) {
-    const line = GLAUTO.route([u.c.x, u.c.y], to, { k, aLat: 3.4 });
-    if (!line || line.L < 6) return false;
-    // from where it stands: the nearest point of the new line ahead of it
-    const pr = VNETZproject(line, u.c.x, u.c.y);
-    GLAUTO.onLine(u.c, line, pr ? Math.min(line.L - 2, pr.s) : 2, u.c.v);
-    u.routeT = 0;
-    return true;
+  const BUNG = [9.6, 12.4],
+    PORT = [-1.8, 14.4];
+  KERN.act({
+    id: 'gl-umziehen',
+    prio: 4,
+    r: 3.2,
+    label: () => (GL.on && GL.era === 'heute' && !VEH.cur && GLLOGIK.stars(GL.W) > 0 ? TX.umziehen : null),
+    pos: () => [BUNG[0], BUNG[1], KERN.ground(BUNG[0], BUNG[1])],
+    run: umziehen,
+  });
+  KERN.act({
+    id: 'gl-kennzeichen',
+    prio: 4,
+    r: 4,
+    label: () =>
+      GL.on &&
+      GL.era === 'heute' &&
+      !VEH.cur &&
+      GL.W.fz &&
+      GLAUTO.moped &&
+      hyp(GLAUTO.moped.st.x - PORT[0], GLAUTO.moped.st.y - PORT[1]) < 14
+        ? TX.schild
+        : null,
+    pos: () => [PORT[0], PORT[1], KERN.ground(PORT[0], PORT[1])],
+    run: () => {
+      if (GLLOGIK.umkennzeichnen(GL.W)) {
+        PLAY.think(TX.schildOk, 3600);
+        GLTON.fx('tick');
+      }
+    },
+  });
+  // ---- the police radio: a line now and then as a subtitle (never while somebody speaks) ----
+  function funk(k, pause = 9) {
+    const L = FUNK[k];
+    if (!L || S.funkT > 0 || !GL.on) return;
+    S.funkT = pause;
+    const line = L[Math.floor(Math.random() * L.length)];
+    GLTON.fx('funk');
+    GLHUD.sub('Funk', line, 3400);
+    GL.emit('funk', { k, text: line });
   }
-  // (the line functions come with GLAUTO's network: verkehr/verkehr_netz.js)
-  const VNETZproject = (line, x, y) => (VERKEHR.net && VERKEHR.net.project ? VERKEHR.net.project(line, x, y) : null);
-  function carSees(u, p) {
-    const d = hyp(u.c.x - p.x, u.c.y - p.y),
-      r = (dark() ? 42 : 80) * (p.veh ? 1.25 : sneak() ? 0.5 : 1);
-    return d < r && !S.hidden && los(u.c.x, u.c.y, p.x, p.y);
-  }
-  async function crewOut(u) {
-    if (u.crew || S.busy) return;
-    u.crew = true;
-    S.busy = true;
-    const ids = GL.era === '1989' ? ['abv', 'vopo'] : ['polizei1', 'polizei2'];
-    for (let i = 0; i < ids.length; i++) {
-      if (S.cops.some(F => F.id === ids[i])) continue;
-      const F = await GLFIG.make(ids[i], { era: GL.era });
-      if (!F) continue;
-      if (!GL.on || u.gone) {
+  // ---- the world the police act in (GLLOGIK.einsatz) ----
+  const LOOK = {
+    streife: ['streife', { col: '#c9cdd2', band: '#1f4fa8', band2: '#cfe23c', bar: 'balken' }],
+    vopo: ['limo89', { col: '#f1f0e8', band: '#2f6b3a', bar: 'rundum' }],
+    sek: ['kasten', { col: '#23272c', band: '#3a4048', bar: 'balken' }],
+  };
+  const WHO = {
+    streife: ['polizei1', 'polizei2'],
+    vopo: ['vopo', 'vopo'],
+    abv: ['abv', 'abv'],
+    sek: ['polizei1', 'polizei2'],
+  };
+  // ---- the officers' figures: made once per search and kept (hidden while they sit in the car), freed when it is over ----
+  const pool = [], // { key, F, busy }
+    POOL = { pool: true };
+  let pending = 0;
+  const wer = (kind, i) => {
+    const ids = WHO[kind] || WHO.streife,
+      id = ids[i % ids.length],
+      sek = kind === 'sek';
+    return [
+      id,
+      sek ? { era: GL.era, kleid: 'wache', hut: 'helmschwarz' } : { era: GL.era },
+      id + '|' + GL.era + (sek ? '|sek' : ''),
+    ];
+  };
+  // a figure for an officer: a free one of the pool, or a new one (resolves to the pool's entry, taken; null without the files)
+  function figur(id, o, key) {
+    const q = pool.find(a => a.key === key && !a.busy && a.F && !a.F.gone);
+    if (q) {
+      q.busy = true;
+      return Promise.resolve(q);
+    }
+    pending++;
+    return GLFIG.make(id, o).then(F => {
+      pending--;
+      if (!F) return null;
+      if (!GL.on) {
         GLFIG.drop(F);
-        continue;
+        return null;
       }
-      const side = i ? 1 : -1,
-        hd = u.c.hd;
-      F.era = GL.era;
-      F.cop = { car: u, st: 'jagt' };
-      F.r = 38;
-      F.knows = false;
-      GLFIG.place(F, u.c.x + Math.cos(hd) * side * 1.6, u.c.y - Math.sin(hd) * side * 1.6, hd);
-      S.cops.push(F);
-      GLTON.fx('funk', hyp(F.x - P.x, F.y - P.y), 60);
-    }
-    S.busy = false;
+      F.cop = POOL;
+      F.g.visible = false;
+      const e = { key, F, busy: true };
+      pool.push(e);
+      return e;
+    });
   }
-  function crewIn(u) {
-    for (const F of S.cops.slice())
-      if (F.cop.car === u) {
-        S.cops.splice(S.cops.indexOf(F), 1);
-        GLFIG.drop(F);
+  function poolDrop() {
+    for (const q of pool) if (q.F && !q.F.gone) GLFIG.drop(q.F);
+    pool.length = 0;
+  }
+  const carOf = u => {
+    const c = u.c;
+    return c && !c.gone ? c : null;
+  };
+  const back = u => {
+    const c = u.c;
+    u.s = c.s;
+    u.v = c.v;
+    u.x = c.x;
+    u.y = c.y;
+    u.hd = c.hd;
+    u.ende = !!c.ende;
+  };
+  const world = {
+    netz,
+    los,
+    rnd: Math.random,
+    maxCops: COARSE ? 2 : 4,
+    frei: q => {
+      try {
+        KERN.pushOut(q, 0.4);
+      } catch (e) {}
+      return Number.isFinite(q[0] + q[1]);
+    },
+    spawn(u) {
+      const L = LOOK[u.kind] || LOOK.streife;
+      u.c = GLAUTO.spawn(L[0], L[1]) || GLAUTO.spawn('streife', LOOK.streife[1]);
+      if (u.c) u.c.pol = true; // (the police's own: other modules have vehicles of the mode too)
+      // its crew's figures are loaded now, while it is still far (loading and painting a figure takes a moment)
+      if (u.st !== 'riegel')
+        for (let i = 0; i < (era89() ? 1 : 2); i++) {
+          const [id, o, key] = wer(u.kind, i);
+          if (pool.length + pending < 4 && !pool.some(q => q.key === key && !q.busy))
+            figur(id, o, key).then(q => q && (q.busy = false));
+        }
+    },
+    remove(u) {
+      if (u.c) GLAUTO.remove(u.c);
+      u.c = null;
+      markDirty();
+    },
+    onLine(u, line, s, v) {
+      const c = carOf(u);
+      if (!c) return;
+      GLAUTO.onLine(c, line, s, v);
+      u.line = line;
+      back(u);
+    },
+    drive(u, dt, o) {
+      const c = carOf(u);
+      if (!c || !c.line) return;
+      c.lat = u.lat || 0;
+      // the traffic ahead on the same lane, going the same way: the police do not drive through it (a car that stands is passed)
+      if (o.halt && GL.era === 'heute')
+        for (const a of (VAUTO && VAUTO.cars) || [])
+          if (
+            a.g.visible &&
+            a.v > 2 &&
+            Math.abs(a.x - c.x) < 50 &&
+            Math.abs(a.y - c.y) < 50 &&
+            Math.cos(a.hd - c.hd) > 0.5
+          )
+            o.halt.push({ x: a.x, y: a.y, r: 0.7, gap: 4 });
+      GLAUTO.drive(c, dt, o);
+      if (c.ende) c.v = 0; // (at the end of a line that does not end with speed 0 it stands all the same)
+      back(u);
+    },
+    park(u, x, y, hd) {
+      const c = carOf(u);
+      if (!c) return;
+      GLAUTO.park(c, x, y, hd);
+      u.line = null;
+      back(u);
+    },
+    copMake(c) {
+      const [id, o, key] = wer(c.kind, c.i);
+      c.name = (GLDATA.CAST[id] || {}).name || 'Polizist';
+      figur(id, o, key).then(q => {
+        const F = q && q.F;
+        if (!F) {
+          // (no figure to show – a phone without the files: he is there all the same, as a voice)
+          c.da = !c.gone;
+          return;
+        }
+        if (c.gone || !GL.on) {
+          q.busy = false;
+          return;
+        }
+        F.era = GL.era;
+        F.cop = c;
+        F.r = 38;
+        F.knows = !!c.knows;
+        F.downT = 0;
+        c.F = F;
+        // where he was to stand by now (the car has stopped; without a car: where he came round the corner)
+        const at = c.unit
+          ? [c.unit.x + Math.cos(c.unit.hd) * (c.i ? 1.6 : -1.6), c.unit.y - Math.sin(c.unit.hd) * (c.i ? 1.6 : -1.6)]
+          : [c.x, c.y];
+        GLFIG.place(F, at[0], at[1], c.hd);
+        c.x = F.x;
+        c.y = F.y;
+        c.da = true;
+        GLTON.fx('funk', hyp(F.x - P.x, F.y - P.y), 60);
+      });
+    },
+    copDrop(c) {
+      // back into the car: the figure is kept (hidden) while the search lasts – getting out again costs nothing
+      const q = c.F && pool.find(a => a.F === c.F);
+      if (q) {
+        q.busy = false;
+        GLFIG.stop(c.F);
+        c.F.g.visible = false;
+        c.F.cop = POOL;
+        markDirty();
+      } else if (c.F) GLFIG.drop(c.F);
+      c.F = null;
+    },
+    copStep(c, dt) {
+      const F = c.F;
+      if (!F) {
+        // without a figure: he moves as a point
+        if (c.goal) {
+          const d = hyp(c.goal[0] - c.x, c.goal[1] - c.y);
+          if (d > 0.3) {
+            const s = Math.min(d, c.v * dt);
+            c.x += ((c.goal[0] - c.x) / d) * s;
+            c.y += ((c.goal[1] - c.y) / d) * s;
+          }
+        }
+        return;
       }
-    u.crew = false;
-  }
-  function leave(u) {
-    crewIn(u);
-    const ex = GLAUTO.zufahrten()
-      .map(z => [hyp(z[0] - u.c.x, z[1] - u.c.y), z])
-      .sort((a, b) => a[0] - b[0])[0];
-    u.st = 'abzug';
-    u.c.horn = false;
-    u.c.blau = false;
-    if (!ex || !reroute(u, ex[1], 1)) drop(u);
-  }
-  function drop(u) {
-    crewIn(u);
-    u.gone = true;
-    GLAUTO.remove(u.c);
-    const i = S.cars.indexOf(u);
-    if (i >= 0) S.cars.splice(i, 1);
-  }
-  // ---- the road block: two cars across the road some hundred metres ahead on the way out ----
-  function sperre(p) {
-    if (S.block || GL.era === '1989' || !inSquare(p.x, p.y)) return;
-    const G = GLAUTO.netz();
-    let best = null,
-      bd = 1e9;
-    for (const e of G.edges) {
-      if (e.kind > 2 || e.len < 40) continue;
-      const m = e.pts[Math.floor(e.pts.length / 2)],
-        d = hyp(m[0] - p.x, m[1] - p.y);
-      if (d > 220 && d < 520 && Math.abs(d - 330) < bd && !los(m[0], m[1], p.x, p.y) === false) {
-        // (in sight is fine at that distance: it is put up while one is far)
-        bd = Math.abs(d - 330);
-        best = e;
+      if (F.downT > 0) return;
+      if (c.goal) {
+        const far = hyp(c.goal[0] - F.x, c.goal[1] - F.y);
+        if (far > 0.5 && (F.st !== 'geht' || !c.went || hyp(c.goal[0] - c.went[0], c.goal[1] - c.went[1]) > 0.45)) {
+          c.went = [c.goal[0], c.goal[1]];
+          GLFIG.go(F, c.goal, c.v);
+        } else if (F.st === 'geht') F.v = c.v;
+      } else {
+        if (F.st === 'geht') GLFIG.stop(F);
+        if (c.lookT > 0) F.hd = c.hd;
       }
-    }
-    if (!best) return;
-    const i = Math.floor(best.pts.length / 2),
-      a = best.pts[Math.max(0, i - 1)],
-      b = best.pts[i],
-      hd = Math.atan2(b[0] - a[0], b[1] - a[1]),
+      c.x = F.x;
+      c.y = F.y;
+      if (F.st === 'geht' || !(c.lookT > 0)) c.hd = F.hd;
+    },
+    tat: (id, name) => tat(id, { force: [{ name, police: true }], quiet: true }),
+    block: B => blockBuild(B),
+    unblock: B => blockDrop(B),
+  };
+  const E = GLLOGIK.einsatz(world);
+  S.cars = E.units;
+  S.cops = E.cops;
+  // ---- the road block: two cars across the road, cones before them, a sign – put up where GLLOGIK says ----
+  let coneGeo = null;
+  function cones() {
+    if (coneGeo) return coneGeo;
+    const k = VPROPS.kit(),
+      red = [0.72, 0.09, 0.03],
+      white = [0.85, 0.85, 0.82],
+      dk = [0.03, 0.03, 0.035];
+    // five cones across the road 14 m before the cars, three more narrowing it; a sign on a stand in the middle
+    const cone = (x, y) => {
+      k.box(x, y, 0.015, 0.36, 0.36, 0.03, 0, dk);
+      k.cyl(x, y, 0.03, 0.2, 0.13, 0.1, 8, red, false);
+      k.cyl(x, y, 0.2, 0.34, 0.1, 0.075, 8, white, false);
+      k.cyl(x, y, 0.34, 0.52, 0.075, 0.035, 8, red, true);
+    };
+    for (let i = -2; i <= 2; i++) cone(i * 1.5, 14);
+    cone(-2.6, 9);
+    cone(2.6, 9);
+    cone(-2.9, 4.5);
+    cone(2.9, 4.5);
+    // the sign: a red disc with a white bar, on a post with a foot
+    k.box(0, 6.5, 0.03, 0.6, 0.5, 0.06, 0, dk);
+    k.cyl(0, 6.5, 0.06, 1.35, 0.025, 0.025, 6, [0.5, 0.5, 0.52], false);
+    k.disc(0, 6.52, 1.62, 0, 1, 0.3, red, 16, false);
+    k.disc(0, 6.48, 1.62, 0, -1, 0.3, [0.45, 0.45, 0.47], 16, false);
+    k.box(0, 6.535, 1.62, 0.42, 0.012, 0.09, 0, white);
+    return (coneGeo = k.geo());
+  }
+  function blockBuild(B) {
+    const hd = B.hd,
       cars = [];
     for (const s of [-1, 1]) {
-      const c = GLAUTO.spawn('streife', LOOK.streife);
+      const c = GLAUTO.spawn('streife', LOOK.streife[1]);
+      if (!c) continue;
       GLAUTO.park(
         c,
-        b[0] + Math.cos(hd) * s * 1.6 + Math.sin(hd) * s * 1.2,
-        b[1] - Math.sin(hd) * s * 1.6 + Math.cos(hd) * s * 1.2,
+        B.x + Math.cos(hd) * s * 1.6 - Math.sin(hd) * s * 1.2,
+        B.y - Math.sin(hd) * s * 1.6 - Math.cos(hd) * s * 1.2,
         hd + Math.PI / 2 + s * 0.35
       );
       c.blau = true;
+      c.pol = true;
       cars.push(c);
     }
-    S.block = { cars, x: b[0], y: b[1], passed: false, near: false };
+    const m = new THREE.Mesh(cones(), VFIG.mat());
+    m.userData.noMerge = true;
+    m.userData.shared = true;
+    m.castShadow = false;
+    m.position.set(B.x, KERN.ground(B.x, B.y) || 0, -B.y);
+    m.rotation.y = -hd;
+    m.name = 'grenzland sperre';
+    scene.add(m);
+    B.cars = cars;
+    B.mesh = m;
+    S.block = B;
+    // an officer beside the sign, facing the way one comes (not on a phone: every figure costs memory)
+    if (!COARSE)
+      GLFIG.make('polizei2', { era: 'heute' }).then(F => {
+        if (!F) return;
+        if (S.block !== B || !GL.on) return GLFIG.drop(F);
+        F.cop = { block: true };
+        F.r = 45;
+        F.knows = false;
+        GLFIG.place(
+          F,
+          B.x + Math.sin(hd) * 6.5 + Math.cos(hd) * 1.5,
+          B.y + Math.cos(hd) * 6.5 - Math.sin(hd) * 1.5,
+          hd
+        );
+        B.F = F;
+      });
     PLAY.think(T.sperre, 3500);
-    GL.emit('sperre', { x: b[0], y: b[1] });
+    funk('sperre', 7);
+    GL.emit('sperre', { x: B.x, y: B.y });
+    markDirty(true);
   }
-  function blockOff() {
-    if (!S.block) return;
-    for (const c of S.block.cars) GLAUTO.remove(c);
-    S.block = null;
+  function blockDrop(B) {
+    for (const c of B.cars || []) GLAUTO.remove(c);
+    if (B.mesh) scene.remove(B.mesh);
+    if (B.F) GLFIG.drop(B.F);
+    B.cars = [];
+    B.mesh = B.F = null;
+    if (S.block === B) S.block = null;
+    markDirty(true);
   }
+  // ---- a flash of blue on the walls at night: one of the game's shared point lights at the nearest beacon (no new lamp) ----
+  KERN.lights.borrow({
+    id: 'grenzland:blau',
+    n: 1,
+    prio: 4,
+    want: () => GL.on && !!S.blauU && dark(),
+    on: ls => {
+      const l = ls[0];
+      l.color.setHex(0x2a5cff);
+      l.distance = 24;
+      l.decay = 1.4;
+      l.intensity = 0;
+    },
+    tick: ls => {
+      const l = ls[0],
+        u = S.blauU;
+      if (!u || !u.c) {
+        l.intensity = 0;
+        return;
+      }
+      l.position.set(u.x, (u.c.z || 0) + 2.1, -u.y);
+      l.intensity = Math.floor((GLAUTO.blink || 0) * 5.5) % 2 ? 30 : 4;
+    },
+  });
   // ---- caught ----
   function erwischt() {
     const W = GL.W,
@@ -324,267 +822,230 @@ export const GLFAHNDUNG = (() => {
     GL.stats.erwischt++;
     GL.emit('erwischt', { busse: n, sterne: GLLOGIK.stars(W), era: GL.era });
     clear(true);
+    GL.W.fz = false; // (the moped is on record now – and given back)
   }
-  // everything of the police away, the level calm (the mode's end, an arrest, a mission's reset)
-  function clear(keepLog) {
-    for (const u of S.cars.slice()) drop(u);
-    for (const F of S.cops.slice()) GLFIG.drop(F);
-    S.cops.length = 0;
-    blockOff();
-    GLLOGIK.clear(GL.W);
-    if (!keepLog) GL.W.log.length = 0;
-    S.wait = 0;
-    S.sent = 0;
-    S.seen = S.close = false;
-    S.catchT = S.chaseT = 0;
+  function clearWorld() {
+    S.blauU = null;
     S.last = null;
+    S.seen = S.close = false;
+    S.wait = 0;
     GLTON.siren(false);
     markDirty();
   }
-  // ---- per frame ----
-  let acc = 0;
-  function tick(dt) {
-    if (!GL.on) return;
-    const W = GL.W,
-      p = wo(),
-      n = GLLOGIK.stars(W),
-      full = GLLOGIK.starsOf(W.heat);
-    S.hidden = versteckt(p.x, p.y, P.feet);
-    // speeding through the village in front of somebody (at most now and then)
-    S.speedT -= dt;
-    if (
-      p.veh &&
-      p.v > 15.5 &&
-      S.speedT <= 0 &&
-      GL.era === 'heute' &&
-      /Ratscher ·|Anger|Dorf/.test(String(KERN.place(p.x, p.y, 0) || ''))
-    ) {
-      S.speedT = 25;
-      if (zeugen().length) tat('raserei', { quiet: n > 0 });
-    }
-    // the cars
-    let seen = false,
-      close = false;
-    const halt = p.veh ? [] : [{ x: p.x, y: p.y, r: 0.4, gap: 3.5 }];
-    for (const F of S.cops) halt.push({ x: F.x, y: F.y, r: 0.4, gap: 2 });
-    for (const u of S.cars.slice()) {
-      const c = u.c,
-        d = hyp(c.x - p.x, c.y - p.y);
-      u.t += dt;
-      u.routeT += dt;
-      const sees = u.st !== 'abzug' && !S.off && carSees(u, p);
-      if (sees) {
-        seen = true;
-        if (d < 26) close = true;
-        S.last = [p.x, p.y];
-        S.lastT = 0;
-        u.lost = 0;
-      } else u.lost += dt;
-      if (u.st === 'abzug') {
-        GLAUTO.drive(c, dt, { k: 0.9, halt });
-        if (c.ende || (d > 260 && u.t > 20)) drop(u);
-        continue;
-      }
-      if (sees && u.st !== 'verfolgt' && u.st !== 'steht') {
-        u.st = 'verfolgt';
-        c.horn = true;
-        u.routeT = 9;
-      }
-      if (u.st === 'verfolgt') {
-        if (!sees && u.lost > 6) {
-          u.st = 'suche';
-          c.horn = false;
-          u.routeT = 9;
-        } else if (!p.veh && d < 22) {
-          // somebody on foot close by: stop, out of the car
-          u.st = 'steht';
-          c.horn = false;
-          crewOut(u);
-        } else if (u.routeT > 2.2 || c.ende) reroute(u, S.last || [p.x, p.y], 1.55);
-        GLAUTO.drive(c, dt, { k: 1, acc: 3.4, halt, vmax: u.st === 'steht' ? 0 : undefined });
-      } else if (u.st === 'steht') {
-        GLAUTO.drive(c, dt, { vmax: 0 });
-        // back into the car when the one on foot is far or has a vehicle again
-        if (p.veh && sees) {
-          crewIn(u);
-          u.st = 'verfolgt';
-          c.horn = true;
-          u.routeT = 9;
-        } else if (u.lost > 28) {
-          crewIn(u);
-          u.st = 'suche';
-          u.routeT = 9;
-        }
-      } else {
-        // on the way to where the player was last seen; then round the roads near it
-        if (u.st === 'anfahrt' && S.last && hyp(c.x - S.last[0], c.y - S.last[1]) < 70) u.st = 'suche';
-        if (c.ende || (u.st === 'suche' && u.routeT > 40)) {
-          u.st = 'suche';
-          c.horn = false;
-          const G = GLAUTO.netz(),
-            o = S.last || [p.x, p.y],
-            cand = G.nodes.filter(q => hyp(q.x - o[0], q.y - o[1]) < 150 && hyp(q.x - c.x, q.y - c.y) > 40);
-          const q = cand[Math.floor(Math.random() * cand.length)];
-          if (!q || !reroute(u, [q.x, q.y], 0.75)) u.routeT = 30;
-        }
-        GLAUTO.drive(c, dt, { k: 1, acc: 2.8, halt });
-      }
-      // boxed in: the car right behind somebody who stands in his vehicle
-      if (p.veh && sees && d < 9 && p.v < 1.5) S.catchT += dt * 0.5;
-    }
-    // the officers on foot: after the player while they see him, else to where he was last seen
-    for (const F of S.cops) {
-      const d = hyp(F.x - p.x, F.y - p.y),
-        sees =
-          !S.off &&
-          !S.hidden &&
-          GLLOGIK.sieht({ x: F.x, y: F.y, hd: F.hd, r: F.r }, p.x, p.y, { dark: dark(), sneak: sneak() }) &&
-          los(F.x, F.y, p.x, p.y);
-      if (sees) {
-        seen = true;
-        if (d < 26) close = true;
-        S.last = [p.x, p.y];
-        S.lastT = 0;
-        if (!F.path || (F.aimT = (F.aimT || 0) + dt) > 0.6) {
-          F.aimT = 0;
-          GLFIG.go(F, [p.x, p.y], 2.15);
-        }
-        if (!p.veh && d < 1.7) S.catchT += dt;
-        if (!F.shout || F.shout < 0) {
-          F.shout = 9;
-          const line = GL.era === '1989' ? GLDATA.J89.leute.abv[2] : 'Halt! Polizei!';
-          GLHUD.sub(F.name, line, 2200);
-        }
-      } else if (S.last && F.st !== 'geht' && hyp(F.x - S.last[0], F.y - S.last[1]) > 4) GLFIG.go(F, S.last, 1.5);
-      if (F.shout > 0) F.shout -= dt;
-    }
-    if (
-      !seen ||
-      (p.veh ? p.v > 1.5 : hyp(P.mvx || 0, P.mvy || 0) > 0.2 && !S.cops.some(F => hyp(F.x - p.x, F.y - p.y) < 1.7))
-    )
-      S.catchT = Math.max(0, S.catchT - dt * 0.7);
-    if (S.catchT > 1.2 && n > 0) {
-      S.catchT = 0;
-      erwischt();
-      return;
-    }
-    // the road block: driven past it → another deed; it sees too
-    if (S.block) {
-      const B = S.block,
-        d = hyp(B.x - p.x, B.y - p.y);
-      if (d < 70 && !S.off && los(B.x, B.y, p.x, p.y) && !S.hidden) {
-        seen = true;
-        if (d < 26) close = true;
-      }
-      if (d < 22) B.near = true;
-      else if (B.near && d > 45 && !B.passed && p.veh) {
-        B.passed = true;
-        tat('sperre', { force: [{ name: 'Die Sperre', police: true }] });
-      }
-      if (n < 3 && full < 3) blockOff();
-    }
-    S.seen = seen;
-    S.close = close;
-    if (S.last) S.lastT += dt;
-    // a long chase is a deed of its own (they get more determined)
-    if (seen && p.veh && p.v > 6) {
-      S.chaseT += dt;
-      if (S.chaseT > 22) {
-        S.chaseT = 0;
-        tat('flucht', { force: [{ name: 'Die Streife', police: true }], quiet: true });
-      }
-    }
-    // the rules
-    // the search runs out only once somebody searches: a car that has arrived, officers on foot – or nobody could come at all
-    const there = S.cars.some(u => u.st !== 'anfahrt') || S.cops.length > 0 || !!S.block,
-      coming = S.cars.length > 0 || S.wait > 0 || S.busy;
-    const ev = GLLOGIK.tick(W, dt, {
-      seen,
-      close,
-      hidden: S.hidden,
-      split: !!GL.getrennt,
-      hold: !there && coming && !S.off,
-    });
-    if (ev === 'gesehen') {
+  // everything of the police away, the level calm (the mode's end, an arrest, a mission's reset)
+  function clear(keepLog) {
+    E.clear();
+    poolDrop();
+    // (whatever a restart of the page or an error left behind)
+    for (const F of GLFIG.figs.slice()) if (F.cop) GLFIG.drop(F);
+    if (S.block) blockDrop(S.block);
+    GLLOGIK.clear(GL.W);
+    if (!keepLog) GL.W.log.length = 0;
+    clearWorld();
+  }
+  // ---- what the police did: tell it ----
+  function erzaehlen(ev) {
+    const [n, d] = ev,
+      W = GL.W;
+    if (n === 'gesehen') {
       GLHUD.say(T.gesehen, '', 2.5);
       GLTON.fx('stern');
-    } else if (ev === 'erkannt') PLAY.think(T.erkannt, 3000);
-    else if (ev === 'verloren') PLAY.think(S.hidden ? T.versteck : T.verloren, 3000);
-    else if (ev === 'stern') {
+    } else if (n === 'erkannt') PLAY.think(T.erkannt, 3000);
+    else if (n === 'verloren') PLAY.think(d.hidden ? T.versteck : T.verloren, 3000);
+    else if (n === 'stern') {
       PLAY.think(T.stern, 2400);
       GL.emit('sterne', { n: GLLOGIK.stars(W), bekannt: W.known });
-    } else if (ev === 'entkommen') {
+    } else if (n === 'entkommen') {
       GL.stats.entkommen++;
       GL.save();
       GLHUD.say(T.entkommen, '', 4);
       GLTON.fx('frei');
-      for (const u of S.cars.slice()) leave(u);
-      blockOff();
-      S.sent = 0;
-      S.last = null;
+      funk('ende', 6);
       GL.emit('entkommen', {});
       GL.emit('sterne', { n: 0, bekannt: false });
+    } else if (n === 'streife') {
+      GL.emit('streife', { n: d.n, kind: d.kind });
+      if (d.kind === 'sek') funk('sek', 6);
+    } else if (n === 'ruf') {
+      const c = S.cops.find(q => q.id === d.id);
+      GLHUD.sub(
+        c && c.name ? c.name : 'Polizist',
+        d.kind === 'abv' || d.kind === 'vopo' ? TX.halt89 : d.kind === 'sek' ? TX.haltSek : TX.halt,
+        2200
+      );
+    } else if (n === 'funk') funk(d.was, 10);
+    else if (n === 'fahrzeug') PLAY.think(TX.fahrzeug, 2800);
+    else if (n === 'durchbruch') {
+      GLHUD.say(TX.durch, '', 2.5);
+      funk('durch', 5);
+    } else if (n === 'zufuss') PLAY.think(d.kind === 'abv' ? TX.abv : TX.zuFuss, 3200);
+    else if (n === 'fest') console.warn('grenzland: a patrol car stood for ever and was taken away', JSON.stringify(d));
+  }
+  // ---- per frame ----
+  // (an error in here must not stop the frame for the modules that tick after this one: it is noted once, and the police are called off)
+  function tick(dt) {
+    if (!GL.on) return;
+    try {
+      lauf(dt);
+    } catch (e) {
+      if (!S.err) console.warn('grenzland police', e);
+      S.err = String((e && e.stack) || e).slice(0, 400);
+      try {
+        clear(true);
+      } catch (e2) {}
     }
-    // sending: as many cars as the stars ask for, one after the other, only where there are roads
-    if ((acc += dt) > 0.5) {
-      acc = 0;
-      const A = GLLOGIK.antwort(full),
-        want = GL.era === '1989' ? Math.min(1, A.cars) : A.cars,
-        have = S.cars.filter(u => u.st !== 'abzug').length;
-      if (full > 0 && have < want && !S.off && S.last && inSquare(S.last[0], S.last[1])) {
-        if (S.wait <= 0) {
-          const u = send(S.last);
-          S.wait = u ? 9 + have * 6 : 6;
+  }
+  function lauf(dt) {
+    const W = GL.W,
+      q = wo(),
+      n = GLLOGIK.stars(W),
+      full = GLLOGIK.starsOf(W.heat);
+    if (S.funkT > 0) S.funkT -= dt;
+    // where he is, for the police: indoors, under trees (looked up a few times a second)
+    if ((S.coverT -= dt) <= 0) {
+      S.coverT = 0.3;
+      S.hidden = drinnen(q.x, q.y, P.feet);
+      S.cover = !S.hidden && unterBaeumen(q.x, q.y);
+      S.krone = !S.hidden && inSquare(q.x, q.y) && unterKrone(q.x, q.y) && !aufStrasse(q.x, q.y);
+    }
+    // the reports that are through
+    for (const r of GLLOGIK.reif(W, dt)) {
+      const F = r.ref && r.ref.F;
+      if (F && (F.gone || F.downT > 0) && !r.opfer) continue; // (he lies on the ground: this call is not made – his own follows)
+      if (r.opfer && !r.quiet) PLAY.think(TX.opfer(r.name), 3200);
+      // (what a bystander has reported already is not counted twice in full: the victim adds his word – and whether he knows the two)
+      const doppelt = r.opfer && W.log.some(q => q.id === r.id && q.wit > 0 && Math.abs(q.t - CLOCK.t) < 1.5);
+      zaehlen(
+        r.id,
+        [{ name: r.name, knows: r.o.knows }],
+        { x: r.x, y: r.y, veh: r.o.fz },
+        { quiet: r.quiet || r.opfer, k: doppelt ? 0.25 : r.o.k }
+      );
+    }
+    // deeds one does by driving: speeding through the village in front of somebody, no helmet in front of the police
+    S.speedT -= dt;
+    S.helmT -= dt;
+    if (q.veh && GL.era === 'heute') {
+      if (q.v > 15.5 && S.speedT <= 0 && /Ratscher ·|Anger|Dorf/.test(String(KERN.place(q.x, q.y, 0) || ''))) {
+        S.speedT = 25;
+        if (zeugen().length) tat('raserei', { quiet: n > 0 });
+      }
+      if (S.helmT <= 0 && q.veh.id === 'gl-moped' && q.v > 3 && !GL.has('helm')) {
+        S.helmT = 4;
+        // only the police mind – and only once per ride past them
+        if (S.cars.some(u => u.st !== 'abzug' && hyp(u.x - q.x, u.y - q.y) < 30 && los(u.x, u.y, q.x, q.y))) {
+          S.helmT = 90;
+          if (tat('helm', { force: [{ name: 'Die Streife', police: true }], quiet: true, k: 0.6 }) && n === 0)
+            PLAY.think(TX.helm, 3000);
         }
-      } else if (full > 0 && !S.off && !inSquare(p.x, p.y) && !S.cops.length && !S.busy && S.wait <= 0 && S.last) {
-        // beyond the square (the town): two officers on foot from round the corner
-        S.wait = 30;
-        footPatrol(p);
       }
-      if (A.sperre && !S.block && p.veh) sperre(p);
     }
-    if (S.wait > 0) S.wait -= dt;
-  }
-  async function footPatrol(p) {
-    S.busy = true;
-    const ids = ['polizei1', 'polizei2'],
-      a = Math.random() * 6.28;
-    for (let i = 0; i < 2; i++) {
-      const F = await GLFIG.make(ids[i], { era: 'heute' });
-      if (!F) continue;
-      if (!GL.on) {
-        GLFIG.drop(F);
-        continue;
+    // the officers who were shoved over lie for a while (they get up again)
+    for (const c of S.cops)
+      if (c.F) {
+        c.da = !(c.F.downT > 0);
+        c.x = c.F.x;
+        c.y = c.F.y;
       }
-      F.cop = { car: null, st: 'jagt' };
-      F.r = 38;
-      F.knows = false;
-      GLFIG.place(F, p.x + Math.sin(a) * 38 + i * 1.2, p.y + Math.cos(a) * 38, a + Math.PI);
-      S.cops.push(F);
+    // the police
+    const p = {
+      x: q.x,
+      y: q.y,
+      v: q.v,
+      hd: q.hd,
+      veh: !!q.veh,
+      hidden: S.hidden,
+      cover: S.cover,
+      sneak: sneak(),
+    };
+    E.tick(dt, p, { W, era: GL.era, dark: dark(), off: S.off, split: !!GL.getrennt, air: S.luft });
+    for (const ev of E.ev.splice(0)) {
+      if (ev[0] === 'erwischt') {
+        erwischt();
+        return;
+      }
+      erzaehlen(ev);
     }
-    S.busy = false;
+    // lights and horns; the vans at the far road ends are only drawn from near; the nearest beacon (for its flash on the walls at night)
+    let nb = null,
+      nd = 70;
+    for (const u of S.cars)
+      if (u.c) {
+        const d = hyp(u.x - q.x, u.y - q.y);
+        u.c.blau = !!u.blau;
+        u.c.horn = !!u.horn;
+        if (u.st === 'riegel') u.c.g.visible = d < 450;
+        if (u.blau && u.c.g.visible && d < nd) {
+          nd = d;
+          nb = u;
+        }
+      }
+    S.blauU = nb;
+    GLAUTO.hornAlt = era89();
+    // the search is over and everybody has gone: the officers' figures are freed
+    if (pool.length && full === 0 && !S.cars.length && !S.cops.length) poolDrop();
+    S.seen = E.seen;
+    S.close = E.close;
+    S.last = E.last;
+    S.wait = Math.max(0, E.wait);
+    if (full > 0 || S.cars.length || S.cops.length) markDirty();
   }
-  // what the display says
+  // what the display says (the radar of the core reads cars, cops, block, last, heli)
   const stand = () => ({
     sterne: GLLOGIK.stars(GL.W),
     hitze: Math.round(GL.W.heat * 100) / 100,
     bekannt: GL.W.known,
     state: GL.W.state,
     seen: S.seen,
-    hidden: S.hidden,
+    voll: GLLOGIK.starsOf(GL.W.heat),
+    hidden: S.hidden || S.cover,
+    drinnen: S.hidden,
+    wald: S.cover,
+    krone: S.krone,
+    fz: GL.W.fz,
+    offen: GL.W.offen.map(r => ({ id: r.id, wer: r.name, t: Math.round(r.t * 10) / 10 })),
     cars: S.cars.map(u => ({
       st: u.st,
-      x: Math.round(u.c.x),
-      y: Math.round(u.c.y),
-      v: Math.round(u.c.v * 10) / 10,
-      crew: u.crew,
+      kind: u.kind,
+      x: Math.round(u.x),
+      y: Math.round(u.y),
+      v: Math.round(u.v * 10) / 10,
+      crew: u.crew !== 'drin',
     })),
-    cops: S.cops.map(F => ({ id: F.id, x: Math.round(F.x), y: Math.round(F.y), st: F.st })),
+    cops: S.cops.map(c => ({
+      id: c.F ? c.F.id : c.kind,
+      x: Math.round(c.x),
+      y: Math.round(c.y),
+      st: c.st,
+      da: !!c.da,
+    })),
     block: S.block ? [Math.round(S.block.x), Math.round(S.block.y)] : null,
     wait: Math.round(S.wait * 10) / 10,
     last: S.last ? S.last.map(Math.round) : null,
+    heli: S.heli ? S.heli.map(Math.round) : null,
   });
-  Object.assign(S, { wo, los, versteckt, zeugen, tat, send, clear, tick, stand, erwischt, inSquare, sneak });
+  Object.assign(S, {
+    wo,
+    los,
+    versteckt,
+    unterBaeumen,
+    unterKrone,
+    drinnen,
+    zeugen,
+    tat,
+    send: () => (S.last ? E.send(era89() ? 'vopo' : 'streife', wo()) : null),
+    clear,
+    tick,
+    stand,
+    erwischt,
+    umziehen,
+    inSquare,
+    sneak,
+    netz,
+    funk,
+    E,
+    TX,
+  });
   return S;
 })();
 window.GLFAHNDUNG = GLFAHNDUNG;
