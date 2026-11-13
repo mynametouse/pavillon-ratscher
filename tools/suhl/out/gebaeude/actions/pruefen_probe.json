@@ -56,6 +56,14 @@
    "ok": true,
    "info": "0 records without z0 (run fuss.py)"
   },
+  "ridge az in the model frame": {
+   "ok": true,
+   "info": "57 long gable roofs: az minus the long axis of the footprint (both clockwise from the model +y axis) median -0.00 deg, 90 % within 0.07; a value from true north would show -3.05. On the globe: az minus the geodesic azimuth of the long axis median +3.04 (the model frame is +3.05 off true north)"
+  },
+  "face az from true north": {
+   "ok": true,
+   "info": "114 faces of these roofs: az minus the downhill direction of their own mesh turned to true north (model - 3.05) median -0.00 deg, 90 % within 0.10; a value in the model frame would show +3.05; faces against the ridge (az + 3.05 - ridge az, folded to 90) median +0.05. On the globe: az minus the geodesic azimuth of the long axis, folded to 90, median +0.01"
+  },
   "footprints do not overlap": {
    "ok": false,
    "info": "39 pairs overlap by more than 1 m² (largest [(19.7, 'DETHL57P00006G2t', 'DETHL57P00006G3j'), (19.1, 'DETHL57P00006G0F', 'DETHL57P00006G0X'), (14.5, 'DETHL57P00002jO1', 'DETHL57P00002jOX')])"
@@ -68,6 +76,57 @@
    "ok": true,
    "info": "2963501 bytes, limit 3000000"
   }
+ },
+ "directions": {
+  "true_north_is_model_minus_deg": 3.0484,
+  "long_gable_roofs": 57,
+  "faces": 114,
+  "ridge_minus_long_axis_deg": {
+   "median": -0.0,
+   "p90_abs": 0.07
+  },
+  "face_minus_mesh_deg": {
+   "median": -0.0,
+   "p90_abs": 0.1
+  },
+  "face_against_ridge_deg": {
+   "median": 0.05,
+   "p90_abs": 0.05
+  },
+  "on_the_globe": {
+   "ridge_minus_long_axis_from_true_north_deg": 3.04,
+   "face_minus_long_axis_from_true_north_deg_folded_90": 0.01,
+   "note": "geodesic azimuth of the long axis (pyproj, GRS80): the ridge must show the offset of the model frame, the faces zero"
+  },
+  "examples": [
+   [
+    "DETHL57P00002lP1",
+    141.3,
+    141.3,
+    [
+     228.3,
+     48.3
+    ]
+   ],
+   [
+    "DETHL57P00002jQh",
+    40.8,
+    40.8,
+    [
+     307.7,
+     127.7
+    ]
+   ],
+   [
+    "DETHL57P00002jQj",
+    40.7,
+    40.6,
+    [
+     127.7,
+     307.7
+    ]
+   ]
+  ]
  },
  "tall": [
   {

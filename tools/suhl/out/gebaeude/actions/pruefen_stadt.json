@@ -56,6 +56,14 @@
    "ok": true,
    "info": "0 records without z0 (run fuss.py)"
   },
+  "ridge az in the model frame": {
+   "ok": true,
+   "info": "767 long gable roofs: az minus the long axis of the footprint (both clockwise from the model +y axis) median +0.00 deg, 90 % within 0.06; a value from true north would show -3.05. On the globe: az minus the geodesic azimuth of the long axis median +3.05 (the model frame is +3.05 off true north)"
+  },
+  "face az from true north": {
+   "ok": true,
+   "info": "1510 faces of these roofs: az minus the downhill direction of their own mesh turned to true north (model - 3.05) median +0.00 deg, 90 % within 0.08; a value in the model frame would show +3.05; faces against the ridge (az + 3.05 - ridge az, folded to 90) median -0.05. On the globe: az minus the geodesic azimuth of the long axis, folded to 90, median -0.00"
+  },
   "footprints do not overlap": {
    "ok": true,
    "info": "79 pairs overlap by more than 1 m² (largest [(48.0, 'DETHL57P00000OFl', 'DETHL57P0001zkhi'), (41.4, 'DETHL57P00008Cce', 'DETHL57P0001yuPl'), (40.5, 'DETHL57P0001CZ46', 'DETHL57P0001nvtJ')])"
@@ -76,6 +84,57 @@
    "ok": true,
    "info": "0 records with their point outside the boundary"
   }
+ },
+ "directions": {
+  "true_north_is_model_minus_deg": 3.0484,
+  "long_gable_roofs": 767,
+  "faces": 1510,
+  "ridge_minus_long_axis_deg": {
+   "median": 0.0,
+   "p90_abs": 0.06
+  },
+  "face_minus_mesh_deg": {
+   "median": 0.0,
+   "p90_abs": 0.08
+  },
+  "face_against_ridge_deg": {
+   "median": -0.05,
+   "p90_abs": 0.05
+  },
+  "on_the_globe": {
+   "ridge_minus_long_axis_from_true_north_deg": 3.05,
+   "face_minus_long_axis_from_true_north_deg_folded_90": -0.0,
+   "note": "geodesic azimuth of the long axis (pyproj, GRS80): the ridge must show the offset of the model frame, the faces zero"
+  },
+  "examples": [
+   [
+    "DETHL57P00000rFo",
+    68.5,
+    68.5,
+    [
+     155.5,
+     335.5
+    ]
+   ],
+   [
+    "DETHL57P00000rRV",
+    3.8,
+    3.9,
+    [
+     270.8,
+     90.8
+    ]
+   ],
+   [
+    "DETHL57P00000rGd",
+    77.4,
+    77.4,
+    [
+     344.4,
+     164.4
+    ]
+   ]
+  ]
  },
  "tall": [
   {
@@ -951,7 +1010,7 @@
  ],
  "tiles": 397,
  "buildings": 31709,
- "bytes": 35018885,
+ "bytes": 34971547,
  "kb_per_building": 1.08,
  "failed": [],
  "warnings": []

@@ -1,11 +1,11 @@
 {
- "made": "2026-11-13T01:58:52Z",
+ "made": "2026-11-13T08:21:46Z",
  "area": "stadt",
- "version": "v1",
- "seconds": 135.7,
+ "version": "v2",
+ "seconds": 92.5,
  "tiles": 397,
  "buildings": 31709,
- "bytes": 33674597,
+ "bytes": 33730642,
  "kb_per_building": 1.04,
  "centre_tile_present": true,
  "ethos_in_frame": 52737,
@@ -24,8 +24,8 @@
  },
  "hq": {
   "2": 30928,
-  "0": 405,
-  "1": 387
+  "0": 318,
+  "1": 474
  },
  "kind": {
   "0": 15470,
@@ -81,21 +81,21 @@
   "tief": 11
  },
  "roof_form": {
-  "0": 17423,
-  "1": 1877,
-  "2": 11965,
-  "3": 455
+  "0": 17907,
+  "1": 1768,
+  "2": 11520,
+  "3": 525
  },
  "roof_rq": {
-  "0": 15708,
-  "1": 15074,
-  "2": 938
+  "0": 12173,
+  "1": 18648,
+  "2": 899
  },
  "floors_gsq": {
   "-1": 5096,
-  "0": 2854,
-  "1": 531,
-  "2": 23239
+  "0": 2898,
+  "1": 530,
+  "2": 23196
  },
  "era": {
   "0": 22397,
@@ -109,17 +109,17 @@
   "1": 4922
  },
  "roof_class": {
-  "0": 7292,
-  "1": 480,
-  "2": 8835,
-  "3": 4469,
-  "4": 20090,
-  "5": 3243,
-  "6": 702
+  "0": 7463,
+  "1": 472,
+  "2": 8775,
+  "3": 4483,
+  "4": 19885,
+  "5": 3083,
+  "6": 711
  },
  "roof_class_q": {
   "0": 406,
-  "1": 44614,
+  "1": 44375,
   "2": 91
  },
  "with_address": 31446,
@@ -130,8 +130,8 @@
  "landmarks": 75,
  "monuments": 63,
  "footprint_ha": 251.95,
- "floor_area_ha": 480.59,
- "roof_area_ha": 279.74,
+ "floor_area_ha": 479.92,
+ "roof_area_ha": 280.22,
  "function_to_use": {
   "Wohngebäude": [
    12946,
@@ -347,58 +347,57 @@
   ]
  },
  "dom": {
-  "tiles_read_missing": 108,
+  "tiles_read_missing": 102,
   "fit": {
-   "kein dom": 6762,
-   "gemessen": 13671,
-   "passt nicht": 1888,
-   "zu klein": 6520,
-   "nur Höhen": 362
+   "passt nicht": 2390,
+   "gemessen": 18020,
+   "zu klein": 8312,
+   "nur Höhen": 481
   },
   "form_rule_to_measured": {
-   "0->0": 3735,
-   "0->1": 177,
-   "0->2": 1142,
-   "0->3": 42,
-   "1->0": 1188,
+   "0->0": 4456,
+   "0->1": 220,
+   "0->2": 1478,
+   "0->3": 50,
+   "1->0": 1402,
    "1->1": 5,
-   "1->2": 14,
-   "2->0": 1904,
-   "2->1": 133,
-   "2->2": 4848,
-   "2->3": 174,
+   "1->2": 16,
+   "2->0": 2584,
+   "2->1": 201,
+   "2->2": 7046,
+   "2->3": 244,
    "3->0": 59,
    "3->1": 7,
-   "3->2": 164,
-   "3->3": 79
+   "3->2": 172,
+   "3->3": 80
   },
-  "form_changed": 5004,
-  "form_same": 8667,
+  "form_changed": 6433,
+  "form_same": 11587,
   "flat_or_pitched_changed": {
-   "regel flach -> gemessen geneigt": 1361,
-   "regel geneigt -> gemessen flach": 3151,
-   "regel flach -> gemessen geneigt (nur Höhen)": 116
+   "regel flach -> gemessen geneigt": 1748,
+   "regel geneigt -> gemessen flach": 4045,
+   "regel flach -> gemessen geneigt (nur Höhen)": 135
   },
-  "both_pitched": 5424,
-  "ridge_turned": 939,
+  "both_pitched": 7771,
+  "ridge_turned": 1317,
   "eave_change_m": {
    "median": 0.88,
    "p90": 2.86
   },
   "pitch_change_deg": {
-   "median": 7.5,
-   "p90": 19.2
+   "median": 7.1,
+   "p90": 18.9
   },
   "height_surface_minus_ethos_m": {
-   "median": 0.14,
-   "p10": -0.31,
-   "p90": 2.35,
-   "n": 16446
+   "median": 0.13,
+   "p10": -0.3,
+   "p90": 2.15,
+   "n": 21638
   },
-  "heights_measured_for_cadastre_only": 387,
+  "heights_measured_for_cadastre_only": 474,
   "cadastre_only_not_in_surface_model": 4,
-  "not_in_cadastre_seen": 112,
-  "not_in_cadastre_flat_ground": 61
+  "not_in_cadastre_seen": 154,
+  "not_in_cadastre_flat_ground": 80
  },
  "zensus": {
   "keine Zelle": 3785,
@@ -409,7 +408,7 @@
  },
  "underground": 11,
  "floors_not_fitting_height": {
-  "0": 534,
+  "0": 578,
   "2": 4,
   "3": 19
  },
@@ -453,13 +452,13 @@
   "kirche": 19
  },
  "rk": {
-  "0": 3513,
-  "2": 1993,
-  "3": 2393,
-  "4": 18558,
-  "5": 247,
-  "6": 4307,
-  "7": 698
+  "0": 3587,
+  "2": 1903,
+  "3": 2389,
+  "4": 18622,
+  "5": 235,
+  "6": 4266,
+  "7": 707
  },
  "fg": {
   "0": 30542,
@@ -473,10 +472,10 @@
   "192": 4
  },
  "r_out": {
-  "0": 17411,
-  "1": 1870,
-  "2": 11820,
-  "3": 409,
+  "0": 17895,
+  "1": 1761,
+  "2": 11375,
+  "3": 479,
   "4": 85,
   "5": 103,
   "6": 8,
