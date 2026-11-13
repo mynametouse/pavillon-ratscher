@@ -97,8 +97,8 @@ export const GLMDATA = (() => {
       fahrt: 'Fahr mit dem Moped zur Feldscheune (E am Moped: aufsteigen).',
       treff: 'Rede mit Jule an der Feldscheune.',
       start: 'Aufs Moped und an die Startlinie am Feldweg.',
-      rennen: 'Rennen zur Staumauer – sei vor Jule da.',
-      damm: 'An der Staumauer: Zeigt der Clique die Karte.',
+      rennen: 'Rennen zum Staudamm – sei vor Jule da.',
+      damm: 'Am Staudamm: Zeigt der Clique die Karte.',
     },
     gerhard: {
       linde: 'Gerhard sitzt auf der Bank unter der Dorflinde. Zeig ihm die Karte.',
@@ -192,7 +192,7 @@ export const GLMDATA = (() => {
       ['timo', 'Krähwinkel sucht die auch. Der Spediteur. Der zahlt besser als wir, aber er fragt nicht so nett.'],
       [
         'jule',
-        'Bevor ich euch mehr erzähle, will ich wissen, ob ihr was taugt. Rennen bis zur Staumauer. Wer vor mir da ist, dem trau ich.',
+        'Bevor ich euch mehr erzähle, will ich wissen, ob ihr was taugt. Rennen bis zum Staudamm. Wer vor mir da ist, dem trau ich.',
       ],
       ['falko', 'Auf dem Ding? Das ist älter als ich.'],
       ['timo', 'Dann habt ihr ja was gemeinsam.'],
@@ -321,7 +321,7 @@ export const GLMDATA = (() => {
       'Krähwinkels Leute laden heute Nacht um. Untere Klinge, 23 Uhr. Wir brauchen Fotos, sonst glaubt uns das keiner. Lasst euch nicht sehen. – J.',
     ],
     jule3: ['Jule', 'Lebt ihr noch? Dann kommt mit den Fotos zur Scheune. – J.'],
-    nebenbei: ['Jule', 'Kegeln an der Scheune, Angeln an der Staumauer. Sag nicht, wir hätten euch nichts geboten.'],
+    nebenbei: ['Jule', 'Kegeln an der Scheune, Angeln am Staudamm. Sag nicht, wir hätten euch nichts geboten.'],
   };
   const CHAT = {
     paket: [
@@ -359,7 +359,7 @@ export const GLMDATA = (() => {
     kanister: 'Gemisch einfüllen',
     kanisterVoll: 'Der Tank ist voll.',
     start3: ['3', '2', '1', 'Los!'],
-    startSub: 'Bis zur Staumauer. Wer bremst, verliert.',
+    startSub: 'Bis zum Staudamm. Wer bremst, verliert.',
     fehlstart: 'Fehlstart! Zurück an die Linie.',
     platz: (p, n, m) =>
       'Platz ' +
@@ -368,8 +368,8 @@ export const GLMDATA = (() => {
       n +
       ' · noch ' +
       (m >= 1000 ? (m / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(m / 10) * 10 + ' m'),
-    verloren: 'Jule war vor dir an der Staumauer.',
-    gewonnen: 'Erster an der Staumauer!',
+    verloren: 'Jule war vor dir am Staudamm.',
+    gewonnen: 'Erster am Staudamm!',
     lohn2: '+80 € und vier Böller.',
     era89: 'Gerhards Erinnerung',
     kisteNimm: 'Kiste nehmen',

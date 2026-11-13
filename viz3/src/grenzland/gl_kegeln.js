@@ -869,7 +869,7 @@ export const GLKEGELN = (() => {
               Math.round(GL.stats.kegel || 0) +
               ' Holz. · Der Verkaufswagen hält ' +
               N.zeitenText() +
-              ' am Anger; dort gibt es auch Köder und die Gastkarte für die Talsperre. · Die Angelstelle ist der Steg unter der Tafel an der Staumauer. · Wer die Bahn nass hinterlässt, fegt.',
+              ' am Anger; dort gibt es auch Köder und die Gastkarte für die Talsperre. · Die Angelstelle ist der Steg unter der Tafel am Staudamm. · Wer die Bahn nass hinterlässt, fegt.',
             [{ t: 'Schließen' }]
           );
         },

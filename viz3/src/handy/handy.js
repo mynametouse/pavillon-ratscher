@@ -376,6 +376,10 @@ export const HANDY = (() => {
     const was = !!gesperrt(id);
     S.frei[id] = true;
     S.dirty = true;
+    // its icon at once (the home screen draws itself again only at its next frame)
+    try {
+      if (S.el) for (const e of S.el.querySelectorAll('.hy-ic[data-app="' + id + '"]')) e.classList.remove('hy-zu');
+    } catch (e) {}
     if (was) {
       const a = S.apps[id];
       mitteilung({
