@@ -39,8 +39,7 @@
 "gl_r_blasius": "de-AT-JonasNeural",
 "gl_r_neon": "en-US-EmmaMultilingualNeural",
 "gl_r_republik": "de-DE-ConradNeural",
-"gl_r_impuls": "de-DE-AmalaNeural",
-"gl_r_west": "en-US-AndrewMultilingualNeural"
+"gl_r_impuls": "de-DE-AmalaNeural"
 }
 },
 "vx_add": [
@@ -834,6 +833,167 @@
 "text": "Ach so. Am Telefon hör ich schlecht, Junge. Komm vorbei, dann reden wir.",
 "file": "voice/gl/gl_gerhard_7jrkvu.mp3",
 "dur": 6.78
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_ittjfj",
+"text": "Falko, ich steh doch hier. Du kannst auch einfach mit mir reden.",
+"file": "voice/gl/gl_sarah_ittjfj.mp3",
+"dur": 4.59
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_10sifhh",
+"text": "Wollte nur testen, ob das Ding geht.",
+"file": "voice/gl/gl_falko_10sifhh.mp3",
+"dur": 2.26
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_10sifhh",
+"text": "Wollte nur testen, ob das Ding geht.",
+"file": "voice/gl/gl_sarah_10sifhh.mp3",
+"dur": 2.44
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1f5v61x",
+"text": "Geht. Leg auf.",
+"file": "voice/gl/gl_sarah_1f5v61x.mp3",
+"dur": 1.86
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_wu0v4v",
+"text": "Ja? Ich bin im Dorf.",
+"file": "voice/gl/gl_sarah_wu0v4v.mp3",
+"dur": 2.14
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1ibdfw0",
+"text": "Jetzt weißt du es. Bis gleich.",
+"file": "voice/gl/gl_sarah_1ibdfw0.mp3",
+"dur": 2.68
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_130j2cl",
+"text": "Ja? Ich bin noch in Schleusingen.",
+"file": "voice/gl/gl_sarah_130j2cl.mp3",
+"dur": 2.58
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1r3uoge",
+"text": "Ja? Ich bin an der Talsperre.",
+"file": "voice/gl/gl_sarah_1r3uoge.mp3",
+"dur": 2.64
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_9x14c1",
+"text": "Ja? Ich bin im Wald an der Klinge. Hier ist kaum Netz.",
+"file": "voice/gl/gl_sarah_9x14c1.mp3",
+"dur": 4.72
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1605j3u",
+"text": "Ja? Ich bin unterwegs.",
+"file": "voice/gl/gl_sarah_1605j3u.mp3",
+"dur": 2.31
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1c6ljqd",
+"text": "Sarah, ich steh doch hier. Du kannst auch einfach mit mir reden.",
+"file": "voice/gl/gl_falko_1c6ljqd.mp3",
+"dur": 4.51
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1f5v61x",
+"text": "Geht. Leg auf.",
+"file": "voice/gl/gl_falko_1f5v61x.mp3",
+"dur": 1.99
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1qovh4j",
+"text": "Na? Ich bin im Dorf.",
+"file": "voice/gl/gl_falko_1qovh4j.mp3",
+"dur": 2.18
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1ibdfw0",
+"text": "Jetzt weißt du es. Bis gleich.",
+"file": "voice/gl/gl_falko_1ibdfw0.mp3",
+"dur": 2.74
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_g6rgwh",
+"text": "Na? Ich bin noch in Schleusingen.",
+"file": "voice/gl/gl_falko_g6rgwh.mp3",
+"dur": 2.63
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1wvzj6a",
+"text": "Na? Ich bin an der Talsperre.",
+"file": "voice/gl/gl_falko_1wvzj6a.mp3",
+"dur": 2.64
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_c02z7x",
+"text": "Na? Ich bin im Wald an der Klinge. Hier ist kaum Netz.",
+"file": "voice/gl/gl_falko_c02z7x.mp3",
+"dur": 4.92
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_10zadlm",
+"text": "Na? Bin unterwegs.",
+"file": "voice/gl/gl_falko_10zadlm.mp3",
+"dur": 2.15
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_mopbjd",
+"text": "Ich seh dich doch. Komm einfach rüber.",
+"file": "voice/gl/gl_jule_mopbjd.mp3",
+"dur": 2.86
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_mopbjd",
+"text": "Ich seh dich doch. Komm einfach rüber.",
+"file": "voice/gl/gl_timo_mopbjd.mp3",
+"dur": 2.78
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_mopbjd",
+"text": "Ich seh dich doch. Komm einfach rüber.",
+"file": "voice/gl/gl_basti_mopbjd.mp3",
+"dur": 3.09
+},
+{
+"who": "gl_yuki",
+"id": "gl_yuki_mopbjd",
+"text": "Ich seh dich doch. Komm einfach rüber.",
+"file": "voice/gl/gl_yuki_mopbjd.mp3",
+"dur": 3.09
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_19n24v8",
+"text": "Ich seh dich doch. Komm einfach her.",
+"file": "voice/gl/gl_gerhard_19n24v8.mp3",
+"dur": 2.53
 },
 {
 "who": "gl_funk",
@@ -5335,104 +5495,6 @@
 "text": "Heute Abend Kundgebung im Lustgarten in Berlin. Und morgen ist Sonnabend. Was ihr damit anfangt, wissen wir auch nicht.",
 "file": "voice/gl/gl_r_impuls_eidolz.mp3",
 "dur": 8.84
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_1qm67ic",
-"text": "Frankenwelle 3 – Pop für Oberfranken. Und seit gestern für die Nachbarn.",
-"file": "voice/gl/gl_r_west_1qm67ic.mp3",
-"dur": 4.37
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_1nrrq1q",
-"text": "Die Frankenwelle. Jetzt mit Gästen.",
-"file": "voice/gl/gl_r_west_1nrrq1q.mp3",
-"dur": 2.37
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_1kh2rjj",
-"text": "Frankenwelle 3, die Nachrichten.",
-"file": "voice/gl/gl_r_west_1kh2rjj.mp3",
-"dur": 2.42
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_ern7sv",
-"text": "Servus aus Coburg. In der Innenstadt hört man heute mehr Zweitakter als Kirchenglocken.",
-"file": "voice/gl/gl_r_west_ern7sv.mp3",
-"dur": 5.19
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_q0u89g",
-"text": "Einen herzlichen Gruß an alle, die uns bisher heimlich gehört haben. Ab heute dürft ihr laut drehen.",
-"file": "voice/gl/gl_r_west_q0u89g.mp3",
-"dur": 5.96
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_1alyo9g",
-"text": "Wer aus Thüringen kommt und den Marktplatz sucht: immer dem Stau nach.",
-"file": "voice/gl/gl_r_west_1alyo9g.mp3",
-"dur": 3.71
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_15cdrp2",
-"text": "Ich mache diesen Beruf seit zehn Jahren. So einen Freitag hatte ich noch nicht.",
-"file": "voice/gl/gl_r_west_15cdrp2.mp3",
-"dur": 4.25
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_1e591l6",
-"text": "Seit der vergangenen Nacht sind die Grenzen der DDR offen. Am Übergang Rottenbach bei Coburg rollen seit dem Morgen Trabant und Wartburg aus Richtung Eisfeld herüber.",
-"file": "voice/gl/gl_r_west_1e591l6.mp3",
-"dur": 9.33
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_b939el",
-"text": "Besucher aus der DDR erhalten ein Begrüßungsgeld von hundert Mark. Vor Banken und Sparkassen bilden sich Schlangen.",
-"file": "voice/gl/gl_r_west_b939el.mp3",
-"dur": 6.62
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_phrvll",
-"text": "Berlin. Am Abend sprechen vor dem Rathaus Schöneberg Bundeskanzler Kohl, der dafür seinen Besuch in Polen unterbrochen hat, Außenminister Genscher, Willy Brandt und der Regierende Bürgermeister Momper.",
-"file": "voice/gl/gl_r_west_phrvll.mp3",
-"dur": 11.34
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_922dtc",
-"text": "In Berlin sind die Geschäftsstraßen überfüllt, der Kurfürstendamm ist von parkenden Autos blockiert. Die Stimmung: ausgelassen.",
-"file": "voice/gl/gl_r_west_922dtc.mp3",
-"dur": 7.42
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_3btkri",
-"text": "Werbung: Das neue Farbfernsehgerät von Technotron. Mit Fernbedienung. Sie müssen nie wieder aufstehen. Wollen Sie das?",
-"file": "voice/gl/gl_r_west_3btkri.mp3",
-"dur": 7.83
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_fjz8ht",
-"text": "Werbung: Kaufhaus am Markt. Heute länger geöffnet. Der Parkplatz ist voll – kommen Sie trotzdem, wir rücken zusammen.",
-"file": "voice/gl/gl_r_west_fjz8ht.mp3",
-"dur": 7.29
-},
-{
-"who": "gl_r_west",
-"id": "gl_r_west_f2nmqz",
-"text": "Werbung: Reisebüro Fernblick. Jetzt neu im Programm: Thüringen. Ja, wirklich.",
-"file": "voice/gl/gl_r_west_f2nmqz.mp3",
-"dur": 6.55
 }
 ]
 }
