@@ -168,12 +168,11 @@ export const ZKNACHT = (() => {
     }
     st.fronts = fronts.sort((a, b) => a.d - b.d);
     // the fire engine: at the upper (Anger) end of the stretch, on the street
-    const top = path.length ? path[0] : [205, -118, 0];
-    st.engine = {
-      x: top[0],
-      y: top[1],
-      a: path.length > 3 ? Math.atan2(path[3][1] - top[1], path[3][0] - top[0]) : Math.PI,
-    };
+    // the fire engine 42 % along the street (the camera stands at 72 %): near enough for its blue lights to read
+    const ie = Math.round(path.length * 0.42),
+      top = path.length ? path[ie] : [205, -118, 0],
+      nx = path.length > ie + 3 ? path[ie + 3] : top;
+    st.engine = { x: top[0], y: top[1], a: Math.atan2(nx[1] - top[1], nx[0] - top[0]) || Math.PI };
     // the camera on the pavement: from the lower part looking up the street towards the Anger
     const low = path.length ? path[Math.min(path.length - 1, Math.round(path.length * 0.72))] : [150, -104];
     st.cam = { x: low[0], y: low[1] };
@@ -290,6 +289,8 @@ export const ZKNACHT = (() => {
     _c.setRGB(PAL.blue[0] * on, PAL.blue[1] * on, PAL.blue[2] * on);
     l.setColorAt(0, _c);
     l.instanceColor.needsUpdate = true;
+    // the flash on the flood (the water's shader)
+    K.U.uZkBlue.value = on > 0.5 ? 1 : 0;
   }
   // ---------- the morning after: mud, bulky waste; the prepared street: sandbags and a barrier ----------
   function schlamm(d) {
@@ -574,8 +575,9 @@ export const ZKNACHT = (() => {
       if (!sg || SLOT[id] === undefined) continue;
       let x, y, face;
       if (sg.place === 'kahlflaeche') {
-        x = st.kahl.x - 9;
-        y = st.kahl.y + 46;
+        // ten metres in front of the clearing's camera (zk_zeitwelt.js place), facing it
+        x = st.kahl.x + 1;
+        y = st.kahl.y + 33;
         face = Math.PI / 2;
       } else if (sg.place === 'heizhaus') {
         const h = st.heiz;
@@ -583,9 +585,9 @@ export const ZKNACHT = (() => {
         y = h.road[1] + (h.y - h.road[1]) * 0.3;
         face = Math.atan2(h.road[1] - h.y, h.road[0] - h.x);
       } else if (sg.place === 'windrad') {
-        const [rx, ry] = st.windRoad;
-        x = rx + 6;
-        y = ry - 4;
+        // the building board at the edge of the clearing where the camera stands, facing it
+        x = st.wind.x - 19;
+        y = st.wind.y + 368;
         face = Math.PI / 2;
       } else if (sg.place === 'schule' && nt.schoolFront) {
         const f = nt.schoolFront;
@@ -614,7 +616,14 @@ export const ZKNACHT = (() => {
     if (!V || !V.night) return;
     if (on && !S.dark) {
       S.nightFn = V.night;
-      V.night = () => 0;
+      const orig = V.night;
+      V.night = () => {
+        if (flickering()) {
+          const k = Math.floor((performance.now() - S.flickT) / 110);
+          return k % 2 || k > 6 ? 0 : orig.call(V);
+        }
+        return 0;
+      };
       S.dark = true;
     } else if (!on && S.dark) {
       V.night = S.nightFn;
@@ -638,7 +647,7 @@ export const ZKNACHT = (() => {
   });
   K.thing({
     id: 'feuerwehr',
-    want: st => (W(st).rain || +W(st).level > 0.03 ? { on: 1 } : null),
+    want: (st, side) => ((W(st).rain || +W(st).level > 0.03) && K.cue(side, 'blaulicht', true) ? { on: 1 } : null),
     build: () => feuerwehr(),
     anim: (o, d, t) => blink(o, t),
   });
@@ -675,7 +684,7 @@ export const ZKNACHT = (() => {
   });
   K.thing({
     id: 'schule',
-    want: st => (BO(st) && BO(st).school ? { on: 1 } : null),
+    want: (st, side) => (BO(st) && BO(st).school && K.cue(side, 'schule-licht', true) ? { on: 1 } : null),
     build: () => schule(),
   });
   K.thing({
@@ -694,6 +703,126 @@ export const ZKNACHT = (() => {
     want: st => (st.signs && st.signs.length ? { ids: st.signs.slice().sort() } : null),
     build: d => schilder(d),
   });
+  K.thing({
+    id: 'pumpe',
+    want: (st, side) => {
+      const w = W(st);
+      return K.cue(side, 'pumpe', +w.level > 0.15) || (+w.mud > 0.5 && !w.rain && !(+w.level > 0.01))
+        ? { on: 1 }
+        : null;
+    },
+    build: () => pumpe(),
+  });
+  K.thing({
+    id: 'oel',
+    want: (st, side) => (+W(st).level > 0.02 && K.cue(side, 'oel', false) ? { lv: q(W(st).level, 0.01) } : null),
+    build: d => {
+      const o = oelfilm();
+      flutLevel(o, d);
+      return o;
+    },
+    update: (o, d) => flutLevel(o, d),
+  });
+  K.thing({
+    id: 'fw-aggregat',
+    want: (st, side) => (BO(st) && K.cue(side, 'aggregat-feuerwehr', false) ? { on: 1 } : null),
+    build: () => fwAggregat(),
+  });
+  // a portable pump by a house: the suction hose into the cellar window, the outflow along the gutter
+  function pumpe() {
+    const g = new THREE.Group(),
+      st = sites(),
+      fr = st.fronts[1] || st.fronts[0];
+    if (!fr) return g;
+    const f = fr.f,
+      B = K.GB(),
+      x = f.mx + f.nx * 2.4,
+      y = f.my + f.ny * 2.4,
+      z = K.gnd(x, y),
+      a = f.a;
+    B.box(x, y, z, 0.9, 0.6, 0.55, a, PAL.red);
+    B.box(x, y, z + 0.55, 0.5, 0.4, 0.25, a, PAL.dark);
+    B.tube([x, y, z + 0.3], [f.mx + f.nx * 0.1, f.my + f.ny * 0.1, z + 0.25], 0.06, 6, PAL.dark);
+    B.tube(
+      [x + f.f.dx * 0.5, y + f.f.dy * 0.5, z + 0.2],
+      [x + f.f.dx * 9 + f.nx * 2.5, y + f.f.dy * 9 + f.ny * 2.5, z + 0.05],
+      0.07,
+      6,
+      C(0xd9d4c4)
+    );
+    g.add(K.mesh(B, K.mats().kit, 'zeitreise pumpe'));
+    return g;
+  }
+  // a film of heating oil on the flood: shimmering streaks over the water (a decal just above it)
+  function oelfilm() {
+    const P = sites().flood,
+      g = new THREE.Group();
+    if (P.length < 2) return g;
+    const B = K.GB(true),
+      tints = [
+        [0.32, 0.12, 0.38],
+        [0.12, 0.3, 0.26],
+        [0.36, 0.3, 0.08],
+        [0.18, 0.16, 0.34],
+      ];
+    for (let i = 0; i + 1 < P.length; i++)
+      for (let k = -4; k <= 4; k++) {
+        const h = K.hash(i * 37 + k * 11);
+        if (h > 0.45) continue;
+        const c = tints[(i + k + 8) % 4];
+        K.strip(
+          B,
+          [P[i], P[i + 1]],
+          -k * 1.6 + 0.7,
+          k * 1.6 + 0.7,
+          (x, y, s) => groundAlong(P, s) + 0.012,
+          () => [c[0], c[1], c[2], 0.3 + 0.25 * h]
+        );
+      }
+    const m = K.inst(B.geo(), K.mats().decal, 1, 'zeitreise oelfilm');
+    g.add(m);
+    g.userData.sheet = m;
+    return g;
+  }
+  // the fire station's generator (in the old school): a red unit by the door, a work light
+  function fwAggregat() {
+    const g = new THREE.Group(),
+      f = sites().schoolFront;
+    if (!f) return g;
+    const B = K.GB(),
+      x = f.mx + f.nx * 2.0 - f.f.dx * 3,
+      y = f.my + f.ny * 2.0 - f.f.dy * 3,
+      z = K.gnd(x, y);
+    B.box(x, y, z, 1.1, 0.75, 0.8, f.a, PAL.red);
+    B.box(x, y, z + 0.8, 0.9, 0.6, 0.12, f.a, PAL.dark);
+    B.tube(
+      [x + f.nx * 0.2, y + f.ny * 0.2, z + 0.5],
+      [f.mx + f.nx * 0.1 - f.f.dx * 2, f.my + f.ny * 0.1 - f.f.dy * 2, z + 0.4],
+      0.04,
+      5,
+      PAL.dark
+    );
+    // a work light on a stand
+    B.cyl(x + f.f.dx * 2, y + f.f.dy * 2, z, 0.03, 0.03, 2.2, 5, PAL.dark);
+    g.add(K.mesh(B, K.mats().kit, 'zeitreise fw-aggregat'));
+    const L = K.GB();
+    L.panel(
+      x + f.f.dx * 2 + f.nx * 0.05,
+      y + f.f.dy * 2 + f.ny * 0.05,
+      z + 2.25,
+      0.4,
+      0.3,
+      f.face + Math.PI / 2,
+      [2.6, 2.5, 2.2]
+    );
+    g.add(K.mesh(L, K.mats().glow, 'zeitreise arbeitslicht'));
+    return g;
+  }
+  // the lights go out with a flicker (the cue 'licht-aus'): for 0.8 s the village's night switch jumps between on and off
+  function flicker() {
+    S.flickT = performance.now();
+  }
+  const flickering = () => !!S.flickT && performance.now() - S.flickT < 900;
   function set(L, R) {
     dark(!!((L && BO(L)) || (R && BO(R))));
   }
@@ -703,5 +832,5 @@ export const ZKNACHT = (() => {
   function warm() {
     atlas();
   }
-  return { S, sites, set, clear, warm, atlas, SLOT };
+  return { S, sites, set, clear, warm, atlas, flicker, flickering, SLOT };
 })();

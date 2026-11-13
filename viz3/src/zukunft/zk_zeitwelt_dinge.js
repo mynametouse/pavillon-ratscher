@@ -732,7 +732,7 @@ export const ZKDINGE = (() => {
         k = (s - sa) / Math.max(0.01, sb - sa),
         x = ax + (bx - ax) * k,
         y = ay + (by - ay) * k,
-        a = Math.atan2(ay - by, ax - bx); // heading from the Anger end outwards (towards the bypass)
+        a = Math.atan2(by - ay, bx - ax); // heading along the way (the cab at +x leads)
       m.position.set(x, K.gnd(x, y), -y);
       m.rotation.set(0, a, 0);
     },

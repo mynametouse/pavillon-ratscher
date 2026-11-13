@@ -12,6 +12,8 @@
 //   ZKZEITWELT.place(id)         → { pos:[x,y,z], look:[x,y,z] } in site metres (x east, y north, z absolute height) for the places that
 //                                depend on built things ('heizhaus', 'windrad', 'kahlflaeche', 'strasse'); null for every other id
 //   ZKZEITWELT.sound(L, R, side) the ambience for the state(s); side 'L'|'R'|'both' (the split: which world one hears)
+//   ZKZEITWELT.cue(id, side, info) a stress test's cue (ZKCHRONIK.CUES: regen, donner, sirene, blaulicht, pumpe, oel, licht-aus, stille,
+//                                aggregat, schule-licht, aggregat-feuerwehr) at its phase; side 'L'|'R'|'both'; info { ev, p, h }
 //   ZKZEITWELT.clear()           everything back to today (meshes, uniforms, weather, lights, sound)
 // Extra (tests, the regie's stubs): stats(), demo(w, yf) → a stub STATE v1 for 'allein'|'gewappnet' until ZKCHRONIK exists, LAYER, S.
 import { scene } from '../core/head.js';
@@ -23,6 +25,7 @@ import { ZKDINGE } from './zk_zeitwelt_dinge.js';
 import { ZKNACHT } from './zk_zeitwelt_nacht.js';
 import { ZKTON } from './zk_zeitwelt_ton.js';
 import { ZKDATA } from './zk_data.js';
+import { WXTON } from '../wetter/wx_ton.js';
 import { ZKWELT } from './zk_welt.js';
 
 export const ZKZEITWELT = (() => {
@@ -364,6 +367,12 @@ export const ZKZEITWELT = (() => {
         if (!S.L) return;
         ZKKIT.tick(dt);
         ZKTON.tick(dt);
+        if (ZKNACHT.flickering()) markDirty();
+        // the street flood's foam at night, no blue flash without the engine
+        const V = window.VILLAGE;
+        ZKKIT.U.uZkNight.value = ZKNACHT.S.nightFn ? ZKNACHT.S.nightFn.call(V) : V && V.night ? V.night() : 0;
+        if (!ZKKIT.T.some(t => t.def.id === 'feuerwehr' && ((t.A && t.A.visible) || (t.B && t.B.visible))))
+          ZKKIT.U.uZkBlue.value = 0;
       }, 'zukunft/zeitwelt');
   }
   function set(L, R) {
@@ -372,6 +381,8 @@ export const ZKZEITWELT = (() => {
     S.L = L || null;
     S.R = R || null;
     S.split = !!R;
+    cueReset(S.L, 'L');
+    cueReset(S.R || S.L, 'R');
     S.drawn = null;
     if (sig === S.sig) return false;
     S.sig = sig;
@@ -386,7 +397,54 @@ export const ZKZEITWELT = (() => {
     return true;
   }
   // ---------- sound: the ambience mix for the state(s) (stage 0: computed, not played yet) ----------
-  function mixOf(st) {
+  // ---------- cues of the stress tests (ZKCHRONIK.CUES; the regie calls cue() at each cue's phase during a halt) ----------
+  // A side that has had a cue in the current event follows its cues (the fire engine arrives with 'blaulicht', the school lights up with
+  // 'schule-licht', the pumps run from 'pumpe'); a side without cues (a seek, the test, a stub) follows the state alone.
+  const CUE = { L: {}, R: {}, ev: { L: null, R: null } };
+  const cueOn = (side, id) => !!(CUE[side] && CUE[side][id]);
+  const cueSeen = side => !!(CUE[side] && CUE[side].seen);
+  ZKKIT.cue = (side, id, fallback) => (cueSeen(side) ? cueOn(side, id) : !!fallback);
+  function cue(id, side, info) {
+    try {
+      const ev = info && (info.ev && info.ev.id ? info.ev.id : info.ev);
+      const sides = side === 'R' ? ['R'] : side === 'L' ? ['L'] : ['L', 'R'];
+      for (const sd of sides) {
+        if (ev && CUE.ev[sd] !== ev) {
+          CUE[sd] = {};
+          CUE.ev[sd] = ev;
+        }
+        CUE[sd][id] = true;
+        CUE[sd].seen = true;
+      }
+      // one-shots: thunder (the weather's own), the village siren, the generator starting, the lights flickering out
+      if (id === 'donner' && WXTON && WXTON.thunder) WXTON.thunder(700 + Math.random() * 1800);
+      if (id === 'licht-aus') ZKNACHT.flicker();
+      const heard = S.side === 'both' || sides.includes(S.side) || !S.split;
+      if (heard) ZKTON.cue(id);
+      // what the cue changes: the things that follow cues, the ambience
+      if (S.L) {
+        ZKKIT.setAll(S.L, S.R);
+        if (S.mixArgs) sound(...S.mixArgs);
+      }
+      S.n.cue = (S.n.cue || 0) + 1;
+      S.lastCue = id;
+      return true;
+    } catch (e) {
+      S.err = 'cue ' + id + ': ' + e;
+      return false;
+    }
+  }
+  // a state without an event (no rain, no water, no blackout) ends the cues of its side
+  function cueReset(st, side) {
+    if (!st || !CUE[side].seen) return;
+    const W = st.water || {},
+      E = st.energy || {};
+    if (!W.rain && !(+W.level > 0) && !E.blackout && !(+W.mud > 0.01)) {
+      CUE[side] = {};
+      CUE.ev[side] = null;
+    }
+  }
+  function mixOf(st, side = 'L') {
     if (!st) return null;
     const F = st.forest || {},
       W = st.water || {},
@@ -399,17 +457,24 @@ export const ZKZEITWELT = (() => {
       harvester: +clamp(+F.harvest || 0, 0, 1).toFixed(3),
       rain: W.rain ? 1 : 0,
       water: +clamp((+W.level || 0) / 0.4, 0, 1).toFixed(3),
-      sirens: W.rain && (+W.level || 0) > 0.05 ? 1 : 0,
-      pumps: (+W.level || 0) > 0.02 || ((+W.mud || 0) > 0.2 && !W.rain) ? 1 : 0,
-      generator: E.blackout && E.blackout.school ? 1 : 0,
+      sirens: ZKKIT.cue(side, 'blaulicht', W.rain && (+W.level || 0) > 0.05) && (W.rain || +W.level > 0) ? 1 : 0,
+      pumps:
+        ZKKIT.cue(side, 'pumpe', (+W.level || 0) > 0.02) || ((+W.mud || 0) > 0.2 && !W.rain && !(+W.level > 0.01))
+          ? 1
+          : 0,
+      generator:
+        E.blackout && (ZKKIT.cue(side, 'aggregat', E.blackout.school) || ZKKIT.cue(side, 'aggregat-feuerwehr', false))
+          ? 1
+          : 0,
       silence: E.blackout ? 1 : 0,
     };
   }
   function sound(L, R, side = 'both') {
     S.n.sound++;
     S.side = side;
-    const mL = mixOf(L),
-      mR = mixOf(R || null);
+    S.mixArgs = [L, R, side];
+    const mL = mixOf(L, 'L'),
+      mR = mixOf(R || null, 'R');
     S.mix = side === 'R' ? mR : side === 'L' || !mR ? mL : avgMix(mL, mR);
     ZKTON.set(S.mix);
     return S.mix;
@@ -423,6 +488,9 @@ export const ZKZEITWELT = (() => {
   function clear() {
     for (const P of PARTS) if (P.clear) guard(P.id + ' clear', P.clear);
     guard('ton clear', () => ZKTON.clear());
+    CUE.L = {};
+    CUE.R = {};
+    CUE.ev = { L: null, R: null };
     for (const k of Object.keys(psig)) delete psig[k];
     S.L = S.R = null;
     S.split = false;

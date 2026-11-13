@@ -30,7 +30,7 @@ export const ZKKIT = (() => {
     return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
   };
   // ---------- materials (one each; programs compiled in warm) ----------
-  const U = { uZkTime: { value: 0 }, uZkFlow: { value: 1 } };
+  const U = { uZkTime: { value: 0 }, uZkFlow: { value: 1 }, uZkBlue: { value: 0 }, uZkNight: { value: 0 } };
   let M = null;
   function mats() {
     if (M) return M;
@@ -50,11 +50,11 @@ export const ZKKIT = (() => {
       }),
       water: new THREE.MeshStandardMaterial({
         color: new THREE.Color(0x6b5a44),
-        roughness: 0.16,
+        roughness: 0.1,
         metalness: 0,
         transparent: true,
-        opacity: 0.92,
-        envMapIntensity: 1.0,
+        opacity: 0.93,
+        envMapIntensity: 1.5,
       }),
       band: new THREE.MeshBasicMaterial({
         vertexColors: true,
@@ -75,7 +75,7 @@ export const ZKKIT = (() => {
           '#include <begin_vertex>\n vFlow = aFlow; vWp = vec2( position.x, position.z );'
         );
       sh.fragmentShader =
-        'uniform float uZkTime, uZkFlow; varying float vFlow; varying vec2 vWp;\n' +
+        'uniform float uZkTime, uZkFlow, uZkBlue, uZkNight; varying float vFlow; varying vec2 vWp; float zkFoam = 0.0;\n' +
         'float zkWh( vec2 p ) { vec3 p3 = fract( vec3( p.xyx ) * 0.1031 ); p3 += dot( p3, p3.yzx + 33.33 ); return fract( ( p3.x + p3.y ) * p3.z ); }\n' +
         'float zkWn( vec2 p ) { vec2 i = floor( p ), f = fract( p ), u = f * f * ( 3.0 - 2.0 * f ); return mix( mix( zkWh( i ), zkWh( i + vec2( 1.0, 0.0 ) ), u.x ), mix( zkWh( i + vec2( 0.0, 1.0 ) ), zkWh( i + vec2( 1.0, 1.0 ) ), u.x ), u.y ); }\n' +
         sh.fragmentShader
@@ -84,7 +84,13 @@ export const ZKKIT = (() => {
             `#include <color_fragment>
             { float t = uZkTime * uZkFlow; vec2 q = vec2( vFlow - t * 1.6, vWp.x * 0.37 + vWp.y * 0.53 );
               float foam = smoothstep( 0.62, 0.9, zkWn( q * vec2( 0.45, 1.3 ) ) * 0.7 + zkWn( q * vec2( 1.7, 3.1 ) ) * 0.3 );
-              diffuseColor.rgb = mix( diffuseColor.rgb * ( 0.85 + 0.3 * zkWn( q * 0.21 ) ), vec3( 0.55, 0.5, 0.42 ), foam * 0.55 ); }`
+              diffuseColor.rgb = mix( diffuseColor.rgb * ( 0.85 + 0.3 * zkWn( q * 0.21 ) ), vec3( 0.55, 0.5, 0.42 ), foam * 0.55 ); zkFoam = foam; }`
+          )
+          .replace(
+            '#include <emissivemap_fragment>',
+            // at night the moving foam catches what light there is, and the blue lights flash on the water
+            `#include <emissivemap_fragment>
+            totalEmissiveRadiance += ( vec3( 0.05, 0.048, 0.042 ) * zkFoam + vec3( 0.006, 0.006, 0.007 ) ) * uZkNight + vec3( 0.03, 0.07, 0.42 ) * uZkBlue * ( 0.35 + 0.65 * zkFoam );`
           )
           .replace(
             '#include <normal_fragment_maps>',

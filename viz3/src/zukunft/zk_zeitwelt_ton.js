@@ -201,6 +201,61 @@ export const ZKTON = (() => {
     L.harvester.burst.gain.setTargetAtTime(saw * 0.8, now, 0.15);
     L.sirens.burst.gain.setTargetAtTime(horn, now, 0.25);
   }
+  // cues: the village siren (the fire alarm: three tones of 12 s, the siren winding up and down, 12 s apart), the generator starting
+  function cue(id) {
+    try {
+      const r = raw();
+      if (!r) return;
+      if (!S.N) S.N = build(r);
+      const ctx = S.N.ctx,
+        t0 = ctx.currentTime + 0.05;
+      if (id === 'sirene') {
+        const o = ctx.createOscillator(),
+          f = ctx.createBiquadFilter(),
+          g = ctx.createGain();
+        o.type = 'sawtooth';
+        f.type = 'bandpass';
+        f.frequency.value = 900;
+        f.Q.value = 0.6;
+        g.gain.value = 0;
+        o.connect(f);
+        f.connect(g);
+        g.connect(S.N.out);
+        for (let k = 0; k < 3; k++) {
+          const a = t0 + k * 24;
+          o.frequency.setValueAtTime(140, a);
+          o.frequency.linearRampToValueAtTime(420, a + 4);
+          o.frequency.setValueAtTime(420, a + 10);
+          o.frequency.linearRampToValueAtTime(150, a + 14);
+          g.gain.setValueAtTime(0, a);
+          g.gain.linearRampToValueAtTime(0.13, a + 2.5);
+          g.gain.setValueAtTime(0.13, a + 10.5);
+          g.gain.linearRampToValueAtTime(0, a + 14);
+        }
+        o.start(t0);
+        o.stop(t0 + 3 * 24);
+      }
+      if (id === 'aggregat' || id === 'aggregat-feuerwehr') {
+        // a starter's whirr, then the engine catches
+        const o = ctx.createOscillator(),
+          g = ctx.createGain();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(18, t0);
+        o.frequency.linearRampToValueAtTime(42, t0 + 1.2);
+        o.frequency.setValueAtTime(30, t0 + 1.3);
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(0.09, t0 + 0.3);
+        g.gain.linearRampToValueAtTime(0.0, t0 + 2.2);
+        o.connect(g);
+        g.connect(S.N.out);
+        o.start(t0);
+        o.stop(t0 + 2.4);
+      }
+      S.lastCue = id;
+    } catch (e) {
+      S.err = String(e);
+    }
+  }
   function clear() {
     set(null);
     if (S.wxOrig) {
@@ -213,5 +268,5 @@ export const ZKTON = (() => {
   function stats() {
     return { built: !!S.N, mix: S.mix, birdK: S.birdK, err: S.err };
   }
-  return { set, tick, clear, stats, S };
+  return { set, tick, cue, clear, stats, S };
 })();

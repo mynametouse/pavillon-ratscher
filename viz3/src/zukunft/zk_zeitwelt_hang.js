@@ -113,7 +113,8 @@ export const ZKHANG = (() => {
       }
     }
   `;
-  const FS_HEAD = `varying float vZkS; varying float vZkA;`;
+  const FS_HEAD = `varying float vZkS; varying float vZkA;
+`; // (the line must end: three's shader goes on with #define)
   const FS_TINT = `
     if ( vZkS > 0.5 ) {
       float zl = dot( diffuseColor.rgb, vec3( 0.3, 0.55, 0.15 ) );
@@ -161,8 +162,8 @@ export const ZKHANG = (() => {
       else if ( s < 3.5 ) col = vec3( 0.11, 0.094, 0.075 ) * ( 0.75 + 0.5 * zkN( p * 0.7 ) );          // fallen trunks, criss-cross
       else if ( s < 4.5 ) {                                                                              // cleared: slash, then grass and herbs
         float a = clamp( ( uZkT.y - r ) / max( uZkT.y - uZkT.x, 0.03 ), 0.0, 1.0 );
-        col = mix( vec3( 0.14, 0.105, 0.07 ), vec3( 0.13, 0.15, 0.055 ), a ) * ( 0.85 + 0.3 * zkN( p * 0.5 ) );
-      } else col = ( uZkT2.z > 0.5 ? vec3( 0.095, 0.16, 0.035 ) : vec3( 0.06, 0.125, 0.03 ) ) * mix( 1.15, 0.8, clamp( uZkT2.y / 12.0, 0.0, 1.0 ) );
+        col = mix( vec3( 0.19, 0.145, 0.095 ), vec3( 0.17, 0.19, 0.075 ), a ) * ( 0.85 + 0.3 * zkN( p * 0.5 ) );
+      } else col = ( uZkT2.z > 0.5 ? vec3( 0.13, 0.2, 0.05 ) : vec3( 0.1, 0.17, 0.045 ) ) * mix( 1.2, 0.75, clamp( uZkT2.y / 12.0, 0.0, 1.0 ) );
       if ( uZkT2.w > 1.5 ) col = s < 1.5 ? vec3( 0.8, 0.1, 0.0 ) : s < 2.5 ? vec3( 0.6 ) : s < 3.5 ? vec3( 0.3, 0.2, 0.6 ) : s < 4.5 ? vec3( 0.8, 0.7, 0.1 ) : vec3( 0.1, 0.9, 0.2 );
       return mix( c, col * mix( 1.0, tx, 0.55 ), fm );
     }

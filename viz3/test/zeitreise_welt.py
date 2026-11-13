@@ -10,7 +10,7 @@ import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 from PIL import Image, ImageDraw, ImageStat
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'api,hang,dinge,nacht,split,ende').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'api,hang,kal,dinge,nacht,split,ende').split(','))
 ck = lib.Checks('zeitreise_welt')
 OUT = lib.out('zeitreise_welt')
 NOBLUR = "document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')"
@@ -124,32 +124,51 @@ def run():
 
         if 'hang' in want:
             # the slopes south of the village from the Anger (eye height) and from 90 m above it, by year and world
-            V = [('anger', 222, -108, 1.65, 190, 3, 55), ('hoch', 222, -108, 90, 195, -10, 60)]
+            # views for the regie: the Anger towards the south, 90 m above it, the slope NE of the village (over the village to the forests
+            # S and SW), the village's south edge by the lane (open fields up to the forest)
+            V = [('anger', 222, -108, 1.65, 190, 3, 55), ('hoch', 222, -108, 90, 195, -10, 60), ('hang', 430, 90, 1.65, 199, -2, 55),
+                 ('dorfrand', 330, -330, 1.65, 187, 2, 55)]
             S = [('heute', 'allein', 2026.5), ('allein-2029', 'allein', 2029.5), ('allein-2045', 'allein', 2045.5), ('gewappnet-2045', 'gewappnet', 2045.5)]
             names, cols = [], {}
             for tag, w, y in S:
                 state(w, y)
                 for v in V:
                     look(*v[1:]); n = f'hang-{v[0]}-{tag}'; pic(n); names.append(n)
-                    cols[n] = region(n, (0.0, 0.3, 1.0, 0.62) if v[0] == 'hoch' else (0.0, 0.38, 1.0, 0.5))
+                    cols[n] = region(n, (0.0, 0.3, 1.0, 0.62) if v[0] in ('hoch', 'hang') else (0.0, 0.38, 1.0, 0.5))
             E("ZKZEITWELT.hang.debug(2)"); state('allein', 2034); look(*V[1][1:]); pic('hang-stufen-2034'); names.append('hang-stufen-2034'); E("ZKZEITWELT.hang.debug(0)")
-            sheet('hang', names, cols=3)
+            sheet('hang', names, cols=4)
             print('slope colours', json.dumps(cols), flush=True)
             d = lambda a, c: sum(abs(x - y) for x, y in zip(cols[a], cols[c]))
             ck('the slopes change colour with the years (overview: today → 2029 red-grey)', d('hang-hoch-heute', 'hang-hoch-allein-2029') > 9, f"{cols['hang-hoch-heute']} → {cols['hang-hoch-allein-2029']}")
             ck('the slopes change seen from the Anger (eye height)', d('hang-anger-heute', 'hang-anger-allein-2029') > 4, f"{cols['hang-anger-heute']} → {cols['hang-anger-allein-2029']}")
             ck('the two worlds look different in 2045 (pioneer wood and dead wood against the planted mix)', d('hang-hoch-allein-2045', 'hang-hoch-gewappnet-2045') > 2, f"{cols['hang-hoch-allein-2045']} vs {cols['hang-hoch-gewappnet-2045']}")
 
+        if 'kal' in want:
+            # calibration of the slopes: straight down over the forests south of the village (photo mask, stages), and from the NE slope
+            names = []
+            for tag, w, y, dbg in (('heute', 'allein', 2026.5, 0), ('2034', 'allein', 2034, 0), ('2034-maske', 'allein', 2034, 1), ('2034-stufen', 'allein', 2034, 2)):
+                state(w, y); E(f"ZKZEITWELT.hang.debug({dbg})")
+                look(150, -650, 1700, 180, -89, 50); n = f'kal-oben-{tag}'; pic(n); names.append(n)
+            for tag, w, y, dbg in (('2029', 'allein', 2029.5, 0), ('2029-stufen', 'allein', 2029.5, 2)):
+                state(w, y); E(f"ZKZEITWELT.hang.debug({dbg})")
+                look(430, 90, 1.65, 199, -2, 55); n = f'kal-hang-{tag}'; pic(n); names.append(n)
+            E("ZKZEITWELT.hang.debug(0)")
+            sheet('kal', names, cols=3)
+
         if 'dinge' in want:
             names = []
-            shots = [('heizhaus', 'gewappnet', 2033.2, 'heizhaus'), ('graben-anger', 'gewappnet', 2029.75, None), ('kahl-gewappnet-2035', 'gewappnet', 2035.5, 'kahlflaeche'),
-                     ('kahl-allein-2035', 'allein', 2035.5, 'kahlflaeche'), ('ernte-gewappnet-2029', 'gewappnet', 2029.5, 'kahlflaeche'), ('windrad-bau', 'gewappnet', 2034.6, 'windrad'),
+            shots = [('heizhaus', 'gewappnet', 2033.2, 'heizhaus'), ('graben', 'gewappnet', 2029.75, None), ('kahl-gewappnet-2035', 'gewappnet', 2035.5, 'kahlflaeche'),
+                     ('kahl-allein-2035', 'allein', 2035.5, 'kahlflaeche'), ('ernte-gewappnet-2029', 'gewappnet', 2029.5, 'kahlflaeche'), ('windrad-bau', 'gewappnet', 2033.6, 'windrad'),
                      ('windrad-dreht', 'gewappnet', 2040.5, 'windrad'), ('windrad-dorf', 'gewappnet', 2040.5, None), ('heizoel', 'allein', 2034.05, None)]
+            # the trench: on the street 18 m before the open stretch, looking along it towards the Anger
+            tp = J("(P => { const L = P[P.length - 1][2], i = P.findIndex(p => p[2] >= L - 113), j = Math.min(P.length - 1, i + 12); return [P[i], P[j]]; })(ZKZEITWELT.dinge.sites().trench)")
             for name, w, y, pid in shots:
                 state(w, y)
                 if pid: at_place(pid)
-                elif name == 'graben-anger': look(238, -126, 1.65, 120, -2)
-                elif name == 'windrad-dorf': look(222, -108, 1.65, 190, 8, 55)
+                elif name == 'graben':
+                    (ax, ay, _), (bx, by, _) = tp
+                    look(ax, ay, 1.65, (math.degrees(math.atan2(bx - ax, by - ay)) + 360) % 360, -4, 60)
+                elif name == 'windrad-dorf': look(330, -330, 1.65, 186, 9, 60)
                 elif name == 'heizoel': look(222, -108, 1.65, 300, 0)
                 steps(0.5); pic(name); names.append(name)
                 sh = J("ZKZEITWELT.stats().parts.dinge.shown")
@@ -177,15 +196,18 @@ def run():
                 print(n, sh, flush=True)
                 if w == 'allein': ck('the morning after in Allein im Sturm: mud and bulky waste', 'schlamm' in sh and 'sperrmuell' in sh, str(sh))
                 else: ck('the morning after in Gewappnet: sandbags, no bulky waste', 'sandsaecke' in sh and 'sperrmuell' not in sh, str(sh))
-            clock(17.6, 'klar')
+            clock(22.0, 'klar')
+            # the old school from in front of its main facade (22 m), the dark village around it
+            sp = J("(f => f ? [f.mx + f.nx * 24, f.my + f.ny * 24, f.mx, f.my] : null)(ZKZEITWELT.nacht.sites().schoolFront)") or [205, -95, 236, -121]
+            syaw = (math.degrees(math.atan2(sp[2] - sp[0], sp[3] - sp[1])) + 360) % 360
             for w in ('allein', 'gewappnet'):
-                state(w, ev='blackout', p=0.5); look(212, -96, 1.65, 135, 3, 60); steps(0.4); n = f'blackout-{w}'; pic(n); names.append(n)
+                state(w, ev='blackout', p=0.5); look(sp[0], sp[1], 1.65, syaw, 4, 70); steps(0.4); n = f'blackout-{w}'; pic(n); names.append(n)
                 st = J("ZKZEITWELT.stats().parts.dinge")
                 print(n, json.dumps(st), flush=True)
                 ck(f'the blackout ({w}): the village dark', st['dark'], '')
                 if w == 'gewappnet': ck('Gewappnet: the old school lit, the battery beside it', 'schule' in st['shown'] and 'speicher' in st['shown'], str(st['shown']))
                 else: ck('Allein im Sturm: a few houses with their own light, the school dark', 'inseln' in st['shown'] and 'schule' not in st['shown'], str(st['shown']))
-            E("ZKZEITWELT.set(ZKCHRONIK.state('allein', 2037.2), null)"); look(212, -96, 1.65, 135, 3, 60); steps(0.4); pic('nacht-normal'); names.append('nacht-normal')
+            E("ZKZEITWELT.set(ZKCHRONIK.state('allein', 2037.2), null)"); look(sp[0], sp[1], 1.65, syaw, 4, 70); steps(0.4); pic('nacht-normal'); names.append('nacht-normal')
             ck('a night without the blackout: the village lights back', not J("ZKZEITWELT.stats().parts.dinge.dark"), '')
             sheet('nacht', names, cols=2)
             clock(13, 'klar')
@@ -198,13 +220,18 @@ def run():
               const m = o.layers.mask; if (m & 1) c[0]++; if (m & (1 << 21)) c[21]++; if (m & (1 << 22)) c[22]++; }); return c; })()""")
             print('layers in the split', lay, flush=True)
             ck('the split: what differs is on layers 21 and 22', lay['21'] > 0 and lay['22'] > 0, str(lay))
-            look(222, -108, 90, 195, -10, 60)
-            for side, mask in (('links', (1 << 21) | 1), ('rechts', (1 << 22) | 1)):
-                E(f"GAME.cam.layers.mask = {mask}"); E("GAME.shot()"); pic('split-' + side)
-            E("GAME.cam.layers.mask = 1")
-            a, c = region('split-links', (0, 0.3, 1, 0.62)), region('split-rechts', (0, 0.3, 1, 0.62))
-            ck('the split: the two halves differ (slopes, turbine)', sum(abs(x - y) for x, y in zip(a, c)) > 2, f'{a} vs {c}')
-            sheet('split', ['split-links', 'split-rechts'], cols=2)
+            names = []
+            for view in ('heizhaus', 'hang'):
+                if view == 'heizhaus': at_place('heizhaus')
+                else: look(430, 90, 1.65, 199, -2, 55)
+                for side, mask in (('links', (1 << 21) | 1), ('rechts', (1 << 22) | 1)):
+                    E(f"GAME.cam.layers.mask = {mask}"); E("GAME.shot()"); n = f'split-{view}-{side}'; pic(n); names.append(n)
+                E("GAME.cam.layers.mask = 1")
+            a, c = region('split-heizhaus-links', (0.2, 0.2, 0.8, 0.8)), region('split-heizhaus-rechts', (0.2, 0.2, 0.8, 0.8))
+            ck('the split: the two halves differ (the heating house only in Gewappnet)', sum(abs(x - y) for x, y in zip(a, c)) > 4, f'{a} vs {c}')
+            a, c = region('split-hang-links', (0, 0.3, 1, 0.62)), region('split-hang-rechts', (0, 0.3, 1, 0.62))
+            print('split slopes', a, c, flush=True)
+            sheet('split', names, cols=2)
 
         if 'ende' in want:
             new = J("GAME.R.info.programs.filter(p => !__p1.has(p.cacheKey)).map(p => p.name + ' …' + String(p.cacheKey).slice(-40))")
