@@ -209,6 +209,14 @@ export const MARKEN = {
     balk: false,
     foto: 'Stadtbücherei Suhl, Bahnhofstraße 10 (Kai Kemmann, CC BY-SA 4.0)',
   },
+  DETHL57P00002jrt: {
+    name: 'Am Bahnhof 10',
+    col: '#e6d08c',
+    roof: '#a3402c',
+    gauben: true,
+    foto: 'Gebäude Am Bahnhof 10 Suhl 2024-08-17 (Strubbl, CC BY-SA 4.0)',
+  },
+  DETHL57P00002jsi: { name: 'Am Bahnhof 10', col: '#e6d08c', roof: '#a3402c' },
   // Senfte
   DETHL57P00006FL9: {
     name: 'Senfte 4',
