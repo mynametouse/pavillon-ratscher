@@ -1,7 +1,13 @@
 # feat/cockpit: the inside of the cars and the graphics while moving (docs/features/cockpit.md). Pictures in out/cockpit/.
-#   python3 viz3/test/cockpit.py PORT [sections]      sections (comma-separated, default all): grafik
-# grafik: Menü → Einstellungen → Grafik „Beim Bewegen“ sets the motion level of render/render.js (fixed stages, back to automatic), no new
-#         shader programs by switching, the frame-rate counter shows, both are kept after a reload, the five buttons fit a phone's width.
+#   python3 viz3/test/cockpit.py PORT [sections]      sections (comma-separated, default all): grafik,cockpit,tractor,phone
+# grafik:  Menü → Einstellungen → Grafik „Beim Bewegen“ sets the motion level of render/render.js (fixed stages, back to automatic), no new
+#          shader programs by switching, the frame-rate counter shows, both are kept after a reload, the five buttons fit a phone's width.
+# cockpit: Falko's car in the driver's view – the cockpit is built on getting in (programs compiled then, once), the speed needle moves when
+#          accelerating, the wheel turns when steering, the hands are on it, a gear change sends the right hand to the lever, the mirrors
+#          render (and stop when switched off), rain moves the wipers, the indicators blink (arrows, lamps), the navi shows the map and the
+#          corner map steps aside; draw calls and programs in budget; pictures by day, at night, in the rain.
+# tractor: the tractor's cab – its wheel turns, the gauges, the hands.
+# phone:   a phone's width in the driver's view: the cockpit there, mirrors off by default, no page errors.
 # Never return an object of the scene from evaluate (docs/WORKFLOW.md): only numbers, flags and JSON.stringify(…).
 import sys, os, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -46,7 +52,9 @@ with lib.browser() as b:
         pg.click('#fpsbtn'); time.sleep(0.2)
         pg.screenshot(path=os.path.join(OUT, 'grafik_menu.png'))
         pg.click('#menu .mhead [data-mclose]'); time.sleep(0.3)
-        E("GAME.shot(); GAME.shot(); GAME.shot()"); time.sleep(1.2)
+        # frames over a second and a half (the loop is frozen in tests: each shot is one frame), the counter read right after
+        for k in range(6):
+            E("GAME.shot()"); time.sleep(0.25)
         fb = info()['box']
         ck('frame-rate counter shows frames per second and the level', bool(fb) and fb['shown'] and 'Bilder/s' in fb['text'] and 'Bewegen: 50 %' in fb['text'],
            json.dumps(fb))
@@ -70,5 +78,112 @@ with lib.browser() as b:
         # back to the default for the other sections
         pg.click('#motseg [data-mot="auto"]'); pg.click('#fpsbtn'); time.sleep(0.1)
         pg.click('#menu .mhead [data-mclose]'); pg.set_viewport_size({'width': 1100, 'height': 680}); time.sleep(0.3)
+    if want('cockpit') or want('look') or want('tractor'):
+        # the real surroundings (roads for the navi) and the figure (its arms)
+        pg.close()
+        pg = lib.page(b, 1100, 680, errs=errs, tier='mittel')
+        E = pg.evaluate
+        lib.boot(pg, port, '', figures=True)
+        pg.set_default_timeout(180000)
+        E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
+        st = lambda: json.loads(E("JSON.stringify(COCKPIT.info())"))
+        steps = lambda secs: E(f"for (let i = 0; i < {int(secs / 0.025)}; i++) GAME.step(0.025)")
+        def drive(secs, thr=0, brk=0, steer=0, hand=False):
+            E(f"VEH.auto = () => ({{ thr: {thr}, brk: {brk}, steer: {steer}, hand: {str(hand).lower()} }})"); steps(secs); E("VEH.auto = null")
+        ck('not built before one gets in (lazy)', not st()['built'])
+        p0 = E("GAME.R.info.programs.length")
+        E("VEH.enter('car'); GAME.setView3(false)"); steps(1.2)
+        i1 = st(); p1 = E("GAME.R.info.programs.length")
+        ck('built on getting in, the body\'s simple inside hidden', i1['built'] and i1['inside'] is False, f"{i1['buildMs']} ms")
+        ck('driver\'s view', i1['view'] is True)
+        lib.shot(pg, OUT, 'a_day_driver'); p2 = E("GAME.R.info.programs.length")
+        names = E(f"GAME.R.info.programs.slice({p0}).map(p => p.name + ':' + String(p.cacheKey || '').length).join(' | ')")
+        ck('programs: the cockpit\'s few, compiled on getting in (warmed) and with the first frame', p2 - p0 <= 6, f'{p0} → {p1} → {p2}: {names}')
+        ck('no part of the cockpit broken (NaN corners)', not i1['bad'], json.dumps(i1['bad']))
+        ck('hands on the wheel', i1['handsShown'] and bool(i1['hands']), json.dumps(i1['hands']))
+        print('info', json.dumps(i1), flush=True)
+        if want('cockpit'):
+            s0 = st(); drive(4, thr=1); s1 = st()
+            ck('the speed needle moves when accelerating', s1['kmh'] > 15 and abs(s1['spd'] - s0['spd']) > 0.3, f"{s1['kmh']} km/h, {s0['spd']} → {s1['spd']}")
+            # on until the automatic changes gear: the right hand at the lever a moment later
+            E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })"); bmax = 0
+            for k in range(40):
+                steps(0.1); i = st(); bmax = max(bmax, i['shiftB'])
+                if bmax > 0.95: break
+            E("VEH.auto = null")
+            ck('a gear change sends the right hand to the lever', i['shifts'] > 0 and bmax > 0.95, f"blend {bmax}, {i['shifts']} changes, gear {i['gear']}")
+            lib.shot(pg, OUT, 'b_shift')
+            h0 = st()['hands']; drive(0.6, thr=0.3, steer=1); s2 = st(); h1 = s2['hands']
+            ck('the wheel turns when steering (about 15:1)', abs(s2['wheel']) > 2 and abs(abs(s2['wheel']) - abs(s2['steer']) * 15) < 0.05, f"wheel {s2['wheel']} rad, steer {s2['steer']}")
+            moved = h0 and h1 and max(abs(a - b) for a, b in zip(h0[1], h1[1])) > 0.03
+            ck('the hands follow the wheel', bool(moved), f'{h0} → {h1}')
+            lib.shot(pg, OUT, 'c_steer')
+            drive(1.5, brk=1)
+            # indicators
+            pg.keyboard.press(','); seen = set(); lamps = 0
+            for k in range(10):
+                steps(0.1); i = st(); seen.add(tuple(i['arrows'])); lamps = max(lamps, i['lamps'][0] or 0)
+            ck('the left indicator blinks (arrow on and off, the lamp)', (True, False) in seen and (False, False) in seen and lamps > 1, f'{seen} lamp {lamps}')
+            lib.shot(pg, OUT, 'd_blink')
+            pg.keyboard.press(','); steps(0.2)
+            ck('pressed again: off', st()['blink'] is None)
+            # mirrors (on for computers)
+            m = st()['mirrors']
+            ck('the mirrors render', m['live'] and m['renders'] > 0, json.dumps(m))
+            # navi and the corner map
+            n = st()
+            ck('the navi shows the map, the corner map steps aside', n['navi']['n'] > 0 and n['mapHidden'], json.dumps(n['navi']))
+            # rain: the wipers
+            E("COCKPIT.rain(0.5)"); phis = []
+            for k in range(12):
+                steps(0.1); phis.append(st()['wiper']['phi'])
+            w = st()['wiper']
+            ck('rain moves the wipers', w['mode'] == 'normal' and max(phis) > 0.8, f"{w} {phis}")
+            lib.shot(pg, OUT, 'e_rain')
+            E("COCKPIT.rain(null)")
+            # mirrors off in the menu: no more pictures
+            E("document.getElementById('mirbtn').click()"); r0 = st()['mirrors']['renders']; steps(0.5); m2 = st()['mirrors']
+            ck('mirrors off: the glass is metal, no more pictures', not m2['live'] and m2['renders'] == r0, json.dumps(m2))
+            E("document.getElementById('mirbtn').click()")
+            # draw calls: the frame with and without the cockpit
+            dc = json.loads(E("""JSON.stringify((() => { const R = GAME.R, root = COCKPIT.S.c.P.root; GAME.shot(); R.info.autoReset = false;
+                root.visible = false; R.info.reset(); GAME.shot(); const b = R.info.render.calls;
+                root.visible = true; R.info.reset(); GAME.shot(); const a = R.info.render.calls;
+                R.info.autoReset = true; return { with: a, without: b }; })())"""))
+            mc = st()['meshes']
+            ck('draw calls of the cockpit in budget (< 60 meshes; a full frame with ambient occlusion draws them twice)', sum(mc.values()) < 60 and dc['with'] - dc['without'] < 130, json.dumps(dc) + ' ' + json.dumps(mc))
+            p3 = E("GAME.R.info.programs.length")
+            ck('no new programs while driving, shifting, steering, blinking, wiping, with mirrors on and off', p3 == p2, f'{p2} → {p3}')
+            # night: the cluster backlit, the lights on (automatic)
+            E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 22 * 60 + 30; DN && DN.update && DN.update(true)"); lib.settle_light(pg); steps(0.5)
+            lib.shot(pg, OUT, 'f_night')
+            n = st()
+            ck('at night: the lights on, the light switch shown', n['light'] == 'auto' and E("VEH.lightsOn(VEH.cur)"), n['light'])
+            print('info', json.dumps(st()), flush=True)
+        E("VEH.exit()"); steps(0.5)
+        if want('tractor'):
+            # the tractor's cab: its own wheel turns, the pod's gauges, the hands
+            E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 13 * 60; DN && DN.update && DN.update(true)"); lib.settle_light(pg)
+            E("VEH.enter('tractor'); GAME.setView3(false)"); steps(1.2)
+            t = st()
+            ck('tractor: its cab built, the hands on its wheel', t.get('kind') == 'tractor' and t['view'] and t['handsShown'], json.dumps(t))
+            drive(0.8, thr=0.4, steer=-1); t2 = st()
+            ck('tractor: the wheel turns when steering', abs(t2['wheel']) > 2 and abs(abs(t2['wheel']) - abs(t2['steer']) * 18) < 0.05, f"wheel {t2['wheel']} steer {t2['steer']}")
+            lib.shot(pg, OUT, 'h_tractor')
+            drive(1.0, brk=1); E("VEH.exit()"); steps(0.5)
+    if want('phone'):
+        # a phone: touch, narrow, the lightest tier – the cockpit there, the mirrors off by default (COARSE)
+        pg.close()
+        pg = lib.page(b, 390, 800, errs=errs, tier='schnell', is_mobile=True, has_touch=True, device_scale_factor=2)
+        E = pg.evaluate
+        lib.boot(pg, port, '?nogeo=1', figures=True)
+        pg.set_default_timeout(180000)
+        E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
+        E("VEH.enter('car'); GAME.setView3(false)"); E("for (let i = 0; i < 40; i++) GAME.step(0.025)")
+        i = json.loads(E("JSON.stringify(COCKPIT.info())"))
+        ck('phone: the cockpit in the driver\'s view', i['built'] and i['view'], json.dumps({k: i.get(k) for k in ('built', 'view', 'buildMs', 'frameMs')}))
+        ck('phone: mirrors off by default', not i['mirrors']['live'] and i['mirrors']['renders'] == 0, json.dumps(i['mirrors']))
+        lib.shot(pg, OUT, 'g_phone')
+        E("VEH.exit()")
     ck.errors(errs)
 ck.done()

@@ -625,7 +625,12 @@ export const ZFP = (() => {
     if (!F || !F.model || !F.B || !F.B.RightHand || !F.B.LeftHand) return null;
     if (FB && FB.src === F) return FB;
     if (FB) FB.root.removeFromParent();
-    FB = null;
+    FB = makeBody(F, b.rig);
+    return FB;
+  }
+  // feat/cockpit: a copy of the figure on any rig (its space as the camera's: x right, y up, −z ahead), the head shrunk, the arms ready
+  // for placeBodyArm and the fingers – vehicles/cockpit_hands.js puts one on the steering wheel (ZFP.makeBody); null without the bones
+  function makeBody(F, rig) {
     try {
       const model = skelClone(F.model),
         root = new THREE.Group(),
@@ -633,8 +638,8 @@ export const ZFP = (() => {
       inner.rotation.y = Math.PI; // the model faces +z, the camera looks along −z
       inner.add(model);
       root.add(inner);
-      b.rig.add(root);
-      b.rig.updateWorldMatrix(true, true);
+      rig.add(root);
+      rig.updateWorldMatrix(true, true);
       const Bn = {};
       model.traverse(x => {
         if (x.isBone) {
@@ -665,7 +670,7 @@ export const ZFP = (() => {
       const mid = loc('RightArm').add(loc('LeftArm')).multiplyScalar(0.5);
       root.position.set(0, -0.255, 0.075).sub(mid);
       root.updateMatrixWorld(true);
-      const fwd = V(0, 0, -1).applyQuaternion(b.rig.getWorldQuaternion(_bq)); // the figure's forward (the camera's)
+      const fwd = V(0, 0, -1).applyQuaternion(rig.getWorldQuaternion(_bq)); // the figure's forward (the camera's)
       const fb = { src: F, root, model, B: Bn, arm: {}, leg: null, fing: { R: [], L: [] }, cur: { R: null, L: null } };
       // the limbs: lengths, and in each bone's own frame the axis along it and the hinge (elbow: flexes forward; knee: backward)
       const limb = (a, m, e, bend) => {
@@ -787,8 +792,7 @@ export const ZFP = (() => {
       }
       for (const sd of ['R', 'L']) for (const f of fb.fing[sd]) f.bn.quaternion.copy(f.rest);
       Bn.Head.scale.setScalar(0.001);
-      FB = fb;
-      return FB;
+      return fb;
     } catch (e) {
       console.warn('zfp body', e);
       return null;
@@ -1648,6 +1652,10 @@ export const ZFP = (() => {
     swingClip,
     HELD,
     body: () => FB,
+    // feat/cockpit: the arms for the steering wheel (vehicles/cockpit_hands.js): a body of its own, the two-bone reach, the fingers
+    makeBody,
+    placeBodyArm,
+    fingers,
   });
   return S;
 })();

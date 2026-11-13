@@ -1,2 +1,4 @@
 # feat/cockpit: the inside of the cars and the graphics while moving (docs/features/cockpit.md), one test name per line as for viz3/test/run.py
 cockpit
+# the driving tests the cockpit touches (vehicles/car.js: the inside and the indicators; vehicle.js; minimap.js: the navi)
+v16b:car,drive,crash,route

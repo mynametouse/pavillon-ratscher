@@ -279,6 +279,10 @@ zukunft/zk_welt.js          # feat/zukunft PV on the 3D roofs, the field, heat p
 zukunft/zk_modus.js         # feat/zukunft the mode: panel, year slider, A/B, presentation, saved state pav-zukunft-v1, discovery book entries (ZUKUNFT)
 # feat/cockpit: the inside of the cars and the graphics while moving below this line (after the vehicles, the zombie night's arms, the weather)
 vehicles/cockpit_set.js     # feat/cockpit the settings: graphics while moving (render/render.js MOTION), the frame-rate counter, mirrors, map (CPSET)
+vehicles/cockpit_build.js   # feat/cockpit the inside of a car as geometry: dashboard, cluster, wheel, seats, doors, mirrors, wipers (CPBUILD)
+vehicles/cockpit_cluster.js # feat/cockpit the faces: the instrument cluster and the navi's screen as canvas textures (CPFACE)
+vehicles/cockpit_hands.js   # feat/cockpit the driver's arms (the zombie night's first-person body) on the wheel and the lever (CPHANDS)
+vehicles/cockpit_mirror.js  # feat/cockpit real mirrors: interior and door mirrors from one small render target (CPMIRROR)
 vehicles/cockpit.js         # feat/cockpit the driver's view: cluster, wheel and hands, mirrors, wipers, indicators, navi (COCKPIT)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything

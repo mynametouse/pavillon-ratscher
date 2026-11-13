@@ -105,6 +105,13 @@ const CAR = (() => {
     rev: new THREE.MeshStandardMaterial({ color: 0xd8d8d8, roughness: 0.2, emissive: 0xffffff, emissiveIntensity: 0 }),
     amber: new THREE.MeshStandardMaterial({ color: 0xc8701a, roughness: 0.3 }),
   };
+  // feat/cockpit: the indicators of each side on their own (vehicles/cockpit.js lights them while it blinks: model.lamps.blinkL / blinkR)
+  M.amberL = M.amber.clone();
+  M.amberR = M.amber.clone();
+  for (const m of [M.amberL, M.amberR]) {
+    m.emissive.setHex(0xff8a1c);
+    m.emissiveIntensity = 0;
+  }
   const g = new THREE.Group(),
     body = new THREE.Group();
   g.add(body);
@@ -431,7 +438,7 @@ const CAR = (() => {
     const rf = add(new THREE.CylinderGeometry(0.055, 0.055, 0.02, 20), M.chrome);
     rf.rotation.x = Math.PI / 2;
     rf.position.copy(V(sx * 0.57, FL + 0.0, 0.705));
-    bx(0.08, 0.04, 0.05, M.amber, sx * 0.8, FL - 0.11, 0.725);
+    bx(0.08, 0.04, 0.05, sx < 0 ? M.amberL : M.amberR, sx * 0.8, FL - 0.11, 0.725); // feat/cockpit: per side
   }
   // bumper: wide black intake, round fog lamps in black surrounds, the number plate
   bx(0.74, 0.05, 0.1, M.black, 0, FB + 0.0, 0.4);
@@ -449,7 +456,7 @@ const CAR = (() => {
   for (const sx of [-1, 1]) {
     tails.push(bx(0.13, 0.05, 0.3, M.tail, sx * 0.745, -2.335, 1.12));
     brakes.push(bx(0.13, 0.05, 0.15, M.brake, sx * 0.745, -2.36, 0.89));
-    bx(0.13, 0.05, 0.09, M.amber, sx * 0.745, -2.375, 0.77);
+    bx(0.13, 0.05, 0.09, sx < 0 ? M.amberL : M.amberR, sx * 0.745, -2.375, 0.77); // feat/cockpit: per side
     revs.push(bx(0.11, 0.05, 0.06, M.rev, sx * 0.745, -2.385, 0.68));
   }
   bx(0.52, 0.012, 0.112, plate, -0.2, -2.405, 0.62);
@@ -463,17 +470,21 @@ const CAR = (() => {
   // underbody: dark, so no sky shows under the car
   bx(1.62, 4.1, 0.02, M.under, 0, (YF + YR) / 2, 0.24);
   // ---- inside: floor, dashboard with cluster, steering wheel, seats, rear bench, gear lever, the load space behind ----
+  // feat/cockpit: dashboard, console, wheel, front seats and lever in a group of their own – vehicles/cockpit.js hides it (model.inside)
+  // when it puts in its own cockpit
+  const inside = new THREE.Group();
+  body.add(inside);
   bx(1.62, 1.92, 0.02, M.carpet, 0, -0.41 + D * 0.5, 0.45);
   bx(1.5, 0.95, 0.02, M.carpet, 0, -1.86, 0.62);
   bx(1.5, 0.02, 0.18, M.carpet, 0, -1.4, 0.53); // load floor at sill height and its step
-  bx(1.58, 0.36, 0.2, M.dash, 0, 0.42 + D, 0.81);
-  bx(1.56, 0.32, 0.05, M.dash, 0, 0.45 + D, 0.925, -0.22);
-  bx(0.4, 0.12, 0.07, M.dash, -0.36, 0.36 + D, 0.955);
-  bx(0.28, 0.3, 0.3, M.dash, 0, 0.3 + D, 0.6);
+  bx(1.58, 0.36, 0.2, M.dash, 0, 0.42 + D, 0.81, 0, 0, inside);
+  bx(1.56, 0.32, 0.05, M.dash, 0, 0.45 + D, 0.925, -0.22, 0, inside);
+  bx(0.4, 0.12, 0.07, M.dash, -0.36, 0.36 + D, 0.955, 0, 0, inside);
+  bx(0.28, 0.3, 0.3, M.dash, 0, 0.3 + D, 0.6, 0, 0, inside);
   const sw = new THREE.Group();
   sw.position.copy(V(-0.36, 0.19 + D, 0.925));
   sw.rotation.x = -0.45;
-  body.add(sw);
+  inside.add(sw);
   {
     const rim = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.016, 8, 32), M.trim);
     sw.add(rim);
@@ -492,13 +503,13 @@ const CAR = (() => {
     sw.add(col);
   }
   for (const sx of [-1, 1]) {
-    bx(0.5, 0.52, 0.12, M.seat, sx * 0.36, -0.38 + D, 0.62);
-    bx(0.5, 0.12, 0.62, M.seat, sx * 0.36, -0.7 + D, 0.95, 0.2);
-    bx(0.28, 0.1, 0.16, M.seat, sx * 0.36, -0.78 + D, 1.32, 0.2);
+    bx(0.5, 0.52, 0.12, M.seat, sx * 0.36, -0.38 + D, 0.62, 0, 0, inside);
+    bx(0.5, 0.12, 0.62, M.seat, sx * 0.36, -0.7 + D, 0.95, 0.2, 0, inside);
+    bx(0.28, 0.1, 0.16, M.seat, sx * 0.36, -0.78 + D, 1.32, 0.2, 0, inside);
   }
   bx(1.36, 0.5, 0.14, M.seat, 0, -1.0, 0.6);
   bx(1.36, 0.12, 0.55, M.seat, 0, -1.25, 0.9, 0.12);
-  bx(0.05, 0.05, 0.16, M.trim, 0.0, 0.08 + D, 0.6);
+  bx(0.05, 0.05, 0.16, M.trim, 0.0, 0.08 + D, 0.6, 0, 0, inside);
   // ---- wheels: tyre (lathe), steel rim with a plain hub cap, on a steering pivot and a rolling node ----
   const tyreGeo = (() => {
     const r = RW,
@@ -553,13 +564,17 @@ const CAR = (() => {
   }
   // V17g: the fixed parts in one mesh per material – the body with its inside, each wheel apart (it rolls). The car was 141 draw calls in
   // every frame it was in view and in every shadow map; the lamps keep their materials, the glass stays as it is (transparent)
+  body.remove(inside); // feat/cockpit: the inside merged on its own
   mergeParts(body);
+  body.add(inside);
+  mergeParts(inside);
   for (const w of wheels) mergeParts(w.node);
   const model = {
     g,
     body,
     wheels,
-    lamps: { head: [M.head], tail: [M.tail], brake: [M.brake], rev: [M.rev] },
+    lamps: { head: [M.head], tail: [M.tail], brake: [M.brake], rev: [M.rev], blinkL: [M.amberL], blinkR: [M.amberR] },
+    inside, // feat/cockpit
     beam: [0, YF - 0.12, 0.7],
     cargo: { y0: -2.33, y1: -1.42, z: 0.63, hw: 0.68, h: 0.88 },
   }; // the load space (V16d)

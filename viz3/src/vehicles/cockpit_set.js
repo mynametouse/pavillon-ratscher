@@ -6,7 +6,7 @@
 // shows a small counter of the frames drawn per second and the level while moving. Saved per browser (pav-cockpit-v1, core/save.js); the
 // cockpit's own settings (mirrors, the corner map beside the navi) live in the same record.
 //   CPSET.S → { mot, fps, mir, nav } · CPSET.mot(name) · CPSET.fps(on) · CPSET.MOT · CPSET.info() · CPSET.save() · CPSET.ui()
-import { $ } from '../core/head.js';
+import { $, COARSE } from '../core/head.js';
 import { SAVE } from '../core/save.js';
 import { MLEVELS, MOTION, setMotionUser } from '../render/render.js';
 export const CPSET = (() => {
@@ -27,8 +27,9 @@ export const CPSET = (() => {
     mittel: { lv: 3, name: 'Mittel', txt: 'in Bewegung ohne Effekte, etwa drei Viertel der Auflösung' },
     stark: { lv: 5, name: 'Stark', txt: 'in Bewegung ohne Effekte, halbe Auflösung – für schwache Geräte' },
   };
-  // mir: real mirrors (null: by device – on for computers, off for phones); nav: the corner map hides while the navi is in view
-  const S = { mot: 'auto', fps: false, mir: null, nav: true };
+  // mir: real mirrors (null: by device – on for computers, off for phones); nav: the corner map hides while the navi is in view;
+  // odo: the estate's odometer (km, vehicles/cockpit.js)
+  const S = { mot: 'auto', fps: false, mir: null, nav: true, odo: null };
   {
     // each field on its own: nonsense in one (test/savefuzz.py) leaves its default
     const v = SAVE.get(KEY);
@@ -37,9 +38,20 @@ export const CPSET = (() => {
       if (typeof v.fps === 'boolean') S.fps = v.fps;
       if (typeof v.mir === 'boolean') S.mir = v.mir;
       if (typeof v.nav === 'boolean') S.nav = v.nav;
+      if (typeof v.odo === 'number' && Number.isFinite(v.odo) && v.odo >= 0 && v.odo < 1e7) S.odo = v.odo;
     }
   }
-  const save = () => SAVE.set(KEY, { v: 1, mot: S.mot, fps: S.fps, mir: S.mir, nav: S.nav });
+  const save = () =>
+    SAVE.set(KEY, {
+      v: 1,
+      mot: S.mot,
+      fps: S.fps,
+      mir: S.mir,
+      nav: S.nav,
+      odo: S.odo == null ? null : Math.round(S.odo * 10) / 10,
+    });
+  // the mirrors' default: on for computers, off for phones and tablets
+  const mirOn = () => (S.mir != null ? S.mir : !COARSE);
   // what a motion level means, in words
   const desc = l => (l > 0 ? Math.round((MLEVELS[l] || 1) * 100) + ' % Auflösung, ohne Effekte' : 'volle Qualität');
   function mot(name) {
@@ -111,12 +123,16 @@ export const CPSET = (() => {
       b.title = m.name + ': ' + m.txt;
     });
     note();
-    const f = $('fpsbtn');
-    if (f) {
-      f.setAttribute('aria-pressed', String(S.fps));
-      const sp = f.querySelector('span');
-      if (sp) sp.textContent = S.fps ? 'an' : 'aus';
-    }
+    const tog = (id, on) => {
+      const b = $(id);
+      if (!b) return;
+      b.setAttribute('aria-pressed', String(on));
+      const sp = b.querySelector('span');
+      if (sp) sp.textContent = on ? 'an' : 'aus';
+    };
+    tog('fpsbtn', S.fps);
+    tog('mirbtn', mirOn());
+    tog('navmapbtn', S.nav);
   }
   // the look of the counter and of the five buttons (they fit a phone's menu sheet)
   {
@@ -134,6 +150,16 @@ export const CPSET = (() => {
     fps(!S.fps);
     save();
   });
+  $('mirbtn')?.addEventListener('click', () => {
+    S.mir = !mirOn();
+    save();
+    ui();
+  });
+  $('navmapbtn')?.addEventListener('click', () => {
+    S.nav = !S.nav;
+    save();
+    ui();
+  });
   // at load: the saved stage (render/render.js applies it at the end of its preparation, after the motion path is compiled)
   setMotionUser(MOT[S.mot].lv);
   if (S.fps) fps(true);
@@ -147,5 +173,5 @@ export const CPSET = (() => {
     fps: S.fps,
     box: box ? { shown: !box.hidden, text: box.textContent } : null,
   });
-  return { S, MOT, mot, fps, info, save, ui, counter };
+  return { S, MOT, mot, fps, info, save, ui, counter, mirOn };
 })();
