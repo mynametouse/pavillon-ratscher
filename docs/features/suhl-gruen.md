@@ -55,10 +55,14 @@ da), OpenStreetMap, Gebäude-Grundrisse – und, wo es vorliegt, das Höhenmodel
    Sonne liegt (im kartierten Wald auch der Schatten).
 3. **Kronen trennen.** Wasserscheiden-Verfahren. Ohne Höhenmodell entscheiden die hellen Kronenspitzen; in Nadelholz enger.
    Kronenradius aus der Kronenfläche.
-4. **Mit Höhenmodell:** Die Baumspitzen kommen aus dem Laser-Modell (höchste Zelle in einem Fenster, das mit der Höhe wächst).
+4. **Mit Höhenmodell:** Der Laser flog **ohne Laub** (auf den ersten Bögen gesehen, 13.11.2026): Nadelbäume, Hecken und
+   geschlossene Bestände sieht er dicht, eine kahle Laubkrone gibt nur einzelne Treffer oder keinen. Deshalb gilt:
    Grün mit Laser-Höhe ab 2,5 m zählt als Krone auch im Schatten von Häusern – dort konnte das Luftbild allein nichts finden.
-   Die Höhe eines Baums ist die höchste Zelle unter seiner Krone (ohne Einzelzellen wie Laternen, und nicht näher als 2 m an
-   einer Hauswand, damit kein Dach als Baum gemessen wird).
+   Baumspitzen des Lasers gelten nur in großem, dichtem Kronendach (ab 300 m²: Nadelholz, geschlossener Bestand); sonst
+   entscheiden weiter die hellen Kronenspitzen des Luftbilds. Die Höhe eines Baums ist die zweithöchste Laser-Zelle unter seiner
+   Krone (eine einzelne kann eine Laterne sein), nicht näher als 2 m an einer Hauswand. Sie zählt als **gemessen**, wenn der
+   Laser genug von der Krone gesehen hat: mindestens drei Zellen mit Treffer, und entweder dicht (40 % der Zellen) oder passend
+   zur Krone (mindestens 0,6 der Schätzung – darunter kamen die Treffer von den unteren Ästen). Sonst bleibt die Schätzung.
 5. **Kein Baum auf dem Dach oder in der Fahrbahn.** Der Stamm steht in der Mitte des Kronenteils, der weder auf einem
    Gebäude-Grundriss (OSM und ETHOS, 0,3 m Rand) noch auf einer Fahrbahn (OSM-Achse, Breite nach Straßenart, 0,5 m Rand) liegt.
    Eine Krone, die ganz auf einem Dach liegt (Dachgarten), entfällt.
@@ -69,21 +73,24 @@ da), OpenStreetMap, Gebäude-Grundrisse – und, wo es vorliegt, das Höhenmodel
 7. **Art.** Nadelbäume sind im nahen Infrarot auch in der Sonne dunkel (im Wald über Goldlauter zwei klare Gruppen). Im
    kartierten Wald gilt ein Nadelbaum als Fichte (Schätzung). Mit Höhenmodell heißt „Strauch“: gemessen unter 3 m.
 
-### Der Zeitversatz zwischen Laser und Luftbild
+### Laser und Luftbild: wer entscheidet was
 
-Das Luftbild ist vom 15.05.2024, der Laser aus den Jahren 2020–2025 (den Tag nennt der Dienst nicht). Was dazwischen gefällt
-oder gepflanzt wurde, widerspricht sich. Die Regel:
+Das Luftbild ist vom 15.05.2024 (mit Laub), der Laser aus den Jahren 2020–2025 (ohne Laub; den Tag nennt der Dienst nicht –
+`statistik_v1.json` → `ndom.datenstand_laut_dienst`). Der Laser kann also vor **oder** nach dem Bild geflogen sein, und eine
+kahle Laubkrone sieht er oft kaum. Die Regel:
 
 | Luftbild 2024 | Laser | Ergebnis | Merker |
 |---|---|---|---|
-| Krone | hoch | Baum; Höhe aus dem Laser | Höhe gemessen |
-| Grün im Schatten oder mit ruhiger Oberfläche | hoch | Baum (der Laser sieht, was das Bild nicht beurteilen kann) | Höhe gemessen |
-| glatter Rasen in der Sonne | hoch | **kein Baum** – hier stand einer, er ist gefällt | – (Fläche wird gezählt) |
+| Krone | genug Treffer | Baum; Höhe aus dem Laser | Höhe gemessen |
+| Krone | wenige oder keine Treffer | Baum bleibt (kahle Krone oder seither gewachsen); Höhe geschätzt wie ohne Laser | Höhe geschätzt |
+| Grün im Schatten oder mit ruhiger Oberfläche | hoch | Baum (der Laser sieht, was das Bild nicht beurteilen kann) | Höhe gemessen, wenn genug Treffer |
+| glatter Rasen in der Sonne | hoch | kein Baum – hier stand einer (die Fläche wird gezählt) | – |
 | kein Grün | hoch | kein Baum (Haus, Mast, Brücke oder gefällt) | – |
-| Krone unter 2,5 m Radius | nichts | Jungbaum oder Strauch, seit dem Laserflug gewachsen: bleibt, Höhe geschätzt, höchstens 5 m | Höhe geschätzt |
-| „Krone“ über 2,5 m Radius | gar nichts (unter 0,4 m) | **kein Baum** – hohes Gras, Stauden oder Schattenmuster auf Rasen | – (wird gezählt) |
+| dicht gesehen und unter 3 m | – | Strauch, Hecke, sehr kleiner Baum | Höhe gemessen |
 
-Kurz: **Das Bild entscheidet, ob etwas da ist. Der Laser gibt die Höhe, wo beide einig sind.**
+Kurz: **Das Bild entscheidet, ob etwas da ist. Der Laser gibt die Höhe, wo er genug gesehen hat. Der Laser beweist nie, dass
+eine Krone des Bilds nicht da ist.** Bäume, die nach dem Bildflug gefällt wurden, bleiben deshalb stehen, bis ein neueres
+Luftbild kommt.
 
 ## 4 Wald: Bestände statt Einzelbäume (Produkt `w`) – Vorschlag
 

@@ -193,6 +193,16 @@ def main():
                                     'ndom_kacheln': n_ndom})
         res['schritte']['baeume'] = {'anzahl': idx['anzahl'], 'kacheln': len(idx['kacheln']), 'sekunden': round(time.time() - t0)}
         glib.write_json(os.path.join(a.out, 'kachel_statistik.json'), stats, indent=0)
+        if ndir:
+            # the doubt list: wide crowns of the image without a single laser return (they stay in the product)
+            zw = [[round(float(e), 1), round(float(n), 1), round(float(r), 1)] for T in M.values()
+                  for e, n, r, q in zip(T['E'], T['N'], T['r'], T.get('nohit', np.zeros(len(T['E'])))) if q > 0]
+            glib.write_json(os.path.join(a.out, 'zweifel.json'), {
+                'hinweis': 'Kronen des Luftbilds vom 15.05.2024 ab 2,5 m Radius ohne einen einzigen Laser-Treffer über 1 m (nDOM1, 2020–2025, ohne Laub): '
+                           'nach dem Bildflug gefällt (Laser jünger), seit dem Laserflug gewachsen (Laser älter) oder hohes Gras. Sie stehen im Produkt b '
+                           '(das Bild entscheidet); diese Liste nennt sie zum Nachsehen. [Ost, Nord, Kronenradius] in UTM 32N, Meter.',
+                'anzahl': len(zw), 'baeume': zw}, separators=(',', ':'))
+            res['zweifel'] = {'breite_kronen_ohne_laser_treffer': len(zw)}
         sums = {}
         for st in stats.values():
             for k, v in st.items():

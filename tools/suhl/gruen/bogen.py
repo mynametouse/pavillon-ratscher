@@ -19,7 +19,7 @@ def colour(kind):
     return COL['strauch'] if kind == 30 else COL['nadel'] if kind in baeume.CONIFER else COL['laub']
 
 
-def draw(img, bb, T, osm=(), scale=1.0, label='', mode='art', legend=None):
+def draw(img, bb, T, osm=(), scale=1.0, label='', mode='art', legend=None, rings=None):
     """img: uint8 array of the box bb (rows from the north) -> PIL image with the trees drawn, scaled by `scale`"""
     from PIL import Image, ImageDraw, ImageFont
     e0, n0, e1, n1 = bb
@@ -36,6 +36,11 @@ def draw(img, bb, T, osm=(), scale=1.0, label='', mode='art', legend=None):
         d.ellipse([x - rr, y - rr, x + rr, y + rr], outline=c, width=1 if scale < 0.8 else 2)
         q = 1.5 if scale < 0.8 else 2.5
         d.ellipse([x - q, y - q, x + q, y + q], fill=(255, 255, 255) if (int(f) & 3) == baeume.POS_OSM else c)
+    for E, N, r in (rings if rings is not None else ()):          # the doubt list: wide crowns without a laser return
+        x, y = (E - e0) * s, (n1 - N) * s
+        if -30 < x < im.width + 30 and -30 < y < im.height + 30:
+            rr = r * s + 2
+            d.ellipse([x - rr, y - rr, x + rr, y + rr], outline=(255, 60, 255), width=2)
     for oe, on, _ in osm:
         x, y = (oe - e0) * s, (n1 - on) * s
         q = 3 if scale < 0.8 else 5
@@ -207,49 +212,51 @@ def height_colours(h):
     return out
 
 
-def v0v1_sheet(T0, T1, window, title, width=500):
+def v0v1_sheet(T0, T1, window, title, width=500, rings=None):
     """the same place twice: the trees estimated from the image alone (v0) | with the object-height model (v1)"""
     from PIL import Image, ImageDraw
     rgb, _ = window_images(window)
     sc = width / rgb.shape[1]
     a = draw(rgb, window, T0, (), scale=sc)
-    b = draw(rgb, window, T1, (), scale=sc, mode='mess')
+    b = draw(rgb, window, T1, (), scale=sc, mode='mess', rings=rings)
     m0, m1 = _inside(T0, window), _inside(T1, window)
+    nz = sum(1 for E, N, r in (rings if rings is not None else ()) if window[0] <= E < window[2] and window[1] <= N < window[3])
     meas = (T1['flags'][m1] & baeume.F_H) > 0
     q = lambda v: (f'{np.median(v):.1f}' if len(v) else '–')
     lines = [f'{title} – UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}',
-             f'links v0 (nur Luftbild): {int(m0.sum())} Bäume, Höhe geschätzt, Median {q(T0["h"][m0])} m, Kronenradius Median {q(T0["r"][m0])} m (gelb Laub, blau Nadel, orange Strauch)',
-             f'rechts v1 (Luftbild + Höhenmodell nDOM1): {int(m1.sum())} Bäume, davon {int(meas.sum())} mit gemessener Höhe (hellblau), Median {q(T1["h"][m1][meas])} m; '
-             f'{int((~meas).sum())} geschätzt (orange); Kronenradius Median {q(T1["r"][m1])} m',
-             CREDIT + ' · Höhenmodell nDOM1 © GDI-Th, bezogen über easygeodata.de']
+             f'links v0 (nur Luftbild): {int(m0.sum())} Bäume, Höhe geschätzt (Median {q(T0["h"][m0])} m), Kronenradius Median {q(T0["r"][m0])} m – gelb Laub, blau Nadel, orange Strauch',
+             f'rechts v1 (mit Höhenmodell): {int(m1.sum())} Bäume, {int(meas.sum())} mit gemessener Höhe (hellblau, Median {q(T1["h"][m1][meas])} m), {int((~meas).sum())} geschätzt (orange)',
+             f'magenta Ring: breite Krone ohne einen Laser-Treffer ({nz}) – gefällt nach dem Bildflug, seither gewachsen oder hohes Gras; bleibt im Produkt',
+             'Luftbild © GDI-Th, CC BY 4.0, 15.05.2024 · nDOM1 © GDI-Th, über easygeodata.de · Bäume: suhl-gruen · OSM © OpenStreetMap-Mitwirkende']
     out = Image.new('RGB', (2 * width + 4, a.height + 17 * len(lines) + 6), (20, 20, 20))
     out.paste(a, (0, 0))
     out.paste(b, (width + 4, 0))
     d = ImageDraw.Draw(out)
     for i, t in enumerate(lines):
         d.text((5, a.height + 3 + 17 * i), t, fill=(235, 235, 235), font=_font())
-    res = {'ort': title, 'fenster_utm': [round(v) for v in window], 'v0_baeume': int(m0.sum()), 'v1_baeume': int(m1.sum()), 'v1_hoehe_gemessen': int(meas.sum()),
+    res = {'ort': title, 'fenster_utm': [round(v) for v in window], 'breite_kronen_ohne_laser_treffer': nz, 'v0_baeume': int(m0.sum()), 'v1_baeume': int(m1.sum()), 'v1_hoehe_gemessen': int(meas.sum()),
            'v0_hoehe_median_m': float(np.median(T0['h'][m0])) if m0.any() else None,
            'v1_hoehe_median_gemessen_m': float(np.median(T1['h'][m1][meas])) if meas.any() else None}
     return out, res
 
 
-def hoehen_sheet(T, nd, window, title, width=500):
+def hoehen_sheet(T, nd, window, title, width=500, rings=None):
     """orthophoto with the crowns | the object-height model in colours with the same crowns – to look whether tops and crowns fit"""
     from PIL import Image, ImageDraw
     rgb, _ = window_images(window)
     sc = width / rgb.shape[1]
-    a = draw(rgb, window, T, (), scale=sc, mode='mess')
+    a = draw(rgb, window, T, (), scale=sc, mode='mess', rings=rings)
     chm = nd.window(window)
     # draw() takes an image on the 20 cm grid: bring the colours of the 1 m model to that grid first
     k5 = int(round(1.0 / gbild.PX))
     hc = np.repeat(np.repeat(height_colours(chm), k5, 0), k5, 1)[:rgb.shape[0], :rgb.shape[1]]
-    b = draw(hc, window, T, (), scale=sc, mode='mess')
+    b = draw(hc, window, T, (), scale=sc, mode='mess', rings=rings)
     m = _inside(T, window)
     meas = (T['flags'][m] & baeume.F_H) > 0
-    lines = [f'{title} – UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}: links Luftbild, rechts Höhenmodell nDOM1 (1 m)',
-             f'{int(m.sum())} Bäume, {int(meas.sum())} mit gemessener Höhe (links hellblau), {int((~meas).sum())} geschätzt (orange) · Farben rechts: 0 m dunkelblau, 5 m grün, 15 m gelb, 30 m rot, grau = keine Daten',
-             CREDIT + ' · Höhenmodell nDOM1 © GDI-Th, bezogen über easygeodata.de']
+    lines = [f'{title} – UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}: links Luftbild, rechts Höhenmodell nDOM1 (1 m, Laser ohne Laub)',
+             f'{int(m.sum())} Bäume: {int(meas.sum())} mit gemessener Höhe (hellblau), {int((~meas).sum())} geschätzt (orange); magenta Ring = breite Krone ohne Laser-Treffer',
+             'Farben rechts: 0 m dunkelblau, 5 m grün, 15 m gelb, 30 m rot, grau = keine Daten',
+             'Luftbild © GDI-Th, CC BY 4.0, 15.05.2024 · nDOM1 © GDI-Th, über easygeodata.de · Bäume: suhl-gruen']
     out = Image.new('RGB', (2 * width + 4, a.height + 17 * len(lines) + 6), (20, 20, 20))
     out.paste(a, (0, 0))
     out.paste(b, (width + 4, 0))
@@ -331,6 +338,7 @@ def main():
     ap.add_argument('--wald', default='', help='forest stand sheets for image blocks, e.g. 49_54,51_55')
     ap.add_argument('--v0v1', default='', help='folder of the older tree product: sheets old against --b for the three places')
     ap.add_argument('--hoehen', default='', help='folder with nDOM1 tiles: sheets orthophoto against height model for the three places')
+    ap.add_argument('--zweifel', default='', help='zweifel.json of the run: wide crowns without a laser return, drawn as magenta rings')
     a = ap.parse_args()
     import kontext
     U = baeume.Umfeld(kontext.load(a.kontext))
@@ -354,19 +362,22 @@ def main():
         if a.hoehen:
             import ndom
             nd = ndom.Ndom(a.hoehen)
+        rings = None
+        if a.zweifel and os.path.exists(a.zweifel):
+            rings = json.load(open(a.zweifel, encoding='utf-8')).get('baeume', [])
         for name, title, w in fenster():
             T1 = window_trees(a.b, w)
             if not len(T1['E']):
                 continue
             if a.v0v1:
-                im, r = v0v1_sheet(window_trees(a.v0v1, w), T1, w, title)
+                im, r = v0v1_sheet(window_trees(a.v0v1, w), T1, w, title, rings=rings)
                 im.save(os.path.join(a.out, f'v0v1_{name}.jpg'), quality=85)
                 res.append(r)
             if nd:
-                hoehen_sheet(T1, nd, w, title).save(os.path.join(a.out, f'hoehen_{name}.jpg'), quality=85)
+                hoehen_sheet(T1, nd, w, title, rings=rings).save(os.path.join(a.out, f'hoehen_{name}.jpg'), quality=85)
                 if w[2] - w[0] <= 200:
                     wz = (w[0] + 50, w[1] + 50, w[2] - 50, w[3] - 50)    # the middle 100 m at 20 cm: do tops and crowns sit on each other?
-                    hoehen_sheet(T1, nd, wz, title + ', Mitte').save(os.path.join(a.out, f'hoehen_{name}_mitte.jpg'), quality=88)
+                    hoehen_sheet(T1, nd, wz, title + ', Mitte', rings=rings).save(os.path.join(a.out, f'hoehen_{name}_mitte.jpg'), quality=88)
         if res:
             glib.write_json(os.path.join(a.out, 'v0v1.json'), res, indent=1)
             print(json.dumps(res, ensure_ascii=False, indent=1))

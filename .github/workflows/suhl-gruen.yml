@@ -8,7 +8,7 @@
 # in Actions, einmal geholt und im Cache dieses Workflows behalten (Kontingent 20 GB im Monat). lauf.txt bestellt die Kacheln (ndom=P1 …).
 # Geheimnisse dürfen fehlen: ohne EASYGEODATA_KEY bleiben die Höhen geschätzt, ohne DATEN_TOKEN wird nichts veröffentlicht – der Lauf
 # sagt das im Protokoll und im Ergebnis und bleibt grün. Für gebiet=zentrum legt der Lauf den Probesatz (b, w, gr) nach
-# tools/suhl/out/gruen/probe/ auf den Zweig, sonst nur Zahlen nach tools/suhl/out/gruen/actions/<gebiet>/.
+# tools/suhl/out/gruen/probe/ auf den Zweig, sonst nur Zahlen nach tools/suhl/out/gruen/actions/<gebiet>_v<N>/.
 name: Suhl – Grün (Bäume, Wald, Grünflächen)
 
 on:
@@ -129,7 +129,7 @@ jobs:
           python -I -u tools/suhl/gruen/bogen.py --b "$B" --out out/bogen --vergleich --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | grep -v -E "RuntimeWarning|results = " | tail -40
           if [ -n "$NDOM_PRIO" ] && [ -d "$SUHL_RAW/ndom1" ]; then
             V0=""; [ "$VERSION" != "0" ] && [ -f out/suhl/b/v0/index.json ] && V0="--v0v1 out/suhl/b/v0"
-            python -I -u tools/suhl/gruen/bogen.py --b "$B" --out out/bogen --hoehen "$SUHL_RAW/ndom1" $V0 --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | tail -40
+            python -I -u tools/suhl/gruen/bogen.py --b "$B" --out out/bogen --hoehen "$SUHL_RAW/ndom1" $V0 --zweifel out/zweifel.json --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | tail -40
             python -I -u tools/suhl/gruen/bogen.py --b "$B" --out out/bogen --wald 49_54 --hoehen "$SUHL_RAW/ndom1" --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | tail -3
           fi
           if [ "$GEBIET" = "stadt" ]; then
@@ -196,6 +196,7 @@ jobs:
             out/statistik.json
             out/statistik_v0.json
             out/kachel_statistik.json
+            out/zweifel.json
           if-no-files-found: ignore
           retention-days: 30
       - name: Bögen und Protokolle als Artefakt
@@ -220,6 +221,7 @@ jobs:
             cp -r "out/suhl/b/v$V" "$D/suhl/b/v$V"
             if [ "$V" != "0" ] && [ -d out/suhl/b/v0 ]; then rm -rf "$D/suhl/b/v0"; cp -r out/suhl/b/v0 "$D/suhl/b/v0"; cp out/statistik_v0.json "$D/statistik_v0.json"; fi
             [ -f out/bogen/v0v1.json ] && cp out/bogen/v0v1.json "$D/v0v1.json"
+            [ -f out/zweifel.json ] && cp out/zweifel.json "$D/zweifel_v$V.json"
             [ -d "out/suhl/w/v$V" ] && cp -r "out/suhl/w/v$V" "$D/suhl/w/v$V"
             [ -d "out/suhl/gr/v$V" ] && cp -r "out/suhl/gr/v$V" "$D/suhl/gr/v$V"
             cp out/statistik.json "$D/statistik_v$V.json"
@@ -227,13 +229,14 @@ jobs:
             [ -f out/bogen/vergleich.json ] && cp out/bogen/vergleich.json "$D/vergleich_v$V.json"
             du -sh "$D"/suhl/*/*
           else
-            D="tools/suhl/out/gruen/actions/${G:-lauf}"
+            D="tools/suhl/out/gruen/actions/${G:-lauf}_v$V"
             mkdir -p "$D"
             [ -f out/statistik.json ] && cp out/statistik.json "$D/statistik.json"
             [ -f out/kachel_statistik.json ] && gzip -9 -c out/kachel_statistik.json > "$D/kachel_statistik.json.gz"
             for p in b w gr; do [ -f "out/suhl/$p/v$V/index.json" ] && cp "out/suhl/$p/v$V/index.json" "$D/index_$p.json"; done
             [ -f "out/suhl/w/v$V/bestaende.geojson.gz" ] && cp "out/suhl/w/v$V/bestaende.geojson.gz" "$D/bestaende.geojson.gz"
             [ -f out/bogen/vergleich.json ] && cp out/bogen/vergleich.json "$D/vergleich.json"
+            [ -f out/zweifel.json ] && gzip -9 -c out/zweifel.json > "$D/zweifel.json.gz"
           fi
           { echo "lauf: ${GITHUB_RUN_ID}"; echo "commit: $(git rev-parse HEAD)"; echo "gebiet: $G, version: $V, ndom: ${NDOM_PRIO:-keins}"; cat logs/ndom.log logs/publish.log 2>/dev/null | tail -12; } > "$D/lauf_${G}_v$V.txt"
           git config user.name "github-actions[bot]"

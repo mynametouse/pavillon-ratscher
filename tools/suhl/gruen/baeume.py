@@ -393,7 +393,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     seg, n, n_chm = crowns(cir, wood, chm1=chm1, dense1=dense1)
     st = {'kronen_roh': int(n), 'kronen_aus_hoehenmodell': int(n_chm), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean()),
           'ndom_anteil': float(np.isfinite(chm).mean()) if chm is not None else 0.0}
-    out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk', 'hm', 'hcap')}
+    out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk', 'hm', 'hcap', 'nohit')}
     # the green mask for the ground: 2 m cells of the tile itself (rows from the north) – 0 no green, 1 low green (lawn, meadow,
     # beds), 2 woody (crown cover); what the map does not know (lawn between the blocks) the image shows
     mg = int(round(MARGIN / PX))
@@ -479,6 +479,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
             con = peak[k] < NIR_CON_PEAK and mnir[k] < NIR_CON_MEAN and mtex[k] > TEX_CON
             kd = (2 if inf else 1) if con else 0
             hm = hcap = float('nan')
+            nohit = 0.0
             shrub_by_size = r < R_SHRUB and not inf
             if chm is not None and has[k] > 0.5:
                 # The laser flew without leaves: a bare broadleaf crown returns a few scattered points or none, a conifer, a
@@ -500,14 +501,15 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
                 else:
                     young += 1          # too little of it in the laser data: height estimated as without the model
                     if r >= R_NEW_MAX and nhit[k + 1] == 0:
-                        drop_nohi += 1  # (counted only: a wide crown without a single return – bare tree, or tall grass?)
+                        drop_nohi += 1  # a wide crown without a single return: the laser flew after it was felled, or before
+                        nohit = 1.0     # it grew, or it is tall grass – it stays (the image decides) and goes on the doubt list
             if shrub_by_size:
                 kd = 30                 # small crowns outside the forest count as shrubs
             if inf:
                 fl |= F_FOREST
             out['E'].append(E); out['N'].append(N); out['r'].append(r); out['kind'].append(kd); out['flags'].append(fl)
             out['nd'].append(mnd[k]); out['nir'].append(mnir[k]); out['tex'].append(mtex[k]); out['red'].append(mred[k]); out['grn'].append(mgrn[k])
-            out['pk'].append(peak[k]); out['hm'].append(hm); out['hcap'].append(hcap)
+            out['pk'].append(peak[k]); out['hm'].append(hm); out['hcap'].append(hcap); out['nohit'].append(nohit)
         st.update(verworfen_klein=drop_small, verworfen_dach_fahrbahn=drop_roof, geruecket=moved, hoehe_gemessen=n_meas,
                   laser_zu_duenn_hoehe_geschaetzt=young, breite_krone_ohne_laser_treffer=drop_nohi)
     T = {k: np.array(v, float) for k, v in out.items()}
@@ -567,14 +569,14 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
             for k, v in (('E', oe), ('N', on), ('r', r), ('kind', 0 if kd is None else kd),
                          ('flags', POS_OSM | F_OSM | (F_KIND if kd is not None else 0)), ('nd', nd[iy, ix]), ('nir', cir[iy, ix, 0]),
                          ('tex', tex[iy, ix]), ('red', cir[iy, ix, 1]), ('grn', cir[iy, ix, 2]), ('pk', cir[iy, ix, 0]), ('oh', osm_height(tags)),
-                         ('hm', h_at(ix, iy)), ('hcap', float('nan'))):
+                         ('hm', h_at(ix, iy)), ('hcap', float('nan')), ('nohit', 0.0)):
                 T[k] = np.append(T[k], v)
         elif inside and tags.get('_v') == 1 and str(tags.get('_t', '')) > FLIGHT and not (bld[iy, ix] or road[iy, ix] or water[iy, ix]):
             # mapped for the first time after the flight and not in the image: a new planting, set as a young tree
             osm_new += 1
             for k, v in (('E', oe), ('N', on), ('r', 1.0), ('kind', 0 if kd is None else kd),
                          ('flags', POS_OSM | F_OSM | (F_KIND if kd is not None else 0)), ('nd', 0.0), ('nir', 0.0), ('tex', 0.0),
-                         ('red', 0.0), ('grn', 0.0), ('pk', 0.0), ('oh', 4.0), ('hm', float('nan')), ('hcap', float('nan'))):
+                         ('red', 0.0), ('grn', 0.0), ('pk', 0.0), ('oh', 4.0), ('hm', float('nan')), ('hcap', float('nan')), ('nohit', 0.0)):
                 T[k] = np.append(T[k], v)
         else:
             osm_gone += 1
