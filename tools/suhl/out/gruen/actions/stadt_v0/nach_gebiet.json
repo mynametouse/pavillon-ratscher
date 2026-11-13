@@ -1,0 +1,35 @@
+{
+ "quelle": "Artefakt suhl-gruen-produkte des Laufs 43340725672 (ganze Stadt v0), Bäume je Gebiet aus gebiete.geojson (Punkt im Polygon, UTM)",
+ "gebiete": {
+  "zentrum": {
+   "flaeche_km2": 0.68,
+   "baeume": 2738,
+   "laub": 2408,
+   "nadel": 86,
+   "straeucher": 244,
+   "im_wald": 289,
+   "ausserhalb_wald_ohne_straeucher": 2205,
+   "je_ha": 40.2
+  },
+  "kernstadt": {
+   "flaeche_km2": 22.04,
+   "baeume": 180411,
+   "laub": 157547,
+   "nadel": 13991,
+   "straeucher": 8873,
+   "im_wald": 30902,
+   "ausserhalb_wald_ohne_straeucher": 140636,
+   "je_ha": 81.9
+  },
+  "stadt": {
+   "flaeche_km2": 141.81,
+   "baeume": 649001,
+   "laub": 406813,
+   "nadel": 224847,
+   "straeucher": 17341,
+   "im_wald": 387112,
+   "ausserhalb_wald_ohne_straeucher": 244548,
+   "je_ha": 45.8
+  }
+ }
+}
