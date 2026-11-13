@@ -178,7 +178,7 @@ def write_json(path, obj, **kw):
     return os.path.getsize(path)
 
 
-def common_index(folder, area, sources, note=''):
+def common_index(folder, area, sources, note='', based_on=''):
     """the common head of an index.json (tile lists, sources, attribution of the contract docs/features/suhl-daten.md), written by the
     shared tool tools/suhl/lib/validate.py --index; the product's own keys stay"""
     import subprocess
@@ -186,17 +186,31 @@ def common_index(folder, area, sources, note=''):
     if not os.path.exists(v):
         log('validate.py of suhl-daten is not there: the index keeps its own head')
         return False
-    r = subprocess.run([sys.executable, '-I', v, '--index', folder, '--area', area, '--sources', ','.join(sources)] + (['--note', note] if note else []),
-                       capture_output=True, text=True)
+    r = subprocess.run([sys.executable, '-I', v, '--index', folder, '--area', area, '--sources', ','.join(sources)] + (['--note', note] if note else [])
+                       + (['--based-on', based_on] if based_on else []), capture_output=True, text=True)
     if r.returncode != 0:
         log('validate.py --index:', (r.stdout + r.stderr).strip()[-400:])
     return r.returncode == 0
 
 
 def index_tiles(idx, L=LEVEL):
-    """the tiles of a product's index.json as [(x, y)] – the common layout {"": {"10": bit field}} or the bare {"10": bit field}"""
+    """the tiles of a product's index.json as [(x, y)] – the common field `has` of schema 1 rev 1.1 ({"": {"10": bit field}} or
+    {"10": bit field}), or the older field `tiles`"""
     import suhllib
-    t = idx['tiles']
+    t = idx.get('has') or idx.get('tiles')
     if '' in t:
         t = t['']
     return [tuple(q) for q in suhllib.tileset_decode(t[str(L)])]
+
+
+def version_dir(out, product):
+    """the newest version folder <out>/suhl/<product>/v<N> that is there, and N"""
+    import re
+    best = None
+    for d in glob.glob(os.path.join(out, 'suhl', product, 'v*')):
+        m = re.fullmatch(r'v(\d+)', os.path.basename(d))
+        if m and (best is None or int(m.group(1)) > best[1]):
+            best = (d, int(m.group(1)))
+    if best is None:
+        raise SystemExit(f'no version of the product {product} under {out}/suhl/{product}')
+    return best

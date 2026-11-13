@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:28:08Z",
+ "made": "2026-11-13T01:32:27Z",
  "tiles": 11,
  "counts": {
   "schilder": 28,
@@ -37,7 +37,7 @@
    "town"
   ]
  ],
- "bytes_tiles": 79082,
+ "bytes_tiles": 22460,
  "tool": "viz3/extra/strassen/daten.py of feat/strassen, unchanged: guard_rails, delineators, signs, lamps, power",
- "bytes_one_file": 39249
+ "bytes_one_file": 39201
 }

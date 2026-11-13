@@ -22,7 +22,7 @@ def main():
     T = [json.load(open(p)) for p in files]
     xs, ys, zs = [], [], []
     for t in T:
-        ox = oy = 0.0     # absolute model coordinates
+        ox, oy = t['o']
         for w in t['ways']:
             q = w[6]
             xs += [ox + v / 10 for v in q[0::3]]
@@ -39,12 +39,12 @@ def main():
            7: (120, 160, 90), 8: (60, 110, 200)}
     acol = {0: (230, 205, 170), 1: (205, 205, 215), 2: (220, 190, 200), 3: (190, 220, 220)}
     for t in T:
-        ox = oy = 0.0     # absolute model coordinates
+        ox, oy = t['o']
         for ar in t['areas']:
-            if not ar['home']:
+            if not ar[5]:
                 continue
-            q = ar['f']
-            d.polygon([(X(q[i] / 10), Y(q[i + 1] / 10)) for i in range(0, len(q), 2)], fill=acol[['platz', 'parken', 'bus', 'steig'].index(ar['k'])])
+            q = ar[7]
+            d.polygon([(X(ox + q[i] / 10), Y(oy + q[i + 1] / 10)) for i in range(0, len(q), 3)], fill=acol[ar[0]])
         for key in ('water', 'rail'):
             for r in t.get(key, []):
                 q = r[3] if key == 'rail' else r[4]
@@ -59,7 +59,7 @@ def main():
             x, y = X(ox + rp[1] / 10), Y(oy + rp[2] / 10)
             d.ellipse([x - 4, y - 4, x + 4, y + 4], outline=(255, 0, 0), width=2)
     for t in T:
-        ox = oy = 0.0     # absolute model coordinates
+        ox, oy = t['o']
         for w in sorted(t['ways'], key=lambda w: -w[0]):
             q = w[6]
             pts = [(X(ox + q[i] / 10), Y(oy + q[i + 1] / 10)) for i in range(0, len(q), 3)]
