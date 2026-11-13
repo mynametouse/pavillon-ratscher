@@ -76,12 +76,12 @@ export const GLRMUSIK = (() => {
   // ---- instruments. w: wave; g: level; a d s r: envelope (seconds, sustain 0 … 1); lp: [cutoff Hz (kt: × the note's frequency),
   //      envelope Hz, its decay s, Q]; uni / det: voices in unison and their detune in cents; rat: frequency ratios (a power chord);
   //      drive: soft clipping; vib: [Hz, cents, delay s]; fm: [ratio, index, decay s (0: the index follows the envelope – brass)];
-  //      trem: [Hz, depth]; hall: reverb send; reg: where its tunes sit (the lowest tonic, MIDI) ----
+  //      trem: [Hz, depth]; hall: reverb send; reg: the middle of where its tunes sit (MIDI) ----
   const INS = {
     tuba: { w: 'fm', fm: [1, 2, 0], g: 0.31, a: 0.03, d: 0.25, s: 0.75, r: 0.08, lp: [900, 600, 0.2, 0.7], hall: 0.08 },
     ebass: { w: 'saw', g: 0.31, a: 0.005, d: 0.2, s: 0.6, r: 0.06, lp: [420, 1400, 0.14, 1.1] },
     sbass: { w: 'pulse', pw: 0.36, g: 0.2, a: 0.004, d: 0.11, s: 0.5, r: 0.05, lp: [450, 2200, 0.09, 2] },
-    kbass: { w: 'pluck', g: 0.95, d: 1.6, br: 0.3, r: 0.12 },
+    kbass: { w: 'saw', g: 0.36, a: 0.008, d: 0.45, s: 0.25, r: 0.1, lp: [320, 800, 0.1, 0.9] },
     akk: {
       w: 'pulse',
       pw: 0.3,
@@ -95,7 +95,7 @@ export const GLRMUSIK = (() => {
       lp: [3600, 0, 0, 0.7],
       vib: [5.6, 5, 0.2],
       hall: 0.14,
-      reg: 60,
+      reg: 72,
     },
     trp: {
       w: 'fm',
@@ -108,7 +108,7 @@ export const GLRMUSIK = (() => {
       vib: [5.3, 9, 0.28],
       lp: [4500, 0, 0, 0.7],
       hall: 0.2,
-      reg: 58,
+      reg: 70,
     },
     dtrp: {
       w: 'fm',
@@ -121,7 +121,7 @@ export const GLRMUSIK = (() => {
       vib: [5.6, 10, 0.2],
       lp: [1700, 0, 0, 2.6],
       hall: 0.2,
-      reg: 58,
+      reg: 70,
     },
     horn: {
       w: 'fm',
@@ -133,7 +133,7 @@ export const GLRMUSIK = (() => {
       r: 0.09,
       lp: [2000, 0, 0, 0.7],
       hall: 0.18,
-      reg: 53,
+      reg: 62,
     },
     klar: {
       w: 'fm',
@@ -146,7 +146,7 @@ export const GLRMUSIK = (() => {
       vib: [5.1, 6, 0.3],
       lp: [3600, 0, 0, 0.7],
       hall: 0.2,
-      reg: 62,
+      reg: 72,
     },
     sax: {
       w: 'fm',
@@ -160,7 +160,7 @@ export const GLRMUSIK = (() => {
       vib: [4.8, 7, 0.3],
       hall: 0.22,
     },
-    git: { w: 'pluck', g: 0.66, d: 2.4, br: 0.75, r: 0.25, hall: 0.12, reg: 55 },
+    git: { w: 'pluck', g: 0.66, d: 2.4, br: 0.75, r: 0.25, hall: 0.12, reg: 66 },
     egit: {
       w: 'saw',
       rat: [1, 1.4983, 2],
@@ -186,11 +186,11 @@ export const GLRMUSIK = (() => {
       lp: [8, 3, 0.3, 1.1],
       kt: true,
       hall: 0.3,
-      reg: 57,
+      reg: 67,
     },
-    orgel: { w: 'organ', g: 0.15, a: 0.008, d: 0.06, s: 1, r: 0.05, trem: [6.3, 0.14], hall: 0.2, reg: 57 },
-    epiano: { w: 'fm', fm: [1, 2.2, 0.4], g: 0.23, a: 0.004, d: 1.3, s: 0.05, r: 0.22, hall: 0.2, reg: 60 },
-    glocke: { w: 'fm', fm: [3.5, 1.5, 0.5], g: 0.26, a: 0.002, d: 0.8, s: 0, r: 0.35, hall: 0.4, reg: 64 },
+    orgel: { w: 'organ', g: 0.15, a: 0.008, d: 0.06, s: 1, r: 0.05, trem: [6.3, 0.14], hall: 0.2, reg: 69 },
+    epiano: { w: 'fm', fm: [1, 2.2, 0.4], g: 0.23, a: 0.004, d: 1.3, s: 0.05, r: 0.22, hall: 0.2, reg: 70 },
+    glocke: { w: 'fm', fm: [3.5, 1.5, 0.5], g: 0.26, a: 0.002, d: 0.8, s: 0, r: 0.35, hall: 0.4, reg: 74 },
     pad: { w: 'saw', uni: 3, det: 15, g: 0.1, a: 0.3, d: 0.6, s: 0.8, r: 0.45, lp: [1300, 1200, 1.4, 0.8], hall: 0.4 },
     streich: {
       w: 'saw',
@@ -216,7 +216,7 @@ export const GLRMUSIK = (() => {
       kt: true,
       vib: [5.6, 13, 0.22],
       hall: 0.34,
-      reg: 62,
+      reg: 72,
     },
     synlead: {
       w: 'saw',
@@ -230,11 +230,11 @@ export const GLRMUSIK = (() => {
       lp: [2200, 3000, 0.25, 1.4],
       vib: [5.5, 8, 0.25],
       hall: 0.3,
-      reg: 57,
+      reg: 69,
     },
     arp: { w: 'pulse', pw: 0.5, g: 0.16, a: 0.003, d: 0.12, s: 0.25, r: 0.08, lp: [1400, 3500, 0.1, 1.8], hall: 0.25 },
-    pfeif: { w: 'sin', g: 0.2, a: 0.03, d: 0.2, s: 0.85, r: 0.08, vib: [5.8, 16, 0.12], hall: 0.3, reg: 64 },
-    klavier: { w: 'piano', g: 0.24, r: 0.3, hall: 0.32, reg: 60 },
+    pfeif: { w: 'sin', g: 0.2, a: 0.03, d: 0.2, s: 0.85, r: 0.08, vib: [5.8, 16, 0.12], hall: 0.3, reg: 76 },
+    klavier: { w: 'piano', g: 0.24, r: 0.3, hall: 0.32, reg: 70 },
   };
   // ---- drums (their numbers in the events) ----
   const DR = {
@@ -787,7 +787,7 @@ export const GLRMUSIK = (() => {
   const STEPS = [1, 1, 1, -1, -1, -1, -1, 2, -2, 2, -2, 0, 3, -3];
 
   // ---- a theme: a period of phrases over a section's chords. Returns [{ b: beat from the section's start, d: beats, p: degree, st: on a beat }] ----
-  function thema(r, stil, prog, bars) {
+  function thema(r, stil, prog, bars, hoch) {
     const bpb = stil.bpb,
       cells = stil.cells,
       pick = () => cells[Math.floor(r() * cells.length)],
@@ -805,7 +805,11 @@ export const GLRMUSIK = (() => {
     const MA = mot(),
       MB = mot(),
       KAD = pick();
-    let p = [2, 4, 7, 4][Math.floor(r() * 4)];
+    // where the tune begins: on the third, the fifth or the octave (a chorus higher); every phrase begins there again
+    const p0 = (hoch ? [4, 7, 7, 4] : [2, 4, 4, 7])[Math.floor(r() * 4)];
+    let p = p0;
+    // a step; far from the middle it turns back more often than not
+    const step = d => (Math.abs(p - 4) >= 3 && (p - 4) * d > 0 && r() < 0.7 ? -d : d);
     const fold = q => (q > HI ? HI - (q - HI) : q < LO ? LO + (LO - q) : q);
     const chAt = b => prog[b % prog.length];
     for (let ph = 0; ph * unit < bars; ph++) {
@@ -822,7 +826,8 @@ export const GLRMUSIK = (() => {
             let pos = 0;
             for (const d of M.c[k]) {
               const st = (pos % grid === 0 && d >= 0.5) || d >= 2;
-              p = fold(p + (j === 0 && u === 0 ? 0 : M.st[j]));
+              if (j === 0 && u === 0) p = p0;
+              else p = fold(p + step(M.st[j]));
               if (st) p = fold(snap(p, ch, M.st[j]));
               out.push({ b: (b0 + k) * bpb + pos, d, p, st });
               pos += d;
@@ -952,7 +957,7 @@ export const GLRMUSIK = (() => {
             E('pad', 0, bpb * 1.4, C.ct(k, 60), 0.7);
           }
           const reg = (INS[bes.lead] || {}).reg || 60;
-          E('lead', 0, bpb * 1.4, into(tonic, reg - 5) + 12, 0.9);
+          E('lead', 0, bpb * 1.4, into(tonic, reg - 12) + 12, 0.9);
           if (stil.feel !== 'klavier') {
             D(bes.kit === 'marsch' ? DR.bd : DR.kick, 0, 0.9);
             D(DR.crash, 0, 0.5);
@@ -964,10 +969,10 @@ export const GLRMUSIK = (() => {
       // the tune
       if (s.th) {
         const key2 = s.th + ':' + s.bars;
-        const th = themes[key2] || (themes[key2] = thema(r, stil, s.prog, s.bars));
+        const th = themes[key2] || (themes[key2] = thema(r, stil, s.prog, s.bars, s.th === 'b'));
         const role = bes[s.wer] ? s.wer : 'lead',
-          reg = (INS[bes[role]] || {}).reg || 60,
-          base = into(tonic, reg - 5),
+          reg = (INS[bes[role]] || {}).reg || 70,
+          base = into(tonic, reg - 12),
           two = bes.zwei && bes.lead2 && role === 'lead' && (s.nth > 1 || s.lvl >= 1.1);
         for (const nt of th) {
           const ch = s.prog[Math.floor(nt.b / bpb) % s.prog.length],
