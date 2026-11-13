@@ -38,6 +38,43 @@ def rings(poly):
     return out
 
 
+def tree_stamps(opl=None):
+    """{node id: (version, timestamp)} of the mapped trees, read from the raw OSM files (the shared OSM model drops them)"""
+    import glob, gzip
+    out = {}
+    if opl:
+        op = gzip.open if opl.endswith('.gz') else open
+        with op(opl, 'rt', encoding='utf-8') as f:
+            for ln in f:
+                if ln[0] != 'n':
+                    if ln[0] in 'wr':
+                        break                    # nodes come first in an OPL file
+                    continue
+                if 'natural=tree' not in ln:
+                    continue
+                v = t = None
+                fl = ln.split(' ')
+                for x in fl[1:]:
+                    if x[:1] == 'v':
+                        v = x[1:]
+                    elif x[:1] == 't':
+                        t = x[1:]
+                try:
+                    out[int(fl[0][1:])] = (int(v or 0), t or '')
+                except ValueError:
+                    pass
+        return out
+    d = os.environ.get('SUHL_OSM_API', '/tmp/suhl-bestand/raw/osm')
+    for p in sorted(glob.glob(os.path.join(d, 'map_*.json'))):
+        try:
+            for el in json.load(open(p, encoding='utf-8')).get('elements', ()):
+                if el['type'] == 'node' and (el.get('tags') or {}).get('natural') == 'tree':
+                    out[el['id']] = (int(el.get('version', 0)), el.get('timestamp', ''))
+        except Exception as ex:
+            glib.log('unreadable', p, ex)
+    return out
+
+
 def build(opl=None, ethos=None):
     osm = glib.load_osm(opl)
     glib.log(f'OSM: {len(osm.nodes)} nodes, {len(osm.ways)} ways, {len(osm.rels)} relations ({osm.source})')
@@ -62,10 +99,14 @@ def build(opl=None, ethos=None):
             c = osm.line(wid)
             if c and len(c) >= 2:
                 K['rows'].append((c, {k: tags[k] for k in KEEP_TAGS if k in tags}))
+    stamps = tree_stamps(opl)
     for i, tags in osm.ntags.items():
         if tags.get('natural') == 'tree' and i in osm.nodes:
             e, n = osm.nodes[i]
-            K['trees'].append((round(e, 2), round(n, 2), i, {k: tags[k] for k in KEEP_TAGS if k in tags}))
+            t = {k: tags[k] for k in KEEP_TAGS if k in tags}
+            if i in stamps:                      # version and time of the node's last edit: a tree mapped after the flight
+                t['_v'], t['_t'] = stamps[i]     # that the image does not show is a new planting, an older one was felled
+            K['trees'].append((round(e, 2), round(n, 2), i, t))
 
     def green(t):
         return any(t.get(k) in GREEN_VALUES[k] for k in GREEN_KEYS)

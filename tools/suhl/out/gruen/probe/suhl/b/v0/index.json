@@ -2,7 +2,7 @@
  "produkt": "b",
  "name": "Bäume (Einzelbäume)",
  "schema": 1,
- "made": "2026-11-13T00:36:50Z",
+ "made": "2026-11-13T00:46:55Z",
  "level": 10,
  "kachel_m": 400.0,
  "crs": "EPSG:25832 (ETRS89 / UTM 32N); Kacheln im Quadtree von tools/welt/wlib.py",
@@ -88,22 +88,22 @@
   "bit4": "Art aus einer kartierten Angabe (OSM species/genus/leaf_type); sonst aus der Infrarot-Signatur geschätzt",
   "bit5": "Stamm von Dach oder Fahrbahn weggerückt",
   "bit6": "der Baum ist in OpenStreetMap kartiert (natural=tree)",
-  "bit7": "frei"
+  "bit7": "der Baum steht in einem kartierten Wald (Bestand im Produkt w)"
  },
  "kacheln": {
-  "495_540": 1031,
-  "495_541": 702,
-  "496_540": 1026,
-  "496_541": 763,
-  "496_542": 487,
-  "496_543": 1150,
-  "497_541": 881,
-  "497_542": 382,
-  "497_543": 1169,
-  "498_542": 896,
-  "498_543": 825
+  "495_540": 1122,
+  "495_541": 737,
+  "496_540": 1099,
+  "496_541": 770,
+  "496_542": 499,
+  "496_543": 1187,
+  "497_541": 936,
+  "497_542": 404,
+  "497_543": 1176,
+  "498_542": 929,
+  "498_543": 858
  },
- "anzahl": 9312,
+ "anzahl": 9717,
  "attribution": "Luftbild (DOP20 RGB und CIR, Bildflug 15.05.2024): © GDI-Th, CC BY 4.0 (dl-de/by-2-0); Bäume, Baumreihen, Wald- und Grünflächen: © OpenStreetMap-Mitwirkende, ODbL 1.0",
  "quellen": [
   {
@@ -120,6 +120,6 @@
    "lizenz": "ODbL 1.0, Forschungszentrum Jülich, Zenodo 11845992"
   }
  ],
- "stand": "Probesatz Zentrum (11 Kacheln), Stand 0: Laubbaum/Strauch, Höhen geschätzt",
+ "stand": "Probesatz Zentrum (11 Kacheln), Stand 1: Laub/Nadel/Strauch aus der Infrarot-Signatur, Höhen geschätzt",
  "gebiet": "zentrum"
 }

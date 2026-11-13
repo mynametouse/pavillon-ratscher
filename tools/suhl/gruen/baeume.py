@@ -29,10 +29,13 @@ import glib, kontext, gbild
 PX = gbild.PX
 MARGIN = gbild.MARGIN
 SCHEMA = 1
+FLIGHT = '2024-05-15T23:59:59Z'   # the flight day of the orthophoto over Suhl (tools/suhl/out/bestand/luftbild.json)
 ND_VEG = 0.15        # NDVI above this is vegetation (8-bit orthophoto, not calibrated; looked at on the Zentrum)
 TEX_MIN = 0.05       # relative roughness of the near infrared above this is woody
 NIR_LIT = 90.0       # smoothed near infrared above this: lit by the sun (cast shadows on lawn are dappled like crowns, but dark)
 DT_CAP, BRIGHT, SIGMA_TOP, MIN_DIST = 2.5, 4.0, 8.0, 11   # crown tops: see crowns()
+SIGMA_TOP_CON, MIN_DIST_CON, NIR_CON_AREA = 3.5, 6, 118.0   # the same for conifer canopy (narrow crowns)
+NIR_CON_PEAK, NIR_CON_MEAN, TEX_CON = 152.0, 125.0, 0.09   # conifer: crown top and crown mean darker than this, and rough
 R_MIN = 0.9          # m, smaller crowns are dropped
 R_SHRUB = 1.6        # m, below this a crown counts as a shrub or a very small tree
 BAND = 6.0           # m around a tile kept for the merge of neighbours
@@ -45,16 +48,17 @@ KINDS = {
 CONIFER = {1, 2, 3, 4, 5}
 # flags: bits 0-1 where the position comes from, bit 2 height measured, bit 3 crown radius measured in the image or the height model,
 # bit 4 kind from a mapped tag (else from the infrared signature), bit 5 trunk moved off a roof or carriageway,
-# bit 6 the tree is mapped in OpenStreetMap, bit 7 free. The setting (street, park, garden, forest) is not in the tile file.
+# bit 6 the tree is mapped in OpenStreetMap, bit 7 the tree stands in a mapped forest (a stand of product w).
 POS_RULE, POS_IMAGE, POS_OSM, POS_NDOM = 0, 1, 2, 3
-F_H, F_R, F_KIND, F_MOVED, F_OSM = 4, 8, 16, 32, 64
+F_H, F_R, F_KIND, F_MOVED, F_OSM, F_FOREST = 4, 8, 16, 32, 64, 128
 FLAGS = {'bits0-1': {0: 'Lage nach Regel gesetzt', 1: 'Lage aus dem Luftbild (Krone, 20 cm)', 2: 'Lage aus OpenStreetMap (kartierter Baum)',
                      3: 'Lage aus dem Kronenhöhenmodell (nDOM1)'},
          'bit2': 'Höhe gemessen (nDOM1); sonst geschätzt aus Kronenradius und Art',
          'bit3': 'Kronenradius gemessen (Kronenfläche im Luftbild oder nDOM1); sonst geschätzt',
          'bit4': 'Art aus einer kartierten Angabe (OSM species/genus/leaf_type); sonst aus der Infrarot-Signatur geschätzt',
          'bit5': 'Stamm von Dach oder Fahrbahn weggerückt',
-         'bit6': 'der Baum ist in OpenStreetMap kartiert (natural=tree)', 'bit7': 'frei'}
+         'bit6': 'der Baum ist in OpenStreetMap kartiert (natural=tree)',
+         'bit7': 'der Baum steht in einem kartierten Wald (Bestand im Produkt w)'}
 GENUS = {  # OSM genus / species / German names -> kind
     'tilia': 10, 'linde': 10, 'acer': 11, 'ahorn': 11, 'quercus': 12, 'eiche': 12, 'fagus': 13, 'buche': 13, 'betula': 14, 'birke': 14,
     'fraxinus': 15, 'esche': 15, 'aesculus': 16, 'kastanie': 16, 'platanus': 17, 'platane': 17, 'populus': 18, 'pappel': 18,
@@ -79,6 +83,9 @@ class Umfeld:
         self.water = K['water']
         self.wbox = np.array([[min(p[0] for p in r[0]), min(p[1] for p in r[0]), max(p[0] for p in r[0]), max(p[1] for p in r[0])]
                               for r in self.water]) if self.water else np.zeros((0, 4))
+        self.forest = [r for (_, t, rr, _) in K['green'] if t.get('landuse') == 'forest' or t.get('natural') == 'wood' for r in rr]
+        self.fbox = np.array([[min(p[0] for p in r[0]), min(p[1] for p in r[0]), max(p[0] for p in r[0]), max(p[1] for p in r[0])]
+                              for r in self.forest]) if self.forest else np.zeros((0, 4))
         self.trees = np.array([[t[0], t[1]] for t in K['trees']]) if K['trees'] else np.zeros((0, 2))
         self.ttags = [t[3] for t in K['trees']]
 
@@ -130,6 +137,22 @@ class Umfeld:
             bld = ndi.binary_dilation(bld, iterations=max(1, int(round(grow_bld / px))))
         return bld, road, water
 
+    def forest_mask(self, bb, px):
+        """the mapped forest (OSM landuse=forest, natural=wood) as a mask of the box"""
+        from PIL import Image, ImageDraw
+        e0, n0, e1, n1 = bb
+        w, h = int(round((e1 - e0) / px)), int(round((n1 - n0) / px))
+        im = Image.new('L', (w, h), 0)
+        d = ImageDraw.Draw(im)
+        for i in self._hit(self.fbox, bb):
+            r = self.forest[i]
+            d.polygon([((x - e0) / px, (n1 - y) / px) for x, y in r[0]], fill=1)
+        for i in self._hit(self.fbox, bb):
+            for hole in self.forest[i][1:]:
+                if len(hole) >= 3:
+                    d.polygon([((x - e0) / px, (n1 - y) / px) for x, y in hole], fill=0)
+        return np.asarray(im, bool)
+
     def osm_trees(self, bb):
         if not len(self.trees):
             return []
@@ -171,9 +194,18 @@ def crowns(cir, wood, px=PX):
     from skimage.segmentation import watershed
     nir = cir[..., 0]
     dt = ndi.distance_transform_edt(wood) * px
-    # inside a closed canopy the distance to the edge says nothing about single crowns: it is capped, the bright crown tops decide
-    f = ndi.gaussian_filter(np.minimum(dt, DT_CAP), 1.5) + BRIGHT * ndi.gaussian_filter(nir, SIGMA_TOP) / 255.0
-    pk = peak_local_max(f, min_distance=MIN_DIST, labels=wood.astype(np.int32), exclude_border=False)
+    # inside a closed canopy the distance to the edge says nothing about single crowns: it is capped, the bright crown tops decide.
+    # Conifers (dark in the near infrared at the scale of a few metres) have narrow crowns: finer smoothing, closer tops.
+    dts = ndi.gaussian_filter(np.minimum(dt, DT_CAP), 1.5)
+    f = dts + BRIGHT * ndi.gaussian_filter(nir, SIGMA_TOP) / 255.0
+    fc = dts + BRIGHT * ndi.gaussian_filter(nir, SIGMA_TOP_CON) / 255.0
+    wf = wood.astype(np.float32)                              # mean over the canopy only (5 m: a stand, not the shaded side of
+    con = ndi.gaussian_filter(nir * wf, 25.0) / (ndi.gaussian_filter(wf, 25.0) + 1e-3) < NIR_CON_AREA   # one broadleaf crown)
+    lab = wood.astype(np.int32)
+    pk = peak_local_max(f, min_distance=MIN_DIST, labels=lab * ~con, exclude_border=False)
+    pc = peak_local_max(fc, min_distance=MIN_DIST_CON, labels=lab * con, exclude_border=False)
+    pk = np.concatenate([pk, pc]) if len(pc) else pk
+    f = np.where(con, fc, f)
     mk = np.zeros(wood.shape, np.int32)
     mk[pk[:, 0], pk[:, 1]] = np.arange(1, len(pk) + 1)
     seg = watershed(-f, mk, mask=wood)
@@ -229,7 +261,8 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     wood, nd, tex, veg = woody(cir, water)
     seg, n = crowns(cir, wood)
     st = {'kronen_roh': int(n), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean())}
-    out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn')}
+    out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk')}
+    forest = U.forest_mask(bb, PX)
     if n:
         idx = np.arange(1, n + 1)
         area = ndi.sum(np.ones(seg.shape, np.float32), seg, idx) * PX * PX
@@ -240,6 +273,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
         mred = ndi.mean(cir[..., 1], seg, idx)
         mgrn = ndi.mean(cir[..., 2], seg, idx)
         mtex = ndi.mean(tex, seg, idx)
+        peak = ndi.maximum(ndi.gaussian_filter(cir[..., 0], 3.0), seg, idx)     # the sunlit top of the crown
         segA = np.where(allowed, seg, 0)
         com = ndi.center_of_mass(allowed.astype(np.float32), segA, idx)
         full = ndi.center_of_mass(np.ones(seg.shape, np.float32), seg, idx)
@@ -270,10 +304,19 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
                 fl |= F_MOVED
                 moved += 1
             E, N = e0 + (ix + 0.5) * PX, n1 - (iy + 0.5) * PX
-            # kind: shrubs by size; conifers are dark in the near infrared and less "green" in the index
-            kd = 30 if r < R_SHRUB else 0
+            # kind: conifers are dark in the near infrared even where the sun is on them (two clear modes in the forest above
+            # Goldlauter: crown tops 130-150 against 170-190); in the mapped forest a conifer counts as spruce (the usual
+            # conifer of the Thuringian Forest – an estimate); small crowns outside the forest are shrubs
+            inf = bool(forest[iy, ix])
+            con = peak[k] < NIR_CON_PEAK and mnir[k] < NIR_CON_MEAN and mtex[k] > TEX_CON
+            kd = (2 if inf else 1) if con else 0
+            if r < R_SHRUB and not inf:
+                kd = 30
+            if inf:
+                fl |= F_FOREST
             out['E'].append(E); out['N'].append(N); out['r'].append(r); out['kind'].append(kd); out['flags'].append(fl)
             out['nd'].append(mnd[k]); out['nir'].append(mnir[k]); out['tex'].append(mtex[k]); out['red'].append(mred[k]); out['grn'].append(mgrn[k])
+            out['pk'].append(peak[k])
         st.update(verworfen_klein=drop_small, verworfen_dach_fahrbahn=drop_roof, geruecket=moved)
     T = {k: np.array(v, float) for k, v in out.items()}
     T['kind'] = T['kind'].astype(int)
@@ -297,7 +340,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
             continue
         o_used[i] = j
         c_used.add(j)
-    osm_hit = osm_added = osm_gone = 0
+    osm_hit = osm_added = osm_gone = osm_new = 0
     for i, (oe, on, tags) in enumerate(O):
         kd = kind_of_tags(tags)
         if i in o_used:
@@ -322,11 +365,18 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
                 pass
             for k, v in (('E', oe), ('N', on), ('r', r), ('kind', 0 if kd is None else kd),
                          ('flags', POS_OSM | F_OSM | (F_KIND if kd is not None else 0)), ('nd', nd[iy, ix]), ('nir', cir[iy, ix, 0]),
-                         ('tex', tex[iy, ix]), ('red', cir[iy, ix, 1]), ('grn', cir[iy, ix, 2]), ('oh', osm_height(tags))):
+                         ('tex', tex[iy, ix]), ('red', cir[iy, ix, 1]), ('grn', cir[iy, ix, 2]), ('pk', cir[iy, ix, 0]), ('oh', osm_height(tags))):
+                T[k] = np.append(T[k], v)
+        elif inside and tags.get('_v') == 1 and str(tags.get('_t', '')) > FLIGHT and not (bld[iy, ix] or road[iy, ix] or water[iy, ix]):
+            # mapped for the first time after the flight and not in the image: a new planting, set as a young tree
+            osm_new += 1
+            for k, v in (('E', oe), ('N', on), ('r', 1.0), ('kind', 0 if kd is None else kd),
+                         ('flags', POS_OSM | F_OSM | (F_KIND if kd is not None else 0)), ('nd', 0.0), ('nir', 0.0), ('tex', 0.0),
+                         ('red', 0.0), ('grn', 0.0), ('pk', 0.0), ('oh', 4.0)):
                 T[k] = np.append(T[k], v)
         else:
             osm_gone += 1
-    st.update(osm_baeume=len(O), osm_mit_krone=osm_hit, osm_ohne_krone_gesetzt=osm_added, osm_nicht_sichtbar=osm_gone)
+    st.update(osm_baeume=len(O), osm_mit_krone=osm_hit, osm_ohne_krone_gesetzt=osm_added, osm_neu_gepflanzt=osm_new, osm_nicht_sichtbar=osm_gone)
     # keep the trees of the tile and of a band around it: merge() gives every tree to the tile its trunk stands in and drops doubles
     te0, tn0, te1, tn1 = glib.wlib.tbounds(glib.L, tx, ty)
     m = (T['E'] >= te0 - BAND) & (T['E'] < te1 + BAND) & (T['N'] >= tn0 - BAND) & (T['N'] < tn1 + BAND)
@@ -358,7 +408,6 @@ def unpack(b, tx, ty):
 
 
 # ---------------- run over tiles, merge of neighbours, product files ----------------
-COLS = ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'oh')
 
 
 def run(tiles, work, U, redo=False):
