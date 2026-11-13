@@ -819,6 +819,7 @@ export const GLFAHNDUNG = (() => {
     GL.stats.erwischt++;
     GL.emit('erwischt', { busse: n, sterne: GLLOGIK.stars(W), era: GL.era });
     clear(true);
+    GL.W.fz = false; // (the moped is on record now – and given back)
   }
   function clearWorld() {
     S.blauU = null;
