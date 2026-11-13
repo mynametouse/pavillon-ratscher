@@ -156,6 +156,8 @@ with lib.browser() as b:
         paar('4_streife', settle=0.0)
         # the lent blue light: short, dark between the flashes
         bl = J("(window.LIGHTS || []).filter(l => l.userData && l.userData.lent && l.color.getHex() === 0x2a5cff).map(l => ({ d: l.distance, dec: l.decay, i: +l.intensity.toFixed(1) }))")
+        # (the shared lights are lent only away from the pavilion – near the garden there may be none: then nothing to check but the rule)
+        print('note lent blue lights:', len(bl), flush=True)
         ck('the blue light the police borrows reaches the nearest walls only (12 m), not the whole street', all(q['d'] <= 12 for q in bl), str(bl))
     except StopIteration:
         pass
