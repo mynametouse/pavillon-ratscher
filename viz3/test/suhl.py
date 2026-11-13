@@ -384,6 +384,8 @@ def desktop():
                 GAME.view(x, y, KERN.ground(x, y) + 1.7, h, -7, 60); })()""")
             for _ in range(8):
                 E("GAME.step(0.5)")
+            au = J("SUHL.status().autos")
+            ck('parked cars on the car parks near the centre', au and au['parks'] >= 3 and au['cars'] >= 30, json.dumps(au))
             wa = J("SUHL.status().wasser")
             ck('open water near the centre: ponds and the Lauter as surfaces on the ground', wa and wa['areas'] >= 2 and wa['rivers'] >= 1 and wa['tris'] > 10,
                json.dumps(wa))
