@@ -12,8 +12,10 @@
 Exit status 0 = valid (warnings are printed), 1 = errors, 2 = wrong call.
 
 Other commands:
-    validate.py --index <.../suhl/<product>/v<N>> --area <probe|zentrum|kernstadt|stadt> --sources ethos,alkis,osm,dop [--note "..."]
-                                         scan the folder and write its index.json (tile lists, numbers, sources, attribution)
+    validate.py --index <.../suhl/<product>/v<N>> [--area <probe|zentrum|kernstadt|stadt>] [--sources ethos,alkis,osm,dop] [--based-on boden=1,s=1]
+                                         write the common part of index.json (schema, product, version, has, n, sources, attribution)
+                                         from the files; every other key of an index.json that is already there is kept, and area,
+                                         sources and attribution are taken from it when they are there
     validate.py --doc                    print the field tables of schema 1 (the tables of docs/features/suhl-daten.md come from here)
     validate.py --sources-list           print the catalogue of sources (the ids for --sources)
 """
@@ -28,31 +30,30 @@ from schema import index as IX   # noqa: E402
 
 def check_centre(folder, rep):
     """the lesson of 26.10.2026: a product that claims to cover Suhl must hold the tile with the centre of Suhl, and plausible numbers"""
-    ip = os.path.join(folder, 'index.json')
+    f = os.path.abspath(folder).rstrip('/')
+    product = os.path.basename(os.path.dirname(f))
+    if product not in S.PRODUCTS or product == '_probe':
+        return
+    ip = os.path.join(f, S.PRODUCTS[product]['index'])
     if not os.path.exists(ip):
         return
     try:
         doc = S.read_json(ip)
+        have = IX.index_has(doc)
+        facts = IX.index_doc_of(f)
     except Exception:
         return
-    p, area = doc.get('p'), doc.get('area')
-    if p in (None, '_probe') or not isinstance(doc.get('tiles'), dict):
-        return
-    where = f'{p}/v{doc.get("version")}'
-    for sub, lv in doc['tiles'].items():
-        for Ls, ts in (lv or {}).items():
-            try:
-                L = int(Ls)
-                if ts.get('n') and not S.tileset_has(dict(ts), *S.tile_at(L, *S.CENTRE_UTM)):
-                    rep.err(where, f'the centre of Suhl (tile {S.tile_key(L, *S.tile_at(L, *S.CENTRE_UTM))}) is not among the tiles of level {L}'
-                                   f'{" in " + sub if sub else ""} - wrong box?', 'centre of Suhl')
-            except Exception:
-                pass
-    kind = {'g': 'buildings', 'b': 'trees'}.get(p)
-    n = (doc.get('n') or {}).get('items')
-    if kind and area in S.PLAUSIBLE[kind] and isinstance(n, int):
+    where = f'{product}/{os.path.basename(f)}'
+    if product != 'w':                                       # forest cells: there is no forest on the Markt
+        for L, tl in have.items():
+            c = S.tile_at(L, *S.CENTRE_UTM)
+            if tl and c not in set(tl):
+                rep.err(where, f'the centre of Suhl (tile {S.tile_key(L, *c)}) is not among the tiles of level {L} - wrong box?', 'centre of Suhl')
+    kind = {'g': 'buildings', 'b': 'trees'}.get(product)
+    n = (facts.get('n') or {}).get('items')
+    if kind and facts.get('area') in S.PLAUSIBLE[kind] and isinstance(n, int):
         try:
-            S.guard_count(n, kind, area, what=where)
+            S.guard_count(n, kind, facts['area'], what=where)
         except S.GuardError as ex:
             rep.err(where, str(ex), 'plausible count')
 
@@ -64,6 +65,8 @@ def validate(target, probe=False):
     if os.path.isfile(t):
         if os.path.basename(t) == 'index.json':
             IX.check_index(S.read_json(t), rep, t, folder=os.path.dirname(t))
+        elif os.path.basename(t) == 'meta.json':
+            IX.check_meta(S.read_json(t), rep, t, folder=os.path.dirname(t))
         elif os.path.basename(t) == 'aktuell.json':
             IX.check_aktuell(S.read_json(t), rep, t)
         else:
@@ -113,17 +116,19 @@ def print_report(rep, target, strict=False, quiet=False):
 
 
 def doc_tables():
-    """the field tables as Markdown (English); docs/features/suhl-daten.md holds the German text around them"""
+    """the field table of the building record and the code lists as Markdown (English); docs/features/suhl-daten.md holds the German text"""
     out = [f'Schema {S.SCHEMA}, revision {schema.REV} (tools/suhl/lib/schema/)', '',
            '### Building record (product g, field b[] of a tile)', '', '| Field | R/O | Type | Unit, frame | Meaning |', '|---|---|---|---|---|']
     for k, req, typ, unit, mean in schema.BUILDING_FIELDS:
         out.append(f'| `{k}` | {req} | {typ} | {unit} | {mean} |')
     for title, table in (('KINDS (k)', schema.KINDS), ('ROOF_FORMS (r)', schema.ROOF_FORMS), ('ROOF_CLASSES (rk, R[].c)', schema.ROOF_CLASSES),
-                         ('ERAS (era)', schema.ERAS), ('FLAGS (fg, bits)', schema.FLAGS), ('QUALITY (rq, q, S[].q)', schema.QUALITY),
-                         ('TREE_KINDS (b tiles)', schema.TREE_KINDS)):
+                         ('ERAS (era)', schema.ERAS), ('FLAGS (fg, bits)', schema.FLAGS), ('QUALITY (rq, q, fas.q, S[].q)', schema.QUALITY),
+                         ('TREE_KINDS (b)', schema.TREE_KINDS), ('TREE_FLAGS (b)', schema.TREE_FLAGS), ('GR_CLASSES (gr)', schema.GR_CLASSES),
+                         ('W_KINDS (w)', schema.W_KINDS)):
         out += ['', f'{title}: ' + '; '.join(f'{k} = {v}' for k, v in table.items())]
-    out += ['', 'USES (use, eg): ' + ', '.join(schema.USES), '', 'SOURCES (src): ' + ', '.join(schema.SOURCES), '',
-            'FURNITURE (m tiles, t): ' + ', '.join(schema.FURNITURE)]
+    out += ['', 'USES (use, eg): ' + ', '.join(schema.USES), '', 'SOURCES (src): ' + ', '.join(schema.SOURCES), '', 'MATS (fas.mat, fat[].mat): ' +
+            ', '.join(schema.MATS), '', 'BALK (balk): ' + ', '.join(schema.BALK), '', 'SIDE_EG (S[].eg): ' + ', '.join(schema.SIDE_EG), '',
+            'FURNITURE (m tiles, t): ' + ', '.join(schema.FURNITURE), '', 'index.json, common keys: ' + ', '.join(schema.INDEX_CORE)]
     return '\n'.join(out)
 
 
@@ -138,6 +143,7 @@ def main():
     ap.add_argument('--area')
     ap.add_argument('--sources')
     ap.add_argument('--note')
+    ap.add_argument('--based-on', dest='based_on', help='for --index: the generation of the other products, e.g. boden=1,s=1 ("" = none)')
     ap.add_argument('--doc', action='store_true')
     ap.add_argument('--sources-list', '--catalogue', dest='catalogue', action='store_true', help='print the catalogue of sources')
     a = ap.parse_args()
@@ -151,22 +157,20 @@ def main():
     if a.index:
         f = os.path.abspath(a.index).rstrip('/')
         product, vname = os.path.basename(os.path.dirname(f)), os.path.basename(f)
-        if product not in S.PRODUCTS or not re.fullmatch(r'v[0-9]+', vname) or not a.area or not a.sources:
-            print('usage: validate.py --index <.../suhl/<product>/v<N>> --area <word> --sources id,id,...', file=sys.stderr)
+        if product not in S.PRODUCTS or not re.fullmatch(r'v[0-9]+', vname) or product == 'boden':
+            print('usage: validate.py --index <.../suhl/<product>/v<N>> [--area <word>] [--sources id,id,...]   (not for boden: its index is '
+                  'meta.json)', file=sys.stderr)
             return 2
-        own, old = {}, {}
-        if os.path.exists(os.path.join(f, 'index.json')):                 # keep the product's own keys of an index that is already there
-            try:
-                old = S.read_json(os.path.join(f, 'index.json'))
-                own = {k: v for k, v in old.items() if k not in IX.INDEX_KEYS}
-            except Exception:
-                own, old = {}, {}
-        doc = IX.make_index(f, product, int(vname[1:]), a.area, [s.strip() for s in a.sources.split(',') if s.strip()], note=a.note, extra=own,
-                            based_on=old.get('based_on'), write=False)
-        if isinstance(old.get('attribution'), str) and old['attribution'].strip():
-            doc['attribution'] = old['attribution']                        # the product's own wording of its attribution stays
-        S.write_json(os.path.join(f, 'index.json'), doc)
-        print(f'{f}/index.json: {doc["n"]["tiles"]} tiles, {doc["n"]["items"]} items, {doc["n"]["bytes"]} bytes; {doc["attribution"]}')
+        try:
+            bo = None
+            if a.based_on is not None:
+                bo = {k: int(v.lstrip('v')) for k, _, v in (q.partition('=') for q in a.based_on.split(',') if q.strip())}
+            doc = IX.normalise_index(f, area=a.area, sources=[s.strip() for s in a.sources.split(',') if s.strip()] if a.sources else None, note=a.note,
+                                     based_on=bo)
+        except S.SuhlError as ex:
+            print(f'validate.py --index: {ex}', file=sys.stderr)
+            return 2
+        print(f'{f}/index.json: {doc["n"]["tiles"]} tiles, {doc["n"]["items"]} items, {doc["n"]["bytes"]} bytes; {doc["attribution"][:200]}')
         return 0
     if not a.target:
         ap.print_usage(sys.stderr)

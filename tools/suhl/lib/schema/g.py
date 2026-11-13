@@ -1,9 +1,13 @@
 """Product g: one record per building, in level-10 tiles suhl/g/v<N>/10/<x>/<y>.json (plan 2.3).
 
-Starts from the layout viz3/src/gebaeude/gebaeude.js reads today (tools/welt-gebaeude/prep.py: f, k, e, h, F, rv, rt, rk, rc, r, az, p,
-id, fl) and adds the fields of plan 2.3. Two names differ from the plan because today's readers already use them:
+Schema 1, revision 1.1 (13.11.2026). The body of a record is that of revision 1.0, which suhl-gebaeude writes since its commit
+4c9e9722: it starts from the layout viz3/src/gebaeude/gebaeude.js reads today (tools/welt-gebaeude/prep.py: f, k, e, h, F, rv, rt, rk,
+rc, r, az, p, id, fl) and adds the fields of plan 2.3. Two names differ from the plan because today's readers already use them:
   h  = height (as today), so the holes of the footprint are 'fh' (the plan called the holes 'h' and the height 'hr');
   fl = 1 for a flat roof (as today), so the flags are 'fg' (the plan called the flags 'fl').
+Revision 1.1 changes the head of the tile (schema, product instead of v, p) and gives the fields suhl-gebaeude had to keep private
+(x_...) their places: fas + the tile table fat (facade parameters of the whole building), teil, zv, lvk, lm, kat, S[].hof, the tile
+list tief; fg 32 = no longer standing (not drawn), 64 = in the cadastre only.
 
 Frame: positions are tile-local model metres (x = model x - o[0], y = model y - o[1], o = the tile centre, suhllib.TileFrame),
 heights true metres. One model metre is 1.0157 m: areas, lengths and angles for scenarios are given as numbers (computed in UTM by the
@@ -11,7 +15,7 @@ pipeline), never taken from this geometry.
 """
 import re
 
-from .core import S, is_int, is_num, num_list, ring_area, unknown_keys
+from .core import S, check_envelope, is_int, is_num, num_list, ring_area, unknown_keys
 
 # ---- code lists (the app shows German words for them; the numbers and words here are the contract)
 KINDS = {0: 'house (dwelling, town house, block of flats, office: plastered, windows on every storey)', 1: 'hall or barn',
@@ -24,13 +28,17 @@ USES = ('wohnen', 'handel', 'buero', 'gastro', 'hotel', 'schule', 'kita', 'kirch
         'industrie', 'lager', 'landwirtschaft', 'verkehr', 'garage', 'neben', 'sport', 'versorgung', 'leer', 'sonst')
 ERAS = {0: 'unknown', 1: 'before 1918', 2: '1919-1948', 3: '1949-1990', 4: 'after 1990'}
 FLAGS = {1: 'landmark (gets a model of its own, SUHL.detail)', 2: 'listed monument', 4: 'enterable', 8: 'vacant', 16: 'demolition planned',
-         32: 'no longer standing (data older than the aerial image)', 64: 'under construction or new'}
+         32: 'no longer standing: not in the cadastre any more (not drawn)', 64: 'in the cadastre only (ETHOS / LoD2 does not have it)',
+         128: 'under construction or new'}
 QUALITY = {0: 'rule or assumption', 1: 'derived from data (aerial image, surface model, tags)', 2: 'measured or official (LoD2, cadastre, a photo read by an agent)',
            3: 'checked by eye'}
 SOURCES = ('ethos', 'lod2', 'alkis', 'osm', 'dop', 'dgm1', 'dom1', 'ndom1', 'cop30', 'foto', 'wissen', 'zensus', 'regel')
 Q_FIELDS = ('f', 'h', 'e', 'z0', 'k', 'use', 'eg', 'era', 'yr', 'bt', 'lv', 'rk', 'rc', 'n', 'adr', 'S', 'A', 'd')
 ADDONS = ('kamin', 'gaube', 'dachfenster', 'pv', 'aufbau', 'antenne')
-SIDE_KEYS = ('st', 'sd', 'q', 'src', 'mat', 'col', 'col2', 'lv', 'h0', 'hf', 'sock', 'win', 'eg', 'balk', 'gable', 'brand', 'sign')
+SIDE_KEYS = ('st', 'sd', 'q', 'src', 'hof', 'mat', 'col', 'col2', 'lv', 'h0', 'hf', 'sock', 'win', 'eg', 'balk', 'gable', 'brand', 'sign')
+FAS_KEYS = ('t', 'q', 'src', 'mat', 'col', 'col2', 'lv', 'h0', 'hf', 'sock', 'win', 'eg', 'balk')          # fas and the entries of fat
+BALK = ('keine', 'balkone', 'loggien', 'franzoesisch')
+SIDE_EG = ('nichts', 'laden', 'arkade', 'garagen', 'durchfahrt', 'eingang')
 MATS = ('putz', 'platte', 'klinker', 'schiefer', 'fachwerk', 'sandstein', 'sichtbeton', 'glas', 'blech', 'holz')
 D_KEYS = ('fa', 'lv', 'gfa', 'vol', 'rf', 'ro', 'ru', 'res', 'heat', 'pv', 'q', 'src')
 
@@ -59,11 +67,17 @@ BUILDING_FIELDS = (
     ('A', 'O', '[{...}, ...]', '', 'things on the roof: {t: kamin | gaube | dachfenster | pv | aufbau | antenne, x, y (tile-local m), z (m above the foot), '
      'w, d, h (m), az (degrees, model frame), f: index of the roof face, q: QUALITY}'),
     ('F', 'R', '[[10 numbers], ...]', 'tile-local m, heights above the foot', 'walls: [ax, ay, bx, by, top at a, apex position u (0..1) along the wall, '
-     'top at the apex, top at b, flags (1 = party wall, no windows), metres to the nearest street (99 = none)]'),
-    ('S', 'O', '[{...} | null, ...]', '', 'sides: one entry per row of F, same order: {st: street name, sd: metres to it, q: QUALITY of the facade '
-     'parameters, src: [photo ids], and the facade parameters of plan 4b: mat, col, col2, lv, h0, hf, sock, win, eg, balk, gable, brand, sign}'),
+     'top at the apex, top at b, flags (1 = party wall, no windows), metres to the nearest street (99 = none)]. The apex position is a FRACTION '
+     'of the wall length (today\'s gebaeude.js uses metres: the runtime converts)'),
+    ('S', 'O', '[{...} | null, ...]', '', 'sides: one entry per row of F, same order - only what a side has of its own: {st: street name, sd: metres '
+     'to it, hof: 1 (faces a courtyard), eg: nichts | laden | arkade | garagen | durchfahrt | eingang, sign: [names], q: QUALITY of the facade '
+     'parameters, src: [photo ids], and any facade parameter that differs from fas: mat, col, col2, lv, h0, hf, sock, win, balk, gable, brand}'),
+    ('fas', 'O', '{...}', '', 'facade parameters of the whole building (plan 4b): {t: index into the tile\'s table fat, col: [r, g, b], q: QUALITY, '
+     'lv: storeys when the building has no lv} - merged over fat[t] = {mat, col2, sock, win, balk}; storey height hf = (e - sock) / lv, ground floor '
+     'h0 = hf unless given; a side of S overrides single values'),
     ('fl', 'O', '0 | 1', '', '1 = flat roof (as today; the same as r = 0)'),
     ('lv', 'O', 'int', '', 'storeys above ground'),
+    ('lvk', 'O', 'int', '', 'the storeys the cadastre names when they do not fit under the measured height of this body (lv is then an estimate)'),
     ('use', 'O', 'string', 'USES', 'main use'),
     ('eg', 'O', 'string', 'USES', 'use of the ground floor when it differs (a shop under flats)'),
     ('fkt', 'O', 'string', '', 'the function in the words of the cadastre (ALKIS funktion)'),
@@ -73,7 +87,12 @@ BUILDING_FIELDS = (
     ('n', 'O', 'string', '', 'name'),
     ('adr', 'O', 'string', '', 'address: "<street> <number>" (several joined with "; ")'),
     ('osm', 'O', 'string', '', 'the OSM object it was matched with (overlap > 50 %): way/<n> or relation/<n>'),
-    ('fg', 'O', 'int', 'FLAGS, bits', 'flags: 1 landmark, 2 monument, 4 enterable, 8 vacant, 16 demolition planned, 32 no longer standing, 64 new'),
+    ('fg', 'O', 'int', 'FLAGS, bits', 'flags: 1 landmark, 2 monument, 4 enterable, 8 vacant, 16 demolition planned, 32 no longer standing (not drawn), '
+     '64 in the cadastre only, 128 new or under construction'),
+    ('lm', 'O', 'string', '', 'the number of the landmark in docs/plans/suhl/wahrzeichen.md (e.g. "Z10")'),
+    ('kat', 'O', '0 | 1', '', 'the match with the cadastre when it is not by the same id: 1 = joined by position, 0 = not in the cadastre'),
+    ('teil', 'O', 'string', '', 'the id of the bigger building a small part (stair tower, bay, balcony stack, annex) is attached to'),
+    ('zv', 'O', '[m, ...]', 'm above z0', 'the ground above z0 at every corner of f, then of the holes fh'),
     ('d', 'O', '{...}', '', 'scenario numbers (plan 6.3), true metres computed in UTM: {fa: footprint m2, lv: storeys, gfa: gross floor area m2, '
      'vol: m3, rf: roof area m2, ro: {N, O, S, W, flach: m2}, ru: usable roof m2, res: residents, heat: {k, kwh}, pv: kWp today, q: {...}}; '
      'may also come as the product d'),
@@ -105,8 +124,40 @@ def _ring(f, rep, where, name, ccw=True):
     return a
 
 
-def check_building(b, fr, rep, where):
-    """one building record; fr = suhllib.TileFrame of its tile"""
+def check_fas(fa, rep, where, what, nfat=None):
+    """facade parameters: the field fas of a building, or one entry of the tile table fat (nfat = None)"""
+    if not isinstance(fa, dict):
+        rep.err(where, f'"{what}" must be an object', what)
+        return
+    unknown_keys(fa, FAS_KEYS, rep, where, what)
+    if nfat is not None and 't' in fa and not (is_int(fa['t']) and 0 <= fa['t'] < nfat):
+        rep.err(where, f'"{what}.t" must be an index into the tile\'s table "fat" ({nfat} entries), found {fa["t"]!r}', 'fas t')
+    if 'mat' in fa and fa['mat'] not in MATS:
+        rep.err(where, f'"{what}.mat" must be one of {MATS}, found {fa["mat"]!r}', 'fas mat')
+    for key in ('col', 'col2'):
+        if key in fa and not (num_list(fa[key], n=3) and all(0 <= q <= 1 for q in fa[key])):
+            rep.err(where, f'"{what}.{key}" must be [r, g, b] in sRGB 0..1', 'fas col')
+    if 'lv' in fa and not (is_int(fa['lv']) and 1 <= fa['lv'] <= 60):
+        rep.err(where, f'"{what}.lv" (storeys) must be an integer 1..60', 'fas lv')
+    for key in ('h0', 'hf', 'sock'):
+        if key in fa and not (is_num(fa[key]) and 0 <= fa[key] <= 30):
+            rep.err(where, f'"{what}.{key}" must be metres, found {fa[key]!r}', 'fas ' + key)
+    if 'win' in fa and fa['win'] is not None and not num_list(fa['win'], minlen=4):
+        rep.err(where, f'"{what}.win" must be a list of numbers [axis spacing, width, height, sill, kind, ...] or null', 'fas win')
+    if 'balk' in fa and fa['balk'] not in BALK:
+        rep.err(where, f'"{what}.balk" must be one of {BALK}, found {fa["balk"]!r}', 'fas balk')
+    if 'q' in fa and (fa['q'] not in QUALITY or isinstance(fa['q'], bool)):
+        rep.err(where, f'"{what}.q" must be 0..3', 'fas q')
+
+
+def _holes_area(b):
+    """the area of the holes of a footprint in model m2 (0 when fh is not a list of rings)"""
+    h = b.get('fh')
+    return sum(abs(ring_area(r)) for r in h if num_list(r, mult=2, minlen=6)) if isinstance(h, list) else 0.0
+
+
+def check_building(b, fr, rep, where, tile=None):
+    """one building record; fr = suhllib.TileFrame of its tile; tile = the tile document (for the table fat)"""
     if not isinstance(b, dict):
         rep.err(where, 'a building must be a JSON object')
         return
@@ -226,8 +277,8 @@ def check_building(b, fr, rep, where):
                     rep.err(w, '"at" must be [u0, v0, u1, v1] in 0..1', 'R at')
             if area and all(isinstance(fc, dict) and is_num(fc.get('ap')) for fc in b['R']) and b['R']:
                 ap = sum(fc['ap'] for fc in b['R'])
-                true_fp = abs(area) * S.MODEL_SCALE ** 2
-                if not 0.85 * true_fp <= ap <= 1.6 * true_fp + 20:
+                true_fp = (abs(area) - _holes_area(b)) * S.MODEL_SCALE ** 2
+                if not 0.85 * true_fp - 3 <= ap <= 1.6 * true_fp + 20:
                     rep.warn(where, f'the plan areas of the roof faces ({ap:.0f} m2) do not fit the footprint ({true_fp:.0f} m2 in UTM)', 'R sum')
     if 'A' in b:
         if not isinstance(b['A'], list):
@@ -266,6 +317,14 @@ def check_building(b, fr, rep, where):
                     rep.err(w, '"lv" (storeys) must be an integer 1..60', 'S lv')
                 if 'st' in s and not isinstance(s['st'], str):
                     rep.err(w, '"st" must be the street name', 'S st')
+                if 'eg' in s and s['eg'] not in SIDE_EG:
+                    rep.err(w, f'"eg" must be one of {SIDE_EG}, found {s["eg"]!r}', 'S eg')
+                if 'sign' in s and not (isinstance(s['sign'], list) and all(isinstance(q, str) and q for q in s['sign'])):
+                    rep.err(w, '"sign" must be a list of names', 'S sign')
+                if 'hof' in s and s['hof'] != 1:
+                    rep.err(w, '"hof" is 1 on a side that faces a courtyard (leave it out otherwise)', 'S hof')
+                if 'balk' in s and s['balk'] not in BALK:
+                    rep.err(w, f'"balk" must be one of {BALK}, found {s["balk"]!r}', 'S balk')
                 if 'src' in s and not (isinstance(s['src'], list) and all(isinstance(q, str) for q in s['src'])):
                     rep.err(w, '"src" must be a list of photo ids', 'S src')
                 if s.get('q', 0) >= 2 and not s.get('src'):
@@ -288,7 +347,7 @@ def check_building(b, fr, rep, where):
         rep.err(where, f'"yr" must be a year, found {b["yr"]!r}', 'yr')
     if 'osm' in b and not (isinstance(b['osm'], str) and _OSM.match(b['osm'])):
         rep.err(where, f'"osm" must be way/<n> or relation/<n>, found {b["osm"]!r}', 'osm')
-    if 'fg' in b and not (is_int(b['fg']) and 0 <= b['fg'] < 128):
+    if 'fg' in b and not (is_int(b['fg']) and 0 <= b['fg'] < 256):
         rep.err(where, f'"fg" must be a sum of the flag bits {sorted(FLAGS)}, found {b["fg"]!r}', 'fg')
     if 'q' in b:
         if not isinstance(b['q'], dict):
@@ -308,6 +367,26 @@ def check_building(b, fr, rep, where):
                     rep.err(where, f'"src.{k}" must be one of {SOURCES}, found {v!r}', 'src value')
     if 'd' in b:
         check_d(b['d'], rep, where)
+    if 'fas' in b:
+        check_fas(b['fas'], rep, where, 'fas', nfat=len((tile or {}).get('fat') or []))
+    for key in ('lm', 'teil'):
+        if key in b and not (isinstance(b[key], str) and b[key].strip()):
+            rep.err(where, f'"{key}" must be a non-empty string', key)
+    if 'kat' in b and b['kat'] not in (0, 1):
+        rep.err(where, f'"kat" must be 1 (joined to the cadastre by position) or 0 (not in the cadastre), found {b["kat"]!r}', 'kat')
+    if 'lvk' in b and not (is_int(b['lvk']) and 1 <= b['lvk'] <= 60):
+        rep.err(where, f'"lvk" (storeys the cadastre names) must be an integer 1..60, found {b["lvk"]!r}', 'lvk')
+    if 'zv' in b:
+        nring = (len(b['f']) // 2 if num_list(b.get('f'), mult=2) else 0) + sum(len(r) // 2 for r in (b.get('fh') or []) if num_list(r, mult=2)) \
+            if isinstance(b.get('fh') or [], list) else 0
+        if not (num_list(b['zv']) and len(b['zv']) == nring and min(b['zv'], default=0) >= -0.01):
+            rep.err(where, f'"zv" must give the ground above z0 (>= 0) at each of the {nring} corners of f and the holes fh', 'zv')
+        if 'z0' not in b:
+            rep.err(where, '"zv" counts from "z0", which is missing', 'zv z0')
+    if is_int(b.get('fg')) and b['fg'] & 32:
+        rep.stat('g: buildings no longer standing (fg 32, not drawn)')
+    if 'z0' not in b:
+        rep.stat('g: buildings without z0 (the runtime sets them on its ground)')
     rep.stat('g: buildings')
 
 
@@ -330,20 +409,42 @@ def check_d(d, rep, where):
 
 
 def check_g_tile(doc, key, rep, where):
-    """a g tile: {v, p: 'g', key, o, b: [building, ...]} plus optional made, dgm, lod2, src"""
-    from .core import check_envelope
+    """a g tile: {schema, product: 'g', key, o, b: [building, ...]} plus made, n, src ({field: source} for the whole tile), fat (the
+    table of facade parameters fas.t points into), tief (underground car parks: [{id, f, fkt, adr, fa}], not drawn), dgm, lod2"""
     fr = check_envelope(doc, 'g', key, rep, where)
     if fr is None:
         return
-    unknown_keys(doc, ('v', 'p', 'key', 'o', 'b', 'made', 'dgm', 'lod2', 'src', 'n'), rep, where, 'g tile')
     if not isinstance(doc.get('b'), list):
         rep.err(where, '"b" must be the list of buildings', 'b')
         return
     if not doc['b']:
         rep.warn(where, 'a tile without buildings should not be written (the index lists the tiles that exist)', 'empty tile')
+    if 'n' in doc and doc['n'] != len(doc['b']):
+        rep.err(where, f'"n" = {doc["n"]!r} but the tile holds {len(doc["b"])} buildings', 'n')
     for key2 in ('dgm', 'lod2'):
         if key2 in doc and doc[key2] not in (0, 1):
             rep.err(where, f'"{key2}" must be 0 or 1', key2)
+    if 'src' in doc and not (isinstance(doc['src'], dict) and all(v in SOURCES for v in doc['src'].values())):
+        rep.err(where, f'"src" must be {{field: source}} with sources of {SOURCES}', 'tile src')
+    if 'fat' in doc:
+        if not isinstance(doc['fat'], list):
+            rep.err(where, '"fat" must be the list of facade parameter sets', 'fat')
+        else:
+            for i, fa in enumerate(doc['fat']):
+                check_fas(fa, rep, f'{where} fat[{i}]', 'fat entry')
+    if 'tief' in doc:
+        if not (isinstance(doc['tief'], list) and all(isinstance(t, dict) and isinstance(t.get('id'), str) and num_list(t.get('f'), mult=2, minlen=6)
+                                                      for t in doc['tief'])):
+            rep.err(where, '"tief" must be a list of underground car parks {id, f: [x0, y0, ...], fkt, adr, fa}', 'tief')
+        else:
+            rep.stat('g: underground car parks (tief, not drawn)', len(doc['tief']))
+    for k in doc:
+        if k.startswith('x_'):
+            rep.stat('g: private tile fields (x_...)')
     for i, b in enumerate(doc['b']):
         bid = b.get('id') if isinstance(b, dict) else None
-        check_building(b, fr, rep, f'{where} b[{i}] {bid if isinstance(bid, str) else ""}'.rstrip())
+        w = f'{where} b[{i}] {bid if isinstance(bid, str) else ""}'.rstrip()
+        try:
+            check_building(b, fr, rep, w, doc)
+        except Exception as ex:           # a record so far from the layout that a check itself fails: that is an error of the record
+            rep.err(w, f'the record cannot be checked ({type(ex).__name__}: {ex}) - a field has an unexpected type', 'record unreadable')
