@@ -316,7 +316,7 @@ with lib.browser() as b:
         X("GLFAHNDUNG.clear(); GAME.view(60, -420, KERN.ground(60, -420) + 1.62, 0, 0)")
         X("for (const id of ['einbruch', 'widerstand', 'sperre', 'einbruch']) GLFAHNDUNG.tat(id, { force: [{ name: 'Streife', police: true }] }); GLFAHNDUNG.E.wait = 0.5")
         steps(12)
-        r = J("({ voll: GLFAHNDUNG.stand().voll, riegel: GLFAHNDUNG.cars.filter(u => u.st === 'riegel').map(u => ({ x: Math.round(u.x), y: Math.round(u.y), typ: u.c.typ, d: Math.round(GLFAHNDUNG.netz(u.x, u.y).abstand(u.x, u.y) * 10) / 10 })), jagd: GLFAHNDUNG.cars.filter(u => u.st !== 'riegel').map(u => u.kind + ':' + u.c.typ) })")
+        r = J("({ voll: GLFAHNDUNG.stand().voll, riegel: GLFAHNDUNG.cars.filter(u => u.st === 'riegel').map(u => ({ x: Math.round(u.x), y: Math.round(u.y), typ: u.c.typ, d: Math.round(GLFAHNDUNG.netz(222, -108).abstand(u.x, u.y) * 10) / 10 })), jagd: GLFAHNDUNG.cars.filter(u => u.st !== 'riegel').map(u => u.kind + ':' + u.c.typ) })")
         ck('sek: five stars – a van of the special forces across the road at each of the five road ends', r['voll'] == 5 and len(r['riegel']) == 5 and all(q['d'] < 3 for q in r['riegel']), str(r))
         t = until("GLFAHNDUNG.cars.some(u => u.kind === 'sek' && u.st !== 'riegel')", 60, 2)
         ck('sek: and vans that hunt with the patrol cars', t is not None, str((t, stand()['cars'])))
