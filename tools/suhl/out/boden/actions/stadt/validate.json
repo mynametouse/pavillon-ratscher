@@ -1,0 +1,15 @@
+{
+ "target": "site",
+ "schema": 1,
+ "rev": "1.1",
+ "valid": true,
+ "errors": [],
+ "warnings": [],
+ "n_errors": 0,
+ "n_warnings": 0,
+ "stats": {
+  "boden: tiles": 12698,
+  "boden: bytes": 290151968,
+  "boden: versions checked": 1
+ }
+}
