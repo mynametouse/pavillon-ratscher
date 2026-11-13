@@ -12,12 +12,15 @@ trägt jedes solche Feld einen Merker.
 |---|---|---|---|
 | `b` Bäume | jeder einzelne Baum: Lage, Höhe, Kronenradius, Art, Merker (8 Byte) | `tools/suhl/out/gruen/probe/suhl/b/v0/` (nur Luftbild), `…/b/v1/` (mit Höhenmodell) | 78 kB |
 | `w` Waldbestände | je Kachel 20 × 20 Zellen zu 20 m im kartierten Wald: Klasse, Nadelanteil, Deckung, Höhe, Dichte, Merker; dazu Bestands-Umrisse | `…/suhl/w/v0/`, `…/w/v1/` | 3 Kacheln, je 2,4 kB |
-| `gr` Grünflächen | kartierte Flächen mit Belag (Rasen, Wiese, Park, Garten, Friedhof, Sportplatz …) als Polygone je Kachel | `…/suhl/gr/v0/` | 11 Kacheln, 88 kB |
+| `gr` Grünflächen | kartierte Flächen mit Belag (Rasen, Wiese, Park, Garten, Friedhof, Sportplatz …) als Polygone je Kachel; dazu je Kachel eine **Grünmaske** (2-m-Zellen: kein Grün / niedriges Grün / Gehölz), gemessen im Luftbild | `…/suhl/gr/v0/`, `…/gr/v1/` | 11 Kacheln, 88 kB + Masken |
 
 - **Probesatz Zentrum:** die 11 Kacheln der Stufe 10 (je 400 m), die `zentrum` berühren. `v0` = nur aus dem Luftbild, `v1` = mit
   dem Höhenmodell nDOM1. Zahlen: `tools/suhl/out/gruen/probe/statistik_v0.json`, `statistik_v1.json`.
-- **Ganze Stadt:** rechnet der Workflow `.github/workflows/suhl-gruen.yml`; die Produkte liegen als Artefakt `suhl-gruen-produkte`
-  am Lauf, die Zahlen unter `tools/suhl/out/gruen/actions/stadt/` (Abschnitt 2).
+- **Ganze Stadt:** rechnet der Workflow `.github/workflows/suhl-gruen.yml`; die Produkte liegen als Artefakte `suhl-b-v<N>`,
+  `suhl-w-v<N>`, `suhl-gr-v<N>` am Lauf (Abschnitt 9), die Zahlen unter `tools/suhl/out/gruen/actions/stadt/`. Veröffentlicht wird
+  nicht hier: `suhl-daten` nimmt die Artefakte und veröffentlicht sie als Satz.
+- **Vertrag:** `b`, `w` und `gr` sind seit Fassung 1.1 im Schema von `suhl-daten` eingetragen (`docs/features/suhl-daten.md`);
+  der Prüfer `tools/suhl/lib/validate.py` läuft in jedem Lauf mit und ergänzt den gemeinsamen Teil der drei `index.json`.
 - **Bilderbögen** (Luftbild mit den Bäumen, Vergleich Modell gegen Luftbild, Waldklassen, Höhenmodell) liegen nur auf dem
   Wegwerf-Zweig `ref/suhl-gruen` – ansehen mit `git fetch origin ref/suhl-gruen && git show origin/ref/suhl-gruen:CREDITS.md`.
 
@@ -117,6 +120,11 @@ Klassen: 1 Wald, 2 Gebüsch, 3 Wiese, 4 Rasen, 5 Park, 6 Garten, 7 Kleingarten, 
 11 Acker, 12 Obstwiese, 17 Heide, 18 Feuchtgebiet. Vorschlag für den Belag je Klasse und der kartierte Belag der Sportplätze
 stehen im `index.json`. **Grenze:** nur was in OSM als Fläche kartiert ist; Rasen zwischen Wohnblöcken fehlt dort oft.
 
+**Grünmaske** (für die Kacheln mit Einzelbäumen): `gr/10/{x}/{y}.png`, 200 × 200 Bildpunkte zu 2 m, 8 Bit Grau, **Zeile 0 =
+Nordrand**, Pixelwert = Klasse: 0 kein Grün (versiegelt, Dach, Wasser, kahler Boden), 1 niedriges Grün (Rasen, Wiese, Beete),
+2 Gehölz (Kronendach). Sie ist im Luftbild gemessen (mit Höhenmodell: Gehölz auch im Schatten) und zeigt auch das Grün, das
+niemand kartiert hat. Im Probesatz v0: 11,6 ha niedriges Grün, 73,7 ha Gehölz auf 176 ha (`index.json` → `gruenmaske`).
+
 ## 6 Format `b` (Bäume)
 
 Eine Datei je Kachel, **8 Byte je Baum**, ohne Kopf, Little Endian. So steht es auch im Vertrag `docs/features/suhl-daten.md`.
@@ -197,8 +205,10 @@ im Cache des Workflows und werden nie zweimal geholt.
 
 ## 12 Für den Suhl-Chat
 
-- **Schema (an `suhl-daten`):** (1) Merker Bit 7 (128) „steht im kartierten Wald“ in `b` nachtragen. (2) Zwei neue Produkte
-  aufnehmen: `w` (Waldzellen, Abschnitt 4) und `gr` (Grünflächen, Abschnitt 5) – der Prüfer meldet sie heute als unbekannte Ordner.
+- **Schema (an `suhl-daten`):** `w` und `gr` sind eingetragen (Fassung 1.1). Noch nachzutragen: Merker Bit 7 (128) in `b`
+  („steht im kartierten Wald“), Merker Bit 3 (8) in `w` („seit dem Laserflug geräumt“) und die Grünmaske `gr/…/{y}.png`.
+- **Kein `based_on`:** Dächer und Fahrbahnen kommen aus OSM und ETHOS, nicht aus einer Fassung von `g` oder `s`. Sobald `g`
+  und `s` für die ganze Stadt stehen, kann der Prüfer die Bäume gegen sie prüfen (Paket S2-8).
 - **Standort der Bäume** (Straßenbaum, Park, Garten, Wald) steht nicht in der Kachel; die Zahlen dazu stehen in der Statistik.
   Wenn die Laufzeit ihn braucht (Modellwahl), schlage ich Art-Nummern 40–43 vor: Straßenbaum, Parkbaum großkronig, Gartenbaum
   kleinkronig, Waldbaum Laub – als Formklassen, nicht als erfundene Baumarten.
