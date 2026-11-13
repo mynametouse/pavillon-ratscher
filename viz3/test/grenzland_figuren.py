@@ -79,9 +79,15 @@ with lib.browser() as b:
     # ---- the player on the moped ----
     def moped():
         do("GAME.view(%f, %f, KERN.ground(%f, %f) + 1.6, 30, -5); GLAUTO.mopedAt(%f, %f, %f); GLSTATE.tank = 3" % (MX - 4, MY - 4, MX - 4, MY - 4, MX, MY, MH))
+        # the other of the two close by: rides along (grenzland/gl_modus.js), behind on the seat (GLPOSE.sozius)
+        do("GLSTATE.folgt = true; (() => { const F = GRENZLAND.partnerOf(); if (F) GLFIG.place(F, %f, %f, 0); })()" % (MX - 1.5, MY - 1.5))
         steps(0.5)
         do("CAM3.want = true; CAM3.d = 1.7; VEH.enter('gl-moped')")
-        steps(1.6, 0.05)
+        steps(0.15, 0.05)
+        on0 = J("GLPOSE.player && GLPOSE.player.on")
+        steps(1.45, 0.05)
+        on1 = J("GLPOSE.player && GLPOSE.player.on")
+        ck('getting on takes a moment (the pose eased in over a third of a second)', on0 is not None and 0 < on0 < 0.8 and on1 == 1, '%s → %s' % (on0, on1))
         st = J("GLPOSE.stand()")
         note('standing on the moped: %s' % st)
         c = st.get('chk') or {}
@@ -93,6 +99,9 @@ with lib.browser() as b:
         def side(name, k=90, pitch=-6, d=1.7):
             do("CAM3.d = %f; GAME.P.yaw = VEH.cur.st.psi * 180 / Math.PI + %f; GAME.P.pitch = %f" % (d, k, pitch))
             pic(name)
+        sz = J("({ s: GLPOSE.stand().sozius, n: GLPOSE.stand().sozN, rides: !!(GRENZLAND.partnerOf() && GRENZLAND.partnerOf().rides), vis: !!(GRENZLAND.partnerOf() && GRENZLAND.partnerOf().g.visible) })")
+        note('partner: %s' % sz)
+        ck('the other of the two rides along behind on the seat, seen', sz['s'] and sz['rides'] and sz['vis'] and sz['n'] > 5, str(sz))
         side('1_moped_stand_links')
         side('1_moped_stand_vorn', 155, -8, 2.2)
         do("VEH.auto = () => ({ thr: 0.85, brk: 0, steer: 0, hand: false })")
@@ -119,8 +128,8 @@ with lib.browser() as b:
         steps(0.5)
         ok = J("({ x: AVATAR.fig.g.rotation.x, z: AVATAR.fig.g.rotation.z, on: !!VEH.cur })")
         ck('off the moped the figure stands upright again', abs(ok['x']) < 1e-6 and abs(ok['z']) < 1e-6 and not ok['on'], str(ok))
-        # Sarah (the other of the two, a smaller figure) on the same moped
-        do("AVATAR.setKind('f')")
+        # Sarah (the other of the two, a smaller figure) on the same moped (alone: the partner would be Sarah too)
+        do("GLPOSE.sozius = false; AVATAR.setKind('f')")
         for _ in range(60):
             steps(0.2)
             if J("!!(AVATAR.fig && AVATAR.fig.kind === 'f')"): break
@@ -139,7 +148,7 @@ with lib.browser() as b:
             steps(0.3)
         else:
             note('Sarah\'s figure did not load')
-        do("AVATAR.setKind('m')")
+        do("GLPOSE.sozius = true; AVATAR.setKind('m')")
         for _ in range(30):
             steps(0.2)
             if J("!!(AVATAR.fig && AVATAR.fig.kind === 'm')"): break
@@ -150,6 +159,7 @@ with lib.browser() as b:
     # ---- the player at the Trabant's wheel (1989's car, seen from outside) ----
     def trabi():
         do("GAME.view(%f, %f, KERN.ground(%f, %f) + 1.6, 30, -5); GLAUTO.trabiAt(%f, %f, %f)" % (MX - 4, MY - 4, MX - 4, MY - 4, MX + 6, MY - 6, MH))
+        do("(() => { const F = GRENZLAND.partnerOf(); if (F) GLFIG.place(F, %f, %f, 0); })()" % (MX + 4, MY - 7))
         steps(0.5)
         do("CAM3.want = true; CAM3.d = 2.2; VEH.enter('gl-trabi')")
         steps(1.4, 0.05)
@@ -157,6 +167,7 @@ with lib.browser() as b:
         c = st.get('chk') or {}
         note('at the Trabant\'s wheel: %s' % c)
         ck('at the Trabant\'s wheel the hands are on the rim (wrists within 6 cm)', VEH_ID(J) == 'gl-trabi' and max(c.get('hands', [9, 9])) < 0.06, str(c))
+        ck('the other of the two sits beside the driver', J("GLPOSE.stand().sozius") is not None, str(J("GLPOSE.stand().sozius")))
         do("CAM3.d = 2.2; GAME.P.yaw = VEH.cur.st.psi * 180 / Math.PI + 160; GAME.P.pitch = -4")
         pic('9_trabi_vorn')
         do("CAM3.d = 2.0; GAME.P.yaw = VEH.cur.st.psi * 180 / Math.PI + 95; GAME.P.pitch = -4")
@@ -225,11 +236,11 @@ with lib.browser() as b:
         ck('an officer told to run covers at least 3.5 m a second', v >= 3.5, '%.2f m/s' % v)
         ck('he runs with the sprint laid over the walk (run weight > 0.9)', b2[3] > 0.9, str(b2))
         px, py = b2[0], b2[1]
-        look_at(px, py, math.pi / 2, 5.5, -math.pi / 2, 1.2, 40, -4)
+        look_at(px, py, math.pi / 2, 5.5, math.pi / 2, 1.2, 40, -4)
         pic('5_rennen_seite')
         steps(0.13, 0.05)
         px, py = J("[GT.polizei1.x, GT.polizei1.y]")
-        look_at(px, py, math.pi / 2, 5.5, -0.5, 1.2, 40, -4)
+        look_at(px, py, math.pi / 2, 5.5, 0.5, 1.2, 40, -4)
         pic('5_rennen_vorn')
         do("GLFIG.stop(GT.polizei1)")
         # the old form with a high speed runs too (welt's officers before this round)
@@ -237,6 +248,14 @@ with lib.browser() as b:
         do("GLFIG.place(GT.polizei1, %f, %f, 0); GLFIG.go(GT.polizei1, [%f, %f], 4.2)" % (x, y - 6, x + 40, y - 6))
         steps(1.5, 0.05)
         ck('go(F, pts, 4.2) runs as well', J("GT.polizei1.renn && GT.polizei1.rig.st.runW > 0.5"), J("[GT.polizei1.renn, GT.polizei1.rig.st.runW]"))
+        # welt's officers chase at 3.2–3.6 m/s: a jog, not a slow sprint
+        do("GLFIG.place(GT.polizei1, %f, %f, 0); GLFIG.go(GT.polizei1, [%f, %f], { renn: true, v: 3.2 })" % (x, y - 3, x + 40, y - 3))
+        steps(1.2, 0.05)
+        jr = J("[GT.polizei1.rig.st.jogW || 0, GT.polizei1.rig.st.runW || 0]")
+        ck('at 3.2 m/s he jogs (the jog clip, not the sprint)', jr[0] > 0.9 and jr[1] < 0.1, str(jr))
+        px, py = J("[GT.polizei1.x, GT.polizei1.y]")
+        look_at(px, py, math.pi / 2, 5.0, -math.pi / 2 + 0.3, 1.2, 40, -4)
+        pic('5_joggen')
         do("GLFIG.stop(GT.polizei1); GLFIG.place(GT.polizei1, %f, %f, 0)" % (X0 + 20, Y0 + 9))
         steps(0.3)
     part('rennen', rennen)
@@ -297,6 +316,7 @@ with lib.browser() as b:
             ck('the gesture „%s“ runs (weight up, no error)' % art, st['g'] == art and st['w'] > 0.6 and not st['err'], str(st))
             if art in ('telefon', 'filmen'):
                 ck('„%s“: the phone is in the hand' % art, st['phone'], str(st))
+                ck('„%s“: the phone hangs in the figure (hidden and gone with it)' % art, J("GT.timo.handyG && GT.timo.handyG.parent === GT.timo.g"), '')
             look_at(x, y, hd, 2.6, 0.25, 1.3, 40, -6)
             pic('7_g_' + art)
             shots.append(art)

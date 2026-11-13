@@ -27,7 +27,19 @@ import { VPROPS } from '../world/village_props.js';
 import { VFIG } from '../verkehr/verkehr_fig.js';
 import { GL } from './gl_state.js';
 export const GLPOSE = (() => {
-  const S = { n: 0, err: null, player: null, riders: 0, last: null, props: 0, msRide: 0, msNach: 0 };
+  const S = {
+    n: 0,
+    err: null,
+    player: null,
+    riders: 0,
+    last: null,
+    props: 0,
+    msRide: 0,
+    msNach: 0,
+    sozius: true, // the partner rides along visibly (false: hidden while one drives, as grenzland/gl_modus.js does)
+    soz: null,
+    sozN: 0,
+  };
   const V = () => new THREE.Vector3(),
     Q = () => new THREE.Quaternion();
   const clamp = THREE.MathUtils.clamp,
@@ -280,6 +292,8 @@ export const GLPOSE = (() => {
   const _r = V(),
     _u = V(),
     _f = V(),
+    _p0 = V(),
+    _q0 = Q(),
     _rq = Q(),
     _rh = V(),
     _rt = V(),
@@ -298,7 +312,7 @@ export const GLPOSE = (() => {
     _mi = new THREE.Matrix4();
   // the rider R on the moped M: placed on the saddle (turned and leaning with it), bent forward as far as the arms need, feet on the
   // pegs (at a stop the left one on the ground), hands round the grips, head up
-  function ride(R, M, dt = 0.016) {
+  function ride(R, M, dt = 0.016, w = 1) {
     const B = R.B,
       P = MOPED[M.typ] || MOPED.s51,
       st = R.st;
@@ -306,13 +320,19 @@ export const GLPOSE = (() => {
     M.root.updateMatrixWorld(true);
     const Fw = M.frame.matrixWorld;
     _mi.copy(Fw).invert();
-    // 1. on the saddle, turned and leaning with the moped
+    // 1. on the saddle, turned and leaning with the moped (w < 1: on the way there from where the figure put itself)
+    _p0.copy(R.g.position);
+    _q0.copy(R.g.quaternion);
     M.frame.getWorldQuaternion(_rq);
     R.g.quaternion.copy(_rq);
     R.g.updateMatrixWorld(true);
     B.Hips.getWorldPosition(_rh);
     v3(P.hip, _rt).applyMatrix4(Fw);
     R.g.position.add(_rt.sub(_rh));
+    if (w < 1) {
+      R.g.position.lerpVectors(_p0, R.g.position, w);
+      R.g.quaternion.slerpQuaternions(_q0, _rq, w);
+    }
     R.g.updateMatrixWorld(true);
     axes(M.frame, _r, _u, _f);
     // 2. how far forward: the shoulders as far from the grips as nine tenths of the arm (a little bend in the elbows)
@@ -359,19 +379,32 @@ export const GLPOSE = (() => {
     st.lean = st.lean == null ? best : st.lean + (best - st.lean) * Math.min(1, dt * 5);
     st.slide = st.slide == null ? bestS : st.slide + (bestS - st.slide) * Math.min(1, dt * 5);
     if (st.slide > 0.001) {
-      R.g.position.addScaledVector(_f, st.slide);
+      R.g.position.addScaledVector(_f, st.slide * w);
       R.g.updateMatrixWorld(true);
     }
     const th = st.lean,
+      tw = th * w,
       Qi = R.model.getWorldQuaternion(_mq).invert();
-    boneTurn(R.sv, Qi, B.Spine, 1, 0, 0, th * 0.45);
-    boneTurn(R.sv, Qi, B.Spine1 || B.Spine2, 1, 0, 0, th * 0.3);
-    boneTurn(R.sv, Qi, B.Spine2 && B.Spine1 ? B.Spine2 : null, 1, 0, 0, th * 0.25);
+    boneTurn(R.sv, Qi, B.Spine, 1, 0, 0, tw * 0.45);
+    boneTurn(R.sv, Qi, B.Spine1 || B.Spine2, 1, 0, 0, tw * 0.3);
+    boneTurn(R.sv, Qi, B.Spine2 && B.Spine1 ? B.Spine2 : null, 1, 0, 0, tw * 0.25);
     // the shoulders come forward toward the bar, the head up to the road
-    boneTurn(R.sv, Qi, B.LeftShoulder, 0, 1, 0, -0.12);
-    boneTurn(R.sv, Qi, B.RightShoulder, 0, 1, 0, 0.12);
-    boneTurn(R.sv, Qi, B.Neck, 1, 0, 0, -th * 0.45);
-    boneTurn(R.sv, Qi, B.Head, 1, 0, 0, -th * 0.5 + 0.06);
+    boneTurn(R.sv, Qi, B.LeftShoulder, 0, 1, 0, -0.12 * w);
+    boneTurn(R.sv, Qi, B.RightShoulder, 0, 1, 0, 0.12 * w);
+    boneTurn(R.sv, Qi, B.Neck, 1, 0, 0, -tw * 0.45);
+    boneTurn(R.sv, Qi, B.Head, 1, 0, 0, (-th * 0.5 + 0.06) * w);
+    // the eyes go into the curve: the head turns a little the way the moped turns (its heading's rate, eased)
+    const hdNow = Math.atan2(_f.x, -_f.z);
+    if (st.hdPrev != null && dt > 0) {
+      const rate = wrap(hdNow - st.hdPrev) / dt;
+      st.rate = (st.rate || 0) + (clamp(rate, -2, 2) - (st.rate || 0)) * Math.min(1, dt * 3);
+    }
+    st.hdPrev = hdNow;
+    const ly = -clamp((st.rate || 0) * 0.35, -0.35, 0.35) * w;
+    if (Math.abs(ly) > 0.005) {
+      boneTurn(R.sv, Qi, B.Neck, 0, 1, 0, ly * 0.4);
+      boneTurn(R.sv, Qi, B.Head, 0, 1, 0, ly * 0.6);
+    }
     // 3. the feet: on the pegs; at a stop the left one goes down to the ground (eased, the foot lifted on its way)
     const stop = M.v < 0.7 ? 1 : 0;
     st.down = st.down == null ? stop : st.down + (stop - st.down) * Math.min(1, dt * 3.2);
@@ -406,8 +439,8 @@ export const GLPOSE = (() => {
         .copy(_f)
         .addScaledVector(_r, s * 0.3)
         .addScaledVector(_u, 0.25);
-      ik2(R, UL, LL, Ft, _ank, _pole);
-      if (Tb) aim(R, Ft, Tb.getWorldPosition(_w1), _ball);
+      ik2(R, UL, LL, Ft, _ank, _pole, w);
+      if (Tb) aim(R, Ft, Tb.getWorldPosition(_w1), _ball, w);
     }
     // 4. the hands round the grips: the elbows out and down a little, the fingers over the grip
     for (let i = 0; i < 2; i++) {
@@ -418,7 +451,7 @@ export const GLPOSE = (() => {
         .multiplyScalar(s * 0.75)
         .addScaledVector(_u, -0.55)
         .addScaledVector(_f, -0.35);
-      ik2(R, B[sd + 'Arm'], B[sd + 'ForeArm'], B[sd + 'Hand'], _gl[i], _pole);
+      ik2(R, B[sd + 'Arm'], B[sd + 'ForeArm'], B[sd + 'Hand'], _gl[i], _pole, w);
       _w1
         .copy(_f)
         .multiplyScalar(0.78)
@@ -429,8 +462,8 @@ export const GLPOSE = (() => {
         .multiplyScalar(0.8)
         .addScaledVector(_f, 0.5)
         .addScaledVector(_r, s * 0.1);
-      handTo(R, sd, _w1, _w2);
-      curl(R, sd, [1.05, 1.0, 0.55], 0.9);
+      handTo(R, sd, _w1, _w2, w);
+      curl(R, sd, [1.05, 1.0, 0.55], 0.9, w);
     }
     // what came of it (the tests read it): the hip joint's height over the moped's ground, how far the balls of the feet are from the
     // pegs (or the ground) and the wrists from the grips
@@ -535,17 +568,153 @@ export const GLPOSE = (() => {
           F0.g.rotation.x = 0;
           F0.g.rotation.z = 0;
         }
-        if (S.player.R) back(S.player.R);
+        // (the turns are in the avatar's own map: it puts them back before its next mixer step)
         S.player = null;
       }
       return;
     }
-    if (!S.player || S.player.F !== AF) S.player = { F: AF, R: rig(AF.B, AF.model, AF.g, AF.sv), n: 0 };
+    if (!S.player || S.player.F !== AF) S.player = { F: AF, R: rig(AF.B, AF.model, AF.g, AF.sv), n: 0, on: 0, v: null };
+    // getting on: a third of a second from the seat the avatar takes to the rider's pose
+    if (S.player.v !== v) {
+      S.player.v = v;
+      S.player.on = 0;
+    }
+    S.player.on = Math.min(1, S.player.on + dt / 0.35);
     const R = S.player.R;
     R.sv = AF.sv;
     // whatever is still turned (a frame the avatar did not pose) back first: the turns below are computed from the clip's pose
     back(R);
-    if (v.id === 'gl-trabi' ? drive(R, v) : ride(R, moped(v), dt)) S.player.n++;
+    if (v.id === 'gl-trabi' ? drive(R, v) : ride(R, moped(v), dt, smooth(S.player.on))) S.player.n++;
+  }
+  // ------------------------------------------------------------------ the other of the two rides along ------------------------------------------------------------------
+  // grenzland/gl_modus.js hides the partner while the player drives (F.rides). GTA shows the two together: seen from outside, the
+  // partner sits behind on the Simson's long seat – hips on its back half, feet on the pillion pegs, hands at the driver's waist – or
+  // beside the driver in the Trabant. GLPOSE.sozius = false keeps the old way (hidden).
+  const SOZ = { hip: [0, -0.68, 0.9], ball: [0.19, -0.44, 0.37] },
+    TRABI2 = { hip: [0.33, -0.45, 0.4], floor: 0.29 };
+  function pillion(R, M, D, dt) {
+    const B = R.B,
+      st = R.st;
+    if (!B.Hips || !M) return false;
+    M.root.updateMatrixWorld(true);
+    const Fw = M.frame.matrixWorld;
+    M.frame.getWorldQuaternion(_rq);
+    R.g.quaternion.copy(_rq);
+    R.g.updateMatrixWorld(true);
+    B.Hips.getWorldPosition(_rh);
+    v3(SOZ.hip, _rt).applyMatrix4(Fw);
+    R.g.position.add(_rt.sub(_rh));
+    R.g.updateMatrixWorld(true);
+    axes(M.frame, _r, _u, _f);
+    const Qi = R.model.getWorldQuaternion(_mq).invert();
+    boneTurn(R.sv, Qi, B.Spine, 1, 0, 0, 0.1);
+    boneTurn(R.sv, Qi, B.Spine1 || B.Spine2, 1, 0, 0, 0.08);
+    boneTurn(R.sv, Qi, B.Neck, 1, 0, 0, -0.08);
+    // a look past the driver's shoulder now and then
+    st.pt = (st.pt || 0) + dt;
+    boneTurn(R.sv, Qi, B.Head, 0, 1, 0, 0.35 * Math.sin(st.pt * 0.21) * Math.max(0, Math.sin(st.pt * 0.09)));
+    for (let i = 0; i < 2; i++) {
+      const sd = i ? 'Right' : 'Left',
+        s = i ? 1 : -1,
+        UL = B[sd + 'UpLeg'],
+        LL = B[sd + 'Leg'],
+        Ft = B[sd + 'Foot'],
+        Tb = B[sd + 'ToeBase'];
+      if (UL && LL && Ft) {
+        v3([s * SOZ.ball[0], SOZ.ball[1], SOZ.ball[2]], _ball).applyMatrix4(Fw);
+        _fd
+          .copy(_f)
+          .multiplyScalar(Math.cos(R.footA + 0.25))
+          .addScaledVector(_u, -Math.sin(R.footA + 0.25))
+          .addScaledVector(_r, s * 0.2);
+        _fd.normalize();
+        _ank.copy(_ball).addScaledVector(_fd, -(R.footL || 0.14));
+        _pole
+          .copy(_f)
+          .addScaledVector(_r, s * 0.45)
+          .addScaledVector(_u, 0.3);
+        ik2(R, UL, LL, Ft, _ank, _pole);
+        if (Tb) aim(R, Ft, Tb.getWorldPosition(_w1), _ball);
+      }
+      // the hands at the driver's waist (or on the own thighs without one)
+      const Ds = D && D.B && (D.B.Spine || D.B.Hips);
+      if (Ds)
+        Ds.getWorldPosition(_gt)
+          .addScaledVector(_r, s * 0.15)
+          .addScaledVector(_f, -0.02)
+          .addScaledVector(_u, -0.04);
+      else if (UL && LL) {
+        UL.getWorldPosition(_sa);
+        LL.getWorldPosition(_gt).lerp(_sa, 0.4).addScaledVector(_u, 0.08);
+      }
+      _pole.copy(_r).multiplyScalar(s).addScaledVector(_u, -0.4).addScaledVector(_f, -0.3);
+      ik2(R, B[sd + 'Arm'], B[sd + 'ForeArm'], B[sd + 'Hand'], _gt, _pole);
+      _w1
+        .copy(_f)
+        .multiplyScalar(0.7)
+        .addScaledVector(_r, -s * 0.6)
+        .addScaledVector(_u, -0.2);
+      _w2.copy(_r).multiplyScalar(s).addScaledVector(_u, 0.3);
+      handTo(R, sd, _w1, _w2);
+      curl(R, sd, [0.6, 0.5, 0.35], 0.3);
+    }
+    return true;
+  }
+  // beside the driver in the Trabant: on the passenger's seat, the feet in the footwell, the hands on the thighs
+  function beifahrer(R, v) {
+    const B = R.B,
+      body = v.model && v.model.body;
+    if (!B.Hips || !body) return false;
+    v.g.updateMatrixWorld(true);
+    body.getWorldQuaternion(_rq);
+    R.g.quaternion.copy(_rq);
+    R.g.updateMatrixWorld(true);
+    B.Hips.getWorldPosition(_rh);
+    v3(TRABI2.hip, _rt).applyMatrix4(body.matrixWorld);
+    R.g.position.add(_rt.sub(_rh));
+    R.g.updateMatrixWorld(true);
+    v3([TRABI2.hip[0], TRABI2.hip[1], TRABI2.floor], _w3).applyMatrix4(body.matrixWorld);
+    sitzBeine(R, _w3.y, false, 1, false);
+    return true;
+  }
+  function partnerRide(dt) {
+    const G = window.GRENZLAND,
+      F = G && G.partnerOf ? G.partnerOf() : null,
+      v = VEH.cur,
+      AF = AVATAR.fig;
+    const on = !!(
+      S.sozius &&
+      F &&
+      F.rig &&
+      F.rides &&
+      !F.gone &&
+      v &&
+      (v.id === 'gl-moped' || v.id === 'gl-trabi') &&
+      AF &&
+      AF.g &&
+      AF.g.visible &&
+      GL.era === 'heute'
+    );
+    if (!on) {
+      if (S.soz) {
+        // (grenzland/gl_modus.js places the partner beside the vehicle again when one gets off)
+        if (S.soz.f && 'mode' in S.soz.f && !S.soz.sitzt && !S.soz.reitet) S.soz.f.mode = 'stand';
+        S.soz = null;
+      }
+      return;
+    }
+    S.soz = F;
+    F.g.visible = true;
+    // the mode hides the partner before the figures' tick: nobody else poses it now – the clips here, then the seat
+    back(F.rig);
+    if (F.f && 'mode' in F.f) F.f.mode = 'sit';
+    F.f.anim(dt, 0);
+    const ok = v.id === 'gl-moped' ? pillion(F.rig, moped(v), S.player && S.player.R, dt) : beifahrer(F.rig, v);
+    if (ok) {
+      F.x = F.g.position.x;
+      F.y = -F.g.position.z;
+      S.sozN = (S.sozN || 0) + 1;
+    }
   }
   // ------------------------------------------------------------------ the figures that ride ------------------------------------------------------------------
   // grenzland/gl_mission.js puts a rider on his moped (F.reitet: hung behind it, upright); here, after the vehicles of the frame, he sits
@@ -598,6 +767,7 @@ export const GLPOSE = (() => {
       const t0 = performance.now();
       try {
         playerRide(dt);
+        partnerRide(dt);
         ridersTick(dt);
         // the slowest of the last frames (decaying), in ms
         S.msRide = Math.max(S.msRide * 0.995, performance.now() - t0);
@@ -608,35 +778,36 @@ export const GLPOSE = (() => {
     });
   // ------------------------------------------------------------------ the run ------------------------------------------------------------------
   // the clip set's sprint, decoded once per set, sampled by interpolants and laid over rbPerson's walk (slerp by the run's weight)
+  // (two of them: the jog for 2–3.6 m/s – welt's officers chase at 3.2 –, the sprint above 4)
   const RUN = new WeakMap();
-  function runClip(set) {
-    if (!set || !set.clips || !set.clips.sprint) return null;
-    let C = RUN.get(set);
-    if (C) return C;
-    const clip = decodeClip(set.clips.sprint);
-    C = {
+  function runClip(set, k = 'sprint') {
+    if (!set || !set.clips || !set.clips[k]) return null;
+    let M = RUN.get(set);
+    if (!M) RUN.set(set, (M = {}));
+    if (M[k]) return M[k];
+    const clip = decodeClip(set.clips[k]);
+    const C = (M[k] = {
+      k,
       d: clip.duration,
-      speed: set.clips.sprint.speed || 5.5,
+      speed: set.clips[k].speed || (k === 'jog' ? 2.4 : 5.5),
       hip: (set.meta && set.meta.restHip) || 0.9,
       tracks: clip.tracks.map(tr => ({
         bone: tr.name.split('.')[0],
         pos: tr.name.endsWith('.position'),
         ip: tr.createInterpolant(),
       })),
-    };
-    RUN.set(set, C);
+    });
     return C;
   }
   const _rv = V(),
     _rqq = Q();
   function lauf(R, C, t, w) {
-    if (!R.runB || R.runC !== C) {
-      R.runC = C;
-      R.runB = C.tracks.map(tr => R.model.getObjectByName(tr.bone) || null);
-    }
+    if (!R.runB) R.runB = new Map();
+    let BB = R.runB.get(C);
+    if (!BB) R.runB.set(C, (BB = C.tracks.map(tr => R.model.getObjectByName(tr.bone) || null)));
     const tt = ((t % C.d) + C.d) % C.d;
     for (let i = 0; i < C.tracks.length; i++) {
-      const b = R.runB[i],
+      const b = BB[i],
         tr = C.tracks[i];
       if (!b) continue;
       const r = tr.ip.evaluate(tt);
@@ -1037,12 +1208,14 @@ export const GLPOSE = (() => {
     }
     g.matrixAutoUpdate = false;
     g.name = 'grenzland handy';
-    scene.add(g);
+    // in the figure's own group: hidden with it, gone with it (its meshes are shared: grenzland/gl_fig.js frees nothing of them)
+    (F.g || scene).add(g);
     F.handyG = g;
     S.props++;
     return g;
   }
   const _pm = new THREE.Matrix4(),
+    _pmi = new THREE.Matrix4(),
     _px = V(),
     _py = V(),
     _pz = V(),
@@ -1058,6 +1231,11 @@ export const GLPOSE = (() => {
     _pz.copy(_hf).multiplyScalar(-1);
     _px.crossVectors(_py, _pz).normalize();
     _pm.makeBasis(_px, _py, _pz).setPosition(_pp);
+    // the world frame into the parent's (the figure's root: no scale)
+    if (g.parent && g.parent !== scene) {
+      g.parent.updateWorldMatrix(true, false);
+      _pm.premultiply(_pmi.copy(g.parent.matrixWorld).invert());
+    }
     g.matrix.copy(_pm);
     g.matrixWorldNeedsUpdate = true;
     g.updateMatrixWorld(true);
@@ -1085,15 +1263,22 @@ export const GLPOSE = (() => {
     if (F.g.position.distanceToSquared(cam.position) > 4900) return;
     const t0 = performance.now();
     try {
-      // the run
-      const runT = F.renn && sp > 0 ? smooth((sp - 1.8) / 1.6) : 0;
-      st.runW = (st.runW || 0) + (runT - (st.runW || 0)) * Math.min(1, dt * 8);
-      if (st.runW > 0.01 && F.set) {
-        const C = runClip(F.set);
-        if (C) {
-          const v = C.speed * ((R.hipH || C.hip) / C.hip);
-          st.runT = (st.runT || 0) + (dt * Math.max(sp, 1)) / v;
-          lauf(R, C, st.runT, st.runW);
+      // the run: over 2 m/s the jog comes in over the walk, over 3.6 the sprint over the jog (each at the pace of its own stride)
+      const fast = sp > 0 ? sp : 0,
+        jT = smooth((fast - 2.0) / 0.5),
+        sT = smooth((fast - 3.6) / 0.8);
+      st.jogW = (st.jogW || 0) + (jT - (st.jogW || 0)) * Math.min(1, dt * 8);
+      st.runW = (st.runW || 0) + (sT - (st.runW || 0)) * Math.min(1, dt * 8);
+      if (F.set && st.jogW > 0.01) {
+        const CJ = runClip(F.set, 'jog'),
+          CS = st.runW > 0.01 ? runClip(F.set, 'sprint') : null;
+        if (CJ) {
+          st.jogT = (st.jogT || 0) + (dt * Math.max(fast, 1)) / (CJ.speed * ((R.hipH || CJ.hip) / CJ.hip));
+          lauf(R, CJ, st.jogT, st.jogW);
+        }
+        if (CS) {
+          st.runT = (st.runT || 0) + (dt * Math.max(fast, 1)) / (CS.speed * ((R.hipH || CS.hip) / CS.hip));
+          lauf(R, CS, st.runT, st.runW);
         }
       }
       // sitting: the feet down
@@ -1241,6 +1426,8 @@ export const GLPOSE = (() => {
       avatar: !!AF,
       chk: S.player && S.player.R ? S.player.R.st.chk || null : null,
       ms: { ride: +S.msRide.toFixed(3), nach: +S.msNach.toFixed(3) },
+      sozius: S.soz ? S.soz.id : null,
+      sozN: S.sozN,
     };
   }
   Object.assign(S, {
