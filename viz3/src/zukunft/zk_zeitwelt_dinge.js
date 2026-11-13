@@ -9,6 +9,7 @@
 // road, a timber truck through the village.
 // Built from the kit (zk_zeitwelt_kit.js): one geometry per part, instanced, per world on layer 0 / 21 / 22.
 import * as THREE from 'three';
+import { cam } from '../core/head.js';
 import { ZKKIT as K } from './zk_zeitwelt_kit.js';
 import { ZKHANG } from './zk_zeitwelt_hang.js';
 
@@ -779,17 +780,28 @@ export const ZKDINGE = (() => {
     want: (st, side) => {
       const F = st.forest;
       if (!F || +F.green > 0.985) return null;
+      // far from the clearing (its stumps and saplings are not seen beyond ~200 m) keep what stands: no rebuilds in the time-lapse
+      if (!nearKahl() && S.lichtD && S.lichtD[side]) {
+        S.lichtStale = true; // zk_zeitwelt.js tick: rebuilt as soon as the camera comes near
+        return S.lichtD[side];
+      }
       if (side === 'R') S.lastR = st;
       else S.lastL = st;
       // rebuild in steps: the young stand's height by 0.5 m, the stage shares by 0.04
-      return {
+      const d = {
         h: q(F.regrowH, 0.5),
         mix: F.regrow === 'mischwald',
         guards: +F.planted > 0.3,
         s: ['young', 'cleared', 'fallen', 'grey'].map(k => q(F[k], 0.04)),
       };
+      (S.lichtD || (S.lichtD = {}))[side] = d;
+      return d;
     },
     build: (d, slot) => lichtung(d, slot),
   });
-  return { S, sites, HUB, ROT };
+  function nearKahl() {
+    const k = sites().kahl;
+    return Math.hypot(cam.position.x - k.x, -cam.position.z - k.y) < 600;
+  }
+  return { S, sites, nearKahl, HUB, ROT };
 })();

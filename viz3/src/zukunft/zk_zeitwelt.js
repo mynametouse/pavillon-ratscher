@@ -231,14 +231,14 @@ export const ZKZEITWELT = (() => {
       // the first version's world (zukunft/zk_welt.js): PV on the village roofs (energy.pvRoof) and the forest at the Klinge (the near trees
       // of world/forest.js – the slope cards leave that lobe out). Its beetle curve (ZKDATA.DIEBACK at ZKDATA.YEARS) is set to the
       // chronicle's for the time of the Zeitreise, so the family forest dies, is cleared and grows again in the chronicle's years; the
-      // real year goes in (quarter years: its stand is rebuilt at most four times a year of the time-lapse). PV in the split: the share of
+      // real year goes in (half years: its stand is rebuilt at most twice a year of the time-lapse). PV in the split: the share of
       // each world as instance counts per render (side). The forest itself shows the left world in the split (its trees are one set).
       id: 'klinge',
       sig: st =>
         st
           ? [
               st.forest && st.forest.regrow,
-              Math.floor((+st.y || 2026) * 4) / 4,
+              Math.floor((+st.y || 2026) * 2) / 2,
               r3(st.energy && st.energy.pvRoof),
               Math.round(((st.water && +st.water.level) || 0) * 20),
             ].join()
@@ -265,7 +265,7 @@ export const ZKZEITWELT = (() => {
         if (!KL.dieback0) KL.dieback0 = ZKDATA.DIEBACK.slice();
         const c = KL.curve && KL.curve[mode === 'umbau' ? 'gewappnet' : 'allein'];
         if (c) c.forEach((v, i) => (ZKDATA.DIEBACK[i] = v));
-        const y = Math.floor((+st.y || 2026) * 4) / 4;
+        const y = Math.floor((+st.y || 2026) * 2) / 2;
         // the river (the Schleuse below the dam: the first version's flood) rises with the events – Annahme: 3 × the street's level
         const lv = (st.water && +st.water.level) || 0;
         ZKWELT.apply(
@@ -359,6 +359,11 @@ export const ZKZEITWELT = (() => {
         ZKKIT.tick(dt);
         ZKTON.tick(dt);
         if (ZKNACHT.flickering()) markDirty();
+        // the clearing's near things were kept while the camera was far: bring them up to date when it comes near
+        if (ZKDINGE.S.lichtStale && ZKDINGE.nearKahl()) {
+          ZKDINGE.S.lichtStale = false;
+          guard('lichtung', () => ZKKIT.setAll(S.L, S.R));
+        }
         // the street flood's foam at night, no blue flash without the engine
         const V = window.VILLAGE;
         ZKKIT.U.uZkNight.value = ZKNACHT.S.nightFn ? ZKNACHT.S.nightFn.call(V) : V && V.night ? V.night() : 0;
