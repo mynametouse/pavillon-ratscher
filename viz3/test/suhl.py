@@ -312,6 +312,26 @@ def desktop():
                 lib.shot(pg, OUT, 'suhl_ampel')
                 E("GAME.go('suhl')")
                 wait(QUIET, 60)
+            # Suhl's own signs: street-name signs at the corners, bus stops with the H, their names, shelters and benches
+            ze = J("SUHL.status().zeichen")
+            ck('street-name signs and bus stops near the Markt: posts with their plates, the H signs with the names of the stops',
+               ze and ze['posts'] >= 5 and ze['plates'] >= ze['posts'] and ze['stops'] >= 2 and ze['names'] >= 5 and ze['near']['stop'] and ze['near']['post'],
+               json.dumps(ze, ensure_ascii=False))
+            if ze and ze['near'] and ze['near']['stop']:
+                sx, sy, sz, saz = ze['near']['stop'][:4]
+                E(f"""(() => {{ const a = {saz} * Math.PI / 180, hx = Math.sin(a), hy = Math.cos(a), x = {sx} - hx * 9 - hy * 2.2, y = {sy} - hy * 9 + hx * 2.2;
+                    GAME.view(x, y, KERN.ground(x, y) + 1.7, {saz} + 14, 4, 55); }})()""")
+                for _ in range(6):
+                    E("GAME.step(0.5)")
+                lib.shot(pg, OUT, 'suhl_haltestelle')
+            if ze and ze['near'] and ze['near']['post']:
+                px_, py_, pz_ = ze['near']['post']
+                E(f"GAME.view({px_} - 5, {py_} - 5, KERN.ground({px_} - 5, {py_} - 5) + 1.7, 45, 12, 50)")
+                for _ in range(6):
+                    E("GAME.step(0.5)")
+                lib.shot(pg, OUT, 'suhl_strassenschild')
+            E("GAME.go('suhl')")
+            wait(QUIET, 60)
             ck('street furniture of Suhl in the roads system: lamps, signs and lines of every street tile, the lamps around the Markt built',
                fu['furn'] > 0 and fu['sets'] == fu['furn'] and fu['err'] == 0 and fu['n'] and fu['n'].get('lamps', 0) > 300 and fu['shown'] and fu['shown'].get('lamps', 0) > 5,
                json.dumps(fu))

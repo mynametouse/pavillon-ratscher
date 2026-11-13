@@ -11,6 +11,7 @@ import { boden } from './suhl/kern/boden.js';
 import { stadt } from './suhl/kern/stadt.js';
 import { strassen } from './suhl/kern/strassen.js';
 import { ampeln } from './suhl/kern/ampeln.js';
+import { zeichen } from './suhl/kern/zeichen.js';
 import { probe } from './suhl/kern/probe.js';
 // the worker behind promises: ask({ op, … }, [transfer]) → the answer
 function workerOf(url, xf) {
@@ -69,6 +70,7 @@ export async function start(ctx) {
     C = stadt(ctx, G, IX, worker, { old: [MARKT[0], MARKT[1], 520], areas, z0ok }),
     ST = strassen(ctx, G, IX),
     AM = ST.on ? ampeln(ctx, ST) : null,
+    ZE = ST.on ? zeichen(ctx, ST) : null,
     T = { index: Math.round(performance.now() - t0), enter: 0, warm: 0, first: 0 },
     A = { on: false, stage: 0, d: 1e9, quarter: null, mem0: null };
   // ---- the drive (welt/fahrt.js, round 2 of the roads system) asks a zone with ground of its own where that ground is: true (drawn
@@ -114,6 +116,7 @@ export async function start(ctx) {
     if (C.on && far) C.tick(dt, o, top());
     if (ST.on) ST.tick(dt, o, d < NEAR);
     if (AM && d < NEAR) AM.tick(dt, o);
+    if (ZE && d < NEAR) ZE.tick(dt, o);
     if (!T.first && C.on && C.n.built > 0) T.first = Math.round(performance.now() - T.t0);
     acc += dt;
     if (acc > 1) {
@@ -146,6 +149,7 @@ export async function start(ctx) {
       B.leave();
       C.leave();
       if (AM) AM.leave();
+      if (ZE) ZE.leave();
       if (ST.on) ST.clear();
       worker.stop();
       A.warmed = false;
@@ -252,6 +256,7 @@ export async function start(ctx) {
       stadt: C.on ? C.state() : null,
       strassen: ST.on ? ST.state() : null,
       ampeln: AM ? AM.state() : null,
+      zeichen: ZE ? ZE.state() : null,
       worker: worker.busy(),
       live: Object.assign({}, LIVE),
       times: T,
