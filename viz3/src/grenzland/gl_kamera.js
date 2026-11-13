@@ -130,8 +130,14 @@ export const GLKAMERA = (() => {
       if ((bust && !bust.hidden) || (wahl && !wahl.hidden)) return nein('tafel');
       const me = playerId();
       const w = GLFAHNDUNG.wo();
+      // (on a moped standing still the other one of the two rides along: she gets off with the player)
+      let mit = null;
+      try {
+        mit = v && window.GRENZLAND && window.GRENZLAND.partnerOf ? window.GRENZLAND.partnerOf() : null;
+      } catch (e) {}
       const da = lines.some(([who]) => {
         if (!who || who === me) return false;
+        if (mit && mit.rides && mit.id === who) return true;
         const F = figOf(who);
         return !!F && !!F.g && F.g.visible && hyp(F.x - w.x, F.y - w.y) < 14;
       });

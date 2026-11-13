@@ -30,6 +30,8 @@ export const GLSCORE = (() => {
     letzter: '',
     probe: false, // a STIMME.whenIdle probe is waiting
     spricht: false,
+    lvl: -1, // the master's level set last
+    lvlA: null,
   };
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
   const raw = () => {
@@ -337,8 +339,15 @@ export const GLSCORE = (() => {
     const c = A.ctx,
       now = c.currentTime,
       duck = S.duckApi || S.duckTalk || spricht();
+    // (the master's level only when it changes: an automation event every frame would pile up)
+    const lvl = GL.on ? (duck ? 0.4 : 1) : 0.0001;
+    if (lvl !== S.lvl || A !== S.lvlA) {
+      S.lvl = lvl;
+      S.lvlA = A;
+      A.master.gain.cancelScheduledValues(now);
+      A.master.gain.setTargetAtTime(lvl, now, 0.12);
+    }
     S.spricht = duck;
-    A.master.gain.setTargetAtTime(GL.on ? (duck ? 0.4 : 1) : 0.0001, now, 0.12);
     for (const name of Object.keys(LAYER)) {
       const D = LAYER[name],
         on = S.ziel === name;
@@ -451,7 +460,13 @@ export const GLSCORE = (() => {
     const A = kette();
     if (!A || A.ctx.state !== 'running') return true;
     const t = A.ctx.currentTime + 0.04;
-    A.master.gain.setTargetAtTime(S.duckApi || S.duckTalk ? 0.4 : 1, t, 0.05);
+    // (a sting with nothing playing yet: the master comes up for it)
+    if (S.lvl !== 1 && S.lvl !== 0.4) {
+      S.lvl = S.duckApi || S.duckTalk ? 0.4 : 1;
+      S.lvlA = A;
+      A.master.gain.cancelScheduledValues(t);
+      A.master.gain.setTargetAtTime(S.lvl, t, 0.05);
+    }
     try {
       STICH[name](A, A.stich, t);
     } catch (e) {}
@@ -465,6 +480,7 @@ export const GLSCORE = (() => {
     S.duckApi = S.duckTalk = false;
     S.ziel = '';
     const A = S.A;
+    S.lvl = -1;
     if (!A) return;
     S.A = null;
     const L = S.L;
