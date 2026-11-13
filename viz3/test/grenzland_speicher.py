@@ -2,7 +2,7 @@
 # decoded texture images and to the renderer's resident memory (SwiftShader: the GPU side is only a hint): after the app's load, after the
 # scene's start in Schleusingen, in free play in the garden, on the moped, at the barn, in 1989, after „Beenden“. Measures and reports
 # (as GitHub annotations); fails only if the textures grow by more than 250 MB or the page dies.
-#   python3 viz3/test/grenzland_speicher.py 8951   (~8 min; on GitHub Actions – the chat machine's browser may not hold it)
+#   python3 viz3/test/grenzland_speicher.py 8951   (~8 min; on GitHub Actions: the browser of the chat machine may not hold it)
 import sys, os, json, time, subprocess
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 import grenzland_ci
