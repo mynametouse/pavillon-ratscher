@@ -70,6 +70,7 @@ export const GLKAMERA = (() => {
     keys: false,
     lineT: 0, // seconds since the line began (taps right after a cut are not counted)
     insertT: 0, // an insert's seconds left
+    cur: null, // the line said now: { i, who, sec }
     turn: [], // figures turning smoothly: { F, hd }
     stats: { cuts: 0, kinds: {}, n: 0 },
     nein: '', // why the last talk was no cutscene (tests)
@@ -335,6 +336,7 @@ export const GLKAMERA = (() => {
   function zeile(i, who, sec) {
     if (!S.on) return;
     S.lineT = 0;
+    S.cur = { i, who, sec };
     const X = who ? S.who.find(e => e.id === who) : null;
     // the listener: for the others the player, for the player's party the first of the others
     let L = null;
@@ -399,6 +401,21 @@ export const GLKAMERA = (() => {
     const e = S.turn.find(q => q.F === F);
     if (e) e.hd = hd;
     else S.turn.push({ F, hd });
+  }
+  // the player was put elsewhere while a talk runs: the same people, a new side, a fresh cut on the line that is said
+  function umstellen() {
+    if (S.insertT > 0 || !S.cur || S.who.some(e => e.F !== 'P' && (e.F.gone || hyp(e.F.x - P.x, e.F.y - P.y) > 14))) {
+      aus(false);
+      return;
+    }
+    S.lock = { x: P.x, y: P.y, body: P.body };
+    seiteWaehlen();
+    const m = mitte(S.who, 1);
+    if (m) P.body = S.lock.body = (Math.atan2(m[0] - P.x, m[1] - P.y) * 180) / PI;
+    S.n = 0;
+    S.shot = null;
+    S.lastWho = '';
+    zeile(S.cur.i, S.cur.who, S.cur.sec);
   }
   // ---------------- begin and end ----------------
   function start(o) {
@@ -523,6 +540,7 @@ export const GLKAMERA = (() => {
     S.on = false;
     S.endT = -1;
     S.insertT = 0;
+    S.cur = null;
     S.talk = null;
     S.lock = null;
     tasten(false);
@@ -580,8 +598,8 @@ export const GLKAMERA = (() => {
       const L = S.lock;
       if (L) {
         if (hyp(P.x - L.x, P.y - L.y) > 1.2) {
-          // put elsewhere: the scene is over
-          aus(false);
+          // put elsewhere (not by the mission – that ends the scene itself): the scene goes on there if the people are near, else it ends
+          umstellen();
         } else {
           P.x = L.x;
           P.y = L.y;

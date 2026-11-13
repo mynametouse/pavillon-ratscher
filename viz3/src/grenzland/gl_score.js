@@ -180,18 +180,18 @@ export const GLSCORE = (() => {
   const LAYER = {
     spannung: {
       bpm: 84,
-      g: 0.85,
+      g: 1,
       step(A, out, t, n) {
         const bar = Math.floor(n / 16),
           s = n % 16,
           C = SP[Math.floor(bar / 2) % 4];
         if (s % 2 === 0) {
           const acc = s % 4 === 0 ? 1 : 0.55;
-          ton(A, out, t, mtof(C.r), { w: 'triangle', d: 0.16, g: 0.1 * acc, lp: 420 });
-          ton(A, out, t, mtof(C.r + 12), { w: 'sine', d: 0.09, g: 0.03 * acc });
+          ton(A, out, t, mtof(C.r), { w: 'triangle', d: 0.16, g: 0.16 * acc, lp: 420 });
+          ton(A, out, t, mtof(C.r + 12), { w: 'sine', d: 0.09, g: 0.05 * acc });
         }
-        if (s === 0 && bar % 2 === 0) flaeche(A, out, t, C.ch, 2 * 16 * (60 / 84 / 4), { g: 0.02, lp: 650 });
-        if ((s === 6 || s === 14) && bar % 2 === 1) ton(A, out, t, mtof(81), { d: 0.07, g: 0.018 });
+        if (s === 0 && bar % 2 === 0) flaeche(A, out, t, C.ch, 2 * 16 * (60 / 84 / 4), { g: 0.032, lp: 650 });
+        if ((s === 6 || s === 14) && bar % 2 === 1) ton(A, out, t, mtof(81), { d: 0.07, g: 0.026 });
       },
     },
     flucht: {
@@ -234,7 +234,7 @@ export const GLSCORE = (() => {
         lg.gain.value = 180;
         lfo.connect(lg);
         lg.connect(f.frequency);
-        g.gain.value = 0.11;
+        g.gain.value = 0.04;
         f.connect(g);
         g.connect(out);
         for (const [m, w, det] of [

@@ -539,13 +539,21 @@ export const GLMISSION = (() => {
       else await KERN.until(() => ruhig() || !GL.on, sek);
     } catch (e) {}
   }
+  // the screen is calm now: no fade, no title shown or waiting, no „Mission bestanden“, no big line (the lead's GLHUD state, else the page)
+  const ruhigJetzt = () => {
+    const H = GLHUD;
+    if (H.titelT > 0 || (H.titelQ && H.titelQ.length) || H.passT > 0 || H.msgT > 0) return false;
+    return ruhig();
+  };
   function titel(m) {
     const g = ++St.titelN;
+    let n = 0;
     (async () => {
+      // frame by frame (a test's steps count; GLHUD.ruhig answers at once under FREEZE), from the second frame on: the step's opening
+      // may begin a fade first
       try {
-        await KERN.until(() => !fadeOn() || g !== St.titelN || !GL.on, 120);
+        await KERN.until(() => g !== St.titelN || !GL.on || (++n > 2 && ruhigJetzt()), 180);
       } catch (e) {}
-      await warteRuhig(25);
       if (g !== St.titelN || !GL.on || GL.cur !== m.id || St.busy) return;
       const D = GLMDATA.M[m.id];
       try {
@@ -770,6 +778,10 @@ export const GLMISSION = (() => {
   // (feat/grenzland-kino) the closing screen comes when „Mission bestanden“ and every other card are gone
   async function ende() {
     const g = ++St.endeN;
+    // frame by frame until nothing big shows (so also in tests, where GLHUD.ruhig answers at once), then the lead's own word on it
+    try {
+      await KERN.until(() => g !== St.endeN || !GL.on || ruhigJetzt(), 25);
+    } catch (e) {}
     await warteRuhig(20);
     if (g !== St.endeN || !GL.on) return;
     endeZeigen();
