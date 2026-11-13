@@ -29,7 +29,8 @@ TREE_FLAGS = {'bits 0-1': 'where the position comes from: 0 set by rule, 1 aeria
               4: 'height measured (nDOM1); otherwise estimated from crown radius and kind',
               8: 'crown radius measured (crown area in the aerial image or nDOM1); otherwise estimated',
               16: 'kind from a mapped value (OSM species / genus / leaf_type); otherwise estimated from the infrared signature',
-              32: 'trunk moved off a roof or a carriageway', 64: 'the tree is mapped in OpenStreetMap (natural=tree)', 128: 'free'}
+              32: 'trunk moved off a roof or a carriageway', 64: 'the tree is mapped in OpenStreetMap (natural=tree)',
+              128: 'stands in mapped forest'}
 TREE_MAX_CM = 40000       # a level-10 tile is 400 m
 
 

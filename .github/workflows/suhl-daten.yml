@@ -155,6 +155,26 @@ jobs:
         env:
           EASYGEODATA_KEY: ${{ secrets.EASYGEODATA_KEY }}
         run: python3 -I tools/suhl/lib/easygeodata.py --product dgm,dom,ndom --prio P1 --raw ~/suhl-raw --report egd.json
+      - name: Zwei Korridor-Kacheln (P4, außerhalb der Gemeinde) über einen Rahmen
+        env:
+          EASYGEODATA_KEY: ${{ secrets.EASYGEODATA_KEY }}
+        run: |
+          T=$(python3 -I -c "import sys; sys.path.insert(0, 'tools/suhl/lib'); import easygeodata as EG; p = EG.prio_tiles(['P4']); print(','.join(f'{e}_{n}' for e, n in (p[0], p[-1])))")
+          echo "P4-Kacheln: $T"
+          python3 -I tools/suhl/lib/easygeodata.py --product dgm --tiles "$T" --raw ~/suhl-raw --report egd-p4.json
+          python3 -I - <<'PY'
+          import json, os, sys
+          sys.path.insert(0, 'tools/suhl/lib')
+          import easygeodata as EG
+          import numpy as np
+          egd = EG.Easygeodata(raw=os.path.expanduser('~/suhl-raw'))
+          r = json.load(open('egd-p4.json'))['reports'][0]
+          print('report:', json.dumps({k: r[k] for k in ('wanted', 'present', 'fetched', 'cached', 'missing', 'failed', 'stopped', 'calls')}))
+          p = EG.prio_tiles(['P4'])
+          for e, n in (p[0], p[-1]):
+              t = egd.read('dgm', e, n)
+              print(f'P4 dgm {e}/{n}:', 'not there' if t is None else f'{t[0].shape} corner {t[1]:.0f}/{t[2]:.0f} min {np.nanmin(t[0]):.2f} max {np.nanmax(t[0]):.2f} empty {int(np.isnan(t[0]).sum())}')
+          PY
       - name: Jede Kachel mit dem Leser der Welt-Pipeline lesen
         run: |
           python3 -I - <<'PY'
