@@ -419,36 +419,41 @@ export const GLMOD = (() => {
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
     const fx = f => 14 + ((Math.max(87, Math.min(108, f)) - 87) / 21) * 228;
-    // list: [{ id, name, freq }], cur: id | null
+    // list: [{ id, name, freq }] (grenzland/gl_radio.js stations()), cur: id | null. The scale in megahertz with a mark for every
+    // station; the name and frequency of the one that plays stand over the scale, the red pointer at its place
     const draw = (list, cur) => {
       x.fillStyle = cur ? '#e8dcae' : '#8d8873';
       x.fillRect(0, 0, 256, 64);
       x.strokeStyle = '#2a2622';
       x.fillStyle = '#2a2622';
       x.lineWidth = 1;
-      x.font = '10px Arial, sans-serif';
       x.textAlign = 'center';
       x.textBaseline = 'middle';
+      x.font = '10px Arial, sans-serif';
       for (let f = 88; f <= 108; f += 1) {
         const px = Math.round(fx(f)) + 0.5;
         x.beginPath();
-        x.moveTo(px, 24);
-        x.lineTo(px, f % 4 === 0 ? 34 : 29);
+        x.moveTo(px, 34);
+        x.lineTo(px, f % 4 === 0 ? 44 : 39);
         x.stroke();
-        if (f % 4 === 0) x.fillText(String(f), px, 42);
+        if (f % 4 === 0) x.fillText(String(f), px, 52);
       }
-      x.fillText('UKW  MHz', 128, 55);
-      let pf = 87.2;
+      let pf = 87.2,
+        on = null;
       (list || []).forEach((st, i) => {
         const n = parseFloat(String(st.freq == null ? '' : st.freq).replace(',', '.')),
-          f = Number.isFinite(n) && n > 80 ? n : 89 + i * 4.5;
-        x.fillRect(Math.round(fx(f)) - 1, 14, 3, 9);
-        x.font = 'bold 9px Arial, sans-serif';
-        x.fillText(String(st.name || '').slice(0, 9), Math.max(24, Math.min(232, fx(f))), i % 2 ? 6 : 6);
-        if (st.id === cur) pf = f;
+          f = Number.isFinite(n) && n > 80 ? n : 89 + i * 3.2;
+        x.fillRect(Math.round(fx(f)) - 1, 24, 3, 9);
+        if (st.id === cur) {
+          pf = f;
+          on = st;
+        }
       });
+      x.font = 'bold 13px Arial, sans-serif';
+      const fq = on && on.freq != null && String(on.freq) ? String(on.freq).replace(/\s*MHz$/i, '') + ' MHz · ' : '';
+      x.fillText(on ? (fq + String(on.name || '')).slice(0, 34) : 'UKW', 128, 12);
       x.fillStyle = '#c62a1a';
-      x.fillRect(Math.round(fx(pf)) - 1, 2, 3, 60);
+      x.fillRect(Math.round(fx(pf)) - 1, 20, 3, 42);
       tex.needsUpdate = true;
     };
     draw([], null);
