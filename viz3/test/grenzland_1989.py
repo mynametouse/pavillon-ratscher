@@ -63,10 +63,17 @@ with lib.browser() as b:
       return { t: Math.round(CLOCK.t * 10) / 10, e0: DN.e0, era: GLSTATE.era, body: document.body.dataset.glEra || '', hold: !!DORF.S.hold, frozen: !!DINGE.frozen, busAuto: BUS.S.auto, vAuto: VERKEHR.S.auto,
         preset: WETTER.state().preset, wand: RATSCHER.bld[0].material.color.getHex(), dach: RATSCHER.bld[1].material.color.getHex(), fogOwn: !!Object.getOwnPropertyDescriptor(GAME_SCENE().fog, 'density').get,
         laub: RATSCHER.trees[0].material.color.getHex(), laubA: RATSCHER.trees[0].material.alphaTest, linde: VPROPS.lindeMeshes ? VPROPS.lindeMeshes[1].material.alphaTest : 0,
-        kind: AVATAR.kind, maps: maps.join(','), figs: GLFIG.figs.length, cars: GLAUTO.cars.length, focus: CLOCK.focused, modern: GL89WELT.modern(),
+        kind: AVATAR.kind, maps: maps.join(','), figs: GLFIG.figs.filter(F => F.era === '1989').length, cars: GL89WELT.state().cars, focus: CLOCK.focused, modern: GL89WELT.modern(),
         kids: GAME_SCENE().children.filter(o => /grenzland 1989/.test(o.name || '')).length }; })()"""
+    # free play (in the merged game the scene starts mission 1 with a fade in Schleusingen): missions done, the garden, the police off
+    for _ in range(6):
+        steps(0.3); time.sleep(0.3)
+    X("try { GLMISSION.stop(); const d = GLMISSION.debug; if (d) for (const id of Object.keys(d.info().st)) GLSTATE.m[id] = { st: 'erledigt', i: 0, n: 0 }; } catch (e) { console.warn(e); }"
+      " GLSTATE.cur = ''; GLSTATE.kap1 = true; GLHUD.fade(false); if (window.GLRADIO && GLRADIO.off) GLRADIO.off();"
+      " CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 17 * 60 + 20; GAME.go('garten'); GLSTATE.save(true); GLFAHNDUNG.off = true;")
+    steps(1)
     X("window.GAME_SCENE = () => { let o = AVATAR.figs.m ? AVATAR.figs.m.g : GLAUTO.moped.g; while (o.parent) o = o.parent; return o; }")
-    wait("!!GRENZLAND.partnerOf() && !!AVATAR.figs.m", 60)
+    wait("!!AVATAR.figs.m", 90)
     # ---- today, in the yard behind the old school: what stands about ----
     X("GAME.setView3(false); GRENZLAND.folgen(false)")
     view(241.5, -74.5, 322)
@@ -91,7 +98,7 @@ with lib.browser() as b:
     ck('the air and the houses of 1989 (haze, the tint of the facades, the villagers held, the weather set)',
        w['fog'] > 0.0015 and s1['wand'] != s0['wand'] and s1['hold'] and s1['frozen'] and s1['preset'] and s1['focus'], json.dumps({k: s1[k] for k in ('wand', 'hold', 'frozen', 'preset', 'focus')}))
     ck('people of the afternoon stand as figures, witnesses who know the teacher', len(st['leute']) >= 3 and E("Object.values(GL89.leute).every(F => F.era === '1989' && F.knows && F.sees && F.g.visible)"), str(st['leute']))
-    ck('the player is the young Gerhard (his figure repainted, glasses and moustache)', st['spieler'] and st['spieler']['tex'] >= 1 and st['spieler']['extra'] >= 1 and s1['kind'] == 'm' and s1['maps'] != s0['maps'], str(st['spieler']) + ' ' + str(E("JSON.stringify(GLFIG.last)")))
+    ck('the player is the young Gerhard (his figure repainted, glasses and moustache)', st['spieler'] and st['spieler']['tex'] >= 1 and st['spieler']['extra'] >= 1 and s1['kind'] == 'm' and s1['maps'] != s0['maps'], str(st['spieler']) + ' ' + str(E("JSON.stringify(GLFIG.last)")) + ' ' + str(E("GLFIG.err")))
     # ---- pictures: the yard, the street ----
     steps(4)
     lib.settle_light(pg)
@@ -106,7 +113,8 @@ with lib.browser() as b:
             try: pg.screenshot(path=os.path.join(OUT, '1989_' + name + '_seite.png'))
             except Exception as e: print('screenshot failed', e)
     # ---- dusk: the lamps of the time, the windows, the smoke ----
-    X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 16 * 60 + 52; DN.update(true)")
+    # (10 November: the sun sets about 16:35; the lamps come on once it stands 3° under the horizon – by 17:22 they burn)
+    X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 17 * 60 + 22; DN.update(true)")
     for name, x, y, yaw, pitch in SPOTS[1:2] + SPOTS[4:5]:
         view(x, y, yaw, pitch)
         for _ in range(6):
@@ -170,8 +178,9 @@ with lib.browser() as b:
     ck('a second time in', ok and E("GL89.on") and E("GLSTATE.era") == '1989')
     X("GRENZLAND.stop(true)")
     steps(1)
-    s3 = J(SNAP.replace("figs: GLFIG.figs.length, cars: GLAUTO.cars.length,", "figs: 0, cars: 0,"))
-    skip = ('modern', 't', 'kids', 'figs', 'cars')
+    s3 = J(SNAP)
+    # (e0: the mode's own end puts back the date from before the mode – the baseline here was taken inside the mode)
+    skip = ('modern', 't', 'kids', 'e0')
     same = [k for k in s0 if k not in skip and s0[k] != s3[k]]
     ck('the mode\'s end inside the flashback restores too', not same and not E("GL89.on") and not E("GLSTATE.on") and E("GLFIG.figs.length") == 0, 'differs: ' + str({k: (s0[k], s3[k]) for k in same}))
     okgl, rep = lib.check_gl(pg)

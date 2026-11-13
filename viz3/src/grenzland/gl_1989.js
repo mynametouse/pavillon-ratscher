@@ -127,8 +127,12 @@ export const GL89 = (() => {
     const F = AVATAR.figs && AVATAR.figs.m;
     if (gen !== S.gen || !F || !F.model) return;
     const G = D.GERHARD;
+    // (the figure's images may be GPU-compressed textures: their pixels come from the figure's file once more)
+    await GLFIG.pixels(F.model, window.PLAYERMAN[AVATAR.FIGS.m.file]);
+    if (gen !== S.gen) return GLFIG.forget(F.model);
     R.tex = GLFIG.dress(F.model, GLDATA.KLEID[G.kleid], R.restore);
     R.extra = GLFIG.kopf(F.model, { bart: G.bart, brille: G.brille, gestell: G.gestell, haar: G.haar });
+    GLFIG.forget(F.model);
     R.done = R.tex.length > 0;
     markDirty(true);
   }

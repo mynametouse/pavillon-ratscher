@@ -1191,14 +1191,16 @@ export const GL89WELT = (() => {
   // ---- the cars of the time at the kerb (the types of grenzland/gl_modelle.js – whatever the names of the day are) ----
   const typ = (...names) => names.find(n => GLAUTO.TYP && GLAUTO.TYP[n]) || null;
   function carsBuild() {
-    const klein = typ('trabant', 'trabi', 'klein89'),
+    const klein = typ('trabant', 'klein89'),
+      kombi = typ('trabant_kombi') || klein,
       limo = typ('wartburg', 'limo89'),
       lkw = typ('w50', 'lkw89'),
-      kasten = typ('barkas', 'b1000', 'kasten89'),
-      moped = typ('simson', 's51', 'moped'),
+      kasten = typ('barkas', 'kasten89'),
+      moped = typ('s51', 'moped'),
       list = [
         [klein, 242.1, -77.0, 205, '#c9d3c4'],
-        [klein, 184.4, -93.2, 176, '#b9c7d6'],
+        [kombi, 184.4, -93.2, 176, '#b9c7d6'],
+        [typ('schwalbe'), 229.6, -63.6, 250, '#4a6fa0'],
         [limo, 241.6, -105.3, 109, '#b6a584'],
         [klein, 262.6, -112.2, 290, '#d8d2bd'],
         [kasten || limo, 192.6, -132.0, 20, kasten ? '#d9d3c0' : '#7c2a26'],

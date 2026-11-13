@@ -23,7 +23,7 @@
 //   brille }) → groups · MUSTER · HUTC
 import * as THREE from 'three';
 import { BASE, COARSE, QS, scene } from '../core/head.js';
-import { markDirty } from '../core/assets.js';
+import { b64bytes, markDirty } from '../core/assets.js';
 import { canonBone } from '../core/rig.js';
 import { KERN } from '../core/kern.js';
 import { CHL, rbPerson } from '../npc/npc_real.js';
@@ -343,6 +343,54 @@ export const GLFIG = (() => {
     },
   };
   // ---- the triangles of the figure in the space of each texture, with their zone and their place on the body ----
+  // ---- the pixels of a figure's textures ----
+  // On the test servers and in the preview (later everywhere, and on phones) the images inside the models arrive as GPU-compressed
+  // textures (core/assets.js TEX2): nothing a canvas can draw. Then the figure's file is read once more (it is in the browser's cache) and
+  // the base colour images of its materials are decoded – kept only until the figure is dressed (forget).
+  const SRC = new Map();
+  const imgOf = t => SRC.get(t) || t.image;
+  async function pixels(model, file) {
+    const need = new Map();
+    model.traverse(x => {
+      if (!x.isMesh) return;
+      for (const m of Array.isArray(x.material) ? x.material : [x.material])
+        if (m && m.map && m.map.isCompressedTexture && !SRC.has(m.map)) need.set(m.name || '', m.map);
+    });
+    if (!need.size || !file || typeof createImageBitmap !== 'function') return 0;
+    let n = 0;
+    try {
+      const J = await (await fetch(U(file))).json(),
+        texs = J.textures || [],
+        imgs = J.images || [];
+      for (const md of J.materials || []) {
+        const t = need.get(md.name || ''),
+          bt = md.pbrMetallicRoughness && md.pbrMetallicRoughness.baseColorTexture,
+          td = bt && texs[bt.index];
+        if (!t || !td) continue;
+        const ext = td.extensions && td.extensions.EXT_texture_webp,
+          im = imgs[ext ? ext.source : td.source];
+        if (!im || !im.uri || !im.uri.startsWith('data:')) continue;
+        const blob = new Blob([b64bytes(im.uri)], { type: im.mimeType || im.uri.slice(5, im.uri.indexOf(';')) });
+        SRC.set(t, await createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' }));
+        n++;
+      }
+    } catch (e) {
+      console.warn('grenzland pixels', e);
+      S.err = 'pixels: ' + ((e && e.message) || e);
+    }
+    return n;
+  }
+  function forget(model) {
+    model.traverse(x => {
+      if (!x.isMesh) return;
+      for (const m of Array.isArray(x.material) ? x.material : [x.material]) {
+        const b = m && m.map && SRC.get(m.map);
+        if (!b) continue;
+        SRC.delete(m.map);
+        if (typeof b.close === 'function') b.close();
+      }
+    });
+  }
   function dress(model, K, restore) {
     const made = [];
     if (!K) return made;
@@ -374,6 +422,10 @@ export const GLFIG = (() => {
       for (const gr of groups) {
         const m = list[gr.materialIndex] || list[0];
         if (!m || !m.map || !m.map.image || !(m.map.image.width > 8)) continue;
+        if (m.map.isCompressedTexture && !SRC.has(m.map)) {
+          S.last.packed = (S.last.packed || 0) + 1; // no pixels to paint on (pixels() first)
+          continue;
+        }
         // hair cards, lashes, glasses: never painted (long hair over a shoulder would take the jacket's colour)
         if (m.alphaTest > 0 || m.transparent || /opacity|hair|lash|brow|glass/i.test(m.name || '')) continue;
         if (!jobs.has(m.map))
@@ -405,6 +457,7 @@ export const GLFIG = (() => {
         t2 = paint(tex, Jb.tris, K, G, MAX, Jb.head);
       } catch (e) {
         console.warn('grenzland dress', e);
+        S.err = 'dress: ' + ((e && e.message) || e);
       }
       if (!t2) continue;
       made.push(t2);
@@ -466,7 +519,7 @@ export const GLFIG = (() => {
   const mulC = (c, f) => [c[0] * f, c[1] * f, c[2] * f];
   function paint(tex, tris, K, G, MAX, isHead) {
     // (a body texture of 512 px is painted at twice its size on a desktop: buttons and prints need the pixels)
-    const img = tex.image,
+    const img = imgOf(tex),
       k = Math.min(2, MAX / Math.max(img.width, img.height)),
       W = Math.max(8, Math.round(img.width * k)),
       Hh = Math.max(8, Math.round(img.height * k));
@@ -682,8 +735,25 @@ export const GLFIG = (() => {
         p[i + 2] = Math.min(255, col[2] * f);
       }
     c2.putImageData(D, 0, 0);
-    const t = tex.clone();
-    t.source = new THREE.Source(cv);
+    let t;
+    if (tex.isCompressedTexture) {
+      // (a compressed texture's clone would keep its format and mip levels: a plain texture with the same sampling instead)
+      t = new THREE.Texture(cv);
+      t.name = tex.name;
+      t.flipY = tex.flipY;
+      t.colorSpace = tex.colorSpace;
+      t.wrapS = tex.wrapS;
+      t.wrapT = tex.wrapT;
+      t.anisotropy = tex.anisotropy;
+      t.channel = tex.channel;
+      t.offset.copy(tex.offset);
+      t.repeat.copy(tex.repeat);
+      t.center.copy(tex.center);
+      t.rotation = tex.rotation;
+    } else {
+      t = tex.clone();
+      t.source = new THREE.Source(cv);
+    }
     t.needsUpdate = true;
     return t;
   }
@@ -806,7 +876,7 @@ export const GLFIG = (() => {
         ua = x.geometry.attributes.uv,
         m = Array.isArray(x.material) ? x.material[0] : x.material;
       if (!ua || !m || !m.map || !m.map.image) continue;
-      const c = texel(m.map.image, ua.getX(src[k + 1]), ua.getY(src[k + 1]), !!m.map.flipY);
+      const c = texel(imgOf(m.map), ua.getX(src[k + 1]), ua.getY(src[k + 1]), !!m.map.flipY);
       if (c[3] < 140) continue;
       hr += c[0];
       hg += c[1];
@@ -1354,6 +1424,7 @@ export const GLFIG = (() => {
       const f = rbPerson(gl, set, { h: c.h, stoop: c.stoop || 0, idleRate: 0.8 + ((id.charCodeAt(0) * 7) % 10) / 50 });
       f.walker = { talking: false };
       f.g.updateMatrixWorld(true);
+      await pixels(f.model, fileOf(c));
       const pick = k => (o[k] === undefined ? c[k] : o[k]),
         kleid = pick('kleid'),
         tex = dress(f.model, GLDATA.KLEID[kleid]),
@@ -1379,6 +1450,7 @@ export const GLFIG = (() => {
       } catch (e) {
         console.warn('grenzland head', id, e);
       }
+      forget(f.model);
       f.g.visible = false;
       f.g.name = 'grenzland ' + id;
       scene.add(f.g);
@@ -1585,6 +1657,8 @@ export const GLFIG = (() => {
     talking,
     near,
     dress,
+    pixels,
+    forget,
     hatOn,
     kopf,
     thing,

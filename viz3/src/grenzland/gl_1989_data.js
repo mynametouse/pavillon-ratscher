@@ -467,8 +467,9 @@ export const GL89DATA = (() => {
   // ---- the picture (the lead's grade in gl_hud.js is judged against these wishes), the light, the air ----
   const BILD = {
     uhr: 15 * 60 + 35,
-    // game minutes per real second while the flashback runs (the afternoon turns to dusk in about ten minutes of play)
-    tempo: 0.085,
+    // game minutes per real second while the flashback runs: the sun sets (about 16:35) after seven or eight minutes of play, the
+    // lamps come on after twelve
+    tempo: 0.13,
     wetter: 'heiter',
     dunst: 0.0021, // the haze of a November afternoon over a valley heated with brown coal (exponential-squared fog)
     wand: [0.8, 0.76, 0.7], // the plaster and the timber of 1989: unrenovated, greyed (a tint on the facades)
