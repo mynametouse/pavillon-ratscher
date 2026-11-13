@@ -328,13 +328,20 @@ export function kachel(m, F) {
         b.e = mk.e;
       }
       if (mk.rise > 0 && b.r !== 0) {
-        const done = new Set();
+        const done = new Set(),
+          up = z => (z > b.e + 0.05 ? b.e + (z - b.e) * mk.rise : z);
         for (const t of b.tris)
           for (const v of t.v)
-            if (!done.has(v) && v[2] > b.e + 0.05) {
-              v[2] = b.e + (v[2] - b.e) * mk.rise;
+            if (!done.has(v)) {
+              v[2] = up(v[2]);
               done.add(v);
             }
+        // the walls that reach into the roof (gables, a cross gable) rise with it, or the roof would stand off them
+        for (const f of b.F) {
+          f[4] = up(f[4]);
+          f[6] = up(f[6]);
+          f[7] = up(f[7]);
+        }
       }
       b.mark = mk;
     }

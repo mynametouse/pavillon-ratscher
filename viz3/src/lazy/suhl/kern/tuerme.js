@@ -41,13 +41,14 @@ const TUERME = [
     at: [-4665.3, 12450.2],
     az: 55,
     w: 2.6,
-    base: 20.5, // on the ridge (its roof made steeper after the photos: bau/marken.js rise)
-    body: 24.2,
+    on: 'DETHL57P00006G2R', // it rides the ridge of this building, as the worker raised it (bau/marken.js rise): heights from there
+    base: -0.8,
+    body: 3.4,
     cap: 2.2,
     lan: 1.6,
     spire: 1.8,
     col: 0x2f3236,
-    clock: 23.0,
+    clock: 2.2,
     turret: true,
   },
 ];
@@ -148,9 +149,18 @@ export function tuerme(ctx) {
       wait = false;
     for (const t of TUERME) {
       if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
-      const zg = KERN.ground(t.at[0], t.at[1]);
+      let zg = null;
+      if (t.on) {
+        // the ridge of its building: the foot as the worker placed it, the eave and the top of the record, the roof raised by rise
+        const v = ctx.SUHL && ctx.SUHL.building ? ctx.SUHL.building(t.on) : null,
+          e = v ? (v.eave ?? v.h) : null,
+          h = v ? (v.h ?? v.eave) : null;
+        if (v && Number.isFinite(v.z0) && Number.isFinite(e) && Number.isFinite(h))
+          zg = v.z0 + e + (h - e) * (v.look && v.look.rise > 0 ? v.look.rise : 1);
+        else wait = true;
+      } else zg = KERN.ground(t.at[0], t.at[1]);
       if (zg === undefined || zg === null || !Number.isFinite(zg)) continue;
-      ref.push([t.at[0], t.at[1], zg]);
+      ref.push([t.at[0], t.at[1], t.on ? KERN.ground(t.at[0], t.at[1]) : zg]);
       if (!walls.has(t.col)) walls.set(t.col, buf());
       const W = walls.get(t.col),
         w = t.w,

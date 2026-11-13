@@ -14,7 +14,7 @@ export const MARKEN = {
     surr: true,
     frame: 0,
     roof: '#3b3e44',
-    rise: 1.5, // the hipped roof steeper than the fit from the aerial photo (the photos: a tall dark roof under the turret)
+    rise: 2.1, // the hipped roof steeper than the fit from the aerial photo (16°; the photos: a tall dark roof under the turret)
     gauben: true,
     foto: 'Rotes Rathaus Suhl 2025-02-24 (Strubbl, CC BY-SA 4.0)',
   },
