@@ -317,17 +317,25 @@ export const GL89WELT = (() => {
       }
     };
     const SANS = '"Arial Narrow", "Helvetica Neue", Arial, sans-serif';
+    // a line of the banner in the largest size that fits its cloth (a long slogan lost its first and last letters)
+    const fit = (t, w, px) => {
+      for (; px > 14; px -= 2) {
+        c.font = 'bold ' + px + 'px ' + SANS;
+        if (c.measureText(t).width <= w) break;
+      }
+      return 'bold ' + px + 'px ' + SANS;
+    };
     // the banner: white letters painted on red cloth, a little faded
     let r = AT.losung;
     c.fillStyle = '#a3231e';
     c.fillRect(...r);
     grain(r, 60, 500);
-    text(GLDATA.J89.losung[0], 512, r[1] + r[3] / 2 + 2, 'bold 62px ' + SANS, '#f1ead8');
+    text(GLDATA.J89.losung[0], 512, r[1] + r[3] / 2 + 2, fit(GLDATA.J89.losung[0], r[2] - 40, 62), '#f1ead8');
     r = AT.losung2;
     c.fillStyle = '#9c2a22';
     c.fillRect(...r);
     grain(r, 60, 400);
-    text(GLDATA.J89.losung[1], 512, r[1] + r[3] / 2 + 2, 'bold 36px ' + SANS, '#efe6d2');
+    text(GLDATA.J89.losung[1], 512, r[1] + r[3] / 2 + 2, fit(GLDATA.J89.losung[1], r[2] - 40, 36), '#efe6d2');
     // the shop's sign: enamel, cream, dark red block letters
     r = AT.konsum;
     c.fillStyle = '#e6dfc8';
@@ -523,27 +531,34 @@ export const GL89WELT = (() => {
   }
   function heap(K, x, y, r, n, seed) {
     const z = gz(x, y);
-    K.lathe(
-      x,
-      y,
-      z - 0.02,
-      [
-        [r, 0],
-        [r * 0.72, r * 0.26],
-        [r * 0.3, r * 0.44],
-        [0, r * 0.48],
-      ],
-      9,
-      C.kohle
-    );
+    // (tipped from a lorry: a low, uneven mound – a few lumps of different size leaning on each other, not one dome)
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 5) * 6.283 + hh(seed + i * 2.3),
+        d = i ? r * (0.3 + 0.22 * hh(seed + i * 5.1)) : 0,
+        q = i ? r * (0.5 + 0.22 * hh(seed + i * 7.7)) : r * 0.78,
+        h = q * (0.42 + 0.14 * hh(seed + i * 1.9));
+      K.lathe(
+        x + Math.cos(a) * d,
+        y + Math.sin(a) * d,
+        z - 0.03,
+        [
+          [q, 0],
+          [q * 0.74, h * 0.5],
+          [q * 0.34, h * 0.9],
+          [0, h],
+        ],
+        7,
+        i % 2 ? C.kohle2 : C.kohle
+      );
+    }
     for (let i = 0; i < n; i++) {
       const a = hh(seed + i) * 6.283,
-        d = Math.sqrt(hh(seed + i * 3.7)) * r * 1.15,
+        d = Math.sqrt(hh(seed + i * 3.7)) * r * 1.2,
         k = Math.max(0, 1 - d / r);
       K.box(
         x + Math.cos(a) * d,
         y + Math.sin(a) * d,
-        z + k * r * 0.44 - 0.01,
+        z + k * r * 0.4 + 0.01,
         0.17,
         0.065,
         0.055,
@@ -845,7 +860,11 @@ export const GL89WELT = (() => {
       s = Math.sin(a),
       z = gz(x, y),
       lp = (u, v) => [x + c * u - s * v, y + s * u + c * v];
-    K.box(x, y, z - 0.02, l, w, 0.1, a, L(58, 46, 36), true);
+    // (dug soil in short pieces that follow the ground – one slab would stand out of a slope)
+    for (let i = 0; i < 6; i++) {
+      const p = lp(-l / 2 + (i + 0.5) * (l / 6), 0);
+      K.box(p[0], p[1], gz(p[0], p[1]) - 0.07, l / 6 + 0.04, w, 0.1, a, L(58, 46, 36), true);
+    }
     for (let i = 0; i < 4; i++) {
       const p = lp(-l / 2 + 0.6 + i * 0.75, w * 0.22),
         q = lp(-l / 2 + 0.6 + i * 0.75, -w * 0.02),
@@ -855,8 +874,7 @@ export const GL89WELT = (() => {
     }
     for (let i = 0; i < 7; i++) {
       const p = lp(-l / 2 + 0.45 + i * ((l - 0.9) / 6), -w * 0.3);
-      K.cyl(p[0], p[1], z + 0.05, z + 0.4, 0.02, 0.02, 5, L(96, 104, 70));
-      K.ball(p[0], p[1], z + 0.5, 0.17, L(52, 82, 60), 6);
+      K.ball(p[0], p[1], gz(p[0], p[1]) + 0.1, 0.16, i % 2 ? L(62, 92, 66) : L(52, 82, 60), 6); // winter cabbage
     }
   }
   // the compost: a box of slats, half full

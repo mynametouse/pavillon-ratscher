@@ -472,8 +472,8 @@ export const GL89DATA = (() => {
     tempo: 0.13,
     wetter: 'heiter',
     dunst: 0.0021, // the haze of a November afternoon over a valley heated with brown coal (exponential-squared fog)
-    wand: [0.8, 0.76, 0.7], // the plaster and the timber of 1989: unrenovated, greyed (a tint on the facades)
-    dach: [0.8, 0.74, 0.72],
+    wand: [0.74, 0.7, 0.64], // the plaster and the timber of 1989: unrenovated, greyed by coal smoke (a tint on the facades)
+    dach: [0.66, 0.6, 0.58], // old tiles, dark with soot and moss
     laub: [1.25, 0.82, 0.5], // the last leaves of November on the trees' crowns (a tint on the far crowns)
   };
   const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
