@@ -12,6 +12,38 @@ port = sys.argv[1] if len(sys.argv) > 1 else '9016'
 ONLY = set(sys.argv[2].split(',')) if len(sys.argv) > 2 else None
 want = lambda s: ONLY is None or s in ONLY
 ck = grenzland_ci.wrap(lib.Checks('grenzland_partner'), 'grenzland_partner')
+REQ = []   # request bodies the stand-in for the Claude API received (as viz3/test/ki.py)
+def sse(blocks, stop='end_turn'):
+    ev = [('message_start', {'type': 'message_start', 'message': {'id': 'msg_t', 'type': 'message', 'role': 'assistant', 'model': 'claude-haiku-5-5',
+           'content': [], 'stop_reason': None, 'stop_sequence': None, 'usage': {'input_tokens': 900, 'output_tokens': 1}}})]
+    for i, b in enumerate(blocks):
+        if b[0] == 'text':
+            ev.append(('content_block_start', {'type': 'content_block_start', 'index': i, 'content_block': {'type': 'text', 'text': ''}}))
+            ev.append(('content_block_delta', {'type': 'content_block_delta', 'index': i, 'delta': {'type': 'text_delta', 'text': b[1]}}))
+        else:
+            ev.append(('content_block_start', {'type': 'content_block_start', 'index': i, 'content_block': {'type': 'tool_use', 'id': b[1], 'name': b[2], 'input': {}}}))
+            ev.append(('content_block_delta', {'type': 'content_block_delta', 'index': i, 'delta': {'type': 'input_json_delta', 'partial_json': json.dumps(b[3], ensure_ascii=False)}}))
+        ev.append(('content_block_stop', {'type': 'content_block_stop', 'index': i}))
+    ev.append(('message_delta', {'type': 'message_delta', 'delta': {'stop_reason': stop, 'stop_sequence': None}, 'usage': {'output_tokens': 30}}))
+    ev.append(('message_stop', {'type': 'message_stop'}))
+    return ''.join(f'event: {n}\ndata: {json.dumps(d, ensure_ascii=False)}\n\n' for n, d in ev)
+def route(r):
+    try:
+        body = json.loads(r.request.post_data or '{}')
+    except Exception:
+        body = {}
+    REQ.append(body)
+    h = {'request-id': 'req_t'}
+    if (body.get('output_config') or {}).get('format'):   # the summary after the talk
+        out = {'zusammenfassung': 'Falko wollte wissen, was ansteht.', 'zeilen': [], 'notiz_fuer_anderen': 'Sarah erzählt von einer alten Karte.', 'meinung_anderer': 2}
+        msg = {'id': 'msg_s', 'type': 'message', 'role': 'assistant', 'model': 'claude-haiku-5-5', 'content': [{'type': 'text', 'text': json.dumps(out, ensure_ascii=False)}],
+               'stop_reason': 'end_turn', 'stop_sequence': None, 'usage': {'input_tokens': 300, 'output_tokens': 40}}
+        return r.fulfill(status=200, headers=dict(h, **{'content-type': 'application/json'}), body=json.dumps(msg, ensure_ascii=False))
+    last = (body.get('messages') or [{}])[-1].get('content') or []
+    if any(b.get('type') == 'tool_result' for b in last) and not any(b.get('type') == 'text' for b in last):
+        return r.fulfill(status=200, headers=dict(h, **{'content-type': 'text/event-stream'}), body=sse([('text', 'Ich bleib hier.')]))
+    return r.fulfill(status=200, headers=dict(h, **{'content-type': 'text/event-stream'}),
+                     body=sse([('text', 'Freizeit. Ich warte hier auf dich.'), ('tool', 'toolu_1', 'spielaufgabe', {'thema': 'warten'})], stop='tool_use'))
 OUT = lib.out('grenzland_partner')
 with lib.browser() as b:
     errs = []
@@ -201,7 +233,35 @@ with lib.browser() as b:
         hud('04_panel_ki')
         X("GLPARTNER.zu()"); steps(0.2)
         ck('ki: closing ends the free talk', E("!KI.conv") and E("GLSTATE.folgt === true"))
-        X("KI.configure({ key: '', hands: true })")
+        # one turn against a stand-in for the Claude API (no real request): the request carries her sheet, her tools and the <lage>; her tool
+        # call spielaufgabe „warten“ makes her wait; after the talk nothing of it goes round the village
+        try:
+            pg.route('**/__ki/**', route)
+            X(f"KI.configure({{ key: '', base: 'http://localhost:{port}/__ki', voice: 'aus', hands: false, on: true }})")
+            X(f"TP.vor({X0}, {Y0}, 90, 2)"); steps(0.3)
+            E("GLPARTNER.auf()"); steps(0.2)
+            X("GLPARTNER.thema('jetzt')")
+            t = 0
+            while t < 20 and not E("GLPARTNER.debug.chips()[3] && GLPARTNER.debug.chips()[3].k === 'komm' && KI.conv && !KI.conv.busy"):
+                steps(0.1); time.sleep(0.25); t += 0.35
+            rq = [q for q in REQ if q.get('stream')]
+            first = rq[0] if rq else {}
+            txt = ''.join(b.get('text', '') for b in ((first.get('messages') or [{}])[0].get('content') or []) if b.get('type') == 'text')
+            ck('ki stand-in: the turn went out with her sheet and her tools', bool(rq) and first['system'][0]['text'].startswith('Du bist Sarah aus Berlin') and 'aufgabe_geben' not in [x['name'] for x in first.get('tools', [])], str(len(rq)))
+            ck('ki stand-in: the words came with the partner\'s <lage>', '<lage>' in txt and 'Kapitel 1 ist geschafft' in txt and 'Polizei: keine Fahndung' in txt and txt.rstrip().endswith('Was machen wir jetzt?') and 'Baustand' not in txt, txt[:500])
+            ck('ki stand-in: her tool call „warten“ – she waits after the talk', E("GLPARTNER.debug.chips()[3].k === 'komm'"), str(J("GLPARTNER.debug.chips().map(c => c.k)")))
+            ck('ki stand-in: her answer stands in the panel', 'warte hier' in (E("document.getElementById('glp-text').textContent") or '') or 'bleib hier' in (E("document.getElementById('glp-text').textContent") or ''), E("document.getElementById('glp-text').textContent"))
+            X("GLPARTNER.zu()"); steps(0.2)
+            t = 0
+            while t < 10 and not any((q.get('output_config') or {}).get('format') for q in REQ):
+                steps(0.1); time.sleep(0.25); t += 0.35
+            time.sleep(0.5)
+            ck('ki stand-in: after the talk she waits (GL.folgt false)', E("GLSTATE.folgt === false"))
+            ck('ki stand-in: nothing goes round the village (klatsch: false)', not E("Object.entries(KI.mem.who).some(([k, w]) => k !== 'gl_p_sarah' && w.notizen.some(n => n.von === 'gl_p_sarah'))"))
+            X("GRENZLAND.folgen(true)")
+        except Exception as e:
+            ck('ki stand-in: ran', False, str(e)[:300])
+        X("KI.configure({ key: '', base: '', hands: true })")
     # ------------------------------------------------------------------ the phone layout ------------------------------------------------------------------
     if want('frei'):
         pg.set_viewport_size({'width': 390, 'height': 760}); steps(0.5)

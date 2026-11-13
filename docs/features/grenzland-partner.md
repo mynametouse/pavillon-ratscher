@@ -71,10 +71,14 @@ genauso.“
   „Warte hier“ hält sie an (12 m weg folgt sie nicht), „Komm mit“ lässt sie wieder folgen, E/Esc/Weggehen schließen, nichts bei Szene und
   1989, auf der Simson: Knopf „B · Mit Sarah reden“, B öffnet, drei Themen, sie fährt weiter mit, E beendet nur das Gespräch; als Sarah
   „Mit Falko reden“ mit Falkos Zeilen; KI: beide Personen registriert, `<lage>` mit Ziel und Sternen, die der Nachbarn
-  unverändert, mit (falschem) Schlüssel läuft ein freies Gespräch im Feld (Bogen, kein `aufgabe_geben`) – ohne eine einzige Anfrage.
+  unverändert, mit (falschem) Schlüssel läuft ein freies Gespräch im Feld (Bogen, kein `aufgabe_geben`) – ohne eine einzige Anfrage; dazu
+  ein Zug gegen einen Stellvertreter der Claude-API (wie `viz3/test/ki.py`, keine echte Anfrage): die Anfrage trägt Sarahs Bogen, ihre
+  Werkzeuge und vor den Worten die `<lage>` des Grenzlands (kein Baustand); ihr Werkzeugaufruf `spielaufgabe` „warten“ lässt sie nach dem
+  Gespräch warten; die Zusammenfassung danach geht nicht ins Dorf (`klatsch: false`).
+- Der vorhandene KI-Browsertest `viz3/test/ki.py` läuft mit den Haken unverändert grün (73/73), die KI-Unit-Tests ebenso.
 - Bilder: `out/grenzland_partner/01_prompt.jpg`, `02_panel.jpg`, `03_panel_handy.jpg`, `04_panel_ki.jpg`, `05_panel_falko.jpg`,
   `06_fahrt_knopf.jpg`, `07_fahrt_panel.jpg`.
-- Lauf auf Actions (erster Stand `9338827c`): `grenzland_partner` 45 Prüfungen ok.
+- Lokal (Port 9016) zuletzt **59/59 ok** (294 s); auf Actions der erste Stand `9338827c` mit 45/45 ok.
 
 ## Für den Lead
 
