@@ -3,8 +3,9 @@
 #   python3 viz3/test/grenzland_blick.py 9011        (~4 min in the chat machine)
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
+import grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-ck = lib.Checks('grenzland_blick')
+ck = grenzland_ci.wrap(lib.Checks('grenzland_blick'), 'grenzland_blick')
 OUT = lib.out('grenzland_blick')
 with lib.browser() as b:
     errs = []

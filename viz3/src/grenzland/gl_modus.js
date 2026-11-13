@@ -446,6 +446,9 @@ export const GRENZLAND = (() => {
       } catch (e) {}
       try {
         S.pol = GLFAHNDUNG.stand();
+        // the panel: who is on the phone to the police, what they know, the helicopter; the phone's unread messages
+        GLHUD.pol = S.pol;
+        GLHUD.neu = GLHANDY.unread ? GLHANDY.unread() | 0 : 0;
       } catch (e) {}
     }
     for (const z of S.ziele) out.push(z);
@@ -458,9 +461,26 @@ export const GRENZLAND = (() => {
       if (st.block) out.push({ x: st.block[0], y: st.block[1], k: 'sperre' });
       if (st.heli) out.push({ x: st.heli[0], y: st.heli[1], k: 'heli' });
     }
+    // a place sent to the phone (a message's „Zum Ziel“): a waypoint, gone when one is there
+    const z = S.punkt;
+    if (z) {
+      const p = GLFAHNDUNG.wo();
+      if (Math.hypot(p.x - z.x, p.y - z.y) < 14) S.punkt = null;
+      else out.push(z);
+    }
     const F = S.partner;
     if (F && GL.era === 'heute' && !F.rides) out.push({ x: F.x, y: F.y, k: 'partner' });
     if (GL.era === 'heute') out.push({ x: 2, y: 2, k: 'ort', name: 'Garten' });
+  });
+  KERN.on('grenzland:ziel', d => {
+    const p = d && d.pos;
+    S.punkt =
+      p && Number.isFinite(p[0]) && Number.isFinite(p[1]) ? { x: p[0], y: p[1], k: 'punkt', name: d.name || '' } : null;
+  });
+  KERN.on('grenzland:stop', () => {
+    S.punkt = null;
+    GLHUD.pol = null;
+    GLHUD.neu = 0;
   });
   // a mission is done: the big line, the reward, the jingle
   KERN.on('grenzland:mission', d => {

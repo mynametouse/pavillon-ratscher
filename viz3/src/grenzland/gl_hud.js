@@ -21,10 +21,13 @@ export const GLHUD = (() => {
     subT: 0,
     passT: 0,
     ortT: 0,
+    funkT: 0,
     ask: null,
     folded: false,
     tip: '',
     xl: '',
+    neu: 0, // unread messages on the phone (the mode feeds it)
+    pol: null, // what the police are doing: { offen: [{ wer, t }], fz, hidden, heli } (the mode feeds it from GLFAHNDUNG.stand())
   };
   const CSS = `
 #glhud{position:absolute;top:66px;right:max(12px,env(safe-area-inset-right,0px));z-index:6;width:min(250px,44vw);background:rgba(14,18,22,.66);color:#eef1f2;
@@ -55,8 +58,13 @@ body[data-gl-era="1989"] #glhud .gt b{color:#d8c79a}
 #glsub{position:absolute;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:7;max-width:min(680px,90vw);
   background:rgba(10,12,14,.72);color:#fff;border-radius:8px;padding:8px 13px;font:400 15px/1.4 var(--f-body,system-ui);text-align:center;pointer-events:none}
 #glsub b{color:#f3c64f;font-weight:600;margin-right:6px}
+#glfunk{position:absolute;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:6;max-width:min(620px,86vw);
+  color:#f4ecd6;font:italic 400 13px/1.4 var(--f-body,system-ui);text-align:center;pointer-events:none;text-shadow:0 1px 6px rgba(0,0,0,.95)}
+#glfunk b{font-style:normal;font-weight:600;color:#f3c64f;margin-right:6px} #glfunk[hidden]{display:none!important}
 #glwahl{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:8;width:min(460px,92vw);
-  background:rgba(14,18,22,.9);color:#eef1f2;border-radius:12px;padding:12px;font:400 14px/1.4 var(--f-body,system-ui);pointer-events:auto}
+  background:rgba(14,18,22,.9);color:#eef1f2;border-radius:12px;padding:12px;font:400 14px/1.4 var(--f-body,system-ui);pointer-events:auto;
+  max-height:calc(100% - 190px - env(safe-area-inset-bottom,0px));overflow:auto;-webkit-overflow-scrolling:touch}
+@media (orientation:landscape) and (max-height:500px){#glwahl{bottom:calc(64px + env(safe-area-inset-bottom,0px));max-height:calc(100% - 84px)}}
 #glwahl h4{margin:0 0 4px;font:600 15px/1.3 var(--f-body,system-ui);color:#f3c64f}
 #glwahl p{margin:0 0 9px;opacity:.9;font-size:13px}
 #glwahl button{display:block;width:100%;text-align:left;margin-top:6px;font:500 14px/1.3 var(--f-body,system-ui);color:#eef1f2;background:rgba(255,255,255,.12);
@@ -123,7 +131,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
        <div class="gw" id="glwas"></div>
        <div class="gn"><b id="glwer"></b><span id="glanderer"></span></div>
        <div class="gh" id="glhint"></div>
-       <div class="gx"><button data-g="wechsel">Wechseln<b>Tab</b></button><button data-g="handy">Handy<b>T</b></button><button data-g="radio">Radio<b>R</b></button>` +
+       <div class="gx"><button data-g="wechsel">Wechseln<b>Tab</b></button><button data-g="handy">Handy<span id="glhandyn"></span><b>T</b></button><button data-g="radio">Radio<b>R</b></button>` +
         `<button data-g="folgen" id="glfolgen">Folgen</button><button data-g="boeller" id="glboeller">Böller</button><button data-g="schlag">Stoßen<b>G</b></button>` +
         `<button data-g="extra" id="glextra" hidden></button><button data-g="end">Beenden</button></div>`
     );
@@ -132,6 +140,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
     S.ortEl = div('glort');
     S.ortEl.hidden = false;
     S.subEl = div('glsub');
+    S.funkEl = div('glfunk');
     S.askEl = div('glwahl');
     S.fadeEl = div('glfade');
     S.fadeEl.hidden = false;
@@ -206,7 +215,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
     else {
       delete document.body.dataset.gl;
       delete document.body.dataset.glEra;
-      S.msg.hidden = S.subEl.hidden = S.askEl.hidden = S.bust.hidden = S.pass.hidden = true;
+      S.msg.hidden = S.subEl.hidden = S.funkEl.hidden = S.askEl.hidden = S.bust.hidden = S.pass.hidden = true;
       S.ortEl.classList.remove('on');
       S.fadeEl.classList.remove('on');
       if (S.ask) {
@@ -230,7 +239,14 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
   const STATE = {
     ruhe: '',
     gesucht: 'Gesucht – außer Sicht',
+    versteckt: 'Gesucht – du bist versteckt',
     verfolgt: 'Sie sehen dich!',
+  };
+  const polKey = () => {
+    const L = S.pol;
+    if (!L) return '';
+    const o = (L.offen || [])[0];
+    return [L.fz ? 1 : 0, L.hidden ? 1 : 0, L.heli ? 1 : 0, o ? (o.wer || '') + Math.ceil(o.t || 0) : ''].join(',');
   };
   function refresh() {
     if (!S.shown) return;
@@ -249,6 +265,8 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
         GL.folgt,
         GL.inv.boeller || 0,
         S.xl || '',
+        S.neu,
+        polKey(),
       ].join('|');
     if (key === S.last) return;
     S.last = key;
@@ -261,20 +279,27 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
         ? (W.known ? 'on' : 'hohl') + (W.state === 'gesucht' && i === n - 1 && fade > 0.55 ? ' blink' : '')
         : '';
     }
+    const L = S.pol || {},
+      tel = (L.offen || [])[0];
     q('glwas').textContent =
       n > 0
-        ? (W.state === 'verfolgt' ? STATE.verfolgt : STATE.gesucht) +
+        ? (W.state === 'verfolgt' ? STATE.verfolgt : L.hidden ? STATE.versteckt : STATE.gesucht) +
           (W.known ? '' : ' · sie haben nur eine Beschreibung') +
+          (L.fz ? ' · das Moped kennen sie' : '') +
+          (L.heli ? ' · Hubschrauber' : '') +
           (W.split ? ' · getrennt' : '')
-        : '';
+        : tel
+          ? (tel.wer || 'Jemand') + ' telefoniert' + (tel.t > 0 ? ' (' + Math.ceil(tel.t) + ' s)' : '') + ' …'
+          : '';
     q('glwer').textContent = GL.era === '1989' ? 'Gerhard, 35' : GL.name();
     q('glanderer').textContent = GL.era === '1989' ? '' : GL.name(GL.other()) + (GL.folgt ? ' kommt mit' : ' wartet');
     q('glhint').textContent = S.tip || '';
     q('glfolgen').textContent = GL.folgt ? 'Warte hier' : 'Komm mit';
     q('glboeller').hidden = !(GL.inv.boeller > 0) || GL.era === '1989';
     q('glboeller').textContent = 'Böller (' + (GL.inv.boeller || 0) + ')';
-    for (const b of S.el.querySelectorAll('[data-g="wechsel"],[data-g="handy"],[data-g="radio"],[data-g="folgen"]'))
+    for (const b of S.el.querySelectorAll('[data-g="wechsel"],[data-g="handy"],[data-g="folgen"]'))
       b.hidden = GL.era === '1989';
+    q('glhandyn').textContent = S.neu > 0 ? ' (' + S.neu + ')' : '';
     const ex = q('glextra');
     ex.hidden = !S.xl;
     ex.textContent = S.xl || '';
@@ -324,6 +349,14 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
     S.subEl.hidden = false;
     S.subT = (ms || Math.max(2200, 900 + text.length * 62)) / 1000;
     return S.subT;
+  }
+  // what the radio says: a line of its own above the subtitles, so that it never covers what people say
+  function funk(name, text, ms = 0) {
+    build();
+    S.funkEl.innerHTML = '<b>♪ ' + esc(name || 'Radio') + '</b>' + esc(text || '');
+    S.funkEl.hidden = !text;
+    S.funkT = text ? (ms || Math.max(2600, 1200 + text.length * 62)) / 1000 : 0;
+    return S.funkT;
   }
   // choices: resolves to the index picked (−1: closed by the mode's end). opts: [{ t: label, s: small line, off: disabled }]
   function wahl(titel, text, opts) {
@@ -377,6 +410,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
     if (S.msgT > 0 && (S.msgT -= dt) <= 0) S.msg.hidden = true;
     if (S.subT > 0 && (S.subT -= dt) <= 0) S.subEl.hidden = true;
     if (S.passT > 0 && (S.passT -= dt) <= 0) S.pass.hidden = true;
+    if (S.funkT > 0 && (S.funkT -= dt) <= 0) S.funkEl.hidden = true;
     if (S.ortT > 0 && (S.ortT -= dt) <= 0) S.ortEl.classList.remove('on');
     S.acc = (S.acc || 0) + dt;
     if (S.acc > 0.25) {
@@ -387,7 +421,24 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
   KERN.on('grenzland:geld', () => {
     S.last = '';
   });
-  Object.assign(S, { build, show, era, refresh, say, sub, wahl, pick, fade, busted, tick, hint, extra, passed, ort });
+  Object.assign(S, {
+    build,
+    show,
+    era,
+    refresh,
+    say,
+    sub,
+    funk,
+    wahl,
+    pick,
+    fade,
+    busted,
+    tick,
+    hint,
+    extra,
+    passed,
+    ort,
+  });
   return S;
 })();
 window.GLHUD = GLHUD;
