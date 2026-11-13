@@ -108,6 +108,11 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 22:20 **Grenzland-Chat** – **V18j auf `src`** (Grenzland Runde 3: mit dem Partner reden – KI und Themen –, echte Helme, Anrufe mit
+  Ortssinn; enthält V18f–V18i). Live, sobald der Pflicht-Teil grün ist. **Geteilte Module:** `viz3/src/npc/ki.js` und `ki_core.js` mit
+  additiven Haken (`lage`, `aufgaben`, `ohne`, `vertraut`, `klatsch` je Person; ohne sie alles wie vorher, `ki.py` 73/73, ein Unit-Test prüft
+  die `<lage>` der anderen Zeichen für Zeichen).
+
 - 13.11. 22:10 **Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv** – **Hilfs-Agent `laeden` gestartet** (Falko 22:05: als Nächstes die Läden in
   Schleusingen): baut die großen Läden an der Suhler Straße, McDonald's, Lidl und REWE als das, was sie sind – echter Name ohne Logo, Türen,
   Parkplätze. Er ersetzt dort die ETHOS-Hallen über einen markierten Haken in `gebaeude/gebaeude.js` und fasst keine Straßen an.
