@@ -518,7 +518,7 @@ export const LAEDEN = (() => {
       roughness: 0.15,
       metalness: 0,
       envMapIntensity: 0.9,
-      emissive: 0xffe2bc,
+      emissive: 0xffcf9a, // warm light inside, not a white panel
       emissiveIntensity: 0,
     });
   // ---- the letters: one canvas atlas per group, every sign a cell of its own (band colour, the text in a plain sans-serif) ----
@@ -2827,11 +2827,12 @@ export const LAEDEN = (() => {
           signs: g.signs || [],
           canopies: g.canopies || [],
           feet: g.feet || [],
-          // each wall: its kind, the largest step, its points on the pad's edge (x, y, outward normal, pad level, ground outside)
+          // each wall: its kind, the largest step, its points on the pad's edge (x, y, outward normal, pad level, ground outside, the
+          // direction the wall and its cover are set out along – at a corner the mitre)
           walls: (g.walls || []).map(r => ({
             kind: r.kind,
             drop: f2(r.drop),
-            pts: r.pts.map(p => [f2(p.x), f2(p.y), f2(p.ex), f2(p.ey), f2(p.s), f2(p.out)]),
+            pts: r.pts.map(p => [f2(p.x), f2(p.y), f2(p.ex), f2(p.ey), f2(p.s), f2(p.out), f2(p.nx), f2(p.ny)]),
           })),
         }
       : null;

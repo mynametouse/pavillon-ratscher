@@ -31,9 +31,9 @@ FEET = ("(([cx, cy, R, gid]) => { const D = LAEDEN.detail(gid), out = []; for (c
         "f.z0 === undefined ? null : +f.z0.toFixed(2), (f.corners || []).map(([x, y]) => { const q = WELT.heightAt(x, y); return q === undefined ? null : +q.toFixed(2); })]); } return out; })")
 # the walls along the pads' edges: before a cut's wall the pad's level (no ramp leaning on it), on its cover the upper ground; on a
 # fill's cover the pad's level, below its wall the low ground
-WALLS = ("(gid) => { const D = LAEDEN.detail(gid), bad = []; let n = 0; for (const w of D.walls) for (const [x, y, ex, ey, s, out] of w.pts.slice(1, -1)) { n++; "
+WALLS = ("(gid) => { const D = LAEDEN.detail(gid), bad = []; let n = 0; for (const w of D.walls) for (const [x, y, ex, ey, s, out, nx, ny] of w.pts.slice(2, -2)) { n++; "
          "if (w.kind === 'cut') { const lo = KERN.ground(x - ex * 0.5, y - ey * 0.5); if (!(Math.abs(lo - s) <= 0.35)) bad.push(['before the wall', x, y, s, lo]); "
-         "for (const k of [1.6, 2.5, 4.0, 5.5]) { const qx = x + ex * k, qy = y + ey * k, c = KERN.ground(qx, qy), t = WELT.heightAt(qx, qy); "
+         "for (const k of [1.6, 2.5, 4.0, 5.5]) { const qx = x + nx * k, qy = y + ny * k, c = KERN.ground(qx, qy), t = WELT.heightAt(qx, qy); "
          "if (!(c >= t - 0.02) || (k === 2.5 && !(c >= s + 0.3))) bad.push(['cover', k, x, y, s, c, t]); } } "
          "else { const lid = KERN.ground(x - ex, y - ey), low = WELT.heightAt(x + ex * 4.4, y + ey * 4.4); "
          "if (!(Math.abs(lid - s) <= 0.3)) bad.push(['cover', x, y, s, lid]); if (!(low <= s - 1.0)) bad.push(['below', x, y, s, low]); } } "
@@ -441,7 +441,8 @@ if GROUPS or 'nacht' in want:
             lamps = J("(VPROPS.lamps || []).filter(l => l.str && Math.hypot(l.x + 1075, l.y - 1570) < 600).length")
             gl = J("LAEDEN.groups.flatMap(g => (g.glass || []).map(q => [q.id, +q.mat.emissiveIntensity.toFixed(2)]))")
             glm = dict((a, b) for a, b in gl)
-            ck('night: lamps on the car parks, McDonald\'s windows lit (open till midnight), Lidl\'s dimmed (Sunday)', lamps > 0 and glm.get('mcd', 0) > 0.5 and glm.get('lidl', 1) < 0.5, f'lamps near {lamps}; glass {gl}')
+            ck('night: lamps on the car parks, McDonald\'s windows lit (open till midnight, warm and soft), Lidl\'s dimmed (Sunday)',
+               lamps > 0 and 0.3 <= glm.get('mcd', 0) <= 0.8 and glm.get('mcd', 0) >= 3 * glm.get('lidl', 1), f'lamps near {lamps}; glass {gl}')
             if 'mitte' in GROUPS:
                 eye(*STREET['mcd'], 3)
                 pic('mcd_nacht')
