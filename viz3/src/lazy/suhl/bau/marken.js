@@ -6,6 +6,7 @@
 // mat: putz, schiefer (slate all over), schiefer_og (slate above a plastered ground floor), fachwerk, fachwerk_og (framing above a
 // plastered ground floor), klinker, platte. balkCol: the balconies' parapets. frame: 0 white, 1 brown, 2 green, 3 grey.
 // rise: the roof above the eave this many times higher (a roof the fit from the aerial photo made too flat). e: a flat roof lower.
+// vordach: a canopy along the sides with shops ({ col, post, d, z }).
 export const MARKEN = {
   // Marktplatz
   DETHL57P00006G2R: {
@@ -166,6 +167,7 @@ export const MARKEN = {
     col: '#f1f1ee',
     frame: 3,
     balk: false,
+    vordach: { col: '#9aa2a7', post: '#b23a32' }, // the canopy along its shops on red posts (photos)
     foto: 'Lauterbogen-Center Suhl Bild 2 2025-04-26 (Strubbl, CC BY-SA 4.0)',
   },
   // Topfmarkt: grey-beige blocks, their windows framed in red (the nearest frame colour: brown)
