@@ -145,8 +145,10 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
 - **Für `stimmen`:** `GLFAHNDUNG.linien()` (Sprecher `funk`, `polizei1`, `polizei2`, `vopo`, `abv`), `GLREAKTION.linien()` (je Sprecher
   dieselben Sätze; Falko und Sarah ihre Antworten), `GLEREIGNIS.linien()`. Die Stimme `gl_funk` meldet das Modul selbst an
   (`STIMME.person`), solange es keine Aufnahme gibt.
-- **Radar:** `GLEREIGNIS` meldet eine Quelle an (`GLKARTE.src`): `{ x, y, k: 'ort', name: 'Blitzer' | 'Stau' | 'Kirmes' | 'Korso' |
-  'Böller' | 'Reh' }`. Eine eigene Art (z. B. `k: 'ereignis'` mit einem Symbol) wäre schöner – gern im Radar ergänzen.
+- **Radar:** `GLEREIGNIS` meldet eine Quelle an (`GLKARTE.src`): `{ x, y, k: 'ereignis', name: 'Blitzer' | 'Traktor' | 'Kirmes' |
+  'Korso' | 'Böller' | 'Reh' }` – das eigene Zeichen dafür kommt vom Lead (13:58).
+- **Wünsche der anderen umgesetzt:** das geborgte blaue Licht der Streife pulst im Takt von `GLAUTO.blauPuls` (`licht`; Farbe 0x2a5cff
+  bleibt, Reichweite 12 m, Abfall 2); die Gerätestimme der Zentrale (`gl_funk`) ist eine Frau wie die Aufnahmen (`stimmen`).
 - **`modules.txt`:** drei Zeilen am Ende des Blocks `# feat/grenzland` (nach `gl_modus.js`): `gl_reaktion_data.js`, `gl_reaktion.js`,
   `gl_ereignis.js`.
 - **Daten zur Laufzeit ergänzt** (damit eure Dateien unberührt bleiben): `GLDATA.CAST` + `GLDATA.KLEID` um die Leute der Ereignisse
