@@ -153,7 +153,7 @@ export const HANDY = (() => {
     `<svg class="${cls || ''}" viewBox="0 0 24 24" aria-hidden="true" fill-rule="evenodd"><path d="${d}"/></svg>`;
   const CSS = `
 .hy{position:absolute;z-index:14;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));
-  height:min(620px,calc(100% - 84px));aspect-ratio:71.6/147.6;max-width:calc(100% - 24px);--hy-e:1;--hy-x:0%;
+  height:min(620px,calc(100% - 124px));aspect-ratio:71.6/147.6;max-width:calc(100% - 24px);--hy-e:1;--hy-x:0%;
   transform:translate(var(--hy-x),calc((1 - var(--hy-e)) * 116%)) rotate(calc((1 - var(--hy-e)) * -5deg));transform-origin:70% 100%;
   pointer-events:auto;user-select:none;-webkit-user-select:none;touch-action:none;color:#f2f3f5;
   font-family:var(--hy-font,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif);-webkit-font-smoothing:antialiased}

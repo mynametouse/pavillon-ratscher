@@ -122,7 +122,7 @@ with lib.browser() as b:
     if 'app' in SECT:
         try: sect_app()
         except Exception as e:
-            ck('section app ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            ck('section app ran through', False, f'{type(e).__name__}: {str(e)[:1400]}')
             try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
             except Exception: pass
     def sect_anruf():
@@ -152,7 +152,7 @@ with lib.browser() as b:
     if 'anruf' in SECT:
         try: sect_anruf()
         except Exception as e:
-            ck('section anruf ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            ck('section anruf ran through', False, f'{type(e).__name__}: {str(e)[:1400]}')
             try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
             except Exception: pass
     def sect_kamera():
@@ -163,11 +163,13 @@ with lib.browser() as b:
         c0 = J("({ su: !document.getElementById('glcam').hidden, open: HANDY.S.open, iso: GLHANDY.isOpen() })")
         n0 = E("HANDY.S.fotos.length")
         # with the mouse looking around (pointer lock after the click on the icon) a click anywhere takes the picture; else the shutter
-        locked = E("!!document.pointerLockElement")
-        if locked: pg.mouse.click(550, 360)
-        else: pg.click('#glcam button[data-c="foto"]')
+        # the lock may come a moment after the click on the icon: click where the shutter is – on it without the lock, through the
+        # phone's own click handler with it
+        sb = J("(() => { const r = document.querySelector('#glcam button[data-c=\"foto\"]').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2] })()")
+        print('at the shutter:', E(f"(() => {{ const e = document.elementFromPoint({sb[0]}, {sb[1]}); return (e ? e.tagName + '.' + e.className : 'none') + ' lock=' + !!document.pointerLockElement }})()"), flush=True)
+        pg.mouse.click(sb[0], sb[1])
         steps(0.25); time.sleep(0.3)
-        print('pointer lock in the viewfinder:', locked, flush=True)
+        print('pointer lock in the viewfinder:', E("!!document.pointerLockElement"), flush=True)
         f = J("(() => { const f = HANDY.S.fotos[HANDY.S.fotos.length - 1]; return f ? { n: HANDY.S.fotos.length, len: f.img.length, jpg: f.img.startsWith('data:image/jpeg') } : null })()")
         ck('Kamera: the viewfinder over the picture, the phone itself put down; the shutter takes a real frame', c0['su'] and not c0['open'] and not c0['iso'] and f and f['n'] == n0 + 1 and f['jpg'] and f['len'] > 8000, str(c0) + str(f))
         po = J("HANDYPOSE.stand()")
@@ -182,7 +184,7 @@ with lib.browser() as b:
     if 'kamera' in SECT:
         try: sect_kamera()
         except Exception as e:
-            ck('section kamera ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            ck('section kamera ran through', False, f'{type(e).__name__}: {str(e)[:1400]}')
             try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
             except Exception: pass
     def sect_halten():
@@ -216,7 +218,7 @@ with lib.browser() as b:
     if 'halten' in SECT:
         try: sect_halten()
         except Exception as e:
-            ck('section halten ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            ck('section halten ran through', False, f'{type(e).__name__}: {str(e)[:1400]}')
             try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
             except Exception: pass
     def sect_format():
@@ -252,7 +254,7 @@ with lib.browser() as b:
     if 'format' in SECT:
         try: sect_format()
         except Exception as e:
-            ck('section format ran through', False, f'{type(e).__name__}: {str(e)[:400]}')
+            ck('section format ran through', False, f'{type(e).__name__}: {str(e)[:1400]}')
             try: E("HANDY.S.anruf && HANDY.auflegen(true); HANDY.sucher(false, { heim: false }); HANDY.alarm && HANDY.S.alarm && HANDY.back(); 0")
             except Exception: pass
     # ---------------- the end ----------------
