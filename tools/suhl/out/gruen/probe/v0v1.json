@@ -8,10 +8,10 @@
    5608000
   ],
   "v0_baeume": 73,
-  "v1_baeume": 91,
-  "v1_hoehe_gemessen": 79,
+  "v1_baeume": 77,
+  "v1_hoehe_gemessen": 63,
   "v0_hoehe_median_m": 10.25,
-  "v1_hoehe_median_gemessen_m": 3.5
+  "v1_hoehe_median_gemessen_m": 5.25
  },
  {
   "ort": "Plattenbau-Gebiet (Aue, Friedrich-König-Straße)",
@@ -22,10 +22,10 @@
    5607490
   ],
   "v0_baeume": 190,
-  "v1_baeume": 295,
-  "v1_hoehe_gemessen": 271,
+  "v1_baeume": 179,
+  "v1_hoehe_gemessen": 153,
   "v0_hoehe_median_m": 13.5,
-  "v1_hoehe_median_gemessen_m": 7.5
+  "v1_hoehe_median_gemessen_m": 11.5
  },
  {
   "ort": "Waldrand (Domberg, Nordrand des Zentrums)",
@@ -36,10 +36,10 @@
    5608200
   ],
   "v0_baeume": 288,
-  "v1_baeume": 403,
-  "v1_hoehe_gemessen": 353,
+  "v1_baeume": 243,
+  "v1_hoehe_gemessen": 205,
   "v0_hoehe_median_m": 15.0,
-  "v1_hoehe_median_gemessen_m": 15.75
+  "v1_hoehe_median_gemessen_m": 21.0
  },
  {
   "ort": "Park am Herrenteich (Nordwest-Viertel des Fensters Steinweg/Markt)",
@@ -50,10 +50,10 @@
    5607900
   ],
   "v0_baeume": 114,
-  "v1_baeume": 137,
-  "v1_hoehe_gemessen": 101,
+  "v1_baeume": 121,
+  "v1_hoehe_gemessen": 94,
   "v0_hoehe_median_m": 9.75,
-  "v1_hoehe_median_gemessen_m": 4.25
+  "v1_hoehe_median_gemessen_m": 5.125
  },
  {
   "ort": "Markt (Südteil) und Steinweg Nord (Nordost-Viertel)",
@@ -64,10 +64,10 @@
    5607900
   ],
   "v0_baeume": 76,
-  "v1_baeume": 88,
-  "v1_hoehe_gemessen": 69,
+  "v1_baeume": 82,
+  "v1_hoehe_gemessen": 59,
   "v0_hoehe_median_m": 10.25,
-  "v1_hoehe_median_gemessen_m": 4.5
+  "v1_hoehe_median_gemessen_m": 6.0
  },
  {
   "ort": "südlich des Herrenteichs (Südwest-Viertel)",
@@ -78,10 +78,10 @@
    5607700
   ],
   "v0_baeume": 114,
-  "v1_baeume": 133,
-  "v1_hoehe_gemessen": 110,
+  "v1_baeume": 118,
+  "v1_hoehe_gemessen": 82,
   "v0_hoehe_median_m": 11.25,
-  "v1_hoehe_median_gemessen_m": 3.625
+  "v1_hoehe_median_gemessen_m": 4.0
  },
  {
   "ort": "Steinweg Süd (Südost-Viertel)",
@@ -92,10 +92,10 @@
    5607700
   ],
   "v0_baeume": 203,
-  "v1_baeume": 231,
-  "v1_hoehe_gemessen": 183,
+  "v1_baeume": 226,
+  "v1_hoehe_gemessen": 149,
   "v0_hoehe_median_m": 11.0,
-  "v1_hoehe_median_gemessen_m": 3.0
+  "v1_hoehe_median_gemessen_m": 3.5
  },
  {
   "ort": "Steinweg, Markt, Herrenteich – das ganze Fenster (400 m)",
@@ -106,9 +106,9 @@
    5607900
   ],
   "v0_baeume": 507,
-  "v1_baeume": 589,
-  "v1_hoehe_gemessen": 463,
+  "v1_baeume": 547,
+  "v1_hoehe_gemessen": 384,
   "v0_hoehe_median_m": 10.75,
-  "v1_hoehe_median_gemessen_m": 3.5
+  "v1_hoehe_median_gemessen_m": 4.125
  }
 ]

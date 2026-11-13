@@ -8,10 +8,10 @@
    619880,
    5608000
   ],
-  "baeume": 91,
+  "baeume": 77,
   "gehoelzmaske_von_kronen_bedeckt_prozent": 84.8,
-  "kronenflaeche_auf_nicht_gruen_prozent": 9.6,
-  "kronendeckung_modell_prozent": 7.7,
+  "kronenflaeche_auf_nicht_gruen_prozent": 12.3,
+  "kronendeckung_modell_prozent": 8.6,
   "gehoelz_im_bild_prozent": 7.3
  },
  {
@@ -23,10 +23,10 @@
    619030,
    5607490
   ],
-  "baeume": 295,
-  "gehoelzmaske_von_kronen_bedeckt_prozent": 81.7,
-  "kronenflaeche_auf_nicht_gruen_prozent": 3.1,
-  "kronendeckung_modell_prozent": 33.6,
+  "baeume": 179,
+  "gehoelzmaske_von_kronen_bedeckt_prozent": 82.0,
+  "kronenflaeche_auf_nicht_gruen_prozent": 4.8,
+  "kronendeckung_modell_prozent": 35.2,
   "gehoelz_im_bild_prozent": 35.0
  },
  {
@@ -38,10 +38,10 @@
    619450,
    5608200
   ],
-  "baeume": 403,
-  "gehoelzmaske_von_kronen_bedeckt_prozent": 81.4,
-  "kronenflaeche_auf_nicht_gruen_prozent": 2.2,
-  "kronendeckung_modell_prozent": 64.4,
+  "baeume": 243,
+  "gehoelzmaske_von_kronen_bedeckt_prozent": 82.0,
+  "kronenflaeche_auf_nicht_gruen_prozent": 2.5,
+  "kronendeckung_modell_prozent": 65.4,
   "gehoelz_im_bild_prozent": 73.4
  }
 ]

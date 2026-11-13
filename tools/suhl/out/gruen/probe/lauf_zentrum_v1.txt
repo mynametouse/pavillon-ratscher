@@ -1,8 +1,7 @@
-lauf: 43346253676
-commit: 7eb7daf95630d9b4e30a9110b44087dede3c9091
+lauf: 43347272870
+commit: 92f47feb9d96f064f78dd98d2c2daf9cbf8540ca
 gebiet: zentrum, version: 1, ndom: P1
-01:38:13 easygeodata nDOM1: 8 of 8 tiles to fetch, about 6.2 MB (limit of this run 400 MB; the account has 20 GB per month), 2 s between calls
-01:38:30 easygeodata nDOM1: 8 of 8 tiles present (8 fetched, 6.2 MB; 0 were there; 0 not offered; 0 failed)
+01:47:13 easygeodata nDOM1: 8 of 8 tiles present (0 fetched, 0.0 MB; 8 were there; 0 not offered; 0 failed)
 nDOM1-Kacheln im Rohdaten-Ordner: 8
 Dieser Workflow veröffentlicht nichts: suhl-daten veröffentlicht Sätze durch eine Tür (Aktion suhl-publish, Zweig suhl/daten).
-Artefakte dieses Laufs 43346253676: suhl-b-v1, suhl-w-v1, suhl-gr-v1
+Artefakte dieses Laufs 43347272870: suhl-b-v1, suhl-w-v1, suhl-gr-v1

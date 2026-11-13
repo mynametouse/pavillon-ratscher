@@ -1,5 +1,5 @@
 {
- "made": "2026-11-13T01:38:31Z",
+ "made": "2026-11-13T01:47:14Z",
  "gebiet": "zentrum",
  "kacheln_gebiet": 11,
  "kacheln_einzelbaeume": 11,
@@ -12,12 +12,12 @@
   "baeume": {
    "anzahl": 9724,
    "kacheln": 11,
-   "sekunden": 26
+   "sekunden": 29
   }
  },
  "kontext": {
   "osm": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
-  "osm_stand": "2026-11-13T01:38:08Z",
+  "osm_stand": "2026-11-13T01:47:10Z",
   "gebaeude_osm_ringe": 35667,
   "gebaeude_ethos": 53938,
   "strassen": 10630,
@@ -210,7 +210,7 @@
   "meldung": "VALID: out0 - schema 1 (rev 1.1), 0 errors, 0 warnings",
   "zeilen": []
  },
- "sekunden": 29,
+ "sekunden": 31,
  "kachel_tabelle": [
   [
    495,
