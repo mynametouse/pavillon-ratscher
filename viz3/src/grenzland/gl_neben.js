@@ -30,13 +30,14 @@ export const GLNEBEN = (() => {
     LOHN = 80,
     ZEIT = [17 * 60 + 30, 22 * 60], // when she stands at the bus stop (minutes of the day)
     NAME = GLDATA.CAST.yuki.name;
-  // where she stands: in front of the open side of the school bus stop's shelter (world/dorfkern_data.js), facing the road
+  // where she stands: beside the east end of the school bus stop's shelter (world/dorfkern_data.js), a step back from the kerb – the
+  // buses stop in front of the shelter –, facing the road
   const ORT = (() => {
     const sh = DKDATA.open && DKDATA.open.shelter,
       c = sh ? sh.c : [249, -101],
       az = ((sh ? sh.az : 196) * Math.PI) / 180;
     return {
-      pos: [c[0] + Math.sin(az) * 1.5 + Math.cos(az) * 0.9, c[1] + Math.cos(az) * 1.5 - Math.sin(az) * 0.9],
+      pos: [c[0] - Math.cos(az) * 2.3 - Math.sin(az) * 0.2, c[1] + Math.sin(az) * 2.3 - Math.cos(az) * 0.2],
       hd: az,
     };
   })();
