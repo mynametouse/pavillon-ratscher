@@ -1473,10 +1473,11 @@ export const GLKAP1 = (() => {
       bb = B.b - B.w / 2,
       bf = B.b + B.w / 2,
       z = Number.isFinite(GLLAGER.zF) ? GLLAGER.zF : KERN.ground(y.vorTuer[0], y.vorTuer[1]),
-      p = y.w(B.tuer - 0.05, bb - 1.15),
+      // (in the doorway itself, a step inside: whoever broke the door stands behind the camera, not in the picture)
+      p = y.w(B.tuer - 0.05, bb + 0.15),
       t = y.w(B.tuer + 0.2, bf - 0.12);
     try {
-      window.GLKAMERA.einstellung([p[0], p[1], z + 1.62], [t[0], t[1], z + 1.45], 3.4, 46);
+      window.GLKAMERA.einstellung([p[0], p[1], z + 1.58], [t[0], t[1], z + 1.45], 3.4, 50);
     } catch (e) {}
   }
   MI.def({

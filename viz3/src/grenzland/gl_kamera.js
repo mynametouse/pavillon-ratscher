@@ -326,8 +326,25 @@ export const GLKAMERA = (() => {
     const t = [x[0] + d[0] * 0.18, x[1] + d[1] * 0.18, x[2] - 0.1];
     return mk('nah', boden(p), t, fov0 - 10, sec, 0.1);
   }
+  // (the mode hides the other one of the two when the camera comes within 0.8 m of her: keep a metre off her feet)
+  function abstand(p) {
+    for (const e of S.who) {
+      const F = e.F;
+      if (F === 'P' || !F.partner) continue;
+      const dx = p[0] - F.x,
+        dy = p[1] - F.y,
+        d = hyp(dx, dy);
+      if (d >= 1.05) continue;
+      const ux = d > 0.01 ? dx / d : 1,
+        uy = d > 0.01 ? dy / d : 0;
+      p[0] = F.x + ux * 1.05;
+      p[1] = F.y + uy * 1.05;
+    }
+    return p;
+  }
   // a shot with its push-in: from p0 towards the target by k of the way over the line (only on lines of 3.5 s and more)
   function mk(kind, p0, t, fov, sec, k) {
+    abstand(p0);
     const push = sec >= 3.5 ? k : 0.02,
       p1 = [p0[0] + (t[0] - p0[0]) * push, p0[1] + (t[1] - p0[1]) * push, p0[2] + (t[2] - p0[2]) * push * 0.5];
     return { kind, p0, p1, t0: t, t1: t, fov, T: Math.max(1, sec), t: 0 };
