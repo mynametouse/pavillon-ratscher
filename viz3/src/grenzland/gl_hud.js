@@ -126,7 +126,7 @@ body[data-gl-era="1989"] #gldatum{display:block}
 #glsub b{color:#f3c64f;font-weight:600;margin-right:6px}
 #glsub.funk b{color:#9cc8ff}
 #glfunk{color:#f4ecd6;font:italic 400 13px/1.4 var(--f-body,system-ui);text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.95);max-width:92%}
-#glfunk b{font-style:normal;font-weight:600;color:#f3c64f;margin-right:6px} #glfunk[hidden]{display:none!important}
+#glfunk b{font-style:normal;font-weight:600;color:#f3c64f;margin-right:6px} #glfunk b.pol{color:#9cc8ff} #glfunk[hidden]{display:none!important}
 @media (orientation:landscape) and (max-height:500px){#glzeilen{bottom:calc(64px + env(safe-area-inset-bottom,0px))}}
 /* a mission's title, as GTA shows it */
 #glmtitel{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);z-index:8;width:min(900px,92vw);text-align:center;pointer-events:none;color:#fff;
@@ -559,20 +559,21 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
     S.ortT = sec;
   }
   // what somebody says (a subtitle); ms: how long it stays. One line at a time: people come first – a line of the police radio
-  // ('Funk', 'Radio', 'Zentrale') waits while somebody speaks and shows after (it is dropped when it waited more than 9 s of game time). Returns the
-  // seconds until the line is gone (with the wait).
+  // ('Funk', 'Radio', 'Zentrale') that comes while somebody speaks stands in the upper line of the stack instead (the queue of
+  // waiting lines stays for calls that ask for it). Returns the seconds until the line is gone.
   const prioOf = name => (/^(Funk|Polizeifunk|Zentrale|Radio)$/i.test(String(name || '').trim()) ? 0 : 1);
   function sub(name, text, ms = 0) {
     build();
     text = String(text == null ? '' : text);
     const dur = (ms || Math.max(2200, 900 + text.length * 62)) / 1000,
       prio = prioOf(name);
+    // the police radio while a person speaks: in the upper line of the stack at once (its voice speaks now – the words must not lag
+    // behind it; found by agent stimmen), where the car radio's words would stand
     if (S.subT > 0.4 && prio < S.subPrio) {
-      let wait = S.subT;
-      for (const l of S.subQ) wait += l.dur;
-      S.subQ.push({ name, text, dur, prio, age: 0 });
-      if (S.subQ.length > 3) S.subQ.shift();
-      return wait + dur;
+      S.funkEl.innerHTML = '<b class="pol">' + esc(name || 'Funk') + '</b>' + esc(text);
+      S.funkEl.hidden = S.kinoOn;
+      S.funkT = S.funkEl.hidden ? 0 : dur;
+      return dur;
     }
     zeige(name, text, dur, prio);
     return dur;

@@ -38,9 +38,9 @@ Lead, B und C fünf Hilfs-Agenten (`kino`, `stimmen`, `licht`, `figuren`, `welt`
   keine Karte mehr steht (davor kommt die Abschlusskarte des Kapitels nicht mehr über „Bestanden“).
 - **Szenen:** `GLHUD.kino(an)` legt schwarze Balken über und unter das Bild, die Untertitel stehen im unteren Balken, Tafel, Radar,
   Aufgabenkarte gehen aus dem Weg (Gespräche als Filmszenen: Agent `kino`).
-- **Eine Zeile zur Zeit:** Untertitel stehen untereinander statt übereinander; der Polizeifunk wartet, solange jemand spricht (und verfällt
-  nach 9 s Spielzeit), Menschen sprechen sofort; die Worte des Autoradios treten zurück, solange jemand spricht; die Sprechzeile des Spiels
-  (Dorfbewohner) weicht einem Untertitel.
+- **Eine Zeile zur Zeit:** Untertitel stehen untereinander statt übereinander; spricht gerade jemand, steht der Polizeifunk sofort in der
+  oberen Zeile (gleichzeitig mit seiner Stimme), sonst unten; die Worte des Autoradios treten zurück, solange jemand spricht oder ein Gedanke
+  steht; die Sprechzeile des Spiels (Dorfbewohner) weicht einem Untertitel und jeder Szene.
 - **Leiser:** das Aufgabenbuch zeigt im Modus nur die Aufgaben des Modus (die Gartenaufgaben „Futter für die Ziegen“ usw. ruhen); Gedanken
   des Spiels über gesehene Tiere, Gartenaufgaben und neue Funktionen („Neu: …“) kommen nicht, die eigenen Gedanken des Modus warten, bis
   kein Untertitel und keine Karte mehr steht.
@@ -50,6 +50,43 @@ Lead, B und C fünf Hilfs-Agenten (`kino`, `stimmen`, `licht`, `figuren`, `welt`
 - **Radar:** eine Streife oder ein Beamter steht nur auf dem Radar, solange sie dich sehen oder eben gesehen haben (`gesehen`, wie GTA 6).
 - **Altes Handy:** seine Einträge standen nebeneinander (die Klasse `.hb` teilt es mit den runden Knöpfen des Spiels) – wieder
   untereinander, bis das gemeinsame Handy (Agent `handy`) es ersetzt.
+
+### Paket B – Kino-Gefühl (Agenten `kino`, `stimmen`, `licht`, `figuren`)
+
+- **Gespräche als Zwischensequenzen** (`gl_kamera.js`, `GLKAMERA`): stehen die Leute, wird ein Gespräch zur Szene – Zweier-Einstellung zum
+  Auftakt, dann je Satz ein Schnitt auf den Sprecher (über die Schulter, nah), die 180°-Linie bleibt, lange Sätze mit langsamer Fahrt;
+  Balken, Leertaste/E/Tippen weiter, Esc überspringt; Sprecher wenden sich zu, Zuhörer schauen hin, nicken. Auf dem fahrenden Moped und
+  in der Verfolgung bleiben es Untertitel. Missionen beginnen mit Titelkarte und Stich; die Abschlusskarte wartet auf „Bestanden“.
+- **Musik nach Lage** (`gl_score.js`, `GLSCORE`): selbst erzeugt (WebAudio, d-Moll) – Spannung, Flucht (dichter mit mehr Sternen), 1989,
+  ein leiser Teppich unter Szenen; Stiche Start/Bestanden/Gescheitert; still im freien Spiel und bei laufendem Autoradio, leiser unter Stimmen.
+- **Echte Stimmen** (`gl_stimmen.js`, `tools/voices/grenzland_*`, Workflow `stimmen_grenzland.yml`): jede feste Zeile mit einer
+  Edge-Stimme je Person, aufgenommen auf Actions, im Spiel über `STIMME.say` (Aufnahme, wenn die Worte stimmen); Funk mit Sprechfunk-Klang,
+  Radiosprecher mit Sendeklang; vorab geladen je Missionsschritt; Radio und Musik treten zurück, solange jemand spricht.
+- **Licht** (`gl_licht.js`, `GLLICHT`): Scheinwerferkegel und Lichtflecken, Rücklichter, Blaulicht im Doppeltakt, Taschenlampen
+  (`F.lampe`), die Leuchtkugel der Klinge-Nacht färbt den Wald rot (~47 s), Regen an der Klinge, lesbarere Nächte, eine Farbstimmung für
+  heute, die kahle Linde 1989 mit feinen Zweigen.
+- **Figuren** (`gl_pose.js`, `GLPOSE`; `GLFIG.geste/blick/sitz/steh/platz/reite`): Fahrhaltung auf Simson und Schwalbe (Hände am Lenker,
+  Füße auf den Rasten, in die Kurve legen), Fahrer im Trabant, **die oder der andere fährt sichtbar mit** (Sozius, Beifahrersitz),
+  Polizisten rennen (heute; 1989 nicht), Gesten (zeigen, nicken, Kopf schütteln, Achseln, winken, telefonieren, filmen, Hände hoch …),
+  Blicke, Sitzen auf echten Bänken (Gerhard unter der Linde).
+
+### Paket C – lebendige Welt (Agent `welt`)
+
+- **Was die Polizei weiß** (`GLFAHNDUNG.stand().wissen`): Gesicht, Kleidung, Fahrzeug aus Sichtungen; Helm, Sturmhaube, andere Kleidung,
+  ein ungesehen verlassenes Fahrzeug ändern es; die Tafel zeigt es als Zeichen, das Radar Streifen nur, solange sie dich sehen.
+- **Der Funk beschreibt dich** in festen Bruchstücken („Gesucht wird Falko, rotes Karohemd, auf einem Moped, Richtung Schleusingen“).
+- **Zeugen filmen** (`gl_reaktion.js`): Leute heben das Handy, im Feed erscheint ein Beitrag mit echtem Bild der Szene, Likes und
+  Kommentaren, große Sachen als „LIVE“.
+- **Leute reagieren** und kommentieren; vor benannten Leuten vier Antworten – Grüßen, Sprüche klopfen, Beruhigen, Provozieren (kann einen
+  Stern bringen).
+- **Zufallsereignisse** (`gl_ereignis.js`): Blitzer auf der L 1625, Traktorstau, Kirmes, Hochzeitskorso, Böller aus dem Kofferraum,
+  Wildunfall – mit eigenem Zeichen auf dem Radar.
+
+### Das gemeinsame Handy (Agent `handy`, `viz3/src/handy/`)
+
+Falko 13:09: realistisches Gerät, Apps zum Öffnen und Schließen, Chats hochkant, Anrufe, später freischaltbar, die Figur hält es vors
+Gesicht – und für alle Welten nutzbar (der Zukunfts-Chat will es auch). Kommt mit dem nächsten Zusammenführen; Beschreibung
+`docs/features/handy.md`.
 
 ## Stand (13.11.2026, 9:30)
 
