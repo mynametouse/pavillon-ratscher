@@ -1,0 +1,30 @@
+{
+ "made": "2026-11-13T01:24:31Z",
+ "raw": "/home/runner/suhl-raw",
+ "reports": [
+  {
+   "product": "dgm",
+   "wanted": 8,
+   "present": 8,
+   "fetched": 8,
+   "cached": 0,
+   "bytes": 11271392,
+   "missing": [],
+   "failed": {},
+   "stopped": null,
+   "calls": 9
+  },
+  {
+   "product": "dom",
+   "wanted": 8,
+   "present": 8,
+   "fetched": 8,
+   "cached": 0,
+   "bytes": 13759899,
+   "missing": [],
+   "failed": {},
+   "stopped": null,
+   "calls": 18
+  }
+ ]
+}

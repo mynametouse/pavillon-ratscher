@@ -1,0 +1,27 @@
+{
+ "target": "/home/runner/suhl-out",
+ "schema": 1,
+ "rev": "1.0",
+ "valid": true,
+ "errors": [],
+ "warnings": [
+  "g/10/490/538 b[20] DETHL57P00000P6I: the plan areas of the roof faces (23 m2) do not fit the footprint (38 m2 in UTM)",
+  "g/10/491/538 b[20] DETHL57P00000Paj: the plan areas of the roof faces (58 m2) do not fit the footprint (80 m2 in UTM)",
+  "g/10/500/538 b[80] DETHL57P00001Kcs: the plan areas of the roof faces (29 m2) do not fit the footprint (46 m2 in UTM)",
+  "g/10/501/538 b[200] DETHL57P00001KaZ: the plan areas of the roof faces (22 m2) do not fit the footprint (28 m2 in UTM)",
+  "g/10/501/538 b[236] DETHL57P00001Kbr: the plan areas of the roof faces (39 m2) do not fit the footprint (54 m2 in UTM)",
+  "g/10/489/539 b[119] DETHL57P00000P9D: the plan areas of the roof faces (76 m2) do not fit the footprint (100 m2 in UTM)",
+  "g/10/489/540 b[38] DETHL57P00000P0A: the plan areas of the roof faces (286 m2) do not fit the footprint (473 m2 in UTM)",
+  "g/10/498/541 b[5] DETHL57P00002jRG: the plan areas of the roof faces (1292 m2) do not fit the footprint (1993 m2 in UTM)",
+  "g/10/495/543 b[100] DETHL57P00006Fzn: the plan areas of the roof faces (51 m2) do not fit the footprint (63 m2 in UTM)",
+  "g/10/498/545 b[9] DETHL57P0000jrAw: the plan areas of the roof faces (44 m2) do not fit the footprint (64 m2 in UTM)"
+ ],
+ "n_errors": 0,
+ "n_warnings": 10,
+ "stats": {
+  "g: tiles": 397,
+  "g: bytes": 35208870,
+  "g: buildings": 31708,
+  "g: versions checked": 1
+ }
+}
