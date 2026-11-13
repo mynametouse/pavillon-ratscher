@@ -81,7 +81,7 @@ export const GLREAKTION = (() => {
     const p = String(KERN.place(x, y, 0) || '');
     return /Schleusingen|Markt|Bertholdsburg/.test(p)
       ? 'Schleusingen'
-      : /Talsperre|Staumauer|Damm/.test(p)
+      : /Talsperre|Staudamm|Staumauer|Damm/.test(p)
         ? 'Talsperre'
         : /Klinge/.test(p)
           ? 'Klinge'

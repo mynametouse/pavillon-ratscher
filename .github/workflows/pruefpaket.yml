@@ -5,6 +5,9 @@
 #   Versuch: Safari-Engine (WebKit mit iPhone-13-Profil) – zählt noch nicht, bis klar ist, ob WebGL dort ohne Grafikkarte läuft;
 #            Feature-Tests v16b, v16c, v16d, v16e – melden, halten die Vorschau aber noch nicht auf
 #            Themen-Tests (seit 23.10.2026): jede Zeile von viz3/extra/*/tests.txt als eigener Lauf – ebenso nur melden
+#   Since 13.11.2026 (20 runners, ~150 report-only jobs per run blocked every candidate's required jobs): the report-only feature and topic
+#   tests run only on src and only after the required part (browser, Straßen) is green; candidates on kern/* run the required part alone.
+#   A newer push to src cancels the older run's report-only jobs, so only the newest src state gets the full report.
 name: Prüfpaket
 
 on:
@@ -70,11 +73,15 @@ jobs:
     # die Feature-Tests (Fahrzeuge, Wald und Fällen, Holz, Dorf) – je 10–30 min, seit 23.10.2026 in Abschnitte geteilt (halbe Wartezeit);
     # sie melden, halten die Vorschau aber (noch) nicht auf
     name: Feature ${{ matrix.key }}
+    needs: [browser, strassen]
+    if: github.ref == 'refs/heads/src'
     runs-on: ubuntu-latest
     timeout-minutes: 75
     continue-on-error: true
     strategy:
       fail-fast: false
+      # report-only: leave runners free for live, Pages and the candidates' required jobs (13.11.2026: 20 runners in all)
+      max-parallel: 4
       matrix:
         include:
           - { key: v16b-1, test: 'v16b:car,drive,crash,route' }
@@ -126,6 +133,8 @@ jobs:
     # the browser tests of the night's topics (garden, figures, neighbours, village, winch, trees …): one job per line of
     # viz3/extra/*/tests.txt ('name[:sections]' as for viz3/test/run.py) – so a merge on src also checks every topic against all the others
     name: Themen-Tests finden
+    needs: [browser, strassen]
+    if: github.ref == 'refs/heads/src'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -157,6 +166,8 @@ jobs:
     continue-on-error: true
     strategy:
       fail-fast: false
+      # report-only: at most 12 at once, so a live or Pages job never waits behind ~130 topic jobs (13.11.2026: 20 runners in all)
+      max-parallel: 12
       matrix: ${{ fromJSON(needs.themen-liste.outputs.m) }}
     steps:
       - uses: actions/checkout@v4

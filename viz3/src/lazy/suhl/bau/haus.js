@@ -474,6 +474,8 @@ export function building(b, id, z0, WB, RB, segs) {
         [ex, ey]
       );
   }
+  if (b.open) posts(b, z0, RB);
+  if (b.mark && b.mark.vordach) vordach(b, z0, RB, b.mark.vordach === true ? {} : b.mark.vordach);
   const gb = b.mark && b.mark.gauben;
   if (
     !flat &&
@@ -622,6 +624,130 @@ export function building(b, id, z0, WB, RB, segs) {
 const BALK = { platte: 1, zeilenbau: 1, punkthochhaus: 1, hochhaus: 1, wbs70: 1 };
 const PARA = ['#bdb8ad', '#c4825f', '#d8c48a', '#93a6b6', '#a9b99c', '#e4e0d6', '#b56b5a'].map(c => linC(hex(c), 0.85)),
   SLAB_C = linC([0.6, 0.59, 0.56], 0.85);
+// an open roof (carport, canopy, the portico of the Haus der Geschichte) stands on posts: along its outline 3.5 to 9 m apart, as thick
+// as its height asks for (eight-sided), in the colour of its walls – without them a tall canopy floats
+function posts(b, z0, RB) {
+  const ring = [];
+  for (let k = 0; k + 1 < b.f.length; k += 2) ring.push([b.f[k], b.f[k + 1]]);
+  if (ring.length < 3) return;
+  const h = b.e,
+    r = Math.min(0.6, Math.max(0.08, h * 0.022)),
+    kc = [4, ...b.st.col],
+    N = 8,
+    lo = z0 - 0.4,
+    hi = z0 + h - 0.05;
+  const put = (x, y) => {
+    for (let i = 0; i < N; i++) {
+      const a0 = (i / N) * 2 * Math.PI,
+        a1 = ((i + 1) / N) * 2 * Math.PI,
+        am = (a0 + a1) / 2,
+        n = [Math.cos(am), Math.sin(am), 0],
+        x0 = x + Math.cos(a0) * r,
+        y0 = y + Math.sin(a0) * r,
+        x1 = x + Math.cos(a1) * r,
+        y1 = y + Math.sin(a1) * r;
+      RB.tri([x0, y0, lo], [x1, y1, lo], [x1, y1, hi], n, PUV, kc, [1, 0]);
+      RB.tri([x0, y0, lo], [x1, y1, hi], [x0, y0, hi], n, PUV, kc, [1, 0]);
+    }
+  };
+  // the posts a little inside the roof's edge
+  let cx = 0,
+    cy = 0;
+  for (const q of ring) {
+    cx += q[0] / ring.length;
+    cy += q[1] / ring.length;
+  }
+  // the spacing: a portico's columns close together, a carport's posts at its corners, a bus station's roof on fewer, farther ones
+  let A2 = 0;
+  for (let k = 0; k < ring.length; k++) {
+    const a = ring[k],
+      c = ring[(k + 1) % ring.length];
+    A2 += a[0] * c[1] - c[0] * a[1];
+  }
+  const step = h > 10 ? 3.6 : Math.min(9, Math.max(3.5, Math.sqrt(Math.abs(A2) / 2) / 3));
+  for (let k = 0; k < ring.length; k++) {
+    const a = ring[k],
+      c = ring[(k + 1) % ring.length],
+      L = Math.hypot(c[0] - a[0], c[1] - a[1]);
+    if (L < 0.3) continue;
+    const n = Math.max(1, Math.round(L / step));
+    for (let i = 0; i < n; i++) {
+      const t = i / n,
+        x = a[0] + (c[0] - a[0]) * t,
+        y = a[1] + (c[1] - a[1]) * t,
+        d = Math.hypot(cx - x, cy - y),
+        k2 = d > 0.01 ? Math.min(r * 1.2, d * 0.5) / d : 0;
+      put(x + (cx - x) * k2, y + (cy - y) * k2);
+    }
+  }
+}
+const PUV = [
+  [0, 0],
+  [1, 0],
+  [1, 1],
+];
+// a shop canopy along the sides with shops (bau/marken.js vordach – the Lauterbogen-Center: the photos show one along its whole front on
+// posts): a slab D deep at the height of the shop fronts' fascia, posts near its edge about every 6 m; v: { col, post, d, z }
+function vordach(b, z0, RB, v) {
+  if (!Array.isArray(b.eg)) return;
+  const kS = [4, ...linC(hex(v.col || '#8f979c'), 0.85)],
+    kP = [4, ...linC(hex(v.post || '#9aa1a6'), 0.85)],
+    D = v.d || 2.4,
+    T = 0.22,
+    PR = 0.12,
+    uq = (a, c) => [
+      [0, 0],
+      [a, 0],
+      [a, c],
+      [0, c],
+    ];
+  b.F.forEach((f, i) => {
+    const [ax, ay, bx, by, , , , , fl] = f,
+      L = Math.hypot(bx - ax, by - ay);
+    if (fl & 1 || L < 6 || b.eg[i] !== 'laden') return;
+    const dx = (bx - ax) / L,
+      dy = (by - ay) / L,
+      nx = dy,
+      ny = -dx,
+      P = (u, d, z) => [ax + dx * u + nx * d, ay + dy * u + ny * d, z],
+      tg = [dx, dy],
+      u0 = 0.2,
+      u1 = L - 0.2,
+      w = u1 - u0,
+      // the street at this wall: a big house on a slope has its foot well below its front (the Lauterbogen-Center: 3 m)
+      gs = b.gz
+        ? [0.25, 0.5, 0.75].map(t => b.gz(ax + (bx - ax) * t + nx * (D + 0.5), ay + (by - ay) * t + ny * (D + 0.5)))
+        : [],
+      zg = gs.length && gs.every(Number.isFinite) ? Math.max(z0, Math.min(...gs)) : z0,
+      zt = zg + (v.z || 3.6),
+      zb = zt - T,
+      zf = zg - 0.3;
+    RB.quad(P(u0, 0, zb), P(u1, 0, zb), P(u1, D, zb), P(u0, D, zb), [0, 0, -1], kS, tg, uq(w, D));
+    RB.quad(P(u0, D, zb), P(u1, D, zb), P(u1, D, zt), P(u0, D, zt), [nx, ny, 0], kS, tg, uq(w, T));
+    RB.quad(P(u0, 0, zt), P(u1, 0, zt), P(u1, D, zt), P(u0, D, zt), [0, 0, 1], kS, tg, uq(w, D));
+    RB.quad(P(u0, 0, zb), P(u0, D, zb), P(u0, D, zt), P(u0, 0, zt), [-dx, -dy, 0], kS, tg, uq(D, T));
+    RB.quad(P(u1, 0, zb), P(u1, D, zb), P(u1, D, zt), P(u1, 0, zt), [dx, dy, 0], kS, tg, uq(D, T));
+    const n = Math.max(2, Math.round(w / 6) + 1);
+    for (let k = 0; k < n; k++) {
+      const u = u0 + 0.4 + ((w - 0.8) * k) / (n - 1),
+        d = D - 0.35;
+      for (const [e1, e2, sg] of [
+        [1, 0, 1],
+        [1, 0, -1],
+        [0, 1, 1],
+        [0, 1, -1],
+      ]) {
+        // the post's four faces: along the side (e1) or across it (e2), out (sg 1) or in
+        const ou = e2 * sg * PR,
+          od = e1 * sg * PR,
+          a = P(u + ou - e1 * PR, d + od - e2 * PR, zf),
+          c = P(u + ou + e1 * PR, d + od + e2 * PR, zf),
+          nm = [e1 * sg * nx + e2 * sg * dx, e1 * sg * ny + e2 * sg * dy, 0];
+        RB.quad(a, c, [c[0], c[1], zb], [a[0], a[1], zb], nm, kP, tg, uq(2 * PR, zb - zf));
+      }
+    }
+  });
+}
 function balconies(b, id, z0, RB, o) {
   const sides = [];
   b.F.forEach(f => {

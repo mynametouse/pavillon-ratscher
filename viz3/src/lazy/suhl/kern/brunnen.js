@@ -21,6 +21,8 @@ export function brunnen(ctx, ST) {
       bronze: new THREE.MeshStandardMaterial({ color: 0x4b3d2c, roughness: 0.42, metalness: 0.7 }),
       water: new THREE.MeshStandardMaterial({ color: 0x35525b, roughness: 0.04, metalness: 0.3 }),
       jet: new THREE.MeshBasicMaterial({ color: 0xeef4f6, transparent: true, opacity: 0.5, depthWrite: false }),
+      beet: new THREE.MeshStandardMaterial({ color: 0x3b5a2b, roughness: 0.95, metalness: 0 }),
+      bluete: new THREE.MeshStandardMaterial({ color: 0xb8262c, roughness: 0.75, metalness: 0 }),
     };
     const mk = (m, name) => {
       const me = new THREE.Mesh(new THREE.BufferGeometry(), m);
@@ -37,6 +39,8 @@ export function brunnen(ctx, ST) {
       bronze: mk(mats.bronze, 'suhl brunnen bronze'),
       water: mk(mats.water, 'suhl brunnen wasser'),
       jet: mk(mats.jet, 'suhl brunnen strahlen'),
+      beet: mk(mats.beet, 'suhl brunnen beet'),
+      bluete: mk(mats.bluete, 'suhl brunnen blueten'),
     };
     K.jet.renderOrder = 2;
     return K;
@@ -107,6 +111,36 @@ export function brunnen(ctx, ST) {
         pt('cyl', sg * 0.24 * k, 1.0 * k, bz + 1.12 * k, 0.02 * k, 0.02 * k, 0.35 * k, -0.6, sg * 0.9);
       }
   }
+  // the flower beds before the Waffenschmied (the photos of the Markt in summer: two curved beds of red flowers in a stone kerb on the
+  // side towards the Gothaer Straße, a path between them): arcs from 12° to 70° either side of north-east, 5.2 to 7.6 m out
+  function beds(Bs, Bg, Br, base) {
+    const r0 = 5.2,
+      r1 = 7.6,
+      rm = (r0 + r1) / 2,
+      step = (6 * Math.PI) / 180;
+    for (const sg of [-1, 1])
+      for (let d = 12; d < 70; d += 6) {
+        const az = ((45 + sg * (d + 3)) * Math.PI) / 180,
+          at = r => [Math.sin(az) * r, Math.cos(az) * r],
+          [mx, my] = at(rm),
+          [ix, iy] = at(r0),
+          [ox, oy] = at(r1),
+          // a box along the arc: its local x the tangent (turned by −az about up)
+          seg = (B, x, y, z, len, wid, hgt) => part(B, 'box', base, 0, x, y, z, len, wid, hgt, 0, -az);
+        seg(Bg, mx, my, 0.14, rm * step + 0.06, r1 - r0 - 0.2, 0.28);
+        seg(Bs, ix, iy, 0.16, r0 * step + 0.06, 0.16, 0.32);
+        seg(Bs, ox, oy, 0.16, r1 * step + 0.06, 0.16, 0.32);
+        for (let k = 0; k < 14; k++) {
+          const h1 = Math.sin(d * 12.9898 + k * 78.233 + sg * 3.1) * 43758.5453,
+            q = h1 - Math.floor(h1),
+            h2 = Math.sin(d * 39.346 + k * 11.135 + sg * 7.7) * 43758.5453,
+            w = h2 - Math.floor(h2),
+            az2 = az + (w - 0.5) * step,
+            r = r0 + 0.35 + q * (r1 - r0 - 0.7);
+          part(Br, 'sph', base, 0, Math.sin(az2) * r, Math.cos(az2) * r, 0.36, 0.085, 0.085, 0.06);
+        }
+      }
+  }
   // ---- one round ----
   function build(o) {
     kit();
@@ -114,6 +148,8 @@ export function brunnen(ctx, ST) {
       Bb = buf(),
       Bw = buf(),
       Bj = buf(),
+      Bg = buf(),
+      Br = buf(),
       n = { basins: 0, figures: 0 },
       ref = [];
     let missed = 0,
@@ -202,6 +238,7 @@ export function brunnen(ctx, ST) {
             part(Bb, 'cyl', base, a, 0, 0.62, 1.25, 0.05, 0.05, 0.22, Math.PI / 2);
             part(Bj, 'cone', base, a, 0, 1.25, 0.4, 0.05, 0.05, 0.9, -0.9);
           }
+          beds(Bs, Bg, Br, base);
           n.figures++;
         } else if (kind === 'diana') {
           // the group on a rough rock, the stag leaping towards the Steinweg, Diana on it, two hounds beside
@@ -246,6 +283,8 @@ export function brunnen(ctx, ST) {
     put(K.bronze, Bb);
     put(K.water, Bw);
     put(K.jet, Bj);
+    put(K.beet, Bg);
+    put(K.bluete, Br);
     S.n = n;
     S.near = near;
     S.ref = ref;
@@ -273,15 +312,15 @@ export function brunnen(ctx, ST) {
     build(o);
   };
   S.away = () => {
-    if (!K || ![K.stone, K.bronze, K.water, K.jet].some(me => me.visible)) return;
-    for (const me of [K.stone, K.bronze, K.water, K.jet]) me.visible = false;
+    if (!K || ![K.stone, K.bronze, K.water, K.jet, K.beet, K.bluete].some(me => me.visible)) return;
+    for (const me of [K.stone, K.bronze, K.water, K.jet, K.beet, K.bluete]) me.visible = false;
     S.rev = -1;
     S.at = [1e9, 1e9];
     markDirty(true);
   };
   S.leave = () => {
     if (!K) return;
-    for (const me of [K.stone, K.bronze, K.water, K.jet]) {
+    for (const me of [K.stone, K.bronze, K.water, K.jet, K.beet, K.bluete]) {
       scene.remove(me);
       me.geometry.dispose();
     }

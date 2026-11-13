@@ -119,6 +119,9 @@ with lib.browser() as b:
     lib.boot(pg, port)
     E = pg.evaluate
     E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
+    # the flow of traffic (verkehr/vk_strom.js) off: these drives test the car and the roads on fixed routes – a vehicle on the road ahead
+    # would hold the test's driver, who neither brakes nor overtakes (verkehr_real.py tests the flow)
+    E("window.VKSTROM && (VKSTROM.off = true)")
     st0 = json.loads(E("""JSON.stringify({ f: FAHRT.status(), res: performance.getEntriesByType('resource').filter(e => /welt-test|fahrt\\//.test(e.name)).length,
         progs: (GAME.R.info.programs || []).length, tex: GAME.R.info.memory.textures, geo: GAME.R.info.memory.geometries, kern: KERN.providers() })"""))
     print('start', json.dumps(st0), flush=True)

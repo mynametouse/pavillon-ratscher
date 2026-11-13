@@ -623,7 +623,7 @@ export const GLKAP1 = (() => {
         id: 'rennen',
         cp: 'start',
         text: TX.clique.rennen,
-        ort: 'Staumauer',
+        ort: 'Staudamm',
         nochmal: [T.verloren, 'Noch einmal von der Scheune.'],
         ziel: S => {
           const R = renn(),
@@ -676,7 +676,7 @@ export const GLKAP1 = (() => {
       {
         id: 'damm',
         text: TX.clique.damm,
-        ort: 'Staumauer',
+        ort: 'Staudamm',
         ziel: () => (renn() ? RENN.end : ORT.damm()),
         tick(dt, S) {
           // the rivals ride up and get off

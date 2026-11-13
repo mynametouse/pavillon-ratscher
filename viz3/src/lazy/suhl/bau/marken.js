@@ -6,6 +6,7 @@
 // mat: putz, schiefer (slate all over), schiefer_og (slate above a plastered ground floor), fachwerk, fachwerk_og (framing above a
 // plastered ground floor), klinker, platte. balkCol: the balconies' parapets. frame: 0 white, 1 brown, 2 green, 3 grey.
 // rise: the roof above the eave this many times higher (a roof the fit from the aerial photo made too flat). e: a flat roof lower.
+// vordach: a canopy along the sides with shops ({ col, post, d, z }). wand: single walls in a colour of their own (side index → colour).
 export const MARKEN = {
   // Marktplatz
   DETHL57P00006G2R: {
@@ -74,6 +75,7 @@ export const MARKEN = {
     col: '#efefec',
     frame: 3,
     balk: false,
+    wand: { 4: '#4a5862', 5: '#4a5862' }, // the glass corner towards the Diana fountain (photo Einkaufscentrum Am Steinweg 2024-12-27)
     foto: 'Einkaufszentrum Am Steinweg Suhl mit dem Dianabrunnen davor 2023-04-07 (Strubbl, CC BY-SA 4.0)',
   },
   // churches
@@ -149,7 +151,8 @@ export const MARKEN = {
     name: 'Waffenmuseum im ehemaligen Malzhaus',
     mat: 'fachwerk_og',
     col: '#efe9dc',
-    roof: '#a9472f',
+    roof: '#9b4630',
+    gauben: false, // the long roof without dormers (the photo)
     foto: 'Gebäude Friedrich-König-Straße 19 Waffenmuseum Suhl 2025-04-26 (Strubbl, CC BY-SA 4.0)',
   },
   DETHL57P00006G07: {
@@ -165,6 +168,7 @@ export const MARKEN = {
     col: '#f1f1ee',
     frame: 3,
     balk: false,
+    vordach: { col: '#9aa2a7', post: '#b23a32' }, // the canopy along its shops on red posts (photos)
     foto: 'Lauterbogen-Center Suhl Bild 2 2025-04-26 (Strubbl, CC BY-SA 4.0)',
   },
   // Topfmarkt: grey-beige blocks, their windows framed in red (the nearest frame colour: brown)
@@ -205,6 +209,14 @@ export const MARKEN = {
     balk: false,
     foto: 'Stadtbücherei Suhl, Bahnhofstraße 10 (Kai Kemmann, CC BY-SA 4.0)',
   },
+  DETHL57P00002jrt: {
+    name: 'Am Bahnhof 10',
+    col: '#e6d08c',
+    roof: '#a3402c',
+    gauben: true,
+    foto: 'Gebäude Am Bahnhof 10 Suhl 2024-08-17 (Strubbl, CC BY-SA 4.0)',
+  },
+  DETHL57P00002jsi: { name: 'Am Bahnhof 10', col: '#e6d08c', roof: '#a3402c' },
   // Senfte
   DETHL57P00006FL9: {
     name: 'Senfte 4',
