@@ -442,11 +442,11 @@ export const GLKAMERA = (() => {
   function start(o) {
     if (!GL.on) return false;
     // a talk that follows the last one at once: the same cutscene goes on
+    // (an insert that runs gives way to the talk)
+    if (S.on && S.insertT > 0) aus(false);
     const weiter = S.on && S.endT >= 0;
     S.talk = o;
     S.endT = -1;
-    // (an insert that runs gives way to the talk)
-    if (S.on && S.insertT > 0) aus(false);
     if (weiter) {
       const add = besetzen(o.lines, o.figOf);
       for (const q of add) if (!S.who.some(e => e.id === q.id)) S.who.push(q);
