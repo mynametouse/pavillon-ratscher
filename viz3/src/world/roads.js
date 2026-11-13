@@ -61,7 +61,7 @@ export const ROADS = (() => {
   const { EMIN, ERNG, LRNG } = STRSTIL; // encoding: edge distance −4 … +8 m, lateral offset ±8 m (strassen/strassen_stil.js)
   // ---- the ground shader part: roadShade( p (site metres), ground colour, distance from the camera ) → colour ----
   S.GLSL = `uniform sampler2D tRoad; uniform highp sampler2DArray tDet; uniform vec4 bRoad, uRoad, uDTile;
-    float gRdGloss = 0.0, gRdPud = 0.0;   // set by roadShade: the pixel is wet hard road / standing water
+    float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0;   // set by roadShade: the pixel is wet hard road / standing water / a road or its edge
     float rdH( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
     float rdN( vec2 p ) { vec2 i = floor( p ), f = fract( p ); vec2 u = f * f * ( 3.0 - 2.0 * f ); return mix( mix( rdH( i ), rdH( i + vec2( 1.0, 0.0 ) ), u.x ), mix( rdH( i + vec2( 0.0, 1.0 ) ), rdH( i + vec2( 1.0, 1.0 ) ), u.x ), u.y ); }
     float rdLine( float d, float hw, float fw ) { return clamp( ( hw - d ) / fw + 0.5, 0.0, 1.0 ) * min( 1.0, 2.0 * hw / fw ); }   // coverage of a line of half width hw
@@ -159,6 +159,7 @@ export const ROADS = (() => {
           if ( wd > 5.45 && al < 0.5 ) paint = max( paint, rdLine( al, 0.06, fwL ) * ( style > 0.5 && style < 1.5 ? 1.0 : step( fract( ph * mix( 3.0, 4.0, built ) ), 0.3333 ) ) ); }
         r = mix( r, vec3( 0.6, 0.6, 0.58 ) * ( 0.85 + 0.15 * n2 ), paint * ( 0.66 + 0.34 * smoothstep( 0.2, 0.6, n1 ) ) * ( 1.0 - smoothstep( 120.0, 220.0, dist ) ) ); }
       if ( mode > 0.5 ) return mix( c, r, k );
+      gRdCov = max( k, far * smoothstep( -2.4, -0.8, e ) );   // here lies a road or its edge: the tiles lay no sett of their own (welt/welt.js)
       vec3 o = c;
       if ( kerbed > 0.5 ) {
         // a kerbed street: two rows of setts as the gutter, the kerb stones (a metre each, a dark line where they drop to the gutter),
@@ -190,7 +191,7 @@ export const ROADS = (() => {
     vec3 roadShade( vec2 p, vec3 c, float dist ) { return roadShade( p, c, dist, 0.0 ); }`;
   // without textures (GPU below what the shader needs, core/detail.js GLCHECK.lite): the same functions, plain
   S.STUB =
-    'float gRdGloss = 0.0, gRdPud = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';
+    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';
   S.shader = sh => {
     if (window.GLCHECK && GLCHECK.lite) return S.STUB;
     Object.assign(sh.uniforms, U);

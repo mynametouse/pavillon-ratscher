@@ -413,6 +413,42 @@ export const STRMOD = (() => {
       for (let i = 0; i < n; i++) for (const b of [-2, 0]) rect(a0 + i, a0 + i + 0.5, b, b + 2);
     }
   };
+  // ---- the markings of a road on a bridge deck (the road map leaves bridges out): P the deck's middle ([x, y, z] on its top), hw the
+  // road's half width, m what the road carries (STRSTIL.marks: centre 'dash' | 'solid' | null, dash, period, edge) ----
+  S.deckMarks = (K, P, hw, m) => {
+    const n = P.length;
+    if (n < 2 || (!m.centre && !m.edge)) return;
+    const cum = [0];
+    for (let i = 1; i < n; i++) cum.push(cum[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+    const L = cum[n - 1],
+      LIFT = 0.025,
+      // the point at s metres along, moved o metres to the left of the direction
+      at = (s, o) => {
+        let k = 0;
+        while (k < n - 2 && cum[k + 1] < s) k++;
+        const l = cum[k + 1] - cum[k] || 1,
+          t = Math.max(0, Math.min(1, (s - cum[k]) / l)),
+          dx = (P[k + 1][0] - P[k][0]) / l,
+          dy = (P[k + 1][1] - P[k][1]) / l;
+        return [
+          P[k][0] + (P[k + 1][0] - P[k][0]) * t - dy * o,
+          P[k][1] + (P[k + 1][1] - P[k][1]) * t + dx * o,
+          P[k][2] + (P[k + 1][2] - P[k][2]) * t + LIFT,
+        ];
+      },
+      // a stripe from s0 to s1 around the offset o, w wide, in pieces of 4 m at most
+      stripe = (s0, s1, o, w) => {
+        const np = Math.max(1, Math.ceil((s1 - s0) / 4));
+        for (let i = 0; i < np; i++) {
+          const a = s0 + ((s1 - s0) * i) / np,
+            b = s0 + ((s1 - s0) * (i + 1)) / np;
+          K.quad(at(a, o - w / 2), at(b, o - w / 2), at(b, o + w / 2), at(a, o + w / 2), C.PAINT);
+        }
+      };
+    if (m.centre === 'solid') stripe(0, L, 0, 0.12);
+    else if (m.centre === 'dash') for (let s = 0; s < L; s += m.period) stripe(s, Math.min(L, s + m.dash), 0, 0.12);
+    if (m.edge) for (const sd of [-1, 1]) stripe(0, L, sd * (hw - 0.27), 0.12);
+  };
   // ================= traffic signs =================
   // One picture for all faces: cells of CELL pixels; a sign is drawn at its true proportions, its longer side filling the cell.
   const CELL = 128,

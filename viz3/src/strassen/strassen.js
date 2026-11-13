@@ -18,10 +18,12 @@ import { ROADS } from '../world/roads.js';
 import { VILLAGE } from '../world/village.js';
 import { VPROPS } from '../world/village_props.js';
 import { VEH } from '../vehicles/vehicle.js';
+import { FAHRT } from '../welt/fahrt.js';
 import { DMOD } from '../dinge/dinge_modelle.js';
 import { WXBODEN } from '../wetter/wx_boden.js';
 import { STRDAT } from './strassen_daten.js';
 import { STRMOD } from './strassen_modelle.js';
+import { STRSTIL } from './strassen_stil.js';
 export const STRASSEN = (() => {
   const S = {
     on: false,
@@ -30,7 +32,7 @@ export const STRASSEN = (() => {
     big: new Map(),
     built: 0,
     builtBig: 0,
-    n: { posts: 0, rails: 0, signs: 0, lamps: 0, lines: 0, masts: 0, spans: 0 },
+    n: { posts: 0, rails: 0, signs: 0, lamps: 0, lines: 0, decks: 0, masts: 0, spans: 0 },
     shown: { posts: 0, rails: 0, signs: 0, lamps: 0, masts: 0 },
     rebuilt: 0,
     ms: 0,
@@ -66,6 +68,7 @@ export const STRASSEN = (() => {
         signs: [],
         lamps: [],
         lines: [],
+        decks: [],
         masts: [],
         built: false,
         meshes: [],
@@ -92,6 +95,14 @@ export const STRASSEN = (() => {
       polygonOffsetFactor: -3,
       polygonOffsetUnits: -3,
     });
+  // the reflectors of the delineators in the head lamps of the car one drives: small bright faces, added on top (at night only)
+  const matGlint = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(2.4, 2.25, 1.95),
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    }),
+    geoGlint = new THREE.PlaneGeometry(1, 1);
   const geoGlass = new THREE.BoxGeometry(0.17, 0.02, 0.46),
     geoPool = new THREE.PlaneGeometry(9, 9);
   geoPool.rotateX(-Math.PI / 2);
@@ -204,6 +215,7 @@ export const STRASSEN = (() => {
       [matGlass, true],
       [matWire, false],
       [matPaint, false],
+      [matGlint, true],
     ]);
     S.atlas = atlas;
     S.ready = true;
@@ -272,7 +284,8 @@ export const STRASSEN = (() => {
   function build(c) {
     const K = STRMOD.kit(),
       F = { pos: [], nrm: [], uv: [], idx: [] },
-      heads = [];
+      heads = [],
+      glints = [];
     c.meshes = [];
     c.extra = [];
     c.vl = [];
@@ -289,6 +302,11 @@ export const STRASSEN = (() => {
         z = gz(x, y);
       STRMOD.post(K, x, y, z, p.az);
       np++;
+      // its reflectors: the upright one looks against the heading, the two dots along it
+      const fx = Math.sin(p.az),
+        fy = Math.cos(p.az);
+      glints.push([x - fx * 0.052, y - fy * 0.052, z + 0.625, -fx, -fy, 0.04, 0.18]);
+      for (const dz of [0.575, 0.695]) glints.push([x + fx * 0.052, y + fy * 0.052, z + dz, fx, fy, 0.05, 0.05]);
       ref(x, y, z);
     }
     for (const r of c.rails) {
@@ -339,9 +357,11 @@ export const STRASSEN = (() => {
     }
     const g = geoOf(K.raw);
     if (g) c.meshes.push(mesh(g, DMOD.mat, 'strassen ' + c.k));
-    if (c.lines.length) {
-      // on hard roads only (the data comes from OSM, the road from the app): a line on gravel would be wrong
+    if (c.lines.length || c.decks.length) {
       const KP = STRMOD.kit();
+      // the markings on the bridge decks
+      for (const d of c.decks) STRMOD.deckMarks(KP, d.P, d.hw, d.m);
+      // on hard roads only (the data comes from OSM, the road from the app): a line on gravel would be wrong
       for (const ln of c.lines) {
         const r = KERN.surface(ln.x, ln.y);
         if (!r || r.surf > 2 || r.e < 0.3) continue;
@@ -392,6 +412,24 @@ export const STRASSEN = (() => {
       }
       if (VPROPS.lamps) VPROPS.lamps.push(...c.vl);
     }
+    if (glints.length) {
+      const iR = new THREE.InstancedMesh(geoGlint, matGlint, glints.length);
+      glints.forEach(([x, y, z, nx, ny, w, h], i) => {
+        _q.setFromAxisAngle(UPV, Math.atan2(nx, -ny));
+        _m.compose(_p.set(x, z, -y), _q, _s.set(w, h, 1));
+        iR.setMatrixAt(i, _m);
+      });
+      iR.castShadow = false;
+      iR.receiveShadow = false;
+      iR.userData.noMerge = true;
+      iR.renderOrder = 2;
+      iR.computeBoundingSphere();
+      iR.name = 'strassen rückstrahler ' + c.k;
+      iR.visible = glintOn;
+      scene.add(iR);
+      c.meshes.push(iR);
+      c.glint = iR;
+    }
     for (const x of c.extra) VEH.extra.push(x);
     c.cnt = { posts: np, rails: c.rails.length, signs: ns, lamps: heads.length };
     for (const k in c.cnt) S.shown[k] += c.cnt[k];
@@ -420,6 +458,7 @@ export const STRASSEN = (() => {
     c.vl = [];
     c.pool = null;
     c.paint = null;
+    c.glint = null;
     c.built = false;
     S.built--;
   }
@@ -489,6 +528,48 @@ export const STRASSEN = (() => {
     c.built = false;
     S.builtBig--;
   }
+  // ---- bridges: the road map leaves them out (no road on the valley floor under a deck) – their markings are laid on the decks as
+  // paint. The decks of the square come with the terrain (world/roads.js), those beyond it with the roads of welt/fahrt.js ----
+  let decksQ = 0,
+    decksF = false;
+  function bridges() {
+    const add = (P, hw, kind, surf, style) => {
+      const m = STRSTIL.marks(kind, hw, style, surf <= 1);
+      if (!m.centre && !m.edge) return;
+      const mid = P[P.length >> 1],
+        c = cellOf(S.cells, CELL, mid[0], mid[1]);
+      c.decks.push({ P, hw, m });
+      S.n.decks++;
+      c.redo = c.built; // built already: once more, with the paint
+    };
+    if (ROADS.decks && ROADS.decks.length !== decksQ) {
+      // (the decks are built once, after the terrain)
+      for (const d of ROADS.decks.slice(decksQ)) {
+        const P = [],
+          w = d.way,
+          n = d.p.length / 2;
+        for (let i = 0; i < n; i++) P.push([d.p[i * 2], d.p[i * 2 + 1], d.zOf(d.cum[i])]);
+        add(P, w.w / 2, w.kind, w.surf, w.st ? w.st[Math.min(w.st.length - 1, n >> 1)] : 0);
+      }
+      decksQ = ROADS.decks.length;
+    }
+    if (!decksF && FAHRT.ready && FAHRT.data) {
+      decksF = true;
+      // (not in a zone that lays its own roads and bridges: Kloster Veßra, as welt/fahrt.js keeps out of it)
+      const V = window.VESSRA,
+        Z = V && V.ORT ? V.ZONE || [V.ORT[0] - 650, V.ORT[1] - 650, V.ORT[0] + 650, V.ORT[1] + 650] : null;
+      for (const w of FAHRT.data.ways) {
+        if (!(w.fl & 1) || w.fl & 2) continue;
+        const mx = (w.bb[0] + w.bb[2]) / 2,
+          my = (w.bb[1] + w.bb[3]) / 2;
+        if (Z && mx > Z[0] - 50 && mx < Z[2] + 50 && my > Z[1] - 50 && my < Z[3] + 50) continue;
+        const P = [];
+        for (let i = 0; i < w.n; i++) P.push([w.p[i * 3], w.p[i * 3 + 1], w.p[i * 3 + 2] + 0.01]);
+        const st = STRSTIL.styles(w.p, 3, w.n, w.kind, STRDAT.placeAt);
+        add(P, w.hw, w.kind, w.surf, st[Math.min(st.length - 1, w.n >> 1)] || 0);
+      }
+    }
+  }
   // ---- the round: the nearest unbuilt cells built (two per round), far ones freed; built ones near set down again when the ground
   // under them changed (finer tiles) or a zone brought its own lamps ----
   const late = c => {
@@ -499,6 +580,7 @@ export const STRASSEN = (() => {
     const w = KERN.where();
     if (!w) return;
     const t0 = performance.now();
+    bridges();
     let ch = false,
       nb = 0;
     const want = [];
@@ -508,9 +590,10 @@ export const STRASSEN = (() => {
         if (d > FAR) {
           free(c);
           ch = true;
-        } else if (d < 320 && (c.zT += dt) > 3) {
+        } else if (c.redo || (d < 320 && (c.zT += dt) > 3)) {
           c.zT = 0;
-          if (late(c)) {
+          if (c.redo || late(c)) {
+            c.redo = false;
             free(c);
             build(c);
             S.rebuilt++;
@@ -559,7 +642,8 @@ export const STRASSEN = (() => {
   // ---- night and rain: the lamps' glass glows with the village's lanterns, their light lies on the ground; the wetness to the roads ----
   let onShown = -1,
     wetShown = -1,
-    snowy = false;
+    snowy = false,
+    glintOn = false;
   function light() {
     const n = VILLAGE && VILLAGE.night ? VILLAGE.night() : 0,
       on = n > 0.08 ? Math.min(1, (n - 0.08) / 0.3) : 0;
@@ -571,8 +655,15 @@ export const STRASSEN = (() => {
     const pv = !!(VPROPS.pool && VPROPS.pool.visible);
     // snow lies on the painted lines too
     snowy = !!(WXBODEN && WXBODEN.S && WXBODEN.S.snowShown > 0.3);
+    // the reflectors shine back at the car one drives with its lamps on (they come on by themselves in the dark)
+    const v = VEH.cur;
+    glintOn = !!(n > 0.35 && v && v.st && v.st.engine && VEH.lights !== 'off');
     for (const c of S.cells.values()) {
       if (!c.built) continue;
+      if (c.glint && c.glint.visible !== glintOn) {
+        c.glint.visible = glintOn;
+        markDirty();
+      }
       if (c.pool && c.pool.visible !== pv) c.pool.visible = pv;
       if (c.paint && c.paint.visible === snowy) {
         c.paint.visible = !snowy;
@@ -665,6 +756,7 @@ export const STRASSEN = (() => {
       0
     ),
     glow: matGlass ? matGlass.emissiveIntensity : 0,
+    glint: glintOn,
     meshes: [...S.cells.values(), ...S.big.values()].reduce(
       (a, c) => a + c.meshes.filter(m => m.parent && m.visible).length,
       0
