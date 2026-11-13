@@ -805,6 +805,10 @@ export const GLKAP1 = (() => {
     abbruch() {
       GLFAHNDUNG.off = false;
       K89.trag = false;
+      // broken off inside the memory: back to today
+      try {
+        if (GL.era !== 'heute') GL89.stop();
+      } catch (e) {}
       if (K89.hide) {
         const i = GLFAHNDUNG.extra.indexOf(K89.hide);
         if (i >= 0) GLFAHNDUNG.extra.splice(i, 1);

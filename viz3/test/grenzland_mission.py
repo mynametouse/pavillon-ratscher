@@ -470,12 +470,13 @@ with lib.browser() as b:
 
     # ================================================================ a reload in the middle, the end ================================================================
     if 'reload' in SECT:
-        E("GLMISSION.debug.go('gefallen', 'heim')"); steps(1)
+        E("if (GLSTATE.era !== 'heute') GL89.stop(); if (VEH.cur) VEH.exit(); GRENZLAND.hin(GLDATA.ORTE.garten.pos[0], GLDATA.ORTE.garten.pos[1], 0); GLMISSION.debug.go('gefallen', 'heim'); 0"); steps(1)
         ck('the debug API reaches a step of a mission', info()['step'] == 'heim' and E("GLSTATE.m.gefallen.i") == 2, str(info())[:200])
         E("GLSTATE.geld = 91; GLSTATE.save(true)")
         lib.boot(pg, port, '', figures=True)
         time.sleep(3)
         ok = until("window.GLSTATE && GLSTATE.on && GLMISSION.debug.info().step === 'heim'", 20, 0.3, 0.4)
+        steps(0.8)
         st = J("({ on: GLSTATE.on, geld: GLSTATE.geld, x: document.getElementById('glextra').textContent, track: QUESTS.track, lager: GLLAGER.on, j: KERN.tasks.list().filter(e => e.src === 'grenzland').map(e => [e.id, e.status]) })")
         ck('a reload in the middle of a mission goes on at its step, set up again', ok and st['on'] and st['geld'] == 91 and st['x'] == 'Mitfahrgelegenheit' and st['track'] == 'grenzland:gefallen' and st['lager'] and ['gefallen', 'läuft'] in st['j'], str(st))
         E("GRENZLAND.stop()"); steps(0.5)
