@@ -169,7 +169,7 @@ export const HANDY = (() => {
 .hy-geh>i.hy-k2{left:-1.1%;top:25.5%;height:9.5%}
 .hy-geh>i.hy-k3{left:-1.1%;top:36.5%;height:9.5%}
 .hy-geh>i.hy-k4{right:-1.1%;left:auto;top:27%;height:14%;background:linear-gradient(270deg,#15181c,#5a606a 60%,#22262c)}
-.hy-glas{position:absolute;inset:2.3%;border-radius:12.6% / 6.1%;overflow:hidden;background:#000;container-type:size;isolation:isolate}
+.hy-glas{position:absolute;inset:1.12% 2.3%;border-radius:12.6% / 6.1%;overflow:hidden;background:#000;container-type:size;isolation:isolate}
 .hy-glas::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:60;
   background:linear-gradient(118deg,rgba(255,255,255,.13) 0%,rgba(255,255,255,.035) 26%,rgba(255,255,255,0) 40%,rgba(255,255,255,0) 72%,rgba(255,255,255,.05) 100%);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
@@ -240,6 +240,7 @@ export const HANDY = (() => {
   line-height:1.15;max-width:100%}
 .hy-chip kbd{font:600 2.8cqmin/1 ui-monospace,monospace;opacity:.6;margin-right:1.2cqmin}
 .hy-sperre{position:absolute;inset:0;z-index:45;display:flex;flex-direction:column;align-items:center;padding:16cqmin 5cqmin 9cqmin;
+  box-shadow:inset 0 0 0 200cqmax rgba(0,0,0,.2);
   transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .32s}
 .hy-sperre.hy-weg{transform:translateY(-100%);opacity:0;pointer-events:none}
 .hy-sperre .hy-zl{width:7cqmin;height:7cqmin;fill:#fff;opacity:.9;margin-bottom:1cqmin;transition:transform .2s}
@@ -299,7 +300,7 @@ export const HANDY = (() => {
 @media (orientation:landscape) and (max-height:500px){
   .hy:not([data-lay="gross"]){height:auto;width:min(66vw,calc((100vh - 16px) * 147.6 / 71.6));aspect-ratio:147.6/71.6;bottom:6px}
   .hy:not([data-lay="gross"]) .hy-geh{border-radius:7.1% / 14.6%}
-  .hy:not([data-lay="gross"]) .hy-glas{border-radius:6.1% / 12.6%}
+  .hy:not([data-lay="gross"]) .hy-glas{border-radius:6.1% / 12.6%;inset:2.3% 1.12%}
   .hy:not([data-lay="gross"]) .hy-insel{top:50%;left:1.2cqh;width:9.4cqmin;height:31cqmin;margin:-15.5cqmin 0 0}
   .hy:not([data-lay="gross"]) .hy-insel::after{right:auto;top:auto;left:2.7cqmin;bottom:3cqmin}
   .hy:not([data-lay="gross"]) .hy-stat{display:none}
@@ -497,6 +498,9 @@ export const HANDY = (() => {
     if (!S.el) return;
     S.el.dataset.lay = S.layout === 'gross' ? 'gross' : 'auto';
     $('.hy-tap').style.background = tapete();
+    // the lock screen lies over the home screen: the same picture, a little darker
+    $('.hy-sperre').style.background = tapete();
+    $('.hy-sperre').style.backgroundSize = 'cover';
     S.el.style.setProperty('--hy-ak', W().farbe || '#4da3ff');
   }
   function layout(l) {
@@ -884,7 +888,7 @@ export const HANDY = (() => {
     // not while one looks at the very thread it belongs to
     const hier =
       S.open && S.app === m.app && (!m.ziel || JSON.stringify(m.ziel) === JSON.stringify(S.stack[S.stack.length - 1]));
-    if (!m.still) ton(m.ton || 'mitteilung');
+    if (!m.still) ton(m.ton || (hier ? 'empfang' : 'mitteilung'));
     if (S.open) {
       if (!hier) {
         build();

@@ -334,7 +334,7 @@ export const GLHANDY = (() => {
     notizen: () => S.notes,
     orte: () =>
       Object.entries(GLDATA.ORTE || {})
-        .filter(([, o]) => o && Array.isArray(o.pos))
+        .filter(([id, o]) => o && Array.isArray(o.pos) && id !== 'moped')
         .map(([id, o]) => ({ id, name: o.name, pos: o.pos, art: o.art || o.typ || 'Ort' })),
     wo: () => KERN.where() || [P.x, P.y],
     ziel: () => S.zielId,
@@ -399,7 +399,7 @@ export const GLHANDY = (() => {
     sag,
     hinweis: why => PLAY.think(why, 3600),
     zeigOrt: id => zeig(id),
-    ziel: o => zeig(o.id),
+    ziel: o => zeig(o.id, true),
     sucher() {
       const c = S.cam;
       if (!c) return { n: '', text: '', gut: false };
@@ -584,7 +584,7 @@ export const GLHANDY = (() => {
     return true;
   }
   // a post's place as a goal: the event for whoever draws markers, and a word on where it is
-  function zeig(ort) {
+  function zeig(ort, still) {
     const O = GLDATA.ORTE[ort];
     if (!O) return;
     S.ziel = { pos: O.pos.slice(), name: O.name };
@@ -597,17 +597,18 @@ export const GLHANDY = (() => {
       dir = ['Norden', 'Nordosten', 'Osten', 'Südosten', 'Süden', 'Südwesten', 'Westen', 'Nordwesten'][
         Math.round((((Math.atan2(dx, dy) * 180) / Math.PI + 360) % 360) / 45) % 8
       ];
-    HANDY.mitteilung({
-      app: 'karte',
-      von: O.name,
-      text:
-        (d < 950 ? Math.round(d / 10) * 10 + ' m' : (d / 1000).toFixed(1).replace('.', ',') + ' km') +
-        ' nach ' +
-        dir +
-        '.',
-      kurz: true,
-      still: true,
-    });
+    if (!still)
+      HANDY.mitteilung({
+        app: 'karte',
+        von: O.name,
+        text:
+          (d < 950 ? Math.round(d / 10) * 10 + ' m' : (d / 1000).toFixed(1).replace('.', ',') + ' km') +
+          ' nach ' +
+          dir +
+          '.',
+        kurz: true,
+        still: true,
+      });
     GLTON.fx('tick');
   }
   // ---------------- taking it out, putting it away ----------------
@@ -621,6 +622,8 @@ export const GLHANDY = (() => {
     let ok;
     if (typeof t === 'string' && TABS.includes(t)) {
       ok = HANDY.open() && tab(t);
+    } else if (typeof t === 'string' && HANDY.S.apps[t]) {
+      ok = HANDY.open(t);
     } else if (!was && unread()) {
       // what came in: straight into the thread (one sender) or the list
       const ids = [...new Set(GL.sms.filter(q => q.neu && !q.aus).map(q => 'p:' + q.von))];

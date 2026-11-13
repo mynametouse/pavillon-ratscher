@@ -160,7 +160,7 @@ export const HANDYPOSE = (() => {
   // fingers round the phone's edge: each joint about the thumb-side axis (+ curls toward the palm), the thumb over the screen
   function curl(sv, B, w, tap) {
     if (!handFrame(B, _f, _n, _s)) return;
-    const ang = [0.55, 0.62, 0.5];
+    const ang = [0.42, 0.5, 0.4];
     for (const fi of ['Index', 'Middle', 'Ring', 'Pinky'])
       for (let j = 1; j <= 3; j++) {
         const b = B['RightHand' + fi + j];
@@ -261,7 +261,7 @@ export const HANDYPOSE = (() => {
     const P = prop();
     if (!handFrame(B, _f, _n, _s)) return false;
     B.RightHand.getWorldPosition(_pp);
-    _pp.addScaledVector(_f, 0.06).addScaledVector(_n, 0.021).addScaledVector(_s, 0.006);
+    _pp.addScaledVector(_f, 0.058).addScaledVector(_n, 0.021).addScaledVector(_s, 0.014);
     _pz.copy(_n);
     _py.copy(_f).addScaledVector(_s, 0.22).addScaledVector(_pz, -_f.dot(_pz)).normalize();
     _px.crossVectors(_py, _pz).normalize();
@@ -348,7 +348,7 @@ export const HANDYPOSE = (() => {
       sh / sum
     );
     _T.addScaledVector(
-      _e.copy(_hd).addScaledVector(_r, 0.105).addScaledVector(_u, -0.07).addScaledVector(_fw, 0.0),
+      _e.copy(_hd).addScaledVector(_r, 0.1).addScaledVector(_u, -0.08).addScaledVector(_fw, 0.07),
       so / sum
     );
     _T.addScaledVector(
