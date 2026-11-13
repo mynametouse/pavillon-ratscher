@@ -123,6 +123,21 @@ export const GRENZLAND = (() => {
         } else if (d < 1.6 && F.st === 'geht') GLFIG.stop(F);
       }
     }
+    // the pillion wears a helmet on the Simson like the rider (grenzland/gl_helm.js; GLPOSE shows the partner on the seat) – put on while
+    // riding the moped, taken off after
+    const hw = !!(F.rides && v && v.id === 'gl-moped');
+    if (hw && F.helmG === undefined) {
+      let g = null;
+      try {
+        if (F.f && F.f.model) g = GLFIG.hatOn(F.f.model, null, F.id === 'sarah' ? 'helmcreme' : 'helmrot');
+      } catch (e) {}
+      F.helmG = g;
+      markDirty(true);
+    } else if (!hw && F.helmG !== undefined) {
+      if (F.helmG && F.helmG.parent) F.helmG.parent.remove(F.helmG);
+      delete F.helmG;
+      markDirty(true);
+    }
     GL.getrennt = !F.rides && d > 60;
     nahCam(F);
   }

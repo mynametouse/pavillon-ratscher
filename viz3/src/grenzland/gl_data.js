@@ -27,8 +27,24 @@ export const GLDATA = (() => {
     sarah: { name: 'Sarah', fig: 'player_f', clips: 'f', h: 1.68, voice: { g: 'f', age: 36 } },
     // today
     fremder: { name: 'Der Fremde', fig: 'vk_m11', clips: 'm', h: 1.79, kleid: 'mantel', voice: { g: 'm', age: 55 } },
-    jule: { name: 'Jule', fig: 'vk_f07', clips: 'f', h: 1.7, kleid: 'jule', hut: 'helm', voice: { g: 'f', age: 26 } },
-    timo: { name: 'Timo', fig: 'vk_m02', clips: 'm', h: 1.82, kleid: 'timo', hut: 'helm', voice: { g: 'm', age: 24 } },
+    jule: {
+      name: 'Jule',
+      fig: 'vk_f07',
+      clips: 'f',
+      h: 1.7,
+      kleid: 'jule',
+      hut: 'helmblau',
+      voice: { g: 'f', age: 26 },
+    },
+    timo: {
+      name: 'Timo',
+      fig: 'vk_m02',
+      clips: 'm',
+      h: 1.82,
+      kleid: 'timo',
+      hut: 'helmweiss',
+      voice: { g: 'm', age: 24 },
+    },
     basti: {
       name: 'Basti',
       fig: 'vk_m20',
