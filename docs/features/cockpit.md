@@ -76,20 +76,27 @@ Guss; die Karosserien des Verkehrs bleiben beim Straßen-Chat.
 - Ein Kombi der Klasse eines Logan MCV (2012), **eigene Form ohne Hersteller- oder Typzeichen** (kein Logo, kein Markengrill, keine
   Markenleuchten): 4,47 × 1,74 × 1,64 m mit Dachreling, Radstand 2,905 m, Spur 1,47 m, Räder 0,31 m – die Maße von `car.js`, also
   bleiben Fahrphysik, Kollisionskasten, Radpunkte und Laderaum unverändert.
-- Gebaut mit dem Karosserie-Baukasten des Grenzland-Chats (`grenzland/gl_karosse.js`, nur gelesen): Querschnitte entlang der Länge mit
-  weichen Kanten und leichter Schulterlinie, Radhäuser mit Kästen, Türfugen, drei Seitenfenster, B- und C-Säule schwarz, A- und D-Säule in
-  Wagenfarbe, langes Dach mit Reling auf drei Füßen, Heck mit zwei ungleich breiten Türen (die linke breiter, Fuge und Scharniere sichtbar),
-  senkrechte Rückleuchten in den D-Säulen (Schluss, Bremse, Blinker, Rückfahrlicht, rote Gläser auch bei Tag), dritte Bremsleuchte,
-  Scheinwerfer mit Gläsern und Blinkern, Nebelleuchten, Seitenblinker, Stoßfänger in Wagenfarbe mit schwarzem Unterteil, dunkler
-  Unterboden, Türgriffe, Spiegelgehäuse in Wagenfarbe auf schwarzem Fuß, Scheiben getönt mit Spiegelung des Himmels, Kennzeichen vorn und
-  hinten mit der erfundenen Nummer „HBN PR 216“. Lack warmes Beige-Metallic mit Klarlack.
+- Gebaut mit dem Karosserie-Baukasten des Grenzland-Chats (`grenzland/gl_karosse.js`, nur gelesen): ~100 Querschnitte entlang der Länge
+  (abgerundete Rechtecke, glatte Normalen), die Ecken vorn und hinten im Grundriss elliptisch gerundet, Stoßfänger aus einem Stück mit den
+  Kotflügeln. **Runde 2** (Falko 13.11. abends: „runder, moderner“, wie ein Logan-MCV-Kombi von heute): kurze, nach vorn abfallende
+  Haube, Frontscheibe 60° gegen die Senkrechte (Fuß y 1,02, Oberkante y 0,13), Gürtellinie nach hinten leicht steigend (Seitenscheiben
+  ~0,42 m hoch), Dach hinten etwas abfallend, D-Säule leicht geneigt über fast senkrechter Heckklappe; Seiten oberhalb der Taille ~7°
+  eingezogen, eine Sicke entlang der Türen, Schweller, untere Stoßfänger und Radlaufkanten aus dunklem Kunststoff; große Scheinwerfer, um
+  die Ecken in die Kotflügel gezogen (außen der Blinker), Grill als Trapez aus waagerechten Stäben (kein Zeichen), Lufteinlass unten,
+  Nebelleuchten in den Ecken; hinten L-förmige Leuchten an den D-Säulen (Schluss oben quer und um die Ecke, darunter Bremse, Blinker,
+  Rückfahrlicht), dezente Abrisskante mit dritter Bremsleuchte. Drei Seitenfenster, B- und C-Säule schwarz, A- und D-Säule in Wagenfarbe,
+  Dachreling auf drei Füßen, Heck mit zwei ungleich breiten Türen (die linke breiter, Fugen und Scharniere sichtbar), Türgriffe,
+  Spiegelgehäuse in Wagenfarbe auf schwarzem Fuß, Scheiben getönt, Kennzeichen „HBN PR 216“ (erfunden). Lack warmes Beige-Metallic.
+- Räder 185/65 R15 (Ø 0,62 m) mit zehn Speichen, die Radhäuser 5 cm über dem Reifen; fürs Auge Spur ~1,50 m, die Reifen bündig mit der
+  Seite (die Fahrphysik behält `car.js`' 1,468 m).
 - Blinker vorn, seitlich und hinten an `model.lamps.blinkL`/`blinkR` (das Cockpit lässt sie blinken), Licht, Bremse und Rückfahrlicht an
   `model.lamps` wie bisher (`vehicles/vehicle.js` schaltet sie).
 - Innen: die Innenschale zeigt Verkleidungen und Dachhimmel; die A-Säulen sind innen ganz dunkler Kunststoff (keine helle Kante mehr) und
   schmaler (Säule 5,8 cm am Fuß, Dachkante r 6 cm). Das Cockpit hängt den echten Dachhimmel 6 cm unter das Dach, dazu das dunkle Band
   auf der Scheibe (3,5 cm, daran der Innenspiegel), die Sonnenblenden und die Dachrahmen über den Türen (10 cm, über den Fenstern).
-- Zwei Detailstufen (`THREE.LOD`, Wechsel bei 45 m): nah 10 Meshes Karosserie + Kennzeichen + 4 Räder, ~26 000 Dreiecke; fern 5 Meshes
-  ohne Innenschale und Kleinteile, ~5 800 Dreiecke (die Leuchten bleiben, nachts sieht man sie).
+- Zwei Detailstufen (`THREE.LOD`, Wechsel bei 45 m): nah 10 Meshes Karosserie + Kennzeichen + 4 Räder, ~34 000 Dreiecke; fern 5 Meshes
+  ohne Innenschale und Kleinteile, ~7 600 Dreiecke (die Leuchten bleiben, nachts sieht man sie). `KOMBI.info().err` nennt einen Fehler
+  beim Bauen (dann bleibt die alte Karosserie).
 - Ersetzt beim Laden die Karosserie von `car.js` (vor dem ersten Bild – die Materialien werden mit allem anderen übersetzt). Mit
   `?altkombi=1` bleibt zum Vergleich die alte.
 
@@ -104,14 +111,14 @@ x 0,745 }, `ws` { y0 0,82, z0 0,97, w0 0,8, y1 −0,05, z1 1,55, w1 0,64 }, `flo
 In `head` außerdem `inset` (Band schmaler als die Scheibe), `fh`/`fw`/`fx` (Höhe, Breite, Lage der Dachrahmen über den Türen).
 **Die neue Karosserie** (`vehicles/kombi.js`) nennt ihre Werte in `spec.cockpit` mit `body: 'kombi'` – sie gelten nur, wenn dieser Teil
 in `model.body` steckt; das fremde Auto im Verkehr kopiert die Spec des Kombi (`verkehr/verkehr_auto.js`) – das Cockpit setzt dort das
-Auge von heute zurück und nimmt die Werte des Kombi weg (`COCKPIT`, `frame`). Für den Kombi: `eye` [−0,36, −0,30, 1,17] (Dachvorderkante ~0,5 m davor, Kranz oben ~0,33 m), `hp` [−0,36, −0,19, 0,6],
-`wheel` { c [−0,36, 0,11, 0,875] }, `dash` { face 0,47, top 0,97, ws 0,84, x 0,77 }, `ws` aus der Karosserie (Fuß y 0,82, Oberkante
-y 0,21), `floor` 0,315, `door` 0,78, `mirL`/`mirR` in den Gehäusen der Karosserie, `mirI` [0, 0,30, 1,31] (25 × 7 cm, Mitte des Autos,
+Auge von heute zurück und nimmt die Werte des Kombi weg (`COCKPIT`, `frame`). Für den Kombi: `eye` [−0,36, −0,30, 1,17] (Dachvorderkante ~0,43 m davor, Kranz oben ~0,33 m), `hp` [−0,36, −0,19, 0,6],
+`wheel` { c [−0,36, 0,11, 0,875] }, `dash` { face 0,47, top 0,97, ws 1,04, x 0,77 }, `ws` aus der Karosserie (Fuß y 1,02, Oberkante
+y 0,14), `floor` 0,315, `door` 0,78, `mirL`/`mirR` in den Gehäusen der Karosserie, `mirI` [0, 0,30, 1,31] (25 × 7 cm, Mitte des Autos,
 0,36 m rechts vom Auge, 0,6 m davor), `head` { z0/z1 aus der Scheibenoberkante, `fh` 0,1 }, `heads` false, `apil` false.
 
 ## Testen
 `python3 viz3/test/run.py --port 9016 --serve cockpit` (über `bash tools/browser_lock.sh`), Abschnitte: `grafik`, `cockpit`, `tractor`,
-`kombi`, `phone`. Bilder in `out/cockpit/` – Teil B: `k_front34`, `k_rear34`, `k_side_mass` (Maße als Linien), `k_driver_day`,
+`kombi`, `phone`. Bilder in `out/cockpit/` – Teil B: `k_front34`, `k_rear34`, `k_side_mass` (Maße als Linien, gestrichelt die Zielform der Runde 2), `k_driver_day`,
 `k_driver_left` (Blick nach links oben: A-Säule, Dachrahmen, Blende), `k_night_front`, `k_night_rear` (Licht, linker Blinker), `k_rain`,
 `k_driver_rain`, `k_verkehr_driver`, zum Vergleich die alte Karosserie `k_alt_front34`, `k_alt_rear34`, `k_alt_side`.
 Themen-Tests auf CI: `viz3/extra/cockpit/tests.txt`.
