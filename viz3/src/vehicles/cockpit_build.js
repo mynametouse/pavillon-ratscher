@@ -30,7 +30,7 @@ export const CPBUILD = (() => {
   const TRACTOR = {
     eye: [0, -0.45, 2.42],
     wheel: { c: [0, -0.05, 2.12], tilt: 0.85, r: 0.2 },
-    pod: [0, 0.075, 2.095],
+    pod: [0, 0.17, 2.27], // above the rim, on a stem from the column
     lever: [0.42, -0.48, 2.05],
   };
   function anchors(v) {
@@ -717,6 +717,16 @@ export const CPBUILD = (() => {
     const box = new THREE.Mesh(new RoundedBoxGeometry(face.w + 0.03, face.h + 0.03, 0.07, 3, 0.02), M.hard);
     box.position.z = -0.036;
     pod.add(box);
+    // its stem down to the column
+    strut(
+      st,
+      [A.pod[0], A.pod[1] + 0.02, A.pod[2] - 0.03],
+      [W.c[0], W.c[1] + 0.12, W.c[2] - 0.05],
+      0.07,
+      0.06,
+      M.hard,
+      0.02
+    );
     const fg = new THREE.Group();
     fg.position.copy(pod.position);
     fg.rotation.copy(pod.rotation);
