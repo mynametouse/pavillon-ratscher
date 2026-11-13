@@ -432,6 +432,7 @@ export const GLHANDY = (() => {
     camShow(false);
     if (typeof t === 'string' && TABS.some(q => q[0] === t)) S.tab = t;
     else if (!S.open && unread()) S.tab = 'sms';
+    else if (!S.open && S.cam) S.tab = 'kamera';
     S.note = -1;
     S.gelesen = unread();
     if (S.tab === 'kamera' && S.cam && t === 'kamera') {

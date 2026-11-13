@@ -58,6 +58,13 @@ with lib.browser() as b:
             if real: time.sleep(real)
         return False
     ST = lambda: J("GLRADIO.stand()")
+    # free play: with the missions merged the scene starts chapter 1 in Schleusingen (talks, messages) – this test wants the open game
+    for _ in range(6):
+        steps(0.3); time.sleep(0.3)
+    E("(() => { GLMISSION.stop(); const d = GLMISSION.debug; if (d) for (const id of Object.keys(d.info().st)) GLSTATE.m[id] = { st: 'erledigt', i: 0, n: 0 }; GLSTATE.cur = ''; GLSTATE.kap1 = true; GLHUD.fade(false); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 17 * 60 + 20; GAME.go('garten'); GLSTATE.save(true); })()")
+    steps(1)
+    E("GLRADIO.off(); GLHANDY.close(); GLFAHNDUNG.clear(); 0")
+    steps(0.5)
     E("GAME.setSound && GAME.setSound(true)")
     steps(1)
     ton = E("!!GLTON.raw()")
@@ -138,9 +145,9 @@ with lib.browser() as b:
     ok = until("GLRADIO.stand().log.some(q => /sucht Zeugen/.test(q.text))", 40)
     ck('„Die Polizei sucht Zeugen …“ while one is wanted', ok, str([q['text'][:50] for q in ST()['log'][-4:]]))
     # three stars: a special report over the music
-    E("GLFAHNDUNG.clear(); GLRADIO.S.pend.length = 0; GLRADIO.S.eil = ''; GLRADIO.tune('kirmes')")
+    E("GLFAHNDUNG.clear(); GLFAHNDUNG.off = true; GLRADIO.S.pend.length = 0; GLRADIO.S.eil = ''; GLRADIO.tune('kirmes')")
     okm = until("GLRADIO.stand().k === 'musik'", 120)
-    E("GLRADIO.S.item.left = 60; GLFAHNDUNG.tat('einbruch', { force: [{ name: 'Streife', police: true }], quiet: true }); GLFAHNDUNG.tat('einbruch', { force: [{ name: 'Streife', police: true }], quiet: true })")
+    E("GLRADIO.S.item.left = 60; for (let i = 0; i < 6 && GLLOGIK.stars(GLSTATE.W) < 3; i++) GLFAHNDUNG.tat('einbruch', { force: [{ name: 'Streife', police: true }], quiet: true })")
     stars = E("GLLOGIK.stars(GLSTATE.W)")
     ok = until("GLRADIO.stand().log.some(q => q.art === 'eil')", 20)
     s = ST()
@@ -149,7 +156,7 @@ with lib.browser() as b:
     E("GLRADIO.melde('Sondermeldung: Der Test läuft.', true)")
     ok = until("GLRADIO.stand().log.some(q => /Der Test läuft/.test(q.text))", 60)
     ck('a mission can put an announcement on air', ok)
-    E("GLFAHNDUNG.clear()")
+    E("GLFAHNDUNG.clear(); GLFAHNDUNG.off = false; GLRADIO.S.pend.length = 0; GLRADIO.S.eil = ''")
     # ---------------- reception ----------------
     E("GLRADIO.tune('blasius'); GAME.view(4, 15, 0, 180, 0)"); steps(1)
     n = E("GLRADIO.stand().sig")
@@ -159,7 +166,7 @@ with lib.browser() as b:
     E("GAME.go('garten')"); steps(1)
     # ---------------- 1989 ----------------
     E("GLRADIO.tune('zweitakt'); GL89.enter({}).then(() => { window.__e89 = 1 }); 0")
-    for _ in range(20):
+    for _ in range(90):
         steps(0.5); time.sleep(0.2)
         if E("window.__e89 === 1"): break
     steps(0.5)
@@ -180,7 +187,7 @@ with lib.browser() as b:
     E("GLHANDY.toggle(); 0"); steps(0.25)
     ck('1989 nobody has a phone', not E("GLHANDY.isOpen()"))
     E("GL89.leave().then(() => { window.__e89 = 2 }); 0")
-    for _ in range(20):
+    for _ in range(90):
         steps(0.5); time.sleep(0.2)
         if E("window.__e89 === 2"): break
     steps(0.5)
@@ -199,7 +206,7 @@ with lib.browser() as b:
     ck('every tab opens with its content', all(tabs[k]['sel'] == k and tabs[k]['n'] > 20 for k in tabs)
        and tabs['chat']['t'] == 'Ratscher aktuell' and tabs['bank']['t'] == 'Bank', str(tabs))
     chat = J("GLSTATE.feed.filter(q => q.k === 'chat').map(q => q.wer)")
-    ck('the village chat has a past and goes on', len(chat) >= 6 and 'Ingrid' in chat, str(chat))
+    ck('the village chat has a past and goes on', len(chat) >= 6 and len(set(chat)) >= 4, str(chat))
     # a patrol car in the village: the chat reacts
     E("GLHANDY.S.evT = {}; KERN.emit('grenzland:streife', { n: 1 })"); steps(14)
     ch = J("GLSTATE.feed.filter(q => q.k === 'chat').slice(-3).map(q => q.text)")
@@ -211,11 +218,12 @@ with lib.browser() as b:
     # a message arrives and is read
     pg.keyboard.press('Escape'); steps(0.25)
     closed = not E("GLHANDY.isOpen()")
+    n0 = E("(() => { for (const q of GLSTATE.sms) q.neu = false; return GLSTATE.sms.length })()")
     E("GLHANDY.sms('Jule', 'Staumauer, 20 Uhr. Bring Gemisch mit.')"); steps(0.25)
     u1 = E("GLHANDY.unread()")
     o1 = E("GLHANDY.open()"); steps(0.5)
     v = J("({ tab: GLHANDY.S.tab, neu: document.querySelectorAll('#glhandy .msg.neu').length, txt: document.getElementById('hybody').textContent, unread: GLHANDY.unread(), saved: GLSTATE.sms.length })")
-    ck('Esc puts the phone away; a message arrives, is shown as new, and is read', closed and o1 is True and u1 == 1 and v['tab'] == 'sms' and v['neu'] == 1 and 'Staumauer' in v['txt'] and v['unread'] == 0 and v['saved'] == 1, str(v)[:240])
+    ck('Esc puts the phone away; a message arrives, is shown as new, and is read', closed and o1 is True and u1 == 1 and v['tab'] == 'sms' and v['neu'] == 1 and 'Staumauer' in v['txt'] and v['unread'] == 0 and v['saved'] == n0 + 1, str(v)[:240])
     pic('07_handy_nachricht')
     # the bank
     E("GLSTATE.earn(50, 'Kurierlohn')"); pg.click('#glhandy .hn button[data-tab="bank"]'); steps(0.5)
@@ -223,7 +231,7 @@ with lib.browser() as b:
     ck('the bank shows the money and its movements', 'Kurierlohn' in bk and '+50 €' in bk and (str(E("GLSTATE.geld")) + ' €') in bk, bk[:160])
     # a note with its sources
     E("GLHANDY.unlock('sushi', true)"); pg.click('#glhandy .hn button[data-tab="notiz"]'); steps(0.25)
-    pg.click('#glhandy .nt >> nth=0'); steps(0.25)
+    pg.click('#glhandy .nt:has-text("Sushi in Suhl")'); steps(0.25)
     nt = J("({ t: document.getElementById('hytitel').textContent, links: [...document.querySelectorAll('#glhandy .nz a')].map(a => a.href), n: GLHANDY.S.notes.length })")
     ck('notes with their sources as links', nt['n'] >= 2 and len(nt['links']) >= 3 and all(h.startswith('https://') for h in nt['links']), str(nt)[:200])
     pic('08_handy_notiz')

@@ -799,8 +799,9 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
       const l = D.SENDER.heute;
       if (era() === 'heute' && GL.radio > 0 && GL.radio <= l.length && !S.id) tune(l[GL.radio - 1].id, { quiet: true });
     }
-    // the first time one sits in a vehicle the radio comes on by itself (as it does in GTA); switched off, it stays off
-    if (!S.touched && !S.id && VEH.cur && VEH.cur.id !== 'tractor') {
+    // the first time one sits in a vehicle the radio comes on by itself (as it does in GTA); switched off, it stays off.
+    // Not while a mission runs: the first one teaches the key, and a scene may want silence.
+    if (!S.touched && !S.id && !GL.cur && VEH.cur && VEH.cur.id !== 'tractor') {
       tune(list()[0].id);
       PLAY.think('Radio: R wechselt den Sender, R halten zeigt die Liste.', 4200);
     }
