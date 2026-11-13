@@ -425,9 +425,11 @@ export const GLREAKTION = (() => {
   });
   KERN.on('grenzland:boeller', () => heute() && wild('boeller'));
   KERN.on('grenzland:sterne', d => {
-    if (heute() && d && d.n >= 4 && S.filmT <= 0) wild('live', { force: false });
+    // (the level itself, not the stars shown – one fewer while the two are apart)
+    const n = GLLOGIK.starsOf(GL.W.heat);
+    if (heute() && d && n >= 4 && S.filmT <= 0) wild('live', { force: false });
     // from two stars: the region's blue-light page posts the police's description (once per search; the words when it is posted)
-    if (heute() && d && d.n >= 2 && !S.fahndung) {
+    if (heute() && d && n >= 2 && !S.fahndung) {
       S.fahndung = true;
       S.posts.push({
         t: 14,

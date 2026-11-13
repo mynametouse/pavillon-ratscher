@@ -506,6 +506,46 @@ export const GLEREIGNIS = (() => {
             hd
           )
         );
+        // bunting from the tree to the stall's roof and to the table (pennants in the fair's colours along a sagging line)
+        const tx = A.x + Math.sin(hd - 1.4) * 6,
+          ty = A.y + Math.cos(hd - 1.4) * 6;
+        E.meshes.push(
+          mesh(
+            K => {
+              const C = [L(220, 40, 40), L(244, 244, 240), L(40, 90, 200), L(240, 200, 40), L(60, 150, 70)];
+              const kette = (a, b) => {
+                const n = Math.max(6, Math.round(hyp(b[0] - a[0], b[1] - a[1]) / 0.45));
+                for (let k = 0; k < n; k++) {
+                  const u0 = k / n,
+                    u1 = (k + 0.8) / n,
+                    P = u => [
+                      a[0] + (b[0] - a[0]) * u,
+                      a[1] + (b[1] - a[1]) * u,
+                      a[2] + (b[2] - a[2]) * u - Math.sin(Math.PI * u) * 0.9,
+                    ],
+                    p0 = P(u0),
+                    p1 = P(u1),
+                    m = P((u0 + u1) / 2),
+                    tip = [m[0], m[1], m[2] - 0.26],
+                    c = C[k % C.length];
+                  K.tri(p0, p1, tip, c);
+                  K.tri(p1, p0, tip, c);
+                }
+              };
+              const st = [sx - A.x, sy - A.y],
+                ta = [tx - A.x, ty - A.y];
+              // (in the mesh's own frame: the tree at the origin, the mesh unturned)
+              kette([0, 0, 5.2], [st[0] - Math.cos(hd) * 1.5, st[1] + Math.sin(hd) * 1.5, 2.45]);
+              kette([0, 0, 5.2], [st[0] + Math.cos(hd) * 1.5, st[1] - Math.sin(hd) * 1.5, 2.45]);
+              kette([0, 0, 4.8], [ta[0], ta[1], 1.9]);
+              // a pole at the table for its end
+              K.cyl(ta[0], ta[1], 0, 2.0, 0.035, 0.03, 6, L(150, 120, 80));
+            },
+            A.x,
+            A.y,
+            0
+          )
+        );
         const sv = [sx - Math.sin(hd) * 0.9, sy - Math.cos(hd) * 0.9];
         figur(E, 'wirt', sx + Math.sin(hd) * 0.9, sy + Math.cos(hd) * 0.9, hd + Math.PI, F => (E.wirt = F));
         figur(E, 'bursche', A.x + 3.2, A.y - 1.5, -1.2, F => (E.bursche = F));

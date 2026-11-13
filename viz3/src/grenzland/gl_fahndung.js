@@ -339,7 +339,8 @@ export const GLFAHNDUNG = (() => {
     if (!H) return null;
     if (!haubeGeo) {
       const K = VPROPS.kit(),
-        col = [0.018, 0.018, 0.022],
+        col = [0.016, 0.016, 0.02],
+        col2 = [0.03, 0.03, 0.036],
         rx = Math.max(0.075, Math.min(0.1, H.rx)) * 1.13 + 0.006,
         ry = Math.max(0.085, Math.min(0.115, H.rz)) * 1.12 + 0.008,
         rz = 0.128,
@@ -360,8 +361,10 @@ export const GLFAHNDUNG = (() => {
           while (am > Math.PI) am -= 2 * Math.PI;
           // (the eye slit: in front, at the eyes' height)
           if (Math.abs(am) < 0.62 && Math.abs(zm - eye) < 0.019) continue;
-          if (j === 0) K.tri(Pt(a0, t1), Pt(a1, t1), Pt(a0, t0), col);
-          else K.quad(Pt(a0, t1), Pt(a1, t1), Pt(a1, t0), Pt(a0, t0), col);
+          // (the knit: ribs in two tones)
+          const c = (i + (j >> 1)) % 2 ? col : col2;
+          if (j === 0) K.tri(Pt(a0, t1), Pt(a1, t1), Pt(a0, t0), c);
+          else K.quad(Pt(a0, t1), Pt(a1, t1), Pt(a1, t0), Pt(a0, t0), c);
         }
       }
       haubeGeo = K.geo();
