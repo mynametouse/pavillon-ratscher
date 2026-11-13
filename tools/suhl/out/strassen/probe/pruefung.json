@@ -1,0 +1,462 @@
+{
+ "made": "2026-11-13T01:08:51Z",
+ "run": "tools/suhl/out/strassen/probe",
+ "drive_file": "suhl-zentrum.json",
+ "tiles": 11,
+ "zaehlung": {
+  "zentrum": {
+   "hier_km": 34.8,
+   "stufe1_km": 34.8,
+   "differenz_prozent": -0.12,
+   "klassen": {
+    "footway": {
+     "hier_km": 9.45,
+     "stufe1_km": 9.45,
+     "differenz_km": 0.0
+    },
+    "service": {
+     "hier_km": 7.84,
+     "stufe1_km": 7.84,
+     "differenz_km": -0.0
+    },
+    "residential": {
+     "hier_km": 7.11,
+     "stufe1_km": 7.11,
+     "differenz_km": 0.0
+    },
+    "secondary": {
+     "hier_km": 3.47,
+     "stufe1_km": 3.63,
+     "differenz_km": -0.16
+    },
+    "path": {
+     "hier_km": 2.75,
+     "stufe1_km": 2.75,
+     "differenz_km": 0.0
+    },
+    "living_street": {
+     "hier_km": 1.88,
+     "stufe1_km": 1.88,
+     "differenz_km": 0.0
+    },
+    "pedestrian": {
+     "hier_km": 0.89,
+     "stufe1_km": 0.89,
+     "differenz_km": 0.0
+    },
+    "steps": {
+     "hier_km": 0.59,
+     "stufe1_km": 0.59,
+     "differenz_km": -0.0
+    },
+    "unclassified": {
+     "hier_km": 0.25,
+     "stufe1_km": 0.25,
+     "differenz_km": 0.0
+    },
+    "busway": {
+     "hier_km": 0.21,
+     "stufe1_km": 0,
+     "differenz_km": 0.21
+    },
+    "secondary_link": {
+     "hier_km": 0.16,
+     "stufe1_km": 0,
+     "differenz_km": 0.16
+    },
+    "cycleway": {
+     "hier_km": 0.13,
+     "stufe1_km": 0.13,
+     "differenz_km": 0.0
+    },
+    "tertiary": {
+     "hier_km": 0.01,
+     "stufe1_km": 0.01,
+     "differenz_km": 0.0
+    }
+   },
+   "ok": true,
+   "hinweis": "Stufe 1 zählt auch Baustellen, Bahnsteige und Flächen-Wege (sonstige, platform); hier stehen Flächen in areas"
+  }
+ },
+ "gebaeude_in_fahrbahn": {
+  "quelle_gebaeude": "OpenStreetMap (building=*, ohne Dächer und Carports, ohne Unterirdisches) – die Grundrisse von suhl-gebaeude folgen",
+  "gebaeude": 1461,
+  "strassen_geprueft": 653,
+  "grenze_m": 0.3,
+  "treffer": 67,
+  "strassenstuecke_betroffen": 53,
+  "gebaeude_betroffen": 57,
+  "ok": false,
+  "tiefste": [
+   {
+    "tiefe_m": 1.56,
+    "osm_weg": 54818046,
+    "strasse": "Böttcherstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w133019887",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.5,
+    "osm_weg": 985108413,
+    "strasse": "service",
+    "breite_m": 3.0,
+    "gebaeude": "w32083739",
+    "art": "parking",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.5,
+    "osm_weg": 847449124,
+    "strasse": "Auenstraße",
+    "breite_m": 3.0,
+    "gebaeude": "w847449113",
+    "art": "apartments",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.5,
+    "osm_weg": 175906376,
+    "strasse": "service",
+    "breite_m": 3.0,
+    "gebaeude": "w42871446",
+    "art": "yes",
+    "name": "Congress Centrum Suhl (CCS)"
+   },
+   {
+    "tiefe_m": 1.5,
+    "osm_weg": 70114738,
+    "strasse": "service",
+    "breite_m": 3.0,
+    "gebaeude": "w42871446",
+    "art": "yes",
+    "name": "Congress Centrum Suhl (CCS)"
+   },
+   {
+    "tiefe_m": 1.49,
+    "osm_weg": 1211540627,
+    "strasse": "Auenstraße",
+    "breite_m": 3.0,
+    "gebaeude": "w847449114",
+    "art": "apartments",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.48,
+    "osm_weg": 1161282134,
+    "strasse": "service",
+    "breite_m": 3.0,
+    "gebaeude": "w42871446",
+    "art": "yes",
+    "name": "Congress Centrum Suhl (CCS)"
+   },
+   {
+    "tiefe_m": 1.47,
+    "osm_weg": 1461905339,
+    "strasse": "service",
+    "breite_m": 3.0,
+    "gebaeude": "w115751930",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.47,
+    "osm_weg": 1461905337,
+    "strasse": "service",
+    "breite_m": 3.0,
+    "gebaeude": "w115751930",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.47,
+    "osm_weg": 985108412,
+    "strasse": "service",
+    "breite_m": 3.0,
+    "gebaeude": "w32083739",
+    "art": "parking",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.45,
+    "osm_weg": 1460160790,
+    "strasse": "Auenstraße",
+    "breite_m": 3.0,
+    "gebaeude": "w847449114",
+    "art": "apartments",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.45,
+    "osm_weg": 69720848,
+    "strasse": "service",
+    "breite_m": 3.0,
+    "gebaeude": "w42484465",
+    "art": "retail",
+    "name": "Lauterbogen-Center"
+   },
+   {
+    "tiefe_m": 1.43,
+    "osm_weg": 1417282548,
+    "strasse": "service",
+    "breite_m": 3.0,
+    "gebaeude": "w127199553",
+    "art": "industrial",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.4,
+    "osm_weg": 1456678991,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w85578519",
+    "art": "office",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.4,
+    "osm_weg": 1096294718,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w300432514",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.4,
+    "osm_weg": 985108409,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w1499548844",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.4,
+    "osm_weg": 557943618,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w412429677",
+    "art": "office",
+    "name": "Haus der Wirtschaft"
+   },
+   {
+    "tiefe_m": 1.4,
+    "osm_weg": 557943618,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w1499541881",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.4,
+    "osm_weg": 317728349,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w314472765",
+    "art": "office",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.4,
+    "osm_weg": 51343347,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w94964399",
+    "art": "apartments",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.39,
+    "osm_weg": 104143996,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w103513213",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.39,
+    "osm_weg": 70114709,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w300432514",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.37,
+    "osm_weg": 557943617,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w1499541881",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.35,
+    "osm_weg": 1492423890,
+    "strasse": "service",
+    "breite_m": 2.8,
+    "gebaeude": "w126550142",
+    "art": "office",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.28,
+    "osm_weg": 55567770,
+    "strasse": "Hofleitengasse",
+    "breite_m": 5.0,
+    "gebaeude": "w104143998",
+    "art": "yes",
+    "name": ""
+   }
+  ],
+  "hinweis": "Tiefe = halbe Fahrbahnbreite minus Abstand der Achse zum Grundriss; meist ist die angenommene Breite zu groß oder die OSM-Achse liegt neben der Fahrbahn"
+ },
+ "kreuzungen": {
+  "ziel": "jede Kreuzung eine Ebene, ±3 cm (3 m um den Knoten)",
+  "alle": {
+   "n": 1735,
+   "median_cm": 0.5,
+   "p95_cm": 7.1,
+   "max_cm": 37.1,
+   "share_within_3cm": 0.878
+  },
+  "fahrstrassen": {
+   "n": 851,
+   "median_cm": 0.4,
+   "p95_cm": 7.8,
+   "max_cm": 25.2,
+   "share_within_3cm": 0.854
+  },
+  "ok": false
+ },
+ "profile": {
+  "klassen": {
+   "street": {
+    "km": 38.25,
+    "wellen_je_km": 1.8,
+    "grenze_wellen": 4,
+    "steigungswechsel_10m": 0.71,
+    "grenze_steigungswechsel": 1.0,
+    "ok": true
+   },
+   "service": {
+    "km": 25.76,
+    "wellen_je_km": 4.0,
+    "grenze_wellen": 5,
+    "steigungswechsel_10m": 1.11,
+    "grenze_steigungswechsel": 1.2,
+    "ok": true
+   },
+   "track": {
+    "km": 9.76,
+    "wellen_je_km": 3.8,
+    "grenze_wellen": 6,
+    "steigungswechsel_10m": 1.15,
+    "grenze_steigungswechsel": 1.5,
+    "ok": true
+   },
+   "main": {
+    "km": 7.01,
+    "wellen_je_km": 0.1,
+    "grenze_wellen": 2,
+    "steigungswechsel_10m": 0.23,
+    "grenze_steigungswechsel": 0.5,
+    "ok": true
+   },
+   "lane": {
+    "km": 2.45,
+    "wellen_je_km": 1.2,
+    "grenze_wellen": 4,
+    "steigungswechsel_10m": 0.71,
+    "grenze_steigungswechsel": 1.0,
+    "ok": true
+   },
+   "county": {
+    "km": 0.08,
+    "wellen_je_km": 0.0,
+    "grenze_wellen": 3,
+    "steigungswechsel_10m": 0.05,
+    "grenze_steigungswechsel": 0.7,
+    "ok": true
+   }
+  },
+  "ok": true,
+  "gerechnet_auf": "ungeschnittene Geländekacheln von suhl-boden (Copernicus DEM GLO-30 (Oberflächenmodell 30 m) mit abgesenktem Wald (ESA WorldCover); DGM1 Thüringen noch nicht verfügbar, Stand 2026-11-13T00:43:18Z, Commit a00136ba; 766022 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 86728 Stützwerte – nur am Rand außerhalb der Kacheln); kleine Klassen 1.3-fach länger geglättet"
+ },
+ "bruecken": {
+  "kreuzungen_mit_anderen_wegen": 24,
+  "unter_4_5_m": 23,
+  "ok": false,
+  "niedrigste": [
+   {
+    "gap_m": -1.4,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 297293073
+   },
+   {
+    "gap_m": -1.4,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 1257119748
+   },
+   {
+    "gap_m": -1.3,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 1257119749
+   },
+   {
+    "gap_m": -1.1,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 1386295050
+   },
+   {
+    "gap_m": -1.0,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 32125359
+   },
+   {
+    "gap_m": -1.0,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 297293095
+   },
+   {
+    "gap_m": -0.9,
+    "bridge_way": 70223028,
+    "name": "footway",
+    "below_way": 70223029
+   },
+   {
+    "gap_m": -0.7,
+    "bridge_way": 1547281403,
+    "name": "steps",
+    "below_way": 70223030
+   }
+  ]
+ },
+ "kachelkanten": {
+  "uebergaenge": 169,
+  "lage_ueber_0_1_m": 0,
+  "hoehe_ungleich": 0,
+  "groesster_abstand_m": 0.0,
+  "ok": true
+ },
+ "ok": {
+  "gebaeude_in_fahrbahn": false,
+  "kreuzungen": false,
+  "profile": true,
+  "bruecken": false,
+  "kachelkanten": true,
+  "zaehlung_zentrum": true
+ }
+}

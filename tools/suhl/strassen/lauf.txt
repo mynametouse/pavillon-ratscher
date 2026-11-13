@@ -1,1 +1,4 @@
-run requested 2026-11-13T00:58:31Z: whole city with tracks and water; requests installed; ways selected by tiles
+Bestellung eines Laufs von suhl-strassen (Zeilen key=value; alles andere ist Text).
+bestellt 2026-11-13T01:08:15Z: ganze Stadt mit Gleisen, Wasser, Routen, Ausstattung, Prüfungen – Technikprobe auf eigener Copernicus-Abtastung,
+weil der Lauf von suhl-boden mit den ungeschnittenen Kacheln der Stadt noch rechnet. Sobald er fertig ist: boden_run=<Nummer> eintragen.
+# boden_run=

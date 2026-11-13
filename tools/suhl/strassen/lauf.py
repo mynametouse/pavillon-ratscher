@@ -336,6 +336,10 @@ def main():
             heights['copernicus_canopy_m'], heights['copernicus'], ' – nur am Rand außerhalb der Kacheln' if heights['tiles'] > heights['copernicus'] else ''))
     heights['solved_on'] = ' und '.join(parts) + ('; kleine Klassen %.1f-fach länger geglättet' % grob if grob != 1.0 else '')
     heights['own_sampling_share'] = round(heights['copernicus'] / max(1, heights['copernicus'] + heights['tiles']), 4)
+    # one ground for everybody: a run counts when its heights come from the uncut ground tiles of suhl-boden
+    heights['zaehlt'] = bool(heights['own_sampling_share'] < 0.25)
+    if not heights['zaehlt']:
+        heights['solved_on'] = 'TECHNIKPROBE, zählt nicht: ' + heights['solved_on']
     root = os.path.join(out, L.product_dir('s', VERSION))
     nbytes = 0
     for t in T:

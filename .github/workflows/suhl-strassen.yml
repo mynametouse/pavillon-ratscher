@@ -19,6 +19,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   stadt:
@@ -66,23 +67,46 @@ jobs:
           fi
           ls -la "$SUHL_RAW/geofabrik"
           cat "$SUHL_RAW/geofabrik/fileinfo-strassen.txt" || true
-      - name: Geländekacheln von suhl-boden, falls es sie schon gibt (sonst Copernicus GLO-30)
-        continue-on-error: true
+      - name: Geländekacheln von suhl-boden – der eine Boden für alle (Bestellung in tools/suhl/strassen/lauf.txt)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          # suhl-boden keeps its tiles as a workflow artifact until the data repo exists; a later version of this step fetches them.
-          # Until then the profiles are solved on Copernicus GLO-30 with the forest lowered (tools/welt/dem.py CopGround).
-          echo "Geländekacheln: keine – Profile auf Copernicus GLO-30" | tee logs/hoehen.txt
+          # One ground for everybody (Suhl-Chat, 13.11.2026): the profiles are solved on the UNCUT terrain tiles of suhl-boden, never on
+          # an own sampling. The order names the run of suhl-boden whose artifact holds them:  boden_run=<run id>  and optionally
+          # boden_artifact=<name>  boden_t=<folder with the terrain tiles inside the artifact, default: the first folder named t>.
+          # Without an order the run is a test of the pipeline on Copernicus GLO-30 and says so in every file (heights.zaehlt = false).
+          RUN=$(grep -E '^boden_run=' tools/suhl/strassen/lauf.txt | tail -1 | cut -d= -f2 | tr -d ' \r' || true)
+          ART=$(grep -E '^boden_artifact=' tools/suhl/strassen/lauf.txt | tail -1 | cut -d= -f2 | tr -d ' \r' || true)
+          SUB=$(grep -E '^boden_t=' tools/suhl/strassen/lauf.txt | tail -1 | cut -d= -f2 | tr -d ' \r' || true)
+          if [ -z "$RUN" ]; then
+            echo "Geländekacheln: keine bestellt – Technikprobe auf eigener Copernicus-Abtastung, zählt nicht" | tee logs/hoehen.txt
+            exit 0
+          fi
+          if [ -z "$ART" ]; then
+            ART=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN/artifacts" --jq '.artifacts[].name' | grep '^suhl-boden-' | grep -v pruefung | head -1)
+          fi
+          echo "suhl-boden: Lauf $RUN, Artefakt $ART" | tee logs/hoehen.txt
+          mkdir -p "$RUNNER_TEMP/boden"
+          gh run download "$RUN" --repo "$GITHUB_REPOSITORY" -n "$ART" -D "$RUNNER_TEMP/boden"
+          if [ -n "$SUB" ]; then TD="$RUNNER_TEMP/boden/$SUB"; else TD=$(find "$RUNNER_TEMP/boden" -type d -name t | sort | head -1); fi
+          if [ ! -d "$TD" ]; then echo "im Artefakt $ART liegt kein Ordner mit Geländekacheln" | tee -a logs/hoehen.txt; exit 1; fi
+          rm -rf "$RUNNER_TEMP/boden"/i "$RUNNER_TEMP/boden"/*/i 2>/dev/null || true
+          echo "BODEN_T=$TD" >> "$GITHUB_ENV"
+          echo "Geländekacheln: $TD ($(find "$TD" -name '*.bin' | wc -l) Kacheln)" | tee -a logs/hoehen.txt
       - name: Die ganze Stadt – Straßen und Wege, Profile, Flächen, Wasser, Bahn (Kacheln s, Datei im Format der Fahrtdaten)
         timeout-minutes: 30
         run: |
           set -o pipefail
-          python -I -u tools/suhl/strassen/lauf.py --gebiet stadt --opl "$SUHL_RAW/geofabrik/suhl-strassen.opl.gz" --raw "$SUHL_RAW" --out "$OUT" 2>&1 | tee logs/lauf.log
+          TILES=""; if [ -n "$BODEN_T" ]; then TILES="--tiles $BODEN_T"; fi
+          python -I -u tools/suhl/strassen/lauf.py --gebiet stadt --opl "$SUHL_RAW/geofabrik/suhl-strassen.opl.gz" --raw "$SUHL_RAW" --out "$OUT" $TILES 2>&1 | tee logs/lauf.log
       - name: Die zwei Routen Garten – Suhl (Landstraße; Autobahn über die Anschlussstelle Suhl-Zentrum)
         continue-on-error: true
         timeout-minutes: 15
         run: |
           set -o pipefail
           if [ -f tools/suhl/strassen/routen.py ]; then
+            # the first attempt's research, for the comparison (read only)
+            git fetch -q --depth 1 origin feat/suhl-fahrt && git show FETCH_HEAD:viz3/extra/suhl-fahrt/recherche.json > "$SUHL_RAW/recherche.json" || true
             python -I -u tools/suhl/strassen/routen.py --opl "$SUHL_RAW/geofabrik/suhl-strassen.opl.gz" --raw "$SUHL_RAW" --out "$OUT" 2>&1 | tee logs/routen.log
           else echo "routen.py fehlt noch – übersprungen" | tee logs/routen.log; fi
       - name: Ausstattung (Werkzeug des Straßen-Chats von feat/strassen, dazu Ampeln, Überwege, Haltestellen, Laternen, Straßenschilder)
@@ -121,6 +145,8 @@ jobs:
           cp -f "$OUT"/*.json "$D/" 2>/dev/null || true
           cp -f "$OUT/suhl/s/v0/index.json" "$D/suhl/s/v0/" 2>/dev/null || true
           cp -f "$OUT/suhl/m/v0/index.json" "$D/suhl/m/v0/" 2>/dev/null || true
+          mkdir -p "$D/strassen" && for f in "$OUT"/strassen/*.json; do [ -f "$f" ] && gzip -9 -n -c "$f" > "$D/strassen/$(basename "$f").gz"; done
+          cp -f logs/hoehen.txt "$D/hoehen.txt" 2>/dev/null || true
           for f in "$OUT"/fahrt/*.json; do [ -f "$f" ] && gzip -9 -n -c "$f" > "$D/fahrt/$(basename "$f").gz"; done
           cp -f "$SUHL_RAW/geofabrik/fileinfo-strassen.txt" "$D/osm-stand.txt" 2>/dev/null || true
           echo "run ${GITHUB_RUN_ID} $(date -u +%FT%TZ)" > "$D/lauf.txt"
