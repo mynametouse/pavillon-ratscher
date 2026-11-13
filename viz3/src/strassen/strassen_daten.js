@@ -4,6 +4,9 @@
 // and the furniture: delineators, guard rails, traffic signs, street lamps, power poles and lines (strassen/strassen.js builds them near
 // the observer). It loads at the start beside the road file; world/roads.js waits for it (STRDAT.when) – and goes on without it when the
 // file is missing or ?nostrassen is set (then every road is open country, as before).
+// Round 2 (13.11.2026, wish W6 of the Suhl chat): further sets of the same shape may come and go while the app runs – STRDAT.add(name,
+// json) / STRDAT.drop(name): the built-up areas of a town that loads only when one gets there, and its furniture. STRDAT.rev counts the
+// changes (the road map works out the styles of its ways again), STRDAT.onChange(fn) tells the furniture (strassen/strassen.js).
 // © OpenStreetMap contributors (ODbL 1.0).
 import * as THREE from 'three';
 import { BASE } from '../core/head.js';
@@ -15,6 +18,8 @@ export const STRDAT = (() => {
     failed: false,
     data: null,
     orte: [],
+    sets: new Map(), // name → { data, orte }: what came with STRDAT.add
+    rev: 0,
   };
   const waiting = [];
   // fn runs once the data is there or has failed – at once when that is already so; inside the file's load callback otherwise, so the
@@ -57,11 +62,11 @@ export const STRDAT = (() => {
       for (const a of o.a) if (x > a.bb[0] && x < a.bb[2] && y > a.bb[1] && y < a.bb[3] && inPoly(a.r, x, y)) return o;
     return null;
   };
-  S.parse = j => {
-    S.data = j;
-    S.orte = (j.orte || []).map(o => ({
+  const orteOf = (j, set) =>
+    (j.orte || []).map(o => ({
       n: o.n,
       t: o.t,
+      set,
       a: o.a.map(q => {
         const r = Float32Array.from(q, v => v / 10),
           bb = [1e9, 1e9, -1e9, -1e9];
@@ -74,6 +79,39 @@ export const STRDAT = (() => {
         return { r, bb };
       }),
     }));
+  S.parse = j => {
+    S.data = j;
+    // (sets that came before the file keep their places)
+    S.orte = orteOf(j, '').concat(S.orte.filter(o => o.set));
+  };
+  // ---- further sets while the app runs: { orte, pfosten, planken, schilder, lampen, masten, leitungen, linien } as in the file ----
+  const subs = [];
+  S.onChange = fn => subs.push(fn);
+  const tell = (name, added) => {
+    S.rev++;
+    for (const fn of subs) {
+      try {
+        fn(name, added);
+      } catch (e) {
+        console.warn('strassen', e);
+      }
+    }
+  };
+  S.drop = name => {
+    if (!S.sets.has(name)) return false;
+    S.sets.delete(name);
+    S.orte = S.orte.filter(o => o.set !== name);
+    tell(name, false);
+    return true;
+  };
+  S.add = (name, j) => {
+    if (!S.on || !name || !j) return false;
+    S.drop(name);
+    const orte = orteOf(j, name);
+    S.orte = S.orte.concat(orte);
+    S.sets.set(name, { data: j, orte });
+    tell(name, true);
+    return true;
   };
   if (!S.on) {
     S.failed = true;

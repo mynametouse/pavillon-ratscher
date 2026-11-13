@@ -2,7 +2,10 @@
 # map (open country, no overtaking, town, village), the furniture beside them – delineators, guard rails, signs, lamps, power lines – built
 # near the observer and never on a carriageway, lamps at night, wet roads in the rain, the road map of the window beyond the square on a
 # drive along the L 1625, no new shader program after the start, the cost per frame. Pictures in out/strassen/.
-# Sections (optional second argument, comma-separated): start,moebel,stadt,nass,fahrt,gl
+# Round 2 (13.11.2026, the wishes of the Suhl chat): road data and furniture that come and go while the app runs (FAHRT.add / FAHRT.drop,
+# STRDAT.add / STRDAT.drop) – a made-up little town on a meadow beside the L 1625 with every case: a pedestrian street and a square
+# without kerbs, a car park, a roundabout and a one-way street without a centre line, a street with one pavement, steps left out.
+# Sections (optional second argument, comma-separated): start,moebel,stadt,nass,fahrt,sets,gl
 # The world tiles come from the published site (welt-test/) and are copied into viz3/dist/welt-test/ first (as viz3/test/fahrt.py does).
 import sys, os, json, time, math, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -41,6 +44,43 @@ def at(route, dist):
 
 I0, START = at(ROUTE, 3700)     # on the L 1625 west of the square, open country
 I1, _ = at(ROUTE, 4700)
+# round 2: a meadow north of the L 1625 before Rappelsdorf, flat within 2 m over 160 m × 120 m, no road on it (probed 13.11.2026)
+PC = (-2775.0, -380.0)
+
+
+def probe_town(cx, cy):
+    """a made-up town of 190 m × 150 m around (cx, cy) in the format of fahrt/strassen.json with the extra fields of round 2, and its furniture"""
+    dm = lambda v: int(round(v * 10))
+    line = lambda pts: [c for (x, y) in pts for c in (dm(cx + x), dm(cy + y), 0)]
+    ring = [(40 + 12 * math.sin(math.radians(a)), -30 + 12 * math.cos(math.radians(a))) for a in range(0, 361, 15)]
+    ways = [
+        # kind, surface, width in dm, flags, name, number, points – and beside it: lanes, s0 (dm along the whole way)
+        ([1, 0, 70, 0, 1, 3, line([(-85, -30), (-40, -30), (0, -30), (28, -30)])], None, 0),          # 0 the main street, west arm
+        ([1, 0, 70, 0, 1, 3, line([(52, -30), (85, -30)])], None, 1370),                              # 1 its east arm: the dashes go on
+        ([1, 0, 65, 4 | 32, 1, 3, line(ring)], 1, 0),                                                # 2 a roundabout
+        ([3, 0, 55, 512, 2, 0, line([(-60, -30), (-60, 10), (-60, 55)])], None, 0),                  # 3 a street, no pavement on its right
+        ([3, 2, 60, 64, 2, 0, line([(40, -18), (40, 22)])], None, 0),                                # 4 a level street of paving stones
+        ([5, 0, 40, 0, 0, 0, line([(-60, 20), (-10, 20)])], None, 0),                                # 5 the lane of the car park
+        ([2, 0, 60, 4, 0, 0, line([(-20, -30), (-20, -65)])], 1, 0),                                 # 6 one way, one lane: no centre line
+        ([1, 0, 70, 4, 0, 0, line([(0, -30), (0, -65)])], 2, 0),                                     # 7 one way, two lanes: a lane divider
+        ([8, 2, 16, 128, 0, 0, line([(70, 40), (88, 40)])], None, 0),                                # 8 steps: not in the map
+    ]
+    rect = lambda x0, y0, x1, y1: line([(x0, y0), (x1, y0), (x1, y1), (x0, y1)])
+    town = [c for (x, y) in [(-95, -75), (95, -75), (95, 75), (-95, 75)] for c in (cx + x, cy + y)]
+    roads = {
+        'v': 1, 'kinds': DATA['kinds'], 'surf': DATA['surf'], 'names': ['', 'Probestraße', 'Am Probeplatz', 'L 9999'],
+        'ways': [w for w, _, _ in ways], 'lanes': [l for _, l, _ in ways], 's0': [s for _, _, s in ways],
+        'areas': [[2, 64, 2, rect(10, 22, 70, 60), [rect(37, 38, 43, 44)], 'platz'], [0, 0, 0, rect(-50, 2, -12, 40), [], 'parken']],
+        'places': [{'n': 'Probestadt', 'k': 'town', 'x': cx, 'y': cy, 'a': [town]}],
+        'orte': [{'n': 'Probestadt', 't': 2, 'a': [[dm(v) for v in town]]}],
+        'signs': [], 'routes': {},
+    }
+    furn = {
+        'lampen': [c for x in (-75, -45, -15, 15) for c in (dm(cx + x), dm(cy - 23.5), 180, 0)],
+        'schilder': [['274-40', dm(cx - 70), dm(cy - 34.6), 90], ['km', dm(cx + 62), dm(cy - 34.6), 90, '99,9']],
+        'linien': [['zebra', dm(cx - 40), dm(cy - 30), 90, 35]],
+    }
+    return roads, furn
 
 
 def fetch_tiles():
@@ -83,7 +123,7 @@ def fetch_tiles():
     return True
 
 
-TILES = fetch_tiles() if want('fahrt') else False
+TILES = fetch_tiles() if want('fahrt') or want('sets') else False
 # an Open-Meteo answer with the same weather in every hour (viz3/test/wetter.py)
 MOCK = r"""window.__wxAnswer = rec => url => {
   const names = { T: 'temperature_2m', P: 'precipitation', R: 'rain', SH: 'showers', SN: 'snowfall', C: 'cloud_cover', V: 'visibility', W: 'wind_speed_10m',
@@ -299,6 +339,78 @@ with lib.browser() as b:
         lib.settle_light(pg)
         steps(1, 0.025)
         E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null")
+    if want('sets') and ck('the tiles around the made-up town are there', TILES):
+        roads, furn = probe_town(*PC)
+        cx, cy = PC
+        P = lambda x, y: f"{cx + x}, {cy + y}"
+        at_ = lambda x, y: J(f"STRKARTE.at({P(x, y)})")
+        surf = lambda x, y: J(f"KERN.surface({P(x, y)}) || null")
+        E("if (VEH.cur) VEH.exit()")
+        view(cx, cy - 20, 0)
+        E("STRKARTE.flush(); STRASSEN.fill()")
+        steps(3, 0.05)
+        base = J("{ ways: FAHRT.data.ways.length, signs: FAHRT.data.signs.length, places: FAHRT.data.places.length, grid: FAHRT.data.grid.size, orte: STRDAT.orte.length, extra: VEH.extra.length, n: STRASSEN.state().n, faces: STRASSEN.state().faces, maps: STRKARTE.n }")
+        gnd = f"[[0, 0], [40, 40], [-30, 20], [40, -30], [-60, 30], [80, -30]].map(q => KERN.ground({cx} + q[0], {cy} + q[1]))"
+        g0 = J(gnd)
+        ck('a meadow before: no road there, open country', at_(0, -30) is None and surf(40, 40) is None and E(f"STRDAT.placeAt({P(0, 0)})") == 0, json.dumps(base)[:200])
+        E(f"window._probe = {json.dumps(roads)}; window._probeF = {json.dumps(furn)}")
+        ok = E("FAHRT.add('probe', _probe, { carve: false })")
+        s1 = J("FAHRT.status()")
+        ck('FAHRT.add takes a road file while the app runs: ways, areas, a place, its built-up area', ok and s1['sets'] == ['probe'] and s1['ways'] == base['ways'] + 9 and s1['areas'] == 2
+           and E("STRDAT.sets.has('fahrt:probe')") and E(f"STRDAT.placeAt({P(0, 0)})") == 2 and E(f"FAHRT.place({P(-40, -30)})") == 'Probestraße, Probestadt',
+           json.dumps({k: s1[k] for k in ('sets', 'ways', 'areas', 'rev')}) + ' ' + str(E(f"FAHRT.place({P(-40, -30)})")))
+        ck('the road map is rastered again at once', E("STRKARTE.busy || STRKARTE.n >= 0") and (E("STRKARTE.flush()") or True) and E("STRKARTE.n") > base['maps'], f"{base['maps']} → {E('STRKARTE.n')} maps, {E('STRKARTE.ms')} ms")
+        m = {k: at_(*q) for k, q in {'main': (-40, -30), 'ring': (40, -18), 'ringE': (40, -42), 'level': (40, 5), 'square': (25, 40), 'hole': (40, 41), 'park': (-30, 10), 'lane': (-30, 20),
+                                    'one1': (-20, -50), 'one2': (0, -50), 'sideL': (-65, 30), 'sideR': (-55, 30), 'steps': (82, 40), 'mainW': (-70, -27)}.items()}
+        ck('the main street in the town: a main road with kerbs and a centre line (its axis in the map)', m['main'] and m['main']['kind'] == 1 and m['main']['style'] == 2 and abs(m['main']['lat']) < 0.8, json.dumps(m['main']))
+        ck('the roundabout and the one-way street of one lane keep off the axis (no centre line); two lanes one way keep their divider',
+           m['ring'] and m['ring']['kind'] == 1 and m['ring']['lat'] >= 0.5 and m['ringE']['lat'] >= 0.5 and m['one1']['lat'] >= 0.5 and m['one1']['kind'] == 2 and abs(m['one2']['lat']) < 0.8,
+           json.dumps({k: m[k] for k in ('ring', 'one1', 'one2')}))
+        ck('the level street is kind 9 with its paving, no kerb', m['level'] and m['level']['kind'] == 9 and m['level']['surf'] == 2, json.dumps(m['level']))
+        ck('the square: kind 9, paving, deep inside; its hole is outside', m['square'] and m['square']['kind'] == 9 and m['square']['surf'] == 2 and m['square']['e'] > 6 and m['hole'] and m['hole']['e'] < 0, json.dumps([m['square'], m['hole']]))
+        ck('the car park: kind 9, asphalt – also where its lane crosses it', m['park'] and m['park']['kind'] == 9 and m['park']['surf'] == 0 and m['lane']['kind'] == 9 and m['lane']['surf'] == 0, json.dumps([m['park'], m['lane']]))
+        ck('the street without a pavement on its right: that half kerb and gutter only (a through road of a village in the map), the left half town',
+           m['sideR'] and m['sideR']['style'] == 3 and m['sideR']['kind'] == 2 and m['sideL']['style'] == 2 and m['sideL']['kind'] == 3, json.dumps([m['sideL'], m['sideR']]))
+        ck('steps are left out of the map', m['steps'] is None or m['steps']['kind'] != 8, json.dumps(m['steps']))
+        sf = {k: surf(*q) for k, q in {'square': (25, 40), 'level': (40, 5), 'main': (-40, -30), 'meadow': (-80, 60)}.items()}
+        ck('KERN.surface: the square and the streets carry (grip), the meadow not', sf['square'] and sf['square'].get('area') and sf['square']['surf'] == 2 and sf['level'] and sf['level']['kind'] == 3 and sf['level']['e'] > 2
+           and sf['main']['kind'] == 1 and sf['meadow'] is None, json.dumps(sf))
+        steps(2, 0.05)
+        g1 = J(gnd)
+        ck('carve: false – the ground stays as it was', all(abs(a - b) < 0.01 for a, b in zip(g0, g1)), json.dumps([round(b - a, 3) for a, b in zip(g0, g1)]))
+        # its furniture: four lamps, a speed limit and a kilometre stone with faces the picture did not have, a zebra crossing
+        ok = E("STRDAT.add('probe', _probeF)")
+        E("STRASSEN.fill()")
+        steps(1, 0.05)
+        E("STRASSEN.fill()")
+        s2 = st()
+        ck('STRDAT.add brings furniture: lamps, signs with new faces in the picture, paint', ok and 'probe' in s2['sets'] and s2['n']['lamps'] == base['n']['lamps'] + 4 and s2['n']['signs'] == base['n']['signs'] + 2
+           and s2['faces'] == base['faces'] + 2 and E("!!STRASSEN.atlas.cell['274-40'] && !!STRASSEN.atlas.cell['km|99,9']") and s2['n']['lines'] == base['n']['lines'] + 1 and not s2['err'],
+           json.dumps({'sets': s2['sets'], 'faces': s2['faces'], 'n': s2['n'], 'err': s2['err']}))
+        near = J(f"STRASSEN.audit({cx - 95}, {cy - 75}, {cx + 95}, {cy + 75})")
+        ck('they stand beside the carriageway, on the ground', len([o for o in near if o[0] == 'lamp']) == 4 and len([o for o in near if o[0] == 'sign']) == 2 and all(o[3] is None or o[3] < -0.25 for o in near), json.dumps(near))
+        E("STRKARTE.flush(); STRASSEN.fill()")
+        steps(0.5, 0.05)
+        for nm, (x, y, yaw, pitch, up) in {'11_probestadt': (0, -150, 0, -24, 42), '12_platz': (40, -4, 0, -10, 0), '13_kreisel': (2, -27, 90, -9, 0),
+                                            '14_einseitig': (-60, -14, 0, -9, 0), '15_parkplatz': (-66, 14, 80, -12, 0), '16_hauptstrasse': (-80, -28.5, 92, -7, 0)}.items():
+            E(f"GAME.view({cx + x}, {cy + y}, KERN.ground({cx + x}, {cy + y}) + 1.6 + {up}, {yaw}, {pitch}, 58)")
+            lib.shot(pg, OUT, nm)
+        view(cx, cy - 20, 0)
+        # ... and away again: everything as it was before
+        ok = E("FAHRT.drop('probe')") and E("STRDAT.drop('probe')")
+        E("STRKARTE.flush(); STRASSEN.fill()")
+        steps(1, 0.05)
+        E("STRKARTE.flush(); STRASSEN.fill()")
+        end = J("{ ways: FAHRT.data.ways.length, signs: FAHRT.data.signs.length, places: FAHRT.data.places.length, grid: FAHRT.data.grid.size, orte: STRDAT.orte.length, extra: VEH.extra.length, n: STRASSEN.state().n, faces: STRASSEN.state().faces, maps: STRKARTE.n }")
+        s3 = J("FAHRT.status()")
+        same = all(end[k] == base[k] for k in ('ways', 'signs', 'places', 'grid', 'orte', 'extra')) and end['n'] == base['n']
+        ck('FAHRT.drop and STRDAT.drop take it all out again: tables, grid, places, furniture, colliders', ok and same and s3['sets'] == [] and s3['areas'] == 0 and not E("STRDAT.sets.size") and st()['sets'] == [],
+           json.dumps({k: [base[k], end[k]] for k in ('ways', 'signs', 'places', 'grid', 'orte', 'extra')}) + json.dumps(end['n']))
+        ck('the meadow is a meadow again', at_(0, -30) is None and at_(25, 40) is None and surf(25, 40) is None and E(f"STRDAT.placeAt({P(0, 0)})") == 0 and E(f"FAHRT.place({P(-40, -30)})") != 'Probestraße, Probestadt')
+        lib.shot(pg, OUT, '17_wieder_wiese')
+        # a set that comes before the region's own roads are loaded waits for them (FAHRT asleep: a fresh page would be needed – here only
+        # the contract: add answers true and drop takes a waiting set out again)
+        ck('add and drop answer what they did', E("FAHRT.drop('nie')") is False and E("STRDAT.drop('nie')") is False and E("FAHRT.add('', _probe)") is False and E("FAHRT.add('x', {})") is False)
     if want('gl'):
         # the programs the roads' own meshes are drawn with: all of them were compiled while the loading screen was up
         mine = J("""(() => { const out = {}; for (const c of [...STRASSEN.cells.values(), ...STRASSEN.big.values()]) for (const o of c.meshes) for (const m of [].concat(o.material)) {

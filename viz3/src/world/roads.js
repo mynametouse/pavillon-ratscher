@@ -105,10 +105,11 @@ export const ROADS = (() => {
       float al = abs( lat ), hw = max( e + al, 0.6 ), fine = 1.0 - smoothstep( 0.012, 0.05, fwp ), mid = 1.0 - smoothstep( 0.08, 0.4, fwp );
       float lum = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hard = step( surf, 2.5 );   // asphalt, concrete, paving: a hard edge; gravel and earth fray into the grass
       float built = step( 1.5, style ), town = built * step( style, 2.5 ), two = step( 2.6, hw );
+      float level = step( 8.5, kind );   // a level surface (a pedestrian zone, a square, a car park): flush with what lies beside it
       // kerbs: in a town along its streets, in a village along the through roads; pavements in the town
       float kerbed = hard * built * step( kind, mix( 2.5, 3.5, town ) ), walk = hard * town * step( kind, 3.5 ) * ( kind < 2.5 ? 1.7 : 1.3 );
       if ( mode > 0.5 && ( kind > 2.5 || hard < 0.5 || dist > 220.0 || e < 0.0 ) ) return c;
-      float eN = e + ( ( rdN( p * 1.7 ) - 0.5 ) * mix( 0.5, 0.13, hard ) + ( rdN( p * 9.0 ) - 0.5 ) * 0.05 * mid ) * ( 1.0 - kerbed );
+      float eN = e + ( ( rdN( p * 1.7 ) - 0.5 ) * mix( 0.5, 0.13, hard ) + ( rdN( p * 9.0 ) - 0.5 ) * 0.05 * mid ) * ( 1.0 - kerbed ) * ( 1.0 - level * hard );
       float k = smoothstep( -fwE, fwE, eN ) * far;
       float n1 = rdN( p * 0.23 ), n2 = rdN( p * 1.3 + 3.7 ), n3 = ( rdN( p * 23.0 ) - 0.5 ) * fine + ( rdN( p * 7.0 + 1.3 ) - 0.5 ) * 0.6 * mid;
       float kd = 1.0 - smoothstep( 25.0, 120.0, dist ), u = 0.0, ph = 0.0;
@@ -144,7 +145,7 @@ export const ROADS = (() => {
       else if ( surf < 3.5 ) {   // gravel: light, coarse grain, wheel tracks a little darker and smoother
         r = mix( vec3( 0.35, 0.33, 0.29 ), c * 1.15, 0.35 ) * ( 0.85 + 0.3 * n1 ) * mix( vec3( 1.0 + 0.45 * n3 ), clamp( rdTex( ${LY('gravel')}, p, uDTile.w, dx, dy ), 0.3, 2.2 ), kd ); r *= 1.0 - 0.1 * ( 1.0 - smoothstep( 0.15, 0.35, abs( al - 0.78 ) ) ); }
       else {   // earth or grass: two wheel tracks of bare soil, grass between and beside them (a single trail on narrow paths)
-        float rut = kind > 6.5 ? 1.0 - smoothstep( 0.18, 0.42, al ) : 1.0 - smoothstep( 0.16, 0.34, abs( al - 0.78 ) );
+        float rut = level > 0.5 ? 0.55 + 0.3 * n1 : kind > 6.5 ? 1.0 - smoothstep( 0.18, 0.42, al ) : 1.0 - smoothstep( 0.16, 0.34, abs( al - 0.78 ) );
         rut *= ( surf > 4.5 ? 0.4 : 0.92 ) * ( 0.75 + 0.25 * n2 );
         vec3 soil = vec3( 0.25, 0.205, 0.155 ) * ( 0.8 + 0.35 * n1 ) * mix( vec3( 1.0 + 0.35 * n3 ), clamp( rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ), 0.3, 2.2 ), kd ), worn = c * vec3( 1.08, 1.05, 0.9 );
         r = mix( worn, soil, rut ); }
@@ -176,7 +177,7 @@ export const ROADS = (() => {
           vec3 wcol = vec3( 0.3, 0.295, 0.285 ) * clamp( lum / 0.2, 0.8, 1.15 ) * ( 0.88 + 0.16 * n1 ) * ( 0.9 + 0.2 * rdH( floor( wq ) ) * mid ) * ( 1.0 - 0.4 * rdJoint( wq, 0.06, fwp / 0.1 ) );
           o = mix( o, wcol, smoothstep( wb - fwE, wb + fwE, e ) * far ); }
         o = mix( o, kcol, kb * far ); }
-      else if ( hard > 0.5 ) {
+      else if ( hard > 0.5 && level < 0.5 ) {
         // open country: a shoulder of gravel and trodden grass beside the asphalt, wider along the bigger roads
         float sw = kind < 2.5 ? 1.1 : 0.7, sh = smoothstep( -sw, -0.08, eN ) * ( 1.0 - k );
         vec3 grit = mix( vec3( 0.2, 0.19, 0.155 ), vec3( 0.27, 0.255, 0.22 ), rdN( p * 3.1 ) ) * ( 0.8 + 0.4 * n2 ) * ( 1.0 + 0.5 * n3 );

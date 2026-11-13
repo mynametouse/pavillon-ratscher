@@ -121,6 +121,134 @@ test('raster: edge distance, lateral offset, the metres along, the widest edge w
   assert.ok(Math.abs(ph(47) - (37.5 - 36) / 36) < 0.02, 'wrapped ' + ph(47));
 });
 
+test('round 2: a level way is kind 9, a way without its centre line keeps off the axis, a town street without one pavement', () => {
+  for (let st = 0; st < 4; st++)
+    for (let sf = 0; sf < 6; sf++) {
+      const c = T.code(T.LEVEL, sf, st);
+      assert.ok(c < 256);
+      assert.deepEqual(T.decode(c), { style: st, kind: 9, surf: sf });
+    }
+  const m9 = T.marks(T.LEVEL, 3, T.TOWN, true);
+  assert.ok(!m9.centre && !m9.edge && !m9.kerb && m9.walk === 0, 'nothing on a level surface');
+  const W = 200,
+    H = 100,
+    D = new Uint8Array(W * H * 4);
+  T.clear(D);
+  // eastbound, 7 m wide, in a town, no centre line, no pavement on its left (the north)
+  T.raster(D, W, H, 0, 0, 1, {
+    p: [10, 50, 100, 50, 190, 50],
+    stride: 2,
+    n: 3,
+    hw: 3.5,
+    kind: 1,
+    surf: 0,
+    st: [T.TOWN, T.RURAL],
+    nc: true,
+    noL: true,
+    s0: 20,
+  });
+  for (const y of [47.5, 49.5, 50.5, 52.5]) {
+    const a = T.read(D, W, H, 0, 0, 1, 60.5, y);
+    assert.ok(a.lat >= T.NC - 0.05, 'the lateral offset keeps off the axis: ' + a.lat);
+    assert.ok(Math.abs(a.lat - Math.max(T.NC, Math.abs(y - 50))) < 0.1, 'and is the distance to it: ' + a.lat);
+  }
+  assert.equal(T.read(D, W, H, 0, 0, 1, 60.5, 52.5).style, T.VILLAGE, 'the left half as in a village');
+  assert.equal(T.read(D, W, H, 0, 0, 1, 60.5, 55.5).style, T.VILLAGE, 'and beside it');
+  assert.equal(T.read(D, W, H, 0, 0, 1, 60.5, 47.5).style, T.TOWN, 'the right half stays town');
+  assert.equal(T.read(D, W, H, 0, 0, 1, 150.5, 52.5).style, T.RURAL, 'open country is open country on both sides');
+  // the metres along start at s0
+  const ph = x => D[(50 * W + x) * 4 + 3] / 255;
+  assert.ok(Math.abs(ph(20) - (20 + 10.5) / 36) < 0.02, 'phase ' + ph(20));
+  // a street (kind 3) without the pavement on its right: that half is written as a through road of a village (kerb and gutter, no
+  // pavement), the other half stays a town street; no centre line can come of it (the offset keeps off the axis)
+  T.clear(D);
+  T.raster(D, W, H, 0, 0, 1, { p: [10, 50, 190, 50], stride: 2, n: 2, hw: 3, kind: 3, surf: 0, st: [T.TOWN], noR: true });
+  const r = T.read(D, W, H, 0, 0, 1, 60.5, 48.5),
+    l = T.read(D, W, H, 0, 0, 1, 60.5, 51.5);
+  assert.ok(r.kind === 2 && r.style === T.VILLAGE && r.lat >= T.NC - 0.05, JSON.stringify(r));
+  assert.ok(l.kind === 3 && l.style === T.TOWN && l.lat >= T.NC - 0.05, JSON.stringify(l));
+  assert.ok(T.marks(2, 3, T.VILLAGE, true).kerb && T.marks(2, 3, T.VILLAGE, true).walk === 0, 'kerb, no pavement');
+});
+
+test('round 2: an area lies in the map as a level surface with the distance to its edge; it covers the roads that cross it', () => {
+  const W = 120,
+    H = 100,
+    D = new Uint8Array(W * H * 4);
+  T.clear(D);
+  // a street from west to east through the middle, then a paved square 60 × 40 m with a hole of 10 × 10 m
+  T.raster(D, W, H, 0, 0, 1, { p: [0, 50, 120, 50], stride: 2, n: 2, hw: 3, kind: 3, surf: 0, st: [T.TOWN] });
+  T.rasterArea(D, W, H, 0, 0, 1, {
+    r: [30, 30, 0, 90, 30, 0, 90, 70, 0, 30, 70, 0],
+    stride: 3,
+    holes: [[70, 34, 0, 80, 34, 0, 80, 44, 0, 70, 44, 0]],
+    surf: 2,
+  });
+  const at = (x, y) => T.read(D, W, H, 0, 0, 1, x, y);
+  const a = at(40.5, 60.5);
+  assert.ok(a.kind === T.LEVEL && a.surf === 2 && a.style === 0, JSON.stringify(a));
+  assert.ok(a.e > 7.5, 'deep inside: the distance is clamped at +8');
+  assert.ok(Math.abs(at(32.5, 60.5).e - 2.5) < 0.1, 'near the west edge');
+  // the street inside the square is the square; outside it stays the street
+  const on = at(60.5, 50.5);
+  assert.ok(on.kind === T.LEVEL && on.surf === 2, 'the square covers the street ' + JSON.stringify(on));
+  const out = at(10.5, 50.5);
+  assert.ok(out.kind === 3 && out.style === T.TOWN && out.surf === 0, JSON.stringify(out));
+  // the hole: outside the area (negative towards its edge), beside the square likewise
+  const h = at(72.5, 39.5);
+  assert.ok(h.kind === T.LEVEL && Math.abs(h.e + 2.5) < 0.1, 'in the hole, near its edge ' + JSON.stringify(h));
+  assert.equal(at(75.5, 39.5), null, 'the middle of the hole is beyond the band of every edge');
+  const b = at(60.5, 27.5);
+  assert.ok(b.kind === T.LEVEL && Math.abs(b.e + 2.5) < 0.1, 'beside the square ' + JSON.stringify(b));
+  assert.equal(at(60.5, 10.5), null, 'far from everything');
+  // a second area inside the first: the one in which the pixel lies deeper wins
+  T.rasterArea(D, W, H, 0, 0, 1, { r: [34, 62, 44, 62, 44, 68, 34, 68], stride: 2, surf: 0 });
+  assert.equal(at(39.5, 65.5).surf, 2, 'the big square stays (deeper inside it)');
+});
+
+test('round 2: the picture of the sign faces grows; the cells of the faces that were there stay where they are', () => {
+  const made = [],
+    cvs = (w, h) => {
+      const g = { fillRect() {}, drawImage() {}, save() {}, restore() {}, translate() {} },
+        cv = { width: w, height: h, getContext: () => g };
+      made.push(cv);
+      return cv;
+    };
+  // (drawing a face needs a real canvas: a face that fails to draw is only logged)
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    const A = M.atlas([{ c: '274-50' }, { c: '205' }], cvs, 64);
+    assert.deepEqual(A.keys, ['back', '274-50', '205']);
+    assert.equal(A.H, 64);
+    assert.equal(A.HV, M.ROWS * 64);
+    const c0 = A.cell['274-50'].slice();
+    // the centre of the second cell of the first row, counted in the picture of ROWS rows
+    assert.ok(Math.abs(c0[0] - 96 / 512) < 1e-9 && Math.abs((1 - c0[1]) * A.HV - 32) < 1e-9, JSON.stringify(c0));
+    assert.equal(A.add([{ c: '274-50' }, { c: '205+215' }]), 1, 'one new face');
+    const more = [];
+    for (let i = 0; i < 20; i++) more.push({ c: 'km', t: String(i) });
+    assert.equal(A.add(more), 20);
+    assert.equal(A.keys.length, 24);
+    assert.equal(A.H, 256, 'three rows of 64 need 256 pixels');
+    assert.equal(A.grown, 2, 'the canvas was made anew once: 64 → 256');
+    assert.deepEqual(A.cell['274-50'], c0, 'a face that was there keeps its cell');
+    const k = A.cell['km|19'];
+    assert.ok(Math.abs((1 - k[1]) * A.HV - (2 * 64 + 32)) < 1e-9, 'row three');
+    // the texture's transform maps the meshes' v onto the rows that exist
+    const v = k[1] * (A.HV / A.H) + (1 - A.HV / A.H);
+    assert.ok(Math.abs((1 - v) * A.H - 160) < 1e-6, 'pixel row ' + (1 - v) * A.H);
+    // full: no more than ROWS × 8 faces
+    const lots = [];
+    for (let i = 0; i < 400; i++) lots.push({ c: 'km', t: 'x' + i });
+    A.add(lots);
+    assert.equal(A.keys.length, M.ROWS * 8);
+    assert.equal(A.H, A.HV);
+    assert.equal(A.add([{ c: 'km', t: 'one too many' }]), 0);
+  } finally {
+    console.warn = warn;
+  }
+});
+
 // ---- geometry ----
 const tris = raw => {
   const out = [];

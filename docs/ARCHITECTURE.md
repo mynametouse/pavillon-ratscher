@@ -304,6 +304,9 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   dieselbe Art Karte für ein Fenster um den Beobachter (`strassen/strassen_karte.js` → `ROADS.W`). Was an den Straßen steht
   (Leitpfosten, Schutzplanken, Schilder, Laternen, Strommasten): `strassen/strassen.js`, je Zelle nahe dem Beobachter, Daten
   `dist/strassen/ausstattung.json` aus `viz3/extra/strassen/daten.py`.
+  Runde 2 (13.11.2026): Straßendaten und Ausstattung kommen und gehen zur Laufzeit – `FAHRT.add(name, json, opts)` / `FAHRT.drop(name)`
+  (`welt/fahrt.js`: das Raster hält (Weg, Teilstück)-Paare, Flächen `areas` mit eigenem Raster, `KERN.surface` auch auf Plätzen und
+  Parkplätzen) und `STRDAT.add` / `STRDAT.drop`; in der Karte ist Art 9 eine niveaugleiche Fläche (Fußgängerzone, Platz, Parkplatz).
 - **Fahrzeuge** (`vehicles/vehicle.js`): ein Fahrzeug = `VEH.add(spec, model)`. `model`: `g` (Gruppe, Ursprung am Boden unter dem Schwerpunkt,
   x rechts, y vorn), `body` (federnder Teil), `wheels` (`{x, y, r, steer, drive, piv, node}`), `lamps` (`head/tail/brake/rev`: Materialien mit
   Emission), optional `update(v, dt)` (Spielzeit), `key(k, down)`, `save()/load(a)`, `beam` (Lichtquelle lokal). `spec`: Masse, Trägheit, Achsabstände `a/b`,
