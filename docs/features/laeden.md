@@ -134,6 +134,9 @@ Stützmauern (vor der Mauer das ebene Pad, auf der Abdeckung die obere Höhe).
 - Parkbuchten rechtwinklig; an der Westseite des Mega Centers parkt man in Wirklichkeit schräg (Luftbild).
 - Das Luftbild zeigt unter den neuen Parkplätzen nichts mehr (Asphalt darüber); außerhalb bleiben die flachen Autos des Fotos, bis die
   Kacheln mit `maske_dinge_utm.json` retuschiert sind (`welt-gebaeude`).
+- Die Stützmauern sind ein Behelf für das 30-m-Oberflächenmodell der Kacheln (Dach und Wald neben den großen Hallen, östlich des Mega
+  Centers bis 10 m über dem Fußboden): mit dem DGM1 (Gelände ohne Gebäude und Bäume) entfielen die meisten; die Böschung hinter einer
+  Mauer zeigt das Luftbild leicht gestreckt (1 : 2,5).
 
 ## Für den Lead
 
