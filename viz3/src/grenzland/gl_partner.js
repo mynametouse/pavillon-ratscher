@@ -202,10 +202,10 @@ body[data-gl-kino="1"] #glpartner,body[data-gl-kino="1"] #glpreden{display:none!
 #glpreden[hidden]{display:none!important}
 @media (max-height:620px){#glpartner{max-height:calc(100% - 290px)}}
 @media (max-width:600px){#glpartner{left:50%;right:auto;top:auto;bottom:calc(214px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:94vw;
-  max-height:calc(100% - 360px);padding:8px 10px 10px} #glpartner .gpt{display:none}
+  max-height:calc(100% - 360px);padding:8px 10px 10px} #glpartner:not(.ki) .gpt{display:none}
   #glpartner .gpc{display:grid;grid-template-columns:1fr 1fr;gap:0 6px} #glpartner .gpc button{font-size:13px;padding:8px 9px}}
 @media (orientation:landscape) and (max-height:500px){#glpartner{top:calc(52px + env(safe-area-inset-top,0px));width:min(300px,42vw);
-  max-height:calc(100% - 130px)} #glpartner .gpt{display:none}}
+  max-height:calc(100% - 130px)} #glpartner:not(.ki) .gpt{display:none}}
 `;
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   function build() {
@@ -290,6 +290,8 @@ body[data-gl-kino="1"] #glpartner,body[data-gl-kino="1"] #glpreden{display:none!
     const h = W.hallo(Math.floor(Math.random() * 3));
     S.gruss = h[0][1];
     S.ki = kiOn() && personen();
+    // (a phone shows a fixed line as the subtitle only; the AI's answer stands in the panel)
+    S.el.classList.toggle('ki', S.ki);
     sprich(h);
     // the free talk (with a key) or, without one, the hint to set it up – both go into this panel
     try {
