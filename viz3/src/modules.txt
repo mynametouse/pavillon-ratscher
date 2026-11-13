@@ -278,6 +278,7 @@ zukunft/zk_data.js          # feat/zukunft topics, variants, five indicators wit
 zukunft/zk_welt.js          # feat/zukunft PV on the 3D roofs, the field, heat pumps, bench and Rufbus, the flood ribbon, the forest's stages, dry ground (ZKWELT)
 zukunft/zk_modus.js         # feat/zukunft the mode: panel, year slider, A/B, presentation, saved state pav-zukunft-v1, discovery book entries (ZUKUNFT)
 # feat/zeitreise: „Zeitreise durch vier Welten“ below this line (chronicle data, the world's look and sound, the regie, the workshop mode)
+zukunft/zk_chronik.js       # feat/zeitreise the chronicle: worlds, chapters, events, STATE v1 by year, numbers with sources, voice lines – pure (ZKCHRONIK)
 zukunft/zk_zeitwelt.js      # feat/zeitreise-welt what the chronicle's states look and sound like: slopes, logging, heating house, wind turbine, heavy rain, blackout (ZKZEITWELT)
 zukunft/zk_workshop_mock.js # feat/workshop stand-ins for ZKCHRONIK and ZKREGIE until the real ones land (WSMOCK)
 zukunft/zk_workshop.js      # feat/workshop the Workshop mode: switch, Ebenen, start screen with the Szenario-Kreuz, overlays, clicker keys (WORKSHOP)
