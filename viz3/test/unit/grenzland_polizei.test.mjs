@@ -343,7 +343,7 @@ test('half an hour of trouble all over the square: no car leaves the road, none 
       },
       900,
       (t, p, evs) => {
-        maxUnits = Math.max(maxUnits, w.E.units.length);
+        maxUnits = Math.max(maxUnits, w.E.units.filter(u => u.st !== 'riegel' && u.st !== 'abzug').length);
         maxCops = Math.max(maxCops, w.E.cops.length);
         // (after an arrest, or when the level has gone: a new deed, seen by somebody)
         if (G.stars(w.W) === 0 && Math.floor(t * 20) % 400 === 0) w.deed(rnd() < 0.5 ? 'einbruch' : 'schlag', p.x, p.y, { police: rnd() < 0.5 });
@@ -354,7 +354,7 @@ test('half an hour of trouble all over the square: no car leaves the road, none 
     assert.ok(w.stats.maxOff < 3.8, 'seed ' + seed + ': no car left the road: ' + w.stats.maxOff.toFixed(2));
     const fest = w.log.filter(e => e[1] === 'fest');
     assert.ok(fest.length === 0, 'seed ' + seed + ': no car stood for ever: ' + JSON.stringify(fest.slice(0, 3)));
-    assert.ok(maxUnits <= 6, 'seed ' + seed + ': at most six vehicles on the hunt: ' + maxUnits);
+    assert.ok(maxUnits <= 5, 'seed ' + seed + ': at most five vehicles on the hunt: ' + maxUnits);
     assert.ok(maxCops <= 4, 'seed ' + seed + ': at most four officers on foot: ' + maxCops);
   }
 });
@@ -404,4 +404,92 @@ test('where there are no roads two officers come on foot from round a corner', (
   assert.equal(n, 2);
   assert.ok(d0 > 30 && d0 < 45, 'from some distance: ' + d0);
   assert.ok(end);
+});
+
+test('the helicopter: flies in after a while, circles over where he was last seen, sees in the open, not under trees or a roof', () => {
+  const H = G.heli(),
+    rnd = zufall(4),
+    P0 = { x: 100, y: -300, veh: false, hidden: false, cover: false };
+  const run = (secs, p, env, each) => {
+    const all = [];
+    for (let t = 0; t < secs; t += 0.05) {
+      for (const e of H.tick(0.05, p, Object.assign({ rnd, delay: 10 }, env))) all.push(e);
+      if (each) each();
+    }
+    return all;
+  };
+  assert.deepEqual(run(30, P0, { want: false, last: [100, -300] }), [], 'not below four stars');
+  assert.equal(H.on, false);
+  let ev = run(9, P0, { want: true, last: [100, -300] });
+  assert.equal(H.on, false, 'it takes a while to come');
+  ev = run(40, P0, { want: true, last: [100, -300] });
+  assert.ok(ev.includes('anflug') && ev.includes('da'), ev.join(' '));
+  assert.equal(H.st, 'kreist');
+  assert.ok(Math.abs(hyp(H.x - 100, H.y + 300) - H.r) < 12, 'on its circle over him');
+  assert.ok(H.h > 35 && H.h < 60);
+  assert.ok(ev.includes('sicht') && H.sieht, 'it sees him standing in the open');
+  // under the trees: lost; it keeps circling over where he was last seen
+  ev = run(20, Object.assign({}, P0, { cover: true }), { want: true, last: [100, -300] });
+  assert.ok(ev.includes('verloren') && !H.sieht);
+  ev = run(20, Object.assign({}, P0, { hidden: true }), { want: true, last: [100, -300] });
+  assert.ok(!H.sieht, 'nor under a roof');
+  // at night: only what the search light falls on – standing in the open near the middle it finds him, far off it does not
+  let found = 0;
+  run(60, P0, { want: true, last: [100, -300], dark: true }, () => {
+    if (H.sieht) found++;
+  });
+  assert.ok(found > 0, 'the light finds him');
+  assert.ok(hyp(H.lx - 100, H.ly + 300) < H.KEGEL + 1, 'and stays on him');
+  const far = { x: 100 + 75, y: -300, veh: false, hidden: false, cover: false };
+  H.sieht = false;
+  found = 0;
+  run(40, far, { want: true, last: [100, -300], dark: true }, () => {
+    if (H.sieht) found++;
+  });
+  assert.equal(found, 0, 'seventy-five metres from where they look, in the dark, he is not seen');
+  found = 0;
+  run(10, far, { want: true, last: [100, -300] }, () => {
+    if (H.sieht) found++;
+  });
+  assert.ok(found > 0, 'by day he is');
+  // it follows him while it sees him
+  const walk = { x: 175, y: -300, veh: false, hidden: false, cover: false };
+  run(30, walk, { want: true, last: [100, -300] }, () => {
+    walk.x += 4.75 * 0.05;
+  });
+  assert.ok(H.sieht && hyp(H.cx - walk.x, H.cy - walk.y) < 25, 'the circle moves with him');
+  // the level falls: it flies off and is gone
+  ev = run(40, walk, { want: false, last: null });
+  assert.ok(ev.includes('abflug') && ev.includes('weg'), ev.join(' '));
+  assert.equal(H.on, false);
+  assert.equal(H.sieht, false);
+});
+
+test('five stars: a van of the special forces stands across the road at every road end, two more hunt; they go when the level falls', () => {
+  const w = welt({ seed: 8 });
+  for (const id of ['einbruch', 'widerstand', 'sperre', 'einbruch']) w.deed(id, 222, -108, { police: true });
+  assert.equal(G.stars(w.W), 5);
+  w.E.wait = 1;
+  let vans = 0;
+  w.spiel(steht(60, -420, { cover: true }), 60, () => {
+    vans = Math.max(vans, w.E.units.filter(u => u.kind === 'sek' && u.st !== 'riegel' && u.st !== 'abzug').length);
+  });
+  const R = w.E.units.filter(u => u.st === 'riegel');
+  assert.equal(R.length, 5, 'one at every road end');
+  for (const u of R) {
+    assert.ok(w.N.abstand(u.x, u.y) < 2.6, 'on the road (on the lane that leads out)');
+    assert.ok(w.N.exits.some(x => hyp(x.x - u.x, x.y - u.y) < 60), 'near a road end');
+    const A = w.N.nah(u.x, u.y);
+    assert.ok(Math.abs(Math.sin(u.hd) * A.dx + Math.cos(u.hd) * A.dy) < 0.2, 'across it');
+  }
+  assert.ok(vans >= 1, 'vans hunt too: ' + vans);
+  assert.ok(w.E.units.filter(u => u.kind !== 'sek').length <= 3);
+  // hidden under the trees the level falls star by star; below five the vans at the road ends drive off
+  w.spiel(steht(60, -420, { cover: true }), 600, () => G.stars(w.W) < 5 && w.E.units.every(u => u.st !== 'riegel'));
+  assert.ok(G.stars(w.W) < 5);
+  assert.ok(w.E.units.every(u => u.st !== 'riegel'), 'the road ends are open again');
+  w.spiel(steht(60, -420, { cover: true }), 900, () => G.stars(w.W) === 0 && !w.E.units.length);
+  assert.equal(G.stars(w.W), 0, 'five stars are not hopeless: hidden long enough, he gets away');
+  assert.equal(w.E.units.length, 0);
+  assert.equal(w.stats.spawn, w.stats.remove);
 });

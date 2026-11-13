@@ -149,44 +149,35 @@ export const GLFAHNDUNG = (() => {
       return Wd ? Wd.frei(ax, ay, bx, by) : true;
     }
     if (!WCOL || !WCOL.ready) return true;
-    let free = true,
-      trunks = 0;
+    let free = true;
     const sx = bx - ax,
       sy = by - ay,
-      L2 = sx * sx + sy * sy || 1,
-      L = Math.sqrt(L2);
+      L = Math.hypot(sx, sy);
     try {
-      WCOL.each(
-        Math.min(ax, bx),
-        Math.min(ay, by),
-        Math.max(ax, bx),
-        Math.max(ay, by),
-        (s, A) => {
-          if (free && GLLOGIK.kreuzt(ax, ay, sx, sy, A[s * 4], A[s * 4 + 1], A[s * 4 + 2], A[s * 4 + 3])) free = false;
-        },
-        (t, A) => {
-          // a trunk right on the sight line (not the ones one stands beside)
-          const u = ((A[t * 3] - ax) * sx + (A[t * 3 + 1] - ay) * sy) / L2;
-          if (u * L < 3 || (1 - u) * L < 3) return;
-          if (Math.abs((A[t * 3] - ax) * sy - (A[t * 3 + 1] - ay) * sx) / L < 0.55 + A[t * 3 + 2]) trunks++;
-        }
-      );
+      WCOL.each(Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by), (s, A) => {
+        if (free && GLLOGIK.kreuzt(ax, ay, sx, sy, A[s * 4], A[s * 4 + 1], A[s * 4 + 2], A[s * 4 + 3])) free = false;
+      });
     } catch (e) {
       return true;
     }
-    return free && trunks < 5;
+    if (!free || L < 30) return free;
+    // through a wood: more than some twenty metres of it on the way (a row of trees along a road hides nobody)
+    let wald = 0;
+    for (let d = 8; d < L - 6; d += 8) if (imWald(ax + (sx * d) / L, ay + (sy * d) / L) && ++wald >= 3) return false;
+    return true;
   }
-  // under the trees of a forest (the helicopter does not see through the canopy, a patrol only from close by)
-  function unterBaeumen(x, y) {
-    if (!WCOL || !WCOL.ready || !inSquare(x, y)) return false;
+  // in a wood: trees standing close all round (four grown trunks within six metres; a row along a road or a garden has fewer)
+  function imWald(x, y) {
     let n = 0;
     try {
-      WCOL.each(x - 5, y - 5, x + 5, y + 5, null, (t, A) => {
+      WCOL.each(x - 6, y - 6, x + 6, y + 6, null, (t, A) => {
         if (A[t * 3 + 2] >= 0.19 && hyp(A[t * 3] - x, A[t * 3 + 1] - y) < 6) n++;
       });
     } catch (e) {}
-    return n >= 3;
+    return n >= 4;
   }
+  // under the trees of a forest (the helicopter does not see through the canopy, a patrol only from close by)
+  const unterBaeumen = (x, y) => !!WCOL && WCOL.ready && inSquare(x, y) && imWald(x, y);
   // indoors, or a place a mission names (the barn)
   function drinnen(x, y, z) {
     try {
@@ -666,6 +657,30 @@ export const GLFAHNDUNG = (() => {
     if (S.block === B) S.block = null;
     markDirty(true);
   }
+  // ---- a flash of blue on the walls at night: one of the game's shared point lights at the nearest beacon (no new lamp) ----
+  KERN.lights.borrow({
+    id: 'grenzland:blau',
+    n: 1,
+    prio: 4,
+    want: () => GL.on && !!S.blauU && dark(),
+    on: ls => {
+      const l = ls[0];
+      l.color.setHex(0x2a5cff);
+      l.distance = 24;
+      l.decay = 1.4;
+      l.intensity = 0;
+    },
+    tick: ls => {
+      const l = ls[0],
+        u = S.blauU;
+      if (!u || !u.c) {
+        l.intensity = 0;
+        return;
+      }
+      l.position.set(u.x, (u.c.z || 0) + 2.1, -u.y);
+      l.intensity = Math.floor((GLAUTO.blink || 0) * 5.5) % 2 ? 30 : 4;
+    },
+  });
   // ---- caught ----
   function erwischt() {
     const W = GL.W,
@@ -675,6 +690,7 @@ export const GLFAHNDUNG = (() => {
     clear(true);
   }
   function clearWorld() {
+    S.blauU = null;
     S.last = null;
     S.seen = S.close = false;
     S.wait = 0;
@@ -772,7 +788,7 @@ export const GLFAHNDUNG = (() => {
         // only the police mind – and only once per ride past them
         if (S.cars.some(u => u.st !== 'abzug' && hyp(u.x - q.x, u.y - q.y) < 30 && los(u.x, u.y, q.x, q.y))) {
           S.helmT = 90;
-          if (tat('helm', { force: [{ name: 'Die Streife', police: true }], quiet: true }) && n === 0)
+          if (tat('helm', { force: [{ name: 'Die Streife', police: true }], quiet: true, k: 0.6 }) && n === 0)
             PLAY.think(TX.helm, 3000);
         }
       }
@@ -803,12 +819,21 @@ export const GLFAHNDUNG = (() => {
       }
       erzaehlen(ev);
     }
-    // lights and horns
+    // lights and horns; the vans at the far road ends are only drawn from near; the nearest beacon (for its flash on the walls at night)
+    let nb = null,
+      nd = 70;
     for (const u of S.cars)
       if (u.c) {
+        const d = hyp(u.x - q.x, u.y - q.y);
         u.c.blau = !!u.blau;
         u.c.horn = !!u.horn;
+        if (u.st === 'riegel') u.c.g.visible = d < 450;
+        if (u.blau && u.c.g.visible && d < nd) {
+          nd = d;
+          nb = u;
+        }
       }
+    S.blauU = nb;
     GLAUTO.hornAlt = era89();
     S.seen = E.seen;
     S.close = E.close;
@@ -823,6 +848,7 @@ export const GLFAHNDUNG = (() => {
     bekannt: GL.W.known,
     state: GL.W.state,
     seen: S.seen,
+    voll: GLLOGIK.starsOf(GL.W.heat),
     hidden: S.hidden || S.cover,
     drinnen: S.hidden,
     wald: S.cover,

@@ -746,12 +746,68 @@ export const GLLOGIK = (() => {
     E.meiden = u => {
       let S = null;
       for (const v of E.units)
-        if (v !== u && v.net === u.net && (v.st === 'steht' || v.st === 'riegel') && v.net) {
+        if (v !== u && v.net === u.net && v.st === 'steht' && v.net) {
           const A = v.net.nah(v.x, v.y, 12);
           if (A) (S = S || new Set()).add(A.e);
         }
       return S;
     };
+    const unit = (kind, N, st, x, y) => ({
+      id: ++E.n,
+      kind,
+      K: KIND[kind],
+      net: N,
+      st,
+      t: 0,
+      line: null,
+      s: 0,
+      v: 0,
+      lat: 0,
+      x,
+      y,
+      hd: 0,
+      hd0: null,
+      ende: false,
+      routeT: 0,
+      lost: 99,
+      crew: 'drin',
+      ziel: null,
+      zielD: 0,
+      stuck: 0,
+      pause: 0,
+      from: -1,
+      blau: true,
+      horn: false,
+      k: 1.3,
+      sawT: 0,
+    });
+    // ---- five stars: a van of the special forces across the road at every road end (they stand, and they see) ----
+    function riegelOn(N) {
+      let n = 0;
+      for (const x of N.exits) {
+        const e = N.G.nodes[x.i].edges[0];
+        if (!e) continue;
+        // 45 m inside the road end, across the lane that leads out (the lane in stays free for the police's own cars)
+        const L = N.lenOf(e),
+          out = e.a === x.i ? -1 : 1,
+          q = N.punkt(e, out < 0 ? Math.min(45, L / 2) : Math.max(L - 45, L / 2)),
+          hx = out * q[2],
+          hy = out * q[3],
+          u = unit('sek', N, 'riegel', q[0] + hy * 2, q[1] - hx * 2);
+        u.from = x.i;
+        world.spawn(u);
+        world.park(u, u.x, u.y, Math.atan2(hx, hy) + Math.PI / 2);
+        u.hd0 = Math.atan2(hx, hy);
+        E.units.push(u);
+        n++;
+      }
+      E.riegel = N;
+      if (n) say('riegel', { n });
+    }
+    function riegelOff() {
+      for (const u of E.units.slice()) if (u.st === 'riegel') leave(u);
+      E.riegel = null;
+    }
     // ---- sending: from the road end that is quickest to where he was seen, not one he is standing at; the second from another side ----
     function send(kind, p) {
       const N = world.netz(E.last[0], E.last[1]);
@@ -771,35 +827,9 @@ export const GLLOGIK = (() => {
         }
       }
       if (!best) return null;
-      const u = {
-        id: ++E.n,
-        kind,
-        K: KIND[kind],
-        net: N,
-        st: 'anfahrt',
-        t: 0,
-        line: null,
-        s: 0,
-        v: 0,
-        lat: 0,
-        x: best.x,
-        y: best.y,
-        hd: 0,
-        hd0: null,
-        ende: false,
-        routeT: 0,
-        lost: 99,
-        crew: 'drin',
-        ziel: null,
-        zielD: 0,
-        stuck: 0,
-        pause: 0,
-        from: best.i,
-        blau: true,
-        horn: true,
-        k: 1.3,
-        sawT: 0,
-      };
+      const u = unit(kind, N, 'anfahrt', best.x, best.y);
+      u.from = best.i;
+      u.horn = true;
       world.spawn(u);
       if (!route(u, E.last, 1.3, { v: 14 })) {
         world.remove(u);
@@ -964,6 +994,7 @@ export const GLLOGIK = (() => {
       E.sawHide = false;
       E.seenT = 9;
       E.footT = 0;
+      E.riegel = null;
       E.ev.length = 0;
     }
     // ---- the road block ----
@@ -1044,7 +1075,7 @@ export const GLLOGIK = (() => {
         for (const v of E.units)
           if (v !== u && hyp(v.x - u.x, v.y - u.y) < 60) {
             const same = Math.cos(v.hd - u.hd) > 0.3;
-            if (same || v.st === 'steht' || v.st === 'riegel') hl.push({ x: v.x, y: v.y, r: 0.6, gap: 3.6 });
+            if (v.st !== 'riegel' && (same || v.st === 'steht')) hl.push({ x: v.x, y: v.y, r: 0.6, gap: 3.6 });
           }
         const drive = o => world.drive(u, dt, Object.assign({ halt: hl }, o));
         if (u.st === 'abzug') {
@@ -1322,7 +1353,7 @@ export const GLLOGIK = (() => {
         }
       }
       // ---- the rules: the search runs out only once somebody searches (a car that has arrived, officers) – or nobody could come ----
-      const there = E.units.some(u => u.st !== 'anfahrt') || E.cops.some(c => c.da) || !!E.block,
+      const there = E.units.some(u => u.st !== 'anfahrt' && u.st !== 'riegel') || E.cops.some(c => c.da),
         coming = E.units.length > 0 || E.wait > 0 || E.cops.length > 0;
       const ev = tick(W, dt, {
         seen,
@@ -1386,7 +1417,10 @@ export const GLLOGIK = (() => {
           E.blockT = 4;
           blockOn(p, env);
         }
+        // the road ends blocked
+        if (K.riegel && !E.riegel && N) riegelOn(N);
       }
+      if (E.riegel && !K.riegel) riegelOff();
       return ev;
     }
     Object.assign(E, {
@@ -1405,6 +1439,140 @@ export const GLLOGIK = (() => {
       KIND,
     });
     return E;
+  }
+  // ---- the helicopter of four stars: it flies in from far, circles over where he was last seen (over him while it sees him), sees
+  //      whoever is in the open – by day all round, at night what its search light falls on – and never through a roof or the canopy
+  //      of a forest; when the level falls it flies off ----
+  // H.tick(dt, p, env) → [events]: p as for the police ({ x, y, veh, hidden, cover }), env = { want, last: [x, y] | null, dark, delay, rnd }
+  //   H.on, H.st: 'weg' | 'anflug' | 'kreist' | 'abflug', H.x/y (over the ground), H.h (height), H.hd, H.sieht, H.lx/ly (where the light falls)
+  function heli() {
+    const H = {
+      on: false,
+      st: 'weg',
+      x: 0,
+      y: 0,
+      h: 0,
+      hd: 0,
+      a: 0,
+      cx: 0,
+      cy: 0,
+      r: 58,
+      sieht: false,
+      t: 0,
+      lx: 0,
+      ly: 0,
+      wartT: 0,
+      seeT: 0,
+    };
+    const V = 21, // m/s round the circle
+      VIN = 52, // m/s flying in and off
+      HOCH = 44, // m above the ground
+      TAG = 95, // how far it sees by day (m, over the ground)
+      KEGEL = 15; // the radius of the search light on the ground
+    H.KEGEL = KEGEL;
+    H.clear = () => {
+      H.on = false;
+      H.st = 'weg';
+      H.sieht = false;
+      H.wartT = 0;
+      H.seeT = 0;
+    };
+    H.tick = (dt, p, env) => {
+      const ev = [],
+        rnd = env.rnd || Math.random;
+      if (!H.on) {
+        H.sieht = false;
+        if (!env.want || !env.last) {
+          H.wartT = 0;
+          return ev;
+        }
+        if ((H.wartT += dt) < (env.delay ?? 10)) return ev;
+        const a = rnd() * 6.283;
+        H.on = true;
+        H.st = 'anflug';
+        H.t = 0;
+        H.wartT = 0;
+        H.cx = H.lx = env.last[0];
+        H.cy = H.ly = env.last[1];
+        H.x = H.cx + Math.sin(a) * 900;
+        H.y = H.cy + Math.cos(a) * 900;
+        H.h = HOCH + 40;
+        ev.push('anflug');
+      }
+      H.t += dt;
+      // the middle of its circle: over him while it sees him, else over where he was last seen
+      const tgt = H.st === 'abflug' ? null : H.sieht ? [p.x, p.y] : env.last;
+      if (tgt) {
+        const dx = tgt[0] - H.cx,
+          dy = tgt[1] - H.cy,
+          d = hyp(dx, dy),
+          s = Math.min(d, (H.st === 'anflug' ? 60 : 17) * dt);
+        if (d > 0.01) {
+          H.cx += (dx / d) * s;
+          H.cy += (dy / d) * s;
+        }
+      }
+      if (H.st === 'anflug') {
+        const dx = H.cx - H.x,
+          dy = H.cy - H.y,
+          d = hyp(dx, dy) || 1;
+        H.hd = Math.atan2(dx, dy);
+        H.h += (HOCH - H.h) * Math.min(1, dt * 0.25);
+        if (d <= H.r + 2) {
+          H.st = 'kreist';
+          H.a = Math.atan2(-dx, -dy);
+          ev.push('da');
+        } else {
+          const s = Math.min(d - H.r, VIN * dt);
+          H.x += (dx / d) * s;
+          H.y += (dy / d) * s;
+        }
+        if (!env.want) H.st = 'abflug';
+      } else if (H.st === 'kreist') {
+        H.a += (V / H.r) * dt;
+        H.x = H.cx + Math.sin(H.a) * H.r;
+        H.y = H.cy + Math.cos(H.a) * H.r;
+        H.hd = H.a + Math.PI / 2;
+        H.h += (HOCH - H.h) * Math.min(1, dt * 0.5);
+        if (!env.want) {
+          H.st = 'abflug';
+          H.t = 0;
+          ev.push('abflug');
+        }
+      } else if (H.st === 'abflug') {
+        H.x += Math.sin(H.hd) * VIN * dt;
+        H.y += Math.cos(H.hd) * VIN * dt;
+        H.h += 6 * dt;
+        if (env.want && env.last) H.st = 'anflug';
+        else if (H.t > 14 || hyp(H.x - p.x, H.y - p.y) > 800) {
+          H.clear();
+          ev.push('weg');
+          return ev;
+        }
+      }
+      // where the light falls: on him while it sees him, else it wanders round the middle of the circle
+      const lt = H.sieht ? [p.x, p.y] : [H.cx + Math.sin(H.t * 0.83) * 30, H.cy + Math.cos(H.t * 0.57) * 30],
+        ldx = lt[0] - H.lx,
+        ldy = lt[1] - H.ly,
+        ld = hyp(ldx, ldy),
+        ls = Math.min(ld, 26 * dt);
+      if (ld > 0.01) {
+        H.lx += (ldx / ld) * ls;
+        H.ly += (ldy / ld) * ls;
+      }
+      // what it sees
+      const was = H.sieht,
+        open = !p.hidden && !p.cover,
+        d = hyp(p.x - H.x, p.y - H.y);
+      H.sieht =
+        H.st === 'kreist' &&
+        open &&
+        (env.dark ? d < 140 && hyp(p.x - H.lx, p.y - H.ly) < KEGEL : d < TAG * (p.veh ? 1.25 : 1));
+      if (H.sieht && !was) ev.push('sicht');
+      if (!H.sieht && was) ev.push('verloren');
+      return ev;
+    };
+    return H;
   }
   return {
     CRIMES,
@@ -1434,6 +1602,7 @@ export const GLLOGIK = (() => {
     kreuzt,
     netz,
     einsatz,
+    heli,
     wrap,
   };
 })();
