@@ -50,11 +50,13 @@ Spezialkräfte; 1989 die Volkspolizei. Module: `viz3/src/grenzland/gl_logik.js` 
   die Beamten aus und kommen zu Fuß.
 - **Die Beamten** (zwei je Streife, höchstens vier zu Fuß zugleich, am Handy zwei – jede Figur kostet Speicher; die Figuren werden
   geladen, wenn die Streife losfährt, und bleiben bis zum Ende der Fahndung versteckt erhalten, damit das Aussteigen nicht ruckelt): steigen aus, wenn man zu Fuß näher
-  als 24 m ist, gehen hinterher (1–2 Sterne 2,15 m/s – wer geht, ist schneller; 3: 2,7; 4: 3,0; 5: 3,3 – dann muss man rennen),
+  als 24 m ist, gehen hinterher (1–2 Sterne 2,15 m/s – wer geht, ist schneller; 3: 3,0; 4: 3,3; 5: 3,6 – dann muss man rennen),
   rufen „Halt! Polizei!“. **Wer steht, wird erwischt** (ein Beamter 1,2 s auf Armlänge; auch auf dem stehenden Moped; ein Auto dicht
   hinter dem stehenden Moped). Außer Sicht gehen sie dorthin, wo man zuletzt gesehen wurde, 16 m weiter um die Ecke, schauen sich 4 s
   um, gehen zum Auto zurück und steigen ein; die Streife sucht weiter. Fährt man mit dem Moped davon, laufen sie zurück – das sind
-  ein paar Sekunden Vorsprung. Umstoßen (Taste G) ist Widerstand; sie stehen wieder auf.
+  ein paar Sekunden Vorsprung. Umstoßen (Taste G) ist Widerstand; sie stehen wieder auf. Solange ein Beamter einen sieht, ruft
+  sein Wagen ihn nicht zurück; einem, der geht, laufen sie den Weg ab (sie zielen dorthin, wo man gleich ist). Die haltende Streife
+  fährt an den Rand, so weit die Straße es zulässt – auf einer richtigen Straße kommen die anderen an ihr vorbei.
 - **Antwort nach Sternen** (`GLLOGIK.kraefte`): 1 – eine Streife (38 s Wartezeit); 2 – zwei (30 s); 3 – drei und eine **Sperre** (24 s);
   4 – dazu der **Hubschrauber** (20 s); 5 – dazu zwei Wagen der **Spezialkräfte**, die mitjagen, und je einer quer an jedem der fünf
   Straßenenden (16 s). Fällt die Fahndung, fährt heim, wer zu viel ist. Kein Auto verlässt die Straße; steht eines 20 s, obwohl es
@@ -88,9 +90,9 @@ Spezialkräfte; 1989 die Volkspolizei. Module: `viz3/src/grenzland/gl_logik.js` 
 |---|---|---|---|---|---|---|
 | 1 | 0,45 | 1 | – | 38 s | 2,15 m/s | 30 s / 18 s |
 | 2 | 1,5 | 2 | – | 30 s | 2,2 m/s | 38 s / 23 s |
-| 3 | 2,9 | 3 | Sperre | 24 s | 2,7 m/s | 46 s / 28 s |
-| 4 | 4,4 | 3 | Sperre, Hubschrauber | 20 s | 3,0 m/s | 54 s / 32 s |
-| 5 | 6,2 | 3 + 2 SEK | Sperre, Hubschrauber, 5 Straßenenden dicht | 16 s | 3,3 m/s | 62 s / 37 s |
+| 3 | 2,9 | 3 | Sperre | 24 s | 3,0 m/s | 46 s / 28 s |
+| 4 | 4,4 | 3 | Sperre, Hubschrauber | 20 s | 3,3 m/s | 54 s / 32 s |
+| 5 | 6,2 | 3 + 2 SEK | Sperre, Hubschrauber, 5 Straßenenden dicht | 16 s | 3,6 m/s | 62 s / 37 s |
 
 Die Zeit läuft erst, wenn jemand sucht (eine Streife ist angekommen oder Beamte sind da), im Versteck (drinnen, unter Bäumen, Scheune)
 1,8-mal so schnell – außer man ist vor ihren Augen hineingegangen. Von fünf Sternen bis null: 230 s außer Sicht, 128 s im Wald
@@ -121,7 +123,8 @@ suchen. In der Konsole: `GLFAHNDUNG.stand()`, `GLFAHNDUNG.tat('einbruch', { forc
 
 ## Offen
 
-- Der Verkehr (`VAUTO`) weicht den Streifen nicht aus und die Streifen bremsen nicht für ihn (sie fahren durch).
+- Der Verkehr (`VAUTO`) weicht den Streifen nicht aus; die Streifen reihen sich hinter fahrenden Autos derselben Richtung ein
+  (an stehenden fahren sie vorbei bzw. hindurch).
 - Zwischen Ratscher und Schleusingen (Landstraße außerhalb des Quadrats, `welt/fahrt.js`) kommt keine Streife.
 - Beamte gehen (auch mit 3,3 m/s im Gehschritt – die Figuren haben keinen Lauf); eine Anhaltekelle in der Hand, ein Beamter an der Sperre.
 - Fahrzeugdiebstahl (siehe oben).

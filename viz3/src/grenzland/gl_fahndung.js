@@ -375,6 +375,8 @@ export const GLFAHNDUNG = (() => {
     if (Z.length) {
       const full = GLLOGIK.starsOf(W.heat);
       E.melde(p.x, p.y, GLLOGIK.kraefte(full, GL.era).delay);
+      S.last = E.last;
+      S.wait = Math.max(0, E.wait);
       if (!o.quiet) PLAY.think(T.zeuge(Z[0].name, tatName(id)), 3600);
       if (GLLOGIK.stars(W) > before) {
         GLTON.fx('stern');
