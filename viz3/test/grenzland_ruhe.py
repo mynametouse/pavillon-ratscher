@@ -107,7 +107,9 @@ with lib.browser() as b:
     E("window.FREEZE = window._fz")
     # ---- a scene: bars, the panel out of the way ----
     E("GLHUD.kino(true); GLHUD.sub('Gerhard', 'Am nächsten Morgen war die Kiste weg.', 3000)")
-    time.sleep(0.8)
+    for _ in range(20):   # the bars slide in (a CSS transition: real time)
+        time.sleep(0.3)
+        if E("getComputedStyle(document.querySelector('#glbars i')).transform") in ('none', 'matrix(1, 0, 0, 1, 0, 0)'): break
     k = J("({ kino: document.body.dataset.glKino, bar: getComputedStyle(document.querySelector('#glbars i')).transform, hud: +getComputedStyle(document.getElementById('glhud')).opacity })")
     ck('a scene: black bars, the panel out of the way', k['kino'] == '1' and k['bar'] in ('none', 'matrix(1, 0, 0, 1, 0, 0)') and k['hud'] < 0.1, str(k))
     pic('05_szene')
@@ -117,7 +119,11 @@ with lib.browser() as b:
     E("window._st0 = GLFAHNDUNG.stand; GLFAHNDUNG.stand = () => Object.assign(window._st0() || {}, { cars: [{ x: KERN.where()[0] + 30, y: KERN.where()[1], gesehen: false }, "
       "{ x: KERN.where()[0] - 30, y: KERN.where()[1], gesehen: true }], wissen: { gesicht: true, kleidung: false, fahrzeug: true } })")
     E("GLFAHNDUNG.tat('einbruch', { force: [{ name: 'Testzeuge', knows: false }] })")
+    E("GRENZLAND.zielT = 0")   # the radar's marks are refreshed every half second of real time: now
     steps(1.2)
+    print('radar diag', J("({ zielT: GRENZLAND.zielT, pol: GRENZLAND.pol ? Object.keys(GRENZLAND.pol) : null, w: GRENZLAND.pol && GRENZLAND.pol.wissen, "
+      "cars: GRENZLAND.pol && GRENZLAND.pol.cars, hud: GLHUD.pol && GLHUD.pol.wissen, st: String(GLFAHNDUNG.stand).slice(0, 60), "
+      "blips: GLKARTE.blips().map(b => b.k), mode: GAME.P.mode, stars: GLLOGIK.stars(GLSTATE.W) })"))
     p = J("({ pol: GLKARTE.blips().filter(b => b.k === 'polizei').length, wis: !document.getElementById('glwissen').hidden, "
           "an: [...document.querySelectorAll('#glwissen i.an')].map(i => i.dataset.w) })")
     ck('the radar shows only the patrol that sees you', p['pol'] == 1, str(p))
@@ -161,6 +167,11 @@ with lib.browser() as b:
             for _ in range(8):
                 steps(0.3); time.sleep(0.4)
         pic(f'08_angel_{yaw}')
+        if yaw == 180:   # what stands in the water there? (the review saw a house in the reservoir)
+            print('angel 180 hits', J("""(() => { const T = window.THREE, rc = new T.Raycaster(), out = [];
+              for (const [u, v] of [[0, 0.1], [0.12, 0.15], [-0.1, 0.12], [0.05, 0.3]]) { rc.setFromCamera(new T.Vector2(u, v), GAME.cam); const h = rc.intersectObjects(GAME.scene ? GAME.scene.children : [], true)[0];
+                if (!h) { out.push(null); continue; } const chain = []; let o = h.object; while (o && chain.length < 6) { chain.push((o.name || o.type) + (o.userData && Object.keys(o.userData).length ? '{' + Object.keys(o.userData).slice(0, 4).join(',') + '}' : '')); o = o.parent; }
+                out.push({ d: Math.round(h.distance), x: Math.round(h.point.x), y: Math.round(-h.point.z), z: Math.round(h.point.y), chain }); } return out; })()"""))
     # ---- Hasso stays at home and comes back at the end ----
     hund = E("!!(window.HUND && HUND.show)")
     if hund:
