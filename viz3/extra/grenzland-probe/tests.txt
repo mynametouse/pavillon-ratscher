@@ -1,0 +1,13 @@
+grenzland
+grenzland_auto
+grenzland_radio
+grenzland_1989
+grenzland_neben
+grenzland_polizei:roads,witness,patrol,escape
+grenzland_polizei:moped,block,night,1989,heli
+grenzland_polizei:sek,stadt
+grenzland_mission:m1
+grenzland_mission:m2
+grenzland_mission:m5
+grenzland_mission:lager,reload
+# (m3 and m4 were green on 880712f2; the full list comes back with the next round)
