@@ -1,5 +1,5 @@
 {
- "set": "site/suhl/boden/v1",
+ "set": "site/suhl/boden/v2",
  "checks": {
   "lists: every listed tile has terrain and image": {
    "ok": true,
@@ -34,8 +34,8 @@
    "info": "(619762.0, 5607680.0)"
   },
   "edges: neighbouring terrain tiles agree": {
-   "ok": true,
-   "info": "11930 pairs, worst 0 cm"
+   "ok": false,
+   "info": "11930 pairs, worst 1 cm, 3 differ: ['10/511/545|E 1 cm', '10/488/551|N 1 cm', '10/510/559|N 1 cm']"
   },
   "centre: ground height plausible": {
    "ok": true,
@@ -51,7 +51,7 @@
   },
   "sizes: terrain bytes per tile in range": {
    "ok": true,
-   "info": "6: 14734, 7: 12490, 8: 10084, 9: 8237, 10: 7322, 11: 6672, 12: 5923"
+   "info": "6: 14735, 7: 12488, 8: 10083, 9: 8249, 10: 7348, 11: 6718, 12: 5990"
   },
   "sizes: image bytes per tile in range": {
    "ok": true,
@@ -66,7 +66,9 @@
    "info": ""
   }
  },
- "fails": [],
+ "fails": [
+  "edges: neighbouring terrain tiles agree"
+ ],
  "counts": {
   "6": 23,
   "7": 40,
@@ -78,8 +80,8 @@
  },
  "edges": {
   "pairs": 11930,
-  "worst_cm": 0,
-  "differ": 0
+  "worst_cm": 1,
+  "differ": 3
  },
  "level_to_parent": {
   "7": {
@@ -89,8 +91,8 @@
   },
   "8": {
    "median_m": 0.31,
-   "p95_m": 1.52,
-   "max_m": 8.46
+   "p95_m": 1.51,
+   "max_m": 8.43
   },
   "9": {
    "median_m": 0.11,
@@ -99,12 +101,12 @@
   },
   "10": {
    "median_m": 0.05,
-   "p95_m": 0.33,
+   "p95_m": 0.34,
    "max_m": 6.56
   },
   "11": {
-   "median_m": 0.03,
-   "p95_m": 0.23,
+   "median_m": 0.04,
+   "p95_m": 0.24,
    "max_m": 4.15
   },
   "12": {
@@ -121,63 +123,63 @@
  "sizes": {
   "6": {
    "n": 23,
-   "terrain_bytes": 338871,
+   "terrain_bytes": 338897,
    "image_bytes": 1579874,
-   "terrain_mean": 14734,
+   "terrain_mean": 14735,
    "image_mean": 68690,
    "image_min": 48736,
    "image_max": 78512
   },
   "7": {
    "n": 40,
-   "terrain_bytes": 499597,
+   "terrain_bytes": 499535,
    "image_bytes": 2865320,
-   "terrain_mean": 12490,
+   "terrain_mean": 12488,
    "image_mean": 71633,
    "image_min": 45760,
    "image_max": 89198
   },
   "8": {
    "n": 116,
-   "terrain_bytes": 1169743,
+   "terrain_bytes": 1169679,
    "image_bytes": 8229284,
-   "terrain_mean": 10084,
+   "terrain_mean": 10083,
    "image_mean": 70942,
    "image_min": 34300,
    "image_max": 94908
   },
   "9": {
    "n": 364,
-   "terrain_bytes": 2998265,
+   "terrain_bytes": 3002592,
    "image_bytes": 23876320,
-   "terrain_mean": 8237,
+   "terrain_mean": 8249,
    "image_mean": 65594,
    "image_min": 24120,
    "image_max": 91708
   },
   "10": {
    "n": 1102,
-   "terrain_bytes": 8069203,
+   "terrain_bytes": 8097640,
    "image_bytes": 60891872,
-   "terrain_mean": 7322,
+   "terrain_mean": 7348,
    "image_mean": 55256,
    "image_min": 11124,
    "image_max": 85594
   },
   "11": {
    "n": 1820,
-   "terrain_bytes": 12142418,
+   "terrain_bytes": 12227559,
    "image_bytes": 73578538,
-   "terrain_mean": 6672,
+   "terrain_mean": 6718,
    "image_mean": 40428,
    "image_min": 14330,
    "image_max": 63550
   },
   "12": {
    "n": 2884,
-   "terrain_bytes": 17082515,
+   "terrain_bytes": 17275954,
    "image_bytes": 76830148,
-   "terrain_mean": 5923,
+   "terrain_mean": 5990,
    "image_mean": 26640,
    "image_min": 8200,
    "image_max": 41696
@@ -185,7 +187,7 @@
  },
  "total": {
   "tiles": 6349,
-  "terrain_mb": 42.3,
+  "terrain_mb": 42.61,
   "image_mb": 247.85
  }
 }

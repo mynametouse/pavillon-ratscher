@@ -1,65 +1,65 @@
 {
- "made": "2026-11-13T01:59:47Z",
+ "made": "2026-11-13T03:04:24Z",
  "mode": "stadt",
  "run": {
-  "id": "43347038164",
+  "id": "43355525248",
   "attempt": "1",
-  "sha": "8d5bffbc563f79a8e489d1c38d27273801f514fc",
+  "sha": "bc443cb2e90ca6570db510d1c70225d1e73d551f",
   "ref": "suhl/boden",
-  "url": "https://github.com/mynametouse/pavillon-ratscher/actions/runs/43347038164"
+  "url": "https://github.com/mynametouse/pavillon-ratscher/actions/runs/43355525248"
  },
- "ok": true,
- "version": "v1",
+ "ok": false,
+ "version": "v2",
  "levels": {
   "6": {
    "tile_m": 6400.0,
    "n": 23,
-   "terrain_bytes": 338871,
+   "terrain_bytes": 338897,
    "image_bytes": 1579874
   },
   "7": {
    "tile_m": 3200.0,
    "n": 40,
-   "terrain_bytes": 499597,
+   "terrain_bytes": 499535,
    "image_bytes": 2865320
   },
   "8": {
    "tile_m": 1600.0,
    "n": 116,
-   "terrain_bytes": 1169743,
+   "terrain_bytes": 1169679,
    "image_bytes": 8229284
   },
   "9": {
    "tile_m": 800.0,
    "n": 364,
-   "terrain_bytes": 2998265,
+   "terrain_bytes": 3002592,
    "image_bytes": 23876320
   },
   "10": {
    "tile_m": 400.0,
    "n": 1102,
-   "terrain_bytes": 8069203,
+   "terrain_bytes": 8097640,
    "image_bytes": 60891872
   },
   "11": {
    "tile_m": 200.0,
    "n": 1820,
-   "terrain_bytes": 12142418,
+   "terrain_bytes": 12227559,
    "image_bytes": 73578538
   },
   "12": {
    "tile_m": 100.0,
    "n": 2884,
-   "terrain_bytes": 17082515,
+   "terrain_bytes": 17275954,
    "image_bytes": 76830148
   }
  },
  "total": {
   "tiles": 6349,
   "files": 12698,
-  "terrain_mb": 42.3,
+  "terrain_mb": 42.61,
   "image_mb": 247.85,
-  "mb": 290.15
+  "mb": 290.46
  },
  "sources": {
   "terrain_source": "dgm1+cop30",
@@ -312,12 +312,12 @@
    "blend_m": 300.0,
    "coarse_cell_m": 8.0,
    "blocks": 42,
-   "seconds": 93.2
+   "seconds": 260.6
   },
   "imagery_method": {
    "quality": 74,
-   "requests": 16,
-   "seconds": 277.0,
+   "requests": 0,
+   "seconds": 0.3,
    "key": "th_dop-f2024-05-15-p2025-02-garten-2024-04-07-q74",
    "store": true,
    "note": "jede Stufe in ihrer eigenen Auflösung vom Dienst geholt"
@@ -364,14 +364,432 @@
     "2024-05-15",
     "2025-05-12"
    ],
-   "cells_used_by_day": {
-    "2024-04-07": 68,
-    "2024-05-15": 2768,
-    "None": 486
-   },
-   "cells_day_from_nearest": 763
+   "cells_used_by_day": {},
+   "cells_day_from_nearest": 0,
+   "set": {
+    "cells": 1018,
+    "by_day": {
+     "2024-04-07": 28,
+     "2024-05-15": 602,
+     "None": 388
+    },
+    "day_from_nearest_cell": 326,
+    "without_day": 388,
+    "note": "1-km-Zellen unter den Bildkacheln des Satzes; day_from_nearest_cell = Zellen außerhalb der abgefragten Flugtage (flugtage.json), die den Tag der nächsten bekannten Zelle bekommen (höchstens 6 km); without_day = bleiben wie geflogen"
+   }
   },
-  "roads": null
+  "roads": {
+   "files": [
+    {
+     "file": "tools/suhl/out/strassen/stadt/fahrt/suhl.json.gz",
+     "sha1": "fcfb3bccf6c4",
+     "made": "2026-11-13",
+     "ways": 9928,
+     "solved_on": "ungeschnittene Geländekacheln von suhl-boden (DGM1 Thüringen (1 m) unter 95 % der Kacheln des Laufs, sonst Copernicus GLO-30; Stand 2026-11-13T01:54:30Z, suhl-boden Lauf 43347038164, Artefakt suhl-boden-roh; 9104258 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 774142 Stützwerte – nur am Rand außerhalb der Kacheln)"
+    },
+    {
+     "file": "tools/suhl/out/strassen/stadt/fahrt/suhl-anfahrt-grund.json.gz",
+     "sha1": "88133754acf0",
+     "made": "2026-11-13",
+     "ways": 200,
+     "solved_on": "ungeschnittene Geländekacheln von suhl-boden (DGM1 Thüringen (1 m) unter 95 % der Kacheln des Laufs, sonst Copernicus GLO-30; Stand 2026-11-13T01:54:30Z, suhl-boden Lauf 43347038164, Artefakt suhl-boden-roh; 9104258 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 774142 Stützwerte – nur am Rand außerhalb der Kacheln)"
+    }
+   ],
+   "ways_cut": 9734,
+   "bridges_kept": 209,
+   "tunnels_skipped": 55,
+   "fit_before_cut": {
+    "nodes": 996911,
+    "mean_m": 0.02,
+    "median_abs_m": 0.2,
+    "p95_abs_m": 0.7,
+    "note": "Straßenhöhe minus Gelände an den Achspunkten vor dem Einschnitt (ohne Brücken und Tunnel); Meter statt Dezimeter heißt: die Profile sind auf einem anderen Gelände gerechnet"
+   },
+   "skipped_by_flag": 394,
+   "skip_bits": 63616,
+   "blocks": 33,
+   "changed_m2": 15212809,
+   "clamped": {
+    "limit_m": 2.5,
+    "spots": 201,
+    "length_m": 2836.6,
+    "worst": [
+     {
+      "id": 4779435,
+      "name": "",
+      "kind": "motorway",
+      "E": 616307.9,
+      "N": 5606481.7,
+      "dz_m": 9.98,
+      "len_m": 14.2
+     },
+     {
+      "id": 211131931,
+      "name": "",
+      "kind": "motorway",
+      "E": 616318.6,
+      "N": 5606483.5,
+      "dz_m": 9.62,
+      "len_m": 14.2
+     },
+     {
+      "id": 66017786,
+      "name": "Am Kornberg",
+      "kind": "track",
+      "E": 620096.7,
+      "N": 5609230.2,
+      "dz_m": -8.6,
+      "len_m": 22.3
+     },
+     {
+      "id": 601813059,
+      "name": "",
+      "kind": "path",
+      "E": 623642.8,
+      "N": 5616218.1,
+      "dz_m": -6.78,
+      "len_m": 17.8
+     },
+     {
+      "id": 69932344,
+      "name": "",
+      "kind": "track",
+      "E": 610988.6,
+      "N": 5608179.6,
+      "dz_m": -6.55,
+      "len_m": 5.8
+     },
+     {
+      "id": 214425454,
+      "name": "",
+      "kind": "path",
+      "E": 619931.3,
+      "N": 5609891.3,
+      "dz_m": 6.32,
+      "len_m": 14.9
+     },
+     {
+      "id": 4779377,
+      "name": "",
+      "kind": "motorway",
+      "E": 623003.2,
+      "N": 5600915.7,
+      "dz_m": 6.18,
+      "len_m": 12.1
+     },
+     {
+      "id": 202634007,
+      "name": "",
+      "kind": "track",
+      "E": 625465.5,
+      "N": 5616072.3,
+      "dz_m": -6.17,
+      "len_m": 18.1
+     },
+     {
+      "id": 1359641174,
+      "name": "",
+      "kind": "foot",
+      "E": 618845.4,
+      "N": 5606929.9,
+      "dz_m": 5.97,
+      "len_m": 22.2
+     },
+     {
+      "id": 4779445,
+      "name": "",
+      "kind": "motorway",
+      "E": 623012.9,
+      "N": 5600920.6,
+      "dz_m": 5.9,
+      "len_m": 12.2
+     },
+     {
+      "id": 1392733394,
+      "name": "",
+      "kind": "foot",
+      "E": 618864.4,
+      "N": 5606933.3,
+      "dz_m": 5.75,
+      "len_m": 17.2
+     },
+     {
+      "id": 24929244,
+      "name": "Linsenhofer Straße",
+      "kind": "lane",
+      "E": 617221.5,
+      "N": 5608367.7,
+      "dz_m": -5.44,
+      "len_m": 23.3
+     },
+     {
+      "id": 601813061,
+      "name": "",
+      "kind": "path",
+      "E": 623618.1,
+      "N": 5616227.1,
+      "dz_m": 5.37,
+      "len_m": 13.7
+     },
+     {
+      "id": 25377868,
+      "name": "",
+      "kind": "track",
+      "E": 624635.3,
+      "N": 5616377.8,
+      "dz_m": 5.23,
+      "len_m": 22.3
+     },
+     {
+      "id": 222747462,
+      "name": "",
+      "kind": "track",
+      "E": 624521.1,
+      "N": 5609502.6,
+      "dz_m": 5.16,
+      "len_m": 18.3
+     },
+     {
+      "id": 132999007,
+      "name": "",
+      "kind": "track",
+      "E": 619929.1,
+      "N": 5609787.1,
+      "dz_m": -5.08,
+      "len_m": 11.5
+     },
+     {
+      "id": 202634010,
+      "name": "",
+      "kind": "track",
+      "E": 625258.8,
+      "N": 5616112.4,
+      "dz_m": 5.02,
+      "len_m": 40.5
+     },
+     {
+      "id": 25377868,
+      "name": "",
+      "kind": "track",
+      "E": 624370.2,
+      "N": 5616651.6,
+      "dz_m": 4.94,
+      "len_m": 38.5
+     },
+     {
+      "id": 112889599,
+      "name": "",
+      "kind": "path",
+      "E": 626062.6,
+      "N": 5613516.6,
+      "dz_m": -4.76,
+      "len_m": 14.5
+     },
+     {
+      "id": 130676317,
+      "name": "",
+      "kind": "motorway",
+      "E": 616096.6,
+      "N": 5607600.4,
+      "dz_m": 4.57,
+      "len_m": 10.0
+     },
+     {
+      "id": 27600361,
+      "name": "",
+      "kind": "motorway",
+      "E": 619552.4,
+      "N": 5611616.9,
+      "dz_m": 4.57,
+      "len_m": 18.8
+     },
+     {
+      "id": 37688261,
+      "name": "",
+      "kind": "track",
+      "E": 624997.2,
+      "N": 5609801.7,
+      "dz_m": -4.53,
+      "len_m": 30.5
+     },
+     {
+      "id": 37369889,
+      "name": "",
+      "kind": "track",
+      "E": 622153.8,
+      "N": 5613198.3,
+      "dz_m": -4.5,
+      "len_m": 30.5
+     },
+     {
+      "id": 123940988,
+      "name": "",
+      "kind": "track",
+      "E": 622153.8,
+      "N": 5613198.3,
+      "dz_m": -4.5,
+      "len_m": 6.1
+     },
+     {
+      "id": 225916126,
+      "name": "Langrod",
+      "kind": "street",
+      "E": 623047.0,
+      "N": 5603140.8,
+      "dz_m": -4.5,
+      "len_m": 6.5
+     },
+     {
+      "id": 47630584,
+      "name": "",
+      "kind": "track",
+      "E": 624387.6,
+      "N": 5612341.3,
+      "dz_m": 4.38,
+      "len_m": 28.4
+     },
+     {
+      "id": 23855216,
+      "name": "",
+      "kind": "motorway",
+      "E": 619542.7,
+      "N": 5611623.6,
+      "dz_m": 4.37,
+      "len_m": 24.4
+     },
+     {
+      "id": 79073427,
+      "name": "",
+      "kind": "track",
+      "E": 611855.3,
+      "N": 5608310.5,
+      "dz_m": 4.35,
+      "len_m": 12.2
+     },
+     {
+      "id": 8874942,
+      "name": "",
+      "kind": "motorway",
+      "E": 616095.6,
+      "N": 5607588.9,
+      "dz_m": 4.33,
+      "len_m": 7.8
+     },
+     {
+      "id": 23854562,
+      "name": "",
+      "kind": "motorway",
+      "E": 616441.8,
+      "N": 5607599.0,
+      "dz_m": 4.33,
+      "len_m": 8.1
+     },
+     {
+      "id": 4779384,
+      "name": "",
+      "kind": "motorway",
+      "E": 622651.7,
+      "N": 5601654.4,
+      "dz_m": 4.33,
+      "len_m": 8.1
+     },
+     {
+      "id": 37014456,
+      "name": "Langes Tal",
+      "kind": "street",
+      "E": 615165.1,
+      "N": 5607003.6,
+      "dz_m": -4.3,
+      "len_m": 12.2
+     },
+     {
+      "id": 37686892,
+      "name": "",
+      "kind": "track",
+      "E": 624831.0,
+      "N": 5611526.5,
+      "dz_m": -4.22,
+      "len_m": 26.3
+     },
+     {
+      "id": 135424867,
+      "name": "",
+      "kind": "track",
+      "E": 626024.6,
+      "N": 5608656.2,
+      "dz_m": 4.22,
+      "len_m": 22.5
+     },
+     {
+      "id": 25151076,
+      "name": "",
+      "kind": "foot",
+      "E": 617252.2,
+      "N": 5606986.8,
+      "dz_m": -4.21,
+      "len_m": 5.7
+     },
+     {
+      "id": 37369889,
+      "name": "",
+      "kind": "track",
+      "E": 622312.7,
+      "N": 5613163.4,
+      "dz_m": -4.17,
+      "len_m": 31.7
+     },
+     {
+      "id": 1359641164,
+      "name": "",
+      "kind": "foot",
+      "E": 618586.6,
+      "N": 5606778.3,
+      "dz_m": 4.1,
+      "len_m": 34.0
+     },
+     {
+      "id": 4779423,
+      "name": "",
+      "kind": "motorway",
+      "E": 622663.5,
+      "N": 5601658.2,
+      "dz_m": 4.02,
+      "len_m": 8.1
+     },
+     {
+      "id": 23854560,
+      "name": "",
+      "kind": "motorway",
+      "E": 616405.7,
+      "N": 5607603.0,
+      "dz_m": 4.01,
+      "len_m": 8.1
+     },
+     {
+      "id": 1356939581,
+      "name": "",
+      "kind": "path",
+      "E": 617458.9,
+      "N": 5606443.9,
+      "dz_m": -3.99,
+      "len_m": 18.2
+     }
+    ],
+    "note": "Wegstücke auf echtem 1-m-Gelände, deren Profil weiter als limit_m vom Gelände liegt (neben Brücken, an Mauern): nicht eingeschnitten; dz_m = Profil minus Gelände am schlimmsten Punkt"
+   },
+   "mean_change_m": 0.353,
+   "max_fill_m": 3.5,
+   "max_cut_m": 3.17,
+   "on_dgm1": {
+    "changed_m2": 15168224,
+    "mean_change_m": 0.352,
+    "max_fill_m": 2.5,
+    "max_cut_m": 2.5,
+    "kept_as_dgm1_m2": 171298,
+    "note": "auf echtem 1-m-Gelände bewegt der Einschnitt den Boden nie um mehr als 2.5 m; wo er es täte (Stützmauern, Brückenwiderlager), bleibt das DGM1 (kept_as_dgm1_m2)"
+   },
+   "method": "tools/welt/roads.py carve: Fahrbahn mit Querneigung, Bankett, Böschungen 1 : 1,5; Breite mit Bord und Gehwegen (profil.load town=True); Brücken behalten ihren Korridor, Tunnel bleiben draußen"
+  }
  },
  "plan": {
   "mode": "stadt",
@@ -432,18 +850,20 @@
  "cut": null,
  "build": {
   "files": 12700,
-  "bytes": 290236492,
-  "seconds": 394
+  "bytes": 290554087,
+  "seconds": 264
  },
- "seconds_all_steps": 937,
+ "seconds_all_steps": 321,
  "checks": {
-  "ok": true,
-  "fails": [],
+  "ok": false,
+  "fails": [
+   "edges: neighbouring terrain tiles agree"
+  ],
   "n": 16,
   "edges": {
    "pairs": 11930,
-   "worst_cm": 0,
-   "differ": 0
+   "worst_cm": 1,
+   "differ": 3
   },
   "heights_nhn": {
    "centre": 436.5,
@@ -458,8 +878,8 @@
    },
    "8": {
     "median_m": 0.31,
-    "p95_m": 1.52,
-    "max_m": 8.46
+    "p95_m": 1.51,
+    "max_m": 8.43
    },
    "9": {
     "median_m": 0.11,
@@ -468,12 +888,12 @@
    },
    "10": {
     "median_m": 0.05,
-    "p95_m": 0.33,
+    "p95_m": 0.34,
     "max_m": 6.56
    },
    "11": {
-    "median_m": 0.03,
-    "p95_m": 0.23,
+    "median_m": 0.04,
+    "p95_m": 0.24,
     "max_m": 4.15
    },
    "12": {
