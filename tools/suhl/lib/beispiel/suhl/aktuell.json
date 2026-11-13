@@ -1,0 +1,67 @@
+{
+ "v": 1,
+ "made": "2026-11-13T00:30:00Z",
+ "base": "https://mynametouse.github.io/pavillon-daten/suhl/",
+ "products": {
+  "_probe": {
+   "version": 0,
+   "schema": 1,
+   "path": "_probe/v0/",
+   "index": "_probe/v0/index.json",
+   "made": "2026-11-13T00:30:00Z",
+   "area": "probe",
+   "tiles": 1,
+   "bytes": 103
+  },
+  "b": {
+   "version": 0,
+   "schema": 1,
+   "path": "b/v0/",
+   "index": "b/v0/index.json",
+   "made": "2026-11-13T00:30:00Z",
+   "area": "probe",
+   "tiles": 1,
+   "bytes": 24
+  },
+  "d": {
+   "version": 0,
+   "schema": 1,
+   "path": "d/v0/",
+   "index": "d/v0/index.json",
+   "made": "2026-11-13T00:30:00Z",
+   "area": "probe",
+   "tiles": 1,
+   "bytes": 166
+  },
+  "g": {
+   "version": 0,
+   "schema": 1,
+   "path": "g/v0/",
+   "index": "g/v0/index.json",
+   "made": "2026-11-13T00:30:00Z",
+   "area": "probe",
+   "tiles": 2,
+   "bytes": 3009
+  },
+  "m": {
+   "version": 0,
+   "schema": 1,
+   "path": "m/v0/",
+   "index": "m/v0/index.json",
+   "made": "2026-11-13T00:30:00Z",
+   "area": "probe",
+   "tiles": 1,
+   "bytes": 227
+  },
+  "s": {
+   "version": 0,
+   "schema": 1,
+   "path": "s/v0/",
+   "index": "s/v0/index.json",
+   "made": "2026-11-13T00:30:00Z",
+   "area": "probe",
+   "tiles": 1,
+   "bytes": 533
+  }
+ }
+}
