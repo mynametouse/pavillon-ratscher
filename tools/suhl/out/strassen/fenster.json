@@ -1,0 +1,188 @@
+{
+ "made": "2026-11-13T00:30:00Z",
+ "osm": "OSM API 0.6 map calls (2 boxes, cached by stage 1)",
+ "osm_stamp": "2026-11-12T23:07:09Z",
+ "zentrum_km2": 0.682,
+ "tiles_level10": [
+  [
+   495,
+   540
+  ],
+  [
+   495,
+   541
+  ],
+  [
+   496,
+   540
+  ],
+  [
+   496,
+   541
+  ],
+  [
+   496,
+   542
+  ],
+  [
+   496,
+   543
+  ],
+  [
+   497,
+   541
+  ],
+  [
+   497,
+   542
+  ],
+  [
+   497,
+   543
+  ],
+  [
+   498,
+   542
+  ],
+  [
+   498,
+   543
+  ]
+ ],
+ "zentrum_km_by_highway": {
+  "footway": 9.45,
+  "service": 7.84,
+  "residential": 7.11,
+  "secondary": 3.47,
+  "path": 2.75,
+  "living_street": 1.88,
+  "pedestrian": 0.89,
+  "steps": 0.59,
+  "unclassified": 0.25,
+  "secondary_link": 0.16,
+  "cycleway": 0.13,
+  "tertiary": 0.01
+ },
+ "zentrum_km_by_kind": {
+  "foot": 10.17,
+  "street": 9.89,
+  "service": 7.84,
+  "main": 3.63,
+  "path": 2.41,
+  "lane": 0.59,
+  "county": 0.01
+ },
+ "zentrum_tags": {
+  "bridge_ways": 7,
+  "building_passage_ways": 5,
+  "lanes_km": 4.59,
+  "lit_tag_km": 17.48,
+  "maxspeed_km": 6.35,
+  "not_in_format: highway=busway": 1,
+  "not_in_format: highway=pedestrian area=yes": 9,
+  "oneway_km": 8.02,
+  "sidewalk_tag_km": 9.29,
+  "steps_ways": 57,
+  "surface_km": 26.25,
+  "tunnel_ways": 22,
+  "width_km": 2.34
+ },
+ "window_desktop_1536m": {
+  "km_by_kind": {
+   "street": 23.4,
+   "service": 22.1,
+   "foot": 21.7,
+   "path": 8.8,
+   "main": 5.7,
+   "track": 5.5,
+   "lane": 1.5,
+   "county": 0.0
+  },
+  "km": 88.7,
+  "osm_segments_by_kind": {
+   "foot": 2244,
+   "service": 1596,
+   "street": 1592,
+   "path": 603,
+   "main": 342,
+   "track": 295,
+   "lane": 153,
+   "county": 1
+  },
+  "osm_segments": 6826,
+  "ways": 1482
+ },
+ "window_phone_1024m": {
+  "km_by_kind": {
+   "street": 14.5,
+   "foot": 13.0,
+   "service": 10.0,
+   "path": 3.4,
+   "main": 3.2,
+   "lane": 0.6,
+   "track": 0.6,
+   "county": 0.0
+  },
+  "km": 45.4,
+  "osm_segments_by_kind": {
+   "foot": 1244,
+   "street": 985,
+   "service": 666,
+   "path": 374,
+   "main": 175,
+   "lane": 48,
+   "track": 32,
+   "county": 1
+  },
+  "osm_segments": 3525,
+  "ways": 859
+ },
+ "zentrum_areas": {
+  "amenity=parking": {
+   "n": 64,
+   "m2_in_zentrum": 38006,
+   "named": []
+  },
+  "highway=pedestrian area=yes": {
+   "n": 9,
+   "m2_in_zentrum": 21685,
+   "named": [
+    [
+     "Steinweg",
+     "sett",
+     7311
+    ],
+    [
+     "Marktplatz",
+     "paving_stones",
+     2811
+    ],
+    [
+     "Platz der Deutschen Einheit",
+     "sett",
+     5565
+    ],
+    [
+     "Rimbachstraße",
+     "paving_stones",
+     1220
+    ],
+    [
+     "Stadelstraße",
+     "sett",
+     439
+    ],
+    [
+     "Backstraße",
+     "paving_stones",
+     1092
+    ],
+    [
+     "Rimbachstraße",
+     "paving_stones",
+     1091
+    ]
+   ]
+  }
+ }
+}
