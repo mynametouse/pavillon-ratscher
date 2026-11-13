@@ -80,10 +80,10 @@ export const ZKZEITWELT = (() => {
       const k = ZKDINGE.sites().kahl;
       return [k.x + 4, k.y + 44, EYE, k.x - 8, k.y - 40, 5];
     },
-    // on the clearing below the ridge, ~380 m from the turbine (the hub at ~160 m fits the picture with the forest below)
+    // on the clearing below the ridge, ~300 m from the turbine (with fov ~60 the whole rotor and the forest below fit the picture)
     windrad: () => {
       const w = ZKDINGE.sites().wind;
-      return [w.x - 25, w.y + 380, EYE, w.x, w.y, ZKDINGE.HUB * 0.62];
+      return [w.x - 20, w.y + 300, EYE, w.x, w.y, ZKDINGE.HUB * 0.6];
     },
   };
   function place(id) {

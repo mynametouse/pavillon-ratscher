@@ -247,6 +247,31 @@ export const ZKDINGE = (() => {
         (x, y) => z(x, y) + 0.03,
         () => PAL.soilDk
       );
+      // the bedding sand and the two pipes (flow and return) lying in the trench, seen from the street as a pair of black lines
+      K.strip(
+        B,
+        open,
+        0.3,
+        0.3,
+        (x, y) => z(x, y) + 0.035,
+        () => C(0xc9b47a)
+      );
+      for (const v of [-0.13, 0.13]) {
+        for (let i = 0; i + 4 < open.length; i += 4) {
+          const [ax, ay] = open[i],
+            [bx, by] = open[i + 4],
+            l = Math.hypot(bx - ax, by - ay) || 1,
+            nx = -(by - ay) / l,
+            ny = (bx - ax) / l;
+          B.tube(
+            [ax + nx * v, ay + ny * v, z(ax, ay) + 0.1],
+            [bx + nx * v, by + ny * v, z(bx, by) + 0.1],
+            0.09,
+            6,
+            PAL.pipe
+          );
+        }
+      }
       for (let i = 0; i + 1 < open.length; i += 2) {
         const [ax, ay] = open[i],
           [bx, by] = open[Math.min(open.length - 1, i + 2)],

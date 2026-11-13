@@ -8,7 +8,10 @@
 #   python3 viz3/test/zeitreise_welt.py 9013 [sections]   sections: api,hang,dinge,nacht,split,ende
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
-from PIL import Image, ImageDraw, ImageStat
+try:
+    from PIL import Image, ImageDraw  # contact sheets (not on CI: there the single pictures)
+except Exception:
+    Image = None
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
 want = set((sys.argv[2] if len(sys.argv) > 2 else 'api,hang,kal,dinge,nacht,split,ende').split(','))
 ck = lib.Checks('zeitreise_welt')
@@ -18,6 +21,7 @@ NOBLUR = "document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filte
 
 def sheet(name, names, cols=3, w=640):
     # a contact sheet: the pictures in a grid with their names (one image to look at instead of many)
+    if Image is None: return None
     ims = [(n, Image.open(os.path.join(OUT, n + '.jpg'))) for n in names if os.path.exists(os.path.join(OUT, n + '.jpg'))]
     if not ims: return None
     h = int(w * ims[0][1].height / ims[0][1].width)
@@ -31,14 +35,12 @@ def sheet(name, names, cols=3, w=640):
     return f
 
 
-def region(name, box):
-    # mean colour of a region (fractions of the picture) – the slopes' change in numbers
-    f = os.path.join(OUT, name + '.jpg')
-    if not os.path.exists(f): return [0, 0, 0]
-    im = Image.open(f).convert('RGB')
-    W, H = im.size
-    c = im.crop((int(box[0] * W), int(box[1] * H), int(box[2] * W), int(box[3] * H)))
-    return [round(v, 1) for v in ImageStat.Stat(c).mean]
+REGION = {}
+
+
+def region(name, box=None):
+    # mean colour of a region of a picture (fractions of the picture), measured in the page right after the picture was drawn (pic)
+    return REGION.get(name, [0, 0, 0])
 
 
 def run():
@@ -82,11 +84,20 @@ def run():
             E(f"ZKZEITWELT.set({L}, null); ZKZEITWELT.sound({L}, null, 'L')")
             steps(0.3)
 
-        def pic(name):
+        def pic(name, box=(0.0, 0.3, 1.0, 0.62)):
             try:
                 lib.shot(pg, OUT, name)
             except Exception as e:
                 print('shot failed', name, repr(e)[:200], flush=True)
+            # the region's mean colour from the drawn canvas (no image library needed)
+            try:
+                REGION[name] = J("""(b => { GAME.shot(); const c = document.createElement('canvas'); c.width = 192; c.height = 108;
+                  const x = c.getContext('2d'); x.drawImage(GAME.R.domElement, 0, 0, 192, 108);
+                  const d = x.getImageData(Math.round(b[0] * 192), Math.round(b[1] * 108), Math.max(1, Math.round((b[2] - b[0]) * 192)), Math.max(1, Math.round((b[3] - b[1]) * 108))).data;
+                  let r = 0, g = 0, bb = 0, n = 0; for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; bb += d[i + 2]; n++; }
+                  return [+(r / n).toFixed(1), +(g / n).toFixed(1), +(bb / n).toFixed(1)]; })(""" + json.dumps(list(box)) + ")")
+            except Exception as e:
+                print('region failed', name, repr(e)[:160], flush=True)
 
         def calls():
             return J("""(() => { const R = GAME.R, orig = R.renderBufferDirect; let calls = 0, tris = 0, zc = 0, zt = 0;
@@ -126,21 +137,20 @@ def run():
             # the slopes south of the village from the Anger (eye height) and from 90 m above it, by year and world
             # views for the regie: the Anger towards the south, 90 m above it, the slope NE of the village (over the village to the forests
             # S and SW), the village's south edge by the lane (open fields up to the forest)
-            V = [('anger', 222, -108, 1.65, 190, 3, 55), ('hoch', 222, -108, 90, 195, -10, 60), ('hang', 430, 90, 1.65, 199, -2, 55),
-                 ('dorfrand', 330, -330, 1.65, 187, 2, 55)]
+            V = [('hoch', 222, -108, 90, 195, -10, 60), ('hang', 440, 20, 1.65, 196, -3, 55), ('dorfrand', 330, -330, 1.65, 187, 3, 55)]
             S = [('heute', 'allein', 2026.5), ('allein-2029', 'allein', 2029.5), ('allein-2045', 'allein', 2045.5), ('gewappnet-2045', 'gewappnet', 2045.5)]
             names, cols = [], {}
             for tag, w, y in S:
                 state(w, y)
                 for v in V:
-                    look(*v[1:]); n = f'hang-{v[0]}-{tag}'; pic(n); names.append(n)
-                    cols[n] = region(n, (0.0, 0.3, 1.0, 0.62) if v[0] in ('hoch', 'hang') else (0.0, 0.38, 1.0, 0.5))
-            E("ZKZEITWELT.hang.debug(2)"); state('allein', 2034); look(*V[1][1:]); pic('hang-stufen-2034'); names.append('hang-stufen-2034'); E("ZKZEITWELT.hang.debug(0)")
+                    look(*v[1:]); n = f'hang-{v[0]}-{tag}'; pic(n, (0.0, 0.3, 1.0, 0.62) if v[0] == 'hoch' else (0.0, 0.4, 1.0, 0.56)); names.append(n)
+                    cols[n] = region(n)
+            E("ZKZEITWELT.hang.debug(2)"); state('allein', 2034); look(*V[0][1:]); pic('hang-stufen-2034'); names.append('hang-stufen-2034'); E("ZKZEITWELT.hang.debug(0)")
             sheet('hang', names, cols=4)
             print('slope colours', json.dumps(cols), flush=True)
             d = lambda a, c: sum(abs(x - y) for x, y in zip(cols[a], cols[c]))
             ck('the slopes change colour with the years (overview: today → 2029 red-grey)', d('hang-hoch-heute', 'hang-hoch-allein-2029') > 9, f"{cols['hang-hoch-heute']} → {cols['hang-hoch-allein-2029']}")
-            ck('the slopes change seen from the Anger (eye height)', d('hang-anger-heute', 'hang-anger-allein-2029') > 4, f"{cols['hang-anger-heute']} → {cols['hang-anger-allein-2029']}")
+            ck('the slopes change seen from the slope over the village (eye height)', d('hang-hang-heute', 'hang-hang-allein-2029') > 4, f"{cols['hang-hang-heute']} → {cols['hang-hang-allein-2029']}")
             ck('the two worlds look different in 2045 (pioneer wood and dead wood against the planted mix)', d('hang-hoch-allein-2045', 'hang-hoch-gewappnet-2045') > 2, f"{cols['hang-hoch-allein-2045']} vs {cols['hang-hoch-gewappnet-2045']}")
 
         if 'kal' in want:
@@ -149,9 +159,10 @@ def run():
             for tag, w, y, dbg in (('heute', 'allein', 2026.5, 0), ('2034', 'allein', 2034, 0), ('2034-maske', 'allein', 2034, 1), ('2034-stufen', 'allein', 2034, 2)):
                 state(w, y); E(f"ZKZEITWELT.hang.debug({dbg})")
                 look(150, -650, 1700, 180, -89, 50); n = f'kal-oben-{tag}'; pic(n); names.append(n)
+            print('the Klinge forest (first version) in 2034', J("(s => s.forest)(ZKWELT.stats())"), flush=True)
             for tag, w, y, dbg in (('2029', 'allein', 2029.5, 0), ('2029-stufen', 'allein', 2029.5, 2)):
                 state(w, y); E(f"ZKZEITWELT.hang.debug({dbg})")
-                look(430, 90, 1.65, 199, -2, 55); n = f'kal-hang-{tag}'; pic(n); names.append(n)
+                look(440, 20, 1.65, 196, -3, 55); n = f'kal-hang-{tag}'; pic(n); names.append(n)
             E("ZKZEITWELT.hang.debug(0)")
             sheet('kal', names, cols=3)
 
@@ -196,9 +207,9 @@ def run():
                 print(n, sh, flush=True)
                 if w == 'allein': ck('the morning after in Allein im Sturm: mud and bulky waste', 'schlamm' in sh and 'sperrmuell' in sh, str(sh))
                 else: ck('the morning after in Gewappnet: sandbags, no bulky waste', 'sandsaecke' in sh and 'sperrmuell' not in sh, str(sh))
-            clock(22.0, 'klar')
-            # the old school from in front of its main facade (22 m), the dark village around it
-            sp = J("(f => f ? [f.mx + f.nx * 24, f.my + f.ny * 24, f.mx, f.my] : null)(ZKZEITWELT.nacht.sites().schoolFront)") or [205, -95, 236, -121]
+            clock(1.0, 'klar')
+            # the old school seen across its front at an angle (the lime of the Anger stands right in front of it), the dark village around
+            sp = J("(f => f ? [f.mx + f.nx * 20 + f.f.dx * 16, f.my + f.ny * 20 + f.f.dy * 16, f.mx, f.my] : null)(ZKZEITWELT.nacht.sites().schoolFront)") or [205, -95, 236, -121]
             syaw = (math.degrees(math.atan2(sp[2] - sp[0], sp[3] - sp[1])) + 360) % 360
             for w in ('allein', 'gewappnet'):
                 state(w, ev='blackout', p=0.5); look(sp[0], sp[1], 1.65, syaw, 4, 70); steps(0.4); n = f'blackout-{w}'; pic(n); names.append(n)
@@ -223,13 +234,13 @@ def run():
             names = []
             for view in ('heizhaus', 'hang'):
                 if view == 'heizhaus': at_place('heizhaus')
-                else: look(430, 90, 1.65, 199, -2, 55)
+                else: look(440, 20, 1.65, 196, -3, 55)
                 for side, mask in (('links', (1 << 21) | 1), ('rechts', (1 << 22) | 1)):
-                    E(f"GAME.cam.layers.mask = {mask}"); E("GAME.shot()"); n = f'split-{view}-{side}'; pic(n); names.append(n)
+                    E(f"GAME.cam.layers.mask = {mask}"); E("GAME.shot()"); n = f'split-{view}-{side}'; pic(n, (0.2, 0.2, 0.8, 0.8) if view == 'heizhaus' else (0, 0.3, 1, 0.62)); names.append(n)
                 E("GAME.cam.layers.mask = 1")
-            a, c = region('split-heizhaus-links', (0.2, 0.2, 0.8, 0.8)), region('split-heizhaus-rechts', (0.2, 0.2, 0.8, 0.8))
+            a, c = region('split-heizhaus-links'), region('split-heizhaus-rechts')
             ck('the split: the two halves differ (the heating house only in Gewappnet)', sum(abs(x - y) for x, y in zip(a, c)) > 4, f'{a} vs {c}')
-            a, c = region('split-hang-links', (0, 0.3, 1, 0.62)), region('split-hang-rechts', (0, 0.3, 1, 0.62))
+            a, c = region('split-hang-links'), region('split-hang-rechts')
             print('split slopes', a, c, flush=True)
             sheet('split', names, cols=2)
 

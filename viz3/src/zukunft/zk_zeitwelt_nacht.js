@@ -291,6 +291,9 @@ export const ZKNACHT = (() => {
     l.instanceColor.needsUpdate = true;
     // the flash on the flood (the water's shader)
     K.U.uZkBlue.value = on > 0.5 ? 1 : 0;
+    // where the engine stands (three's x, z: the water's vWp)
+    const e = sites().engine;
+    K.U.uZkBlueP.value.set(e.x, -e.y);
   }
   // ---------- the morning after: mud, bulky waste; the prepared street: sandbags and a barrier ----------
   function schlamm(d) {
@@ -350,6 +353,27 @@ export const ZKNACHT = (() => {
       }
     });
     if (B.n()) g.add(K.mesh(B, K.mats().kit, 'zeitreise sperrmuell'));
+    return g;
+  }
+  // the morning after: the flood's dirty line on the walls along the street, up to the height the water stood
+  function schmutzrand(d) {
+    const g = new THREE.Group(),
+      B = K.GB(true);
+    for (const fr of sites().fronts) {
+      const f = fr.f,
+        z = K.gnd(fr.qx, fr.qy),
+        n = Math.max(1, Math.round(f.L / 1.5));
+      for (let i = 0; i < n; i++) {
+        const u0 = -f.L / 2 + (i * f.L) / n,
+          u1 = u0 + f.L / n,
+          hh = d.h * (0.9 + 0.2 * K.hash(fr.b.id * 31 + i)),
+          p = (u, zz) => [f.mx + f.f.dx * u + f.nx * 0.04, f.my + f.f.dy * u + f.ny * 0.04, z + zz];
+        // a dark wet band below the line, a sharper dirt edge at it
+        B.quad(p(u0, -0.1), p(u1, -0.1), p(u1, hh), p(u0, hh), [0.09, 0.075, 0.055, 0.42]);
+        B.quad(p(u0, hh - 0.03), p(u1, hh - 0.03), p(u1, hh + 0.02), p(u0, hh + 0.02), [0.07, 0.055, 0.04, 0.7]);
+      }
+    }
+    if (B.n()) g.add(K.inst(B.geo(), K.mats().decal, 1, 'zeitreise schmutzrand'));
     return g;
   }
   function sandsaecke() {
@@ -586,8 +610,8 @@ export const ZKNACHT = (() => {
         face = Math.atan2(h.road[1] - h.y, h.road[0] - h.x);
       } else if (sg.place === 'windrad') {
         // the building board at the edge of the clearing where the camera stands, facing it
-        x = st.wind.x - 19;
-        y = st.wind.y + 368;
+        x = st.wind.x - 14;
+        y = st.wind.y + 288;
         face = Math.PI / 2;
       } else if (sg.place === 'schule' && nt.schoolFront) {
         const f = nt.schoolFront;
@@ -660,6 +684,17 @@ export const ZKNACHT = (() => {
     id: 'sperrmuell',
     want: st => (+W(st).debris > 0.05 ? { n: Math.max(1, Math.round(+W(st).debris * 8)) } : null),
     build: d => sperrmuell(d),
+  });
+  K.thing({
+    id: 'schmutzrand',
+    // where the water came into the houses: the highest level of the night (its mark) when the mud is still there
+    want: st => {
+      const w = W(st),
+        m = (w.marks || []).filter(k => k.y >= 2030).map(k => +k.h || 0);
+      const h = Math.max(+w.level || 0, ...m, 0);
+      return +w.mud > 0.4 && h > 0.15 ? { h: q(h, 0.05) } : null;
+    },
+    build: d => schmutzrand(d),
   });
   K.thing({
     id: 'sandsaecke',

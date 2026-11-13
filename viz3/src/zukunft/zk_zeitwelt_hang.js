@@ -17,6 +17,7 @@
 import * as THREE from 'three';
 import { markDirty } from '../core/assets.js';
 import { warmUp } from '../render/render.js';
+import { scene } from '../core/head.js';
 
 export const ZKHANG = (() => {
   const G = w => window[w];
@@ -47,7 +48,12 @@ export const ZKHANG = (() => {
     float zkH( vec2 p ) { vec3 p3 = fract( vec3( p.xyx ) * 0.1031 ); p3 += dot( p3, p3.yzx + 33.33 ); return fract( ( p3.x + p3.y ) * p3.z ); }
     float zkN( vec2 p ) { vec2 i = floor( p ), f = fract( p ), u = f * f * ( 3.0 - 2.0 * f );
       return mix( mix( zkH( i ), zkH( i + vec2( 1.0, 0.0 ) ), u.x ), mix( zkH( i + vec2( 0.0, 1.0 ) ), zkH( i + vec2( 1.0, 1.0 ) ), u.x ), u.y ); }
-    float zkRank( vec2 p ) { float r = 0.6 * zkN( p * 0.0105 + vec2( 3.7, 1.9 ) ) + 0.3 * zkN( p * 0.032 + vec2( -1.3, 7.1 ) ) + 0.1 * zkN( p * 0.11 );
+    // three octaves, each turned (37°, −61°, 13°), on a slowly warped plane: irregular stands, no squares of the noise's grid
+    float zkRank( vec2 p ) {
+      vec2 q = p + 70.0 * vec2( zkN( p * 0.004 + vec2( 11.0, 3.0 ) ), zkN( p * 0.004 - vec2( 7.0, 5.0 ) ) );
+      float r = 0.6 * zkN( mat2( 0.7986, 0.6018, -0.6018, 0.7986 ) * q * 0.0105 + vec2( 3.7, 1.9 ) )
+              + 0.3 * zkN( mat2( 0.4848, -0.8746, 0.8746, 0.4848 ) * q * 0.032 + vec2( -1.3, 7.1 ) )
+              + 0.1 * zkN( mat2( 0.9744, 0.225, -0.225, 0.9744 ) * q * 0.11 );
       for ( int i = 0; i < 2; i++ ) { vec2 d = ( p - uZkSeed[ i ].xy ) / uZkSeed[ i ].z; r -= 0.42 * exp( - dot( d, d ) * 1.6 ); }
       return r; }
     // 0 green, 1 red, 2 grey, 3 fallen, 4 cleared, 5 young
@@ -77,11 +83,14 @@ export const ZKHANG = (() => {
       d = zkH(ix + 1, iy + 1);
     return a + (b - a) * ux + (c + (d - c) * ux - (a + (b - a) * ux)) * uy;
   }
+  const rot = (x, y, c, sn) => [c * x - sn * y, sn * x + c * y];
   const rank = (x, y) => {
-    let r =
-      0.6 * zkN(x * 0.0105 + 3.7, y * 0.0105 + 1.9) +
-      0.3 * zkN(x * 0.032 - 1.3, y * 0.032 + 7.1) +
-      0.1 * zkN(x * 0.11, y * 0.11);
+    const qx = x + 70 * zkN(x * 0.004 + 11, y * 0.004 + 3),
+      qy = y + 70 * zkN(x * 0.004 - 7, y * 0.004 - 5);
+    const a = rot(qx * 0.0105, qy * 0.0105, 0.7986, 0.6018),
+      b = rot(qx * 0.032, qy * 0.032, 0.4848, -0.8746),
+      c = rot(qx * 0.11, qy * 0.11, 0.9744, 0.225);
+    let r = 0.6 * zkN(a[0] + 3.7, a[1] + 1.9) + 0.3 * zkN(b[0] - 1.3, b[1] + 7.1) + 0.1 * zkN(c[0], c[1]);
     for (const s of SEEDS) {
       const dx = (x - s.x) / s.z,
         dy = (y - s.y) / s.z;
@@ -123,11 +132,13 @@ export const ZKHANG = (() => {
       else if ( vZkS > 4.5 ) diffuseColor.rgb *= uZkT2.z > 0.5 ? vec3( 1.05, 1.18, 0.8 ) : vec3( 0.95, 1.08, 0.9 );          // young
       if ( uZkT2.w > 1.5 ) diffuseColor.rgb = vZkS < 1.5 ? vec3( 0.8, 0.1, 0.0 ) : vZkS < 2.5 ? vec3( 0.6 ) : vec3( 0.1, 0.9, 0.2 );
     }`;
-  function patchCards(mat) {
-    if (mat.userData.zk) return;
-    const ob = mat.onBeforeCompile;
+  function patchCards(orig) {
+    if (S.mat) return S.mat;
+    const mat = orig.clone(),
+      ob = orig.onBeforeCompile;
+    mat.name = 'zeitreise geotree';
     mat.onBeforeCompile = (sh, r) => {
-      ob.call(mat, sh, r);
+      ob.call(orig, sh, r);
       Object.assign(sh.uniforms, U);
       let vs = sh.vertexShader;
       vs = vs.replace('void main() {', 'void main() {\n zkPrep( aKind );');
@@ -139,17 +150,29 @@ export const ZKHANG = (() => {
       if (!/zkPrep\( aKind \)/.test(sh.vertexShader) || !/zkKd \+ vMapUv/.test(sh.vertexShader))
         S.err = 'cards: shader anchors not found';
     };
-    const key = mat.customProgramCacheKey ? mat.customProgramCacheKey() : 'geotree';
+    const key = orig.customProgramCacheKey ? orig.customProgramCacheKey() : 'geotree';
     mat.customProgramCacheKey = () => key + '-zk';
-    mat.userData.zk = true;
-    mat.needsUpdate = true;
+    S.mat = mat;
+    S.orig = orig;
+    return mat;
+  }
+  // the cards wear the patched copy while the slopes are on, their own material otherwise
+  function wear(on) {
+    const RT = G('RATSCHER');
+    if (!RT || !RT.trees || !S.mat || S.worn === on) return;
+    for (const im of RT.trees) im.material = on ? S.mat : S.orig;
+    S.worn = on;
   }
   // ---------- terrain (world/ratscher.js terrainMat: geoCol is the orthophoto as albedo) ----------
   const TERRAIN = `
     vec3 zkSlope( vec2 p, vec3 c ) {
       if ( uZkOn < 0.5 ) return c;
       float l = dot( c, vec3( 0.3, 0.55, 0.15 ) );
-      float fm = ( 1.0 - smoothstep( uZkM.x, uZkM.y, l ) ) * ( 1.0 - smoothstep( 0.0, 0.025, c.b - c.g ) );
+      // is it forest? asked of the 10 km photo a few mip levels up (stands, not single crowns), the 24 km one beyond it
+      vec2 uO = gUV( p, bGO );
+      vec3 cs = geoAlb( ( uO.x > 0.0 && uO.y > 0.0 && uO.x < 1.0 && uO.y < 1.0 ) ? texture2D( tGO, uO, 2.5 ).rgb : texture2D( tGF, gUV( p, bGF ), 1.0 ).rgb, uGGain );
+      float ls = dot( cs, vec3( 0.3, 0.55, 0.15 ) );
+      float fm = ( 1.0 - smoothstep( uZkM.x, uZkM.y, ls ) ) * ( 1.0 - smoothstep( 0.0, 0.025, cs.b - cs.g ) );
       for ( int i = 0; i < ${NH}; i++ ) { vec3 h = uZkHole[ i ]; if ( h.z > 0.0 ) fm *= smoothstep( h.z - 25.0, h.z, distance( p, h.xy ) ); }
       if ( uZkT2.w > 0.5 && uZkT2.w < 1.5 ) return mix( c, vec3( 0.9, 0.0, 0.9 ), fm );
       if ( fm < 0.01 ) return c;
@@ -157,8 +180,8 @@ export const ZKHANG = (() => {
       if ( s < 0.5 ) return c;
       float tx = clamp( l / uZkM.z, 0.55, 1.6 );
       vec3 col;
-      if ( s < 1.5 ) col = vec3( 0.15, 0.062, 0.028 );                                                  // red-brown crowns
-      else if ( s < 2.5 ) col = vec3( 0.15, 0.137, 0.115 );                                             // grey snags over brown litter
+      if ( s < 1.5 ) col = vec3( 0.175, 0.066, 0.028 );                                                  // red-brown crowns
+      else if ( s < 2.5 ) col = vec3( 0.175, 0.16, 0.135 );                                             // grey snags over brown litter
       else if ( s < 3.5 ) col = vec3( 0.11, 0.094, 0.075 ) * ( 0.75 + 0.5 * zkN( p * 0.7 ) );          // fallen trunks, criss-cross
       else if ( s < 4.5 ) {                                                                              // cleared: slash, then grass and herbs
         float a = clamp( ( uZkT.y - r ) / max( uZkT.y - uZkT.x, 0.03 ), 0.0, 1.0 );
@@ -179,7 +202,13 @@ export const ZKHANG = (() => {
         S.err = 'terrain: shader anchor not found';
         return;
       }
-      sh.fragmentShader = GLSL + TERRAIN + sh.fragmentShader.replace(A, 'vec3 gc = zkSlope( vGeo, geoCol( vGeo ) );');
+      const fs = sh.fragmentShader.replace(A, 'vec3 gc = zkSlope( vGeo, geoCol( vGeo ) );'),
+        k = fs.indexOf('void main() {');
+      if (k < 0 || fs.indexOf('vec3 geoAlb(') < 0) {
+        S.err = 'terrain: main or geoAlb not found';
+        return;
+      }
+      sh.fragmentShader = fs.slice(0, k) + GLSL + TERRAIN + fs.slice(k);
     };
     const key = mat.customProgramCacheKey ? mat.customProgramCacheKey() : 'geoterrain';
     mat.customProgramCacheKey = () => key + '-zk';
@@ -218,6 +247,16 @@ export const ZKHANG = (() => {
     );
     S.holes.forEach((h, i) => U.uZkHole.value[i].set(h[0], h[1], h[2]));
     patchCards(RT.trees[0].material);
+    // a hidden carrier of the original card material: the first version's young-tree impostors (zukunft/zk_welt.js) look it up by its
+    // key 'geotree' in the scene and draw with it – they must find it while the cards wear the copy
+    const dec = new THREE.InstancedMesh(RT.trees[0].geometry, S.orig, 1);
+    dec.setColorAt(0, new THREE.Color(1, 1, 1));
+    dec.count = 0;
+    dec.visible = false;
+    dec.frustumCulled = false;
+    dec.name = 'zeitreise geotree-original';
+    scene.add(dec);
+    S.decoy = dec;
     if (RT.terrainMat) patchTerrain(RT.terrainMat);
     S.patched = true;
     S.ready = true;
@@ -291,6 +330,7 @@ export const ZKHANG = (() => {
       return;
     }
     U.uZkOn.value = 1;
+    wear(true);
     U.uZkT.value.set(...u.T);
     U.uZkT2.value.set(u.T2[0], u.T2[1], u.T2[2], U.uZkT2.value.w);
   };
@@ -313,7 +353,10 @@ export const ZKHANG = (() => {
     // compile both patched programs now (the uniforms are values: switching them later compiles nothing)
     put({ T: [0.1, 0.2, 0.3, 0.4], T2: [0.5, 3, 1] });
     try {
-      warmUp(RT.trees[0]);
+      const w = new THREE.InstancedMesh(RT.trees[0].geometry, S.mat, 1);
+      w.setColorAt(0, new THREE.Color(1, 1, 1));
+      w.frustumCulled = false;
+      warmUp(w);
       if (RT.meshes && RT.meshes[0]) warmUp(RT.meshes[0]);
     } catch (e) {
       S.err = 'warm: ' + e;
@@ -324,6 +367,7 @@ export const ZKHANG = (() => {
   function clear() {
     S.side.L = S.side.R = null;
     put(null);
+    wear(false);
     markDirty(true);
   }
   function debug(mode) {
