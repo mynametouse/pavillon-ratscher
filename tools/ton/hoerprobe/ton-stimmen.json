@@ -1,0 +1,713 @@
+[
+ {
+  "id": "stimme:gl_falko:Fu1ia734Gm7rNhp4N2FN",
+  "titel": "Falko – Crivo – Warm, Expressive Creator",
+  "was": "Passt die Stimme zu Falko? Ende dreißig bis vierzig, aus Berlin, Gartenmensch mit Werkstatt. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Crivo – Warm, Expressive Creator (Fu1ia734Gm7rNhp4N2FN)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/Fu1ia734Gm7rNhp4N2FN/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI3Yjc5YzMyNGFlMzM0YTRlODQ1YjU1OTRiZjg4MWQ4NyIsImZpbGVuYW1lIjoiR29Xb2xycm1Ic3pXaTNDcXVCMTEubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Per Anhalter mit dem Paket eines Fremden. Meine Mutter wäre stolz.“"
+ },
+ {
+  "id": "stimme:gl_falko:eZYqKbAljL6KjR1xHX5g",
+  "titel": "Falko – Joris – Authentic Support Agent",
+  "was": "Passt die Stimme zu Falko? Ende dreißig bis vierzig, aus Berlin, Gartenmensch mit Werkstatt. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Joris – Authentic Support Agent (eZYqKbAljL6KjR1xHX5g)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/eZYqKbAljL6KjR1xHX5g/n2imYcF1bvdiRIBmwXWR.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Per Anhalter mit dem Paket eines Fremden. Meine Mutter wäre stolz.“"
+ },
+ {
+  "id": "stimme:gl_falko:DrBEKFgWMDWUG6bjTSTk",
+  "titel": "Falko – Mattes",
+  "was": "Passt die Stimme zu Falko? Ende dreißig bis vierzig, aus Berlin, Gartenmensch mit Werkstatt. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Mattes (DrBEKFgWMDWUG6bjTSTk)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/DrBEKFgWMDWUG6bjTSTk/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI3ZTAxNzE2MjA3NTE0ZmEwODcwYzAxNjYyYWY3MWYzMSIsImZpbGVuYW1lIjoiMGM1MDMxNzgtMzVjYy00NTI5LTgwNGItNjAyMDRkNjE5MWMxLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Per Anhalter mit dem Paket eines Fremden. Meine Mutter wäre stolz.“"
+ },
+ {
+  "id": "stimme:gl_sarah:iyscHPBBWOqnjHpyGETU",
+  "titel": "Sarah – Hannah – Engaging German Storytelling",
+  "was": "Passt die Stimme zu Sarah? Mitte dreißig, aus Berlin, Falkos Freundin. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Hannah – Engaging German Storytelling (iyscHPBBWOqnjHpyGETU)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/7174184d4ae64c50b3b0111d2de8bec7/voices/iyscHPBBWOqnjHpyGETU/83cbsi0erMLpyWkM0ci6.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Drei Fotos. Ein Transporter, zwei Gesichter und Kisten mit Stempel.“"
+ },
+ {
+  "id": "stimme:gl_sarah:Ns3AEOIovhjdrxad17pt",
+  "titel": "Sarah – Elke Collins – German AI Voice Agent",
+  "was": "Passt die Stimme zu Sarah? Mitte dreißig, aus Berlin, Falkos Freundin. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Elke Collins – German AI Voice Agent (Ns3AEOIovhjdrxad17pt)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/6e47aaf2f87e4ab1a1dad0a712f13780/voices/Ns3AEOIovhjdrxad17pt/ytk1oNEsZ9o9OX271gCs.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Drei Fotos. Ein Transporter, zwei Gesichter und Kisten mit Stempel.“"
+ },
+ {
+  "id": "stimme:gl_sarah:ZoxS77tXeRuNRJNif3rR",
+  "titel": "Sarah – Mila | Engaging & Trustworthy",
+  "was": "Passt die Stimme zu Sarah? Mitte dreißig, aus Berlin, Falkos Freundin. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Mila | Engaging & Trustworthy (ZoxS77tXeRuNRJNif3rR)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/ZoxS77tXeRuNRJNif3rR/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI1ZmVjYjcyMGE5YmM0NGU4YTAwNmMyYmY3ZDdkMDFlZiIsImZpbGVuYW1lIjoieXJ6dDh3VFgwekpHRE52RDNuSEMubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Drei Fotos. Ein Transporter, zwei Gesichter und Kisten mit Stempel.“"
+ },
+ {
+  "id": "stimme:gl_jule:YSsw6Xh8H4vnTOiBI2n5",
+  "titel": "Jule – Fiona – raspy, charismatic, cheeky young",
+  "was": "Passt die Stimme zu Jule? 26, aus Ratscher, führt die Clique, schraubt an Simsons. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Fiona – raspy, charismatic, cheeky young (YSsw6Xh8H4vnTOiBI2n5)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a12dba634064b89a1e823f807ddc875/voices/YSsw6Xh8H4vnTOiBI2n5/D2CvL9p1iLNYkqGt4VEH.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Leise also. Dann wartet, bis es dunkel ist. Und atmet flach.“"
+ },
+ {
+  "id": "stimme:gl_jule:MYkWSmw0Lk11IIzuxxfn",
+  "titel": "Jule – Kimi – Reliable Sidekick",
+  "was": "Passt die Stimme zu Jule? 26, aus Ratscher, führt die Clique, schraubt an Simsons. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Kimi – Reliable Sidekick (MYkWSmw0Lk11IIzuxxfn)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/MYkWSmw0Lk11IIzuxxfn/baBBeXEg4UYg1EOiBLTd.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Leise also. Dann wartet, bis es dunkel ist. Und atmet flach.“"
+ },
+ {
+  "id": "stimme:gl_jule:lXDrVXQgT1lmdco6ryhE",
+  "titel": "Jule – Clementine | Crisp and Assertive",
+  "was": "Passt die Stimme zu Jule? 26, aus Ratscher, führt die Clique, schraubt an Simsons. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Clementine | Crisp and Assertive (lXDrVXQgT1lmdco6ryhE)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/lXDrVXQgT1lmdco6ryhE/KmkDAbuZtZL0TULXAnXv.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Leise also. Dann wartet, bis es dunkel ist. Und atmet flach.“"
+ },
+ {
+  "id": "stimme:gl_timo:Tdw3mwY0G0cBmz5tx5Nn",
+  "titel": "Timo – Kevin – Happy & Friendly",
+  "was": "Passt die Stimme zu Timo? 24, der Spaßvogel der Clique. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Kevin – Happy & Friendly (Tdw3mwY0G0cBmz5tx5Nn)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/436d06f6bba44fa780b8145c46029d89/voices/Tdw3mwY0G0cBmz5tx5Nn/fvFpMiZRcTLZHQ4xZVOA.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Der Bunker. Da war ich als Kind. Da ist nichts drin außer Fledermäusen.“"
+ },
+ {
+  "id": "stimme:gl_timo:VJ6RlQD1le620taxztQk",
+  "titel": "Timo – Mackel – Friendly Dude",
+  "was": "Passt die Stimme zu Timo? 24, der Spaßvogel der Clique. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Mackel – Friendly Dude (VJ6RlQD1le620taxztQk)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/VJ6RlQD1le620taxztQk/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI4ZWI2MWVkMmNkYzA0ZTE2ODVhYTA1NTQ1OWZkMGIwMyIsImZpbGVuYW1lIjoiYjUwNjc3NzMtMGIxMy00ZTc3LWI1ZWUtZTZmNzFlZWI1ZDUzLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Der Bunker. Da war ich als Kind. Da ist nichts drin außer Fledermäusen.“"
+ },
+ {
+  "id": "stimme:gl_timo:0i5UT3fATBWphA0jBZug",
+  "titel": "Timo – Timon – Energetic and Clear",
+  "was": "Passt die Stimme zu Timo? 24, der Spaßvogel der Clique. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Timon – Energetic and Clear (0i5UT3fATBWphA0jBZug)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/09d36c57aec041b6a37a53b057bf5247/voices/0i5UT3fATBWphA0jBZug/485b25b0-510f-4daa-9810-b9cda52481ec.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Der Bunker. Da war ich als Kind. Da ist nichts drin außer Fledermäusen.“"
+ },
+ {
+  "id": "stimme:gl_basti:hE5g948a43gbyxPuk4qh",
+  "titel": "Basti – Jonas – Dynamic, Professional, Direct",
+  "was": "Passt die Stimme zu Basti? 22, sagt vier Wörter am Tag. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Jonas – Dynamic, Professional, Direct (hE5g948a43gbyxPuk4qh)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ada9aa59182641ffa43cc8308dcd518f/voices/hE5g948a43gbyxPuk4qh/ad9ef07f-59d3-46fa-a068-3e13af768200.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Frag den Gerhard.“"
+ },
+ {
+  "id": "stimme:gl_basti:FfvPVzUs3MSJucOhMXLy",
+  "titel": "Basti – Julius Berger – ruhig und freundlich",
+  "was": "Passt die Stimme zu Basti? 22, sagt vier Wörter am Tag. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Julius Berger – ruhig und freundlich (FfvPVzUs3MSJucOhMXLy)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/9e7c4aad79d140369ead9725ff8d29bb/voices/FfvPVzUs3MSJucOhMXLy/5U808Ym1iwDKeTJHWoTm.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Frag den Gerhard.“"
+ },
+ {
+  "id": "stimme:gl_basti:pjvu5b1KMIka2bL61Exv",
+  "titel": "Basti – Nik",
+  "was": "Passt die Stimme zu Basti? 22, sagt vier Wörter am Tag. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Nik (pjvu5b1KMIka2bL61Exv)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/pjvu5b1KMIka2bL61Exv/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJlNDBlOWJlZDkwNDM0ZjQ4YjVjMTc0ZDRjMGNiMWMxYiIsImZpbGVuYW1lIjoiNTc2ZDE4ZTYtYzJhNy00ZDkyLTlkYTQtNjQyOTg4OWYyZGViLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Frag den Gerhard.“"
+ },
+ {
+  "id": "stimme:gl_gerhard:2baru8J0e15nxuG3bzXy",
+  "titel": "Gerhard – Cornelius – Wise & Heartwarming Old Man",
+  "was": "Passt die Stimme zu Gerhard? 72, der alte Dorfchronist von Ratscher, derselbe Mann wie im Dorf. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Cornelius – Wise & Heartwarming Old Man (2baru8J0e15nxuG3bzXy)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/2baru8J0e15nxuG3bzXy/AsXkaH92BSczbm1v7u4f.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Bei uns fiel keine Mauer. Bei uns stand ein Zaun, und der stand am Zehnten noch.“"
+ },
+ {
+  "id": "stimme:gl_gerhard:s1TxC2vO0GyTuonQQhm4",
+  "titel": "Gerhard – Martin (leichter Thüringer Akzent)",
+  "was": "Passt die Stimme zu Gerhard? 72, der alte Dorfchronist von Ratscher, derselbe Mann wie im Dorf. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Martin (leichter Thüringer Akzent) (s1TxC2vO0GyTuonQQhm4)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/user/n1shajXPpJRYztFpmKBBzk3SNFY2/voices/s1TxC2vO0GyTuonQQhm4/01bf7204-6bff-4324-9af8-92f4cc457919.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Bei uns fiel keine Mauer. Bei uns stand ein Zaun, und der stand am Zehnten noch.“"
+ },
+ {
+  "id": "stimme:gl_fremder:LTo9oDjTW1FdEgMfiXWQ",
+  "titel": "Der Fremde – David – Slow & Charming",
+  "was": "Passt die Stimme zu Der Fremde? 55, der Unbekannte mit dem Paket. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: David – Slow & Charming (LTo9oDjTW1FdEgMfiXWQ)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/4af5070bca234973ba91bbc4cc73bf1e/voices/LTo9oDjTW1FdEgMfiXWQ/8ixf1YoW4nKUpGk8apjA.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Ihr fahrt nach Ratscher. Die zwei aus Berlin, mit dem Garten. Spricht sich rum.“"
+ },
+ {
+  "id": "stimme:gl_fremder:yR6YPi6ytQSGBZ0uKFQl",
+  "titel": "Der Fremde – Heribert deutsch",
+  "was": "Passt die Stimme zu Der Fremde? 55, der Unbekannte mit dem Paket. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Heribert deutsch (yR6YPi6ytQSGBZ0uKFQl)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5f4eb39fe4dc4273afae2ce75efe36d8/voices/yR6YPi6ytQSGBZ0uKFQl/837a2c5d-4632-4a3b-8ba4-51b166142884.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Ihr fahrt nach Ratscher. Die zwei aus Berlin, mit dem Garten. Spricht sich rum.“"
+ },
+ {
+  "id": "stimme:gl_fremder:bFv4VX9jlZxtKnEa6UWs",
+  "titel": "Der Fremde – Arthur Holm – German AI Voice Agent",
+  "was": "Passt die Stimme zu Der Fremde? 55, der Unbekannte mit dem Paket. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Arthur Holm – German AI Voice Agent (bFv4VX9jlZxtKnEa6UWs)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/bFv4VX9jlZxtKnEa6UWs/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJkYTkzMGE1NzYwODU0OTFhOWE1YjIwZDQ2ZDZhOTZmNSIsImZpbGVuYW1lIjoiSXdvb3FRSlhPTTFCTUdKbUJWQWsubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Ihr fahrt nach Ratscher. Die zwei aus Berlin, mit dem Garten. Spricht sich rum.“"
+ },
+ {
+  "id": "stimme:gl_yuki:krYs4UGlOJ9RA8enVbqQ",
+  "titel": "Yuki – Laura – Friendly and calming",
+  "was": "Passt die Stimme zu Yuki? 29, Köchin, hat das Sushi nach Schleusingen gebracht. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Laura – Friendly and calming (krYs4UGlOJ9RA8enVbqQ)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/992e38470c094747b2b907c1fc6302d1/voices/krYs4UGlOJ9RA8enVbqQ/673dd57f-9994-408c-8dd7-07e346b2825a.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Ach, du bist’s! Ich stehe am Herd.“"
+ },
+ {
+  "id": "stimme:gl_yuki:MkzrAJQV1Nmpxa4pLXn5",
+  "titel": "Yuki – Toni – Klar & Engagiert",
+  "was": "Passt die Stimme zu Yuki? 29, Köchin, hat das Sushi nach Schleusingen gebracht. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Toni – Klar & Engagiert (MkzrAJQV1Nmpxa4pLXn5)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/MkzrAJQV1Nmpxa4pLXn5/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI2NjhlODZhODkzM2I0MDc2OGY5NDIxNTcxOGQ0YzJmNSIsImZpbGVuYW1lIjoiNmNjMDg1YTMtYmJlMi00MzllLTgyNDktYjhlZGZiYmU0ZjJlLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Ach, du bist’s! Ich stehe am Herd.“"
+ },
+ {
+  "id": "stimme:gl_haendler:f46eMKDCAFikzwQKNKsK",
+  "titel": "Verkäuferin (Wagen am Anger) – Gabi – enthusiastic, friendly & warm",
+  "was": "Passt die Stimme zu Verkäuferin (Wagen am Anger)? 52, verkauft am Wagen am Anger, kennt jeden. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Gabi – enthusiastic, friendly & warm (f46eMKDCAFikzwQKNKsK)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/3e3ee95f38264ba690c5988abb7aaf9d/voices/f46eMKDCAFikzwQKNKsK/62f86b96-73eb-4f98-891e-86177e8d6912.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.“"
+ },
+ {
+  "id": "stimme:gl_haendler:4FAKwoQRvqLfJJP6W6Qp",
+  "titel": "Verkäuferin (Wagen am Anger) – DeMandy – Saxonian plain, no-nonsense",
+  "was": "Passt die Stimme zu Verkäuferin (Wagen am Anger)? 52, verkauft am Wagen am Anger, kennt jeden. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: DeMandy – Saxonian plain, no-nonsense (4FAKwoQRvqLfJJP6W6Qp)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/4FAKwoQRvqLfJJP6W6Qp/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJhZmRhZjM2NmEzNDU0YTBiYWQ5ZDlhNzdkOWI1MmIwNiIsImZpbGVuYW1lIjoiMW8yc0lRcncxYzl1TDFFQ3hzWXoubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.“"
+ },
+ {
+  "id": "stimme:gl_haendler:vPFocGjG5CEBbSByU2UY",
+  "titel": "Verkäuferin (Wagen am Anger) – Klara | Angry and Powerful",
+  "was": "Passt die Stimme zu Verkäuferin (Wagen am Anger)? 52, verkauft am Wagen am Anger, kennt jeden. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Klara | Angry and Powerful (vPFocGjG5CEBbSByU2UY)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/vPFocGjG5CEBbSByU2UY/u8qHt2cIKD7HyVAL80mX.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.“"
+ },
+ {
+  "id": "stimme:gl_wirt:s1TxC2vO0GyTuonQQhm4",
+  "titel": "Bratwurst-Uwe – Martin (leichter Thüringer Akzent)",
+  "was": "Passt die Stimme zu Bratwurst-Uwe? 56, steht am Rost, ruft die Rostbratwurst aus. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Martin (leichter Thüringer Akzent) (s1TxC2vO0GyTuonQQhm4)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/user/n1shajXPpJRYztFpmKBBzk3SNFY2/voices/s1TxC2vO0GyTuonQQhm4/01bf7204-6bff-4324-9af8-92f4cc457919.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Mit Senf. Natürlich mit Senf. Alles andere wäre eine Beleidigung.“"
+ },
+ {
+  "id": "stimme:gl_wirt:HnpxLFIC9u8kpNYbKwes",
+  "titel": "Bratwurst-Uwe – Erin – Funky, Rich, Mature",
+  "was": "Passt die Stimme zu Bratwurst-Uwe? 56, steht am Rost, ruft die Rostbratwurst aus. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Erin – Funky, Rich, Mature (HnpxLFIC9u8kpNYbKwes)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/bebee4ca953840a2a23208622a7d639d/voices/HnpxLFIC9u8kpNYbKwes/whsCUz6GRSPF2jZ2hKcL.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Mit Senf. Natürlich mit Senf. Alles andere wäre eine Beleidigung.“"
+ },
+ {
+  "id": "stimme:gl_wirt:eokb0hhuVX3JuAiUKucB",
+  "titel": "Bratwurst-Uwe – Schorsch (süddeutsch, rustikal)",
+  "was": "Passt die Stimme zu Bratwurst-Uwe? 56, steht am Rost, ruft die Rostbratwurst aus. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Schorsch (süddeutsch, rustikal) (eokb0hhuVX3JuAiUKucB)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/user/4o71nY0nh9a0z1dPntJVpBSMGGx1/voices/eokb0hhuVX3JuAiUKucB/492jzLjTBQOEE49AcWc4.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Mit Senf. Natürlich mit Senf. Alles andere wäre eine Beleidigung.“"
+ },
+ {
+  "id": "stimme:gl_boellermann:bbrPDPPWja1s6vFfCBdR",
+  "titel": "Der Böller-Mann – Emirs Voice German",
+  "was": "Passt die Stimme zu Der Böller-Mann? 47, verkauft Böller aus dem Kofferraum. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Emirs Voice German (bbrPDPPWja1s6vFfCBdR)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/user/9dVBttUVanNRqnsFAwZd9lrPhJn1/voices/bbrPDPPWja1s6vFfCBdR/cec60ca8-eb74-4405-b6ea-d7e7e12fd2ec.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Drei Stück, fünf Euro. Und nicht vor Silvester zünden. Haha.“"
+ },
+ {
+  "id": "stimme:gl_boellermann:oO4oNPU95QsKq3IXKrwj",
+  "titel": "Der Böller-Mann – MXI – young chilly dude (Berliner Slang)",
+  "was": "Passt die Stimme zu Der Böller-Mann? 47, verkauft Böller aus dem Kofferraum. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: MXI – young chilly dude (Berliner Slang) (oO4oNPU95QsKq3IXKrwj)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/962ed3ff168b4a4398fca5adb22632da/voices/oO4oNPU95QsKq3IXKrwj/f7c66e61-0036-4120-823d-5ac4558aca15.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Drei Stück, fünf Euro. Und nicht vor Silvester zünden. Haha.“"
+ },
+ {
+  "id": "stimme:gl_bursche:GpMEuRGYD0oLjmn4ptQZ",
+  "titel": "Kirmesbursche – Jonas Falk – Natural, charismatic, young",
+  "was": "Passt die Stimme zu Kirmesbursche? 21, Kirmesbursche mit Hut und Band, hat die Nacht am Kirmesbaum gewacht. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Jonas Falk – Natural, charismatic, young (GpMEuRGYD0oLjmn4ptQZ)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/60c81a0c25a543b6a016a25306b74a2c/voices/GpMEuRGYD0oLjmn4ptQZ/u78NT444QhwudpCNsST8.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Kirmes ist nur einmal im Jahr! Komm, tanz mit!“"
+ },
+ {
+  "id": "stimme:gl_bursche:s4tfUoQXKHI6ERH0abfW",
+  "titel": "Kirmesbursche – Charlie – Natural, Charismatic, Clear",
+  "was": "Passt die Stimme zu Kirmesbursche? 21, Kirmesbursche mit Hut und Band, hat die Nacht am Kirmesbaum gewacht. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Charlie – Natural, Charismatic, Clear (s4tfUoQXKHI6ERH0abfW)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/60c81a0c25a543b6a016a25306b74a2c/voices/s4tfUoQXKHI6ERH0abfW/VZnJiX5bMZnqdBpdlVvp.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Kirmes ist nur einmal im Jahr! Komm, tanz mit!“"
+ },
+ {
+  "id": "stimme:gl_maedchen:JudZUClAOU1jP3wA2eDG",
+  "titel": "Kirmesmädchen – Lola – School, but Exciting!",
+  "was": "Passt die Stimme zu Kirmesmädchen? 20, Kirmesmädchen, stolz auf den bewachten Kirmesbaum. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Lola – School, but Exciting! (JudZUClAOU1jP3wA2eDG)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a53258044834171a20d693794566080/voices/JudZUClAOU1jP3wA2eDG/8jqltLfglLAiSsXPlYQB.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Hast du den Kirmesbaum gesehen? Den haben wir die ganze Nacht bewacht.“"
+ },
+ {
+  "id": "stimme:gl_maedchen:8pVdES9f9x71wHWeQsgz",
+  "titel": "Kirmesmädchen – Nicole – Young & Friendly",
+  "was": "Passt die Stimme zu Kirmesmädchen? 20, Kirmesmädchen, stolz auf den bewachten Kirmesbaum. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Nicole – Young & Friendly (8pVdES9f9x71wHWeQsgz)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/82145cedc25d4d2581efe329fc8bf973/voices/8pVdES9f9x71wHWeQsgz/361bf4e9-3f1a-4303-aa01-0819ad12137b.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Hast du den Kirmesbaum gesehen? Den haben wir die ganze Nacht bewacht.“"
+ },
+ {
+  "id": "stimme:gl_funk:HkESLncErpfXT5IWi6vH",
+  "titel": "Polizeifunk – Leitstelle „Rennsteig“ – Nexa – The System",
+  "was": "Passt die Stimme zu Polizeifunk – Leitstelle „Rennsteig“? Die Disponentin der Leitstelle: sachlich, knapp, ruhig unter Druck, Funkdisziplin. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Nexa – The System (HkESLncErpfXT5IWi6vH)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/25ae641729924300a213545fe4060ee3/voices/HkESLncErpfXT5IWi6vH/zIMmm2kJxbg558IDehHK.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Rennsteig an alle: Spezialkräfte übernehmen. Zufahrten dicht machen.“"
+ },
+ {
+  "id": "stimme:gl_funk:PqkRNA8ETUoU9O2ldnwW",
+  "titel": "Polizeifunk – Leitstelle „Rennsteig“ – Johanna – Strict Tutor",
+  "was": "Passt die Stimme zu Polizeifunk – Leitstelle „Rennsteig“? Die Disponentin der Leitstelle: sachlich, knapp, ruhig unter Druck, Funkdisziplin. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Johanna – Strict Tutor (PqkRNA8ETUoU9O2ldnwW)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ed9b05e6324c457685490352e9a1ec90/voices/PqkRNA8ETUoU9O2ldnwW/3b88aeb2-304e-403d-83fc-350e6fd75412.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Rennsteig an alle: Spezialkräfte übernehmen. Zufahrten dicht machen.“"
+ },
+ {
+  "id": "stimme:gl_funk:VwrOyjuYiIhDmERAlgrS",
+  "titel": "Polizeifunk – Leitstelle „Rennsteig“ – Bettina – Warm Customer Care Agent",
+  "was": "Passt die Stimme zu Polizeifunk – Leitstelle „Rennsteig“? Die Disponentin der Leitstelle: sachlich, knapp, ruhig unter Druck, Funkdisziplin. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Bettina – Warm Customer Care Agent (VwrOyjuYiIhDmERAlgrS)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ed9b05e6324c457685490352e9a1ec90/voices/VwrOyjuYiIhDmERAlgrS/z6UjrbTom2STxjHRQCvf.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Rennsteig an alle: Spezialkräfte übernehmen. Zufahrten dicht machen.“"
+ },
+ {
+  "id": "stimme:gl_funk:streife:zNeD2iChxecwCPSfaTPY",
+  "titel": "Polizeifunk – Streifenwagen („Schleuse 12“, „Bussard 1“) – Mithat Demir",
+  "was": "Passt die Stimme zu Polizeifunk – Streifenwagen („Schleuse 12“, „Bussard 1“)? Der Mann im Streifenwagen (Zeilen, die mit „Schleuse 12 …“, „Bussard 1 …“ oder „Verstanden …“ beginnen): knapp, etwas außer Atem, Motorgeräusch im Rücken. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Mithat Demir (zNeD2iChxecwCPSfaTPY)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/1677caf7c52741b8b8edb535e98d229e/voices/zNeD2iChxecwCPSfaTPY/74e68ee9-6766-4b7f-8004-50b58905569f.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Schleuse 14: Der ist über den Acker! Der Bauer wird sich freuen.“"
+ },
+ {
+  "id": "stimme:gl_funk:streife:0F7T2CzC9m1e5vPviVmT",
+  "titel": "Polizeifunk – Streifenwagen („Schleuse 12“, „Bussard 1“) – Peter – Audiobook & Documentary Narrator",
+  "was": "Passt die Stimme zu Polizeifunk – Streifenwagen („Schleuse 12“, „Bussard 1“)? Der Mann im Streifenwagen (Zeilen, die mit „Schleuse 12 …“, „Bussard 1 …“ oder „Verstanden …“ beginnen): knapp, etwas außer Atem, Motorgeräusch im Rücken. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Peter – Audiobook & Documentary Narrator (0F7T2CzC9m1e5vPviVmT)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/user/liMg5KPwbWVuWA5ukXq2Y2vQUbE2/voices/0F7T2CzC9m1e5vPviVmT/uVsf9YcZMyr5d3v2wPx9.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Schleuse 14: Der ist über den Acker! Der Bauer wird sich freuen.“"
+ },
+ {
+  "id": "stimme:gl_polizei1:BDqe1qZiwPi7xspRxTgh",
+  "titel": "Polizist – Roderich – Crude & Ruthless",
+  "was": "Passt die Stimme zu Polizist? 38, Streifenpolizist; ruft, rennt, befiehlt. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Roderich – Crude & Ruthless (BDqe1qZiwPi7xspRxTgh)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/BDqe1qZiwPi7xspRxTgh/QoLoROIqj9n0yJjIZ816.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Halt! Polizei!“"
+ },
+ {
+  "id": "stimme:gl_polizei1:nsFsExJHz4xV1sOX6Kdn",
+  "titel": "Polizist – Christian Plasa – Social Media",
+  "was": "Passt die Stimme zu Polizist? 38, Streifenpolizist; ruft, rennt, befiehlt. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Christian Plasa – Social Media (nsFsExJHz4xV1sOX6Kdn)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/408f5707fa3a40c1b8a789ad0430380e/voices/nsFsExJHz4xV1sOX6Kdn/rKyVND68JwbPvPEgQ07Q.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Halt! Polizei!“"
+ },
+ {
+  "id": "stimme:gl_polizei2:KzAyD2tTf9r77ytc2bYC",
+  "titel": "Polizistin – Lola – Female Action Character",
+  "was": "Passt die Stimme zu Polizistin? 33, Streifenpolizistin; bestimmt, laut, außer Atem beim Laufen. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Lola – Female Action Character (KzAyD2tTf9r77ytc2bYC)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a53258044834171a20d693794566080/voices/KzAyD2tTf9r77ytc2bYC/ki0Y6g1kXzj13srBsXKU.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Halt! Polizei!“"
+ },
+ {
+  "id": "stimme:gl_polizei2:lXDrVXQgT1lmdco6ryhE",
+  "titel": "Polizistin – Clementine | Crisp and Assertive",
+  "was": "Passt die Stimme zu Polizistin? 33, Streifenpolizistin; bestimmt, laut, außer Atem beim Laufen. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Clementine | Crisp and Assertive (lXDrVXQgT1lmdco6ryhE)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/lXDrVXQgT1lmdco6ryhE/KmkDAbuZtZL0TULXAnXv.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Halt! Polizei!“"
+ },
+ {
+  "id": "stimme:gl_wache1:BDqe1qZiwPi7xspRxTgh",
+  "titel": "Wachmann (Außenlager) – Roderich – Crude & Ruthless",
+  "was": "Passt die Stimme zu Wachmann (Außenlager)? 40, Wachmann bei Krähwinkel, schreit über den Hof, flucht. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Roderich – Crude & Ruthless (BDqe1qZiwPi7xspRxTgh)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/BDqe1qZiwPi7xspRxTgh/QoLoROIqj9n0yJjIZ816.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „He! Da ist einer! Stehenbleiben!“"
+ },
+ {
+  "id": "stimme:gl_wache1:IVOxk5cceHtyIS9ovqvK",
+  "titel": "Wachmann (Außenlager) – Simon Sqittorq (Schweizer Akzent)",
+  "was": "Passt die Stimme zu Wachmann (Außenlager)? 40, Wachmann bei Krähwinkel, schreit über den Hof, flucht. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Simon Sqittorq (Schweizer Akzent) (IVOxk5cceHtyIS9ovqvK)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5be7e0dfc5184e41ac6f200563de5b90/voices/IVOxk5cceHtyIS9ovqvK/2bbd67c5-ef60-490d-89c9-d794c0d7c68c.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „He! Da ist einer! Stehenbleiben!“"
+ },
+ {
+  "id": "stimme:gl_wache2:zNeD2iChxecwCPSfaTPY",
+  "titel": "Wachmann (zweiter) – Mithat Demir",
+  "was": "Passt die Stimme zu Wachmann (zweiter)? 35, der zweite Wachmann, telefoniert hektisch mit der Zentrale. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Mithat Demir (zNeD2iChxecwCPSfaTPY)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/1677caf7c52741b8b8edb535e98d229e/voices/zNeD2iChxecwCPSfaTPY/74e68ee9-6766-4b7f-8004-50b58905569f.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Zentrale? Einbruch im Außenlager. Ja, jetzt gerade!“"
+ },
+ {
+  "id": "stimme:gl_wache2:1DwTnatVV6DjV1wDcwUd",
+  "titel": "Wachmann (zweiter) – Jakob – Natürliche deutsche Stimme",
+  "was": "Passt die Stimme zu Wachmann (zweiter)? 35, der zweite Wachmann, telefoniert hektisch mit der Zentrale. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Jakob – Natürliche deutsche Stimme (1DwTnatVV6DjV1wDcwUd)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/a6061d7c44b24647807972f42fe47cc1/voices/1DwTnatVV6DjV1wDcwUd/08e91d8f-3d1d-4f50-9823-2d4678adcf09.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Zentrale? Einbruch im Außenlager. Ja, jetzt gerade!“"
+ },
+ {
+  "id": "stimme:gl_wache3:HnpxLFIC9u8kpNYbKwes",
+  "titel": "Fahrer (Wache 3) – Erin – Funky, Rich, Mature",
+  "was": "Passt die Stimme zu Fahrer (Wache 3)? 47, Krähwinkels Fahrer, bläst den Einsatz ab. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Erin – Funky, Rich, Mature (HnpxLFIC9u8kpNYbKwes)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/bebee4ca953840a2a23208622a7d639d/voices/HnpxLFIC9u8kpNYbKwes/whsCUz6GRSPF2jZ2hKcL.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Die haben Fotos! Leuchtkugel, Abbruch – alles in den Wagen!“"
+ },
+ {
+  "id": "stimme:gl_kraeh:VHYWoxffK1pFlM1dtRb0",
+  "titel": "Dieter Krähwinkel – Thomas – German Bariton for Literature",
+  "was": "Passt die Stimme zu Dieter Krähwinkel? 58, der Spediteur, sucht die andere Hälfte der Karte. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Thomas – German Bariton for Literature (VHYWoxffK1pFlM1dtRb0)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/4d610380a893406e847c9c6687481452/voices/VHYWoxffK1pFlM1dtRb0/cec88af9-73f1-4cc3-8b65-2b16114b4d1b.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Ich bin Spediteur. Ich bringe Dinge dahin, wo sie hingehören.“"
+ },
+ {
+  "id": "stimme:gl_kraeh:1KGG4Q8LqRdNII9xBurw",
+  "titel": "Dieter Krähwinkel – M. Danisch",
+  "was": "Passt die Stimme zu Dieter Krähwinkel? 58, der Spediteur, sucht die andere Hälfte der Karte. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: M. Danisch (1KGG4Q8LqRdNII9xBurw)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/2eba3ecf58994be094d8a0e70c36d57f/voices/1KGG4Q8LqRdNII9xBurw/2pl0i0BoD9LOkmkEoXuB.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Ich bin Spediteur. Ich bringe Dinge dahin, wo sie hingehören.“"
+ },
+ {
+  "id": "stimme:gl_lutz:t4UzaTDxAVxvWIx7Q1hY",
+  "titel": "Lutz (1989) – Dominic – Young & Empathetic",
+  "was": "Passt die Stimme zu Lutz (1989)? 30, Grenzer 1989, übergibt Gerhard die Kiste. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Dominic – Young & Empathetic (t4UzaTDxAVxvWIx7Q1hY)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/f3c0486c60be4265bfe2c426db6d9801/voices/t4UzaTDxAVxvWIx7Q1hY/36f02063-0be0-4579-9db7-13742b04b87a.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Frag nicht, was drin ist. Ich weiß es selber nur halb.“"
+ },
+ {
+  "id": "stimme:gl_lutz:t7z7JVU64WYfp4GSw7aZ",
+  "titel": "Lutz (1989) – Noah – Warm, Professionell, Nahbar",
+  "was": "Passt die Stimme zu Lutz (1989)? 30, Grenzer 1989, übergibt Gerhard die Kiste. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Noah – Warm, Professionell, Nahbar (t7z7JVU64WYfp4GSw7aZ)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/t7z7JVU64WYfp4GSw7aZ/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJiNDhlYTg3YWFkNDE0ZDhhYjEyNzQxY2Y1M2ZjM2FlMCIsImZpbGVuYW1lIjoiU3RxSXNCblpCRmVOWWxaVHVISzEubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Frag nicht, was drin ist. Ich weiß es selber nur halb.“"
+ },
+ {
+  "id": "stimme:gl_abv:1KGG4Q8LqRdNII9xBurw",
+  "titel": "Der ABV (1989) – M. Danisch",
+  "was": "Passt die Stimme zu Der ABV (1989)? 50, Abschnittsbevollmächtigter der Volkspolizei 1989. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: M. Danisch (1KGG4Q8LqRdNII9xBurw)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/2eba3ecf58994be094d8a0e70c36d57f/voices/1KGG4Q8LqRdNII9xBurw/2pl0i0BoD9LOkmkEoXuB.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Was ist in der Kiste?“"
+ },
+ {
+  "id": "stimme:gl_abv:GPj7TWARaf5fPNhxhOI6",
+  "titel": "Der ABV (1989) – Darius – Grumpy & Critical (Hubert im Dorf!)",
+  "was": "Passt die Stimme zu Der ABV (1989)? 50, Abschnittsbevollmächtigter der Volkspolizei 1989. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Darius – Grumpy & Critical (Hubert im Dorf!) (GPj7TWARaf5fPNhxhOI6)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/GPj7TWARaf5fPNhxhOI6/B1Kft24jbJNmH0y26Q7R.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Was ist in der Kiste?“"
+ },
+ {
+  "id": "stimme:gl_vopo:cUNmvfLD2G6l2g628j6f",
+  "titel": "Volkspolizist (1989) – Sam",
+  "was": "Passt die Stimme zu Volkspolizist (1989)? 28, junger Volkspolizist, ruft „Stehenbleiben!“. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Sam (cUNmvfLD2G6l2g628j6f)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/cda20af073ad44f1b68f20ad5cf7dbb9/voices/cUNmvfLD2G6l2g628j6f/OPwBvLJGegZrOpYyaxVM.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Stehenbleiben!“"
+ },
+ {
+  "id": "stimme:gl_horst:CD5xyRjkR74P5qby9tmm",
+  "titel": "Horst (1989) – Axel – ruhig, erzählend, leicht rauh",
+  "was": "Passt die Stimme zu Horst (1989)? 58, Nachbar 1989, schimpft über die Briketts. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Axel – ruhig, erzählend, leicht rauh (CD5xyRjkR74P5qby9tmm)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/9aa2a95d870b442cb7e0a94364be7e6c/voices/CD5xyRjkR74P5qby9tmm/3ad569ba-0311-4778-828c-7526ab2f4cf1.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Zwanzig Zentner Briketts, und keiner da, der mit anfasst. Alle im Westen.“"
+ },
+ {
+  "id": "stimme:gl_horst:eokb0hhuVX3JuAiUKucB",
+  "titel": "Horst (1989) – Schorsch (süddeutsch, rustikal)",
+  "was": "Passt die Stimme zu Horst (1989)? 58, Nachbar 1989, schimpft über die Briketts. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Schorsch (süddeutsch, rustikal) (eokb0hhuVX3JuAiUKucB)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/user/4o71nY0nh9a0z1dPntJVpBSMGGx1/voices/eokb0hhuVX3JuAiUKucB/492jzLjTBQOEE49AcWc4.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Zwanzig Zentner Briketts, und keiner da, der mit anfasst. Alle im Westen.“"
+ },
+ {
+  "id": "stimme:gl_werner:pfvZahoGcT3NdpxRuNkg",
+  "titel": "Werner (1989) – Bruno, der Bär – loving and cozy",
+  "was": "Passt die Stimme zu Werner (1989)? 61, skeptisch, will erst fahren, wenn er wieder reinkommt. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Bruno, der Bär – loving and cozy (pfvZahoGcT3NdpxRuNkg)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/pfvZahoGcT3NdpxRuNkg/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJiMjhjYzRhOWQwMzg0Y2Y5ODU3ODQwNjQ0YjQyOTI4MSIsImZpbGVuYW1lIjoianhHdWRnQlFRd3FpcUJ2TGwwNEoubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Ich fahr erst, wenn ich weiß, dass ich auch wieder reinkomme.“"
+ },
+ {
+  "id": "stimme:gl_kurt:YyYOpSknZlewhHezK5bv",
+  "titel": "Kurt (1989) – Oswald – Kind & Gentle Grandpa",
+  "was": "Passt die Stimme zu Kurt (1989)? 74, der Älteste auf der Straße 1989, hat 1952 und 1961 erlebt. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Oswald – Kind & Gentle Grandpa (YyYOpSknZlewhHezK5bv)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/YyYOpSknZlewhHezK5bv/30uGN9hnk661WTWiXWtn.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Pass auf dich auf, Junge. Wenn sich alles dreht, will mancher noch schnell was wegschaffen.“"
+ },
+ {
+  "id": "stimme:gl_kurt:R3XXDwKMU2YHwBcuYUH3",
+  "titel": "Kurt (1989) – Opa Johann – calm & wise",
+  "was": "Passt die Stimme zu Kurt (1989)? 74, der Älteste auf der Straße 1989, hat 1952 und 1961 erlebt. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Opa Johann – calm & wise (R3XXDwKMU2YHwBcuYUH3)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/R3XXDwKMU2YHwBcuYUH3/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJiMjhjYzRhOWQwMzg0Y2Y5ODU3ODQwNjQ0YjQyOTI4MSIsImZpbGVuYW1lIjoidmgyM2U0TXllZFNrd1BzRW1JNHUubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Pass auf dich auf, Junge. Wenn sich alles dreht, will mancher noch schnell was wegschaffen.“"
+ },
+ {
+  "id": "stimme:gl_erna:p2Wol3C7j3rHbfOrbL18",
+  "titel": "Erna (1989) – Oma’s Nähkästchen – Kitchen Stories & Anecdotes",
+  "was": "Passt die Stimme zu Erna (1989)? 66, Kopftuch und Kittel, weiß alles von allen. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Oma’s Nähkästchen – Kitchen Stories & Anecdotes (p2Wol3C7j3rHbfOrbL18)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/p2Wol3C7j3rHbfOrbL18/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ1c2VyX2lkIjoiaXFadlA5dU9GWWZVdzBCc0RVUVJtSHlFSEEwMiIsImZpbGVuYW1lIjoiNklpOHd3UnZuMzJ6UmR3NWhLZWkubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Was schleppst du denn da? Na, geht mich ja nichts an.“"
+ },
+ {
+  "id": "stimme:gl_erna:9VojQrRhoFFUbqyNRsxF",
+  "titel": "Erna (1989) – Kathy Calm – Deep Tone",
+  "was": "Passt die Stimme zu Erna (1989)? 66, Kopftuch und Kittel, weiß alles von allen. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Kathy Calm – Deep Tone (9VojQrRhoFFUbqyNRsxF)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/afdaf366a3454a0bad9d9a77d9b52b06/voices/9VojQrRhoFFUbqyNRsxF/oiCGopTXD83Nn6jOdcKj.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Was schleppst du denn da? Na, geht mich ja nichts an.“"
+ },
+ {
+  "id": "stimme:gl_renate:5kN3CFEeRreSoAQlWcb9",
+  "titel": "Renate (1989) – Julia",
+  "was": "Passt die Stimme zu Renate (1989)? 38, Mutter zweier Kinder, die nach Coburg wollen. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Julia (5kN3CFEeRreSoAQlWcb9)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/user/h38jBBdPmgeWuob0yrWClsEWKnY2/voices/5kN3CFEeRreSoAQlWcb9/LcTTfPoYye6z8fCeLPUb.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „In der Kaufhalle in Schleusingen gibt’s Apfelsinen. Kuba. Aber Apfelsinen.“"
+ },
+ {
+  "id": "stimme:gl_renate:4YKI1ONIhgWEKHyAHYPC",
+  "titel": "Renate (1989) – Susanne K – Friendly & Natural, Casual",
+  "was": "Passt die Stimme zu Renate (1989)? 38, Mutter zweier Kinder, die nach Coburg wollen. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Susanne K – Friendly & Natural, Casual (4YKI1ONIhgWEKHyAHYPC)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ed9b05e6324c457685490352e9a1ec90/voices/4YKI1ONIhgWEKHyAHYPC/R207ZPxYV5gWHZntJXoj.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „In der Kaufhalle in Schleusingen gibt’s Apfelsinen. Kuba. Aber Apfelsinen.“"
+ },
+ {
+  "id": "stimme:gl_brigitte:Ow8TnOLY7NuUU63qhHJB",
+  "titel": "Brigitte (1989) – Maureen – sympathische Frau mittleren Alters",
+  "was": "Passt die Stimme zu Brigitte (1989)? 57, erzählt vom Westfernsehen und vom Waffenschmied. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Maureen – sympathische Frau mittleren Alters (Ow8TnOLY7NuUU63qhHJB)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/user/W5UXM0OeUPgGrUSCxsc1JNXR9363/voices/Ow8TnOLY7NuUU63qhHJB/16637aa8-ea2a-4051-b1cd-50fd3504abbb.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Gestern Abend haben wir es im Westfernsehen gesehen. Geglaubt hab ich es erst heute früh.“"
+ },
+ {
+  "id": "stimme:gl_gisela:V8IDMv79XsMfnx3b9E2U",
+  "titel": "Gisela (1989, Konsum) – Moreana – Dark, Charismatic",
+  "was": "Passt die Stimme zu Gisela (1989, Konsum)? 46, die Verkäuferin im Konsum. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Moreana – Dark, Charismatic (V8IDMv79XsMfnx3b9E2U)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ed6a18bcf7b94126b8403c45cae4329a/voices/V8IDMv79XsMfnx3b9E2U/bfyd0yrDrbJLZsFrVvy4.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Bananen? Gerhard. Wir haben November.“"
+ },
+ {
+  "id": "stimme:gl_gisela:QR3u6NImjjOZiLeMunRk",
+  "titel": "Gisela (1989, Konsum) – Alina – Vertrauenserweckend & Ruhig",
+  "was": "Passt die Stimme zu Gisela (1989, Konsum)? 46, die Verkäuferin im Konsum. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Alina – Vertrauenserweckend & Ruhig (QR3u6NImjjOZiLeMunRk)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0746740cf0f443ccad94f10a60255b3c/voices/QR3u6NImjjOZiLeMunRk/ebe5cc4a-6a58-43a5-859d-3fd31159bfa1.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Bananen? Gerhard. Wir haben November.“"
+ },
+ {
+  "id": "stimme:gl_ines:fDEsK7MOSzHnJUs8bmQ8",
+  "titel": "Ines (1989) – Lola – Fantasy & LitRPG",
+  "was": "Passt die Stimme zu Ines (1989)? 20, freut sich auf die Disko im Kulturhaus, die Schwester ist über Ungarn weg. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Lola – Fantasy & LitRPG (fDEsK7MOSzHnJUs8bmQ8)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a53258044834171a20d693794566080/voices/fDEsK7MOSzHnJUs8bmQ8/bvF7kakWjtfVmYP0rlhJ.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Morgen ist Disko im Kulturhaus. Wenn dann noch einer hier ist.“"
+ },
+ {
+  "id": "stimme:gl_ines:paJLeKT4SGdqKEMFGc6U",
+  "titel": "Ines (1989) – Melissa – warm & calm",
+  "was": "Passt die Stimme zu Ines (1989)? 20, freut sich auf die Disko im Kulturhaus, die Schwester ist über Ungarn weg. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Melissa – warm & calm (paJLeKT4SGdqKEMFGc6U)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/51c0046bdfc14b9f9dd11e0f2b0c3aed/voices/paJLeKT4SGdqKEMFGc6U/6d5880b8-a179-4c0d-bcd0-852b212514ab.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Morgen ist Disko im Kulturhaus. Wenn dann noch einer hier ist.“"
+ },
+ {
+  "id": "stimme:gl_r_grenzland:utkd5fchbspYG3Ld0zt0",
+  "titel": "Matze (Radio Grenzland) – Dan – Radio Host / Moderator",
+  "was": "Passt die Stimme zu Matze (Radio Grenzland)? 45, Moderator des Lokalradios, trocken-witzig, Plauderton zwischen Polizeibericht und Karpfen. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Dan – Radio Host / Moderator (utkd5fchbspYG3Ld0zt0)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/utkd5fchbspYG3Ld0zt0/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ1c2VyX2lkIjoiSmlKYjl1dG1NMFBEcWZBWVJiYUdHZmd2dlRqMiIsImZpbGVuYW1lIjoiTldTSmNqbVhNbFcyNUZNaDJlckkubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „An der Talsperre beißen die Karpfen. Die Angler schweigen dazu – wie zu allem.“"
+ },
+ {
+  "id": "stimme:gl_r_grenzland:r0AkgGRNBikUnbVKxtHG",
+  "titel": "Matze (Radio Grenzland) – Tom – Youthful Austrian (TV-Moderator)",
+  "was": "Passt die Stimme zu Matze (Radio Grenzland)? 45, Moderator des Lokalradios, trocken-witzig, Plauderton zwischen Polizeibericht und Karpfen. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Tom – Youthful Austrian (TV-Moderator) (r0AkgGRNBikUnbVKxtHG)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/r0AkgGRNBikUnbVKxtHG/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI1MjQ0YjMwNjVhNjI0YmUyYjIwNzY4ZDU0MzYyNThmNSIsImZpbGVuYW1lIjoiYTk3MzFkYzktOGExMS00NWQ0LThmNzctNDgxZmJmYmNlYzBjLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „An der Talsperre beißen die Karpfen. Die Angler schweigen dazu – wie zu allem.“"
+ },
+ {
+  "id": "stimme:gl_r_kirmes:5Aahq892EEb6MdNwMM3p",
+  "titel": "Gundula (Kirmeswelle) – Laura – Werbung & Social Media",
+  "was": "Passt die Stimme zu Gundula (Kirmeswelle)? 58, Schlagerradio, Grüße und Frühschoppen. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Laura – Werbung & Social Media (5Aahq892EEb6MdNwMM3p)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://api.us.elevenlabs.io/v1/voices/5Aahq892EEb6MdNwMM3p/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ1c2VyX2lkIjoiR2xOUlhZRmNpNWVkZHZCZmNVYk1XdThuTTQzMyIsImZpbGVuYW1lIjoiMU5XeWVaUUp1ZTl1MVlueFBRcVoubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Die Kirmeswelle. Wo jeder Tag ein Sonntag ist und jeder Sonntag Frühschoppen.“"
+ },
+ {
+  "id": "stimme:gl_r_klassik:XJWHuOvSoCriK1Q4wPAN",
+  "titel": "Frau Dr. Sommerlatte (Klassik am Kamm) – Judith Maas – Art & Culture",
+  "was": "Passt die Stimme zu Frau Dr. Sommerlatte (Klassik am Kamm)? 61, Klassikradio, gebildet, langsam, feiner Humor. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Judith Maas – Art & Culture (XJWHuOvSoCriK1Q4wPAN)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/25ae641729924300a213545fe4060ee3/voices/XJWHuOvSoCriK1Q4wPAN/6T2YBn0xrn8EmJ12MDg3.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Sie hören Klassik am Kamm. Bitte nicht klatschen, wir sind im Radio.“"
+ },
+ {
+  "id": "stimme:gl_r_blasius:vjMckQpQGHArc0Q8xmo6",
+  "titel": "Schorsch (Radio Blasius, Oberfranken) – FloZirkusFM (bairisch)",
+  "was": "Passt die Stimme zu Schorsch (Radio Blasius, Oberfranken)? 63, Blasmusik aus Oberfranken, gemütlich, stolz auf Franken. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: FloZirkusFM (bairisch) (vjMckQpQGHArc0Q8xmo6)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/user/FL7gMJbOs2cP8jzdqyWhaxJ95GU2/voices/vjMckQpQGHArc0Q8xmo6/1oM03I4HWAEawfOCHaK0.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Radio Blasius aus Oberfranken. Bayern ist das Bundesland. Franken sind wir.“"
+ },
+ {
+  "id": "stimme:gl_r_neon:gSZiss4v1BGsE1cTgoWF",
+  "titel": "Synthia (Neonfunk) – Lola – The Ad Voice",
+  "was": "Passt die Stimme zu Synthia (Neonfunk)? 31, Synthpop & New Wave, cool, ironisch, Achtziger-Glanz. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Lola – The Ad Voice (gSZiss4v1BGsE1cTgoWF)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a53258044834171a20d693794566080/voices/gSZiss4v1BGsE1cTgoWF/EjGHdnKgIsJ2tijHkClk.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Neonfunk – Musik aus Strom. Hundert Prozent Synthese, null Prozent Gitarrenkoffer.“"
+ },
+ {
+  "id": "stimme:gl_r_neon:Gt7OshJCH7MuzX96wFHi",
+  "titel": "Synthia (Neonfunk) – Ina Incredible",
+  "was": "Passt die Stimme zu Synthia (Neonfunk)? 31, Synthpop & New Wave, cool, ironisch, Achtziger-Glanz. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Ina Incredible (Gt7OshJCH7MuzX96wFHi)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/Gt7OshJCH7MuzX96wFHi/ccmHlGpBWm6YdKIF5Gyf.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Neonfunk – Musik aus Strom. Hundert Prozent Synthese, null Prozent Gitarrenkoffer.“"
+ },
+ {
+  "id": "stimme:gl_r_republik:76ZsWRKclBS6MNPWxaLc",
+  "titel": "Der Sprecher (Radio Republik, 1989) – Volker – Professionelle warme Stimme",
+  "was": "Passt die Stimme zu Der Sprecher (Radio Republik, 1989)? 52, Nachrichtensprecher des DDR-Rundfunks 1989. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Volker – Professionelle warme Stimme (76ZsWRKclBS6MNPWxaLc)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/c61b89290d9c4d9994bd65598c18d381/voices/76ZsWRKclBS6MNPWxaLc/M9HzSSjcF3rOqLQki9vi.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Besondere Vorkommnisse im Kreis: keine. So steht es jedenfalls im Rapport.“"
+ },
+ {
+  "id": "stimme:gl_r_impuls:Utm9RYMyBhvkjOgvnWNB",
+  "titel": "Kati (Impuls, Jugendradio 1989) – Livia – Expressive & Dynamic",
+  "was": "Passt die Stimme zu Kati (Impuls, Jugendradio 1989)? 24, DDR-Jugendradio im Herbst 89, plötzlich ohne Manuskript. (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Livia – Expressive & Dynamic (Utm9RYMyBhvkjOgvnWNB)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/d6ca71536a6f46fbae5c51349a1b4e04/voices/Utm9RYMyBhvkjOgvnWNB/d0Se8vksP6OmqEulqE5D.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Impuls – das Jugendradio. Heute ohne Manuskript.“"
+ },
+ {
+  "id": "stimme:gl_r_funkloch:ntwcx49ZcqEarZ2so6jP",
+  "titel": "DJ von Funkloch FM (neu, ton-radio) – Jan – Laid-back Storyteller",
+  "was": "Passt die Stimme zu DJ von Funkloch FM (neu, ton-radio)? Rap & Elektro, jung, aus der Gegend, trockener Humor (ton-radio erfindet die Figur; Schlüssel 'gl_r_funkloch', wenn die Station 'funkloch' heißt). (👍 = in die engere Wahl)",
+  "quelle": "ElevenLabs-Bibliothek: Jan – Laid-back Storyteller (ntwcx49ZcqEarZ2so6jP)",
+  "lizenz": "KI-Stimme (ElevenLabs Text-to-Speech, Stimme aus der ElevenLabs-Bibliothek; Nutzung nach den Bedingungen des ElevenLabs-Kontos)",
+  "url": "https://storage.googleapis.com/eleven-public-prod/database/workspace/86b732f4681e45d58a26b287a7fc2de7/voices/ntwcx49ZcqEarZ2so6jP/35sXfQQ4A0QK60uk7Oej.mp3",
+  "notiz": "die Hörprobe des Sprechers aus der Bibliothek (ein anderer Text) – unser Satz kommt, sobald der Schlüssel da ist: „Funkloch FM. Wenn ihr uns hört, habt ihr Netz.“"
+ }
+]

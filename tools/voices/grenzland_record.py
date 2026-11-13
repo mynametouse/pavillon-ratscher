@@ -9,11 +9,23 @@
 # list go. The budget (all files ≤ 12 MB, each < 5 MB): the story (prio 1) and the world (2) always, then as far as it goes the reactions of the story's
 # people (2.5), the talk stations (3), the reactions of everybody else (3.5), the other stations (4) – 2.5, 3.5 and 4 a whole person each.
 #   python3 tools/voices/grenzland_record.py        (GL_BUDGET=bytes, GL_ONLY=<who,…> to try a few people, GL_DRY=1 nothing recorded)
+# ton-stimmen (14.11.2026): ElevenLabs as a second engine (tools/voices/grenzland_eleven.py; Edge stays the default):
+#   --engine eleven   the lines of every person with a chosen voice (tools/voices/besetzung.json 'gewaehlt') with ElevenLabs – model
+#                     GL_EL_MODEL (default besetzung.json modelle.wahl, else eleven_v3), direction tags of the line (regie), credits within
+#                     GL_EL_BUDGET (the lead's go); same paths, ids, loudness and formats as Edge. An Edge run keeps ElevenLabs recordings.
+#   --probe           the casting samples (each candidate says the person's line) · --modelltest  3 lines with direction × 3 models
+#   --hoerprobe       only the list tools/ton/hoerprobe/ton-stimmen.json · --selbsttest  the offline checks (budget guard, choice, tags)
+#   (no ELEVENLABS_API_KEY: every ElevenLabs step says „ELEVENLABS_API_KEY fehlt – übersprungen“ and the Edge lines are recorded as always)
+# Call lines (gl_tel_<who>, the other side of a phone call) get the phone's band in the person's voice; the street's people (gl_l_<m|f><age>)
+# a voice of the pool by gender and age.
 import asyncio, json, os, re, subprocess, sys, zlib
+import grenzland_eleven as EL
 from itertools import groupby
 H = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(H, '..', '..'))
-EX = os.path.join(ROOT, 'viz3', 'extra', 'grenzland-stimmen'); OUT = os.path.join(EX, 'dist', 'snd', 'voice', 'gl')
-TMP = os.path.join(ROOT, 'out', 'grenzland-stimmen')
+# (GL_EX, GL_LINIEN, GL_TMP: another extra folder, list and scratch folder – the tests use them)
+EX = os.environ.get('GL_EX') or os.path.join(ROOT, 'viz3', 'extra', 'grenzland-stimmen'); OUT = os.path.join(EX, 'dist', 'snd', 'voice', 'gl')
+TMP = os.environ.get('GL_TMP') or os.path.join(ROOT, 'out', 'grenzland-stimmen')
+LINIEN = os.environ.get('GL_LINIEN') or os.path.join(H, 'grenzland_linien.json')
 BUDGET = int(os.environ.get('GL_BUDGET', 11_600_000))   # the MP3 files; with the two lists the folder stays under 12 MB (lead, 13.11. ~14:00)
 FX = 'fx1'   # the version of the sound chains below: a new one records everything again
 
@@ -113,9 +125,22 @@ KIND = {
 FEM = re.compile(r'Katja|Amala|Seraphina|Ingrid|Leni|Emma|Ava|Elke|Tanja')
 def h32(s): return zlib.crc32(s.encode('utf8'))
 def unit(p): return p >= 4 or p % 1 == 0.5   # a whole person or nothing
+TEL = re.compile(r'^gl_tel_')
+LEUTE = re.compile(r'^gl_l_([mf])(\d+)')
+HOERER = re.compile(r'^gl_(r_)?(anrufer|hoerer|hörer)')
 def setting(l, cast, have):
     """(voice, rate, pitch, kind) of a line"""
     w = l['who']
+    if TEL.match(w):
+        # the other side of a phone call: the person's own voice through the phone's band
+        base = dict(l, who='gl_' + w[7:])
+        voice, rate, pitch, kind = setting(base, cast, have)
+        return voice, rate, pitch, 'pt'
+    m = LEUTE.match(w)
+    if m:
+        # a passer-by: gender and age are in the key; heard from a few metres (16 kHz)
+        c = {'g': m.group(1), 'age': int(m.group(2))}
+        cast = dict(cast, **{w: c})
     if w in CAST:
         pref, rate, pitch, kind = CAST[w]
         if kind == 'f':
@@ -127,7 +152,8 @@ def setting(l, cast, have):
         j = h32(w) % 7 - 3
         rate = '%+d%%' % ((-8 if age >= 65 else 6 if age < 30 else 0) + j); pitch = '%+dHz' % ((-6 if age >= 65 else 3 if age < 30 else 0) + j)
         kind = 'r' if w.startswith('gl_r_') else squelch(l['text']) if w.startswith('gl_funk') else 'p'
-    if kind == 'p' and l.get('prio', 2) % 1 == 0.5: kind = 'pq'
+        if HOERER.match(w): kind = 'pt'
+    if kind == 'p' and (l.get('prio', 2) % 1 == 0.5 or LEUTE.match(w)): kind = 'pq'
     g = 'f' if FEM.search(pref[0]) else 'm'
     voice = next((v for v in pref if v in have), None) or next((v for v in POOL[g] if v in have), None)
     return voice, rate, pitch, kind
@@ -146,6 +172,10 @@ async def tts(text, voice, rate, pitch, raw, tries=4):
 KIND.update({k: KIND['f'] for k in ('fi', 'fo', 'fm')})
 # the many small reactions (welt): a person's sound at 16 kHz, 24 kbit/s (heard in the street, often from a few metres)
 KIND['pq'] = dict(KIND['p'], ar=16000, br='24k', bps=3000)
+# the other side of a phone call (gl_tel_<who>) and the radio's callers: the phone's band 300–3400 Hz, a little compressed and driven, quieter
+KIND['pt'] = {'af': ('highpass=f=300,highpass=f=300,lowpass=f=3400,lowpass=f=3400,'
+                     'acompressor=threshold=-24dB:ratio=4:attack=4:release=80:makeup=4,equalizer=f=1800:t=q:w=1.2:g=3,'
+                     'asoftclip=type=tanh,loudnorm=I=-19:TP=-2:LRA=6'), 'ar': 16000, 'br': '24k', 'bps': 3000}
 def encode(raw, mp3, kind):
     K = KIND[kind]
     if kind.startswith('f'):
@@ -171,10 +201,11 @@ def lufs(f):
 
 async def main():
     os.makedirs(OUT, exist_ok=True); os.makedirs(TMP, exist_ok=True)
-    doc = json.load(open(os.path.join(H, 'grenzland_linien.json')))
+    doc = json.load(open(LINIEN))
     lines, cast = doc['lines'], doc.get('cast', {})
     only = [w for w in os.environ.get('GL_ONLY', '').split(',') if w]
-    if os.environ.get('GL_DRY'):
+    if os.environ.get('GL_DRY') or os.environ.get('GL_EDGE_STATIC'):
+        # (a dry run, or a test without the Edge service: the voices of the table count as offered)
         have = {v for pref, *_ in CAST.values() for v in pref} | {v for p in POOL.values() for v in p} | set(FUNK_PATROL[0])
     else:
         import edge_tts
@@ -184,6 +215,19 @@ async def main():
     old = json.load(open(af)) if os.path.exists(af) else {}
     # a voice that gave no audio for a person: the person's next voice, for all their lines (kept in aufnahmen.json '_bad')
     bad = old.pop('_bad', {})
+    # ElevenLabs (--engine eleven): the people with a chosen voice; the credits within GL_EL_BUDGET (the ledger of grenzland_eleven.py)
+    B, RT = EL.besetzung(), EL.regie_table()
+    engine = 'eleven' if '--engine' in sys.argv and sys.argv[sys.argv.index('--engine') + 1:][:1] == ['eleven'] else 'edge'
+    if engine == 'eleven' and not EL.key() and not os.environ.get('GL_DRY'):
+        print('::notice title=grenzland_record::' + EL.FEHLT + ' (es bleibt bei Edge)', flush=True); engine = 'edge'
+    elmodel = os.environ.get('GL_EL_MODEL') or B.get('modelle', {}).get('wahl') or 'eleven_v3'
+    LED = EL.ledger(); Bud = EL.Budget(EL.budget_limit(), LED.get('_credits', 0))
+    def el_of(l, kind):
+        """(voice id, sig, the text sent, credits) when the line's person has a chosen ElevenLabs voice, else None"""
+        v = EL.gewaehlt(l['who'], l['text'], B)
+        if not v: return None
+        tags = EL.tags_of(l, RT); text = EL.el_text(l['text'], tags, elmodel)
+        return v, '|'.join(['el', v, elmodel, ','.join(tags), kind, FX]), text, EL.cost(text, elmodel)
     def plan():
         """the budget: in the order of prio (the collector's order within one), the files that stay count with their size, new ones
         estimated → want {id: (line, voice, rate, pitch, kind, sig, mp3, keep)}, the ids to record, the lines over the budget.
@@ -191,6 +235,7 @@ async def main():
         device-voice ones sounds wrong)"""
         order = sorted(range(len(lines)), key=lambda i: (lines[i].get('prio', 2), i))
         want, total, cut, todo, items = {}, 0, [], [], []
+        credits = 0
         def take(l, st, size):
             nonlocal total
             total += size
@@ -203,7 +248,18 @@ async def main():
             sig = '|'.join([voice, rate, pitch, kind, FX])
             mp3 = os.path.join(OUT, l['id'] + '.mp3')
             a = old.get(l['id'], {})
-            keep = a.get('sig') == sig and os.path.exists(mp3) and sound(a, l['text'], rate)
+            ok = os.path.exists(mp3) and sound(a, l['text'], rate)
+            e = el_of(l, kind)
+            asig = str(a.get('sig', ''))
+            if e and engine == 'eleven' and (asig == e[1] or Bud.fits(credits + e[3])):
+                # ElevenLabs: the chosen voice, the model, the direction – a recording with the same settings stays
+                keep = asig == e[1] and ok
+                if not keep: credits += e[3]
+                voice, rate, pitch, sig = 'el:' + e[0], '+0%', '+0Hz', e[1]
+            else:
+                # Edge – a recording of ElevenLabs of the chosen voice stays (a change of direction or model waits for --engine eleven)
+                keep = ok and (asig == sig or bool(e and asig.startswith('el|' + e[0] + '|')))
+                if keep and asig != sig: voice, rate, pitch, sig = 'el:' + e[0], '+0%', '+0Hz', asig
             if only and l['who'] not in only and not keep: continue
             size = os.path.getsize(mp3) if keep else int(expect(l['text'], rate) * KIND[kind]['bps']) + 800
             items.append((l, (voice, rate, pitch, kind, sig, mp3, keep), size))
@@ -224,7 +280,11 @@ async def main():
                     take(*e)
         return want, todo, cut, total
     want, todo, cut, total = plan()
-    print(f'{len(want)} lines wanted ({len(todo)} to record), ≈ {total / 1e6:.2f} MB of {BUDGET / 1e6:.2f} MB; {len(cut)} lines over the budget (they keep the device voice)', flush=True)
+    eltodo = [k for k in todo if want[k][1].startswith('el:')]
+    print(f'{len(want)} lines wanted ({len(todo)} to record, {len(eltodo)} with ElevenLabs {elmodel if eltodo else ""}), ≈ {total / 1e6:.2f} MB of {BUDGET / 1e6:.2f} MB; {len(cut)} lines over the budget (they keep the device voice)', flush=True)
+    if engine == 'eleven':
+        n = sum(EL.cost(EL.el_text(want[k][0]['text'], EL.tags_of(want[k][0], RT), elmodel), elmodel) for k in eltodo)
+        print(f'::notice title=grenzland_record::ElevenLabs {elmodel}: {len(eltodo)} lines, {n} credits planned; {Bud}', flush=True)
     if os.environ.get('GL_DRY'):
         for k in todo[:12]: l, voice, rate, pitch, kind, *_ = want[k]; print('  would record', l['who'], voice, rate, pitch, kind, l['text'][:60])
         per = {}
@@ -245,15 +305,46 @@ async def main():
         old[k] = a
         print('ok', k, a['dur'], 's', a['lufs'], 'LUFS', flush=True)
         return True
+    E = EL.Eleven(EL.key()) if engine == 'eleven' else None
+    async def one_el(k, sem):
+        """a line with ElevenLabs: the chosen voice, the model, the direction tags in the text – then the same chain as Edge"""
+        l, voice, rate, pitch, kind, sig, mp3, keep = want[k]
+        e = el_of(l, kind)
+        if not e or not Bud.fits(e[3]): print('over the credits', k, flush=True); return False
+        raw = os.path.join(TMP, k + '.el.mp3')
+        async with sem:
+            try:
+                b, _h = await asyncio.to_thread(E.tts, e[0], e[2], elmodel, EL.el_settings(elmodel, EL.tags_of(l, RT)), EL.seed_of(k))
+            except EL.ElevenError as er:
+                print('FAILED', k, 'ElevenLabs', er, flush=True); return False
+        Bud.take(e[3])
+        open(raw, 'wb').write(b)
+        await asyncio.to_thread(encode, raw, mp3 + '.new.mp3', kind)
+        a = {'sig': sig, 'voice': voice, 'rate': rate, 'pitch': pitch, 'kind': kind, 'dur': round(dur(mp3 + '.new.mp3'), 2),
+             'lufs': lufs(mp3 + '.new.mp3'), 'bytes': os.path.getsize(mp3 + '.new.mp3'), 'model': elmodel, 'tags': EL.tags_of(l, RT)}
+        if not sound(a, l['text'], rate):
+            print('BROKEN', k, voice, a['dur'], 's', a['lufs'], 'LUFS', flush=True); os.remove(mp3 + '.new.mp3'); return False
+        # (only now the Edge recording is replaced – a failed request leaves the line as it was)
+        os.replace(mp3 + '.new.mp3', mp3)
+        old[k] = a
+        print('ok', k, 'ElevenLabs', a['dur'], 's', a['lufs'], 'LUFS', flush=True)
+        return True
     async def runs(ids, par, tries):
         sem = asyncio.Semaphore(par)
-        res = await asyncio.gather(*(one(k, sem, tries) for k in ids))
-        return [k for k, r in zip(ids, res) if not r]
+        el, ed = [k for k in ids if want[k][1].startswith('el:')], [k for k in ids if not want[k][1].startswith('el:')]
+        res = await asyncio.gather(*(one(k, sem, tries) for k in ed))
+        # ElevenLabs: two at a time (the plans allow 2–5 parallel requests)
+        sem2 = asyncio.Semaphore(2)
+        res2 = await asyncio.gather(*(one_el(k, sem2) for k in el)) if el else []
+        # (an ElevenLabs line that failed keeps its Edge recording, if it has one – it is not 'failed')
+        bad_el = [k for k, r in zip(el, res2) if not r and not (k in old and os.path.exists(want[k][6]))]
+        return [k for k, r in zip(ed, res) if not r] + bad_el
     async def again(ids):
         """what failed, one at a time, a person's voice after the other – a voice that fails twice in a row is given up at once (its
         remaining lines count as failed: the person then gets the next voice)"""
-        out, by = [], {}
-        for k in ids: by.setdefault((want[k][0]['who'], want[k][1]), []).append(k)
+        out, by = [k for k in ids if want[k][1].startswith('el:')], {}
+        for k in ids:
+            if not want[k][1].startswith('el:'): by.setdefault((want[k][0]['who'], want[k][1]), []).append(k)
         sem = asyncio.Semaphore(1)
         for (w, v), ks in by.items():
             # (a person without another voice – Gerhard keeps his voice of the village – gets more patience instead)
@@ -271,6 +362,7 @@ async def main():
     switch = {}
     for k in failed:
         l, voice = want[k][0], want[k][1]
+        if voice.startswith('el:'): continue
         pref = CAST.get(l['who'], ([],))[0]
         rest = [v for v in pref if v in have and v != voice and v not in bad.get(l['who'], [])]
         if rest and l['who'] not in switch: switch[l['who']] = voice
@@ -303,13 +395,22 @@ async def main():
             for j in [j for j in want if want[j][0]['who'] == w]: drop(j)
         else: drop(k)
     # the manifest: the lines in the collector's order (the story first), the voices of the people
-    vx_add, voices = [], {}
+    vx_add, voices, elv = [], {}, {}
     for l in lines:
         w = want.get(l['id'])
         if not w or l['id'] in failed or not os.path.exists(w[6]) or l['id'] not in old: continue
         vx_add.append({'who': l['who'], 'id': l['id'], 'text': l['text'], 'file': 'voice/gl/' + l['id'] + '.mp3', 'dur': old[l['id']]['dur']})
-        if not (w[4].startswith('f') and PATROL.match(l['text'])): voices.setdefault(l['who'], w[1])
-    json.dump({'vx': {'voices': voices}, 'vx_add': vx_add}, open(os.path.join(EX, 'manifest.json'), 'w'), ensure_ascii=False, indent=0)
+        if not (w[4].startswith('f') and PATROL.match(l['text'])):
+            # (the device's voice for a line without a recording stays the Edge voice, also where the recordings are ElevenLabs)
+            ev = w[1] if not w[1].startswith('el:') else setting(l, cast, have - set(bad.get(l['who'], [])))[0]
+            if ev: voices.setdefault(l['who'], ev)
+            g = EL.gewaehlt(l['who'], l['text'], B)
+            if g: elv.setdefault(l['who'], g)
+    vx = manifest_vx(voices, elv)
+    json.dump({'vx': vx, 'vx_add': vx_add}, open(os.path.join(EX, 'manifest.json'), 'w'), ensure_ascii=False, indent=0)
+    if engine == 'eleven':
+        LED2 = EL.ledger(); LED2['_credits'] = Bud.spent; EL.save_ledger(LED2)
+        print(f'::notice title=grenzland_record::ElevenLabs: {Bud}', flush=True)
     if bad: old['_bad'] = bad
     json.dump(old, open(af, 'w'), ensure_ascii=False, separators=(',', ':'), sort_keys=True)
     old.pop('_bad', None)
@@ -318,9 +419,25 @@ async def main():
     print(f'::notice title=grenzland_record::{len(vx_add)} lines recorded, {len(todo) - len(failed)} new, {len(failed)} without audio, '
           f'{len(cut)} radio lines over the budget, {size / 1e6:.2f} MB' + (f'; voices switched: {switch}' if switch else ''), flush=True)
     summary(lines, want, old, todo, failed, cut, size)
-    folder = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(EX) for f in fs)
+    # (the casting samples in probe/ are not served – only dist/ and the lists count)
+    folder = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(EX) for f in fs if not os.path.relpath(d, EX).startswith('probe'))
     print(f'the folder viz3/extra/grenzland-stimmen: {folder / 1e6:.2f} MB')
     if folder > 12_000_000: print('::warning title=grenzland_record::the folder is over 12 MB – lower GL_BUDGET')
+
+PERSON = re.compile(r'^gl_(?!r_|funk|tel_|l_|p_)')
+def manifest_vx(voices, elv):
+    """the manifest's vx: the Edge voice per person (VOICEX.voices – audio/stimme.js recOf, the device's voice in Edge and the engine
+    'microsoft') and the chosen ElevenLabs voice (VOICEX.el – for the engine 'eleven', see docs/features/grenzland-stimmen.md „Für den
+    Lead“); every person also as the AI person gl_p_<who> of the free talks (grenzland/gl_partner.js), so the AI Sarah sounds like the
+    recorded one"""
+    vx = {'voices': dict(voices)}
+    for w, v in voices.items():
+        if PERSON.match(w): vx['voices'].setdefault('gl_p_' + w[3:], v)
+    if elv:
+        vx['el'] = dict(elv)
+        for w, v in elv.items():
+            if PERSON.match(w): vx['el'].setdefault('gl_p_' + w[3:], v)
+    return vx
 
 def summary(lines, want, old, todo, failed, cut, size):
     """the job summary: the new lines (line, voice, seconds, loudness), per person, what is over the budget"""
@@ -344,4 +461,6 @@ def summary(lines, want, old, todo, failed, cut, size):
     if os.environ.get('GITHUB_STEP_SUMMARY'): open(os.environ['GITHUB_STEP_SUMMARY'], 'a').write(text)
 
 if __name__ == '__main__':
+    if '--selbsttest' in sys.argv: sys.exit(EL.selbsttest())
+    if any(a in sys.argv for a in ('--probe', '--modelltest', '--hoerprobe')): sys.exit(EL.main_probe(sys.argv))
     asyncio.run(main())

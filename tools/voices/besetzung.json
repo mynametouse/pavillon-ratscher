@@ -1,0 +1,485 @@
+{
+ "note": "Besetzung der Grenzland-Stimmen mit ElevenLabs (Hilfs-Agent ton-stimmen, 13./14.11.2026). Je Sprecher 2–3 Kandidaten aus der ElevenLabs-Bibliothek (deutsche Muttersprachler; gesucht mit dem ElevenLabs-Connector des Chats – nur Suche, nichts erzeugt). Falko wählt: 'gewaehlt' = die Voice-ID (null: es bleibt die Edge-Stimme). tools/voices/grenzland_record.py --engine eleven nimmt nur Personen mit 'gewaehlt' auf; --probe rendert für jeden Kandidaten den Satz 'probe' (Budget, Reihenfolge nach 'rang'). 'vorschau': die eigene Hörprobe des Sprechers in der Bibliothek (kostenlos anzuhören, anderer Text). Stimmen des Dorfs (audio/stimme.js EL_DEF) sind für niemand anderen vorgesehen – außer Gerhard, der im Dorf und in Grenzland derselbe Mann ist.",
+ "stand": "2026-11-14",
+ "suche": "ElevenLabs-Bibliothek, Sprache de; Suchen: Alter/Geschlecht, Akzent de-saxon/de-bavarian/de-berlinerisch, 'Franconian', 'fränkisch', 'Thüringen', 'Dialekt', 'Oma', 'Radio Moderator', 'Nachrichten' (13.11.2026, 23:55–00:10). Eine ostfränkische/hennebergische Stimme gibt es dort nicht; am nächsten: Martin (leicht thüringisch), Schorsch (süddeutsch-rustikal), FloZirkusFM und Tom (bairisch/österreichisch gefärbt) – siehe 'mundart' je Person.",
+ "modelle": {
+  "probe": "eleven_multilingual_v2",
+  "test": ["eleven_multilingual_v2", "eleven_v3", "eleven_v4"],
+  "live": "eleven_flash_v2_5"
+ },
+ "dorf": {
+  "hubert": "GPj7TWARaf5fPNhxhOI6", "ronald": "HvPMqVH31pBg9ThkOUPw", "gerhard": "rzsHuAqCFTWoxDNMLxYf", "manfred": "vYm4B0DErmDBF04R0grX",
+  "wolfgang": "GboUS6lvk5l3QlALJMRL", "uwe": "2QhwfRSog8ArO9AfgYMU", "jens": "En37bfV9fWjqOHsrHXsZ", "katrin": "a9xTHeUqm2s31ct5pQck",
+  "ingrid": "R24r0IV80Iw9eyByq1ps", "heike": "gVOibprogMfmHVVyo5r6", "m": "A2eYGaZmwykOiEVBlQ7h", "f": "yMouMDT5kvrfmH76gqc1"
+ },
+ "personen": {
+  "gl_falko": {
+   "name": "Falko", "g": "m", "alter": 40, "art": "geschichte", "rang": 1,
+   "beschreibung": "Ende dreißig bis vierzig, aus Berlin, Gartenmensch mit Werkstatt. Warm, trocken-ironisch, unaufgeregt; redet in kurzen Sätzen, macht Witze über sich selbst, wird in der Not leise und präzise. Hochdeutsch, ein Hauch Berliner Lockerheit, kein Dialekt. (Ein echter Mensch: natürliche Stimme, keine Karikatur.)",
+   "probe": "Per Anhalter mit dem Paket eines Fremden. Meine Mutter wäre stolz.",
+   "kandidaten": [
+    {"id": "Fu1ia734Gm7rNhp4N2FN", "name": "Crivo – Warm, Expressive Creator", "warum": "warm, tiefer, lächelnd, wie jemand, der in die Kamera redet – nicht wie ein Sprecher; laut Beschreibung für Gefühls-Tags von Eleven v4 gemacht", "vorschau": "https://api.us.elevenlabs.io/v1/voices/Fu1ia734Gm7rNhp4N2FN/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI3Yjc5YzMyNGFlMzM0YTRlODQ1YjU1OTRiZjg4MWQ4NyIsImZpbGVuYW1lIjoiR29Xb2xycm1Ic3pXaTNDcXVCMTEubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D"},
+    {"id": "eZYqKbAljL6KjR1xHX5g", "name": "Joris – Authentic Support Agent", "warum": "beiläufig, mit natürlichen Zögerern – klingt nach Gespräch statt nach Text, gut für Neckereien", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/eZYqKbAljL6KjR1xHX5g/n2imYcF1bvdiRIBmwXWR.mp3"},
+    {"id": "DrBEKFgWMDWUG6bjTSTk", "name": "Mattes", "warum": "dunkel und klar, ruhiger – falls Crivo zu jung oder zu werblich klingt", "vorschau": "https://api.us.elevenlabs.io/v1/voices/DrBEKFgWMDWUG6bjTSTk/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI3ZTAxNzE2MjA3NTE0ZmEwODcwYzAxNjYyYWY3MWYzMSIsImZpbGVuYW1lIjoiMGM1MDMxNzgtMzVjYy00NTI5LTgwNGItNjAyMDRkNjE5MWMxLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_sarah": {
+   "name": "Sarah", "g": "f", "alter": 36, "art": "geschichte", "rang": 1,
+   "beschreibung": "Mitte dreißig, aus Berlin, Falkos Freundin. Schnell im Kopf, warm, schlagfertig, die Planerin der beiden; spricht klar und lebendig, lacht leicht, kann sehr bestimmt werden. Hochdeutsch, kein Dialekt. (Ein echter Mensch – Sarah hat am 13.11. zugestimmt: natürliche Stimme, keine Karikatur.)",
+   "probe": "Drei Fotos. Ein Transporter, zwei Gesichter und Kisten mit Stempel.",
+   "kandidaten": [
+    {"id": "iyscHPBBWOqnjHpyGETU", "name": "Hannah – Engaging German Storytelling", "warum": "warm, ausdrucksvoll, klare Aussprache, ruhig-natürlich; laut Beschreibung am besten mit V4", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/7174184d4ae64c50b3b0111d2de8bec7/voices/iyscHPBBWOqnjHpyGETU/83cbsi0erMLpyWkM0ci6.mp3"},
+    {"id": "Ns3AEOIovhjdrxad17pt", "name": "Elke Collins – German AI Voice Agent", "warum": "warm, natürlich, gesprächig – für die freien KI-Gespräche gemacht, dieselbe Stimme passt in beide", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/6e47aaf2f87e4ab1a1dad0a712f13780/voices/Ns3AEOIovhjdrxad17pt/ytk1oNEsZ9o9OX271gCs.mp3"},
+    {"id": "ZoxS77tXeRuNRJNif3rR", "name": "Mila | Engaging & Trustworthy", "warum": "spricht mit einem Lächeln, dynamische Tonhöhe – die schlagfertige Seite", "vorschau": "https://api.us.elevenlabs.io/v1/voices/ZoxS77tXeRuNRJNif3rR/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI1ZmVjYjcyMGE5YmM0NGU4YTAwNmMyYmY3ZDdkMDFlZiIsImZpbGVuYW1lIjoieXJ6dDh3VFgwekpHRE52RDNuSEMubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_jule": {
+   "name": "Jule", "g": "f", "alter": 26, "art": "geschichte", "rang": 1,
+   "beschreibung": "26, aus Ratscher, führt die Clique, schraubt an Simsons. Schnell, frech, direkt, ein bisschen rau; sagt, was Sache ist, und lacht über die Jungs. Junge Stimme der Gegend – höchstens ein Hauch Färbung.",
+   "probe": "Leise also. Dann wartet, bis es dunkel ist. Und atmet flach.",
+   "kandidaten": [
+    {"id": "YSsw6Xh8H4vnTOiBI2n5", "name": "Fiona – raspy, charismatic, cheeky young", "warum": "leicht rau, frech, straßenschlau, sehr sympathisch – genau die Anführerin, die an Mopeds schraubt", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a12dba634064b89a1e823f807ddc875/voices/YSsw6Xh8H4vnTOiBI2n5/D2CvL9p1iLNYkqGt4VEH.mp3"},
+    {"id": "MYkWSmw0Lk11IIzuxxfn", "name": "Kimi – Reliable Sidekick", "warum": "fröhlich, leicht kratzig, lebhaft; für Spielfiguren gemacht", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/MYkWSmw0Lk11IIzuxxfn/baBBeXEg4UYg1EOiBLTd.mp3"},
+    {"id": "lXDrVXQgT1lmdco6ryhE", "name": "Clementine | Crisp and Assertive", "warum": "jung, klar, bestimmt – wenn Jule mehr Chefin als Kumpel sein soll", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/lXDrVXQgT1lmdco6ryhE/KmkDAbuZtZL0TULXAnXv.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_timo": {
+   "name": "Timo", "g": "m", "alter": 24, "art": "geschichte", "rang": 1,
+   "beschreibung": "24, der Spaßvogel der Clique. Hell, schnell, immer einen Spruch, kippt beim Erzählen gern ins Lachen; kennt jede Abkürzung durch den Wald.",
+   "probe": "Der Bunker. Da war ich als Kind. Da ist nichts drin außer Fledermäusen.",
+   "kandidaten": [
+    {"id": "Tdw3mwY0G0cBmz5tx5Nn", "name": "Kevin – Happy & Friendly", "warum": "hell, fröhlich, lebhaft – und laut Beschreibung gut im Flüstern (Schleich-Szenen)", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/436d06f6bba44fa780b8145c46029d89/voices/Tdw3mwY0G0cBmz5tx5Nn/fvFpMiZRcTLZHQ4xZVOA.mp3"},
+    {"id": "VJ6RlQD1le620taxztQk", "name": "Mackel – Friendly Dude", "warum": "sympathisch, locker, Kumpel-Ton", "vorschau": "https://api.us.elevenlabs.io/v1/voices/VJ6RlQD1le620taxztQk/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI4ZWI2MWVkMmNkYzA0ZTE2ODVhYTA1NTQ1OWZkMGIwMyIsImZpbGVuYW1lIjoiYjUwNjc3NzMtMGIxMy00ZTc3LWI1ZWUtZTZmNzFlZWI1ZDUzLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D"},
+    {"id": "0i5UT3fATBWphA0jBZug", "name": "Timon – Energetic and Clear", "warum": "jung, energisch, Gaming-Ton – wenn Timo lauter sein darf", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/09d36c57aec041b6a37a53b057bf5247/voices/0i5UT3fATBWphA0jBZug/485b25b0-510f-4daa-9810-b9cda52481ec.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_basti": {
+   "name": "Basti", "g": "m", "alter": 22, "art": "geschichte", "rang": 1,
+   "beschreibung": "22, sagt vier Wörter am Tag. Tief für sein Alter, langsam, maulfaul, trocken – jedes Wort sitzt. Leichte Färbung der Gegend darf sein.",
+   "probe": "Frag den Gerhard.",
+   "kandidaten": [
+    {"id": "hE5g948a43gbyxPuk4qh", "name": "Jonas – Dynamic, Professional, Direct", "warum": "laut Beschreibung ein junger Laie, der beiläufig spricht – genau das Unpolierte", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ada9aa59182641ffa43cc8308dcd518f/voices/hE5g948a43gbyxPuk4qh/ad9ef07f-59d3-46fa-a068-3e13af768200.mp3"},
+    {"id": "FfvPVzUs3MSJucOhMXLy", "name": "Julius Berger – ruhig und freundlich", "warum": "ruhig, 25 Jahre – der stille Typ", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/9e7c4aad79d140369ead9725ff8d29bb/voices/FfvPVzUs3MSJucOhMXLy/5U808Ym1iwDKeTJHWoTm.mp3"},
+    {"id": "pjvu5b1KMIka2bL61Exv", "name": "Nik", "warum": "angenehm, unauffällig, jung – setzt sich von Timo ab", "vorschau": "https://api.us.elevenlabs.io/v1/voices/pjvu5b1KMIka2bL61Exv/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJlNDBlOWJlZDkwNDM0ZjQ4YjVjMTc0ZDRjMGNiMWMxYiIsImZpbGVuYW1lIjoiNTc2ZDE4ZTYtYzJhNy00ZDkyLTlkYTQtNjQyOTg4OWYyZGViLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_gerhard": {
+   "name": "Gerhard", "g": "m", "alter": 72, "art": "geschichte", "rang": 1,
+   "beschreibung": "72, der alte Dorfchronist von Ratscher, derselbe Mann wie im Dorf. Tief, langsam, bedächtig, ein bisschen brüchig; erzählt in Bildern, lässt Pausen stehen, wird bei 1989 leise. Älterer Einheimischer: leichte hennebergische Färbung (Falko entscheidet nach Gehör).",
+   "probe": "Bei uns fiel keine Mauer. Bei uns stand ein Zaun, und der stand am Zehnten noch.",
+   "kandidaten": [
+    {"id": "rzsHuAqCFTWoxDNMLxYf", "name": "Adrian – Deep & Narrative (seine Stimme im Dorf)", "warum": "Gerhard spricht im Dorf (KI-Gespräch, audio/stimme.js EL_DEF) schon mit Adrian – derselbe Mann, dieselbe Stimme", "vorschau": ""},
+    {"id": "2baru8J0e15nxuG3bzXy", "name": "Cornelius – Wise & Heartwarming Old Man", "warum": "wirklich alt, warm, rau, weise – die Rückblende-Stimme", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/2baru8J0e15nxuG3bzXy/AsXkaH92BSczbm1v7u4f.mp3"},
+    {"id": "s1TxC2vO0GyTuonQQhm4", "name": "Martin (leichter Thüringer Akzent)", "warum": "tief, warm, mit leichtem Thüringer Akzent – die einzige Stimme der Gegend in der Bibliothek; klingt jünger als 72", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/user/n1shajXPpJRYztFpmKBBzk3SNFY2/voices/s1TxC2vO0GyTuonQQhm4/01bf7204-6bff-4324-9af8-92f4cc457919.mp3", "mundart": "thüringisch, leicht"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_gerhard89": {
+   "name": "Gerhard 1989", "g": "m", "alter": 35, "art": "1989", "rang": 4,
+   "beschreibung": "Derselbe Gerhard mit 35 (spricht bisher nirgends, er wird 1989 gespielt). Dieselbe Stimme wie der alte Gerhard, etwas schneller und heller (Tempo +6 %, eine Spur höher).",
+   "probe": "",
+   "kandidaten": [], "wie": "gl_gerhard", "gewaehlt": null, "mundart": true
+  },
+  "gl_fremder": {
+   "name": "Der Fremde", "g": "m", "alter": 55, "art": "geschichte", "rang": 1,
+   "beschreibung": "55, der Unbekannte mit dem Paket. Ruhig, tief, eine Spur zu freundlich; spricht langsam und weiß mehr, als er sagt. Kein Dialekt – er ist nicht von hier.",
+   "probe": "Ihr fahrt nach Ratscher. Die zwei aus Berlin, mit dem Garten. Spricht sich rum.",
+   "kandidaten": [
+    {"id": "LTo9oDjTW1FdEgMfiXWQ", "name": "David – Slow & Charming", "warum": "langsam, charmant, trocken-ironisch, lange Pausen – unheimlich freundlich", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/4af5070bca234973ba91bbc4cc73bf1e/voices/LTo9oDjTW1FdEgMfiXWQ/8ixf1YoW4nKUpGk8apjA.mp3"},
+    {"id": "yR6YPi6ytQSGBZ0uKFQl", "name": "Heribert deutsch", "warum": "reif, warm, nachdenklich, leise Selbstsicherheit", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5f4eb39fe4dc4273afae2ce75efe36d8/voices/yR6YPi6ytQSGBZ0uKFQl/837a2c5d-4632-4a3b-8ba4-51b166142884.mp3"},
+    {"id": "bFv4VX9jlZxtKnEa6UWs", "name": "Arthur Holm – German AI Voice Agent", "warum": "tiefer Bassbariton, ruhig, vertrauenerweckend – zu vertrauenerweckend", "vorschau": "https://api.us.elevenlabs.io/v1/voices/bFv4VX9jlZxtKnEa6UWs/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJkYTkzMGE1NzYwODU0OTFhOWE1YjIwZDQ2ZDZhOTZmNSIsImZpbGVuYW1lIjoiSXdvb3FRSlhPTTFCTUdKbUJWQWsubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_yuki": {
+   "name": "Yuki", "g": "f", "alter": 29, "art": "welt", "rang": 2,
+   "beschreibung": "29, Köchin, hat das Sushi nach Schleusingen gebracht. Freundlich, schnell, beschäftigt (steht immer am Herd), herzlich-direkt. Hochdeutsch.",
+   "probe": "Ach, du bist’s! Ich stehe am Herd.",
+   "kandidaten": [
+    {"id": "krYs4UGlOJ9RA8enVbqQ", "name": "Laura – Friendly and calming", "warum": "junge Frau, für Dialoge gemacht, freundlich", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/992e38470c094747b2b907c1fc6302d1/voices/krYs4UGlOJ9RA8enVbqQ/673dd57f-9994-408c-8dd7-07e346b2825a.mp3"},
+    {"id": "MkzrAJQV1Nmpxa4pLXn5", "name": "Toni – Klar & Engagiert", "warum": "lebendig, sympathisch, klar – die schnelle, beschäftigte Seite", "vorschau": "https://api.us.elevenlabs.io/v1/voices/MkzrAJQV1Nmpxa4pLXn5/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI2NjhlODZhODkzM2I0MDc2OGY5NDIxNTcxOGQ0YzJmNSIsImZpbGVuYW1lIjoiNmNjMDg1YTMtYmJlMi00MzllLTgyNDktYjhlZGZiYmU0ZjJlLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_haendler": {
+   "name": "Verkäuferin (Wagen am Anger)", "g": "f", "alter": 52, "art": "welt", "rang": 2,
+   "beschreibung": "52, verkauft am Wagen am Anger, kennt jeden. Resolut, mütterlich, spitze Zunge, lacht laut. Ältere Einheimische: leichte Färbung der Gegend.",
+   "probe": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
+   "kandidaten": [
+    {"id": "f46eMKDCAFikzwQKNKsK", "name": "Gabi – enthusiastic, friendly & warm", "warum": "herzlich, begeistert, warm – die Verkäuferin, die jeden kennt", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/3e3ee95f38264ba690c5988abb7aaf9d/voices/f46eMKDCAFikzwQKNKsK/62f86b96-73eb-4f98-891e-86177e8d6912.mp3"},
+    {"id": "4FAKwoQRvqLfJJP6W6Qp", "name": "DeMandy – Saxonian plain, no-nonsense", "warum": "geradeheraus, bodenständig, unverkennbar ostdeutsch (sächsisch, nicht hennebergisch) – nur, wenn Falko eine ostdeutsche Färbung hören will", "vorschau": "https://api.us.elevenlabs.io/v1/voices/4FAKwoQRvqLfJJP6W6Qp/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJhZmRhZjM2NmEzNDU0YTBiYWQ5ZDlhNzdkOWI1MmIwNiIsImZpbGVuYW1lIjoiMW8yc0lRcncxYzl1TDFFQ3hzWXoubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D", "mundart": "sächsisch"},
+    {"id": "vPFocGjG5CEBbSByU2UY", "name": "Klara | Angry and Powerful", "warum": "resolute deutsche Mutter mit Temperament – die spitze Zunge", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/vPFocGjG5CEBbSByU2UY/u8qHt2cIKD7HyVAL80mX.mp3"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_wirt": {
+   "name": "Bratwurst-Uwe", "g": "m", "alter": 56, "art": "welt", "rang": 2,
+   "beschreibung": "56, steht am Rost, ruft die Rostbratwurst aus. Laut, gemütlich, Brustton, Thüringer durch und durch. Älterer Einheimischer: die Färbung darf hier am deutlichsten sein.",
+   "probe": "Mit Senf. Natürlich mit Senf. Alles andere wäre eine Beleidigung.",
+   "kandidaten": [
+    {"id": "s1TxC2vO0GyTuonQQhm4", "name": "Martin (leichter Thüringer Akzent)", "warum": "tief, warm, Thüringer Akzent – der Bratwurstmann der Gegend", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/user/n1shajXPpJRYztFpmKBBzk3SNFY2/voices/s1TxC2vO0GyTuonQQhm4/01bf7204-6bff-4324-9af8-92f4cc457919.mp3", "mundart": "thüringisch, leicht"},
+    {"id": "HnpxLFIC9u8kpNYbKwes", "name": "Erin – Funky, Rich, Mature", "warum": "voll, reif, gut gelaunt", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/bebee4ca953840a2a23208622a7d639d/voices/HnpxLFIC9u8kpNYbKwes/whsCUz6GRSPF2jZ2hKcL.mp3"},
+    {"id": "eokb0hhuVX3JuAiUKucB", "name": "Schorsch (süddeutsch, rustikal)", "warum": "Mitte 40, süddeutsch, eher rustikal – leicht schwäbisch, also nur eine Annäherung an Fränkisch", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/user/4o71nY0nh9a0z1dPntJVpBSMGGx1/voices/eokb0hhuVX3JuAiUKucB/492jzLjTBQOEE49AcWc4.mp3", "mundart": "süddeutsch"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_boellermann": {
+   "name": "Der Böller-Mann", "g": "m", "alter": 47, "art": "welt", "rang": 2,
+   "beschreibung": "47, verkauft Böller aus dem Kofferraum. Gut gelaunt, schnell, verschwörerisch, lacht über die eigenen Witze; immer auf dem Sprung.",
+   "probe": "Drei Stück, fünf Euro. Und nicht vor Silvester zünden. Haha.",
+   "kandidaten": [
+    {"id": "bbrPDPPWja1s6vFfCBdR", "name": "Emirs Voice German", "warum": "lebendig, beweglich, Verkäufer-Ton", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/user/9dVBttUVanNRqnsFAwZd9lrPhJn1/voices/bbrPDPPWja1s6vFfCBdR/cec60ca8-eb74-4405-b6ea-d7e7e12fd2ec.mp3"},
+    {"id": "oO4oNPU95QsKq3IXKrwj", "name": "MXI – young chilly dude (Berliner Slang)", "warum": "etwas schräg, nerdig, Berliner Slang – ein Zugezogener mit Kofferraumgeschäft", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/962ed3ff168b4a4398fca5adb22632da/voices/oO4oNPU95QsKq3IXKrwj/f7c66e61-0036-4120-823d-5ac4558aca15.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_bursche": {
+   "name": "Kirmesbursche", "g": "m", "alter": 21, "art": "welt", "rang": 2,
+   "beschreibung": "21, Kirmesbursche mit Hut und Band, hat die Nacht am Kirmesbaum gewacht. Laut, fröhlich, ein bisschen angetrunken, will alle zum Tanzen holen.",
+   "probe": "Kirmes ist nur einmal im Jahr! Komm, tanz mit!",
+   "kandidaten": [
+    {"id": "GpMEuRGYD0oLjmn4ptQZ", "name": "Jonas Falk – Natural, charismatic, young", "warum": "charismatisch, energiegeladen, sympathisch", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/60c81a0c25a543b6a016a25306b74a2c/voices/GpMEuRGYD0oLjmn4ptQZ/u78NT444QhwudpCNsST8.mp3"},
+    {"id": "s4tfUoQXKHI6ERH0abfW", "name": "Charlie – Natural, Charismatic, Clear", "warum": "jung, frisch, nahbar", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/60c81a0c25a543b6a016a25306b74a2c/voices/s4tfUoQXKHI6ERH0abfW/VZnJiX5bMZnqdBpdlVvp.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_maedchen": {
+   "name": "Kirmesmädchen", "g": "f", "alter": 20, "art": "welt", "rang": 2,
+   "beschreibung": "20, Kirmesmädchen, stolz auf den bewachten Kirmesbaum. Hell, fröhlich, schnell, kichert.",
+   "probe": "Hast du den Kirmesbaum gesehen? Den haben wir die ganze Nacht bewacht.",
+   "kandidaten": [
+    {"id": "JudZUClAOU1jP3wA2eDG", "name": "Lola – School, but Exciting!", "warum": "frisch, gut gelaunt, mit Humor, junge Erwachsene", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a53258044834171a20d693794566080/voices/JudZUClAOU1jP3wA2eDG/8jqltLfglLAiSsXPlYQB.mp3"},
+    {"id": "8pVdES9f9x71wHWeQsgz", "name": "Nicole – Young & Friendly", "warum": "süß, zart, junge Frau – die leise Variante", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/82145cedc25d4d2581efe329fc8bf973/voices/8pVdES9f9x71wHWeQsgz/361bf4e9-3f1a-4303-aa01-0819ad12137b.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_funk": {
+   "name": "Polizeifunk – Leitstelle „Rennsteig“", "g": "f", "alter": 41, "art": "funk", "rang": 2,
+   "beschreibung": "Die Disponentin der Leitstelle: sachlich, knapp, ruhig unter Druck, Funkdisziplin. Klingt durch Funk (Telefonband, Kompressor, Rauschstoß) – die Stimme selbst darf klar und kühl sein.",
+   "probe": "Rennsteig an alle: Spezialkräfte übernehmen. Zufahrten dicht machen.",
+   "kandidaten": [
+    {"id": "HkESLncErpfXT5IWi6vH", "name": "Nexa – The System", "warum": "präzise, beherrscht, ruhige Autorität – Durchsagen und Warnungen", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/25ae641729924300a213545fe4060ee3/voices/HkESLncErpfXT5IWi6vH/zIMmm2kJxbg558IDehHK.mp3"},
+    {"id": "PqkRNA8ETUoU9O2ldnwW", "name": "Johanna – Strict Tutor", "warum": "klar, ruhig, schnell – eine fähige Kollegin, kein Roboter", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ed9b05e6324c457685490352e9a1ec90/voices/PqkRNA8ETUoU9O2ldnwW/3b88aeb2-304e-403d-83fc-350e6fd75412.mp3"},
+    {"id": "VwrOyjuYiIhDmERAlgrS", "name": "Bettina – Warm Customer Care Agent", "warum": "gefasst, klar, jede Antwort klingt endgültig", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ed9b05e6324c457685490352e9a1ec90/voices/VwrOyjuYiIhDmERAlgrS/z6UjrbTom2STxjHRQCvf.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_funk:streife": {
+   "name": "Polizeifunk – Streifenwagen („Schleuse 12“, „Bussard 1“)", "g": "m", "alter": 38, "art": "funk", "rang": 3,
+   "beschreibung": "Der Mann im Streifenwagen (Zeilen, die mit „Schleuse 12 …“, „Bussard 1 …“ oder „Verstanden …“ beginnen): knapp, etwas außer Atem, Motorgeräusch im Rücken.",
+   "probe": "Schleuse 14: Der ist über den Acker! Der Bauer wird sich freuen.",
+   "kandidaten": [
+    {"id": "zNeD2iChxecwCPSfaTPY", "name": "Mithat Demir", "warum": "normale Männerstimme, erzählend – klingt nach Dienst statt nach Studio", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/1677caf7c52741b8b8edb535e98d229e/voices/zNeD2iChxecwCPSfaTPY/74e68ee9-6766-4b7f-8004-50b58905569f.mp3"},
+    {"id": "0F7T2CzC9m1e5vPviVmT", "name": "Peter – Audiobook & Documentary Narrator", "warum": "ruhig, klar, vertrauenswürdig", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/user/liMg5KPwbWVuWA5ukXq2Y2vQUbE2/voices/0F7T2CzC9m1e5vPviVmT/uVsf9YcZMyr5d3v2wPx9.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_polizei1": {
+   "name": "Polizist", "g": "m", "alter": 38, "art": "welt", "rang": 3,
+   "beschreibung": "38, Streifenpolizist; ruft, rennt, befiehlt. Kräftig, kurz angebunden.",
+   "probe": "Halt! Polizei!",
+   "kandidaten": [
+    {"id": "BDqe1qZiwPi7xspRxTgh", "name": "Roderich – Crude & Ruthless", "warum": "rau, kurz, laut – für Wachen und Soldaten gemacht, mit echter Atemführung beim Rufen", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/BDqe1qZiwPi7xspRxTgh/QoLoROIqj9n0yJjIZ816.mp3"},
+    {"id": "nsFsExJHz4xV1sOX6Kdn", "name": "Christian Plasa – Social Media", "warum": "knackig, energisch, klar", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/408f5707fa3a40c1b8a789ad0430380e/voices/nsFsExJHz4xV1sOX6Kdn/rKyVND68JwbPvPEgQ07Q.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_polizei2": {
+   "name": "Polizistin", "g": "f", "alter": 33, "art": "welt", "rang": 3,
+   "beschreibung": "33, Streifenpolizistin; bestimmt, laut, außer Atem beim Laufen.",
+   "probe": "Halt! Polizei!",
+   "kandidaten": [
+    {"id": "KzAyD2tTf9r77ytc2bYC", "name": "Lola – Female Action Character", "warum": "kraftvoll, befehlend, mit Biss – Rufe und Befehle", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a53258044834171a20d693794566080/voices/KzAyD2tTf9r77ytc2bYC/ki0Y6g1kXzj13srBsXKU.mp3"},
+    {"id": "lXDrVXQgT1lmdco6ryhE", "name": "Clementine | Crisp and Assertive", "warum": "klar, bestimmt (wenn Jule eine andere Stimme bekommt)", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/lXDrVXQgT1lmdco6ryhE/KmkDAbuZtZL0TULXAnXv.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_wache1": {
+   "name": "Wachmann (Außenlager)", "g": "m", "alter": 40, "art": "geschichte", "rang": 2,
+   "beschreibung": "40, Wachmann bei Krähwinkel, schreit über den Hof, flucht. Rau, laut, gereizt.",
+   "probe": "He! Da ist einer! Stehenbleiben!",
+   "kandidaten": [
+    {"id": "BDqe1qZiwPi7xspRxTgh", "name": "Roderich – Crude & Ruthless", "warum": "für Wachen, Türsteher, Banditen gemacht – tief, rau, drohend (falls der Polizist eine andere bekommt)", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/BDqe1qZiwPi7xspRxTgh/QoLoROIqj9n0yJjIZ816.mp3"},
+    {"id": "IVOxk5cceHtyIS9ovqvK", "name": "Simon Sqittorq (Schweizer Akzent)", "warum": "Anfang 40, leichter Schweizer Akzent – ein Wachmann von woanders", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5be7e0dfc5184e41ac6f200563de5b90/voices/IVOxk5cceHtyIS9ovqvK/2bbd67c5-ef60-490d-89c9-d794c0d7c68c.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_wache2": {
+   "name": "Wachmann (zweiter)", "g": "m", "alter": 35, "art": "geschichte", "rang": 2,
+   "beschreibung": "35, der zweite Wachmann, telefoniert hektisch mit der Zentrale. Nervös, schnell.",
+   "probe": "Zentrale? Einbruch im Außenlager. Ja, jetzt gerade!",
+   "kandidaten": [
+    {"id": "zNeD2iChxecwCPSfaTPY", "name": "Mithat Demir", "warum": "normale Männerstimme, gut von Wachmann 1 zu unterscheiden", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/1677caf7c52741b8b8edb535e98d229e/voices/zNeD2iChxecwCPSfaTPY/74e68ee9-6766-4b7f-8004-50b58905569f.mp3"},
+    {"id": "1DwTnatVV6DjV1wDcwUd", "name": "Jakob – Natürliche deutsche Stimme", "warum": "jung, natürlich – kann auch hektisch", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/a6061d7c44b24647807972f42fe47cc1/voices/1DwTnatVV6DjV1wDcwUd/08e91d8f-3d1d-4f50-9823-2d4678adcf09.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_wache3": {
+   "name": "Fahrer (Wache 3)", "g": "m", "alter": 47, "art": "geschichte", "rang": 3,
+   "beschreibung": "47, Krähwinkels Fahrer, bläst den Einsatz ab. Laut, befehlend.",
+   "probe": "Die haben Fotos! Leuchtkugel, Abbruch – alles in den Wagen!",
+   "kandidaten": [
+    {"id": "HnpxLFIC9u8kpNYbKwes", "name": "Erin – Funky, Rich, Mature", "warum": "voll und reif (falls Bratwurst-Uwe Martin bekommt)", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/bebee4ca953840a2a23208622a7d639d/voices/HnpxLFIC9u8kpNYbKwes/whsCUz6GRSPF2jZ2hKcL.mp3"},
+    {"id": "DrBEKFgWMDWUG6bjTSTk", "name": "Mattes", "warum": "dunkel, klar (falls Falko eine andere bekommt)", "vorschau": ""}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_kraeh": {
+   "name": "Dieter Krähwinkel", "g": "m", "alter": 58, "art": "geschichte", "rang": 3,
+   "beschreibung": "58, der Spediteur, sucht die andere Hälfte der Karte. Kühl, kontrolliert, geschäftsmäßig freundlich mit Kante. (Spricht bisher keine Zeile.)",
+   "probe": "Ich bin Spediteur. Ich bringe Dinge dahin, wo sie hingehören.",
+   "kandidaten": [
+    {"id": "VHYWoxffK1pFlM1dtRb0", "name": "Thomas – German Bariton for Literature", "warum": "gebildeter, glatter Bariton – der Mann im guten Mantel", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/4d610380a893406e847c9c6687481452/voices/VHYWoxffK1pFlM1dtRb0/cec88af9-73f1-4cc3-8b65-2b16114b4d1b.mp3"},
+    {"id": "1KGG4Q8LqRdNII9xBurw", "name": "M. Danisch", "warum": "ältere Erzählerstimme, sachlich", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/2eba3ecf58994be094d8a0e70c36d57f/voices/1KGG4Q8LqRdNII9xBurw/2pl0i0BoD9LOkmkEoXuB.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_lutz": {
+   "name": "Lutz (1989)", "g": "m", "alter": 30, "art": "1989", "rang": 3,
+   "beschreibung": "30, Grenzer 1989, übergibt Gerhard die Kiste. Gehetzt, leise, misstrauisch; DDR-Uniform, Thüringer.",
+   "probe": "Frag nicht, was drin ist. Ich weiß es selber nur halb.",
+   "kandidaten": [
+    {"id": "t4UzaTDxAVxvWIx7Q1hY", "name": "Dominic – Young & Empathetic", "warum": "jung, empathisch, für Filme – der gehetzte junge Mann", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/f3c0486c60be4265bfe2c426db6d9801/voices/t4UzaTDxAVxvWIx7Q1hY/36f02063-0be0-4579-9db7-13742b04b87a.mp3"},
+    {"id": "t7z7JVU64WYfp4GSw7aZ", "name": "Noah – Warm, Professionell, Nahbar", "warum": "jung, warm, klar", "vorschau": "https://api.us.elevenlabs.io/v1/voices/t7z7JVU64WYfp4GSw7aZ/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJiNDhlYTg3YWFkNDE0ZDhhYjEyNzQxY2Y1M2ZjM2FlMCIsImZpbGVuYW1lIjoiU3RxSXNCblpCRmVOWWxaVHVISzEubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_abv": {
+   "name": "Der ABV (1989)", "g": "m", "alter": 50, "art": "1989", "rang": 3,
+   "beschreibung": "50, Abschnittsbevollmächtigter der Volkspolizei 1989. Amtlich, streng, ein bisschen selbstgefällig. Eine leichte sächsische Färbung wäre glaubhaft (Volkspolizei aus dem ganzen Land) – Falko entscheidet.",
+   "probe": "Was ist in der Kiste?",
+   "kandidaten": [
+    {"id": "1KGG4Q8LqRdNII9xBurw", "name": "M. Danisch", "warum": "älter, sachlich, amtlich", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/2eba3ecf58994be094d8a0e70c36d57f/voices/1KGG4Q8LqRdNII9xBurw/2pl0i0BoD9LOkmkEoXuB.mp3"},
+    {"id": "GPj7TWARaf5fPNhxhOI6", "name": "Darius – Grumpy & Critical (Hubert im Dorf!)", "warum": "nur wenn Hubert nie 1989 spricht: genervt, zynisch – der Uniformierte, der es satt hat", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/GPj7TWARaf5fPNhxhOI6/B1Kft24jbJNmH0y26Q7R.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_vopo": {
+   "name": "Volkspolizist (1989)", "g": "m", "alter": 28, "art": "1989", "rang": 4,
+   "beschreibung": "28, junger Volkspolizist, ruft „Stehenbleiben!“. Laut, unsicher.",
+   "probe": "Stehenbleiben!",
+   "kandidaten": [
+    {"id": "1DwTnatVV6DjV1wDcwUd", "name": "Jakob – Natürliche deutsche Stimme", "warum": "jung, natürlich", "vorschau": ""},
+    {"id": "cUNmvfLD2G6l2g628j6f", "name": "Sam", "warum": "jung, freundlich – einer, dem das Rufen nicht liegt", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/cda20af073ad44f1b68f20ad5cf7dbb9/voices/cUNmvfLD2G6l2g628j6f/OPwBvLJGegZrOpYyaxVM.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_horst": {
+   "name": "Horst (1989)", "g": "m", "alter": 58, "art": "1989", "rang": 3,
+   "beschreibung": "58, Nachbar 1989, schimpft über die Briketts. Brummig, warm, Einheimischer: leichte Färbung.",
+   "probe": "Zwanzig Zentner Briketts, und keiner da, der mit anfasst. Alle im Westen.",
+   "kandidaten": [
+    {"id": "CD5xyRjkR74P5qby9tmm", "name": "Axel – ruhig, erzählend, leicht rauh", "warum": "leicht rau, natürlich, ruhig – der Nachbar am Zaun", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/9aa2a95d870b442cb7e0a94364be7e6c/voices/CD5xyRjkR74P5qby9tmm/3ad569ba-0311-4778-828c-7526ab2f4cf1.mp3"},
+    {"id": "eokb0hhuVX3JuAiUKucB", "name": "Schorsch (süddeutsch, rustikal)", "warum": "rustikal, süddeutsch gefärbt – die Annäherung an die Mundart", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/user/4o71nY0nh9a0z1dPntJVpBSMGGx1/voices/eokb0hhuVX3JuAiUKucB/492jzLjTBQOEE49AcWc4.mp3", "mundart": "süddeutsch"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_werner": {
+   "name": "Werner (1989)", "g": "m", "alter": 61, "art": "1989", "rang": 3,
+   "beschreibung": "61, skeptisch, will erst fahren, wenn er wieder reinkommt. Bedächtig, trocken; Einheimischer.",
+   "probe": "Ich fahr erst, wenn ich weiß, dass ich auch wieder reinkomme.",
+   "kandidaten": [
+    {"id": "pfvZahoGcT3NdpxRuNkg", "name": "Bruno, der Bär – loving and cozy", "warum": "groß, tief, warm – der bedächtige Ältere", "vorschau": "https://api.us.elevenlabs.io/v1/voices/pfvZahoGcT3NdpxRuNkg/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJiMjhjYzRhOWQwMzg0Y2Y5ODU3ODQwNjQ0YjQyOTI4MSIsImZpbGVuYW1lIjoianhHdWRnQlFRd3FpcUJ2TGwwNEoubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D"},
+    {"id": "s1TxC2vO0GyTuonQQhm4", "name": "Martin (leichter Thüringer Akzent)", "warum": "wenn Bratwurst-Uwe und Gerhard eine andere Stimme bekommen", "vorschau": "", "mundart": "thüringisch, leicht"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_kurt": {
+   "name": "Kurt (1989)", "g": "m", "alter": 74, "art": "1989", "rang": 3,
+   "beschreibung": "74, der Älteste auf der Straße 1989, hat 1952 und 1961 erlebt. Langsam, brüchig, ernst; Einheimischer: leichte Färbung.",
+   "probe": "Pass auf dich auf, Junge. Wenn sich alles dreht, will mancher noch schnell was wegschaffen.",
+   "kandidaten": [
+    {"id": "YyYOpSknZlewhHezK5bv", "name": "Oswald – Kind & Gentle Grandpa", "warum": "sanft, leicht verwittert, ruhig, voller Lebenserfahrung", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/b28cc4a9d0384cf9857840644b429281/voices/YyYOpSknZlewhHezK5bv/30uGN9hnk661WTWiXWtn.mp3"},
+    {"id": "R3XXDwKMU2YHwBcuYUH3", "name": "Opa Johann – calm & wise", "warum": "alter Erzähler, warm, weise (Stimme des Arbeitsbereichs)", "vorschau": "https://api.us.elevenlabs.io/v1/voices/R3XXDwKMU2YHwBcuYUH3/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiJiMjhjYzRhOWQwMzg0Y2Y5ODU3ODQwNjQ0YjQyOTI4MSIsImZpbGVuYW1lIjoidmgyM2U0TXllZFNrd1BzRW1JNHUubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_maik": {
+   "name": "Maik (1989)", "g": "m", "alter": 19, "art": "1989", "rang": 3,
+   "beschreibung": "19, stolz auf die Stonewashed-Jeans aus dem Westpaket, will mit der Simme rüber. Hell, aufgeregt, schnell.",
+   "probe": "Stonewashed, original. Hat mein Onkel im Westpaket geschickt.",
+   "kandidaten": [
+    {"id": "0i5UT3fATBWphA0jBZug", "name": "Timon – Energetic and Clear", "warum": "jung, energisch (falls Timo Kevin bekommt)", "vorschau": ""},
+    {"id": "VJ6RlQD1le620taxztQk", "name": "Mackel – Friendly Dude", "warum": "locker, jung", "vorschau": ""}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_erna": {
+   "name": "Erna (1989)", "g": "f", "alter": 66, "art": "1989", "rang": 3,
+   "beschreibung": "66, Kopftuch und Kittel, weiß alles von allen. Flink, neugierig, herzlich-resolut; Einheimische: leichte Färbung.",
+   "probe": "Was schleppst du denn da? Na, geht mich ja nichts an.",
+   "kandidaten": [
+    {"id": "p2Wol3C7j3rHbfOrbL18", "name": "Oma’s Nähkästchen – Kitchen Stories & Anecdotes", "warum": "warm, lebhaft, großmütterlich, mit Witz – die Nachbarin, die alles weiß", "vorschau": "https://api.us.elevenlabs.io/v1/voices/p2Wol3C7j3rHbfOrbL18/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ1c2VyX2lkIjoiaXFadlA5dU9GWWZVdzBCc0RVUVJtSHlFSEEwMiIsImZpbGVuYW1lIjoiNklpOHd3UnZuMzJ6UmR3NWhLZWkubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D"},
+    {"id": "9VojQrRhoFFUbqyNRsxF", "name": "Kathy Calm – Deep Tone", "warum": "tief, warm, etwas rau – die ruhigere Variante", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/afdaf366a3454a0bad9d9a77d9b52b06/voices/9VojQrRhoFFUbqyNRsxF/oiCGopTXD83Nn6jOdcKj.mp3"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_renate": {
+   "name": "Renate (1989)", "g": "f", "alter": 38, "art": "1989", "rang": 4,
+   "beschreibung": "38, Mutter zweier Kinder, die nach Coburg wollen. Praktisch, etwas besorgt, schnell.",
+   "probe": "In der Kaufhalle in Schleusingen gibt’s Apfelsinen. Kuba. Aber Apfelsinen.",
+   "kandidaten": [
+    {"id": "5kN3CFEeRreSoAQlWcb9", "name": "Julia", "warum": "Anfang dreißig, locker, freundlich, kein Dialekt", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/user/h38jBBdPmgeWuob0yrWClsEWKnY2/voices/5kN3CFEeRreSoAQlWcb9/LcTTfPoYye6z8fCeLPUb.mp3"},
+    {"id": "4YKI1ONIhgWEKHyAHYPC", "name": "Susanne K – Friendly & Natural, Casual", "warum": "warm, ruhig, beiläufig", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ed9b05e6324c457685490352e9a1ec90/voices/4YKI1ONIhgWEKHyAHYPC/R207ZPxYV5gWHZntJXoj.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_brigitte": {
+   "name": "Brigitte (1989)", "g": "f", "alter": 57, "art": "1989", "rang": 4,
+   "beschreibung": "57, erzählt vom Westfernsehen und vom Waffenschmied. Gemütlich, staunend; Einheimische: leichte Färbung.",
+   "probe": "Gestern Abend haben wir es im Westfernsehen gesehen. Geglaubt hab ich es erst heute früh.",
+   "kandidaten": [
+    {"id": "Ow8TnOLY7NuUU63qhHJB", "name": "Maureen – sympathische Frau mittleren Alters", "warum": "dunkel, emotional, erzählend", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/user/W5UXM0OeUPgGrUSCxsc1JNXR9363/voices/Ow8TnOLY7NuUU63qhHJB/16637aa8-ea2a-4051-b1cd-50fd3504abbb.mp3"},
+    {"id": "4FAKwoQRvqLfJJP6W6Qp", "name": "DeMandy – Saxonian plain", "warum": "ostdeutsch gefärbt (sächsisch) – falls die Verkäuferin sie nicht bekommt", "vorschau": "", "mundart": "sächsisch"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_gisela": {
+   "name": "Gisela (1989, Konsum)", "g": "f", "alter": 46, "art": "1989", "rang": 4,
+   "beschreibung": "46, die Verkäuferin im Konsum. Trocken, müde, schlagfertig.",
+   "probe": "Bananen? Gerhard. Wir haben November.",
+   "kandidaten": [
+    {"id": "V8IDMv79XsMfnx3b9E2U", "name": "Moreana – Dark, Charismatic", "warum": "warm mit einem Hauch Sarkasmus – die trockene Konsumverkäuferin", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/ed6a18bcf7b94126b8403c45cae4329a/voices/V8IDMv79XsMfnx3b9E2U/bfyd0yrDrbJLZsFrVvy4.mp3"},
+    {"id": "QR3u6NImjjOZiLeMunRk", "name": "Alina – Vertrauenserweckend & Ruhig", "warum": "reif, ruhig, souverän", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0746740cf0f443ccad94f10a60255b3c/voices/QR3u6NImjjOZiLeMunRk/ebe5cc4a-6a58-43a5-859d-3fd31159bfa1.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_ines": {
+   "name": "Ines (1989)", "g": "f", "alter": 20, "art": "1989", "rang": 4,
+   "beschreibung": "20, freut sich auf die Disko im Kulturhaus, die Schwester ist über Ungarn weg. Jung, hell, ein bisschen wehmütig.",
+   "probe": "Morgen ist Disko im Kulturhaus. Wenn dann noch einer hier ist.",
+   "kandidaten": [
+    {"id": "fDEsK7MOSzHnJUs8bmQ8", "name": "Lola – Fantasy & LitRPG", "warum": "jung, ausdrucksvoll", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a53258044834171a20d693794566080/voices/fDEsK7MOSzHnJUs8bmQ8/bvF7kakWjtfVmYP0rlhJ.mp3"},
+    {"id": "paJLeKT4SGdqKEMFGc6U", "name": "Melissa – warm & calm", "warum": "warm, ruhig, klar", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/51c0046bdfc14b9f9dd11e0f2b0c3aed/voices/paJLeKT4SGdqKEMFGc6U/6d5880b8-a179-4c0d-bcd0-852b212514ab.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_r_grenzland": {
+   "name": "Matze (Radio Grenzland)", "g": "m", "alter": 45, "art": "radio", "rang": 2,
+   "beschreibung": "45, Moderator des Lokalradios, trocken-witzig, Plauderton zwischen Polizeibericht und Karpfen. Sendeklang (Hochpass, Kompressor, Präsenz).",
+   "probe": "An der Talsperre beißen die Karpfen. Die Angler schweigen dazu – wie zu allem.",
+   "kandidaten": [
+    {"id": "utkd5fchbspYG3Ld0zt0", "name": "Dan – Radio Host / Moderator", "warum": "für Radio gemacht: energisch, freundlich, verspielt, klar", "vorschau": "https://api.us.elevenlabs.io/v1/voices/utkd5fchbspYG3Ld0zt0/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ1c2VyX2lkIjoiSmlKYjl1dG1NMFBEcWZBWVJiYUdHZmd2dlRqMiIsImZpbGVuYW1lIjoiTldTSmNqbVhNbFcyNUZNaDJlckkubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D"},
+    {"id": "r0AkgGRNBikUnbVKxtHG", "name": "Tom – Youthful Austrian (TV-Moderator)", "warum": "echter Moderator, trockener Humor, leicht österreichisch gefärbt", "vorschau": "https://api.us.elevenlabs.io/v1/voices/r0AkgGRNBikUnbVKxtHG/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ3b3Jrc3BhY2VfaWQiOiI1MjQ0YjMwNjVhNjI0YmUyYjIwNzY4ZDU0MzYyNThmNSIsImZpbGVuYW1lIjoiYTk3MzFkYzktOGExMS00NWQ0LThmNzctNDgxZmJmYmNlYzBjLm1wMyIsInRpbWVzdGFtcCI6MTc5NDYwNzIwMDAwMDAwMH0%3D"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_r_kirmes": {
+   "name": "Gundula (Kirmeswelle)", "g": "f", "alter": 58, "art": "radio", "rang": 4,
+   "beschreibung": "58, Schlagerradio, Grüße und Frühschoppen. Herzlich, überschwänglich, ein bisschen kitschig.",
+   "probe": "Die Kirmeswelle. Wo jeder Tag ein Sonntag ist und jeder Sonntag Frühschoppen.",
+   "kandidaten": [
+    {"id": "f46eMKDCAFikzwQKNKsK", "name": "Gabi – enthusiastic, friendly & warm", "warum": "herzlich, begeistert (falls die Verkäuferin eine andere bekommt)", "vorschau": ""},
+    {"id": "5Aahq892EEb6MdNwMM3p", "name": "Laura – Werbung & Social Media", "warum": "warm, lebendig, für Funk und Radio", "vorschau": "https://api.us.elevenlabs.io/v1/voices/5Aahq892EEb6MdNwMM3p/previews/audio?payload=eyJ2b2ljZV9zb3VyY2UiOiJjdXN0b20iLCJ1c2VyX2lkIjoiR2xOUlhZRmNpNWVkZHZCZmNVYk1XdThuTTQzMyIsImZpbGVuYW1lIjoiMU5XeWVaUUp1ZTl1MVlueFBRcVoubXAzIiwidGltZXN0YW1wIjoxNzk0NjA3MjAwMDAwMDAwfQ%3D%3D"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_r_klassik": {
+   "name": "Frau Dr. Sommerlatte (Klassik am Kamm)", "g": "f", "alter": 61, "art": "radio", "rang": 4,
+   "beschreibung": "61, Klassikradio, gebildet, langsam, feiner Humor.",
+   "probe": "Sie hören Klassik am Kamm. Bitte nicht klatschen, wir sind im Radio.",
+   "kandidaten": [
+    {"id": "XJWHuOvSoCriK1Q4wPAN", "name": "Judith Maas – Art & Culture", "warum": "kultiviert, reif, elegant – Museumsführung, Kultur", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/25ae641729924300a213545fe4060ee3/voices/XJWHuOvSoCriK1Q4wPAN/6T2YBn0xrn8EmJ12MDg3.mp3"},
+    {"id": "QR3u6NImjjOZiLeMunRk", "name": "Alina – Vertrauenserweckend & Ruhig", "warum": "reif, warm, elegant", "vorschau": ""}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_r_zweitakt": {
+   "name": "Ecki (Radio Zweitakt)", "g": "m", "alter": 52, "art": "radio", "rang": 4,
+   "beschreibung": "52, Rockradio, rau, entspannt, Lederjacke.",
+   "probe": "Ecki hier. Das eben war handgemacht. Na gut, maschinengemacht. Aber mit Gefühl.",
+   "kandidaten": [
+    {"id": "CD5xyRjkR74P5qby9tmm", "name": "Axel – ruhig, erzählend, leicht rauh", "warum": "leicht rau, ruhig – der Rocker nach dem Konzert", "vorschau": ""},
+    {"id": "HnpxLFIC9u8kpNYbKwes", "name": "Erin – Funky, Rich, Mature", "warum": "funky, satt, reif", "vorschau": ""}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_r_blasius": {
+   "name": "Schorsch (Radio Blasius, Oberfranken)", "g": "m", "alter": 63, "art": "radio", "rang": 4,
+   "beschreibung": "63, Blasmusik aus Oberfranken, gemütlich, stolz auf Franken. Hier ist eine fränkische Färbung Teil der Figur.",
+   "probe": "Radio Blasius aus Oberfranken. Bayern ist das Bundesland. Franken sind wir.",
+   "kandidaten": [
+    {"id": "eokb0hhuVX3JuAiUKucB", "name": "Schorsch (süddeutsch, rustikal)", "warum": "heißt sogar so; süddeutsch, rustikal – leicht schwäbisch, Annäherung an Fränkisch", "vorschau": "", "mundart": "süddeutsch"},
+    {"id": "vjMckQpQGHArc0Q8xmo6", "name": "FloZirkusFM (bairisch)", "warum": "bairisch gefärbt, Erzählton von trocken bis stimmungsvoll", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/user/FL7gMJbOs2cP8jzdqyWhaxJ95GU2/voices/vjMckQpQGHArc0Q8xmo6/1oM03I4HWAEawfOCHaK0.mp3", "mundart": "bairisch"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_r_neon": {
+   "name": "Synthia (Neonfunk)", "g": "f", "alter": 31, "art": "radio", "rang": 4,
+   "beschreibung": "31, Synthpop & New Wave, cool, ironisch, Achtziger-Glanz.",
+   "probe": "Neonfunk – Musik aus Strom. Hundert Prozent Synthese, null Prozent Gitarrenkoffer.",
+   "kandidaten": [
+    {"id": "gSZiss4v1BGsE1cTgoWF", "name": "Lola – The Ad Voice", "warum": "modern, cool, selbstbewusst – Radio und Spots", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/0a53258044834171a20d693794566080/voices/gSZiss4v1BGsE1cTgoWF/EjGHdnKgIsJ2tijHkClk.mp3"},
+    {"id": "Gt7OshJCH7MuzX96wFHi", "name": "Ina Incredible", "warum": "voller Klang, frisch, cool, mit Lächeln", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/5fecb720a9bc44e8a006c2bf7d7d01ef/voices/Gt7OshJCH7MuzX96wFHi/ccmHlGpBWm6YdKIF5Gyf.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_r_republik": {
+   "name": "Der Sprecher (Radio Republik, 1989)", "g": "m", "alter": 52, "art": "radio", "rang": 3,
+   "beschreibung": "52, Nachrichtensprecher des DDR-Rundfunks 1989. Getragen, amtlich, gleichmäßig – je mehr die Wirklichkeit davonläuft, desto ruhiger.",
+   "probe": "Besondere Vorkommnisse im Kreis: keine. So steht es jedenfalls im Rapport.",
+   "kandidaten": [
+    {"id": "76ZsWRKclBS6MNPWxaLc", "name": "Volker – Professionelle warme Stimme", "warum": "für Nachrichten und Dokus: ernst, glaubwürdig, nicht künstlich", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/c61b89290d9c4d9994bd65598c18d381/voices/76ZsWRKclBS6MNPWxaLc/M9HzSSjcF3rOqLQki9vi.mp3"},
+    {"id": "0F7T2CzC9m1e5vPviVmT", "name": "Peter – Audiobook & Documentary Narrator", "warum": "ruhig, klar, vertrauenswürdig", "vorschau": ""}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_r_impuls": {
+   "name": "Kati (Impuls, Jugendradio 1989)", "g": "f", "alter": 24, "art": "radio", "rang": 4,
+   "beschreibung": "24, DDR-Jugendradio im Herbst 89, plötzlich ohne Manuskript. Frisch, aufgekratzt, frech.",
+   "probe": "Impuls – das Jugendradio. Heute ohne Manuskript.",
+   "kandidaten": [
+    {"id": "MkzrAJQV1Nmpxa4pLXn5", "name": "Toni – Klar & Engagiert", "warum": "lebendig, sympathisch (falls Yuki eine andere bekommt)", "vorschau": ""},
+    {"id": "Utm9RYMyBhvkjOgvnWNB", "name": "Livia – Expressive & Dynamic", "warum": "ausdrucksvoll, selbstbewusst, Radiospots", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/d6ca71536a6f46fbae5c51349a1b4e04/voices/Utm9RYMyBhvkjOgvnWNB/d0Se8vksP6OmqEulqE5D.mp3"}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_r_west": {
+   "name": "Wolfi (Frankenwelle 3, 1989)", "g": "m", "alter": 34, "art": "radio", "rang": 4,
+   "beschreibung": "34, Popradio aus Oberfranken 1989, begrüßt die Nachbarn aus Thüringen. Gut gelaunt, schnell, fränkisch-bairische Färbung passt.",
+   "probe": "Frankenwelle 3 – Pop für Oberfranken. Und seit gestern für die Nachbarn.",
+   "kandidaten": [
+    {"id": "r0AkgGRNBikUnbVKxtHG", "name": "Tom – Youthful Austrian (TV-Moderator)", "warum": "Moderator mit süddeutsch-österreichischer Färbung (falls Matze Dan bekommt)", "vorschau": "", "mundart": "österreichisch, leicht"},
+    {"id": "vjMckQpQGHArc0Q8xmo6", "name": "FloZirkusFM (bairisch)", "warum": "bairisch, gesprächig", "vorschau": "", "mundart": "bairisch"}
+   ],
+   "gewaehlt": null, "mundart": true
+  },
+  "gl_r_funkloch": {
+   "name": "DJ von Funkloch FM (neu, ton-radio)", "g": "m", "alter": 26, "art": "radio", "rang": 3,
+   "beschreibung": "Rap & Elektro, jung, aus der Gegend, trockener Humor (ton-radio erfindet die Figur; Schlüssel 'gl_r_funkloch', wenn die Station 'funkloch' heißt). Jung, entspannt, schnell.",
+   "probe": "Funkloch FM. Wenn ihr uns hört, habt ihr Netz.",
+   "kandidaten": [
+    {"id": "ntwcx49ZcqEarZ2so6jP", "name": "Jan – Laid-back Storyteller", "warum": "entspannt, authentisch, Podcast-Ton (Stimme des Arbeitsbereichs)", "vorschau": "https://storage.googleapis.com/eleven-public-prod/database/workspace/86b732f4681e45d58a26b287a7fc2de7/voices/ntwcx49ZcqEarZ2so6jP/35sXfQQ4A0QK60uk7Oej.mp3"},
+    {"id": "oO4oNPU95QsKq3IXKrwj", "name": "MXI – young chilly dude", "warum": "schräg, nerdig, Slang (falls der Böller-Mann eine andere bekommt)", "vorschau": ""}
+   ],
+   "gewaehlt": null, "mundart": false
+  },
+  "gl_r_anrufer": {
+   "name": "Hörer am Telefon (ton-radio, „Hörer rufen an“)", "g": "?", "alter": 0, "art": "radio", "rang": 4,
+   "beschreibung": "Die Anrufer der Sender (Schlüssel vergibt ton-radio). Bekommen Stimmen aus dem Pool der Leute auf der Straße (gl_l_*), nach Geschlecht und Alter; ihr Satz klingt nach Telefon.",
+   "probe": "", "kandidaten": [], "wie": "pool", "gewaehlt": null, "mundart": false
+  }
+ },
+ "leute": {
+  "note": "Die Leute auf der Straße (viz3/src/grenzland/gl_leute.js): 14 Stimmen, Schlüssel gl_l_<m|f><alter>. Jede Stimme hat ihre eigenen Sätze (gl_leute_data.js). Kandidaten aus der Bibliothek, keine der Hauptfiguren; mit Edge sprechen sie mit den deutschen Edge-Stimmen in anderem Tempo und anderer Höhe.",
+  "gl_l_m19": {"g": "m", "alter": 19, "beschreibung": "Jugendlicher, schnell, nuschelt", "kandidaten": [{"id": "cUNmvfLD2G6l2g628j6f", "name": "Sam"}, {"id": "ZLb7mLJF7nktaIs5wPzj", "name": "Kalle – Crazy & Comic (nur für einen Spinner)"}], "gewaehlt": null},
+  "gl_l_m27": {"g": "m", "alter": 27, "beschreibung": "junger Mann, freundlich, sportlich", "kandidaten": [{"id": "t7z7JVU64WYfp4GSw7aZ", "name": "Noah"}, {"id": "1DwTnatVV6DjV1wDcwUd", "name": "Jakob"}], "gewaehlt": null},
+  "gl_l_m36": {"g": "m", "alter": 36, "beschreibung": "Handwerker, kurz angebunden", "kandidaten": [{"id": "zNeD2iChxecwCPSfaTPY", "name": "Mithat Demir"}, {"id": "iNmg5TuXskrU3jUtYXW5", "name": "Tommy Pro (ruhig, norddeutsch)"}], "gewaehlt": null},
+  "gl_l_m45": {"g": "m", "alter": 45, "beschreibung": "Familienvater, gemütlich", "kandidaten": [{"id": "0F7T2CzC9m1e5vPviVmT", "name": "Peter"}, {"id": "nsFsExJHz4xV1sOX6Kdn", "name": "Christian Plasa"}], "gewaehlt": null},
+  "gl_l_m53": {"g": "m", "alter": 53, "beschreibung": "Einheimischer, brummig, leichte Färbung", "kandidaten": [{"id": "CD5xyRjkR74P5qby9tmm", "name": "Axel"}, {"id": "s1TxC2vO0GyTuonQQhm4", "name": "Martin (thüringisch)"}], "gewaehlt": null, "mundart": true},
+  "gl_l_m66": {"g": "m", "alter": 66, "beschreibung": "Rentner, neugierig, leichte Färbung", "kandidaten": [{"id": "pfvZahoGcT3NdpxRuNkg", "name": "Bruno"}, {"id": "eokb0hhuVX3JuAiUKucB", "name": "Schorsch (süddeutsch)"}], "gewaehlt": null, "mundart": true},
+  "gl_l_m78": {"g": "m", "alter": 78, "beschreibung": "alter Mann am Stock, langsam, leichte Färbung", "kandidaten": [{"id": "YyYOpSknZlewhHezK5bv", "name": "Oswald"}, {"id": "R3XXDwKMU2YHwBcuYUH3", "name": "Opa Johann"}], "gewaehlt": null, "mundart": true},
+  "gl_l_f17": {"g": "f", "alter": 17, "beschreibung": "Schülerin, kichert, schnell", "kandidaten": [{"id": "8pVdES9f9x71wHWeQsgz", "name": "Nicole"}, {"id": "JudZUClAOU1jP3wA2eDG", "name": "Lola – School"}], "gewaehlt": null},
+  "gl_l_f26": {"g": "f", "alter": 26, "beschreibung": "junge Frau mit Kinderwagen, freundlich", "kandidaten": [{"id": "paJLeKT4SGdqKEMFGc6U", "name": "Melissa"}, {"id": "krYs4UGlOJ9RA8enVbqQ", "name": "Laura"}], "gewaehlt": null},
+  "gl_l_f34": {"g": "f", "alter": 34, "beschreibung": "Pendlerin, eilig", "kandidaten": [{"id": "5kN3CFEeRreSoAQlWcb9", "name": "Julia"}, {"id": "IPgFCimtGutbaeC6sKnf", "name": "Darinka"}], "gewaehlt": null},
+  "gl_l_f47": {"g": "f", "alter": 47, "beschreibung": "Frau vom Bäcker, resolut", "kandidaten": [{"id": "Ow8TnOLY7NuUU63qhHJB", "name": "Maureen"}, {"id": "4YKI1ONIhgWEKHyAHYPC", "name": "Susanne K – Casual"}], "gewaehlt": null},
+  "gl_l_f58": {"g": "f", "alter": 58, "beschreibung": "Nachbarin, neugierig, leichte Färbung", "kandidaten": [{"id": "4FAKwoQRvqLfJJP6W6Qp", "name": "DeMandy (sächsisch)"}, {"id": "hSzY2zmYNQPukJaIll7k", "name": "Carlotta"}], "gewaehlt": null, "mundart": true},
+  "gl_l_f69": {"g": "f", "alter": 69, "beschreibung": "Rentnerin mit Einkaufstasche, leichte Färbung", "kandidaten": [{"id": "9VojQrRhoFFUbqyNRsxF", "name": "Kathy Calm"}, {"id": "QR3u6NImjjOZiLeMunRk", "name": "Alina"}], "gewaehlt": null, "mundart": true},
+  "gl_l_f81": {"g": "f", "alter": 81, "beschreibung": "alte Frau am Fenster, langsam, leichte Färbung", "kandidaten": [{"id": "p2Wol3C7j3rHbfOrbL18", "name": "Oma’s Nähkästchen"}, {"id": "lJsTszeSyrYhIQNECkbn", "name": "Grumpy Greta (nur als grantige Alte)"}], "gewaehlt": null, "mundart": true}
+ }
+}

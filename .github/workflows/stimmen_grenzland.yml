@@ -3,17 +3,41 @@
 # by tools/voices/grenzland_linien.mjs), the record script or this workflow records what is new or changed
 # (tools/voices/grenzland_record.py) and commits the feature extra viz3/extra/grenzland-stimmen back to the same branch ([skip ci]; the
 # tests run with the next push). After a merge of new lines: node tools/voices/grenzland_linien.mjs, commit, push – nothing else.
+# ton-stimmen (14.11.2026): also on the sound agents' branches (feat/ton-*: new lines of ton-radio and ton-stimmen get recorded – with Edge);
+# with the secret ELEVENLABS_API_KEY the casting samples and the model test (tools/voices/besetzung.json, budget GL_EL_BUDGET, default 5000
+# credits over all runs) – without it the step says „ELEVENLABS_API_KEY fehlt – übersprungen“ and the Edge lines are recorded as always.
+# The full re-recording with ElevenLabs is a manual run (Actions → „Stimmen Grenzland“ → Run workflow: schritt = eleven, budget, modell)
+# after Falko chose the voices ('gewaehlt') and the lead gave the go.
 name: Stimmen Grenzland
 
 on:
   push:
-    branches: ['feat/grenzland-stimmen', 'feat/grenzland']
-    paths: ['tools/voices/grenzland_linien.json', 'tools/voices/grenzland_record.py', '.github/workflows/stimmen_grenzland.yml']
+    branches: ['feat/grenzland-stimmen', 'feat/grenzland', 'feat/ton-*']
+    paths:
+      - 'tools/voices/grenzland_linien.json'
+      - 'tools/voices/grenzland_record.py'
+      - 'tools/voices/grenzland_eleven.py'
+      - 'tools/voices/besetzung.json'
+      - 'tools/voices/regie.json'
+      - '.github/workflows/stimmen_grenzland.yml'
   workflow_dispatch:
+    inputs:
+      schritt:
+        description: 'edge = nur Neues mit Edge · proben = Edge + ElevenLabs-Proben/Modelltest · eleven = Neuaufnahme der gewählten Stimmen mit ElevenLabs'
+        type: choice
+        options: ['proben', 'edge', 'eleven']
+        default: 'proben'
+      budget:
+        description: 'ElevenLabs-Credits für alles zusammen (die Proben eingerechnet; Standard 5000)'
+        default: '5000'
+      modell:
+        description: 'Modell für die Neuaufnahme (leer: besetzung.json modelle.wahl, sonst eleven_v3)'
+        default: ''
 
+# (one run at a time per branch, none cancelled: a run that spends ElevenLabs credits must finish and write its ledger)
 concurrency:
   group: stimmen-grenzland-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -22,7 +46,7 @@ jobs:
   record:
     name: Aufnehmen
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,8 +59,24 @@ jobs:
           pip install -q edge-tts
           command -v ffmpeg || (sudo apt-get update -q && sudo apt-get install -y -q ffmpeg)
           ffmpeg -hide_banner -filters 2>/dev/null | grep -E ' (asoftclip|anoisesrc|loudnorm|ebur128) ' || true
+      - name: Prüfen (ohne Dienst)
+        run: python tools/voices/grenzland_record.py --selbsttest
       - name: Aufnehmen
-        run: python tools/voices/grenzland_record.py
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          GL_EL_BUDGET: ${{ github.event.inputs.budget || '5000' }}
+          GL_EL_MODEL: ${{ github.event.inputs.modell || '' }}
+          SCHRITT: ${{ github.event.inputs.schritt || 'proben' }}
+        run: |
+          if [ "$SCHRITT" = eleven ]; then python tools/voices/grenzland_record.py --engine eleven
+          else python tools/voices/grenzland_record.py; fi
+      # (on a push only on ton-stimmen's branch – the ledger of the credits lives in the branch; elsewhere by hand)
+      - name: ElevenLabs – Proben der Besetzung und Modelltest
+        if: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.schritt != 'edge') || github.ref_name == 'feat/ton-stimmen' }}
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          GL_EL_BUDGET: ${{ github.event.inputs.budget || '5000' }}
+        run: python tools/voices/grenzland_record.py --probe --modelltest
       - name: Ins Repo
         env:
           B: ${{ github.ref_name }}
@@ -44,6 +84,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A viz3/extra/grenzland-stimmen
+          [ -f tools/ton/hoerprobe/ton-stimmen.json ] && git add tools/ton/hoerprobe/ton-stimmen.json
           git diff --cached --quiet && { echo 'nothing new'; exit 0; }
           git commit -q -m "[skip ci] Stimmen Grenzland: Aufnahmen (tools/voices/grenzland_record.py)"
           # the branch may have moved meanwhile (a push of the agent or the lead): on top of it, a few tries
