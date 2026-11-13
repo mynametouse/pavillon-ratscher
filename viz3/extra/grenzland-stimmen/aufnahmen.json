@@ -34,6 +34,256 @@
   "sig": "de-DE-ConradNeural|-4%|-6Hz|p|fx1",
   "voice": "de-DE-ConradNeural"
  },
+ "gl_basti_13w2j8r": {
+  "bytes": 7568,
+  "dur": 2.38,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_17h0ocj": {
+  "bytes": 12428,
+  "dur": 3.96,
+  "kind": "pq",
+  "lufs": -15.8,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1cjh9l8": {
+  "bytes": 7460,
+  "dur": 2.33,
+  "kind": "pq",
+  "lufs": -18.8,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1dfkelw": {
+  "bytes": 4868,
+  "dur": 1.47,
+  "kind": "pq",
+  "lufs": -18.7,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1esnmc": {
+  "bytes": 12428,
+  "dur": 3.99,
+  "kind": "pq",
+  "lufs": -16.7,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1fg7xi1": {
+  "bytes": 11564,
+  "dur": 3.69,
+  "kind": "pq",
+  "lufs": -16.3,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1g2m635": {
+  "bytes": 13616,
+  "dur": 4.37,
+  "kind": "pq",
+  "lufs": -16.8,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1hvzzo2": {
+  "bytes": 10916,
+  "dur": 3.48,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1i90i1l": {
+  "bytes": 3680,
+  "dur": 1.07,
+  "kind": "pq",
+  "lufs": -17.4,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1iuv7n0": {
+  "bytes": 12860,
+  "dur": 4.11,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1jm6ble": {
+  "bytes": 11996,
+  "dur": 3.82,
+  "kind": "pq",
+  "lufs": -17.8,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1khgqmd": {
+  "bytes": 11024,
+  "dur": 3.49,
+  "kind": "pq",
+  "lufs": -17.0,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1kwk0ax": {
+  "bytes": 13724,
+  "dur": 4.42,
+  "kind": "pq",
+  "lufs": -17.0,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1m2l44b": {
+  "bytes": 8648,
+  "dur": 2.71,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1udbfjm": {
+  "bytes": 13400,
+  "dur": 4.31,
+  "kind": "pq",
+  "lufs": -16.3,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1uwkyq7": {
+  "bytes": 12212,
+  "dur": 3.89,
+  "kind": "pq",
+  "lufs": -16.9,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1v0tf3c": {
+  "bytes": 4760,
+  "dur": 1.42,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1v2y3fu": {
+  "bytes": 7676,
+  "dur": 2.4,
+  "kind": "pq",
+  "lufs": -17.4,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1v822oy": {
+  "bytes": 7460,
+  "dur": 2.33,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1vg8wjp": {
+  "bytes": 11456,
+  "dur": 3.64,
+  "kind": "pq",
+  "lufs": -17.4,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1xojrg": {
+  "bytes": 14156,
+  "dur": 4.55,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_1xskeda": {
+  "bytes": 9296,
+  "dur": 2.92,
+  "kind": "pq",
+  "lufs": -17.4,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_2qh5wu": {
+  "bytes": 9620,
+  "dur": 3.05,
+  "kind": "pq",
+  "lufs": -17.1,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_6xknea": {
+  "bytes": 2924,
+  "dur": 0.82,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_7hjwej": {
+  "bytes": 2708,
+  "dur": 0.73,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
  "gl_basti_hstver": {
   "bytes": 3356,
   "dur": 0.57,
@@ -52,6 +302,26 @@
   "pitch": "-6Hz",
   "rate": "-8%",
   "sig": "de-AT-JonasNeural|-8%|-6Hz|p|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_kzey3m": {
+  "bytes": 11996,
+  "dur": 3.82,
+  "kind": "pq",
+  "lufs": -16.6,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_mdz4rb": {
+  "bytes": 10700,
+  "dur": 3.42,
+  "kind": "pq",
+  "lufs": -16.6,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
   "voice": "de-AT-JonasNeural"
  },
  "gl_basti_mj7bkl": {
@@ -73,6 +343,116 @@
   "rate": "-8%",
   "sig": "de-AT-JonasNeural|-8%|-6Hz|p|fx1",
   "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_o351lb": {
+  "bytes": 9080,
+  "dur": 2.85,
+  "kind": "pq",
+  "lufs": -20.5,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_o3cv1o": {
+  "bytes": 10484,
+  "dur": 3.34,
+  "kind": "pq",
+  "lufs": -17.8,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_qnqpa6": {
+  "bytes": 9620,
+  "dur": 3.03,
+  "kind": "pq",
+  "lufs": -17.4,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_ucoo5v": {
+  "bytes": 10052,
+  "dur": 3.17,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_vfzx3z": {
+  "bytes": 11996,
+  "dur": 3.82,
+  "kind": "pq",
+  "lufs": -17.2,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_vwgyhm": {
+  "bytes": 15128,
+  "dur": 4.89,
+  "kind": "pq",
+  "lufs": -16.8,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_wwhod": {
+  "bytes": 8864,
+  "dur": 2.79,
+  "kind": "pq",
+  "lufs": -18.7,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_basti_zk98t": {
+  "bytes": 7244,
+  "dur": 2.26,
+  "kind": "pq",
+  "lufs": -19.8,
+  "pitch": "-6Hz",
+  "rate": "-8%",
+  "sig": "de-AT-JonasNeural|-8%|-6Hz|pq|fx1",
+  "voice": "de-AT-JonasNeural"
+ },
+ "gl_boellermann_185195j": {
+  "bytes": 20636,
+  "dur": 4.03,
+  "kind": "p",
+  "lufs": -16.8,
+  "pitch": "+1Hz",
+  "rate": "+1%",
+  "sig": "de-CH-JanNeural|+1%|+1Hz|p|fx1",
+  "voice": "de-CH-JanNeural"
+ },
+ "gl_boellermann_s79fiu": {
+  "bytes": 26756,
+  "dur": 5.25,
+  "kind": "p",
+  "lufs": -17.5,
+  "pitch": "+1Hz",
+  "rate": "+1%",
+  "sig": "de-CH-JanNeural|+1%|+1Hz|p|fx1",
+  "voice": "de-CH-JanNeural"
+ },
+ "gl_boellermann_ydrt7c": {
+  "bytes": 22436,
+  "dur": 4.37,
+  "kind": "p",
+  "lufs": -16.7,
+  "pitch": "+1Hz",
+  "rate": "+1%",
+  "sig": "de-CH-JanNeural|+1%|+1Hz|p|fx1",
+  "voice": "de-CH-JanNeural"
  },
  "gl_brigitte_g7bpy5": {
   "bytes": 29996,
@@ -103,6 +483,16 @@
   "rate": "-4%",
   "sig": "de-AT-IngridNeural|-4%|-4Hz|p|fx1",
   "voice": "de-AT-IngridNeural"
+ },
+ "gl_bursche_1szkbsb": {
+  "bytes": 18236,
+  "dur": 3.55,
+  "kind": "p",
+  "lufs": -16.5,
+  "pitch": "+0Hz",
+  "rate": "+3%",
+  "sig": "de-AT-JonasNeural|+3%|+0Hz|p|fx1",
+  "voice": "de-AT-JonasNeural"
  },
  "gl_erna_12xbdy3": {
   "bytes": 51716,
@@ -144,6 +534,16 @@
   "sig": "de-DE-AmalaNeural|-8%|-8Hz|p|fx1",
   "voice": "de-DE-AmalaNeural"
  },
+ "gl_falko_13mdxn9": {
+  "bytes": 7076,
+  "dur": 1.3,
+  "kind": "p",
+  "lufs": -18.3,
+  "pitch": "-1Hz",
+  "rate": "+0%",
+  "sig": "de-DE-ConradNeural|+0%|-1Hz|p|fx1",
+  "voice": "de-DE-ConradNeural"
+ },
  "gl_falko_14jici9": {
   "bytes": 24116,
   "dur": 4.72,
@@ -159,6 +559,16 @@
   "dur": 1.74,
   "kind": "p",
   "lufs": -17.9,
+  "pitch": "-1Hz",
+  "rate": "+0%",
+  "sig": "de-DE-ConradNeural|+0%|-1Hz|p|fx1",
+  "voice": "de-DE-ConradNeural"
+ },
+ "gl_falko_1e51bre": {
+  "bytes": 16676,
+  "dur": 3.22,
+  "kind": "p",
+  "lufs": -17.3,
   "pitch": "-1Hz",
   "rate": "+0%",
   "sig": "de-DE-ConradNeural|+0%|-1Hz|p|fx1",
@@ -249,6 +659,26 @@
   "dur": 1.49,
   "kind": "p",
   "lufs": -19.0,
+  "pitch": "-1Hz",
+  "rate": "+0%",
+  "sig": "de-DE-ConradNeural|+0%|-1Hz|p|fx1",
+  "voice": "de-DE-ConradNeural"
+ },
+ "gl_falko_1xda428": {
+  "bytes": 6836,
+  "dur": 1.25,
+  "kind": "p",
+  "lufs": -20.8,
+  "pitch": "-1Hz",
+  "rate": "+0%",
+  "sig": "de-DE-ConradNeural|+0%|-1Hz|p|fx1",
+  "voice": "de-DE-ConradNeural"
+ },
+ "gl_falko_3px6q9": {
+  "bytes": 17276,
+  "dur": 3.35,
+  "kind": "p",
+  "lufs": -16.4,
   "pitch": "-1Hz",
   "rate": "+0%",
   "sig": "de-DE-ConradNeural|+0%|-1Hz|p|fx1",
@@ -864,6 +1294,46 @@
   "sig": "de-DE-KatjaNeural|-2%|-2Hz|fm|fx1",
   "voice": "de-DE-KatjaNeural"
  },
+ "gl_gerhard_13w2j8r": {
+  "bytes": 6056,
+  "dur": 1.84,
+  "kind": "pq",
+  "lufs": -17.9,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_17h0ocj": {
+  "bytes": 11888,
+  "dur": 3.8,
+  "kind": "pq",
+  "lufs": -17.2,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1cjh9l8": {
+  "bytes": 5516,
+  "dur": 1.68,
+  "kind": "pq",
+  "lufs": -18.8,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1dfkelw": {
+  "bytes": 4976,
+  "dur": 1.48,
+  "kind": "pq",
+  "lufs": -17.4,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
  "gl_gerhard_1dgb20p": {
   "bytes": 28796,
   "dur": 5.66,
@@ -894,6 +1364,36 @@
   "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|p|fx1",
   "voice": "en-US-AndrewMultilingualNeural"
  },
+ "gl_gerhard_1esnmc": {
+  "bytes": 10916,
+  "dur": 3.46,
+  "kind": "pq",
+  "lufs": -17.2,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1fg7xi1": {
+  "bytes": 11456,
+  "dur": 3.66,
+  "kind": "pq",
+  "lufs": -17.4,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1g2m635": {
+  "bytes": 13184,
+  "dur": 4.25,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
  "gl_gerhard_1g6vr21": {
   "bytes": 31916,
   "dur": 6.28,
@@ -904,6 +1404,66 @@
   "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|p|fx1",
   "voice": "en-US-AndrewMultilingualNeural"
  },
+ "gl_gerhard_1hvzzo2": {
+  "bytes": 10808,
+  "dur": 3.43,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1i90i1l": {
+  "bytes": 4112,
+  "dur": 1.22,
+  "kind": "pq",
+  "lufs": -20.2,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1iuv7n0": {
+  "bytes": 11780,
+  "dur": 3.78,
+  "kind": "pq",
+  "lufs": -17.2,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1jm6ble": {
+  "bytes": 13616,
+  "dur": 4.39,
+  "kind": "pq",
+  "lufs": -17.9,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1khgqmd": {
+  "bytes": 10484,
+  "dur": 3.32,
+  "kind": "pq",
+  "lufs": -16.7,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1kwk0ax": {
+  "bytes": 13616,
+  "dur": 4.38,
+  "kind": "pq",
+  "lufs": -17.9,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
  "gl_gerhard_1l3mc2f": {
   "bytes": 28316,
   "dur": 5.55,
@@ -912,6 +1472,96 @@
   "pitch": "-6Hz",
   "rate": "-10%",
   "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|p|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1m2l44b": {
+  "bytes": 7676,
+  "dur": 2.38,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1udbfjm": {
+  "bytes": 11996,
+  "dur": 3.84,
+  "kind": "pq",
+  "lufs": -16.7,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1uwkyq7": {
+  "bytes": 10592,
+  "dur": 3.37,
+  "kind": "pq",
+  "lufs": -16.3,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1v0tf3c": {
+  "bytes": 5408,
+  "dur": 1.63,
+  "kind": "pq",
+  "lufs": -20.0,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1v2y3fu": {
+  "bytes": 8540,
+  "dur": 2.67,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1v822oy": {
+  "bytes": 8648,
+  "dur": 2.72,
+  "kind": "pq",
+  "lufs": -22.5,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1vg8wjp": {
+  "bytes": 12320,
+  "dur": 3.94,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1xojrg": {
+  "bytes": 12428,
+  "dur": 3.98,
+  "kind": "pq",
+  "lufs": -17.4,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_1xskeda": {
+  "bytes": 8000,
+  "dur": 2.5,
+  "kind": "pq",
+  "lufs": -17.4,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
   "voice": "en-US-AndrewMultilingualNeural"
  },
  "gl_gerhard_1yutk31": {
@@ -934,6 +1584,56 @@
   "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|p|fx1",
   "voice": "en-US-AndrewMultilingualNeural"
  },
+ "gl_gerhard_2qh5wu": {
+  "bytes": 8972,
+  "dur": 2.84,
+  "kind": "pq",
+  "lufs": -19.0,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_6xknea": {
+  "bytes": 3140,
+  "dur": 0.87,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_7hjwej": {
+  "bytes": 2600,
+  "dur": 0.7,
+  "kind": "pq",
+  "lufs": -18.8,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_kzey3m": {
+  "bytes": 11024,
+  "dur": 3.5,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_mdz4rb": {
+  "bytes": 10052,
+  "dur": 3.17,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
  "gl_gerhard_nw5mjh": {
   "bytes": 18356,
   "dur": 3.55,
@@ -942,6 +1642,86 @@
   "pitch": "-6Hz",
   "rate": "-10%",
   "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|p|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_o351lb": {
+  "bytes": 7136,
+  "dur": 2.22,
+  "kind": "pq",
+  "lufs": -21.2,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_o3cv1o": {
+  "bytes": 11132,
+  "dur": 3.54,
+  "kind": "pq",
+  "lufs": -18.1,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_qnqpa6": {
+  "bytes": 11024,
+  "dur": 3.5,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_ucoo5v": {
+  "bytes": 10808,
+  "dur": 3.43,
+  "kind": "pq",
+  "lufs": -18.0,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_vfzx3z": {
+  "bytes": 10160,
+  "dur": 3.21,
+  "kind": "pq",
+  "lufs": -17.0,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_vwgyhm": {
+  "bytes": 14372,
+  "dur": 4.63,
+  "kind": "pq",
+  "lufs": -18.1,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_wwhod": {
+  "bytes": 10268,
+  "dur": 3.27,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
+  "voice": "en-US-AndrewMultilingualNeural"
+ },
+ "gl_gerhard_zk98t": {
+  "bytes": 7460,
+  "dur": 2.33,
+  "kind": "pq",
+  "lufs": -21.1,
+  "pitch": "-6Hz",
+  "rate": "-10%",
+  "sig": "en-US-AndrewMultilingualNeural|-10%|-6Hz|pq|fx1",
   "voice": "en-US-AndrewMultilingualNeural"
  },
  "gl_gisela_157a6pi": {
@@ -1054,6 +1834,26 @@
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
   "voice": "de-DE-KatjaNeural"
  },
+ "gl_jule_13w2j8r": {
+  "bytes": 7028,
+  "dur": 2.19,
+  "kind": "pq",
+  "lufs": -17.9,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_17h0ocj": {
+  "bytes": 11780,
+  "dur": 3.76,
+  "kind": "pq",
+  "lufs": -16.3,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
  "gl_jule_1ab9ii3": {
   "bytes": 52796,
   "dur": 10.46,
@@ -1064,6 +1864,16 @@
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
   "voice": "de-DE-KatjaNeural"
  },
+ "gl_jule_1cjh9l8": {
+  "bytes": 6704,
+  "dur": 2.07,
+  "kind": "pq",
+  "lufs": -18.4,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
  "gl_jule_1croxj6": {
   "bytes": 17996,
   "dur": 3.5,
@@ -1072,6 +1882,46 @@
   "pitch": "+1Hz",
   "rate": "+5%",
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1dfkelw": {
+  "bytes": 4868,
+  "dur": 1.45,
+  "kind": "pq",
+  "lufs": -18.1,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1esnmc": {
+  "bytes": 11996,
+  "dur": 3.82,
+  "kind": "pq",
+  "lufs": -17.2,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1fg7xi1": {
+  "bytes": 10376,
+  "dur": 3.29,
+  "kind": "pq",
+  "lufs": -16.6,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1g2m635": {
+  "bytes": 12644,
+  "dur": 4.04,
+  "kind": "pq",
+  "lufs": -16.5,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
   "voice": "de-DE-KatjaNeural"
  },
  "gl_jule_1h1ix38": {
@@ -1094,6 +1944,56 @@
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
   "voice": "de-DE-KatjaNeural"
  },
+ "gl_jule_1hvzzo2": {
+  "bytes": 9620,
+  "dur": 3.05,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1i90i1l": {
+  "bytes": 3140,
+  "dur": 0.87,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1iuv7n0": {
+  "bytes": 12428,
+  "dur": 3.98,
+  "kind": "pq",
+  "lufs": -17.0,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1jm6ble": {
+  "bytes": 12536,
+  "dur": 4.01,
+  "kind": "pq",
+  "lufs": -18.3,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1khgqmd": {
+  "bytes": 9836,
+  "dur": 3.13,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
  "gl_jule_1ksraf0": {
   "bytes": 45716,
   "dur": 9.04,
@@ -1102,6 +2002,26 @@
   "pitch": "+1Hz",
   "rate": "+5%",
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1kwk0ax": {
+  "bytes": 12860,
+  "dur": 4.14,
+  "kind": "pq",
+  "lufs": -17.1,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1m2l44b": {
+  "bytes": 8756,
+  "dur": 2.75,
+  "kind": "pq",
+  "lufs": -18.1,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
   "voice": "de-DE-KatjaNeural"
  },
  "gl_jule_1qu9i3a": {
@@ -1114,6 +2034,86 @@
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
   "voice": "de-DE-KatjaNeural"
  },
+ "gl_jule_1udbfjm": {
+  "bytes": 12212,
+  "dur": 3.92,
+  "kind": "pq",
+  "lufs": -16.2,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1uwkyq7": {
+  "bytes": 11672,
+  "dur": 3.74,
+  "kind": "pq",
+  "lufs": -16.8,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1v0tf3c": {
+  "bytes": 4760,
+  "dur": 1.42,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1v2y3fu": {
+  "bytes": 7352,
+  "dur": 2.29,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1v822oy": {
+  "bytes": 8108,
+  "dur": 2.53,
+  "kind": "pq",
+  "lufs": -18.1,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1vg8wjp": {
+  "bytes": 10592,
+  "dur": 3.38,
+  "kind": "pq",
+  "lufs": -17.7,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1xojrg": {
+  "bytes": 13292,
+  "dur": 4.28,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_1xskeda": {
+  "bytes": 8972,
+  "dur": 2.83,
+  "kind": "pq",
+  "lufs": -17.8,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
  "gl_jule_283k59": {
   "bytes": 35396,
   "dur": 6.96,
@@ -1124,6 +2124,16 @@
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
   "voice": "de-DE-KatjaNeural"
  },
+ "gl_jule_2qh5wu": {
+  "bytes": 8540,
+  "dur": 2.68,
+  "kind": "pq",
+  "lufs": -18.9,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
  "gl_jule_2s71ln": {
   "bytes": 32156,
   "dur": 6.32,
@@ -1132,6 +2142,26 @@
   "pitch": "+1Hz",
   "rate": "+5%",
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_6xknea": {
+  "bytes": 2708,
+  "dur": 0.74,
+  "kind": "pq",
+  "lufs": -17.8,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_7hjwej": {
+  "bytes": 2492,
+  "dur": 0.66,
+  "kind": "pq",
+  "lufs": -19.9,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
   "voice": "de-DE-KatjaNeural"
  },
  "gl_jule_8scs18": {
@@ -1164,6 +2194,16 @@
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
   "voice": "de-DE-KatjaNeural"
  },
+ "gl_jule_kzey3m": {
+  "bytes": 11888,
+  "dur": 3.78,
+  "kind": "pq",
+  "lufs": -16.2,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
  "gl_jule_lqgnuc": {
   "bytes": 43556,
   "dur": 8.59,
@@ -1182,6 +2222,36 @@
   "pitch": "+1Hz",
   "rate": "+5%",
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_mdz4rb": {
+  "bytes": 9728,
+  "dur": 3.09,
+  "kind": "pq",
+  "lufs": -16.9,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_o351lb": {
+  "bytes": 8972,
+  "dur": 2.84,
+  "kind": "pq",
+  "lufs": -18.5,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_o3cv1o": {
+  "bytes": 9620,
+  "dur": 3.05,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
   "voice": "de-DE-KatjaNeural"
  },
  "gl_jule_of2fvm": {
@@ -1204,6 +2274,16 @@
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
   "voice": "de-DE-KatjaNeural"
  },
+ "gl_jule_qnqpa6": {
+  "bytes": 9836,
+  "dur": 3.12,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
  "gl_jule_r2gzr1": {
   "bytes": 18596,
   "dur": 3.61,
@@ -1212,6 +2292,56 @@
   "pitch": "+1Hz",
   "rate": "+5%",
   "sig": "de-DE-KatjaNeural|+5%|+1Hz|p|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_ucoo5v": {
+  "bytes": 9620,
+  "dur": 3.03,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_vfzx3z": {
+  "bytes": 10916,
+  "dur": 3.47,
+  "kind": "pq",
+  "lufs": -16.7,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_vwgyhm": {
+  "bytes": 13940,
+  "dur": 4.47,
+  "kind": "pq",
+  "lufs": -16.8,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_wwhod": {
+  "bytes": 8540,
+  "dur": 2.69,
+  "kind": "pq",
+  "lufs": -18.7,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
+  "voice": "de-DE-KatjaNeural"
+ },
+ "gl_jule_zk98t": {
+  "bytes": 7136,
+  "dur": 2.2,
+  "kind": "pq",
+  "lufs": -18.1,
+  "pitch": "+1Hz",
+  "rate": "+5%",
+  "sig": "de-DE-KatjaNeural|+5%|+1Hz|pq|fx1",
   "voice": "de-DE-KatjaNeural"
  },
  "gl_kurt_107vr50": {
@@ -1274,6 +2404,16 @@
   "sig": "de-DE-KillianNeural|-2%|-3Hz|p|fx1",
   "voice": "de-DE-KillianNeural"
  },
+ "gl_maedchen_12mita5": {
+  "bytes": 24596,
+  "dur": 4.81,
+  "kind": "p",
+  "lufs": -16.2,
+  "pitch": "+3Hz",
+  "rate": "+6%",
+  "sig": "de-DE-AmalaNeural|+6%|+3Hz|p|fx1",
+  "voice": "de-DE-AmalaNeural"
+ },
  "gl_maik_13py0m7": {
   "bytes": 21956,
   "dur": 4.29,
@@ -1334,36 +2474,6 @@
   "sig": "de-AT-IngridNeural|+2%|+0Hz|p|fx1",
   "voice": "de-AT-IngridNeural"
  },
- "gl_r_grenzland_10oxr5e": {
-  "bytes": 16748,
-  "dur": 5.41,
-  "kind": "r",
-  "lufs": -18.8,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_10x0isz": {
-  "bytes": 20744,
-  "dur": 6.73,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_111ua30": {
-  "bytes": 26468,
-  "dur": 8.66,
-  "kind": "r",
-  "lufs": -18.8,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_11hx16x": {
   "bytes": 21068,
   "dur": 6.86,
@@ -1414,16 +2524,6 @@
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
  },
- "gl_r_grenzland_16diy7e": {
-  "bytes": 17936,
-  "dur": 5.83,
-  "kind": "r",
-  "lufs": -18.7,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_16h8g4": {
   "bytes": 20744,
   "dur": 6.76,
@@ -1439,16 +2539,6 @@
   "dur": 6.66,
   "kind": "r",
   "lufs": -19.5,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_16vxdmk": {
-  "bytes": 25496,
-  "dur": 8.35,
-  "kind": "r",
-  "lufs": -18.1,
   "pitch": "+3Hz",
   "rate": "+8%",
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
@@ -1484,16 +2574,6 @@
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
  },
- "gl_r_grenzland_1a8bpxi": {
-  "bytes": 19988,
-  "dur": 6.51,
-  "kind": "r",
-  "lufs": -19.2,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_1as4wxy": {
   "bytes": 19340,
   "dur": 6.27,
@@ -1504,31 +2584,11 @@
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
  },
- "gl_r_grenzland_1bnepxz": {
-  "bytes": 20636,
-  "dur": 6.7,
-  "kind": "r",
-  "lufs": -19.2,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_1cxx9v6": {
   "bytes": 21500,
   "dur": 7.01,
   "kind": "r",
   "lufs": -18.8,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_1fsjsr6": {
-  "bytes": 18692,
-  "dur": 6.06,
-  "kind": "r",
-  "lufs": -18.9,
   "pitch": "+3Hz",
   "rate": "+8%",
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
@@ -1564,16 +2624,6 @@
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
  },
- "gl_r_grenzland_1k2tzwd": {
-  "bytes": 31112,
-  "dur": 10.22,
-  "kind": "r",
-  "lufs": -19.2,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_1n74bzo": {
   "bytes": 25172,
   "dur": 8.24,
@@ -1584,31 +2634,11 @@
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
  },
- "gl_r_grenzland_1p8iii6": {
-  "bytes": 35540,
-  "dur": 11.69,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_1plet4u": {
   "bytes": 17828,
   "dur": 5.79,
   "kind": "r",
   "lufs": -19.2,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_1qdnnr0": {
-  "bytes": 20312,
-  "dur": 6.61,
-  "kind": "r",
-  "lufs": -17.8,
   "pitch": "+3Hz",
   "rate": "+8%",
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
@@ -1684,51 +2714,11 @@
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
  },
- "gl_r_grenzland_2xg8sw": {
-  "bytes": 24308,
-  "dur": 7.93,
-  "kind": "r",
-  "lufs": -18.8,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_3nvrfw": {
-  "bytes": 14156,
-  "dur": 4.57,
-  "kind": "r",
-  "lufs": -18.4,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_66iinh": {
-  "bytes": 17936,
-  "dur": 5.83,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_8fpc6u": {
   "bytes": 18584,
   "dur": 6.04,
   "kind": "r",
   "lufs": -19.1,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_91jz74": {
-  "bytes": 21932,
-  "dur": 7.13,
-  "kind": "r",
-  "lufs": -18.3,
   "pitch": "+3Hz",
   "rate": "+8%",
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
@@ -1759,16 +2749,6 @@
   "dur": 2.85,
   "kind": "r",
   "lufs": -19.2,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_cig6tw": {
-  "bytes": 47960,
-  "dur": 15.81,
-  "kind": "r",
-  "lufs": -19.3,
   "pitch": "+3Hz",
   "rate": "+8%",
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
@@ -1814,91 +2794,11 @@
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
  },
- "gl_r_grenzland_hag0ry": {
-  "bytes": 21608,
-  "dur": 7.03,
-  "kind": "r",
-  "lufs": -19.0,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_hxaz03": {
-  "bytes": 23876,
-  "dur": 7.81,
-  "kind": "r",
-  "lufs": -19.1,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_kz7psz": {
-  "bytes": 16532,
-  "dur": 5.36,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_l4hk5t": {
-  "bytes": 14480,
-  "dur": 4.68,
-  "kind": "r",
-  "lufs": -18.5,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_ls6ncc": {
-  "bytes": 18260,
-  "dur": 5.91,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_m9dyu4": {
-  "bytes": 22148,
-  "dur": 7.22,
-  "kind": "r",
-  "lufs": -19.0,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_mnj90m": {
-  "bytes": 29384,
-  "dur": 9.62,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_mxdbcc": {
   "bytes": 21824,
   "dur": 7.11,
   "kind": "r",
   "lufs": -18.8,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_np4qx3": {
-  "bytes": 22040,
-  "dur": 7.19,
-  "kind": "r",
-  "lufs": -18.9,
   "pitch": "+3Hz",
   "rate": "+8%",
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
@@ -1934,16 +2834,6 @@
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
  },
- "gl_r_grenzland_qyncwy": {
-  "bytes": 22688,
-  "dur": 7.38,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_qzt877": {
   "bytes": 20528,
   "dur": 6.66,
@@ -1959,16 +2849,6 @@
   "dur": 7.14,
   "kind": "r",
   "lufs": -18.5,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_grenzland_seyi6k": {
-  "bytes": 25064,
-  "dur": 8.19,
-  "kind": "r",
-  "lufs": -18.2,
   "pitch": "+3Hz",
   "rate": "+8%",
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
@@ -1994,16 +2874,6 @@
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
  },
- "gl_r_grenzland_w0c4hx": {
-  "bytes": 32408,
-  "dur": 10.64,
-  "kind": "r",
-  "lufs": -19.1,
-  "pitch": "+3Hz",
-  "rate": "+8%",
-  "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
-  "voice": "en-US-BrianMultilingualNeural"
- },
  "gl_r_grenzland_wt1jef": {
   "bytes": 19556,
   "dur": 6.34,
@@ -2023,376 +2893,6 @@
   "rate": "+8%",
   "sig": "en-US-BrianMultilingualNeural|+8%|+3Hz|r|fx1",
   "voice": "en-US-BrianMultilingualNeural"
- },
- "gl_r_impuls_154rwsf": {
-  "bytes": 33596,
-  "dur": 11.02,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_18cyarx": {
-  "bytes": 24740,
-  "dur": 8.07,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_1d04jc6": {
-  "bytes": 16532,
-  "dur": 5.35,
-  "kind": "r",
-  "lufs": -17.9,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_1mfisu2": {
-  "bytes": 5516,
-  "dur": 1.67,
-  "kind": "r",
-  "lufs": -18.3,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_1ud5q52": {
-  "bytes": 23552,
-  "dur": 7.7,
-  "kind": "r",
-  "lufs": -18.7,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_7j91u": {
-  "bytes": 27440,
-  "dur": 8.98,
-  "kind": "r",
-  "lufs": -18.5,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_9r0by7": {
-  "bytes": 19340,
-  "dur": 6.28,
-  "kind": "r",
-  "lufs": -18.1,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_cvp4se": {
-  "bytes": 22796,
-  "dur": 7.42,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_eidolz": {
-  "bytes": 27008,
-  "dur": 8.84,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_esib3u": {
-  "bytes": 10700,
-  "dur": 3.41,
-  "kind": "r",
-  "lufs": -17.4,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_g2jss5": {
-  "bytes": 12968,
-  "dur": 4.16,
-  "kind": "r",
-  "lufs": -17.6,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_impuls_zwgbso": {
-  "bytes": 24200,
-  "dur": 7.9,
-  "kind": "r",
-  "lufs": -17.6,
-  "pitch": "+4Hz",
-  "rate": "+8%",
-  "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
-  "voice": "de-DE-AmalaNeural"
- },
- "gl_r_republik_19s70ag": {
-  "bytes": 32300,
-  "dur": 10.61,
-  "kind": "r",
-  "lufs": -18.3,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_1cpnhj8": {
-  "bytes": 22472,
-  "dur": 7.33,
-  "kind": "r",
-  "lufs": -18.1,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_1d82got": {
-  "bytes": 17936,
-  "dur": 5.83,
-  "kind": "r",
-  "lufs": -18.3,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_1esreqa": {
-  "bytes": 26468,
-  "dur": 8.67,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_1h62khj": {
-  "bytes": 31220,
-  "dur": 10.25,
-  "kind": "r",
-  "lufs": -18.9,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_1ixxt2j": {
-  "bytes": 17072,
-  "dur": 5.53,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_1l2ytwr": {
-  "bytes": 23768,
-  "dur": 7.77,
-  "kind": "r",
-  "lufs": -18.3,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_1lu0x94": {
-  "bytes": 17936,
-  "dur": 5.82,
-  "kind": "r",
-  "lufs": -18.7,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_1p8m4vz": {
-  "bytes": 41372,
-  "dur": 13.64,
-  "kind": "r",
-  "lufs": -18.5,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_2gij37": {
-  "bytes": 36296,
-  "dur": 11.93,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_5nqy69": {
-  "bytes": 19556,
-  "dur": 6.35,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_6b1wr1": {
-  "bytes": 27656,
-  "dur": 9.05,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_6ydv3i": {
-  "bytes": 38996,
-  "dur": 12.84,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_9og4we": {
-  "bytes": 42236,
-  "dur": 13.93,
-  "kind": "r",
-  "lufs": -18.3,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_aigl5u": {
-  "bytes": 22040,
-  "dur": 7.19,
-  "kind": "r",
-  "lufs": -18.8,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_dl6zhh": {
-  "bytes": 26468,
-  "dur": 8.65,
-  "kind": "r",
-  "lufs": -18.3,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_eeo1fj": {
-  "bytes": 25064,
-  "dur": 8.17,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_g67y0k": {
-  "bytes": 23444,
-  "dur": 7.63,
-  "kind": "r",
-  "lufs": -18.0,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_i166tq": {
-  "bytes": 21392,
-  "dur": 6.95,
-  "kind": "r",
-  "lufs": -18.2,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_n72ha8": {
-  "bytes": 37700,
-  "dur": 12.42,
-  "kind": "r",
-  "lufs": -18.7,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_nkdjf": {
-  "bytes": 9188,
-  "dur": 2.91,
-  "kind": "r",
-  "lufs": -19.1,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_nmsfek": {
-  "bytes": 22472,
-  "dur": 7.33,
-  "kind": "r",
-  "lufs": -18.0,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_nqdws1": {
-  "bytes": 16964,
-  "dur": 5.48,
-  "kind": "r",
-  "lufs": -18.6,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_o6ksf9": {
-  "bytes": 9080,
-  "dur": 2.87,
-  "kind": "r",
-  "lufs": -18.3,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
- },
- "gl_r_republik_w4upfh": {
-  "bytes": 8432,
-  "dur": 2.64,
-  "kind": "r",
-  "lufs": -20.0,
-  "pitch": "-4Hz",
-  "rate": "-4%",
-  "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
-  "voice": "de-DE-ConradNeural"
  },
  "gl_renate_861su2": {
   "bytes": 31436,
@@ -2437,6 +2937,16 @@
  "gl_sarah_104gsj1": {
   "bytes": 9956,
   "dur": 1.9,
+  "kind": "p",
+  "lufs": -17.4,
+  "pitch": "+0Hz",
+  "rate": "+0%",
+  "sig": "de-DE-SeraphinaMultilingualNeural|+0%|+0Hz|p|fx1",
+  "voice": "de-DE-SeraphinaMultilingualNeural"
+ },
+ "gl_sarah_15nmrko": {
+  "bytes": 7316,
+  "dur": 1.37,
   "kind": "p",
   "lufs": -17.4,
   "pitch": "+0Hz",
@@ -2604,6 +3114,16 @@
   "sig": "de-DE-SeraphinaMultilingualNeural|+0%|+0Hz|p|fx1",
   "voice": "de-DE-SeraphinaMultilingualNeural"
  },
+ "gl_sarah_eyc4n9": {
+  "bytes": 16316,
+  "dur": 3.15,
+  "kind": "p",
+  "lufs": -17.0,
+  "pitch": "+0Hz",
+  "rate": "+0%",
+  "sig": "de-DE-SeraphinaMultilingualNeural|+0%|+0Hz|p|fx1",
+  "voice": "de-DE-SeraphinaMultilingualNeural"
+ },
  "gl_sarah_fekf5o": {
   "bytes": 12716,
   "dur": 2.43,
@@ -2619,6 +3139,26 @@
   "dur": 2.53,
   "kind": "p",
   "lufs": -17.4,
+  "pitch": "+0Hz",
+  "rate": "+0%",
+  "sig": "de-DE-SeraphinaMultilingualNeural|+0%|+0Hz|p|fx1",
+  "voice": "de-DE-SeraphinaMultilingualNeural"
+ },
+ "gl_sarah_t52uaj": {
+  "bytes": 12356,
+  "dur": 2.36,
+  "kind": "p",
+  "lufs": -18.3,
+  "pitch": "+0Hz",
+  "rate": "+0%",
+  "sig": "de-DE-SeraphinaMultilingualNeural|+0%|+0Hz|p|fx1",
+  "voice": "de-DE-SeraphinaMultilingualNeural"
+ },
+ "gl_sarah_v7kiov": {
+  "bytes": 19556,
+  "dur": 3.81,
+  "kind": "p",
+  "lufs": -17.3,
   "pitch": "+0Hz",
   "rate": "+0%",
   "sig": "de-DE-SeraphinaMultilingualNeural|+0%|+0Hz|p|fx1",
@@ -2644,6 +3184,26 @@
   "sig": "de-DE-KillianNeural|+6%|+2Hz|p|fx1",
   "voice": "de-DE-KillianNeural"
  },
+ "gl_timo_13w2j8r": {
+  "bytes": 7352,
+  "dur": 2.3,
+  "kind": "pq",
+  "lufs": -19.2,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_17h0ocj": {
+  "bytes": 11672,
+  "dur": 3.71,
+  "kind": "pq",
+  "lufs": -17.0,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
  "gl_timo_18rakul": {
   "bytes": 34316,
   "dur": 6.75,
@@ -2652,6 +3212,126 @@
   "pitch": "+2Hz",
   "rate": "+6%",
   "sig": "de-DE-KillianNeural|+6%|+2Hz|p|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1cjh9l8": {
+  "bytes": 6596,
+  "dur": 2.05,
+  "kind": "pq",
+  "lufs": -18.5,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1dfkelw": {
+  "bytes": 4544,
+  "dur": 1.33,
+  "kind": "pq",
+  "lufs": -20.5,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1esnmc": {
+  "bytes": 11132,
+  "dur": 3.54,
+  "kind": "pq",
+  "lufs": -18.0,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1fg7xi1": {
+  "bytes": 10484,
+  "dur": 3.33,
+  "kind": "pq",
+  "lufs": -17.1,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1g2m635": {
+  "bytes": 12968,
+  "dur": 4.17,
+  "kind": "pq",
+  "lufs": -17.1,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1hvzzo2": {
+  "bytes": 10592,
+  "dur": 3.36,
+  "kind": "pq",
+  "lufs": -17.9,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1i90i1l": {
+  "bytes": 3464,
+  "dur": 0.99,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1iuv7n0": {
+  "bytes": 12212,
+  "dur": 3.9,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1jm6ble": {
+  "bytes": 11564,
+  "dur": 3.68,
+  "kind": "pq",
+  "lufs": -18.3,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1khgqmd": {
+  "bytes": 9836,
+  "dur": 3.11,
+  "kind": "pq",
+  "lufs": -16.6,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1kwk0ax": {
+  "bytes": 12428,
+  "dur": 3.97,
+  "kind": "pq",
+  "lufs": -18.4,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1m2l44b": {
+  "bytes": 8108,
+  "dur": 2.52,
+  "kind": "pq",
+  "lufs": -20.8,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
   "voice": "de-DE-KillianNeural"
  },
  "gl_timo_1njg2nr": {
@@ -2674,6 +3354,166 @@
   "sig": "de-DE-KillianNeural|+6%|+2Hz|p|fx1",
   "voice": "de-DE-KillianNeural"
  },
+ "gl_timo_1udbfjm": {
+  "bytes": 11456,
+  "dur": 3.65,
+  "kind": "pq",
+  "lufs": -17.1,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1uwkyq7": {
+  "bytes": 11564,
+  "dur": 3.71,
+  "kind": "pq",
+  "lufs": -17.5,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1v0tf3c": {
+  "bytes": 4760,
+  "dur": 1.41,
+  "kind": "pq",
+  "lufs": -17.3,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1v2y3fu": {
+  "bytes": 7136,
+  "dur": 2.2,
+  "kind": "pq",
+  "lufs": -19.9,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1v822oy": {
+  "bytes": 7676,
+  "dur": 2.41,
+  "kind": "pq",
+  "lufs": -19.6,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1vg8wjp": {
+  "bytes": 9944,
+  "dur": 3.14,
+  "kind": "pq",
+  "lufs": -18.5,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1xojrg": {
+  "bytes": 13184,
+  "dur": 4.25,
+  "kind": "pq",
+  "lufs": -17.0,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_1xskeda": {
+  "bytes": 8756,
+  "dur": 2.74,
+  "kind": "pq",
+  "lufs": -19.5,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_2qh5wu": {
+  "bytes": 8432,
+  "dur": 2.66,
+  "kind": "pq",
+  "lufs": -19.4,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_6xknea": {
+  "bytes": 2924,
+  "dur": 0.82,
+  "kind": "pq",
+  "lufs": -18.7,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_7hjwej": {
+  "bytes": 2600,
+  "dur": 0.71,
+  "kind": "pq",
+  "lufs": -19.7,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_kzey3m": {
+  "bytes": 11564,
+  "dur": 3.71,
+  "kind": "pq",
+  "lufs": -17.6,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_mdz4rb": {
+  "bytes": 10052,
+  "dur": 3.18,
+  "kind": "pq",
+  "lufs": -16.5,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_o351lb": {
+  "bytes": 8108,
+  "dur": 2.53,
+  "kind": "pq",
+  "lufs": -18.7,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_o3cv1o": {
+  "bytes": 9188,
+  "dur": 2.9,
+  "kind": "pq",
+  "lufs": -20.0,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_qnqpa6": {
+  "bytes": 8972,
+  "dur": 2.82,
+  "kind": "pq",
+  "lufs": -21.7,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
  "gl_timo_tfq1cw": {
   "bytes": 33956,
   "dur": 6.68,
@@ -2684,6 +3524,26 @@
   "sig": "de-DE-KillianNeural|+6%|+2Hz|p|fx1",
   "voice": "de-DE-KillianNeural"
  },
+ "gl_timo_ucoo5v": {
+  "bytes": 9404,
+  "dur": 2.96,
+  "kind": "pq",
+  "lufs": -21.7,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_vfzx3z": {
+  "bytes": 10700,
+  "dur": 3.39,
+  "kind": "pq",
+  "lufs": -16.5,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
  "gl_timo_vrl469": {
   "bytes": 48476,
   "dur": 9.59,
@@ -2692,6 +3552,36 @@
   "pitch": "+2Hz",
   "rate": "+6%",
   "sig": "de-DE-KillianNeural|+6%|+2Hz|p|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_vwgyhm": {
+  "bytes": 13940,
+  "dur": 4.5,
+  "kind": "pq",
+  "lufs": -18.5,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_wwhod": {
+  "bytes": 8432,
+  "dur": 2.64,
+  "kind": "pq",
+  "lufs": -18.8,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
+  "voice": "de-DE-KillianNeural"
+ },
+ "gl_timo_zk98t": {
+  "bytes": 6056,
+  "dur": 1.85,
+  "kind": "pq",
+  "lufs": -19.4,
+  "pitch": "+2Hz",
+  "rate": "+6%",
+  "sig": "de-DE-KillianNeural|+6%|+2Hz|pq|fx1",
   "voice": "de-DE-KillianNeural"
  },
  "gl_vopo_ij18nw": {
@@ -2833,5 +3723,15 @@
   "rate": "-6%",
   "sig": "de-DE-KillianNeural|-6%|-8Hz|p|fx1",
   "voice": "de-DE-KillianNeural"
+ },
+ "gl_wirt_166yqq9": {
+  "bytes": 21716,
+  "dur": 4.24,
+  "kind": "p",
+  "lufs": -17.2,
+  "pitch": "+0Hz",
+  "rate": "+0%",
+  "sig": "de-DE-FlorianMultilingualNeural|+0%|+0Hz|p|fx1",
+  "voice": "de-DE-FlorianMultilingualNeural"
  }
 }
