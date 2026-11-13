@@ -89,7 +89,8 @@ export const BUS = (() => {
   function load() {
     if (S.state !== 'idle') return;
     S.state = 'loading';
-    fetch(BASE + 'bus/fahrplan.json')
+    // feat/suhl (B1): with ?suhl=… the timetable that runs on into Suhl (the same tool with Suhl's roads, tools/suhl/bus) replaces the world's
+    fetch((window.SUHL && SUHL.busPlan) || BASE + 'bus/fahrplan.json')
       .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
       .then(j => {
         BUSPLAN.parse(j);
