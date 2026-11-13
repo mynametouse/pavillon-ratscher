@@ -997,8 +997,8 @@ export const GLTYPEN = (() => {
     for (const s of [-1, 1]) {
       const x = hw * 0.62,
         y = B.end(s * x, zg + 0.01, 1);
-      k.at({ p: [s * x, y - 0.01, zg + 0.012], rz: -s * 0.32 }, () => {
-        k.pad('head', [0, 0, 0], [hw * 0.46, 0.07, 0.115], 0.03, C.lens);
+      k.at({ p: [s * x, y - 0.028, zg + 0.012], rz: -s * 0.4 }, () => {
+        k.pad('head', [0, 0, 0], [hw * 0.46, 0.06, 0.11], 0.028, C.lens);
         k.box('blink', [s * hw * 0.16, 0.012, -0.03], [hw * 0.09, 0.05, 0.03], C.amber);
       });
       k.pad('matt', [s * hw * 0.72, B.end(s * hw * 0.72, 0.4, 1) - 0.02, 0.4], [0.16, 0.05, 0.09], 0.02, C.black);
