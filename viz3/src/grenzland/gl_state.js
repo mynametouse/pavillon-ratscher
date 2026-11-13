@@ -29,6 +29,7 @@ export const GL = (() => {
     t0: 0,
     e0alt: 0, // the game's calendar before the mode began (time/daynight.js DN.e0; put back at the end)
     e0neu: 0, // the story's calendar: its first day is Friday, 4 September 2026 (0: not set yet)
+    hund: false, // Hasso was with the walker when the mode began: he stays at home meanwhile and comes back at the end
   });
   const S = Object.assign(fresh(), {
     era: 'heute', // 'heute' | '1989' (the flashback: grenzland/gl_1989.js)
@@ -56,6 +57,7 @@ export const GL = (() => {
     't0',
     'e0alt',
     'e0neu',
+    'hund',
   ];
   const obj = v => !!v && typeof v === 'object' && !Array.isArray(v);
   function load() {
