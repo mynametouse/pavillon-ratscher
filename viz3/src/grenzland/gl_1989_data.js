@@ -19,7 +19,7 @@ export const GL89DATA = (() => {
   //      armC: the sleeves' colour (a jumper under an apron); knopf: a button row; reissv: a zip; hemd/schlips/vtief/vweit: shirt and tie
   //      in the opening; kragenC: the collar; kragen: collar patches; schulter: shoulder boards; koppel: a belt; band: a cuff band on
   //      the left sleeve; abz: a badge on the left upper arm; passe: a yoke in another colour; bund: knitted hem and cuffs; taschen:
-  //      patch pockets; hals: a collar standing up the throat (m); falte: a trouser crease; naht: the seams of jeans; galon: a stripe down the leg; schaft: boots up the calf (m) ----
+  //      patch pockets; glatt: how much of the figure's own print and folds is smoothed away (0 … 1); hals: a collar standing up the throat (m); falte: a trouser crease; naht: the seams of jeans; galon: a stripe down the leg; schaft: boots up the calf (m) ----
   const KLEID = {
     // a Dederon apron dress with small flowers over a brown cardigan, thick stockings
     kittel: {
@@ -128,6 +128,7 @@ export const GL89DATA = (() => {
     },
     // the young teacher: a parka over a checked shirt, corduroy trousers, brown shoes
     parka: {
+      glatt: 0.78,
       hals: 0.03,
       ober: [94, 100, 72],
       kragenC: [124, 108, 80],
@@ -171,7 +172,7 @@ export const GL89DATA = (() => {
     // a winter coat with a fur collar
     wintermantel: {
       hals: 0.03,
-      ober: [86, 66, 96],
+      ober: [98, 60, 66],
       kragenC: [70, 50, 36],
       knopf: [40, 30, 44],
       unter: [140, 118, 96],
@@ -183,6 +184,7 @@ export const GL89DATA = (() => {
     // the Volkspolizei: grey-green jacket with four pockets, collar patches and shoulder boards in dark green, shirt and tie, a brown
     // belt, the emblem on the left sleeve; pressed trousers, black shoes
     vopo: {
+      glatt: 0.86,
       ober: [98, 112, 96],
       unter: [98, 112, 96],
       falte: true,
@@ -202,6 +204,7 @@ export const GL89DATA = (() => {
     },
     // the ABV in the uniform coat of the cold season
     vopomantel: {
+      glatt: 0.86,
       hals: 0.03,
       ober: [98, 112, 96],
       unter: [98, 112, 96],
@@ -221,6 +224,7 @@ export const GL89DATA = (() => {
     },
     // the border troops: stone grey, green piping, the green cuff band on the left sleeve, boots
     grenzer: {
+      glatt: 0.8,
       ober: [118, 118, 108],
       unter: [118, 118, 108],
       schuh: [14, 14, 14],
@@ -231,8 +235,8 @@ export const GL89DATA = (() => {
       schlips: [58, 60, 56],
       vtief: 0.13,
       vweit: 0.4,
-      kragen: [70, 130, 80],
-      schulter: [62, 118, 72],
+      kragen: [92, 124, 96],
+      schulter: [70, 112, 78],
       band: [40, 120, 60],
       knopf: [176, 174, 160],
       taschen: true,
@@ -337,6 +341,16 @@ export const GL89DATA = (() => {
       bart: 'schnauzer',
       voice: { g: 'm', age: 74 },
     },
+    // (a young man with short hair: the core's figure for him wears his hair to the collar)
+    vopo: {
+      name: 'Volkspolizist',
+      fig: 'dorf_jens',
+      clips: 'm',
+      h: 1.83,
+      kleid: 'vopo',
+      hut: 'vopo',
+      voice: { g: 'm', age: 28 },
+    },
     abv: {
       name: 'Der ABV',
       fig: 'vk_m16',
@@ -348,8 +362,8 @@ export const GL89DATA = (() => {
       voice: { g: 'm', age: 50 },
     },
   };
-  // ---- the young Gerhard (the player's own figure, repainted): parka, corduroy, the glasses and the moustache of the time ----
-  const GERHARD = { kleid: 'parka', brille: 'gross', gestell: 'gold', bart: 'schnauzer' };
+  // ---- the young Gerhard (the player's own figure, repainted): parka, corduroy, the glasses of the time (the figure has its beard) ----
+  const GERHARD = { kleid: 'parka', brille: 'gross', gestell: 'gold' };
   // ---- where they are and what they do (site metres; hd compass degrees). tun: 'kehren' sweeping, 'kohlen' shovelling briquettes into
   //      buckets, 'schlange' queueing, 'laden' in the shop's door, 'moped' bent over the moped, 'stehen', 'lesen' before the notice
   //      board, 'gehen' walking a round (weg) with pauses; zu: whom they talk to while nobody else is near ----

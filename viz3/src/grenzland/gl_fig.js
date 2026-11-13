@@ -211,7 +211,8 @@ export const GLFIG = (() => {
     _at[1] = hyp(px - a.d[0] * t, py - a.d[1] * t, pz - a.d[2] * t);
     return _at;
   }
-  // zones: 0 nothing (head, throat, hands), 1 torso, 2 legs, 3 left arm, 4 right arm, 5 shoes
+  // zones: 0 nothing (head, throat, hands), 1 torso, 2 legs, 3 left arm, 4 right arm, 5 shoes, 6 round the collar (throat or torso;
+  // 7 in the pixels: the figure's own collar above the line)
   function zoneOf(K, G, x, y, z) {
     const i = x > 0 ? 0 : 1,
       a = G.arm[i];
@@ -223,8 +224,11 @@ export const GLFIG = (() => {
         return 3 + i;
       }
     }
-    // the head; the throat above the collar (the neck joint is where a shirt's collar sits; hals: a collar standing higher, m)
-    if (y > G.kinn || (y > G.neck - 0.012 + (K.hals || 0) && Math.abs(x) < 0.058 * G.H)) return 0;
+    // the head; round the collar (the neck joint is where a shirt's collar sits; hals: a collar standing higher, m) the line between
+    // throat and cloth is drawn per pixel (zone 6)
+    if (y > G.kinn + 0.03) return 0;
+    if (y > G.neck - 0.072 + (K.hals || 0) && Math.abs(x) < 0.075 * G.H) return 6;
+    if (y > G.kinn) return 0;
     if (y < G.ankle + (K.schaft ?? 0.035)) return 5;
     const hem = K.rock ? K.rock * G.H : G.hip - (K.saum ?? 0.03);
     return y < hem ? 2 : 1;
@@ -281,8 +285,8 @@ export const GLFIG = (() => {
     },
     // „moon-washed“: the marbled bleach of the late eighties
     moonwash(x, y) {
-      const n = vnoise(x / 13, y / 17) * 0.6 + vnoise(x / 5, y / 6) * 0.4;
-      return n > 0.56 ? [1, [226, 232, 238]] : 0.8 + n * 0.5 + (hash(x, y) - 0.5) * 0.08;
+      const n = vnoise(x / 11, y / 15) * 0.6 + vnoise(x / 4, y / 5) * 0.4;
+      return 0.74 + n * 0.6 + (n > 0.6 ? 0.22 : 0) + (hash(x, y) - 0.5) * 0.08;
     },
     karo(x, y) {
       const a = x % 44 < 8,
@@ -323,13 +327,13 @@ export const GLFIG = (() => {
     },
     // small blossoms scattered on the cloth (the print of a Dederon apron)
     blumen(x, y) {
-      const cx = Math.floor(x / 26),
-        cy = Math.floor(y / 26),
-        ox = 6 + hash(cx, cy) * 14,
-        oy = 6 + hash(cy, cx + 7) * 14,
-        d = hyp((x % 26) - ox, (y % 26) - oy);
-      if (d < 2) return [1, [236, 206, 96]];
-      if (d < 5.2) return [1, hash(cx + 3, cy) < 0.5 ? [228, 226, 216] : [214, 130, 150]];
+      const cx = Math.floor(x / 18),
+        cy = Math.floor(y / 18),
+        ox = 5 + hash(cx, cy) * 8,
+        oy = 5 + hash(cy, cx + 7) * 8,
+        d = hyp((x % 18) - ox, (y % 18) - oy);
+      if (d < 1.5) return [1, [236, 206, 96]];
+      if (d < 3.7) return [1, hash(cx + 3, cy) < 0.5 ? [228, 226, 216] : [214, 130, 150]];
       return 1 + (vnoise(x / 6, y / 6) - 0.5) * 0.08;
     },
     // the other apron print: small rings and dots in rows
@@ -372,7 +376,8 @@ export const GLFIG = (() => {
         if (!m || !m.map || !m.map.image || !(m.map.image.width > 8)) continue;
         // hair cards, lashes, glasses: never painted (long hair over a shoulder would take the jacket's colour)
         if (m.alphaTest > 0 || m.transparent || /opacity|hair|lash|brow|glass/i.test(m.name || '')) continue;
-        if (!jobs.has(m.map)) jobs.set(m.map, { tris: [], mats: new Set(), any: false });
+        if (!jobs.has(m.map))
+          jobs.set(m.map, { tris: [], mats: new Set(), any: false, head: /head/i.test(m.name || '') });
         const Jb = jobs.get(m.map);
         Jb.mats.add(m);
         for (let t = gr.start; t + 2 < gr.start + gr.count; t += 3) {
@@ -397,7 +402,7 @@ export const GLFIG = (() => {
       if (!Jb.any) continue;
       let t2 = null;
       try {
-        t2 = paint(tex, Jb.tris, K, G, MAX);
+        t2 = paint(tex, Jb.tris, K, G, MAX, Jb.head);
       } catch (e) {
         console.warn('grenzland dress', e);
       }
@@ -459,9 +464,10 @@ export const GLFIG = (() => {
     return { Z, Q };
   }
   const mulC = (c, f) => [c[0] * f, c[1] * f, c[2] * f];
-  function paint(tex, tris, K, G, MAX) {
+  function paint(tex, tris, K, G, MAX, isHead) {
+    // (a body texture of 512 px is painted at twice its size on a desktop: buttons and prints need the pixels)
     const img = tex.image,
-      k = Math.min(1, MAX / Math.max(img.width, img.height)),
+      k = Math.min(2, MAX / Math.max(img.width, img.height)),
       W = Math.max(8, Math.round(img.width * k)),
       Hh = Math.max(8, Math.round(img.height * k));
     const cv = document.createElement('canvas');
@@ -472,21 +478,58 @@ export const GLFIG = (() => {
     const { Z, Q } = raster(tris, W, Hh, !!tex.flipY),
       D = c2.getImageData(0, 0, W, Hh),
       p = D.data;
-    const zn = v => (v === 255 ? 0 : v & 127);
-    // the mean light of the cloth and of the skin per zone (the garment's colour is multiplied by what a pixel differs from it: folds stay)
-    const sum = new Float64Array(16),
-      cnt = new Float64Array(16);
-    for (let i = 0, j = 0; i < p.length; i += 4, j++) {
-      const z = zn(Z[j]);
-      if (!z) continue;
-      const sk = isSkin(p[i], p[i + 1], p[i + 2]) ? 8 : 0;
-      sum[z + sk] += 0.3 * p[i] + 0.59 * p[i + 1] + 0.11 * p[i + 2];
-      cnt[z + sk]++;
-    }
-    const ref = z => (cnt[z] > 20 ? sum[z] / cnt[z] : 110);
     const hem = K.rock ? K.rock * G.H : G.hip - (K.saum ?? 0.03),
-      yc = G.neck - 0.012 + (K.hals || 0),
-      vT = K.hemd ? yc - (K.vtief ?? 0.17) : 1e9,
+      boot = G.ankle + (K.schaft ?? 0.035);
+    // the hem and the boot's top are lines on the body, not the edges of triangles: torso, legs and shoes are told apart per pixel
+    const yc = G.neck - 0.012 + (K.hals || 0);
+    for (let j = 0; j < Z.length; j++) {
+      const v = Z[j];
+      if (!v || v === 255) continue;
+      const z = v & 127,
+        y = Q[j * 3 + 1];
+      // above the collar's line: the throat stays (the head's own texture); what the figure wore there – a collar of its body's
+      // texture – becomes the new garment's collar (zone 7)
+      if (z === 6) Z[j] = y > G.kinn || (y > yc && Math.abs(Q[j * 3]) < 0.058 * G.H) ? (isHead ? 255 : 7) : 1;
+      else Z[j] = z === 1 || z === 2 || z === 5 ? (y < boot ? 5 : y < hem ? 2 : 1) : z;
+    }
+    const zn = v => (v === 255 ? 0 : v);
+    // the light of the cloth, and of bare skin, around each pixel (a coarse grid of means; the garment's colour is multiplied by what a
+    // pixel differs from the light around it: folds and seams stay, but a dark skirt under a light blouse becomes one apron dress)
+    const NG = 64,
+      bw = W / NG,
+      bh = Hh / NG,
+      gs = new Float32Array(NG * NG * 2),
+      gc = new Float32Array(NG * NG * 2),
+      sum = [0, 0],
+      cnt = [0, 0],
+      lum = new Float32Array(W * Hh);
+    for (let y = 0, j = 0; y < Hh; y++)
+      for (let x = 0; x < W; x++, j++) {
+        if (!zn(Z[j])) continue;
+        const i = j * 4,
+          l = 0.3 * p[i] + 0.59 * p[i + 1] + 0.11 * p[i + 2],
+          sk = isSkin(p[i], p[i + 1], p[i + 2]) ? 1 : 0,
+          g = (Math.min(NG - 1, Math.floor(y / bh)) * NG + Math.min(NG - 1, Math.floor(x / bw))) * 2 + sk;
+        lum[j] = l;
+        gs[g] += l;
+        gc[g]++;
+        sum[sk] += l;
+        cnt[sk]++;
+      }
+    const mean = [cnt[0] > 20 ? sum[0] / cnt[0] : 110, cnt[1] > 20 ? sum[1] / cnt[1] : 150];
+    for (let g = 0; g < gs.length; g++) gs[g] = gc[g] > 5 ? gs[g] / gc[g] : mean[g & 1];
+    const local = (x, y, sk) => {
+      const fx = Math.max(0, Math.min(NG - 1.001, x / bw - 0.5)),
+        fy = Math.max(0, Math.min(NG - 1.001, y / bh - 0.5)),
+        ix = Math.floor(fx),
+        iy = Math.floor(fy),
+        tx = fx - ix,
+        ty = fy - iy,
+        a = (iy * NG + ix) * 2 + sk,
+        b = a + NG * 2;
+      return (gs[a] * (1 - tx) + gs[a + 2] * tx) * (1 - ty) + (gs[b] * (1 - tx) + gs[b + 2] * tx) * ty;
+    };
+    const vT = K.hemd ? yc - (K.vtief ?? 0.17) : 1e9,
       vW = K.vweit ?? 0.42,
       mOb = MUSTER[K.oberM] || null,
       mUn = MUSTER[K.unterM] || null,
@@ -528,7 +571,7 @@ export const GLFIG = (() => {
           if (K.bund && by < hem + 0.06) {
             col = K.bund;
             fac *= 0.88 + 0.2 * (Math.round(Math.atan2(bx, bz) * 60) % 2 ? 1 : 0);
-          } else pat(mOb, Math.atan2(bx, bz - G.shZ) * 0.16, by);
+          } else pat(mOb, front ? bx : 0.61 - bx, by);
           if (front && by > vT && ax < (by - vT) * vW + 0.004) {
             // the opening of a jacket: shirt, tie
             col = K.hemd;
@@ -610,6 +653,8 @@ export const GLFIG = (() => {
               fac = 1;
             }
           }
+        } else if (z === 7) {
+          col = K.kragenC || K.hemd || K.ober;
         } else if (z === 2) {
           // ---- the legs ----
           const sd = bx > 0 ? 1 : -1,
@@ -629,10 +674,9 @@ export const GLFIG = (() => {
           else if (by < 0.014) fac *= 0.55;
         }
         if (!col) continue;
-        const l = 0.3 * r + 0.59 * g + 0.11 * b,
-          lr = ref(z + (sk ? 8 : 0));
-        let f = 1 + (l / lr - 1) * (sk ? 0.45 : 0.7);
-        f = Math.max(0.42, Math.min(1.5, f)) * fac;
+        const lr = Math.max(12, local(x, y, sk ? 1 : 0));
+        let f = 1 + (lum[j] / lr - 1) * (sk ? 0.5 : 0.85) * (1 - (K.glatt || 0));
+        f = Math.max(0.5, Math.min(1.45, f)) * fac;
         p[i] = Math.min(255, col[0] * f);
         p[i + 1] = Math.min(255, col[1] * f);
         p[i + 2] = Math.min(255, col[2] * f);
@@ -799,12 +843,12 @@ export const GLFIG = (() => {
       K.lathe(
         0,
         0,
-        -0.058,
+        -0.078,
         [
           [r, 0],
           [r, 0.04],
-          [r * 1.34, 0.085],
-          [r * 1.3, 0.1],
+          [r * 1.3, 0.085],
+          [r * 1.27, 0.098],
           [0, 0.104],
         ],
         16,
@@ -813,7 +857,7 @@ export const GLFIG = (() => {
       K.lathe(
         0,
         0,
-        -0.06,
+        -0.08,
         [
           [r * 1.015, 0],
           [r * 1.015, 0.03],
@@ -821,19 +865,20 @@ export const GLFIG = (() => {
         16,
         c.band
       );
-      K.box(0, r + 0.03, -0.058, 0.15, 0.085, 0.012, 0, c.peak, true);
-      K.box(0, r + 0.004, -0.02, 0.03, 0.01, 0.03, 0, c.badge || c.band);
+      K.box(0, r + 0.03, -0.078, 0.15, 0.085, 0.012, 0, c.peak, true);
+      K.box(0, r + 0.004, -0.04, 0.03, 0.01, 0.03, 0, c.badge || c.band);
     },
+    // the flat cap: pulled down to the forehead, a short peak
     schieber(K, R, c) {
-      dome(K, -0.085, R * 1.12, R * 1.22, 0.1, 1.25, c.top, 14, 4);
-      K.box(0, R + 0.03, -0.062, 0.13, 0.07, 0.012, 0, c.top, true);
+      dome(K, -0.108, R * 1.13, R * 1.2, 0.13, 1.36, c.top, 14, 5);
+      K.box(0, R * 1.08 + 0.03, -0.088, 0.135, 0.075, 0.012, 0, c.top, true);
     },
     // a felt hat: brim, crown with a dent, the band
     hut(K, R, c) {
       K.lathe(
         0,
         0,
-        -0.062,
+        -0.082,
         [
           [R * 1.72, -0.004],
           [R * 1.06, 0.008],
@@ -847,7 +892,7 @@ export const GLFIG = (() => {
       K.lathe(
         0,
         0,
-        -0.064,
+        -0.084,
         [
           [R * 1.74, -0.006],
           [R * 1.06, -0.01],
@@ -858,7 +903,7 @@ export const GLFIG = (() => {
       K.lathe(
         0,
         0,
-        -0.052,
+        -0.072,
         [
           [R * 1.075, 0],
           [R * 1.045, 0.03],
@@ -867,11 +912,47 @@ export const GLFIG = (() => {
         c.band
       );
     },
+    // the headscarf: close over the hair, the face free – from the hairline round the cheeks to the chin, tied under it, a corner down the nape
     kopftuch(K, R, c) {
-      dome(K, -R * 0.95, R * 1.12, R * 1.16, R * 1.12, 2.05, c.top, 14, 7);
-      K.tri([-0.07, -R * 0.9, -0.12], [0.07, -R * 0.9, -0.12], [0, -R * 1.25, -0.25], c.top);
-      K.tri([0.07, -R * 0.9, -0.12], [-0.07, -R * 0.9, -0.12], [0, -R * 1.25, -0.25], c.top);
-      K.box(0, R * 0.55, -R * 2.02, 0.05, 0.04, 0.04, 0, c.band); // the knot under the chin
+      const rx = R * 1.09,
+        ry = R * 1.14,
+        rv = R * 1.14,
+        z0 = -R * 1.0,
+        seg = 16,
+        rings = 8,
+        to = 2.2,
+        P = (a, t) => [Math.cos(a) * Math.sin(t) * rx, Math.sin(a) * Math.sin(t) * ry, z0 + Math.cos(t) * rv];
+      for (let j = 0; j < rings; j++) {
+        const t0 = (to * j) / rings,
+          t1 = (to * (j + 1)) / rings;
+        for (let i = 0; i < seg; i++) {
+          const a0 = (i / seg) * Math.PI * 2,
+            a1 = ((i + 1) / seg) * Math.PI * 2,
+            fr = Math.sin((a0 + a1) / 2);
+          // the face: nothing in front below the hairline, nothing before the cheeks further down
+          if ((fr > 0.5 && t1 > 0.78) || (fr > 0.15 && t1 > 1.5)) continue;
+          if (j === 0) K.tri(P(a0, t1), P(a1, t1), P(a0, t0), c.top);
+          else K.quad(P(a0, t1), P(a1, t1), P(a1, t0), P(a0, t0), c.top);
+        }
+      }
+      // the ends from the cheeks to the knot under the chin
+      const kn = [0, R * 0.62, z0 + Math.cos(to) * rv - 0.035];
+      for (const sx of [-1, 1]) {
+        const a = Math.PI / 2 + sx * 1.42,
+          p0 = P(a, 1.55),
+          p1 = P(a, to),
+          q0 = [kn[0] + sx * 0.012, kn[1], kn[2] + 0.03],
+          q1 = [kn[0] + sx * 0.012, kn[1] - 0.02, kn[2]];
+        K.quad(p1, q1, q0, p0, c.top);
+        K.quad(p0, q0, q1, p1, c.top);
+      }
+      K.box(kn[0], kn[1], kn[2], 0.045, 0.035, 0.035, 0, c.band, true);
+      // the corner at the back
+      const b0 = P(-Math.PI / 2 - 0.5, to),
+        b1 = P(-Math.PI / 2 + 0.5, to),
+        b2 = [0, -ry * 1.02, z0 + Math.cos(to) * rv - 0.1];
+      K.tri(b0, b1, b2, c.top);
+      K.tri(b1, b0, b2, c.top);
     },
     strick(K, R, c) {
       dome(K, -R * 0.9, R * 1.1, R * 1.14, R * 1.12, 1.45, c.top, 14, 6);
@@ -918,7 +999,7 @@ export const GLFIG = (() => {
     hut: ['hut', { top: L(84, 76, 64), band: L(40, 34, 30) }],
     kopftuch: ['kopftuch', { top: L(150, 54, 60), band: L(150, 54, 60) }],
     kopftuchblau: ['kopftuch', { top: L(62, 84, 128), band: L(62, 84, 128) }],
-    kopftuchbunt: ['kopftuch', { top: L(176, 140, 64), band: L(120, 70, 40) }],
+    kopftuchbunt: ['kopftuch', { top: L(78, 96, 86), band: L(60, 76, 68) }],
     strick: ['strick', { top: L(196, 70, 150), band: L(236, 232, 224) }],
     strickblau: ['strick', { top: L(60, 96, 150), band: L(232, 228, 216) }],
     basecap: ['basecap', { top: L(30, 34, 40), band: L(30, 34, 40) }],
@@ -932,7 +1013,7 @@ export const GLFIG = (() => {
     // a perm: curls all over, the face free (lang: down to the shoulders)
     dauerwelle(K, D, c, lang) {
       const rv = 0.108,
-        n = lang ? 96 : 84;
+        n = lang ? 96 : 76;
       for (let i = 0; i < n; i++) {
         const h1 = hash(i, 7),
           h2 = hash(i, 13),
@@ -941,12 +1022,12 @@ export const GLFIG = (() => {
           ph = h2 * Math.PI * 2,
           fr = Math.cos(ph);
         if ((th > 0.78 && fr > 0.5) || (th > 1.2 && fr > 0.12)) continue; // the face
-        const r = 1.07 + h3 * 0.1;
+        const r = 1.04 + h3 * 0.08;
         K.ball(
           Math.sin(th) * Math.sin(ph) * D.rx * r,
           Math.sin(th) * fr * D.rz * r,
           -rv + Math.cos(th) * rv * r,
-          0.027 + h3 * 0.013,
+          0.024 + h3 * 0.012,
           tone(c, 0.8 + hash(i, 3) * 0.42),
           5
         );
@@ -974,7 +1055,7 @@ export const GLFIG = (() => {
     // „vorne kurz, hinten lang“: short and standing on top, the nape down to the collar
     vokuhila(K, D, c) {
       const rv = 0.106;
-      dome(K, -rv * 0.97, D.rx * 1.07, D.rz * 1.08, rv * 1.12, 1.1, tone(c, 0.95), 12, 4);
+      dome(K, -rv * 1.0, D.rx * 1.04, D.rz * 1.05, rv * 1.08, 1.05, tone(c, 0.95), 12, 4);
       for (let i = 0; i < 16; i++) {
         const a = (i / 16) * Math.PI - Math.PI / 2;
         K.ball(
@@ -1025,11 +1106,11 @@ export const GLFIG = (() => {
   };
   const BART = {
     schnauzer(K, D, c) {
-      const y = D.nose[0] - 0.021,
-        z = D.nose[1] - 0.024;
+      const y = D.nose[0] - 0.022,
+        z = D.nose[1] - 0.023;
       for (const sx of [-1, 1]) {
-        K.box(sx * 0.013, y, z, 0.027, 0.012, 0.011, sx * -0.28, c, true);
-        K.box(sx * 0.03, y - 0.006, z - 0.004, 0.012, 0.011, 0.01, sx * -0.6, c, true);
+        K.box(sx * 0.012, y, z, 0.026, 0.01, 0.009, sx * -0.3, c, true);
+        K.box(sx * 0.028, y - 0.006, z - 0.004, 0.012, 0.009, 0.008, sx * -0.65, c, true);
       }
     },
   };
