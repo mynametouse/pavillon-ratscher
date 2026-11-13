@@ -135,7 +135,7 @@ export function styleOf(b, id, old) {
     o.sp = 3.1 + hh(id + 4) * 0.4;
     o.frame = 0;
   }
-  return o;
+  return byEra(o, b, id, b.typ);
 }
 // ---- the look from the record's own facade parameters (data contract: fas over the tile's table fat = { mat, col, col2, sock,
 // win: [axis spacing, width, height, sill, kind, frame colour, bars], balk, lv, q }) as far as the village's facade program can
@@ -168,6 +168,17 @@ export function matStyle(mat, bt, k) {
   if (st === ST.SHED && k === 1) st = ST.BARN_FULL;
   return st;
 }
+// what the type and era add to the look the material gave: light surrounds round the windows of the town houses and villas of up to
+// 1948 (stucco frames), grey frames on what was built after 1990, white ones on the blocks of 1949–1990 (their plastic windows)
+const OLD_BT = { stadthaus: 1, villa: 1, block: 1 };
+function byEra(o, b, id, bt) {
+  const st = o.style,
+    plaster = st === ST.PLASTER || st === ST.SLATE_GABLE;
+  if (OLD_BT[bt] && (b.era === 1 || b.era === 2) && plaster) o.surr = hh(id + 43) < 0.8;
+  if (b.era === 4 && (st === ST.PLASTER || st === ST.MODERN)) o.frame = hh(id + 47) < 0.55 ? 3 : 0;
+  if (b.era === 3 && st === ST.MODERN) o.frame = 0;
+  return o;
+}
 export function styleFa(b, id, fa, bt) {
   const o = styleOf(b, id, 0),
     win = fa.win,
@@ -188,7 +199,7 @@ export function styleFa(b, id, fa, bt) {
   }
   if (bt === 'garage')
     Object.assign(o, { noWin: true, doorW: 2.3, door: [4, 4, 3, 0, 5, 4][Math.floor(hh(id + 9) * 6)], raised: false });
-  return o;
+  return byEra(o, b, id, bt);
 }
 // ---- buffers ----
 export function wallBuf() {
@@ -367,7 +378,7 @@ export function building(b, id, z0, WB, RB, segs) {
       du,
       dw,
       sp,
-      fl: (gable ? 1 : 0) + (o.shutters ? 2 : 0) + (o.orn ? 4 : 0) + (o.raised ? 8 : 0),
+      fl: (gable ? 1 : 0) + (o.shutters ? 2 : 0) + (o.orn ? 4 : 0) + (o.raised ? 8 : 0) + (o.surr ? 64 : 0),
       col: wcol,
       pk,
     };
@@ -412,6 +423,8 @@ export function building(b, id, z0, WB, RB, segs) {
     segs.push(ax, ay, bx, by);
     u0 += L;
   });
+  if (o.style === ST.MODERN && b.r === 0 && b.e >= 8 && (BALK[b.typ] || (b.typ === 'block' && b.era === 3)))
+    balconies(b, id, z0, RB, o);
   // ---- roof: the faces of the record, each with its own cover and colour (b.tris: corners above the foot, kc = [cover, r, g, b]) ----
   const col = b.trim,
     th = b.k === 0 || b.church ? 0.16 : 0.1,
@@ -582,6 +595,98 @@ export function building(b, id, z0, WB, RB, segs) {
         col
       );
     }
+  }
+}
+// ---- balconies (stage 2, a rule): the prefabricated and flat-roofed blocks of 1949–1990 carry them on the long side away from the
+// street and towards the sun (point blocks on every side facing south or west), from the first floor up, in every other bay of the facade
+// program (its bays: (L − 0.6) / spacing, windows in their middles), so each stands before a window: a concrete slab of 1.25 m and a
+// parapet of 1 m in a colour of the house – faces of the roof program (kind 4: flat, in the colour given), no new program ----
+const BALK = { platte: 1, zeilenbau: 1, punkthochhaus: 1, hochhaus: 1, wbs70: 1 };
+const PARA = ['#bdb8ad', '#c4825f', '#d8c48a', '#93a6b6', '#a9b99c', '#e4e0d6', '#b56b5a'].map(c => linC(hex(c), 0.85)),
+  SLAB_C = linC([0.6, 0.59, 0.56], 0.85);
+function balconies(b, id, z0, RB, o) {
+  const sides = [];
+  b.F.forEach(f => {
+    const [ax, ay, bx, by, , , , , fl, sd] = f,
+      L = Math.hypot(bx - ax, by - ay);
+    if (fl & 1 || L < 9) return;
+    const dx = (bx - ax) / L,
+      dy = (by - ay) / L;
+    sides.push({ ax, ay, dx, dy, nx: dy, ny: -dx, L, face: -0.5 * dy + 0.87 * dx, sd: Math.min(sd ?? 99, 30) });
+  });
+  if (!sides.length) return;
+  const point = b.typ === 'punkthochhaus' || b.typ === 'hochhaus',
+    longest = Math.max(...sides.map(q => q.L)),
+    pick = point
+      ? sides.filter(q => q.face > -0.25)
+      : sides
+          .filter(q => q.L >= 0.6 * longest)
+          .sort((p, q) => q.sd + 6 * q.face - (p.sd + 6 * p.face)) // away from the street (courtyard, garden), else to the sun
+          .slice(0, 1),
+    pc = PARA[Math.floor(hh(id + 31) * PARA.length)];
+  for (const s of pick) {
+    const nb = Math.max(1, Math.floor((s.L - 0.6) / o.sp)),
+      bw = s.L / nb,
+      w = Math.min(bw * 0.88, 3.4);
+    for (let fi = 1; z0 + 0.35 + fi * 2.75 + 2.45 <= z0 + b.e; fi++)
+      for (let bi = 1; bi < nb - (nb > 3 ? 1 : 0); bi += 2)
+        balcony(RB, s, (bi + 0.5) * bw, w, z0 + 0.35 + fi * 2.75, pc);
+  }
+}
+function balcony(RB, s, uc, w, fb, pc) {
+  const D = 1.25,
+    T = 0.18,
+    PH = 1.0,
+    PT = 0.08,
+    P = (u, d, z) => [s.ax + s.dx * u + s.nx * d, s.ay + s.dy * u + s.ny * d, z],
+    u0 = uc - w / 2,
+    u1 = uc + w / 2,
+    zt = fb - 0.02,
+    zb = zt - T,
+    zp = zt + PH,
+    di = D - PT,
+    kS = [4, ...SLAB_C],
+    kP = [4, ...pc],
+    tg = [s.dx, s.dy],
+    up = [0, 0, 1],
+    out = [s.nx, s.ny, 0],
+    inn = [-s.nx, -s.ny, 0],
+    lf = [-s.dx, -s.dy, 0],
+    rt = [s.dx, s.dy, 0],
+    uq = (a, c) => [
+      [0, 0],
+      [a, 0],
+      [a, c],
+      [0, c],
+    ];
+  // the slab: underside, front edge, ends, top
+  RB.quad(P(u0, 0, zb), P(u1, 0, zb), P(u1, D, zb), P(u0, D, zb), [0, 0, -1], kS, tg, uq(w, D));
+  RB.quad(P(u0, D, zb), P(u1, D, zb), P(u1, D, zt), P(u0, D, zt), out, kS, tg, uq(w, T));
+  RB.quad(P(u0, 0, zb), P(u0, D, zb), P(u0, D, zt), P(u0, 0, zt), lf, kS, tg, uq(D, T));
+  RB.quad(P(u1, 0, zb), P(u1, D, zb), P(u1, D, zt), P(u1, 0, zt), rt, kS, tg, uq(D, T));
+  RB.quad(P(u0, 0, zt), P(u1, 0, zt), P(u1, D, zt), P(u0, D, zt), up, kS, tg, uq(w, D));
+  // the parapet along the front: its outer face flush with the slab's edge, the inner one, the cap
+  RB.quad(P(u0, D, zt), P(u1, D, zt), P(u1, D, zp), P(u0, D, zp), out, kP, tg, uq(w, PH));
+  RB.quad(P(u0, di, zt), P(u1, di, zt), P(u1, di, zp), P(u0, di, zp), inn, kP, tg, uq(w, PH));
+  RB.quad(P(u0, di, zp), P(u1, di, zp), P(u1, D, zp), P(u0, D, zp), up, kP, tg, uq(w, PT));
+  // … and at the two ends
+  for (const [u, sg] of [
+    [u0, -1],
+    [u1, 1],
+  ]) {
+    const ui = u - sg * PT;
+    RB.quad(P(u, 0, zt), P(u, D, zt), P(u, D, zp), P(u, 0, zp), sg < 0 ? lf : rt, kP, tg, uq(D, PH));
+    RB.quad(P(ui, 0, zt), P(ui, di, zt), P(ui, di, zp), P(ui, 0, zp), sg < 0 ? rt : lf, kP, tg, uq(di, PH));
+    RB.quad(
+      P(Math.min(u, ui), 0, zp),
+      P(Math.max(u, ui), 0, zp),
+      P(Math.max(u, ui), D, zp),
+      P(Math.min(u, ui), D, zp),
+      up,
+      kP,
+      tg,
+      uq(PT, D)
+    );
   }
 }
 function chimney(RB, cx, cy, z0, w, d, z1, ang, kk, col) {

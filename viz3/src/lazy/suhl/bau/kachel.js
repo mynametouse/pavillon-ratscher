@@ -111,6 +111,8 @@ export function norm(rec, T, map) {
       open: rec.bt === 'ueberdachung', // an open roof (carport, canopy): no walls
       z0rec: Number.isFinite(rec.z0) && T.z0ok ? rec.z0 : undefined,
       typ: rec.bt || '',
+      era: rec.era | 0, // 0 unknown, 1 up to 1918, 2 1919–1948, 3 1949–1990, 4 from 1991
+      use: rec.use || '',
       // the facade parameters of the house: its own over the row of the tile's table
       fa: fas ? Object.assign({}, (T.fat && T.fat[fas.t]) || {}, fas) : null,
     };
