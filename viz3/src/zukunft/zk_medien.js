@@ -290,7 +290,7 @@ export const ZKMEDIEN = (() => {
 .zkm-call .nm{font-size:4.2vh;font-weight:800;margin-top:1.6vh}
 .zkm-call .ro{font-size:2.6vh;opacity:.85}
 .zkm-call .st{font-size:2.7vh;margin-top:1.4vh;font-weight:700;color:#8fe0a6}
-.zkm-call .cp{margin-top:2.4vh;font-size:2.8vh;line-height:1.28;background:rgba(0,0,0,.35);padding:1.2vh 1.4vh;border-radius:1.4vh;font-weight:600}
+.zkm-call .cp{margin-top:2.4vh;font-size:2.6vh;line-height:1.25;background:rgba(0,0,0,.35);padding:1.2vh 1.4vh;border-radius:1.4vh;font-weight:600}
 .zkm-alert{background:repeating-linear-gradient(135deg,#7d1d0d 0 2.4vh,#5a1308 2.4vh 4.8vh);align-items:center;text-align:center;animation:zkmalert 1s steps(2) infinite}
 @keyframes zkmalert{50%{filter:brightness(1.35)}}
 .zkm-alert .ic{font-size:9vh;margin-top:1vh}
@@ -434,7 +434,7 @@ export const ZKMEDIEN = (() => {
     const net = h('span', 'net', S.noNet ? 'Kein Netz' : NETBARS);
     if (S.noNet) net.classList.add('off');
     st.append(clock, net, h('span', 'bat', '▮▮▮▯'));
-    body.append(st, h('div', 'zkm-mark', 'Szenario · ' + D.NAMES.mark));
+    body.append(st, h('div', 'zkm-mark', D.NAMES.mark));
     if (w && (side === 'L' || side === 'R')) {
       const wi = worldInfo(w);
       const chip = h('div', 'zkm-chip', wi.title);

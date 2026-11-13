@@ -111,7 +111,7 @@ export const ZKMEDIENDATA = (() => {
           place: 'bruecke',
           lines: [
             {
-              v: 'Manfred hier, Feuerwehr. Die Straße am Bach ist dicht, wir kommen nicht überall hin. Bleibt oben und passt auf euch auf.',
+              v: 'Manfred, Feuerwehr. Die Straße am Bach ist dicht. Wir kommen nicht überall hin. Bleibt oben.',
             },
           ],
         },
@@ -137,7 +137,7 @@ export const ZKMEDIENDATA = (() => {
           place: 'bruecke',
           lines: [
             {
-              v: 'Manfred hier. Die Sandsäcke sitzen, der Bach geht bei uns in die Wiese. Bleibt ruhig, wir melden uns.',
+              v: 'Manfred hier. Die Sandsäcke sitzen, der Bach geht in die Wiese. Bleibt ruhig.',
             },
           ],
         },
