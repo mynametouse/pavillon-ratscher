@@ -80,7 +80,8 @@ with lib.browser() as b:
         steps(0.3)
         st = J("GLSTIMMEN.stand()")
         # the first time with loading and decoding (the slow chat machine: up to 3 s more); the second time from STIMME's own buffer
-        r2 = J(f"(async () => {{ const t0 = performance.now(), ok = await STIMME.say({json.dumps(line['who'])}, {json.dumps(line['text'])}); return {{ ok, ms: performance.now() - t0 }}; }})()")
+        r2 = E(f"(async () => {{ const t0 = performance.now(), ok = await STIMME.say({json.dumps(line['who'])}, {json.dumps(line['text'])}); return {{ ok, ms: performance.now() - t0 }}; }})()") or {}
+        r2.setdefault('ms', -1e9); r2.setdefault('ok', None)
         ok1 = r.get('ms') is not None and line['dur'] - 0.3 <= r['ms'] / 1000 <= line['dur'] + 3
         ok2 = line['dur'] - 0.3 <= r2['ms'] / 1000 <= line['dur'] + 1
         ck('a recorded line plays and its Promise ends with the recording (dur … dur + 1 s)', r.get('ok') is True and r2['ok'] is True and ok1 and ok2,
