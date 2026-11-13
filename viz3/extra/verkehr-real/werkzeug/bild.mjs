@@ -20,6 +20,7 @@ const W = +(opt('w') || 900),
   SS = 2;
 const O = Object.assign({}, opt('opt') ? JSON.parse(opt('opt')) : {});
 if (opt('col')) O.col = opt('col');
+if (opt('col2')) O.col2 = opt('col2');
 const views = (opt('views') || 'v34,h34,seite,front').split(',');
 
 function VKHEX(h) {

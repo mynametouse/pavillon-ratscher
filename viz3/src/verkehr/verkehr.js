@@ -36,7 +36,22 @@ import { VLEUTE } from './verkehr_leute.js';
 import { VNETZ } from './verkehr_netz.js';
 import { VFIG } from './verkehr_fig.js';
 import { VAUTO } from './verkehr_auto.js';
+// feat/verkehr-real: the types of today and their models (the drivers' own cars)
+import { VKTYPEN } from './vk_typen.js';
+import { VKMOD } from './vk_modelle.js';
 export const VERKEHR = (() => {
+  // feat/verkehr-real: each driver of the cast has a car of today of his own (by his name: the same type every time; the colour stays
+  // his, VLEUTE) – the cars by their share of the stock (VKTYPEN.PKW); their models asked for at once, in the order of that share
+  const typFor = who => {
+    let h = 2166136261;
+    for (const ch of String(who || '')) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+    let sum = 0;
+    for (const e of VKTYPEN.PKW) sum += e[1];
+    let x = ((h % 10007) / 10007) * sum;
+    for (const [t, w] of VKTYPEN.PKW) if ((x -= w) <= 0) return t;
+    return VKTYPEN.PKW[0][0];
+  };
+  for (const [t] of VKTYPEN.PKW.slice().sort((a, b) => b[1] - a[1])) VKMOD.need(t, 1);
   const PP = VLEUTE.P;
   const S = {
     places: {},
@@ -579,7 +594,7 @@ export const VERKEHR = (() => {
     VNETZ.at(line, s, _a);
     if (!opt.prime && opt.s === undefined && seen(_a.x, _a.y) && Math.hypot(_a.x - o[0], _a.y - o[1]) < 120)
       return null;
-    const c = VAUTO.spawn({ place: Pl.id, line, s, who, col: PP[who].car, v: Math.min(line.S[Math.round(s)] || 8, 9) });
+    const c = VAUTO.spawn({ place: Pl.id, line, s, who, typ: typFor(who), col: PP[who].car, v: Math.min(line.S[Math.round(s)] || 8, 9) });
     c.vk = 0.92 + rnd() * 0.12;
     c.laneOff = 1.2;
     S.busy[who] = 'car';
@@ -1269,7 +1284,7 @@ export const VERKEHR = (() => {
     const r = roadLine(v.st.x, v.st.y, v.st.psi);
     if (!r) return;
     const k = pick(who),
-      c = VAUTO.spawn({ place: 'fahrt', line: r.line, s: r.s0, who: k, col: PP[k].car, v: 14 });
+      c = VAUTO.spawn({ place: 'fahrt', line: r.line, s: r.s0, who: k, typ: typFor(k), col: PP[k].car, v: 14 });
     c.vk = 0.9 + rnd() * 0.1;
     c.laneOff = 1.3;
     S.busy[k] = 'car';
@@ -1467,7 +1482,7 @@ export const VERKEHR = (() => {
       const line = carRoute(Pl, o.from, o.to),
         who = driverFor(Pl, o.who);
       if (!line || !who) return null;
-      const c = VAUTO.spawn({ place: Pl.id, line, s: o.s || 0, who, col: PP[who].car, v: o.v ?? 0 });
+      const c = VAUTO.spawn({ place: Pl.id, line, s: o.s || 0, who, typ: typFor(who), col: PP[who].car, v: o.v ?? 0 });
       c.vk = 1;
       c.laneOff = 1.2;
       S.busy[who] = 'car';
