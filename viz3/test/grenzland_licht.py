@@ -261,6 +261,10 @@ with lib.browser() as b:
         grab('10_flare_sinkt')
         st = J("GLLICHT.stand()")
         ck('it sinks slowly on its parachute and still burns after 25 s', st['flare'] and st['flare']['k'] > 0.5 and 10 < st['flare']['z'] < 50, str(st['flare']))
+        # the mission's own flare: the step 'flucht' sends the event (grenzland/gl_kapitel1.js) – ours goes up anew, the old red ball not at all
+        do("GLMISSION.debug.go('klinge', 4)"); steps(1.0, 0.05)
+        st = J("({ s: GLLICHT.stand(), step: GLMISSION.debug.info().step, ball: (o => !!(o && o.visible))(GAME.scene.getObjectByName('grenzland leuchtkugel')) })")
+        ck('the mission\'s flare (step „flucht“) starts this one, and no second red ball', st['step'] == 'flucht' and st['s']['flare'] and st['s']['flare']['t'] < 3 and not st['ball'], str(st)[:300])
     except StopIteration:
         pass
     except Exception as e:

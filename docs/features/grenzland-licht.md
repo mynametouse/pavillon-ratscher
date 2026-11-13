@@ -149,3 +149,8 @@ neue Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden�
   `out/grenzland_licht/*_vergleich.jpg` (Straße mit Moped, Sattel, Streife, Leute, Dämmerung, Klinge im Regen, Linde 1989, Abend
   1989) und `7_flare_steigt.jpg` … `10_flare_sinkt.jpg`. Gemessen: Straße 7 m vor dem Moped 97 → 132 (seitlich außerhalb 13 → 46),
   eine Figur in 15 m 6,6 → 19, unter der Leuchtkugel obere Bildhälfte Rot 72 / Grün 50, keine neuen Shader-Programme.
+- ~14:00: `origin/feat/grenzland` (Zusammenführung 1: Paket A, `kino` löst die Leuchtkugel aus und lässt seine Kugel weg, Wachleute
+  mit `F.lampe`) hereingeholt; `GLLICHT.hatLampe(F)` für `figuren`. Lokal auf diesem Stand `grenzland_licht` **21/21** (483 s, dazu
+  Dämmerung, Kosten je Bild 0,24 ms mit brennender Leuchtkugel, Hubschrauber bei vier Sternen).
+- ~14:10: der Kegel des Hubschraubers (`gl_heli.js`) stand als harter blasser Keil im Himmel – ersetzt durch einen weichen Strahl;
+  Kegel der Fahrzeuge und Taschenlampen schwächer (Wagen und Wachleute an der Klinge ergaben eine weiße Fläche).
