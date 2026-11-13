@@ -48,13 +48,14 @@ export const ZKORTE = (() => {
     },
     // outside the family forest's north-east edge (world/forest.js CORE: the tip of the lobe, its edge (−518, −536)–(−423, −494)), ~20 m
     // from the first spruces, looking across the edge into the stand – the sun from the right in the afternoon
+    // (the CI picture of 13.11.: the stand begins ~60 m off – a moderate long lens on the edge lets the spruces fill the frame)
     waldrand: {
       pos: [-479, -497],
       h: EYE,
-      look: [-464, -529],
-      lh: 7,
-      fov: 55,
-      move: { dolly: 2 },
+      look: [-458, -543],
+      lh: 9,
+      fov: 35,
+      move: { pan: 2 },
       label: 'Am Waldrand an der Klinge',
     },
     // a beetle clearing (zeitreise-welt knows the real one and gives its view)
