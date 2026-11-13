@@ -77,7 +77,7 @@ body[data-gl-era="1989"] #glhud .gt b{color:#d8c79a}
 #glpass em{display:block;font-style:normal;margin-top:7px;font:600 clamp(15px,2.2vw,20px)/1.3 var(--f-body,system-ui);text-shadow:0 2px 10px rgba(0,0,0,.95)}
 #glpass span{display:block;margin-top:9px;font:600 clamp(13px,1.8vw,16px)/1.3 var(--f-mono,monospace);color:#8fe08a;text-shadow:0 2px 8px rgba(0,0,0,.95)}
 @keyframes glpa{from{opacity:0;transform:translateX(-50%) scale(1.12)}to{opacity:1;transform:translateX(-50%) scale(1)}}
-#glort{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(224px + env(safe-area-inset-bottom,0px));z-index:5;max-width:46vw;pointer-events:none;
+#glort{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(246px + env(safe-area-inset-bottom,0px));z-index:5;max-width:46vw;pointer-events:none;
   color:#fff;font:italic 700 clamp(15px,2vw,21px)/1.2 var(--f-display,Georgia,serif);text-shadow:0 2px 10px rgba(0,0,0,.95);opacity:0;transition:opacity .7s}
 #glort.on{opacity:1} #glort small{display:block;margin-top:2px;font:500 11px/1.3 var(--f-mono,monospace);font-style:normal;opacity:.88;letter-spacing:.04em}
 @media (pointer:coarse),(max-width:720px){#glort{bottom:auto;top:calc(256px + env(safe-area-inset-top,0px))}}
@@ -86,10 +86,10 @@ body[data-gl-era="1989"] #glhud .gt b{color:#d8c79a}
 #gltouch button{width:48px;height:48px;border-radius:50%;border:0;background:rgba(20,26,32,.74);color:#fff;font:700 17px/1 system-ui;touch-action:manipulation}
 /* 1989: a faded colour print – on the picture only, the panels stay as they are */
 body[data-gl-era="1989"] #stage canvas:first-of-type{filter:sepia(.34) saturate(.6) contrast(1.07) brightness(.97) hue-rotate(-6deg)}
-#glvig,#glkorn{position:absolute;inset:0;pointer-events:none;z-index:4;display:none}
+#glvig,#glkorn{position:absolute;inset:0;pointer-events:none;z-index:2;display:none}
 body[data-gl-era="1989"] #glvig{display:block;background:radial-gradient(ellipse at center,rgba(40,24,6,0) 52%,rgba(40,24,6,.5) 100%)}
-body[data-gl-era="1989"] #glkorn{display:block;width:100%;height:100%;opacity:.11;mix-blend-mode:overlay;image-rendering:pixelated}
-#gldatum{position:absolute;left:calc(max(14px,env(safe-area-inset-left,0px)) + 190px);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:6;pointer-events:none;display:none;
+body[data-gl-era="1989"] #glkorn{display:block;opacity:.13;mix-blend-mode:overlay;background-repeat:repeat;background-size:256px 256px}
+#gldatum{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(222px + env(safe-area-inset-bottom,0px));z-index:6;pointer-events:none;display:none;
   color:#f0e3c0;font:600 13px/1.3 var(--f-mono,monospace);letter-spacing:.06em;text-shadow:0 1px 6px rgba(0,0,0,.9)}
 body[data-gl-era="1989"] #gldatum{display:block}
 @media (pointer:coarse),(max-width:720px){#gldatum{left:max(14px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px))}}
@@ -138,7 +138,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
     S.bust = div('glbust', `<div id="glbustt"></div><small id="glbusts"></small><button id="glbustb">Weiter</button>`);
     S.vig = div('glvig');
     S.vig.hidden = false;
-    S.korn = div('glkorn', '', 'canvas');
+    S.korn = div('glkorn');
     S.korn.hidden = false;
     S.datum = div('gldatum');
     S.datum.hidden = false;
@@ -178,12 +178,13 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
   }
   // the grain of the old print: a small canvas of noise, stretched over the picture
   function korn() {
-    const c = S.korn;
-    if (!c || c.width === 192) return;
-    c.width = 192;
-    c.height = 128;
+    if (S.kornOk) return;
+    S.kornOk = true;
+    // a tile of fine noise, repeated at its own size (stretched over the picture it would be blocks)
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
     const g = c.getContext('2d'),
-      im = g.createImageData(192, 128);
+      im = g.createImageData(256, 256);
     let s = 9731;
     for (let i = 0; i < im.data.length; i += 4) {
       s = (s * 1664525 + 1013904223) | 0;
@@ -192,6 +193,9 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
       im.data[i + 3] = 255;
     }
     g.putImageData(im, 0, 0);
+    try {
+      S.korn.style.backgroundImage = 'url(' + c.toDataURL('image/png') + ')';
+    } catch (e) {}
   }
   function show(on) {
     build();
