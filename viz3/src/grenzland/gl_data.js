@@ -240,6 +240,8 @@ export const GLDATA = (() => {
     widerstand: 'Widerstand',
     kiste: 'Verdächtige Kiste',
     ausweis: 'Der Kontrolle entzogen',
+    angeln: 'Angeln ohne Erlaubnisschein',
+    helm: 'Fahren ohne Helm',
   };
   // ---- texts ----
   const T = {
@@ -272,7 +274,10 @@ export const GLDATA = (() => {
     sperre: 'Sperre auf der Landstraße!',
     heli: 'Ein Hubschrauber kreist über dem Tal.',
     versteck: 'Hier sieht dich so schnell keiner.',
-    tank: 'Der Tank ist leer.',
+    tank: 'Der Tank ist leer. Im Garten steht ein Kanister – oder du hast einen dabei.',
+    tankHeim: 'Moped betanken (Gemisch 1:50 aus dem Kanister)',
+    tankKan: 'Moped betanken (dein Kanister)',
+    getankt: 'Vollgetankt: fünf Liter Gemisch, eins zu fünfzig.',
     tankVoll: 'Gemisch 1 : 50 eingefüllt. Der Zweitakter dankt es.',
     geldFehlt: 'Dafür reicht das Geld nicht.',
     schlagLuft: 'Daneben.',
@@ -340,7 +345,7 @@ export const GLDATA = (() => {
         'Polizeibericht: Handgreiflichkeiten im Raum Ratscher. Die Beteiligten kannten sich danach besser als vorher.',
       rempeln: 'Polizeibericht: Ein Passant wurde angerempelt. Die Kriminalität erreicht damit ein Zehnjahreshoch.',
       raserei: 'Polizeibericht: Ein Moped wurde in der Ortslage gemessen. Das Messgerät wird überprüft.',
-      boeller: 'Polizeibericht: Knallkörper im November. Die Polizei erinnert daran, dass Silvester ein Datum ist.',
+      boeller: 'Polizeibericht: Knallkörper im September. Die Polizei erinnert daran, dass Silvester ein Datum ist.',
       einbruch:
         'Polizeibericht: Einbruch in ein Containerlager bei Ratscher. Der Eigentümer möchte „keine große Sache daraus machen“.',
       hausfrieden: 'Polizeibericht: Unbekannte im Wald bei Geisenhöhn. Anwohner hörten Knall und Motoren.',
@@ -398,6 +403,7 @@ export const GLDATA = (() => {
     { k: 'mais', name: 'Dosenmais (Angelköder)', eur: 0.99, n: 5 },
     { k: 'wurm', name: 'Tauwürmer (Angelköder)', eur: 2.9, n: 5 },
     { k: 'blinker', name: 'Blinker', eur: 4.5, n: 3 },
+    { k: 'kanister', name: 'Kanister Gemisch 1:50 (5 Liter)', eur: 9.8 },
     { k: 'boeller', name: 'Böller „aus dem Kofferraum“', eur: 6, n: 4, unter: true },
   ];
   // ---- 1989: the afternoon of Friday, 10 November – what people say, what the radio says, what is in the street ----

@@ -27,6 +27,8 @@ export const GL = (() => {
     pos: [], // where the player last stood outdoors: x, y, feet, yaw (a reload goes on there)
     fig0: '', // the figure chosen before the mode began (put back at the end)
     t0: 0,
+    e0alt: 0, // the game's calendar before the mode began (time/daynight.js DN.e0; put back at the end)
+    e0neu: 0, // the story's calendar: its first day is Friday, 4 September 2026 (0: not set yet)
   });
   const S = Object.assign(fresh(), {
     era: 'heute', // 'heute' | '1989' (the flashback: grenzland/gl_1989.js)
@@ -52,6 +54,8 @@ export const GL = (() => {
     'pos',
     'fig0',
     't0',
+    'e0alt',
+    'e0neu',
   ];
   const obj = v => !!v && typeof v === 'object' && !Array.isArray(v);
   function load() {
@@ -67,7 +71,8 @@ export const GL = (() => {
           : b;
     }
     if (S.wer !== 'm' && S.wer !== 'f') S.wer = f.wer;
-    for (const k of ['geld', 'kap', 'tage', 'radio', 'tank', 't0']) if (!Number.isFinite(S[k])) S[k] = f[k];
+    for (const k of ['geld', 'kap', 'tage', 'radio', 'tank', 't0', 'e0alt', 'e0neu'])
+      if (!Number.isFinite(S[k])) S[k] = f[k];
     S.geld = Math.max(0, Math.round(S.geld));
     if (!obj(S.stats)) S.stats = f.stats;
     for (const k of Object.keys(f.stats)) if (!Number.isFinite(S.stats[k])) S.stats[k] = 0;

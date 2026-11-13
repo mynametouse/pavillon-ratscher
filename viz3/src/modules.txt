@@ -204,6 +204,7 @@ grenzland/gl_fig.js         # feat/grenzland the cast as figures: clothes painte
 grenzland/gl_modelle.js     # feat/grenzland the vehicles' models: patrol car, van, the cars of 1989, mopeds (GLMOD)
 grenzland/gl_auto.js        # feat/grenzland the vehicles in the world: routes over the road graph, driving, the player's moped (GLAUTO)
 grenzland/gl_hud.js         # feat/grenzland the panel: stars, money, who plays; messages, subtitles, choices, the look of 1989 (GLHUD)
+grenzland/gl_karte.js       # feat/grenzland the radar: the small round map with target, partner, police, places (GLKARTE)
 grenzland/gl_cockpit.js     # feat/grenzland the view from the driver's seat: handlebar, dashboards, instruments (GLCOCKPIT)
 grenzland/gl_radio_data.js  # feat/grenzland the radio's and the phone's data: stations, programmes, texts (GLRDATA)
 grenzland/gl_radio_musik.js # feat/grenzland the radio's music, synthesised per station (GLRMUSIK)
