@@ -92,7 +92,7 @@ with lib.browser() as b:
         t = until("GLLOGIK.stars(GLSTATE.W) > 0", 12, 0.5)
         st = stand()
         ck('witness: a break-in cannot be talked away – the call goes through: two stars (hollow unless a villager saw it too), the police are called',
-           q['g'] == 0 and lab is None and t is not None and 2 < t < 9 and st['sterne'] == 2 and st['bekannt'] == q['knows'] and st['wait'] > 10, str((q, lab, t, st['sterne'], st['bekannt'], st['wait'])))
+           q['g'] == 0 and lab is None and t is not None and 2 < t < 9 and st['voll'] == 2 and st['bekannt'] == q['knows'] and st['wait'] > 10, str((q, lab, t, st['voll'], st['bekannt'], st['wait'])))
         # knocked down she reports that herself once she is up again (hurting people never pays)
         E("GLFAHNDUNG.clear(); GLFIG.down(TZ, 5); KERN.emit('grenzland:schlag', { id: 'haendler' })")
         st0 = stand()
@@ -256,7 +256,7 @@ with lib.browser() as b:
         st = stand()
         t = until("GLHELI.on && GLHELI.st === 'kreist'", 90, 1)
         h = J("GLHELI.stand()")
-        ck('heli: at four stars the helicopter flies in and circles over where he was last seen', st['sterne'] >= 4 and t is not None and h['on'] and h['h'] > 25 and h['d'] < 140, str((st['sterne'], t, h)))
+        ck('heli: at four stars the helicopter flies in and circles over where he was last seen', st['voll'] >= 4 and t is not None and h['on'] and h['h'] > 25 and h['d'] < 140, str((st['voll'], t, h)))
         t = until("GLHELI.sieht", 40, 0.5)
         st = stand()
         ck('heli: it sees him in the open (the radar gets its place)', t is not None and st['seen'] and st['heli'] is not None, str((t, st['seen'], st['heli'])))
