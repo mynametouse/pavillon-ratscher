@@ -24,7 +24,29 @@ CENTRES = {'nord': (-885, 2060), 'mitte': (-1075, 1570), 'rewe': (-1765, 915)}
 GROUP_OF = {'obi': 'nord', 'mega': 'nord', 'edeka': 'nord', 'getraenke': 'nord', 'zeile40': 'nord', 'shell': 'nord', 'mcd': 'mitte', 'lidl': 'mitte', 'rewe': 'rewe'}
 # from the street (x, y, yaw): eye height on the pavement of the road the shop faces
 STREET = {'obi': (-1001.0, 1846.0, 72), 'mega': (-986.0, 1990.0, 78), 'edeka': (-938.0, 2172.0, 105), 'shell': (-934.0, 2292.0, 92),
-          'mcd': (-1066.0, 1738.0, 228), 'lidl': (-1096.0, 1418.0, 48), 'rewe': (-1744.0, 868.0, 330)}
+          'mcd': (-1066.0, 1738.0, 228), 'lidl': (-1096.0, 1418.0, 48), 'rewe': (-1758.0, 872.0, 340)}
+# the feet of what stands on posts (LAEDEN.detail): the ground drawn under each (WELT.heightAt), under a pylon's plinth corners too
+FEET = ("(([cx, cy, R, gid]) => { const D = LAEDEN.detail(gid), out = []; for (const f of D.feet) { if (Math.hypot(f.x - cx, f.y - cy) > R) continue; "
+        "const h = WELT.heightAt(f.x, f.y); out.push([f.what, +f.x.toFixed(1), +f.y.toFixed(1), +f.z.toFixed(2), h === undefined ? null : +h.toFixed(2), "
+        "f.z0 === undefined ? null : +f.z0.toFixed(2), (f.corners || []).map(([x, y]) => { const q = WELT.heightAt(x, y); return q === undefined ? null : +q.toFixed(2); })]); } return out; })")
+# the walls along the pads' edges: before a cut's wall the pad's level (no ramp leaning on it), on its cover the upper ground; on a
+# fill's cover the pad's level, below its wall the low ground
+WALLS = ("(gid) => { const D = LAEDEN.detail(gid), bad = []; let n = 0; for (const w of D.walls) for (const [x, y, ex, ey, s, out] of w.pts.slice(1, -1)) { n++; "
+         "if (w.kind === 'cut') { const lo = KERN.ground(x - ex * 0.5, y - ey * 0.5); if (!(Math.abs(lo - s) <= 0.35)) bad.push(['before the wall', x, y, s, lo]); "
+         "for (const k of [1.6, 2.5, 4.0, 5.5]) { const qx = x + ex * k, qy = y + ey * k, c = KERN.ground(qx, qy), t = WELT.heightAt(qx, qy); "
+         "if (!(c >= t - 0.02) || (k === 2.5 && !(c >= s + 0.3))) bad.push(['cover', k, x, y, s, c, t]); } } "
+         "else { const lid = KERN.ground(x - ex, y - ey), low = WELT.heightAt(x + ex * 4.4, y + ey * 4.4); "
+         "if (!(Math.abs(lid - s) <= 0.3)) bad.push(['cover', x, y, s, lid]); if (!(low <= s - 1.0)) bad.push(['below', x, y, s, low]); } } "
+         "return { walls: D.walls.map(w => [w.kind, w.drop, w.pts.length * 2]), n, bad: bad.slice(0, 6) }; }")
+# the roofs stay on their buildings: every vertex of the roofs' mesh inside a footprint of the group's shops (the cap's lip 4 cm out)
+ROOFS = ("(gid) => { const g = LAEDEN.groups.find(q => q.id === gid), m = g.meshes.find(q => q.name.endsWith('dächer')); if (!m) return null; "
+         "const P = m.geometry.attributes.position.array, polys = []; for (const sh of g.shops) for (const p of sh.parts.concat(sh.annex)) polys.push(p.f); "
+         "const inP = (f, x, y) => { let c = false; for (let p = 0, q = f.length - 2; p < f.length; q = p, p += 2) { const xi = f[p], yi = f[p + 1], xj = f[q], yj = f[q + 1]; "
+         "if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; }; "
+         "const eD = (f, x, y) => { let d = 1e9; for (let p = 0, q = f.length - 2; p < f.length; q = p, p += 2) { const ax = f[q], ay = f[q + 1], dx = f[p] - ax, dy = f[p + 1] - ay, "
+         "l2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2)); d = Math.min(d, Math.hypot(x - ax - dx * t, y - ay - dy * t)); } return d; }; "
+         "let worst = 0, at = null; for (let i = 0; i < P.length; i += 3) { const x = P[i], y = -P[i + 2]; let b = 1e9; for (const f of polys) { if (inP(f, x, y)) { b = 0; break; } b = Math.min(b, eD(f, x, y)); } "
+         "if (b > worst) { worst = b; at = [+x.toFixed(1), +y.toFixed(1)]; } } return { n: P.length / 3, worst: +worst.toFixed(3), at }; }")
 
 
 def ring(f):
@@ -246,6 +268,79 @@ if GROUPS or 'nacht' in want:
             cars = J(f"""(() => {{ const L = LAEDEN.data.lots.filter(l => {json.dumps([s['id'] for s in shops])}.includes(l.shop)); const inP = (f, x, y) => {{ let c = false; for (let p = 0, q = f.length - 2; p < f.length; q = p, p += 2) {{ const xi = f[p], yi = f[p + 1], xj = f[q], yj = f[q + 1]; if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; }} return c; }};
                 let n = 0, inBay = 0, shown = 0; for (const p of DINGE.places) {{ if (p.laeden === 'weg') continue; const l = L.find(q => inP(q.f, p.x, p.y)); if (!l) continue; n++; if (p.im && p.on && !p.hide && !p.door) shown++; if (l.bays.some(b => Math.hypot(b[0] - p.x, b[1] - p.y) < 0.05)) inBay++; }} return {{ n, inBay, shown, moved: LAEDEN.moved, dropped: LAEDEN.dropped }}; }})()""")
             ck(f'{gid}: the parked cars of the car parks stand in the bays (a weekday morning: some are there)', cars['n'] > 0 and cars['inBay'] == cars['n'] and cars['shown'] > 0, json.dumps(cars))
+            # the signs: every text inside its sign with a margin (the letters measured, the font shrunk to fit), no canopy before a name band
+            D = J(f"LAEDEN.detail('{gid}')")
+            badt = []
+            for sg in D['signs']:
+                pw, ph, bx = sg['pw'], sg['ph'], sg.get('boxes') or []
+                if not bx:
+                    badt.append(f"{sg['t'][:24]}: no letters")
+                for b in bx:
+                    if b[0] < 0.03 * pw or b[2] > 0.97 * pw or b[1] < 0.04 * ph or b[3] > 0.96 * ph:
+                        badt.append(f"{sg['t'][:24]}: {b} in {pw}×{ph}")
+                for b1, b2 in zip(bx, bx[1:]):
+                    if b2[1] < b1[3]:
+                        badt.append(f"{sg['t'][:24]}: its lines overlap")
+            ck(f'{gid}: every text stays inside its sign with a margin (the letters measured, the font shrunk to fit)', D['signs'] and not badt,
+               f"{len(D['signs'])} signs; {badt[:4]}")
+            badc = []
+            for sg in D['signs']:
+                if sg['k'] != 'band':
+                    continue
+                for c in D['canopies']:
+                    if sg['nx'] * c['nx'] + sg['ny'] * c['ny'] < 0.9:
+                        continue
+                    along = abs((sg['x'] - c['x']) * -c['ny'] + (sg['y'] - c['y']) * c['nx'])
+                    off = (sg['x'] - c['x']) * c['nx'] + (sg['y'] - c['y']) * c['ny']
+                    if along < sg['w'] / 2 + c['w'] / 2 and -c['d'] / 2 - 0.6 < off < 0.6 and sg['z'] < c['z1'] + 0.1:
+                        badc.append(f"{sg['t']}: the band from {sg['z']:.2f} m, the canopy up to {c['z1']:.2f} m")
+            ck(f'{gid}: no canopy hides a name band (each band over the canopy in front of it)', not badc, f"{len(D['canopies'])} canopies; {badc[:3]}")
+            # the roofs stay on their buildings (no attica running past an acute corner)
+            rf = pg.evaluate(ROOFS, gid)
+            ck(f'{gid}: the roofs stay on their buildings (every vertex of the roofs inside the walls, the cap\'s lip 4 cm out)', rf and rf['worst'] <= 0.08, json.dumps(rf))
+
+            def feet_bad(rows):
+                bad = []
+                for what, fx_, fy_, z, h, z0, cs in rows:
+                    if h is None:
+                        continue
+                    if abs(z - h) > 0.3:
+                        bad.append(f'{what} at {fx_}, {fy_}: foot {z}, ground {h}')
+                    for hc in cs:
+                        if hc is not None and z0 is not None and hc < z0 - 0.02:
+                            bad.append(f'{what} at {fx_}, {fy_}: plinth from {z0} over the ground {hc}')
+                return bad
+            rows = pg.evaluate(FEET, [sx, sy, 140, gid])
+            fb = feet_bad(rows)
+            ck(f'{gid}: lamps, columns and posts near the car park stand on the ground (each foot within 0.3 m of the ground drawn there)', rows and not fb,
+               f"{len(rows)} feet within 140 m; {fb[:4]}")
+            # every pylon, seen from near by (the finest tiles under it): its foot on the ground drawn there, the plinth down to it all round
+            pyl = [p for p in DATA['props'] if GROUP_OF.get(p['shop']) == gid]
+            pb, pn = [], 0
+            for p in pyl:
+                E(f"GAME.setView3(false, true); GAME.view({p['x'] + 14}, {p['y'] + 14}, KERN.ground({p['x'] + 14}, {p['y'] + 14}) + 1.7, 225, 0)")
+                settle(40)
+                rows = pg.evaluate(FEET, [p['x'], p['y'], 0.5, gid])
+                pn += len(rows)
+                pb += feet_bad(rows)
+            ck(f'{gid}: every pylon stands on the ground (its foot within 0.3 m of the ground drawn under it, the plinth down to the ground at every corner)',
+               pn == len(pyl) and not pb, f'{pn} of {len(pyl)} pylons; {pb[:3]}')
+            # the retaining walls (where the ground outside a pad lies more than 1.5 m above or below it), seen from near by
+            if D['walls']:
+                w0 = max(D['walls'], key=lambda w: len(w['pts']))
+                x, y, ex, ey, zs, out = w0['pts'][len(w0['pts']) // 2]
+                vx, vy = (x - ex * 12, y - ey * 12) if w0['kind'] == 'cut' else (x + ex * 14, y + ey * 14)
+                yw = (math.degrees(math.atan2(ex, ey)) + (0 if w0['kind'] == 'cut' else 180)) % 360
+                E(f"GAME.setView3(false, true); GAME.view({vx}, {vy}, KERN.ground({vx}, {vy}) + 1.7, {yw}, 0)")
+                settle(60)
+            wl = pg.evaluate(WALLS, gid)
+            ck(f'{gid}: retaining walls where the ground beside a pad lies more than 1.5 m above or below it: the pad flat up to the wall, its cover on the upper level',
+               not wl['bad'], json.dumps(wl))
+            if gid == 'nord' and D['walls']:
+                eye(vx, vy, yw, 4)
+                pic('mega_lieferhof')
+                above(x, y, (yw + 180) % 360, 35, 55)
+                pic('mega_lieferhof_oben')
             # each shop: the label at its main door, its building from the street and from the car park
             for sh in shops:
                 md = next(d for d in sh['doors'] if d['k'] == 'main')
@@ -294,7 +389,8 @@ if GROUPS or 'nacht' in want:
                 yaw = (math.degrees(math.atan2(lp[3][0] - lp[2][0], lp[3][1] - lp[2][1])) + 360) % 360
                 eye(lp[1][0], lp[1][1], (math.degrees(math.atan2(lp[2][0] - lp[1][0], lp[2][1] - lp[1][1])) + 360) % 360, 2, 68, 1.25)
                 pic('mcd_drivein_einfahrt')
-                eye(lp[4][0] + (lp[5][0] - lp[4][0]) * 0.15, lp[4][1] + (lp[5][1] - lp[4][1]) * 0.15, yaw, 2, 68, 1.25)
+                yw = (math.degrees(math.atan2(lp[5][0] - lp[4][0], lp[5][1] - lp[4][1])) + 360) % 360
+                eye(lp[4][0] + (lp[5][0] - lp[4][0]) * 0.12, lp[4][1] + (lp[5][1] - lp[4][1]) * 0.12, (yw - 25) % 360, 2, 68, 1.25)
                 pic('mcd_drivein_fenster')
                 above(-1100, 1712, 160, 62, 70)
                 pic('mcd_drivein_oben')
@@ -311,10 +407,21 @@ if GROUPS or 'nacht' in want:
             E(f"GAME.setView3(false, true); GAME.view({sx}, {sy}, KERN.ground({sx}, {sy}) + 1.7, 0, 0)")
             settle(60)
             L0 = next(l for l in DATA['lots'] if l['shop'] == shops[0]['id'] and l['aisles'])
+            # along the aisle as OSM draws it (its first 40 m; a loop round the car park is longer than the drive)
             a = ring(L0['aisles'][0])
-            p0, p1 = a[0], a[-1]
-            path = [list(p0), [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2], list(p1)]
-            E(f"VEH.place('car', {p0[0]}, {p0[1]}, Math.atan2({p1[0] - p0[0]}, {p1[1] - p0[1]})); VEH.enter('car'); GAME.setView3(true)")
+            path, run_ = [list(a[0])], 0.0
+            for q0, q1 in zip(a, a[1:]):
+                seg = math.dist(q0, q1)
+                if run_ + seg >= 40:
+                    t = (40 - run_) / seg
+                    path.append([q0[0] + (q1[0] - q0[0]) * t, q0[1] + (q1[1] - q0[1]) * t])
+                    break
+                path.append(list(q1))
+                run_ += seg
+            if len(path) == 2:
+                path.insert(1, [(path[0][0] + path[1][0]) / 2, (path[0][1] + path[1][1]) / 2])
+            p0, p1 = path[0], path[-1]
+            E(f"VEH.place('car', {p0[0]}, {p0[1]}, Math.atan2({path[1][0] - p0[0]}, {path[1][1] - p0[1]})); VEH.enter('car'); GAME.setView3(true)")
             E(f"window._lf = VEH.follow({json.dumps(path)}, 4)")
             steps(14, 0.05)
             v = J("({ x: VEH.cur.st.x, y: VEH.cur.st.y })")
@@ -338,5 +445,17 @@ if GROUPS or 'nacht' in want:
             if 'mitte' in GROUPS:
                 eye(*STREET['mcd'], 3)
                 pic('mcd_nacht')
+                md = next(d for d in SHOP['mcd']['doors'] if d['k'] == 'main')
+                yaw = (math.degrees(math.atan2(-md['nx'], -md['ny'])) + 360) % 360
+                eye(md['x'] + md['nx'] * 11, md['y'] + md['ny'] * 11, yaw, 4)
+                pic('mcd_nacht_fenster')
+            if 'nord' in GROUPS:
+                # the station at night: the lights under its canopy (built again: the group was dropped on the way south)
+                x, y, yw = STREET['shell']
+                eye(x, y, yw, 3)
+                settle(120)
+                steps(4)
+                eye(x, y, yw, 3)
+                pic('shell_nacht')
         ck.errors(errs)
 ck.done()

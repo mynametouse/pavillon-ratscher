@@ -100,7 +100,20 @@ export const LAEDEN = (() => {
     YEL = L(0.85, 0.7, 0.2), // the lane edge of the drive-in and the bumpers – road paint, no brand
     PV = L(0.1, 0.13, 0.2),
     PVF = L(0.5, 0.52, 0.55),
-    GREEN_GL = L(0.62, 0.72, 0.68);
+    GREEN_GL = L(0.62, 0.72, 0.68),
+    SIL = L(0.05, 0.045, 0.04), // the dark shapes of a room seen through a lit window
+    SIL2 = L(0.11, 0.09, 0.07),
+    RWALL = L(0.68, 0.67, 0.64), // a retaining wall's concrete
+    RJOINT = L(0.5, 0.5, 0.48), // its formwork joints
+    COPE = L(0.78, 0.78, 0.76),
+    VERGE = L(0.3, 0.34, 0.24); // the grass on a wall's cover
+  // roofs: kind of the village's roof shader (4 flat, 2 trapezoidal sheet) and colour (linear)
+  const ROOFS = {
+    grau: { k: 4, col: [0.36, 0.36, 0.35] },
+    weiss: { k: 4, col: [0.62, 0.62, 0.6] },
+    dunkel: { k: 4, col: [0.2, 0.2, 0.2] },
+    rotbraun: { k: 2, col: L(0.5, 0.3, 0.24) },
+  };
   // sign styles: [band, letters] – plain, neutral
   const ST = [
     ['#2c3034', '#f4f4f2'], // white on anthracite
@@ -505,7 +518,7 @@ export const LAEDEN = (() => {
       roughness: 0.15,
       metalness: 0,
       envMapIntensity: 0.9,
-      emissive: 0xfff0d8,
+      emissive: 0xffe2bc,
       emissiveIntensity: 0,
     });
   // ---- the letters: one canvas atlas per group, every sign a cell of its own (band colour, the text in a plain sans-serif) ----
@@ -517,8 +530,10 @@ export const LAEDEN = (() => {
       y = 0,
       rowH = 0;
     for (const it of items) {
-      it.pw = Math.min(W - 4, Math.max(16, Math.round(it.w * PX * (it.k === 'board' || it.k === 'plate' ? 1.6 : 1))));
-      it.ph = Math.max(12, Math.round(it.h * PX * (it.k === 'board' || it.k === 'plate' ? 1.6 : 1)));
+      // boards and plates are read up close: more pixels per metre
+      const dens = it.k === 'board' ? 4 : it.k === 'plate' ? 3 : 1;
+      it.pw = Math.min(W - 4, Math.max(16, Math.round(it.w * PX * dens)));
+      it.ph = Math.max(12, Math.round(it.h * PX * dens));
       if (it.ph > 1024) {
         const k = 1024 / it.ph;
         it.ph = 1024;
@@ -539,41 +554,60 @@ export const LAEDEN = (() => {
     cv.width = W;
     cv.height = H;
     const g = cv.getContext('2d');
+    g.textAlign = 'left';
+    g.textBaseline = 'alphabetic';
+    // the ink of a text (what the letters cover, not the font's em box): left/right of the pen, above/below the baseline
+    const ink = (m, fs) => {
+      const l = Number.isFinite(m.actualBoundingBoxLeft) ? m.actualBoundingBoxLeft : 0,
+        r = Number.isFinite(m.actualBoundingBoxRight) ? m.actualBoundingBoxRight : m.width,
+        a = Number.isFinite(m.actualBoundingBoxAscent) ? m.actualBoundingBoxAscent : fs * 0.78,
+        d = Number.isFinite(m.actualBoundingBoxDescent) ? m.actualBoundingBoxDescent : fs * 0.22;
+      return { l, r, a, d, w: l + r, h: a + d };
+    };
+    // the largest size up to fs0 whose ink fits maxW × maxH (measured, then shrunk until it fits)
+    const fit = (t, bold, fs0, maxW, maxH) => {
+      let fs = Math.max(6, Math.round(fs0)),
+        k = null;
+      for (let n = 0; n < 10; n++) {
+        g.font = `${bold ? 'bold ' : ''}${fs}px ${FONT}`;
+        k = ink(g.measureText(t), fs);
+        const s = Math.min(1, maxW / Math.max(1, k.w), maxH / Math.max(1, k.h));
+        if (s >= 0.999 || fs <= 6) break;
+        fs = Math.max(6, Math.floor(fs * s));
+      }
+      return k;
+    };
+    // the text's ink centred on (cx, cy); its box kept (cell pixels) for the test that every text stays inside its sign
+    const put = (it, t, cx, cy, k) => {
+      const x = cx - k.w / 2 + k.l,
+        y = cy - k.h / 2 + k.a;
+      g.fillText(t, x, y);
+      it.boxes.push(
+        [x - k.l - it.px, y - k.a - it.py, x + k.r - it.px, y + k.d - it.py].map(v => Math.round(v * 10) / 10)
+      );
+    };
     for (const it of items) {
       const [bg, fg] = ST[it.st] || ST[0];
       g.fillStyle = bg;
       g.fillRect(it.px, it.py, it.pw, it.ph);
       g.fillStyle = fg;
-      g.textAlign = 'center';
-      g.textBaseline = 'middle';
+      it.boxes = [];
       const lines = it.lines;
-      if (it.k === 'band' || it.k === 'pylon') {
-        // one line, as large as the band allows
-        let fs = Math.round(it.ph * 0.66);
-        g.font = `bold ${fs}px ${FONT}`;
-        const tw = g.measureText(lines[0]).width,
-          room = it.pw - it.ph * 0.5;
-        if (tw > room) {
-          fs = Math.max(8, Math.floor((fs * room) / tw));
-          g.font = `bold ${fs}px ${FONT}`;
-        }
-        g.fillText(lines[0], it.px + it.pw / 2, it.py + it.ph / 2 + fs * 0.04);
+      if (it.k === 'band' || it.k === 'pylon' || lines.length === 1) {
+        // one line, as large as the sign allows: 6 % free left and right, 13 % above and below
+        const k = fit(lines[0], it.k !== 'plate', it.ph * 0.72, it.pw * 0.88, it.ph * 0.74);
+        put(it, lines[0], it.px + it.pw / 2, it.py + it.ph / 2, k);
       } else {
-        // several lines: a title, then the rest (a board, a plate with opening hours, the prices of a station)
+        // several lines: a title with a rule under it, then the rest (a board, a plate with the opening hours); 5 % free above and below
         const n = lines.length,
-          lh = it.ph / (n + 0.6);
+          y0 = it.py + it.ph * 0.05,
+          lh = (it.ph * 0.9) / (n + 0.6);
         lines.forEach((t, i) => {
-          let fs = Math.round(lh * (i === 0 ? 0.62 : 0.5));
-          g.font = `${i === 0 ? 'bold ' : ''}${fs}px ${FONT}`;
-          const tw = g.measureText(t).width;
-          if (tw > it.pw * 0.92) {
-            fs = Math.max(6, Math.floor((fs * it.pw * 0.92) / tw));
-            g.font = `${i === 0 ? 'bold ' : ''}${fs}px ${FONT}`;
-          }
-          if (i === 0 && n > 1) {
-            g.fillText(t, it.px + it.pw / 2, it.py + lh * 0.8);
-            g.fillRect(it.px + it.pw * 0.06, it.py + lh * 1.3, it.pw * 0.88, Math.max(1, lh * 0.04));
-          } else g.fillText(t, it.px + it.pw / 2, it.py + lh * (i + 1.05));
+          const k = fit(t, i === 0, lh * (i === 0 ? 0.62 : 0.5), it.pw * 0.88, lh * 0.78);
+          if (i === 0) {
+            put(it, t, it.px + it.pw / 2, y0 + lh * 0.75, k);
+            g.fillRect(it.px + it.pw * 0.06, y0 + lh * 1.3, it.pw * 0.88, Math.max(1, lh * 0.04));
+          } else put(it, t, it.px + it.pw / 2, y0 + lh * (i + 1.05), k);
         });
       }
       // a thin frame
@@ -721,6 +755,8 @@ export const LAEDEN = (() => {
       raw = null;
     }
     g.raw = raw;
+    // our own pads of an earlier build out first: the levels below are read from the ground without them (the streets' only)
+    WELT.setPads('laeden:' + g.id, []);
     const rawAt = (x, y) => {
       const z = raw ? raw(x, y) : undefined;
       if (Number.isFinite(z)) return z;
@@ -751,9 +787,29 @@ export const LAEDEN = (() => {
         for (let x = b[0]; x <= b[2]; x += 3)
           for (let y = b[1]; y <= b[3]; y += 3) if (!nearFoot(x, y, 4) && edgeDist(pad.f, x, y) > 1) add(x, y);
       }
+      // the streets beside the pad (their level as drawn: carved by welt/fahrt.js where it has them) – the car park meets the street
+      // there, so they count three times
+      for (const r of pad.roads || [])
+        for (let i = 0; i + 3 < r.length; i += 2) {
+          const ax = r[i],
+            ay = r[i + 1],
+            L2 = Math.hypot(r[i + 2] - ax, r[i + 3] - ay);
+          for (let t = 0; t < L2; t += 4) {
+            const x = ax + ((r[i + 2] - ax) * t) / L2,
+              y = ay + ((r[i + 3] - ay) * t) / L2,
+              z = WELT.padAt ? WELT.padAt(x, y, rawAt(x, y)) : rawAt(x, y);
+            if (Number.isFinite(z)) for (let k = 0; k < 3; k++) pts.push([x, y, z]);
+          }
+        }
       const fit = fitSurface(pts, pad);
       g.surf.push(fit);
       pad.fit = fit;
+    }
+    // the retaining walls along the pads' edges (wallRuns below)
+    g.walls = [];
+    for (const pad of g.pads) {
+      pad.runs = wallRuns(g, pad, pad.fit);
+      g.walls.push(...pad.runs);
     }
     // pads that overlap take one surface: the one of the larger fit (the shops of the Suhler Straße share their car parks)
     const pads = g.pads.map((pad, i) => {
@@ -764,26 +820,336 @@ export const LAEDEN = (() => {
         bb,
         fit,
         z: (x, y, r) => {
-          const d = inPoly(pad.f, x, y) ? edgeDist(pad.f, x, y) : 0,
-            w = d >= BLEND ? 1 : d <= 0 ? 0 : 0.5 - 0.5 * Math.cos((Math.PI * d) / BLEND),
-            s = fit.at(x, y);
+          const d = inPoly(pad.f, x, y) ? edgeDist(pad.f, x, y) : 0;
+          let w = d >= BLEND ? 1 : d <= 0 ? 0 : 0.5 - 0.5 * Math.cos((Math.PI * d) / BLEND);
+          // along a wall the pad stays flat to its edge (a cut's level runs on in the strip outside, below)
+          if (d > 0 && d < BLEND && pad.runs.length && runKind(pad, x, y, d)) w = 1;
+          const s = fit.at(x, y);
           return r + (s - r) * w;
         },
       };
     });
     g.padsW = pads;
-    g.gz = (x, y) => {
-      for (const p of pads)
-        if (x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y))
-          return p.z(x, y, rawAt(x, y));
-      const z = KERN.ground(x, y);
-      return Number.isFinite(z) ? z : rawAt(x, y);
-    };
-    WELT.setPads(
-      'laeden:' + g.id,
-      pads.map(p => ({ poly: p.poly, z: p.z }))
-    );
+    // a cut's strip outside the pad's edge (a pad of its own beside the pad): the pad's level 4 m on (the wall 1 m out, the step behind
+    // it under its cover), then the bank behind the wall from the wall's top at 1 : 2.5 up to the ground
+    const strips = [];
+    g.pads.forEach((pad, i) => {
+      for (const run of pad.runs) {
+        if (run.kind !== 'cut') continue;
+        const pts = run.pts,
+          poly = [];
+        for (const p of pts) poly.push(p.x, p.y);
+        for (let k = pts.length - 1; k >= 0; k--)
+          poly.push(pts[k].x + pts[k].nx * pts[k].sw, pts[k].y + pts[k].ny * pts[k].sw);
+        const fit = g.surf[i];
+        strips.push({
+          poly,
+          z: (x, y, r) => {
+            // the nearest point of the run: its distance, the wall's height and the strip's width there
+            let de = 1e9,
+              hw = 0,
+              sw = STRIP;
+            for (let k = 0; k + 1 < pts.length; k++) {
+              const a = pts[k],
+                b = pts[k + 1],
+                dx = b.x - a.x,
+                dy = b.y - a.y,
+                l2 = dx * dx + dy * dy || 1,
+                t = Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / l2)),
+                d = Math.hypot(x - a.x - dx * t, y - a.y - dy * t);
+              if (d < de) {
+                de = d;
+                hw = a.hw + (b.hw - a.hw) * t;
+                sw = a.sw + (b.sw - a.sw) * t;
+              }
+            }
+            const s = fit.at(x, y),
+              T = bankZ(s, hw, de, r);
+            if (de <= CUT_OUT + 3) return s;
+            if (de < CUT_OUT + 5)
+              return (
+                s + (bankZ(s, hw, CUT_OUT + 5, r) - s) * (0.5 - 0.5 * Math.cos((Math.PI * (de - CUT_OUT - 3)) / 2))
+              );
+            // the strip's last 2 m into the ground (where its width ran short of the bank)
+            if (de > sw - 2) return T + (r - T) * Math.min(1, (de - (sw - 2)) / 2);
+            return T;
+          },
+        });
+      }
+    });
+    WELT.setPads('laeden:' + g.id, pads.map(p => ({ poly: p.poly, z: p.z })).concat(strips));
+    // the ground under everything built: the raw heights of the finest tiles through all pads (the streets', ours) – what the tiles
+    // draw once they are in, whatever level is in now (else, without the raw tiles, the ground of the moment: then set down again later)
+    g.exact = !!(raw && WELT.padAt);
+    g.gz = g.exact
+      ? (x, y) => WELT.padAt(x, y, rawAt(x, y))
+      : (x, y) => {
+          for (const p of pads)
+            if (x > p.bb[0] && x < p.bb[2] && y > p.bb[1] && y < p.bb[3] && inPoly(p.poly, x, y))
+              return p.z(x, y, rawAt(x, y));
+          const z = KERN.ground(x, y);
+          return Number.isFinite(z) ? z : rawAt(x, y);
+        };
   }
+  // ---- retaining walls: where the ground 3 m outside a pad lies more than 1.5 m above or below the pad's surface at its edge (the
+  // 30 m surface model has roofs and trees in it beside the big buildings), a grey wall instead of a steep smeared bank. The tiles'
+  // 2 m mesh cannot draw a wall's step – it would lean a ramp against the wall – so the step lies behind the wall under a cover: a cut
+  // (the ground outside higher): the wall 1 m outside the pad's edge, the pad's level 3 m on behind it (a strip pad), then 2.5 m into
+  // the ground, the cover over that at the upper level. A fill (the pad higher): the wall 2.9 m outside the edge, the pad flat to its
+  // edge, the dip behind the wall covered at the pad's level. Not where a road or an aisle leaves the pad (those meet it on their own
+  // level); elsewhere the 5 m blend. ----
+  const WALL_DROP = 1.5,
+    CUT_OUT = 1,
+    STRIP = 6.5,
+    FILL_OUT = 2.9,
+    WALL_H = 2.5, // a cut's wall at most this high; above it a bank
+    BANK = 2.5; // the bank's run per metre of rise
+  // the bank behind a cut's wall (de from the pad's edge): from the wall's top up at 1 : BANK until it meets the ground
+  const bankZ = (s, hw, de, r) => Math.min(r, s + hw + Math.max(0, de - CUT_OUT - 0.35) / BANK);
+  const segD = (x, y, ax, ay, bx, by) => {
+    const dx = bx - ax,
+      dy = by - ay,
+      l2 = dx * dx + dy * dy || 1,
+      t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2));
+    return Math.hypot(x - ax - dx * t, y - ay - dy * t);
+  };
+  function wallRuns(g, pad, fit) {
+    const r = ring(pad.f),
+      nr = r.length,
+      ground = (x, y) => (WELT.padAt ? WELT.padAt(x, y, g.rawAt(x, y)) : g.rawAt(x, y)),
+      lines = [];
+    for (const l of g.lots) for (const a of l.aisles || []) lines.push([a, 9]);
+    for (const rd of pad.roads || []) lines.push([rd, 12]);
+    const blocked = (x, y) =>
+      lines.some(([a, m]) => {
+        for (let i = 0; i + 3 < a.length; i += 2) if (segD(x, y, a[i], a[i + 1], a[i + 2], a[i + 3]) < m) return true;
+        return false;
+      });
+    // points along the edge every ~2 m, the corners among them; e: the edge's outward normal, n: the offset direction (at a corner
+    // the bisector, lengthened so that the offset line stays parallel to both edges, at most ×2)
+    const P = [];
+    for (let i = 0; i < nr; i++) {
+      const a = r[i],
+        b = r[(i + 1) % nr],
+        L2 = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (L2 < 0.2) continue;
+      const ux = (b[0] - a[0]) / L2,
+        uy = (b[1] - a[1]) / L2,
+        n = Math.max(1, Math.round(L2 / 2));
+      for (let k = 0; k < n; k++)
+        P.push({ x: a[0] + (ux * L2 * k) / n, y: a[1] + (uy * L2 * k) / n, ex: uy, ey: -ux, corner: k === 0 });
+    }
+    const np = P.length;
+    if (np < 4) return [];
+    P.forEach((p, i) => {
+      p.nx = p.ex;
+      p.ny = p.ey;
+      if (p.corner) {
+        const q = P[(i + np - 1) % np];
+        let mx = p.ex + q.ex,
+          my = p.ey + q.ey;
+        const ml = Math.hypot(mx, my) || 1;
+        mx /= ml;
+        my /= ml;
+        const c = Math.max(0.5, mx * p.ex + my * p.ey);
+        p.nx = mx / c;
+        p.ny = my / c;
+      }
+      p.s = fit.at(p.x, p.y);
+      p.out = ground(p.x + p.ex * 3, p.y + p.ey * 3);
+      p.dz = p.out - p.s;
+      p.k = blocked(p.x, p.y) ? 0 : p.dz > WALL_DROP ? 1 : p.dz < -WALL_DROP ? -1 : 0;
+    });
+    // runs of one kind, at least 6 m long
+    const runs = [];
+    let start = P.findIndex(p => p.k === 0),
+      cur = null;
+    if (start < 0) start = 0;
+    for (let j = 0; j <= np; j++) {
+      const p = j < np ? P[(start + j) % np] : null;
+      if (p && p.k !== 0 && cur && cur.k === p.k) cur.pts.push(p);
+      else {
+        if (cur && cur.pts.length >= 4) runs.push(cur);
+        cur = p && p.k !== 0 ? { k: p.k, pts: [p] } : null;
+      }
+    }
+    for (const run of runs) {
+      run.kind = run.k > 0 ? 'cut' : 'fill';
+      for (const p of run.pts) {
+        p.hw = Math.min(WALL_H, Math.abs(p.dz));
+        p.sw = Math.min(28, Math.max(STRIP, CUT_OUT + 0.35 + (Math.abs(p.dz) - p.hw) * BANK + 3));
+      }
+      run.segs = [];
+      for (let i = 0; i + 1 < run.pts.length; i++)
+        run.segs.push([run.pts[i].x, run.pts[i].y, run.pts[i + 1].x, run.pts[i + 1].y]);
+      run.bb = bbOf(run.segs.flat());
+      run.drop = Math.max(...run.pts.map(p => Math.abs(p.dz)));
+    }
+    return runs;
+  }
+  // the kind of wall whose edge piece is the nearest edge of the pad at (x, y) (d: the distance to the pad's edge)
+  function runKind(pad, x, y, d) {
+    for (const run of pad.runs) {
+      if (x < run.bb[0] - d - 1 || x > run.bb[2] + d + 1 || y < run.bb[1] - d - 1 || y > run.bb[3] + d + 1) continue;
+      for (const sg of run.segs) if (segD(x, y, sg[0], sg[1], sg[2], sg[3]) <= d + 0.25) return run.kind;
+    }
+    return null;
+  }
+  // the walls themselves (build): the face, a coping, the cover over the step, wings at the ends; the walker and the cars stop at them
+  function walls(g, B) {
+    const { KB, wallSeg } = B,
+      ground = (x, y) => (WELT.padAt ? WELT.padAt(x, y, g.rawAt(x, y)) : g.rawAt(x, y)),
+      lids = [],
+      tri = (a, b, c) => lids.push([a, b, c]);
+    const lidQuad = (a, b, c, d) => {
+      KB.quadUp(a, b, c, d, VERGE);
+      tri(a, b, c);
+      tri(a, c, d);
+    };
+    for (const pad of g.pads)
+      for (const run of pad.runs || []) {
+        const cut = run.kind === 'cut',
+          pts = run.pts.map(p => {
+            const wx = p.x + p.nx * (cut ? CUT_OUT : FILL_OUT),
+              wy = p.y + p.ny * (cut ? CUT_OUT : FILL_OUT),
+              s = pad.fit.at(wx, wy);
+            if (!cut) return { p, wx, wy, foot: ground(wx, wy) - 0.3, lid: p.s + 0.05, top: p.s + 0.9 };
+            // the cover over the step behind the wall: on the bank's surface, tucked under it where it ends
+            const bz = (x, y, de) => bankZ(pad.fit.at(x, y), p.hw, de, g.rawAt(x, y)),
+              mx = p.x + p.nx * (CUT_OUT + 3),
+              my = p.y + p.ny * (CUT_OUT + 3),
+              ox = p.x + p.nx * STRIP,
+              oy = p.y + p.ny * STRIP;
+            return {
+              p,
+              wx,
+              wy,
+              foot: s - 0.3,
+              top: s + p.hw + 0.1,
+              lidIn: bz(wx, wy, CUT_OUT + 0.35) + 0.12,
+              mx,
+              my,
+              lidMid: bz(mx, my, CUT_OUT + 3) + 0.12,
+              ox,
+              oy,
+              lidOut: bz(ox, oy, STRIP) - 0.05,
+            };
+          });
+        for (let i = 0; i + 1 < pts.length; i++) {
+          const A = pts[i],
+            Q = pts[i + 1],
+            a = A.p,
+            q = Q.p;
+          if (cut) {
+            const tA = Math.max(A.top, A.lidIn + 0.05),
+              tQ = Math.max(Q.top, Q.lidIn + 0.05);
+            // the face toward the pad (a joint of the formwork every 2.5 m), the coping, the cover
+            KB.quad([Q.wx, Q.wy, Q.foot], [A.wx, A.wy, A.foot], [A.wx, A.wy, tA], [Q.wx, Q.wy, tQ], RWALL);
+            const segL = Math.hypot(Q.wx - A.wx, Q.wy - A.wy);
+            for (let u = (2.5 - ((run.u0 || 0) % 2.5)) % 2.5; u < segL; u += 2.5) {
+              const t = u / segL,
+                jx = A.wx + (Q.wx - A.wx) * t - a.nx * 0.012,
+                jy = A.wy + (Q.wy - A.wy) * t - a.ny * 0.012,
+                tx2 = ((Q.wx - A.wx) / segL) * 0.025,
+                ty2 = ((Q.wy - A.wy) / segL) * 0.025,
+                zt2 = tA + (tQ - tA) * t - 0.13;
+              KB.quad(
+                [jx + tx2, jy + ty2, A.foot + 0.3],
+                [jx - tx2, jy - ty2, A.foot + 0.3],
+                [jx - tx2, jy - ty2, zt2],
+                [jx + tx2, jy + ty2, zt2],
+                RJOINT
+              );
+            }
+            run.u0 = (run.u0 || 0) + segL;
+            const c = (P2, o) => [P2.wx + P2.p.nx * o, P2.wy + P2.p.ny * o];
+            const [a0x, a0y] = c(A, -0.15),
+              [q0x, q0y] = c(Q, -0.15),
+              [a1x, a1y] = c(A, 0.35),
+              [q1x, q1y] = c(Q, 0.35);
+            KB.quad([q0x, q0y, tQ - 0.12], [a0x, a0y, tA - 0.12], [a0x, a0y, tA + 0.02], [q0x, q0y, tQ + 0.02], COPE);
+            KB.quadUp([a0x, a0y, tA + 0.02], [q0x, q0y, tQ + 0.02], [q1x, q1y, tQ + 0.02], [a1x, a1y, tA + 0.02], COPE);
+            lidQuad([a1x, a1y, A.lidIn], [q1x, q1y, Q.lidIn], [Q.mx, Q.my, Q.lidMid], [A.mx, A.my, A.lidMid]);
+            lidQuad([A.mx, A.my, A.lidMid], [Q.mx, Q.my, Q.lidMid], [Q.ox, Q.oy, Q.lidOut], [A.ox, A.oy, A.lidOut]);
+          } else {
+            // the face toward the low ground, the parapet's inner face over the cover, its coping, the cover
+            const [ix, iy] = [A.wx - a.nx * 0.3, A.wy - a.ny * 0.3],
+              [jx, jy] = [Q.wx - q.nx * 0.3, Q.wy - q.ny * 0.3];
+            KB.quad([A.wx, A.wy, A.foot], [Q.wx, Q.wy, Q.foot], [Q.wx, Q.wy, Q.top], [A.wx, A.wy, A.top], RWALL);
+            KB.quad([jx, jy, Q.lid - 0.05], [ix, iy, A.lid - 0.05], [ix, iy, A.top], [jx, jy, Q.top], RWALL);
+            KB.quadUp([ix, iy, A.top], [jx, jy, Q.top], [Q.wx, Q.wy, Q.top], [A.wx, A.wy, A.top], COPE);
+            lidQuad(
+              [a.x - a.ex * 3, a.y - a.ey * 3, A.lid],
+              [q.x - q.ex * 3, q.y - q.ey * 3, Q.lid],
+              [jx, jy, Q.lid],
+              [ix, iy, A.lid]
+            );
+          }
+          wallSeg(A.wx, A.wy, Q.wx, Q.wy);
+        }
+        // wings at the ends (they close the step's ends): a cut's from the strip's end over the wall back into the pad, sloping down
+        // to the pad's level 5 m inside; a fill's from the wall back 3 m into the pad
+        for (const E of [pts[0], pts[pts.length - 1]]) {
+          const p = E.p;
+          if (cut) {
+            const top = Math.max(E.top, E.lidIn + 0.05);
+            slab(KB, E.ox, E.oy, E.wx, E.wy, 0.3, E.foot, E.lidOut + 0.17, E.foot, top, RWALL);
+            slab(KB, E.wx, E.wy, p.x - p.ex * 5, p.y - p.ey * 5, 0.3, E.foot, top, p.s - 0.3, p.s + 0.25, RWALL);
+            wallSeg(E.ox, E.oy, E.wx, E.wy);
+            wallSeg(E.wx, E.wy, p.x - p.ex * 2, p.y - p.ey * 2);
+          } else {
+            slab(KB, E.wx, E.wy, p.x - p.ex * 3, p.y - p.ey * 3, 0.3, E.foot, E.top, p.s - 0.3, E.top, RWALL);
+            wallSeg(E.wx, E.wy, p.x - p.ex * 3, p.y - p.ey * 3);
+          }
+        }
+      }
+    // the covers carry the walker (KERN.ground below): triangles in an 8 m hash
+    g.lids = new Map();
+    for (const t of lids) {
+      const xs = t.map(v => v[0]),
+        ys = t.map(v => v[1]);
+      for (let i = Math.floor(Math.min(...xs) / 8); i <= Math.floor(Math.max(...xs) / 8); i++)
+        for (let j = Math.floor(Math.min(...ys) / 8); j <= Math.floor(Math.max(...ys) / 8); j++) {
+          const k = i + ',' + j;
+          if (!g.lids.has(k)) g.lids.set(k, []);
+          g.lids.get(k).push(t);
+        }
+    }
+  }
+  // a wall piece w thick from a to b, its foot and top at a (za0, za1) and at b (zb0, zb1)
+  function slab(K, ax, ay, bx, by, w, za0, za1, zb0, zb1, col) {
+    const L2 = Math.hypot(bx - ax, by - ay);
+    if (L2 < 0.05) return;
+    const nx = ((by - ay) / L2) * (w / 2),
+      ny = (-(bx - ax) / L2) * (w / 2),
+      A0 = [ax + nx, ay + ny],
+      A1 = [ax - nx, ay - ny],
+      B0 = [bx + nx, by + ny],
+      B1 = [bx - nx, by - ny];
+    K.quad([A0[0], A0[1], za0], [B0[0], B0[1], zb0], [B0[0], B0[1], zb1], [A0[0], A0[1], za1], col);
+    K.quad([B1[0], B1[1], zb0], [A1[0], A1[1], za0], [A1[0], A1[1], za1], [B1[0], B1[1], zb1], col);
+    K.quad([A0[0], A0[1], za1], [B0[0], B0[1], zb1], [B1[0], B1[1], zb1], [A1[0], A1[1], za1], col);
+    K.quad([A1[0], A1[1], za0], [A0[0], A0[1], za0], [A0[0], A0[1], za1], [A1[0], A1[1], za1], col);
+    K.quad([B0[0], B0[1], zb0], [B1[0], B1[1], zb0], [B1[0], B1[1], zb1], [B0[0], B0[1], zb1], col);
+  }
+  // the height of a wall's cover at (x, y), if one is there
+  function lidAt(x, y) {
+    for (const g of GROUPS) {
+      if (!g.lids || g.state !== 'built') continue;
+      const L = g.lids.get(Math.floor(x / 8) + ',' + Math.floor(y / 8));
+      if (!L) continue;
+      for (const [a, b, c] of L) {
+        const d = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1]);
+        if (Math.abs(d) < 1e-9) continue;
+        const l1 = ((b[1] - c[1]) * (x - c[0]) + (c[0] - b[0]) * (y - c[1])) / d,
+          l2 = ((c[1] - a[1]) * (x - c[0]) + (a[0] - c[0]) * (y - c[1])) / d,
+          l3 = 1 - l1 - l2;
+        if (l1 >= -1e-6 && l2 >= -1e-6 && l3 >= -1e-6) return l1 * a[2] + l2 * b[2] + l3 * c[2];
+      }
+    }
+    return undefined;
+  }
+  KERN.provide('ground', (x, y) => lidAt(x, y), 9);
   const lotIn = (l, pad) => {
     const c = centroid(l.f);
     return inPoly(pad.f, c[0], c[1]);
@@ -866,6 +1232,8 @@ export const LAEDEN = (() => {
       signs = [],
       segs = [],
       lamps = [],
+      feet = [], // everything that stands on the ground on a post (pylons, lamps, columns): its foot, for the test
+      canopies = [], // the entrances' canopies (a name band stays over them)
       glassBy = new Map();
     const glassK = id => {
       if (!glassBy.has(id)) glassBy.set(id, kit());
@@ -883,7 +1251,24 @@ export const LAEDEN = (() => {
     let bid = 6000 + GROUPS.indexOf(g) * 300;
     for (const sh of g.shops) {
       try {
-        shop(sh, g, { WB, RB, KB, KN, KA, KP, KL, signs, wallSeg, boxSeg, lamps, glassK, gz, bid: (bid += 20) });
+        shop(sh, g, {
+          WB,
+          RB,
+          KB,
+          KN,
+          KA,
+          KP,
+          KL,
+          signs,
+          wallSeg,
+          boxSeg,
+          lamps,
+          glassK,
+          gz,
+          feet,
+          canopies,
+          bid: (bid += 20),
+        });
       } catch (e) {
         console.warn('laeden', sh.id, e);
         S.err = sh.id + ': ' + e;
@@ -891,15 +1276,21 @@ export const LAEDEN = (() => {
     }
     for (const l of g.lots) {
       try {
-        lot(l, g, { KN, KA, KL, boxSeg, lamps, gz });
+        lot(l, g, { KN, KA, KL, boxSeg, lamps, gz, feet });
       } catch (e) {
         console.warn('laeden lot', l.id, e);
         S.err = l.id + ': ' + e;
       }
     }
+    try {
+      walls(g, { KB, wallSeg });
+    } catch (e) {
+      console.warn('laeden walls', e);
+      S.err = 'walls: ' + e;
+    }
     for (const p of g.props) {
       try {
-        prop(p, g, { KB, KN, signs, boxSeg, gz });
+        prop(p, g, { KB, KN, signs, boxSeg, gz, feet });
       } catch (e) {
         console.warn('laeden prop', p.t, e);
       }
@@ -935,7 +1326,7 @@ export const LAEDEN = (() => {
       const mat = glassMat(),
         m = add(K.geo(false), mat, 'glas ' + id);
       m.userData.own = true;
-      g.glass.push({ id, mat, sh: g.shops.find(q => q.id === id) });
+      g.glass.push({ id, mat, sh: g.shops.find(q => q.id === id.split(':')[0]), always: id.endsWith(':licht') });
     }
     if (signs.length) {
       const A = atlas(signs),
@@ -944,6 +1335,23 @@ export const LAEDEN = (() => {
       m.userData.tex = A.tex;
       g.atlas = { W: A.W, H: A.H, n: signs.length, texts: signs.map(s => s.lines.join(' / ')) };
     }
+    // what the tests look at: every sign (its cell and the boxes of its letters), the canopies, the feet of what stands on posts
+    g.signs = signs.map(s => ({
+      t: s.lines.join(' / '),
+      k: s.k,
+      pw: s.pw,
+      ph: s.ph,
+      boxes: s.boxes,
+      x: s.x,
+      y: s.y,
+      z: s.z,
+      w: s.w,
+      h: s.h,
+      nx: s.nx,
+      ny: s.ny,
+    }));
+    g.canopies = canopies;
+    g.feet = feet;
     // lamps: the heads glow with the village's lamps (its glass material), light on the ground, the nearest light the facades
     if (lamps.length && VPROPS.glass) {
       const gH = new THREE.BoxGeometry(0.62, 0.06, 0.3),
@@ -1016,11 +1424,20 @@ export const LAEDEN = (() => {
     );
     g.ms = Math.round(performance.now() - t0);
     g.state = 'built';
+    // without the raw tiles the ground was the one of the moment: a few points to see whether finer tiles changed it
+    g.probes = g.exact ? null : probesOf(g);
     S.segs = GROUPS.reduce((n, q) => n + (q.segs ? q.segs.length : 0), 0);
     snapCars(g);
     markDirty(true);
   }
-  function drop(g) {
+  function probesOf(g) {
+    const pts = [];
+    for (const p of g.props) pts.push([p.x, p.y]);
+    for (const l of g.lots) for (let i = 0; i < l.f.length; i += 8) pts.push([l.f[i], l.f[i + 1]]);
+    for (const sh of g.shops) for (const d of sh.doors) pts.push([d.x + d.nx, d.y + d.ny]);
+    return pts.map(([x, y]) => [x, y, g.gz(x, y)]);
+  }
+  function drop(g, keepPads) {
     for (const m of g.meshes) {
       scene.remove(m);
       if (m.isInstancedMesh) m.dispose();
@@ -1042,6 +1459,9 @@ export const LAEDEN = (() => {
         if (i >= 0) VPROPS.lamps.splice(i, 1);
       }
     g.lampsV = [];
+    g.probes = null;
+    g.lids = null;
+    if (keepPads) return;
     WELT.setPads('laeden:' + g.id, []);
     g.padsW = null;
     g.state = 'idle';
@@ -1153,14 +1573,19 @@ export const LAEDEN = (() => {
       // the roof: flat behind an attica, or glass (the garden centre)
       roof(RB, KB, KN, v, zF, sh, g);
     });
+    // the name bands first: an entrance's canopy under a band stays low enough not to hide it (entrance())
+    B.bands = sh.signs.map(s => {
+      const fc = faceAt(sh, s);
+      return Object.assign({}, s, { z: zF + s.z, top: zF + (fc ? fc.h : 6) });
+    });
     // the entrances: a glazed front with sliding doors and a canopy; a vestibule's front is glazed all over
     sh.doors.forEach(d => {
       if (d.k === 'liefer') return;
       entrance(sh, d, B, zF);
     });
     // the lettering
-    for (const s of sh.signs) {
-      const z = zF + s.z;
+    for (const s of B.bands) {
+      const z = s.z;
       // the band: a plate 0.12 m in front of the wall, the letters on it
       const tx = -s.ny,
         ty = s.nx;
@@ -1295,7 +1720,9 @@ export const LAEDEN = (() => {
       return;
     }
     const zr = zt - 0.55, // the roof membrane behind the attica
-      gc = [0.36, 0.36, 0.35];
+      // the roof as the orthophoto shows it: grey membrane (the big ones under solar panels), white (REWE), red-brown sheet (Lidl)
+      rf = ROOFS[sh.roof] || ROOFS.grau,
+      gc = rf.col;
     // the membrane
     const pts = [];
     for (let i = 0; i < f.length; i += 2) pts.push(new THREE.Vector2(f[i], f[i + 1]));
@@ -1306,26 +1733,49 @@ export const LAEDEN = (() => {
         [pts[j].x, pts[j].y, zr],
         [pts[k].x, pts[k].y, zr],
         [0, 0, 1],
-        [4, gc[0], gc[1], gc[2]]
+        [rf.k, gc[0], gc[1], gc[2]]
       );
-    // the attica: inner face from the membrane up, the cap on top (0.3 m), outer face is the wall
-    const r = ring(f);
-    for (let i = 0; i < r.length; i++) {
+    // the attica: inner face from the membrane up, the cap on top (0.3 m), outer face is the wall; its inner line mitred at the
+    // corners (at an acute corner the parapet ends in the corner instead of running 0.3 m · cot past it), the mitre at most 1.2 m
+    const r = ring(f),
+      nr = r.length,
+      DA = 0.3,
+      inner = r.map((v, i) => {
+        const p = r[(i + nr - 1) % nr],
+          q = r[(i + 1) % nr],
+          la = Math.hypot(v[0] - p[0], v[1] - p[1]) || 1,
+          lb = Math.hypot(q[0] - v[0], q[1] - v[1]) || 1,
+          // inward normals of the two edges (left of them: the ring runs counter-clockwise)
+          m1x = -(v[1] - p[1]) / la,
+          m1y = (v[0] - p[0]) / la,
+          m2x = -(q[1] - v[1]) / lb,
+          m2y = (q[0] - v[0]) / lb,
+          den = Math.max(0.12, 1 + m1x * m2x + m1y * m2y);
+        let mx = ((m1x + m2x) * DA) / den,
+          my = ((m1y + m2y) * DA) / den;
+        const ml = Math.hypot(mx, my);
+        if (ml > 4 * DA) {
+          mx *= (4 * DA) / ml;
+          my *= (4 * DA) / ml;
+        }
+        return [v[0] + mx, v[1] + my];
+      });
+    for (let i = 0; i < nr; i++) {
       const a = r[i],
-        b = r[(i + 1) % r.length],
+        b = r[(i + 1) % nr],
+        ia = inner[i],
+        ib = inner[(i + 1) % nr],
         L2 = Math.hypot(b[0] - a[0], b[1] - a[1]);
       if (L2 < 0.05) continue;
       const ux = (b[0] - a[0]) / L2,
         uy = (b[1] - a[1]) / L2,
         nx = uy,
-        ny = -ux, // outward
-        ix = -nx * 0.3,
-        iy = -ny * 0.3;
+        ny = -ux; // outward
       RB.quad(
-        [b[0] + ix, b[1] + iy, zr],
-        [a[0] + ix, a[1] + iy, zr],
-        [a[0] + ix, a[1] + iy, zt],
-        [b[0] + ix, b[1] + iy, zt],
+        [ib[0], ib[1], zr],
+        [ia[0], ia[1], zr],
+        [ia[0], ia[1], zt],
+        [ib[0], ib[1], zt],
         [-nx, -ny, 0],
         [16, 0, 0, 0],
         [ux, uy]
@@ -1333,8 +1783,8 @@ export const LAEDEN = (() => {
       RB.quad(
         [a[0], a[1], zt],
         [b[0], b[1], zt],
-        [b[0] + ix, b[1] + iy, zt],
-        [a[0] + ix, a[1] + iy, zt],
+        [ib[0], ib[1], zt],
+        [ia[0], ia[1], zt],
         [0, 0, 1],
         [18, 0, 0, 0],
         [ux, uy]
@@ -1435,8 +1885,29 @@ export const LAEDEN = (() => {
       front = Math.max(d.w + 0.4, Math.min(main ? d.w + 7 : d.w + 1.2, room)),
       zd = gz(d.x + d.nx * 0.6, d.y + d.ny * 0.6),
       z0 = Math.min(zF, zd),
-      hG = main ? 3.1 : 2.6, // the glazing's top
-      hD = 2.35; // the doors' height
+      hD = 2.35, // the doors' height
+      cw = front + (main ? 1.2 : 0.4); // the canopy's width
+    let hG = main ? Math.max(2.5, Math.min(3.1, (facade ? facade.h : 6) - 1.45)) : 2.6, // the glazing's top (lower on a low building)
+      cd = main ? 2.6 : 1.2; // the canopy's depth
+    // a name band over this front: the canopy stays under it (lower glazing, a shallower canopy) – else its fascia hides the letters;
+    // where the band is too low even so, the band goes up (and gets lower under the wall's top)
+    const over = (B.bands || []).filter(
+      b =>
+        b.nx * d.nx + b.ny * d.ny > 0.9 &&
+        Math.abs((b.x - d.x) * d.nx + (b.y - d.y) * d.ny) < 0.8 &&
+        Math.abs((b.x - d.x) * tx + (b.y - d.y) * ty) < b.w / 2 + cw / 2 + 0.2
+    );
+    if (over.length) {
+      const zb = Math.min(...over.map(b => b.z));
+      cd = main ? 1.8 : 1.0;
+      hG = Math.max(2.5, Math.min(hG, zb - z0 - 0.72));
+      const cTop = z0 + hG + 0.25 + 0.32;
+      for (const b of over)
+        if (b.z < cTop + 0.15) {
+          b.z = cTop + 0.15;
+          if (b.z + b.h > b.top - 0.15) b.h = Math.max(0.4, b.top - 0.15 - b.z);
+        }
+    }
     d.front = front;
     const o = 0.04, // in front of the wall
       P = (u, z, off = o) => [d.x + tx * u + d.nx * off, d.y + ty * u + d.ny * off, z];
@@ -1509,12 +1980,25 @@ export const LAEDEN = (() => {
         GREYM
       );
     }
-    // the canopy: 2.6 m deep at the main door (1.2 m at a side door), its fascia band, light underneath
-    const cd = main ? 2.6 : 1.2,
-      cw = front + (main ? 1.2 : 0.4),
-      zc = z0 + hG + 0.25;
+    // the canopy: 2.6 m deep at the main door (1.2 m at a side door; shallower under a name band), its fascia band, light underneath
+    const zc = z0 + hG + 0.25;
     KB.box(d.x + d.nx * (cd / 2 + 0.05), d.y + d.ny * (cd / 2 + 0.05), zc, cw, cd, 0.08, rot, LIGHT);
     KB.box(d.x + d.nx * (cd / 2 + 0.05), d.y + d.ny * (cd / 2 + 0.05), zc + 0.08, cw, cd, 0.24, rot, ANTH);
+    B.canopies.push({
+      shop: sh.id,
+      x: d.x + d.nx * (cd / 2 + 0.05),
+      y: d.y + d.ny * (cd / 2 + 0.05),
+      nx: d.nx,
+      ny: d.ny,
+      w: cw,
+      d: cd,
+      z0: zc,
+      z1: zc + 0.32,
+    });
+    // a restaurant's windows: the room behind the glass at night – lights in the ceiling, the counter, tables and chairs against the
+    // lit back (dark shapes just in front of the pane: the glass itself is not transparent)
+    if (/restaurant|imbiss|café/i.test((d.art || sh.art || '') + ' ' + (d.who || sh.name || '')))
+      interior(sh, d, B, z0, hG, front);
     // the plate with the opening hours, on the wall beside the doors (right of them, seen from outside)
     const oh = d.oh || sh.oh;
     if (main && oh && front - d.w > 1.4) {
@@ -1545,6 +2029,48 @@ export const LAEDEN = (() => {
     }
     // the way in stays free: the walker meets the glass (a wall), the cars the posts of the canopy (none: it is cantilevered)
   }
+  // ---- the room behind a restaurant's windows: dark shapes just in front of the pane (counter, tables, chairs) and lights in the
+  // ceiling – at night against the lit glass they read as the room inside, by day they vanish in the dark glass ----
+  function interior(sh, d, B, z0, hG, front) {
+    const { KN, glassK } = B,
+      KL2 = glassK(sh.id + ':licht'),
+      tx = -d.ny,
+      ty = d.nx,
+      off = 0.052, // between the pane (0.04) and the frames
+      P = (u, z) => [d.x + tx * u + d.nx * off, d.y + ty * u + d.ny * off, z],
+      rect = (K, u0, u1, za, zb, col) => K.quad(P(u0, za), P(u1, za), P(u1, zb), P(u0, zb), col);
+    const sides = [
+      [-front / 2 + 0.12, -d.w / 2 - 0.12],
+      [d.w / 2 + 0.12, front / 2 - 0.12],
+    ].filter(([a, b]) => b - a > 1.2);
+    if (!sides.length) return;
+    // the longer side has the counter with the menu boards over it, the other the tables
+    sides.sort((p, q) => q[1] - q[0] - (p[1] - p[0]));
+    sides.forEach(([a, b], i) => {
+      // lights in the ceiling: short bright strips under the glazing's head
+      for (let u = a + 0.45; u + 0.25 < b; u += 1.1)
+        rect(KL2, u - 0.25, u + 0.25, z0 + hG - 0.42, z0 + hG - 0.36, [1, 1, 1]);
+      if (i === 0) {
+        const c0 = a + 0.25,
+          c1 = Math.min(b - 0.25, c0 + 3.2);
+        rect(KN, c0, c1, z0 + 0.35, z0 + 1.02, SIL);
+        rect(KN, c0 - 0.05, c1 + 0.05, z0 + 1.02, z0 + 1.1, SIL2);
+        // the menu boards behind it, lit
+        for (let u = c0 + 0.2; u + 0.7 < c1; u += 1.0) rect(KL2, u, u + 0.7, z0 + 1.75, z0 + 2.1, [1, 1, 1]);
+      } else {
+        for (let u = a + 0.8; u + 0.7 < b; u += 1.6) {
+          rect(KN, u - 0.4, u + 0.4, z0 + 0.71, z0 + 0.76, SIL2); // the table's top
+          rect(KN, u - 0.04, u + 0.04, z0 + 0.35, z0 + 0.71, SIL); // its foot
+          for (const sg of [-1, 1]) {
+            const cu = u + sg * 0.62;
+            rect(KN, cu - 0.2, cu + 0.2, z0 + 0.46, z0 + 0.5, SIL); // the chair's seat
+            rect(KN, cu + sg * 0.16 - 0.04, cu + sg * 0.16 + 0.04, z0 + 0.5, z0 + 0.92, SIL); // its back
+            rect(KN, cu - 0.02 - sg * 0.12, cu + 0.02 - sg * 0.12, z0 + 0.35, z0 + 0.46, SIL); // a leg
+          }
+        }
+      }
+    });
+  }
   // the facade of the shop a door lies on: its length and the door's u along it
   function faceAt(sh, d) {
     let best = null;
@@ -1560,7 +2086,7 @@ export const LAEDEN = (() => {
           u = (d.x - a[0]) * ux + (d.y - a[1]) * uy,
           off = Math.abs((d.x - a[0]) * uy - (d.y - a[1]) * ux);
         if (u < -0.2 || u > L2 + 0.2 || off > 0.3) continue;
-        if (!best || off < best.off) best = { u, L: L2, off };
+        if (!best || off < best.off) best = { u, L: L2, off, h: p.h };
       }
     }
     return best;
@@ -1580,7 +2106,7 @@ export const LAEDEN = (() => {
   }
   // ---- a car park: asphalt, kerbs along its edges (not where an aisle or a road runs out), the bays' lines, trolley shelters, lamps ----
   function lot(l, g, B) {
-    const { KN, KA, KL, boxSeg, lamps, gz } = B;
+    const { KN, KA, KL, boxSeg, lamps, gz, feet } = B;
     groundPoly(KA, l.f, gz, ASPH, 0.04, 3);
     // kerbs: along the edges, broken where an aisle leaves the car park (6 m)
     const r = ring(l.f),
@@ -1665,16 +2191,36 @@ export const LAEDEN = (() => {
         [-2.3, 1.1],
         [2.3, 1.1],
       ]) {
-        const [px, py] = P2(u, w);
-        KN.box(px, py, z, 0.08, 0.08, 2.2, rot, GREYM);
+        // each post on the ground under it, the roof level
+        const [px, py] = P2(u, w),
+          zp = gz(px, py);
+        KN.box(px, py, zp - 0.05, 0.08, 0.08, z + 2.25 - zp, rot, GREYM);
+        feet.push({ what: 'Wagenbox', x: px, y: py, z: zp });
       }
       KN.box(c.x, c.y, z + 2.2, 4.9, 2.6, 0.08, rot, LIGHT);
-      // trolleys: two rows nested
-      for (const w of [-0.45, 0.45])
-        for (let k = 0; k < 8; k++) {
-          const [px, py] = P2(-1.8 + k * 0.42, w);
-          KN.box(px, py, z + 0.25, 0.5, 0.56, 0.6, rot, GREYM);
+      // trolleys: two rows nested into each other – the wire baskets as their rails and bars (one sees through them), the handles
+      for (const w of [-0.5, 0.5]) {
+        const u0 = -2.0,
+          u1 = 1.9;
+        for (const sw of [-0.27, 0.27]) {
+          const [ax, ay] = P2(u0, w + sw),
+            [bx, by] = P2(u1, w + sw);
+          KN.bar(ax, ay, bx, by, 0.03, 0.92, 0.96, GREYM, z, z); // the top rail
+          KN.bar(ax, ay, bx, by, 0.03, 0.42, 0.45, GREYM, z, z); // the basket's floor rail
+          for (let u = u0 + 0.15; u < u1; u += 0.3) {
+            const [px, py] = P2(u, w + sw);
+            KN.box(px, py, z + 0.42, 0.02, 0.02, 0.52, rot, GREYM);
+          }
         }
+        // the handle at the end of the row, a plastic grip
+        const [hx0, hy0] = P2(u1 + 0.25, w - 0.28),
+          [hx1, hy1] = P2(u1 + 0.25, w + 0.28);
+        KN.bar(hx0, hy0, hx1, hy1, 0.04, 1.0, 1.05, ANTH, z, z);
+        // the wheels' frame low down
+        const [fx0, fy0] = P2(u0, w),
+          [fx1, fy1] = P2(u1, w);
+        KN.bar(fx0, fy0, fx1, fy1, 0.4, 0.12, 0.16, GREYM, z, z);
+      }
       boxSeg(c.x, c.y, 4.7, 2.3, rot);
     }
     // lamps: an 8 m pole with an arm, the head lit at night
@@ -1682,7 +2228,8 @@ export const LAEDEN = (() => {
       const z = gz(x, y),
         az = Math.atan2(...lampDir(l, x, y));
       KN.cyl(x, y, z, z + 7.8, 0.08, 8, GREYM);
-      KN.box(x, y, z, 0.3, 0.3, 0.5, 0, CONC);
+      KN.box(x, y, z - 0.2, 0.3, 0.3, 0.7, 0, CONC);
+      feet.push({ what: 'Leuchte', x, y, z });
       const hx = x + Math.sin(az) * 0.6,
         hy = y + Math.cos(az) * 0.6;
       KN.bar(x, y, hx, hy, 0.08, z + 7.75, z + 7.85, GREYM);
@@ -1708,10 +2255,9 @@ export const LAEDEN = (() => {
   }
   // ---- a pylon at the edge of the car park: a slim column with the names, one under the other (both faces) ----
   function prop(p, g, B) {
-    const { KB, signs, boxSeg, gz } = B;
+    const { KB, signs, boxSeg, gz, feet } = B;
     if (p.t !== 'pylon') return;
-    const z = gz(p.x, p.y),
-      w = 2.0,
+    const w = 2.0,
       d = 0.5,
       // its faces turned to the nearest road: across the car park's long side – simply facing the group's middle
       dx = g.c[0] - p.x,
@@ -1719,18 +2265,37 @@ export const LAEDEN = (() => {
       L2 = Math.hypot(dx, dy) || 1,
       fx = dx / L2,
       fy = dy / L2,
-      // the faces look along ±(−fy, fx): seen from the road along the car park
+      // the faces look along ±(−fy, fx): seen from the road along the car park; the pylon is w wide along (fx, fy), d deep across
       nx = -fy,
       ny = fx,
       rot = Math.atan2(fy, fx);
-    KB.box(p.x, p.y, z, d, w, p.h, rot, ANTH);
-    KB.box(p.x, p.y, z, d + 0.2, w + 0.2, 0.4, rot, CONC);
-    const n = p.texts.length,
-      top = z + p.h - 0.35,
+    // the foot: the ground under the middle; the plinth reaches down to the lowest of its corners (on a slope it never hangs)
+    const zc = gz(p.x, p.y),
+      corners = [];
+    let z = zc;
+    for (const [su, sv] of [
+      [-1, -1],
+      [1, -1],
+      [1, 1],
+      [-1, 1],
+    ]) {
+      const cx = p.x + fx * su * (w / 2 + 0.1) + nx * sv * (d / 2 + 0.1),
+        cy = p.y + fy * su * (w / 2 + 0.1) + ny * sv * (d / 2 + 0.1);
+      corners.push([cx, cy]);
+      z = Math.min(z, gz(cx, cy));
+    }
+    KB.box(p.x, p.y, z - 0.05, w, d, zc + p.h - (z - 0.05), rot, ANTH);
+    KB.box(p.x, p.y, z - 0.25, w + 0.2, d + 0.2, zc + 0.35 - (z - 0.25), rot, CONC);
+    feet.push({ what: 'Pylon ' + p.shop, x: p.x, y: p.y, z: zc, z0: z - 0.25, corners });
+    // the names, and at a station its fuels (the names only: no prices made up)
+    const texts = p.prices ? p.texts.concat(['Super E10 · Super · Diesel']) : p.texts,
+      n = texts.length,
+      top = zc + p.h - 0.35,
       hEach = Math.min(1.4, (p.h * 0.55) / n);
     for (const s of [1, -1])
-      p.texts.forEach((t, i) => {
-        const zz = top - (i + 1) * (hEach + 0.12);
+      texts.forEach((t, i) => {
+        const hh2 = p.prices && i === n - 1 ? hEach * 0.55 : hEach,
+          zz = top - (i + 1) * (hEach + 0.12) + (hEach - hh2);
         signs.push({
           k: 'pylon',
           lines: [t],
@@ -1739,12 +2304,12 @@ export const LAEDEN = (() => {
           y: p.y + ny * s * (d / 2 + 0.01),
           z: zz,
           w: w - 0.2,
-          h: hEach,
+          h: hh2,
           nx: nx * s,
           ny: ny * s,
         });
       });
-    boxSeg(p.x, p.y, d + 0.2, w + 0.2, rot);
+    boxSeg(p.x, p.y, w + 0.2, d + 0.2, rot);
   }
   // ---- a shop in a house that stays (the ETHOS house of gebaeude/gebaeude.js): a door and a sign on its facade ----
   function house(h, g, B) {
@@ -1817,7 +2382,7 @@ export const LAEDEN = (() => {
       }
     }
     // the underside: light panels, and rows of lamps in it (the glass material of the shop – lit when it is open and dark)
-    const KG = glassK(sh.id),
+    const KG = glassK(sh.id + ':licht'),
       pts = [];
     for (let i = 0; i < f.length; i += 2) pts.push(new THREE.Vector2(f[i], f[i + 1]));
     const tris = THREE.ShapeUtils.triangulateShape(pts, []);
@@ -1830,15 +2395,15 @@ export const LAEDEN = (() => {
       else KB.tri(a, b, c, LIGHT);
     }
     const bbF = bbOf(f);
-    for (let x = bbF[0] + 2; x < bbF[2] - 1.5; x += 3.5)
-      for (let y = bbF[1] + 2; y < bbF[3] - 1.5; y += 3.5) {
-        if (!inPoly(f, x, y) || edgeDist(f, x, y) < 1.2) continue;
+    for (let x = bbF[0] + 1.6; x < bbF[2] - 1.2; x += 2.6)
+      for (let y = bbF[1] + 1.6; y < bbF[3] - 1.2; y += 2.6) {
+        if (!inPoly(f, x, y) || edgeDist(f, x, y) < 1.0) continue;
         const zl = zc - 0.03;
         KG.quad(
-          [x - 0.5, y + 0.25, zl],
-          [x + 0.5, y + 0.25, zl],
-          [x + 0.5, y - 0.25, zl],
-          [x - 0.5, y - 0.25, zl],
+          [x - 0.7, y + 0.35, zl],
+          [x + 0.7, y + 0.35, zl],
+          [x + 0.7, y - 0.35, zl],
+          [x - 0.7, y - 0.35, zl],
           [1, 1, 1]
         );
       }
@@ -1854,8 +2419,10 @@ export const LAEDEN = (() => {
       KN.box(is.x, is.y, z + 1.2, 0.92, 0.57, 0.45, rot, ANTH);
       for (const s of [-1, 1]) {
         const px = is.x + Math.cos(rot) * s * 2.3,
-          py = is.y + Math.sin(rot) * s * 2.3;
-        KB.box(px, py, z, 0.36, 0.36, zc - z, rot, WHITE_);
+          py = is.y + Math.sin(rot) * s * 2.3,
+          zp = gz(px, py);
+        KB.box(px, py, zp - 0.05, 0.36, 0.36, zc - zp + 0.05, rot, WHITE_);
+        B.feet.push({ what: 'Säule Tankstelle', x: px, y: py, z: zp });
         boxSeg(px, py, 0.4, 0.4, rot);
       }
       boxSeg(is.x, is.y, 1.0, 0.65, rot);
@@ -1927,12 +2494,20 @@ export const LAEDEN = (() => {
       z = gz(po.x, po.y),
       a = (po.az * Math.PI) / 180,
       rot = Math.atan2(Math.cos(a), Math.sin(a));
-    KN.box(po.x, po.y, z, 0.45, 0.35, 1.45, rot, ANTH);
+    KN.box(po.x, po.y, z - 0.05, 0.45, 0.35, 1.5, rot, ANTH);
     KN.box(po.x, po.y, z + 1.45, 0.6, 0.5, 0.08, rot, LIGHT);
+    B.feet.push({ what: 'Bestellsäule', x: po.x, y: po.y, z });
     const bx = po.x + Math.cos(rot) * 2.2,
-      by = po.y + Math.sin(rot) * 2.2;
-    for (const s of [-0.85, 0.85]) KN.box(bx + Math.cos(rot) * s, by + Math.sin(rot) * s, z, 0.1, 0.1, 1.2, rot, ANTH);
-    KB.box(bx, by, z + 1.2, 2.0, 0.18, 1.4, rot, ANTH);
+      by = po.y + Math.sin(rot) * 2.2,
+      zB = Math.max(gz(bx, by), z);
+    for (const s of [-0.85, 0.85]) {
+      const px = bx + Math.cos(rot) * s,
+        py = by + Math.sin(rot) * s,
+        zp = gz(px, py);
+      KN.box(px, py, zp - 0.05, 0.1, 0.1, zB + 1.25 - zp, rot, ANTH);
+      B.feet.push({ what: 'Menütafel', x: px, y: py, z: zp });
+    }
+    KB.box(bx, by, zB + 1.2, 2.0, 0.18, 1.4, rot, ANTH);
     // the board's face looks at the arriving driver: back along the lane
     const fx = -Math.sin(rot),
       fy = Math.cos(rot);
@@ -1942,7 +2517,7 @@ export const LAEDEN = (() => {
       st: 0,
       x: bx + fx * 0.1,
       y: by + fy * 0.1,
-      z: z + 1.3,
+      z: zB + 1.3,
       w: 1.8,
       h: 1.2,
       nx: fx,
@@ -1985,10 +2560,17 @@ export const LAEDEN = (() => {
       L0 = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) || 1,
       nx0 = (p1[1] - p0[1]) / L0,
       ny0 = -(p1[0] - p0[0]) / L0,
-      zg = gz(p0[0], p0[1]);
+      zg = Math.max(
+        gz(p0[0] + nx0 * (hw + 0.35), p0[1] + ny0 * (hw + 0.35)),
+        gz(p0[0] - nx0 * (hw + 0.35), p0[1] - ny0 * (hw + 0.35))
+      );
     for (const s of [-1, 1]) {
-      KB.cyl(p0[0] + nx0 * s * (hw + 0.35), p0[1] + ny0 * s * (hw + 0.35), zg, zg + 3.0, 0.07, 8, ANTH);
-      boxSeg(p0[0] + nx0 * s * (hw + 0.35), p0[1] + ny0 * s * (hw + 0.35), 0.16, 0.16, 0);
+      const px = p0[0] + nx0 * s * (hw + 0.35),
+        py = p0[1] + ny0 * s * (hw + 0.35),
+        zp = gz(px, py);
+      KB.cyl(px, py, zp - 0.05, zg + 3.0, 0.07, 8, ANTH);
+      B.feet.push({ what: 'Höhenbalken', x: px, y: py, z: zp });
+      boxSeg(px, py, 0.16, 0.16, 0);
     }
     KB.bar(
       p0[0] - nx0 * (hw + 0.35),
@@ -2176,6 +2758,17 @@ export const LAEDEN = (() => {
           .finally(() => (BUSY.g = null));
       }
       if (g.state !== 'built') continue;
+      // built on the ground of the moment (no raw tiles then): set down again when finer tiles changed it under the probes
+      if (
+        g.probes &&
+        (g.pt = (g.pt || 0) + 1) % 4 === 0 &&
+        g.probes.some(([x, y, z]) => Math.abs(g.gz(x, y) - z) > 0.3)
+      ) {
+        drop(g, true);
+        build(g);
+        g.reseat = (g.reseat || 0) + 1;
+        continue;
+      }
       // the small things near only
       const nearOn = d < DETAIL + 200;
       for (const m of g.near) if (m !== g.pool) m.visible = nearOn && !RATSCHER.map;
@@ -2190,9 +2783,14 @@ export const LAEDEN = (() => {
     for (const g of GROUPS)
       for (const q of g.glass || []) {
         const open = q.sh ? isOpen(q.sh.week) : null,
-          k = n > 0.05 ? Math.min(1, (n - 0.05) / 0.3) * (open === false ? 0.12 : 1) : 0;
-        if (Math.abs(q.mat.emissiveIntensity - k * 1.6) > 0.01) {
-          q.mat.emissiveIntensity = k * 1.6;
+          // the lights under a station's canopy burn day and night; a shop's windows light up at dusk, dimmed when it is closed
+          k = q.always
+            ? (0.55 + 0.45 * Math.min(1, n / 0.3)) * 1.6
+            : n > 0.05
+              ? Math.min(1, (n - 0.05) / 0.3) * (open === false ? 0.19 : 0.72)
+              : 0;
+        if (Math.abs(q.mat.emissiveIntensity - k) > 0.01) {
+          q.mat.emissiveIntensity = k;
           markDirty();
         }
       }
@@ -2220,6 +2818,24 @@ export const LAEDEN = (() => {
     dropped: S.dropped,
   });
   S.shop = id => (S.data ? S.data.shops.find(s => s.id === id) || null : null);
+  // for the tests: a built group's signs (cells and letter boxes), canopies, feet on the ground, retaining walls
+  S.detail = id => {
+    const g = GROUPS.find(q => q.id === id);
+    const f2 = v => Math.round(v * 100) / 100;
+    return g && g.state === 'built'
+      ? {
+          signs: g.signs || [],
+          canopies: g.canopies || [],
+          feet: g.feet || [],
+          // each wall: its kind, the largest step, its points on the pad's edge (x, y, outward normal, pad level, ground outside)
+          walls: (g.walls || []).map(r => ({
+            kind: r.kind,
+            drop: f2(r.drop),
+            pts: r.pts.map(p => [f2(p.x), f2(p.y), f2(p.ex), f2(p.ey), f2(p.s), f2(p.out)]),
+          })),
+        }
+      : null;
+  };
   S.groundAt = (x, y) => {
     for (const g of GROUPS)
       if (g.state === 'built' && g.gz && Math.hypot(g.c[0] - x, g.c[1] - y) < 450) return g.gz(x, y);

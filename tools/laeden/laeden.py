@@ -57,6 +57,9 @@ SHOPS = [
          carts=[(-972.0, 1861.0)]),
     dict(id='mega', way=34214973, art='Einkaufszentrum', name='Mega Center', col='hell',
          parts=[('DEG_DETHL57P0000LyrQ', 10.6)],
+         # the delivery loop round the building (OSM service road, one way) and the yard inside it: on the shop's level – the 30 m
+         # surface model puts the roof and the forest east of it there, 10 m above the floor
+         yard=dict(ways=[226334824], w=6.0),
          annex=[dict(ids=['DEG_DETHL57P0000LCFS'], h=10.8, what='Eingangsportal Süd', glass=True, portal=True, sign='MEGA CENTER'),
                 dict(ids=['DEG_DETHL57P0000LCFT'], h=10.9, what='Eingangsportal Nord', glass=True, portal=True, sign='ALDI'),
                 dict(ids=['DEG_DETHL57P0000LCFC'], h=12.5, what='Turm am Restaurant', sign='MEGA CENTER')],
@@ -98,15 +101,15 @@ SHOPS = [
          doors=[dict(k='main', at=(-838.0, 2203.8), w=1.4, src='regel', who='Turan Kebap Haus', art='Imbiss'),
                 dict(k='main', at=(-822.0, 2198.3), w=1.4, src='regel', who='Wäscheservice', art='Wäscheservice',
                      oh='Mo-Fr 09:00-18:00')],
-         signs=[dict(t='Turan Kebap Haus', at=(-836.0, 2203.0), z=2.75, h=0.75, st=2),
-                dict(t='Wäscheservice', at=(-822.0, 2198.3), z=2.75, h=0.75, st=3)]),
+         signs=[dict(t='Turan Kebap Haus', at=(-836.0, 2203.0), z=3.45, h=0.75, st=2),
+                dict(t='Wäscheservice', at=(-822.0, 2198.3), z=3.45, h=0.75, st=3)]),
     dict(id='shell', way=358207615, art='Tankstelle', name='Shell', col='weiss',
          parts=[('DEG_DETHL57P0000Lyrz', 4.2), ('DEG_DETHL57P0001eBgC', 3.7)],
          doors=[dict(k='main', at=(-902.0, 2277.0), w=1.8, src='regel', who='Shell')],
-         signs=[dict(t='Shell', at=(-898.0, 2276.0), z=2.9, h=0.8, st=1)],
+         signs=[dict(t='Shell', at=(-898.0, 2276.0), z=3.3, h=0.7, st=1)],
          fuel=dict(way=56000335, h=5.2),
          pylon=dict(at=(-921.0, 2290.0), texts=['Shell'], h=7.0, prices=True)),
-    dict(id='mcd', way=128886071, art='Schnellrestaurant', name="McDonald's", col='dunkel',
+    dict(id='mcd', way=128886071, art='Schnellrestaurant', name="McDonald's", col='dunkel', roof='dunkel',
          parts=[('osm', 4.6)], stadt=("McDonald's", 'Kurhausstraße 1a'),
          annex=[dict(ids=['DEG_DETHL57P0000LzqP'], h=3.1, what='Nebenraum')],
          doors=[dict(k='main', osm=9423643848, w=2.0, who="McDonald's")],
@@ -114,17 +117,17 @@ SHOPS = [
                 dict(t="McDonald's", at=(-1103.0, 1704.0), z=3.0, h=1.0, st=1)],
          drive=dict(way=110310970), lots=[128886077],
          pylon=dict(at=(-1078.0, 1724.5), texts=["McDonald's", 'Drive-in'], h=8.0)),
-    dict(id='lidl', way=185486341, art='Discounter', name='Lidl', col='hell',
+    dict(id='lidl', way=185486341, art='Discounter', name='Lidl', col='hell', roof='rotbraun',
          parts=[('osm', 6.2)], stadt=('Lidl', 'Jägerhausstraße 8'), h_src='faustwert',
          doors=[dict(k='main', at=(-1062.5, 1441.5), w=2.4, src='luftbild', who='Lidl'),
                 dict(k='side', at=(-1052.5, 1452.5), w=1.6, src='regel', who='Café & Backshop Drei Ähren', art='Bäckerei',
                      oh='Mo-Fr 08:00-18:00; Sa 08:00-12:00; Su,PH off'),
                 dict(k='liefer', at=(-1042.0, 1421.0), w=4.0, src='regel')],
          signs=[dict(t='LIDL', at=(-1059.0, 1445.5), z=3.8, h=1.8, st=1),
-                dict(t='Café & Backshop Drei Ähren', at=(-1052.5, 1452.5), z=2.85, h=0.6, st=3)],
+                dict(t='Café & Backshop Drei Ähren', at=(-1052.5, 1452.5), z=3.3, h=0.55, st=3)],
          lots=[55533801], carts=[(-1070.0, 1452.0)],
          pylon=dict(at=(-1105.0, 1468.0), texts=['LIDL'], h=8.0)),
-    dict(id='rewe', way=55463189, art='Supermarkt', name='REWE', col='weiss',
+    dict(id='rewe', way=55463189, art='Supermarkt', name='REWE', col='weiss', roof='weiss',
          parts=[('DEG_DETHL57P00012az4', 6.6), ('DEG_DETHL57P00012az2', 4.8)],
          doors=[dict(k='main', osm=2725921022, w=2.4, who='REWE'),
                 dict(k='liefer', at=(-1730.0, 925.0), w=4.0, src='regel')],
@@ -214,6 +217,15 @@ def flat(poly):
 
 def ring_of(f):
     return [(f[i], f[i + 1]) for i in range(0, len(f), 2)]
+
+
+def opened(P, r=0.4):
+    """needles and slivers thinner than 2 r cut off (an ETHOS outline cut to the OSM one can run out into a needle along a wall: OBI's
+    part Lyti 10 m, REWE's 28 m); square corners stay square (mitred), the polygon never grows"""
+    Q = P.buffer(-r, join_style=2, mitre_limit=10).buffer(r, join_style=2, mitre_limit=10).intersection(P).buffer(0)
+    if Q.is_empty:
+        return P
+    return Q.simplify(0.05)
 
 
 def snap_to_facade(f, x, y):
@@ -412,7 +424,7 @@ def main():
             best[0] = unary_union([best[0], piece.buffer(0.05)]).buffer(-0.05)
         out_parts = []
         for P, h, src in parts:
-            P = P.buffer(0.15).buffer(-0.15).simplify(0.25)
+            P = opened(P.buffer(0.15).buffer(-0.15).simplify(0.25))
             for g in (P.geoms if hasattr(P, 'geoms') else [P]):
                 if g.area < 4:
                     continue
@@ -430,7 +442,9 @@ def main():
                 src = 'luftbild'
             if hasattr(g, 'geoms'):
                 g = max(g.geoms, key=lambda q: q.area)
-            g = g.simplify(0.2)
+            g = opened(g.simplify(0.2), 0.3)
+            if hasattr(g, 'geoms'):
+                g = max(g.geoms, key=lambda q: q.area)
             annexes.append(dict(f=flat(g), h=a['h'], what=a['what'], src=src, glass=bool(a.get('glass')), portal=bool(a.get('portal')),
                                 roof=a.get('roof', 'flach'), walls=a.get('walls', 'blech'), sign=a.get('sign')))
         # every footprint of the shop (doors and signs go onto the nearest wall of these)
@@ -505,7 +519,7 @@ def main():
             signs.append(dict(t=s['t'], x=r1(px), y=r1(py), nx=round(nx, 4), ny=round(ny, 4), z=s['z'], h=s['h'], w=r1(ww), st=s.get('st', 0)))
         oh = t.get('opening_hours')
         addr = ' '.join(v for v in (t.get('addr:street'), t.get('addr:housenumber')) if v) or None
-        sh = dict(id=S['id'], name=S['name'], art=S['art'], osm='w%d' % w, oh=oh, addr=addr, col=S.get('col', 'hell'),
+        sh = dict(id=S['id'], name=S['name'], art=S['art'], osm='w%d' % w, oh=oh, addr=addr, col=S.get('col', 'hell'), roof=S.get('roof', 'grau'),
                   parts=out_parts, annex=annexes, doors=doors, signs=signs, h_src=S.get('h_src', 'ethos'))
         if S.get('stadt'):
             skip_stadt.append(list(S['stadt']))
@@ -580,6 +594,10 @@ def main():
             sh['board'] = dict(x=r1(px), y=r1(py), nx=round(nx, 4), ny=round(ny, 4), title=B['title'], names=B['names'])
         # the car parks: bays on both sides of each aisle OSM draws through them
         site = [footprint.buffer(3.0)]
+        if S.get('yard'):
+            Y = S['yard']
+            loop = unary_union([LineString(way_pts(w)).buffer(Y['w'], cap_style=2) for w in Y['ways'] if w in ways])
+            site.append(unary_union([loop, footprint]).convex_hull)
         for lid in S.get('lots', []):
             if lid not in ways:
                 print('no lot', lid, flush=True)
@@ -664,7 +682,21 @@ def main():
     for ids, g in comps:
         for g1 in (g.geoms if hasattr(g, 'geoms') else [g]):
             if g1.area >= 200:
-                pads.append(dict(shops=sorted(ids), f=flat(g1.simplify(0.5))))
+                # the streets beside the pad (within 25 m): their level is the street level the car park meets
+                near = []
+                zone = g1.buffer(25.0)
+                for Ls, wd, wid in roads:
+                    if not Ls.intersects(zone):
+                        continue
+                    q = Ls.intersection(zone)
+                    for part in (q.geoms if hasattr(q, 'geoms') else [q]):
+                        if part.geom_type == 'LineString' and part.length > 4:
+                            near.append([r1(v) for c in part.coords for v in c])
+                # notches and needles of the outline closed and cut (a wall along the pad's edge follows it)
+                g2 = opened(g1.buffer(1.5, join_style=2).buffer(-1.5, join_style=2), 1.0)
+                if hasattr(g2, 'geoms'):
+                    g2 = max(g2.geoms, key=lambda q: q.area)
+                pads.append(dict(shops=sorted(ids), f=flat(g2.simplify(0.5)), roads=near))
     # every other ETHOS building that stands in a shop's footprint, on a car park or under the drive-in lane
     allfoot = []
     for sh in shops_out:
