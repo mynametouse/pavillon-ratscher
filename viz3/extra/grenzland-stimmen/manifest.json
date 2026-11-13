@@ -18,7 +18,7 @@
    "gl_vopo": "de-AT-JonasNeural",
    "gl_abv": "de-DE-ConradNeural",
    "gl_boellermann": "de-CH-JanNeural",
-   "gl_wirt": "de-DE-FlorianMultilingualNeural",
+   "gl_wirt": "de-DE-KillianNeural",
    "gl_bursche": "de-AT-JonasNeural",
    "gl_maedchen": "de-DE-AmalaNeural",
    "gl_erna": "de-DE-AmalaNeural",
@@ -1082,7 +1082,14 @@
    "id": "gl_wirt_166yqq9",
    "text": "Rostbratwurst! Frisch vom Rost, mit Senf, drei Euro!",
    "file": "voice/gl/gl_wirt_166yqq9.mp3",
-   "dur": 4.24
+   "dur": 5.09
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_92m8a2",
+   "text": "Mit Senf. Natürlich mit Senf. Alles andere wäre eine Beleidigung.",
+   "file": "voice/gl/gl_wirt_92m8a2.mp3",
+   "dur": 5.94
   },
   {
    "who": "gl_bursche",
@@ -2644,6 +2651,20 @@
    "text": "Im Thüringer Wald wurde ein Funkloch entdeckt, das größer ist als das Netz drumherum.",
    "file": "voice/gl/gl_r_grenzland_1wss21r.mp3",
    "dur": 5.1
+  },
+  {
+   "who": "gl_r_grenzland",
+   "id": "gl_r_grenzland_3nvrfw",
+   "text": "Wetter: Es wird, wie es wird. Näheres, wenn es da ist.",
+   "file": "voice/gl/gl_r_grenzland_3nvrfw.mp3",
+   "dur": 4.57
+  },
+  {
+   "who": "gl_r_grenzland",
+   "id": "gl_r_grenzland_10x0isz",
+   "text": "Verkehr: Auf dem Feldweg bei der Klinge kommt Ihnen ein Traktor entgegen. Er hat Vorfahrt. Immer.",
+   "file": "voice/gl/gl_r_grenzland_10x0isz.mp3",
+   "dur": 6.73
   }
  ]
 }
