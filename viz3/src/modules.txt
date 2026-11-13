@@ -280,6 +280,8 @@ zukunft/zk_modus.js         # feat/zukunft the mode: panel, year slider, A/B, pr
 # feat/zeitreise: „Zeitreise durch vier Welten“ below this line (chronicle data, the world's look and sound, the regie, the workshop mode)
 zukunft/zk_chronik.js       # feat/zeitreise the chronicle: worlds, chapters, events, STATE v1 by year, numbers with sources, voice lines – pure (ZKCHRONIK)
 zukunft/zk_zeitwelt.js      # feat/zeitreise-welt what the chronicle's states look and sound like: slopes, logging, heating house, wind turbine, heavy rain, blackout (ZKZEITWELT)
+zukunft/zk_medien_data.js    # feat/zeitreise-medien the media script: phone messages, radio news, verified real videos – pure data (ZKMEDIENDATA)
+zukunft/zk_medien.js         # feat/zeitreise-medien phone transitions, radio as sound bridge, real videos after a click (ZKMEDIEN)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
