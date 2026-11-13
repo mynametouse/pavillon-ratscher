@@ -39,9 +39,9 @@ NIR_CON_PEAK, NIR_CON_MEAN, TEX_CON = 152.0, 125.0, 0.09   # conifer: crown top 
 R_MIN = 0.9          # m, smaller crowns are dropped
 H_TREE = 2.5         # m in the height model nDOM1: something woody stands here
 H_MEAS = 1.5         # m: from here on a crown's height counts as measured
-H_NONE = 0.4         # m: below this nothing woody stood here when the laser flew
 H_SHRUB = 3.0        # m: a measured crown lower than this is a shrub or a very small tree
-R_NEW_MAX = 2.5      # m: an image crown wider than this without any height in the laser data is no tree planted since
+DENSE_MIN = 300      # cells (m²) of closed laser canopy from which on the laser's tree tops are used
+R_NEW_MAX = 2.5      # m: crowns wider than this without a single laser return are counted (statistics only)
 R_SHRUB = 1.6        # m, below this a crown counts as a shrub or a very small tree
 BAND = 6.0           # m around a tile kept for the merge of neighbours
 GM_CELL = 2.0        # m, cell of the green mask
@@ -230,10 +230,12 @@ def chm_tops(chm1, con1):
     return c[:, 0], c[:, 1], f
 
 
-def crowns(cir, wood, px=PX, chm1=None, skip1=None):
+def crowns(cir, wood, px=PX, chm1=None, skip1=None, dense1=None):
     """watershed crowns -> label image (0 = none), the number of crowns, how many of them start at a top of the height model
     (labels 1..n_chm). chm1: the object-height model of the same box at 1 m (NaN = no data), or None; skip1: cells of that
-    grid whose height is not a tree's (walls and roofs: a crown leaning over a house must not get the eaves as its top)."""
+    grid whose height is not a tree's (walls and roofs: a crown leaning over a house must not get the eaves as its top);
+    dense1: cells where the laser saw a closed canopy – only there its tops are taken (a bare broadleaf crown gives a few
+    scattered returns: no top to rely on, the image's bright tops serve there)."""
     from scipy import ndimage as ndi
     from skimage.feature import peak_local_max
     from skimage.segmentation import watershed
@@ -259,7 +261,11 @@ def crowns(cir, wood, px=PX, chm1=None, skip1=None):
         up = np.repeat(np.repeat(fs, k, 0), k, 1)[:wood.shape[0], :wood.shape[1]]
         ups = ndi.gaussian_filter(up, 2.5)
         dom = wood & (ups >= H_TREE - 0.5)
+        if dense1 is not None:
+            dom &= np.repeat(np.repeat(dense1, k, 0), k, 1)[:wood.shape[0], :wood.shape[1]]
         for r1, c1 in zip(tr, tc):
+            if dense1 is not None and not dense1[r1, c1]:
+                continue
             y, x = r1 * k + k // 2, c1 * k + k // 2
             if not (0 <= y < wood.shape[0] and 0 <= x < wood.shape[1]):
                 continue
@@ -361,7 +367,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     bld, road, water = U.raster(bb, PX)
     forest = U.forest_mask(bb, PX)
     k5 = int(round(1.0 / PX))
-    chm1 = chm = raw1 = near_b = None
+    chm1 = chm = raw1 = near_b = dense1 = None
     if ndom is not None:
         w1 = ndom.window(bb)
         if np.isfinite(w1).mean() > 0.02:
@@ -375,10 +381,16 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
             chm1[~np.isfinite(w1)] = np.nan
             chm = np.repeat(np.repeat(chm1, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]     # on the image grid, NaN = no data
             near_b = ndi.distance_transform_edt(~bld) * PX < 1.7                    # within 2 m of a wall:
+            # where the laser saw a closed canopy over at least 300 m² (conifers, closed stands – not one dense crown or a hedge
+            # between bare ones: mixing the two kinds of tops inside one crown would cut it up)
+            dense1 = ndi.uniform_filter((raw1 >= H_TREE).astype(np.float32), 5) >= 0.5
+            dl, dn = ndi.label(dense1)
+            if dn:
+                dense1 = (np.bincount(dl.ravel(), minlength=dn + 1) >= DENSE_MIN)[dl] & dense1
     # in the mapped forest shaded canopy counts too (slopes turned away from the sun; there is no lawn to mistake it for)
     wood, nd, tex, veg = woody(cir, water, shade_ok=forest,                     # there the laser cannot tell lawn from tree
                                chm=np.where(near_b, np.nan, chm) if chm is not None else None)
-    seg, n, n_chm = crowns(cir, wood, chm1=chm1)
+    seg, n, n_chm = crowns(cir, wood, chm1=chm1, dense1=dense1)
     st = {'kronen_roh': int(n), 'kronen_aus_hoehenmodell': int(n_chm), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean()),
           'ndom_anteil': float(np.isfinite(chm).mean()) if chm is not None else 0.0}
     out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk', 'hm', 'hcap')}
@@ -423,6 +435,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
             o = np.lexsort((val1, lab1))
             lab1, val1 = lab1[o], val1[o]
             cnt = np.bincount(lab1, minlength=n + 1)
+            nhit = np.bincount(lab1, weights=(val1 >= 1.0), minlength=n + 1)      # cells of the crown with a return above 1 m
             end = np.cumsum(cnt)                                   # one past the last (highest) cell of each label
             h2 = hfar.copy()
             big = np.flatnonzero(cnt[1:] >= 4) + 1
@@ -466,33 +479,37 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
             con = peak[k] < NIR_CON_PEAK and mnir[k] < NIR_CON_MEAN and mtex[k] > TEX_CON
             kd = (2 if inf else 1) if con else 0
             hm = hcap = float('nan')
+            shrub_by_size = r < R_SHRUB and not inf
             if chm is not None and has[k] > 0.5:
-                # the height: the highest (median-filtered) cell under the crown, away from walls where the crown reaches there
-                hm = float(h2[k]) if far_area[k] >= 1.0 else float(hall[k])
-                if far_area[k] < 1.0 and hm > 1.8 * float(rule_height(r, kd)):
-                    hm = float('nan')   # a small crown against a wall: the cell shows the house, not the tree
-                elif hm >= H_MEAS:
+                # The laser flew without leaves: a bare broadleaf crown returns a few scattered points or none, a conifer, a
+                # hedge or a closed stand many. So the laser never proves that a crown of the image is NOT there. Its height
+                # counts as measured when it saw enough of the crown: at least three cells with a return, and either it saw the
+                # crown densely (40 % of its cells) or the height fits the crown (at least 0.6 of the rule's estimate – below
+                # that the returns came from the lower branches). Height = second highest raw cell, away from walls.
+                hx = float(h2[k]) if far_area[k] >= 1.0 else float(hall[k])
+                rule = float(rule_height(r, kd))
+                share = float(nhit[k + 1]) / max(1.0, float(cnt[k + 1]))
+                if far_area[k] < 1.0 and hx > 1.8 * rule:
+                    pass                # a small crown against a wall: the cell shows the house, not the tree
+                elif nhit[k + 1] >= 3 and hx >= H_MEAS and (share >= 0.4 or hx >= 0.6 * rule):
+                    hm = hx
                     n_meas += 1
-                    if hm < H_SHRUB and not inf:
-                        kd = 30
-                elif hm < H_NONE and r >= R_NEW_MAX and not inf:
-                    drop_nohi += 1      # wide, textured green with no height at all when the laser flew: tall grass, perennials
-                    continue            # or dappled shade on lawn – not a tree planted since
+                    shrub_by_size = False
+                    if hx < H_SHRUB and share >= 0.4 and not inf:
+                        kd = 30         # seen densely and low: a shrub, a hedge, a very small tree
                 else:
-                    # nothing tall here when the laser flew: a shrub, or a tree planted or grown since – small, height estimated
-                    young += 1
-                    hcap = 5.0
-                    if r < R_SHRUB or r >= R_NEW_MAX:
-                        kd = 30
-            elif r < R_SHRUB and not inf:
-                kd = 30                 # no height model: small crowns outside the forest count as shrubs
+                    young += 1          # too little of it in the laser data: height estimated as without the model
+                    if r >= R_NEW_MAX and nhit[k + 1] == 0:
+                        drop_nohi += 1  # (counted only: a wide crown without a single return – bare tree, or tall grass?)
+            if shrub_by_size:
+                kd = 30                 # small crowns outside the forest count as shrubs
             if inf:
                 fl |= F_FOREST
             out['E'].append(E); out['N'].append(N); out['r'].append(r); out['kind'].append(kd); out['flags'].append(fl)
             out['nd'].append(mnd[k]); out['nir'].append(mnir[k]); out['tex'].append(mtex[k]); out['red'].append(mred[k]); out['grn'].append(mgrn[k])
             out['pk'].append(peak[k]); out['hm'].append(hm); out['hcap'].append(hcap)
-        st.update(verworfen_klein=drop_small, verworfen_dach_fahrbahn=drop_roof, geruecket=moved, verworfen_ohne_hoehe=drop_nohi,
-                  hoehe_gemessen=n_meas, ohne_hoehe_im_laser_behalten=young)
+        st.update(verworfen_klein=drop_small, verworfen_dach_fahrbahn=drop_roof, geruecket=moved, hoehe_gemessen=n_meas,
+                  laser_zu_duenn_hoehe_geschaetzt=young, breite_krone_ohne_laser_treffer=drop_nohi)
     T = {k: np.array(v, float) for k, v in out.items()}
     T['kind'] = T['kind'].astype(int)
     T['flags'] = T['flags'].astype(int)

@@ -4,7 +4,7 @@
 # ndom:    welche 1-km-Kacheln des Höhenmodells nDOM1 über easygeodata geholt werden (Prioritäten aus tools/suhl/out/bestand/kacheln.csv):
 #          P1 (8 um das Zentrum) | P1,P2 (Kernstadt) | P1,P2,P3 (ganze Gemeinde, 193 Kacheln, 190 MB) | leer = ohne Höhenmodell
 # ohne:    Schritte weglassen (baeume, wald, flaechen), durch Komma getrennt
-lauf=3
+lauf=4
 gebiet=zentrum
 version=1
 ndom=P1
