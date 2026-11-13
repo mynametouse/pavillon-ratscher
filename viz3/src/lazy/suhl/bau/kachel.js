@@ -310,6 +310,15 @@ export function kachel(m, F) {
         for (const t of b.tris) t.kc = [t.kc[0], ...rc];
         b.trim = rc;
       }
+      if (mk.rise > 0 && b.r !== 0) {
+        const done = new Set();
+        for (const t of b.tris)
+          for (const v of t.v)
+            if (!done.has(v) && v[2] > b.e + 0.05) {
+              v[2] = b.e + (v[2] - b.e) * mk.rise;
+              done.add(v);
+            }
+      }
       b.mark = mk;
     }
     if (pt && pt.col) b.st.col = linC(rgb(pt.col), 0.82);

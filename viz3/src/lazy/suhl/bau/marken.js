@@ -4,6 +4,7 @@
 // the scratch branch ref/suhl-fotos, credits there in commons/CREDITS.md) and checked against the model seen from the same place;
 // colours as they read in daylight (sRGB). A stand-in until the pipeline writes them into the records themselves (field S per side).
 // mat: putz, schiefer (slate all over), schiefer_og (slate above a plastered ground floor), fachwerk, klinker, platte.
+// rise: the roof above the eave this many times higher (a roof the fit from the aerial photo made too flat).
 export const MARKEN = {
   // Marktplatz
   DETHL57P00006G2R: {
@@ -12,6 +13,7 @@ export const MARKEN = {
     surr: true,
     frame: 0,
     roof: '#3b3e44',
+    rise: 1.5, // the hipped roof steeper than the fit from the aerial photo (the photos: a tall dark roof under the turret)
     gauben: true,
     foto: 'Rotes Rathaus Suhl 2025-02-24 (Strubbl, CC BY-SA 4.0)',
   },
