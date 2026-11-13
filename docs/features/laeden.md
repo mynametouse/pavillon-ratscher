@@ -82,11 +82,12 @@ keine Markenschrift).
   McDonald’s und Lidl – `welt/schleusingen.js` lässt sie aus (`LAEDEN.skipStadt`). Mit `?nolaeden` ist alles wie vorher.
 - **Laden und Freigeben**: Daten (33 KB), sobald man näher als 1,6 km kommt; drei Gruppen (Suhler Straße Nord, McDonald’s/Lidl, REWE) werden
   näher als 900 m gebaut (Telefone 650 m) und jenseits von 1150 m freigegeben; die kleinen Dinge (Markierung, Bordsteine, Laternen,
-  Wagenboxen, Solarfelder) nur näher als ~650 m sichtbar. Gruppe Nord: 16 Meshes, ~19 000 Dreiecke, ~0,2–0,3 s Bauzeit.
+  Wagenboxen, Solarfelder) nur näher als ~650 m sichtbar. Gruppe Nord: 19 Meshes, ~24 000 Dreiecke, ~0,3 s Bauzeit.
 - **Keine neuen Shader-Programme**: Wände und Dächer mit den Materialien des Dorfs (`world/village.js`), alles Übrige aus Eckfarben mit dem
   Material der parkenden Autos (`DMOD.mat`), Asphalt mit dem Programm des Pflasters des Dorfs (`v16e-kit1.3`, Asphaltfoto der Texturen),
   Pflaster mit `VPROPS.mat.pave`, Markierung mit dem Programm der Straßenfarbe, Schrift als **ein Canvas-Atlas je Gruppe** mit dem Programm
-  der Schilder der Stadt, Fenster und Lichtfelder mit dem Programm des Laternenglases (nachts hell, wenn der Laden offen hat).
+  der Schilder der Stadt, Fenster und Lichtfelder mit dem Programm des Laternenglases (nachts warm, wenn der Laden offen hat, sonst
+  nur ein Nachtlicht), Stützmauern und ihre Abdeckung mit dem Material der parkenden Autos.
 
 ## Daten neu erzeugen
 
