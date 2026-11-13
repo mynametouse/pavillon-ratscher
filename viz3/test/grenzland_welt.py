@@ -230,8 +230,8 @@ with lib.browser() as b:
             ck(f'ereignis {k}: starts at the player', ok and info and info['name'] == k, str((ok, info, E("GLEREIGNIS.err"))))
             # its point on the radar
             steps(0.5)
-            bl = J("(GLKARTE.blips ? GLKARTE.blips() : []).filter(b => b.k === 'ort').map(b => b.name)")
-            ck(f'ereignis {k}: a point on the radar', len(bl) > 0, str(bl))
+            bl = J("(GLKARTE.blips ? GLKARTE.blips() : []).filter(b => b.k === 'ereignis').map(b => b.name)")
+            ck(f'ereignis {k}: a point on the radar', len(bl) == 1, str(bl))
             # let it show (figures load), look at it
             for _ in range(10): steps(0.3); time.sleep(0.4)
             info = J("GLEREIGNIS.debug.info()")

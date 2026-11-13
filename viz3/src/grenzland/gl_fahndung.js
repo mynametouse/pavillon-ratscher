@@ -1230,9 +1230,9 @@ export const GLFAHNDUNG = (() => {
     want: () => GL.on && !!S.blauU && dark(),
     on: ls => {
       const l = ls[0];
-      l.color.setHex(0x2a5cff);
-      l.distance = 24;
-      l.decay = 1.4;
+      l.color.setHex(0x2a5cff); // (feat/grenzland-licht finds this light by its colour)
+      l.distance = 12;
+      l.decay = 2;
       l.intensity = 0;
     },
     tick: ls => {
@@ -1243,7 +1243,12 @@ export const GLFAHNDUNG = (() => {
         return;
       }
       l.position.set(u.x, (u.c.z || 0) + 2.1, -u.y);
-      l.intensity = Math.floor((GLAUTO.blink || 0) * 5.5) % 2 ? 30 : 4;
+      // (the beacons' own rhythm, feat/grenzland-licht: twice left, twice right)
+      l.intensity = GLAUTO.blauPuls
+        ? 46 * Math.max(...GLAUTO.blauPuls(GLAUTO.blink || 0))
+        : Math.floor((GLAUTO.blink || 0) * 5.5) % 2
+          ? 30
+          : 4;
     },
   });
   // ---- caught ----
@@ -1349,7 +1354,8 @@ export const GLFAHNDUNG = (() => {
     if (!S.stimme) {
       S.stimme = true;
       try {
-        STIMME.person('gl_funk', { name: 'Funk', g: 'm', age: 46 });
+        // (the dispatcher is a woman – as the recordings of feat/grenzland-stimmen have her)
+        STIMME.person('gl_funk', { name: 'Funk', g: 'f', age: 41 });
       } catch (e) {}
     }
     // (the looks and the radio's description must never stop the police)

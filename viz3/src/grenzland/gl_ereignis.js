@@ -14,6 +14,7 @@
 // The people are figures of grenzland/gl_fig.js (their cast and clothes are added to GLDATA at load – nothing of the lead's data
 // changes), the cars of grenzland/gl_auto.js, the props merged meshes in the traffic's material (no new shader program, no lamp).
 //   GLEREIGNIS.start(name) · stop() · aktiv() → name | '' · linien() → [[who, text], …] · debug.start(name) (tests: at the player)
+//   The radar gets { x, y, k: 'ereignis', name } (the lead's radar draws its own sign for it).
 import * as THREE from 'three';
 import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -1060,7 +1061,7 @@ export const GLEREIGNIS = (() => {
   // the radar: where it is (a letter on the map)
   GLKARTE.src(out => {
     const E = S.E;
-    if (E && heute()) out.push({ x: E.x, y: E.y, k: 'ort', name: E.def.radar });
+    if (E && heute()) out.push({ x: E.x, y: E.y, k: 'ereignis', name: E.def.radar });
   });
   // ------------------------------------------------------------------ per frame ------------------------------------------------------------------
   // where the player is, for the plan: in the town, in a village, out on the land
