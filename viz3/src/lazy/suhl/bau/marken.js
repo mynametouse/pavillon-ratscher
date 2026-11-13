@@ -190,6 +190,46 @@ export const MARKEN = {
     col: '#9c4b36',
     roof: '#3c3f45',
   },
+  // Bahnhofstraße
+  DETHL57P00006FJ6: {
+    name: 'Bahnhofstraße 16',
+    mat: 'putz', // a hall in the records – a two-storey plastered house with an attic storey in the photo
+    col: '#e6cf7c',
+    frame: 1,
+    foto: 'Bahnhofstraße 16, 98527 Suhl (Kai Kemmann, CC BY-SA 4.0)',
+  },
+  DETHL57P00006FZK: {
+    name: 'Stadtbücherei, Bahnhofstraße 10',
+    col: '#a9bdb6', // a curtain wall of green and blue glass: its tone
+    frame: 3,
+    balk: false,
+    foto: 'Stadtbücherei Suhl, Bahnhofstraße 10 (Kai Kemmann, CC BY-SA 4.0)',
+  },
+  // Senfte
+  DETHL57P00006FL9: {
+    name: 'Senfte 4',
+    mat: 'fachwerk',
+    col: '#f1efe9',
+    roof: '#8b4734',
+    gauben: true,
+    foto: 'Gebäude Senfte 4 Suhl 2023-04-09 (Strubbl, CC BY-SA 4.0)',
+  },
+  DETHL57P00006FLB: {
+    name: 'Senfte 15',
+    mat: 'klinker',
+    col: '#9a4632',
+    roof: '#5e3b33',
+    foto: 'Gebäude Senfte 15 Suhl 2024-08-10 (Strubbl, CC BY-SA 4.0)',
+  },
+  DETHL57P00006FLK: { name: 'Senfte 15', mat: 'klinker', col: '#9a4632', roof: '#5e3b33' },
+  // Pfarrstraße
+  DETHL57P00006FSI: {
+    name: 'Pfarrstraße 13',
+    col: '#ece6d6',
+    roof: '#9a3e2d',
+    gauben: true,
+    foto: 'Gebäude Pfarrstraße 13 Suhl 2023-12-26 (Strubbl, CC BY-SA 4.0)',
+  },
 };
 // a material word → the style of the facade program (lazy/suhl/bau/haus.js ST)
 export const MARK_ST = { putz: 0, platte: 1, schiefer: 2, schiefer_og: 3, fachwerk: 5, fachwerk_og: 6, klinker: 0 };
