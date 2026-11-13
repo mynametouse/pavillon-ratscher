@@ -248,6 +248,13 @@ window.SAVE = SAVE;
     null,
     v => v === null || (obj(v) && v.v === 1)
   ); // feat/tiere (tiere/tiere_hund.js)
+  K(
+    'pav-cockpit-v1',
+    'Grafik beim Bewegen, Bildrate, Spiegel und Karte im Auto',
+    'json',
+    null,
+    v => v === null || (obj(v) && v.v === 1)
+  ); // feat/cockpit (vehicles/cockpit_set.js)
   for (const h of [
     'pav-v14',
     'pav-v15',

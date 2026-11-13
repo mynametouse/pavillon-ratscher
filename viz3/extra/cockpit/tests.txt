@@ -1,0 +1,2 @@
+# feat/cockpit: the inside of the cars and the graphics while moving (docs/features/cockpit.md), one test name per line as for viz3/test/run.py
+cockpit

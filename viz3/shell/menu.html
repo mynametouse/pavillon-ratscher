@@ -102,9 +102,17 @@
             <div class="mrow" data-ptr="fine"><span>Maus</span><div class="mseg" id="lockseg"><button type="button" data-lock="1" aria-pressed="true" title="Nach einem Klick ins Bild dreht die Maus den Blick, Klick: handeln, Esc: Menü">Steuert den Blick</button><button type="button" data-lock="0" aria-pressed="false" title="Mit gedrückter Taste ziehen, um dich umzuschauen">Ziehen</button></div></div>
             <p class="mnote" id="fignote" hidden>Die Figur wird noch geladen.</p>
           </section>
+          <!-- feat/cockpit: Grafik – the quality (moved here from „Mehr“), „Beim Bewegen“ (render/render.js MOTION) and the frame-rate counter;
+               wired by vehicles/cockpit_set.js (texts and explanations there) -->
+          <section class="msec" aria-label="Grafik"><h3>Grafik</h3>
+            <div class="mrow"><span>Beim Bewegen</span><div class="mseg" id="motseg"><button type="button" data-mot="auto" aria-pressed="true">Auto</button><button type="button" data-mot="voll" aria-pressed="false">Voll</button><button type="button" data-mot="leicht" aria-pressed="false">Leicht</button><button type="button" data-mot="mittel" aria-pressed="false">Mittel</button><button type="button" data-mot="stark" aria-pressed="false">Stark</button></div></div>
+            <p class="mnote" id="motnote"></p>
+            <div class="mlist mlist2">
+              <button class="tog" id="qualbtn" aria-pressed="true" title="Grafikqualität (wird beim Laden an das Gerät angepasst): hoch – mittel – schnell">Qualität<span>hoch</span></button>
+              <button class="tog" id="fpsbtn" aria-pressed="false" title="Kleine Anzeige oben in der Mitte: gezeichnete Bilder je Sekunde und die Stufe beim Bewegen">Bildrate<span>aus</span></button>
+            </div></section>
           <section class="msec" aria-label="Mehr"><h3>Mehr</h3><div class="mlist">
               <button class="tog" id="kibtn" aria-pressed="false" title="Mit Hubert, Ronald und den Leuten im Dorf frei reden – per Stimme, sie antworten mit KI (eigener Claude-Schlüssel)">KI-Gespräche<span>einrichten</span></button>
-              <button class="tog" id="qualbtn" aria-pressed="true" title="Grafikqualität (wird beim Laden an das Gerät angepasst): hoch – mittel – schnell">Grafik<span>hoch</span></button>
               <button class="tog" id="collbtn" aria-pressed="true" title="Wände und Möbel halten dich auf">Kollision<span>an</span></button>
               <button class="tog" id="fullbtn" aria-pressed="false" title="Vollbild: Kopfzeile ausblenden, Modell über den ganzen Bildschirm">Vollbild</button>
             </div></section>
