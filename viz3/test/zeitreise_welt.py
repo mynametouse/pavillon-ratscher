@@ -255,6 +255,13 @@ def run():
             a, c = region('split-hang-links'), region('split-hang-rechts')
             print('split slopes', a, c, flush=True)
             sheet('split', names, cols=2)
+            # the regie's takes at the Klinge: one world after the other on the whole screen (set(world, null)) – the near family forest
+            # (the first version's CPU tints) follows the world shown
+            E("ZKZEITWELT.set(ZKCHRONIK.state('allein', 2034.5), null)"); steps(0.2)
+            m1 = J("ZKWELT.S.state && ZKWELT.S.state.forest ? ZKWELT.S.state.forest.mode : null")
+            E("ZKZEITWELT.set(ZKCHRONIK.state('gewappnet', 2034.5), null)"); steps(0.2)
+            m2 = J("ZKWELT.S.state && ZKWELT.S.state.forest ? ZKWELT.S.state.forest.mode : null")
+            ck('takes: the forest at the Klinge follows the world shown (Allein natur → Gewappnet umbau)', m1 == 'natur' and m2 == 'umbau', f'{m1} → {m2}')
 
         if 'ende' in want:
             new = J("GAME.R.info.programs.filter(p => !__p1.has(p.cacheKey)).map(p => p.name + ' …' + String(p.cacheKey).slice(-40))")

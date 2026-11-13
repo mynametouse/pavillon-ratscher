@@ -374,6 +374,16 @@ export const ZKZEITWELT = (() => {
     S.split = !!R;
     cueReset(S.L, 'L');
     cueReset(S.R || S.L, 'R');
+    // a take of the other world (the regie shows one world after the other, set(world, null)): its cues start afresh
+    const wk = S.L && S.L.forest ? S.L.forest.regrow + (S.R ? '|' + (S.R.forest && S.R.forest.regrow) : '') : '';
+    if (wk !== S.wkey) {
+      if (S.wkey !== undefined && !S.R) {
+        CUE.L = {};
+        CUE.R = {};
+        CUE.ev = { L: null, R: null };
+      }
+      S.wkey = wk;
+    }
     S.drawn = null;
     if (sig === S.sig) return false;
     S.sig = sig;
@@ -398,7 +408,8 @@ export const ZKZEITWELT = (() => {
   function cue(id, side, info) {
     try {
       const ev = info && (info.ev && info.ev.id ? info.ev.id : info.ev);
-      const sides = side === 'R' ? ['R'] : side === 'L' ? ['L'] : ['L', 'R'];
+      // one world on the screen (a take of the regie: set(thatWorld, null)): its cues are that world's whatever side they name
+      const sides = !S.split || side === 'both' || !side ? ['L', 'R'] : side === 'R' ? ['R'] : ['L'];
       for (const sd of sides) {
         if (ev && CUE.ev[sd] !== ev) {
           CUE[sd] = {};
@@ -466,7 +477,8 @@ export const ZKZEITWELT = (() => {
     S.mixArgs = [L, R, side];
     const mL = mixOf(L, 'L'),
       mR = mixOf(R || null, 'R');
-    S.mix = side === 'R' ? mR : side === 'L' || !mR ? mL : avgMix(mL, mR);
+    // one world (R null, also a take of the right world): its own mix whatever side is named
+    S.mix = !R ? mL : side === 'R' ? mR : side === 'L' ? mL : avgMix(mL, mR);
     ZKTON.set(S.mix);
     return S.mix;
   }
