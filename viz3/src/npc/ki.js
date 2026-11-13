@@ -306,6 +306,17 @@ export const KI = (() => {
       themen: c.pa.themen(),
       meinung: w.meinung,
     };
+    // (feat/grenzland-partner) an adapter that tells the situation itself (lage() → lines): its lines instead of the place, the hand, the
+    // garden's building phase and the base game's tasks (or its own aufgaben())
+    if (c.pa.lage) {
+      try {
+        s.lage = c.pa.lage() || [];
+      } catch (e) {
+        s.lage = [];
+      }
+      s.ort = s.haelt = s.phase = '';
+      s.aufgaben = c.pa.aufgaben ? c.pa.aufgaben() : [];
+    }
     if (first) {
       s.begruessung = c.greet || '';
       s.neu = w.neu.slice();
@@ -509,9 +520,10 @@ export const KI = (() => {
       if (r.stop_reason !== 'end_turn' || !txt) return;
       const g = K.applySummary(S.mem, c.who, JSON.parse(txt.text), day());
       // the village talks: two or three others hear it (Hubert and Ronald tell each other at the table instead)
-      if (g && g.spread) {
+      const P0 = K.people();
+      if (g && g.spread && !(P0[c.who] && P0[c.who].klatsch === false)) {
         const others = Object.keys(PERS)
-          .filter(k => k !== c.who)
+          .filter(k => k !== c.who && !(P0[k] && P0[k].klatsch === false))
           .sort(() => Math.random() - 0.5)
           .slice(0, 3);
         K.spread(S.mem, c.who, g.spread, others, g.meinung, day());
@@ -900,30 +912,36 @@ export const KI = (() => {
     EAR,
     // another person to talk to (feat/verkehr: strollers, drivers): { key, name, g, age, role, sheet, start, pos(), mouth(on), sub(text),
     // show(text), host() (the panel for the microphone), close(), line() } – then KI.talk(key) when its panel opens, KI.ended(key) when it closes
+    // (feat/grenzland-partner, optional – without them everything is as before:) themen() / quest(k) – doings through the tool
+    // spielaufgabe; lage() → lines for <lage> instead of the place, the hand, the building phase and the base tasks, aufgaben() → [text];
+    // ohne: [tool names] left out; vertraut: knows the player for years; klatsch: false – tells nobody and hears nothing from the village
     person(p) {
       if (!p || !p.key || PERS[p.key]) return PERS[p && p.key] || null;
-      return register(
-        p.key,
-        {
-          pos: p.pos || (() => [P.x, P.y]),
-          mouth: p.mouth || (() => {}),
-          sub: p.sub || (() => {}),
-          show: p.show || (() => {}),
-          host: p.host || (() => null),
-          close: p.close || (() => end(PERS[p.key])),
-          line: p.line || (() => ''),
-        },
-        {
-          name: p.name,
-          sheet:
-            p.sheet ||
-            `Du bist ${p.name}${p.age ? ', ' + p.age + ' Jahre' : ''}${p.role ? ', ' + p.role : ''}, unterwegs in der Gegend.`,
-          g: p.g === 'f' ? 'f' : 'm',
-          age: p.age || 45,
-          start: Number.isFinite(p.start) ? p.start : 50,
-          intro: p.intro || 'Jemand spricht dich an – jemand aus dem Garten bei Hubert und Ronald in Ratscher.',
-        }
-      );
+      const a = {
+        pos: p.pos || (() => [P.x, P.y]),
+        mouth: p.mouth || (() => {}),
+        sub: p.sub || (() => {}),
+        show: p.show || (() => {}),
+        host: p.host || (() => null),
+        close: p.close || (() => end(PERS[p.key])),
+        line: p.line || (() => ''),
+      };
+      for (const k of ['themen', 'quest', 'lage', 'aufgaben']) if (typeof p[k] === 'function') a[k] = p[k];
+      const prof = {
+        name: p.name,
+        sheet:
+          p.sheet ||
+          `Du bist ${p.name}${p.age ? ', ' + p.age + ' Jahre' : ''}${p.role ? ', ' + p.role : ''}, unterwegs in der Gegend.`,
+        g: p.g === 'f' ? 'f' : 'm',
+        age: p.age || 45,
+        start: Number.isFinite(p.start) ? p.start : 50,
+        intro: p.intro || 'Jemand spricht dich an – jemand aus dem Garten bei Hubert und Ronald in Ratscher.',
+      };
+      if (typeof p.themen === 'function') prof.quests = true;
+      if (Array.isArray(p.ohne)) prof.ohne = p.ohne.slice();
+      if (p.vertraut) prof.vertraut = true;
+      if (p.klatsch === false) prof.klatsch = false;
+      return register(p.key, a, prof);
     },
     talk: key => {
       UI.hint(PERS[key]);
@@ -934,6 +952,8 @@ export const KI = (() => {
       UI.hint(null);
     },
     people: () => Object.keys(PERS),
+    // (feat/grenzland-partner, tests) the <lage> a talk with this person would get now – no request is made
+    lage: key => (PERS[key] ? K.situation(sit({ pa: PERS[key], who: key, greet: '' }, false)) : ''),
     // tests: settings without the panel ({ key, base, hands, on, voice: 'browser' | 'eleven' | 'aus' | … })
     configure(o = {}) {
       if ('key' in o) SAVE.set(KK, (S.key = o.key || ''));

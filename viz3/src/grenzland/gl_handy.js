@@ -237,6 +237,108 @@ export const GLHANDY = (() => {
       ['gerhard', 'Ach so. Am Telefon hör ich schlecht, Junge. Komm vorbei, dann reden wir.'],
     ],
   };
+  // the partner's answer goes by where the partner really is (Falko 13.11. 20:33: "sie sagt, sie wäre im Garten, dabei steht sie vor
+  // mir in Schleusingen"): in sight – within NAH m, or riding along – one is told so; else the place under the partner's feet
+  const NAH = 30;
+  const WO = {
+    sarah: {
+      nah: [
+        ['sarah', 'Falko, ich steh doch hier. Du kannst auch einfach mit mir reden.'],
+        ['ich', 'Wollte nur testen, ob das Ding geht.'],
+        ['sarah', 'Geht. Leg auf.'],
+      ],
+      garten: RUF.sarah,
+      dorf: 'Ja? Ich bin im Dorf.',
+      schleusingen: 'Ja? Ich bin noch in Schleusingen.',
+      talsperre: 'Ja? Ich bin an der Talsperre.',
+      klinge: 'Ja? Ich bin im Wald an der Klinge. Hier ist kaum Netz.',
+      unterwegs: 'Ja? Ich bin unterwegs.',
+    },
+    falko: {
+      nah: [
+        ['falko', 'Sarah, ich steh doch hier. Du kannst auch einfach mit mir reden.'],
+        ['ich', 'Wollte nur testen, ob das Ding geht.'],
+        ['falko', 'Geht. Leg auf.'],
+      ],
+      garten: RUF.falko,
+      dorf: 'Na? Ich bin im Dorf.',
+      schleusingen: 'Na? Ich bin noch in Schleusingen.',
+      talsperre: 'Na? Ich bin an der Talsperre.',
+      klinge: 'Na? Ich bin im Wald an der Klinge. Hier ist kaum Netz.',
+      unterwegs: 'Na? Bin unterwegs.',
+    },
+  };
+  const woRuf = (p, k) => {
+    const L = WO[p][k] || WO[p].unterwegs;
+    return Array.isArray(L)
+      ? L
+      : [
+          [p, L],
+          ['ich', 'Wollte nur hören, wo du steckst.'],
+          [p, 'Jetzt weißt du es. Bis gleich.'],
+        ];
+  };
+  // the others, when one calls them from within sight
+  const NAH_RUF = {
+    jule: [['jule', 'Ich seh dich doch. Komm einfach rüber.']],
+    timo: [['timo', 'Ich seh dich doch. Komm einfach rüber.']],
+    basti: [['basti', 'Ich seh dich doch. Komm einfach rüber.']],
+    yuki: [['yuki', 'Ich seh dich doch. Komm einfach rüber.']],
+    gerhard: [['gerhard', 'Ich seh dich doch. Komm einfach her.']],
+  };
+  // the place of a point: the garden (around the origin), else by the name of the place there (KERN.place)
+  const ORTE = [
+    [/Talsperre|Staudamm|Angelstelle|Stausee/, 'talsperre'],
+    [/Klinge|Wald/, 'klinge'],
+    [/Schleusingen/, 'schleusingen'],
+    [/Ratscher|Anger|Dorf/, 'dorf'],
+  ];
+  function ortVon(x, y) {
+    if (Math.hypot(x, y) < 70) return 'garten';
+    let n = '';
+    try {
+      n = String(KERN.place(x, y, 0) || '');
+    } catch (e) {}
+    for (const [rx, k] of ORTE) if (rx.test(n)) return k;
+    return 'unterwegs';
+  }
+  // the figure of the one called, if there is one: the partner (wherever), the others only within sight
+  function figVon(id) {
+    try {
+      if (id === partner()) {
+        const G = window.GRENZLAND,
+          F = G && G.partnerOf && G.partnerOf();
+        return F && GL.era === 'heute' ? F : null;
+      }
+      const FG = window.GLFIG;
+      return (FG && FG.near ? FG.near(P.x, P.y, NAH, GL.era) : []).find(F => F.id === id) || null;
+    } catch (e) {
+      return null;
+    }
+  }
+  // who is in sight turns to one for a moment
+  function schautHer(F) {
+    try {
+      const FG = window.GLFIG;
+      if (!FG || !FG.blick) return;
+      FG.blick(F, 'spieler');
+      setTimeout(() => {
+        try {
+          FG.blick(F, null);
+        } catch (e) {}
+      }, 5000);
+    } catch (e) {}
+  }
+  // the lines of a call to id, as things stand
+  function rufZeilen(id) {
+    const F = figVon(id);
+    if (id === partner()) {
+      if (F && (F.rides || Math.hypot(F.x - P.x, F.y - P.y) < NAH)) return (schautHer(F), woRuf(id, 'nah'));
+      return woRuf(id, F ? ortVon(F.x, F.y) : 'garten');
+    }
+    if (F && NAH_RUF[id]) return (schautHer(F), NAH_RUF[id]);
+    return RUF[id];
+  }
   const wer = w => (w === 'ich' ? ich() : w);
   // what the phone says aloud: the person's voice, the mode's subtitle
   function sag(w, text) {
@@ -264,7 +366,10 @@ export const GLHANDY = (() => {
   function ruf(w, zeilen, o = {}) {
     if (!GL.on || GL.era !== 'heute') return false;
     const K = kontakte().find(k => k.id === w) || { id: w, name: nameOf(w), rolle: o.rolle || '' };
-    return HANDY.eingehend(K, Object.assign({}, o, { szene: (k, ctl) => gespraech(zeilen || RUF[w] || [], ctl) }));
+    return HANDY.eingehend(
+      K,
+      Object.assign({}, o, { szene: (k, ctl) => gespraech(zeilen || rufZeilen(w) || [], ctl) })
+    );
   }
   // short answers to one's chips (now and then, after the typing dots)
   const ANTW = {
@@ -395,7 +500,7 @@ export const GLHANDY = (() => {
     },
     anruf(k, ctl, art) {
       if (art === 'ein') return null;
-      const L = RUF[k.id];
+      const L = rufZeilen(k.id);
       if (!L) return null;
       return gespraech(L, ctl);
     },
@@ -859,10 +964,14 @@ export const GLHANDY = (() => {
   // every line the phone speaks (agent stimmen records them)
   function linien() {
     const out = [];
-    for (const L of Object.values(RUF))
+    const add = L => {
       for (const [w, text] of L)
         for (const x of w === 'ich' ? ['falko', 'sarah'] : [w])
           if (!out.some(q => q[0] === x && q[1] === text)) out.push([x, text]);
+    };
+    for (const L of Object.values(RUF)) add(L);
+    for (const p of Object.keys(WO)) for (const k of Object.keys(WO[p])) add(woRuf(p, k));
+    for (const L of Object.values(NAH_RUF)) add(L);
     return out;
   }
   return {
@@ -888,6 +997,7 @@ export const GLHANDY = (() => {
     cam: () => S.cam,
     ziel: () => S.ziel,
     ruf,
+    rufZeilen,
     freischalten,
     kontakte,
     linien,

@@ -26,3 +26,4 @@ grenzland_welt:film,wahl
 grenzland_welt:ereignis
 grenzland_licht:stadt
 handy
+grenzland_partner:frei,ki
