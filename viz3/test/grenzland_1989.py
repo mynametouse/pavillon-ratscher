@@ -144,7 +144,7 @@ with lib.browser() as b:
     X("window.__row = 0; (async () => { const ids = %s; for (let i = 0; i < ids.length; i++) { const F = await GL89.hol(ids[i], 224.6 + i * 0.86, -100.5 - i * 0.24, 200); if (F) window.__row++; } window.__rowDone = true; })()" % json.dumps(ids))
     wait("window.__rowDone === true", 240, 0.2)
     ck('everybody of the cast can be made (twelve in a row)', E("window.__row") == len(ids), str(E("window.__row")) + ' ' + str(E("GLFIG.err")))
-    bare = J("GLFIG.figs.filter(F => !(F.tex && F.tex.length)).map(F => F.id)")
+    bare = J("GLFIG.figs.filter(F => F.g && F.g.visible && !(F.tex && F.tex.length)).map(F => F.id)")  # (the partner of today waits hidden)
     ck('everybody wears the clothes of 1989 (also the figures whose images are GPU-compressed)', not bare, str(bare) + ' ' + str(E("JSON.stringify(GLFIG.last)")) + ' ' + str(E("GLFIG.err")))
     X("for (const F of GLFIG.figs) { GLFIG.pose(F, null); GLFIG.talking(F, false); }")
     steps(1.5)

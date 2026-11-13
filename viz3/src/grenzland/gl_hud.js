@@ -55,10 +55,10 @@ body[data-gl-era="1989"] #glhud .gt b{color:#d8c79a}
 #glmsg{position:absolute;left:50%;top:22%;transform:translateX(-50%);z-index:7;max-width:min(740px,88vw);text-align:center;pointer-events:none;
   color:#fff7e6;font:700 clamp(19px,3.3vw,32px)/1.25 var(--f-display,Georgia,serif);text-shadow:0 2px 14px rgba(0,0,0,.9);letter-spacing:.01em}
 #glmsg small{display:block;margin-top:8px;font:400 clamp(13px,1.8vw,16px)/1.4 var(--f-body,system-ui);opacity:.92}
-#glsub{position:absolute;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:7;max-width:min(680px,90vw);
+#glsub{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:7;max-width:min(680px,90vw);
   background:rgba(10,12,14,.72);color:#fff;border-radius:8px;padding:8px 13px;font:400 15px/1.4 var(--f-body,system-ui);text-align:center;pointer-events:none}
 #glsub b{color:#f3c64f;font-weight:600;margin-right:6px}
-#glfunk{position:absolute;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:6;max-width:min(620px,86vw);
+#glfunk{position:absolute;left:50%;bottom:calc(206px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:6;max-width:min(620px,86vw);
   color:#f4ecd6;font:italic 400 13px/1.4 var(--f-body,system-ui);text-align:center;pointer-events:none;text-shadow:0 1px 6px rgba(0,0,0,.95)}
 #glfunk b{font-style:normal;font-weight:600;color:#f3c64f;margin-right:6px} #glfunk[hidden]{display:none!important}
 #glwahl{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:8;width:min(460px,92vw);
