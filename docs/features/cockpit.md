@@ -39,7 +39,14 @@ einstellbar (Stufen und Automatik, Bildrate anzeigen).
 - Mittelkonsole mit **Navi** (16:9, `MMAP.drawTo` in `vehicles/minimap.js`: dieselbe Karte, rechteckig, das Fahrzeug unten; oben das Ziel
   mit Entfernung, unten die Uhrzeit), Lüftungsdüsen, Warnblinkschalter, drei Klimaregler, Wählhebel P R N D, Handbremshebel (hebt sich bei
   Leertaste), Pedale (Gas, Bremse), Sitze mit Wangen und Kopfstützen (Stoff), Türverkleidungen (Armlehne, Griff, Fensterheber,
-  Lautsprecher), A-Säulen-Verkleidung, Sonnenblenden, Innenspiegel, Außenspiegelköpfe.
+  Lautsprecher), A-Säulen-Verkleidung (dunkelgrauer Kunststoff, ~8 cm), Innenspiegel, Außenspiegelköpfe.
+- **Dach innen** (Hinweis des Leads 13.11. ~18:00, „oben offen, spielzeughaft“): die heutige Karosserie verglast weit nach oben und hinten
+  (die Oberkante der Scheibe liegt fast über dem Kopf). Innen schließt das Cockpit dort, wo das Dach eines Logan beginnt: ein dunkles
+  Band auf der Scheibe (Siebdruck und Dachrahmen, daran hängt der Innenspiegel), der hellgraue Dachhimmel, zwei hochgeklappte
+  Sonnenblenden mit Haltern, die oberen Rahmen der Türfenster (Anker `head`). Dazu im Armaturenbrett eine gröbere Narbung, die
+  Gummifuge zur Scheibe, die Abdeckung des Beifahrer-Airbags als feine Fuge.
+- **Blickwinkel** in der Fahrersicht: 62° senkrecht auf breiten Bildschirmen (vorher 70°, das zog Säulen und Armaturen in die Breite;
+  `vehicles/vehicle.js`, markiert), schmal (< 760 px) wie bisher 76°. Lenkrad näher an den Augen (Kranz oben ~0,54 m vor ihnen).
 - **Spiegel** (`vehicles/cockpit_mirror.js`): Innen- und beide Außenspiegel zeigen live, was hinten ist – ein kleines Renderziel
   (512 × 256, am Handy 256 × 128) mit drei Streifen, je Spiegel eine Kamera am Glas (Blickwinkel wie das Glas vom Auge aus), höchstens ein
   Spiegel je Bild, jeder ~15 Mal je Sekunde, nur die im Blick, keine neue Schattenkarte. Einstellung „Echte Spiegel“ (Menü → Einstellungen
@@ -64,9 +71,10 @@ einstellbar (Stufen und Automatik, Bildrate anzeigen).
 ### Ankerpunkte (für neue Karosserien, Absprache mit dem Straßen-Chat in `docs/PARALLEL.md`, 13.11. 17:05)
 Modellrahmen wie `car.js` (x rechts, y vorn, z oben, Meter). Eine Karosserie mit eigenen Werten nennt sie in `spec.cockpit` (gleiche
 Felder; was fehlt, bleibt wie beim Kombi – `CPBUILD.anchors`). Heute für den Kombi (`CPBUILD.CAR`): `eye` [−0,36, −0,22, 1,17] (= `spec.eye`),
-`hp` (H-Punkt) [−0,36, −0,10, 0,62], `wheel` { c [−0,36, 0,30, 0,86], tilt 0,44, r 0,185 }, `dash` { face 0,49, top 0,966, ws 0,84,
+`hp` (H-Punkt) [−0,36, −0,10, 0,62], `wheel` { c [−0,36, 0,24, 0,875], tilt 0,44, r 0,185 }, `dash` { face 0,49, top 0,966, ws 0,84,
 x 0,745 }, `ws` { y0 0,82, z0 0,97, w0 0,8, y1 −0,05, z1 1,55, w1 0,64 }, `floor` 0,45, `door` 0,755, `mirL` [−0,99, 0,67, 1,04],
-`mirR` [0,99, 0,67, 1,04], `mirI` [0, 0,22, 1,285], `roof` 1,51.
+`mirR` [0,99, 0,67, 1,04], `mirI` [0, 0,22, 1,285], `roof` 1,51, `head` { z0 1,30, z1 1,35, back [−1,15, 1,47], w 0,635 }
+(dunkles Band auf der Scheibe von z0 bis z1, Dachhimmel von dort bis `back`; eine Karosserie mit echtem Dach lässt `head` weg: `null`).
 
 ## Testen
 `python3 viz3/test/run.py --port 9016 --serve cockpit` (über `bash tools/browser_lock.sh`), Abschnitte: `grafik`, `cockpit`, `phone`.
@@ -95,6 +103,7 @@ Themen-Tests auf CI: `viz3/extra/cockpit/tests.txt`.
 - `viz3/src/modules.txt`: Block `# feat/cockpit` vor `game/tutorial.js`.
 - `viz3/src/vehicles/car.js`: das einfache Innere (Armaturenbrett, Konsole, Lenkrad, Vordersitze, Hebel) in der Gruppe `model.inside`
   (eigens zusammengeführt), die Blinker je Seite mit eigenem Material (`model.lamps.blinkL` / `blinkR`).
+- `viz3/src/vehicles/vehicle.js`: eine Zeile in `applyCam` (Fahrersicht 62° statt 70° auf breiten Bildschirmen).
 - `viz3/src/vehicles/minimap.js`: `MMAP.drawTo(o)` (dieselbe Karte in eine andere Leinwand: das Navi) und `MMAP.hide` (Eckkarte weicht).
 - `viz3/src/zombie/z_fp.js`: der Körper der Ich-Sicht als Fabrik `ZFP.makeBody(F, rig)` (aus `fpBody` herausgelöst, Verhalten gleich),
   dazu `ZFP.placeBodyArm` und `ZFP.fingers` nach außen – damit das Cockpit dieselben Arme nutzt, statt sie nachzubauen.

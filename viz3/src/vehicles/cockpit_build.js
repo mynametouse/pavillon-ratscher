@@ -16,7 +16,7 @@ export const CPBUILD = (() => {
   const CAR = {
     eye: [-0.36, -0.22, 1.17],
     hp: [-0.36, -0.1, 0.62], // the driver's H-point (hip joint on the seat)
-    wheel: { c: [-0.36, 0.3, 0.86], tilt: 0.44, r: 0.185 }, // centre, tilt of its plane from upright (top forward), rim radius
+    wheel: { c: [-0.36, 0.24, 0.875], tilt: 0.44, r: 0.185 }, // centre, tilt of its plane from upright (top forward), rim radius
     dash: { face: 0.49, top: 0.966, ws: 0.84, x: 0.745 }, // face (y), top (z), windscreen base (y), half width
     ws: { y0: 0.82, z0: 0.97, w0: 0.8, y1: -0.05, z1: 1.55, w1: 0.64 }, // windscreen: base and top edge (y, z, half width)
     floor: 0.45,
@@ -25,6 +25,9 @@ export const CPBUILD = (() => {
     mirR: [0.99, 0.67, 1.04],
     mirI: [0, 0.22, 1.285], // interior mirror (centre of its glass)
     roof: 1.51, // under the headliner
+    // the inside of the roof: a dark band on the windscreen from z0 to z1 (its frit and the header), the headliner from there back to
+    // [y, z]; today's body glazes far up and back, so the cockpit closes it where a Logan's roof begins
+    head: { z0: 1.3, z1: 1.35, back: [-1.15, 1.47], w: 0.635 },
   };
   // the tractor (vehicles/tractor.js): eye from its spec, the wheel on its column, the pod in front of it, the levers on the right
   const TRACTOR = {
@@ -42,6 +45,8 @@ export const CPBUILD = (() => {
     if (own && typeof own === 'object')
       for (const k of Object.keys(A))
         if (own[k] != null && typeof own[k] === typeof A[k]) A[k] = JSON.parse(JSON.stringify(own[k]));
+    // a body with a real roof inside switches the cockpit's band and headliner off (head: null)
+    if (own && own.head === null) A.head = null;
     return A;
   }
   // ---- materials: plain lit ones like the body's (vehicles/car.js), unlit faces whose brightness the cockpit sets (day light or backlight) ----
@@ -70,6 +75,23 @@ export const CPBUILD = (() => {
     }
     g.putImageData(im, 0, 0);
   };
+  // the dashboard's skin: a coarser grain with soft pores (stronger than the plain grain, still one texture)
+  const skin = (g, n) => {
+    const im = g.createImageData(n, n);
+    let s = 3;
+    const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < n * n; i++) {
+      const v = 214 + (rnd() - 0.5) * 60 + (rnd() < 0.08 ? -40 : 0);
+      im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v;
+      im.data[i * 4 + 3] = 255;
+    }
+    g.putImageData(im, 0, 0);
+    // soften: the pores as small blobs, not single pixels
+    g.globalAlpha = 0.5;
+    g.drawImage(g.canvas, 1, 0);
+    g.drawImage(g.canvas, 0, 1);
+    g.globalAlpha = 1;
+  };
   // the seats' weave: fine diagonal threads in two shades
   const weave = (g, n) => {
     g.fillStyle = '#e4e4e4';
@@ -88,10 +110,11 @@ export const CPBUILD = (() => {
   function mats() {
     if (MAT) return MAT;
     const gr = canvasTex(128, grain, 1),
+      sk = canvasTex(128, skin, 1),
       wv = canvasTex(64, weave, 1);
     const S = o => new THREE.MeshStandardMaterial(o);
     MAT = {
-      pad: S({ color: 0x2a2c2f, roughness: 0.8, map: gr }), // soft-touch top of the dashboard
+      pad: S({ color: 0x34363a, roughness: 0.82, map: sk }), // soft-touch top of the dashboard
       hard: S({ color: 0x1d1e21, roughness: 0.68, map: gr }), // lower dashboard, console, stack
       gloss: S({ color: 0x0b0c0d, roughness: 0.18, metalness: 0.15 }), // piano black: bezels, vents' frames
       satin: S({ color: 0x9aa0a6, roughness: 0.3, metalness: 0.9 }), // satin chrome: rings, handles, slats' edges
@@ -273,6 +296,21 @@ export const CPBUILD = (() => {
     // the defroster's outlets along the windscreen's foot: a dark strip with slats
     put(st, rb(W * 1.7, 0.035, 0.008, 0.003), M.gloss, 0, d.ws - 0.03, t + 0.004);
     for (let k = -6; k <= 6; k++) put(st, rb(0.004, 0.03, 0.006, 0.0015), M.hard, k * 0.09, d.ws - 0.03, t + 0.007);
+    // the join to the windscreen: a black rubber strip along the glass's foot
+    put(st, rb((A.ws.w0 - 0.02) * 2, 0.016, 0.012, 0.004), M.rubber, 0, A.ws.y0 + 0.004, A.ws.z0 - 0.002);
+    // the passenger airbag's lid: a fine groove round a rectangle on the top (on the chord of the profile, a hair above it)
+    {
+      const ya = f + 0.07,
+        yb = f + 0.22,
+        za = y => t - 0.03 + (y - f - 0.05) * 0.15 + 0.004,
+        xa = 0.25,
+        xb = 0.55,
+        tl = Math.atan(0.15);
+      put(st, rb(xb - xa, 0.003, 0.003, 0.001), M.black, (xa + xb) / 2, ya, za(ya), tl);
+      put(st, rb(xb - xa, 0.003, 0.003, 0.001), M.black, (xa + xb) / 2, yb, za(yb), tl);
+      for (const x of [xa, xb])
+        put(st, rb(0.003, yb - ya, 0.003, 0.001), M.black, x, (ya + yb) / 2, za((ya + yb) / 2), tl);
+    }
     // a softer seam along the face: the lower dashboard in the harder plastic (knee bolster, glovebox line)
     put(st, rb(W * 2 - 0.08, 0.03, 0.2, 0.012), M.hard, 0, f + 0.012, A.floor + 0.25);
     put(st, rb(0.42, 0.012, 0.15, 0.01), M.hard, 0.37, f - 0.006, t - 0.24);
@@ -396,8 +434,8 @@ export const CPBUILD = (() => {
     seam.position.set(0, -0.022, -0.004);
     spin.add(seam);
     // the column shroud into the dashboard and the stalks on it (left: indicators and lights, right: wipers)
-    const col = new THREE.Mesh(new RoundedBoxGeometry(0.085, 0.082, 0.24, 2, 0.025), M.hard);
-    col.position.set(0, -0.006, -0.17);
+    const col = new THREE.Mesh(new RoundedBoxGeometry(0.085, 0.082, 0.34, 2, 0.025), M.hard);
+    col.position.set(0, -0.006, -0.22);
     base.add(col);
     const stalk = side => {
       const p = new THREE.Group();
@@ -543,19 +581,19 @@ export const CPBUILD = (() => {
       spk.rotateZ(Math.PI / 2);
       put(st, spk, M.black, x - sx * 0.004, 0.36, A.floor + 0.12);
       put(st, rb(0.03, 0.62, 0.36, 0.03), M.hard, x + sx * 0.004, 0.1, A.floor + 0.19);
-      // A-pillar trim inside the body's pillar
+      // A-pillar trim: dark grey plastic over the body's pillar, from the dashboard's corner up to the header
+      const H = A.head,
+        z1 = H ? H.z1 : w.z1,
+        k = (z1 - w.z0) / (w.z1 - w.z0);
       strut(
         st,
-        [sx * (w.w0 - 0.035), w.y0 - 0.03, w.z0 + 0.015],
-        [sx * (w.w1 - 0.03), w.y1 - 0.015, w.z1 - 0.035],
-        0.065,
-        0.03,
-        M.liner,
-        0.012
+        [sx * (w.w0 - 0.045), w.y0 - 0.025, w.z0 + 0.02],
+        [sx * (w.w0 + (w.w1 - w.w0) * k - 0.04), w.y0 + (w.y1 - w.y0) * k - 0.012, z1 - 0.008],
+        0.085,
+        0.035,
+        M.hard,
+        0.014
       );
-      // sun visor folded up under the headliner
-      put(st, rb(0.36, 0.15, 0.024, 0.01, 3), M.liner, sx * 0.34, w.y1 - 0.1, A.roof - 0.025, 0.08);
-      put(st, rb(0.02, 0.02, 0.03, 0.005), M.hard, sx * 0.53, w.y1 - 0.06, A.roof - 0.012);
     }
     // interior mirror: a stem from the glass, a housing (its glass is the mirrors' module's)
     const mi = A.mirI;
@@ -563,6 +601,49 @@ export const CPBUILD = (() => {
     put(st, rb(0.25, 0.034, 0.07, 0.016, 3), M.black, mi[0], mi[1] + 0.012, mi[2], 0.05, -0.2);
     // door mirror heads (black housings) round the body's small ones
     for (const p of [A.mirL, A.mirR]) put(st, rb(0.21, 0.14, 0.15, 0.045, 3), M.black, p[0], p[1], p[2]);
+  }
+  // ---- the inside of the roof: the dark band on the windscreen (frit, header), the light headliner, the folded visors, the top frames of
+  // the door windows – today's body has its glass far up and back; this closes it from inside where a real roof begins ----
+  function roofInside(st, A) {
+    const M = MAT,
+      w = A.ws,
+      H = A.head;
+    if (!H) return;
+    const dz = w.z1 - w.z0,
+      gy = z => w.y0 - ((z - w.z0) / dz) * (w.y0 - w.y1),
+      gw = z => w.w0 + ((w.w1 - w.w0) * (z - w.z0)) / dz,
+      ang = Math.atan2(w.y0 - w.y1, dz),
+      ny = -Math.cos(ang) * 0.007,
+      nz = -Math.sin(ang) * 0.007,
+      slope = Math.hypot(w.y0 - w.y1, dz) / dz;
+    // the band: on the glass, a little inside it
+    const zm = (H.z0 + H.z1) / 2;
+    put(st, rb(gw(zm) * 2 - 0.03, 0.006, (H.z1 - H.z0) * slope + 0.01, 0.003), M.black, 0, gy(zm) + ny, zm + nz, ang);
+    // the headliner: from the band's top back over the heads, a little rising
+    const y0 = gy(H.z1) - 0.004,
+      z0 = H.z1,
+      [y1, z1] = H.back,
+      L = Math.hypot(y0 - y1, z1 - z0),
+      tl = -Math.atan2(z1 - z0, y0 - y1);
+    put(st, rb(H.w * 2, L, 0.024, 0.012, 2), M.liner, 0, (y0 + y1) / 2, (z0 + z1) / 2 + 0.012, tl);
+    const zAt = y => z0 + ((y0 - y) / (y0 - y1)) * (z1 - z0);
+    // the visors, folded up against it, and their clips
+    for (const sx of [-1, 1]) {
+      const yv = y0 - 0.085;
+      put(st, rb(0.36, 0.16, 0.022, 0.01, 3), M.liner, sx * 0.33, yv, zAt(yv) - 0.012, tl);
+      put(st, rb(0.03, 0.025, 0.02, 0.006), M.hard, sx * 0.13, yv + 0.06, zAt(yv + 0.06) - 0.004);
+      put(st, rb(0.02, 0.03, 0.024, 0.006), M.hard, sx * 0.53, yv - 0.04, zAt(yv - 0.04) - 0.006);
+      // the top frames of the door windows along the headliner's edge
+      strut(
+        st,
+        [sx * (H.w + 0.005), y0 - 0.01, z0 - 0.005],
+        [sx * (H.w + 0.01), y1, z1 - 0.01],
+        0.03,
+        0.05,
+        M.hard,
+        0.012
+      );
+    }
   }
   // ---- pedals (brake and accelerator, automatic gearbox) ----
   function pedals(mov, A) {
@@ -662,6 +743,7 @@ export const CPBUILD = (() => {
     const ce = centre(st, mov, A, navi);
     seats(st, A);
     trims(st, mov, A);
+    roofInside(st, A);
     const pe = pedals(mov, A);
     const lk = lightKnob(mov, A);
     const wi = wipers(mov, A);
