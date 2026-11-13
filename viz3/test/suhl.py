@@ -332,6 +332,19 @@ def desktop():
                 lib.shot(pg, OUT, 'suhl_strassenschild')
             E("GAME.go('suhl')")
             wait(QUIET, 60)
+            # shop fronts on the ground floors the data marks as shops (S[i].eg), the names of the businesses on the fascias
+            la = J("SUHL.status().laeden")
+            ck('shop fronts around the Markt: display windows in their frames, fascias with the names of the businesses',
+               la and la['sides'] >= 10 and la['bays'] >= la['sides'] and la['names'] >= 5 and la['first'] is not None,
+               json.dumps({k: v for k, v in (la or {}).items()}, ensure_ascii=False))
+            if la and la.get('first'):
+                (fx, fy, fz), (nx, ny) = la['first']['at'], la['first']['nv']
+                E(f"""(() => {{ const x = {fx} + ({nx}) * 9, y = {fy} + ({ny}) * 9; GAME.view(x, y, KERN.ground(x, y) + 1.7, Math.atan2(-({nx}), -({ny})) * 180 / Math.PI, 4, 60); }})()""")
+                for _ in range(6):
+                    E("GAME.step(0.5)")
+                lib.shot(pg, OUT, 'suhl_laeden')
+                E("GAME.go('suhl')")
+                wait(QUIET, 60)
             ck('street furniture of Suhl in the roads system: lamps, signs and lines of every street tile, the lamps around the Markt built',
                fu['furn'] > 0 and fu['sets'] == fu['furn'] and fu['err'] == 0 and fu['n'] and fu['n'].get('lamps', 0) > 300 and fu['shown'] and fu['shown'].get('lamps', 0) > 5,
                json.dumps(fu))

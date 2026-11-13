@@ -139,6 +139,14 @@ export function ampeln(ctx, ST) {
       markDirty(true);
     }
   };
+  // the observer far away or high above: nothing shown, built again on the way back
+  S.away = () => {
+    if (!M || ![M.mast, M.head, M.lens].some(me => me.visible)) return;
+    for (const me of [M.mast, M.head, M.lens]) me.visible = false;
+    S.rev = -1;
+    S.at = [1e9, 1e9];
+    markDirty(true);
+  };
   S.leave = () => {
     if (!M) return;
     for (const im of [M.mast, M.head, M.lens]) {
