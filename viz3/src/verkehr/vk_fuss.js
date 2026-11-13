@@ -30,8 +30,10 @@ export const VKFUSS = (() => {
         if (!d.f || !d.f.g.visible) return null;
         const F = d.fall,
           down = F && F.ph !== 'auf',
-          f = [Math.sin(d.hd), Math.cos(d.hd)],
-          r = [Math.cos(d.hd), -Math.sin(d.hd)];
+          hd = Number.isFinite(d.hd) ? d.hd : 0,
+          f = [Math.sin(hd), Math.cos(hd)],
+          r = [Math.cos(hd), -Math.sin(hd)];
+        if (!Number.isFinite(d.x) || !Number.isFinite(d.y)) return null;
         // lying: a low, long box where he lies (along his heading – the clip lays him along it)
         return down
           ? { c: [d.x, d.y], ax: r, ay: f, ex: 0.3, ey: 0.85, z0: d.z, z1: d.z + 0.32 }
@@ -41,7 +43,7 @@ export const VKFUSS = (() => {
         const u0 = d.fall ? 0 : d.sp || 0,
           b = {
             spec: { mass: M, Iz: IZ },
-            st: { x: d.x, y: d.y, psi: d.hd, u: u0, v: 0, r: 0, sleep: 0 },
+            st: { x: d.x, y: d.y, psi: Number.isFinite(d.hd) ? d.hd : 0, u: u0, v: 0, r: 0, sleep: 0 },
             x0: d.x,
             y0: d.y,
             u0,

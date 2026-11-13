@@ -590,20 +590,25 @@ with lib.browser() as b:
         # (no faster than 3.5 m/s), lies a moment, gets up over her knees, complains and walks on; the car is hardly slowed (75 kg). A slow
         # touch only makes her stumble at most
         try:
-            E(pg, "window.__uf && __uf.drop(); VERKEHR.force({ peds: 0, cars: 0 }); VERKEHR.clear(); VERKEHR.autoOn(false); VKSTROM.force = { n: 0 }")
+            E(pg, f"GAME.view({ANGER[0] - 16}, {ANGER[1] - 9}, KERN.ground({ANGER[0] - 16}, {ANGER[1] - 9}) + 1.7, 75, -2)")
+            E(pg, "window.__uf && __uf.drop(); VERKEHR.force({ peds: 0, cars: 0 }); VERKEHR.clear(); VERKEHR.autoOn(true); VKSTROM.force = { n: 0 }")
+            E(pg, "__vr.until(() => VERKEHR.state().places.dorf.on, 60); VERKEHR.autoOn(false)")
             at_day((2026, 11, 13), 11)
             lib.settle_light(pg)
             FS = """window.__fs = {
               ped(key) { return VERKEHR.addPed(key, 'dorf', [%d, %d], true); },
               d(key) { return VERKEHR.S.peds.find(q => q.key === key) || null; },
               // the walker stands (looking at a garden) where she is; the player's car behind her on her way, driving at v along it
-              ram(key, back, v) { const d = __fs.d(key), L = d.line, s0 = Math.max(0, d.s - back), p = {};
-                d.st = 'schaut'; d.t = 60; d.look = d.hd; d.dodge = 0; GAME.step(0.05);
+              // (on the village street at the Anger, where the cars drive – the same place every run: her way for the moment is the cars'
+              // line there; the player's car comes along it from back metres behind her)
+              ram(key, back, v) { const d = __fs.d(key), b = __vr.line(222, -108);
+                d.line = b.L; d.s = b.s + 6; d.dodge = 0; d.pz = []; d.look = d.hd; d.st = 'schaut'; d.t = 60; GAME.step(0.05);
+                const L = b.L, s0 = d.s - back, p = {};
                 VERKEHR.net.at(L, s0, p);
                 if (!VEH.cur || VEH.cur.id !== 'car') VEH.enter('car');
                 VEH.place('car', p.x, p.y, p.hd);
                 const pts = []; for (let s = s0; s < Math.min(L.L, s0 + 40); s += 1.5) { const q = {}; VERKEHR.net.at(L, s, q); pts.push([q.x, q.y]); }
-                VEH.cur.st.u = v; VEH.follow(pts, v); __fs.n0 = VKFUSS.knocks; return { s0, s: d.s, L: L.L }; },
+                VEH.cur.st.u = v; VEH.follow(pts, v); __fs.n0 = VKFUSS.knocks; return { s0: +s0.toFixed(1), s: +d.s.toFixed(1), x: +d.x.toFixed(1), y: +d.y.toFixed(1) }; },
               hit(key, secs) { const d = __fs.d(key); let t = 0, sp = 0;
                 for (; t < secs; t += 0.05) { sp = Math.hypot(VEH.cur.st.u, VEH.cur.st.v); GAME.step(0.05); if (d.fall || VKFUSS.knocks > __fs.n0) break; }
                 const after = Math.hypot(VEH.cur.st.u, VEH.cur.st.v); VEH.auto = null; VEH.cur.st.u = VEH.cur.st.v = 0; for (let i = 0; i < 3; i++) GAME.step(0.05);
@@ -616,11 +621,19 @@ with lib.browser() as b:
             };""" % ANGER
             E(pg, FS)
             k = J(pg, "__fs.ped('bettina')")
-            ok_fig = E(pg, "(() => { for (let i = 0; i < 120; i++) { GAME.step(0.1); const d = __fs.d('bettina'); if (d && d.f && d.f.g.visible) return true; } return false; })()")
+            # (her figure loads in the background: step the world from here, so that its promise comes in between)
+            ok_fig = False
+            for i in range(120):
+                if E(pg, "(() => { GAME.step(0.1); const d = __fs.d('bettina'); return !!(d && d.f && d.f.g.visible); })()"):
+                    ok_fig = True
+                    break
+                time.sleep(0.1)
             ck('a walker of the place with her figure', k == 'bettina' and ok_fig, f"{k} {ok_fig}")
+            # (the camera beside her once the player is out: a figure far from the camera keeps its pose – nobody sees it)
+            VIEW = "(() => { const d = __fs.d('bettina'); GAME.view(d.x + 5, d.y + 2, KERN.ground(d.x + 5, d.y + 2) + 1.7, Math.atan2(-5, -2) * 180 / Math.PI, -14); })()"
             r = J(pg, "__fs.ram('bettina', 9, 4.5)")
-            E(pg, "(() => { const d = __fs.d('bettina'); GAME.view(d.x + 6, d.y + 3, KERN.ground(d.x + 6, d.y + 3) + 1.8, Math.atan2(-6, -3) * 180 / Math.PI, -10); })()")
             h = J(pg, "__fs.hit('bettina', 8)")
+            E(pg, VIEW)
             print('walker knock', json.dumps(r), json.dumps(h), flush=True)
             ck('the car knocks her down (16 km/h): she falls', h['fall'] in ('faellt', 'liegt') and h['falls'] >= 1, json.dumps(h))
             ck('the car is hardly slowed by her (75 kg against 1.2 t)', h['before'] > 3 and h['after'] > h['before'] * 0.75, json.dumps(h))
@@ -630,29 +643,33 @@ with lib.browser() as b:
                 pass
             print('walker', rec[::6], flush=True)
             x0, y0 = h['x'], h['y']
-            far = max(math.hypot(q[3] - x0, q[4] - y0) for q in rec)
+            far = max([math.hypot(q[3] - x0, q[4] - y0) for q in rec if q[2] != '-'] or [0])  # (while she is down: not her walking on)
             ck('she slides a little (thrown no faster than 3.5 m/s), lies a moment, gets up over her knees', bool(lying) and any('kneelIdle' in q[5] for q in rec) and far < 1.6, f"lying {len(lying)} frames, slid {far:.2f} m")
             subs = [q[6] for q in rec if q[6]]
             ck('up again she complains, by name', any(s.startswith('Bettina:') and any(l in s for l in J(pg, "VKUNFALL.LINES.fuss")) for s in subs), str(subs[-1:]))
             ck('and walks on (her way again)', rec[-1][2] == '-' and rec[-1][1] in ('gruesst', 'gehen', 'schaut'), str(rec[-1]))
-            E(pg, "(() => { const d = __fs.d('bettina'); d.st = 'schaut'; d.t = 60; })()")
+            E(pg, "(() => { const d = __fs.d('bettina'); d.look = d.hd; d.st = 'schaut'; d.t = 60; })()")
             # a picture of her on the ground (a second knock, the camera beside her)
             r2 = J(pg, "__fs.ram('bettina', 9, 4.5)")
-            E(pg, "(() => { const d = __fs.d('bettina'); GAME.view(d.x + 5, d.y + 2, KERN.ground(d.x + 5, d.y + 2) + 1.7, Math.atan2(-5, -2) * 180 / Math.PI, -14); })()")
             h2 = J(pg, "__fs.hit('bettina', 8)")
+            E(pg, VIEW)
             E(pg, "for (let i = 0; i < 12; i++) GAME.step(0.1)")
+            st2 = J(pg, "(() => { const d = __fs.d('bettina'), B = d.f.bones, y = n => B[n] ? +B[n].getWorldPosition(new THREE.Vector3()).y.toFixed(2) : null; return { fall: d.fall ? d.fall.ph : null, over: d.f.over, hips: y('Hips'), head: y('Head'), ground: +d.z.toFixed(2) }; })()")
+            print('second knock', json.dumps(h2), json.dumps(st2), flush=True)
+            ck('on the ground she lies (her head low, near the ground)', st2['fall'] in ('faellt', 'liegt') and st2['head'] is not None and st2['head'] - st2['ground'] < 0.5, json.dumps(st2))
             shot(pg, 'fuss_liegt')
             E(pg, "for (let i = 0; i < 60; i++) GAME.step(0.1)")
             # a slow touch: no fall
-            E(pg, "(() => { const d = __fs.d('bettina'); d.st = 'schaut'; d.t = 60; })()")
+            E(pg, "(() => { const d = __fs.d('bettina'); d.look = d.hd; d.st = 'schaut'; d.t = 60; })()")
             f0 = J(pg, "VKFUSS.falls")
             J(pg, "__fs.ram('bettina', 4, 0.6)")
             h3 = J(pg, "__fs.hit('bettina', 12)")
             print('slow', json.dumps(h3), flush=True)
             ck('a slow touch does not knock her down', J(pg, "VKFUSS.falls") == f0 and not h3['fall'], json.dumps(h3))
-            E(pg, "VERKEHR.clear(); VERKEHR.autoOn(true); VKSTROM.force = { mult: 1 }")
         except Exception as ex:
             ck('section ran: fuss', False, repr(ex)[:400])
+        finally:
+            E(pg, "VEH.auto = null; if (VEH.cur) VEH.exit(); VERKEHR.clear(); VERKEHR.autoOn(true); VKSTROM.force = { mult: 1 }")
 
     if want('dichte'):
         try:
