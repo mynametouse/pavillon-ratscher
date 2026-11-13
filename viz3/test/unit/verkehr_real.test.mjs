@@ -399,7 +399,7 @@ test('stage 3: after the knock – it rolls, slides, brakes and stands; it turns
   for (let i = 0; i < 40; i++) U.straighten(e, 0.25);
   assert.equal(e.hdOff, 0);
   // the lines and who says them
-  for (const kind of ['knock', 'crash', 'stood', 'rear', 'again', 'end', 'endDorf', 'liegt'])
+  for (const kind of ['knock', 'crash', 'stood', 'rear', 'again', 'end', 'endDorf', 'liegt', 'fuss', 'stolpert'])
     assert.ok(U.LINES[kind].length && U.line(kind, 0.99), kind);
   assert.equal(U.who('lkw', 'lkw', 'm'), 'Der Lkw-Fahrer');
   assert.equal(U.who('pkw', 'muell', 'f'), 'Die Müllfahrerin');
