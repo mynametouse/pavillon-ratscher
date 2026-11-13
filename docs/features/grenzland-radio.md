@@ -28,8 +28,9 @@ Programm), `gl_handy.js` (`GLHANDY`: das Handy). Tests: `viz3/test/unit/grenzlan
   `GLRDATA.QUELLEN89` und im Handy unter Notizen.
 - **Umschalten wie in GTA:** `R` nächster Sender (nach dem letzten: aus), `Umschalt + R` der davor, **`R` halten** öffnet die Senderliste
   zum Anklicken (auch: die Anzeige antippen; im Handy der Reiter „Radio“). Beim Einschalten landet man mitten in einem laufenden Stück.
-  Die Wahl bleibt (`GL.radio`), nach einem Neuladen läuft der Sender weiter. Wer zum ersten Mal in einem Fahrzeug sitzt, hört das Radio
-  von selbst (wie in GTA); einmal ausgeschaltet, bleibt es aus.
+  Die Wahl bleibt (`GL.radio`), nach einem Neuladen läuft der Sender weiter (hörbar ab dem ersten Klick – vorher gibt der Browser
+  keinen Ton frei). Wer im freien Spiel zum ersten Mal in einem Fahrzeug sitzt, hört das Radio von selbst (wie in GTA); einmal
+  ausgeschaltet, bleibt es aus. Während einer Mission schaltet es sich nicht von selbst ein (die erste Mission bringt die Taste bei).
 - **Die Anzeige** oben, etwas links der Mitte (frei vom Radar und vom Ortsnamen links und von Uhr und Menü rechts; auf schmalen
   Fenstern eine Zeile tiefer): Frequenz, Name, eine Skala mit Zeiger, der zum
   Sender fährt, darunter Titel und Interpret bzw. was gerade läuft. Sie blendet nach ein paar Sekunden aus und kommt bei jedem neuen
@@ -55,7 +56,9 @@ Programm), `gl_handy.js` (`GLHANDY`: das Handy). Tests: `viz3/test/unit/grenzlan
   ein Stück entsteht aus dem Samen seines Titels – der Sender spielt also immer dieselben Stücke. Elf Stile (Polka, Marsch, Walzer,
   Schlager-Fox, Rock, Ballade, Synth, Pop, Swing, Klavierstück, Kennung) mit Form (Vorspiel, Strophe, Refrain, Trio in der Quarte,
   Rückung um einen Halbton, Schluss), Akkordfolgen in Stufen, Bass, Begleitung und Schlagzeug je Stil, Melodien als Perioden (Motiv,
-  Sequenz, zweites Motiv, Halbschluss – Ganzschluss) und einer zweiten Stimme in Terzen und Sexten. 45–80 Sekunden je Stück.
+  Sequenz, zweites Motiv, Halbschluss – Ganzschluss; jede Phrase beginnt wie die erste) und einer zweiten Stimme in Terzen und
+  Sexten. Stücke desselben Stils unterscheiden sich in Tonart, Tempo, Melodien, Begleitmuster (drei Varianten je Stil) und zum Teil
+  in der Form. 45–85 Sekunden je Stück.
 - **Synthese** bei 24 kHz, mono: Sinus, bandbegrenzte Säge- und Pulswellen, FM für Blech, Klarinette und E-Piano, Orgel, gezupfte Saiten
   (Karplus-Strong), Klavier aus abklingenden Teiltönen, Schlagzeug aus Sinus-Sweeps und gefiltertem Rauschen, kleiner Hall, Master.
 - **Pegel:** jedes Stück wird auf denselben Effektivwert gebracht (RMS 0,1 ≈ −20 dBFS); Spitzen werden ab 0,5 weich gebogen und bleiben
@@ -86,6 +89,18 @@ Ein Gehäuse in Handyform mit sieben Reitern (Ziffern 1–7 wechseln):
 
 Oben die Spielzeit und die Netzbalken (im Wald an der Klinge: „Funkloch“). 1989 hat niemand ein Handy. Auf dem Telefon füllt es den
 Bildschirm hochkant fast ganz, quer steht es rechts. Gespeichert über `GL`: `GL.sms`, `GL.feed` (Einträge nach `k`: chat, feed, bank, note).
+
+## Getestet
+
+- `bash tools/check.sh` grün; 9 Unit-Tests (`grenzland_radio.test.mjs`): Repertoire, Form, Tonart aller 51 Stücke, Pegel/Spektrum von
+  fünf gerenderten Stücken, Rendern in Scheiben, Senderliste, Sendeuhr, Polizeibericht, Feature, Nachrichten 1989, Wetter/Uhr.
+- Browser-Test `viz3/test/grenzland_radio.py` (38 Prüfungen): auf GitHub Actions grün für den Stand 0ec5721a (13.11. 3:34, „38 checks
+  ok in 600 s“); hier im Chat-Rechner bis zur Hälfte gesehen (29 von 29 bis zum Handy, dann hing der Test an einem eigenen Fehler:
+  `GLHANDY.open()` gab ein Promise zurück, auf das `evaluate` ewig wartete – behoben). Der Test stellt das Spiel zuerst auf freies
+  Spiel (im zusammengeführten Stand beginnt die Szene mit Kapitel 1) und zählt Nachrichten ab einem Ausgangswert.
+- Bilder angesehen: Senderanzeige heute und 1989, Polizeibericht (`out/grenzland_radio/01`, `03`, `04`). Das Handy habe ich bis zum
+  Abgabetermin nicht im Bild gesehen (die Warteschlange für den einen Browser war eine Stunde lang) – Maße und Sitz prüft der Test
+  (Hochkant 390 × 780, quer 780 × 390: alles im Bild), das Aussehen noch niemand.
 
 ## Ausprobieren
 
