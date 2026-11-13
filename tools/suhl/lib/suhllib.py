@@ -761,6 +761,7 @@ def scan_tiles(folder, ext=None):
 # ------------------------------------------------------------------ polite HTTP with an on-disk cache
 SECRET_PARAMS = ('key', 'apikey', 'api_key', 'token', 'access_token', 'secret', 'password', 'auth', 'signature', 'sig')
 _last_call = {}
+last_headers = {}        # the response headers (lower-case names) of the latest real request of http_get, e.g. rate-limit headers
 
 
 def redact(url):
@@ -807,9 +808,13 @@ def http_get(url, cache=None, max_age=None, headers=None, tries=4, timeout=120, 
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 body = r.read()
                 last = (r.status, body, r.headers.get('content-type', '') or '')
+                last_headers.clear()
+                last_headers.update({k.lower(): v for k, v in r.headers.items()})
         except urllib.error.HTTPError as ex:
             last = (ex.code, ex.read()[:20000], (ex.headers.get('content-type', '') if ex.headers else '') or '')
             retry_after = ex.headers.get('retry-after') if ex.headers else None
+            last_headers.clear()
+            last_headers.update({k.lower(): v for k, v in (ex.headers.items() if ex.headers else ())})
         except Exception as ex:   # timeouts, resets, DNS
             last = (0, repr(ex).encode()[:400], '')
         _last_call[host] = time.time()
