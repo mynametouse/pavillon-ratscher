@@ -1,0 +1,42 @@
+{
+ "made": "2026-11-13T02:41:23Z",
+ "produkt": "Artefakt suhl-b-v1 des Laufs 43349414221, suhl/b/v1",
+ "gebiete": {
+  "zentrum": {
+   "flaeche_km2": 0.68,
+   "baeume": 2846,
+   "laub": 2391,
+   "nadel": 114,
+   "straeucher": 341,
+   "im_wald": 325,
+   "ausserhalb_wald_ohne_straeucher": 2180,
+   "hoehe_gemessen": 1357,
+   "hoehe_median_gemessen_m": 11.0,
+   "je_ha": 41.7
+  },
+  "kernstadt": {
+   "flaeche_km2": 22.04,
+   "baeume": 174504,
+   "laub": 153668,
+   "nadel": 9300,
+   "straeucher": 11536,
+   "im_wald": 26134,
+   "ausserhalb_wald_ohne_straeucher": 136834,
+   "hoehe_gemessen": 74208,
+   "hoehe_median_gemessen_m": 14.5,
+   "je_ha": 79.2
+  },
+  "stadt": {
+   "flaeche_km2": 141.81,
+   "baeume": 571701,
+   "laub": 407683,
+   "nadel": 142075,
+   "straeucher": 21943,
+   "im_wald": 311548,
+   "ausserhalb_wald_ohne_straeucher": 238210,
+   "hoehe_gemessen": 336626,
+   "hoehe_median_gemessen_m": 20.0,
+   "je_ha": 40.3
+  }
+ }
+}

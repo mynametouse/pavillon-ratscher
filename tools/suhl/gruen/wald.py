@@ -8,8 +8,10 @@ grid of 20 x 20 cells (20 m) inside the mapped forest (OSM landuse=forest, natur
   deckung  crown cover in percent
   hoehe    stand height in 0.25 m – ESTIMATED from the class until nDOM1 is there (merker bit 1 = measured)
   dichte   trees per hectare / 10 – estimated from class and cover; where the 20 cm crowns of product b cover the cell it is the
-           count of those crowns (merker bit 0: the single trees of this cell are in b – draw those, do not fill)
-  merker   bit 0 single trees in b, bit 1 height measured, bit 2 density counted from crowns
+           count of those crowns (merker bit 0: the single trees of this cell are in b – draw those, do not fill); elsewhere,
+           with nDOM1, the tree tops of the 1 m laser model scaled per stand kind to the crown count of the image (see build)
+  merker   bit 0 single trees in b, bit 1 height measured, bit 2 density counted (crowns of b, or laser tops scaled),
+           bit 3 cleared since the laser flight (forest in the laser data, none in the image of 15.05.2024)
 
 File w/10/{x}/{y}.bin: six planes of 400 bytes (art, nadel, deckung, hoehe, dichte, merker), each 20 rows of 20 cells, row 0 = SOUTH
 edge, cell 0 = west. Stand polygons for people and scenarios (cells of one class joined, areas in UTM): bestaende.geojson.gz.
@@ -32,6 +34,7 @@ HOEHE = {1: 24.0, 2: 26.0, 3: 25.0, 5: 6.0, 6: 0.0}          # estimates (m) unt
 DICHTE = {1: 220.0, 2: 450.0, 3: 330.0, 5: 1500.0, 6: 0.0}   # trees per hectare at full cover (estimates)
 NIR_CON = 125.0      # smoothed near infrared below this (and rough): conifer canopy (two modes at 95 and 160 above Goldlauter)
 CV_ROUGH = 0.08      # relative roughness of the near infrared at 1 m above this: tree crowns, below: grass, young growth
+CAL_MIN = 250        # cells (10 ha) of a stand kind with both counts from which on the laser count is scaled to the image's
 
 
 def block_image(bx, by):
@@ -126,6 +129,7 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
     idx_tiles, areas, n_cells, n_cleared, n_meas, n_trees = {}, {}, 0, 0, 0, 0.0
     big = {}                                  # the class raster of the whole area for the stand polygons: (tx, ty) -> art
     planes_all = {}
+    todo = {}                                 # (tx, ty) -> the planes of a tile, written after the densities are on one scale
     for bi, (bx, by) in enumerate(blocks):
         C = cells_of_block(bx, by, U, ndom)
         glib.log(f'forest image block {bi + 1}/{len(blocks)} ({bx}, {by})')
@@ -147,6 +151,7 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
                     hoehe[art == k] = HOEHE[k]
                     dichte[art == k] = DICHTE[k]
             dichte = dichte * np.where(np.isin(art, (1, 2, 3)), np.clip(deck / 100.0, 0.2, 1.0), 1.0)
+            lt = bc = None                                        # per hectare: tops of the laser model, crowns of product b
             if C['hoehe'] is not None:
                 hm = C['hoehe'][sl][::-1]
                 ok = np.isfinite(hm)
@@ -154,7 +159,8 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
                 merker[ok] |= 2                                   # stand height measured
                 tp = C['tops'][sl][::-1]
                 st = np.isfinite(tp) & np.isin(art, (1, 2, 3))
-                dichte[st] = tp[st] / (CELL * CELL / 1e4)         # tree tops of the laser model per hectare
+                lt = np.where(st, tp / (CELL * CELL / 1e4), np.nan).astype(np.float32)
+                dichte[st] = lt[st]
                 merker[st] |= 4
                 gz = C['geraeumt'][sl][::-1]
                 merker[gz] |= 8                                   # forest in the laser data, none in the image of 2024
@@ -166,28 +172,57 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
                 p = os.path.join(b_dir or '', str(glib.L), str(tx), f'{ty}.bin')
                 if b_dir and os.path.exists(p):
                     T = baeume.unpack(open(p, 'rb').read(), tx, ty)
+                    tree = T['kind'] != 30                        # shrubs are no trees of a stand
                     e0, n0, _, _ = glib.wlib.tbounds(glib.L, tx, ty)
-                    ci = np.clip(((T['E'] - e0) / CELL).astype(int), 0, NC - 1)
-                    cj = np.clip(((T['N'] - n0) / CELL).astype(int), 0, NC - 1)
+                    ci = np.clip(((T['E'][tree] - e0) / CELL).astype(int), 0, NC - 1)
+                    cj = np.clip(((T['N'][tree] - n0) / CELL).astype(int), 0, NC - 1)
                     cnt = np.zeros((NC, NC), np.float32)
                     np.add.at(cnt, (cj, ci), 1.0)
                     cnt = cnt / (CELL * CELL / 1e4)
                     st = np.isin(art, (1, 2, 3))
                     dichte[st] = cnt[st]
                     merker[st] |= 4
-            n_trees += float((dichte * (CELL * CELL / 1e4))[np.isin(art, (1, 2, 3))].sum())
-            planes = [art, nadel, deck, np.clip(np.round(hoehe / 0.25), 0, 255).astype(np.uint8),
-                      np.clip(np.round(dichte / 10.0), 0, 255).astype(np.uint8), merker]
-            p = os.path.join(out, str(glib.L), str(tx), f'{ty}.bin')
-            os.makedirs(os.path.dirname(p), exist_ok=True)
-            open(p, 'wb').write(b''.join(a.astype(np.uint8).tobytes() for a in planes))
-            idx_tiles[f'{tx}_{ty}'] = int((art > 0).sum())
-            big[(tx, ty)] = art
-            planes_all[(tx, ty)] = (nadel, deck, hoehe, dichte)
-            for k, c in zip(*np.unique(art, return_counts=True)):
-                if k:
-                    areas[int(k)] = areas.get(int(k), 0.0) + c * CELL * CELL / 1e4
-            n_cells += int((art > 0).sum())
+                    bc = cnt
+            todo[(tx, ty)] = (art, nadel, deck, hoehe, dichte, merker, lt, bc)
+    # The tops of the 1 m laser model are fewer than the crowns the 20 cm image shows, in closed conifer canopy most of all
+    # (conifer cells of the single-tree tiles: 151 trees per hectare from the laser's tops in the whole-city run 43349414221,
+    # 205 from the image's crowns in run 43340725672). Where both counts
+    # exist - the tiles with single trees - their ratio is taken per stand kind, and the laser count of all other tiles is
+    # scaled with it: one density scale for the whole forest. That makes the density outside the single-tree tiles an
+    # estimate resting on a count; the factors and their basis are in the index.
+    cal = {k: [0.0, 0.0, 0] for k in (1, 2, 3)}
+    for art, _, _, _, _, _, lt, bc in todo.values():
+        if lt is None or bc is None:
+            continue
+        for k in cal:
+            m = (art == k) & np.isfinite(lt)
+            cal[k][0] += float(bc[m].sum())
+            cal[k][1] += float(lt[m].sum())
+            cal[k][2] += int(m.sum())
+    faktor = {k: (float(np.clip(c[0] / c[1], 0.5, 3.0)) if c[2] >= CAL_MIN and c[1] > 0 else 1.0) for k, c in cal.items()}
+    n_scaled = 0
+    for (tx, ty), (art, nadel, deck, hoehe, dichte, merker, lt, bc) in todo.items():
+        if lt is not None and bc is None:
+            for k in cal:
+                m = (art == k) & np.isfinite(lt)
+                dichte[m] = lt[m] * faktor[k]
+                n_scaled += int(m.sum())
+        n_trees += float((dichte * (CELL * CELL / 1e4))[np.isin(art, (1, 2, 3))].sum())
+        planes = [art, nadel, deck, np.clip(np.round(hoehe / 0.25), 0, 255).astype(np.uint8),
+                  np.clip(np.round(dichte / 10.0), 0, 255).astype(np.uint8), merker]
+        p = os.path.join(out, str(glib.L), str(tx), f'{ty}.bin')
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        open(p, 'wb').write(b''.join(a.astype(np.uint8).tobytes() for a in planes))
+        idx_tiles[f'{tx}_{ty}'] = int((art > 0).sum())
+        big[(tx, ty)] = art
+        planes_all[(tx, ty)] = (nadel, deck, hoehe, dichte)
+        for k, c in zip(*np.unique(art, return_counts=True)):
+            if k:
+                areas[int(k)] = areas.get(int(k), 0.0) + c * CELL * CELL / 1e4
+        n_cells += int((art > 0).sum())
+    kal = {ARTEN[k]: {'faktor': round(faktor[k], 2), 'zellen_mit_beiden_zaehlungen': c[2],
+                      'kronen_im_luftbild_je_ha': round(c[0] / c[2], 1) if c[2] else None,
+                      'baumspitzen_im_hoehenmodell_je_ha': round(c[1] / c[2], 1) if c[2] else None} for k, c in cal.items()}
     stands = polygons(big, planes_all, out)
     idx = {
         'produkt': 'w', 'name': 'Waldbestände (Zellen 20 m)', 'schema': 1, 'made': glib.now(), 'level': glib.L, 'kachel_m': 400.0, 'zelle_m': CELL,
@@ -195,11 +230,15 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
         'format': {'ebenen': ['art', 'nadel', 'deckung', 'hoehe', 'dichte', 'merker'], 'bytes_je_ebene': NC * NC,
                    'reihenfolge': 'je Ebene 20 Zeilen zu 20 Zellen; Zeile 0 = Südrand, Zelle 0 = Westrand',
                    'einheiten': {'nadel': 'Prozent Nadelholz an der Krone', 'deckung': 'Prozent Kronendeckung', 'hoehe': '0,25 m (geschätzt, solange merker Bit 1 = 0)',
-                                 'dichte': 'Bäume je Hektar / 10', 'merker': 'Bit 0: Einzelbäume dieser Zelle stehen im Produkt b (zeichnen statt füllen); Bit 1: Höhe gemessen (nDOM1, 95-%-Quantil der Zelle); Bit 2: Dichte gezählt (Kronen aus b oder Baumspitzen des Höhenmodells); Bit 3: seit dem Laserflug geräumt (Laser 2020–2025 zeigt Wald, das Luftbild vom 15.05.2024 keinen)'}},
+                                 'dichte': 'Bäume je Hektar / 10', 'merker': 'Bit 0: Einzelbäume dieser Zelle stehen im Produkt b (zeichnen statt füllen); Bit 1: Höhe gemessen (nDOM1, 95-%-Quantil der Zelle); Bit 2: Dichte gezählt (in Kacheln mit Einzelbäumen die Kronen aus b, ohne Sträucher; sonst die Baumspitzen des Höhenmodells, je Bestandsart mit dem Faktor aus dichte_faktor_laser_auf_bildkronen auf die Kronenzahl des Luftbilds hochgerechnet – eine Schätzung auf gezählter Grundlage); Bit 3: seit dem Laserflug geräumt (Laser 2020–2025 zeigt Wald, das Luftbild vom 15.05.2024 keinen)'}},
         'arten': {str(k): v for k, v in ARTEN.items()}, 'hoehe_schaetzung_m': HOEHE, 'dichte_schaetzung_je_ha': DICHTE,
         'kacheln': idx_tiles, 'zellen': n_cells, 'flaeche_ha': {ARTEN[k]: round(v, 1) for k, v in sorted(areas.items())},
         'hoehe_gemessen_ha': round(n_meas * CELL * CELL / 1e4, 1), 'seit_laserflug_geraeumt_ha': round(n_cleared * CELL * CELL / 1e4, 1),
         'baeume_in_bestaenden_geschaetzt_oder_gezaehlt': int(round(n_trees)),
+        'dichte_faktor_laser_auf_bildkronen': kal, 'zellen_dichte_hochgerechnet': n_scaled,
+        'dichte_faktor_hinweis': 'Das 1-m-Höhenmodell zeigt im geschlossenen Bestand weniger Baumspitzen, als das Luftbild (20 cm) Kronen zeigt. '
+                                 'Wo beides gezählt ist (Kacheln mit Einzelbäumen), ergibt sich je Bestandsart ein Faktor; mit ihm ist die Laser-Zählung '
+                                 f'der übrigen Kacheln hochgerechnet. Faktor 1, wenn weniger als {CAL_MIN} Zellen beide Zählungen haben.',
         'bestaende': {'datei': 'bestaende.geojson.gz', 'anzahl': stands},
         'attribution': glib.ATTRIBUTION,
         'quellen': [{'name': 'DOP20 CIR Thüringen (th_dop20cir, auf 1 m gerechnet), Bildflug 15.05.2024', 'lizenz': 'CC BY 4.0, © GDI-Th', 'url': glib.WMS},
@@ -208,7 +247,8 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
     glib.write_json(os.path.join(out, 'index.json'), idx, indent=1)
     return {'kacheln': len(idx_tiles), 'zellen': n_cells, 'flaeche_ha': idx['flaeche_ha'], 'flaeche_ha_summe': round(sum(areas.values()), 1),
             'bestaende': stands, 'bildbloecke': len(blocks), 'hoehe_gemessen_ha': idx['hoehe_gemessen_ha'],
-            'seit_laserflug_geraeumt_ha': idx['seit_laserflug_geraeumt_ha'], 'baeume_in_bestaenden': idx['baeume_in_bestaenden_geschaetzt_oder_gezaehlt']}
+            'seit_laserflug_geraeumt_ha': idx['seit_laserflug_geraeumt_ha'], 'baeume_in_bestaenden': idx['baeume_in_bestaenden_geschaetzt_oder_gezaehlt'],
+            'dichte_faktor_laser_auf_bildkronen': kal, 'zellen_dichte_hochgerechnet': n_scaled}
 
 
 def polygons(big, planes, out, min_cells=3):

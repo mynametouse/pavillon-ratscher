@@ -41,7 +41,14 @@ H_TREE = 2.5         # m in the height model nDOM1: something woody stands here
 H_MEAS = 1.5         # m: from here on a crown's height counts as measured
 H_SHRUB = 3.0        # m: a measured crown lower than this is a shrub or a very small tree
 DENSE_MIN = 300      # cells (m²) of closed laser canopy from which on the laser's tree tops are used
-R_NEW_MAX = 2.5      # m: crowns wider than this without a single laser return are counted (statistics only)
+# Version 1 took the tops of the 1 m laser model inside a closed canopy. The whole-city run 43349414221 showed what the sample
+# of the Zentrum could not: in conifer and mixed stands these tops are too few (two 1 ha windows at 20 cm: 224 crowns of the
+# image against 177 laser crowns in a spruce stand, 291 against 154 in a mixed one; crown radius 2.8 m against 4.0 m; in the
+# whole city 235 151 spruces became 145 661). The image at 20 cm resolves single crowns, the 1 m model with its closed holes
+# does not. Since version 2 the image gives position and crown everywhere; the laser gives the height, the shrub decision and
+# the canopy in the shade. Set SUHL_GRUEN_LASER_TOPS=1 to get the tops of version 1 back.
+LASER_TOPS = os.environ.get('SUHL_GRUEN_LASER_TOPS', '') == '1'
+R_NEW_MAX = 2.5     # m: crowns wider than this without a single laser return are counted (statistics only)
 R_SHRUB = 1.6        # m, below this a crown counts as a shrub or a very small tree
 BAND = 6.0           # m around a tile kept for the merge of neighbours
 GM_CELL = 2.0        # m, cell of the green mask
@@ -390,7 +397,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     # in the mapped forest shaded canopy counts too (slopes turned away from the sun; there is no lawn to mistake it for)
     wood, nd, tex, veg = woody(cir, water, shade_ok=forest,                     # there the laser cannot tell lawn from tree
                                chm=np.where(near_b, np.nan, chm) if chm is not None else None)
-    seg, n, n_chm = crowns(cir, wood, chm1=chm1, dense1=dense1)
+    seg, n, n_chm = crowns(cir, wood, chm1=chm1 if LASER_TOPS else None, dense1=dense1)
     st = {'kronen_roh': int(n), 'kronen_aus_hoehenmodell': int(n_chm), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean()),
           'ndom_anteil': float(np.isfinite(chm).mean()) if chm is not None else 0.0}
     out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk', 'hm', 'hcap', 'nohit')}

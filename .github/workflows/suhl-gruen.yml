@@ -220,7 +220,7 @@ jobs:
             rm -rf "$D/suhl/b/v$V" "$D/suhl/w/v$V" "$D/suhl/gr/v$V"
             cp -r "out/suhl/b/v$V" "$D/suhl/b/v$V"
             if [ "$V" != "0" ] && [ -d out/suhl/b/v0 ]; then rm -rf "$D/suhl/b/v0"; cp -r out/suhl/b/v0 "$D/suhl/b/v0"; cp out/statistik_v0.json "$D/statistik_v0.json"; fi
-            [ -f out/bogen/v0v1.json ] && cp out/bogen/v0v1.json "$D/v0v1.json"
+            [ -f out/bogen/v0v1.json ] && cp out/bogen/v0v1.json "$D/v0_gegen_v$V.json"
             [ -f out/zweifel.json ] && cp out/zweifel.json "$D/zweifel_v$V.json"
             [ -d "out/suhl/w/v$V" ] && cp -r "out/suhl/w/v$V" "$D/suhl/w/v$V"
             [ -d "out/suhl/gr/v$V" ] && cp -r "out/suhl/gr/v$V" "$D/suhl/gr/v$V"

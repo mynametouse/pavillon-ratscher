@@ -318,6 +318,10 @@ def fenster():
             ('suedwest', 'südlich des Herrenteichs (Südwest-Viertel)', (E, N, E + 200, N + 200)),
             ('steinweg_sued', 'Steinweg Süd (Südost-Viertel)', (E + 200, N, E + 400, N + 200)),
             ('steinweg_markt_400', 'Steinweg, Markt, Herrenteich – das ganze Fenster (400 m)', (E, N, E + 400, N + 400))]
+    # two closed stands outside the Zentrum (drawn only when the tree product covers them): here the tops of the 1 m laser
+    # model were too few in version 1 (224 crowns of the image against 177, and 291 against 154, per hectare)
+    out += [('fichte_507_554', 'Fichtenbestand (Kachel 507_554)', (623600.0, 5612500.0, 623800.0, 5612700.0)),
+            ('misch_484_543', 'Nadel-/Mischbestand (Kachel 484_543)', (614400.0, 5608100.0, 614600.0, 5608300.0))]
     return out
 
 
