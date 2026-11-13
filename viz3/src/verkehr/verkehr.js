@@ -927,7 +927,11 @@ export const VERKEHR = (() => {
       const r = [Math.cos(c.hd), -Math.sin(c.hd)],
         f = [Math.sin(c.hd), Math.cos(c.hd)];
       // (feat/verkehr-real: in a car of today the eye a hand under its roof – higher in an SUV, lower in a small car)
-      return { x: c.x + r[0] * 0.36 - f[0] * 0.22, y: c.y + r[1] * 0.36 - f[1] * 0.22, z: c.z + (c.vm ? c.D.H - 0.32 : 1.17) };
+      return {
+        x: c.x + r[0] * 0.36 - f[0] * 0.22,
+        y: c.y + r[1] * 0.36 - f[1] * 0.22,
+        z: c.z + (c.vm ? c.D.H - 0.32 : 1.17),
+      };
     };
     PLAY.sit({
       kind: 'ride',
