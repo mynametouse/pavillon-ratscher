@@ -48,9 +48,23 @@ Branch `feat/grenzland-mission`, Auftrag `docs/plans/auftraege/grenzland-mission
 - In der Konsole: `GLMISSION.debug.go('clique')`, `…go('gerhard', 'kiste')`, `…go('klinge', 'fotos')`, `…go('coup', 'rein')` (alles davor gilt
   als erledigt, mit dem, was es gab); `GLMISSION.debug.skip()` beendet den laufenden Schritt; `GLMISSION.debug.info()` zeigt den Stand.
   Missionen: `gefallen`, `clique`, `gerhard`, `klinge`, `coup`.
-- Tests: `node --test viz3/test/unit/grenzland_mission.test.mjs`;
+- In der Rückblende (Mission 3) springt man mit `debug.go('gerhard', 'damals')` hinein und dann mit `debug.skip()` weiter (die Schritte
+  danach setzen 1989 voraus).
+- Tests: `node --test viz3/test/unit/grenzland_mission.test.mjs` (13 Tests: Läufer, Gummiband, Nacht, Wachsamkeit, Bilanz, Texte, Lagerplan);
   `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9017 --serve grenzland_mission:m1,reload` (Abschnitte `m1 m2 m3 m4 m5 lager
-  reload`, Bilder in `out/grenzland_mission/`); Orte nachmessen: `grenzland_mission_probe`.
+  reload`, jeder für sich lauffähig; Bilder in `out/grenzland_mission/`); Orte nachmessen: `grenzland_mission_probe`.
+- Auf GitHub Actions läuft jeder Abschnitt als eigener Job (`viz3/extra/grenzland-mission/tests.txt`), Fehlschläge stehen als Anmerkung am Job.
+
+## Was der Browser-Test durchspielt
+
+| Abschnitt | geprüft (echte Prüfungen der Schritte; nur Wege werden übersprungen) |
+|---|---|
+| `m1` | Start an der Zentralhaltestelle, Tagebuch, Gespräch, der Fremde kommt, Paket +50 €, „Mitfahrgelegenheit“, Schultür, Wechsel zu Sarah → `karte1`, SMS und Dorf-Chat, Handy, Radio, Nacht → Morgen, Ereignis mit Titel und Lohn |
+| `m2` | SMS, Moped und Kanister, Tanken (halten), Clique an der Scheune, Gespräch, Strecke mit Kontrollpunkten, Reiter sitzen, Countdown, Rivalen fahren, **verlieren** → wieder am Start, **gewinnen** über alle Kontrollpunkte, Gespräch an der Mauer, +80 €, 4 Böller |
+| `m3` | Gerhard sitzt (Dorf-Gerhard weg), Gespräch, 1989 am Schulhof, Kiste nehmen, langsames Gehen mit Kiste, ruhige Minute, gesehen → Sterne, **erwischt** → wieder an der Kiste (noch 1989), Stroh an der Scheune, Versteck, zurück im Heute, Gespräch |
+| `m4` | SMS, Warten bis zum Abend, Transporter/Männer/Kisten bei Nacht, Foto aus 55 m zählt nicht, **entdeckt und gefasst** → wieder am Waldrand, Böller lockt zwei weg, drei Fotos geduckt, Leuchtkugel, Dorf-Chat, drei hohle Sterne, Wagen fährt ab, erst ohne Sterne im Garten fertig |
+| `m5` | Gespräch, Wahl leise/laut, Lager mit zwei Wachen, Zaun hält, Zeichen → Batterie → Wachen am Tor + ein hohler Stern, durch die Lücke, Tür aufbrechen, Karte nehmen, **gesehen** → Einbruch gemeldet, **gefasst** → wieder vor dem Zaun, zweiter Anlauf, zur Scheune, Gespräch, +250 €, Abschlussbild, freies Spiel |
+| `lager`, `reload` | Lager steht; 1989 verborgen und nicht fest; Debug-Sprung; Neuladen mitten in der Mission geht am Schritt weiter; „Beenden“ räumt alles ab |
 
 ## Entscheidungen (Falko schlief)
 
@@ -65,6 +79,11 @@ Branch `feat/grenzland-mission`, Auftrag `docs/plans/auftraege/grenzland-mission
 - **Verhaftung in der Gegenwart** startet nur Schritte neu, die das brauchen (Flucht von der Klinge, Flucht mit der Karte); sonst geht die
   Geschichte am nächsten Morgen einfach weiter.
 - **Dritter Mann an der Klinge**: `GLDATA.CAST.wache3` („Fahrer“) wird beim Laden ergänzt. Krähwinkel selbst tritt in Kapitel 1 nicht auf.
+- **Das Büro steht abseits des Tors**, damit „leise“ geht: die Tür hört nur, wer näher als 7,5 m vorbeikommt (also die Runde abwarten);
+  bei „laut“ sind beide Wachen 48 Sekunden am Tor, danach hört man die Tür 24 m weit.
+- **Im Hof gilt nur, wer wirklich innerhalb des Zauns steht** (wer von außen am Zaun steht, wird nicht gemeldet). Hausfriedensbruch
+  (vor dem Aufbrechen) und Einbruch (danach) werden je einmal gemeldet.
+- **Mit der Kiste** geht man höchstens 1,9 m/s (zügiges Gehen statt 2,5; Rennen wird gebremst) – 250 m dauern so gut zwei Minuten.
 - Hubert und Ronald kommen in keinem Text vor (Unit-Test prüft es); alle Täter sind erfunden.
 
 ## Offen
@@ -75,6 +94,12 @@ Branch `feat/grenzland-mission`, Auftrag `docs/plans/auftraege/grenzland-mission
 - Der Plan „leise“/„laut“ später in der Strategie-Linse (Auftrag: nicht heute).
 
 ## Für den Lead
+
+- `docs/ARCHITECTURE.md` (Modulkarte): neu `grenzland/gl_kapitel1.js` (GLKAP1); `gl_mission_data.js` exportiert zusätzlich `GLMLOGIK`.
+- Falls `gl_fig.js` (Agent 1989) Figuren künftig jede Runde auf den Boden setzt: Sitzende (`F.sitzt`) und Reiter (`F.reitet`) bitte
+  auslassen – die Mission setzt ihre Höhe selbst (`F.z`), der Sitz kommt aus `F.f.mode = 'sit'`.
+- `GLFAHNDUNG.sneak` und `.seen` nutze ich nur, wenn es sie gibt (sonst `P.stance` bzw. `stand().seen`).
+- Die Wegpunkte des Rennens hängen an `GLAUTO.route(Scheune → Staumauer)`; ändert der Auto-Agent das Netz, ändert sich nur die Strecke.
 
 - `GRENZLAND.start()` setzt den Spieler in den Garten und ruft dann `GLMISSION.neu()` – Mission 1 blendet ab und setzt ihn nach
   Schleusingen. `viz3/test/grenzland.py` prüft danach „Sarah steht daneben“ usw.: das hält (die Partnerfigur entsteht beim Spieler), aber
