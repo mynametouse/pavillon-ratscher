@@ -86,6 +86,13 @@ Falko (13.11. 12:14): „Sie sollen sich natürlich an Ampeln und Verkehrsregeln
 | Zeichenaufrufe | 1 je Fahrzeug (nah 2) + 2 für alle Schatten und Lichtkegel |
 | Fr 16:30 am Rand von Ratscher | 6 Fahrzeuge von 5,9 gezählt; um 3 Uhr 1 von 0,9; So 11 Uhr 4, kein Lkw |
 
+**Die Test-Rechner von GitHub** (Chrome 158 mit SwiftShader/Subzero, reine Software-Grafik) brauchen für das **erste Bild nach dem
+Laden** mehrere Minuten: beim ersten Zeichnen werden dort alle Shader-Pipelines übersetzt, und V18b bringt zwei große neue mit (der Lack
+mit Klarlack und das Glas der Fahrzeuge). Im Chat-Rechner mit demselben Chrome gemessen: erstes Bild `src` ohne Verkehr 142 s, mit V18b
+387 s; alle weiteren Bilder gleich teuer (v16b auf `src` mit V18b: erstes Bild nach 300 s, danach 7–12 s je Bild wie vorher). Mit dem
+älteren Chrome 141 kein Unterschied. Auf echten Grafikkarten kostet das Übersetzen Sekundenbruchteile und geschieht beim Laden. `v16b`
+schreibt die blockierenden WebGL-Aufrufe des ersten Bilds ins Protokoll.
+
 ## Tests
 
 - `viz3/test/unit/verkehr_real.test.mjs`: Maße aller Typen, Achsen, Lampenarten, Stufen, Tagesganglinien, Ostern und Feiertage,
