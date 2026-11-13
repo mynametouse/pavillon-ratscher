@@ -236,11 +236,11 @@ with lib.browser() as b:
         ck('an officer told to run covers at least 3.5 m a second', v >= 3.5, '%.2f m/s' % v)
         ck('he runs with the sprint laid over the walk (run weight > 0.9)', b2[3] > 0.9, str(b2))
         px, py = b2[0], b2[1]
-        look_at(px, py, math.pi / 2, 5.5, -math.pi / 2, 1.2, 40, -4)
+        look_at(px, py, math.pi / 2, 5.5, math.pi / 2, 1.2, 40, -4)
         pic('5_rennen_seite')
         steps(0.13, 0.05)
         px, py = J("[GT.polizei1.x, GT.polizei1.y]")
-        look_at(px, py, math.pi / 2, 5.5, -0.5, 1.2, 40, -4)
+        look_at(px, py, math.pi / 2, 5.5, 0.5, 1.2, 40, -4)
         pic('5_rennen_vorn')
         do("GLFIG.stop(GT.polizei1)")
         # the old form with a high speed runs too (welt's officers before this round)

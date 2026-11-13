@@ -393,6 +393,18 @@ export const GLPOSE = (() => {
     boneTurn(R.sv, Qi, B.RightShoulder, 0, 1, 0, 0.12 * w);
     boneTurn(R.sv, Qi, B.Neck, 1, 0, 0, -tw * 0.45);
     boneTurn(R.sv, Qi, B.Head, 1, 0, 0, (-th * 0.5 + 0.06) * w);
+    // the eyes go into the curve: the head turns a little the way the moped turns (its heading's rate, eased)
+    const hdNow = Math.atan2(_f.x, -_f.z);
+    if (st.hdPrev != null && dt > 0) {
+      const rate = wrap(hdNow - st.hdPrev) / dt;
+      st.rate = (st.rate || 0) + (clamp(rate, -2, 2) - (st.rate || 0)) * Math.min(1, dt * 3);
+    }
+    st.hdPrev = hdNow;
+    const ly = -clamp((st.rate || 0) * 0.35, -0.35, 0.35) * w;
+    if (Math.abs(ly) > 0.005) {
+      boneTurn(R.sv, Qi, B.Neck, 0, 1, 0, ly * 0.4);
+      boneTurn(R.sv, Qi, B.Head, 0, 1, 0, ly * 0.6);
+    }
     // 3. the feet: on the pegs; at a stop the left one goes down to the ground (eased, the foot lifted on its way)
     const stop = M.v < 0.7 ? 1 : 0;
     st.down = st.down == null ? stop : st.down + (stop - st.down) * Math.min(1, dt * 3.2);
