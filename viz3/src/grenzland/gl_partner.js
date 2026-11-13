@@ -193,7 +193,7 @@ export const GLPARTNER = (() => {
 #glpartner.ki-host .np-me{color:rgba(238,241,242,.7)} #glpartner.ki-host .np-me:empty{display:none}
 #glpartner.ki-host .np-in input,#glpartner.ki-host .np-in button{background:rgba(255,255,255,.1);color:#eef1f2;border-color:rgba(255,255,255,.2)}
 #glpartner.ki-host .np-note{color:rgba(238,241,242,.65)} #glpartner.ki-host .np-note:empty{display:none}
-#glpartner.ki-host .np-setup{display:block;width:100%;box-sizing:border-box;margin-top:10px;font:500 12px/1.3 var(--f-body,system-ui);color:#f3c64f;
+#glpartner.ki-host .np-setup{display:block;width:100%;box-sizing:border-box;margin:10px 0 0;font:500 12px/1.3 var(--f-body,system-ui);color:#f3c64f;
   background:none;border:1px dashed rgba(243,198,79,.45);border-radius:8px;padding:7px 10px;cursor:pointer;text-align:left}
 #glpartner.ki-host .np-setup[hidden]{display:none}
 body[data-gl-kino="1"] #glpartner,body[data-gl-kino="1"] #glpreden{display:none!important}
@@ -453,8 +453,10 @@ body[data-gl-kino="1"] #glpartner,body[data-gl-kino="1"] #glpreden{display:none!
           !(a && ['INPUT', 'TEXTAREA', 'SELECT'].includes(a.tagName)) &&
           imAuto()
         ) {
+          // (the base game's workshop book also listens to B – while riding together the key is the talk's)
           auf();
           e.preventDefault();
+          e.stopImmediatePropagation();
         }
         return;
       }

@@ -163,6 +163,7 @@ with lib.browser() as b:
             hud('06_fahrt_knopf')
             pg.keyboard.press('b'); steps(0.3)
             ck('fahrt: B opens the talk while riding', E("GLPARTNER.offen() && GLPARTNER.auto"))
+            ck('fahrt: … and not the workshop book of the base game', E("(b => !b || b.hidden)(document.getElementById('werkbuch'))"))
             ck('fahrt: three topics, no „Warte hier“', J("GLPARTNER.debug.chips().map(c => c.k)") == ['jetzt', 'bisher', 'geht'], str(J("GLPARTNER.debug.chips().map(c => c.k)")))
             time.sleep(0.3); X("GLPARTNER.log.length = 0")
             pg.keyboard.press('1')

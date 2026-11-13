@@ -12,7 +12,7 @@ genauso.“
   (`GLMISSION.redet()`), nicht bei offener Auswahl.
 - **Zusammen unterwegs** (Auto, Simson; die Partnerin fährt unsichtbar mit): Taste **B** öffnet dasselbe Gespräch – ohne „Komm mit“/„Warte
   hier“, wie das Geplauder bei GTA-Fahrten. Nach dem Aufsteigen zeigt sich oben rechts für 6 Sekunden der Knopf **„B · Mit Sarah reden“**
-  (am Handy, ohne Tasten: solange man zusammen fährt). E beendet im Fahrzeug zuerst das Gespräch, erst das nächste E steigt aus.
+  (am Handy, ohne Tasten: solange man zusammen fährt). E oder Esc beenden das Gespräch, Aussteigen bleibt Q; Absteigen beendet es auch.
 - **Das Gespräch**: E öffnet rechts ein kleines Feld im Look des Modus (dunkel, gelber Name, wie die Auswahl von `GLHUD.wahl`). Die
   Partnerin bleibt stehen, dreht sich zum Spieler und schaut ihn an (`GLFIG.face`, `GLFIG.blick(F, 'spieler')`), der Mund bewegt sich,
   während sie spricht (`GLFIG.talking`), die Zeile steht als Untertitel (`GLHUD.sub`) und im Feld. Zur Begrüßung ein kurzes „Was gibt es?“.
@@ -48,8 +48,8 @@ genauso.“
 - **Taste E** über den Aktionsknopf des Spiels (`KERN.act`, Kennung `gl:partner`, Reichweite 3 m, Priorität 0,15) – E war frei, genau so
   bieten die anderen Grenzland-Aktionen (Tanken, Helm, Angeln …) ihre Knöpfe an. Im offenen Gespräch fängt das Feld E/Esc/1–4 ab (Capture),
   damit E nicht zugleich eine andere Aktion auslöst.
-- **Im Fahrzeug Taste B** („Beifahrer“): E ist dort der Ausstieg; B ist im Grenzland frei (im Grundspiel nur zu Fuß belegt: Buch im
-  Wald, Werkstatt). Während der Fahrt hält das Gespräch `GL.folgt` nicht an (sonst stiege sie aus), „Warte hier“ gibt es nicht, und die KI
+- **Im Fahrzeug Taste B** („Beifahrer“): Der Aktionsknopf des Spiels ist während der Fahrt nicht da; B ist sonst nur zu Fuß belegt (Buch
+  im Wald, Werkstattbuch) – während man zusammen fährt, gehört B dem Gespräch (das Werkstattbuch öffnet dann nicht mit). Während der Fahrt hält das Gespräch `GL.folgt` nicht an (sonst stiege sie aus), „Warte hier“ gibt es nicht, und die KI
   antwortet auf „warten“ mit „Geht gerade nicht – ihr fahrt zusammen.“ `<lage>` meldet „ihr sitzt zusammen auf dem …“.
 - **Mission-1-Test an der alten Schule** (Schritt `schule`) statt Schritt 1 (`ankunft`): Schritt 1 ist ein Missionsgespräch, dort gibt es
   absichtlich keinen Knopf; und so bleibt der Testlauf in einem Gebiet (Ratscher).
