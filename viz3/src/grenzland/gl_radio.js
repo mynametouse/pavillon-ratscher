@@ -171,9 +171,7 @@ export const GLRADIO = (() => {
       A.hp.frequency.setTargetAtTime(Mo.hp, t, 0.08);
       A.lp.frequency.setTargetAtTime(Mo.lp, t, 0.08);
     }
-    S.fadeT += dt;
-    const sg = signal();
-    S.sig = sg;
+    const sg = S.sig;
     const lade = !S.item || S.item.k === 'lade';
     A.out.gain.setTargetAtTime(S.id ? Mo.g : 0, t, 0.12);
     A.sig.gain.setTargetAtTime(0.1 + 0.9 * sg * sg, t, 0.2);
@@ -455,7 +453,7 @@ export const GLRADIO = (() => {
   function tune(id, o = {}) {
     const lst = list(),
       s = id ? lst.find(q => q.id === id) : null;
-    if (id && !s) return false;
+    if (id && (!s || !GL.on)) return false;
     S.touched = true;
     const was = S.id;
     stopSrc(0.1);
@@ -724,8 +722,6 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     if (!GL.on || !d) return;
     S.pend.push({ id: d.id, wit: d.zeugen | 0, t: CLOCK.t });
     if (S.pend.length > 6) S.pend.shift();
-    // a piece that would run much longer makes room for the report
-    if (S.id && S.item && S.item.k === 'musik' && S.item.left > 14 && d.zeugen > 0) S.item.left = 7;
   });
   KERN.on('grenzland:sterne', d => {
     if (!GL.on || !d) return;
@@ -782,6 +778,8 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     }
     uiTick(dt);
     if (!S.id) return;
+    S.fadeT += dt;
+    S.sig = signal();
     jobTick();
     mixTick(dt);
     // a special report over the music
@@ -803,6 +801,8 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     }
     if (it.k === 'musik') {
       it.left -= dt;
+      // a deed somebody saw: a piece that would run much longer makes room for the report
+      if (it.left > 7 && S.pend.length && S.pend.some(q => q.wit > 0)) it.left = 7;
       if (S.eil && (S.eil === 'eil' || S.eil === 'heli') && it.left > 6) {
         const c = ctxOf(),
           o = D.PROG.next(prog(S.id), c);
