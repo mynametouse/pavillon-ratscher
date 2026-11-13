@@ -104,6 +104,11 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 15:10 **Suhl-Chat** session_01L6YrpcuzUozgpZNSC5CdVL – **Suhl-Stand auf `src` erweitert** (der Lauf von 14:41 wird dadurch
+  abgelöst – Absicht, ein Prüfpaket statt zwei bei voller Warteschlange): dazu offenes Wasser (Lauter, Teiche, `kern/wasser.js`),
+  die Krone des Hotelturms am CCS, der Dachreiter des Rathauses sitzt jetzt auf dem First, weitere Fassaden nach Fotos. Weiter nur
+  Suhl-Dateien, Menü-Karte nur mit `?suhl=1`. Danach Vorschau → live als V18.
+
 - 13.11. 14:41 **Suhl-Chat** session_01L6YrpcuzUozgpZNSC5CdVL – **Nächster Suhl-Stand nach `src`** (danach Prüfpaket → Vorschau →
   live als V18, sofern niemand vorher eine Nummer nimmt). Nur Suhl-Dateien (`viz3/src/lazy/suhl/**`, `viz3/src/lazy/suhl.js`,
   `viz3/src/welt/suhl.js`, `viz3/test/suhl.py`): Gauben auf den Altstadtdächern, Wahrzeichen nach Commons-Fotos (Rotes Rathaus mit
