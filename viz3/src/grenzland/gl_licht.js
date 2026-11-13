@@ -11,7 +11,7 @@
 // - the helicopter's search light: a bright patch where it falls and the glare of the lamp;
 // - torches: any figure of grenzland/gl_fig.js with F.lampe (set by the missions and the police), without the flag at night also the
 //   officers, the guards and the police of 1989 – the lamp glass at the hand, a beam, a patch of light on the ground that goes with it;
-// - the flare (KERN.emit('grenzland:flare', { x, y, z })): it climbs with a trail of smoke, pops, and burns red on its parachute for
+// - the flare (KERN.emit('grenzland:flare', { x, y, z })): it climbs some 60 m with a trail of smoke, pops, and burns red on its parachute for
 //   about forty seconds while it sinks and drifts, sparks falling, a red glow over the forest, one borrowed light (KERN.lights.borrow)
 //   that follows it, fog and sky light tinted red while it burns – then it fades;
 // - readable nights: while the mode runs at night more light from the sky (the hemisphere light, moonlight blue) and a little more
@@ -224,8 +224,9 @@ export const GLLICHT = (() => {
     MAT.blauL = karte('blau links', 0x2f63ff, 0);
     MAT.blauR = karte('blau rechts', 0x2f63ff, 0);
     MAT.blauBoden = karte('blau boden', 0x1d46ff, 0);
-    MAT.fackel = karte('fackel', 0xfff1d8, 0.5);
-    MAT.fackelBoden = karte('fackel boden', 0xffeccc, 0.3);
+    MAT.fackel = karte('fackel', 0xfff1d8, 0.12);
+    MAT.fackelGlas = karte('fackel glas', 0xfff6e8, 0.9);
+    MAT.fackelBoden = karte('fackel boden', 0xffeccc, 0.14);
     MAT.blauRund = karte('blau rundum', 0x2f63ff, 0);
     MAT.heli = karte('heli', 0xe6efff, 0.55);
     MAT.dunst = karte('leuchtkugel dunst', 0xff3018, 0.2);
@@ -271,12 +272,13 @@ export const GLLICHT = (() => {
               .addScaledVector(t, b * sy);
         B.quad(P(-1, -1), P(1, -1), P(-1, 1), P(1, 1), R);
       },
-      // a beam from p along d (unit): three cards crossed along its axis, w0 wide at the lamp, w1 at the end
+      // a beam from p along d (unit): three cards crossed along its axis – a flat one and two tilted by 38° (no upright one: seen from
+      // behind or ahead it stood as a bright streak), w0 wide at the lamp, w1 at the end
       beam(pc, d, L, w0, w1, R) {
         const up = Math.abs(d.y) > 0.9 ? new V3(1, 0, 0) : new V3(0, 1, 0),
           s0 = new V3().crossVectors(d, up).normalize(),
           e = pc.clone().addScaledVector(d, L);
-        for (const ang of [0, Math.PI / 3, (2 * Math.PI) / 3]) {
+        for (const ang of [0, 0.66, -0.66]) {
           const s = s0.clone().applyAxisAngle(d, ang);
           B.quad(
             pc.clone().addScaledVector(s, -w0),
@@ -460,6 +462,8 @@ export const GLLICHT = (() => {
         bremse: null,
         blau: [],
         boden: null,
+        glas: [],
+        glas0: [],
       };
     if (!T.head) return D;
     mats();
@@ -703,10 +707,11 @@ export const GLLICHT = (() => {
     const K = bau(),
       d = new V3(0, 0, -1);
     K.beam(new V3(0, 0, -0.06), d, 7, 0.035, 1.25, REG.beam);
-    K.facing(new V3(0, 0, -0.05), d, 0.16, REG.glow);
+    const G = bau();
+    G.facing(new V3(0, 0, -0.05), d, 0.13, REG.glow);
     const B = bau();
     B.boden(0, 0, -1.7, 1.7, 1.3, 1.3, REG.spot);
-    return (FGEO = { licht: K.geo(), boden: B.geo() });
+    return (FGEO = { licht: K.geo(), glas: G.geo(), boden: B.geo() });
   }
   const _h = new V3(),
     _e = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -722,10 +727,12 @@ export const GLLICHT = (() => {
           const G = fackelGeo();
           L = {
             licht: own(new THREE.Mesh(G.licht, MAT.fackel), 'fackel'),
+            glas: own(new THREE.Mesh(G.glas, MAT.fackelGlas), 'fackel glas'),
             boden: own(new THREE.Mesh(G.boden, MAT.fackelBoden), 'fackel boden'),
             ph: Math.random() * 7,
           };
           L.boden.renderOrder = 2;
+          L.licht.add(L.glas);
           scene.add(L.licht, L.boden);
           S.fackeln.set(F, L);
         }
@@ -759,15 +766,16 @@ export const GLLICHT = (() => {
         markDirty();
       }
     if (S.fackeln.size) {
-      MAT.fackel.opacity = 0.42 * S.lampK;
-      MAT.fackelBoden.opacity = 0.34 * S.lampK;
+      MAT.fackel.opacity = 0.12 * S.lampK;
+      MAT.fackelGlas.opacity = 0.9 * S.lampK;
+      MAT.fackelBoden.opacity = 0.16 * S.lampK;
       markDirty();
     }
     S.n.fackeln = S.fackeln.size;
   }
   // ================================================================ the flare ================================================================
-  // climbs about 3 s to some 75 m, the parachute opens, it burns 40 s while it sinks and drifts, then 3 s to go out; the smoke stays a while
-  const FL = { steig: 3.2, brenn: 40, aus: 3.5, hoch: 75 };
+  // climbs 3 s to some 60 m, the parachute opens, it burns 40 s while it sinks and drifts, then 3.5 s to go out; the smoke stays a while
+  const FL = { steig: 3.0, brenn: 40, aus: 3.5, hoch: 58 };
   let FB = null;
   function flareBau() {
     if (FB) return FB;
@@ -875,15 +883,15 @@ export const GLLICHT = (() => {
     f.pT -= dt;
     if (t < end - 1 && f.pT <= 0) {
       const climb = t < FL.steig;
-      f.pT = climb ? 0.035 : 0.22;
+      f.pT = climb ? 0.05 : 0.3;
       f.puffs.push({
-        x: f.x + (Math.random() - 0.5) * 0.3,
-        y: f.y + (Math.random() - 0.5) * 0.3,
-        z: f.z + (climb ? -0.5 : 0.6),
-        s: climb ? 0.7 : 0.5,
-        g: climb ? 1.2 : 0.75,
+        x: f.x + (Math.random() - 0.5) * 0.15,
+        y: f.y + (Math.random() - 0.5) * 0.15,
+        z: f.z + (climb ? -0.4 : 0.5),
+        s: climb ? 0.28 : 0.3,
+        g: climb ? 0.42 : 0.3,
         age: 0,
-        life: climb ? 9 : 7,
+        life: climb ? 8 : 6,
         rot: Math.random() * 6.3,
       });
       if (f.puffs.length > 130) f.puffs.shift();
@@ -957,8 +965,8 @@ export const GLLICHT = (() => {
     B.rauch.end();
     // the smoke: grey, reddened by the light while it burns
     const rk = Math.min(1, k);
-    MAT.rauch.color.setRGB(0.3 + 0.55 * rk, 0.27 + 0.05 * rk, 0.26 + 0.03 * rk);
-    MAT.rauch.opacity = 0.42;
+    MAT.rauch.color.setRGB(0.42 + 0.3 * rk, 0.4 + 0.04 * rk, 0.38 + 0.02 * rk);
+    MAT.rauch.opacity = 0.3;
     markDirty();
     if (t > end + 9 && !f.puffs.length) {
       S.fl = null;
@@ -1170,7 +1178,6 @@ export const GLLICHT = (() => {
     if (s && Number.isFinite(s.sunEl)) return s.sunEl;
     return VAUTO.dark && VAUTO.dark() ? -12 : 30;
   }
-  let rT = 0;
   function tick(dt) {
     if (!GL.on) {
       if (S.aktiv) aus();
@@ -1192,10 +1199,7 @@ export const GLLICHT = (() => {
       else if (FB && !show) flareLeer();
       if (KUGEL.o && KUGEL.o.visible === !!(S.fl && show)) KUGEL.o.visible = !(S.fl && show);
       licht(show);
-      if ((rT -= dt) <= 0) {
-        rT = 0.5;
-        regen(show && regenWill());
-      }
+      regen(show && regenWill());
     } catch (e) {
       if (!S.err) console.warn('grenzland licht', e);
       S.err = String((e && e.stack) || e).slice(0, 300);
@@ -1269,7 +1273,6 @@ export const GLLICHT = (() => {
     flare,
     regnen: v => {
       S.regenHand = v === null || v === undefined ? null : !!v;
-      rT = 0;
     },
     stand,
     blauPuls,

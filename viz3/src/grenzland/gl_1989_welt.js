@@ -45,6 +45,7 @@ import { VERKEHR } from '../verkehr/verkehr.js';
 import { WETTER } from '../wetter/wetter.js';
 import { BUSMOD } from '../bus/bus_modell.js';
 import { BUS } from '../bus/bus.js';
+import { thinCards } from '../garden/trees.js';
 import { BUSLEUTE } from '../bus/bus_leute.js';
 import { GLDATA } from './gl_data.js';
 import { GLAUTO } from './gl_auto.js';
@@ -323,7 +324,7 @@ export const GL89WELT = (() => {
       }
       zweig(cx, cy, aa + (rnd() - 0.5) * 0.4, l * 0.55, w * 0.7, n - 1);
     };
-    for (let i = 0; i < 3; i++) zweig(128 + (i - 1) * 6, 254, (i - 1) * 0.42, 118 - Math.abs(i - 1) * 18, 6.5, 4);
+    for (let i = 0; i < 2; i++) zweig(126 + i * 4, 254, (i - 0.5) * 0.5, 112 - i * 14, 4.2, 4);
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
@@ -332,12 +333,19 @@ export const GL89WELT = (() => {
   function zweige() {
     const L = VPROPS.lindeMeshes;
     if (!L || !L[1] || !L[2] || !L[1].material) return;
-    const m = L[1].material.clone();
+    const base = L[1].material,
+      m = base.clone();
+    // (a copy has no shader patch of its own – three copies neither onBeforeCompile nor the key: given the original's, it shares its program)
+    m.onBeforeCompile = base.onBeforeCompile;
+    if (Object.prototype.hasOwnProperty.call(base, 'customProgramCacheKey'))
+      m.customProgramCacheKey = base.customProgramCacheKey;
     m.map = zweigBild();
-    m.color.setRGB(0.36, 0.32, 0.28);
+    m.color.setRGB(0.25, 0.22, 0.19);
     m.alphaTest = 0.42;
     m.name = 'grenzland 1989 zweige';
-    const me = new THREE.Mesh(L[2].geometry, m);
+    // a quarter of the leaves' cards, a little larger: sprays of twigs, the sky between them
+    const geo = thinCards(L[1].geometry, 0.24, 1.35),
+      me = new THREE.Mesh(geo, m);
     me.name = 'grenzland 1989 linde';
     me.userData.noMerge = true;
     me.castShadow = false;
@@ -346,6 +354,7 @@ export const GL89WELT = (() => {
     S.zweige = me;
     S.undo.push(() => {
       scene.remove(me);
+      geo.dispose();
       m.map.dispose();
       m.dispose();
       S.zweige = null;

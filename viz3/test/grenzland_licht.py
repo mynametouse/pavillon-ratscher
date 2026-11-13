@@ -9,6 +9,8 @@
 import sys, os, json, time, math, base64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib, grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
+# sections (second argument, comma separated; default all): strasse leute klinge 1989
+SECT = [q for q in (sys.argv[2] if len(sys.argv) > 2 else 'strasse,leute,klinge,1989').split(',') if q]
 ck = grenzland_ci.wrap(lib.Checks('grenzland_licht'), 'grenzland_licht')
 OUT = lib.out('grenzland_licht')
 # free play (as the lead gives it), at 22:00
@@ -64,7 +66,7 @@ with lib.browser() as b:
         """mean colour of a box of a kept picture"""
         return J("((n, b) => { const c = __img[n], x0 = Math.max(0, Math.round(b[0])), y0 = Math.max(0, Math.round(b[1])), x1 = Math.min(c.width, Math.round(b[2])), y1 = Math.min(c.height, Math.round(b[3])); "
                  "if (x1 <= x0 || y1 <= y0) return [-1, -1, -1]; const d = c.getContext('2d').getImageData(x0, y0, x1 - x0, y1 - y0).data; let r = 0, g = 0, bb = 0; "
-                 "for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; bb += d[i + 2]; } const n = d.length / 4; return [r / n, g / n, bb / n]; })("
+                 "for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; bb += d[i + 2]; } const k = d.length / 4; return [r / k, g / k, bb / k]; })("
                  + json.dumps(img) + ", " + json.dumps(list(box)) + ")")
     def lum(img, box):
         r, g, bb = rgb(img, box)
@@ -92,12 +94,14 @@ with lib.browser() as b:
         ck('the mode starts', False, str(e)[:300])
 
     # ---------------------------------------------------------------- the village road: the player's moped, a patrol car, cars ----------------------------------------------------------------
+    R0 = None
     try:
         # a line along the road from the garden to the old school: where the moped stands, where the others stand
         R0 = J("(() => { const L = GLAUTO.route(GLDATA.ORTE.garten.pos, GLDATA.ORTE.schule.pos); if (!L) return null; window.__L = L; const c = GLAUTO.spawn('kombi', { col: '#2b3a4a' }); "
                "const at = s => { GLAUTO.onLine(c, L, s, 0); return [c.x, c.y, c.hd]; }; const o = { len: L.L, a: at(70), b: at(92), c: at(116), d: at(138) }; window.__C = c; return o; })()")
         ck('a road line from the garden into the village', R0 and R0['len'] > 150, str(R0))
         mx, my, mh = R0['a']
+        if 'strasse' not in SECT: raise StopIteration
         bx, by, bh = R0['b']
         # the moped on the road, the player on it, its lamp on; the patrol car ahead, coming the other way, beacons on; a car of today
         # drives towards us; a Trabant parked
@@ -153,11 +157,15 @@ with lib.browser() as b:
         # the lent blue light: short, dark between the flashes
         bl = J("(window.LIGHTS || []).filter(l => l.userData && l.userData.lent && l.color.getHex() === 0x2a5cff).map(l => ({ d: l.distance, dec: l.decay, i: +l.intensity.toFixed(1) }))")
         ck('the blue light the police borrows reaches the nearest walls only (12 m), not the whole street', all(q['d'] <= 12 for q in bl), str(bl))
+    except StopIteration:
+        pass
     except Exception as e:
         ck('the village road ran through without an error of the test', False, str(e)[:300])
 
     # ---------------------------------------------------------------- people at night: a torch, the partner at 15 m ----------------------------------------------------------------
     try:
+        if 'leute' not in SECT or not R0: raise StopIteration
+        mh = R0['a'][2]
         do("window.__W = null; GLFIG.make('wache1', {}).then(F => { window.__W = F; })")
         until("!!window.__W", 60, 0.25, 0.4)
         # the camera on the road, the partner 15 m ahead, the guard with his torch 9 m ahead and to the left, looking about
@@ -181,11 +189,14 @@ with lib.browser() as b:
             ck('a person at 15 m reads as a person: brighter than before (readable nights)', l1 > l0 * 1.3 and l1 > 14, f'{l0:.1f} → {l1:.1f} in {[round(q) for q in bb]}')
         else:
             ck('the partner is in the picture', False, str(box))
+    except StopIteration:
+        pass
     except Exception as e:
         ck('the people at night ran through without an error of the test', False, str(e)[:300])
 
     # ---------------------------------------------------------------- the Klinge: rain, the guards' torches, the flare ----------------------------------------------------------------
     try:
+        if 'klinge' not in SECT: raise StopIteration
         do("if (VEH.cur) VEH.exit(); GLFAHNDUNG.clear(); GLMISSION.debug.go('klinge', 2)"); steps(0.5)
         ok = until("['w1', 'w2', 'w3'].every(k => GLMISSION.F(k)) && !!GLMISSION.C('van')", 160, 0.3, 0.5)
         lib.settle_light(pg)
@@ -204,30 +215,36 @@ with lib.browser() as b:
         K0 = pnames()
         E(f"KERN.emit('grenzland:flare', {{ x: {KL['van'][0]}, y: {KL['van'][1]}, z: KERN.ground({KL['van'][0]}, {KL['van'][1]}) + 1.5 }})")
         steps(1.6, 0.05)
-        do(f"GAME.view({p[0]}, {p[1]}, KERN.ground({p[0]}, {p[1]}) + 1.62, {yawTo(p, KL['van'])}, 16, 62)")
+        # (from further away: the flare stands some 60 m over the van)
+        q = PP(-52, -26)
+        do(f"GAME.view({q[0]}, {q[1]}, KERN.ground({q[0]}, {q[1]}) + 1.62, {yawTo(q, KL['van'])}, 22, 62)")
         grab('7_flare_steigt')
         steps(5, 0.05)
         st = J("GLLICHT.stand()")
-        do(f"GAME.view({p[0]}, {p[1]}, KERN.ground({p[0]}, {p[1]}) + 1.62, {yawTo(p, KL['van'])}, 22, 62)")
+        do(f"GAME.view({q[0]}, {q[1]}, KERN.ground({q[0]}, {q[1]}) + 1.62, {yawTo(q, KL['van'])}, 26, 62)")
         img = grab('8_flare_brennt')
         do(f"GAME.view({p[0]}, {p[1]}, KERN.ground({p[0]}, {p[1]}) + 1.62, {yawTo(p, KL['van'])}, -2, 62)")
         img2 = grab('9_flare_wald')
         w, h = size(img)
         up = rgb(img, (0, 0, w, h // 2))
-        ck('the flare burns high over the van (a light of its own, smoke, sparks)', st['flare'] and st['flare']['z'] > 40 and st['flare']['k'] > 0.6 and st['flare']['puffs'] > 10, str(st['flare']))
+        ck('the flare burns high over the van (a light of its own, smoke, sparks)', st['flare'] and st['flare']['z'] > 35 and st['flare']['k'] > 0.6 and st['flare']['puffs'] > 10, str(st['flare']))
         ck('under the flare the picture turns red (upper half: red clearly above green)', up[0] > up[1] * 1.35 and up[0] > 30, str([round(q, 1) for q in up]))
         lo = rgb(img2, (0, h // 2, w, h))
         ck('the forest and the ground are lit red', lo[0] > lo[1] * 1.15, str([round(q, 1) for q in lo]))
         NEU.update(pnames() - K0)
         steps(20, 0.1)
+        do(f"GAME.view({q[0]}, {q[1]}, KERN.ground({q[0]}, {q[1]}) + 1.62, {yawTo(q, KL['van'])}, 18, 62)")
         grab('10_flare_sinkt')
         st = J("GLLICHT.stand()")
-        ck('it sinks slowly on its parachute and still burns after 25 s', st['flare'] and st['flare']['k'] > 0.5 and 10 < st['flare']['z'] < 60, str(st['flare']))
+        ck('it sinks slowly on its parachute and still burns after 25 s', st['flare'] and st['flare']['k'] > 0.5 and 10 < st['flare']['z'] < 50, str(st['flare']))
+    except StopIteration:
+        pass
     except Exception as e:
         ck('the Klinge ran through without an error of the test', False, str(e)[:300])
 
     # ---------------------------------------------------------------- 1989: the bare lime, the lamps of the time ----------------------------------------------------------------
     try:
+        if '1989' not in SECT: raise StopIteration
         do("if (VEH.cur) VEH.exit(); GLMISSION.stop(); GLFAHNDUNG.clear()"); steps(0.5)
         E("window.__e89 = false; GL89.enter({ uhr: 15 * 60 + 35, pos: [209, -113], yaw: 62 }).then(() => { window.__e89 = true; })")
         ok = until("!!window.__e89", 120, 0.3, 0.4)
@@ -245,6 +262,8 @@ with lib.browser() as b:
         paar('12_abend_1989')
         do("GL89.leave()")
         until("GLSTATE.era === 'heute' && !GL89.busy", 60, 0.3, 0.3)
+    except StopIteration:
+        pass
     except Exception as e:
         ck('1989 ran through without an error of the test', False, str(e)[:300])
 
