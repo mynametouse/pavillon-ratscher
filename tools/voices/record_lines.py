@@ -70,3 +70,4 @@ for f in os.listdir(OUT):
     if f.endswith('.mp3') and f not in want: os.remove(os.path.join(OUT, f)); print('removed', f)
 json.dump({'vx': {'voices': pick, 'lines': out}}, open(mf, 'w'), ensure_ascii=False, indent=1)
 print('DONE', len(out), 'lines,', n, 'new', flush=True)
+# 13.11.2026: the Zeitreise media lines (newsreader zk_sprecherin, calls, voice notes) – a commit that touches this file starts the recording
