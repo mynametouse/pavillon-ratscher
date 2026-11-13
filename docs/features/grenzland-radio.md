@@ -114,6 +114,8 @@ Bildschirm hochkant fast ganz, quer steht es rechts. Gespeichert über `GL`: `GL
   Jingles, keine Marken. Hubert und Ronald kommen nirgends vor (ein Unit-Test sucht danach). Spedition Krähwinkel wirbt im Radio.
 - **Stimmen:** vorgelesen wird nur über kostenlose Wege (Gerät, Piper, Microsoft-Freikontingent). Ist ElevenLabs gewählt, bleibt das
   Radio bei Untertiteln, bis man im Handy „Sprecher vorlesen“ anhakt – das Radio redet viel und würde Guthaben kosten.
+  Während eine Mission läuft oder jemand in der Welt spricht, liest das Radio nicht vor (nur seine Zeile) und wird leiser – die Stimmen
+  der Geschichte gehen vor.
 - **1989 zu Fuß:** Gerhard hat ein Kofferradio (sonst hörte man die Nachrichten des 10. November nur im Auto). Auf dem Moped und zu Fuß
   heute spielt das Handy.
 - **Radio Blasius** hat im Garten nur Rauschen mit etwas Musik, ab etwa 750 m südlich klaren Empfang; die Frankenwelle 1989 schwankt immer.
