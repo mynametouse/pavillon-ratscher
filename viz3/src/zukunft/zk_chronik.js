@@ -897,6 +897,13 @@ export const ZKCHRONIK = (() => {
     },
   ];
 
+  // the id of a line's recording: who + FNV-1a of the UTF-8 words in base 36, as tools/voices/linien.mjs makes it – the file is
+  // snd/voice/x/<rec>.mp3 of the extra viz3/extra/saetze (window.VOICEX); STIMME.say(who, text) finds it by the words as well
+  function fnv(s) {
+    let h = 0x811c9dc5;
+    for (const c of new TextEncoder().encode(s)) h = Math.imul(h ^ c, 0x01000193) >>> 0;
+    return h.toString(36);
+  }
   // speech time of a line in seconds (about 2.3 words per second with the recording settings, plus a breath)
   const speak = text => text.split(/\s+/).filter(Boolean).length / 2.3 + 0.8;
 
@@ -918,6 +925,7 @@ export const ZKCHRONIK = (() => {
         id: 'zk-' + b.id + '-' + (same ? 'x' : letter) + (i + 1),
         who,
         text,
+        rec: 'x_' + who + '_' + fnv(text),
       }));
       // the halt fits the longer talk of the two worlds (a shared moment halts equally long in both)
       const talk = Math.max(
