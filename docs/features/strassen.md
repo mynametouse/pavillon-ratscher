@@ -41,7 +41,8 @@ umsetzen kannst, das tu“.
     gewähren und Stopp (OSM-Knoten, dazu nach Regel, wo eine Straße auf eine klassifizierte trifft) mit Warte-/Haltlinie; Vorfahrt (301)
     150 m davor auf der klassifizierten Straße außerorts; Kreisverkehre (205 + 215); Andreaskreuze an Bahnübergängen; Fußgängerüberweg
     (350, mit Zebrastreifen); Stationszeichen (OSM `milestone`); Richtungstafeln in engen Kurven (Radius unter 62 m); Wildwechsel (142),
-    wo eine klassifizierte Straße 350 m und mehr durch Wald führt. Formen als echte Umrisse (kein Ausschnitt), ein Bild für alle Flächen.
+    wo eine klassifizierte Straße 350 m und mehr durch Wald führt. Formen als echte Umrisse (kein Ausschnitt), ein Bild für alle Flächen
+    (Felder von 128 Pixeln, auf Telefonen und Tablets 64 – ein Viertel des Speichers).
   - **Straßenlaternen** (1596): OSM-Knoten (55) und nach Regel an beleuchteten Straßen (`lit=yes`) und den Straßen der bebauten Flächen,
     die OSM nicht „unbeleuchtet“ nennt – eine Seite, alle 36 m. Nicht in Ratscher (dort stehen die Laternen aus `world/village_props.js`),
     nicht neben den Laternen einer Zone. Nachts leuchten Glas und Lichtfleck mit den Dorflaternen (deren Materialien bzw. Programme),

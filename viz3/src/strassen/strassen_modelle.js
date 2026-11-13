@@ -450,9 +450,10 @@ export const STRMOD = (() => {
     if (m.edge) for (const sd of [-1, 1]) stripe(0, L, sd * (hw - 0.27), 0.12);
   };
   // ================= traffic signs =================
-  // One picture for all faces: cells of CELL pixels; a sign is drawn at its true proportions, its longer side filling the cell.
-  const CELL = 128,
-    PAD = 5,
+  // One picture for all faces: cells of CELL pixels (128; 64 on phones and tablets – a quarter of the memory); a sign is drawn at its
+  // true proportions, its longer side filling the cell.
+  const CELL0 = 128,
+    PAD0 = 5,
     RED = '#c4161c',
     BLUE = '#0d4f9e',
     WHT = '#f4f4f0',
@@ -749,7 +750,8 @@ export const STRMOD = (() => {
   }
   S.draw = draw;
   // ---- the atlas: one cell per sign face that occurs (code + text), plus the grey of the backs ----
-  S.atlas = (list, makeCanvas) => {
+  S.atlas = (list, makeCanvas, CELL = CELL0) => {
+    const PAD = Math.max(2, Math.round((PAD0 * CELL) / CELL0));
     const keys = ['back'];
     for (const s of list) {
       for (const c of s.c.split('+')) {

@@ -192,12 +192,16 @@ export const STRASSEN = (() => {
         }
       }
     // the picture of the sign faces and the materials – now, so that their programs are compiled while the loading screen is up
-    atlas = STRMOD.atlas(signs, (w, h) => {
-      const cv = document.createElement('canvas');
-      cv.width = w;
-      cv.height = h;
-      return cv;
-    });
+    atlas = STRMOD.atlas(
+      signs,
+      (w, h) => {
+        const cv = document.createElement('canvas');
+        cv.width = w;
+        cv.height = h;
+        return cv;
+      },
+      COARSE ? 64 : 128
+    );
     const tex = new THREE.CanvasTexture(atlas.cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
