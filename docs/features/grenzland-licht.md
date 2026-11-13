@@ -27,10 +27,10 @@ Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo ech
   `vehicles/vehicle.js` ohnehin für das nächste Fahrzeug mit Licht hat – dafür war kein geliehenes Licht nötig.
 - **Blaulicht:** Die beiden blauen Lampen auf dem Dach blitzen im Doppeltakt von heute (zweimal links, zweimal rechts, 0,84 s,
   `GLAUTO.blauPuls`), dazu ein blaues Glühen an jeder Lampe und ein blauer Puls auf dem Boden um den Wagen. Die Rundumleuchte der
-  Volkspolizei schlägt wie ein drehender Spiegel. **Woher die blaue Flut kam:** `gl_fahndung.js` (Datei von `welt`) leiht ein Licht
-  mit 24 m Reichweite, Abfall 1,4 und zwischen den Blitzen nicht aus (Stärke 4) – das färbte die ganze Straße gleichmäßig blau. Bis
-  `welt` das ändert, setzt `gl_licht.js` dieses geliehene Licht nach dessen Takt jeden Frame auf 12 m, Abfall 2 und zwischen den
-  Blitzen 0 (siehe „Für den Lead“).
+  Volkspolizei schlägt wie ein drehender Spiegel. **Woher die blaue Flut kam:** `gl_fahndung.js` (Datei von `welt`) lieh ein Licht
+  mit 24 m Reichweite, Abfall 1,4 und zwischen den Blitzen nicht aus (Stärke 4) – das färbte die ganze Straße gleichmäßig blau.
+  Seit der Zusammenführung 1 hat `welt` es auf 12 m, Abfall 2 und den Doppeltakt von `GLAUTO.blauPuls` gestellt (der Übergang, mit
+  dem `gl_licht.js` das vorher von außen tat, ist wieder weg).
 - **Hubschrauber:** wo der Suchscheinwerfer auf den Boden fällt, ein heller Fleck (dreht sich langsam), am Hubschrauber der Glanz
   der Lampe, dazwischen ein weicher Strahl (eine zur Kamera gedrehte Karte). Der eigene Kegel von `gl_heli.js` (Datei von `welt`)
   stand als harter, blasser Keil quer über dem Himmel (Bild `out/grenzland_licht/14_heli_vergleich.jpg`, links): solange die Lichter
@@ -117,15 +117,14 @@ neue Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden�
   `gl_heli.js`); `gl_auto.js` (Blaulicht im Doppeltakt `blauPuls`, `c.bremst` in `drive()`, warmes Scheinwerfermaterial 1989
   einschalten), `gl_modelle.js` (`LM.head89` warm, `LM.head` weißer; die Typen von 1989 und die Mopeds bekommen das warme), 
   `gl_1989_welt.js` (Zweige der kahlen Linde); Test `viz3/test/grenzland_licht.py`, `viz3/extra/grenzland-licht/tests.txt`.
-- **An `welt` (gl_fahndung.js, ~Zeile 795, `grenzland:blau`):** bitte `distance = 12`, `decay = 2` und als Stärke
-  `46 * Math.max(...GLAUTO.blauPuls(GLAUTO.blink))` statt `… % 2 ? 30 : 4` – dann kann der Übergang in `gl_licht.js`
-  (`blauLicht`) entfallen. Er findet das Licht an seiner Farbe `0x2a5cff`; ändert `welt` die Farbe, greift er nicht mehr.
+- **An `welt`:** das Blaulicht ist erledigt (danke). Offen: der eigene Kegel des Hubschraubers in `gl_heli.js` (`S.cone`) – bitte
+  nicht mehr zeigen, wenn `window.GLLICHT` da ist; bis dahin blendet `gl_licht.js` ihn nach dessen Takt aus.
 - **An `kino` (gl_kapitel1.js, Schritt `flucht` der Mission `klinge`):** beim Abschuss `KERN.emit('grenzland:flare', { x: K.van[0],
   y: K.van[1], z: KERN.ground(K.van[0], K.van[1]) + 1.5 })` und die eigene rote Kugel (`leuchtkugel`) weglassen, wenn
   `window.GLLICHT` da ist – sonst sieht man zwei. Die Leuchtkugel brennt ~47 s (Steigen 3,2 s, Brennen 40 s, Erlöschen 3,5 s).
   Taschenlampen: `F.lampe = true` für die Wachleute der Klinge und des Lagers nachts; ohne die Angabe tragen sie nachts ohnehin eine.
-- **Ton (gl_ton.js):** ein Zischen der Leuchtkugel (Abschuss: kurzes Fauchen; Brennen: leises Prasseln/Zischen ~40 s, aus
-  `grenzland:flare` ableitbar), Regen kommt vom Wetter selbst (`wetter/wx_ton.js`).
+- **Ton (gl_ton.js):** das Fauchen und Zischen der Leuchtkugel hat der Lead seit der Zusammenführung 1 eingebaut; Regen kommt vom
+  Wetter selbst (`wetter/wx_ton.js`).
 
 ## Offen
 

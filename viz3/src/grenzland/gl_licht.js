@@ -6,8 +6,8 @@
 //   on the road ahead, a glare on the lamp glass, the red glow of the tail lamps, brighter while braking (their lamp glass too) – warm
 //   for 1989 and the Simson, whiter for the cars of today; only while the lamps burn;
 // - the police's beacons: a blue glow at each lamp in the double flash of today's patrol cars, a blue pulse on the ground round the car;
-//   the shared light that the wanted level borrows (grenzland/gl_fahndung.js 'grenzland:blau') kept short and pulsing, so that it flashes
-//   on the nearest wall instead of flooding the street;
+//   the shared light that the wanted level borrows (grenzland/gl_fahndung.js 'grenzland:blau') is short (12 m) and pulses with
+//   GLAUTO.blauPuls since merge 1 (it flooded the street before: 24 m, never dark), so it flashes on the nearest wall;
 // - the helicopter's search light: a bright patch where it falls and the glare of the lamp;
 // - torches: any figure of grenzland/gl_fig.js with F.lampe (set by the missions and the police), without the flag at night also the
 //   officers, the guards and the police of 1989 – the lamp glass at the hand, a beam, a patch of light on the ground that goes with it;
@@ -809,20 +809,6 @@ export const GLLICHT = (() => {
     S.n.kegel = nk;
     S.n.blau = nb;
   }
-  // the wanted level's blue light on the walls (grenzland/gl_fahndung.js borrows it with 24 m reach and a steady glow between the flashes,
-  // which lit the whole street): kept short and dark between the flashes. A light lent from the pool, found by its colour; the owner sets it
-  // anew each frame before us.
-  function blauLicht(show) {
-    const L = window.LIGHTS;
-    if (!L || !S.n.blau) return;
-    const [pl, pr] = puls();
-    for (const l of L)
-      if (l && l.userData && l.userData.lent && l.color && l.color.getHex() === 0x2a5cff) {
-        l.distance = 12;
-        l.decay = 2;
-        l.intensity = show ? 46 * Math.max(pl, pr) : 0;
-      }
-  }
   // ================================================================ the helicopter's light ================================================================
   // (grenzland/gl_heli.js draws a cone of its own – a mesh that stood as a hard pale wedge across the sky; while our lights are on it is
   // hidden after its update and a soft card turned to the camera goes from the lamp to the patch instead)
@@ -1400,7 +1386,6 @@ export const GLLICHT = (() => {
     S.aktiv = true;
     try {
       autos(dt, show);
-      blauLicht(show);
       heli(show);
       fackeln(dt, show);
       if (S.fl && show) flareTick(dt);
