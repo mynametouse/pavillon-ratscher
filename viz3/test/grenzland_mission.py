@@ -262,21 +262,184 @@ with lib.browser() as b:
       except Exception as e:
         ck('mission 3 ran through without an error of the test', False, str(e)[:300])
 
+    # ================================================================ 4 · Nachts an der Klinge ================================================================
+    if 'm4' in SECT:
+      try:
+        E("if (VEH.cur) VEH.exit(); GLFAHNDUNG.clear(); GLMISSION.debug.go('klinge')"); steps(0.5)
+        KL = J("(K => ({ van: K.van, vorn: K.vorn, hd: K.hd, men: K.men.map(m => m[2]) }))(GLKAP1.szeneKlinge())")
+        st = J("({ sms: GLSTATE.sms.slice(-1)[0].text, x: document.getElementById('glextra').textContent, b: GLSTATE.inv.boeller || 0, nacht: GLMLOGIK.nacht(CLOCK.t), surf: !!KERN.surface(" + f"{KL['van'][0]}, {KL['van'][1]}" + ") })")
+        ck('„Nachts an der Klinge“: Jule\'s message, bangers in the pocket, „Bis zum Abend warten“ on the panel; the van\'s place is on the forest track',
+           'Klinge' in st['sms'] and st['x'] == 'Bis zum Abend warten' and st['b'] >= 2 and st['surf'], str(st))
+        put(KL['vorn'])
+        steps(1.5)
+        day = info()['step'] == 'abend' and not E("!!GLMISSION.C('van')")
+        E("GLHUD.acts.extra()")
+        ok = until("GLMLOGIK.nacht(CLOCK.t) && !CLOCK.warp", 40, 0.5, 0.1)
+        ck('by day nobody is there; waiting until the evening brings the night', (day or st['nacht']) and ok, 'minute ' + str(E("Math.floor(CLOCK.t) % 1440")))
+        ok = at('ansehen', 6)
+        ok2 = until("['w1', 'w2', 'w3'].every(k => GLMISSION.F(k)) && !!GLMISSION.C('van')", 160, 0.3, 0.5)
+        lib.settle_light(pg)
+        st = J("({ van: (c => [c.x, c.y, c.g.visible])(GLMISSION.C('van')), d: ['w1', 'w2', 'w3'].map(k => Math.round(Math.hypot(GLMISSION.F(k).x - GLMISSION.C('van').x, GLMISSION.F(k).y - GLMISSION.C('van').y) * 10) / 10), k: !!GLMISSION.D('kisten'), dark: VAUTO.dark(), lamp: GLAUTO.LM.head.emissiveIntensity })")
+        ck('in the forest: a van with its lamps on, three men, crates', ok and ok2 and st['van'][2] and max(st['d']) < 8 and st['k'] and st['dark'] and st['lamp'] > 1, str(st))
+        import math
+        f = (math.sin(KL['hd']), math.cos(KL['hd'])); r = (math.cos(KL['hd']), -math.sin(KL['hd']))
+        P = lambda a, b: (KL['van'][0] + f[0] * a + r[0] * b, KL['van'][1] + f[1] * a + r[1] * b)
+        yawTo = lambda p, q: math.degrees(math.atan2(q[0] - p[0], q[1] - p[1]))
+        p = P(-16, -9)
+        E(f"GAME.view({p[0]}, {p[1]}, KERN.ground({p[0]}, {p[1]}) + 1.62, {yawTo(p, KL['van'])}, -4)"); steps(0.3)
+        pic('41_klinge')
+        n = talk() if until("GLMISSION.redet()", 3) else 0
+        ck('the two make a plan', n >= 2 and at('ablenken'), f'{n} lines ' + info()['step'])
+        # too far for a picture
+        p = P(-52, -20)
+        E(f"GAME.view({p[0]}, {p[1]}, KERN.ground({p[0]}, {p[1]}) + 1.62, {yawTo(p, KL['van'])}, 0)"); steps(0.3)
+        a1 = act('gl:foto'); steps(0.3)
+        far = E("GLKAP1.K4().n") == 0
+        # seen from close by → they come running → caught → the checkpoint
+        E("(F => { GAME.view(F.x + Math.sin(F.hd) * 3.5, F.y + Math.cos(F.hd) * 3.5, KERN.ground(F.x, F.y) + 1.62, 0, 0) })(GLMISSION.F('w3'))")
+        ok = until("GLKAP1.K4().job === 'jagt'", 5, 0.1)
+        ok2 = until("GLMISSION.debug.info().n >= 1 && GLMISSION.debug.info().step === 'ablenken' && !GLMISSION.St.busy", 20, 0.25, 0.2)
+        st = J("({ n: GLKAP1.K4().n, job: GLKAP1.K4().job, w: KERN.where(), d: Math.hypot(GLMISSION.F('w1').x - " + f"{KL['men'][0][0]}" + ", GLMISSION.F('w1').y - " + f"{KL['men'][0][1]}" + ") })")
+        ck('a photo from 55 m shows nothing; seen from close by they come running and catch you – again from the forest\'s edge, not the whole mission',
+           a1 and far and ok and ok2 and st['job'] == 'laden' and abs(st['w'][0] - KL['vorn'][0]) < 3 and abs(st['w'][1] - KL['vorn'][1]) < 3 and st['d'] < 1, str(st))
+        # the banger on the far side draws two of them away
+        bx, by = P(6, 34)
+        E(f"GRENZLAND.bang({bx}, {by})"); steps(0.3)
+        ok = at('fotos', 3)
+        steps(9)
+        st = J("({ d: ['w1', 'w2', 'w3'].map(k => Math.round(Math.hypot(GLMISSION.F(k).x - GLMISSION.C('van').x, GLMISSION.F(k).y - GLMISSION.C('van').y))), lure: !!GLKAP1.K4().lure })")
+        ck('a banger on the far side: two men go and look, one stays at the van', ok and st['lure'] and st['d'][0] > 12 and st['d'][1] > 12 and st['d'][2] < 6, str(st))
+        p = P(-20, -22)
+        E(f"GAME.view({p[0]}, {p[1]}, KERN.ground({p[0]}, {p[1]}) + 1.1, {yawTo(p, KL['van'])}, 0); GAME.P.stance = 'crouch'"); steps(0.3)
+        pic('42_fotos')
+        got = []
+        for _ in range(3):
+            got.append(act('gl:foto')); steps(1.3)
+        ok = at('flucht', 3)
+        E("GAME.P.stance = 'stand'")
+        ck('three photos from cover, ducked in the dark, unseen', all(got) and ok and E("GLSTATE.inv.fotos") == 3 and E("GLKAP1.K4().job") != 'jagt', str(got) + info()['step'])
+        steps(4)
+        st = J("({ n: GLLOGIK.stars(GLSTATE.W), known: GLSTATE.W.known, leucht: !!GLMISSION.D('leucht'), chat: GLSTATE.feed.slice(-4).map(q => q.text).join(' | '), van: (c => c ? Math.round(c.v * 10) / 10 : -1)(GLMISSION.C('van')), figs: GLMISSION.debug.info().figs.length })")
+        ck('a flare over the forest, „Schüsse an der Klinge?!“ in the village chat: three hollow stars, the men drive off',
+           st['n'] == 3 and not st['known'] and st['leucht'] and 'Schüsse an der Klinge' in st['chat'] and st['van'] > 0.5 and st['figs'] == 0, str(st))
+        E(f"GAME.view({p[0]}, {p[1]}, KERN.ground({p[0]}, {p[1]}) + 1.62, {yawTo(p, KL['van'])}, 28)"); steps(0.2)
+        pic('43_leuchtkugel')
+        put(ORT['garten'], 0, (2, 2)); steps(1)
+        held = info()['step'] == 'flucht'
+        E("GLFAHNDUNG.clear()"); steps(1.5)
+        ok = until("GLMISSION.redet()", 5)
+        n = talk()
+        ok2 = until("GLMISSION.debug.info().st.klinge === 'erledigt'", 5)
+        ck('home is not enough while they search; once the stars are gone the night is over – mission done', held and ok and n >= 2 and ok2, f'{held} {n}')
+      except Exception as e:
+        ck('mission 4 ran through without an error of the test', False, str(e)[:300])
+
+    # ================================================================ 5 · Der Coup ================================================================
+    if 'm5' in SECT:
+      try:
+        E("if (VEH.cur) VEH.exit(); GLFAHNDUNG.clear(); GLMISSION.debug.go('coup')"); steps(0.5)
+        ok = until("!!GLMISSION.F('jule')", 150, 0.3, 0.5)
+        j = J("(F => [F.x, F.y])(GLMISSION.F('jule'))")
+        view(j, 2.4, 2.4, 225)
+        ok = until("GLMISSION.redet() && GLMISSION.St.talk.key === 'plan'", 8)
+        n = talk()
+        ok2 = at('plan', 4) and E("!document.getElementById('glwahl').hidden")
+        opts = J("[...document.querySelectorAll('#glwahl button')].map(b => b.textContent.slice(0, 5))")
+        pic('50_plan')
+        ck('Jule knows where the crates go; the plan is a choice: leise or laut', ok and n >= 8 and ok2 and opts == ['Leise', 'LautD'][:1] + [opts[1]] and opts[1].startswith('Laut'), str(opts))
+        E("GLHUD.pick(0)"); steps(0.3); time.sleep(0.2); steps(0.3); talk()
+        st = J("({ step: GLMISSION.debug.info().step, plan: GLSTATE.m.coup.plan, x: document.getElementById('glextra').textContent, text: GLMISSION.debug.info().text })")
+        ck('leise: at night through the gap (the panel offers to wait for the night)', st['step'] == 'hin' and st['plan'] == 'leise' and st['x'] == 'Bis zur Nacht warten' and 'Nacht' in st['text'], str(st))
+        E("GLMISSION.debug.go('coup', 'plan')"); steps(0.3)
+        E("GLHUD.pick(1)"); steps(0.3); time.sleep(0.2); steps(0.3); talk()
+        ok = at('hin', 4)
+        YY = J("(Y => ({ hinten: Y.hinten, drin: Y.drin, vorTor: Y.vorTor, vorTuer: Y.vorTuer, imBuero: Y.imBuero, karte: Y.karte, pos: Y.pos, zaun: Y.w(4, -15.5), zaunIn: Y.w(4, -9), hd: Y.kamera.hd, side: Y.side }))(GLLAGER.Y)")
+        yawIn = math.degrees(YY['hd']) % 360
+        ck('laut: to the back of the yard, the clique waits for the sign', ok and E("GLSTATE.m.coup.plan") == 'laut' and 'Zeichen' in info()['text'], info()['text'])
+        # the picture from the gate, by day
+        g = (YY['vorTor'][0] + (YY['vorTor'][0] - YY['pos'][0]) * 0.9, YY['vorTor'][1] + (YY['vorTor'][1] - YY['pos'][1]) * 0.9)
+        E(f"GAME.view({g[0]}, {g[1]}, KERN.ground({g[0]}, {g[1]}) + 2.4, {(yawIn + 180) % 360}, -6)"); steps(0.5)
+        ok = until("GLLAGER.wachen.length === 2", 150, 0.3, 0.5)
+        steps(2)
+        pic('51_lager_tor')
+        ck('the yard: two guards on their jobs (one on his round, one at the gate)', ok and sorted(w['job'] for w in J("GLLAGER.status().wachen")) == ['posten', 'runde'], str(J("GLLAGER.status()"))[:300])
+        # the fence is solid, the gap is not
+        E(f"GAME.view({YY['zaun'][0]}, {YY['zaun'][1]}, KERN.ground({YY['zaun'][0]}, {YY['zaun'][1]}) + 1.62, {yawIn}, 0)")
+        E("GAME.step(3.5, 1)")
+        out = not E("GLLAGER.Y.innen(GAME.P.x, GAME.P.y)")
+        put(YY['hinten'], yawIn)
+        ok = at('rein', 4)
+        pic('52_lager_hinten')
+        ck('the fence holds; at the back, by the gap, the next step begins', out and ok, f'{out} ' + info()['step'])
+        a1 = act('gl:zeichen'); steps(7.5)
+        st = J("({ w: GLLAGER.status().wachen, n: GLLOGIK.stars(GLSTATE.W), tor: GLLAGER.wachen.map(w => Math.round(Math.hypot(w.F.x - GLLAGER.Y.tor[0], w.F.y - GLLAGER.Y.tor[1]))) })")
+        ck('the sign: a battery of bangers at the gate – both guards run there, and somebody calls the police (one hollow star)',
+           a1 and all(w['job'] == 'gelenkt' for w in st['w']) and st['n'] == 1, str(st)[:300])
+        E(f"GAME.view({YY['hinten'][0]}, {YY['hinten'][1]}, KERN.ground({YY['hinten'][0]}, {YY['hinten'][1]}) + 1.62, {yawIn}, 0)")
+        E("GAME.step(2.2, 1)")
+        ok = at('tuer', 3)
+        ck('through the gap into the yard', ok and E("GLLAGER.Y.innen(GAME.P.x, GAME.P.y)"), info()['step'])
+        view(YY['vorTuer'], 0, 0, yawIn)
+        a2 = act('gl:tuer', 4.2)
+        ok = at('karte', 3)
+        ck('the office door is broken open (hold)', a2 and ok and E("GLLAGER.offen"), info()['step'])
+        E(f"GAME.view({YY['vorTuer'][0] - math.sin(YY['hd']) * 1.6}, {YY['vorTuer'][1] - math.cos(YY['hd']) * 1.6}, KERN.ground({YY['vorTuer'][0]}, {YY['vorTuer'][1]}) + 1.62, {yawIn}, -4)"); steps(0.3)
+        pic('53_buero')
+        talk()
+        view(YY['imBuero'], 0, 0, yawIn)
+        a3 = act('gl:karte', 1.4)
+        ok = at('raus', 3)
+        ck('the framed half of the map is taken from the wall', a3 and ok and E("GLSTATE.inv.karte2") == 1 and not E("GLLAGER.karte"), info()['step'])
+        talk()
+        # a guard sees you inside: he reports the burglary and comes running; caught → again from outside the fence
+        E("GLLAGER.wachen.forEach(w => GLLAGER.heim(w, true)); (w => { const F = w.F; GAME.view(F.x + Math.sin(F.hd) * 3, F.y + Math.cos(F.hd) * 3, KERN.ground(F.x, F.y) + 1.62, 0, 0) })(GLLAGER.wachen[0])")
+        ok = until("GLLAGER.wachen.some(w => w.job === 'jagt')", 4, 0.1)
+        st1 = J("({ log: GLSTATE.W.log.map(l => l.id), n: GLLOGIK.stars(GLSTATE.W) })")
+        ok2 = until("GLMISSION.debug.info().n >= 1 && GLMISSION.debug.info().step === 'rein' && !GLMISSION.St.busy", 20, 0.25, 0.2)
+        st = J("({ k2: GLSTATE.inv.karte2 || 0, offen: GLLAGER.offen, karte: GLLAGER.karte, d: Math.hypot(GAME.P.x - GLLAGER.Y.hinten[0], GAME.P.y - GLLAGER.Y.hinten[1]), n: GLLOGIK.stars(GLSTATE.W) })")
+        ck('seen inside: „Einbruch“ is reported; caught by the guard: again from outside the fence (door shut, map back on the wall)',
+           ok and 'einbruch' in st1['log'] and st1['n'] >= 2 and ok2 and st['k2'] == 0 and not st['offen'] and st['karte'] and st['d'] < 3 and st['n'] == 0, str(st1) + str(st))
+        # the second try, undisturbed (the guards put at the gate)
+        E("GLLAGER.lenke(GLLAGER.Y.vorTor[0], GLLAGER.Y.vorTor[1], 600)")
+        E(f"GAME.view({YY['drin'][0]}, {YY['drin'][1]}, KERN.ground({YY['drin'][0]}, {YY['drin'][1]}) + 1.62, {yawIn}, 0)"); steps(0.3)
+        at('tuer', 3); view(YY['vorTuer'], 0, 0, yawIn); act('gl:tuer', 4.2); at('karte', 3); talk()
+        view(YY['imBuero'], 0, 0, yawIn); act('gl:karte', 1.4); at('raus', 3); talk()
+        put(YY['hinten'], yawIn, ((YY['hinten'][0] - YY['drin'][0]) * 0.6, (YY['hinten'][1] - YY['drin'][1]) * 0.6))
+        ok = at('flucht', 3)
+        SCH = J("GLKAP1.ORT.scheune()")
+        E("GLFAHNDUNG.clear()")
+        put(SCH, 0, (9, 9)); steps(0.5)
+        ok2 = at('ende', 4)
+        ok3 = until("!!GLMISSION.F('jule')", 150, 0.3, 0.5)
+        j = J("(F => [F.x, F.y])(GLMISSION.F('jule'))")
+        view(j, 2.4, 2.4, 225)
+        ok4 = until("GLMISSION.redet() && GLMISSION.St.talk.key === 'ende'", 8)
+        steps(0.4)
+        pic('54_karte')
+        g0 = E("GLSTATE.geld")
+        n = talk()
+        ok5 = until("GLMISSION.debug.info().st.coup === 'erledigt'", 5)
+        ck('out through the gap and away to the barn with the map: the two halves together – the chapter\'s last mission is done (+250 €)',
+           ok and ok2 and ok3 and ok4 and n >= 6 and ok5 and E("GLSTATE.geld") == g0 + 250 and E("GLSTATE.inv.karte1") == 1 and E("GLSTATE.inv.karte2") == 1, f'{ok} {ok2} {ok3} {ok4} {n} {ok5}')
+        ok = until("GLMISSION.debug.info().ende", 12)
+        rows = J("[...document.querySelectorAll('#glende tr')].map(r => r.textContent)")
+        txt = E("document.getElementById('glende').textContent")
+        pg.screenshot(path=os.path.join(OUT, '55_ende_hud.png'))
+        ck('the closing screen of chapter 1: what was done, „Fortsetzung in Kapitel 2“', ok and len(rows) == 7 and 'Kapitel 2' in txt and 'Bunker' in txt and any('Taten' in r for r in rows), str(rows))
+        pg.click('#glende button'); steps(0.5)
+        st = J("({ ende: GLMISSION.debug.info().ende, cur: GLMISSION.cur(), on: GLSTATE.on, j: KERN.tasks.list().filter(e => e.src === 'grenzland').map(e => e.status) })")
+        ck('free play goes on: the mode still runs, the journal shows five missions done', not st['ende'] and st['cur'] == '' and st['on'] and st['j'] == ['erledigt'] * 5, str(st))
+      except Exception as e:
+        ck('mission 5 ran through without an error of the test', False, str(e)[:300])
+
     # ================================================================ the yard ================================================================
     if 'lager' in SECT:
         st = J("GLLAGER.status()")
         ck('the haulier\'s yard stands in the fields beside the track', st['on'] and st['boxes'] > 12 and st['side'] in (1, -1) and not st['err'], str(st))
-        Y = J("({ vorTor: GLLAGER.Y.vorTor, hinten: GLLAGER.Y.hinten, drin: GLLAGER.Y.drin, pos: GLLAGER.Y.pos, tor: GLLAGER.Y.tor, vorTuer: GLLAGER.Y.vorTuer, hd: GLLAGER.Y.kamera.hd })")
-        yawIn = (Y['hd'] * 180 / 3.14159265 + 180) % 360
-        E(f"GRENZLAND.hin({Y['vorTor'][0] + (Y['vorTor'][0] - Y['pos'][0]) * 1.2}, {Y['vorTor'][1] + (Y['vorTor'][1] - Y['pos'][1]) * 1.2}, {yawIn})"); steps(1)
-        pic('51_lager_tor', False)
-        ok = until("GLLAGER.wachen.length === 2", 90, 0.3, 0.4)
-        ck('two guards come when one is near', ok, str(J("GLLAGER.status().wachen")))
-        E(f"GRENZLAND.hin({Y['hinten'][0]}, {Y['hinten'][1]}, {(yawIn + 180) % 360})"); steps(1)
-        pic('52_lager_hinten', False)
-        # the fence is solid, the gap is not
-        E(f"GRENZLAND.hin({Y['hinten'][0] - 4 * (Y['hinten'][0] - Y['drin'][0]) / 4.9 + 6}, {Y['hinten'][1]}, 0)")
-        steps(0.5)
+        E("GLMISSION.debug.go('gerhard', 'damals')")
+        ok = until("GLSTATE.era === '1989'", 20, 0.3, 0.3); steps(0.5)
+        st = J("({ vis: GLLAGER.grp.visible, box: VEH.extra.filter(e => e.grenzland === 'lager' && e.box()).length })")
+        ck('in 1989 the field is a field: the yard is hidden and not solid', ok and not st['vis'] and st['box'] == 0, str(st))
 
     # ================================================================ a reload in the middle, the end ================================================================
     if 'reload' in SECT:
