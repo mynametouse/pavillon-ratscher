@@ -443,6 +443,17 @@ def rings_tiles(rings, L):
     return sorted(out, key=lambda t: (t[1], t[0]))
 
 
+def rings_touch_box(rings, box):
+    """does the polygon (its rings, even-odd) touch the closed UTM box (E0, N0, E1, N1)?"""
+    bx0, by0, bx1, by1 = box
+    for r in rings:
+        for i in range(len(r)):
+            (ax, ay), (bx, by) = r[i - 1], r[i]
+            if _seg_hits_box(ax, ay, bx, by, bx0, by0, bx1, by1):
+                return True
+    return _point_in_rings(rings, (bx0 + bx1) / 2, (by0 + by1) / 2)
+
+
 # ------------------------------------------------------------------ areas (stadt, kernstadt, zentrum)
 class Area:
     """one area of gebiete.geojson in UTM. rings: every ring of every part (outer and holes, closing point dropped)"""
@@ -471,6 +482,20 @@ class Area:
         if L not in self._tiles:
             self._tiles[L] = rings_tiles(self.rings, L)
         return list(self._tiles[L])
+
+    def touches_box(self, box):
+        """does the area touch the UTM box (E0, N0, E1, N1)?"""
+        b = self.bbox
+        return not (box[2] < b[0] or box[0] > b[2] or box[3] < b[1] or box[1] > b[3]) and rings_touch_box(self.rings, box)
+
+    def state_tiles_1km(self, margin=0.0):
+        """the state's 1-km tiles (DGM1, DOM1, nDOM1) that come within `margin` metres of the area: [(E km, N km)], rows from the south"""
+        b = self.bbox
+        out = []
+        for e, n in utm_tiles_1km((b[0] - margin, b[1] - margin, b[2] + margin, b[3] + margin)):
+            if self.touches_box((e * 1000 - margin, n * 1000 - margin, e * 1000 + 1000 + margin, n * 1000 + 1000 + margin)):
+                out.append((e, n))
+        return out
 
     def area_m2(self):
         """area on the UTM grid (the grid scale at Suhl is 0.99978: true areas are 0.04 % larger)"""
