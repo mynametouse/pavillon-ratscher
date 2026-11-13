@@ -204,7 +204,7 @@ def woody(cir, water=None, shade_ok=None, chm=None):
     wood = ndi.binary_opening(wood, structure=disk(3))       # strips thinner than ~1.4 m go (hedge lines, lawn edges)
     wood = ndi.binary_closing(wood, structure=disk(3)) & veg
     wood = ndi.binary_fill_holes(wood) & (ndi.uniform_filter(vf, 5) > 0.5)
-    wood = ndi.binary_dilation(wood, structure=disk(2)) & veg & (texs > 0.6 * TEX_MIN)   # the shaded side of a crown
+    wood |= ndi.binary_dilation(wood, structure=disk(2)) & veg & (texs > 0.6 * TEX_MIN)  # the shaded side of a crown
     return wood, nd, texs, veg
 
 
@@ -226,9 +226,10 @@ def chm_tops(chm1, con1):
     return c[:, 0], c[:, 1], f
 
 
-def crowns(cir, wood, px=PX, chm1=None):
+def crowns(cir, wood, px=PX, chm1=None, skip1=None):
     """watershed crowns -> label image (0 = none), the number of crowns, how many of them start at a top of the height model
-    (labels 1..n_chm). chm1: the object-height model of the same box at 1 m (NaN = no data), or None."""
+    (labels 1..n_chm). chm1: the object-height model of the same box at 1 m (NaN = no data), or None; skip1: cells of that
+    grid whose height is not a tree's (walls and roofs: a crown leaning over a house must not get the eaves as its top)."""
     from scipy import ndimage as ndi
     from skimage.feature import peak_local_max
     from skimage.segmentation import watershed
@@ -249,7 +250,8 @@ def crowns(cir, wood, px=PX, chm1=None):
     if chm1 is not None and np.isfinite(chm1).any():
         # where the laser has canopy, its tops are the trees (measured, free of light and shade); the image's bright tops serve
         # only where the laser has none (grown or planted since, or shrubs) and not within 1.5 m of the laser's canopy
-        tr, tc, fs = chm_tops(chm1, con[k // 2::k, k // 2::k][:chm1.shape[0], :chm1.shape[1]])
+        tr, tc, fs = chm_tops(np.where(skip1, 0.0, chm1) if skip1 is not None else chm1,
+                              con[k // 2::k, k // 2::k][:chm1.shape[0], :chm1.shape[1]])
         up = np.repeat(np.repeat(fs, k, 0), k, 1)[:wood.shape[0], :wood.shape[1]]
         ups = ndi.gaussian_filter(up, 2.5)
         dom = wood & (ups >= H_TREE - 0.5)
@@ -268,7 +270,12 @@ def crowns(cir, wood, px=PX, chm1=None):
                 mk[y, x] = n_chm
         f = np.where(dom, 10.0 + ups, f)
         from skimage.morphology import disk
-        free = wood & ~ndi.binary_dilation(dom, structure=disk(7))
+        # canopy of the laser model that got no top of its own (its top lies on a skipped cell) is left to the image's tops
+        dl, dn = ndi.label(dom)
+        seeded = np.zeros(dn + 1, bool)
+        seeded[np.unique(dl[mk > 0])] = True
+        seeded[0] = False
+        free = wood & ~ndi.binary_dilation(seeded[dl], structure=disk(7))
         lab = free.astype(np.int32)
     pk = peak_local_max(f, min_distance=MIN_DIST, labels=lab * ~con, exclude_border=False)
     pc = peak_local_max(f, min_distance=MIN_DIST_CON, labels=lab * con, exclude_border=False)
@@ -358,7 +365,10 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
             chm = np.repeat(np.repeat(w1, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]     # on the image grid, NaN = no data
     # in the mapped forest shaded canopy counts too (slopes turned away from the sun; there is no lawn to mistake it for)
     wood, nd, tex, veg = woody(cir, water, shade_ok=forest, chm=chm)
-    seg, n, n_chm = crowns(cir, wood, chm1=chm1)
+    skip1 = None
+    if chm1 is not None:
+        skip1 = ndi.binary_dilation(bld[k5 // 2::k5, k5 // 2::k5][:chm1.shape[0], :chm1.shape[1]], iterations=2)   # houses + 2 m
+    seg, n, n_chm = crowns(cir, wood, chm1=chm1, skip1=skip1)
     st = {'kronen_roh': int(n), 'kronen_aus_hoehenmodell': int(n_chm), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean()),
           'ndom_anteil': float(np.isfinite(chm).mean()) if chm is not None else 0.0}
     out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk', 'hm', 'hcap')}
