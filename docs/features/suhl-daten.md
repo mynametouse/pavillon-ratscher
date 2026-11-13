@@ -29,12 +29,13 @@ S.guard(buildings=n, area='stadt')                      # plausible Menge? (stad
 | Feldliste (englisch, aus dem Code) | `python3 -I tools/suhl/lib/validate.py --doc` |
 | Tests der Bibliothek | `python3 -I tools/suhl/lib/test_lib.py`, `test_schema.py`, `test_easygeodata.py` (zusammen 3 s, ohne Netz) |
 | Höhen von easygeodata holen (nur im Workflow) | `python3 -I tools/suhl/lib/easygeodata.py --product dgm --prio P1 --raw ~/suhl-raw` (Abschnitt 9) |
-| Erfundenes Beispiel aller Produkte | `tools/suhl/lib/beispiel/suhl/…` (zum Einlesen, bevor echte Daten da sind; Kennungen `BEISPIEL_…`) |
+| Veröffentlichen | nicht selbst: den Ordner `…/suhl/<produkt>/v<N>` als Artefakt mit festem Namen hochladen (`suhl-g-v1` …) und dem Suhl-Chat den Lauf nennen – Abschnitt 8 |
+| Erfundenes Beispiel aller Produkte | `tools/suhl/lib/beispiel/suhl/…` (kleinstes Beispiel in der Form der Fassung 1.1; Kennungen `BEISPIEL_…`) |
 | Probekacheln | `tools/suhl/lib/probe.json` – die 11 Kacheln der Stufe 10, die `zentrum` berühren, mit Grenzen in UTM und Modellmetern |
 
 ## 2 Koordinaten: welcher Rahmen in welcher Datei
 
-Entschieden am 13.11.2026 (Suhl-Chat, 01:52 und 02:20). **Jedes Produkt hat genau einen Rahmen. Wer liest, rechnet um – nie raten.**
+Entschieden in der Nacht zum 13.11.2026 (Suhl-Chat). **Jedes Produkt hat genau einen Rahmen. Wer liest, rechnet um – nie raten.**
 
 | Produkt | Rahmen der Lagen | Einheit | Warum |
 |---|---|---|---|
@@ -236,7 +237,7 @@ Eine Datei je Kachel, **8 Byte je Baum, ohne Kopf**, Little Endian; Zahl der Bä
 | 4 | uint8 | Baumhöhe in 0,25 m |
 | 5 | uint8 | Kronenradius in 0,1 m |
 | 6 | uint8 | Art: 0 Laubbaum, 1 Nadelbaum, 2 Fichte, 3 Kiefer, 4 Lärche, 5 Tanne/Douglasie, 10 Linde, 11 Ahorn, 12 Eiche, 13 Buche, 14 Birke, 15 Esche, 16 Rosskastanie, 17 Platane, 18 Pappel, 19 Weide, 20 Obstbaum, 21 Robinie, 22 Hainbuche, 23 Eberesche, 24 Erle, 25 Zierkirsche, 30 Strauch/Hecke (Nadelbäume: 1–5) |
-| 7 | uint8 | Merker: Bits 0–1 Herkunft der Lage (0 Regel, 1 Luftbild, 2 OSM, 3 nDOM1); 4 = Höhe gemessen (nDOM1); 8 = Kronenradius gemessen; 16 = Art kartiert; 32 = vom Dach oder der Fahrbahn weggerückt; 64 = in OSM kartiert |
+| 7 | uint8 | Merker: Bits 0–1 Herkunft der Lage (0 Regel, 1 Luftbild, 2 OSM, 3 nDOM1); 4 = Höhe gemessen (nDOM1); 8 = Kronenradius gemessen; 16 = Art kartiert; 32 = vom Dach oder der Fahrbahn weggerückt; 64 = in OSM kartiert; 128 = steht in kartiertem Wald |
 
 Python: `schema.tree_pack(liste)`, `schema.tree_unpack(bytes)`, `schema.tree_model(key, baum)`. Geprüft wird: Größe durch 8 teilbar,
 jeder Baum in der Kachel (< 40 000 cm), bekannte Art, Höhe und Radius > 0.
@@ -310,30 +311,46 @@ Kacheln (`WTH1`, WebP), `suhl.product/version/schema`; `suhl.balanced` und `suhl
   mit wachsender Wartezeit bei 429/5xx, kein zweiter Versuch bei 403/404, Platten-Cache. Schlüssel aus der Adresse und aus Kopfzeilen
   kommen nie in den Cache oder ins Protokoll.
 
-## 8 Veröffentlichen: die Aktion `suhl-publish`
+## 8 Veröffentlichen: eine Tür, ein Satz, ein Commit
 
-Geprüft am 13.11.2026, 01:43 (Lauf 43339309234): Das Geheimnis `DATEN_TOKEN` ist da und darf schreiben; `suhl/_probe/hallo.json` lag
-30 Sekunden nach dem Push unter `https://mynametouse.github.io/pavillon-daten/suhl/_probe/hallo.json`.
+Entschieden in der Nacht zum 13.11.2026 (Suhl-Chat). **Die Daten-Workflows veröffentlichen nicht selbst.** Gründe: GitHub Pages baut
+etwa zehnmal in der Stunde und liefert höchstens 1 GB je Seite; ein Satz muss zusammenpassen (Boden auf die Straßen geschnitten,
+Hausfüße auf diesem Boden abgelesen); Browser behalten `aktuell.json` zehn Minuten.
 
-```yaml
-jobs:
-  veroeffentlichen:
-    concurrency: { group: suhl-daten-publish, cancel-in-progress: false }   # eine Gruppe für alle, nie abbrechen
-    steps:
-      - uses: actions/checkout@v4
-      - …                                              # erzeugt <ordner>/suhl/g/v1/ mit index.json, prüft mit validate.py
-      - uses: ./.github/actions/suhl-publish
-        with:
-          folder: <ordner>/suhl/g/v1
-          token: ${{ secrets.DATEN_TOKEN }}
-```
+| Schritt | Wer | Was |
+|---|---|---|
+| 1 | jeder Daten-Workflow | lädt seinen Produkt-Ordner `…/suhl/<produkt>/v<N>` (mit Index) als **Artefakt mit festem Namen** hoch: `suhl-boden-v1`, `suhl-g-v1`, `suhl-s-v1`, `suhl-m-v1`, `suhl-b-v1`, `suhl-gr-v1`, `suhl-w-v1` – und nennt dem Suhl-Chat die Nummer des Laufs |
+| 2 | Suhl-Chat → `suhl-daten` | trägt den Satz in `tools/suhl/daten/satz.json` ein: je Produkt `version` und die Herkunft – `{run, artifact}` (Artefakt eines Laufs), `{branch, commit, path}` (Ordner eines Zweigs an einem genannten Commit, etwa ein Probesatz) oder `{folder}` (Ordner dieses Zweigs); dazu `dry_run`, `remove` (auch `entfernen`) |
+| 3 | Job `satz` in `.github/workflows/suhl-daten.yml` (Zweig `suhl/daten`, bestellt über `tools/suhl/daten/lauf.txt`: `lauf: satz`) | holt die Artefakte, prüft jedes Produkt mit `validate.py`, prüft `based_on` quer über den Satz und gegen das schon Veröffentlichte, legt die Ordner unter `suhl/<produkt>/v<N>/` ab, schaltet `suhl/aktuell.json` um, schreibt `ATTRIBUTION.md` – **ein Commit** mit `secrets.DATEN_TOKEN` |
+| 4 | derselbe Job | wartet, bis GitHub Pages `aktuell.json` mit dem neuen Stand ausliefert |
 
-Stand: Modus `hallo` (nur die Probe-Datei) läuft; **Modus `product` (Ordner → Daten-Repo, `aktuell.json`, `ATTRIBUTION.md`) folgt als
-Nächstes** – bis dahin bleibt die ganze Stadt Artefakt des eigenen Laufs. Fehlt das Geheimnis oder das Repo, veröffentlicht die Aktion
-nichts, sagt es im Protokoll, in der Zusammenfassung und in `outputs.published`/`outputs.reason` und lädt den Ordner als Artefakt hoch;
-der Lauf schlägt deshalb nicht fehl. Der Schlüssel erscheint nie im Protokoll. In dieses Repo (auch `gh-pages`) schreibt sie nie.
-Achtung GitHub: In einer `concurrency`-Gruppe wartet höchstens **ein** Lauf; ein dritter verdrängt den wartenden. Die Aktion schützt
-sich deshalb selbst: abgelehnter Push → holen, umsetzen, noch einmal (bis zu 8 Versuche).
+Regeln der Tür (`.github/actions/suhl-publish/publish.py`, Tests `test_publish.py`):
+
+- **Abgelehnt** wird ein Satz, wenn ein Produkt nicht gültig ist; wenn die Generationen nicht passen („g v1 wurde auf boden v0
+  gerechnet, nach diesem Satz gilt boden v1“); wenn eine veröffentlichte Version sich ändern würde (dann die nächste Nummer nehmen;
+  nur ein Probesatz darf mit `"replace": true` ersetzt werden); wenn die Seite danach über 900 MB hätte. Dann schlägt der Schritt fehl
+  und nichts wird geschrieben.
+- **Alte Versionen** löscht nie derselbe Satz von selbst, sondern ein späterer über die Liste `remove` (`["g/v0"]`); die gültige
+  Version lässt sich nicht löschen.
+- **Bericht** jeder Veröffentlichung (Protokoll, Zusammenfassung, Artefakt `suhl-satz-bericht`): Dateien neu / geändert / entfernt,
+  neue MB im Repository (nach Inhalt gezählt: eine neue Version mit denselben Bildkacheln kostet nichts), Größe der Seite danach –
+  Warnung über 700 MB. `.nojekyll` wird geprüft und nötigenfalls ergänzt.
+- **Trockenlauf** (`"dry_run": true` in `satz.json`): alles außer dem Push; braucht kein Geheimnis.
+- Fehlt das Geheimnis oder das Repo, wird nichts veröffentlicht und der Lauf sagt es klar – er schlägt deshalb nicht fehl. Der
+  Schlüssel erscheint nie im Protokoll. In dieses Repo (auch `gh-pages`) schreibt die Tür nie.
+- GitHub lässt in einer `concurrency`-Gruppe höchstens einen Lauf warten; weil nur noch dieser eine Job schreibt, stört das nicht.
+  Ein abgelehnter Push wird trotzdem geholt, umgesetzt und wiederholt (bis zu 8 Versuche).
+
+Geprüft am 13.11.2026:
+
+| Lauf | Was | Ergebnis |
+|---|---|---|
+| 43339309234 (01:43) | Probe `suhl/_probe/hallo.json` mit `DATEN_TOKEN` | geschrieben; GitHub Pages lieferte die Datei 30 Sekunden nach dem Push aus |
+| 43345327046 (02:30) | **Trockenlauf eines Satzes**: der Boden der ganzen Stadt, Artefakt `suhl-boden-v1` aus Lauf 43340569202 | geholt, geprüft (0 Fehler, 2 Warnungen: `balanced`, `based_on` fehlen), eingeordnet, Bericht gedruckt, **nichts geschrieben**. 12 560 Dateien, 264,8 MB; mit `aktuell.json` und `ATTRIBUTION.md` 12 562 neue Dateien; die Seite wüchse von 0,0 auf 264,8 MB in 12 565 Dateien; `.nojekyll` ist da. Dauer des ganzen Laufs: etwa eine Minute. |
+
+Der Boden allein belegt also gut ein Viertel der 1 GB von GitHub Pages; zwei Generationen nebeneinander (beim Umschalten) mehr als die Hälfte.
+Deshalb bekommen Gelände und Bild im Boden eigene Versionen (`suhl-boden` baut das): ein neuer Straßen-Einschnitt kostet dann 22–55 MB
+statt 290.
 
 ## 9 easygeodata: DGM1, DOM1, nDOM1 (1 m)
 
@@ -351,7 +368,8 @@ Gelesen wurde die Beschreibung der Schnittstelle selbst (`/api/docs`, „easygeo
 | Wie kommt die Datei? | Die Liste nennt je Kachel eine Adresse `/api/file/…`. Sie prüft Schlüssel und Kontingent und leitet auf eine 15 Minuten gültige Adresse eines anderen Servers weiter. Der Client schickt den Schlüssel nur an easygeodata.de, nie an den zweiten Server. |
 | Grenzen | kostenloses Konto: **20 GB im Monat**; Mosaik und Höhenlinien bis 150 Kacheln je Abruf. Fehler tragen ein Feld `grund` (`kontingent`, `tageslimit`, `tageslimit_server`, `schluessel` …) – es gibt also auch Tagesgrenzen, Zahlen nennt die Beschreibung nicht. Antworten ohne Zähler in den Kopfzeilen. |
 | Lizenz, Nennung | Daten des Landes: „© GDI-Th“ (das Land nennt CC BY 4.0, die Seite für Höhendaten dl-de/by-2-0 – gleiche Nennung). Die Beschreibung verlangt, die Quellenvermerke der Länder zu beachten. Wir nennen zusätzlich „bezogen über easygeodata.de“ (`egd.sources_entry('dgm')`). |
-| Straßen-Korridore (P4, 35 Kacheln außerhalb der Gemeinde) | nicht in der Gemeinde-Liste; der Client fragt sie einzeln über einen Rahmen ab (noch nicht am echten Dienst geprüft) |
+| Straßen-Korridore (P4, 35 Kacheln außerhalb der Gemeinde) | nicht in der Gemeinde-Liste; der Client fragt sie mit **einer** Abfrage über den Rahmen um alle fehlenden Kacheln ab. Geprüft am echten Dienst (Lauf 43345805762): die Kacheln 618/5611 und 626/5594 kamen so (2,4 MB, 3 Abrufe), je 1000 × 1000 Zellen, keine leere Zelle. |
+| Hält der Cache? | Ja: der zweite Lauf desselben Workflows (43345805762) fand alle 24 P1-Kacheln im wiederhergestellten Cache und holte nichts. |
 
 **So holt ein Workflow, was er braucht** (jeder mit eigenem Cache – Actions-Caches gelten je Zweig, einen gemeinsamen Rohdaten-Ordner gibt es nicht):
 
@@ -386,10 +404,11 @@ deshalb den Cache-Schlüssel nicht ohne Grund ändern. Benutzt wird der Dienst n
 
 | Was | Stand |
 |---|---|
-| Daten-Repo `mynametouse/pavillon-daten` mit GitHub Pages | ✔ angelegt, Pages antwortet |
+| Daten-Repo `mynametouse/pavillon-daten` mit GitHub Pages | ✔ angelegt, Pages antwortet; `.nojekyll` liegt an der Wurzel |
 | Geheimnis `DATEN_TOKEN` | ✔ vorhanden, schreibt (Lauf 43339309234) |
-| Geheimnis `EASYGEODATA_KEY` | ✔ vorhanden, gilt (Läufe 43340656226, 43341000214); 20 GB im Monat frei |
+| Geheimnis `EASYGEODATA_KEY` | ✔ vorhanden, gilt (Läufe 43340656226, 43341000214, 43341830636, 43345805762); 20 GB im Monat frei, bisher etwa 35 MB verbraucht |
 | LoD2 (echte Dachformen) | weiter von Hand, später |
+| Platz bei GitHub Pages | nichts zu tun – zur Kenntnis: 1 GB je Seite. Der Boden der ganzen Stadt hat 265 MB (mit echtem Gelände etwa 290 MB). Solange alte und neue Generation kurz nebeneinander liegen, ist mehr als die Hälfte belegt; die Tür warnt ab 700 MB und lehnt ab 900 MB ab. |
 
 ## 11 Für den Suhl-Chat
 
@@ -411,8 +430,9 @@ Sonst:
 - `suhl-laufzeit`: `aktuell.json` mit `cache: 'no-cache'` holen (Pages: `max-age=600`); Pages sendet `access-control-allow-origin: *`.
   `F[i][5]` ist ein Bruchteil der Wandlänge. Gebäude mit `fg & 32` nicht zeichnen. `z0` gilt nur, wenn `based_on.boden` zur gültigen
   Boden-Version passt.
-- Die gemeinsame `concurrency`-Gruppe verdrängt wartende Läufe (Abschnitt 8) – veröffentlicht wird deshalb nur an einer Stelle.
-- Die 35 Korridor-Kacheln P4 (außerhalb der Gemeinde) sind am echten Dienst noch nicht abgerufen worden.
+- Veröffentlicht wird nur an einer Stelle: Job `satz` auf `suhl/daten` (Abschnitt 8). Zuerst geht der Probesatz Zentrum v1 hinaus,
+  sobald der Suhl-Chat die Läufe und Artefakte nennt.
+- Die Korridor-Kacheln P4 (außerhalb der Gemeinde) gehen über eine Rahmen-Abfrage; an zwei Kacheln am echten Dienst geprüft (Abschnitt 9).
 
 ## 12 Änderungen am Schema
 

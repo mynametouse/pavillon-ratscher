@@ -251,6 +251,21 @@ class Easygeodata:
             self.log(f'easygeodata {title}: SKIPPED - {self.stopped}. {rep["cached"]} of {len(tiles)} tiles are in the raw folder.')
             return rep
         offered = self.tiles(product) if todo else {}
+        outside = [t for t in todo if t not in offered]
+        if outside and self.available():
+            # tiles outside the municipality (the road corridors P4): ONE question for the box around them
+            c = [S.lonlat_from_utm(e, n) for e in (min(t[0] for t in outside) * 1000 + 100.0, max(t[0] for t in outside) * 1000 + 900.0)
+                 for n in (min(t[1] for t in outside) * 1000 + 100.0, max(t[1] for t in outside) * 1000 + 900.0)]
+            more = self.tiles(product, bbox=(min(q[0] for q in c), min(q[1] for q in c), max(q[0] for q in c), max(q[1] for q in c)))
+            offered.update({k: v for k, v in more.items() if k not in offered})
+            self.log(f'easygeodata {title}: {len(outside)} tiles lie outside the municipality list; the box around them offers '
+                     f'{sum(1 for t in outside if t in offered)} of them')
+        if todo and self.stopped:                     # the list could not be asked (key refused, quota, daily limit): nothing is "missing"
+            rep['stopped'] = self.stopped
+            rep['present'] = rep['cached']
+            rep['calls'] = self.calls
+            self.log(f'easygeodata {title}: STOPPED - {self.stopped}. {rep["cached"]} of {len(tiles)} tiles are in the raw folder.')
+            return rep
         need = sum(offered[t].get('size_bytes', 0) for t in todo if t in offered)
         if todo:
             self.log(f'easygeodata {title}: {len(todo)} of {len(tiles)} tiles to fetch, about {need / 1e6:.1f} MB (limit of this run {max_mb:.0f} MB; '
@@ -260,7 +275,10 @@ class Easygeodata:
             if rep['bytes'] / 1e6 >= max_mb:
                 rep['stopped'] = f'the limit of this run ({max_mb:.0f} MB) is reached - the next run goes on'
                 break
-            p, note = self.fetch(product, t[0], t[1], offered.get(t))
+            if t not in offered:                      # asked for by list and by box: nobody offers it
+                rep['missing'].append(f'{t[0]}_{t[1]}')
+                continue
+            p, note = self.fetch(product, t[0], t[1], offered[t])
             if p:
                 rep['fetched'] += 1
                 rep['bytes'] += os.path.getsize(p)
