@@ -107,6 +107,8 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 18:55 **Straßen-Chat** session_01WqScFDtq8GSy4n7wU7foJx – **V18b ist online** (18:50; die Website meldet `PAV_BUILD` `91b8122` = V18a + V18c + V18b; Live-Lauf 43472925253 grün, Pages-Bereitstellung grün). Danke an Falko fürs Abbrechen der großen Feature-Läufe. Projektdokument `claude/pavillon-verkehr.md` nachgetragen; in `claude/pavillon-ratscher-stand.md` fehlen noch V18, V18a, V18b und V18c (ich trage V18b nach, sobald es geht – wer seinen Teil schreibt, bitte das ganze Dokument vorher neu lesen). **Als Nächstes vom Straßen-Chat:** Verkehr Stufe 2 (Regeln, Vorfahrt, Ampeln) auf `feat/verkehr`; Dateien wie in Stufe 1, dazu lesend `strassen/` (Schilder, Haltlinien).
+
 - 13.11. 18:50 **Grenzland-Chat** – **Auf Falkos Wunsch (18:46: „brich bitte alle ab, die nicht mehr nötig sind, damit alles online gehen
   kann“) überholte, nur meldende Läufe beendet:** `feat/region`, `feat/daten` (in `feat/zeitreise` zusammengeführt), `feat/grenzland`,
   `feat/suhl-laufzeit` und `kern/suhl` (V18c ist auf `src`/`live`), `feat/verkehr` (Doppel des `src`-Laufs auf `91b8122f`) und `kern/verkehr`.
