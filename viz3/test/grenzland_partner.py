@@ -23,12 +23,15 @@ with lib.browser() as b:
     def steps(secs, dt=0.1):
         X(f"for (let i = 0; i < {max(1, int(round(secs / dt)))}; i++) GAME.step({dt})")
     def hud(name):
-        try:
-            E("GAME.shot()")
-            pg.screenshot(path=os.path.join(OUT, name + '.jpg'), type='jpeg', quality=82)
-            print('shot', name, flush=True)
-        except Exception as e:
-            print('shot failed', name, e)
+        for i in range(2):
+            try:
+                E("GAME.shot()")
+                pg.screenshot(path=os.path.join(OUT, name + '.jpg'), type='jpeg', quality=82, timeout=60000)
+                print('shot', name, flush=True)
+                return
+            except Exception as e:
+                print('shot failed', name, i, e)
+                steps(0.2); time.sleep(2)
     def until(cond, secs, dt=0.25, nap=0.05):
         t = 0.0
         while t < secs:
@@ -64,7 +67,7 @@ with lib.browser() as b:
         ck('frei: the action button shows it', 'Mit Sarah reden' in E("TP.btn()"), E("TP.btn()"))
         X(f"TP.vor({X0}, {Y0}, 270, 2); GAME.view({X0}, {Y0}, KERN.ground({X0}, {Y0}) + 1.62, 90, -4)"); steps(0.4)
         ck('frei: with the back to her there is none', E("TP.lab()") is None or 'Sarah' not in E("TP.btn()"), E("TP.btn()"))
-        X(f"TP.vor({X0}, {Y0}, 90, 2)"); steps(0.4)
+        X(f"TP.vor({X0}, {Y0}, 90, 2); if (GLHUD.subAus) GLHUD.subAus()"); steps(0.4)
         hud('01_prompt')
         pg.keyboard.press('e'); steps(0.3)
         ck('frei: E opens the talk', E("GLPARTNER.offen()") and E("!document.getElementById('glpartner').hidden"))
@@ -149,6 +152,28 @@ with lib.browser() as b:
             ck('frei: mission 1 – the prompt at the school', False, str(J("({ lab: TP.lab(), redet: GLMISSION.redet(), kino: document.body.dataset.glKino, d: TP.dist() })")))
         # back to free play
         X("GLMISSION.stop(); for (const id of GLPDATA.ORDER) GLSTATE.m[id] = { st: 'erledigt', i: 0, n: 0 }; GLSTATE.cur = ''; GLSTATE.save(true)"); steps(0.5)
+        # riding together on the moped: B opens the talk (without „Komm mit“ / „Warte hier“), she keeps riding along, E only ends the talk
+        X(f"GLAUTO.mopedAt({X0} + 3, {Y0} + 2, 1.6); GLSTATE.tank = 3; GRENZLAND.folgen(true)"); steps(0.3)
+        X(f"TP.vor({X0} + 2, {Y0} + 2, 90, 1.5)"); steps(0.3)
+        E("VEH.enter('gl-moped')"); steps(0.6)
+        ok = until("GLPARTNER.debug.imAuto()", 6, 0.25, 0.05)
+        ck('fahrt: on the moped together', ok is not None, str(J("({ veh: VEH.cur && VEH.cur.id, rides: !!(GRENZLAND.partnerOf() && GRENZLAND.partnerOf().rides), folgt: GLSTATE.folgt })")))
+        if ok is not None:
+            ck('fahrt: the button „B · Mit Sarah reden“ shows for a moment', E("(b => !!b && !b.hidden && b.textContent)(document.getElementById('glpreden'))") == 'B · Mit Sarah reden', str(E("(b => b && b.textContent)(document.getElementById('glpreden'))")))
+            hud('06_fahrt_knopf')
+            pg.keyboard.press('b'); steps(0.3)
+            ck('fahrt: B opens the talk while riding', E("GLPARTNER.offen() && GLPARTNER.auto"))
+            ck('fahrt: three topics, no „Warte hier“', J("GLPARTNER.debug.chips().map(c => c.k)") == ['jetzt', 'bisher', 'geht'], str(J("GLPARTNER.debug.chips().map(c => c.k)")))
+            time.sleep(0.3); X("GLPARTNER.log.length = 0")
+            pg.keyboard.press('1')
+            until("GLPARTNER.log.length >= 2", 6, 0.1, 0.1)
+            s = J("TP.said()")
+            ck('fahrt: „Was machen wir jetzt?“ on the way', s[:2] == [['falko', 'Was machen wir jetzt?'], ['sarah', D['FREI'][0]]], str(s))
+            ck('fahrt: she keeps riding along', E("GRENZLAND.partnerOf().rides && GLSTATE.folgt === true"))
+            hud('07_fahrt_panel')
+            pg.keyboard.press('e'); steps(0.3)
+            ck('fahrt: E ends the talk, not the ride', not E("GLPARTNER.offen()") and E("!!VEH.cur"))
+        E("VEH.cur && VEH.exit()"); steps(1)
     # ------------------------------------------------------------------ ki ------------------------------------------------------------------
     if want('ki'):
         ppl = J("KI.people()")

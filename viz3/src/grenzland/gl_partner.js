@@ -13,6 +13,8 @@
 //   the police know, place, money (the adapter's lage()); the microphone and the text field sit in the panel; the topics ask the AI, „Komm
 //   mit“ / „Warte hier“ act at once; the AI itself can make the partner come along, wait or mark the next target (tool spielaufgabe).
 // E or Esc ends the talk, so does walking away, a scene, a mission's talk, Tab, the trip to 1989.
+// Riding together (car, moped; the partner rides along out of sight): key B – or the small „Mit Sarah reden“ button that shows for a few
+// seconds after getting on together (on a phone while riding) – opens the same talk without „Komm mit“ / „Warte hier“ (GTA's banter).
 //   GLPARTNER.auf() · zu() · thema(k) · offen() · frei() · linien() · debug { zustand(), lageSt(), log, chips() } · tempo (tests)
 import { COARSE, stage } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -47,6 +49,9 @@ export const GLPARTNER = (() => {
     folgtNach: true, // what GL.folgt becomes after the talk (the partner stands still while it runs)
     jagdT: -1e9, // when the police were last shaken off (performance.now())
     ki: false, // the talk is a free one (npc/ki.js)
+    auto: false, // the talk runs while riding together
+    pillT: 0, // seconds the button for the talk while riding stays
+    fuhr: false, // the partner rode along at the last frame
     gruss: '',
     el: null,
     log: [], // what was said: [who, text] (tests)
@@ -65,6 +70,11 @@ export const GLPARTNER = (() => {
     if (!GL.on || GL.era !== 'heute' || !F || !F.g || !F.g.visible || F.rides || F.reitet) return false;
     if (P.mode !== 'walk' || VEH.cur || PLAY.seated() || kino() || redet() || GLHUD.ask) return false;
     return Math.hypot(F.x - P.x, F.y - P.y) <= r;
+  }
+  // riding together: the player drives, the partner rides along (out of sight), no scene, no talk of a mission
+  function imAuto() {
+    const F = fig();
+    return !!(GL.on && GL.era === 'heute' && VEH.cur && F && F.rides && GL.folgt && !kino() && !redet() && !GLHUD.ask);
   }
   // ---------------- the state the lines and the AI go by ----------------
   function info() {
@@ -160,35 +170,42 @@ export const GLPARTNER = (() => {
   }
   // ---------------- the panel ----------------
   const CSS = `
-#glpartner{position:absolute;right:max(16px,2.2vw);top:50%;transform:translateY(-42%);z-index:11;width:min(330px,36vw);
-  background:rgba(14,18,22,.88);color:#eef1f2;border-radius:12px;padding:12px 12px 10px;font:400 14px/1.4 var(--f-body,system-ui);
-  pointer-events:auto;max-height:calc(100% - 200px);overflow:auto;-webkit-overflow-scrolling:touch;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+#glpartner{position:absolute;right:max(16px,2.2vw);top:calc(122px + env(safe-area-inset-top,0px));z-index:11;width:min(330px,36vw);box-sizing:border-box;
+  background:rgba(14,18,22,.88);color:#eef1f2;border-radius:12px;padding:10px 12px 12px;font:400 14px/1.4 var(--f-body,system-ui);
+  pointer-events:auto;max-height:calc(100% - 330px - env(safe-area-inset-bottom,0px));overflow:auto;-webkit-overflow-scrolling:touch;
+  box-shadow:0 8px 30px rgba(0,0,0,.35)}
 #glpartner[hidden]{display:none!important}
-#glpartner header{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 0 6px}
-#glpartner header b{font:600 16px/1.2 var(--f-body,system-ui);color:#f3c64f}
-#glpartner header small{font:500 11px/1 var(--f-mono,monospace);opacity:.6;letter-spacing:.04em}
-#glpartner .gpt{margin:0 0 8px;min-height:20px;font:italic 400 14px/1.4 var(--f-body,system-ui);opacity:.92}
+#glpartner header{display:flex;align-items:center;gap:8px;margin:0 0 6px}
+#glpartner header b{flex:1;font:600 16px/1.2 var(--f-body,system-ui);color:#f3c64f}
+#glpartner header small{font:500 11px/1 var(--f-mono,monospace);opacity:.55;letter-spacing:.04em}
+#glpartner .gpx{flex:none;font:500 12px/1 var(--f-body,system-ui);color:#eef1f2;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);
+  border-radius:999px;padding:6px 11px;cursor:pointer}
+#glpartner .gpx:hover{background:rgba(255,255,255,.18)}
+#glpartner .gpt{margin:0 0 6px;font:italic 400 14px/1.4 var(--f-body,system-ui);opacity:.92}
 #glpartner .gpt:empty{display:none}
-#glpartner .gpc button{display:flex;gap:9px;align-items:center;width:100%;text-align:left;margin-top:6px;font:500 14px/1.3 var(--f-body,system-ui);
-  color:#eef1f2;background:rgba(255,255,255,.12);border:0;border-radius:8px;padding:9px 11px;cursor:pointer}
+#glpartner .gpc button{display:flex;gap:9px;align-items:center;width:100%;box-sizing:border-box;text-align:left;margin-top:6px;
+  font:500 14px/1.3 var(--f-body,system-ui);color:#eef1f2;background:rgba(255,255,255,.12);border:0;border-radius:8px;padding:9px 11px;cursor:pointer}
 #glpartner .gpc button:hover{background:rgba(255,255,255,.22)}
 #glpartner .gpc button kbd{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:5px;background:rgba(243,198,79,.18);color:#f3c64f;
   font:600 11px/1 var(--f-mono,monospace)}
 #glpartner .gpc button.akt{background:rgba(243,198,79,.16)}
-#glpartner .gpx{display:block;margin:10px 0 0 auto;font:500 12px/1 var(--f-body,system-ui);color:#eef1f2;background:none;border:1px solid rgba(255,255,255,.25);
-  border-radius:999px;padding:6px 12px;cursor:pointer;opacity:.8}
 #glpartner.ki-host .np-ki{padding:8px 0 0;border-top:1px solid rgba(255,255,255,.12);margin-top:10px}
-#glpartner.ki-host .np-me{color:rgba(238,241,242,.7)}
+#glpartner.ki-host .np-me{color:rgba(238,241,242,.7)} #glpartner.ki-host .np-me:empty{display:none}
 #glpartner.ki-host .np-in input,#glpartner.ki-host .np-in button{background:rgba(255,255,255,.1);color:#eef1f2;border-color:rgba(255,255,255,.2)}
-#glpartner.ki-host .np-note{color:rgba(238,241,242,.65)}
-#glpartner.ki-host .np-setup{display:block;width:100%;margin-top:10px;font:500 12px/1.3 var(--f-body,system-ui);color:#f3c64f;background:none;
-  border:1px dashed rgba(243,198,79,.45);border-radius:8px;padding:7px 10px;cursor:pointer;text-align:left}
+#glpartner.ki-host .np-note{color:rgba(238,241,242,.65)} #glpartner.ki-host .np-note:empty{display:none}
+#glpartner.ki-host .np-setup{display:block;width:100%;box-sizing:border-box;margin-top:10px;font:500 12px/1.3 var(--f-body,system-ui);color:#f3c64f;
+  background:none;border:1px dashed rgba(243,198,79,.45);border-radius:8px;padding:7px 10px;cursor:pointer;text-align:left}
 #glpartner.ki-host .np-setup[hidden]{display:none}
-body[data-gl-kino="1"] #glpartner{display:none!important}
-@media (max-width:600px){#glpartner{left:50%;right:auto;top:auto;bottom:calc(214px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:92vw;
-  max-height:calc(100% - 300px)} #glpartner .gpc{display:grid;grid-template-columns:1fr 1fr;gap:0 6px}}
-@media (orientation:landscape) and (max-height:500px){#glpartner{top:calc(52px + env(safe-area-inset-top,0px));transform:none;width:min(300px,42vw);
-  max-height:calc(100% - 130px)}}
+body[data-gl-kino="1"] #glpartner,body[data-gl-kino="1"] #glpreden{display:none!important}
+#glpreden{position:absolute;right:max(16px,2.2vw);top:calc(122px + env(safe-area-inset-top,0px));z-index:11;border:0;border-radius:999px;
+  background:rgba(14,18,22,.72);color:#f3c64f;font:600 13px/1 var(--f-body,system-ui);padding:9px 14px;cursor:pointer;backdrop-filter:blur(4px)}
+#glpreden[hidden]{display:none!important}
+@media (max-height:620px){#glpartner{max-height:calc(100% - 290px)}}
+@media (max-width:600px){#glpartner{left:50%;right:auto;top:auto;bottom:calc(214px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:94vw;
+  max-height:calc(100% - 360px);padding:8px 10px 10px} #glpartner .gpt{display:none}
+  #glpartner .gpc{display:grid;grid-template-columns:1fr 1fr;gap:0 6px} #glpartner .gpc button{font-size:13px;padding:8px 9px}}
+@media (orientation:landscape) and (max-height:500px){#glpartner{top:calc(52px + env(safe-area-inset-top,0px));width:min(300px,42vw);
+  max-height:calc(100% - 130px)} #glpartner .gpt{display:none}}
 `;
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   function build() {
@@ -201,8 +218,8 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
     el.hidden = true;
     el.setAttribute('aria-label', 'Gespräch');
     el.innerHTML =
-      '<header><b id="glp-name"></b><small id="glp-keys"></small></header><p class="gpt" id="glp-text" aria-live="polite"></p>' +
-      '<div class="gpc" id="glp-chips"></div><button type="button" class="gpx" id="glp-zu"></button>';
+      '<header><b id="glp-name"></b><small id="glp-keys"></small><button type="button" class="gpx" id="glp-zu"></button></header>' +
+      '<p class="gpt" id="glp-text" aria-live="polite"></p><div class="gpc" id="glp-chips"></div>';
     (stage || document.body).appendChild(el);
     el.addEventListener('click', e => {
       const b = e.target.closest('button');
@@ -213,16 +230,24 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
     S.el = el;
     return el;
   }
-  const chips = () => [
-    { k: 'jetzt', t: GLPDATA.FRAGE.jetzt },
-    { k: 'bisher', t: GLPDATA.FRAGE.bisher },
-    { k: 'geht', t: GLPDATA.FRAGE.geht },
-    S.folgtNach ? { k: 'warte', t: GLPDATA.FRAGE.warte, akt: true } : { k: 'komm', t: GLPDATA.FRAGE.komm, akt: true },
-  ];
+  const chips = () =>
+    [
+      { k: 'jetzt', t: GLPDATA.FRAGE.jetzt },
+      { k: 'bisher', t: GLPDATA.FRAGE.bisher },
+      { k: 'geht', t: GLPDATA.FRAGE.geht },
+    ].concat(
+      S.auto
+        ? []
+        : [
+            S.folgtNach
+              ? { k: 'warte', t: GLPDATA.FRAGE.warte, akt: true }
+              : { k: 'komm', t: GLPDATA.FRAGE.komm, akt: true },
+          ]
+    );
   function render() {
     const el = build();
     el.querySelector('#glp-name').textContent = nameOf(S.who);
-    el.querySelector('#glp-keys').textContent = COARSE ? '' : '1–4 · E: Ende';
+    el.querySelector('#glp-keys').textContent = COARSE ? '' : '1–4';
     el.querySelector('#glp-zu').textContent = T.ende;
     el.querySelector('#glp-chips').innerHTML = chips()
       .map(
@@ -239,16 +264,22 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
   }
   // ---------------- open, topics, close ----------------
   function auf() {
-    if (S.open || !frei(3.6)) return false;
+    if (S.open) return false;
+    const auto = imAuto();
+    if (!auto && !frei(3.6)) return false;
     const F = fig();
     S.open = true;
+    S.auto = auto;
     S.gen++;
     S.who = partnerId();
     S.folgtNach = GL.folgt;
-    GL.folgt = false; // she or he stands while the talk runs (as grenzland/gl_kegeln.js does at the lane)
-    GLFIG.stop(F);
-    GLFIG.face(F, P.x, P.y);
-    GLFIG.blick(F, 'spieler');
+    pill(false);
+    if (!auto) {
+      GL.folgt = false; // she or he stands while the talk runs (as grenzland/gl_kegeln.js does at the lane)
+      GLFIG.stop(F);
+      GLFIG.face(F, P.x, P.y);
+      GLFIG.blick(F, 'spieler');
+    }
     render();
     zeig('');
     S.el.hidden = false;
@@ -275,7 +306,7 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
     S.folgtNach = !!v;
     if (window.GRENZLAND && GRENZLAND.folgen) GRENZLAND.folgen(!!v);
     else GL.folgt = !!v;
-    if (S.open) GL.folgt = false;
+    if (S.open && !S.auto) GL.folgt = false;
   }
   function thema(k) {
     if (!S.open) return false;
@@ -283,6 +314,7 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
     const W = GLPDATA.waehle(zustand());
     let zeilen = null;
     if (k === 'komm' || k === 'warte') {
+      if (S.auto) return false;
       folge(k === 'komm');
       zeilen = W[k](S.n);
       // the AI hears it (its talk goes on with it)
@@ -316,7 +348,8 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
     try {
       if (KI && KI.ended && personen()) KI.ended(key(S.who));
     } catch (e) {}
-    GL.folgt = S.folgtNach;
+    if (!S.auto) GL.folgt = S.folgtNach;
+    S.auto = false;
     const F = fig();
     if (F) {
       GLFIG.blick(F, null);
@@ -376,6 +409,7 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
   }
   function aktion(k) {
     if (k === 'mitkommen' || k === 'warten') {
+      if (S.auto) return { text: 'Geht gerade nicht – ihr fahrt zusammen.' };
       folge(k === 'mitkommen');
       if (S.open) render();
       return { text: k === 'mitkommen' ? 'Du kommst jetzt mit.' : 'Du wartest jetzt hier.' };
@@ -408,8 +442,20 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
   window.addEventListener(
     'keydown',
     e => {
-      if (!S.open || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       const a = document.activeElement;
+      if (!S.open) {
+        if (
+          e.key.toLowerCase() === 'b' &&
+          !e.repeat &&
+          !(a && ['INPUT', 'TEXTAREA', 'SELECT'].includes(a.tagName)) &&
+          imAuto()
+        ) {
+          auf();
+          e.preventDefault();
+        }
+        return;
+      }
       if (a && ['INPUT', 'TEXTAREA', 'SELECT'].includes(a.tagName)) {
         if (e.key === 'Escape') a.blur();
         return;
@@ -430,9 +476,37 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
     },
     true
   );
-  function tick() {
-    if (!S.open) return;
-    const F = fig();
+  // the small button while riding together: a few seconds after getting on (a phone: as long as one rides – no key there)
+  function pill(on) {
+    if (!S.pillEl) {
+      if (!on) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.id = 'glpreden';
+      b.hidden = true;
+      b.addEventListener('click', () => auf());
+      (stage || document.body).appendChild(b);
+      build();
+      S.pillEl = b;
+    }
+    if (on) S.pillEl.textContent = (COARSE ? '' : 'B · ') + T.reden(GL.name(GL.other()));
+    S.pillEl.hidden = !on;
+  }
+  function tick(dt) {
+    const F = fig(),
+      faehrt = !!(F && F.rides && VEH.cur && GL.on);
+    if (faehrt && !S.fuhr) S.pillT = 6;
+    S.fuhr = faehrt;
+    if (!S.open) {
+      const sicht = imAuto() && (COARSE || S.pillT > 0);
+      if (S.pillT > 0) S.pillT -= Math.min(dt || 0, 0.25);
+      if (sicht !== !!(S.pillEl && !S.pillEl.hidden)) pill(sicht);
+      return;
+    }
+    if (S.auto) {
+      if (!imAuto()) zu('weg');
+      return;
+    }
     if (!F || F.id !== S.who || !frei(4.6)) return void zu('weg');
     // the panel's or the HUD's „Komm mit“ / „Warte hier“ while the talk runs: kept for afterwards, she or he still stands
     if (GL.folgt) {
@@ -459,7 +533,7 @@ body[data-gl-kino="1"] #glpartner{display:none!important}
     offen: () => S.open,
     personen,
     linien: () => GLPDATA.linien(),
-    debug: { zustand, lageSt, chips, aktion },
+    debug: { zustand, lageSt, chips, aktion, imAuto },
   });
 })();
 window.GLPARTNER = GLPARTNER;

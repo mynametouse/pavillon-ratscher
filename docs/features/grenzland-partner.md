@@ -9,7 +9,10 @@ genauso.“
 - **Überall im heutigen Grenzland**: Steht man zu Fuß bis etwa 3 m vor Sarah (oder, wenn man Sarah spielt, vor Falko) und schaut grob zu
   ihr, zeigt der Aktionsknopf des Spiels **„Mit Sarah reden · E“** / „Mit Falko reden · E“ (am Handy: antippen). Nicht 1989 (dort ist der
   Partner nicht da), nicht während einer Filmszene (`body[data-gl-kino="1"]`), nicht während ein Missionsgespräch läuft
-  (`GLMISSION.redet()`), nicht bei offener Auswahl, nicht im Fahrzeug.
+  (`GLMISSION.redet()`), nicht bei offener Auswahl.
+- **Zusammen unterwegs** (Auto, Simson; die Partnerin fährt unsichtbar mit): Taste **B** öffnet dasselbe Gespräch – ohne „Komm mit“/„Warte
+  hier“, wie das Geplauder bei GTA-Fahrten. Nach dem Aufsteigen zeigt sich oben rechts für 6 Sekunden der Knopf **„B · Mit Sarah reden“**
+  (am Handy, ohne Tasten: solange man zusammen fährt). E beendet im Fahrzeug zuerst das Gespräch, erst das nächste E steigt aus.
 - **Das Gespräch**: E öffnet rechts ein kleines Feld im Look des Modus (dunkel, gelber Name, wie die Auswahl von `GLHUD.wahl`). Die
   Partnerin bleibt stehen, dreht sich zum Spieler und schaut ihn an (`GLFIG.face`, `GLFIG.blick(F, 'spieler')`), der Mund bewegt sich,
   während sie spricht (`GLFIG.talking`), die Zeile steht als Untertitel (`GLHUD.sub`) und im Feld. Zur Begrüßung ein kurzes „Was gibt es?“.
@@ -45,9 +48,9 @@ genauso.“
 - **Taste E** über den Aktionsknopf des Spiels (`KERN.act`, Kennung `gl:partner`, Reichweite 3 m, Priorität 0,15) – E war frei, genau so
   bieten die anderen Grenzland-Aktionen (Tanken, Helm, Angeln …) ihre Knöpfe an. Im offenen Gespräch fängt das Feld E/Esc/1–4 ab (Capture),
   damit E nicht zugleich eine andere Aktion auslöst.
-- **Im Fahrzeug nicht** in dieser Runde: Im Auto/auf der Simson ist E der Ausstieg, und eine eigene Taste fürs Gespräch während der Fahrt
-  wäre eine Änderung in `gl_modus.js`/`gl_hud.js` (Lead). Die Daten und die KI-Person sind dafür vorbereitet (`lage()` meldet
-  „ihr sitzt zusammen auf dem …“, `frei()` ist die einzige Sperre).
+- **Im Fahrzeug Taste B** („Beifahrer“): E ist dort der Ausstieg; B ist im Grenzland frei (im Grundspiel nur zu Fuß belegt: Buch im
+  Wald, Werkstatt). Während der Fahrt hält das Gespräch `GL.folgt` nicht an (sonst stiege sie aus), „Warte hier“ gibt es nicht, und die KI
+  antwortet auf „warten“ mit „Geht gerade nicht – ihr fahrt zusammen.“ `<lage>` meldet „ihr sitzt zusammen auf dem …“.
 - **Mission-1-Test an der alten Schule** (Schritt `schule`) statt Schritt 1 (`ankunft`): Schritt 1 ist ein Missionsgespräch, dort gibt es
   absichtlich keinen Knopf; und so bleibt der Testlauf in einem Gebiet (Ratscher).
 - **Rückblick**: die letzten zwei geschafften Missionen, nicht alle fünf (sonst 25 Sekunden Monolog).
@@ -66,23 +69,27 @@ genauso.“
 - `viz3/test/grenzland_partner.py` (Browser, `frei` und `ki`; auch auf Actions über `viz3/extra/grenzland-partner/tests.txt`): Knopf in 2 m,
   keiner in 6 m oder mit dem Rücken zu ihr, E öffnet, Themen spielen die richtigen Zeilen (freies Spiel, Mission 1 an der Schule),
   „Warte hier“ hält sie an (12 m weg folgt sie nicht), „Komm mit“ lässt sie wieder folgen, E/Esc/Weggehen schließen, nichts bei Szene und
-  1989, als Sarah „Mit Falko reden“ mit Falkos Zeilen; KI: beide Personen registriert, `<lage>` mit Ziel und Sternen, die der Nachbarn
+  1989, auf der Simson: Knopf „B · Mit Sarah reden“, B öffnet, drei Themen, sie fährt weiter mit, E beendet nur das Gespräch; als Sarah
+  „Mit Falko reden“ mit Falkos Zeilen; KI: beide Personen registriert, `<lage>` mit Ziel und Sternen, die der Nachbarn
   unverändert, mit (falschem) Schlüssel läuft ein freies Gespräch im Feld (Bogen, kein `aufgabe_geben`) – ohne eine einzige Anfrage.
-- Bilder: `out/grenzland_partner/01_prompt.jpg`, `02_panel.jpg`, `03_panel_handy.jpg`, `04_panel_ki.jpg`, `05_panel_falko.jpg`.
+- Bilder: `out/grenzland_partner/01_prompt.jpg`, `02_panel.jpg`, `03_panel_handy.jpg`, `04_panel_ki.jpg`, `05_panel_falko.jpg`,
+  `06_fahrt_knopf.jpg`, `07_fahrt_panel.jpg`.
+- Lauf auf Actions (erster Stand `9338827c`): `grenzland_partner` 45 Prüfungen ok.
 
 ## Für den Lead
 
 - **`modules.txt`**: zwei Zeilen am Ende des `# feat/grenzland`-Blocks (nach `gl_stimmen.js`): `gl_partner_data.js`, `gl_partner.js`
   (`gl_partner.js` importiert `gl_mission.js`, `gl_fahndung.js`, `gl_hud.js`, `npc/ki.js`; `GRENZLAND` liest es über `window`).
 - **Keine Änderung in `gl_modus.js`, `gl_data.js`, `gl_hud.js` nötig.** Wünsche, falls gewollt:
-  1. **Gespräch während der Fahrt** (GTA-Banter): eine Taste/ein Knopf im HUD, der `GLPARTNER.auf()` auch im Fahrzeug erlaubt, wenn
-     `GRENZLAND.partnerOf().rides` – dafür müsste `frei()` die Fahrzeug-Sperre lockern (meine Datei) und der Lead die Taste vergeben
-     (z. B. im Fahrzeug `Y`), weil E dort Aussteigen ist.
+  1. Die Taste **B** fürs Gespräch während der Fahrt bitte in die Tastenliste des Modus aufnehmen (Kopf von `gl_modus.js`, Einführung
+     `T.introKeys` in `gl_data.js`), falls sie dort genannt werden soll – heute nennt sie nur der Knopf beim Aufsteigen.
   2. Optional: der HUD-Knopf „Komm mit/Warte hier“ in `gl_hud.js` könnte während eines Gesprächs `GLPARTNER.thema('komm'|'warte')`
      rufen, damit die Partnerin antwortet (heute wirkt er still; `gl_partner.js` übernimmt den Wert nach dem Gespräch).
   3. **KI-Telefonat** (Auftrag Punkt 4) nicht gebaut: `GLHANDY.rufZeilen` bleibt der Weg. Ansatz für später: in `gl_handy.js` beim Anruf an
      den Partner mit `KI.ready` statt der festen Zeilen `GLPARTNER`-Person mit dem Anrufbildschirm als `host()`.
 - `npc/ki.js` und `npc/ki_core.js` sind geteilte Module (außerhalb von `grenzland/`): die Änderung ist im Auftrag erlaubt, additiv,
   mit Unit-Test – beim Merge bitte mit `feat/ki`-Ständen abgleichen, falls dort parallel etwas kam.
-- Die Stimmen: `tools/voices/grenzland_linien.json` enthält die 144 neuen Zeilen; der Workflow nimmt sie beim Push auf diesen Branch auf
-  (und committet mit `[skip ci]` zurück).
+- Die Stimmen: `tools/voices/grenzland_linien.json` enthält die 144 neuen Zeilen. **Der Workflow `stimmen_grenzland.yml` läuft nur bei
+  Pushes auf `feat/grenzland` und `feat/grenzland-stimmen`** (und von Hand) – auf diesem Zweig hat er also nicht aufgenommen, und
+  `gh workflow run` ist mir nicht erlaubt (403). Nach dem Zusammenführen in `feat/grenzland` nimmt er die neuen Zeilen auf (der Pfad
+  `tools/voices/grenzland_linien.json` ändert sich); bis dahin sprechen die Gerätestimmen.
