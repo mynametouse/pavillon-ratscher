@@ -71,6 +71,7 @@ def run():
         E("window.__P1 = new Set(GAME.R.info.programs.map(p => p.cacheKey))")
         ck('the camera is the director\'s (orbit mode under it, RENDER.draw set)', E("GAME.P.mode === 'orbit' && !!ZKREGIE.S.shot") and J("ZKREGIE.info().bild.frames") >= 0)
         if 'lapse' in want:
+            E("ZKREGIE.seek(2032)"); steps(0.5)  # far from any halt (wald-neu 2031.3, wald-flicken 2038.5)
             y0 = st()['y']; h0 = E("CLOCK.t % 1440")
             steps(1.4)
             s = st(); h1 = E("CLOCK.t % 1440")
@@ -88,15 +89,15 @@ def run():
         if 'split' in want:
             # a red quad on layer 21 and a blue one on layer 22 in front of the camera (no depth test: drawn over everything)
             made = E("""(() => { const q = (col, layer) => { const o = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: col, depthTest: false, depthWrite: false, fog: false }));
-                o.frustumCulled = false; o.renderOrder = 9999; o.layers.set(layer); o.name = 'zk-test-' + layer; GAME.scene.add(o); return o; };
+                o.frustumCulled = false; o.renderOrder = 9999; o.layers.set(layer); o.name = 'zk-test-' + layer;
+                // in front of whatever camera draws it (a cut may move the camera between two measurements)
+                o.onBeforeRender = (r, sc, c) => { o.position.copy(c.position).add(c.getWorldDirection(new THREE.Vector3()).multiplyScalar(2)); o.quaternion.copy(c.quaternion); o.scale.set(3, 3, 1); o.updateMatrixWorld(); };
+                GAME.scene.add(o); return o; };
               window.__zkTest = [q(0xff0000, 21), q(0x0000ff, 22)]; return 'ok'; })()""")
             if made == 'ok':
-                # keep them in front of the camera (they follow it each frame of the test)
-                E("""window.__zkFollow = () => { const c = GAME.cam; c.updateMatrixWorld(); for (const o of __zkTest) { o.position.copy(c.position).add(c.getWorldDirection(o.position.clone()).multiplyScalar(2)); o.quaternion.copy(c.quaternion); o.scale.set(3, 3, 1); o.updateMatrixWorld(); } }; __zkFollow()""")
-                E("window.__zkFollow()")
                 l = J(f"({MEAN})([0.05, 0.3, 0.45, 0.7])"); r = J(f"({MEAN})([0.55, 0.3, 0.95, 0.7])")
                 ck('split: left half shows layer 21 (red), right half layer 22 (blue)', l[0] > l[2] + 60 and r[2] > r[0] + 60, f'L {[round(v) for v in l]} R {[round(v) for v in r]}')
-                E("ZKREGIE.split(false)"); steps(0.3); E("window.__zkFollow()")
+                E("ZKREGIE.split(false)"); steps(0.5)
                 l = J(f"({MEAN})([0.05, 0.3, 0.45, 0.7])"); r = J(f"({MEAN})([0.55, 0.3, 0.95, 0.7])")
                 ck('one world: layer 21 over the whole picture', l[0] > l[2] + 60 and r[0] > r[2] + 60, f'L {[round(v) for v in l]} R {[round(v) for v in r]}')
                 info1 = J("ZKREGIE.info().bild")
@@ -111,8 +112,9 @@ def run():
             l = J(f"({MEAN})([0.0, 0.1, 0.5, 0.9])"); r = J(f"({MEAN})([0.5, 0.1, 1.0, 0.9])")
             diff = sum(abs(a - c) for a, c in zip(l, r))
             save('split_2045', E(SHOT))
-            print('halves 2045 mean colour', [round(v) for v in l], [round(v) for v in r], 'world', json.dumps(stats)[:300], flush=True)
-            if stats and (stats.get('L') or stats.get('layers') or stats.get('n21')):
+            print('halves 2045 mean colour', [round(v) for v in l], [round(v) for v in r], 'objects on 21/22:', J("ZKBILD_LAYERS().length"), 'world', json.dumps(stats)[:300], flush=True)
+            layered = J("ZKBILD_LAYERS().length")
+            if layered > 0:
                 ck('split 2045: the halves differ (the worlds differ)', diff > 4, f'diff {diff:.1f}')
             else:
                 print('note: zeitreise-welt draws nothing on 21/22 yet – halves', 'differ' if diff > 4 else 'alike', f'({diff:.1f})', flush=True)

@@ -541,6 +541,14 @@ export const ZKREGIE = (() => {
     S.lines = linesOf(m);
     S.li = -1;
     S.nextLineT = 1.2;
+    S.wkey = '';
+    try {
+      const e = evOf(m),
+        st = C.state(e.w, C.at(e, 0));
+      S.rainEv = !!(st && st.water && st.water.rain);
+    } catch (err) {
+      S.rainEv = false;
+    }
     hush();
     // a phone photo of this place was taken for the media: they dissolve it into the live view themselves – a hard cut under it
     const hard = S.snapFor === m.place;
@@ -695,10 +703,20 @@ export const ZKREGIE = (() => {
       m = S.mode === 'halt' || S.mode === 'before' ? S.ev : null,
       yf = m ? C.at(evOf(m), S.mode === 'halt' ? S.phase : 0) : S.y;
     try {
-      S.stL = S.side !== 'R' && wl ? C.state(wl, yf) : null;
-      S.stR = S.side !== 'L' && wr ? C.state(wr, yf) : null;
-      if (S.side === 'both') W.set(S.stL, S.stR);
-      else W.set(S.side === 'R' ? S.stR : S.stL, null);
+      // the states only when the time or the shown worlds changed (state() is ~0.07 ms per world)
+      const key = S.side + ':' + yf;
+      if (key !== S.wkey) {
+        S.wkey = key;
+        S.stL = S.side !== 'R' && wl ? C.state(wl, yf) : null;
+        S.stR = S.side !== 'L' && wr ? C.state(wr, yf) : null;
+        if (S.side === 'both') W.set(S.stL, S.stR);
+        else W.set(S.side === 'R' ? S.stR : S.stL, null);
+        // a storm cell that has passed in the chronicle (water.rain null again): the rain stops, the sky stays grey
+        if (m && S.mode === 'halt' && S.rainEv) {
+          const wet = (S.stL && S.stL.water && S.stL.water.rain) || (S.stR && S.stR.water && S.stR.water.rain);
+          weather(wet ? m.weather : 'bedeckt');
+        }
+      }
       if (S.rt - S.sndT > 0.25) {
         S.sndT = S.rt;
         W.sound(S.stL, S.side === 'both' ? S.stR : null, S.side);
@@ -741,6 +759,8 @@ export const ZKREGIE = (() => {
     S.mediaDuck = 1;
     S.voxSet = 1;
     S.werr = 0;
+    S.wkey = '';
+    S.rainEv = false;
     // everything that is put back at the end
     let wx = null;
     try {
