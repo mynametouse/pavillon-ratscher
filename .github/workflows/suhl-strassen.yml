@@ -38,7 +38,7 @@ jobs:
           python-version: '3.12'
       - name: Werkzeuge
         run: |
-          pip install --quiet numpy scipy shapely pyproj rasterio tifffile imagecodecs pillow
+          pip install --quiet numpy scipy shapely pyproj rasterio tifffile imagecodecs pillow requests
           sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
           mkdir -p "$SUHL_RAW" logs "$OUT" tools/suhl/out/strassen/stadt
       - name: Rohdaten aus dem Cache (Downloads früherer Läufe)

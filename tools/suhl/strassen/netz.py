@@ -130,19 +130,55 @@ def record(wid, nd, t, nodes):
                 bname=t.get('bridge:name', '') or t.get('tunnel:name', ''))
 
 
-def select(o, box):
-    """all ways of the street space with a node inside the UTM box"""
+RAIL = {'rail': 0, 'light_rail': 0, 'narrow_gauge': 0, 'tram': 0, 'preserved': 1, 'disused': 1}
+RAIL_SIDE = ('siding', 'yard', 'spur', 'crossover')
+
+
+def rail_record(wid, nd, t, nodes):
+    """a railway track as a way of the same network (kind 'rail'): its profile is solved with the roads, so a level crossing has one
+    height and a road bridge keeps its clearance over the track. Tracks taken up (railway=abandoned) are no tracks."""
+    rw = t.get('railway')
+    if rw not in RAIL:
+        return None
+    refs = [r for r in nd if r in nodes]
+    if len(refs) < 2:
+        return None
+    fl = (1 if t.get('bridge') not in (None, 'no') else 0) | (2 if t.get('tunnel') not in (None, 'no') else 0)
+    try:
+        layer = int(t.get('layer', '0'))
+    except ValueError:
+        layer = 0
+    ms = _num(t.get('maxspeed', ''))
+    return dict(id=wid, kind='rail', kout='rail', surf='gravel', w=3.2, fl=fl, refs=refs, name=t.get('name', ''), ref=t.get('ref', ''),
+                layer=layer, hw='railway=' + rw, lanes=0, ms=int(ms) if ms and ms < 400 else 0, lit=0, service=t.get('service', ''),
+                bname=t.get('bridge:name', '') or t.get('tunnel:name', ''), L=600.0, rtype=RAIL[rw],
+                side=1 if t.get('service') in RAIL_SIDE else 0)
+
+
+def select(o, box, rail=True, tiles=None):
+    """all ways of the street space (and the tracks) with a node inside the UTM box; tiles: a set of level-10 tile keys – then only
+    ways with a node in one of them (the municipality is no rectangle: its bounding box holds twice its roads)"""
     e0, n0, e1, n1 = box
+    s = S.ROOT / (1 << S.LEVEL)
     out = []
     for wid, (nd, t) in o.ways.items():
-        if 'highway' not in t:
+        if 'highway' in t:
+            r = record(wid, nd, t, o.nodes)
+        elif rail and 'railway' in t:
+            r = rail_record(wid, nd, t, o.nodes)
+        else:
             continue
-        r = record(wid, nd, t, o.nodes)
         if r is None:
             continue
         P = np.array([o.nodes[i] for i in r['refs']])
-        if ((P[:, 0] > e0) & (P[:, 0] < e1) & (P[:, 1] > n0) & (P[:, 1] < n1)).any():
-            out.append(r)
+        if not ((P[:, 0] > e0) & (P[:, 0] < e1) & (P[:, 1] > n0) & (P[:, 1] < n1)).any():
+            continue
+        if tiles is not None:
+            tx = np.floor((P[:, 0] - S.ROOT_E0) / s).astype(int)
+            ty = np.floor((P[:, 1] - S.ROOT_N0) / s).astype(int)
+            if not any((int(a), int(b)) in tiles for a, b in zip(tx, ty)):
+                continue
+        out.append(r)
     out.sort(key=lambda w: w['id'])
     return out
 
@@ -154,7 +190,7 @@ def lam_of(w, grob=1.0):
     if w['fl'] & 3:
         return 1e9
     L = w.get('L') or WR.KINDS[w['kind']][3]
-    if grob != 1.0 and WR.KINDS[w['kind']][5] <= 6:
+    if grob != 1.0 and w['kind'] in WR.KINDS and WR.KINDS[w['kind']][5] <= 6:
         L *= grob
     return (L / (2 * math.pi)) ** 4
 
@@ -274,7 +310,7 @@ def solve(pos, chains, dem, pin=None, joints=True, flat=True, twins=True, offset
         # the plane that road has there (its longitudinal grade; flat across). h_k - h_j - g t_k = 0 with g = (h_b - h_a) / |ab|.
         SQ = 40.0
         ck, cj, ca, cb, vk, vj, va, vb = [], [], [], [], [], [], [], []
-        rank = lambda ci: (WR.KINDS[chains[ci][0]['kind']][5], chains[ci][0]['w'])
+        rank = lambda ci: (WR.KINDS[chains[ci][0]['kind']][5] if chains[ci][0]['kind'] in WR.KINDS else 10, chains[ci][0]['w'])   # a track outranks every road
         stiff = lambda ci: chains[ci][0]['fl'] & (3 | FL['steps'])
         for j, oc in occ.items():
             arms = []     # (chain, index of j in it, direction)
