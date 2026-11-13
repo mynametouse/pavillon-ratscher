@@ -556,7 +556,7 @@ export const GLPOSE = (() => {
           F0.g.rotation.x = 0;
           F0.g.rotation.z = 0;
         }
-        if (S.player.R) back(S.player.R);
+        // (the turns are in the avatar's own map: it puts them back before its next mixer step)
         S.player = null;
       }
       return;

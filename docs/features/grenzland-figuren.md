@@ -20,9 +20,10 @@ Dateien: `viz3/src/grenzland/gl_fig.js` (die Schnittstelle `GLFIG`), neu `viz3/s
   Verhalten wieder her.
 - **Am Steuer des Trabant** (1989, Ansicht von außen): auf dem Fahrersitz des Wagens dieses Bildes, die Hände auf zehn vor zwei am
   Lenkrad; sie gehen ein Stück mit dem Lenkrad mit wie die Hände der Fahreransicht.
-- **Rennen**: `GLFIG.go(F, x, y, { renn: true })` – nach einem kurzen Antritt (5,5 m/s²) 4,6 m/s, dazu der Sprint aus dem
-  Bewegungssatz der Spielerfiguren über den Gehschritt gelegt (die Schrittlänge passt zur Beinlänge). Ein Tempo über 2,6 m/s läuft auch
-  mit der alten Form `go(F, pts, v)` als Rennen – so rennen die Polizisten zu Fuß aus `gl_fahndung.js` schon jetzt.
+- **Rennen**: `GLFIG.go(F, x, y, { renn: true })` – nach einem kurzen Antritt (5,5 m/s²) 4,6 m/s. Über 2 m/s kommt der Trab
+  (`jog`) aus dem Bewegungssatz der Spielerfiguren über den Gehschritt, über 3,6 m/s der Sprint – jeweils im Takt der eigenen
+  Schrittlänge (passend zur Beinlänge). So trabt ein Polizist, den `welt` mit 3,2 m/s hinterherschickt, statt in Zeitlupe zu sprinten.
+  Ein Tempo über 2,6 m/s läuft auch mit der alten Form `go(F, pts, v)` als Rennen.
 - **Gesten** (`GLFIG.geste(F, art, o)`), weich ein- und ausgeblendet (¼ s): `zeigen` (auf `o.ziel`, der Blick geht mit, Zeigefinger
   gestreckt), `nicken`, `kopf` (Kopfschütteln), `achsel` (Schultern hoch, Handflächen nach oben), `arme` (verschränkt, gehalten),
   `winken`, `telefon` (Handy am Ohr, gehalten), `filmen` (Handy mit beiden Händen vor der Brust, gehalten), `haende` (Hände hoch,
@@ -120,6 +121,9 @@ Hinweise an die Besitzer anderer Dateien (ich habe sie nicht angefasst):
 - **`gl_modus.js` (Lead), der Mitfahrer:** `partnerTick` setzt den Partner beim Fahren unsichtbar; ich setze ihn nach den Fahrzeugen
   (`VEH.after`) wieder sichtbar und auf den Soziussitz bzw. Beifahrersitz (nur Ansicht von außen, nur „heute“). Wer das nicht will:
   `GLPOSE.sozius = false`. Der Radar zeigt den Partner beim Mitfahren weiterhin nicht (`F.rides`) – das passt.
+- **`handy` (feat/handy, Haltung des Spieler-Handys):** die Spielerfigur teilt sich eine Merkliste der Drehungen (`AVATAR.fig.sv`).
+  Solange der Spieler auf der Simson oder im Trabant sitzt (Ansicht von außen), setze ich sie vor der Fahrerhaltung zurück – eine
+  Handy-Haltung gilt dann nicht (wie verabredet: nur im Gehen und Stehen).
 - **`welt`**: Polizisten zu Fuß rennen ab 2,6 m/s von selbst; für Zeugen `GLFIG.geste(F, 'filmen')`, zum Gaffen
   `GLFIG.blick(F, 'spieler')`, Kopfschütteln `GLFIG.geste(F, 'kopf')`.
 
@@ -128,5 +132,11 @@ Noch offen: siehe unten.
 ## Offen
 
 - Kopfdrehen und Nicken sieht man auf Standbildern kaum; im Spiel sichtbar.
-- Die Figuren im Trabant von 1989 (Volkspolizei, Grenzer) sitzen nicht im Wagen – es gibt sie dort nicht als Mitfahrer.
-- Füße beim Rennen gleiten nicht, solange Tempo und Sprint-Schritt passen; sehr kleine Figuren gleiten etwas.
+- Auf- und Absteigen: aufs Moped geht es in einer Drittelsekunde aus der Sitzhaltung des Grundspiels in die Fahrerhaltung; beim
+  Absteigen steht die Figur sofort (das Grundspiel setzt sie neben das Fahrzeug) – eine echte Absteige-Bewegung fehlt.
+- Die Spielerfigur hängt im Grundspiel ein Bild hinter den Fahrzeugen (`game/avatar.js` ist ein später KERN-Takt, die Fahrzeuge
+  fahren danach in `window.TICKS`). Auf Simson und Trabant setze ich sie neu; in Auto, Traktor und Bus des Grundspiels bleibt der
+  Versatz (bei Tempo 50 etwa 20 cm) – eine Sache für `game/avatar.js`.
+- Ein Barhocker oder Sitzplätze an der Kegelbahn stehen nicht in den Daten (`GLDATA.ORTE`); `GLFIG.platz` kennt nur die Bänke des
+  Dorfkerns und den Ring der Dorflinde.
+- Füße gleiten beim Rennen kaum; sehr kleine oder sehr große Figuren etwas (die Schrittlänge folgt der Hüfthöhe).
