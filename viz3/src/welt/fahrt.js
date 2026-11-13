@@ -176,6 +176,7 @@ export const FAHRT = (() => {
       sById.set(sg.id, sg);
     }
     for (const k in j.routes || {}) {
+      if (set && k in D.routes) continue; // (a set never takes the place of a route that is there – the region's `markt`, `baumschule`)
       D.routes[k] = Array.from(j.routes[k].pts, v => v / 10);
       // (a route with a name is a destination on the small map: „Suhl 12 km“)
       if (set && j.routes[k].n) D.dests[k] = j.routes[k].n;
@@ -193,7 +194,7 @@ export const FAHRT = (() => {
           fl: row[1] || 0,
           name: typeof row[2] === 'string' ? row[2] : names[row[2]] || '',
           r,
-          holes: (row[4] || []).map(ringOf),
+          holes: (Array.isArray(row[4]) ? row[4] : []).filter(Array.isArray).map(ringOf),
           type: row[5],
         };
       a.bb = bbOf(r, 2);
