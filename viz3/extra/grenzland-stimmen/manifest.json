@@ -1,2670 +1,2649 @@
 {
- "vx": {
-  "voices": {
-   "gl_sarah": "de-DE-SeraphinaMultilingualNeural",
-   "gl_falko": "de-DE-ConradNeural",
-   "gl_fremder": "de-DE-KillianNeural",
-   "gl_jule": "de-DE-KatjaNeural",
-   "gl_basti": "de-AT-JonasNeural",
-   "gl_timo": "de-DE-KillianNeural",
-   "gl_gerhard": "en-US-AndrewMultilingualNeural",
-   "gl_lutz": "de-DE-KillianNeural",
-   "gl_wache1": "de-CH-JanNeural",
-   "gl_wache2": "en-US-BrianMultilingualNeural",
-   "gl_wache3": "de-AT-JonasNeural",
-   "gl_funk": "de-DE-KatjaNeural",
-   "gl_polizei1": "de-CH-JanNeural",
-   "gl_polizei2": "de-AT-IngridNeural",
-   "gl_vopo": "de-AT-JonasNeural",
-   "gl_abv": "de-DE-ConradNeural",
-   "gl_boellermann": "de-CH-JanNeural",
-   "gl_wirt": "de-DE-KillianNeural",
-   "gl_bursche": "de-AT-JonasNeural",
-   "gl_maedchen": "de-DE-AmalaNeural",
-   "gl_erna": "de-DE-AmalaNeural",
-   "gl_horst": "de-CH-JanNeural",
-   "gl_renate": "de-DE-KatjaNeural",
-   "gl_brigitte": "de-AT-IngridNeural",
-   "gl_gisela": "de-DE-SeraphinaMultilingualNeural",
-   "gl_maik": "de-DE-KillianNeural",
-   "gl_ines": "de-CH-LeniNeural",
-   "gl_werner": "de-DE-KillianNeural",
-   "gl_kurt": "en-US-BrianMultilingualNeural",
-   "gl_r_grenzland": "en-US-BrianMultilingualNeural"
-  }
- },
- "vx_add": [
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1gnantd",
-   "text": "Vierzig Minuten bis zum Bus. In Berlin wäre das ein Skandal.",
-   "file": "voice/gl/gl_sarah_1gnantd.mp3",
-   "dur": 4.9
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1v6dpdr",
-   "text": "Hier ist das ein Fahrplan.",
-   "file": "voice/gl/gl_falko_1v6dpdr.mp3",
-   "dur": 1.49
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1fhl9y6",
-   "text": "Und der Mann da drüben? Der guckt, als hätte er uns bestellt.",
-   "file": "voice/gl/gl_sarah_1fhl9y6.mp3",
-   "dur": 4.6
-  },
-  {
-   "who": "gl_fremder",
-   "id": "gl_fremder_z2sv76",
-   "text": "Ihr fahrt nach Ratscher. Die zwei aus Berlin, mit dem Garten. Spricht sich rum.",
-   "file": "voice/gl/gl_fremder_z2sv76.mp3",
-   "dur": 6.61
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1i90i1l",
-   "text": "Kennen wir uns?",
-   "file": "voice/gl/gl_falko_1i90i1l.mp3",
-   "dur": 0.97
-  },
-  {
-   "who": "gl_fremder",
-   "id": "gl_fremder_1q71w1k",
-   "text": "Nein. Das ist ja das Schöne. Das hier muss nach Ratscher, zur alten Schule. Heute noch.",
-   "file": "voice/gl/gl_fremder_1q71w1k.mp3",
-   "dur": 8.16
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_j66ann",
-   "text": "Und warum bringen Sie es nicht selbst hin?",
-   "file": "voice/gl/gl_sarah_j66ann.mp3",
-   "dur": 2.53
-  },
-  {
-   "who": "gl_fremder",
-   "id": "gl_fremder_1fseslr",
-   "text": "Weil man mich dort kennt. Fünfzig Euro. Nicht aufmachen, nicht schütteln, nicht fragen.",
-   "file": "voice/gl/gl_fremder_1fseslr.mp3",
-   "dur": 7.52
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_3xvvkl",
-   "text": "Das waren jetzt drei Dinge, die ich bis eben gar nicht vorhatte.",
-   "file": "voice/gl/gl_falko_3xvvkl.mp3",
-   "dur": 3.5
-  },
-  {
-   "who": "gl_fremder",
-   "id": "gl_fremder_1wwiixl",
-   "text": "An der Schule wartet jemand. Sagt einfach, es kommt von einem Freund.",
-   "file": "voice/gl/gl_fremder_1wwiixl.mp3",
-   "dur": 5.13
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1fineti",
-   "text": "Der hat uns fünfzig Euro für eine Busfahrt gegeben, die wir sowieso machen.",
-   "file": "voice/gl/gl_sarah_1fineti.mp3",
-   "dur": 4.69
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_9esqma",
-   "text": "Deshalb heißt es Gefallen.",
-   "file": "voice/gl/gl_falko_9esqma.mp3",
-   "dur": 1.4
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_wrp8og",
-   "text": "Wenn einer fragt: Im Paket ist Blumenerde.",
-   "file": "voice/gl/gl_sarah_wrp8og.mp3",
-   "dur": 3.67
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_14jici9",
-   "text": "Per Anhalter mit dem Paket eines Fremden. Meine Mutter wäre stolz.",
-   "file": "voice/gl/gl_falko_14jici9.mp3",
-   "dur": 4.72
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_m11d6r",
-   "text": "Alte Schule. Licht aus, Tür zu, keiner da.",
-   "file": "voice/gl/gl_falko_m11d6r.mp3",
-   "dur": 4.01
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_17tpl45",
-   "text": "Vielleicht ist „heute noch“ hier ein dehnbarer Begriff.",
-   "file": "voice/gl/gl_sarah_17tpl45.mp3",
-   "dur": 3.32
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1mhjvo8",
-   "text": "Und jetzt? Stellen wir es vor die Tür?",
-   "file": "voice/gl/gl_falko_1mhjvo8.mp3",
-   "dur": 3.1
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_103c0s2",
-   "text": "Ein Paket von einem Fremden, abends, vor eine Schule. Falko.",
-   "file": "voice/gl/gl_sarah_103c0s2.mp3",
-   "dur": 5.04
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1oveje1",
-   "text": "War ja nur eine Frage.",
-   "file": "voice/gl/gl_falko_1oveje1.mp3",
-   "dur": 1.43
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1o3v07w",
-   "text": "Ich sag es gleich: Ich hab es unterwegs aufgemacht.",
-   "file": "voice/gl/gl_sarah_1o3v07w.mp3",
-   "dur": 3.34
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1nu3fxs",
-   "text": "Nicht aufmachen, nicht schütteln, nicht fragen.",
-   "file": "voice/gl/gl_falko_1nu3fxs.mp3",
-   "dur": 2.89
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1uqd2ri",
-   "text": "Geschüttelt hab ich nicht. Guck: eine Karte. Eine halbe – sauber an der Faltkante durchgerissen.",
-   "file": "voice/gl/gl_sarah_1uqd2ri.mp3",
-   "dur": 7.76
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_m9hpku",
-   "text": "„Grenzgebiet. Betreten verboten.“ Die ist von neunundachtzig. Und da ist ein Kreuz.",
-   "file": "voice/gl/gl_falko_m9hpku.mp3",
-   "dur": 6.44
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_4xeduj",
-   "text": "Ein Kreuz auf einer halben Karte. Entweder ein Schatz oder eine Klärgrube.",
-   "file": "voice/gl/gl_sarah_4xeduj.mp3",
-   "dur": 5.53
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1nce2a4",
-   "text": "„Wir vergessen, wie ihr ausseht.“ Großzügig.",
-   "file": "voice/gl/gl_falko_1nce2a4.mp3",
-   "dur": 2.8
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1kil5vr",
-   "text": "Und die Dorfgruppe weiß es auch schon. Wir sind seit zehn Minuten hier.",
-   "file": "voice/gl/gl_sarah_1kil5vr.mp3",
-   "dur": 4.8
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1dynuo1",
-   "text": "Lass an. Wenn wir schon Ärger haben, dann mit Musik.",
-   "file": "voice/gl/gl_sarah_1dynuo1.mp3",
-   "dur": 3.82
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1ksraf0",
-   "text": "Ihr seid die mit der Karte. Ich bin Jule. Das sind Timo und Basti. Basti sagt nicht viel – das ist sein bester Zug.",
-   "file": "voice/gl/gl_jule_1ksraf0.mp3",
-   "dur": 9.04
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_jpmw4p",
-   "text": "Stimmt.",
-   "file": "voice/gl/gl_basti_jpmw4p.mp3",
-   "dur": 0.64
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_151hf2t",
-   "text": "Woher wisst ihr von der Karte?",
-   "file": "voice/gl/gl_falko_151hf2t.mp3",
-   "dur": 1.74
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_of2fvm",
-   "text": "Der Mann an der Haltestelle sollte sie uns bringen. Er hat kalte Füße gekriegt und sie den Erstbesten in die Hand gedrückt.",
-   "file": "voice/gl/gl_jule_of2fvm.mp3",
-   "dur": 7.23
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_fekf5o",
-   "text": "Den Erstbesten. Danke.",
-   "file": "voice/gl/gl_sarah_fekf5o.mp3",
-   "dur": 2.43
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_18rakul",
-   "text": "Krähwinkel sucht die auch. Der Spediteur. Der zahlt besser als wir, aber er fragt nicht so nett.",
-   "file": "voice/gl/gl_timo_18rakul.mp3",
-   "dur": 6.75
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_lqgnuc",
-   "text": "Bevor ich euch mehr erzähle, will ich wissen, ob ihr was taugt. Rennen bis zur Staumauer. Wer vor mir da ist, dem trau ich.",
-   "file": "voice/gl/gl_jule_lqgnuc.mp3",
-   "dur": 8.59
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1omu3os",
-   "text": "Auf dem Ding? Das ist älter als ich.",
-   "file": "voice/gl/gl_falko_1omu3os.mp3",
-   "dur": 2.88
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1s6hxe0",
-   "text": "Dann habt ihr ja was gemeinsam.",
-   "file": "voice/gl/gl_timo_1s6hxe0.mp3",
-   "dur": 1.57
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1h1ix38",
-   "text": "Knapp daneben ist auch verloren. Noch mal von der Scheune?",
-   "file": "voice/gl/gl_jule_1h1ix38.mp3",
-   "dur": 3.96
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1qu9i3a",
-   "text": "Na gut. Ihr fahrt wie Leute, die nichts zu verlieren haben.",
-   "file": "voice/gl/gl_jule_1qu9i3a.mp3",
-   "dur": 4.28
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1ss9stw",
-   "text": "Wir haben einen Garten zu verlieren.",
-   "file": "voice/gl/gl_sarah_1ss9stw.mp3",
-   "dur": 2.37
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_tfq1cw",
-   "text": "Zeigt mal her. – Das ist der alte Kolonnenweg. Da sind die Grenzer langgefahren, immer am Zaun.",
-   "file": "voice/gl/gl_timo_tfq1cw.mp3",
-   "dur": 6.68
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_2s71ln",
-   "text": "Und das Kreuz liegt daneben. Nur: daneben wovon? Die andere Hälfte fehlt.",
-   "file": "voice/gl/gl_jule_2s71ln.mp3",
-   "dur": 6.32
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_mj7bkl",
-   "text": "Frag den Gerhard.",
-   "file": "voice/gl/gl_basti_mj7bkl.mp3",
-   "dur": 1.24
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1ab9ii3",
-   "text": "Vier Wörter am Stück, Basti. Aber er hat recht: Gerhard, der Chronist. Der war neunundachtzig dabei. Sitzt meistens unter der Linde.",
-   "file": "voice/gl/gl_jule_1ab9ii3.mp3",
-   "dur": 10.46
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1njg2nr",
-   "text": "Hier, fürs Benzin. Und was zum Krachmachen, falls ihr mal jemanden ablenken müsst.",
-   "file": "voice/gl/gl_timo_1njg2nr.mp3",
-   "dur": 5.82
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_jokpy4",
-   "text": "Und wenn ihr Feierabend braucht: Kegelbahn an der Scheune. Hier an der Mauer beißen abends die Karpfen.",
-   "file": "voice/gl/gl_jule_jokpy4.mp3",
-   "dur": 6.64
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1g6vr21",
-   "text": "Ihr seid die vom Garten. Setzt euch. Oder bleibt stehen, die Bank ist sowieso kalt.",
-   "file": "voice/gl/gl_gerhard_1g6vr21.mp3",
-   "dur": 6.28
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1tlhc7",
-   "text": "Wir haben da eine Karte. Eine halbe.",
-   "file": "voice/gl/gl_sarah_1tlhc7.mp3",
-   "dur": 3.11
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1l3mc2f",
-   "text": "Die hab ich schon einmal gesehen. Ganz. Am zehnten November neunundachtzig.",
-   "file": "voice/gl/gl_gerhard_1l3mc2f.mp3",
-   "dur": 5.55
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_7lkekr",
-   "text": "Einen Tag nach dem Mauerfall.",
-   "file": "voice/gl/gl_falko_7lkekr.mp3",
-   "dur": 1.57
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1yutk31",
-   "text": "Bei uns fiel keine Mauer. Bei uns stand ein Zaun, und der stand am Zehnten noch.",
-   "file": "voice/gl/gl_gerhard_1yutk31.mp3",
-   "dur": 5.74
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1yzll96",
-   "text": "Ich war fünfunddreißig und Lehrer. Und im Schulflur stand eine Kiste, die mir nicht gehörte.",
-   "file": "voice/gl/gl_gerhard_1yzll96.mp3",
-   "dur": 6.6
-  },
-  {
-   "who": "gl_lutz",
-   "id": "gl_lutz_x06zq4",
-   "text": "Heb die auf, Gerhard. Bis sich alles beruhigt hat.",
-   "file": "voice/gl/gl_lutz_x06zq4.mp3",
-   "dur": 4.03
-  },
-  {
-   "who": "gl_lutz",
-   "id": "gl_lutz_1v68p8l",
-   "text": "Frag nicht, was drin ist. Ich weiß es selber nur halb.",
-   "file": "voice/gl/gl_lutz_1v68p8l.mp3",
-   "dur": 4.27
-  },
-  {
-   "who": "gl_lutz",
-   "id": "gl_lutz_16oqt7w",
-   "text": "Die halbe Karte nehm ich mit. Sicher ist sicher.",
-   "file": "voice/gl/gl_lutz_16oqt7w.mp3",
-   "dur": 3.6
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_nw5mjh",
-   "text": "Am nächsten Morgen war die Kiste weg. Und Lutz auch.",
-   "file": "voice/gl/gl_gerhard_nw5mjh.mp3",
-   "dur": 3.55
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_19lozro",
-   "text": "Weg wohin?",
-   "file": "voice/gl/gl_sarah_19lozro.mp3",
-   "dur": 1.04
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1dgb20p",
-   "text": "Rüber, nehme ich an. Durften ja auf einmal alle. Geschrieben hat er nie.",
-   "file": "voice/gl/gl_gerhard_1dgb20p.mp3",
-   "dur": 5.66
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1sa6ufu",
-   "text": "Und die andere Hälfte der Karte?",
-   "file": "voice/gl/gl_falko_1sa6ufu.mp3",
-   "dur": 1.96
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1e5r0rj",
-   "text": "Hatte Lutz. Wenn dieser Krähwinkel nach der Kiste sucht, dann hat er Lutz’ Hälfte. Oder Lutz. Mir gefällt beides nicht.",
-   "file": "voice/gl/gl_gerhard_1e5r0rj.mp3",
-   "dur": 9.64
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1ekg6gc",
-   "text": "In die Chronik hab ich das nie geschrieben. Manches schreibt man erst auf, wenn es zu Ende ist.",
-   "file": "voice/gl/gl_gerhard_1ekg6gc.mp3",
-   "dur": 6.05
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1d6ep9w",
-   "text": "Ein Transporter, Licht an, drei Mann. Die fühlen sich hier sehr zu Hause.",
-   "file": "voice/gl/gl_sarah_1d6ep9w.mp3",
-   "dur": 5.44
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_t41tnz",
-   "text": "Plan: Einer macht auf der anderen Seite Krach, der andere fotografiert.",
-   "file": "voice/gl/gl_falko_t41tnz.mp3",
-   "dur": 4.18
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_1hyhdjp",
-   "text": "Du machst Krach. Das kannst du.",
-   "file": "voice/gl/gl_sarah_1hyhdjp.mp3",
-   "dur": 2.76
-  },
-  {
-   "who": "gl_wache1",
-   "id": "gl_wache1_1cpt51p",
-   "text": "Was war das?",
-   "file": "voice/gl/gl_wache1_1cpt51p.mp3",
-   "dur": 0.86
-  },
-  {
-   "who": "gl_wache2",
-   "id": "gl_wache2_byhp8n",
-   "text": "Jäger sind das nicht. Komm, nachsehen.",
-   "file": "voice/gl/gl_wache2_byhp8n.mp3",
-   "dur": 3.29
-  },
-  {
-   "who": "gl_wache1",
-   "id": "gl_wache1_pbktqr",
-   "text": "He! Da ist einer! Stehenbleiben!",
-   "file": "voice/gl/gl_wache1_pbktqr.mp3",
-   "dur": 3.58
-  },
-  {
-   "who": "gl_wache2",
-   "id": "gl_wache2_11brs4v",
-   "text": "Weg. War wohl ein Reh.",
-   "file": "voice/gl/gl_wache2_11brs4v.mp3",
-   "dur": 1.96
-  },
-  {
-   "who": "gl_wache1",
-   "id": "gl_wache1_709n6b",
-   "text": "Ein Reh mit Handy?",
-   "file": "voice/gl/gl_wache1_709n6b.mp3",
-   "dur": 1.13
-  },
-  {
-   "who": "gl_wache3",
-   "id": "gl_wache3_lelylg",
-   "text": "Die haben Fotos! Leuchtkugel, Abbruch – alles in den Wagen!",
-   "file": "voice/gl/gl_wache3_lelylg.mp3",
-   "dur": 4.52
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_3h0vhm",
-   "text": "Drei Fotos. Ein Transporter, zwei Gesichter und Kisten mit Stempel.",
-   "file": "voice/gl/gl_sarah_3h0vhm.mp3",
-   "dur": 5.87
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1k06yx1",
-   "text": "Und ich habe Tannennadeln an Stellen, von denen ich nichts wusste.",
-   "file": "voice/gl/gl_falko_1k06yx1.mp3",
-   "dur": 3.37
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_13sy39h",
-   "text": "Das ist Krähwinkels Transporter. Die Kisten gehen ins Außenlager – die Container in der Feldflur, Richtung Autobahn.",
-   "file": "voice/gl/gl_jule_13sy39h.mp3",
-   "dur": 7.77
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_vrl469",
-   "text": "Da hab ich mal Paletten abgeladen. Im Bürocontainer hängt was an der Wand, gerahmt. Eine halbe Karte. Ich dachte, das ist Deko.",
-   "file": "voice/gl/gl_timo_vrl469.mp3",
-   "dur": 9.59
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_104gsj1",
-   "text": "Die hängt er sich an die Wand?",
-   "file": "voice/gl/gl_sarah_104gsj1.mp3",
-   "dur": 1.9
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1croxj6",
-   "text": "Krähwinkel hängt sich alles an die Wand, was er für seins hält.",
-   "file": "voice/gl/gl_jule_1croxj6.mp3",
-   "dur": 3.5
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_elbz17",
-   "text": "Dann holen wir sie.",
-   "file": "voice/gl/gl_falko_elbz17.mp3",
-   "dur": 1.04
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_lssou7",
-   "text": "Zwei Wege. Leise: nachts hinten durch den Zaun, da ist eine Lücke – während der Wachmann seine Runde dreht.",
-   "file": "voice/gl/gl_jule_lssou7.mp3",
-   "dur": 7.23
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1hp89bf",
-   "text": "Oder laut: Wir zünden vorn am Tor eine Batterie, die Wachen rennen hin, und ihr geht hinten rein.",
-   "file": "voice/gl/gl_jule_1hp89bf.mp3",
-   "dur": 5.94
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_hstver",
-   "text": "Laut.",
-   "file": "voice/gl/gl_basti_hstver.mp3",
-   "dur": 0.57
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_r2gzr1",
-   "text": "Basti ist für laut. Basti ist immer für laut.",
-   "file": "voice/gl/gl_jule_r2gzr1.mp3",
-   "dur": 3.61
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_da4hbl",
-   "text": "Leise also. Dann wartet, bis es dunkel ist. Und atmet flach.",
-   "file": "voice/gl/gl_jule_da4hbl.mp3",
-   "dur": 5.62
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_283k59",
-   "text": "Laut. Basti, hol die Batterie. Ihr gebt das Zeichen, wenn ihr hinten am Zaun steht.",
-   "file": "voice/gl/gl_jule_283k59.mp3",
-   "dur": 6.96
-  },
-  {
-   "who": "gl_wache1",
-   "id": "gl_wache1_32br42",
-   "text": "Am Tor! Die verdammten Mopedfahrer!",
-   "file": "voice/gl/gl_wache1_32br42.mp3",
-   "dur": 2.98
-  },
-  {
-   "who": "gl_wache2",
-   "id": "gl_wache2_1vmx7qd",
-   "text": "Ich ruf die Polizei. Diesmal wirklich!",
-   "file": "voice/gl/gl_wache2_1vmx7qd.mp3",
-   "dur": 3.13
-  },
-  {
-   "who": "gl_wache1",
-   "id": "gl_wache1_rjp7bb",
-   "text": "He! Du da! Stehenbleiben!",
-   "file": "voice/gl/gl_wache1_rjp7bb.mp3",
-   "dur": 3.44
-  },
-  {
-   "who": "gl_wache2",
-   "id": "gl_wache2_pzdfbu",
-   "text": "Zentrale? Einbruch im Außenlager. Ja, jetzt gerade!",
-   "file": "voice/gl/gl_wache2_pzdfbu.mp3",
-   "dur": 5.17
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_8scs18",
-   "text": "Legt sie zusammen.",
-   "file": "voice/gl/gl_jule_8scs18.mp3",
-   "dur": 1.06
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_103syfd",
-   "text": "Der Bunker. Da war ich als Kind. Da ist nichts drin außer Fledermäusen.",
-   "file": "voice/gl/gl_timo_103syfd.mp3",
-   "dur": 5.4
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_18ewsxb",
-   "text": "Jetzt ist da was drin. Oder es war was drin.",
-   "file": "voice/gl/gl_sarah_18ewsxb.mp3",
-   "dur": 3.49
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_pvc6jv",
-   "text": "Morgen früh weiß Krähwinkel, dass seine Karte weg ist. Mittags weiß er, wer sie hat.",
-   "file": "voice/gl/gl_jule_pvc6jv.mp3",
-   "dur": 5.97
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_u5fuck",
-   "text": "Wir wollten eigentlich nur ein Wochenende im Garten.",
-   "file": "voice/gl/gl_falko_u5fuck.mp3",
-   "dur": 2.73
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_ncndcm",
-   "text": "Passiert.",
-   "file": "voice/gl/gl_basti_ncndcm.mp3",
-   "dur": 0.75
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1obfdg7",
-   "text": "Zentrale an alle Streifen.",
-   "file": "voice/gl/gl_funk_1obfdg7.mp3",
-   "dur": 1.88
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_ad1jx4",
-   "text": "Gesucht wird eine Person,",
-   "file": "voice/gl/gl_funk_ad1jx4.mp3",
-   "dur": 1.63
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1e05o5z",
-   "text": "Gesucht wird Falko,",
-   "file": "voice/gl/gl_funk_1e05o5z.mp3",
-   "dur": 1.34
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_4xkxoh",
-   "text": "Gesucht wird Sarah,",
-   "file": "voice/gl/gl_funk_4xkxoh.mp3",
-   "dur": 1.27
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_63cv2t",
-   "text": "Weiterhin gesucht wird eine Person,",
-   "file": "voice/gl/gl_funk_63cv2t.mp3",
-   "dur": 2.17
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1qh3y9u",
-   "text": "Weiterhin gesucht wird Falko,",
-   "file": "voice/gl/gl_funk_1qh3y9u.mp3",
-   "dur": 1.95
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1vnb84g",
-   "text": "Weiterhin gesucht wird Sarah,",
-   "file": "voice/gl/gl_funk_1vnb84g.mp3",
-   "dur": 1.87
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_tjbvxh",
-   "text": "männlich,",
-   "file": "voice/gl/gl_funk_tjbvxh.mp3",
-   "dur": 0.81
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1hsvvzq",
-   "text": "weiblich,",
-   "file": "voice/gl/gl_funk_1hsvvzq.mp3",
-   "dur": 0.75
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1g4d4bx",
-   "text": "rotes Karohemd,",
-   "file": "voice/gl/gl_funk_1g4d4bx.mp3",
-   "dur": 1.4
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_jwhzng",
-   "text": "dunkle Jacke,",
-   "file": "voice/gl/gl_funk_jwhzng.mp3",
-   "dur": 0.99
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1twz45x",
-   "text": "helle Jacke,",
-   "file": "voice/gl/gl_funk_1twz45x.mp3",
-   "dur": 0.93
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_15upc6z",
-   "text": "orange Warnjacke,",
-   "file": "voice/gl/gl_funk_15upc6z.mp3",
-   "dur": 1.26
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_apmzkx",
-   "text": "grüner Parka,",
-   "file": "voice/gl/gl_funk_apmzkx.mp3",
-   "dur": 1.1
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1bqao11",
-   "text": "mit Helm,",
-   "file": "voice/gl/gl_funk_1bqao11.mp3",
-   "dur": 0.73
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_10lw4rf",
-   "text": "mit Sturmhaube,",
-   "file": "voice/gl/gl_funk_10lw4rf.mp3",
-   "dur": 1.2
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_o50f9i",
-   "text": "auf einem Moped.",
-   "file": "voice/gl/gl_funk_o50f9i.mp3",
-   "dur": 1.16
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1xqwntk",
-   "text": "in einem Trabant.",
-   "file": "voice/gl/gl_funk_1xqwntk.mp3",
-   "dur": 1.22
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_iwlwhz",
-   "text": "in einem Auto.",
-   "file": "voice/gl/gl_funk_iwlwhz.mp3",
-   "dur": 1.09
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_nmz51o",
-   "text": "auf einem Traktor.",
-   "file": "voice/gl/gl_funk_nmz51o.mp3",
-   "dur": 1.28
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1nuxpgj",
-   "text": "zu Fuß.",
-   "file": "voice/gl/gl_funk_1nuxpgj.mp3",
-   "dur": 0.84
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1b67sup",
-   "text": "Richtung Schleusingen.",
-   "file": "voice/gl/gl_funk_1b67sup.mp3",
-   "dur": 1.35
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1br0jxx",
-   "text": "Richtung Ratscher.",
-   "file": "voice/gl/gl_funk_1br0jxx.mp3",
-   "dur": 1.1
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1v1jh9v",
-   "text": "Richtung Talsperre.",
-   "file": "voice/gl/gl_funk_1v1jh9v.mp3",
-   "dur": 1.35
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1k5e9xl",
-   "text": "Richtung Klinge.",
-   "file": "voice/gl/gl_funk_1k5e9xl.mp3",
-   "dur": 1.09
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_9m8m2t",
-   "text": "Zuletzt gesehen in Schleusingen.",
-   "file": "voice/gl/gl_funk_9m8m2t.mp3",
-   "dur": 1.95
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_19fm6td",
-   "text": "Zuletzt gesehen in Ratscher.",
-   "file": "voice/gl/gl_funk_19fm6td.mp3",
-   "dur": 1.75
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_2g4gbu",
-   "text": "Zuletzt gesehen an der Talsperre.",
-   "file": "voice/gl/gl_funk_2g4gbu.mp3",
-   "dur": 2.12
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_y69nau",
-   "text": "Zuletzt gesehen an der Klinge.",
-   "file": "voice/gl/gl_funk_y69nau.mp3",
-   "dur": 1.86
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_gjl1ja",
-   "text": "Letzter Standort unbekannt.",
-   "file": "voice/gl/gl_funk_gjl1ja.mp3",
-   "dur": 2.02
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_gq3zlk",
-   "text": "Kommen.",
-   "file": "voice/gl/gl_funk_gq3zlk.mp3",
-   "dur": 0.75
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_4aj7y8",
-   "text": "Rennsteig für Schleuse 12: Hinweis aus Ratscher. Fahren Sie mal hin.",
-   "file": "voice/gl/gl_funk_4aj7y8.mp3",
-   "dur": 5.63
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_9wwfr0",
-   "text": "Schleuse 12 verstanden. Wir brauchen ein bisschen – Landstraße.",
-   "file": "voice/gl/gl_funk_9wwfr0.mp3",
-   "dur": 4.55
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_83qdgs",
-   "text": "Schleuse 12 am Ort. Wir schauen uns um.",
-   "file": "voice/gl/gl_funk_83qdgs.mp3",
-   "dur": 3.62
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1hj0gii",
-   "text": "Rennsteig von Schleuse 12: vor Ort. Bisher nur Hühner.",
-   "file": "voice/gl/gl_funk_1hj0gii.mp3",
-   "dur": 5.06
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_11uh0bc",
-   "text": "Schleuse 12: Sichtkontakt!",
-   "file": "voice/gl/gl_funk_11uh0bc.mp3",
-   "dur": 2.38
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_b4l5db",
-   "text": "Rennsteig, wir haben ihn. Fahren nach.",
-   "file": "voice/gl/gl_funk_b4l5db.mp3",
-   "dur": 3.72
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_sqdw5m",
-   "text": "Schleuse 12: Sicht verloren. Suchen den Bereich ab.",
-   "file": "voice/gl/gl_funk_sqdw5m.mp3",
-   "dur": 4.44
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1bfg98l",
-   "text": "Rennsteig, der ist weg. Wir drehen eine Runde.",
-   "file": "voice/gl/gl_funk_1bfg98l.mp3",
-   "dur": 4.15
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_ad2dfz",
-   "text": "Rennsteig an alle: Kontrollstelle auf der Landstraße einrichten.",
-   "file": "voice/gl/gl_funk_ad2dfz.mp3",
-   "dur": 4.38
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_18mp73r",
-   "text": "Schleuse 14 steht quer. Hier kommt keiner durch. Hoffentlich.",
-   "file": "voice/gl/gl_funk_18mp73r.mp3",
-   "dur": 5.68
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_big1il",
-   "text": "Schleuse 14: Der ist über den Acker! Der Bauer wird sich freuen.",
-   "file": "voice/gl/gl_funk_big1il.mp3",
-   "dur": 4.87
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1vrmfi3",
-   "text": "Rennsteig für Bussard 1: Sie haben Freigabe. Suchgebiet Ratscher.",
-   "file": "voice/gl/gl_funk_1vrmfi3.mp3",
-   "dur": 5.57
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_vco6je",
-   "text": "Bussard 1 im Anflug. Bleiben Sie, wo Sie sind – das gilt nicht Ihnen, Rennsteig.",
-   "file": "voice/gl/gl_funk_vco6je.mp3",
-   "dur": 5.72
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1f4nsk2",
-   "text": "Rennsteig an alle: Spezialkräfte übernehmen. Zufahrten dicht machen.",
-   "file": "voice/gl/gl_funk_1f4nsk2.mp3",
-   "dur": 5.72
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1ilmiwd",
-   "text": "Rennsteig an alle: Fahndung eingestellt. Kaffee ist fertig.",
-   "file": "voice/gl/gl_funk_1ilmiwd.mp3",
-   "dur": 5.37
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_1vzbs5w",
-   "text": "Schleuse 12 rückt ein. War wohl wieder nichts.",
-   "file": "voice/gl/gl_funk_1vzbs5w.mp3",
-   "dur": 3.74
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_tdup3b",
-   "text": "Hier Zentrale. Genosse Hauptwachtmeister, klären Sie das in Ratscher.",
-   "file": "voice/gl/gl_funk_tdup3b.mp3",
-   "dur": 5.43
-  },
-  {
-   "who": "gl_funk",
-   "id": "gl_funk_21w4oa",
-   "text": "Verstanden. Bin mit dem Wartburg unterwegs.",
-   "file": "voice/gl/gl_funk_21w4oa.mp3",
-   "dur": 3.57
-  },
-  {
-   "who": "gl_polizei1",
-   "id": "gl_polizei1_1boylrm",
-   "text": "Halt! Polizei!",
-   "file": "voice/gl/gl_polizei1_1boylrm.mp3",
-   "dur": 1.94
-  },
-  {
-   "who": "gl_polizei2",
-   "id": "gl_polizei2_1boylrm",
-   "text": "Halt! Polizei!",
-   "file": "voice/gl/gl_polizei2_1boylrm.mp3",
-   "dur": 1.96
-  },
-  {
-   "who": "gl_polizei1",
-   "id": "gl_polizei1_osvl3g",
-   "text": "Polizei! Auf den Boden!",
-   "file": "voice/gl/gl_polizei1_osvl3g.mp3",
-   "dur": 2.25
-  },
-  {
-   "who": "gl_vopo",
-   "id": "gl_vopo_ij18nw",
-   "text": "Stehenbleiben!",
-   "file": "voice/gl/gl_vopo_ij18nw.mp3",
-   "dur": 0.92
-  },
-  {
-   "who": "gl_abv",
-   "id": "gl_abv_ij18nw",
-   "text": "Stehenbleiben!",
-   "file": "voice/gl/gl_abv_ij18nw.mp3",
-   "dur": 0.99
-  },
-  {
-   "who": "gl_boellermann",
-   "id": "gl_boellermann_ydrt7c",
-   "text": "Psst. Böller? Beste Qualität. Hast du nicht von mir.",
-   "file": "voice/gl/gl_boellermann_ydrt7c.mp3",
-   "dur": 4.37
-  },
-  {
-   "who": "gl_boellermann",
-   "id": "gl_boellermann_s79fiu",
-   "text": "Drei Stück, fünf Euro. Und nicht vor Silvester zünden. Haha.",
-   "file": "voice/gl/gl_boellermann_s79fiu.mp3",
-   "dur": 5.25
-  },
-  {
-   "who": "gl_boellermann",
-   "id": "gl_boellermann_185195j",
-   "text": "Ich bin dann mal weg. Die Polizei mag keine Kofferraumgeschäfte.",
-   "file": "voice/gl/gl_boellermann_185195j.mp3",
-   "dur": 4.03
-  },
-  {
-   "who": "gl_wirt",
-   "id": "gl_wirt_166yqq9",
-   "text": "Rostbratwurst! Frisch vom Rost, mit Senf, drei Euro!",
-   "file": "voice/gl/gl_wirt_166yqq9.mp3",
-   "dur": 5.09
-  },
-  {
-   "who": "gl_wirt",
-   "id": "gl_wirt_92m8a2",
-   "text": "Mit Senf. Natürlich mit Senf. Alles andere wäre eine Beleidigung.",
-   "file": "voice/gl/gl_wirt_92m8a2.mp3",
-   "dur": 5.94
-  },
-  {
-   "who": "gl_bursche",
-   "id": "gl_bursche_1szkbsb",
-   "text": "Kirmes ist nur einmal im Jahr! Komm, tanz mit!",
-   "file": "voice/gl/gl_bursche_1szkbsb.mp3",
-   "dur": 3.55
-  },
-  {
-   "who": "gl_maedchen",
-   "id": "gl_maedchen_12mita5",
-   "text": "Hast du den Kirmesbaum gesehen? Den haben wir die ganze Nacht bewacht.",
-   "file": "voice/gl/gl_maedchen_12mita5.mp3",
-   "dur": 4.81
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_7hjwej",
-   "text": "Ist was?",
-   "file": "voice/gl/gl_gerhard_7hjwej.mp3",
-   "dur": 0.7
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1i90i1l",
-   "text": "Kennen wir uns?",
-   "file": "voice/gl/gl_gerhard_1i90i1l.mp3",
-   "dur": 1.22
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_qnqpa6",
-   "text": "Du guckst, als hättest du noch nie einen Menschen gesehen.",
-   "file": "voice/gl/gl_gerhard_qnqpa6.mp3",
-   "dur": 3.5
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_o3cv1o",
-   "text": "Wenn du was suchst: Die Kirmes ist erst nächste Woche.",
-   "file": "voice/gl/gl_gerhard_o3cv1o.mp3",
-   "dur": 3.54
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1hvzzo2",
-   "text": "Na? Auch auf der Suche nach Rostbratwurst?",
-   "file": "voice/gl/gl_gerhard_1hvzzo2.mp3",
-   "dur": 3.43
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_kzey3m",
-   "text": "Schönes Karohemd. Holzfäller oder Tischdecke?",
-   "file": "voice/gl/gl_gerhard_kzey3m.mp3",
-   "dur": 3.5
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_zk98t",
-   "text": "Rot kariert – wie beim Schützenfest.",
-   "file": "voice/gl/gl_gerhard_zk98t.mp3",
-   "dur": 2.33
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_vwgyhm",
-   "text": "Ganz in Dunkel? Gehst du zu einer Beerdigung oder zu einem Einbruch?",
-   "file": "voice/gl/gl_gerhard_vwgyhm.mp3",
-   "dur": 4.63
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1cjh9l8",
-   "text": "Schicke Jacke. Neu?",
-   "file": "voice/gl/gl_gerhard_1cjh9l8.mp3",
-   "dur": 1.68
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1iuv7n0",
-   "text": "Ah, der Forst! Ist wieder was mit dem Borkenkäfer?",
-   "file": "voice/gl/gl_gerhard_1iuv7n0.mp3",
-   "dur": 3.78
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1v2y3fu",
-   "text": "In Orange sieht man dich bis Hildburghausen.",
-   "file": "voice/gl/gl_gerhard_1v2y3fu.mp3",
-   "dur": 2.67
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_ucoo5v",
-   "text": "Kommt jetzt endlich jemand wegen dem Baum am Friedhof?",
-   "file": "voice/gl/gl_gerhard_ucoo5v.mp3",
-   "dur": 3.43
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1vg8wjp",
-   "text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
-   "file": "voice/gl/gl_gerhard_1vg8wjp.mp3",
-   "dur": 3.94
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1m2l44b",
-   "text": "Eine Simson! Die läuft ja noch.",
-   "file": "voice/gl/gl_gerhard_1m2l44b.mp3",
-   "dur": 2.38
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1udbfjm",
-   "text": "So ein Moped hatte mein Vater auch. Genauso laut.",
-   "file": "voice/gl/gl_gerhard_1udbfjm.mp3",
-   "dur": 3.84
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1xskeda",
-   "text": "Schönes Auto. Gehört das dir?",
-   "file": "voice/gl/gl_gerhard_1xskeda.mp3",
-   "dur": 2.5
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_wwhod",
-   "text": "Mit dem Traktor durchs Dorf, wie es sich gehört.",
-   "file": "voice/gl/gl_gerhard_wwhod.mp3",
-   "dur": 3.27
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_6xknea",
-   "text": "Spinnst du?",
-   "file": "voice/gl/gl_gerhard_6xknea.mp3",
-   "dur": 0.87
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1v822oy",
-   "text": "Das hab ich gefilmt, nur dass du es weißt.",
-   "file": "voice/gl/gl_gerhard_1v822oy.mp3",
-   "dur": 2.72
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1uwkyq7",
-   "text": "So was gab es früher nicht. Früher gab es gar nichts.",
-   "file": "voice/gl/gl_gerhard_1uwkyq7.mp3",
-   "dur": 3.37
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1dfkelw",
-   "text": "Ich sag das deiner Mutter.",
-   "file": "voice/gl/gl_gerhard_1dfkelw.mp3",
-   "dur": 1.48
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1fg7xi1",
-   "text": "Dich suchen die doch. Das kam gerade im Radio.",
-   "file": "voice/gl/gl_gerhard_1fg7xi1.mp3",
-   "dur": 3.66
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1g2m635",
-   "text": "Die Polizei war schon zweimal hier. Wegen dir, oder?",
-   "file": "voice/gl/gl_gerhard_1g2m635.mp3",
-   "dur": 4.25
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_13w2j8r",
-   "text": "Muss ja. Und selbst?",
-   "file": "voice/gl/gl_gerhard_13w2j8r.mp3",
-   "dur": 1.84
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1kwk0ax",
-   "text": "Geht so. Am Sonntag gibt es Klöße, dann wird es besser.",
-   "file": "voice/gl/gl_gerhard_1kwk0ax.mp3",
-   "dur": 4.38
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_mdz4rb",
-   "text": "Na, ihr zwei. Schönen Abend noch!",
-   "file": "voice/gl/gl_gerhard_mdz4rb.mp3",
-   "dur": 3.17
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1esnmc",
-   "text": "Besser als dein Hemd. Das sieht aus wie eine Tischdecke.",
-   "file": "voice/gl/gl_gerhard_1esnmc.mp3",
-   "dur": 3.46
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1xojrg",
-   "text": "Sagt die Richtige. Oder der Richtige. Egal.",
-   "file": "voice/gl/gl_gerhard_1xojrg.mp3",
-   "dur": 3.98
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1jm6ble",
-   "text": "Ganz schön frech für einen, der hier nicht mal den Kirmesbaum aufstellt.",
-   "file": "voice/gl/gl_gerhard_1jm6ble.mp3",
-   "dur": 4.39
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_o351lb",
-   "text": "Na gut. Ich hab nichts gesehen.",
-   "file": "voice/gl/gl_gerhard_o351lb.mp3",
-   "dur": 2.22
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_vfzx3z",
-   "text": "Schon gut. Aber keinen Ärger hier, ja?",
-   "file": "voice/gl/gl_gerhard_vfzx3z.mp3",
-   "dur": 3.21
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_2qh5wu",
-   "text": "Na warte. Ich ruf die Polizei.",
-   "file": "voice/gl/gl_gerhard_2qh5wu.mp3",
-   "dur": 2.84
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_17h0ocj",
-   "text": "So nicht, mein Freund. Ich telefoniere jetzt.",
-   "file": "voice/gl/gl_gerhard_17h0ocj.mp3",
-   "dur": 3.8
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1khgqmd",
-   "text": "Ach, du schon wieder. Der mit den Sprüchen.",
-   "file": "voice/gl/gl_gerhard_1khgqmd.mp3",
-   "dur": 3.32
-  },
-  {
-   "who": "gl_gerhard",
-   "id": "gl_gerhard_1v0tf3c",
-   "text": "Mit dir rede ich nicht mehr.",
-   "file": "voice/gl/gl_gerhard_1v0tf3c.mp3",
-   "dur": 1.63
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_7hjwej",
-   "text": "Ist was?",
-   "file": "voice/gl/gl_jule_7hjwej.mp3",
-   "dur": 0.66
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1i90i1l",
-   "text": "Kennen wir uns?",
-   "file": "voice/gl/gl_jule_1i90i1l.mp3",
-   "dur": 0.87
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_qnqpa6",
-   "text": "Du guckst, als hättest du noch nie einen Menschen gesehen.",
-   "file": "voice/gl/gl_jule_qnqpa6.mp3",
-   "dur": 3.12
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_o3cv1o",
-   "text": "Wenn du was suchst: Die Kirmes ist erst nächste Woche.",
-   "file": "voice/gl/gl_jule_o3cv1o.mp3",
-   "dur": 3.05
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1hvzzo2",
-   "text": "Na? Auch auf der Suche nach Rostbratwurst?",
-   "file": "voice/gl/gl_jule_1hvzzo2.mp3",
-   "dur": 3.05
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_kzey3m",
-   "text": "Schönes Karohemd. Holzfäller oder Tischdecke?",
-   "file": "voice/gl/gl_jule_kzey3m.mp3",
-   "dur": 3.78
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_zk98t",
-   "text": "Rot kariert – wie beim Schützenfest.",
-   "file": "voice/gl/gl_jule_zk98t.mp3",
-   "dur": 2.2
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_vwgyhm",
-   "text": "Ganz in Dunkel? Gehst du zu einer Beerdigung oder zu einem Einbruch?",
-   "file": "voice/gl/gl_jule_vwgyhm.mp3",
-   "dur": 4.47
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1cjh9l8",
-   "text": "Schicke Jacke. Neu?",
-   "file": "voice/gl/gl_jule_1cjh9l8.mp3",
-   "dur": 2.07
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1iuv7n0",
-   "text": "Ah, der Forst! Ist wieder was mit dem Borkenkäfer?",
-   "file": "voice/gl/gl_jule_1iuv7n0.mp3",
-   "dur": 3.98
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1v2y3fu",
-   "text": "In Orange sieht man dich bis Hildburghausen.",
-   "file": "voice/gl/gl_jule_1v2y3fu.mp3",
-   "dur": 2.29
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_ucoo5v",
-   "text": "Kommt jetzt endlich jemand wegen dem Baum am Friedhof?",
-   "file": "voice/gl/gl_jule_ucoo5v.mp3",
-   "dur": 3.03
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1vg8wjp",
-   "text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
-   "file": "voice/gl/gl_jule_1vg8wjp.mp3",
-   "dur": 3.38
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1m2l44b",
-   "text": "Eine Simson! Die läuft ja noch.",
-   "file": "voice/gl/gl_jule_1m2l44b.mp3",
-   "dur": 2.75
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1udbfjm",
-   "text": "So ein Moped hatte mein Vater auch. Genauso laut.",
-   "file": "voice/gl/gl_jule_1udbfjm.mp3",
-   "dur": 3.92
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1xskeda",
-   "text": "Schönes Auto. Gehört das dir?",
-   "file": "voice/gl/gl_jule_1xskeda.mp3",
-   "dur": 2.83
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_wwhod",
-   "text": "Mit dem Traktor durchs Dorf, wie es sich gehört.",
-   "file": "voice/gl/gl_jule_wwhod.mp3",
-   "dur": 2.69
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_6xknea",
-   "text": "Spinnst du?",
-   "file": "voice/gl/gl_jule_6xknea.mp3",
-   "dur": 0.74
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1v822oy",
-   "text": "Das hab ich gefilmt, nur dass du es weißt.",
-   "file": "voice/gl/gl_jule_1v822oy.mp3",
-   "dur": 2.53
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1uwkyq7",
-   "text": "So was gab es früher nicht. Früher gab es gar nichts.",
-   "file": "voice/gl/gl_jule_1uwkyq7.mp3",
-   "dur": 3.74
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1dfkelw",
-   "text": "Ich sag das deiner Mutter.",
-   "file": "voice/gl/gl_jule_1dfkelw.mp3",
-   "dur": 1.45
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1fg7xi1",
-   "text": "Dich suchen die doch. Das kam gerade im Radio.",
-   "file": "voice/gl/gl_jule_1fg7xi1.mp3",
-   "dur": 3.29
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1g2m635",
-   "text": "Die Polizei war schon zweimal hier. Wegen dir, oder?",
-   "file": "voice/gl/gl_jule_1g2m635.mp3",
-   "dur": 4.04
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_13w2j8r",
-   "text": "Muss ja. Und selbst?",
-   "file": "voice/gl/gl_jule_13w2j8r.mp3",
-   "dur": 2.19
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1kwk0ax",
-   "text": "Geht so. Am Sonntag gibt es Klöße, dann wird es besser.",
-   "file": "voice/gl/gl_jule_1kwk0ax.mp3",
-   "dur": 4.14
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_mdz4rb",
-   "text": "Na, ihr zwei. Schönen Abend noch!",
-   "file": "voice/gl/gl_jule_mdz4rb.mp3",
-   "dur": 3.09
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1esnmc",
-   "text": "Besser als dein Hemd. Das sieht aus wie eine Tischdecke.",
-   "file": "voice/gl/gl_jule_1esnmc.mp3",
-   "dur": 3.82
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1xojrg",
-   "text": "Sagt die Richtige. Oder der Richtige. Egal.",
-   "file": "voice/gl/gl_jule_1xojrg.mp3",
-   "dur": 4.28
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1jm6ble",
-   "text": "Ganz schön frech für einen, der hier nicht mal den Kirmesbaum aufstellt.",
-   "file": "voice/gl/gl_jule_1jm6ble.mp3",
-   "dur": 4.01
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_o351lb",
-   "text": "Na gut. Ich hab nichts gesehen.",
-   "file": "voice/gl/gl_jule_o351lb.mp3",
-   "dur": 2.84
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_vfzx3z",
-   "text": "Schon gut. Aber keinen Ärger hier, ja?",
-   "file": "voice/gl/gl_jule_vfzx3z.mp3",
-   "dur": 3.47
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_2qh5wu",
-   "text": "Na warte. Ich ruf die Polizei.",
-   "file": "voice/gl/gl_jule_2qh5wu.mp3",
-   "dur": 2.68
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_17h0ocj",
-   "text": "So nicht, mein Freund. Ich telefoniere jetzt.",
-   "file": "voice/gl/gl_jule_17h0ocj.mp3",
-   "dur": 3.76
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1khgqmd",
-   "text": "Ach, du schon wieder. Der mit den Sprüchen.",
-   "file": "voice/gl/gl_jule_1khgqmd.mp3",
-   "dur": 3.13
-  },
-  {
-   "who": "gl_jule",
-   "id": "gl_jule_1v0tf3c",
-   "text": "Mit dir rede ich nicht mehr.",
-   "file": "voice/gl/gl_jule_1v0tf3c.mp3",
-   "dur": 1.42
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_7hjwej",
-   "text": "Ist was?",
-   "file": "voice/gl/gl_timo_7hjwej.mp3",
-   "dur": 0.71
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1i90i1l",
-   "text": "Kennen wir uns?",
-   "file": "voice/gl/gl_timo_1i90i1l.mp3",
-   "dur": 0.99
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_qnqpa6",
-   "text": "Du guckst, als hättest du noch nie einen Menschen gesehen.",
-   "file": "voice/gl/gl_timo_qnqpa6.mp3",
-   "dur": 2.82
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_o3cv1o",
-   "text": "Wenn du was suchst: Die Kirmes ist erst nächste Woche.",
-   "file": "voice/gl/gl_timo_o3cv1o.mp3",
-   "dur": 2.9
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1hvzzo2",
-   "text": "Na? Auch auf der Suche nach Rostbratwurst?",
-   "file": "voice/gl/gl_timo_1hvzzo2.mp3",
-   "dur": 3.36
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_kzey3m",
-   "text": "Schönes Karohemd. Holzfäller oder Tischdecke?",
-   "file": "voice/gl/gl_timo_kzey3m.mp3",
-   "dur": 3.71
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_zk98t",
-   "text": "Rot kariert – wie beim Schützenfest.",
-   "file": "voice/gl/gl_timo_zk98t.mp3",
-   "dur": 1.85
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_vwgyhm",
-   "text": "Ganz in Dunkel? Gehst du zu einer Beerdigung oder zu einem Einbruch?",
-   "file": "voice/gl/gl_timo_vwgyhm.mp3",
-   "dur": 4.5
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1cjh9l8",
-   "text": "Schicke Jacke. Neu?",
-   "file": "voice/gl/gl_timo_1cjh9l8.mp3",
-   "dur": 2.05
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1iuv7n0",
-   "text": "Ah, der Forst! Ist wieder was mit dem Borkenkäfer?",
-   "file": "voice/gl/gl_timo_1iuv7n0.mp3",
-   "dur": 3.9
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1v2y3fu",
-   "text": "In Orange sieht man dich bis Hildburghausen.",
-   "file": "voice/gl/gl_timo_1v2y3fu.mp3",
-   "dur": 2.2
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_ucoo5v",
-   "text": "Kommt jetzt endlich jemand wegen dem Baum am Friedhof?",
-   "file": "voice/gl/gl_timo_ucoo5v.mp3",
-   "dur": 2.96
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1vg8wjp",
-   "text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
-   "file": "voice/gl/gl_timo_1vg8wjp.mp3",
-   "dur": 3.14
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1m2l44b",
-   "text": "Eine Simson! Die läuft ja noch.",
-   "file": "voice/gl/gl_timo_1m2l44b.mp3",
-   "dur": 2.52
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1udbfjm",
-   "text": "So ein Moped hatte mein Vater auch. Genauso laut.",
-   "file": "voice/gl/gl_timo_1udbfjm.mp3",
-   "dur": 3.65
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1xskeda",
-   "text": "Schönes Auto. Gehört das dir?",
-   "file": "voice/gl/gl_timo_1xskeda.mp3",
-   "dur": 2.74
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_wwhod",
-   "text": "Mit dem Traktor durchs Dorf, wie es sich gehört.",
-   "file": "voice/gl/gl_timo_wwhod.mp3",
-   "dur": 2.64
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_6xknea",
-   "text": "Spinnst du?",
-   "file": "voice/gl/gl_timo_6xknea.mp3",
-   "dur": 0.82
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1v822oy",
-   "text": "Das hab ich gefilmt, nur dass du es weißt.",
-   "file": "voice/gl/gl_timo_1v822oy.mp3",
-   "dur": 2.41
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1uwkyq7",
-   "text": "So was gab es früher nicht. Früher gab es gar nichts.",
-   "file": "voice/gl/gl_timo_1uwkyq7.mp3",
-   "dur": 3.71
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1dfkelw",
-   "text": "Ich sag das deiner Mutter.",
-   "file": "voice/gl/gl_timo_1dfkelw.mp3",
-   "dur": 1.33
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1fg7xi1",
-   "text": "Dich suchen die doch. Das kam gerade im Radio.",
-   "file": "voice/gl/gl_timo_1fg7xi1.mp3",
-   "dur": 3.33
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1g2m635",
-   "text": "Die Polizei war schon zweimal hier. Wegen dir, oder?",
-   "file": "voice/gl/gl_timo_1g2m635.mp3",
-   "dur": 4.17
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_13w2j8r",
-   "text": "Muss ja. Und selbst?",
-   "file": "voice/gl/gl_timo_13w2j8r.mp3",
-   "dur": 2.3
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1kwk0ax",
-   "text": "Geht so. Am Sonntag gibt es Klöße, dann wird es besser.",
-   "file": "voice/gl/gl_timo_1kwk0ax.mp3",
-   "dur": 3.97
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_mdz4rb",
-   "text": "Na, ihr zwei. Schönen Abend noch!",
-   "file": "voice/gl/gl_timo_mdz4rb.mp3",
-   "dur": 3.18
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1esnmc",
-   "text": "Besser als dein Hemd. Das sieht aus wie eine Tischdecke.",
-   "file": "voice/gl/gl_timo_1esnmc.mp3",
-   "dur": 3.54
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1xojrg",
-   "text": "Sagt die Richtige. Oder der Richtige. Egal.",
-   "file": "voice/gl/gl_timo_1xojrg.mp3",
-   "dur": 4.25
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1jm6ble",
-   "text": "Ganz schön frech für einen, der hier nicht mal den Kirmesbaum aufstellt.",
-   "file": "voice/gl/gl_timo_1jm6ble.mp3",
-   "dur": 3.68
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_o351lb",
-   "text": "Na gut. Ich hab nichts gesehen.",
-   "file": "voice/gl/gl_timo_o351lb.mp3",
-   "dur": 2.53
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_vfzx3z",
-   "text": "Schon gut. Aber keinen Ärger hier, ja?",
-   "file": "voice/gl/gl_timo_vfzx3z.mp3",
-   "dur": 3.39
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_2qh5wu",
-   "text": "Na warte. Ich ruf die Polizei.",
-   "file": "voice/gl/gl_timo_2qh5wu.mp3",
-   "dur": 2.66
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_17h0ocj",
-   "text": "So nicht, mein Freund. Ich telefoniere jetzt.",
-   "file": "voice/gl/gl_timo_17h0ocj.mp3",
-   "dur": 3.71
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1khgqmd",
-   "text": "Ach, du schon wieder. Der mit den Sprüchen.",
-   "file": "voice/gl/gl_timo_1khgqmd.mp3",
-   "dur": 3.11
-  },
-  {
-   "who": "gl_timo",
-   "id": "gl_timo_1v0tf3c",
-   "text": "Mit dir rede ich nicht mehr.",
-   "file": "voice/gl/gl_timo_1v0tf3c.mp3",
-   "dur": 1.41
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_7hjwej",
-   "text": "Ist was?",
-   "file": "voice/gl/gl_basti_7hjwej.mp3",
-   "dur": 0.73
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1i90i1l",
-   "text": "Kennen wir uns?",
-   "file": "voice/gl/gl_basti_1i90i1l.mp3",
-   "dur": 1.07
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_qnqpa6",
-   "text": "Du guckst, als hättest du noch nie einen Menschen gesehen.",
-   "file": "voice/gl/gl_basti_qnqpa6.mp3",
-   "dur": 3.03
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_o3cv1o",
-   "text": "Wenn du was suchst: Die Kirmes ist erst nächste Woche.",
-   "file": "voice/gl/gl_basti_o3cv1o.mp3",
-   "dur": 3.34
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1hvzzo2",
-   "text": "Na? Auch auf der Suche nach Rostbratwurst?",
-   "file": "voice/gl/gl_basti_1hvzzo2.mp3",
-   "dur": 3.48
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_kzey3m",
-   "text": "Schönes Karohemd. Holzfäller oder Tischdecke?",
-   "file": "voice/gl/gl_basti_kzey3m.mp3",
-   "dur": 3.82
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_zk98t",
-   "text": "Rot kariert – wie beim Schützenfest.",
-   "file": "voice/gl/gl_basti_zk98t.mp3",
-   "dur": 2.26
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_vwgyhm",
-   "text": "Ganz in Dunkel? Gehst du zu einer Beerdigung oder zu einem Einbruch?",
-   "file": "voice/gl/gl_basti_vwgyhm.mp3",
-   "dur": 4.89
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1cjh9l8",
-   "text": "Schicke Jacke. Neu?",
-   "file": "voice/gl/gl_basti_1cjh9l8.mp3",
-   "dur": 2.33
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1iuv7n0",
-   "text": "Ah, der Forst! Ist wieder was mit dem Borkenkäfer?",
-   "file": "voice/gl/gl_basti_1iuv7n0.mp3",
-   "dur": 4.11
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1v2y3fu",
-   "text": "In Orange sieht man dich bis Hildburghausen.",
-   "file": "voice/gl/gl_basti_1v2y3fu.mp3",
-   "dur": 2.4
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_ucoo5v",
-   "text": "Kommt jetzt endlich jemand wegen dem Baum am Friedhof?",
-   "file": "voice/gl/gl_basti_ucoo5v.mp3",
-   "dur": 3.17
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1vg8wjp",
-   "text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
-   "file": "voice/gl/gl_basti_1vg8wjp.mp3",
-   "dur": 3.64
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1m2l44b",
-   "text": "Eine Simson! Die läuft ja noch.",
-   "file": "voice/gl/gl_basti_1m2l44b.mp3",
-   "dur": 2.71
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1udbfjm",
-   "text": "So ein Moped hatte mein Vater auch. Genauso laut.",
-   "file": "voice/gl/gl_basti_1udbfjm.mp3",
-   "dur": 4.31
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1xskeda",
-   "text": "Schönes Auto. Gehört das dir?",
-   "file": "voice/gl/gl_basti_1xskeda.mp3",
-   "dur": 2.92
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_wwhod",
-   "text": "Mit dem Traktor durchs Dorf, wie es sich gehört.",
-   "file": "voice/gl/gl_basti_wwhod.mp3",
-   "dur": 2.79
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_6xknea",
-   "text": "Spinnst du?",
-   "file": "voice/gl/gl_basti_6xknea.mp3",
-   "dur": 0.82
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1v822oy",
-   "text": "Das hab ich gefilmt, nur dass du es weißt.",
-   "file": "voice/gl/gl_basti_1v822oy.mp3",
-   "dur": 2.33
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1uwkyq7",
-   "text": "So was gab es früher nicht. Früher gab es gar nichts.",
-   "file": "voice/gl/gl_basti_1uwkyq7.mp3",
-   "dur": 3.89
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1dfkelw",
-   "text": "Ich sag das deiner Mutter.",
-   "file": "voice/gl/gl_basti_1dfkelw.mp3",
-   "dur": 1.47
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1fg7xi1",
-   "text": "Dich suchen die doch. Das kam gerade im Radio.",
-   "file": "voice/gl/gl_basti_1fg7xi1.mp3",
-   "dur": 3.69
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1g2m635",
-   "text": "Die Polizei war schon zweimal hier. Wegen dir, oder?",
-   "file": "voice/gl/gl_basti_1g2m635.mp3",
-   "dur": 4.37
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_13w2j8r",
-   "text": "Muss ja. Und selbst?",
-   "file": "voice/gl/gl_basti_13w2j8r.mp3",
-   "dur": 2.38
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1kwk0ax",
-   "text": "Geht so. Am Sonntag gibt es Klöße, dann wird es besser.",
-   "file": "voice/gl/gl_basti_1kwk0ax.mp3",
-   "dur": 4.42
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_mdz4rb",
-   "text": "Na, ihr zwei. Schönen Abend noch!",
-   "file": "voice/gl/gl_basti_mdz4rb.mp3",
-   "dur": 3.42
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1esnmc",
-   "text": "Besser als dein Hemd. Das sieht aus wie eine Tischdecke.",
-   "file": "voice/gl/gl_basti_1esnmc.mp3",
-   "dur": 3.99
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1xojrg",
-   "text": "Sagt die Richtige. Oder der Richtige. Egal.",
-   "file": "voice/gl/gl_basti_1xojrg.mp3",
-   "dur": 4.55
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1jm6ble",
-   "text": "Ganz schön frech für einen, der hier nicht mal den Kirmesbaum aufstellt.",
-   "file": "voice/gl/gl_basti_1jm6ble.mp3",
-   "dur": 3.82
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_o351lb",
-   "text": "Na gut. Ich hab nichts gesehen.",
-   "file": "voice/gl/gl_basti_o351lb.mp3",
-   "dur": 2.85
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_vfzx3z",
-   "text": "Schon gut. Aber keinen Ärger hier, ja?",
-   "file": "voice/gl/gl_basti_vfzx3z.mp3",
-   "dur": 3.82
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_2qh5wu",
-   "text": "Na warte. Ich ruf die Polizei.",
-   "file": "voice/gl/gl_basti_2qh5wu.mp3",
-   "dur": 3.05
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_17h0ocj",
-   "text": "So nicht, mein Freund. Ich telefoniere jetzt.",
-   "file": "voice/gl/gl_basti_17h0ocj.mp3",
-   "dur": 3.96
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1khgqmd",
-   "text": "Ach, du schon wieder. Der mit den Sprüchen.",
-   "file": "voice/gl/gl_basti_1khgqmd.mp3",
-   "dur": 3.49
-  },
-  {
-   "who": "gl_basti",
-   "id": "gl_basti_1v0tf3c",
-   "text": "Mit dir rede ich nicht mehr.",
-   "file": "voice/gl/gl_basti_1v0tf3c.mp3",
-   "dur": 1.42
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1xda428",
-   "text": "Na, alles gut?",
-   "file": "voice/gl/gl_falko_1xda428.mp3",
-   "dur": 1.25
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_t52uaj",
-   "text": "Hallo! Alles gut bei dir?",
-   "file": "voice/gl/gl_sarah_t52uaj.mp3",
-   "dur": 2.36
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_3px6q9",
-   "text": "Schicke Jacke. Hat die deine Oma gestrickt?",
-   "file": "voice/gl/gl_falko_3px6q9.mp3",
-   "dur": 3.35
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_eyc4n9",
-   "text": "Schicke Frisur. War der Friseur krank?",
-   "file": "voice/gl/gl_sarah_eyc4n9.mp3",
-   "dur": 3.15
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_1e51bre",
-   "text": "Alles in Ordnung. Ich bin gleich wieder weg.",
-   "file": "voice/gl/gl_falko_1e51bre.mp3",
-   "dur": 3.22
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_v7kiov",
-   "text": "Alles gut, wirklich. Ich bin gleich wieder weg.",
-   "file": "voice/gl/gl_sarah_v7kiov.mp3",
-   "dur": 3.81
-  },
-  {
-   "who": "gl_falko",
-   "id": "gl_falko_13mdxn9",
-   "text": "Was glotzt du denn so?",
-   "file": "voice/gl/gl_falko_13mdxn9.mp3",
-   "dur": 1.3
-  },
-  {
-   "who": "gl_sarah",
-   "id": "gl_sarah_15nmrko",
-   "text": "Hast du ein Problem?",
-   "file": "voice/gl/gl_sarah_15nmrko.mp3",
-   "dur": 1.37
-  },
-  {
-   "who": "gl_erna",
-   "id": "gl_erna_swt49a",
-   "text": "Gerhard! Morgen nach Suhl in den Waffenschmied, ja? Zwei Jahre habt ihr auf den Tisch gewartet!",
-   "file": "voice/gl/gl_erna_swt49a.mp3",
-   "dur": 8.61
-  },
-  {
-   "who": "gl_erna",
-   "id": "gl_erna_jn006r",
-   "text": "Erst wird gebadet, alle zusammen, dann gibt’s Kimonos. Hat die Brigitte erzählt.",
-   "file": "voice/gl/gl_erna_jn006r.mp3",
-   "dur": 7.21
-  },
-  {
-   "who": "gl_erna",
-   "id": "gl_erna_12xbdy3",
-   "text": "Die halbe Straße ist seit heute früh in Suhl auf dem Volkspolizeikreisamt, das Visum holen. Und wer kehrt hier? Ich.",
-   "file": "voice/gl/gl_erna_12xbdy3.mp3",
-   "dur": 10.23
-  },
-  {
-   "who": "gl_erna",
-   "id": "gl_erna_d47haj",
-   "text": "Was schleppst du denn da? Na, geht mich ja nichts an.",
-   "file": "voice/gl/gl_erna_d47haj.mp3",
-   "dur": 4.25
-  },
-  {
-   "who": "gl_horst",
-   "id": "gl_horst_bbmd9w",
-   "text": "Morgen früh fahren wir rüber. Über Eisfeld nach Coburg. Hundert Mark Begrüßungsgeld soll es geben.",
-   "file": "voice/gl/gl_horst_bbmd9w.mp3",
-   "dur": 7.55
-  },
-  {
-   "who": "gl_horst",
-   "id": "gl_horst_1advex5",
-   "text": "Und die Bayern legen noch vierzig drauf, sagt der Schwager. Der war heute schon drüben.",
-   "file": "voice/gl/gl_horst_1advex5.mp3",
-   "dur": 5.43
-  },
-  {
-   "who": "gl_horst",
-   "id": "gl_horst_yzf8vh",
-   "text": "Der Trabi packt das. Ist ja nur einmal übern Berg.",
-   "file": "voice/gl/gl_horst_yzf8vh.mp3",
-   "dur": 3.92
-  },
-  {
-   "who": "gl_horst",
-   "id": "gl_horst_jbgcz0",
-   "text": "Zwanzig Zentner Briketts, und keiner da, der mit anfasst. Alle im Westen.",
-   "file": "voice/gl/gl_horst_jbgcz0.mp3",
-   "dur": 5.5
-  },
-  {
-   "who": "gl_renate",
-   "id": "gl_renate_uk16bm",
-   "text": "In der Kaufhalle in Schleusingen gibt’s Apfelsinen. Kuba. Aber Apfelsinen.",
-   "file": "voice/gl/gl_renate_uk16bm.mp3",
-   "dur": 6.41
-  },
-  {
-   "who": "gl_renate",
-   "id": "gl_renate_d2qzcp",
-   "text": "Der ABV war vorhin bei der Schule. Sucht der dich?",
-   "file": "voice/gl/gl_renate_d2qzcp.mp3",
-   "dur": 3.92
-  },
-  {
-   "who": "gl_renate",
-   "id": "gl_renate_861su2",
-   "text": "Morgen ist doch Unterricht? Meine zwei wollen nicht hin – die halbe Klasse ist in Coburg.",
-   "file": "voice/gl/gl_renate_861su2.mp3",
-   "dur": 6.18
-  },
-  {
-   "who": "gl_brigitte",
-   "id": "gl_brigitte_ylsyhf",
-   "text": "In Eisfeld stehen sie Schlange bis in die Stadt rein, heißt es. Trabi an Trabi.",
-   "file": "voice/gl/gl_brigitte_ylsyhf.mp3",
-   "dur": 5.55
-  },
-  {
-   "who": "gl_brigitte",
-   "id": "gl_brigitte_g7bpy5",
-   "text": "Gestern Abend haben wir es im Westfernsehen gesehen. Geglaubt hab ich es erst heute früh.",
-   "file": "voice/gl/gl_brigitte_g7bpy5.mp3",
-   "dur": 5.9
-  },
-  {
-   "who": "gl_brigitte",
-   "id": "gl_brigitte_qqmk46",
-   "text": "Im Waffenschmied war ich einmal, zweiundachtzig. Erst ins Becken, dann der Kimono. Geschmeckt hat es auch.",
-   "file": "voice/gl/gl_brigitte_qqmk46.mp3",
-   "dur": 7.74
-  },
-  {
-   "who": "gl_gisela",
-   "id": "gl_gisela_157a6pi",
-   "text": "Brot ist alle, Milch kommt um vier. Wie immer.",
-   "file": "voice/gl/gl_gisela_157a6pi.mp3",
-   "dur": 3.83
-  },
-  {
-   "who": "gl_gisela",
-   "id": "gl_gisela_1w50edo",
-   "text": "Bananen? Gerhard. Wir haben November.",
-   "file": "voice/gl/gl_gisela_1w50edo.mp3",
-   "dur": 3.99
-  },
-  {
-   "who": "gl_gisela",
-   "id": "gl_gisela_vx8y2v",
-   "text": "Um sechs schließ ich zu. Wenn dann noch einer da ist, der was kaufen will.",
-   "file": "voice/gl/gl_gisela_vx8y2v.mp3",
-   "dur": 5.25
-  },
-  {
-   "who": "gl_maik",
-   "id": "gl_maik_13py0m7",
-   "text": "Stonewashed, original. Hat mein Onkel im Westpaket geschickt.",
-   "file": "voice/gl/gl_maik_13py0m7.mp3",
-   "dur": 4.29
-  },
-  {
-   "who": "gl_maik",
-   "id": "gl_maik_k2zzrt",
-   "text": "Den Stempel hab ich schon. Um fünf früh angestanden, in Suhl.",
-   "file": "voice/gl/gl_maik_k2zzrt.mp3",
-   "dur": 4.18
-  },
-  {
-   "who": "gl_maik",
-   "id": "gl_maik_y3oivv",
-   "text": "Ich fahr mit der Simme rüber. Wenn sie anspringt.",
-   "file": "voice/gl/gl_maik_y3oivv.mp3",
-   "dur": 3.2
-  },
-  {
-   "who": "gl_ines",
-   "id": "gl_ines_1ddmejj",
-   "text": "Glaubst du das, was die im Radio sagen?",
-   "file": "voice/gl/gl_ines_1ddmejj.mp3",
-   "dur": 2.35
-  },
-  {
-   "who": "gl_ines",
-   "id": "gl_ines_1fecf37",
-   "text": "Meine Schwester ist im September über Ungarn weg. Jetzt hätte sie einfach den Bus nehmen können.",
-   "file": "voice/gl/gl_ines_1fecf37.mp3",
-   "dur": 5.95
-  },
-  {
-   "who": "gl_ines",
-   "id": "gl_ines_1914m9n",
-   "text": "Morgen ist Disko im Kulturhaus. Wenn dann noch einer hier ist.",
-   "file": "voice/gl/gl_ines_1914m9n.mp3",
-   "dur": 4.73
-  },
-  {
-   "who": "gl_werner",
-   "id": "gl_werner_w0n9wz",
-   "text": "Achtundzwanzig Jahre zu. Und dann liest einer einen Zettel vor, und sie ist auf.",
-   "file": "voice/gl/gl_werner_w0n9wz.mp3",
-   "dur": 5.64
-  },
-  {
-   "who": "gl_werner",
-   "id": "gl_werner_ko4ak4",
-   "text": "Im Betrieb war heute die halbe Brigade nicht da. Krank, sagen sie. Krank in Coburg.",
-   "file": "voice/gl/gl_werner_ko4ak4.mp3",
-   "dur": 7.12
-  },
-  {
-   "who": "gl_werner",
-   "id": "gl_werner_ko6064",
-   "text": "Ich fahr erst, wenn ich weiß, dass ich auch wieder reinkomme.",
-   "file": "voice/gl/gl_werner_ko6064.mp3",
-   "dur": 3.51
-  },
-  {
-   "who": "gl_kurt",
-   "id": "gl_kurt_kaplh2",
-   "text": "Zweiundfünfzig haben sie an der Grenze die Leute ausgesiedelt, einundsechzig alles dichtgemacht. Dass einer aufmacht, hab ich noch nicht erlebt.",
-   "file": "voice/gl/gl_kurt_kaplh2.mp3",
-   "dur": 10.62
-  },
-  {
-   "who": "gl_kurt",
-   "id": "gl_kurt_107vr50",
-   "text": "Die Wandzeitung ist noch vom Oktober. Vierzig Jahre DDR. Die hängt keiner mehr ab.",
-   "file": "voice/gl/gl_kurt_107vr50.mp3",
-   "dur": 7.47
-  },
-  {
-   "who": "gl_kurt",
-   "id": "gl_kurt_1su8z49",
-   "text": "Pass auf dich auf, Junge. Wenn sich alles dreht, will mancher noch schnell was wegschaffen.",
-   "file": "voice/gl/gl_kurt_1su8z49.mp3",
-   "dur": 6.64
-  },
-  {
-   "who": "gl_abv",
-   "id": "gl_abv_1pmy6mv",
-   "text": "Genosse Lehrer! Einen Moment.",
-   "file": "voice/gl/gl_abv_1pmy6mv.mp3",
-   "dur": 2.81
-  },
-  {
-   "who": "gl_abv",
-   "id": "gl_abv_m3x5eh",
-   "text": "Was ist in der Kiste?",
-   "file": "voice/gl/gl_abv_m3x5eh.mp3",
-   "dur": 1.35
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_qb87ro",
-   "text": "Radio Grenzland – wir senden, bis einer kommt.",
-   "file": "voice/gl/gl_r_grenzland_qb87ro.mp3",
-   "dur": 3.21
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_17vy5tv",
-   "text": "Radio Grenzland. Zwischen Rennsteig und Rodach.",
-   "file": "voice/gl/gl_r_grenzland_17vy5tv.mp3",
-   "dur": 3.31
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_127kote",
-   "text": "Sie hören Radio Grenzland. Freiwillig, hoffen wir.",
-   "file": "voice/gl/gl_r_grenzland_127kote.mp3",
-   "dur": 3.91
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_cb7937",
-   "text": "89,1 – die Frequenz zum Jahr.",
-   "file": "voice/gl/gl_r_grenzland_cb7937.mp3",
-   "dur": 2.85
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_cng26y",
-   "text": "Hier ist Matze am Mikrofon. Die Kollegin ist beim Zahnarzt, der Praktikant beim Bäcker – ich bin also die Redaktion.",
-   "file": "voice/gl/gl_r_grenzland_cng26y.mp3",
-   "dur": 7.71
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_11r9m1",
-   "text": "Schreiben Sie uns, was Sie bewegt. Wir lesen alles vor. Auch die Rechtschreibfehler.",
-   "file": "voice/gl/gl_r_grenzland_11r9m1.mp3",
-   "dur": 5.78
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_11hx16x",
-   "text": "Gleich mehr Musik. Vorher atmen wir einmal gemeinsam durch. So. Das war die Sendung „Gesundheit“.",
-   "file": "voice/gl/gl_r_grenzland_11hx16x.mp3",
-   "dur": 6.86
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_blwf5c",
-   "text": "Der Hörer der Woche hat angerufen und gefragt, ob wir auch was anderes spielen können. Nein.",
-   "file": "voice/gl/gl_r_grenzland_blwf5c.mp3",
-   "dur": 5.58
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_16onf6",
-   "text": "Unser Sendegebiet reicht vom Rennsteig bis zur Landesgrenze. Dahinter rauscht es. Wir nennen das Bayern.",
-   "file": "voice/gl/gl_r_grenzland_16onf6.mp3",
-   "dur": 6.66
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_q7bovr",
-   "text": "Wenn Sie uns im Auto hören: Augen auf die Straße. Wenn Sie uns am Handy hören: Respekt, hier ist ja kaum Netz.",
-   "file": "voice/gl/gl_r_grenzland_q7bovr.mp3",
-   "dur": 7.47
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1trqtlr",
-   "text": "Polizeibericht: In Ratscher ist ein Fahrzeug weggekommen. Der Besitzer sagt, er habe es „nur kurz“ offen gelassen.",
-   "file": "voice/gl/gl_r_grenzland_1trqtlr.mp3",
-   "dur": 7.44
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_19ixig",
-   "text": "Polizeibericht: Ein Fahrzeug wechselte in Ratscher den Fahrer. Der bisherige war dagegen.",
-   "file": "voice/gl/gl_r_grenzland_19ixig.mp3",
-   "dur": 5.89
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_16h8g4",
-   "text": "Polizeibericht: Handgreiflichkeiten im Raum Ratscher. Die Beteiligten kannten sich danach besser als vorher.",
-   "file": "voice/gl/gl_r_grenzland_16h8g4.mp3",
-   "dur": 6.76
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_pjcdni",
-   "text": "Polizeibericht: In Ratscher gab es eine Meinungsverschiedenheit. Sie wurde mit der Faust vorgetragen.",
-   "file": "voice/gl/gl_r_grenzland_pjcdni.mp3",
-   "dur": 6.28
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_qzt877",
-   "text": "Polizeibericht: Ein Passant wurde angerempelt. Die Kriminalität erreicht damit ein Zehnjahreshoch.",
-   "file": "voice/gl/gl_r_grenzland_qzt877.mp3",
-   "dur": 6.66
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1a5gzy3",
-   "text": "Polizeibericht: Rempelei im Ort. Der Geschädigte beschreibt den Täter als „unhöflich“.",
-   "file": "voice/gl/gl_r_grenzland_1a5gzy3.mp3",
-   "dur": 5.97
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_8fpc6u",
-   "text": "Polizeibericht: Ein Moped wurde in der Ortslage gemessen. Das Messgerät wird überprüft.",
-   "file": "voice/gl/gl_r_grenzland_8fpc6u.mp3",
-   "dur": 6.04
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_wt1jef",
-   "text": "Polizeibericht: Zu schnell durch den Ort. Die Hühner an der Dorfstraße haben Anzeige erstattet.",
-   "file": "voice/gl/gl_r_grenzland_wt1jef.mp3",
-   "dur": 6.34
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1cxx9v6",
-   "text": "Polizeibericht: Knallkörper im September. Die Polizei erinnert daran, dass Silvester ein Datum ist.",
-   "file": "voice/gl/gl_r_grenzland_1cxx9v6.mp3",
-   "dur": 7.01
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1ie1tvc",
-   "text": "Polizeibericht: Es hat geknallt. Der Hund von nebenan liegt unterm Sofa und möchte nicht aussagen.",
-   "file": "voice/gl/gl_r_grenzland_1ie1tvc.mp3",
-   "dur": 6.33
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_rs79ee",
-   "text": "Polizeibericht: Einbruch in ein Containerlager bei Ratscher. Der Eigentümer möchte „keine große Sache daraus machen“.",
-   "file": "voice/gl/gl_r_grenzland_rs79ee.mp3",
-   "dur": 7.14
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_srrhg6",
-   "text": "Polizeibericht: Ein Lager in der Feldflur wurde geöffnet. Von außen. Ohne Schlüssel.",
-   "file": "voice/gl/gl_r_grenzland_srrhg6.mp3",
-   "dur": 6.23
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_vr2n0y",
-   "text": "Polizeibericht: Unbekannte im Wald bei Geisenhöhn. Anwohner hörten Knall und Motoren.",
-   "file": "voice/gl/gl_r_grenzland_vr2n0y.mp3",
-   "dur": 6.1
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_fyqbpg",
-   "text": "Polizeibericht: Unbefugte auf fremdem Gelände. Das Schild „Betreten verboten“ wurde gelesen und anders bewertet.",
-   "file": "voice/gl/gl_r_grenzland_fyqbpg.mp3",
-   "dur": 7.51
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1plet4u",
-   "text": "Polizeibericht: Ein Fahrzeug entzog sich der Kontrolle. Es wird ermittelt, wohin.",
-   "file": "voice/gl/gl_r_grenzland_1plet4u.mp3",
-   "dur": 5.79
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1s3ydxs",
-   "text": "Polizeibericht: Auf das Haltezeichen der Streife folgte Vollgas. Die Streife nimmt das persönlich.",
-   "file": "voice/gl/gl_r_grenzland_1s3ydxs.mp3",
-   "dur": 6.49
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_mxdbcc",
-   "text": "Polizeibericht: Eine Straßensperre wurde umfahren. Über den Acker. Der Bauer stellt Strafantrag.",
-   "file": "voice/gl/gl_r_grenzland_mxdbcc.mp3",
-   "dur": 7.11
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_al3rgz",
-   "text": "Polizeibericht: Die Sperre auf der Landstraße hat gehalten. Der Acker daneben nicht.",
-   "file": "voice/gl/gl_r_grenzland_al3rgz.mp3",
-   "dur": 5.49
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1as4wxy",
-   "text": "Polizeibericht: Widerstand bei einer Kontrolle. Den Beamten geht es gut, der Laune weniger.",
-   "file": "voice/gl/gl_r_grenzland_1as4wxy.mp3",
-   "dur": 6.27
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_cw0lo2",
-   "text": "Polizeibericht: Ein Beamter wurde bei einer Kontrolle geschubst. Er schreibt jetzt. Viel.",
-   "file": "voice/gl/gl_r_grenzland_cw0lo2.mp3",
-   "dur": 6.17
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1t32nxg",
-   "text": "Polizeibericht: Keine besonderen Vorkommnisse. Jedenfalls keine, die jemand gesehen hätte.",
-   "file": "voice/gl/gl_r_grenzland_1t32nxg.mp3",
-   "dur": 6.24
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1s5r1nn",
-   "text": "Eine genaue Beschreibung liegt nicht vor. Die Zeugen sind sich einig, dass es „jemand“ war.",
-   "file": "voice/gl/gl_r_grenzland_1s5r1nn.mp3",
-   "dur": 5.49
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1iw2y0k",
-   "text": "Die Beamten wissen inzwischen, wen sie suchen. Im Dorf wusste man es schon vorher.",
-   "file": "voice/gl/gl_r_grenzland_1iw2y0k.mp3",
-   "dur": 5.19
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_12zt8pb",
-   "text": "Wir unterbrechen das Programm für eine Eilmeldung: Großeinsatz der Polizei im Raum Ratscher, Sperre auf der Landstraße. Bitte umfahren Sie das Gebiet – oder bleiben Sie gleich zu Hause, da ist es auch schön.",
-   "file": "voice/gl/gl_r_grenzland_12zt8pb.mp3",
-   "dur": 12.12
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1tegbxv",
-   "text": "Eilmeldung: Über dem Tal kreist ein Hubschrauber. Die Kühe sind unruhig, die Dorf-Chatgruppe ist es auch.",
-   "file": "voice/gl/gl_r_grenzland_1tegbxv.mp3",
-   "dur": 7.02
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1n74bzo",
-   "text": "Polizeibericht: Die Fahndung im Raum Ratscher wurde eingestellt. Die Streife ist wieder in Schleusingen. Der Kaffee war noch warm.",
-   "file": "voice/gl/gl_r_grenzland_1n74bzo.mp3",
-   "dur": 8.24
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_zugi5j",
-   "text": "Die Polizei sucht Zeugen. Hinweise bitte an jede Dienststelle – oder an die Dorf-Chatgruppe, die weiß es eh zuerst.",
-   "file": "voice/gl/gl_r_grenzland_zugi5j.mp3",
-   "dur": 7.39
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_gb57pu",
-   "text": "Die Polizei sucht Zeugen. Hinweise bitte an jede Dienststelle – oder an die Dorf-Chatgruppe, die weiß es eh zuerst. Achtung, Kontrollen auf der Landstraße.",
-   "file": "voice/gl/gl_r_grenzland_gb57pu.mp3",
-   "dur": 10.4
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1wn8jjp",
-   "text": "Der Verkaufswagen meldet: Rostbratwurst wieder lieferbar. Die Lage in Ratscher hat sich entspannt.",
-   "file": "voice/gl/gl_r_grenzland_1wn8jjp.mp3",
-   "dur": 6.25
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_11v1nt2",
-   "text": "Die Stadt Schleusingen prüft einen Förderantrag für eine Machbarkeitsstudie über Förderanträge.",
-   "file": "voice/gl/gl_r_grenzland_11v1nt2.mp3",
-   "dur": 5.13
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1iny7xw",
-   "text": "Blitzer auf der Landstraße bei Ratscher. Er steht da seit drei Wochen und hat inzwischen Stammkunden.",
-   "file": "voice/gl/gl_r_grenzland_1iny7xw.mp3",
-   "dur": 5.82
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_1wss21r",
-   "text": "Im Thüringer Wald wurde ein Funkloch entdeckt, das größer ist als das Netz drumherum.",
-   "file": "voice/gl/gl_r_grenzland_1wss21r.mp3",
-   "dur": 5.1
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_3nvrfw",
-   "text": "Wetter: Es wird, wie es wird. Näheres, wenn es da ist.",
-   "file": "voice/gl/gl_r_grenzland_3nvrfw.mp3",
-   "dur": 4.57
-  },
-  {
-   "who": "gl_r_grenzland",
-   "id": "gl_r_grenzland_10x0isz",
-   "text": "Verkehr: Auf dem Feldweg bei der Klinge kommt Ihnen ein Traktor entgegen. Er hat Vorfahrt. Immer.",
-   "file": "voice/gl/gl_r_grenzland_10x0isz.mp3",
-   "dur": 6.73
-  }
- ]
+"vx": {
+"voices": {
+"gl_sarah": "de-DE-SeraphinaMultilingualNeural",
+"gl_falko": "de-DE-ConradNeural",
+"gl_fremder": "de-DE-KillianNeural",
+"gl_jule": "de-DE-KatjaNeural",
+"gl_basti": "de-AT-JonasNeural",
+"gl_timo": "de-DE-KillianNeural",
+"gl_gerhard": "en-US-AndrewMultilingualNeural",
+"gl_lutz": "de-DE-KillianNeural",
+"gl_wache1": "de-CH-JanNeural",
+"gl_wache2": "en-US-BrianMultilingualNeural",
+"gl_wache3": "de-AT-JonasNeural",
+"gl_funk": "de-DE-KatjaNeural",
+"gl_polizei1": "de-CH-JanNeural",
+"gl_polizei2": "de-AT-IngridNeural",
+"gl_vopo": "de-AT-JonasNeural",
+"gl_abv": "de-DE-ConradNeural",
+"gl_boellermann": "de-CH-JanNeural",
+"gl_wirt": "de-DE-KillianNeural",
+"gl_bursche": "de-AT-JonasNeural",
+"gl_maedchen": "de-DE-AmalaNeural",
+"gl_erna": "de-DE-AmalaNeural",
+"gl_horst": "de-CH-JanNeural",
+"gl_renate": "de-DE-KatjaNeural",
+"gl_brigitte": "de-AT-IngridNeural",
+"gl_gisela": "de-DE-SeraphinaMultilingualNeural",
+"gl_maik": "de-DE-KillianNeural",
+"gl_ines": "de-CH-LeniNeural",
+"gl_werner": "de-DE-KillianNeural",
+"gl_kurt": "en-US-BrianMultilingualNeural",
+"gl_r_grenzland": "en-US-BrianMultilingualNeural"
+}
+},
+"vx_add": [
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1gnantd",
+"text": "Vierzig Minuten bis zum Bus. In Berlin wäre das ein Skandal.",
+"file": "voice/gl/gl_sarah_1gnantd.mp3",
+"dur": 4.9
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1v6dpdr",
+"text": "Hier ist das ein Fahrplan.",
+"file": "voice/gl/gl_falko_1v6dpdr.mp3",
+"dur": 1.49
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1fhl9y6",
+"text": "Und der Mann da drüben? Der guckt, als hätte er uns bestellt.",
+"file": "voice/gl/gl_sarah_1fhl9y6.mp3",
+"dur": 4.6
+},
+{
+"who": "gl_fremder",
+"id": "gl_fremder_z2sv76",
+"text": "Ihr fahrt nach Ratscher. Die zwei aus Berlin, mit dem Garten. Spricht sich rum.",
+"file": "voice/gl/gl_fremder_z2sv76.mp3",
+"dur": 6.61
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1i90i1l",
+"text": "Kennen wir uns?",
+"file": "voice/gl/gl_falko_1i90i1l.mp3",
+"dur": 0.97
+},
+{
+"who": "gl_fremder",
+"id": "gl_fremder_1q71w1k",
+"text": "Nein. Das ist ja das Schöne. Das hier muss nach Ratscher, zur alten Schule. Heute noch.",
+"file": "voice/gl/gl_fremder_1q71w1k.mp3",
+"dur": 8.16
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_j66ann",
+"text": "Und warum bringen Sie es nicht selbst hin?",
+"file": "voice/gl/gl_sarah_j66ann.mp3",
+"dur": 2.53
+},
+{
+"who": "gl_fremder",
+"id": "gl_fremder_1fseslr",
+"text": "Weil man mich dort kennt. Fünfzig Euro. Nicht aufmachen, nicht schütteln, nicht fragen.",
+"file": "voice/gl/gl_fremder_1fseslr.mp3",
+"dur": 7.52
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_3xvvkl",
+"text": "Das waren jetzt drei Dinge, die ich bis eben gar nicht vorhatte.",
+"file": "voice/gl/gl_falko_3xvvkl.mp3",
+"dur": 3.5
+},
+{
+"who": "gl_fremder",
+"id": "gl_fremder_1wwiixl",
+"text": "An der Schule wartet jemand. Sagt einfach, es kommt von einem Freund.",
+"file": "voice/gl/gl_fremder_1wwiixl.mp3",
+"dur": 5.13
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1fineti",
+"text": "Der hat uns fünfzig Euro für eine Busfahrt gegeben, die wir sowieso machen.",
+"file": "voice/gl/gl_sarah_1fineti.mp3",
+"dur": 4.69
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_9esqma",
+"text": "Deshalb heißt es Gefallen.",
+"file": "voice/gl/gl_falko_9esqma.mp3",
+"dur": 1.4
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_wrp8og",
+"text": "Wenn einer fragt: Im Paket ist Blumenerde.",
+"file": "voice/gl/gl_sarah_wrp8og.mp3",
+"dur": 3.67
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_14jici9",
+"text": "Per Anhalter mit dem Paket eines Fremden. Meine Mutter wäre stolz.",
+"file": "voice/gl/gl_falko_14jici9.mp3",
+"dur": 4.72
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_m11d6r",
+"text": "Alte Schule. Licht aus, Tür zu, keiner da.",
+"file": "voice/gl/gl_falko_m11d6r.mp3",
+"dur": 4.01
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_17tpl45",
+"text": "Vielleicht ist „heute noch“ hier ein dehnbarer Begriff.",
+"file": "voice/gl/gl_sarah_17tpl45.mp3",
+"dur": 3.32
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1mhjvo8",
+"text": "Und jetzt? Stellen wir es vor die Tür?",
+"file": "voice/gl/gl_falko_1mhjvo8.mp3",
+"dur": 3.1
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_103c0s2",
+"text": "Ein Paket von einem Fremden, abends, vor eine Schule. Falko.",
+"file": "voice/gl/gl_sarah_103c0s2.mp3",
+"dur": 5.04
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1oveje1",
+"text": "War ja nur eine Frage.",
+"file": "voice/gl/gl_falko_1oveje1.mp3",
+"dur": 1.43
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1o3v07w",
+"text": "Ich sag es gleich: Ich hab es unterwegs aufgemacht.",
+"file": "voice/gl/gl_sarah_1o3v07w.mp3",
+"dur": 3.34
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1nu3fxs",
+"text": "Nicht aufmachen, nicht schütteln, nicht fragen.",
+"file": "voice/gl/gl_falko_1nu3fxs.mp3",
+"dur": 2.89
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1uqd2ri",
+"text": "Geschüttelt hab ich nicht. Guck: eine Karte. Eine halbe – sauber an der Faltkante durchgerissen.",
+"file": "voice/gl/gl_sarah_1uqd2ri.mp3",
+"dur": 7.76
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_m9hpku",
+"text": "„Grenzgebiet. Betreten verboten.“ Die ist von neunundachtzig. Und da ist ein Kreuz.",
+"file": "voice/gl/gl_falko_m9hpku.mp3",
+"dur": 6.44
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_4xeduj",
+"text": "Ein Kreuz auf einer halben Karte. Entweder ein Schatz oder eine Klärgrube.",
+"file": "voice/gl/gl_sarah_4xeduj.mp3",
+"dur": 5.53
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1nce2a4",
+"text": "„Wir vergessen, wie ihr ausseht.“ Großzügig.",
+"file": "voice/gl/gl_falko_1nce2a4.mp3",
+"dur": 2.8
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1kil5vr",
+"text": "Und die Dorfgruppe weiß es auch schon. Wir sind seit zehn Minuten hier.",
+"file": "voice/gl/gl_sarah_1kil5vr.mp3",
+"dur": 4.8
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1dynuo1",
+"text": "Lass an. Wenn wir schon Ärger haben, dann mit Musik.",
+"file": "voice/gl/gl_sarah_1dynuo1.mp3",
+"dur": 3.82
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1ksraf0",
+"text": "Ihr seid die mit der Karte. Ich bin Jule. Das sind Timo und Basti. Basti sagt nicht viel – das ist sein bester Zug.",
+"file": "voice/gl/gl_jule_1ksraf0.mp3",
+"dur": 9.04
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_jpmw4p",
+"text": "Stimmt.",
+"file": "voice/gl/gl_basti_jpmw4p.mp3",
+"dur": 0.64
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_151hf2t",
+"text": "Woher wisst ihr von der Karte?",
+"file": "voice/gl/gl_falko_151hf2t.mp3",
+"dur": 1.74
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_of2fvm",
+"text": "Der Mann an der Haltestelle sollte sie uns bringen. Er hat kalte Füße gekriegt und sie den Erstbesten in die Hand gedrückt.",
+"file": "voice/gl/gl_jule_of2fvm.mp3",
+"dur": 7.23
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_fekf5o",
+"text": "Den Erstbesten. Danke.",
+"file": "voice/gl/gl_sarah_fekf5o.mp3",
+"dur": 2.43
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_18rakul",
+"text": "Krähwinkel sucht die auch. Der Spediteur. Der zahlt besser als wir, aber er fragt nicht so nett.",
+"file": "voice/gl/gl_timo_18rakul.mp3",
+"dur": 6.75
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_lqgnuc",
+"text": "Bevor ich euch mehr erzähle, will ich wissen, ob ihr was taugt. Rennen bis zur Staumauer. Wer vor mir da ist, dem trau ich.",
+"file": "voice/gl/gl_jule_lqgnuc.mp3",
+"dur": 8.59
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1omu3os",
+"text": "Auf dem Ding? Das ist älter als ich.",
+"file": "voice/gl/gl_falko_1omu3os.mp3",
+"dur": 2.88
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1s6hxe0",
+"text": "Dann habt ihr ja was gemeinsam.",
+"file": "voice/gl/gl_timo_1s6hxe0.mp3",
+"dur": 1.57
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1h1ix38",
+"text": "Knapp daneben ist auch verloren. Noch mal von der Scheune?",
+"file": "voice/gl/gl_jule_1h1ix38.mp3",
+"dur": 3.96
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1qu9i3a",
+"text": "Na gut. Ihr fahrt wie Leute, die nichts zu verlieren haben.",
+"file": "voice/gl/gl_jule_1qu9i3a.mp3",
+"dur": 4.28
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1ss9stw",
+"text": "Wir haben einen Garten zu verlieren.",
+"file": "voice/gl/gl_sarah_1ss9stw.mp3",
+"dur": 2.37
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_tfq1cw",
+"text": "Zeigt mal her. – Das ist der alte Kolonnenweg. Da sind die Grenzer langgefahren, immer am Zaun.",
+"file": "voice/gl/gl_timo_tfq1cw.mp3",
+"dur": 6.68
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_2s71ln",
+"text": "Und das Kreuz liegt daneben. Nur: daneben wovon? Die andere Hälfte fehlt.",
+"file": "voice/gl/gl_jule_2s71ln.mp3",
+"dur": 6.32
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_mj7bkl",
+"text": "Frag den Gerhard.",
+"file": "voice/gl/gl_basti_mj7bkl.mp3",
+"dur": 1.24
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1ab9ii3",
+"text": "Vier Wörter am Stück, Basti. Aber er hat recht: Gerhard, der Chronist. Der war neunundachtzig dabei. Sitzt meistens unter der Linde.",
+"file": "voice/gl/gl_jule_1ab9ii3.mp3",
+"dur": 10.46
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1njg2nr",
+"text": "Hier, fürs Benzin. Und was zum Krachmachen, falls ihr mal jemanden ablenken müsst.",
+"file": "voice/gl/gl_timo_1njg2nr.mp3",
+"dur": 5.82
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_jokpy4",
+"text": "Und wenn ihr Feierabend braucht: Kegelbahn an der Scheune. Hier an der Mauer beißen abends die Karpfen.",
+"file": "voice/gl/gl_jule_jokpy4.mp3",
+"dur": 6.64
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1g6vr21",
+"text": "Ihr seid die vom Garten. Setzt euch. Oder bleibt stehen, die Bank ist sowieso kalt.",
+"file": "voice/gl/gl_gerhard_1g6vr21.mp3",
+"dur": 6.28
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1tlhc7",
+"text": "Wir haben da eine Karte. Eine halbe.",
+"file": "voice/gl/gl_sarah_1tlhc7.mp3",
+"dur": 3.11
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1l3mc2f",
+"text": "Die hab ich schon einmal gesehen. Ganz. Am zehnten November neunundachtzig.",
+"file": "voice/gl/gl_gerhard_1l3mc2f.mp3",
+"dur": 5.55
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_7lkekr",
+"text": "Einen Tag nach dem Mauerfall.",
+"file": "voice/gl/gl_falko_7lkekr.mp3",
+"dur": 1.57
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1yutk31",
+"text": "Bei uns fiel keine Mauer. Bei uns stand ein Zaun, und der stand am Zehnten noch.",
+"file": "voice/gl/gl_gerhard_1yutk31.mp3",
+"dur": 5.74
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1yzll96",
+"text": "Ich war fünfunddreißig und Lehrer. Und im Schulflur stand eine Kiste, die mir nicht gehörte.",
+"file": "voice/gl/gl_gerhard_1yzll96.mp3",
+"dur": 6.6
+},
+{
+"who": "gl_lutz",
+"id": "gl_lutz_x06zq4",
+"text": "Heb die auf, Gerhard. Bis sich alles beruhigt hat.",
+"file": "voice/gl/gl_lutz_x06zq4.mp3",
+"dur": 4.03
+},
+{
+"who": "gl_lutz",
+"id": "gl_lutz_1v68p8l",
+"text": "Frag nicht, was drin ist. Ich weiß es selber nur halb.",
+"file": "voice/gl/gl_lutz_1v68p8l.mp3",
+"dur": 4.27
+},
+{
+"who": "gl_lutz",
+"id": "gl_lutz_16oqt7w",
+"text": "Die halbe Karte nehm ich mit. Sicher ist sicher.",
+"file": "voice/gl/gl_lutz_16oqt7w.mp3",
+"dur": 3.6
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_nw5mjh",
+"text": "Am nächsten Morgen war die Kiste weg. Und Lutz auch.",
+"file": "voice/gl/gl_gerhard_nw5mjh.mp3",
+"dur": 3.55
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_19lozro",
+"text": "Weg wohin?",
+"file": "voice/gl/gl_sarah_19lozro.mp3",
+"dur": 1.04
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1dgb20p",
+"text": "Rüber, nehme ich an. Durften ja auf einmal alle. Geschrieben hat er nie.",
+"file": "voice/gl/gl_gerhard_1dgb20p.mp3",
+"dur": 5.66
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1sa6ufu",
+"text": "Und die andere Hälfte der Karte?",
+"file": "voice/gl/gl_falko_1sa6ufu.mp3",
+"dur": 1.96
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1e5r0rj",
+"text": "Hatte Lutz. Wenn dieser Krähwinkel nach der Kiste sucht, dann hat er Lutz’ Hälfte. Oder Lutz. Mir gefällt beides nicht.",
+"file": "voice/gl/gl_gerhard_1e5r0rj.mp3",
+"dur": 9.64
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1ekg6gc",
+"text": "In die Chronik hab ich das nie geschrieben. Manches schreibt man erst auf, wenn es zu Ende ist.",
+"file": "voice/gl/gl_gerhard_1ekg6gc.mp3",
+"dur": 6.05
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1d6ep9w",
+"text": "Ein Transporter, Licht an, drei Mann. Die fühlen sich hier sehr zu Hause.",
+"file": "voice/gl/gl_sarah_1d6ep9w.mp3",
+"dur": 5.44
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_t41tnz",
+"text": "Plan: Einer macht auf der anderen Seite Krach, der andere fotografiert.",
+"file": "voice/gl/gl_falko_t41tnz.mp3",
+"dur": 4.18
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1hyhdjp",
+"text": "Du machst Krach. Das kannst du.",
+"file": "voice/gl/gl_sarah_1hyhdjp.mp3",
+"dur": 2.76
+},
+{
+"who": "gl_wache1",
+"id": "gl_wache1_1cpt51p",
+"text": "Was war das?",
+"file": "voice/gl/gl_wache1_1cpt51p.mp3",
+"dur": 0.86
+},
+{
+"who": "gl_wache2",
+"id": "gl_wache2_byhp8n",
+"text": "Jäger sind das nicht. Komm, nachsehen.",
+"file": "voice/gl/gl_wache2_byhp8n.mp3",
+"dur": 3.29
+},
+{
+"who": "gl_wache1",
+"id": "gl_wache1_pbktqr",
+"text": "He! Da ist einer! Stehenbleiben!",
+"file": "voice/gl/gl_wache1_pbktqr.mp3",
+"dur": 3.58
+},
+{
+"who": "gl_wache2",
+"id": "gl_wache2_11brs4v",
+"text": "Weg. War wohl ein Reh.",
+"file": "voice/gl/gl_wache2_11brs4v.mp3",
+"dur": 1.96
+},
+{
+"who": "gl_wache1",
+"id": "gl_wache1_709n6b",
+"text": "Ein Reh mit Handy?",
+"file": "voice/gl/gl_wache1_709n6b.mp3",
+"dur": 1.13
+},
+{
+"who": "gl_wache3",
+"id": "gl_wache3_lelylg",
+"text": "Die haben Fotos! Leuchtkugel, Abbruch – alles in den Wagen!",
+"file": "voice/gl/gl_wache3_lelylg.mp3",
+"dur": 4.52
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_3h0vhm",
+"text": "Drei Fotos. Ein Transporter, zwei Gesichter und Kisten mit Stempel.",
+"file": "voice/gl/gl_sarah_3h0vhm.mp3",
+"dur": 5.87
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1k06yx1",
+"text": "Und ich habe Tannennadeln an Stellen, von denen ich nichts wusste.",
+"file": "voice/gl/gl_falko_1k06yx1.mp3",
+"dur": 3.37
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_13sy39h",
+"text": "Das ist Krähwinkels Transporter. Die Kisten gehen ins Außenlager – die Container in der Feldflur, Richtung Autobahn.",
+"file": "voice/gl/gl_jule_13sy39h.mp3",
+"dur": 7.77
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_vrl469",
+"text": "Da hab ich mal Paletten abgeladen. Im Bürocontainer hängt was an der Wand, gerahmt. Eine halbe Karte. Ich dachte, das ist Deko.",
+"file": "voice/gl/gl_timo_vrl469.mp3",
+"dur": 9.59
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_104gsj1",
+"text": "Die hängt er sich an die Wand?",
+"file": "voice/gl/gl_sarah_104gsj1.mp3",
+"dur": 1.9
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1croxj6",
+"text": "Krähwinkel hängt sich alles an die Wand, was er für seins hält.",
+"file": "voice/gl/gl_jule_1croxj6.mp3",
+"dur": 3.5
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_elbz17",
+"text": "Dann holen wir sie.",
+"file": "voice/gl/gl_falko_elbz17.mp3",
+"dur": 1.04
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_lssou7",
+"text": "Zwei Wege. Leise: nachts hinten durch den Zaun, da ist eine Lücke – während der Wachmann seine Runde dreht.",
+"file": "voice/gl/gl_jule_lssou7.mp3",
+"dur": 7.23
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1hp89bf",
+"text": "Oder laut: Wir zünden vorn am Tor eine Batterie, die Wachen rennen hin, und ihr geht hinten rein.",
+"file": "voice/gl/gl_jule_1hp89bf.mp3",
+"dur": 5.94
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_hstver",
+"text": "Laut.",
+"file": "voice/gl/gl_basti_hstver.mp3",
+"dur": 0.57
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_r2gzr1",
+"text": "Basti ist für laut. Basti ist immer für laut.",
+"file": "voice/gl/gl_jule_r2gzr1.mp3",
+"dur": 3.61
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_da4hbl",
+"text": "Leise also. Dann wartet, bis es dunkel ist. Und atmet flach.",
+"file": "voice/gl/gl_jule_da4hbl.mp3",
+"dur": 5.62
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_283k59",
+"text": "Laut. Basti, hol die Batterie. Ihr gebt das Zeichen, wenn ihr hinten am Zaun steht.",
+"file": "voice/gl/gl_jule_283k59.mp3",
+"dur": 6.96
+},
+{
+"who": "gl_wache1",
+"id": "gl_wache1_32br42",
+"text": "Am Tor! Die verdammten Mopedfahrer!",
+"file": "voice/gl/gl_wache1_32br42.mp3",
+"dur": 2.98
+},
+{
+"who": "gl_wache2",
+"id": "gl_wache2_1vmx7qd",
+"text": "Ich ruf die Polizei. Diesmal wirklich!",
+"file": "voice/gl/gl_wache2_1vmx7qd.mp3",
+"dur": 3.13
+},
+{
+"who": "gl_wache1",
+"id": "gl_wache1_rjp7bb",
+"text": "He! Du da! Stehenbleiben!",
+"file": "voice/gl/gl_wache1_rjp7bb.mp3",
+"dur": 3.44
+},
+{
+"who": "gl_wache2",
+"id": "gl_wache2_pzdfbu",
+"text": "Zentrale? Einbruch im Außenlager. Ja, jetzt gerade!",
+"file": "voice/gl/gl_wache2_pzdfbu.mp3",
+"dur": 5.17
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_8scs18",
+"text": "Legt sie zusammen.",
+"file": "voice/gl/gl_jule_8scs18.mp3",
+"dur": 1.06
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_103syfd",
+"text": "Der Bunker. Da war ich als Kind. Da ist nichts drin außer Fledermäusen.",
+"file": "voice/gl/gl_timo_103syfd.mp3",
+"dur": 5.4
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_18ewsxb",
+"text": "Jetzt ist da was drin. Oder es war was drin.",
+"file": "voice/gl/gl_sarah_18ewsxb.mp3",
+"dur": 3.49
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_pvc6jv",
+"text": "Morgen früh weiß Krähwinkel, dass seine Karte weg ist. Mittags weiß er, wer sie hat.",
+"file": "voice/gl/gl_jule_pvc6jv.mp3",
+"dur": 5.97
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_u5fuck",
+"text": "Wir wollten eigentlich nur ein Wochenende im Garten.",
+"file": "voice/gl/gl_falko_u5fuck.mp3",
+"dur": 2.73
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_ncndcm",
+"text": "Passiert.",
+"file": "voice/gl/gl_basti_ncndcm.mp3",
+"dur": 0.75
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1obfdg7",
+"text": "Zentrale an alle Streifen.",
+"file": "voice/gl/gl_funk_1obfdg7.mp3",
+"dur": 1.88
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_ad1jx4",
+"text": "Gesucht wird eine Person,",
+"file": "voice/gl/gl_funk_ad1jx4.mp3",
+"dur": 1.63
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1e05o5z",
+"text": "Gesucht wird Falko,",
+"file": "voice/gl/gl_funk_1e05o5z.mp3",
+"dur": 1.34
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_4xkxoh",
+"text": "Gesucht wird Sarah,",
+"file": "voice/gl/gl_funk_4xkxoh.mp3",
+"dur": 1.27
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_63cv2t",
+"text": "Weiterhin gesucht wird eine Person,",
+"file": "voice/gl/gl_funk_63cv2t.mp3",
+"dur": 2.17
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1qh3y9u",
+"text": "Weiterhin gesucht wird Falko,",
+"file": "voice/gl/gl_funk_1qh3y9u.mp3",
+"dur": 1.95
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1vnb84g",
+"text": "Weiterhin gesucht wird Sarah,",
+"file": "voice/gl/gl_funk_1vnb84g.mp3",
+"dur": 1.87
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_tjbvxh",
+"text": "männlich,",
+"file": "voice/gl/gl_funk_tjbvxh.mp3",
+"dur": 0.81
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1hsvvzq",
+"text": "weiblich,",
+"file": "voice/gl/gl_funk_1hsvvzq.mp3",
+"dur": 0.75
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1g4d4bx",
+"text": "rotes Karohemd,",
+"file": "voice/gl/gl_funk_1g4d4bx.mp3",
+"dur": 1.4
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_jwhzng",
+"text": "dunkle Jacke,",
+"file": "voice/gl/gl_funk_jwhzng.mp3",
+"dur": 0.99
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1twz45x",
+"text": "helle Jacke,",
+"file": "voice/gl/gl_funk_1twz45x.mp3",
+"dur": 0.93
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_15upc6z",
+"text": "orange Warnjacke,",
+"file": "voice/gl/gl_funk_15upc6z.mp3",
+"dur": 1.26
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_apmzkx",
+"text": "grüner Parka,",
+"file": "voice/gl/gl_funk_apmzkx.mp3",
+"dur": 1.1
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1bqao11",
+"text": "mit Helm,",
+"file": "voice/gl/gl_funk_1bqao11.mp3",
+"dur": 0.73
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_10lw4rf",
+"text": "mit Sturmhaube,",
+"file": "voice/gl/gl_funk_10lw4rf.mp3",
+"dur": 1.2
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_o50f9i",
+"text": "auf einem Moped.",
+"file": "voice/gl/gl_funk_o50f9i.mp3",
+"dur": 1.16
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1xqwntk",
+"text": "in einem Trabant.",
+"file": "voice/gl/gl_funk_1xqwntk.mp3",
+"dur": 1.22
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_iwlwhz",
+"text": "in einem Auto.",
+"file": "voice/gl/gl_funk_iwlwhz.mp3",
+"dur": 1.09
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_nmz51o",
+"text": "auf einem Traktor.",
+"file": "voice/gl/gl_funk_nmz51o.mp3",
+"dur": 1.28
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1nuxpgj",
+"text": "zu Fuß.",
+"file": "voice/gl/gl_funk_1nuxpgj.mp3",
+"dur": 0.84
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1b67sup",
+"text": "Richtung Schleusingen.",
+"file": "voice/gl/gl_funk_1b67sup.mp3",
+"dur": 1.35
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1br0jxx",
+"text": "Richtung Ratscher.",
+"file": "voice/gl/gl_funk_1br0jxx.mp3",
+"dur": 1.1
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1v1jh9v",
+"text": "Richtung Talsperre.",
+"file": "voice/gl/gl_funk_1v1jh9v.mp3",
+"dur": 1.35
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1k5e9xl",
+"text": "Richtung Klinge.",
+"file": "voice/gl/gl_funk_1k5e9xl.mp3",
+"dur": 1.09
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_9m8m2t",
+"text": "Zuletzt gesehen in Schleusingen.",
+"file": "voice/gl/gl_funk_9m8m2t.mp3",
+"dur": 1.95
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_19fm6td",
+"text": "Zuletzt gesehen in Ratscher.",
+"file": "voice/gl/gl_funk_19fm6td.mp3",
+"dur": 1.75
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_2g4gbu",
+"text": "Zuletzt gesehen an der Talsperre.",
+"file": "voice/gl/gl_funk_2g4gbu.mp3",
+"dur": 2.12
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_y69nau",
+"text": "Zuletzt gesehen an der Klinge.",
+"file": "voice/gl/gl_funk_y69nau.mp3",
+"dur": 1.86
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_gjl1ja",
+"text": "Letzter Standort unbekannt.",
+"file": "voice/gl/gl_funk_gjl1ja.mp3",
+"dur": 2.02
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_gq3zlk",
+"text": "Kommen.",
+"file": "voice/gl/gl_funk_gq3zlk.mp3",
+"dur": 0.75
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_4aj7y8",
+"text": "Rennsteig für Schleuse 12: Hinweis aus Ratscher. Fahren Sie mal hin.",
+"file": "voice/gl/gl_funk_4aj7y8.mp3",
+"dur": 5.63
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_9wwfr0",
+"text": "Schleuse 12 verstanden. Wir brauchen ein bisschen – Landstraße.",
+"file": "voice/gl/gl_funk_9wwfr0.mp3",
+"dur": 4.55
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_83qdgs",
+"text": "Schleuse 12 am Ort. Wir schauen uns um.",
+"file": "voice/gl/gl_funk_83qdgs.mp3",
+"dur": 3.62
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1hj0gii",
+"text": "Rennsteig von Schleuse 12: vor Ort. Bisher nur Hühner.",
+"file": "voice/gl/gl_funk_1hj0gii.mp3",
+"dur": 5.06
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_11uh0bc",
+"text": "Schleuse 12: Sichtkontakt!",
+"file": "voice/gl/gl_funk_11uh0bc.mp3",
+"dur": 2.38
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_b4l5db",
+"text": "Rennsteig, wir haben ihn. Fahren nach.",
+"file": "voice/gl/gl_funk_b4l5db.mp3",
+"dur": 3.72
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_sqdw5m",
+"text": "Schleuse 12: Sicht verloren. Suchen den Bereich ab.",
+"file": "voice/gl/gl_funk_sqdw5m.mp3",
+"dur": 4.44
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1bfg98l",
+"text": "Rennsteig, der ist weg. Wir drehen eine Runde.",
+"file": "voice/gl/gl_funk_1bfg98l.mp3",
+"dur": 4.15
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_ad2dfz",
+"text": "Rennsteig an alle: Kontrollstelle auf der Landstraße einrichten.",
+"file": "voice/gl/gl_funk_ad2dfz.mp3",
+"dur": 4.38
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_18mp73r",
+"text": "Schleuse 14 steht quer. Hier kommt keiner durch. Hoffentlich.",
+"file": "voice/gl/gl_funk_18mp73r.mp3",
+"dur": 5.68
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_big1il",
+"text": "Schleuse 14: Der ist über den Acker! Der Bauer wird sich freuen.",
+"file": "voice/gl/gl_funk_big1il.mp3",
+"dur": 4.87
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1vrmfi3",
+"text": "Rennsteig für Bussard 1: Sie haben Freigabe. Suchgebiet Ratscher.",
+"file": "voice/gl/gl_funk_1vrmfi3.mp3",
+"dur": 5.57
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_vco6je",
+"text": "Bussard 1 im Anflug. Bleiben Sie, wo Sie sind – das gilt nicht Ihnen, Rennsteig.",
+"file": "voice/gl/gl_funk_vco6je.mp3",
+"dur": 5.72
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1f4nsk2",
+"text": "Rennsteig an alle: Spezialkräfte übernehmen. Zufahrten dicht machen.",
+"file": "voice/gl/gl_funk_1f4nsk2.mp3",
+"dur": 5.72
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1ilmiwd",
+"text": "Rennsteig an alle: Fahndung eingestellt. Kaffee ist fertig.",
+"file": "voice/gl/gl_funk_1ilmiwd.mp3",
+"dur": 5.37
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_1vzbs5w",
+"text": "Schleuse 12 rückt ein. War wohl wieder nichts.",
+"file": "voice/gl/gl_funk_1vzbs5w.mp3",
+"dur": 3.74
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_tdup3b",
+"text": "Hier Zentrale. Genosse Hauptwachtmeister, klären Sie das in Ratscher.",
+"file": "voice/gl/gl_funk_tdup3b.mp3",
+"dur": 5.43
+},
+{
+"who": "gl_funk",
+"id": "gl_funk_21w4oa",
+"text": "Verstanden. Bin mit dem Wartburg unterwegs.",
+"file": "voice/gl/gl_funk_21w4oa.mp3",
+"dur": 3.57
+},
+{
+"who": "gl_polizei1",
+"id": "gl_polizei1_1boylrm",
+"text": "Halt! Polizei!",
+"file": "voice/gl/gl_polizei1_1boylrm.mp3",
+"dur": 1.94
+},
+{
+"who": "gl_polizei2",
+"id": "gl_polizei2_1boylrm",
+"text": "Halt! Polizei!",
+"file": "voice/gl/gl_polizei2_1boylrm.mp3",
+"dur": 1.96
+},
+{
+"who": "gl_polizei1",
+"id": "gl_polizei1_osvl3g",
+"text": "Polizei! Auf den Boden!",
+"file": "voice/gl/gl_polizei1_osvl3g.mp3",
+"dur": 2.25
+},
+{
+"who": "gl_vopo",
+"id": "gl_vopo_ij18nw",
+"text": "Stehenbleiben!",
+"file": "voice/gl/gl_vopo_ij18nw.mp3",
+"dur": 0.92
+},
+{
+"who": "gl_abv",
+"id": "gl_abv_ij18nw",
+"text": "Stehenbleiben!",
+"file": "voice/gl/gl_abv_ij18nw.mp3",
+"dur": 0.99
+},
+{
+"who": "gl_boellermann",
+"id": "gl_boellermann_ydrt7c",
+"text": "Psst. Böller? Beste Qualität. Hast du nicht von mir.",
+"file": "voice/gl/gl_boellermann_ydrt7c.mp3",
+"dur": 4.37
+},
+{
+"who": "gl_boellermann",
+"id": "gl_boellermann_s79fiu",
+"text": "Drei Stück, fünf Euro. Und nicht vor Silvester zünden. Haha.",
+"file": "voice/gl/gl_boellermann_s79fiu.mp3",
+"dur": 5.25
+},
+{
+"who": "gl_boellermann",
+"id": "gl_boellermann_185195j",
+"text": "Ich bin dann mal weg. Die Polizei mag keine Kofferraumgeschäfte.",
+"file": "voice/gl/gl_boellermann_185195j.mp3",
+"dur": 4.03
+},
+{
+"who": "gl_wirt",
+"id": "gl_wirt_166yqq9",
+"text": "Rostbratwurst! Frisch vom Rost, mit Senf, drei Euro!",
+"file": "voice/gl/gl_wirt_166yqq9.mp3",
+"dur": 5.09
+},
+{
+"who": "gl_wirt",
+"id": "gl_wirt_92m8a2",
+"text": "Mit Senf. Natürlich mit Senf. Alles andere wäre eine Beleidigung.",
+"file": "voice/gl/gl_wirt_92m8a2.mp3",
+"dur": 5.94
+},
+{
+"who": "gl_bursche",
+"id": "gl_bursche_1szkbsb",
+"text": "Kirmes ist nur einmal im Jahr! Komm, tanz mit!",
+"file": "voice/gl/gl_bursche_1szkbsb.mp3",
+"dur": 3.55
+},
+{
+"who": "gl_maedchen",
+"id": "gl_maedchen_12mita5",
+"text": "Hast du den Kirmesbaum gesehen? Den haben wir die ganze Nacht bewacht.",
+"file": "voice/gl/gl_maedchen_12mita5.mp3",
+"dur": 4.81
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_7hjwej",
+"text": "Ist was?",
+"file": "voice/gl/gl_gerhard_7hjwej.mp3",
+"dur": 0.7
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1i90i1l",
+"text": "Kennen wir uns?",
+"file": "voice/gl/gl_gerhard_1i90i1l.mp3",
+"dur": 1.22
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_qnqpa6",
+"text": "Du guckst, als hättest du noch nie einen Menschen gesehen.",
+"file": "voice/gl/gl_gerhard_qnqpa6.mp3",
+"dur": 3.5
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_o3cv1o",
+"text": "Wenn du was suchst: Die Kirmes ist erst nächste Woche.",
+"file": "voice/gl/gl_gerhard_o3cv1o.mp3",
+"dur": 3.54
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1hvzzo2",
+"text": "Na? Auch auf der Suche nach Rostbratwurst?",
+"file": "voice/gl/gl_gerhard_1hvzzo2.mp3",
+"dur": 3.43
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_kzey3m",
+"text": "Schönes Karohemd. Holzfäller oder Tischdecke?",
+"file": "voice/gl/gl_gerhard_kzey3m.mp3",
+"dur": 3.5
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_zk98t",
+"text": "Rot kariert – wie beim Schützenfest.",
+"file": "voice/gl/gl_gerhard_zk98t.mp3",
+"dur": 2.33
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_vwgyhm",
+"text": "Ganz in Dunkel? Gehst du zu einer Beerdigung oder zu einem Einbruch?",
+"file": "voice/gl/gl_gerhard_vwgyhm.mp3",
+"dur": 4.63
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1cjh9l8",
+"text": "Schicke Jacke. Neu?",
+"file": "voice/gl/gl_gerhard_1cjh9l8.mp3",
+"dur": 1.68
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1iuv7n0",
+"text": "Ah, der Forst! Ist wieder was mit dem Borkenkäfer?",
+"file": "voice/gl/gl_gerhard_1iuv7n0.mp3",
+"dur": 3.78
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1v2y3fu",
+"text": "In Orange sieht man dich bis Hildburghausen.",
+"file": "voice/gl/gl_gerhard_1v2y3fu.mp3",
+"dur": 2.67
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_ucoo5v",
+"text": "Kommt jetzt endlich jemand wegen dem Baum am Friedhof?",
+"file": "voice/gl/gl_gerhard_ucoo5v.mp3",
+"dur": 3.43
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1vg8wjp",
+"text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
+"file": "voice/gl/gl_gerhard_1vg8wjp.mp3",
+"dur": 3.94
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1m2l44b",
+"text": "Eine Simson! Die läuft ja noch.",
+"file": "voice/gl/gl_gerhard_1m2l44b.mp3",
+"dur": 2.38
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1udbfjm",
+"text": "So ein Moped hatte mein Vater auch. Genauso laut.",
+"file": "voice/gl/gl_gerhard_1udbfjm.mp3",
+"dur": 3.84
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1xskeda",
+"text": "Schönes Auto. Gehört das dir?",
+"file": "voice/gl/gl_gerhard_1xskeda.mp3",
+"dur": 2.5
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_wwhod",
+"text": "Mit dem Traktor durchs Dorf, wie es sich gehört.",
+"file": "voice/gl/gl_gerhard_wwhod.mp3",
+"dur": 3.27
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_6xknea",
+"text": "Spinnst du?",
+"file": "voice/gl/gl_gerhard_6xknea.mp3",
+"dur": 0.87
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1v822oy",
+"text": "Das hab ich gefilmt, nur dass du es weißt.",
+"file": "voice/gl/gl_gerhard_1v822oy.mp3",
+"dur": 2.72
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1uwkyq7",
+"text": "So was gab es früher nicht. Früher gab es gar nichts.",
+"file": "voice/gl/gl_gerhard_1uwkyq7.mp3",
+"dur": 3.37
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1dfkelw",
+"text": "Ich sag das deiner Mutter.",
+"file": "voice/gl/gl_gerhard_1dfkelw.mp3",
+"dur": 1.48
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1fg7xi1",
+"text": "Dich suchen die doch. Das kam gerade im Radio.",
+"file": "voice/gl/gl_gerhard_1fg7xi1.mp3",
+"dur": 3.66
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1g2m635",
+"text": "Die Polizei war schon zweimal hier. Wegen dir, oder?",
+"file": "voice/gl/gl_gerhard_1g2m635.mp3",
+"dur": 4.25
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_13w2j8r",
+"text": "Muss ja. Und selbst?",
+"file": "voice/gl/gl_gerhard_13w2j8r.mp3",
+"dur": 1.84
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1kwk0ax",
+"text": "Geht so. Am Sonntag gibt es Klöße, dann wird es besser.",
+"file": "voice/gl/gl_gerhard_1kwk0ax.mp3",
+"dur": 4.38
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_mdz4rb",
+"text": "Na, ihr zwei. Schönen Abend noch!",
+"file": "voice/gl/gl_gerhard_mdz4rb.mp3",
+"dur": 3.17
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1esnmc",
+"text": "Besser als dein Hemd. Das sieht aus wie eine Tischdecke.",
+"file": "voice/gl/gl_gerhard_1esnmc.mp3",
+"dur": 3.46
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1xojrg",
+"text": "Sagt die Richtige. Oder der Richtige. Egal.",
+"file": "voice/gl/gl_gerhard_1xojrg.mp3",
+"dur": 3.98
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1jm6ble",
+"text": "Ganz schön frech für einen, der hier nicht mal den Kirmesbaum aufstellt.",
+"file": "voice/gl/gl_gerhard_1jm6ble.mp3",
+"dur": 4.39
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_o351lb",
+"text": "Na gut. Ich hab nichts gesehen.",
+"file": "voice/gl/gl_gerhard_o351lb.mp3",
+"dur": 2.22
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_vfzx3z",
+"text": "Schon gut. Aber keinen Ärger hier, ja?",
+"file": "voice/gl/gl_gerhard_vfzx3z.mp3",
+"dur": 3.21
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_2qh5wu",
+"text": "Na warte. Ich ruf die Polizei.",
+"file": "voice/gl/gl_gerhard_2qh5wu.mp3",
+"dur": 2.84
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_17h0ocj",
+"text": "So nicht, mein Freund. Ich telefoniere jetzt.",
+"file": "voice/gl/gl_gerhard_17h0ocj.mp3",
+"dur": 3.8
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1khgqmd",
+"text": "Ach, du schon wieder. Der mit den Sprüchen.",
+"file": "voice/gl/gl_gerhard_1khgqmd.mp3",
+"dur": 3.32
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1v0tf3c",
+"text": "Mit dir rede ich nicht mehr.",
+"file": "voice/gl/gl_gerhard_1v0tf3c.mp3",
+"dur": 1.63
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_7hjwej",
+"text": "Ist was?",
+"file": "voice/gl/gl_jule_7hjwej.mp3",
+"dur": 0.66
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1i90i1l",
+"text": "Kennen wir uns?",
+"file": "voice/gl/gl_jule_1i90i1l.mp3",
+"dur": 0.87
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_qnqpa6",
+"text": "Du guckst, als hättest du noch nie einen Menschen gesehen.",
+"file": "voice/gl/gl_jule_qnqpa6.mp3",
+"dur": 3.12
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_o3cv1o",
+"text": "Wenn du was suchst: Die Kirmes ist erst nächste Woche.",
+"file": "voice/gl/gl_jule_o3cv1o.mp3",
+"dur": 3.05
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1hvzzo2",
+"text": "Na? Auch auf der Suche nach Rostbratwurst?",
+"file": "voice/gl/gl_jule_1hvzzo2.mp3",
+"dur": 3.05
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_kzey3m",
+"text": "Schönes Karohemd. Holzfäller oder Tischdecke?",
+"file": "voice/gl/gl_jule_kzey3m.mp3",
+"dur": 3.78
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_zk98t",
+"text": "Rot kariert – wie beim Schützenfest.",
+"file": "voice/gl/gl_jule_zk98t.mp3",
+"dur": 2.2
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_vwgyhm",
+"text": "Ganz in Dunkel? Gehst du zu einer Beerdigung oder zu einem Einbruch?",
+"file": "voice/gl/gl_jule_vwgyhm.mp3",
+"dur": 4.47
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1cjh9l8",
+"text": "Schicke Jacke. Neu?",
+"file": "voice/gl/gl_jule_1cjh9l8.mp3",
+"dur": 2.07
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1iuv7n0",
+"text": "Ah, der Forst! Ist wieder was mit dem Borkenkäfer?",
+"file": "voice/gl/gl_jule_1iuv7n0.mp3",
+"dur": 3.98
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1v2y3fu",
+"text": "In Orange sieht man dich bis Hildburghausen.",
+"file": "voice/gl/gl_jule_1v2y3fu.mp3",
+"dur": 2.29
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_ucoo5v",
+"text": "Kommt jetzt endlich jemand wegen dem Baum am Friedhof?",
+"file": "voice/gl/gl_jule_ucoo5v.mp3",
+"dur": 3.03
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1vg8wjp",
+"text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
+"file": "voice/gl/gl_jule_1vg8wjp.mp3",
+"dur": 3.38
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1m2l44b",
+"text": "Eine Simson! Die läuft ja noch.",
+"file": "voice/gl/gl_jule_1m2l44b.mp3",
+"dur": 2.75
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1udbfjm",
+"text": "So ein Moped hatte mein Vater auch. Genauso laut.",
+"file": "voice/gl/gl_jule_1udbfjm.mp3",
+"dur": 3.92
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1xskeda",
+"text": "Schönes Auto. Gehört das dir?",
+"file": "voice/gl/gl_jule_1xskeda.mp3",
+"dur": 2.83
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_wwhod",
+"text": "Mit dem Traktor durchs Dorf, wie es sich gehört.",
+"file": "voice/gl/gl_jule_wwhod.mp3",
+"dur": 2.69
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_6xknea",
+"text": "Spinnst du?",
+"file": "voice/gl/gl_jule_6xknea.mp3",
+"dur": 0.74
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1v822oy",
+"text": "Das hab ich gefilmt, nur dass du es weißt.",
+"file": "voice/gl/gl_jule_1v822oy.mp3",
+"dur": 2.53
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1uwkyq7",
+"text": "So was gab es früher nicht. Früher gab es gar nichts.",
+"file": "voice/gl/gl_jule_1uwkyq7.mp3",
+"dur": 3.74
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1dfkelw",
+"text": "Ich sag das deiner Mutter.",
+"file": "voice/gl/gl_jule_1dfkelw.mp3",
+"dur": 1.45
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1fg7xi1",
+"text": "Dich suchen die doch. Das kam gerade im Radio.",
+"file": "voice/gl/gl_jule_1fg7xi1.mp3",
+"dur": 3.29
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1g2m635",
+"text": "Die Polizei war schon zweimal hier. Wegen dir, oder?",
+"file": "voice/gl/gl_jule_1g2m635.mp3",
+"dur": 4.04
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_13w2j8r",
+"text": "Muss ja. Und selbst?",
+"file": "voice/gl/gl_jule_13w2j8r.mp3",
+"dur": 2.19
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1kwk0ax",
+"text": "Geht so. Am Sonntag gibt es Klöße, dann wird es besser.",
+"file": "voice/gl/gl_jule_1kwk0ax.mp3",
+"dur": 4.14
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_mdz4rb",
+"text": "Na, ihr zwei. Schönen Abend noch!",
+"file": "voice/gl/gl_jule_mdz4rb.mp3",
+"dur": 3.09
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1esnmc",
+"text": "Besser als dein Hemd. Das sieht aus wie eine Tischdecke.",
+"file": "voice/gl/gl_jule_1esnmc.mp3",
+"dur": 3.82
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1xojrg",
+"text": "Sagt die Richtige. Oder der Richtige. Egal.",
+"file": "voice/gl/gl_jule_1xojrg.mp3",
+"dur": 4.28
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1jm6ble",
+"text": "Ganz schön frech für einen, der hier nicht mal den Kirmesbaum aufstellt.",
+"file": "voice/gl/gl_jule_1jm6ble.mp3",
+"dur": 4.01
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_o351lb",
+"text": "Na gut. Ich hab nichts gesehen.",
+"file": "voice/gl/gl_jule_o351lb.mp3",
+"dur": 2.84
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_vfzx3z",
+"text": "Schon gut. Aber keinen Ärger hier, ja?",
+"file": "voice/gl/gl_jule_vfzx3z.mp3",
+"dur": 3.47
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_2qh5wu",
+"text": "Na warte. Ich ruf die Polizei.",
+"file": "voice/gl/gl_jule_2qh5wu.mp3",
+"dur": 2.68
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_17h0ocj",
+"text": "So nicht, mein Freund. Ich telefoniere jetzt.",
+"file": "voice/gl/gl_jule_17h0ocj.mp3",
+"dur": 3.76
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1khgqmd",
+"text": "Ach, du schon wieder. Der mit den Sprüchen.",
+"file": "voice/gl/gl_jule_1khgqmd.mp3",
+"dur": 3.13
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1v0tf3c",
+"text": "Mit dir rede ich nicht mehr.",
+"file": "voice/gl/gl_jule_1v0tf3c.mp3",
+"dur": 1.42
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_7hjwej",
+"text": "Ist was?",
+"file": "voice/gl/gl_timo_7hjwej.mp3",
+"dur": 0.71
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1i90i1l",
+"text": "Kennen wir uns?",
+"file": "voice/gl/gl_timo_1i90i1l.mp3",
+"dur": 0.99
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_qnqpa6",
+"text": "Du guckst, als hättest du noch nie einen Menschen gesehen.",
+"file": "voice/gl/gl_timo_qnqpa6.mp3",
+"dur": 2.82
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_o3cv1o",
+"text": "Wenn du was suchst: Die Kirmes ist erst nächste Woche.",
+"file": "voice/gl/gl_timo_o3cv1o.mp3",
+"dur": 2.9
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1hvzzo2",
+"text": "Na? Auch auf der Suche nach Rostbratwurst?",
+"file": "voice/gl/gl_timo_1hvzzo2.mp3",
+"dur": 3.36
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_kzey3m",
+"text": "Schönes Karohemd. Holzfäller oder Tischdecke?",
+"file": "voice/gl/gl_timo_kzey3m.mp3",
+"dur": 3.71
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_zk98t",
+"text": "Rot kariert – wie beim Schützenfest.",
+"file": "voice/gl/gl_timo_zk98t.mp3",
+"dur": 1.85
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_vwgyhm",
+"text": "Ganz in Dunkel? Gehst du zu einer Beerdigung oder zu einem Einbruch?",
+"file": "voice/gl/gl_timo_vwgyhm.mp3",
+"dur": 4.5
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1cjh9l8",
+"text": "Schicke Jacke. Neu?",
+"file": "voice/gl/gl_timo_1cjh9l8.mp3",
+"dur": 2.05
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1iuv7n0",
+"text": "Ah, der Forst! Ist wieder was mit dem Borkenkäfer?",
+"file": "voice/gl/gl_timo_1iuv7n0.mp3",
+"dur": 3.9
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1v2y3fu",
+"text": "In Orange sieht man dich bis Hildburghausen.",
+"file": "voice/gl/gl_timo_1v2y3fu.mp3",
+"dur": 2.2
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_ucoo5v",
+"text": "Kommt jetzt endlich jemand wegen dem Baum am Friedhof?",
+"file": "voice/gl/gl_timo_ucoo5v.mp3",
+"dur": 2.96
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1vg8wjp",
+"text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
+"file": "voice/gl/gl_timo_1vg8wjp.mp3",
+"dur": 3.14
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1m2l44b",
+"text": "Eine Simson! Die läuft ja noch.",
+"file": "voice/gl/gl_timo_1m2l44b.mp3",
+"dur": 2.52
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1udbfjm",
+"text": "So ein Moped hatte mein Vater auch. Genauso laut.",
+"file": "voice/gl/gl_timo_1udbfjm.mp3",
+"dur": 3.65
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1xskeda",
+"text": "Schönes Auto. Gehört das dir?",
+"file": "voice/gl/gl_timo_1xskeda.mp3",
+"dur": 2.74
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_wwhod",
+"text": "Mit dem Traktor durchs Dorf, wie es sich gehört.",
+"file": "voice/gl/gl_timo_wwhod.mp3",
+"dur": 2.64
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_6xknea",
+"text": "Spinnst du?",
+"file": "voice/gl/gl_timo_6xknea.mp3",
+"dur": 0.82
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1v822oy",
+"text": "Das hab ich gefilmt, nur dass du es weißt.",
+"file": "voice/gl/gl_timo_1v822oy.mp3",
+"dur": 2.41
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1uwkyq7",
+"text": "So was gab es früher nicht. Früher gab es gar nichts.",
+"file": "voice/gl/gl_timo_1uwkyq7.mp3",
+"dur": 3.71
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1dfkelw",
+"text": "Ich sag das deiner Mutter.",
+"file": "voice/gl/gl_timo_1dfkelw.mp3",
+"dur": 1.33
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1fg7xi1",
+"text": "Dich suchen die doch. Das kam gerade im Radio.",
+"file": "voice/gl/gl_timo_1fg7xi1.mp3",
+"dur": 3.33
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1g2m635",
+"text": "Die Polizei war schon zweimal hier. Wegen dir, oder?",
+"file": "voice/gl/gl_timo_1g2m635.mp3",
+"dur": 4.17
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_13w2j8r",
+"text": "Muss ja. Und selbst?",
+"file": "voice/gl/gl_timo_13w2j8r.mp3",
+"dur": 2.3
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1kwk0ax",
+"text": "Geht so. Am Sonntag gibt es Klöße, dann wird es besser.",
+"file": "voice/gl/gl_timo_1kwk0ax.mp3",
+"dur": 3.97
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_mdz4rb",
+"text": "Na, ihr zwei. Schönen Abend noch!",
+"file": "voice/gl/gl_timo_mdz4rb.mp3",
+"dur": 3.18
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1esnmc",
+"text": "Besser als dein Hemd. Das sieht aus wie eine Tischdecke.",
+"file": "voice/gl/gl_timo_1esnmc.mp3",
+"dur": 3.54
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1xojrg",
+"text": "Sagt die Richtige. Oder der Richtige. Egal.",
+"file": "voice/gl/gl_timo_1xojrg.mp3",
+"dur": 4.25
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1jm6ble",
+"text": "Ganz schön frech für einen, der hier nicht mal den Kirmesbaum aufstellt.",
+"file": "voice/gl/gl_timo_1jm6ble.mp3",
+"dur": 3.68
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_o351lb",
+"text": "Na gut. Ich hab nichts gesehen.",
+"file": "voice/gl/gl_timo_o351lb.mp3",
+"dur": 2.53
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_vfzx3z",
+"text": "Schon gut. Aber keinen Ärger hier, ja?",
+"file": "voice/gl/gl_timo_vfzx3z.mp3",
+"dur": 3.39
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_2qh5wu",
+"text": "Na warte. Ich ruf die Polizei.",
+"file": "voice/gl/gl_timo_2qh5wu.mp3",
+"dur": 2.66
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_17h0ocj",
+"text": "So nicht, mein Freund. Ich telefoniere jetzt.",
+"file": "voice/gl/gl_timo_17h0ocj.mp3",
+"dur": 3.71
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1khgqmd",
+"text": "Ach, du schon wieder. Der mit den Sprüchen.",
+"file": "voice/gl/gl_timo_1khgqmd.mp3",
+"dur": 3.11
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_1v0tf3c",
+"text": "Mit dir rede ich nicht mehr.",
+"file": "voice/gl/gl_timo_1v0tf3c.mp3",
+"dur": 1.41
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_7hjwej",
+"text": "Ist was?",
+"file": "voice/gl/gl_basti_7hjwej.mp3",
+"dur": 0.73
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1i90i1l",
+"text": "Kennen wir uns?",
+"file": "voice/gl/gl_basti_1i90i1l.mp3",
+"dur": 1.07
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_qnqpa6",
+"text": "Du guckst, als hättest du noch nie einen Menschen gesehen.",
+"file": "voice/gl/gl_basti_qnqpa6.mp3",
+"dur": 3.03
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_o3cv1o",
+"text": "Wenn du was suchst: Die Kirmes ist erst nächste Woche.",
+"file": "voice/gl/gl_basti_o3cv1o.mp3",
+"dur": 3.34
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1hvzzo2",
+"text": "Na? Auch auf der Suche nach Rostbratwurst?",
+"file": "voice/gl/gl_basti_1hvzzo2.mp3",
+"dur": 3.48
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_kzey3m",
+"text": "Schönes Karohemd. Holzfäller oder Tischdecke?",
+"file": "voice/gl/gl_basti_kzey3m.mp3",
+"dur": 3.82
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_zk98t",
+"text": "Rot kariert – wie beim Schützenfest.",
+"file": "voice/gl/gl_basti_zk98t.mp3",
+"dur": 2.26
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_vwgyhm",
+"text": "Ganz in Dunkel? Gehst du zu einer Beerdigung oder zu einem Einbruch?",
+"file": "voice/gl/gl_basti_vwgyhm.mp3",
+"dur": 4.89
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1cjh9l8",
+"text": "Schicke Jacke. Neu?",
+"file": "voice/gl/gl_basti_1cjh9l8.mp3",
+"dur": 2.33
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1iuv7n0",
+"text": "Ah, der Forst! Ist wieder was mit dem Borkenkäfer?",
+"file": "voice/gl/gl_basti_1iuv7n0.mp3",
+"dur": 4.11
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1v2y3fu",
+"text": "In Orange sieht man dich bis Hildburghausen.",
+"file": "voice/gl/gl_basti_1v2y3fu.mp3",
+"dur": 2.4
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_ucoo5v",
+"text": "Kommt jetzt endlich jemand wegen dem Baum am Friedhof?",
+"file": "voice/gl/gl_basti_ucoo5v.mp3",
+"dur": 3.17
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1vg8wjp",
+"text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
+"file": "voice/gl/gl_basti_1vg8wjp.mp3",
+"dur": 3.64
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1m2l44b",
+"text": "Eine Simson! Die läuft ja noch.",
+"file": "voice/gl/gl_basti_1m2l44b.mp3",
+"dur": 2.71
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1udbfjm",
+"text": "So ein Moped hatte mein Vater auch. Genauso laut.",
+"file": "voice/gl/gl_basti_1udbfjm.mp3",
+"dur": 4.31
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1xskeda",
+"text": "Schönes Auto. Gehört das dir?",
+"file": "voice/gl/gl_basti_1xskeda.mp3",
+"dur": 2.92
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_wwhod",
+"text": "Mit dem Traktor durchs Dorf, wie es sich gehört.",
+"file": "voice/gl/gl_basti_wwhod.mp3",
+"dur": 2.79
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_6xknea",
+"text": "Spinnst du?",
+"file": "voice/gl/gl_basti_6xknea.mp3",
+"dur": 0.82
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1v822oy",
+"text": "Das hab ich gefilmt, nur dass du es weißt.",
+"file": "voice/gl/gl_basti_1v822oy.mp3",
+"dur": 2.33
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1uwkyq7",
+"text": "So was gab es früher nicht. Früher gab es gar nichts.",
+"file": "voice/gl/gl_basti_1uwkyq7.mp3",
+"dur": 3.89
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1dfkelw",
+"text": "Ich sag das deiner Mutter.",
+"file": "voice/gl/gl_basti_1dfkelw.mp3",
+"dur": 1.47
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1fg7xi1",
+"text": "Dich suchen die doch. Das kam gerade im Radio.",
+"file": "voice/gl/gl_basti_1fg7xi1.mp3",
+"dur": 3.69
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1g2m635",
+"text": "Die Polizei war schon zweimal hier. Wegen dir, oder?",
+"file": "voice/gl/gl_basti_1g2m635.mp3",
+"dur": 4.37
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_13w2j8r",
+"text": "Muss ja. Und selbst?",
+"file": "voice/gl/gl_basti_13w2j8r.mp3",
+"dur": 2.38
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1kwk0ax",
+"text": "Geht so. Am Sonntag gibt es Klöße, dann wird es besser.",
+"file": "voice/gl/gl_basti_1kwk0ax.mp3",
+"dur": 4.42
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_mdz4rb",
+"text": "Na, ihr zwei. Schönen Abend noch!",
+"file": "voice/gl/gl_basti_mdz4rb.mp3",
+"dur": 3.42
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1esnmc",
+"text": "Besser als dein Hemd. Das sieht aus wie eine Tischdecke.",
+"file": "voice/gl/gl_basti_1esnmc.mp3",
+"dur": 3.99
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1xojrg",
+"text": "Sagt die Richtige. Oder der Richtige. Egal.",
+"file": "voice/gl/gl_basti_1xojrg.mp3",
+"dur": 4.55
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1jm6ble",
+"text": "Ganz schön frech für einen, der hier nicht mal den Kirmesbaum aufstellt.",
+"file": "voice/gl/gl_basti_1jm6ble.mp3",
+"dur": 3.82
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_o351lb",
+"text": "Na gut. Ich hab nichts gesehen.",
+"file": "voice/gl/gl_basti_o351lb.mp3",
+"dur": 2.85
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_vfzx3z",
+"text": "Schon gut. Aber keinen Ärger hier, ja?",
+"file": "voice/gl/gl_basti_vfzx3z.mp3",
+"dur": 3.82
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_2qh5wu",
+"text": "Na warte. Ich ruf die Polizei.",
+"file": "voice/gl/gl_basti_2qh5wu.mp3",
+"dur": 3.05
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_17h0ocj",
+"text": "So nicht, mein Freund. Ich telefoniere jetzt.",
+"file": "voice/gl/gl_basti_17h0ocj.mp3",
+"dur": 3.96
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1khgqmd",
+"text": "Ach, du schon wieder. Der mit den Sprüchen.",
+"file": "voice/gl/gl_basti_1khgqmd.mp3",
+"dur": 3.49
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_1v0tf3c",
+"text": "Mit dir rede ich nicht mehr.",
+"file": "voice/gl/gl_basti_1v0tf3c.mp3",
+"dur": 1.42
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1xda428",
+"text": "Na, alles gut?",
+"file": "voice/gl/gl_falko_1xda428.mp3",
+"dur": 1.25
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_t52uaj",
+"text": "Hallo! Alles gut bei dir?",
+"file": "voice/gl/gl_sarah_t52uaj.mp3",
+"dur": 2.36
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_3px6q9",
+"text": "Schicke Jacke. Hat die deine Oma gestrickt?",
+"file": "voice/gl/gl_falko_3px6q9.mp3",
+"dur": 3.35
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_eyc4n9",
+"text": "Schicke Frisur. War der Friseur krank?",
+"file": "voice/gl/gl_sarah_eyc4n9.mp3",
+"dur": 3.15
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1e51bre",
+"text": "Alles in Ordnung. Ich bin gleich wieder weg.",
+"file": "voice/gl/gl_falko_1e51bre.mp3",
+"dur": 3.22
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_v7kiov",
+"text": "Alles gut, wirklich. Ich bin gleich wieder weg.",
+"file": "voice/gl/gl_sarah_v7kiov.mp3",
+"dur": 3.81
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_13mdxn9",
+"text": "Was glotzt du denn so?",
+"file": "voice/gl/gl_falko_13mdxn9.mp3",
+"dur": 1.3
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_15nmrko",
+"text": "Hast du ein Problem?",
+"file": "voice/gl/gl_sarah_15nmrko.mp3",
+"dur": 1.37
+},
+{
+"who": "gl_erna",
+"id": "gl_erna_swt49a",
+"text": "Gerhard! Morgen nach Suhl in den Waffenschmied, ja? Zwei Jahre habt ihr auf den Tisch gewartet!",
+"file": "voice/gl/gl_erna_swt49a.mp3",
+"dur": 8.61
+},
+{
+"who": "gl_erna",
+"id": "gl_erna_jn006r",
+"text": "Erst wird gebadet, alle zusammen, dann gibt’s Kimonos. Hat die Brigitte erzählt.",
+"file": "voice/gl/gl_erna_jn006r.mp3",
+"dur": 7.21
+},
+{
+"who": "gl_erna",
+"id": "gl_erna_12xbdy3",
+"text": "Die halbe Straße ist seit heute früh in Suhl auf dem Volkspolizeikreisamt, das Visum holen. Und wer kehrt hier? Ich.",
+"file": "voice/gl/gl_erna_12xbdy3.mp3",
+"dur": 10.23
+},
+{
+"who": "gl_erna",
+"id": "gl_erna_d47haj",
+"text": "Was schleppst du denn da? Na, geht mich ja nichts an.",
+"file": "voice/gl/gl_erna_d47haj.mp3",
+"dur": 4.25
+},
+{
+"who": "gl_horst",
+"id": "gl_horst_bbmd9w",
+"text": "Morgen früh fahren wir rüber. Über Eisfeld nach Coburg. Hundert Mark Begrüßungsgeld soll es geben.",
+"file": "voice/gl/gl_horst_bbmd9w.mp3",
+"dur": 7.55
+},
+{
+"who": "gl_horst",
+"id": "gl_horst_1advex5",
+"text": "Und die Bayern legen noch vierzig drauf, sagt der Schwager. Der war heute schon drüben.",
+"file": "voice/gl/gl_horst_1advex5.mp3",
+"dur": 5.43
+},
+{
+"who": "gl_horst",
+"id": "gl_horst_yzf8vh",
+"text": "Der Trabi packt das. Ist ja nur einmal übern Berg.",
+"file": "voice/gl/gl_horst_yzf8vh.mp3",
+"dur": 3.92
+},
+{
+"who": "gl_horst",
+"id": "gl_horst_jbgcz0",
+"text": "Zwanzig Zentner Briketts, und keiner da, der mit anfasst. Alle im Westen.",
+"file": "voice/gl/gl_horst_jbgcz0.mp3",
+"dur": 5.5
+},
+{
+"who": "gl_renate",
+"id": "gl_renate_uk16bm",
+"text": "In der Kaufhalle in Schleusingen gibt’s Apfelsinen. Kuba. Aber Apfelsinen.",
+"file": "voice/gl/gl_renate_uk16bm.mp3",
+"dur": 6.41
+},
+{
+"who": "gl_renate",
+"id": "gl_renate_d2qzcp",
+"text": "Der ABV war vorhin bei der Schule. Sucht der dich?",
+"file": "voice/gl/gl_renate_d2qzcp.mp3",
+"dur": 3.92
+},
+{
+"who": "gl_renate",
+"id": "gl_renate_861su2",
+"text": "Morgen ist doch Unterricht? Meine zwei wollen nicht hin – die halbe Klasse ist in Coburg.",
+"file": "voice/gl/gl_renate_861su2.mp3",
+"dur": 6.18
+},
+{
+"who": "gl_brigitte",
+"id": "gl_brigitte_ylsyhf",
+"text": "In Eisfeld stehen sie Schlange bis in die Stadt rein, heißt es. Trabi an Trabi.",
+"file": "voice/gl/gl_brigitte_ylsyhf.mp3",
+"dur": 5.55
+},
+{
+"who": "gl_brigitte",
+"id": "gl_brigitte_g7bpy5",
+"text": "Gestern Abend haben wir es im Westfernsehen gesehen. Geglaubt hab ich es erst heute früh.",
+"file": "voice/gl/gl_brigitte_g7bpy5.mp3",
+"dur": 5.9
+},
+{
+"who": "gl_brigitte",
+"id": "gl_brigitte_qqmk46",
+"text": "Im Waffenschmied war ich einmal, zweiundachtzig. Erst ins Becken, dann der Kimono. Geschmeckt hat es auch.",
+"file": "voice/gl/gl_brigitte_qqmk46.mp3",
+"dur": 7.74
+},
+{
+"who": "gl_gisela",
+"id": "gl_gisela_157a6pi",
+"text": "Brot ist alle, Milch kommt um vier. Wie immer.",
+"file": "voice/gl/gl_gisela_157a6pi.mp3",
+"dur": 3.83
+},
+{
+"who": "gl_gisela",
+"id": "gl_gisela_1w50edo",
+"text": "Bananen? Gerhard. Wir haben November.",
+"file": "voice/gl/gl_gisela_1w50edo.mp3",
+"dur": 3.99
+},
+{
+"who": "gl_gisela",
+"id": "gl_gisela_vx8y2v",
+"text": "Um sechs schließ ich zu. Wenn dann noch einer da ist, der was kaufen will.",
+"file": "voice/gl/gl_gisela_vx8y2v.mp3",
+"dur": 5.25
+},
+{
+"who": "gl_maik",
+"id": "gl_maik_13py0m7",
+"text": "Stonewashed, original. Hat mein Onkel im Westpaket geschickt.",
+"file": "voice/gl/gl_maik_13py0m7.mp3",
+"dur": 4.29
+},
+{
+"who": "gl_maik",
+"id": "gl_maik_k2zzrt",
+"text": "Den Stempel hab ich schon. Um fünf früh angestanden, in Suhl.",
+"file": "voice/gl/gl_maik_k2zzrt.mp3",
+"dur": 4.18
+},
+{
+"who": "gl_maik",
+"id": "gl_maik_y3oivv",
+"text": "Ich fahr mit der Simme rüber. Wenn sie anspringt.",
+"file": "voice/gl/gl_maik_y3oivv.mp3",
+"dur": 3.2
+},
+{
+"who": "gl_ines",
+"id": "gl_ines_1ddmejj",
+"text": "Glaubst du das, was die im Radio sagen?",
+"file": "voice/gl/gl_ines_1ddmejj.mp3",
+"dur": 2.35
+},
+{
+"who": "gl_ines",
+"id": "gl_ines_1fecf37",
+"text": "Meine Schwester ist im September über Ungarn weg. Jetzt hätte sie einfach den Bus nehmen können.",
+"file": "voice/gl/gl_ines_1fecf37.mp3",
+"dur": 5.95
+},
+{
+"who": "gl_ines",
+"id": "gl_ines_1914m9n",
+"text": "Morgen ist Disko im Kulturhaus. Wenn dann noch einer hier ist.",
+"file": "voice/gl/gl_ines_1914m9n.mp3",
+"dur": 4.73
+},
+{
+"who": "gl_werner",
+"id": "gl_werner_w0n9wz",
+"text": "Achtundzwanzig Jahre zu. Und dann liest einer einen Zettel vor, und sie ist auf.",
+"file": "voice/gl/gl_werner_w0n9wz.mp3",
+"dur": 5.64
+},
+{
+"who": "gl_werner",
+"id": "gl_werner_ko4ak4",
+"text": "Im Betrieb war heute die halbe Brigade nicht da. Krank, sagen sie. Krank in Coburg.",
+"file": "voice/gl/gl_werner_ko4ak4.mp3",
+"dur": 7.12
+},
+{
+"who": "gl_werner",
+"id": "gl_werner_ko6064",
+"text": "Ich fahr erst, wenn ich weiß, dass ich auch wieder reinkomme.",
+"file": "voice/gl/gl_werner_ko6064.mp3",
+"dur": 3.51
+},
+{
+"who": "gl_kurt",
+"id": "gl_kurt_kaplh2",
+"text": "Zweiundfünfzig haben sie an der Grenze die Leute ausgesiedelt, einundsechzig alles dichtgemacht. Dass einer aufmacht, hab ich noch nicht erlebt.",
+"file": "voice/gl/gl_kurt_kaplh2.mp3",
+"dur": 10.62
+},
+{
+"who": "gl_kurt",
+"id": "gl_kurt_107vr50",
+"text": "Die Wandzeitung ist noch vom Oktober. Vierzig Jahre DDR. Die hängt keiner mehr ab.",
+"file": "voice/gl/gl_kurt_107vr50.mp3",
+"dur": 7.47
+},
+{
+"who": "gl_kurt",
+"id": "gl_kurt_1su8z49",
+"text": "Pass auf dich auf, Junge. Wenn sich alles dreht, will mancher noch schnell was wegschaffen.",
+"file": "voice/gl/gl_kurt_1su8z49.mp3",
+"dur": 6.64
+},
+{
+"who": "gl_abv",
+"id": "gl_abv_1pmy6mv",
+"text": "Genosse Lehrer! Einen Moment.",
+"file": "voice/gl/gl_abv_1pmy6mv.mp3",
+"dur": 2.81
+},
+{
+"who": "gl_abv",
+"id": "gl_abv_m3x5eh",
+"text": "Was ist in der Kiste?",
+"file": "voice/gl/gl_abv_m3x5eh.mp3",
+"dur": 1.35
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_qb87ro",
+"text": "Radio Grenzland – wir senden, bis einer kommt.",
+"file": "voice/gl/gl_r_grenzland_qb87ro.mp3",
+"dur": 3.21
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_17vy5tv",
+"text": "Radio Grenzland. Zwischen Rennsteig und Rodach.",
+"file": "voice/gl/gl_r_grenzland_17vy5tv.mp3",
+"dur": 3.31
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_127kote",
+"text": "Sie hören Radio Grenzland. Freiwillig, hoffen wir.",
+"file": "voice/gl/gl_r_grenzland_127kote.mp3",
+"dur": 3.91
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_cb7937",
+"text": "89,1 – die Frequenz zum Jahr.",
+"file": "voice/gl/gl_r_grenzland_cb7937.mp3",
+"dur": 2.85
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_cng26y",
+"text": "Hier ist Matze am Mikrofon. Die Kollegin ist beim Zahnarzt, der Praktikant beim Bäcker – ich bin also die Redaktion.",
+"file": "voice/gl/gl_r_grenzland_cng26y.mp3",
+"dur": 7.71
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_11r9m1",
+"text": "Schreiben Sie uns, was Sie bewegt. Wir lesen alles vor. Auch die Rechtschreibfehler.",
+"file": "voice/gl/gl_r_grenzland_11r9m1.mp3",
+"dur": 5.78
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_11hx16x",
+"text": "Gleich mehr Musik. Vorher atmen wir einmal gemeinsam durch. So. Das war die Sendung „Gesundheit“.",
+"file": "voice/gl/gl_r_grenzland_11hx16x.mp3",
+"dur": 6.86
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_blwf5c",
+"text": "Der Hörer der Woche hat angerufen und gefragt, ob wir auch was anderes spielen können. Nein.",
+"file": "voice/gl/gl_r_grenzland_blwf5c.mp3",
+"dur": 5.58
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_16onf6",
+"text": "Unser Sendegebiet reicht vom Rennsteig bis zur Landesgrenze. Dahinter rauscht es. Wir nennen das Bayern.",
+"file": "voice/gl/gl_r_grenzland_16onf6.mp3",
+"dur": 6.66
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_q7bovr",
+"text": "Wenn Sie uns im Auto hören: Augen auf die Straße. Wenn Sie uns am Handy hören: Respekt, hier ist ja kaum Netz.",
+"file": "voice/gl/gl_r_grenzland_q7bovr.mp3",
+"dur": 7.47
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1trqtlr",
+"text": "Polizeibericht: In Ratscher ist ein Fahrzeug weggekommen. Der Besitzer sagt, er habe es „nur kurz“ offen gelassen.",
+"file": "voice/gl/gl_r_grenzland_1trqtlr.mp3",
+"dur": 7.44
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_19ixig",
+"text": "Polizeibericht: Ein Fahrzeug wechselte in Ratscher den Fahrer. Der bisherige war dagegen.",
+"file": "voice/gl/gl_r_grenzland_19ixig.mp3",
+"dur": 5.89
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_16h8g4",
+"text": "Polizeibericht: Handgreiflichkeiten im Raum Ratscher. Die Beteiligten kannten sich danach besser als vorher.",
+"file": "voice/gl/gl_r_grenzland_16h8g4.mp3",
+"dur": 6.76
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_pjcdni",
+"text": "Polizeibericht: In Ratscher gab es eine Meinungsverschiedenheit. Sie wurde mit der Faust vorgetragen.",
+"file": "voice/gl/gl_r_grenzland_pjcdni.mp3",
+"dur": 6.28
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_qzt877",
+"text": "Polizeibericht: Ein Passant wurde angerempelt. Die Kriminalität erreicht damit ein Zehnjahreshoch.",
+"file": "voice/gl/gl_r_grenzland_qzt877.mp3",
+"dur": 6.66
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1a5gzy3",
+"text": "Polizeibericht: Rempelei im Ort. Der Geschädigte beschreibt den Täter als „unhöflich“.",
+"file": "voice/gl/gl_r_grenzland_1a5gzy3.mp3",
+"dur": 5.97
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_8fpc6u",
+"text": "Polizeibericht: Ein Moped wurde in der Ortslage gemessen. Das Messgerät wird überprüft.",
+"file": "voice/gl/gl_r_grenzland_8fpc6u.mp3",
+"dur": 6.04
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_wt1jef",
+"text": "Polizeibericht: Zu schnell durch den Ort. Die Hühner an der Dorfstraße haben Anzeige erstattet.",
+"file": "voice/gl/gl_r_grenzland_wt1jef.mp3",
+"dur": 6.34
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1cxx9v6",
+"text": "Polizeibericht: Knallkörper im September. Die Polizei erinnert daran, dass Silvester ein Datum ist.",
+"file": "voice/gl/gl_r_grenzland_1cxx9v6.mp3",
+"dur": 7.01
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1ie1tvc",
+"text": "Polizeibericht: Es hat geknallt. Der Hund von nebenan liegt unterm Sofa und möchte nicht aussagen.",
+"file": "voice/gl/gl_r_grenzland_1ie1tvc.mp3",
+"dur": 6.33
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_rs79ee",
+"text": "Polizeibericht: Einbruch in ein Containerlager bei Ratscher. Der Eigentümer möchte „keine große Sache daraus machen“.",
+"file": "voice/gl/gl_r_grenzland_rs79ee.mp3",
+"dur": 7.14
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_srrhg6",
+"text": "Polizeibericht: Ein Lager in der Feldflur wurde geöffnet. Von außen. Ohne Schlüssel.",
+"file": "voice/gl/gl_r_grenzland_srrhg6.mp3",
+"dur": 6.23
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_vr2n0y",
+"text": "Polizeibericht: Unbekannte im Wald bei Geisenhöhn. Anwohner hörten Knall und Motoren.",
+"file": "voice/gl/gl_r_grenzland_vr2n0y.mp3",
+"dur": 6.1
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_fyqbpg",
+"text": "Polizeibericht: Unbefugte auf fremdem Gelände. Das Schild „Betreten verboten“ wurde gelesen und anders bewertet.",
+"file": "voice/gl/gl_r_grenzland_fyqbpg.mp3",
+"dur": 7.51
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1plet4u",
+"text": "Polizeibericht: Ein Fahrzeug entzog sich der Kontrolle. Es wird ermittelt, wohin.",
+"file": "voice/gl/gl_r_grenzland_1plet4u.mp3",
+"dur": 5.79
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1s3ydxs",
+"text": "Polizeibericht: Auf das Haltezeichen der Streife folgte Vollgas. Die Streife nimmt das persönlich.",
+"file": "voice/gl/gl_r_grenzland_1s3ydxs.mp3",
+"dur": 6.49
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_mxdbcc",
+"text": "Polizeibericht: Eine Straßensperre wurde umfahren. Über den Acker. Der Bauer stellt Strafantrag.",
+"file": "voice/gl/gl_r_grenzland_mxdbcc.mp3",
+"dur": 7.11
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_al3rgz",
+"text": "Polizeibericht: Die Sperre auf der Landstraße hat gehalten. Der Acker daneben nicht.",
+"file": "voice/gl/gl_r_grenzland_al3rgz.mp3",
+"dur": 5.49
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1as4wxy",
+"text": "Polizeibericht: Widerstand bei einer Kontrolle. Den Beamten geht es gut, der Laune weniger.",
+"file": "voice/gl/gl_r_grenzland_1as4wxy.mp3",
+"dur": 6.27
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_cw0lo2",
+"text": "Polizeibericht: Ein Beamter wurde bei einer Kontrolle geschubst. Er schreibt jetzt. Viel.",
+"file": "voice/gl/gl_r_grenzland_cw0lo2.mp3",
+"dur": 6.17
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1t32nxg",
+"text": "Polizeibericht: Keine besonderen Vorkommnisse. Jedenfalls keine, die jemand gesehen hätte.",
+"file": "voice/gl/gl_r_grenzland_1t32nxg.mp3",
+"dur": 6.24
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1s5r1nn",
+"text": "Eine genaue Beschreibung liegt nicht vor. Die Zeugen sind sich einig, dass es „jemand“ war.",
+"file": "voice/gl/gl_r_grenzland_1s5r1nn.mp3",
+"dur": 5.49
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1iw2y0k",
+"text": "Die Beamten wissen inzwischen, wen sie suchen. Im Dorf wusste man es schon vorher.",
+"file": "voice/gl/gl_r_grenzland_1iw2y0k.mp3",
+"dur": 5.19
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_12zt8pb",
+"text": "Wir unterbrechen das Programm für eine Eilmeldung: Großeinsatz der Polizei im Raum Ratscher, Sperre auf der Landstraße. Bitte umfahren Sie das Gebiet – oder bleiben Sie gleich zu Hause, da ist es auch schön.",
+"file": "voice/gl/gl_r_grenzland_12zt8pb.mp3",
+"dur": 12.12
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1tegbxv",
+"text": "Eilmeldung: Über dem Tal kreist ein Hubschrauber. Die Kühe sind unruhig, die Dorf-Chatgruppe ist es auch.",
+"file": "voice/gl/gl_r_grenzland_1tegbxv.mp3",
+"dur": 7.02
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1n74bzo",
+"text": "Polizeibericht: Die Fahndung im Raum Ratscher wurde eingestellt. Die Streife ist wieder in Schleusingen. Der Kaffee war noch warm.",
+"file": "voice/gl/gl_r_grenzland_1n74bzo.mp3",
+"dur": 8.24
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_zugi5j",
+"text": "Die Polizei sucht Zeugen. Hinweise bitte an jede Dienststelle – oder an die Dorf-Chatgruppe, die weiß es eh zuerst.",
+"file": "voice/gl/gl_r_grenzland_zugi5j.mp3",
+"dur": 7.39
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_gb57pu",
+"text": "Die Polizei sucht Zeugen. Hinweise bitte an jede Dienststelle – oder an die Dorf-Chatgruppe, die weiß es eh zuerst. Achtung, Kontrollen auf der Landstraße.",
+"file": "voice/gl/gl_r_grenzland_gb57pu.mp3",
+"dur": 10.4
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1wn8jjp",
+"text": "Der Verkaufswagen meldet: Rostbratwurst wieder lieferbar. Die Lage in Ratscher hat sich entspannt.",
+"file": "voice/gl/gl_r_grenzland_1wn8jjp.mp3",
+"dur": 6.25
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_11v1nt2",
+"text": "Die Stadt Schleusingen prüft einen Förderantrag für eine Machbarkeitsstudie über Förderanträge.",
+"file": "voice/gl/gl_r_grenzland_11v1nt2.mp3",
+"dur": 5.13
+},
+{
+"who": "gl_r_grenzland",
+"id": "gl_r_grenzland_1iny7xw",
+"text": "Blitzer auf der Landstraße bei Ratscher. Er steht da seit drei Wochen und hat inzwischen Stammkunden.",
+"file": "voice/gl/gl_r_grenzland_1iny7xw.mp3",
+"dur": 5.82
+}
+]
 }
