@@ -75,6 +75,7 @@ def run():
                         E(f"ZUKUNFT.view('{v}')"); steps(2.0)
                 E("ZUKUNFT.setTopic('mobil'); ZUKUNFT.show('a')"); steps(1.0)
             P0 = progs()
+            E("window.__zkP0 = new Set(GAME.R.info.programs.map(p => p.cacheKey))")
             print('programs after start', P0, flush=True)
             E("window.__T0 = FOREST.list.filter(t => t.sp === 'spruce').slice(0, 400).map(t => [t.h, t.w, t.tint ? t.tint.join(',') : ''])")
             page_pic('00-panel')
@@ -87,7 +88,8 @@ def run():
             pic('10-mobil-bank')
             E("ZUKUNFT.toggle()"); steps(0.5)
             s = st()
-            ck('mobil B (key/button): the Rufbus sign and van, the bench gone', s['van'] and ZUKUNFT_state_show(E) == 'b', str(s))
+            # the minibus runs only in the Rufbus hours (evenings, Sundays; zukunft-welt), so at noon the sign (plate) is what stands
+            ck('mobil B (key/button): the Rufbus sign stands, the bench is gone', s['plates'] >= 1 and not s['bank'] and ZUKUNFT_state_show(E) == 'b', str(s))
             pic('11-mobil-rufbus')
             ka = J("ZUKUNFT.calc('a').ind.kosten.raw"); kb = J("ZUKUNFT.calc('b').ind.kosten.raw")
             ck('Rufbus costs far more a year than the bench', kb['yr'] > 20 * max(ka['yr'], 1), f"{ka} {kb}")
@@ -152,11 +154,15 @@ def run():
                 print('forest', nm, s['forest'], flush=True)
                 if nm == '2030': ck('wald 2030: red and grey crowns', s['forest'].get('rot', 0) > 100 or s['forest'].get('grau', 0) > 100, str(s['forest']))
                 if nm == '2035': ck('wald 2035: cleared places', s['forest'].get('kahl', 0) > 500, str(s['forest']))
-                if nm == '2060': ck('wald 2060: young trees all over', s['forest'].get('jung', 0) > 1500, str(s['forest']))
+                yng = lambda q: q['forest'].get('jung', 0) + sum((q.get('young') or {}).values())
+                if nm == '2060':
+                    NY = yng(s)
+                    ck('wald 2060: young trees all over', NY > 1500, str(s['forest']) + ' ' + str(s.get('young')))
                 pic('41-wald-natur-' + nm)
             E("ZUKUNFT.show('b')"); time.sleep(0.6); steps(1.0)
             s = st()
-            ck('wald B (Waldumbau) 2060: more young trees than natural regeneration', s['forest'].get('jung', 0) > 3000, str(s['forest']))
+            yng = lambda q: q['forest'].get('jung', 0) + sum((q.get('young') or {}).values())
+            ck('wald B (Waldumbau) 2060: more young trees than natural regeneration', yng(s) > NY, str(s['forest']) + ' ' + str(s.get('young')) + f' vs natural {NY}')
             pic('42-wald-umbau-2060')
             E("ZUKUNFT.view('walk'); GAME.P.x = -120; GAME.P.y = -445; GAME.P.yaw = 200"); steps(1.0)
             pic('43-wald-umbau-zu-fuss')
@@ -195,10 +201,14 @@ def run():
         if 'ende' in want:
             print('programs at section start:', progs(), flush=True)
             progs_end = progs()
-            # After visiting every view first, local run 14.11.: still +7 (mobil section +2, energie +3, wood +2). Owner: zukunft-welt (zk_welt.warm / bench builder);
-            # tighten to 0 once they are gone. The per-section counts are printed above ('programs at section start').
-            MAX_NEW = 7
-            ck('no new shader programs while the variants were tried (after visiting the views)', P0 is None or progs_end - P0 <= MAX_NEW, f'{P0} -> {progs_end}')
+            # only programs used by meshes named zukunft:… (and the village office's bench) count – the rest of the world compiles over time
+            mine = J("""(() => { const keys = new Set(), R = GAME.R, objs = [];
+              GAME.scene.traverse(o => { if (o.isMesh && (o.name || '').startsWith('zukunft')) objs.push(o); });
+              const b = window.AMTWORLD && AMTWORLD.S.items.mitfahrbank; if (b && b.g) b.g.traverse(o => o.isMesh && objs.push(o));
+              for (const o of objs) for (const m of [].concat(o.material)) { const p = R.properties.get(m).currentProgram; if (p) keys.add(p.cacheKey); }
+              return GAME.R.info.programs.filter(p => !__zkP0.has(p.cacheKey) && keys.has(p.cacheKey)).map(p => p.name); })()""") if P0 is not None else []
+            MAX_NEW = 0
+            ck('no new shader program of the mode itself while the variants were tried (after visiting the views)', len(mine) <= MAX_NEW, f'{P0} -> {progs_end}; of the mode: {mine}')
             E("ZUKUNFT.setTopic('wald'); ZUKUNFT.show('a')"); steps(0.5)
             E("ZUKUNFT.exit()"); steps(1.0)
             s = st()

@@ -145,8 +145,8 @@ export const ZUKUNFT = (() => {
       'Freiflächen-Solarpark',
       'energie',
       'park',
-      'Etwa ein Hektar Fläche trägt ein Megawatt Modulleistung. Das ist der billigste Solarstrom (4,1 bis 6,9 Cent je kWh nach Fraunhofer ISE), braucht aber einen Bebauungsplan und Fläche, die oft Acker ist. Die Gemeinde kann mit 0,2 Cent je kWh beteiligt werden (§ 6 EEG: ein „soll“, freiwillig).',
-      'Der Platz im Modell südwestlich des Dorfs ist eine Annahme zum Ausprobieren, keine Planung (im Marktstammdatenregister ist hier keine Freiflächenanlage geplant).',
+      'Knapp ein Hektar Fläche trägt ein Megawatt Modulleistung. Das ist der billigste Solarstrom (4,1 bis 6,9 Cent je kWh nach Fraunhofer ISE), braucht aber einen Bebauungsplan und Fläche, die oft Acker ist. Die Gemeinde kann mit 0,2 Cent je kWh beteiligt werden (§ 6 EEG: ein „soll“, freiwillig).',
+      'Der Platz im Modell südlich des Dorfs ist eine Annahme zum Ausprobieren, keine Planung (im Marktstammdatenregister ist hier keine Freiflächenanlage geplant).',
       [Z.SRC.eeg6, Z.SRC.pvstrom, Z.SRC.laenderbet, Z.SRC.bfn],
     ],
     [
@@ -179,8 +179,8 @@ export const ZUKUNFT = (() => {
       'klima',
       'hoch',
       'HQ100 ist die Abflussmenge, die statistisch einmal in 100 Jahren erreicht oder überschritten wird – das heißt nicht, dass es nur alle 100 Jahre geschieht: In 30 Jahren trifft es mit etwa 26 % Wahrscheinlichkeit mindestens einmal ein. Die Hochwassergefahrenkarten des Landes zeigen, welche Häuser betroffen wären.',
-      'Im Modell steigt die Schleuse über die Ufer, die Fläche folgt dem Gelände; der Pegel ist eine Annahme, die Karte des Landes war nicht abrufbar.',
-      [Z.SRC.hnz],
+      'Im Modell ist das amtliche Überschwemmungsgebiet (HQ100) des Landes eingefärbt; wie hoch das Wasser an jedem Gebäude steht, ist nicht amtlich.',
+      [Z.SRC.uesg, Z.SRC.hnz],
     ],
     [
       'zk:hq23',

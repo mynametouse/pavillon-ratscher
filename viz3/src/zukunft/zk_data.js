@@ -154,6 +154,10 @@ export const ZKDATA = (() => {
       'DWD: Klimaatlas Deutschland (Projektionen, Südthüringen)',
       'https://www.dwd.de/DE/klimaumwelt/klimaatlas/klimaatlas_node.html',
     ],
+    uesg: [
+      'Geoproxy Thüringen (TLUBN, GDI-Th): amtliches Überschwemmungsgebiet HQ100, WMS-Ebene UESG (abgerufen 12.11.2026)',
+      'https://www.geoportal-th.de/',
+    ],
     hnz: [
       'Hochwassernachrichtenzentrum Thüringen: Hochwasservorsorge',
       'https://hnz.thueringen.de/hochwasservorsorge/pdf/HWVorsorge_Gesamtdokument.pdf',
@@ -188,7 +192,7 @@ export const ZKDATA = (() => {
   const CTX0 = {
     bus: { werk: 30, sa: 14, so: 11, min: 4, src: 'annahme' }, // Annahme as a stand-in: the real timetable (week of 16.11.2026) has 30 / 14 / 11 departures
     roof: { kwp: 600, area: 2900, n: 40, src: 'annahme' },
-    field: { kwp: 1700, ha: 1.7, src: 'annahme' },
+    field: { kwp: 1520, ha: 1.71, src: 'annahme' },
     nat0: 55,
     forest: { ha: 16.8, spruce: 0.62 },
     houses: 55,
@@ -274,7 +278,7 @@ export const ZKDATA = (() => {
           id: 'park',
           label: 'Solarpark',
           short: 'Solarpark am Ortsrand',
-          text: 'Eine Freifläche am südwestlichen Ortsrand (Annahme für den Ort – eine konkrete Planung für Ratscher oder Schleusingen wurde bei einer Suche im November 2026 nicht gefunden) mit Modultischen in Reihen.',
+          text: 'Eine Freifläche am südlichen Ortsrand (Annahme für den Ort – eine konkrete Planung für Ratscher oder Schleusingen wurde bei einer Suche im November 2026 nicht gefunden) mit Modultischen in Reihen.',
         },
         {
           id: 'waerme',
@@ -313,7 +317,7 @@ export const ZKDATA = (() => {
           id: 'hoch',
           label: 'Schwerer als 2023',
           short: 'Hochwasser schwerer als 2023',
-          text: 'Ein Hochwasser, wie es etwa einmal in 100 Jahren kommt (HQ100) – angenommen, der Rückhalt der Talsperre reicht dann nicht mehr aus.',
+          text: 'Ein Hochwasser, wie es etwa einmal in 100 Jahren kommt (HQ100) – so wie das Land das hundertjährliche Hochwasser für die Schleuse berechnet hat.',
         },
         {
           id: 'duerre',
@@ -421,7 +425,7 @@ export const ZKDATA = (() => {
       [
         'chronist',
         -1,
-        'Der Blick vom Weg nach Südwesten wäre danach ein anderer. Das sollte man vorher gemeinsam anschauen.',
+        'Der Blick vom Weg nach Süden wäre danach ein anderer. Das sollte man vorher gemeinsam anschauen.',
       ],
     ],
     'energie/waerme': [
@@ -705,10 +709,15 @@ export const ZKDATA = (() => {
       res.kosten = { inv: [0, 0, 0], yr: [ead * 0.5, ead, ead * 2] };
       res.world.flood = 0.9 * at([1, 1.02, 1.04, 1.07, 1.1], y);
     } else if (vid === 'hoch') {
-      const dmg = 315000; // Annahme: 9 Häuser × 35 000 €
+      // The official flood area (HQ100, Geoproxy Thüringen WMS 'UESG') wets about 37 buildings in the world (zukunft-welt, counted from the mask;
+      // ZKWELT.ctx() does not expose the number, so it is a constant here). Annahme: half living houses at 35 000 € (shallow water, cellar and
+      // ground floor), the rest barns and outbuildings at 5 000 €. The depth at each building is not official.
+      const nB = 37,
+        nLiving = Math.floor(nB / 2), // 18 living houses, 19 outbuildings – as the Warum text says
+        dmg = nLiving * 35000 + (nB - nLiving) * 5000;
       const ead = dmg * 0.01 * at([1, 1.02, 1.04, 1.07, 1.1], y) + dmg * 0.002;
       res.dmg = dmg;
-      res.houses = 9;
+      res.houses = nB;
       res.ead = ead;
       res.kosten = { inv: [0, 0, 0], yr: [ead * 0.5, ead, ead * 2.2] };
       res.world.flood = 1.8 * at([1, 1.02, 1.04, 1.07, 1.1], y);
@@ -865,7 +874,7 @@ export const ZKDATA = (() => {
           dec(c.field.ha, 1) +
           ' ha trägt ' +
           dec(c.field.kwp / 1000, 1) +
-          ' MWp (etwa 1 MWp je Hektar). Der Strom aus neuen Freiflächenanlagen kostet 4,1–6,9 ct/kWh (Fraunhofer ISE 2024). Gezeigt werden Investition und laufende Kosten des Betreibers; die Stadt oder das Dorf zahlt sie nicht – sie verpachtet allenfalls die Fläche. Im Marktstammdatenregister stehen für die Postleitzahl 98553 (Stand November 2026) drei Freiflächenanlagen in Betrieb (749, 517 und 11 kW, die größeren seit 2019 und 2017); für Ratscher selbst wurde keine geplante Freiflächenanlage gefunden. Der Preis fällt von 700 auf 450 €/kWp (Fraunhofer ISE: unter 460 €/kW bis 2045). Jährlich Betrieb 12 €/kWp und Pacht 2 500 €/ha (Annahme). Die Gemeinde kann mit 0,2 ct/kWh beteiligt werden (§ 6 EEG: der Betreiber „soll“ es anbieten; freiwillig, nur bei EEG-Förderung erstattet; das Thüringer Beteiligungsgesetz von 2024 gilt nur für Wind). Bis zum Bau vergehen zwei bis drei Jahre Bauleitplanung (Aufstellungsbeschluss, Bebauungsplan).',
+          ' MWp (etwa 0,9 MWp je Hektar). Der Strom aus neuen Freiflächenanlagen kostet 4,1–6,9 ct/kWh (Fraunhofer ISE 2024). Gezeigt werden Investition und laufende Kosten des Betreibers; die Stadt oder das Dorf zahlt sie nicht – sie verpachtet allenfalls die Fläche. Im Marktstammdatenregister stehen für die Postleitzahl 98553 (Stand November 2026) drei Freiflächenanlagen in Betrieb (749, 517 und 11 kW, die größeren seit 2019 und 2017); für Ratscher selbst wurde keine geplante Freiflächenanlage gefunden. Der Preis fällt von 700 auf 450 €/kWp (Fraunhofer ISE: unter 460 €/kW bis 2045). Jährlich Betrieb 12 €/kWp und Pacht 2 500 €/ha (Annahme). Die Gemeinde kann mit 0,2 ct/kWh beteiligt werden (§ 6 EEG: der Betreiber „soll“ es anbieten; freiwillig, nur bei EEG-Förderung erstattet; das Thüringer Beteiligungsgesetz von 2024 gilt nur für Wind). Bis zum Bau vergehen zwei bis drei Jahre Bauleitplanung (Aufstellungsbeschluss, Bebauungsplan).',
         [SRC.ise, SRC.pvstrom, SRC.eeg6, SRC.laenderbet, SRC.mastr],
         true
       );
@@ -894,8 +903,8 @@ export const ZKDATA = (() => {
       );
     if (t === 'klima' && v === 'hoch')
       return W(
-        'Annahme: neun Häuser an der Schleuse betroffen, je 35 000 €. Die Hochwassergefahrenkarte von Thüringen (HQ100) konnte nicht abgerufen werden – die Zahl muss mit der Karte des Landes geprüft werden. Erwartet im Jahr: 1 % mal Schaden, dazu kleine Hochwasser. Bezug ist das Hochwasser vom Dezember 2023, bei dem die Talsperre etwa 900 000 m³ zurückhielt (Drs. 7/9624) – hier reicht dieser Rückhalt nicht.',
-        [SRC.hnz, SRC.buch, SRC.dez23],
+        'Im amtlichen Überschwemmungsgebiet (HQ100, vom Land berechnet) liegen rund 37 Gebäude ganz oder teilweise – Wohnhäuser, Scheunen, Nebengebäude (Geoproxy Thüringen, Ebene UESG). Schaden (Annahme, nachrechenbar): etwa die Hälfte Wohnhäuser, 18 × 35 000 € (flaches Wasser, Keller und Erdgeschoss), der Rest Nebengebäude, 19 × 5 000 €, zusammen 725 000 €; wie hoch das Wasser an jedem Gebäude steht, ist nicht amtlich. Erwartet im Jahr: 1 % dieses Schadens (ein hundertjährliches Hochwasser) plus 0,2 % für kleinere Hochwasser. Zum Vergleich das Hochwasser vom Dezember 2023, bei dem die Talsperre etwa 900 000 m³ zurückhielt (Drs. 7/9624).',
+        [SRC.uesg, SRC.hnz, SRC.dez23],
         true
       );
     if (t === 'klima' && v === 'duerre')
