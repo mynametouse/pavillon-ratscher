@@ -265,7 +265,7 @@ export const ZKREGIE = (() => {
   const _p = new THREE.Vector3(),
     _l = new THREE.Vector3();
   function shotOf(id, still) {
-    const a = ZKORTE.pose(id, W);
+    const a = ZKORTE.pose(id, W, { halt: still });
     return { id, a, b: still ? null : ZKORTE.moved(a), t: 0, T: PLACE_S, hold: !!still };
   }
   function setShot(sh) {
@@ -302,8 +302,9 @@ export const ZKREGIE = (() => {
       m = (u, v) => [u[0] + (v[0] - u[0]) * k, u[1] + (v[1] - u[1]) * k, u[2] + (v[2] - u[2]) * k];
     return b ? { pos: m(a.pos, b.pos), look: m(a.look, b.look), fov: a.fov, near: a.near } : a;
   }
-  function applyPose(q) {
-    const fov = q.fov * (S.side === 'both' ? ZKORTE.FOV_SPLIT : 1);
+  // single: the picture is one world on the whole width (a take, a still for a take) – no widening for the narrow halves
+  function applyPose(q, single) {
+    const fov = q.fov * (S.side === 'both' && !S.take && !single ? ZKORTE.FOV_SPLIT : 1);
     cam.near = q.near || 0.1;
     cam.far = FAR0();
     cam.fov = fov;
@@ -758,8 +759,9 @@ export const ZKREGIE = (() => {
     }
     waitTick(dt);
     if (S.note && S.rt > S.note.until) S.note = null;
-    world();
+    // the picture first (a cut that had to wait may switch the view or the take now), then the world for exactly that view
     ZKBILD.tick(dt);
+    world();
     // the sky follows the date at once in the time-lapse (its own tick looks every 0.2 s: the sun jumped)
     if (S.dnDue && S.rt - S.dnT > 0.04) {
       S.dnDue = false;
@@ -1105,11 +1107,13 @@ export const ZKREGIE = (() => {
   function snapshot(placeId, sd) {
     if (!S.on) return Promise.reject(new Error('Zeitreise läuft nicht'));
     const id = placeId || S.place || 'anger',
-      q = ZKORTE.pose(id, W),
+      q = ZKORTE.pose(id, W, { halt: true }),
       s = sd === 'R' || sd === 'L' ? sd : S.side === 'R' ? 'R' : 'L';
     if ((S.mode === 'before' || S.mode === 'prelude') && (S.ev || S.pend) && (S.ev || S.pend).place === id)
       S.snapFor = id;
-    return ZKBILD.stillOf(q, s, applyPose);
+    // a place shown in two takes: its halt is one world on the whole width – the still the same
+    const full = S.side === 'both' && TAKES.has(id);
+    return ZKBILD.stillOf(q, s, p => applyPose(p, full), { full });
   }
   function duck(level) {
     S.mediaDuck = clamp(level == null ? 1 : +level);
@@ -1194,7 +1198,7 @@ export const ZKREGIE = (() => {
     view,
     look,
     places: () => ZKORTE.ids(),
-    pose: id => ZKORTE.pose(id, W),
+    pose: (id, o) => ZKORTE.pose(id, W, o),
     info: () => ({
       bild: ZKBILD.info,
       mode: S.mode,
