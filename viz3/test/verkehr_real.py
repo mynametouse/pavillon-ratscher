@@ -404,7 +404,7 @@ with lib.browser() as b:
             if not E(pg, "!!window.__rg"):
                 raise RuntimeError('needs the section regeln first (its helpers)')
             E(pg, "GAME.view(-1034, 1630, KERN.ground(-1034, 1630) + 1.7, 0, -8)")
-            run_flow(4, 0.05)
+            run_flow(8, 0.1)
             lt = J(pg, "VKAMPEL.lights.map(L => ({ id: L.id, kind: L.kind, built: !!L.g, failed: !!L.failed, axis: L.axis, parts: L.g ? L.g.children.length : 0, lamps: L.mat ? Object.keys(L.mat).sort() : [] }))")
             print('lights', json.dumps(lt), flush=True)
             k = next((l for l in lt if l['kind'] == 'k'), None)
@@ -434,13 +434,13 @@ with lib.browser() as b:
                     ck('and goes at green', bool(went), str(rec[-1]))
             # the walkers' crossing at the Markt: someone presses – yellow, then red for the cars, the walkers green in between
             E(pg, "GAME.view(-702, 1400, KERN.ground(-702, 1400) + 1.7, 0, -8)")
-            run_flow(3, 0.05)
-            cr = J(pg, "(() => { const L = VKAMPEL.lights.find(q => q.kind === 'f'); if (!L) return null; L.st.ph = 'gruen'; L.st.t = 25; L.st.req = true; const seq = []; for (let t = 0; t < 22; t += 0.5) { GAME.step(0.5); seq.push(L.st.ph[0] + (VKREGELN.walkGreen(L.st) ? '*' : '')); } return { built: !!L.g, lamps: L.mat ? Object.keys(L.mat).sort() : [], seq: seq.join(' ') }; })()")
+            run_flow(8, 0.1)
+            cr = J(pg, "(() => { const L = VKAMPEL.lights.find(q => q.kind === 'f'); if (!L) return null; L.st.ph = 'gruen'; L.st.t = 25; L.st.req = true; const seq = []; for (let t = 0; t < 22; t += 0.5) { GAME.step(0.5); seq.push({ gruen: 'G', gelb: 'Y', rot: 'R', rotgelb: 'O' }[L.st.ph] + (VKREGELN.walkGreen(L.st) ? '*' : '')); } return { built: !!L.g, lamps: L.mat ? Object.keys(L.mat).sort() : [], seq: seq.join(' ') }; })()")
             print('crossing', json.dumps(cr), flush=True)
-            ck('the walkers’ crossing switches on request (yellow, red with the walkers’ green, back to green)', cr and cr['built'] and 'g r' not in cr['seq'] and 'r*' in cr['seq'] and cr['seq'].strip().endswith('g'), json.dumps(cr))
+            ck('the walkers’ crossing switches on request (yellow, red with the walkers’ green, back to green)', cr and cr['built'] and 'G R' not in cr['seq'] and 'Y' in cr['seq'] and 'R*' in cr['seq'] and cr['seq'].strip().endswith('G'), json.dumps(cr))
             # the top view: the lights as dots
             svg = J(pg, "(() => { const L = STRAT.layer.list().find(l => l.id === 'verkehr'); if (!L) return ''; const pr = (x, y) => [600 + (x + 870) * 0.5, 360 - (y - 1550) * 0.5, 0]; return L.draw(pr, 1200, 720); })()")
-            ck('the top view shows the lights', svg and svg.count('Ampel') >= 2, str(svg.count('Ampel') if svg else None))
+            ck('the top view shows the lights', svg and svg.count('mpel –') >= 2, str(svg.count('mpel –') if svg else None))
             E(pg, "VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
         except Exception as ex:
             ck('section ran: ampel', False, repr(ex)[:400])

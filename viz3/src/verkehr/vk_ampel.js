@@ -95,7 +95,8 @@ export const VKAMPEL = (() => {
     g: [new THREE.Color(0.15, 1.0, 0.45), new THREE.Color(0.02, 0.11, 0.05)],
   };
   const lampMat = () => {
-    const m = new THREE.MeshBasicMaterial({ color: 0x111111, toneMapped: false });
+    // (both sides: the discs are seen from the traffic whichever way their triangles turn)
+    const m = new THREE.MeshBasicMaterial({ color: 0x111111, toneMapped: false, side: THREE.DoubleSide });
     m.name = 'verkehr ampel licht';
     return m;
   };
@@ -344,9 +345,10 @@ export const VKAMPEL = (() => {
         VKREGELN.crossStep(L.st, dt, req);
       }
       const d = hyp(o[0] - L.x, o[1] - L.y);
-      if (!L.g && d < 400 && !L.failed) {
+      if (!L.g && d < 400 && !L.failed && !(S.t < L.next)) {
+        // (the roads there may still be on their way after a jump: again in 3 s; an error stops it)
         try {
-          if (!build(L)) L.failed = true;
+          if (!build(L)) L.next = S.t + 3;
         } catch (e) {
           L.failed = true;
           console.warn('ampel', e);
