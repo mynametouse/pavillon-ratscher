@@ -351,6 +351,7 @@ export const ZKZEITWELT = (() => {
     // the sign atlas first (its texture is part of the sign program), then every material of the kit, then the slopes' programs
     guard('nacht warm', () => ZKNACHT.warm());
     guard('kit warm', () => ZKKIT.warm());
+    guard('dinge warm', () => ZKDINGE.warm());
     for (const P of PARTS) if (P.warm) guard(P.id + ' warm', P.warm);
     // animation and sound bursts run with the frame (the clock of the Zeitreise does not run by itself)
     if (!S.offTick && KERN.tick)

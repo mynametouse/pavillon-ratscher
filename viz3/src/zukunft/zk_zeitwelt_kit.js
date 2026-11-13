@@ -215,6 +215,46 @@ export const ZKKIT = (() => {
         }
         return B;
       },
+      // an irregular clump (bramble, a bush): a squashed, dented sphere of radius r and height h standing on z, 32 faces
+      blob(x, y, z, r, h, cl, seed) {
+        const V = [
+            [1, 0, 0],
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, -1, 0],
+            [0, 0, 1],
+            [0, 0, -1],
+          ],
+          F = [
+            [0, 2, 4],
+            [2, 1, 4],
+            [1, 3, 4],
+            [3, 0, 4],
+            [2, 0, 5],
+            [1, 2, 5],
+            [3, 1, 5],
+            [0, 3, 5],
+          ];
+        const pt = (v, k) => {
+          const l = Math.hypot(v[0], v[1], v[2]) || 1,
+            j = 0.6 + 0.8 * hash(seed * 31 + k * 7);
+          return [x + (v[0] / l) * r * j, y + (v[1] / l) * r * j, z + h * 0.5 + (v[2] / l) * h * 0.5 * j];
+        };
+        let k = 0;
+        for (const [a, b, c] of F) {
+          const A = V[a],
+            Bv = V[b],
+            Cv = V[c],
+            ab = [(A[0] + Bv[0]) / 2, (A[1] + Bv[1]) / 2, (A[2] + Bv[2]) / 2],
+            bc = [(Bv[0] + Cv[0]) / 2, (Bv[1] + Cv[1]) / 2, (Bv[2] + Cv[2]) / 2],
+            ca = [(Cv[0] + A[0]) / 2, (Cv[1] + A[1]) / 2, (Cv[2] + A[2]) / 2],
+            key = v => Math.round(v[0] * 8) * 100 + Math.round(v[1] * 8) * 10 + Math.round(v[2] * 8);
+          const P = [A, Bv, Cv, ab, bc, ca].map(v => pt(v, key(v) + k * 0));
+          B.tri(P[0], P[3], P[5], cl).tri(P[3], P[1], P[4], cl).tri(P[5], P[4], P[2], cl).tri(P[3], P[4], P[5], cl);
+          k++;
+        }
+        return B;
+      },
       // a gable house: footprint w × d (heading a), eaves at he, ridge at hr along w; walls, roof with overhang o
       gable(x, y, z0, w, d, he, hr, a, wall, roof, o = 0.4) {
         const c = Math.cos(a),
@@ -283,7 +323,7 @@ export const ZKKIT = (() => {
   function dispose(o) {
     if (!o) return;
     o.traverse(m => {
-      if (m.isMesh && m.geometry) m.geometry.dispose();
+      if (m.isMesh && m.geometry && !m.userData.sharedGeo) m.geometry.dispose();
       if (m.isInstancedMesh && m.dispose) m.dispose();
     });
     if (o.parent) o.parent.remove(o);

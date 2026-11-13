@@ -147,8 +147,8 @@ def run():
             # S and SW), the village's south edge by the lane (open fields up to the forest)
             # the regie's views (zk_regie_orte.js): the overview 90 m above the Anger, 'hang' 85 m above the slope NE of the village;
             # the village's south edge at eye height (the regie's turbine view)
-            V = [('hoch', 222, -108, 90, 195, -10, 60), ('hang', 470, 120, 85, 120, -330, 20, 44), ('dorfrand', 330, -330, 1.65, 187, 3, 55)]
-            S = [('heute', 'allein', 2026.5), ('allein-2029', 'allein', 2029.5), ('allein-2045', 'allein', 2045.5), ('gewappnet-2045', 'gewappnet', 2045.5)]
+            V = [('hoch', 222, -108, 90, 195, -10, 60), ('hang', 470, 120, 85, 120, -330, 20, 44), ('dorfrand', 330, -330, 1.65, 190, 4, 30)]
+            S = [('heute', 'allein', 2026.5), ('allein-2028', 'allein', 2028.65), ('allein-2029', 'allein', 2029.5), ('allein-2045', 'allein', 2045.5), ('gewappnet-2045', 'gewappnet', 2045.5)]
             names, cols = [], {}
             for tag, w, y in S:
                 state(w, y)
@@ -157,8 +157,7 @@ def run():
                     else: look(*v[1:])
                     n = f'hang-{v[0]}-{tag}'; pic(n, (0.0, 0.33, 1.0, 0.46) if v[0] == 'hoch' else (0.0, 0.35, 1.0, 0.65) if v[0] == 'hang' else (0.0, 0.4, 1.0, 0.56)); names.append(n)
                     cols[n] = region(n)
-            E("ZKZEITWELT.hang.debug(2)"); state('allein', 2034); look(*V[0][1:]); pic('hang-stufen-2034'); names.append('hang-stufen-2034'); E("ZKZEITWELT.hang.debug(0)")
-            sheet('hang', names, cols=4)
+            sheet('hang', names, cols=3)
             print('slope colours', json.dumps(cols), flush=True)
             d = lambda a, c: sum(abs(x - y) for x, y in zip(cols[a], cols[c]))
             # (the band under the horizon holds fields too: a few units of the mean are a whole slope turning grey)
@@ -169,11 +168,11 @@ def run():
         if 'kal' in want:
             # calibration of the slopes: straight down over the forests south of the village (photo mask, stages), and from the NE slope
             names = []
-            for tag, w, y, dbg in (('heute', 'allein', 2026.5, 0), ('2034', 'allein', 2034, 0), ('2034-maske', 'allein', 2034, 1), ('2034-stufen', 'allein', 2034, 2)):
+            for tag, w, y, dbg in (('heute', 'allein', 2026.5, 0), ('2034', 'allein', 2034, 0), ('2034-debug-maske', 'allein', 2034, 1), ('2034-debug-stufen', 'allein', 2034, 2)):
                 state(w, y); E(f"ZKZEITWELT.hang.debug({dbg})")
                 look(150, -650, 1700, 180, -89, 50); n = f'kal-oben-{tag}'; pic(n); names.append(n)
             print('the Klinge forest (first version) in 2034', J("(s => s.forest)(ZKWELT.stats())"), flush=True)
-            for tag, w, y, dbg in (('2029', 'allein', 2029.5, 0), ('2029-stufen', 'allein', 2029.5, 2)):
+            for tag, w, y, dbg in (('2029', 'allein', 2029.5, 0), ('2029-debug-stufen', 'allein', 2029.5, 2)):
                 state(w, y); E(f"ZKZEITWELT.hang.debug({dbg})")
                 look(440, 20, 1.65, 196, -3, 55); n = f'kal-hang-{tag}'; pic(n); names.append(n)
             E("ZKZEITWELT.hang.debug(0)")
@@ -185,7 +184,7 @@ def run():
                      ('kahl-allein-2035', 'allein', 2035.5, 'kahlflaeche'), ('ernte-gewappnet-2029', 'gewappnet', 2029.5, 'kahlflaeche'), ('windrad-bau', 'gewappnet', 2033.6, 'windrad'),
                      ('windrad-dreht', 'gewappnet', 2040.5, 'windrad'), ('windrad-dorf', 'gewappnet', 2040.5, None), ('heizoel', 'allein', 2034.05, None)]
             # the trench: on the street 18 m before the open stretch, looking along it towards the Anger
-            tp = J("(P => { const L = P[P.length - 1][2], i = P.findIndex(p => p[2] >= L - 113), j = Math.min(P.length - 1, i + 12); return [P[i], P[j]]; })(ZKZEITWELT.dinge.sites().trench)")
+            tp = J("(P => { const L = P[P.length - 1][2], i = Math.max(0, P.findIndex(p => p[2] >= L - 180)), j = Math.min(P.length - 1, i + 14); return [P[i], P[j]]; })(ZKZEITWELT.dinge.sites().trench)")
             for name, w, y, pid in shots:
                 state(w, y)
                 if pid: at_place(pid)

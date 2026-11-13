@@ -127,8 +127,8 @@ export const ZKHANG = (() => {
   const FS_TINT = `
     if ( vZkS > 0.5 ) {
       float zl = dot( diffuseColor.rgb, vec3( 0.3, 0.55, 0.15 ) );
-      if ( vZkS < 1.5 ) diffuseColor.rgb = mix( diffuseColor.rgb, vec3( 0.36, 0.13, 0.045 ) * ( 0.45 + 4.0 * zl ), 0.92 );   // red-brown
-      else if ( vZkS < 2.5 ) { diffuseColor.rgb = vec3( 0.30, 0.285, 0.26 ) * ( 0.55 + 3.0 * zl ); diffuseColor.a *= 0.5 + 0.3 * vZkA; } // grey, thin
+      if ( vZkS < 1.5 ) diffuseColor.rgb = vec3( 0.5, 0.15, 0.035 ) * ( 0.6 + 3.0 * zl );                                    // rust red
+      else if ( vZkS < 2.5 ) { diffuseColor.rgb = vec3( 0.44, 0.44, 0.42 ) * ( 0.7 + 2.5 * zl ); diffuseColor.a *= 0.55 + 0.3 * vZkA; } // silver-grey, thin
       else if ( vZkS > 4.5 ) diffuseColor.rgb *= uZkT2.z > 0.5 ? vec3( 1.05, 1.18, 0.8 ) : vec3( 0.95, 1.08, 0.9 );          // young
       if ( uZkT2.w > 1.5 ) diffuseColor.rgb = vZkS < 1.5 ? vec3( 0.8, 0.1, 0.0 ) : vZkS < 2.5 ? vec3( 0.6 ) : vec3( 0.1, 0.9, 0.2 );
     }`;
@@ -182,13 +182,14 @@ export const ZKHANG = (() => {
       if ( s < 0.5 ) return c;
       float tx = clamp( l / uZkM.z, 0.55, 1.6 );
       vec3 col;
-      if ( s < 1.5 ) col = vec3( 0.175, 0.066, 0.028 );                                                  // red-brown crowns
-      else if ( s < 2.5 ) col = vec3( 0.175, 0.16, 0.135 );                                             // grey snags over brown litter
+      if ( s < 1.5 ) col = vec3( 0.23, 0.07, 0.022 );                                                   // rust-red crowns
+      else if ( s < 2.5 ) col = vec3( 0.25, 0.245, 0.225 );                                            // silver-grey snags over the litter
       else if ( s < 3.5 ) col = vec3( 0.11, 0.094, 0.075 ) * ( 0.75 + 0.5 * zkN( p * 0.7 ) );          // fallen trunks, criss-cross
       else if ( s < 4.5 ) {                                                                              // cleared: slash, then grass and herbs
         float a = clamp( ( uZkT.y - r ) / max( uZkT.y - uZkT.x, 0.03 ), 0.0, 1.0 );
-        col = mix( vec3( 0.19, 0.145, 0.095 ), vec3( 0.17, 0.19, 0.075 ), a ) * ( 0.85 + 0.3 * zkN( p * 0.5 ) );
-      } else col = ( uZkT2.z > 0.5 ? vec3( 0.13, 0.2, 0.05 ) : vec3( 0.1, 0.17, 0.045 ) ) * mix( 1.2, 0.75, clamp( uZkT2.y / 12.0, 0.0, 1.0 ) );
+        col = mix( vec3( 0.27, 0.22, 0.16 ), vec3( 0.22, 0.21, 0.12 ), a ) * ( 0.85 + 0.3 * zkN( p * 0.5 ) );  // light brown-grey, greening
+      } else col = mix( vec3( 0.2, 0.17, 0.11 ), uZkT2.z > 0.5 ? vec3( 0.15, 0.19, 0.07 ) : vec3( 0.17, 0.2, 0.08 ), clamp( 0.35 + uZkT2.y / 6.0, 0.0, 1.0 ) )
+                 * mix( 1.1, 0.7, clamp( uZkT2.y / 12.0, 0.0, 1.0 ) );                                                         // young: muted yellow-green over the brown ground
       if ( uZkT2.w > 1.5 ) col = s < 1.5 ? vec3( 0.8, 0.1, 0.0 ) : s < 2.5 ? vec3( 0.6 ) : s < 3.5 ? vec3( 0.3, 0.2, 0.6 ) : s < 4.5 ? vec3( 0.8, 0.7, 0.1 ) : vec3( 0.1, 0.9, 0.2 );
       return mix( c, col * mix( 1.0, tx, 0.55 ), fm );
     }
