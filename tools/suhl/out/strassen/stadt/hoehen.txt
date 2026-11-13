@@ -1,2 +1,2 @@
-suhl-boden: Lauf 43340569202, Artefakt suhl-boden-v1
-Geländekacheln: /home/runner/work/_temp/boden/t (6279 Kacheln)
+suhl-boden: Lauf 43347038164, Artefakt suhl-boden-roh
+Geländekacheln: /home/runner/work/_temp/boden/t (6054 Kacheln)

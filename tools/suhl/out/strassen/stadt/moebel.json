@@ -1,17 +1,17 @@
 {
- "made": "2026-11-13T01:48:08Z",
+ "made": "2026-11-13T02:52:21Z",
  "tiles": 1129,
  "counts": {
-  "pfosten": 3411,
+  "pfosten": 3432,
   "planken": 405,
-  "schilder": 603,
+  "schilder": 604,
   "lampen": 5237,
   "linien": 151,
   "masten": 358,
   "ampeln": 180,
   "querungen": 191,
   "halte": 249,
-  "namen": 416
+  "namen": 418
  },
  "planken_pieces": 649,
  "lamps_osm_in_box": 973,
@@ -25,7 +25,7 @@
   "205+215": 3,
   "201": 8,
   "350": 12,
-  "km": 98,
+  "km": 99,
   "625": 110
  },
  "crossings_by_type": {
@@ -41,7 +41,7 @@
  },
  "bus_stops_named": 249,
  "bus_stops_in_timetable_names": 21,
- "guard_rail_m": 77780,
+ "guard_rail_m": 77783,
  "places": [
   [
    "Suhl",
@@ -84,7 +84,7 @@
    "village"
   ]
  ],
- "bytes_tiles": 939652,
+ "bytes_tiles": 940040,
  "tool": "viz3/extra/strassen/daten.py of feat/strassen, unchanged: guard_rails, delineators, signs, lamps, power",
- "bytes_one_file": 783534
+ "bytes_one_file": 784044
 }
