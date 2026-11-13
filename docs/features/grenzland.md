@@ -74,7 +74,7 @@ Gemeinsame Regeln für alle Teile: `docs/plans/auftraege/grenzland-gemeinsam.md`
 
 ## Offen
 
-- Sarahs Einverständnis, als Figur aufzutreten (Falko, 13.11.: „nur, wenn Sarah das mag“).
+- Erledigt: Sarah ist einverstanden, als Figur aufzutreten (Falko, 13.11. 10:44; gefragt hatte er 0:30 „nur, wenn Sarah das mag“).
 - Zu zweit über das Internet; Coups von oben planen (Strategie-Linse); Autos knacken; Besitz kaufen; Kapitel 2 braucht eine Detailzone an
   der alten Grenze zu Bayern (Kolonnenweg, Grünes Band).
 - Der Modus liegt im Hauptpaket der App (wie die Zombie-Nacht); als Paket auf Abruf würde er den ersten Seitenaufbau entlasten.

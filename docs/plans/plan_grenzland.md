@@ -9,7 +9,7 @@ Chat session_01L6Yrpf75YEUJPnMQdXevjQ, Branch `feat/grenzland`, Ordner `viz3/src
   schon haben, die letztendlich GTA 6 Vibes reinbekommen, um auch Spielspaß und ähnliche Stories, aber passend zur Region und zur Karte, die wir
   haben oder die gerade gebaut wird, passende Quests und überhaupt Gameplay Varianten hinbekommen, die möglichst nah an GTA 6 ranreichen.“
 - **0:30, angeklickt:** Hauptgeschichte **Grenzland** (Schmuggel nach Bayern über die A73, Rückblenden auf 1989) · Hauptfiguren **Falko und
-  Sarah** (umschaltbar wie Jason und Lucia; „nur, wenn Sarah das mag“) · Ton und Härte **wie GTA** (Satire, Verfolgungen, Kämpfe wie in der
+  Sarah** (umschaltbar wie Jason und Lucia; „nur, wenn Sarah das mag“ – 10:44: Sarah ist einverstanden) · Ton und Härte **wie GTA** (Satire, Verfolgungen, Kämpfe wie in der
   Zombie-Nacht, nur Erwachsene) · erster Schritt **alles**: Kapitel 1 mit 5 Missionen, Fahndung und Polizei, Handy und Radio, Fahrzeuge und
   Nebenbeschäftigungen.
 - **0:30:** „Okay, bitte setzt das Ganze richtig gut um. Achte darauf, nicht mit den anderen Chats in die Quere zu kommen.“
