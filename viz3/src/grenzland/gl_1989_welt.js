@@ -242,6 +242,9 @@ export const GL89WELT = (() => {
     safe('laub', () => {
       const lm = VPROPS.lindeMeshes && VPROPS.lindeMeshes[1] && VPROPS.lindeMeshes[1].material;
       if (lm && lm.alphaTest > 0) set(lm, 'alphaTest', 1.01);
+      // feat/grenzland-licht: the bare lime – without its leaves only the boughs were left, ending in spikes; fine twigs where the leaves
+      // were make it read as a lime in November
+      zweige();
       const fm = RATSCHER.trees && RATSCHER.trees[0] && RATSCHER.trees[0].material;
       if (fm && fm.color) {
         const old = fm.color.clone();
@@ -279,6 +282,74 @@ export const GL89WELT = (() => {
       S.undo.push(() => CLOCK.unfocus('gl-1989'));
     });
     scan();
+  }
+  // ---- feat/grenzland-licht: the Dorflinde in November – sprays of fine twigs on the cards of its leaves (the coarser set: fewer, larger),
+  //      in a copy of the leaves' own material (its program) with a drawing of twigs; gone on leaving (the cards' geometry is the lime's) ----
+  function zweigBild() {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 256;
+    const x = cv.getContext('2d');
+    let q = 1889;
+    const rnd = () => {
+      q = (q * 16807) % 2147483647;
+      return (q - 1) / 2147483646;
+    };
+    x.lineCap = 'round';
+    x.strokeStyle = '#d8d0c6';
+    // a twig: from (px, py) at angle a (0 = up), length l, width w; it forks, the forks thinner and shorter, a little crooked
+    const zweig = (px, py, a, l, w, n) => {
+      let cx = px,
+        cy = py,
+        aa = a;
+      const seg = 4;
+      x.lineWidth = w;
+      x.beginPath();
+      x.moveTo(cx, cy);
+      for (let i = 0; i < seg; i++) {
+        aa += (rnd() - 0.5) * 0.35;
+        cx += Math.sin(aa) * (l / seg);
+        cy -= Math.cos(aa) * (l / seg);
+        x.lineTo(cx, cy);
+      }
+      x.stroke();
+      if (n <= 0 || w < 1.6) return;
+      const k = 2 + (rnd() < 0.45 ? 1 : 0);
+      for (let j = 0; j < k; j++) {
+        const t = 0.45 + 0.55 * rnd(),
+          bx = px + (cx - px) * t,
+          by = py + (cy - py) * t,
+          side = j % 2 ? 1 : -1;
+        zweig(bx, by, aa + side * (0.35 + 0.45 * rnd()), l * (0.5 + 0.2 * rnd()), w * 0.68, n - 1);
+      }
+      zweig(cx, cy, aa + (rnd() - 0.5) * 0.4, l * 0.55, w * 0.7, n - 1);
+    };
+    for (let i = 0; i < 3; i++) zweig(128 + (i - 1) * 6, 254, (i - 1) * 0.42, 118 - Math.abs(i - 1) * 18, 6.5, 4);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    return tex;
+  }
+  function zweige() {
+    const L = VPROPS.lindeMeshes;
+    if (!L || !L[1] || !L[2] || !L[1].material) return;
+    const m = L[1].material.clone();
+    m.map = zweigBild();
+    m.color.setRGB(0.36, 0.32, 0.28);
+    m.alphaTest = 0.42;
+    m.name = 'grenzland 1989 zweige';
+    const me = new THREE.Mesh(L[2].geometry, m);
+    me.name = 'grenzland 1989 linde';
+    me.userData.noMerge = true;
+    me.castShadow = false;
+    me.receiveShadow = false;
+    scene.add(me);
+    S.zweige = me;
+    S.undo.push(() => {
+      scene.remove(me);
+      m.map.dispose();
+      m.dispose();
+      S.zweige = null;
+    });
   }
   // ------------------------------------------------------------------ what is written: one atlas ------------------------------------------------------------------
   // regions of the atlas in pixels [x, y, w, h] (1024 × 512)
@@ -1373,6 +1444,7 @@ export const GL89WELT = (() => {
     lamps: S.lamps.length,
     puffs: S.puffs.length,
     boxes: S.boxes.length,
+    zweige: !!S.zweige,
     stats: Object.assign({}, S.stats),
     fog: scene.fog ? +scene.fog.density.toFixed(5) : 0,
     hold: !!DORF.S.hold,

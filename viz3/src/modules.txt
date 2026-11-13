@@ -223,6 +223,7 @@ grenzland/gl_radio.js       # feat/grenzland the radio: stations to switch betwe
 grenzland/gl_handy.js       # feat/grenzland the phone: messages, the village chat, the regional feed, notes, the camera (GLHANDY)
 grenzland/gl_fahndung.js    # feat/grenzland the wanted level in the world: witnesses, patrol cars, officers, the road block, hiding (GLFAHNDUNG)
 grenzland/gl_heli.js        # feat/grenzland the police helicopter of four stars (GLHELI)
+grenzland/gl_licht.js       # feat/grenzland-licht the nights: lamps, beams and pools of the vehicles, beacons, torches, the flare, readable nights, rain at the Klinge, a grade (GLLICHT)
 grenzland/gl_orte.js        # feat/grenzland the mode's own places: the field barn, the skittle alley, the shop on wheels, the angling spot (GLORTE)
 grenzland/gl_wagen.js       # feat/grenzland the shop on wheels at the Anger (GLWAGEN)
 grenzland/gl_kegeln.js      # feat/grenzland skittles on the open-air alley (GLKEGELN)

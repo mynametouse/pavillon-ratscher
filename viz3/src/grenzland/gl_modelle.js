@@ -36,6 +36,13 @@ export const GLMOD = (() => {
     blau2: VAUTO.LM.head.clone(),
     blink: VAUTO.LM.tail.clone(),
   };
+  // feat/grenzland-licht: head lamps of today whiter, of 1989 and the mopeds warm (a bulb of the time)
+  LM.head.emissive.setHex(0xf1f5ff);
+  LM.head89 = VAUTO.LM.head.clone();
+  LM.head89.emissive.setHex(0xffc978);
+  LM.head89.emissiveIntensity = 0;
+  const ERA89 = new Set(['trabant', 'trabant_kombi', 'wartburg', 'barkas', 'w50', 's51', 'schwalbe', 'lada']);
+  const LM89 = Object.assign({}, LM, { head: LM.head89 });
   for (const m of [LM.blau, LM.blau2]) {
     m.color.setHex(0x16357a);
     m.emissive.setHex(0x1f5cff);
@@ -317,8 +324,10 @@ export const GLMOD = (() => {
     if (!T) return null;
     const g = new THREE.Group(),
       M = { g, T, parts: {}, tilt: null, seat: null };
+    // feat/grenzland-licht: the lamps of the type's time
+    const lamps = ERA89.has(NEU(typ)) ? LM89 : LM;
     if (T.form === 'moped') {
-      const Z = mopedModel(NEU(typ), o, LM);
+      const Z = mopedModel(NEU(typ), o, lamps);
       g.add(Z.tilt);
       M.tilt = Z.tilt;
       M.steer = Z.steer;
@@ -334,7 +343,7 @@ export const GLMOD = (() => {
       const P = name => N.pieces.find(p => p.name === name),
         axF = meshes(P('axF'), T),
         axR = meshes(P('axR'), T);
-      g.add(meshes(P('body'), T, LM, N.schrift ? { schrift: schrift(N.schrift) } : {}));
+      g.add(meshes(P('body'), T, lamps, N.schrift ? { schrift: schrift(N.schrift) } : {}));
       axF.position.set(0, T.rw, -T.a);
       axR.position.set(0, T.rw, -T.b);
       g.add(axF, axR);
@@ -473,7 +482,7 @@ export const GLMOD = (() => {
     const N = GLTYPEN.bau('trabant', { col: o.col || '#9fc1d2', innen: 'cockpit', einzel: true }),
       T = N.T,
       TC = N.cockpit,
-      lamps = { head: LM.head.clone(), tail: LM.tail.clone(), blau: LM.blau, blau2: LM.blau2, blink: LM.blink },
+      lamps = { head: LM.head89.clone(), tail: LM.tail.clone(), blau: LM.blau, blau2: LM.blau2, blink: LM.blink },
       face = tachoBild(TC.dial.max),
       dial = new THREE.MeshBasicMaterial({ map: face.tex }),
       radio = radioBild(),
@@ -554,7 +563,7 @@ export const GLMOD = (() => {
   // ---- the model of the player's moped (vehicles/vehicle.js VEH.add): four contact points for the physics, two wheels to see ----
   function spielerMoped(o = {}) {
     const lamps = {
-        head: LM.head.clone(),
+        head: LM.head89.clone(),
         tail: LM.tail.clone(),
         blau: LM.blau,
         blau2: LM.blau2,
