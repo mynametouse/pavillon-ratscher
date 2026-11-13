@@ -325,6 +325,10 @@ export const GLORTE = (() => {
   };
   // the angling spot: from the board on the dam towards the water
   const AN = { hd: (146.6 * Math.PI) / 180, o: O.damm.pos, z: 15.2, w: 14.78, sA: 22, sB: 29, hw: 0.75, pose: null };
+  const KBC = Math.cos(KB.hd),
+    KBS = Math.sin(KB.hd),
+    ANC = Math.cos(AN.hd),
+    ANS = Math.sin(AN.hd);
   const P = {
     scheune: BO,
     kegel: KB.stand.slice(),
@@ -1345,12 +1349,19 @@ export const GLORTE = (() => {
       'ground',
       (x, y) => {
         if (!S.built || S.era !== 'heute') return undefined;
+        // (no arrays here: this is asked for every foot and wheel)
         if (near(x, y, KB.o, 8) && KB.F) {
-          const [r, f] = KB.F.loc(x, y);
+          const dx = x - KB.o[0],
+            dy = y - KB.o[1],
+            r = dx * KBC - dy * KBS,
+            f = dx * KBS + dy * KBC;
           if (Math.abs(r) <= KB.hw && f >= -KB.anlauf - 0.25 && f <= 0.3) return KB.z;
         } else if (near(x, y, P.angel, 12) && AN.F) {
-          const [r, s] = AN.F.loc(x, y);
-          if (Math.abs(r) <= AN.hw && s >= AN.sA && s <= AN.sB) return AN.z;
+          const dx = x - AN.o[0],
+            dy = y - AN.o[1],
+            r = dx * ANC - dy * ANS,
+            q = dx * ANS + dy * ANC;
+          if (Math.abs(r) <= AN.hw && q >= AN.sA && q <= AN.sB) return AN.z;
         }
         return undefined;
       },

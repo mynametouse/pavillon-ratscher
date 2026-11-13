@@ -27,6 +27,7 @@ import { GLNLOGIK } from './gl_neben_logik.js';
 import { GL } from './gl_state.js';
 import { GLTON } from './gl_ton.js';
 import { GLHUD } from './gl_hud.js';
+import { GLHANDY } from './gl_handy.js';
 import { GLFAHNDUNG } from './gl_fahndung.js';
 import { GLORTE } from './gl_orte.js';
 import { GLSPIEL } from './gl_kegeln.js';
@@ -368,6 +369,12 @@ export const GLANGELN = (() => {
     const len = Math.min(0.95, 0.36 * Math.cbrt(f.kg) + 0.08);
     M.fisch.scale.set(len, len, len);
     M.pose.visible = false;
+    if (f.kg >= 5)
+      GLHANDY.feed(
+        'Angel_Andi',
+        'Am Steg hat einer einen ' + f.name + ' von ' + kg(f.kg) + ' gezogen. Ich sag ja nichts mehr.',
+        'damm'
+      );
     GL.emit('fang', f);
     panel();
   }

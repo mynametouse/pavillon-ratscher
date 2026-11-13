@@ -24,6 +24,7 @@ import { GL } from './gl_state.js';
 import { GLTON } from './gl_ton.js';
 import { GLFIG } from './gl_fig.js';
 import { GLHUD } from './gl_hud.js';
+import { GLHANDY } from './gl_handy.js';
 import { GLORTE } from './gl_orte.js';
 // ---- the panel of the side games: a title, a line of help, a bar with a band and a marker, buttons (pressed and let go) ----
 export const GLSPIEL = (() => {
@@ -161,8 +162,8 @@ export const GLKEGELN = (() => {
       schnell: 1,
     };
   const FEE = 2,
-    A_DIR = 0.028, // how far the line swings (rad)
-    T_DIR = 2.8, // seconds for one swing to and fro
+    A_DIR = 0.026, // how far the line swings (rad): half a metre to each side at the pins
+    T_DIR = 3.2, // seconds for one swing to and fro
     T_KRAFT = 1.5,
     HDdeg = () => (GLORTE.KB.hd * 180) / Math.PI;
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
@@ -348,18 +349,19 @@ export const GLKEGELN = (() => {
     M.linie.visible = show;
     if (!show) return;
     const X = N.bahn(S.aim, S.dir, S.drall, 0.75),
+      F = M.F,
+      c = Math.cos(F.hd),
+      sn = Math.sin(F.hd),
       a = M.linie.geometry.attributes.position,
       n = a.count / 2;
     for (let i = 0; i < n; i++) {
       const s = 0.35 + (i / (n - 1)) * (Lb - 0.9),
         x = X(s),
         w = 0.016 + 0.012 * (i / n);
-      for (const [j, q] of [
-        [0, -w],
-        [1, w],
-      ]) {
-        const p = M.F.P(x + q, s, 0.007);
-        a.setXYZ(i * 2 + j, p[0], p[2], -p[1]);
+      // (the frame's own arithmetic, so that nothing is allocated per frame)
+      for (let j = 0; j < 2; j++) {
+        const r = x + (j ? w : -w);
+        a.setXYZ(i * 2 + j, F.ox + r * c + s * sn, F.z0 + 0.007, -(F.oy - r * sn + s * c));
       }
     }
     a.needsUpdate = true;
@@ -612,6 +614,15 @@ export const GLKEGELN = (() => {
       if (k >= 1) bereit();
     }
     linie();
+    // the ball lies ready at the foul line while one aims
+    if ((S.ph === 'ziel' || S.ph === 'richtung' || S.ph === 'kraft') && S.dran === 'ich') {
+      const M = S.meshes,
+        F0 = M.F,
+        c0 = Math.cos(F0.hd),
+        s0 = Math.sin(F0.hd);
+      M.ball.visible = true;
+      M.ball.position.set(F0.ox + S.aim * c0 + 0.15 * s0, F0.z0 + N.BAHN.ball, -(F0.oy - S.aim * s0 + 0.15 * c0));
+    }
     // the eye: behind the foul line while one aims, down the lane after the ball
     const F = S.meshes.F,
       roll = S.ph === 'rollt' || S.ph === 'schau',
@@ -645,7 +656,18 @@ export const GLKEGELN = (() => {
     let gewonnen = null;
     if (fertig) {
       const best = punkte > (GL.stats.kegel || 0);
-      if (best) GL.stats.kegel = punkte;
+      if (best) {
+        GL.stats.kegel = punkte;
+        // the region's feed hears of it
+        if (punkte >= 30)
+          GLHANDY.feed(
+            'Kegelfreunde Ratscher',
+            'Bahnrekord an der Feldscheune: ' +
+              punkte +
+              ' Holz in fünf Wurf. Der Vorstand prüft, ob das mit rechten Dingen zuging.',
+            'treff'
+          );
+      }
       if (vs) {
         gewonnen = punkte > vp ? true : punkte < vp ? false : null;
         if (gewonnen) GL.earn(S.einsatz * 2, 'Kegeln');
@@ -700,7 +722,7 @@ export const GLKEGELN = (() => {
     if (S.on || !GL.on || GL.era !== 'heute' || !GLORTE.built) return leer;
     bauen();
     if (!S.meshes || PLAY.seated()) return leer;
-    let vs = o.gegner ? { name: String(o.gegner), stufe: o.stufe ?? 0.55, liste: [] } : null,
+    let vs = o.gegner ? { name: String(o.gegner), stufe: o.stufe ?? 0.4, liste: [] } : null,
       einsatz = o.einsatz ?? 10;
     if (!o.auto && !o.gegner) {
       // ask: alone, or against Timo for a stake
@@ -720,7 +742,7 @@ export const GLKEGELN = (() => {
       );
       if (i < 0 || i === opts.length - 1 || !GL.on || S.on) return leer;
       if (T && i === 1) {
-        vs = { name: T.name, stufe: 0.55, liste: [] };
+        vs = { name: T.name, stufe: 0.4, liste: [] };
         GLHUD.sub(T.name, 'Zehn Euro? Leicht verdientes Geld.', 2400);
       }
     }
