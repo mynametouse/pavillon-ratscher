@@ -601,6 +601,17 @@ export const GLFAHNDUNG = (() => {
       const c = carOf(u);
       if (!c || !c.line) return;
       c.lat = u.lat || 0;
+      // the traffic ahead on the same lane, going the same way: the police do not drive through it (a car that stands is passed)
+      if (o.halt && GL.era === 'heute')
+        for (const a of (VAUTO && VAUTO.cars) || [])
+          if (
+            a.g.visible &&
+            a.v > 2 &&
+            Math.abs(a.x - c.x) < 50 &&
+            Math.abs(a.y - c.y) < 50 &&
+            Math.cos(a.hd - c.hd) > 0.5
+          )
+            o.halt.push({ x: a.x, y: a.y, r: 0.7, gap: 4 });
       GLAUTO.drive(c, dt, o);
       if (c.ende) c.v = 0; // (at the end of a line that does not end with speed 0 it stands all the same)
       back(u);

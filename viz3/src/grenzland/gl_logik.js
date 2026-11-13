@@ -162,7 +162,7 @@ export const GLLOGIK = (() => {
       abv: false,
       delay: A.delay,
       tempo: [0, 1.25, 1.4, 1.55, 1.6, 1.7][n],
-      schritt: [0, 2.15, 2.2, 2.7, 3.0, 3.3][n],
+      schritt: [0, 2.15, 2.2, 3.0, 3.3, 3.6][n],
       sicht: 80,
       crew: 2,
     };
@@ -1094,7 +1094,8 @@ export const GLLOGIK = (() => {
         const d = hyp(u.x - p.x, u.y - p.y);
         u.t += dt;
         u.routeT += dt;
-        u.lat *= Math.exp(-dt * 2.5);
+        // across the road: back onto its lane after a new line – or over to the edge while it stands with its crew out
+        u.lat += ((u.st === 'steht' ? u.rand || 0 : 0) - u.lat) * Math.min(1, dt * 2.5);
         const sees = u.st !== 'abzug' && full > 0 && carSees(u, p, env, K);
         if (sees) {
           seen = true;
@@ -1115,7 +1116,8 @@ export const GLLOGIK = (() => {
         for (const v of E.units)
           if (v !== u && hyp(v.x - u.x, v.y - u.y) < 60) {
             const same = Math.cos(v.hd - u.hd) > 0.3;
-            if (v.st !== 'riegel' && (same || v.st === 'steht')) hl.push({ x: v.x, y: v.y, r: 0.6, gap: 3.6 });
+            if (v.st !== 'riegel' && (same || v.st === 'steht'))
+              hl.push({ x: v.x, y: v.y, r: v.st === 'steht' ? 0.5 : 0.6, gap: 3.6 });
           }
         const drive = o => world.drive(u, dt, Object.assign({ halt: hl }, o));
         if (u.st === 'abzug') {
@@ -1152,6 +1154,14 @@ export const GLLOGIK = (() => {
             u.horn = false;
             u.t = 0;
             u.wasOut = false;
+            // it pulls over as far as the road allows (on a real road the others get past it)
+            u.rand =
+              A && A.e
+                ? Math.max(
+                    0,
+                    Math.min(1.8, (A.e.w || 5) / 2 - (A.e.kind <= 3 ? Math.max(1, (A.e.w || 5) / 4) : 0.7) + 0.55)
+                  )
+                : 0;
             if (E.cops.length + K.crew <= maxCops()) crewOut(u, K.crew);
           } else if (u.routeT > (p.veh ? 1.4 : 2.4)) {
             // after him: to where he is – a vehicle that moves is driven up to (the line goes on beyond him with his speed)
@@ -1169,7 +1179,14 @@ export const GLLOGIK = (() => {
           const mine = E.cops.filter(c => c.unit === u),
             A = strasse(u.net),
             // he gets away: with a vehicle again, or to where the car is much nearer to him round by the road, or out of all reach
-            away = (p.veh && p.v > 3 && d > 28) || (d > 60 && A && hyp(u.x - A.x, u.y - A.y) > 45 && sees) || d > 230,
+            away =
+              (p.veh && p.v > 3 && d > 28) ||
+              (d > 60 &&
+                A &&
+                hyp(u.x - A.x, u.y - A.y) > 45 &&
+                sees &&
+                mine.every(c => hyp(c.x - p.x, c.y - p.y) > 45)) ||
+              d > 230,
             // he is gone, and the place he was last seen at has been looked at
             gone = u.lost > 16 && (u.crew === 'drin' || u.checked || u.lost > 40);
           if (u.crew === 'raus' && (away || gone)) crewIn(u, false);
@@ -1274,16 +1291,21 @@ export const GLLOGIK = (() => {
           seen = true;
           if (d < 26) close = true;
           sight();
+          if (c.unit) c.unit.lost = 0; // (while its officers see him, their car does not call them back)
           if (c.knows && !W.known) {
             W.known = true;
             say('erkannt', { wer: c.kind });
           }
           c.st = 'jagt';
-          if ((c.aimT += dt) > 0.5 || !c.goal) {
-            // up to him, an arm's length short
+          if ((c.aimT += dt) > 0.3 || !c.goal) {
+            // up to him, an arm's length short – while he moves, to where he will be in a moment
             c.aimT = 0;
-            const k = d > 1.2 ? (d - 1.1) / d : 0;
-            c.goal = [c.x + (p.x - c.x) * k, c.y + (p.y - c.y) * k];
+            const mv = p.v > 1 && !p.veh,
+              tx = p.x + (mv ? Math.sin(p.hd) * p.v * 0.6 : 0),
+              ty = p.y + (mv ? Math.cos(p.hd) * p.v * 0.6 : 0),
+              dd = hyp(tx - c.x, ty - c.y),
+              k = mv ? 1 : dd > 1.2 ? (dd - 1.1) / dd : 0;
+            c.goal = [c.x + (tx - c.x) * k, c.y + (ty - c.y) * k];
           }
           // he has hold of whoever stands or walks slowly – also of somebody sitting on a moped that does not move
           if (d < 1.7 && (!p.veh || p.v < 1.5)) {

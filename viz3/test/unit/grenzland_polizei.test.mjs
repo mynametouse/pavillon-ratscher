@@ -619,3 +619,26 @@ test('new clothes while they search: the cars drive home by themselves', () => {
   assert.equal(w.E.units.length, 0);
   assert.equal(w.stats.spawn, w.stats.remove);
 });
+
+test('one star is harmless: whoever walks away from the two officers gets away; at three stars he must run', () => {
+  // beside the main road south of the village, open fields to the east
+  const run = (deeds, pace) => {
+    const w = welt({ seed: 5 });
+    for (const id of deeds) w.deed(id, 446, -600, { police: true });
+    w.E.wait = 1;
+    let go = 0;
+    const pl = t => {
+      if (!go && w.E.cops.length) go = t;
+      const s = go ? Math.min(330, (t - go) * pace) : 0;
+      return { x: 446 + s, y: -600 + s * 0.15, v: go && s < 330 ? pace : 0, hd: Math.atan2(1, 0.15), veh: false, hidden: false, cover: false, sneak: false };
+    };
+    w.spiel(pl, 500, (t, p, evs) => evs.some(e => e[0] === 'erwischt') || (go && G.stars(w.W) === 0));
+    return { caught: names(w).includes('erwischt'), stars: G.starsOf(w.W.heat), go: Math.round(go), t: Math.round(w.t) };
+  };
+  const one = run(['rempeln'], 2.5);
+  assert.ok(one.go > 0 && !one.caught && one.stars === 0, 'one star, walking: ' + JSON.stringify(one));
+  const three = run(['einbruch', 'rempeln'], 2.5);
+  assert.ok(three.caught, 'three stars, walking: they are quicker – ' + JSON.stringify(three));
+  const run3 = run(['einbruch', 'rempeln'], 4.75);
+  assert.ok(!run3.caught, 'three stars, running: ' + JSON.stringify(run3));
+});
