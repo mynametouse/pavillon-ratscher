@@ -20,10 +20,11 @@ with lib.browser() as b:
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
     steps = lambda secs, dt=0.25: E(f"for (let i = 0; i < {max(1, int(secs / dt))}; i++) GAME.step({dt})")
     def pic(name, world=False):
+        # (the frame read back first – lib.shot –, else the page's screenshot waits for the software GPU and gives up; as grenzland_radio.py)
         try:
-            if world: lib.shot(pg, OUT, name)
-            else: E("GAME.shot()")
+            lib.shot(pg, OUT, name)
             pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=20000)
+            if not world: os.remove(os.path.join(OUT, name + '.jpg'))
             print('pic', name, flush=True)
         except Exception as e:
             print('shot failed', name, str(e)[:120])
