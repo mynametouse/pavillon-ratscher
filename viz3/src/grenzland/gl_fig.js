@@ -1774,6 +1774,7 @@ export const GLFIG = (() => {
     if (!F) return;
     if (c) {
       F.ritt = c;
+      F.rittFest = true;
       F.reitet = true;
       F.st = 'steht';
       F.path = null;
@@ -1787,6 +1788,7 @@ export const GLFIG = (() => {
     }
     const m = F.ritt;
     F.ritt = null;
+    F.rittFest = false;
     F.reitet = false;
     if (F.f && 'mode' in F.f) F.f.mode = 'stand';
     if (m && !m.gone) place(F, m.x + Math.cos(m.hd) * 0.8, m.y - Math.sin(m.hd) * 0.8, m.hd);

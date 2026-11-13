@@ -1,14 +1,15 @@
 # feat/grenzland-figuren (13.11.2026, Grenzland round 2): people who move like people. One page, free play in Ratscher: the player
 # on the moped (hips on the saddle, balls of the feet on the pegs, hands at the grips; at a stop the left foot down; leaning in the
-# curve), a figure riding a moped of the mode (GLFIG.reite, and the way grenzland/gl_mission.js does it: F.reitet), an officer told to
+# curve), the player at the Trabant's wheel (hands on the rim), a figure riding a moped of the mode (GLFIG.reite, and the way
+# grenzland/gl_mission.js does it: F.reitet), an officer told to
 # run (≥ 3.5 m/s), a figure sitting on the bench under the Dorflinde and one on a bar stool's height, every gesture (a contact sheet),
 # the look (the head turns toward the target), no page errors, the shader programs unchanged by the poses and the phone.
-#   python3 viz3/test/grenzland_figuren.py 9015 [parts]     parts: moped,reiter,rennen,sitzen,gesten,blick (default: all)
+#   python3 viz3/test/grenzland_figuren.py 9015 [parts]     parts: moped,trabi,reiter,rennen,sitzen,gesten,blick (default: all)
 #   pictures in out/grenzland_figuren/
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib, grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-PARTS = set((sys.argv[2] if len(sys.argv) > 2 else 'moped,reiter,rennen,sitzen,gesten,blick').split(','))
+PARTS = set((sys.argv[2] if len(sys.argv) > 2 else 'moped,trabi,reiter,rennen,sitzen,gesten,blick').split(','))
 ck = grenzland_ci.wrap(lib.Checks('grenzland_figuren'), 'grenzland_figuren')
 OUT = lib.out('grenzland_figuren')
 NOTES = []
@@ -102,7 +103,7 @@ with lib.browser() as b:
         note('riding at %.1f km/h: %s' % (sp, c))
         ck('riding, both balls of the feet are on the pegs and the hands at the grips',
            sp > 8 and c.get('down', 1) < 0.1 and max(c.get('feet', [9, 9])) < 0.06 and max(c.get('hands', [9, 9])) < 0.06, str(c))
-        ck('riding, the rider bends forward a little (lean 0.05–0.7 rad)', 0.05 < c.get('lean', 0) < 0.7, str(c))
+        ck('riding, the rider bends forward a little (lean 0.05–0.6 rad)', 0.05 < c.get('lean', 0) < 0.6, str(c))
         side('2_moped_fahrt_links')
         side('2_moped_fahrt_rechts', -90)
         do("VEH.auto = () => ({ thr: 0.6, brk: 0, steer: 0.4, hand: false })")
@@ -120,6 +121,34 @@ with lib.browser() as b:
         ck('off the moped the figure stands upright again', abs(ok['x']) < 1e-6 and abs(ok['z']) < 1e-6 and not ok['on'], str(ok))
         do("CAM3.want = false; CAM3.d = 3.3")
     part('moped', moped)
+
+    # ---- the player at the Trabant's wheel (1989's car, seen from outside) ----
+    def trabi():
+        do("GAME.view(%f, %f, KERN.ground(%f, %f) + 1.6, 30, -5); GLAUTO.trabiAt(%f, %f, %f)" % (MX - 4, MY - 4, MX - 4, MY - 4, MX + 6, MY - 6, MH))
+        steps(0.5)
+        do("CAM3.want = true; CAM3.d = 2.2; VEH.enter('gl-trabi')")
+        steps(1.4, 0.05)
+        st = J("GLPOSE.stand()")
+        c = st.get('chk') or {}
+        note('at the Trabant\'s wheel: %s' % c)
+        ck('at the Trabant\'s wheel the hands are on the rim (wrists within 6 cm)', VEH_ID(J) == 'gl-trabi' and max(c.get('hands', [9, 9])) < 0.06, str(c))
+        do("CAM3.d = 2.2; GAME.P.yaw = VEH.cur.st.psi * 180 / Math.PI + 160; GAME.P.pitch = -4")
+        pic('9_trabi_vorn')
+        do("CAM3.d = 2.0; GAME.P.yaw = VEH.cur.st.psi * 180 / Math.PI + 95; GAME.P.pitch = -4")
+        pic('9_trabi_seite')
+        do("VEH.auto = () => ({ thr: 0.5, brk: 0, steer: 0.5, hand: false })")
+        steps(1.5, 0.05)
+        c = (J("GLPOSE.stand()").get('chk') or {})
+        ck('steering, the hands stay on the rim', max(c.get('hands', [9, 9])) < 0.06, str(c))
+        do("CAM3.d = 2.2; GAME.P.yaw = VEH.cur.st.psi * 180 / Math.PI + 160; GAME.P.pitch = -4")
+        pic('9_trabi_lenkt')
+        do(BRAKE)
+        steps(2.5, 0.05)
+        do("VEH.auto = null; VEH.exit(); GLAUTO.trabiHide()")
+        steps(0.5)
+        do("CAM3.want = false; CAM3.d = 3.3")
+    VEH_ID = lambda J: J("VEH.cur && VEH.cur.id")
+    part('trabi', trabi)
 
     # ---- a figure riding a moped of the mode ----
     def reiter():
@@ -248,6 +277,14 @@ with lib.browser() as b:
             shots.append(art)
             do("GLFIG.geste(GT.timo, null)")
             steps(0.5)
+        # a torch (grenzland/gl_licht.js: F.lampe) is held up in front of the chest
+        do("GT.timo.lampe = true")
+        steps(0.8)
+        look_at(x, y, hd, 2.6, 0.25, 1.3, 40, -6)
+        pic('7_g_lampe')
+        ck('a figure with a torch holds it up (F.lampe)', J("GT.timo.rig.st.lampW > 0.9"), str(J("GT.timo.rig.st.lampW")))
+        do("GT.timo.lampe = false")
+        steps(0.6)
         gone = J("({ g: GT.timo.gest, phone: !!GT.timo.handyG })")
         ck('ended gestures are gone, and the phone with them', not gone['g'] and not gone['phone'], str(gone))
         look_at(x, y, hd, 2.6, 0.25, 1.3, 40, -6)

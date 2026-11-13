@@ -330,27 +330,38 @@ export const GLPOSE = (() => {
       } else _sh[i].copy(_rt);
     }
     L = L / 2 || 0.55;
-    // in the moped's frame (three's axes: x right, y up, -z forward); the lean turns the shoulders about the hips
+    // in the moped's frame (three's axes: x right, y up, -z forward); the lean turns the shoulders about the hips; who has short
+    // arms slides forward on the seat (up to 12 cm) rather than lying on the tank
     const hipL = v3(P.hip, _w1),
       want = 0.93 * L;
     let best = 0.2,
+      bestS = 0,
       bestE = 1e9;
-    for (let th = 0.04; th <= 0.5; th += 0.03) {
-      let e = 0;
-      for (let i = 0; i < 2; i++) {
-        _w2.copy(_sh[i]).applyMatrix4(_mi).sub(hipL);
-        const y = _w2.y * Math.cos(th) + _w2.z * Math.sin(th),
-          z = -_w2.y * Math.sin(th) + _w2.z * Math.cos(th);
-        _w3.set(_w2.x, y, z).add(hipL);
-        _w2.copy(_gl[i]).applyMatrix4(_mi);
-        e += Math.abs(_w3.distanceTo(_w2) - want);
+    for (let sl = 0; sl <= 0.121; sl += 0.03)
+      for (let th = 0.08; th <= 0.5; th += 0.03) {
+        let e = 0;
+        for (let i = 0; i < 2; i++) {
+          _w2.copy(_sh[i]).applyMatrix4(_mi).sub(hipL);
+          const y = _w2.y * Math.cos(th) + _w2.z * Math.sin(th),
+            z = -_w2.y * Math.sin(th) + _w2.z * Math.cos(th) - sl;
+          _w3.set(_w2.x, y, z).add(hipL);
+          _w2.copy(_gl[i]).applyMatrix4(_mi);
+          e += Math.abs(_w3.distanceTo(_w2) - want);
+        }
+        // a little less lean and less sliding are worth a few millimetres
+        e += 0.25 * sl + 0.03 * th;
+        if (e < bestE - 1e-4) {
+          bestE = e;
+          best = th;
+          bestS = sl;
+        }
       }
-      if (e < bestE - 1e-4) {
-        bestE = e;
-        best = th;
-      }
-    }
     st.lean = st.lean == null ? best : st.lean + (best - st.lean) * Math.min(1, dt * 5);
+    st.slide = st.slide == null ? bestS : st.slide + (bestS - st.slide) * Math.min(1, dt * 5);
+    if (st.slide > 0.001) {
+      R.g.position.addScaledVector(_f, st.slide);
+      R.g.updateMatrixWorld(true);
+    }
     const th = st.lean,
       Qi = R.model.getWorldQuaternion(_mq).invert();
     boneTurn(R.sv, Qi, B.Spine, 1, 0, 0, th * 0.45);
@@ -423,7 +434,14 @@ export const GLPOSE = (() => {
     }
     // what came of it (the tests read it): the hip joint's height over the moped's ground, how far the balls of the feet are from the
     // pegs (or the ground) and the wrists from the grips
-    const chk = { lean: +th.toFixed(3), down: +kd.toFixed(2), hip: 0, feet: [0, 0], hands: [0, 0] };
+    const chk = {
+      lean: +th.toFixed(3),
+      slide: +st.slide.toFixed(3),
+      down: +kd.toFixed(2),
+      hip: 0,
+      feet: [0, 0],
+      hands: [0, 0],
+    };
     B.Hips.getWorldPosition(_w1).applyMatrix4(_mi);
     chk.hip = +_w1.y.toFixed(3);
     for (let i = 0; i < 2; i++) {
@@ -534,6 +552,8 @@ export const GLPOSE = (() => {
   // on it like a rider. His moped: F.ritt (GLFIG.reite) or the nearest moped of the mode under him.
   function mopedOf(F) {
     const A = window.GLAUTO;
+    // tied by GLFIG.reite: that one, wherever it goes; else the one under him
+    if (F.ritt && F.rittFest && !F.ritt.gone && F.ritt.g) return F.ritt;
     if (F.ritt && !F.ritt.gone && F.ritt.g && Math.hypot(F.ritt.x - F.x, F.ritt.y - F.y) < 2.5) return F.ritt;
     let best = null,
       bd = 1.4;
@@ -919,6 +939,29 @@ export const GLPOSE = (() => {
       }
     }
   }
+  // the torch held up: the hand in front of the chest, the fist closed, the beam (grenzland/gl_licht.js) ahead and down
+  function fackel(R, sd, w) {
+    const B = R.B,
+      A = B[sd + 'Arm'];
+    if (!A) return;
+    const s = sd === 'Right' ? 1 : -1;
+    axes(R.g, _r, _u, _f);
+    A.getWorldPosition(_gt);
+    _gt
+      .addScaledVector(_f, 0.3)
+      .addScaledVector(_u, -0.2)
+      .addScaledVector(_r, -s * 0.06);
+    _pole
+      .copy(_u)
+      .multiplyScalar(-1)
+      .addScaledVector(_r, s * 0.5)
+      .addScaledVector(_f, -0.3);
+    ik2(R, A, B[sd + 'ForeArm'], B[sd + 'Hand'], _gt, _pole, w);
+    _w1.copy(_f).addScaledVector(_u, -0.25);
+    _w2.copy(_u).addScaledVector(_r, s * 0.3);
+    handTo(R, sd, _w1, _w2, w);
+    curl(R, sd, [1.3, 1.2, 0.8], 0.8, w);
+  }
   const _al = V(),
     _al2 = V();
   function armLen(R, sd) {
@@ -1046,7 +1089,7 @@ export const GLPOSE = (() => {
         if (C) {
           const v = C.speed * ((R.hipH || C.hip) / C.hip);
           st.runT = (st.runT || 0) + (dt * Math.max(sp, 1)) / v;
-          lauf(R, C, st.runT * C.d, st.runW);
+          lauf(R, C, st.runT, st.runW);
         }
       }
       // sitting: the feet down
@@ -1072,6 +1115,17 @@ export const GLPOSE = (() => {
             handyPose(F, R);
           }
         }
+      }
+      // a torch (F.lampe – grenzland/gl_licht.js puts its beam at the hand): held up in front of the chest, the left hand if the right
+      // holds a thing
+      const LI = window.GLLICHT,
+        lampe = F.lampe === true || (F.lampe !== false && !!(LI && LI.hatLampe && LI.hatLampe(F)));
+      const lsd = F.ding ? 'L' : 'R',
+        lOn = lampe && !F.sitzt && !F.reitet && F.tilt < 0.05 && armsBusy.indexOf(lsd) < 0;
+      st.lampW = (st.lampW || 0) + ((lOn ? 1 : 0) - (st.lampW || 0)) * Math.min(1, dt * 4);
+      if (st.lampW > 0.01) {
+        fackel(R, lsd === 'L' ? 'Left' : 'Right', st.lampW);
+        armsBusy += lsd;
       }
       // talking: the hands that are free move a little
       const talk = !!(F.f.walker && F.f.walker.talking) && !F.sitzt && !F.reitet && sp < 0.3;
