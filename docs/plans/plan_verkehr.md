@@ -92,7 +92,13 @@ Bildzeit) und live.
 - Grenzland-Chat: der Karosseriebauer (`gl_karosse.js`) – heutige Typen bauen wir mit ihm, ohne seinen Modus zu berühren.
 - Suhl-Chat und Was-wäre-wenn-Chat: Busse (`bus/`), Verkehr in Suhl über dieselben Schnittstellen.
 
-## 6. Entscheidungen für Falko
+## 6. Entscheidungen (Falko, 13.11.2026 ~12:45, angeklickt)
+
+- **Modelle:** nach echten Maßen bauen, ohne Logos (A).
+- **Unfallfolgen:** harmlos.
+- **Dichte:** wie echt gezählt.
+
+Die Fragen dazu waren:
 
 1. Fahrzeugmodelle: **A** gebaut nach echten Maßen ohne Logos (empfohlen) oder **B** fertige Modelle mit freier Lizenz.
 2. Folgen eines Unfalls im normalen Spiel: harmlos (Stoß, Stillstand, Fahrer schimpft, Ruf im Dorf) – oder mehr (Polizei, Kosten)?
