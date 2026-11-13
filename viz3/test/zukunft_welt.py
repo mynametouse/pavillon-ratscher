@@ -79,7 +79,7 @@ def run():
             print('programs: after load', P['load'], 'after the mode started (warm)', P['warm'], flush=True)
             s = st()
             ck('the mode started, its materials compiled once (warm)', s['warmed'] and E("ZUKUNFT.S.on"), str(s))
-            ck('starting the mode adds at most four shader programs (the mud band, the plate, the bench of the village office)', P['warm'] - P['load'] <= 4, f"{P['load']} → {P['warm']}")
+            ck('starting the mode adds at most four shader programs (the mud band, foam and shore, the plate, the bench of the village office)', P['warm'] - P['load'] <= 4, f"{P['load']} → {P['warm']}")
             sp = J("ZKWELT.spots()")
             dbg = J("""(() => { const out = []; const ms = []; if (window.RATSCHER && RATSCHER.bld && RATSCHER.bld[1]) ms.push(RATSCHER.bld[1]);
               GAME.scene.traverse(o => { if (o.isMesh && /^gebaeude roofs/.test(o.name || '')) ms.push(o); });
@@ -232,6 +232,16 @@ def run():
                     ck(f'the flood ({vid}) stays in the valley (nothing farther than 160 m from the river)', far[0] == 0, str(far))
                     look(330, -175, 60, 320, -27); pic(f'41-hochwasser-{tag}-dorf-60m')
                     look(196, -40, 1.7, 30, -2); pic(f'42-hochwasser-{tag}-bruecke-zu-fuss')
+                    # on the bank: the water's edge nearest to the bridge, from 10 m on the dry side
+                    sh = J("""(() => { const g = ZKWELT.S.floodMesh.geometry.attributes.position; let b = null, bd = 1e9;
+                      for (let i = 0; i < g.count; i++) { const x = g.getX(i), y = -g.getZ(i), d = Math.hypot(x - 196, y + 40);
+                        if (d < bd && d > 15 && (KERN.terrain(x, y) || 0) < g.getY(i) - 0.15) { bd = d; b = [x, y]; } } return b; })()""")
+                    if sh:
+                        import math
+                        dx, dy = 196 - sh[0], -40 - sh[1]; l = math.hypot(dx, dy) or 1
+                        cx, cy = sh[0] + dx / l * 10, sh[1] + dy / l * 10
+                        yaw = (math.degrees(math.atan2(sh[0] - cx, sh[1] - cy)) + 360) % 360
+                        look(cx, cy, 1.7, yaw, -8); pic(f'42-hochwasser-{tag}-ufer-zu-fuss')
                     look(560, -420, 60, 340, -28); pic(f'43-hochwasser-{tag}-unter-damm-60m')
                 world('klima', 'heute', 2026)
                 look(196, -40, 1.7, 30, -2); pic('44-bruecke-heute')
@@ -260,20 +270,40 @@ def run():
                 look(fin[0], fin[1], 1.7, fin[2], 6); pic('51-wald-zu-fuss-heute')
                 look(fed[0], fed[1], 1.7, fed[2], 3); pic('51-wald-rand-heute')
                 last = None
-                for vid, year in (('umbau', 2030), ('umbau', 2035), ('umbau', 2045), ('umbau', 2060), ('natur', 2035), ('natur', 2060)):
+                for vid, year in (('umbau', 2030), ('natur', 2030), ('umbau', 2035), ('natur', 2035), ('umbau', 2045), ('umbau', 2060), ('natur', 2060)):
                     world('wald', vid, year)
                     s = st()
                     print(vid, year, json.dumps(s['forest']), json.dumps(s['young']), flush=True)
                     look(-420, -470, 60, 215, -27); pic(f'5{2 if vid == "umbau" else 7}-wald-{vid}-{year}-60m')
                     look(fin[0], fin[1], 1.7, fin[2], 6); pic(f'5{2 if vid == "umbau" else 7}-wald-{vid}-{year}-zu-fuss')
                     look(fed[0], fed[1], 1.7, fed[2], 3); pic(f'5{2 if vid == "umbau" else 7}-wald-{vid}-{year}-rand')
-                    if vid == 'umbau' and year == 2030:
-                        ck('2030: spruces struck – red and grey crowns', s['forest'].get('rot', 0) + s['forest'].get('grau', 0) > 100, str(s['forest']))
+                    if year == 2035:
+                        look(fin[0], fin[1], 1.7, fin[2] + 40, -32); pic(f'5{2 if vid == "umbau" else 7}-wald-{vid}-{year}-boden')
+                    # what the view on foot looks at (12 m ahead): the spruces within 20 m by state
+                    near = J(f"""(() => {{ const Fo = ZKWELT.S.forest, a = {fin[2]} * Math.PI / 180, x = {fin[0]} + Math.sin(a) * 12, y = {fin[1]} + Math.cos(a) * 12, c = {{}};
+                      Fo.L.forEach((t, i) => {{ if (!Fo.small[i] && Math.hypot(t.x - x, t.y - y) < 20) c[Fo.code[i]] = (c[Fo.code[i]] || 0) + 1; }}); return c; }})()""")
+                    print('in view on foot', vid, year, near, flush=True)
+                    if year == 2030:
+                        tot = sum(near.values()) or 1
+                        ck(f'2030 ({vid}): the view on foot looks at a beetle nest (a third or more of the spruces there struck)', (tot - near.get('0', 0)) / tot >= 0.33, str(near))
+                    if year == 2030:
+                        ck(f'2030 ({vid}): spruces struck – red-brown and grey crowns, some thrown by the wind', s['forest'].get('rot', 0) > 100 and s['forest'].get('grau', 0) > 100 and s['forest'].get('geworfen', 0) > 10, str(s['forest']))
+                    if vid == 'umbau' and year == 2035:
+                        yn = J("ZKWELT.S.youngN")
+                        print('floor 2035', json.dumps(yn), flush=True)
+                        ck('2035 Waldumbau: the clearing – grass, fireweed, foxglove, brambles, slash, skid lanes, stumps', yn['grass'] > 500 and yn['fire'] > 30 and yn['fox'] > 5 and yn['bram'] > 30 and yn['slash'] > 50 and yn['lanes'] > 20 and yn['stumps'] > 300, str(yn))
                     if vid == 'umbau' and year == 2060:
                         ck('2060 Waldumbau: the spruces cleared, a young mixed stand (the garden\'s real tree kinds for the tall broadleaf ones)', s['forest'].get('kahl', 0) > 500 and sum(v for k, v in s['young'].items() if k.startswith('ez-')) > 100, str(s['young']))
                     if vid == 'natur' and year == 2060:
-                        ck('2060 natural regeneration: spruce and birch, dead trees lying in the family forest', s['forest'].get('jung', 0) + s['young'].get('birke', 0) + s['young'].get('ez-aspen', 0) > 100 and s['forest'].get('liegt', 0) > 20, str(s['forest']) + str(s['young']))
+                        ck('2060 natural regeneration: spruce and birch, dead trees lying in the family forest', s['forest'].get('jung', 0) + s['young'].get('birke', 0) + s['young'].get('ez-aspen', 0) > 100 and s['forest'].get('liegt', 0) + s['young'].get('log', 0) > 20, str(s['forest']) + str(s['young']))
                     last = s
+                # the clearing in July: fireweed and foxglove in flower
+                E("window.__zkT = CLOCK.t; CLOCK.t = (Math.floor(CLOCK.t / 1440) + ((404 - Math.floor(CLOCK.t / 1440)) % 365 + 365) % 365) * 1440 + 12 * 60 + 30; DN.update(true)")
+                world('wald', 'umbau', 2045); world('wald', 'umbau', 2035)
+                look(fin[0], fin[1], 1.7, fin[2], 6); pic('53-wald-umbau-2035-zu-fuss-juli')
+                look(fed[0], fed[1], 1.7, fed[2], 3); pic('53-wald-umbau-2035-rand-juli')
+                E("CLOCK.t = window.__zkT; DN.update(true)")
+                world('wald', 'umbau', 2045)
                 # the year slider changes the forest
                 world('wald', 'umbau', 2035); a = st()['young']
                 world('wald', 'umbau', 2060); b2 = st()['young']
@@ -298,8 +328,8 @@ def run():
                 # the futures' own draws (meshes named zukunft:…): the world streams details in and out, its counts are only printed
                 ck('roof PV: at most 4 draw calls of its own', c1['zc'] <= 4, str(c1))
                 ck('the park: at most 9 draw calls of its own', c2['zc'] <= 9, str(c2))
-                ck('the young forest: at most 12 draw calls of its own', c4['zc'] <= 12, str(c4))
-                ck('triangles within budget (at most 700 000 of its own for a whole variant in view)', max(c1['zt'], c2['zt'], c4['zt']) < 700000, f"{c1['zt']} {c2['zt']} {c4['zt']}")
+                ck('the young forest and its floor: at most 32 draw calls of its own', c4['zc'] <= 32, str(c4))
+                ck('triangles within budget (at most 1,6 million of its own for a whole variant in view)', max(c1['zt'], c2['zt'], c4['zt']) < 1600000, f"{c1['zt']} {c2['zt']} {c4['zt']}")
 
             if 'ende' in want:
                 print('programs before', 'ende', progs(), newp(), flush=True)
@@ -348,8 +378,10 @@ def run():
                 world(t, v, y)
             s = st()
             ck('phone: every topic shown, no new programs', E("ZUKUNFT.S.on") and progs() == p0, f"{p0} → {progs()}")
-            ck('phone: fewer young trees (coarse pointer)', sum(v for k, v in s['young'].items() if k not in ('stump', 'brush', 'guard')) <= 2600, str(s['young']))
+            ck('phone: fewer young trees and plants (coarse pointer)', sum(v for k, v in s['young'].items() if k not in ('stump', 'brush', 'guard', 'grass', 'slash') and k != 'fern') <= 3400 and s['young'].get('grass', 0) <= 1800, str(s['young']))
             look(-420, -470, 60, 215, -27); pic('90-telefon-wald')
+            c = calls()
+            ck('phone: the forest within 0,8 million triangles of its own', c['zt'] < 800000, str(c))
             ck.errors(perrs)
             pg.close()
     ck.done()

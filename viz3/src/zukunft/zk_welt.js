@@ -32,7 +32,7 @@
 //                            nat0, forest:{ha,spruce} } – ZKDATA.calc reads them as ctx; tests also read ZKWELT.stats() and ZKWELT.spots()
 // Pictures: viz3/test/zukunft_welt.py (out/zukunft_welt/: each topic before/after, on foot and from 60 m).
 import * as THREE from 'three';
-import { COARSE, scene } from '../core/head.js';
+import { cam, COARSE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, plain } from '../core/assets.js';
 import { warmUp } from '../render/render.js';
@@ -41,6 +41,7 @@ import { DN } from '../time/daynight.js';
 import { WXBODEN } from '../wetter/wx_boden.js';
 import { FENCE_MAT } from '../garden/fences.js';
 import { TREES, treeLeafLevels } from '../garden/trees.js';
+import { GRASS } from '../garden/grass.js';
 import { ZKDATA } from './zk_data.js';
 
 export const ZKWELT = (() => {
@@ -132,6 +133,16 @@ export const ZKWELT = (() => {
       quad(a, b, c, d, col) {
         B.tri(a, b, c, col);
         B.tri(a, c, d, col);
+      },
+      // one triangle with a colour per corner and one normal
+      triV(p, cs, n) {
+        for (let q = 0; q < 3; q++) {
+          const c = cs[q];
+          P.push(p[q].x, p[q].y, p[q].z);
+          N.push(n.x, n.y, n.z);
+          if (alpha) C.push(c[0], c[1], c[2], c.length > 3 ? c[3] : 1);
+          else C.push(c[0], c[1], c[2]);
+        }
       },
       // a box of size sx, sy, sz centred at the origin, moved by matrix m; skip: bit mask of faces left out (+x −x +y −y +z −z)
       box(m, sx, sy, sz, col, skip = 0) {
@@ -272,7 +283,8 @@ export const ZKWELT = (() => {
       } catch (e) {}
     });
     S.brook = b;
-    // flood water of December 2023 in the photos: brown-grey, opaque, the grey sky faintly mirrored, moving
+    // flood water in the photos of December 2023 (Schleuse, Werra): turbid brown-grey, opaque, the sky only faint and blurred – at a
+    // grazing angle more of it (Fresnel), never a mirror; ripples and the current moving downstream
     if (b) {
       const m = b.clone();
       m.onBeforeCompile = (sh, r) => {
@@ -280,11 +292,11 @@ export const ZKWELT = (() => {
         S.wt = sh.uniforms.uWT;
       };
       m.customProgramCacheKey = () => 'brook';
-      m.color.setRGB(...L(0.3, 0.29, 0.21));
-      m.opacity = 0.93;
-      m.roughness = 0.06;
-      m.envMapIntensity = 1.1;
-      if (m.normalScale) m.normalScale.set(0.26, 0.26);
+      m.color.setRGB(...L(0.3, 0.27, 0.2));
+      m.opacity = 0.97;
+      m.roughness = 0.26;
+      m.envMapIntensity = 0.32;
+      if (m.normalScale) m.normalScale.set(0.32, 0.32);
       return m;
     }
     return new THREE.MeshStandardMaterial({
@@ -315,12 +327,84 @@ export const ZKWELT = (() => {
     g.fillText('bis 60 Min. vorher', 128, 118);
     g.fillText('per Telefon oder App', 128, 146);
     g.font = '16px sans-serif';
-    g.fillText('Mo–Fr 6–20 Uhr · Sa 8–14 Uhr', 128, 176);
+    g.fillText('Mo–Fr ab 20.45 · Sa ab 13 · So', 128, 176);
     g.strokeStyle = '#16703a';
     g.lineWidth = 6;
     g.strokeRect(3, 3, 250, 186);
     const t = new THREE.CanvasTexture(cv);
     t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+    return t;
+  }
+  // tileable pictures drawn out along u (the current): foam lines and flecks on the water; mud with grass laid flat by the water
+  function streakTex(kind) {
+    const N = 256,
+      cv = document.createElement('canvas');
+    cv.width = cv.height = N;
+    const g = cv.getContext('2d');
+    let r = kind === 'foam' ? 7 : 3;
+    const rnd = () => (r = (Math.imul(r, 1664525) + 1013904223) >>> 0) / 4294967296;
+    const wrap = f => {
+      for (const dx of [-N, 0, N]) for (const dy of [-N, 0, N]) f(dx, dy);
+    };
+    if (kind === 'shore') {
+      g.fillStyle = 'rgb(92,78,58)';
+      g.fillRect(0, 0, N, N);
+      for (let i = 0; i < 900; i++) {
+        const x = rnd() * N,
+          y = rnd() * N,
+          l = 18 + rnd() * 60,
+          w = 0.8 + rnd() * 1.8,
+          k = rnd(),
+          c = k < 0.45 ? [168, 148, 96] : k < 0.75 ? [96, 102, 58] : k < 0.9 ? [130, 116, 80] : [66, 55, 40],
+          al = 0.35 + rnd() * 0.5;
+        g.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${al})`;
+        g.lineWidth = w;
+        const bend = (rnd() - 0.5) * 6;
+        wrap((dx, dy) => {
+          g.beginPath();
+          g.moveTo(x + dx, y + dy);
+          g.quadraticCurveTo(x + dx + l / 2, y + dy + bend, x + dx + l, y + dy + bend * 0.4);
+          g.stroke();
+        });
+      }
+    } else {
+      g.clearRect(0, 0, N, N);
+      // lines of foam along the current, broken; flecks and small clusters of bubbles
+      for (let i = 0; i < 40; i++) {
+        const x = rnd() * N,
+          y = rnd() * N,
+          l = 40 + rnd() * 150,
+          w = 1 + rnd() * 3.5,
+          al = 0.3 + rnd() * 0.4,
+          bend = (rnd() - 0.5) * 14;
+        g.strokeStyle = `rgba(236,232,220,${al})`;
+        g.lineWidth = w;
+        g.setLineDash([4 + rnd() * 16, 2 + rnd() * 10]);
+        wrap((dx, dy) => {
+          g.beginPath();
+          g.moveTo(x + dx, y + dy);
+          g.quadraticCurveTo(x + dx + l / 2, y + dy + bend, x + dx + l, y + dy);
+          g.stroke();
+        });
+      }
+      g.setLineDash([]);
+      for (let i = 0; i < 90; i++) {
+        const x = rnd() * N,
+          y = rnd() * N,
+          rx = 1 + rnd() * 5,
+          al = 0.25 + rnd() * 0.5;
+        g.fillStyle = `rgba(228,222,206,${al})`;
+        wrap((dx, dy) => {
+          g.beginPath();
+          g.ellipse(x + dx, y + dy, rx * 2.2, rx * 0.7, 0, 0, 6.283);
+          g.fill();
+        });
+      }
+    }
+    const t = new THREE.CanvasTexture(cv);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.anisotropy = 4;
     return t;
   }
@@ -349,6 +433,21 @@ export const ZKWELT = (() => {
       shadow: D && D.shMat ? D.shMat : null,
     };
     S.mats.mud.name = 'zukunft mud';
+    // the flood's foam and its shore of flattened grass: one program (a picture, colours with alpha per vertex), two pictures
+    const flat = map =>
+      plain({
+        map,
+        vertexColors: true,
+        transparent: true,
+        depthWrite: false,
+        roughness: 0.85,
+        envMapIntensity: 0.25,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -6,
+      });
+    S.mats.foam = flat(streakTex('foam'));
+    S.mats.shore = flat(streakTex('shore'));
     return S.mats;
   }
   // instanced mesh in a kit material: instance colours always (the program welt-dinge compiled at load)
@@ -441,6 +540,9 @@ export const ZKWELT = (() => {
     imp.setColorAt(0, new THREE.Color(1, 1, 1));
     add(new THREE.Mesh(tg, M.kit));
     add(new THREE.Mesh(tga, M.mud));
+    const tgu = tga.clone();
+    tgu.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1], 2));
+    add(new THREE.Mesh(tgu, M.foam));
     const wg = new THREE.PlaneGeometry(0.01, 0.01);
     wg.translate(0, -300, 0);
     add(new THREE.Mesh(wg, M.water));
@@ -470,7 +572,7 @@ export const ZKWELT = (() => {
     } catch (e) {
       console.warn('zukunft warm bank', e);
     }
-    for (const x of [tg, tga, pl, wg]) x.dispose();
+    for (const x of [tg, tga, tgu, pl, wg]) x.dispose();
     return true;
   }
 
@@ -2050,7 +2152,8 @@ export const ZKWELT = (() => {
   // lies on the same flat floor only 0–1,5 m above it – a fixed depth would put the whole village under water. So the depth is chosen
   // so that as many houses stand in the water as the variant assumes (zukunft/zk_data.js: „Wie im Dezember 2023“, gauge 0,9 m above
   // the bed – two houses with wet cellars, the river mostly in the meadows; „Schwerer als 2023“, HQ100 at 1,8 m – nine houses):
-  // houses(level) ≈ 9 · ((level − 0,6) / 1,2)^1,5 (Annahme, between those two). The extent is an Annahme, not the state's flood map.
+  // houses(level) ≈ 9 · ((level − 0,6) / 1,2)^1,5 (Annahme, between those two) – used for the modest December 2023 only; HQ100 takes the
+  // state's official flood area (floodBuild), 37 buildings in it, as zk_data.js now has it too.
   const floodHouses = lvl => Math.max(0, Math.round(9 * Math.pow(Math.max(0, lvl - 0.6) / 1.2, 1.5)));
   // the grid over the river's corridor, once: the valley floor under each point (W0), the terrain (Z), along (Sv) and across (Dv)
   function floodGrid() {
@@ -2245,7 +2348,8 @@ export const ZKWELT = (() => {
         j = (k / NX) | 0;
       vi[k] = pos.length / 3;
       pos.push(x0 + i * CELL, W[k] + 0.02, -(y0 + j * CELL));
-      uv.push(Sv[k] / 7, Dv[k] / 7);
+      // the ripples drawn out along the current and moving downstream (the brook's program moves them towards −u)
+      uv.push(-Sv[k] / 4, Dv[k] / 2.6);
       return vi[k];
     };
     let nCells = 0,
@@ -2267,11 +2371,8 @@ export const ZKWELT = (() => {
     for (let i = 0; i < nrm.length; i += 3) nrm[i + 1] = 1;
     g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
     g.computeBoundingSphere();
-    // the shore: a band of wet mud from the waterline up to ~0,7 m above it, draped on the terrain, its upper edge soft; flotsam on the line
-    const mud = GB(true),
-      MUD = L(0.2, 0.16, 0.11),
-      MUD2 = L(0.3, 0.25, 0.18);
-    const shore = [];
+    // the shore: a band from the waterline up to ~0,6 m above it, draped on the terrain – wet mud with the grass laid flat along the
+    // current (its picture, darker near the water), the upper edge soft; flotsam on the line
     const near = new Uint8Array(CX * CY);
     for (let j = 0; j < CY; j++)
       for (let i = 0; i < CX; i++)
@@ -2282,17 +2383,38 @@ export const ZKWELT = (() => {
                 q = j + b;
               if (p >= 0 && q >= 0 && p < CX && q < CY) near[q * CX + p] = 1;
             }
-    const vtx = k => {
-      const i = k % NX,
-        j = (k / NX) | 0,
-        x = x0 + i * CELL,
-        y = y0 + j * CELL,
-        up = Z[k] - W[k],
-        a = up <= -0.04 ? 0 : 0.72 * Math.min(1, (up + 0.04) / 0.1) * Math.max(0, 1 - up / 0.6),
-        nz = noise(x / 6, y / 6),
-        c = mix3(MUD, MUD2, nz);
-      return { p: new THREE.Vector3(x, Z[k] + 0.05, -y), c: [c[0], c[1], c[2], a] };
+    // an indexed mesh over grid vertices: pos (x, z above the ground or water), colour RGBA, uv
+    const gridMesh = (cells, vat) => {
+      const vi2 = new Int32Array(NX * NY).fill(-1),
+        P = [],
+        C = [],
+        U = [],
+        I = [];
+      const v = k => {
+        if (vi2[k] >= 0) return vi2[k];
+        const o = vat(k);
+        vi2[k] = P.length / 3;
+        P.push(x0 + (k % NX) * CELL, o.z, -(y0 + ((k / NX) | 0) * CELL));
+        C.push(o.c[0], o.c[1], o.c[2], o.c[3]);
+        U.push(o.u, o.v);
+        return vi2[k];
+      };
+      for (const [i, j] of cells) {
+        const [a, b, c, d] = corner(i, j).map(v);
+        I.push(a, b, c, a, c, d);
+      }
+      const gg = new THREE.BufferGeometry();
+      gg.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+      gg.setAttribute('color', new THREE.Float32BufferAttribute(C, 4));
+      gg.setAttribute('uv', new THREE.Float32BufferAttribute(U, 2));
+      const nn = new Float32Array(P.length);
+      for (let q = 1; q < nn.length; q += 3) nn[q] = 1;
+      gg.setAttribute('normal', new THREE.BufferAttribute(nn, 3));
+      gg.setIndex(I);
+      gg.computeBoundingSphere();
+      return gg;
     };
+    const band = [];
     for (let j = 0; j < CY; j++)
       for (let i = 0; i < CX; i++) {
         if (!near[j * CX + i]) continue;
@@ -2301,19 +2423,111 @@ export const ZKWELT = (() => {
         const ups = cs.map(k => Z[k] - W[k]);
         // only the band: some corner within 0,6 m above the water, some above it
         if (Math.min(...ups) > 0.6 || Math.max(...ups) < -0.04) continue;
-        const [a, b, c, d] = cs.map(vtx);
-        mud.tri(a.p, b.p, c.p, a.c);
-        // per-vertex colours: GB takes one colour per triangle – set them by hand below
-        mud.tri(a.p, c.p, d.p, a.c);
-        // remember the per-vertex alphas for the fix-up
-        shore.push([a.c, b.c, c.c, a.c, c.c, d.c]);
+        band.push([i, j]);
       }
-    const mg = mud.geo();
-    {
-      const C = mg.attributes.color;
-      let v = 0;
-      for (const six of shore) for (const c of six) C.setXYZW(v++, c[0], c[1], c[2], c[3]);
+    const mg = gridMesh(band, k => {
+      const up = Z[k] - W[k],
+        a = up <= -0.04 ? 0 : 0.85 * Math.min(1, (up + 0.04) / 0.1) * Math.max(0, 1 - up / 0.6),
+        wet = 0.62 + 0.38 * Math.min(1, Math.max(0, up) / 0.5);
+      return { z: Z[k] + 0.05, c: [wet, wet, wet, a], u: Sv[k] / 5, v: Dv[k] / 1.1 };
+    });
+    // the wet walls: where the water stands at a house, its walls dark and soaked up to ~0,3 m above it (both faces of a strip just
+    // outside the wall); foam gathers where the current meets them
+    const Vg = G('VILLAGE'),
+      wall = GB(true),
+      WET = L(0.16, 0.13, 0.1),
+      foamNear = new Uint8Array(NX * NY),
+      gk = (x, y) => {
+        const i = Math.round((x - x0) / CELL),
+          j = Math.round((y - y0) / CELL);
+        return i >= 0 && j >= 0 && i < NX && j < NY ? j * NX + i : -1;
+      },
+      wetAt = (x, y) => {
+        const i = Math.floor((x - x0) / CELL),
+          j = Math.floor((y - y0) / CELL);
+        if (i < 0 || j < 0 || i >= CX || j >= CY || !seen[j * CX + i]) return NaN;
+        const k = gk(x, y);
+        return k >= 0 ? W[k] : NaN;
+      };
+    let nWall = 0;
+    for (const b of Vg && Vg.bld ? Vg.bld : []) {
+      if (!b.quads || !b.quads.length) continue;
+      let mx = 0,
+        my = 0;
+      for (const q of b.quads) {
+        mx += q.ax + q.bx;
+        my += q.ay + q.by;
+      }
+      mx /= 2 * b.quads.length;
+      my /= 2 * b.quads.length;
+      for (const q of b.quads) {
+        if (q.len < 0.5) continue;
+        let nx = (q.by - q.ay) / q.len,
+          ny = -(q.bx - q.ax) / q.len;
+        const cx = (q.ax + q.bx) / 2,
+          cy = (q.ay + q.by) / 2;
+        if ((cx - mx) * nx + (cy - my) * ny < 0) {
+          nx = -nx;
+          ny = -ny;
+        }
+        const Wl = wetAt(cx + nx * 1.6, cy + ny * 1.6);
+        if (!(Wl > q.foot + 0.03)) continue;
+        nWall++;
+        const o = 0.03,
+          A0 = T3(q.ax + nx * o, q.ay + ny * o, 0),
+          B0 = T3(q.bx + nx * o, q.by + ny * o, 0),
+          at = (P, z) => new THREE.Vector3(P.x, z, P.z),
+          n3 = new THREE.Vector3(nx, 0, -ny),
+          m3 = n3.clone().negate(),
+          rows = [
+            [Wl - 0.03, 0.7],
+            [Wl + 0.14, 0.5],
+            [Wl + 0.34, 0],
+          ];
+        for (let r = 0; r + 1 < rows.length; r++) {
+          const [z0, a0] = rows[r],
+            [z1, a1] = rows[r + 1],
+            p = [at(A0, z0), at(B0, z0), at(B0, z1), at(A0, z1)],
+            cs = [
+              [...WET, a0],
+              [...WET, a0],
+              [...WET, a1],
+              [...WET, a1],
+            ];
+          for (const [i0, i1, i2, n] of [
+            [0, 1, 2, n3],
+            [0, 2, 3, n3],
+            [0, 2, 1, m3],
+            [0, 3, 2, m3],
+          ])
+            wall.triV([p[i0], p[i1], p[i2]], [cs[i0], cs[i1], cs[i2]], n);
+        }
+        // foam along the wall
+        for (let t = 0; t <= q.len; t += 2) {
+          const x = q.ax + ((q.bx - q.ax) * t) / q.len,
+            y = q.ay + ((q.by - q.ay) * t) / q.len;
+          for (const d of [1, 3, 5]) {
+            const k = gk(x + nx * d, y + ny * d);
+            if (k >= 0) foamNear[k] = Math.max(foamNear[k], d < 2 ? 2 : 1);
+          }
+        }
+      }
     }
+    const wg = nWall ? wall.geo() : null;
+    // foam and streaks on the water: drawn out along the current and drifting with it (its picture); thick along the shore and at the
+    // walls, in lines in the main current, scattered elsewhere
+    const fcells = [];
+    for (let j = 0; j < CY; j++) for (let i = 0; i < CX; i++) if (seen[j * CX + i]) fcells.push([i, j]);
+    const fg = gridMesh(fcells, k => {
+      const dep = W[k] - Z[k],
+        x = x0 + (k % NX) * CELL,
+        y = y0 + ((k / NX) | 0) * CELL,
+        shoreF = 0.45 * (1 - smooth(0.05, 0.5, dep)),
+        main = 0.3 * (1 - smooth(4, 10, Math.abs(Dv[k]))),
+        wallF = foamNear[k] === 2 ? 0.65 : foamNear[k] === 1 ? 0.35 : 0,
+        a = Math.max(0.14 * smooth(0.55, 0.8, noise(x / 30, y / 30)), shoreF, main, wallF);
+      return { z: W[k] + 0.035, c: [1, 1, 1, Math.min(0.8, a)], u: Sv[k] / 14, v: Dv[k] / 3.5 };
+    });
     // flotsam: twigs and straw along the waterline (cells with wet and dry corners)
     const fl = [];
     for (let j = 0; j < CY; j++)
@@ -2343,7 +2557,7 @@ export const ZKWELT = (() => {
           kind: hash(k0 * 23) < 0.07 ? 2 : hash(k0 * 17) < 0.55 ? 0 : 1,
         });
       }
-    return { g, mg, fl, cells: nCells, area, depth, houses: nh, want, maxD, usg: big };
+    return { g, mg, fg, wg, fl, cells: nCells, area, depth, houses: nh, want, maxD, usg: big, walls: nWall };
   }
   // twigs (a few thin sticks) and straw (a flat pale tangle): flotsam in one geometry each
   function flotsamGeo(kind) {
@@ -2389,15 +2603,16 @@ export const ZKWELT = (() => {
     }
     return B.geo();
   }
+  const floodMeshes = () => [S.floodMesh, S.mudMesh, S.foamMesh, S.wallMesh, S.flot0, S.flot1, S.flot2].filter(Boolean);
   function flood(level) {
     level = level > 0 ? level : 0;
     if (!level) {
-      for (const m of [S.floodMesh, S.mudMesh, S.flot0, S.flot1, S.flot2]) if (m) m.visible = false;
+      for (const m of floodMeshes()) m.visible = false;
       S.floodLevel = 0;
       return;
     }
     if (Math.abs((S.floodLevel || 0) - level) < 0.01 && S.floodMesh) {
-      for (const m of [S.floodMesh, S.mudMesh, S.flot0, S.flot1, S.flot2]) if (m) m.visible = true;
+      for (const m of floodMeshes()) m.visible = true;
       return;
     }
     const M = mats(),
@@ -2408,13 +2623,32 @@ export const ZKWELT = (() => {
       S.floodMesh.onBeforeRender = () => {
         if (S.wt) S.wt.value = (performance.now() / 1000) % 600;
       };
-      S.mudMesh = plainMesh(F.mg, M.mud, 'hochwasser-schlamm');
+      S.mudMesh = plainMesh(F.mg, M.shore, 'hochwasser-ufer');
       S.mudMesh.renderOrder = 2;
+      S.foamMesh = plainMesh(F.fg, M.foam, 'hochwasser-schaum');
+      S.foamMesh.renderOrder = 4;
+      // the foam drifts with the current (about 0,4 m/s)
+      S.foamMesh.onBeforeRender = () => {
+        M.foam.map.offset.x = -(((performance.now() / 1000) * 0.03) % 1);
+      };
     } else {
-      S.floodMesh.geometry.dispose();
-      S.floodMesh.geometry = F.g;
-      S.mudMesh.geometry.dispose();
-      S.mudMesh.geometry = F.mg;
+      for (const [m, g] of [
+        [S.floodMesh, F.g],
+        [S.mudMesh, F.mg],
+        [S.foamMesh, F.fg],
+      ]) {
+        m.geometry.dispose();
+        m.geometry = g;
+      }
+    }
+    if (S.wallMesh) {
+      scene.remove(S.wallMesh);
+      S.wallMesh.geometry.dispose();
+      S.wallMesh = null;
+    }
+    if (F.wg) {
+      S.wallMesh = plainMesh(F.wg, M.mud, 'hochwasser-waende');
+      S.wallMesh.renderOrder = 2;
     }
     for (const kind of [0, 1, 2]) {
       const key = 'flot' + kind,
@@ -2443,9 +2677,10 @@ export const ZKWELT = (() => {
       im.instanceMatrix.needsUpdate = true;
       S[key] = im;
     }
-    for (const m of [S.floodMesh, S.mudMesh, S.flot0, S.flot1, S.flot2]) if (m) m.visible = true;
+    for (const m of floodMeshes()) m.visible = true;
     S.floodLevel = level;
     S.floodInfo = {
+      walls: F.walls,
       cells: F.cells,
       area: Math.round(F.area),
       depth: +F.depth.toFixed(2),
@@ -2492,22 +2727,41 @@ export const ZKWELT = (() => {
   // =====================================================================================================================================
   // The forest at the Klinge after the beetle: dying, cleared or fallen, young trees growing
   // =====================================================================================================================================
-  const TINT = { red: [1.55, 0.74, 0.4], grey: [0.82, 0.78, 0.72], dry: [1.2, 1.05, 0.62] };
+  // crown colours as factors on the spruce's needle cards (their texture is a dark olive green, linear ~0.05/0.06/0.016 with the
+  // spruce's tint): fading yellow-green in the first months, rust red-brown (sRGB ~130/80/35) until the needles fall, then the bare
+  // silver-grey twigs (~110/105/90) – the beetle spruces of the Thüringer Wald in the photos of 2019–2024
+  const TINT = {
+    fade: [2.1, 1.5, 0.8],
+    red: [4.6, 1.3, 0.95],
+    grey: [3.1, 2.15, 5.4],
+    dry: [1.7, 1.2, 0.8],
+  };
   function forestInit() {
     if (S.forest) return S.forest;
     const F = G('FOREST');
-    const Ls = F && F.list ? F.list.filter(t => t.sp === 'spruce' && !t.gone && t.h > 4) : [];
-    // rank of every spruce on a mix of chance and place (neighbours die together: the beetle spreads from nests)
-    const sc = Ls.map((t, i) => ({ i, s: 0.45 * hash(t.id * 13 + 5) + 0.55 * noise(t.x / 45, t.y / 45) }));
-    sc.sort((a, b) => a.s - b.s);
+    // the spruces (the small ones of the understorey too: the harvesters of the Waldumbau take them with the dead stand)
+    const Ls = F && F.list ? F.list.filter(t => t.sp === 'spruce' && !t.gone && t.h > 1.5) : [],
+      core = Ls.map(t => (F.inCore ? F.inCore(t.x, t.y) : false));
+    // rank of every spruce on a mix of chance and place (neighbours die together: the beetle spreads from nests). The family forest
+    // is ranked on its own – it follows the same curve as the whole stand (ZKDATA's share by year), its nests ~20 m across
     const rank = new Float32Array(Ls.length);
-    sc.forEach((o, r) => (rank[o.i] = (r + 0.5) / Ls.length));
+    for (const inC of [true, false]) {
+      const sc = [];
+      Ls.forEach((t, i) => {
+        if (core[i] !== inC) return;
+        const n = inC ? noise(t.x / 26 + 7.1, t.y / 26 + 3.3) : noise(t.x / 45, t.y / 45);
+        sc.push({ i, s: (inC ? 0.15 : 0.45) * hash(t.id * 13 + 5) + (inC ? 0.85 : 0.55) * n });
+      });
+      sc.sort((a, b) => a.s - b.s);
+      sc.forEach((o, r) => (rank[o.i] = (r + 0.5) / sc.length));
+    }
     S.forest = {
       L: Ls,
       rank,
       orig: Ls.map(t => ({ h: t.h, w: t.w, tint: t.tint || null, tilt: t.tilt || null })),
       code: new Int16Array(Ls.length).fill(-1),
-      core: Ls.map(t => (F.inCore ? F.inCore(t.x, t.y) : false)),
+      core,
+      small: Ls.map(t => t.h <= 4),
     };
     return S.forest;
   }
@@ -2515,13 +2769,13 @@ export const ZKWELT = (() => {
   function youngGeo(kind) {
     const B = GB(false),
       BARK = L(0.3, 0.25, 0.2),
-      BIRCH = L(0.78, 0.77, 0.72),
-      DARK = L(0.055, 0.085, 0.05);
+      BIRCH = L(0.66, 0.64, 0.6),
+      DARK = L(0.07, 0.1, 0.06);
     if (kind === 'fichte' || kind === 'tanne') {
       // a narrow cone of whorls: five tiers, darker inside, the leader on top
       B.prism(0, 0, 0, 0.98, 0.016, 0.004, 5, BARK, false);
-      const c0 = kind === 'tanne' ? L(0.035, 0.07, 0.045) : L(0.045, 0.08, 0.04),
-        c1 = kind === 'tanne' ? L(0.07, 0.12, 0.07) : L(0.08, 0.13, 0.06);
+      const c0 = kind === 'tanne' ? L(0.08, 0.14, 0.09) : L(0.1, 0.16, 0.08),
+        c1 = kind === 'tanne' ? L(0.12, 0.2, 0.12) : L(0.14, 0.22, 0.1);
       for (let i = 0; i < 5; i++) {
         const y0 = 0.1 + i * 0.17,
           r = 0.26 * (1 - i / 5.6);
@@ -2530,7 +2784,7 @@ export const ZKWELT = (() => {
       }
     } else if (kind === 'birke') {
       // a white stem, a narrow airy crown of three loose masses
-      B.prism(0, 0, 0, 0.85, 0.016, 0.006, 6, BIRCH, false);
+      B.prism(0, 0, 0, 0.85, 0.008, 0.003, 5, BIRCH, false);
       for (const [x, y, z, r] of [
         [0.03, 0.62, 0, 0.13],
         [-0.04, 0.76, 0.03, 0.12],
@@ -2539,7 +2793,7 @@ export const ZKWELT = (() => {
         B.blob(x, y, z, r, r * 1.25, r, () => PAINT, Math.round(y * 100), 3, 6, 0.35);
     } else {
       // beech, oak, maple, rowan: a stem and a rounded crown of four lumpy masses (few triangles: thousands of them stand)
-      B.prism(0, 0, 0, 0.55, 0.02, 0.012, 5, BARK, false);
+      B.prism(0, 0, 0, 0.55, 0.011, 0.006, 5, BARK, false);
       const sp = kind === 'eiche' ? 0.3 : kind === 'ahorn' ? 0.27 : 0.25;
       for (const [x, y, z, r] of [
         [0, 0.66, 0, sp],
@@ -2554,7 +2808,7 @@ export const ZKWELT = (() => {
           r,
           r * 0.85,
           r,
-          nv => (nv.y < -0.25 ? L(0.11, 0.1, 0.065) : PAINT),
+          nv => (nv.y < -0.25 ? L(0.2, 0.22, 0.12) : PAINT),
           Math.round(x * 100 + 50),
           3,
           6,
@@ -2565,7 +2819,7 @@ export const ZKWELT = (() => {
   }
   function guardGeo() {
     const B = GB(false);
-    B.prism(0, 0, 0, 1.2, 0.07, 0.065, 10, L(0.46, 0.53, 0.45), false);
+    B.prism(0, 0, 0, 1.2, 0.07, 0.065, 10, L(0.36, 0.41, 0.32), false);
     B.prism(0.09, 0, -0.3, 1.25, 0.012, 0.012, 4, L(0.36, 0.3, 0.22), true);
     return B.geo();
   }
@@ -2599,12 +2853,7 @@ export const ZKWELT = (() => {
   }
   // the season of the game's day: leaf colour by kind (paint), bare in winter for birch and maple, young beech and oak keep dry leaves
   function leafCol(kind, rnd) {
-    let doy = 300;
-    try {
-      const e = (DN && Number.isFinite(DN.e0) ? DN.e0 : 20605) + Math.floor(((CLOCK && CLOCK.t) || 0) / 1440),
-        d = new Date(e * 864e5);
-      doy = Math.floor((d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5);
-    } catch (e) {}
+    const doy = doyNow();
     const v = 0.85 + rnd * 0.3;
     const sc = c => [c[0] * v, c[1] * v, c[2] * v];
     const green = {
@@ -2613,6 +2862,7 @@ export const ZKWELT = (() => {
         ahorn: L(0.2, 0.33, 0.11),
         birke: L(0.27, 0.36, 0.12),
         eberesche: L(0.19, 0.3, 0.1),
+        weide: L(0.25, 0.33, 0.15),
       },
       autumn = {
         buche: L(0.5, 0.3, 0.1),
@@ -2620,6 +2870,7 @@ export const ZKWELT = (() => {
         ahorn: L(0.62, 0.42, 0.08),
         birke: L(0.62, 0.5, 0.12),
         eberesche: L(0.55, 0.2, 0.08),
+        weide: L(0.5, 0.45, 0.15),
       },
       winter = {
         buche: L(0.45, 0.3, 0.17),
@@ -2627,6 +2878,7 @@ export const ZKWELT = (() => {
         ahorn: L(0.3, 0.26, 0.24),
         birke: L(0.3, 0.25, 0.25),
         eberesche: L(0.3, 0.26, 0.24),
+        weide: L(0.32, 0.27, 0.22),
       };
     if (doy >= 120 && doy < 275) return sc(green[kind] || green.buche);
     if (doy >= 275 && doy < 315) return sc(autumn[kind] || autumn.buche);
@@ -2638,21 +2890,53 @@ export const ZKWELT = (() => {
       out = [],
       guards = [],
       stumps = [],
-      brush = [];
+      brush = [],
+      logs = [];
     const lag = ZKDATA.LAG;
     const cap = COARSE ? 2600 : 6500;
     for (let i = 0; i < Fo.L.length && out.length < cap; i++) {
       const t = Fo.L[i],
         a = y - ZKDATA.strikeYear(Fo.rank[i]);
-      if (a < lag) continue;
+      if (a < lag || Fo.small[i]) continue;
       const age = a - lag,
         core = Fo.core[i],
         lying = mode === 'natur' && core && age < LIE;
+      // left alone: after the dead tree has lain as the forest's own tree (LIE years) its trunk stays, mossy, for decades
+      if (mode === 'natur' && core && age >= LIE && age < 34) {
+        const r = Math.max(0.1, (t.dbh || 0.3) / 2),
+          rot = hash(t.id * 19) * 6.28,
+          len = Fo.orig[i].h * (0.35 + 0.2 * hash(t.id * 23)),
+          z0 = gnd(t.x, t.y),
+          z1 = gnd(t.x + Math.cos(rot) * len, t.y + Math.sin(rot) * len);
+        // on the ground along its length (the slope), sunk a little
+        logs.push({
+          x: t.x,
+          y: t.y,
+          z: z0 + r * 0.3,
+          rot,
+          pitch: Math.atan2(z1 - z0, len),
+          len,
+          r,
+          c: mix3(L(0.33, 0.29, 0.24), L(0.27, 0.29, 0.2), smooth(LIE, 30, age)),
+        });
+      }
       // cleared (Waldumbau, and outside the family forest in both): a stump; brush heaps here and there. Left alone: nothing cut
       if (mode === 'umbau' || !core) {
-        stumps.push({ x: t.x, y: t.y, r: Math.max(0.1, (t.dbh || 0.3) * 0.55), rot: hash(t.id) * 6.28 });
+        stumps.push({
+          x: t.x,
+          y: t.y,
+          z: gnd(t.x, t.y),
+          r: Math.max(0.1, (t.dbh || 0.3) * 0.55),
+          rot: hash(t.id) * 6.28,
+        });
         if (hash(t.id * 71) < 0.07)
-          brush.push({ x: t.x + 1.5, y: t.y - 1, rot: hash(t.id * 3) * 6.28, s: 0.8 + hash(t.id * 5) * 0.5 });
+          brush.push({
+            x: t.x + 1.5,
+            y: t.y - 1,
+            z: gnd(t.x + 1.5, t.y - 1),
+            rot: hash(t.id * 3) * 6.28,
+            s: 0.8 + hash(t.id * 5) * 0.5,
+          });
       }
       if (age <= 0.3) continue;
       // young trees: in the family forest planted in groups (umbau) or seeded (natur), elsewhere fewer
@@ -2673,15 +2957,464 @@ export const ZKWELT = (() => {
         // dead trees lying in the family forest they stay small for now
         if (CONIFER[kind] && h > SLOT_H) {
           if (!lying) continue;
-          h = Math.min(h, 3.5);
+          h = Math.min(h, SLOT_H - 0.1);
         }
-        out.push({ x, y: yy, h, kind, rot: r * 6.28, id: t.id * 4 + k });
+        out.push({ x, y: yy, z: gnd(x, yy), h, kind, rot: r * 6.28, id: t.id * 4 + k });
         // tree guards on the planted oaks, firs and maples for their first eight years
         if (mode === 'umbau' && core && age < 8 && (kind === 'eiche' || kind === 'tanne' || kind === 'ahorn'))
-          guards.push({ x, y: yy });
+          guards.push({ x, y: yy, z: gnd(x, yy) });
       }
     }
-    return { out, guards, stumps, brush };
+    return Object.assign({ out, guards, stumps, brush, logs }, floorStand(mode, y));
+  }
+  // ---------- the clearing's floor: Schlagflur, slash, skid lanes ----------
+  // day of the year of the game's date (the world's season), and the season of the clearing's plants: 0 spring shoots (Apr–May),
+  // 1 summer (Jun–Aug: fireweed and foxglove flower), 2 autumn (Sep–Oct: seed hair, red leaves, straw-coloured grass), 3 winter
+  function doyNow() {
+    // the world's own date (world/forest.js: the larches' year): the Julian date of the game's clock
+    try {
+      const d = new Date((DN.jdOf(CLOCK.t) - 2440587.5) * 864e5);
+      return Math.floor((d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5);
+    } catch (e) {
+      return 180;
+    }
+  }
+  const seasonNow = () => {
+    const d = doyNow();
+    return d >= 95 && d < 152 ? 0 : d >= 152 && d < 245 ? 1 : d >= 245 && d < 310 ? 2 : 3;
+  };
+  const smooth = (a, b, v) => {
+    const t = Math.max(0, Math.min(1, (v - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+  };
+  // Once the needles are down the light reaches the floor: within two years wood small-reed (Reitgras), fireweed, foxglove, raspberry
+  // and bramble come (the Schlagflur of the Thuringian uplands); they are thickest after ~3–8 years and give way under the young trees
+  // after 15–25. Where the Waldumbau cleared: the tops and branches (Schlagabraum) for ~12 years, and the skid lanes (Rückegassen)
+  function floorStand(mode, y) {
+    const Fo = forestInit(),
+      lag = ZKDATA.LAG,
+      sea = seasonNow(),
+      grass = [],
+      fire = [],
+      fox = [],
+      bram = [],
+      slash = [];
+    const GR = [L(0.34, 0.48, 0.2), L(0.38, 0.46, 0.22), L(0.66, 0.56, 0.36), L(0.58, 0.5, 0.38)][sea];
+    for (let i = 0; i < Fo.L.length; i++) {
+      const t = Fo.L[i],
+        a = y - ZKDATA.strikeYear(Fo.rank[i]);
+      if (a < 1.5 || Fo.small[i]) continue;
+      const open = a - 1.5,
+        f = smooth(0.3, 3, open) * (1 - 0.8 * smooth(14, 28, open));
+      if (f < 0.04) continue;
+      const cut = a >= lag && (mode === 'umbau' || !Fo.core[i]);
+      const at = (k, r0, r1) => {
+        const ang = hash(t.id * 131 + k * 17) * 6.28,
+          d = r0 + (r1 - r0) * Math.sqrt(hash(t.id * 137 + k * 29)),
+          x = t.x + Math.cos(ang) * d,
+          yy = t.y + Math.sin(ang) * d;
+        return { x, y: yy, z: gnd(x, yy), rot: hash(t.id * 139 + k) * 6.28 };
+      };
+      if (cut && a - lag < 12 && hash(t.id * 43) < 0.6) {
+        const o = at(1, 1.5, 4),
+          age = a - lag;
+        o.s = (0.8 + 0.5 * hash(t.id * 47)) * (age > 8 ? 1 - (age - 8) / 6 : 1);
+        o.c = mix3(L(0.46, 0.3, 0.19), L(0.52, 0.5, 0.46), smooth(1, 6, age));
+        slash.push(o);
+      }
+      const ng = Math.round(6 * f * (0.5 + hash(t.id * 31)));
+      for (let k = 0; k < ng; k++) {
+        const o = at(10 + k, 0.4, 3.6),
+          v = 0.85 + 0.3 * hash(t.id * 7 + k);
+        o.s = 0.9 + 0.6 * hash(t.id * 59 + k);
+        o.h = (0.6 + 0.5 * hash(t.id * 61 + k)) * (sea === 0 ? 0.65 : 1);
+        o.c = [GR[0] * v, GR[1] * v, GR[2] * v];
+        grass.push(o);
+      }
+      if (hash(t.id * 37) < 0.5 * f) {
+        const o = at(3, 0.5, 3);
+        o.s = 0.9 + 0.6 * hash(t.id * 67);
+        o.h = 1.0 + 0.5 * hash(t.id * 71);
+        fire.push(o);
+      }
+      if (hash(t.id * 41) < 0.16 * f) {
+        const o = at(4, 0.8, 3.2);
+        o.s = 1;
+        o.h = 1.0 + 0.4 * hash(t.id * 73);
+        fox.push(o);
+      }
+      if (hash(t.id * 53) < 0.4 * f) {
+        const o = at(5, 0.6, 3.2);
+        o.s = 0.8 + 0.7 * hash(t.id * 79) * f;
+        o.h = o.s * (0.7 + 0.3 * hash(t.id * 83));
+        bram.push(o);
+      }
+    }
+    return { grass, fire, fox, bram, slash, lanes: lanesGeo(mode) };
+  }
+  const UP3 = new THREE.Vector3(0, 1, 0);
+  // a thin leaf, both faces with a normal bent upwards (its underside is not black): from p along dir, its width across side
+  function leafQ(B, p, dir, side, len, wid, col) {
+    const b = p
+        .clone()
+        .addScaledVector(dir, len * 0.45)
+        .addScaledVector(side, wid / 2),
+      c = p.clone().addScaledVector(dir, len),
+      d = p
+        .clone()
+        .addScaledVector(dir, len * 0.45)
+        .addScaledVector(side, -wid / 2),
+      fn = new THREE.Vector3().crossVectors(side, dir).normalize(),
+      n = fn
+        .multiplyScalar(fn.y < 0 ? -0.5 : 0.5)
+        .add(UP3)
+        .normalize();
+    B.tri(p, b, c, col, n, n, n);
+    B.tri(p, c, d, col, n, n, n);
+    B.tri(p, c, b, col, n, n, n);
+    B.tri(p, d, c, col, n, n, n);
+  }
+  const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+  // fireweed (Schmalblättriges Weidenröschen): a patch of five stalks 1 m high in its own frame, lanceolate leaves; in summer the pink
+  // raceme, in autumn red leaves and the split pods' white hair, in winter the dead stalks
+  function fireweedGeo(sea) {
+    const B = GB(false),
+      STEM = sea === 3 ? L(0.36, 0.27, 0.21) : sea === 2 ? L(0.42, 0.17, 0.14) : L(0.25, 0.32, 0.15),
+      LF = sea === 2 ? [L(0.52, 0.14, 0.11), L(0.62, 0.36, 0.13)] : [L(0.17, 0.3, 0.1), L(0.22, 0.36, 0.13)],
+      FL = L(0.86, 0.34, 0.62),
+      BUD = L(0.52, 0.2, 0.4),
+      SEED = L(0.88, 0.86, 0.82);
+    for (let s = 0; s < 5; s++) {
+      const a = s * 2.4 + 0.4,
+        r = s ? 0.08 + 0.2 * hash(s * 7 + 1) : 0,
+        x = Math.cos(a) * r,
+        z = Math.sin(a) * r,
+        h = sea === 0 ? 0.3 + 0.15 * hash(s * 3) : 0.72 + 0.28 * hash(s * 3 + 2);
+      B.prism(x, z, 0, h, 0.008, 0.004, 4, STEM, false);
+      if (sea === 3) {
+        B.prism(x, z, h * 0.8, h, 0.012, 0.004, 4, L(0.6, 0.56, 0.5), false);
+        continue;
+      }
+      const nl = sea === 0 ? 4 : 6;
+      for (let k = 0; k < nl; k++) {
+        const an = k * 2.4 + s,
+          len = (sea === 0 ? 0.1 : 0.14) * (1 - (0.35 * k) / nl);
+        leafQ(
+          B,
+          V3(x, h * (sea === 0 ? 0.2 + (0.6 * k) / nl : 0.1 + (0.55 * k) / nl), z),
+          V3(Math.cos(an) * 0.85, 0.45, Math.sin(an) * 0.85).normalize(),
+          V3(-Math.sin(an), 0, Math.cos(an)),
+          len,
+          len * 0.2,
+          LF[k % 2]
+        );
+      }
+      if (sea === 1) {
+        B.prism(x, z, h * 0.7, h * 0.93, 0.035, 0.02, 5, FL, false);
+        B.prism(x, z, h * 0.93, h * 1.03, 0.018, 0.003, 4, BUD, false);
+        for (let k = 0; k < 4; k++) {
+          const an = k * 1.57 + s;
+          leafQ(
+            B,
+            V3(x, h * (0.72 + 0.04 * k), z),
+            V3(Math.cos(an), 0.25, Math.sin(an)).normalize(),
+            V3(-Math.sin(an), 0, Math.cos(an)),
+            0.07,
+            0.05,
+            FL
+          );
+        }
+      } else if (sea === 2) B.prism(x, z, h * 0.62, h, 0.03, 0.01, 5, SEED, false);
+    }
+    return B.geo();
+  }
+  // foxglove (Roter Fingerhut): the leaf rosette all year; from June a stalk ~1 m with a one-sided raceme of purple bells, in autumn
+  // the seed pods on a brown stalk
+  function foxgloveGeo(sea) {
+    const B = GB(false),
+      LEAF = sea === 3 ? L(0.16, 0.22, 0.1) : L(0.2, 0.3, 0.13),
+      STEM = sea >= 2 ? L(0.36, 0.28, 0.19) : L(0.24, 0.3, 0.16),
+      BELL = L(0.68, 0.25, 0.56),
+      TIP = L(0.56, 0.3, 0.5),
+      POD = L(0.32, 0.25, 0.16);
+    for (let k = 0; k < 7; k++) {
+      const an = k * 0.9;
+      leafQ(
+        B,
+        V3(0, 0.02, 0),
+        V3(Math.cos(an), 0.3, Math.sin(an)).normalize(),
+        V3(-Math.sin(an), 0, Math.cos(an)),
+        0.26,
+        0.09,
+        LEAF
+      );
+    }
+    if (sea === 0) return B.geo();
+    B.prism(0, 0, 0, 1, 0.011, 0.005, 4, STEM, false);
+    if (sea === 3) return B.geo();
+    for (let k = 0; k < 3; k++) {
+      const an = k * 2.1;
+      leafQ(
+        B,
+        V3(0, 0.15 + 0.1 * k, 0),
+        V3(Math.cos(an), 0.5, Math.sin(an)).normalize(),
+        V3(-Math.sin(an), 0, Math.cos(an)),
+        0.12,
+        0.05,
+        LEAF
+      );
+    }
+    for (let k = 0; k < 11; k++) {
+      const yl = 0.45 + (0.5 * k) / 11,
+        an = 0.5 * Math.sin(k * 1.7);
+      if (sea === 1)
+        B.box(
+          M4(Math.cos(an) * 0.035, yl, Math.sin(an) * 0.035, -an, 0, -0.45),
+          0.05 * (1 - (0.4 * k) / 11),
+          0.026,
+          0.026,
+          k > 8 ? TIP : BELL,
+          0
+        );
+      else B.box(M4(Math.cos(an) * 0.02, yl, Math.sin(an) * 0.02, -an), 0.02, 0.026, 0.02, POD, 0);
+    }
+    return B.geo();
+  }
+  // raspberry and bramble: a low mound of leaves ~1 m across with arching canes (bramble keeps green leaves into winter,
+  // raspberry turns yellow in autumn)
+  function brambleGeo(sea) {
+    const B = GB(false),
+      G1 = sea === 3 ? L(0.13, 0.17, 0.08) : L(0.12, 0.22, 0.07),
+      G2 = sea === 2 ? L(0.5, 0.42, 0.12) : sea === 3 ? L(0.3, 0.16, 0.14) : L(0.2, 0.32, 0.11),
+      G3 = sea === 2 ? L(0.42, 0.15, 0.13) : G1,
+      CANE = L(0.34, 0.16, 0.17);
+    // loose clusters of leaves at different heights (not one cushion)
+    for (let k = 0; k < 7; k++) {
+      const an = k * 2.3,
+        d = k ? 0.18 + 0.22 * hash(k * 5) : 0,
+        r = 0.13 + 0.1 * hash(k * 7),
+        c = [G1, G2, G3][k % 3];
+      B.blob(
+        Math.cos(an) * d,
+        0.22 + 0.4 * hash(k * 11),
+        Math.sin(an) * d,
+        r,
+        r * 0.7,
+        r,
+        nv => (nv.y < -0.3 ? L(0.1, 0.13, 0.06) : c),
+        k * 13 + 7,
+        2,
+        5,
+        0.45
+      );
+    }
+    for (let k = 0; k < 4; k++) {
+      const an = k * 1.57 + 0.4;
+      B.box(M4(Math.cos(an) * 0.35, 0.45, Math.sin(an) * 0.35, -an, 0, 0.5), 0.5, 0.014, 0.014, CANE, 0);
+      B.box(M4(Math.cos(an) * 0.68, 0.32, Math.sin(an) * 0.68, -an, 0, -0.7), 0.35, 0.012, 0.012, CANE, 0);
+    }
+    return B.geo();
+  }
+  // slash: a spruce top and its dead branches lying where they were cut – a low tangle of grey-brown sticks (the needles are gone)
+  function slashGeo() {
+    const B = GB(false),
+      BR = [L(0.3, 0.26, 0.21), L(0.38, 0.33, 0.27), L(0.24, 0.2, 0.16)];
+    B.box(M4(0, 0.07, 0, 0.2), 3.2, 0.06, 0.06, BR[0], 0);
+    for (let i = 0; i < 14; i++) {
+      // branches off the top at both sides, bent down; some lying across
+      const u = (hash(i * 3) - 0.5) * 2.8,
+        side = i % 2 ? 1 : -1,
+        a = 0.2 + side * (0.6 + 0.5 * hash(i * 13 + 5)) + (i > 10 ? 1.2 * hash(i * 29) : 0),
+        l = 0.5 + hash(i * 7 + 1) * 0.9;
+      B.box(
+        M4(
+          u + Math.cos(a) * l * 0.45,
+          0.06 + hash(i * 11) * 0.16,
+          -Math.sin(a) * l * 0.45,
+          a,
+          0,
+          (hash(i * 17) - 0.5) * 0.5
+        ),
+        l,
+        0.022,
+        0.022,
+        BR[i % 3],
+        0
+      );
+    }
+    return B.geo();
+  }
+  // a dead spruce lying for decades (natural regeneration): the trunk along +x from its foot, radius 1 at the foot; paint (grey bark,
+  // greener with moss as it ages)
+  function logGeo() {
+    const B = GB(false);
+    B.prism(0, 0, 0, 1, 1, 0.55, 7, PAINT, true);
+    const g = B.geo();
+    g.rotateZ(-Math.PI / 2);
+    return g;
+  }
+  // the garden's lawn clump (garden/grass.js: a picture of grass blades, its program exists): the clearing's tussocks, scaled to metres
+  function grassSrc() {
+    if (S.grassSrc) return S.grassSrc;
+    const m = (GRASS.meshes || []).find(o => o.isInstancedMesh && o.instanceColor && o.material && o.material.map);
+    if (!m) return null;
+    const g = m.geometry;
+    if (!g.boundingBox) g.computeBoundingBox();
+    const sz = g.boundingBox.getSize(new THREE.Vector3());
+    return (S.grassSrc = {
+      geometry: g,
+      material: m.material,
+      kw: 0.8 / Math.max(0.01, Math.max(sz.x, sz.z)),
+      kh: 1 / Math.max(0.01, sz.y),
+      // the clump's foot below its origin (the lawn's geometry is centred): lift by this part of the height
+      lift: -g.boundingBox.min.y / Math.max(0.01, sz.y),
+    });
+  }
+  // skid lanes (Rückegassen) where the clearing was driven: 4 m wide, two ruts, crushed twigs between, down the slope every 30 m (the
+  // old Thuringian 20 m and today's 40 m in between); only where cleared spruces stand near them and no tree stands on them
+  function lanesGeo(mode) {
+    const F = G('FOREST'),
+      Fo = forestInit();
+    if (!F || !F.owns || !F.list || !Fo.L.length) return null;
+    const K8 = (x, y) => Math.floor(x / 8) * 100003 + Math.floor(y / 8),
+      cl = new Set();
+    for (let i = 0; i < Fo.L.length; i++)
+      if (Fo.code[i] === 3 && (mode === 'umbau' || !Fo.core[i])) cl.add(K8(Fo.L[i].x, Fo.L[i].y));
+    if (!cl.size) return null;
+    let gx = 0,
+      gy = 0;
+    for (let i = 0; i < Fo.L.length; i += 9) {
+      const t = Fo.L[i];
+      gx += ter(t.x + 6, t.y) - ter(t.x - 6, t.y);
+      gy += ter(t.x, t.y + 6) - ter(t.x, t.y - 6);
+    }
+    const gl = Math.hypot(gx, gy) || 1,
+      dx = gx / gl,
+      dy = gy / gl,
+      nx = -dy,
+      ny = dx;
+    const st = new Map(),
+      K4 = (x, y) => Math.floor(x / 4) * 100003 + Math.floor(y / 4);
+    for (const t of F.list)
+      if (!t.gone && t.h > 2.5 && !t._zkFall) {
+        const k = K4(t.x, t.y);
+        let a = st.get(k);
+        if (!a) st.set(k, (a = []));
+        a.push(t);
+      }
+    const blocked = (x, y) => {
+      for (let i = -1; i <= 1; i++)
+        for (let j = -1; j <= 1; j++) {
+          const a = st.get(K4(x + i * 4, y + j * 4));
+          if (a) for (const t of a) if ((t.x - x) ** 2 + (t.y - y) ** 2 < 5.8) return true;
+        }
+      return false;
+    };
+    const used = (x, y) => {
+      for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) if (cl.has(K8(x + i * 8, y + j * 8))) return true;
+      return false;
+    };
+    let s0 = 1e9,
+      s1 = -1e9,
+      q0 = 1e9,
+      q1 = -1e9;
+    for (const t of Fo.L) {
+      const s = t.x * dx + t.y * dy,
+        q = t.x * nx + t.y * ny;
+      s0 = Math.min(s0, s);
+      s1 = Math.max(s1, s);
+      q0 = Math.min(q0, q);
+      q1 = Math.max(q1, q);
+    }
+    const runs = [];
+    for (let q = Math.ceil(q0 / 30) * 30 + 7; q < q1; q += 30) {
+      let run = [];
+      for (let s = s0; s <= s1 + 2; s += 2) {
+        const x = s * dx + q * nx,
+          yy = s * dy + q * ny,
+          ok = s <= s1 && F.owns(x, yy) && used(x, yy) && !blocked(x, yy) && (mode === 'umbau' || !F.inCore(x, yy));
+        if (ok) run.push([x, yy]);
+        else {
+          if (run.length >= 6) runs.push(run);
+          run = [];
+        }
+      }
+    }
+    if (!runs.length) return null;
+    const O = [-2.2, -1.6, -1.25, -0.9, -0.45, 0.45, 0.9, 1.25, 1.6, 2.2],
+      A = [0, 0.5, 0.92, 0.5, 0.42, 0.42, 0.5, 0.92, 0.5, 0],
+      RUT = L(0.13, 0.1, 0.07),
+      MID = L(0.24, 0.19, 0.14),
+      BRS = L(0.36, 0.3, 0.22),
+      cAt = k => (Math.abs(O[k]) === 1.25 ? RUT : Math.abs(O[k]) === 0.9 || Math.abs(O[k]) === 1.6 ? MID : BRS);
+    const pos = [],
+      col = [],
+      idx = [];
+    let m = 0;
+    for (const run of runs) {
+      // the machine does not drive a ruler's line
+      const P = run.map(([x, yy]) => {
+        const w = (noise(x / 25, yy / 25) - 0.5) * 2.4;
+        return [x + nx * w, yy + ny * w];
+      });
+      const v0 = pos.length / 3;
+      P.forEach(([x, yy], j) => {
+        const end = j === 0 || j === P.length - 1 ? 0 : 1;
+        O.forEach((o, k) => {
+          const px = x + nx * o,
+            py = yy + ny * o;
+          pos.push(px, gnd(px, py) + 0.04, -py);
+          const c = cAt(k);
+          col.push(c[0], c[1], c[2], A[k] * end * (0.85 + 0.3 * noise(px / 3, py / 3)));
+        });
+      });
+      for (let j = 0; j + 1 < P.length; j++)
+        for (let k = 0; k + 1 < O.length; k++) {
+          const a = v0 + j * O.length + k,
+            b = a + 1,
+            c = a + O.length + 1,
+            d = a + O.length;
+          idx.push(a, b, c, a, c, d);
+        }
+      m += (P.length - 1) * 2;
+    }
+    // face up (the winding depends on the lanes' direction)
+    if (idx.length) {
+      const p = (i, c) => pos[idx[i] * 3 + c],
+        e1x = p(1, 0) - p(0, 0),
+        e1z = p(1, 2) - p(0, 2),
+        e2x = p(2, 0) - p(0, 0),
+        e2z = p(2, 2) - p(0, 2);
+      if (e1z * e2x - e1x * e2z < 0)
+        for (let i = 0; i < idx.length; i += 3) {
+          const t = idx[i + 1];
+          idx[i + 1] = idx[i + 2];
+          idx[i + 2] = t;
+        }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 4));
+    const nrm = new Float32Array(pos.length);
+    for (let i = 1; i < nrm.length; i += 3) nrm[i] = 1;
+    g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+    g.setIndex(idx);
+    g.computeBoundingSphere();
+    return { g, m };
+  }
+  function lanesShow(Ln) {
+    if (!Ln) {
+      if (S.lanes) S.lanes.visible = false;
+      return;
+    }
+    if (!S.lanes) {
+      S.lanes = plainMesh(Ln.g, mats().mud, 'rueckegassen');
+      S.lanes.renderOrder = 2;
+    } else {
+      S.lanes.geometry.dispose();
+      S.lanes.geometry = Ln.g;
+    }
+    S.lanes.visible = true;
   }
   // the mixes of the young stand and a slot's lead tree (the first of its group): kind, height factor – the stand and the slot agree
   const MIX = {
@@ -2690,13 +3423,16 @@ export const ZKWELT = (() => {
       ['tanne', 0.22],
       ['eiche', 0.16],
       ['ahorn', 0.12],
-      ['fichte', 0.06],
-      ['birke', 0.06],
+      ['fichte', 0.05],
+      ['birke', 0.07],
+      ['eberesche', 0.03],
+      ['weide', 0.03],
     ],
     natur: [
-      ['fichte', 0.42],
-      ['birke', 0.3],
-      ['eberesche', 0.16],
+      ['fichte', 0.38],
+      ['birke', 0.28],
+      ['eberesche', 0.14],
+      ['weide', 0.08],
       ['buche', 0.12],
     ],
   };
@@ -2715,6 +3451,7 @@ export const ZKWELT = (() => {
   const VIS = {
     birke: [18, 16, 1.15],
     eberesche: [11, 15, 1.15],
+    weide: [9, 9, 1.1],
     fichte: [20, 22, 1.3],
     tanne: [16, 30, 1.45],
     buche: [17, 26, 1.4],
@@ -2735,7 +3472,7 @@ export const ZKWELT = (() => {
     const t = Fo.L[i],
       a = y - ZKDATA.strikeYear(Fo.rank[i]),
       age = a - ZKDATA.LAG;
-    if (age <= 0.3 || (mode === 'natur' && Fo.core[i] && age < LIE)) return null;
+    if (Fo.small[i] || age <= 0.3 || (mode === 'natur' && Fo.core[i] && age < LIE)) return null;
     const occ = ZKDATA.OCC[mode] * (Fo.core[i] ? 1 : 0.45);
     if (hash(t.id * 29 + 3) > occ) return null;
     const kind = pickKind(mode, hash(t.id * 53)),
@@ -2746,15 +3483,28 @@ export const ZKWELT = (() => {
   function treeState(Fo, i, mode, y, dryV) {
     const t = Fo.L[i],
       o = Fo.orig[i];
+    if (mode && Fo.small[i]) {
+      // the understorey: taken out with the clearing (Waldumbau, and salvage outside the family forest); left alone it grows on
+      const a = y - ZKDATA.strikeYear(Fo.rank[i]);
+      if (a >= ZKDATA.LAG && (mode === 'umbau' || !Fo.core[i])) return { code: 3, h: 0.02, w: o.w, tint: o.tint };
+      return { code: 0, h: o.h, w: o.w, tint: o.tint };
+    }
     if (mode) {
       const a = y - ZKDATA.strikeYear(Fo.rank[i]);
-      if (a >= 0 && a < 1) return { code: 1, h: o.h, w: o.w, tint: TINT.red };
-      if (a >= 1 && a < ZKDATA.LAG) return { code: 2, h: o.h, w: o.w * 0.78, tint: TINT.grey };
+      // struck: the crown fades for some months, turns rust red-brown, drops its needles (grey, thinner); some dead spruces are thrown
+      // by the wind before anyone clears them (both variants)
+      if (a >= 0 && a < 0.3) return { code: 1, h: o.h, w: o.w, tint: TINT.fade };
+      if (a >= 0.3 && a < 1.7) return { code: 1, h: o.h, w: o.w * 0.94, tint: TINT.red };
+      if (a >= 1.7 && a < ZKDATA.LAG) {
+        if (hash(t.id * 61 + 7) < 0.16) return { code: 6, h: o.h * 0.92, w: o.w * 0.6, tint: TINT.grey, fall: true };
+        return { code: 2, h: o.h, w: o.w * 0.66, tint: TINT.grey };
+      }
       if (a >= ZKDATA.LAG) {
         // left alone (natural regeneration, in the family forest): grey for some years, then fallen, then rotten away and grown over
         if (mode === 'natur' && Fo.core[i] && a < ZKDATA.LAG + LIE) {
-          if (a < ZKDATA.LAG + 4 + 4 * hash(t.id * 7)) return { code: 2, h: o.h, w: o.w * 0.7, tint: TINT.grey };
-          return { code: 5, h: o.h * 0.92, w: o.w * 0.6, tint: TINT.grey, fall: true };
+          if (hash(t.id * 61 + 7) >= 0.16 && a < ZKDATA.LAG + 4 + 4 * hash(t.id * 7))
+            return { code: 2, h: o.h, w: o.w * 0.58, tint: TINT.grey };
+          return { code: 5, h: o.h * 0.92, w: o.w * 0.55, tint: TINT.grey, fall: true };
         }
         // a young conifer grown taller than a sapling: the slot's own tree again, young (narrower, a fresher green; the fir darker)
         const g = slotGrowth(Fo, i, mode, y);
@@ -2817,7 +3567,7 @@ export const ZKWELT = (() => {
           const c = Fo.code[i],
             o = Fo.orig[i],
             t = Fo.L[i],
-            k = c === 3 || c === 5 ? 1 : c >= 10 && c < 900 ? 0.6 : c === 2 ? 0.35 : 0;
+            k = c === 3 || c === 5 || c === 6 ? 1 : c >= 10 && c < 900 ? 0.6 : c === 2 ? 0.55 : c === 1 ? 0.15 : 0;
           if (k) F.canopy.open(t.x, t.y, o.h, o.w, k);
         }
       F.canopy.upload(mode ? 0.5 : 0);
@@ -2827,36 +3577,40 @@ export const ZKWELT = (() => {
     if (n) markDirty(true);
     return n;
   }
-  const KINDS = ['fichte', 'tanne', 'birke', 'buche', 'eiche', 'ahorn', 'eberesche'];
+  const KINDS = ['fichte', 'tanne', 'birke', 'buche', 'eiche', 'ahorn', 'eberesche', 'weide'];
   // young broadleaf trees above sapling size: the garden's ez-tree kinds (garden/trees.js – built at load, real bark and leaf cards,
-  // lit like the garden's trees, their programs exist): beech and maple as ash/oak shapes, oak as oak, birch and rowan as aspen
-  const EZ = { buche: 'oakB', eiche: 'oakA', ahorn: 'ash', birke: 'aspen', eberesche: 'aspen' };
+  // lit like the garden's trees, their programs exist): beech as the rounder oak, oak as oak, maple and rowan (pinnate leaves) as ash,
+  // birch and sallow (Salweide) as aspen
+  const EZ = { buche: 'oakB', eiche: 'oakA', ahorn: 'ash', birke: 'aspen', eberesche: 'ash', weide: 'aspen' };
   const ezKind = k => (EZ[k] && TREES[EZ[k]] && TREES[EZ[k]].lg ? EZ[k] : null);
   // the season's leaf colour as a factor on the green leaf cards (instance colour): beech and oak keep dry brown leaves in winter
   function leafMul(kind) {
-    let doy = 300;
-    try {
-      const e = (DN && Number.isFinite(DN.e0) ? DN.e0 : 20605) + Math.floor(((CLOCK && CLOCK.t) || 0) / 1440),
-        d = new Date(e * 864e5);
-      doy = Math.floor((d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5);
-    } catch (e) {}
-    if (doy >= 120 && doy < 275) return [1, 1, 1];
-    const late = doy >= 315 || doy < 120;
+    const doy = doyNow();
+    if (doy >= 135 && doy < 275) return [1, 1, 1];
+    // the fresh leaves of late April and May
+    if (doy >= 112 && doy < 135) return [0.92, 1.12, 0.62];
+    const late = doy >= 315 || doy < 112;
+    // young beech and oak keep their dry leaves through the winter; the others are bare (null: no leaves drawn)
     if (kind === 'buche' || kind === 'eiche') return late ? [1.5, 0.82, 0.45] : [1.55, 0.95, 0.4];
-    if (kind === 'ahorn') return late ? [0.75, 0.65, 0.55] : [1.6, 1.15, 0.3];
-    return late ? [0.8, 0.72, 0.6] : [1.5, 1.25, 0.35];
+    if (late) return null;
+    if (kind === 'ahorn') return [1.6, 1.15, 0.3];
+    return [1.5, 1.25, 0.35];
   }
-  function ezShow(list) {
-    // the nearest to the family forest (each tree ~1 800 triangles in its lighter level: the cap keeps a stand within budget)
-    const cap = COARSE ? 110 : 380;
-    // the family forest first, then the nearest to it
-    const F = G('FOREST'),
-      core = F && F.CORE ? F.CORE : null,
-      cx = core ? core.reduce((a, p) => a + p[0], 0) / core.length : -475,
-      cy = core ? core.reduce((a, p) => a + p[1], 0) / core.length : -600;
-    const sorted = list.map(t => ({ t, d: Math.hypot(t.x - cx, t.y - cy) })).sort((a, b) => a.d - b.d),
-      L0 = sorted.slice(0, cap).map(o => o.t),
-      rest = sorted.slice(cap).map(o => o.t);
+  // what is drawn near the camera (chosen again when it has moved 12 m, KERN tick below): real young trees, the garden's far
+  // versions of them, the clearing's plants – each kind up to its cap (fewer on a phone)
+  const NEAR = COARSE
+    ? { ez: 110, imp: 1200, grass: 1800, fire: 160, fox: 70, bram: 260, slash: 500 }
+    : { ez: 380, imp: 3000, grass: 6500, fire: 650, fox: 280, bram: 1000, slash: 1500 };
+  function byDist(list, cx, cy) {
+    const d = new Float32Array(list.length);
+    list.forEach((o, i) => (d[i] = (o.x - cx) ** 2 + (o.y - cy) ** 2));
+    return Array.from(list.keys())
+      .sort((a, b) => d[a] - d[b])
+      .map(i => list[i]);
+  }
+  const nearest = (list, n, cx, cy) => (list.length <= n ? list : byDist(list, cx, cy).slice(0, n));
+  // young broadleaf trees near the camera: the garden's ez-tree kinds (each ~1 800 triangles in its lighter level)
+  function ezShow(L0) {
     S.ez = S.ez || {};
     const groups = {};
     for (const t of L0) (groups[EZ[t.kind]] = groups[EZ[t.kind]] || []).push(t);
@@ -2871,7 +3625,7 @@ export const ZKWELT = (() => {
       if (!S.ez[key]) {
         if (!g.length) continue;
         const LV = treeLeafLevels(K),
-          n = cap,
+          n = NEAR.ez,
           bark = new THREE.InstancedMesh(K.bgFar || K.bgMid || K.bg, K.bark, n),
           leaf = new THREE.InstancedMesh(LV[2] || LV[1] || K.lg, K.leaf, n);
         for (let i = 0; i < n; i++) leaf.setColorAt(i, col.setRGB(1, 1, 1));
@@ -2891,12 +3645,14 @@ export const ZKWELT = (() => {
         const s = t.h / E.H,
           w = s * 0.78;
         _qq.setFromAxisAngle(up, t.rot);
-        _m.compose(T3(t.x, t.y, gnd(t.x, t.y) - 0.05), _qq, _s.set(w, s, w));
+        _m.compose(T3(t.x, t.y, t.z - 0.05), _qq, _s.set(w, s, w));
         E.bark.setMatrixAt(i, _m);
-        E.leaf.setMatrixAt(i, _m);
         const f = leafMul(t.kind),
           v = 0.85 + 0.3 * hash(t.id * 7);
-        E.leaf.setColorAt(i, col.setRGB(f[0] * v, f[1] * v, f[2] * v));
+        // bare in winter: the branches only
+        if (!f) _m.scale(_s.set(0, 0, 0));
+        E.leaf.setMatrixAt(i, _m);
+        if (f) E.leaf.setColorAt(i, col.setRGB(f[0] * v, f[1] * v, f[2] * v));
       });
       for (const im of [E.bark, E.leaf]) {
         im.count = g.length;
@@ -2906,36 +3662,178 @@ export const ZKWELT = (() => {
       if (E.leaf.instanceColor) E.leaf.instanceColor.needsUpdate = true;
     }
     S.ezN = L0.length;
-    return rest;
+  }
+  // far pictures of the young broadleaf kinds: the village's far trees (world/ratscher.js: crossed cards with an atlas of the garden's
+  // generated kinds oakA, ash, oakB, aspen, pine – one per 256 px cell, the tree standing on the cell's bottom; program 'geotree',
+  // compiled at load). Their material, a cross of our own with the kind per instance; null if the village has none
+  const ATLAS = ['oakA', 'ash', 'oakB', 'aspen', 'pine'];
+  function impostors() {
+    if (S.imp) return S.imp;
+    let src = null;
+    scene.traverse(o => {
+      if (src || !o.isInstancedMesh || !o.material || !o.material.customProgramCacheKey || !o.instanceColor) return;
+      try {
+        if (o.material.customProgramCacheKey() === 'geotree' && o.geometry.attributes.aKind) src = o;
+      } catch (e) {}
+    });
+    if (!src) return null;
+    // a tree's height in its cell (as the atlas was drawn: the cell is max(width, height) square)
+    const fill = {},
+      bb = new THREE.Box3(),
+      sz = new THREE.Vector3();
+    for (const key of ATLAS) {
+      const K = TREES[key];
+      if (!K || !K.bg || !K.lg) continue;
+      for (const g of [K.bg, K.lg]) if (!g.boundingBox) g.computeBoundingBox();
+      bb.copy(K.bg.boundingBox).union(K.lg.boundingBox).getSize(sz);
+      const hw = (Math.max(sz.x, sz.z) / 2) * 1.02,
+        H = sz.y * 1.02;
+      fill[key] = H / Math.max(hw * 2, H);
+    }
+    const geo = src.geometry.clone();
+    geo.deleteAttribute('aKind');
+    geo.setAttribute('aKind', new THREE.InstancedBufferAttribute(new Float32Array(NEAR.imp), 1));
+    return (S.imp = { geo, mat: src.material, fill });
+  }
+  // young broadleaf trees beyond the real ones: the far picture of the same kind (one draw); returns those it could not draw
+  function impShow(list) {
+    const I = impostors();
+    if (!I) {
+      if (S.impM) S.impM.visible = false;
+      S.impN = 0;
+      return list;
+    }
+    if (!S.impM) {
+      const im = new THREE.InstancedMesh(I.geo, I.mat, NEAR.imp),
+        w = new THREE.Color(1, 1, 1);
+      for (let i = 0; i < NEAR.imp; i++) im.setColorAt(i, w);
+      im.count = 0;
+      im.frustumCulled = false;
+      im.userData.noMerge = true;
+      im.name = 'zukunft:jung-fern';
+      scene.add(im);
+      S.impM = im;
+    }
+    const im = S.impM,
+      kind = I.geo.attributes.aKind,
+      L0 = list.slice(0, NEAR.imp),
+      _m = new THREE.Matrix4(),
+      _qq = new THREE.Quaternion(),
+      _s = new THREE.Vector3(),
+      up = new THREE.Vector3(0, 1, 0),
+      col = new THREE.Color();
+    L0.forEach((t, i) => {
+      const key = EZ[t.kind],
+        sy = (t.h * 1.04) / (I.fill[key] || 0.9),
+        sx = sy * 0.8;
+      _qq.setFromAxisAngle(up, t.rot);
+      _m.compose(T3(t.x, t.y, t.z - 0.25), _qq, _s.set(sx, sy, sx));
+      im.setMatrixAt(i, _m);
+      kind.setX(i, Math.max(0, ATLAS.indexOf(key)));
+      const f = leafMul(t.kind) || [0.62, 0.52, 0.45],
+        v = 0.86 + 0.24 * hash(t.id * 7);
+      im.setColorAt(i, col.setRGB(f[0] * v, f[1] * v, f[2] * v));
+    });
+    im.count = L0.length;
+    im.visible = L0.length > 0;
+    im.instanceMatrix.needsUpdate = true;
+    kind.needsUpdate = true;
+    if (im.instanceColor) im.instanceColor.needsUpdate = true;
+    S.impN = L0.length;
+    return list.slice(NEAR.imp);
   }
   function youngShow(Y) {
     const M = mats();
+    S.Y = Y || null;
     if (!Y) {
       if (S.young) for (const im of Object.values(S.young)) im.visible = false;
       if (S.ez) for (const E of Object.values(S.ez)) E.bark.visible = E.leaf.visible = false;
+      if (S.impM) S.impM.visible = false;
+      if (S.lanes) S.lanes.visible = false;
+      S.nearAt = null;
       return;
     }
     if (!S.young) {
       S.young = {};
       const geos = {};
       for (const k of KINDS) {
-        const gk = k === 'eberesche' ? 'ahorn' : k;
+        const gk = k === 'eberesche' || k === 'weide' ? 'ahorn' : k;
         geos[gk] = geos[gk] || youngGeo(gk);
         S.young[k] = inst(geos[gk], M.wood, COARSE ? 1200 : 3000, 'jung-' + k);
       }
       S.young.guard = inst(guardGeo(), M.kit, 2000, 'wuchshuellen');
       S.young.stump = inst(stumpGeo(), M.wood, COARSE ? 2500 : 6000, 'stubben');
       S.young.brush = inst(brushGeo(), M.wood, 600, 'reisig');
+      S.young.slash = inst(slashGeo(), M.wood, NEAR.slash, 'schlagabraum');
+      S.young.log = inst(logGeo(), M.wood, 900, 'totholz');
+      S.young.fire = inst(new THREE.BufferGeometry(), M.kit, NEAR.fire, 'weidenroeschen');
+      S.young.fox = inst(new THREE.BufferGeometry(), M.kit, NEAR.fox, 'fingerhut');
+      S.young.bram = inst(new THREE.BufferGeometry(), M.wood, NEAR.bram, 'brombeere');
+      const gr = grassSrc();
+      if (gr) {
+        S.young.grass = new THREE.InstancedMesh(gr.geometry, gr.material, NEAR.grass);
+        const im = S.young.grass,
+          w = new THREE.Color(1, 1, 1);
+        for (let i = 0; i < NEAR.grass; i++) im.setColorAt(i, w);
+        im.count = 0;
+        im.receiveShadow = true;
+        im.castShadow = false;
+        im.frustumCulled = false;
+        im.userData.noMerge = true;
+        im.name = 'zukunft:gras';
+        im.visible = false;
+        scene.add(im);
+      }
     }
+    // the plants of the season (their colours are in the geometry: flowers in summer, seed and red leaves in autumn)
+    const sea = seasonNow();
+    if (S.plantSea !== sea) {
+      S.plantSea = sea;
+      for (const [k, f] of [
+        ['fire', fireweedGeo],
+        ['fox', foxgloveGeo],
+        ['bram', brambleGeo],
+      ]) {
+        const old = S.young[k].geometry;
+        S.young[k].geometry = f(sea);
+        old.dispose();
+      }
+    }
+    lanesShow(Y.lanes);
+    youngNear();
+    S.youngN = {
+      trees: Y.out.length,
+      guards: Y.guards.length,
+      stumps: Y.stumps.length,
+      brush: Y.brush.length,
+      grass: Y.grass.length,
+      fire: Y.fire.length,
+      fox: Y.fox.length,
+      bram: Y.bram.length,
+      slash: Y.slash.length,
+      logs: Y.logs.length,
+      lanes: Y.lanes ? Y.lanes.m : 0,
+    };
+  }
+  // fill the instanced meshes from the stand nearest to the camera
+  function youngNear() {
+    const Y = S.Y;
+    if (!Y || !S.young) return;
+    const cx = cam.position.x,
+      cy = -cam.position.z;
+    S.nearAt = [cx, cy];
     const by = {};
     for (const k of KINDS) by[k] = [];
     const tall = [];
+    // broadleaf from 0,7 m on as the garden's kinds (real near the camera, their far picture beyond); saplings and conifers simple
     for (const t of Y.out) {
-      if (t.h > SLOT_H && !CONIFER[t.kind] && ezKind(t.kind)) tall.push(t);
+      if (t.h >= 0.7 && !CONIFER[t.kind] && ezKind(t.kind)) tall.push(t);
       else by[t.kind].push(t);
     }
-    // beyond the cap (far from the family forest): the simple shapes
-    for (const t of ezShow(tall)) by[t.kind].push(t);
+    const ts = byDist(tall, cx, cy);
+    ezShow(ts.slice(0, NEAR.ez));
+    // beyond the real ones the far version of the same kind; simple shapes only if the garden has none
+    for (const t of impShow(ts.slice(NEAR.ez))) by[t.kind].push(t);
     const _m = new THREE.Matrix4(),
       _p = new THREE.Vector3(),
       _s = new THREE.Vector3(),
@@ -2943,15 +3841,15 @@ export const ZKWELT = (() => {
       col = new THREE.Color();
     for (const k of KINDS) {
       const im = S.young[k],
-        L0 = by[k].slice(0, im.instanceMatrix.count);
+        L0 = nearest(by[k], im.instanceMatrix.count, cx, cy);
       L0.forEach((t, i) => {
         // crowns of young trees in a stand are narrow (they grow up towards the light): narrower the taller
-        const wide = k === 'fichte' || k === 'tanne' ? 0.95 : (k === 'birke' ? 0.85 : 1.0) * (t.h > 4 ? 0.72 : 0.95);
+        const wide = k === 'fichte' || k === 'tanne' ? 0.78 : (k === 'birke' ? 0.85 : 1.0) * (t.h > 4 ? 0.72 : 0.95);
         _s.set(t.h * wide, t.h, t.h * wide);
         _q.setFromAxisAngle(up, t.rot);
-        _p.copy(T3(t.x, t.y, gnd(t.x, t.y) - 0.03));
+        _p.copy(T3(t.x, t.y, t.z - 0.03));
         im.setMatrixAt(i, _m.compose(_p, _q, _s));
-        const c = k === 'fichte' || k === 'tanne' ? [1, 1, 1] : leafCol(k, hash(t.id * 3));
+        const c = k === 'fichte' || k === 'tanne' ? [1, 1, 1] : leafCol(k, hash(t.id * 3)).map(v => v * 1.25);
         im.setColorAt(i, col.setRGB(c[0], c[1], c[2]));
       });
       im.count = L0.length;
@@ -2959,24 +3857,47 @@ export const ZKWELT = (() => {
       im.instanceMatrix.needsUpdate = true;
       if (im.instanceColor) im.instanceColor.needsUpdate = true;
     }
-    const put = (im, list, f) => {
-      const L0 = list.slice(0, im.instanceMatrix.count);
-      L0.forEach((o, i) => im.setMatrixAt(i, f(o)));
+    const put = (im, list, f, cap) => {
+      if (!im) return;
+      const L0 = nearest(list, Math.min(cap || 1e9, im.instanceMatrix.count), cx, cy);
+      L0.forEach((o, i) => {
+        im.setMatrixAt(i, f(o, i));
+        if (o.c && im.instanceColor) im.setColorAt(i, col.setRGB(o.c[0], o.c[1], o.c[2]));
+      });
       im.count = L0.length;
       im.visible = L0.length > 0;
       im.instanceMatrix.needsUpdate = true;
+      if (im.instanceColor) im.instanceColor.needsUpdate = true;
     };
-    put(S.young.guard, Y.guards, o =>
-      _m.compose(T3(o.x, o.y, gnd(o.x, o.y) - 0.05), _q.identity(), _s.set(1, 1, 1)).clone()
+    const flat = (o, sx, sy, sz, dz = 0) =>
+      _m.compose(T3(o.x, o.y, o.z + dz), _q.setFromAxisAngle(up, o.rot || 0), _s.set(sx, sy, sz));
+    put(S.young.guard, Y.guards, o => flat(o, 1, 1, 1, -0.05));
+    put(S.young.stump, Y.stumps, o => flat(o, o.r, 1, o.r));
+    put(S.young.brush, Y.brush, o => flat(o, o.s, o.s, o.s, -0.05));
+    put(S.young.slash, Y.slash, o => flat(o, o.s, o.s * 0.8, o.s, -0.04));
+    const _qp = new THREE.Quaternion(),
+      zax = new THREE.Vector3(0, 0, 1);
+    put(S.young.log, Y.logs, o =>
+      _m.compose(
+        T3(o.x, o.y, o.z),
+        _q.setFromAxisAngle(up, o.rot).multiply(_qp.setFromAxisAngle(zax, o.pitch)),
+        _s.set(o.len, o.r, o.r)
+      )
     );
-    put(S.young.stump, Y.stumps, o =>
-      _m.compose(T3(o.x, o.y, gnd(o.x, o.y)), _q.setFromAxisAngle(up, o.rot), _s.set(o.r, 1, o.r)).clone()
-    );
-    put(S.young.brush, Y.brush, o =>
-      _m.compose(T3(o.x, o.y, gnd(o.x, o.y) - 0.05), _q.setFromAxisAngle(up, o.rot), _s.set(o.s, o.s, o.s)).clone()
-    );
-    S.youngN = { trees: Y.out.length, guards: Y.guards.length, stumps: Y.stumps.length, brush: Y.brush.length };
+    put(S.young.fire, Y.fire, o => flat(o, o.s, o.h, o.s));
+    put(S.young.fox, Y.fox, o => flat(o, o.s, o.h, o.s));
+    put(S.young.bram, Y.bram, o => flat(o, o.s, o.h, o.s, -0.08));
+    const gs = grassSrc();
+    if (S.young.grass && gs)
+      put(S.young.grass, Y.grass, o => flat(o, o.s * gs.kw, o.h * gs.kh, o.s * gs.kw, o.h * gs.lift - 0.05));
   }
+  // the camera moved on: the nearest again (nothing to do while no future of the forest is shown)
+  KERN.tick(() => {
+    if (!S.Y || !S.nearAt) return;
+    if (Math.hypot(cam.position.x - S.nearAt[0], -cam.position.z - S.nearAt[1]) < 12) return;
+    youngNear();
+    markDirty(true);
+  }, 'zukunft-welt/wald');
 
   // =====================================================================================================================================
   // the whole description of the world (from ZKDATA.calc(...).world)
@@ -3023,8 +3944,7 @@ export const ZKWELT = (() => {
   }
   function clear() {
     S.sig.all = null;
-    for (const m of [S.roofMesh, S.flatMesh, S.flatBody, S.wpMesh, S.floodMesh, S.mudMesh, S.flot0, S.flot1, S.flot2])
-      if (m) m.visible = false;
+    for (const m of [S.roofMesh, S.flatMesh, S.flatBody, S.wpMesh, ...floodMeshes()]) if (m) m.visible = false;
     if (S.parkMeshes) for (const m of Object.values(S.parkMeshes)) if (m && m.isObject3D) m.visible = false;
     if (S.ruf) for (const m of [S.ruf.plates, S.ruf.posts, S.ruf.van, S.ruf.vsh, S.ruf.win]) if (m) m.visible = false;
     S.rufOn = false;
@@ -3170,11 +4090,34 @@ export const ZKWELT = (() => {
     // edge of the family forest towards the field, looking in
     const forest = {};
     if (F && F.list && F.inCore) {
-      const Fo = forestInit(),
-        first = Fo.L.map((t, i) => ({ t, i }))
-          .filter(o => Fo.core[o.i])
-          .sort((a, b) => Fo.rank[a.i] - Fo.rank[b.i])
-          .slice(0, 25);
+      const Fo = forestInit();
+      let first = Fo.L.map((t, i) => ({ t, i }))
+        .filter(o => Fo.core[o.i] && !Fo.small[o.i])
+        .sort((a, b) => Fo.rank[a.i] - Fo.rank[b.i])
+        .slice(0, 80);
+      // the densest nest among the first struck: the one with most of them within 15 m, and those around it
+      let best = null,
+        bn = -1;
+      for (const o of first) {
+        const n = first.filter(q => Math.hypot(q.t.x - o.t.x, q.t.y - o.t.y) < 15).length;
+        if (n > bn) {
+          bn = n;
+          best = o;
+        }
+      }
+      if (best) first = first.filter(q => Math.hypot(q.t.x - best.t.x, q.t.y - best.t.y) < 15);
+      // how many dead spruces of the family forest would fall with their crown across the place (the outer 60 % of the fall line
+      // within 2,5 m) – the view should not look into a crown lying on the ground
+      const fallsHere = (x, y) =>
+        Fo.L.filter((t, i) => {
+          const h = Fo.orig[i].h;
+          if (!Fo.core[i] || Fo.small[i] || Math.hypot(t.x - x, t.y - y) > h + 3) return false;
+          const d = hash(t.id * 19) * 6.28,
+            ux = Math.cos(d),
+            uy = Math.sin(d),
+            s = Math.max(0.4 * h, Math.min(h, (x - t.x) * ux + (y - t.y) * uy));
+          return Math.hypot(t.x + ux * s - x, t.y + uy * s - y) < 2.5;
+        }).length;
       const free = (x, y, r) =>
         !F.list.some(
           t => !t.gone && Math.abs(t.x - x) < r && Math.abs(t.y - y) < r && Math.hypot(t.x - x, t.y - y) < r
@@ -3182,18 +4125,22 @@ export const ZKWELT = (() => {
       if (first.length) {
         const mx = first.reduce((a, o) => a + o.t.x, 0) / first.length,
           my = first.reduce((a, o) => a + o.t.y, 0) / first.length;
-        outer: for (const d of [12, 15, 10, 18])
-          for (let k = 0; k < 16; k++) {
-            const a = (k / 16) * Math.PI * 2,
+        // the free place 10–18 m from the nest with the fewest crowns falling on it (the nearer distances first)
+        let bh = 1e9;
+        for (const d of [12, 15, 10, 18])
+          for (let k = 0; k < 24; k++) {
+            const a = (k / 24) * Math.PI * 2,
               x = mx + Math.cos(a) * d,
               y = my + Math.sin(a) * d;
             if (!F.inCore(x, y) || !free(x, y, 2.6)) continue;
+            const h = fallsHere(x, y);
+            if (h >= bh) continue;
+            bh = h;
             forest.inside = [
               +x.toFixed(1),
               +y.toFixed(1),
               +(((Math.atan2(mx - x, my - y) * 180) / Math.PI + 360) % 360).toFixed(1),
             ];
-            break outer;
           }
       }
       if (core) {
@@ -3205,8 +4152,8 @@ export const ZKWELT = (() => {
           nx = -(b[1] - a[1]) / l,
           ny = (b[0] - a[0]) / l,
           sg = nx * (ex - fx) + ny * (ey - fy) > 0 ? 1 : -1,
-          x = ex + nx * sg * 7,
-          y = ey + ny * sg * 7;
+          x = ex + nx * sg * 4,
+          y = ey + ny * sg * 4;
         forest.edge = [
           +x.toFixed(1),
           +y.toFixed(1),
@@ -3241,13 +4188,16 @@ export const ZKWELT = (() => {
                 ? 'kahl'
                 : c === 5
                   ? 'liegt'
-                  : c === 900
-                    ? 'stress'
-                    : 'jung';
+                  : c === 6
+                    ? 'geworfen'
+                    : c === 900
+                      ? 'stress'
+                      : 'jung';
     if (Fo) for (const c of Fo.code) codes[name(c)] = (codes[name(c)] || 0) + 1;
     const young = {};
     if (S.young) for (const [k, im] of Object.entries(S.young)) young[k] = cnt(im);
     if (S.ez) for (const [k, E] of Object.entries(S.ez)) young['ez-' + k] = cnt(E.leaf);
+    young.fern = cnt(S.impM);
     return {
       roofModules: cnt(S.roofMesh) + cnt(S.flatMesh),
       roofTotal: S.roof ? S.roof.mods.length + S.roof.flats.length : 0,
@@ -3255,6 +4205,7 @@ export const ZKWELT = (() => {
       roofMs: S.roof ? S.roof.ms : 0,
       roofWhy: S.roofWhy || null,
       roofDbg: S.roofDbg || null,
+      doy: doyNow(),
       fieldTables: S.parkMeshes ? cnt(S.parkMeshes.tm) : 0,
       fieldTotal: S.park ? S.park.T.length : 0,
       fence: S.parkMeshes ? cnt(S.parkMeshes.fm) : 0,

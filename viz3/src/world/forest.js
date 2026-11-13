@@ -1359,14 +1359,15 @@ export const FOREST = (() => {
     save: () => S.cov && !S._cov0 && (S._cov0 = S.cov.slice()),
     reset: () => S._cov0 && S.cov.set(S._cov0),
     open: (x, y, h, w, k) => S.cov && splat(S.cov, x, y, h * 0.16 * w + 1.2, (h < 6.5 ? -0.25 : -0.7) * k, true, true),
-    // floor: where today's cover is denser, keep at least this much (the needle litter stays on the ground, the light comes in)
+    // floor: inside the stand (today's cover above 2 %) keep at least this much (the needle litter and moss stay on the ground where
+    // the crowns are gone, not the aerial photo; the light comes in)
     upload: (floor = 0) => {
       if (!S.cov || !CU.tCan.value) return;
       const d = CU.tCan.value.image.data,
         c = S.cov,
         c0 = S._cov0;
       for (let k = 0; k < c.length; k++) {
-        const v = floor && c0 ? Math.max(c[k], Math.min(c0[k], floor)) : c[k];
+        const v = floor && c0 && c0[k] > 0.02 ? Math.max(c[k], floor) : c[k];
         d[k] = Math.round(Math.max(0, Math.min(1, v)) * 255);
       }
       CU.tCan.value.needsUpdate = true;
