@@ -1,6 +1,6 @@
 # Plan: Verkehr realistisch (Fahrzeuge, Dichte, Regeln, Unfälle, Draufsicht)
 
-Stand: 13.11.2026, 12:40 · Straßen-Chat (session_01WqScFDtq8GSy4n7wU7foJx). Falkos Wunsch vom 13.11., 12:14:
+Stand: 13.11.2026, 14:35 (Stufe 1 gebaut) · Straßen-Chat (session_01WqScFDtq8GSy4n7wU7foJx). Falkos Wunsch vom 13.11., 12:14:
 
 > „Aktuell fahren noch sehr wenig und sehr wenige Autos auf den Straßen und die Autos sehen noch sehr künstlich bzw. eckig und schemenartig
 > aus. Bitte möglichst realistische Modelle wählen und den Verkehr, die Verkehrsdichte typisch gestalten. Achte auch darauf, dass die Busse
@@ -92,7 +92,15 @@ Bildzeit) und live.
 - Grenzland-Chat: der Karosseriebauer (`gl_karosse.js`) – heutige Typen bauen wir mit ihm, ohne seinen Modus zu berühren.
 - Suhl-Chat und Was-wäre-wenn-Chat: Busse (`bus/`), Verkehr in Suhl über dieselben Schnittstellen.
 
-## 6. Entscheidungen (Falko, 13.11.2026 ~12:45, angeklickt)
+## 6. Stand
+
+- **Stufe 1 gebaut** (13.11., Branch `feat/verkehr`, Stand `docs/features/verkehr-real.md`): 20 Fahrzeugtypen nach echten Maßen ohne
+  Logos (Pkw, Transporter, Lkw, Sattelzug, Müllwagen, Traktor mit Kipper), gebaut im Worker, ein Shader, drei Detailstufen, Anhänger auf
+  der Schleppkurve; Dichte nach Straße, Wochentag, Feiertag, Monat und Stunde (Zählwerte, Lkw-Verbot sonntags); Verkehr auf allen Straßen
+  um den Beobachter; Draufsicht in echten Größen und Farben. Kreuzende Fahrzeuge halten einander auf (einfach, ohne Vorfahrtsregeln).
+- **Stufe 2** (Regeln, Ampeln), **Stufe 3** (Zusammenstöße), **Stufe 4** (Räder, Fußgänger) folgen.
+
+## 7. Entscheidungen (Falko, 13.11.2026 ~12:45, angeklickt)
 
 - **Modelle:** nach echten Maßen bauen, ohne Logos (A).
 - **Unfallfolgen:** harmlos.
