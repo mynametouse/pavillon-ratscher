@@ -16,7 +16,7 @@ want = lambda k: k in ONLY
 ck = lib.Checks('suhl')
 OUT = lib.out('suhl')
 O = (-4698.2, 12255.7)     # SUHL.O, the centre of Suhl in model metres
-MARKT = (-4652.5, 12470.5)
+MARKT = (-4638.5, 12474.5)   # the place 'suhl' (SUHL.SPOTS.suhl)
 
 # colours at points of the picture just drawn (u, v in 0..1 from the top left)
 PIX = """window.__pix = pts => { GAME.shot(); const c = document.querySelector('#stage canvas'), d = document.createElement('canvas'); d.width = c.width; d.height = c.height;
@@ -122,7 +122,8 @@ def desktop():
         pg = lib.page(b, 1100, 680, errs, tier='mittel')
         # every answer for Suhl's files, the worker's too (the page's own resource timing list holds 250 entries and misses the worker)
         net = []
-        pg.on('response', lambda r: net.append((r.url, int(r.headers.get('content-length') or 0))) if ('/suhl/' in r.url or 'lazy/suhl' in r.url) else None)
+        failed = []
+        pg.on('response', lambda r: (net.append((r.url, int(r.headers.get('content-length') or 0))), failed.append((r.status, r.url)) if r.status >= 400 else None) if ('/suhl/' in r.url or 'lazy/suhl' in r.url) else None)
         lib.boot(pg, port)
         E = pg.evaluate
         J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
@@ -186,6 +187,7 @@ def desktop():
             ck('trees of the sample tiles', st.get('trees', 0) >= 4 and st.get('nTrees', 0) > 1000 and st.get('atlas'), f"{st.get('nTrees')} trees in {st.get('trees')} tiles")
             ck('the far ground beyond the near tiles', bo.get('farDrawn', 0) >= 1 and bo.get('err') == 0 and bo.get('tileMat'), json.dumps(bo))
             ck('data until the first street picture within the budget (10 MB)', 0 < nbytes < 10e6, f'{nbytes / 1e6:.2f} MB in {len(res)} requests')
+            ck('no request for a file of Suhl failed (every tile the indexes name is there)', not failed, json.dumps(failed[:6]))
             # pictures: from the spot, along the Steinweg, from a roof height, from above
             lib.settle_light(pg)
             lib.shot(pg, OUT, 'suhl_markt')
@@ -215,7 +217,7 @@ def desktop():
             far_tile = (-5597.9, 11658.5)   # the centre of tile 495/540, 1.25 km from the Markt
             lv = J(f"[SUHL.levelAt({MARKT[0]}, {MARKT[1]}), SUHL.levelAt({far_tile[0]}, {far_tile[1]}), SUHL.levelAt(0, 0)]")
             ck('levels at the Markt: full houses here (1), the lean level 1.2 km away (2), nothing outside Suhl (-1)', lv == [1, 2, -1], str(lv))
-            E(f"GAME.view(-2300, 12500, {J('KERN.ground(-4652, 12470)') + 420}, 268, -12, 55)")
+            E(f"GAME.view(-2300, 12500, {J('KERN.ground(%s, %s)' % MARKT) + 420}, 268, -12, 55)")
             ok = wait("SUHL.status().stadt.l1 === 0 && SUHL.status().stadt.l2 >= 11 && SUHL.status().stadt.trees === 0 && !SUHL.status().boden.need && SUHL.status().stadt.queue === 0", 120)
             wait("SUHL.status().boden.farLoading === 0 && SUHL.status().worker === 0", 60)
             s2 = J("SUHL.status()")
@@ -268,7 +270,7 @@ def desktop():
             tr = J("""(() => { const C = SUHL.status().stadt; const p = [GAME.P.x + 7, GAME.P.y + 3]; return { trunks: C.trunks, segs: C.segs }; })()""")
             ck('wall feet and trunks in the collisions', tr['segs'] > 3000 and tr['trunks'] > 1000, json.dumps(tr))
             pl = J("[KERN.place(-4753.5, 12321.8), KERN.place(SUHL.SPOTS.suhl[0][0], SUHL.SPOTS.suhl[0][1]), SUHL.areaAt(-4753.5, 12321.8), SUHL.ways(-4753.5, 12321.8, 60).length, SUHL.status().strassen]")
-            ck('place names from the street tiles („…, Suhl“), the ways for traffic, the streets painted on the ground', (pl[0] or '').endswith(', Suhl') and pl[2] == 'zentrum' and pl[3] > 0 and pl[4] and pl[4]['overlay'] and pl[4]['err'] == 0, json.dumps(pl, ensure_ascii=False))
+            ck('place names from the street tiles (a named way: „Steinweg, Suhl“; a named square: „Marktplatz, Suhl“), the ways for traffic, the streets painted on the ground', (pl[0] or '').endswith(', Suhl') and pl[1] == 'Marktplatz, Suhl' and pl[2] == 'zentrum' and pl[3] > 0 and pl[4] and pl[4]['overlay'] and pl[4]['err'] == 0, json.dumps(pl, ensure_ascii=False))
             E("GAME.go('suhl')")
             wait(QUIET, 60)
 

@@ -144,7 +144,7 @@ export const SUHL = (() => {
     );
   // ---- places to jump to and the start situation (the heights are set from the ground once it is there) ----
   const SPOTS = {
-    suhl: [[-4652.5, 12470.5], 62, 'Suhl (Markt)'],
+    suhl: [[-4638.5, 12474.5], 62, 'Suhl (Markt)'], // the middle of the square, clear of the crowns of its trees (10 m)
     suhl_steinweg: [[-4760, 12330], -138, 'Suhl, Steinweg'],
     suhl_bahnhof: [[-5352, 11938], -120, 'Suhl, Bahnhof'],
     suhl_ccs: [[-4990, 12400], -62, 'Suhl, Congress Centrum'],

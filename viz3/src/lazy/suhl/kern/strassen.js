@@ -299,6 +299,24 @@ export function strassen(ctx, G, IX) {
           }
         }
       }
+      // no named way under the walker: a named square he stands on (an area lies in every tile it touches)
+      if (!best)
+        for (const a of t.d.areas) {
+          if (!a[3]) continue;
+          const p = a[7],
+            n = p.length - (p.length % 3);
+          let inside = false;
+          for (let k = 0; k < n; k += 3) {
+            const m = (k + 3) % n,
+              y1 = p[k + 1],
+              y2 = p[m + 1];
+            if (y1 > ly !== y2 > ly && lx < p[k] + ((ly - y1) * (p[m] - p[k])) / (y2 - y1)) inside = !inside;
+          }
+          if (inside) {
+            best = t.d.names[a[3]];
+            break;
+          }
+        }
     }
     last = [x, y, best];
     return best;

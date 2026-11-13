@@ -693,6 +693,8 @@ export function stadt(ctx, G, IX, worker, opt) {
       freeTrees(t);
       t.trBusy = false;
       t.busy = false;
+      t.want = 0;
+      t.trWant = false;
       t.recs = t.ids = t.foot = null;
     }
     READY.length = 0;
@@ -702,8 +704,11 @@ export function stadt(ctx, G, IX, worker, opt) {
     grid();
   };
   S.state = () => {
+    if (gridDirty) grid(); // (the counts of wall feet and trunks below are those of the collision grid)
     const L = [...S.tiles.values()],
-      lv = n => L.filter(t => t.lvl === n).length;
+      lv = n => L.filter(t => t.lvl === n).length,
+      // wanted and not there yet (the planning asks for at most three at a time): it counts as work in progress
+      pending = t => (t.g && t.want && (t.want !== t.lvl || t.dirty)) || (t.b && t.trWant && !t.tr);
     return {
       tiles: L.length,
       l1: lv(1),
@@ -717,7 +722,7 @@ export function stadt(ctx, G, IX, worker, opt) {
       z0: opt.z0ok(),
       segs: SEG.length,
       trunks: TRUNK.length,
-      queue: READY.length + L.filter(t => t.busy || t.trBusy).length,
+      queue: READY.length + L.filter(t => t.busy || t.trBusy || pending(t)).length,
       built: S.n.built,
       freed: S.n.freed,
       req: S.n.req,
