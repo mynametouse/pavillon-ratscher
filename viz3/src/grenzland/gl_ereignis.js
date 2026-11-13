@@ -25,6 +25,7 @@ import { VPROPS } from '../world/village_props.js';
 import { VFIG } from '../verkehr/verkehr_fig.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
 import { VNETZ } from '../verkehr/verkehr_netz.js';
+import { WCOL } from '../world/worldcol.js';
 import { STIMME } from '../audio/stimme.js';
 import { GLLOGIK } from './gl_logik.js';
 import { GLDATA } from './gl_data.js';
@@ -174,6 +175,38 @@ export const GLEREIGNIS = (() => {
   }
   // beside the road, on the right (as one drives): off metres
   const rechts = (A, off) => [A.x + A.dy * off, A.y - A.dx * off];
+  // ---- a free place: off the roads (2.5 m from their edge), not indoors, no wall or trunk within r metres (world/worldcol.js) ----
+  function frei(x, y, r) {
+    try {
+      const s = KERN.surface(x, y);
+      if (s && s.kind <= 7 && s.e > -2.5) return false;
+      if (KERN.inside(x, y, (KERN.ground(x, y) || 0) + 1)) return false;
+    } catch (e) {}
+    let hit = false;
+    try {
+      if (WCOL && WCOL.ready)
+        WCOL.each(
+          x - r,
+          y - r,
+          x + r,
+          y + r,
+          () => (hit = true),
+          () => (hit = true)
+        );
+    } catch (e) {}
+    return !hit;
+  }
+  function freierPlatz(cx, cy, r, weg) {
+    for (const d of [0, 6, 10, 14, 18, 24, 30, 38, 46])
+      for (let i = 0; i < (d ? 12 : 1); i++) {
+        const a = (i / 12) * Math.PI * 2,
+          x = cx + Math.sin(a) * d,
+          y = cy + Math.cos(a) * d;
+        if (weg && hyp(x - weg[0], y - weg[1]) < weg[2]) continue;
+        if (frei(x, y, r)) return [x, y];
+      }
+    return null;
+  }
   // ---- props: merged meshes in the traffic's material ----
   function mesh(build, x, y, hd, z) {
     const K = VPROPS.kit();
@@ -374,8 +407,14 @@ export const GLEREIGNIS = (() => {
       radar: 'Kirmes',
       wo: () => {
         const p = where(),
-          a = GLDATA.ORTE.anger.pos;
-        return hyp(p.x - a[0], p.y - a[1]) < 700 ? { x: a[0] - 2, y: a[1] + 14, hd: 0.3 } : null;
+          a = GLDATA.ORTE.anger.pos,
+          L0 = (GLDATA.ORTE.linde && GLDATA.ORTE.linde.pos) || [213.5, -112.5];
+        if (hyp(p.x - a[0], p.y - a[1]) > 700) return null;
+        // on the green by the Anger: room for the tree, the stall and a bench (9 m free all round), not under the Linde's crown
+        const q = freierPlatz(a[0], a[1], 9, [L0[0], L0[1], 13]);
+        if (!q) return null;
+        // the stall faces where the player comes from
+        return { x: q[0], y: q[1], hd: Math.atan2(p.x - q[0], p.y - q[1]) + Math.PI };
       },
       start(E, A) {
         E.x = A.x;
@@ -461,7 +500,9 @@ export const GLEREIGNIS = (() => {
       tick(E, dt, p) {
         const d = hyp(p.x - E.x, p.y - E.y);
         // the band plays while one is near (bars of a polka on the music bus)
-        if (d < 90 && (E.musT -= dt) <= 0) E.musT = Math.max(4, GLTON.musik('polka', 8) - 0.2) || 8;
+        // (not over the radio of a vehicle he sits in)
+        if (d < 90 && !(VEH.cur && GL.radio > 0) && (E.musT -= dt) <= 0)
+          E.musT = Math.max(4, GLTON.musik('polka', 8) - 0.2) || 8;
         if (!E.gruss && d < 14) {
           E.gruss = true;
           const F = E.bursche || E.maedchen;
@@ -555,12 +596,17 @@ export const GLEREIGNIS = (() => {
         return null;
       },
       start(E, A) {
+        // (parked on the right of the way he comes)
+        const p0 = where();
+        if (Math.cos(A.hd - p0.hd) < 0) A.hd += Math.PI;
+        A.dx = Math.sin(A.hd);
+        A.dy = Math.cos(A.hd);
         const [x, y] = rechts(A, 4.4);
         const c = auto(E, 'kombi', { col: '#3e4a3a' });
         if (c) GLAUTO.park(c, x, y, A.hd);
-        // the crates behind the car, the boot's lid up
-        const bx = x - Math.sin(A.hd) * 3.3,
-          by = y - Math.cos(A.hd) * 3.3;
+        // the crates at the open boot, on the pavement side
+        const bx = x - Math.sin(A.hd) * 3.2 + Math.cos(A.hd) * 0.9,
+          by = y - Math.cos(A.hd) * 3.2 - Math.sin(A.hd) * 0.9;
         E.meshes.push(
           mesh(
             K => {
@@ -586,11 +632,23 @@ export const GLEREIGNIS = (() => {
         E.x = bx;
         E.y = by;
         E.kauf = [bx, by];
+        // the lid of the boot, up (a dark slab over the rear) – and the man beside his crates, facing the road
+        E.meshes.push(
+          mesh(
+            K => {
+              K.box(0, 0, 1.85, 1.3, 0.08, 0.04, 0, L(52, 64, 50));
+              K.box(0, 0.02, 1.62, 1.24, 0.03, 0.42, 0, L(40, 48, 40));
+            },
+            x - Math.sin(A.hd) * 2.55,
+            y - Math.cos(A.hd) * 2.55,
+            A.hd
+          )
+        );
         figur(
           E,
           'boellermann',
-          bx + Math.cos(A.hd) * 1.1,
-          by - Math.sin(A.hd) * 1.1,
+          bx - Math.sin(A.hd) * 1.0,
+          by - Math.cos(A.hd) * 1.0,
           A.hd - Math.PI / 2,
           F => (E.mann = F)
         );
@@ -747,23 +805,43 @@ export const GLEREIGNIS = (() => {
     K.box(0.07, 0.56, 1.26, 0.03, 0.05, 0.12, 0, b);
     K.box(0, -0.49, 0.72, 0.2, 0.04, 0.2, 0, w);
   }
-  // white bows on a wedding car: on the roof and on the bonnet, two ribbons from the bow to the mirrors
+  // a wedding car: white ribbons from both mirrors down to a bow on the front of the bonnet, a little bouquet in it
   function schleife(c) {
     const T = c.T || {},
       h = T.h || 1.45,
-      a = T.a ?? 1.2,
-      b = T.b ?? -1.2,
+      hw = T.hw || 0.8,
       yf = T.yf ?? 2.0,
-      w = L(246, 246, 244);
-    const K = VPROPS.kit();
-    const bow = (y, z, s) => {
-      K.box(0, y, z, 0.42 * s, 0.1 * s, 0.1 * s, 0.6, w);
-      K.box(0, y, z, 0.42 * s, 0.1 * s, 0.1 * s, -0.6, w);
-      K.box(0, y, z - 0.02, 0.1 * s, 0.1 * s, 0.12 * s, 0, w);
+      w = L(248, 248, 246),
+      K = VPROPS.kit();
+    const band = (a, b, br) => {
+      const dx = b[0] - a[0],
+        dy = b[1] - a[1],
+        l = hyp(dx, dy) || 1,
+        px = (-dy / l) * br,
+        py = (dx / l) * br;
+      const q = [
+        [a[0] + px, a[1] + py, a[2]],
+        [a[0] - px, a[1] - py, a[2]],
+        [b[0] - px, b[1] - py, b[2]],
+        [b[0] + px, b[1] + py, b[2]],
+      ];
+      K.quad(q[0], q[1], q[2], q[3], w);
+      K.quad(q[3], q[2], q[1], q[0], w);
     };
-    bow((a + b) / 2, h + 0.01, 1.2);
-    bow(yf - 0.55, h * 0.66, 1);
-    for (const s of [-1, 1]) K.box(s * 0.36, yf - 1.05, h * 0.68, 0.035, 1.0, 0.02, s * 0.5, w);
+    const front = [0, yf - 0.32, h * 0.6 + 0.03];
+    for (const s of [-1, 1]) band([s * (hw + 0.04), yf - 1.55, h * 0.72], [s * 0.05, front[1], front[2]], 0.035);
+    // the bow: two loops and two tails
+    for (const s of [-1, 1]) {
+      K.box(s * 0.11, front[1], front[2] + 0.04, 0.2, 0.05, 0.1, s * 0.5, w);
+      band([s * 0.03, front[1] + 0.02, front[2]], [s * 0.2, front[1] + 0.22, front[2] - 0.04], 0.025);
+    }
+    K.box(0, front[1], front[2] + 0.03, 0.07, 0.07, 0.08, 0, w);
+    for (const [x, y, col] of [
+      [-0.05, -0.08, L(220, 60, 90)],
+      [0.05, -0.08, L(240, 200, 220)],
+      [0, -0.14, L(90, 150, 70)],
+    ])
+      K.box(x, front[1] + y, front[2] + 0.02, 0.07, 0.07, 0.07, 0.4, col);
     const m = new THREE.Mesh(K.geo(), VFIG.mat());
     m.userData.noMerge = true;
     m.castShadow = false;
