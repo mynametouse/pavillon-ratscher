@@ -43,6 +43,11 @@ CAST = {
     'gl_polizei2': (['de-AT-IngridNeural', 'de-DE-AmalaNeural'], '+2%', '+0Hz', 'p'),
     'gl_yuki': (['de-CH-LeniNeural', 'de-DE-AmalaNeural'], '+2%', '+2Hz', 'p'),
     'gl_haendler': (['de-DE-AmalaNeural'], '-4%', '-4Hz', 'p'),
+    # the people of welt's random events (as the first recording gave them, the landlord no longer Florian)
+    'gl_boellermann': (['de-CH-JanNeural', 'de-AT-JonasNeural'], '+1%', '+1Hz', 'p'),   # 47, sells bangers from his boot
+    'gl_wirt': (['de-DE-KillianNeural'], '-5%', '-7Hz', 'p'),                           # Bratwurst-Uwe, 56
+    'gl_bursche': (['de-AT-JonasNeural', 'de-DE-KillianNeural'], '+3%', '+0Hz', 'p'),  # 21, the fair
+    'gl_maedchen': (['de-DE-AmalaNeural', 'de-DE-KatjaNeural'], '+6%', '+3Hz', 'p'),   # 20, the fair
     # 1989 (Gerhard is played, he does not speak there; the others never meet today's people)
     'gl_lutz': (['de-DE-KillianNeural'], '-2%', '-3Hz', 'p'),
     'gl_abv': (['de-DE-ConradNeural'], '-4%', '-6Hz', 'p'),
@@ -89,7 +94,8 @@ def squelch(text):
     t = text.strip(); i = bool(CALL.match(t)); o = t == 'Kommen.' or (i and not t.endswith('an alle Streifen.'))
     return 'f' if i and o else 'fi' if i else 'fo' if o else 'fm'
 # someone not in the table (a module's new speaker): a voice of the right gender, by the name's hash; pace and pitch by age
-POOL = {'m': ['de-DE-KillianNeural', 'de-AT-JonasNeural', 'de-CH-JanNeural', 'de-DE-ConradNeural', 'de-DE-FlorianMultilingualNeural'],
+# (not Florian: on 13.11.2026 it gave no audio for most lines)
+POOL = {'m': ['de-DE-KillianNeural', 'de-AT-JonasNeural', 'de-CH-JanNeural', 'de-DE-ConradNeural', 'en-US-BrianMultilingualNeural'],
         'f': ['de-DE-KatjaNeural', 'de-DE-AmalaNeural', 'de-AT-IngridNeural', 'de-CH-LeniNeural', 'de-DE-SeraphinaMultilingualNeural']}
 # the sound of each kind: the filter after the trimmed silence, the target loudness, sample rate, bit rate (bytes per second for the budget)
 TRIM = ('silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05,areverse,'
