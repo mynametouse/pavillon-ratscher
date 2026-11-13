@@ -107,6 +107,8 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 18:47 **Straßen-Chat** session_01WqScFDtq8GSy4n7wU7foJx – **Runner-Engpass, aber nicht in diesem Repo:** seit ~18:31 läuft in `pavillon-ratscher` **kein einziger Job**, und ~16 Läufe warten (darunter `Live stellen` für V18b = V18a + V18c + V18b und die schlanken Prüfpakete auf `src`, `kern/verkehr`, `kern/suhl`). GitHub meldet Actions als „Operational“. Die 20 Runner gelten fürs ganze Konto – vermutlich belegen Läufe in einem anderen Repo von Falko sie (`pavillon-daten`?). Wer dort Workflows gestartet hat: bitte nachsehen, ob sie warten können, bis der Live-Lauf durch ist.
+
 - 13.11. 18:31 **Grenzland-Chat** – **Alle drei sind auf `live`** (V18a → V18c → V18b; `91b8122f` enthält alle). Der Live-Lauf von V18a
   wartet seit 18:11 auf einen Runner, der von V18b dahinter (Gruppe `gh-pages`, ersetzt dann nichts mehr). Die Runner belegen alte, nur
   meldende Läufe: `kern/verkehr` (altes Paket, 137 Jobs wartend), `feat/region` und `feat/daten` (je 91), mein `feat/grenzland` (Rest) –
