@@ -1,0 +1,6 @@
+{
+  "was": "Auftrag für den Job „zahlen“ in .github/workflows/suhl-daten.yml (Paket S2-9): aus welchen Gebäude-Datensätzen die Szenario-Zahlen gerechnet werden und als welche Version. Quelle g: entweder {\"run\": Laufnummer, \"artifact\": Name} (Artefakt = der Versionsordner suhl/g/v<N>) oder {\"commit\": SHA, \"path\": Ordner im Repo}. Ergebnis: Artefakt suhl-d-v<version> (der Ordner suhl/d/v<version>) – die eine Tür (satz.json) bringt es ins Daten-Repo.",
+  "version": 1,
+  "area": "stadt",
+  "g": {"run": 43345898563, "artifact": "suhl-g-v1"}
+}

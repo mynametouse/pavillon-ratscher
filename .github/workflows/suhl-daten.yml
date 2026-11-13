@@ -8,10 +8,13 @@
 #   satz         DIE EINE TÜR ins Daten-Repo: bringt den Satz aus tools/suhl/daten/satz.json (je Produkt Lauf, Artefakt, Version)
 #                als EINEN Commit nach mynametouse/pavillon-daten und schaltet suhl/aktuell.json um - oder macht, solange dort
 #                dry_run: true steht, alles außer dem Push und druckt den Bericht. Die Daten-Workflows veröffentlichen nicht selbst.
+#   zahlen       Paket S2-9: holt die Zensus-Gitter 2022 (amtliche Download-Seite), schneidet sie auf Suhl und rechnet aus den
+#                Gebäude-Datensätzen (Quelle in tools/suhl/daten/zahlen.json: Lauf + Artefakt oder Zweig + Commit + Ordner) die
+#                Szenario-Zahlen je Gebäude und Stadtteil. Ergebnis: Artefakt „suhl-d-v<N>“ (der Versionsordner) für die eine Tür.
 # Fehlt ein Geheimnis, sagt der Lauf das klar (Protokoll und Zusammenfassung) und schlägt nicht fehl. In dieses Repo schreibt er nichts.
 # Läuft nur auf suhl/daten und nur, wenn tools/suhl/daten/lauf.txt sich ändert (lauf.txt ändern = neuen Lauf bestellen); die letzte
 # Zeile "lauf: <job> <job> …" nennt die Jobs. Der Lauf nimmt den neuesten Stand des Zweigs.
-name: Suhl – Datenhaus (Proben)
+name: Suhl – Datenhaus (Proben, Tür, Zahlen)
 
 on:
   push:
@@ -31,6 +34,7 @@ jobs:
       easygeodata: ${{ steps.p.outputs.easygeodata }}
       egd-client: ${{ steps.p.outputs.egd-client }}
       satz: ${{ steps.p.outputs.satz }}
+      zahlen: ${{ steps.p.outputs.zahlen }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,7 +44,7 @@ jobs:
         run: |
           line=$(grep -E '^lauf:' tools/suhl/daten/lauf.txt | tail -1 || true)
           echo "bestellt: $line"
-          for j in hallo easygeodata egd-client satz; do
+          for j in hallo easygeodata egd-client satz zahlen; do
             if echo " ${line#lauf:} " | grep -q " $j "; then echo "$j=true" >> "$GITHUB_OUTPUT"; else echo "$j=false" >> "$GITHUB_OUTPUT"; fi
           done
           echo "Bestellt: \`$line\`" >> "$GITHUB_STEP_SUMMARY"
@@ -254,4 +258,171 @@ jobs:
             echo "::warning::Pages liefert $URL nach 6 Minuten noch nicht mit dem neuen Stand (zuletzt HTTP $code)."
             echo "- ⚠️ GitHub Pages liefert aktuell.json nach 6 Minuten noch nicht mit dem neuen Stand (zuletzt HTTP $code)" >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: Was ein Browser bekommt – Status, CORS, Cache, Größe (aktuell.json und eine Kachel je Produkt)
+        if: ${{ steps.pub.outputs.published == 'true' }}
+        env:
+          URL: ${{ steps.pub.outputs.url }}
+        run: |
+          base="${URL%aktuell.json}"
+          cd "$RUNNER_TEMP/pavillon-daten/suhl"
+          {
+            echo "aktuell.json"
+            for p in */; do
+              f=$(find "$p" -type f \( -name '*.json' -o -name '*.bin' -o -name '*.webp' \) ! -name index.json ! -name meta.json ! -name viertel.json | sort | head -1)
+              i=$(find "$p" -maxdepth 2 -type f \( -name index.json -o -name meta.json \) | sort | tail -1)
+              [ -n "$i" ] && echo "$i"
+              [ -n "$f" ] && echo "$f"
+            done
+          } > /tmp/proben.txt
+          {
+            echo ""
+            echo "**Was ein Browser bekommt** (Abruf von einem fremden Ursprung, mit gzip):"
+            echo ""
+            echo "| Datei | Status | access-control-allow-origin | cache-control | content-type | content-encoding | Bytes übertragen | Bytes entpackt |"
+            echo "|---|---|---|---|---|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          bad=0
+          while read -r f; do
+            w=$(curl -sS -m 60 --compressed -H 'Origin: http://localhost:8000' -D /tmp/h.txt -o /tmp/body.bin -w '%{http_code} %{size_download}' "$base$f?t=$GITHUB_RUN_ID" || echo "000 0")
+            code=${w%% *}; sent=${w##* }
+            hdr() { grep -i "^$1:" /tmp/h.txt | tail -1 | cut -d' ' -f2- | tr -d '\r'; }
+            line="| \`$f\` | $code | $(hdr access-control-allow-origin) | $(hdr cache-control) | $(hdr content-type) | $(hdr content-encoding) | $sent | $(wc -c < /tmp/body.bin) |"
+            echo "$line" | tee -a "$GITHUB_STEP_SUMMARY"
+            [ "$code" = "200" ] || bad=1
+          done < /tmp/proben.txt
+          if [ "$bad" = "1" ]; then echo "::warning::Nicht jede Probe-Datei kam mit HTTP 200 von GitHub Pages (Tabelle in der Zusammenfassung)."; fi
 
+  zahlen:
+    name: Szenario-Zahlen (S2-9) – Zensus-Gitter, Zahlen je Gebäude und Stadtteil
+    needs: plan
+    if: ${{ needs.plan.outputs.zahlen == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: read                    # die Gebäude-Datensätze sind das Artefakt eines anderen Laufs dieses Repos
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: suhl/daten
+          persist-credentials: false
+      - name: Tests (Bibliothek, Schema, Zahlen, Zensus – ohne Netz)
+        run: |
+          python3 -I tools/suhl/lib/test_lib.py
+          python3 -I tools/suhl/lib/test_schema.py
+          python3 -I tools/suhl/daten/test_zahlen.py
+          python3 -I tools/suhl/daten/test_zensus.py
+      - name: Auftrag (tools/suhl/daten/zahlen.json)
+        id: auftrag
+        run: |
+          python3 -I - <<'PY'
+          import json, os, re
+          d = json.load(open('tools/suhl/daten/zahlen.json'))
+          g = d['g']
+          v = int(d['version'])
+          area = d.get('area', 'stadt')
+          assert area in ('stadt', 'kernstadt', 'zentrum', 'probe'), area
+          out = {'version': v, 'area': area, 'run': '', 'artifact': '', 'commit': '', 'path': ''}
+          if 'run' in g:
+              assert re.fullmatch(r'[0-9]+', str(g['run'])) and re.fullmatch(r'[A-Za-z0-9._-]+', g['artifact']), g
+              out.update(run=str(g['run']), artifact=g['artifact'])
+          else:
+              assert re.fullmatch(r'[0-9a-f]{7,40}', g['commit']) and re.fullmatch(r'[A-Za-z0-9._/-]+', g['path']) and '..' not in g['path'], g
+              out.update(commit=g['commit'], path=g['path'].strip('/'))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              for k, val in out.items():
+                  f.write(f'{k}={val}\n')
+          print('Auftrag:', out)
+          PY
+      - name: Gebäude-Datensätze holen (Artefakt eines Laufs oder Ordner eines Commits)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ steps.auftrag.outputs.run }}
+          ART: ${{ steps.auftrag.outputs.artifact }}
+          COMMIT: ${{ steps.auftrag.outputs.commit }}
+          GPATH: ${{ steps.auftrag.outputs.path }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/g"
+          if [ -n "$RUN" ]; then
+            gh run download "$RUN" --repo "$GITHUB_REPOSITORY" -n "$ART" -D "$RUNNER_TEMP/g"
+          else
+            git fetch -q --depth 1 origin "$COMMIT"          # the repository is public: no token needed to read
+            git archive FETCH_HEAD "$GPATH" | tar -x -C "$RUNNER_TEMP/g" --strip-components="$(echo "$GPATH" | awk -F/ '{print NF}')"
+          fi
+          ls "$RUNNER_TEMP/g" | head; du -sh "$RUNNER_TEMP/g"
+          test -f "$RUNNER_TEMP/g/index.json"
+      - name: Zensus-Gitter aus dem Cache (Downloads früherer Läufe)
+        uses: actions/cache@v4
+        with:
+          path: ~/suhl-raw/zensus
+          key: suhl-raw-zensus-v1-${{ github.run_id }}
+          restore-keys: |
+            suhl-raw-zensus-v1-
+      - name: Zensus-Gitter 2022 holen und auf Suhl schneiden (fehlt ein Thema, wird es übersprungen)
+        run: |
+          set -o pipefail
+          python3 -I -u tools/suhl/daten/zensus.py --fetch --raw ~/suhl-raw/zensus --out "$RUNNER_TEMP/zensus" 2>&1 | cut -c1-400 | tee "$RUNNER_TEMP/zensus.log"
+          if [ ! -s "$RUNNER_TEMP/zensus/einwohner.json" ]; then
+            echo "::warning::Das Zensus-Gitter der Einwohner war nicht zu holen – es gelten die Zellen, die auf dem Zweig liegen (tools/suhl/out/daten/zensus)."
+            rm -rf "$RUNNER_TEMP/zensus"; cp -r tools/suhl/out/daten/zensus "$RUNNER_TEMP/zensus"
+          fi
+          ls -la "$RUNNER_TEMP/zensus"
+      - name: Zahlen rechnen (tools/suhl/daten/zahlen.py)
+        env:
+          V: ${{ steps.auftrag.outputs.version }}
+          AREA: ${{ steps.auftrag.outputs.area }}
+        run: |
+          set -o pipefail
+          python3 -I -u tools/suhl/daten/zahlen.py --g "$RUNNER_TEMP/g" --out "$RUNNER_TEMP/aus/suhl/d/v$V" --area "$AREA" \
+            --zensus "$RUNNER_TEMP/zensus" --report "$RUNNER_TEMP/zahlen_bericht.json" 2>&1 | cut -c1-600 | tee "$RUNNER_TEMP/zahlen.log"
+          du -sh "$RUNNER_TEMP/aus/suhl/d/v$V"
+      - name: Prüfer des Datenvertrags
+        env:
+          AREA: ${{ steps.auftrag.outputs.area }}
+        run: |
+          set -o pipefail
+          if [ "$AREA" = "probe" ]; then P="--probe"; else P=""; fi
+          python3 -I -u tools/suhl/lib/validate.py "$RUNNER_TEMP/aus" $P --quiet --json "$RUNNER_TEMP/vertrag.json" 2>&1 | tail -30 | tee "$RUNNER_TEMP/vertrag.log"
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          python3 -I - <<'PY' >> "$GITHUB_STEP_SUMMARY" || true
+          import json, os
+          t = os.environ['RUNNER_TEMP']
+          r = json.load(open(os.path.join(t, 'zahlen_bericht.json')))
+          s, z = r['stadt'], r.get('zensus', {})
+          print(f"**Szenario-Zahlen** – {r['tiles']} Kacheln, {r['buildings']} Gebäude, {r['bytes'] / 1e6:.2f} MB + viertel.json {r['bytes_viertel'] / 1e3:.0f} kB; "
+                f"aus g v{r['g_version']}")
+          print()
+          print(f"- in der Gemeinde: Grundfläche {s['footprint'] / 1e4:.1f} ha, Geschossfläche {s['floorArea'] / 1e4:.1f} ha, Dächer {s['roofArea'] / 1e4:.1f} ha, "
+                f"Solar-Potenzial {s['pvKwp'] / 1e3:.1f} MWp (Regel)")
+          if z:
+              c = z['city']
+              print(f"- Zensus 2022: {c['residents']} Einwohner in {c['cells']} Zellen; auf Gebäude verteilt {z['residents_on_buildings']:.0f}, "
+                    f"ohne Gebäude {z['residents_unassigned']}")
+          print(f"- Dachrichtungen hier gegen g (Grad, 5 %/Mitte/95 %): {r['roof_check']['az_here_minus_g_deg_p5_p50_p95']}")
+          print()
+          print('| Stadtteil | Gebäude | Geschossfläche ha | Einwohner Stadt 31.12.2022 | Zensus 2022 | Modell |')
+          print('|---|---|---|---|---|---|')
+          for k, v in r['viertel'].items():
+              print(f"| {k} | {v['buildings']} | {v['floorArea'] / 1e4:.1f} | {v['official']['residents']} | {(v.get('census') or {}).get('residents', '–')} | "
+                    f"{(v.get('residents') or {}).get('model', '–')} |")
+          PY
+      - name: Artefakt – der Versionsordner für die eine Tür
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-d-v${{ steps.auftrag.outputs.version }}
+          path: ${{ runner.temp }}/aus/suhl/d/v${{ steps.auftrag.outputs.version }}
+          retention-days: 30
+          if-no-files-found: error
+      - name: Artefakt – Bericht, Protokolle, Zensus-Zellen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-zahlen-bericht
+          path: |
+            ${{ runner.temp }}/zahlen_bericht.json
+            ${{ runner.temp }}/vertrag.json
+            ${{ runner.temp }}/*.log
+            ${{ runner.temp }}/zensus
+          retention-days: 30
