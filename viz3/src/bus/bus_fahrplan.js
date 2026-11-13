@@ -124,6 +124,9 @@ export const BUSPLAN = (() => {
       }
       // stops: a station's platform, or the edge of the world (s = -1: where a bus comes from or goes to beyond it – no halt there)
       const P = { i, n, X, Y, Z, Vl, st: p.st.map(([s, q]) => ({ s, q })), s: p.s.slice(), L: p.L, R: null };
+      // feat/suhl (B2): a plan may say per point how far right of the way's centre its lane lies (dm; -1: BUS.lane) – Suhl's one-way and
+      // narrow streets (tools/suhl/bus/fahrplan_suhl.py); the world's plan does not, its lanes stay as they were
+      if (p.o && p.o.length === n) P.O = Float32Array.from(p.o, v => (v < 0 ? -1 : v / 10));
       P.first = P.st.findIndex(o => o.s >= 0);
       P.last = P.st.length - 1 - [...P.st].reverse().findIndex(o => o.s >= 0);
       P.st.forEach((o, k) => o.s >= 0 && S.stations[o.s] && S.stations[o.s].pats.push([i, k]));
@@ -252,7 +255,7 @@ export const BUSPLAN = (() => {
   function lane(P) {
     if (P.R) return P.R;
     const C = [];
-    for (let k = 0; k < P.n; k++) C.push({ x: P.X[k], y: P.Y[k], o: BUS.lane, v: k });
+    for (let k = 0; k < P.n; k++) C.push({ x: P.X[k], y: P.Y[k], o: P.O && P.O[k] >= 0 ? P.O[k] : BUS.lane, v: k }); // feat/suhl (B2)
     const F = VNETZ.fillet(VNETZ.offset(C), 5);
     // resample every metre, the source index interpolated (limit and height follow it)
     const X = [],

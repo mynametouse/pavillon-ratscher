@@ -69,6 +69,23 @@ export const ROADS = (() => {
       vec2 q = uv * vec2( textureSize( tRoad, 0 ) ) - 0.5, f = fract( q ); ivec2 i = ivec2( floor( q ) );
       float a = texelFetch( tRoad, i, 0 ).a, b = texelFetch( tRoad, i + ivec2( 1, 0 ), 0 ).a, c = texelFetch( tRoad, i + ivec2( 0, 1 ), 0 ).a, d = texelFetch( tRoad, i + ivec2( 1, 1 ), 0 ).a;
       b -= floor( b - a + 0.5 ); c -= floor( c - a + 0.5 ); d -= floor( d - a + 0.5 ); return fract( mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y ) ); }
+    // feat/suhl (S-R1, 13.11.2026, Falko: Suhl's streets „sehr unrealistisch und kantig“): the code (style, kind, surface) where two surfaces
+    // meet – a square and a street, sett and asphalt. The nearest texel drew the border in steps of the map's raster (1.5 m beyond the
+    // square); here the four texels of the bilinear footprint vote with their weights (only those a road reaches: R > 0), so the border
+    // runs smooth along the 0.5 line between them. One code all round: the same as before.
+    float rdCode( vec2 uv ) {
+      vec2 q = uv * vec2( textureSize( tRoad, 0 ) ) - 0.5, f = fract( q ); ivec2 i = ivec2( floor( q ) );
+      vec4 t0 = texelFetch( tRoad, i, 0 ), t1 = texelFetch( tRoad, i + ivec2( 1, 0 ), 0 ), t2 = texelFetch( tRoad, i + ivec2( 0, 1 ), 0 ), t3 = texelFetch( tRoad, i + ivec2( 1, 1 ), 0 );
+      vec4 c = floor( vec4( t0.g, t1.g, t2.g, t3.g ) * 255.0 + 0.5 );
+      vec4 w = vec4( ( 1.0 - f.x ) * ( 1.0 - f.y ), f.x * ( 1.0 - f.y ), ( 1.0 - f.x ) * f.y, f.x * f.y ) * step( 0.5 / 255.0, vec4( t0.r, t1.r, t2.r, t3.r ) );
+      if ( c.x == c.y && c.x == c.z && c.x == c.w ) return c.x;
+      vec4 s = vec4( dot( w, vec4( equal( c, c.xxxx ) ) ), dot( w, vec4( equal( c, c.yyyy ) ) ), dot( w, vec4( equal( c, c.zzzz ) ) ), dot( w, vec4( equal( c, c.wwww ) ) ) );
+      if ( s.x + s.y + s.z + s.w <= 0.0 ) return floor( texelFetch( tRoad, ivec2( uv * vec2( textureSize( tRoad, 0 ) ) ), 0 ).g * 255.0 + 0.5 );
+      float best = c.x, bs = s.x;
+      if ( s.y > bs ) { best = c.y; bs = s.y; }
+      if ( s.z > bs ) { best = c.z; bs = s.z; }
+      if ( s.w > bs ) best = c.w;
+      return best; }
     // a detail texture with mean 1 (two samples, one turned and scaled, against visible tiling); explicit gradients dx, dy of p, so it may sit in branches
     vec3 rdTex( float layer, vec2 p, float tile, vec2 dx, vec2 dy ) { vec2 q = p / tile; mat2 M = mat2( 0.8, -0.6, 0.6, 0.8 ) * 0.43;
       vec3 a = textureGrad( tDet, vec3( q, layer ), dx / tile, dy / tile ).rgb, b = textureGrad( tDet, vec3( M * q + 0.31, layer ), M * dx / tile, M * dy / tile ).rgb;
@@ -101,7 +118,7 @@ export const ROADS = (() => {
       // the square's roads fade into the photo far away; a window around the vehicle ends before its own edge
       float far = uRoad.z > 0.5 ? 1.0 - smoothstep( uRoad.z - 70.0, uRoad.z, dist ) : 1.0 - smoothstep( 600.0, 1400.0, dist );
       if ( far <= 0.0 ) return c;
-      float code = floor( texelFetch( tRoad, ivec2( uv * vec2( textureSize( tRoad, 0 ) ) ), 0 ).g * 255.0 + 0.5 ), style = floor( code / 60.0 ), rest = code - style * 60.0, kind = floor( rest / 6.0 ), surf = rest - kind * 6.0;
+      float code = rdCode( uv ), style = floor( code / 60.0 ), rest = code - style * 60.0, kind = floor( rest / 6.0 ), surf = rest - kind * 6.0;   // feat/suhl (S-R1)
       float al = abs( lat ), hw = max( e + al, 0.6 ), fine = 1.0 - smoothstep( 0.012, 0.05, fwp ), mid = 1.0 - smoothstep( 0.08, 0.4, fwp );
       float lum = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hard = step( surf, 2.5 );   // asphalt, concrete, paving: a hard edge; gravel and earth fray into the grass
       float built = step( 1.5, style ), town = built * step( style, 2.5 ), two = step( 2.6, hw );

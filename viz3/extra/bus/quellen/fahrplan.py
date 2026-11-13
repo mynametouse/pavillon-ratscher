@@ -722,6 +722,9 @@ def main():
         st['x'], st['y'] = round(sum(xs) / len(xs)), round(sum(ys) / len(ys))
     # ways: decimetres, simplified (0.3 m), with the speed limit (m/s) and, beyond the square, the road profile (z) per point
     def simplify(pts, eps=0.3):
+        # Douglas-Peucker against the chord as a segment (not the infinite line): a ring line ends where it began – its chord has no
+        # length, and measured against the line through it every point counted as on it (feat/suhl, 13.11.2026: the city's ring lines
+        # A1 … D2 kept only their stops and ran straight through the houses)
         keep = [False] * len(pts)
         keep[0] = keep[-1] = True
         stack = [(0, len(pts) - 1)]
@@ -730,10 +733,11 @@ def main():
             ax, ay = pts[i0][0], pts[i0][1]
             bx, by = pts[i1][0], pts[i1][1]
             dx, dy = bx - ax, by - ay
-            L = math.hypot(dx, dy) or 1e-9
+            l2 = dx * dx + dy * dy
             bd, bi = -1, -1
             for i in range(i0 + 1, i1):
-                d = abs((pts[i][0] - ax) * dy - (pts[i][1] - ay) * dx) / L
+                t = max(0.0, min(1.0, ((pts[i][0] - ax) * dx + (pts[i][1] - ay) * dy) / l2)) if l2 > 1e-12 else 0.0
+                d = math.hypot(pts[i][0] - ax - dx * t, pts[i][1] - ay - dy * t)
                 if d > bd:
                     bd, bi = d, i
             if bd > eps:
