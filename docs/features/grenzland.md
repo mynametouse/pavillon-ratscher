@@ -85,8 +85,14 @@ Lead, B und C fünf Hilfs-Agenten (`kino`, `stimmen`, `licht`, `figuren`, `welt`
 ### Das gemeinsame Handy (Agent `handy`, `viz3/src/handy/`)
 
 Falko 13:09: realistisches Gerät, Apps zum Öffnen und Schließen, Chats hochkant, Anrufe, später freischaltbar, die Figur hält es vors
-Gesicht – und für alle Welten nutzbar (der Zukunfts-Chat will es auch). Kommt mit dem nächsten Zusammenführen; Beschreibung
-`docs/features/handy.md`.
+Gesicht – und für alle Welten nutzbar (der Zukunfts-Chat will es auch). `HANDY` (`handy.js`, `handy_apps.js`, `handy_pose.js`): ein Gerät
+ohne Marke mit Sperr- und Startbildschirm, Dock, Abzeichen; Apps wachsen aus ihrem Symbol und schließen sich hinein; alles scrollt von oben
+nach unten (die alten Reihen nebeneinander kamen von der Klasse `.hb` des Grundspiels). Apps: Nachrichten (Antwort-Knöpfe, Tipp-Punkte),
+Telefon (Anrufe, Liste), Kamera-Sucher mit echtem Bild, Fotos, Karte, Feed (Bilder, LIVE, Likes, Kommentare), Bank, Notizen, Einstellungen,
+Uhr; Grenzland bringt Radio und „Aufträge“ (gesperrt bis Kapitel 2). Die Figur hebt es vor die Brust, schaut darauf, der Daumen tippt; beim
+Anruf ans Ohr, im Sucher vor die Augen; die Kamera rückt etwas näher. Esc steckt es weg, Rücktaste geht zurück. Grenzland ist die erste Welt
+(`gl_handy.js` hält die alte `GLHANDY`-Schnittstelle, neu `GLHANDY.ruf` für Anrufe als Szene); für den Zukunfts-Chat gibt es die große
+Darstellung am rechten Rand (`HANDY.layout('gross')`), `HANDY.mount(el)`, Mitteilungen und Anrufe nach Drehbuch – `docs/features/handy.md`.
 
 ## Stand (13.11.2026, 9:30)
 
