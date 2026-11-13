@@ -169,6 +169,14 @@ def main():
                                     'ndom_kacheln': n_ndom})
         res['schritte']['baeume'] = {'anzahl': idx['anzahl'], 'kacheln': len(idx['kacheln']), 'sekunden': round(time.time() - t0)}
         glib.write_json(os.path.join(a.out, 'kachel_statistik.json'), stats, indent=0)
+        sums = {}
+        for st in stats.values():
+            for k, v in st.items():
+                if isinstance(v, (int, float)) and not k.endswith('_anteil') and k != 'sekunden':
+                    sums[k] = sums.get(k, 0) + v
+        res['kachel_summen'] = {k: (round(v, 1) if isinstance(v, float) else v) for k, v in sorted(sums.items())}
+        res['kachel_summen']['hinweis'] = ('Summen über die Kacheln samt 12 m Rand – am Rand doppelt gezählt (etwa 6 %); die Zahlen der Bäume '
+                                           'stehen unter "baeume"')
         import pruefen
         res['baeume'] = pruefen.statistik(M, K, rows)
         res['pruefung'] = pruefen.pruefe(M, K)

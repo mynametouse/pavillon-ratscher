@@ -307,7 +307,10 @@ def main():
                 res.append(r)
             if a.hoehen:
                 import ndom
-                hoehen_sheet(tx, ty, T1, U, ndom.Ndom(a.hoehen), w, title).save(os.path.join(a.out, f'hoehen_{tx}_{ty}.jpg'), quality=85)
+                nd = ndom.Ndom(a.hoehen)
+                hoehen_sheet(tx, ty, T1, U, nd, w, title).save(os.path.join(a.out, f'hoehen_{tx}_{ty}.jpg'), quality=85)
+                wz = (w[0] + 50, w[1] + 50, w[2] - 50, w[3] - 50)        # the middle 100 m at 20 cm: do tops and crowns sit on each other?
+                hoehen_sheet(tx, ty, T1, U, nd, wz, title + ', Mitte').save(os.path.join(a.out, f'hoehen_{tx}_{ty}_mitte.jpg'), quality=88)
         if res:
             glib.write_json(os.path.join(a.out, 'v0v1.json'), res, indent=1)
             print(json.dumps(res, ensure_ascii=False, indent=1))
