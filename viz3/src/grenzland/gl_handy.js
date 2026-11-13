@@ -135,7 +135,12 @@ export const GLHANDY = (() => {
     );
     if (bild || o.live) {
       // (the one who posts plays its own sound – gl_reaktion.js)
-      HANDY.mitteilung({ app: 'feed', von: String(wer), text: t.replace(/^LIVE:\s*/, o.live ? 'LIVE · ' : ''), still: !!bild });
+      HANDY.mitteilung({
+        app: 'feed',
+        von: String(wer),
+        text: t.replace(/^LIVE:\s*/, o.live ? 'LIVE · ' : ''),
+        still: !!bild,
+      });
       GL.emit('feedpost', { wer, live: !!o.live, bild: !!bild });
     }
     return bild;
