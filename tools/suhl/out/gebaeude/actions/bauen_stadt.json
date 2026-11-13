@@ -1,0 +1,1452 @@
+{
+ "made": "2026-11-13T01:10:07Z",
+ "area": "stadt",
+ "version": "v1",
+ "seconds": 714.1,
+ "tiles": 397,
+ "buildings": 31719,
+ "bytes": 23994449,
+ "kb_per_building": 0.74,
+ "centre_tile_present": true,
+ "ethos_in_frame": 52737,
+ "cadastre_in_frame": 33296,
+ "join": {
+  "kataster_nur_ueberdeckt": 324
+ },
+ "kat": {
+  "2": 30960,
+  "1": 488,
+  "0": 271
+ },
+ "src": {
+  "e": 30928,
+  "k": 791
+ },
+ "hq": {
+  "2": 30928,
+  "0": 791
+ },
+ "kind": {
+  "0": 15470,
+  "1": 656,
+  "2": 13059,
+  "3": 2378,
+  "4": 65,
+  "5": 62,
+  "6": 18,
+  "8": 11
+ },
+ "use": {
+  "wohnen": 13132,
+  "freizeit": 6470,
+  "unbekannt": 4517,
+  "neben": 2869,
+  "garage": 2294,
+  "gewerbe": 1113,
+  "handel": 255,
+  "versorgung": 213,
+  "oeffentlich": 175,
+  "gemischt": 167,
+  "land": 79,
+  "bildung": 76,
+  "sozial": 55,
+  "verkehr": 49,
+  "gesundheit": 41,
+  "gastro": 40,
+  "buero": 38,
+  "turm": 36,
+  "kultur": 34,
+  "kirche": 30,
+  "friedhof": 18,
+  "sport": 18
+ },
+ "typ": {
+  "efh": 9329,
+  "neben": 5660,
+  "laube": 5118,
+  "dorf": 2926,
+  "dach": 2378,
+  "garage": 2290,
+  "block": 1853,
+  "halle": 720,
+  "stadthaus": 642,
+  "platte": 231,
+  "villa": 203,
+  "zeile": 165,
+  "tank": 65,
+  "turm": 62,
+  "hochhaus": 47,
+  "kirche": 19,
+  "tief": 11
+ },
+ "roof_form": {
+  "0": 15851,
+  "1": 2773,
+  "2": 12636,
+  "3": 459
+ },
+ "roof_rq": {
+  "0": 25762,
+  "1": 2432,
+  "2": 3525
+ },
+ "floors_gsq": {
+  "-1": 5072,
+  "0": 2320,
+  "1": 567,
+  "2": 23760
+ },
+ "era": {
+  "0": 28216,
+  "1": 3026,
+  "2": 4,
+  "3": 461,
+  "4": 12
+ },
+ "era_q": {
+  "0": 31648,
+  "1": 71
+ },
+ "roof_class": {
+  "0": 5391,
+  "1": 1552,
+  "2": 8964,
+  "3": 4377,
+  "4": 19188,
+  "5": 5527,
+  "6": 795
+ },
+ "roof_class_q": {
+  "0": 187,
+  "1": 45510,
+  "2": 97
+ },
+ "with_address": 31456,
+ "with_name": 469,
+ "with_osm": 23834,
+ "with_street_side": 19634,
+ "with_shop_zone": 547,
+ "landmarks": 75,
+ "monuments": 63,
+ "footprint_ha": 252.05,
+ "floor_area_ha": 488.6,
+ "roof_area_ha": 277.93,
+ "function_to_use": {
+  "Wohngebäude": [
+   12946,
+   "wohnen"
+  ],
+  "Gebäude zur Freizeitgestaltung": [
+   6314,
+   "freizeit"
+  ],
+  "Nach Quellenlage nicht zu spezifizieren": [
+   4712,
+   "unbekannt"
+  ],
+  "Überdachung": [
+   2825,
+   "neben"
+  ],
+  "Garage": [
+   2121,
+   "garage"
+  ],
+  "Gebäude für Wirtschaft oder Gewerbe": [
+   1117,
+   "gewerbe"
+  ],
+  "(nicht im Kataster)": [
+   271,
+   "unbekannt"
+  ],
+  "Gebäude für Handel und Dienstleistungen": [
+   213,
+   "handel"
+  ],
+  "Gebäude für Gewerbe und Industrie": [
+   182,
+   "gewerbe"
+  ],
+  "Gemischt genutztes Gebäude mit Wohnen": [
+   167,
+   "gemischt"
+  ],
+  "Gebäude zur Versorgung": [
+   98,
+   "versorgung"
+  ],
+  "Verwaltungsgebäude": [
+   74,
+   "oeffentlich"
+  ],
+  "Gebäude für Land- und Forstwirtschaft": [
+   65,
+   "land"
+  ],
+  "Wasserbehälter": [
+   59,
+   "versorgung"
+  ],
+  "Gebäude für öffentliche Zwecke": [
+   59,
+   "oeffentlich"
+  ],
+  "Gebäude für soziale Zwecke": [
+   55,
+   "sozial"
+  ],
+  "Gebäude für Erholungszwecke": [
+   55,
+   "freizeit"
+  ],
+  "Allgemein bildende Schule": [
+   51,
+   "bildung"
+  ],
+  "Funkmast": [
+   23,
+   "turm"
+  ],
+  "Betriebsgebäude zu Verkehrsanlagen (allgemein)": [
+   23,
+   "verkehr"
+  ],
+  "Gebäude für Gesundheitswesen": [
+   23,
+   "gesundheit"
+  ],
+  "Justizvollzugsanstalt": [
+   23,
+   "oeffentlich"
+  ],
+  "Gebäude zur Entsorgung": [
+   22,
+   "versorgung"
+  ],
+  "Gebäude für kulturelle Zwecke": [
+   19,
+   "kultur"
+  ],
+  "Friedhofsgebäude": [
+   18,
+   "friedhof"
+  ],
+  "Feuerwehr": [
+   18,
+   "oeffentlich"
+  ],
+  "Sport-, Turnhalle": [
+   18,
+   "sport"
+  ],
+  "Krankenhaus": [
+   18,
+   "gesundheit"
+  ],
+  "Kirche": [
+   17,
+   "kirche"
+  ],
+  "Gebäude für Bildung und Forschung": [
+   16,
+   "bildung"
+  ],
+  "Tiefgarage": [
+   11,
+   "verkehr"
+  ],
+  "Gebäude für religiöse Zwecke": [
+   10,
+   "kirche"
+  ],
+  "Museum": [
+   10,
+   "kultur"
+  ],
+  "Straßenmeisterei": [
+   5,
+   "verkehr"
+  ],
+  "Empfangsgebäude": [
+   5,
+   "verkehr"
+  ],
+  "Treibhaus, Gewächshaus": [
+   5,
+   "land"
+  ],
+  "Kino": [
+   5,
+   "kultur"
+  ],
+  "Berufsbildende Schule": [
+   4,
+   "bildung"
+  ],
+  "Aussichtsturm": [
+   4,
+   "turm"
+  ],
+  "Polizei": [
+   4,
+   "oeffentlich"
+  ],
+  "Schornstein": [
+   4,
+   "turm"
+  ],
+  "Gebäude für Sicherheit und Ordnung": [
+   4,
+   "garage"
+  ],
+  "Schutzhütte": [
+   4,
+   "freizeit"
+  ],
+  "Pumpstation": [
+   3,
+   "versorgung"
+  ],
+  "Kapelle": [
+   3,
+   "kirche"
+  ],
+  "Parkhaus": [
+   3,
+   "verkehr"
+  ],
+  "Kontrollturm": [
+   3,
+   "turm"
+  ],
+  "Sonstiges": [
+   2,
+   "turm"
+  ],
+  "Gericht": [
+   2,
+   "oeffentlich"
+  ],
+  "Rathaus": [
+   2,
+   "oeffentlich"
+  ],
+  "Sprungschanze (Anlauf)": [
+   2,
+   "unbekannt"
+  ],
+  "Gasometer": [
+   1,
+   "unbekannt"
+  ],
+  "Solarzellen": [
+   1,
+   "unbekannt"
+  ]
+ },
+ "tall": [
+  {
+   "id": "DETHL57P0000js64",
+   "hr": 68.0,
+   "gf": 26,
+   "gs": 2,
+   "gsq": 2,
+   "use": "gewerbe",
+   "fn": "Gebäude für Gewerbe und Industrie",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Fröhliche-Mann-Straße 2",
+   "utm": [
+    620113,
+    5610215
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0000js2G",
+   "hr": 59.2,
+   "gf": 20,
+   "gs": null,
+   "gsq": null,
+   "use": "unbekannt",
+   "fn": "",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "",
+   "utm": [
+    620188,
+    5610335
+   ],
+   "kat": 0
+  },
+  {
+   "id": "DETHL57P00006G0l",
+   "hr": 56.6,
+   "gf": 584,
+   "gs": 19,
+   "gsq": 2,
+   "use": "gastro",
+   "fn": "Gebäude für Handel und Dienstleistungen",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": "Hotelturm (City Hotel am CCS)",
+   "adr": "Friedrich-König-Straße 1",
+   "utm": [
+    619314,
+    5607787
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001nlJk",
+   "hr": 55.7,
+   "gf": 44,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Funkmast",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Kornbergstraße",
+   "utm": [
+    620343,
+    5609886
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001jGod",
+   "hr": 51.5,
+   "gf": 50,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Funkmast",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Forstort Teufelskreis",
+   "utm": [
+    625038,
+    5613100
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0000jrup",
+   "hr": 47.9,
+   "gf": 71,
+   "gs": 16,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Friedrich-König-Straße 44",
+   "utm": [
+    620078,
+    5608244
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001nmpP",
+   "hr": 46.4,
+   "gf": 24,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Funkmast",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Schützenstraße",
+   "utm": [
+    621458,
+    5605278
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00006G1W",
+   "hr": 46.1,
+   "gf": 480,
+   "gs": 16,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Friedrich-König-Straße 20",
+   "utm": [
+    619817,
+    5607978
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001eCsk",
+   "hr": 46.0,
+   "gf": 6,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Funkmast",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Heiligenberg; Heiliger Berg",
+   "utm": [
+    616699,
+    5607926
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00006G1Y",
+   "hr": 45.9,
+   "gf": 5,
+   "gs": 15,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Friedrich-König-Straße 20",
+   "utm": [
+    619830,
+    5607975
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00006IbC",
+   "hr": 45.9,
+   "gf": 7,
+   "gs": 16,
+   "gsq": 0,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Friedrich-König-Straße 11",
+   "utm": [
+    619519,
+    5607972
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00006G0d",
+   "hr": 45.7,
+   "gf": 510,
+   "gs": 15,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Friedrich-König-Straße 11",
+   "utm": [
+    619531,
+    5607969
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001oCJz",
+   "hr": 45.7,
+   "gf": 1,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Funkmast",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Eisenberg",
+   "utm": [
+    626883,
+    5608690
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00006G0c",
+   "hr": 45.5,
+   "gf": 506,
+   "gs": 15,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Friedrich-König-Straße 9",
+   "utm": [
+    619474,
+    5607952
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0000jruo",
+   "hr": 45.5,
+   "gf": 434,
+   "gs": 15,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Friedrich-König-Straße 44",
+   "utm": [
+    620063,
+    5608252
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00006G0m",
+   "hr": 45.4,
+   "gf": 508,
+   "gs": 15,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Friedrich-König-Straße 13",
+   "utm": [
+    619592,
+    5607972
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002jxj",
+   "hr": 45.1,
+   "gf": 519,
+   "gs": 15,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Auenstraße 80",
+   "utm": [
+    618668,
+    5607340
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00006G0z",
+   "hr": 45.1,
+   "gf": 507,
+   "gs": 15,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Friedrich-König-Straße 17",
+   "utm": [
+    619676,
+    5607965
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00006FW1",
+   "hr": 40.3,
+   "gf": 400,
+   "gs": 14,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Platz der Deutschen Einheit 1",
+   "utm": [
+    619639,
+    5607774
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001jqWY",
+   "hr": 40.1,
+   "gf": 6,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Funkmast",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Kleiner Harzhüttenhügel; Schmückestraße",
+   "utm": [
+    627560,
+    5608605
+   ],
+   "kat": 1
+  },
+  {
+   "id": "DETHL57P0001geFy",
+   "hr": 39.8,
+   "gf": 2,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Schornstein",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Am Steinsfelder Wasser 15",
+   "utm": [
+    620956,
+    5610790
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002jt0",
+   "hr": 35.4,
+   "gf": 987,
+   "gs": 12,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 4,2,6",
+   "utm": [
+    618952,
+    5607539
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002jwM",
+   "hr": 35.4,
+   "gf": 991,
+   "gs": 12,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 48,46,44",
+   "utm": [
+    618765,
+    5607290
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001nw3R",
+   "hr": 35.4,
+   "gf": 34,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Funkmast",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Auf dem Domberg; Domberg",
+   "utm": [
+    619229,
+    5608630
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002jtE",
+   "hr": 35.3,
+   "gf": 349,
+   "gs": 12,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Auenstraße 9",
+   "utm": [
+    618787,
+    5607531
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002jsf",
+   "hr": 35.2,
+   "gf": 988,
+   "gs": 12,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 24,28,26",
+   "utm": [
+    618857,
+    5607406
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002jtn",
+   "hr": 35.2,
+   "gf": 988,
+   "gs": 12,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Auenstraße 13,15,11",
+   "utm": [
+    618740,
+    5607496
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lPf",
+   "hr": 34.5,
+   "gf": 27,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 48,44",
+   "utm": [
+    618769,
+    5607277
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lPe",
+   "hr": 34.4,
+   "gf": 28,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 48,44",
+   "utm": [
+    618750,
+    5607297
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lPd",
+   "hr": 34.2,
+   "gf": 14,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 48,44",
+   "utm": [
+    618736,
+    5607313
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lO2",
+   "hr": 34.1,
+   "gf": 14,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Auenstraße 9",
+   "utm": [
+    618785,
+    5607520
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lO3",
+   "hr": 34.1,
+   "gf": 13,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Auenstraße 9",
+   "utm": [
+    618796,
+    5607531
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lPg",
+   "hr": 34.1,
+   "gf": 14,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 48,44",
+   "utm": [
+    618784,
+    5607261
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOo",
+   "hr": 34.0,
+   "gf": 27,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Auenstraße 11,15,13",
+   "utm": [
+    618735,
+    5607483
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOp",
+   "hr": 34.0,
+   "gf": 14,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Auenstraße 11,15,13",
+   "utm": [
+    618719,
+    5607468
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOT",
+   "hr": 34.0,
+   "gf": 13,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 26,28,24",
+   "utm": [
+    618876,
+    5607377
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOR",
+   "hr": 33.9,
+   "gf": 28,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 26,28,24",
+   "utm": [
+    618842,
+    5607413
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOS",
+   "hr": 33.9,
+   "gf": 27,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 26,28,24",
+   "utm": [
+    618861,
+    5607393
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0000jwy5",
+   "hr": 33.9,
+   "gf": 4,
+   "gs": 10,
+   "gsq": 0,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "block",
+   "k": 0,
+   "r": 0,
+   "n": "Ringberghotel",
+   "adr": "Ringberg 10",
+   "utm": [
+    621898,
+    5608621
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0000jwy6",
+   "hr": 33.9,
+   "gf": 21,
+   "gs": 10,
+   "gsq": 0,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "block",
+   "k": 0,
+   "r": 0,
+   "n": "Ringberghotel",
+   "adr": "Ringberg 10",
+   "utm": [
+    621901,
+    5608622
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOn",
+   "hr": 33.8,
+   "gf": 27,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Auenstraße 11,15,13",
+   "utm": [
+    618755,
+    5607502
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOm",
+   "hr": 33.8,
+   "gf": 13,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Auenstraße 9",
+   "utm": [
+    618771,
+    5607517
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOa",
+   "hr": 33.7,
+   "gf": 14,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 2,4,6",
+   "utm": [
+    618923,
+    5607561
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOb",
+   "hr": 33.7,
+   "gf": 27,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 2,4,6",
+   "utm": [
+    618938,
+    5607545
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOc",
+   "hr": 33.7,
+   "gf": 27,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 2,4,6",
+   "utm": [
+    618956,
+    5607525
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOQ",
+   "hr": 33.6,
+   "gf": 14,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 26,28,24",
+   "utm": [
+    618827,
+    5607429
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002lOd",
+   "hr": 33.6,
+   "gf": 13,
+   "gs": 11,
+   "gsq": 1,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "hochhaus",
+   "k": 0,
+   "r": 0,
+   "n": null,
+   "adr": "Würzburger Straße 2,4,6",
+   "utm": [
+    618971,
+    5607509
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001eCtd",
+   "hr": 33.0,
+   "gf": 6,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Funkmast",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Döllberg am Breisloch",
+   "utm": [
+    622042,
+    5607359
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00002jRj",
+   "hr": 31.1,
+   "gf": 7,
+   "gs": 2,
+   "gsq": 2,
+   "use": "friedhof",
+   "fn": "Friedhofsgebäude",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Wertherstraße",
+   "utm": [
+    619864,
+    5607315
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00000OAR",
+   "hr": 30.9,
+   "gf": 385,
+   "gs": 1,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "efh",
+   "k": 0,
+   "r": 2,
+   "n": null,
+   "adr": "Leonhard-Frank-Straße 62",
+   "utm": [
+    618071,
+    5606843
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00000OAQ",
+   "hr": 30.7,
+   "gf": 378,
+   "gs": 1,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "efh",
+   "k": 0,
+   "r": 2,
+   "n": null,
+   "adr": "Leonhard-Frank-Straße 42",
+   "utm": [
+    618172,
+    5606901
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00000OAq",
+   "hr": 30.5,
+   "gf": 355,
+   "gs": 1,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "efh",
+   "k": 0,
+   "r": 2,
+   "n": null,
+   "adr": "Leonhard-Frank-Straße 88",
+   "utm": [
+    617949,
+    5606790
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00000OAP",
+   "hr": 30.0,
+   "gf": 337,
+   "gs": 1,
+   "gsq": 2,
+   "use": "wohnen",
+   "fn": "Wohngebäude",
+   "typ": "efh",
+   "k": 0,
+   "r": 2,
+   "n": null,
+   "adr": "Leonhard-Frank-Straße 106",
+   "utm": [
+    617810,
+    5606752
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001juaB",
+   "hr": 27.0,
+   "gf": 1,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Schornstein",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Schmückestraße",
+   "utm": [
+    627645,
+    5608667
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001uQLO",
+   "hr": 26.6,
+   "gf": 15,
+   "gs": null,
+   "gsq": null,
+   "use": "neben",
+   "fn": "Überdachung",
+   "typ": "dach",
+   "k": 3,
+   "r": 0,
+   "n": null,
+   "adr": "Im Hammelsgrunde",
+   "utm": [
+    613014,
+    5607669
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00012Wyt",
+   "hr": 25.8,
+   "gf": 981,
+   "gs": 5,
+   "gsq": 2,
+   "use": "oeffentlich",
+   "fn": "Gebäude für öffentliche Zwecke",
+   "typ": "block",
+   "k": 0,
+   "r": 3,
+   "n": "Archiv",
+   "adr": "Platz der Deutschen Einheit 3",
+   "utm": [
+    619496,
+    5607687
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P0001mfek",
+   "hr": 25.4,
+   "gf": 7,
+   "gs": null,
+   "gsq": null,
+   "use": "turm",
+   "fn": "Funkmast",
+   "typ": "turm",
+   "k": 5,
+   "r": 0,
+   "n": null,
+   "adr": "Ritterstraße",
+   "utm": [
+    626662,
+    5615466
+   ],
+   "kat": 2
+  },
+  {
+   "id": "DETHL57P00012zzx",
+   "hr": 25.2,
+   "gf": 4984,
+   "gs": 6,
+   "gsq": 2,
+   "use": "gesundheit",
+   "fn": "Krankenhaus",
+   "typ": "block",
+   "k": 0,
+   "r": 0,
+   "n": "Zentralklinikum",
+   "adr": "Albert-Schweitzer-Straße 6,4,2",
+   "utm": [
+    620988,
+    5606978
+   ],
+   "kat": 2
+  }
+ ]
+}
