@@ -38,9 +38,18 @@ def decode_wth1(b):
 class Tiles:
     """heights from a folder of ground tiles <dir>/<L>/<x>/<y>.bin (the t/ folder of suhl-boden), finest level first; NaN where none"""
 
-    def __init__(self, folder, levels=(12, 11, 10, 9, 8)):
+    def __init__(self, folder, levels=(12, 11, 10, 9, 8, 7, 6)):
         self.dir = folder
         self.have = {}
+        # what the set says about itself (suhl-boden writes meta.json beside t/): which terrain, when, from which commit
+        self.meta = {}
+        mp = os.path.join(os.path.dirname(os.path.abspath(folder)), 'meta.json')
+        if os.path.exists(mp):
+            import json
+            try:
+                self.meta = json.load(open(mp, encoding='utf-8'))
+            except Exception as e:
+                S.log('meta.json of the ground tiles not read:', repr(e)[:120])
         for L in levels:
             d = os.path.join(folder, str(L))
             if not os.path.isdir(d):
@@ -106,6 +115,13 @@ class Heights:
         if px and 'GDAL_HTTP_PROXY' not in os.environ:
             os.environ['GDAL_HTTP_PROXY'] = px
         self.cop = CopGround(raw, ctx, trees)
+        # one ground for everybody: where a point lies beyond the ground tiles (the 400 m of context around the run's tiles), the
+        # own Copernicus sampling lowers the forest by the amount the tile set used, not by its own fit (5.0 m against 9.3 m gave
+        # steps of 4 m under trees)
+        cm = ((self.tiles.meta or {}).get('sources') or {}).get('canopy_m') if self.tiles is not None else None
+        if cm is not None and self.cop.trees is not None:
+            S.log(f'forest lowered as in the ground tiles: {float(cm):.2f} m (own fit {self.cop.canopy:.1f} m)')
+            self.cop.canopy = float(cm)
         self.canopy = float(self.cop.canopy)
         self.n_tile = self.n_cop = 0
 
@@ -121,6 +137,24 @@ class Heights:
         return out
 
     def info(self):
-        return {'tiles': self.n_tile, 'copernicus': self.n_cop, 'tile_dir': self.tiles.dir if self.tiles else None,
-                'copernicus_canopy_m': round(self.canopy, 1),
-                'note': 'samples per source; Copernicus GLO-30 is a 30 m surface model with the forest lowered (tools/welt/dem.py CopGround)'}
+        d = {'tiles': self.n_tile, 'copernicus': self.n_cop, 'tile_dir': self.tiles.dir if self.tiles else None,
+             'copernicus_canopy_m': round(self.canopy, 1),
+             'note': 'samples per source: tiles = the uncut ground tiles of suhl-boden (the one ground of all Suhl packages); copernicus = own '
+                     'sampling of Copernicus GLO-30 with the forest lowered (tools/welt/dem.py CopGround) where no tile holds the point'}
+        if self.tiles is not None and self.tiles.meta:
+            m = self.tiles.meta
+            src = m.get('sources', {})
+            d['ground'] = {'generated': m.get('generated'), 'commit': m.get('commit'), 'plan': m.get('plan'), 'terrain': src.get('terrain'),
+                           'terrain_source': src.get('terrain_source'), 'canopy_m': src.get('canopy_m'),
+                           'dgm1_level10_tiles': src.get('dgm1_level10_tiles'), 'dgm1_have': (src.get('dgm1') or {}).get('have')}
+        return d
+
+    def coarse(self, ntiles):
+        """True while the heights are a 30 m surface model (own Copernicus sampling, or ground tiles without 1 m terrain under most
+        of the run's tiles)"""
+        if self.tiles is None or self.n_cop > self.n_tile:
+            return True
+        src = (self.tiles.meta or {}).get('sources', {})
+        if not src:
+            return True
+        return (src.get('dgm1_level10_tiles') or 0) < 0.5 * ntiles

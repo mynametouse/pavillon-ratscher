@@ -102,8 +102,7 @@ def main():
     if grob == 0:
         # the heights of this run come from the 30 m surface model (houses, tree tops): the small classes are smoothed over 1.3 times
         # their wavelength; with 1 m terrain (ground tiles of suhl-boden) the classes' own wavelengths hold
-        hi = dem.info()
-        grob = 1.3 if hi['copernicus'] > hi['tiles'] else 1.0
+        grob = 1.3 if dem.coarse(len(T)) else 1.0
         if grob != 1.0:
             h, axis, info = NZ.solve(pos, chains, dem, grob=grob, cache=cache)
     S.log('profiles solved:', info, 'grob', grob)
@@ -327,9 +326,16 @@ def main():
     # ---------------- write: tiles, index, the drive file, numbers ----------------
     made = S.now()
     heights = dem.info()
-    heights['solved_on'] = ('Geländekacheln von suhl-boden (%d Stützwerte) und ' % heights['tiles'] if heights['tiles'] else '') + \
-        'Copernicus GLO-30 (30 m, Wald um %.1f m abgesenkt; %d Stützwerte)' % (heights['copernicus_canopy_m'], heights['copernicus']) + \
-        ('; kleine Klassen %.1f-fach länger geglättet' % grob if grob != 1.0 else '')
+    g = heights.get('ground') or {}
+    parts = []
+    if heights['tiles']:
+        parts.append('ungeschnittene Geländekacheln von suhl-boden (%s, Stand %s, Commit %s; %d Stützwerte)' % (
+            g.get('terrain') or 'Quelle unbekannt', g.get('generated') or '?', g.get('commit') or '?', heights['tiles']))
+    if heights['copernicus']:
+        parts.append('eigene Abtastung von Copernicus GLO-30 (30 m, Wald um %.1f m abgesenkt; %d Stützwerte%s)' % (
+            heights['copernicus_canopy_m'], heights['copernicus'], ' – nur am Rand außerhalb der Kacheln' if heights['tiles'] > heights['copernicus'] else ''))
+    heights['solved_on'] = ' und '.join(parts) + ('; kleine Klassen %.1f-fach länger geglättet' % grob if grob != 1.0 else '')
+    heights['own_sampling_share'] = round(heights['copernicus'] / max(1, heights['copernicus'] + heights['tiles']), 4)
     root = os.path.join(out, L.product_dir('s', VERSION))
     nbytes = 0
     for t in T:
