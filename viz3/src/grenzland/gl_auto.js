@@ -93,6 +93,14 @@ export const GLAUTO = (() => {
     zweitakt(null, 0);
     if (S.trabi) trabiHide();
   };
+  // a vehicle set down somewhere else is seen at once: the scene hides small things far from the camera (core/assets.js CULL) by
+  // their place at its last look – a moped fetched from far away would stay hidden for a moment (or for a test's first picture)
+  function zeig(g) {
+    g.updateMatrixWorld(true);
+    g.traverse(o => {
+      if (o.isMesh && o.layers.mask !== 1) o.layers.mask = 1;
+    });
+  }
   const _e = new THREE.Euler(0, 0, 0, 'YXZ'),
     _a = {},
     _b = {};
@@ -115,6 +123,7 @@ export const GLAUTO = (() => {
     _e.set(Math.atan2((zF || 0) - (zR || 0), T.wb), -hd, 0, 'YXZ');
     c.g.quaternion.setFromEuler(_e);
     c.g.visible = true;
+    zeig(c.g);
     markDirty(true);
     return c;
   }
@@ -159,6 +168,7 @@ export const GLAUTO = (() => {
     if (!Number.isFinite(c.z)) c.z = 0;
     pose(c);
     c.g.visible = true;
+    zeig(c.g);
     markDirty();
     return c;
   }
@@ -462,6 +472,7 @@ export const GLAUTO = (() => {
     if (!v) return null;
     VEH.place('gl-trabi', x, y, hd);
     v.g.visible = true;
+    zeig(v.g);
     markDirty(true);
     return v;
   }
@@ -477,6 +488,7 @@ export const GLAUTO = (() => {
     if (!v) return null;
     VEH.place('gl-moped', x, y, hd);
     v.g.visible = true;
+    zeig(v.g);
     markDirty(true);
     return v;
   }

@@ -907,6 +907,303 @@ export const GLZWEIRAD = (() => {
     );
     return k.done();
   }
+  // ======================= Simson Schwalbe (KR 51): the step-through with its sheet-metal dress =======================
+  // leg shield and foot boards, the tunnel over the engine, the closed rear body, the deep front mudguard, the lamp in the
+  // handlebar's cowl, indicators at the ends of the handlebar, the bench seat, the carrier
+  function schwalbeRahmen(k, T) {
+    const B2 = T.b,
+      W = [1, 1, 1];
+    // the rear body round the wheel
+    k.blob(
+      'lack0',
+      [
+        { y: -0.935, w: 0.05, z0: 0.53, z1: 0.66, e: 2.4 },
+        { y: -0.87, w: 0.115, z0: 0.43, z1: 0.705, e: 3 },
+        { y: -0.6, w: 0.152, z0: 0.375, z1: 0.74, e: 3.4 },
+        { y: -0.3, w: 0.16, z0: 0.36, z1: 0.74, e: 3.4 },
+        { y: -0.17, w: 0.15, z0: 0.37, z1: 0.73, e: 3.2 },
+        { y: -0.11, w: 0.1, z0: 0.41, z1: 0.7, e: 2.6 },
+      ],
+      W,
+      18
+    );
+    // the tunnel over the engine, the cover from the steering head down to it
+    k.blob(
+      'lack0',
+      [
+        { y: -0.15, w: 0.08, z0: 0.34, z1: 0.56, e: 3 },
+        { y: 0.05, w: 0.09, z0: 0.33, z1: 0.57, e: 3 },
+        { y: 0.2, w: 0.085, z0: 0.34, z1: 0.6, e: 3 },
+        { y: 0.27, w: 0.06, z0: 0.4, z1: 0.62, e: 2.6 },
+      ],
+      W,
+      14
+    );
+    k.tube(
+      'lack0',
+      [
+        [0, T.pivot[1] - 0.02, T.pivot[2] - 0.05],
+        [0, 0.22, 0.66],
+        [0, 0.1, 0.58],
+      ],
+      0.07,
+      10,
+      W,
+      { flat: [1, 0.7] }
+    );
+    // the leg shield: a sheet bowed back at its edges, both faces
+    const rows = [];
+    for (let i = 0; i <= 8; i++) {
+      const t = i / 8,
+        z = 0.3 + 0.57 * t,
+        hw = 0.225 - 0.075 * t,
+        row = [];
+      for (let j = 0; j <= 8; j++) {
+        const u = j / 4 - 1;
+        row.push([u * hw, 0.25 + 0.1 * t - 0.085 * u * u, z]);
+      }
+      rows.push(row);
+    }
+    k.smooth(() => k.grid(rows, () => ['lack0', W], { both: true }));
+    // foot boards with their rubber mats
+    for (const s of [-1, 1]) {
+      k.box('lack0', [s * 0.155, 0.04, 0.305], [0.14, 0.46, 0.02], W);
+      k.box('matt', [s * 0.155, 0.04, 0.318], [0.115, 0.42, 0.008], C.rubber);
+      // rear shocks under the body, the indicators on the body's sides are bar-end ones (on the handlebar)
+      k.tube(
+        'chrom',
+        seg([s * 0.125, B2 + 0.02, RW + 0.02], [s * 0.125, -0.42, 0.52], 14),
+        ribs(0.018, 0.004, 7),
+        8,
+        C.chrome
+      );
+    }
+    // the bench seat, the carrier behind it
+    k.blob(
+      'matt',
+      [
+        { y: -0.735, w: 0.08, z0: 0.74, z1: 0.79, e: 2.6 },
+        { y: -0.7, w: 0.125, z0: 0.725, z1: 0.815, e: 3.4 },
+        { y: -0.4, w: 0.14, z0: 0.72, z1: 0.82, e: 3.6 },
+        { y: -0.15, w: 0.13, z0: 0.72, z1: 0.812, e: 3.4 },
+        { y: -0.1, w: 0.09, z0: 0.735, z1: 0.79, e: 2.6 },
+      ],
+      C.seat,
+      16
+    );
+    k.tube(
+      'chrom',
+      K.fillet(
+        [
+          [-0.09, -0.72],
+          [-0.09, -0.93],
+          [0.09, -0.93],
+          [0.09, -0.72],
+        ],
+        0.03,
+        4
+      ).map(p => [p[0], p[1], 0.765]),
+      0.006,
+      6,
+      C.chrome
+    );
+    for (const y of [-0.8, -0.87])
+      k.tube(
+        'chrom',
+        [
+          [-0.09, y, 0.765],
+          [0.09, y, 0.765],
+        ],
+        0.005,
+        5,
+        C.chrome
+      );
+    // the engine under the tunnel, the exhaust low on the right
+    k.pad('matt', [0, 0.02, 0.29], [0.19, 0.34, 0.15], 0.04, C.alu);
+    k.tube(
+      'chrom',
+      [
+        [0.07, 0.16, 0.3],
+        [0.12, 0.1, 0.25],
+        [0.145, -0.05, 0.245],
+        [0.15, -0.2, 0.25],
+        [0.152, -0.62, 0.275],
+        [0.153, -0.7, 0.28],
+      ],
+      t =>
+        t < 0.3
+          ? 0.015
+          : t < 0.4
+            ? 0.015 + ((t - 0.3) / 0.1) * 0.02
+            : t < 0.92
+              ? 0.035
+              : 0.035 - ((t - 0.92) / 0.08) * 0.018,
+      10,
+      C.chrome,
+      { caps: 'b' }
+    );
+    // the tail lamp and the plate
+    k.pad('matt', [0, -0.945, 0.6], [0.08, 0.04, 0.065], 0.012, C.black);
+    k.box('tail', [0, -0.968, 0.6], [0.065, 0.012, 0.05], C.red);
+    k.box('matt', [0, -0.95, 0.47], [0.145, 0.004, 0.115], C.black);
+    k.box('matt', [0, -0.954, 0.47], [0.135, 0.004, 0.105], C.plate);
+  }
+  function schwalbeLenkung(k, T) {
+    const P = T.pivot,
+      axF = [0, T.a - P[1], RW - P[2]],
+      W = [1, 1, 1];
+    for (const s of [-1, 1])
+      k.tube(
+        'matt',
+        [
+          [s * 0.05, axF[1], axF[2]],
+          [s * 0.05, 0, 0],
+        ],
+        0.016,
+        6,
+        C.frame
+      );
+    // the deep mudguard
+    schutzblech(k, 'lack0', W, axF, RW + 0.035, 12, 168, 0.15, 0.075);
+    // the cowl on the handlebar with the lamp in its front, the speedometer on top
+    k.blob(
+      'lack0',
+      [
+        { y: -0.1, w: 0.05, z0: 0.05, z1: 0.13, e: 2.4 },
+        { y: -0.06, w: 0.085, z0: 0.03, z1: 0.155, e: 2.8 },
+        { y: 0.06, w: 0.09, z0: 0.02, z1: 0.16, e: 2.8 },
+        { y: 0.1, w: 0.078, z0: 0.025, z1: 0.155, e: 2.6 },
+      ],
+      W,
+      14
+    );
+    const L = [0, 0.1, 0.09];
+    k.lathe(
+      'chrom',
+      L,
+      [0, 1, 0],
+      [
+        [0.066, -0.004],
+        [0.07, 0.004],
+        [0.067, 0.012],
+        [0.06, 0.012],
+      ],
+      16,
+      C.chrome
+    );
+    k.lathe(
+      'head',
+      L,
+      [0, 1, 0],
+      [
+        [0.06, 0.01],
+        [0.045, 0.017],
+        [0.02, 0.021],
+        [0.0005, 0.022],
+      ],
+      16,
+      C.lens
+    );
+    const dn = nrm([0, -0.35, 0.94]);
+    k.lathe(
+      'matt',
+      [0, -0.02, 0.158],
+      dn,
+      [
+        [0.03, -0.004],
+        [0.03, 0.006],
+        [0.0005, 0.007],
+      ],
+      14,
+      j => (j === 1 ? C.white : C.black)
+    );
+    // the handlebar with grips, levers and the indicators at its ends; the mirror on the left
+    const hb = [
+      [-0.3, -0.09, 0.175],
+      [-0.19, -0.075, 0.175],
+      [-0.1, -0.03, 0.13],
+      [0.1, -0.03, 0.13],
+      [0.19, -0.075, 0.175],
+      [0.3, -0.09, 0.175],
+    ];
+    k.tube('chrom', hb, 0.011, 8, C.chrome);
+    for (const s of [-1, 1]) {
+      k.tube(
+        'matt',
+        [
+          [s * 0.185, -0.075, 0.175],
+          [s * 0.3, -0.09, 0.175],
+        ],
+        0.017,
+        10,
+        C.rubber
+      );
+      k.lathe(
+        'matt',
+        [s * 0.3, -0.09, 0.175],
+        [s, 0, 0],
+        [
+          [0.02, 0],
+          [0.022, 0.012],
+          [0.022, 0.02],
+        ],
+        10,
+        C.black
+      );
+      k.lathe(
+        'blink',
+        [s * 0.3, -0.09, 0.175],
+        [s, 0, 0],
+        [
+          [0.022, 0.02],
+          [0.02, 0.045],
+          [0.012, 0.055],
+          [0.0005, 0.057],
+        ],
+        10,
+        C.amber
+      );
+      k.tube(
+        'matt',
+        [
+          [s * 0.17, -0.055, 0.172],
+          [s * 0.21, -0.03, 0.17],
+          [s * 0.3, -0.045, 0.168],
+        ],
+        0.0052,
+        6,
+        C.alu,
+        { caps: 'b' }
+      );
+    }
+    const m2 = [-0.25, -0.07, 0.32];
+    k.tube('chrom', [[-0.16, -0.06, 0.18], [-0.19, -0.06, 0.25], m2], 0.005, 6, C.chrome);
+    const md = nrm([0.12, -1, 0.1]);
+    k.lathe(
+      'matt',
+      m2,
+      md,
+      [
+        [0.0005, -0.016],
+        [0.04, -0.012],
+        [0.053, -0.002],
+        [0.054, 0.003],
+      ],
+      16,
+      C.black
+    );
+    k.lathe(
+      'chrom',
+      m2,
+      md,
+      [
+        [0.052, 0.003],
+        [0.0005, 0.004],
+      ],
+      16,
+      C.chrome
+    );
+  }
   // the needle in the dial's own frame: x right, y up on the face, z towards the rider; it points along +x
   function nadel() {
     const k = K.kit();
@@ -952,6 +1249,15 @@ export const GLZWEIRAD = (() => {
         pieces.push({ name: 'haende', parts: k.done(), at: T.pivot, paint, dial: true });
         pieces.push({ name: 'hahn', parts: hahnHebel(), at: T.hahn, paint, dial: true });
       }
+    } else if (typ === 'schwalbe') {
+      let k = K.kit();
+      schwalbeRahmen(k, T);
+      pieces.push({ name: 'rahmen', parts: k.done(), at: [0, 0, 0], paint });
+      k = K.kit();
+      schwalbeLenkung(k, T);
+      pieces.push({ name: 'lenkung', parts: k.done(), at: T.pivot, paint });
+      pieces.push({ name: 'rad', parts: rad(), at: [0, T.a, T.rw], paint });
+      pieces.push({ name: 'rad', parts: pieces[2].parts, at: [0, T.b, T.rw], paint });
     } else return null;
     const M = { typ, T, pieces };
     cache.set(key, M);
@@ -960,6 +1266,6 @@ export const GLZWEIRAD = (() => {
   // the needle's angle on the dial (radians, counter-clockwise from the dial's right as the rider sees it) for a speed in km/h:
   // 0 at the lower left, the scale's end (100 km/h on the S 51, 120 in the Trabant) at the lower right, over the top
   const nadelWinkel = (kmh, max = 100) => ((225 - 270 * Math.max(0, Math.min(1.04, kmh / max))) * Math.PI) / 180;
-  const has = typ => typ === 's51';
+  const has = typ => typ === 's51' || typ === 'schwalbe';
   return { TYP, DEF, C, bau, has, nadelWinkel, rad };
 })();

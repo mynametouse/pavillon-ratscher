@@ -456,7 +456,7 @@ export const GLTYPEN = (() => {
       ],
       seams: [0.47, -0.44],
       zone: { dach: [col2], dachkante: [col2] },
-      inner: { trim: C.vinylBrown, liner: C.ivory },
+      inner: { trim: C.vinylBrown, liner: C.ivory, y1: 0.86 },
     };
     const B = K.body(k, D);
     // ---- front: round lamps in chrome rings, the grille between them, indicators, bumper, plate ----
@@ -1580,7 +1580,7 @@ export const GLTYPEN = (() => {
       col,
       dial: { c: [-0.33, 0.236, 0.805], d, r: [1, 0, 0], up: K.V.crs(d, [1, 0, 0]), R: 0.052, max: 120 },
       radio: { c: [0.13, 0.236, 0.765], d, r: [1, 0, 0], up: K.V.crs(d, [1, 0, 0]), w: 0.062, h: 0.016 },
-      eye1: [-0.33, -0.3, 1.12],
+      eye1: [-0.33, -0.36, 1.06],
       eye3: [-0.33, -0.2, 1.2],
     };
   })();
@@ -1604,6 +1604,10 @@ export const GLTYPEN = (() => {
       { caps: 1 }
     );
     k.box('matt', [0, yD + 0.015, 0.672], [2 * xd, 0.03, 0.02], C.vinylBlack);
+    // the demister's two slots in the dash's top, the loudspeaker's grille between them
+    for (const x of [-0.36, 0.36]) k.box('matt', [x, yD + 0.2, sh - 0.016], [0.3, 0.02, 0.004], C.black, 'b');
+    for (let i = 0; i < 6; i++)
+      k.box('matt', [0, yD + 0.1 + i * 0.016, sh - 0.024], [0.16, 0.006, 0.004], C.black, 'b');
     // ---- the speedometer: a chrome bezel, the face (textured), three control lamps under it ----
     const dc = TC.dial.c,
       R = TC.dial.R;
@@ -1745,10 +1749,10 @@ export const GLTYPEN = (() => {
     k.tube(
       'chrom',
       [
-        [-0.25, yD + 0.01, 0.7],
-        [-0.235, yD - 0.13, 0.725],
-        [-0.232, yD - 0.165, 0.715],
-        [-0.23, yD - 0.18, 0.68],
+        [-0.25, yD + 0.01, 0.775],
+        [-0.225, yD - 0.14, 0.805],
+        [-0.22, yD - 0.17, 0.798],
+        [-0.218, yD - 0.185, 0.775],
       ],
       0.007,
       6,
@@ -1756,7 +1760,7 @@ export const GLTYPEN = (() => {
     );
     k.lathe(
       'matt',
-      [-0.23, yD - 0.182, 0.66],
+      [-0.218, yD - 0.187, 0.755],
       [0, 0, 1],
       [
         [0.0005, -0.022],
@@ -1892,7 +1896,7 @@ export const GLTYPEN = (() => {
     );
     // the fire wall
     const sh = B.S(yA).sh;
-    k.quad(
+    k.quad2(
       'matt',
       [-hwF(fy1), fy1, I.floor],
       [hwF(fy1), fy1, I.floor],

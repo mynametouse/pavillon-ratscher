@@ -20,6 +20,7 @@ import { VEH } from '../vehicles/vehicle.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
 import { GL } from './gl_state.js';
 import { GLZWEIRAD } from './gl_zweirad.js';
+import { GLAUTO } from './gl_auto.js';
 export const GLCOCKPIT = (() => {
   const S = { on: false, kmh: 0, tank: -1, hell: -1, t: 0, veh: null, radio: undefined, km: {}, zaehler: -1, seit: 0 };
   // how bright the day is for an unlit face: 1 with the sun up, a glimmer at night
@@ -137,9 +138,17 @@ export const GLCOCKPIT = (() => {
       }
     }
   }
+  // the mode ends: the faces' pictures leave the graphics memory (they are sent again when a cockpit is next shown)
   function stop() {
     S.on = false;
     S.veh = null;
+    for (const v of [GLAUTO.moped, GLAUTO.trabi]) {
+      const C = v && v.model.cockpit;
+      if (!C) continue;
+      if (C.hands) C.hands.visible = false;
+      if (C.face && C.face.tex) C.face.tex.dispose();
+      if (C.radio && C.radio.mat.map) C.radio.mat.map.dispose();
+    }
   }
   const stand = () => ({
     on: S.on,

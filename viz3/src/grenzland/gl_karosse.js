@@ -893,7 +893,9 @@ export const GLKAROSSE = (() => {
         (i, jj) => {
           if (Y[i] < ya || Y[i + 1] > yb) return null;
           const j = jj <= JN - 1 ? jj : 2 * JN - 1 - jj;
-          if (j < 3) return null;
+          if (j < 1) return null;
+          // the wheel houses bulge into the cabin
+          if (j < 3) return ['matt', BLACK];
           const zn = zoneOf(i, jj);
           if (zn === 'glas' || zn === 'scheibe' || zn === 'heckscheibe') return null;
           if (zn === 'haube' || zn === 'heck') return null;
