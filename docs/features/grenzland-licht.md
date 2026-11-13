@@ -46,8 +46,8 @@ Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo ech
   mit einer weißen Rauchspur (alle 30 cm ein Wölkchen), ploppt auf, brennt dann 40 s am Fallschirm, sinkt langsam (knapp 1 m/s) und treibt mit dem Wind des
   Wetters, Funken fallen, ein weißglühender Kern, ein roter Hof und ein großer roter Dunst in der Luft, darüber eine dünne Rauchfahne,
   rot angeleuchtet; ein geliehenes rotes Licht folgt ihr (das macht den Wald rot), Nebel und Himmelslicht werden rot getönt; dann
-  erlischt sie in 3,5 s, der Rauch zieht noch ab. Geht in der Mission die rote Kugel von `gl_kapitel1.js` hoch, ohne dass das
-  Ereignis kam, startet `gl_licht.js` die Leuchtkugel selbst an ihrer Stelle; solange unsere brennt, ist die Kugel ausgeblendet.
+  erlischt sie in 3,5 s, der Rauch zieht noch ab. Die Mission (`gl_kapitel1.js`, Schritt `flucht`) löst sie seit der
+  Zusammenführung 1 selbst aus und lässt ihre kleine rote Kugel weg, wenn `window.GLLICHT` da ist.
 - **Lesbare Nächte:** Solange der Modus läuft, gibt es nachts mehr Himmelslicht (das Halbkugel-Licht, mondblau, unten ein dunkles
   Blaugrau) und etwas mehr Belichtung (bis ×1,28), die Lichtflecken der Straßenlaternen sind heller (1989 oranger). Alles wird auf
   den Wert gesetzt, den der Tageslauf gerade will, plus unseren Teil – und beim Beenden genau zurück.
