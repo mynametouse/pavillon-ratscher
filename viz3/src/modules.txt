@@ -256,6 +256,8 @@ grenzland/gl_reaktion_data.js # feat/grenzland-welt what people say when they no
 grenzland/gl_reaktion.js    # feat/grenzland-welt the world notices the player: witnesses film, the feed posts, looks, comments, four answers (GLREAKTION)
 grenzland/gl_ereignis.js    # feat/grenzland-welt things on the way: speed camera, harvest lorry, fair, wedding convoy, bangers, a deer (GLEREIGNIS)
 grenzland/gl_stimmen.js     # feat/grenzland-stimmen real voices: the lines to record, fetched ahead, the music steps back while one speaks (GLSTIMMEN)
+grenzland/gl_partner_data.js # feat/grenzland-partner talking with the other of the two: the fixed lines by mission step, the AI's sheets, the <lage> lines – data (GLPDATA)
+grenzland/gl_partner.js     # feat/grenzland-partner talking with the other of the two anywhere today: the prompt, the panel, topics, the AI person with quest context (GLPARTNER)
 # feat/tiere: the animals of the region and the dog below this line (after the forest, the vehicles, the neighbours and their goats; before the frame loop)
 tiere/tiere_arten.js        # feat/tiere the animals around Ratscher: species, profiles with sources, flight distances, signs – data (TARTEN)
 tiere/tiere_koerper.js      # feat/tiere the bodies: procedural, true to size, skinned, the coat in vertex colours, gaits and poses (TKOERPER)

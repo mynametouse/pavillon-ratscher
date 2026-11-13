@@ -4236,6 +4236,1014 @@
    "src": "GLEREIGNIS.linien"
   },
   {
+   "who": "gl_sarah",
+   "id": "gl_sarah_18wl8jk",
+   "text": "Was machen wir jetzt?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_18wl8jk",
+   "text": "Was machen wir jetzt?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_bvqz3b",
+   "text": "Was wissen wir bisher?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_bvqz3b",
+   "text": "Was wissen wir bisher?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_dfh404",
+   "text": "Alles gut bei dir?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_dfh404",
+   "text": "Alles gut bei dir?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1h2dqkr",
+   "text": "Komm mit.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1h2dqkr",
+   "text": "Komm mit.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1f1hug4",
+   "text": "Warte hier.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1f1hug4",
+   "text": "Warte hier.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1eiyfyj",
+   "text": "Auf den Bus warten. Vierzig Minuten, Schleusinger Zeit.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_qjv6a",
+   "text": "Wir warten auf den Bus nach Ratscher. Das kann dauern.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_u3zdkr",
+   "text": "Da kommt einer auf uns zu. Hören wir uns das an.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_9sfl5b",
+   "text": "Der Mann da will was von uns. Lass ihn reden.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_45j88g",
+   "text": "Das Paket muss zur alten Schule nach Ratscher. Bus, Daumen raus oder zu Fuß.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_uz8gx0",
+   "text": "Wir bringen das Paket zur alten Schule. Bus, Anhalter oder die eigenen Füße.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_107rig3",
+   "text": "Zur Tür der alten Schule. Da soll jemand warten.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_fpdam8",
+   "text": "Rüber zur Schultür. Angeblich wartet da einer.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_b7q259",
+   "text": "Keiner da. Lass mich mal ran – wir tauschen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_lpouvk",
+   "text": "Hier ist niemand. Übernimm du mal, wir tauschen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_xfsj2n",
+   "text": "Dein Handy summt. Guck mal drauf.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_gt28hi",
+   "text": "Dein Handy brummt. Schau nach.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_prsk3y",
+   "text": "Mach mal das Radio an. Mal hören, was hier sonst los ist.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_e1zdfo",
+   "text": "Schalt das Radio ein. Vielleicht erfahren wir was.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_4qnc2q",
+   "text": "Genug Abenteuer für einen Freitag. Ab in den Garten.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_14aioqv",
+   "text": "Für heute reicht es. Lass uns in den Garten gehen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1qi8dgg",
+   "text": "Das Moped ist fast leer. Der Kanister steht daneben – Gemisch rein.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_164uj3h",
+   "text": "Erst tanken. Der Kanister steht neben dem Moped.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_v0uwwz",
+   "text": "Rauf aufs Moped und zur Feldscheune.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_yhfxft",
+   "text": "Mit dem Moped zur Feldscheune. Ich halt mich fest.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_17v5zz3",
+   "text": "Da ist Jule. Rede mit ihr.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_m9f3w",
+   "text": "Jule wartet an der Scheune. Sprich sie an.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_bbimwo",
+   "text": "An die Startlinie am Feldweg. Zeig der Jugend, wie man fährt.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1n04xhu",
+   "text": "An die Startlinie. Mal sehen, ob wir noch schnell sind.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_7qhlzm",
+   "text": "Zum Staudamm, schneller als Jule! Gib Gas!",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1shxp3r",
+   "text": "Zum Staudamm, und zwar vor Jule. Nicht bremsen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_113y1bv",
+   "text": "Zeig ihnen die Karte. Die wissen mehr, als sie sagen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_14k6pdf",
+   "text": "Jetzt die Karte zeigen. Mal sehen, was die Clique weiß.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_2b6pr3",
+   "text": "Gerhard sitzt unter der Linde. Zeig ihm die Karte.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1f8h531",
+   "text": "Zu Gerhard an die Linde. Der soll sich die Karte ansehen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_gj1rew",
+   "text": "Gerhard erzählt. Hör einfach zu.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1kihmku",
+   "text": "Lass Gerhard erzählen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_rrb72e",
+   "text": "Die Kiste an der Hoftür der Schule. Nimm sie.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_vyjswx",
+   "text": "Die Kiste steht an der Hoftür. Nimm sie mit.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1p6uaeo",
+   "text": "Die Kiste ungesehen zur Feldscheune. Hinten durch die Gärten, geduckt.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1tkie4n",
+   "text": "Durch die Gärten zur Scheune, geduckt hinter den Zäunen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_10aisz",
+   "text": "Die Kiste unters Stroh in der Scheune.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_ccnyg",
+   "text": "Stroh drüber, dann sieht sie keiner.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_sbz2dq",
+   "text": "Bleib bei der Scheune, bis die Luft rein ist.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1ludbyp",
+   "text": "Warten, bis die Luft rein ist.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_17z5mtj",
+   "text": "Zurück zu Gerhard unter die Linde.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1neqs50",
+   "text": "Zurück zur Linde. Gerhard ist noch nicht fertig.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1jcho8w",
+   "text": "Wir warten bis zum Abend und fahren dann zur Unteren Klinge.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_qh9w4l",
+   "text": "Bis zum Abend warten, dann runter zur Unteren Klinge.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_mtdjig",
+   "text": "Näher ran. Geduckt und ohne Licht.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_5z6e4d",
+   "text": "Wir schleichen uns näher ran. Kein Licht.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1m3xfwy",
+   "text": "Lass mich hier warten. Du machst drüben Krach mit einem Böller, dann tauschen wir.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_4ovnca",
+   "text": "Ich bleib hier. Du wirfst drüben einen Böller, dann tauschen wir.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_spapz0",
+   "text": "Drei Fotos vom Umladen. Aus der Deckung, nicht näher als nötig.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_3x9yfr",
+   "text": "Wir brauchen drei Fotos. Aus der Deckung, höchstens vierzig Meter.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_ogzsbl",
+   "text": "Die Landstraße ist dicht. Über die Feldwege zurück in den Garten.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_6ke7z5",
+   "text": "Straße gesperrt. Über die Feldwege, und dann heim in den Garten.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_187j9db",
+   "text": "Die suchen nicht mehr. Ab in den Garten.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1lciinb",
+   "text": "Die Luft ist rein. Zurück in den Garten.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_se18ba",
+   "text": "Wir zeigen Jule die Fotos. An der Feldscheune.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1rnlck6",
+   "text": "Mit den Fotos zu Jule an die Scheune.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1p07i1h",
+   "text": "Leise oder laut – du entscheidest. Ich sag nur: Leise hat Stil.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_tcalh6",
+   "text": "Leise oder laut? Ich bin für leise. Meistens.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_qamex9",
+   "text": "Zum Außenlager in der Feldflur. Die Lücke ist hinten im Zaun.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1kf6msv",
+   "text": "Raus zum Außenlager. Hinten im Zaun ist eine Lücke.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1baip52",
+   "text": "Durch die Lücke im Zaun, wenn der Wachmann vorn ist.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_fhqmjv",
+   "text": "Rein durch den Zaun, wenn der Wachmann wegschaut.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1ma1qnn",
+   "text": "Die Tür vom Bürocontainer. Leise wird das nicht.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1thwonw",
+   "text": "Die Containertür aufbrechen. Das wird laut.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_5v2p13",
+   "text": "Da hängt sie. Nimm die Karte von der Wand.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_th4ek8",
+   "text": "Die gerahmte Karte. Runter von der Wand damit.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_16y7wo3",
+   "text": "Raus hier! Zur Feldscheune!",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_kiok9t",
+   "text": "Weg hier! Die Karte zur Scheune!",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_42hlb3",
+   "text": "Nicht stehen bleiben. Zur Feldscheune!",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_f5ooe3",
+   "text": "Lauf! Zur Scheune!",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_x9ow3w",
+   "text": "Jetzt legen wir die zwei Hälften zusammen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1qiulxw",
+   "text": "Die beiden Hälften zusammenlegen. Endlich.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1fs7e25",
+   "text": "Wir warten auf den Bus. Was sonst.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_r6daed",
+   "text": "Wir warten auf den Bus. Mehr ist hier gerade nicht.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_10g42va",
+   "text": "Jemand weiß von der Karte. Warten wir ab, wer sich meldet.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_sotdoa",
+   "text": "Irgendwer weiß von der Karte. Wir warten, bis sich einer meldet.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1o5xc2i",
+   "text": "Wir sollten zu Gerhard. Der sitzt meistens unter der Linde.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1tsayi9",
+   "text": "Gerhard. Der sitzt meistens unter der Dorflinde.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1qyo3te",
+   "text": "Jule hört sich um, was Krähwinkels Leute nachts treiben. Wir warten auf sie.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_17soz7u",
+   "text": "Jule meldet sich, wenn sie was über Krähwinkels Leute weiß.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1cv6cwq",
+   "text": "Mit den Fotos zu Jule.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_p1g2gx",
+   "text": "Wir bringen Jule die Fotos.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_4ymf26",
+   "text": "Die Karte ist ganz. Jetzt haben wir Zeit – Kegeln, Angeln, oder einfach mal gar nichts.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1fnz88b",
+   "text": "Die Karte ist ganz. Jetzt erst mal durchatmen – kegeln, angeln, was du willst.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_rx32b1",
+   "text": "Bisher wissen wir gar nichts. Außer, dass der Bus spät kommt.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_qkrzm9",
+   "text": "Noch wissen wir nichts. Nur, dass der Bus dauert.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_99hpyz",
+   "text": "Ein Fremder gibt uns ein Paket, ich mach es auf, und drin ist eine halbe Grenzkarte von neunundachtzig. Mit Kreuz.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_14p4xuz",
+   "text": "Ein Fremder, ein Paket, und darin eine halbe Grenzkarte von neunundachtzig. Mit einem Kreuz.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_10qsrdm",
+   "text": "Jule, Timo und Basti trauen uns. Die Karte zeigt den alten Kolonnenweg, und Gerhard war damals dabei.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_7l6oml",
+   "text": "Die Clique ist auf unserer Seite. Der alte Kolonnenweg, und Gerhard weiß mehr.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_eaw66n",
+   "text": "Gerhard hat neunundachtzig eine Kiste für Lutz versteckt. Die andere Hälfte der Karte hat jetzt wohl Krähwinkel.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_pq9akj",
+   "text": "Lutz hatte die andere Hälfte der Karte. Und die hängt jetzt wohl bei Krähwinkel.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1oryo4",
+   "text": "Wir haben drei Fotos vom Umladen an der Klinge. Und die Polizei hat uns nicht gekriegt.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_136u7ny",
+   "text": "Drei Fotos von Krähwinkels Leuten. Und keiner hat uns erwischt.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_vqei7l",
+   "text": "Die Karte ist ganz. Das Kreuz liegt an einem Bunker am alten Kolonnenweg, kurz vor Bayern.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1466qxy",
+   "text": "Die Karte ist komplett. Ein Bunker am Kolonnenweg, kurz vor Bayern.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1b7nr0g",
+   "text": "Mir geht es gut. Die Polizei sieht das vielleicht anders.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_sin5g4",
+   "text": "Alles gut, solange da hinten kein Blaulicht auftaucht.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_yrvr3k",
+   "text": "Frag mich das, wenn die Sterne weg sind.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_18nggzg",
+   "text": "Mir geht es gut. Die Polizei hätte da allerdings Fragen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_oaxxfl",
+   "text": "Alles bestens. Wir sollten nur nicht hier rumstehen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_24lr92",
+   "text": "Gut. Aber lass uns erst mal untertauchen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1ne54a5",
+   "text": "Mein Puls ist irgendwo bei Suhl. Aber gut.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1a757y1",
+   "text": "Das war knapp. Mach das bitte nicht zur Gewohnheit.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_130ycxo",
+   "text": "Ich zittere nicht. Das ist nur die Kälte.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1asklcn",
+   "text": "Knapp. Aber wir sind ja noch da.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_107n4ku",
+   "text": "Müde. Und du willst bestimmt noch irgendwohin.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_kmomsd",
+   "text": "Gut. Nachts ist es hier so still, dass man sich selber denken hört.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_13hiao8",
+   "text": "Müde. Aber für dich bleib ich wach.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_bkdxvs",
+   "text": "Gut. Nur dunkel ist es hier. Richtig dunkel.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1ayq8k8",
+   "text": "Kaffee wäre gut. Sonst alles gut.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_2c6stm",
+   "text": "Gut. Ich bin wach, aber nur offiziell.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_15ksc83",
+   "text": "Ohne Kaffee bin ich nur zur Hälfte da.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_14o17g7",
+   "text": "Gut. Der Morgen hier ist schöner als jeder in Berlin.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1m23vp5",
+   "text": "Mir geht es gut. Ich frag mich nur, wie wir da reingeraten sind.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_tud2lv",
+   "text": "Alles gut. Ein Paket hat unser Leben verändert. Ganz normal.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_15rty62",
+   "text": "Gut. Und dir? Du guckst so ernst.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_xgd5bb",
+   "text": "Alles gut. Ich hab nur gerade überlegt, wie normal unser Leben mal war.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_x6b968",
+   "text": "Gut. Solange du dabei bist.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_12bbel8",
+   "text": "Bestens. Garten, Moped, Grenzkarte. Wie im Urlaub.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_19ke0gb",
+   "text": "Bin dabei.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1f3mg22",
+   "text": "Na los, ich komm ja schon.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1vjelh2",
+   "text": "Ich komme.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1rq6toa",
+   "text": "Bin direkt hinter dir.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_vqdrm8",
+   "text": "Gut, ich warte hier. Lass dir nicht ewig Zeit.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_vc4kgm",
+   "text": "Ich bleib hier. Ruf an, wenn was ist.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1w80qr8",
+   "text": "Ich warte hier.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_3ok8ko",
+   "text": "Ich rühr mich nicht. Versprochen.",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1ap5q8x",
+   "text": "Was gibt es?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1wso381",
+   "text": "Ja?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1gifn6j",
+   "text": "Hm? Was ist?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_nij7tb",
+   "text": "Was ist?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1wso381",
+   "text": "Ja?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1ap5q8x",
+   "text": "Was gibt es?",
+   "prio": 2,
+   "src": "GLPDATA.linien"
+  },
+  {
    "who": "gl_erna",
    "id": "gl_erna_swt49a",
    "text": "Gerhard! Morgen nach Suhl in den Waffenschmied, ja? Zwei Jahre habt ihr auf den Tisch gewartet!",
