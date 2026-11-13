@@ -5,7 +5,7 @@
 //   enter()    the zone is built: from now on tick(dt) streams by distance – far ground and warm shaders from 2.5 km before Suhl's
 //              ground, the near ground (WELT) from 900 m, buildings and trees per tile (lazy/suhl/kern/stadt.js)
 //   leave()    everything of Suhl out of the scene and the memory; the index stays
-import { frame } from './suhl/kern/geo.js';
+import { frame, LIVE } from './suhl/kern/geo.js';
 import { loadIndex, SCHEMA } from './suhl/kern/index.js';
 import { boden } from './suhl/kern/boden.js';
 import { stadt } from './suhl/kern/stadt.js';
@@ -63,10 +63,19 @@ export async function start(ctx) {
     MARKT = [-4639.4, 12476.5],
     areas = () => ctx.SUHL.areas,
     B = boden(ctx, G, IX, worker),
-    C = stadt(ctx, G, IX, worker, { old: [MARKT[0], MARKT[1], 520], areas }),
+    // the foot z0 of the building records counts only while they were computed on the ground that is valid now (contract, section 3)
+    z0ok = () => !!(IX.prod.g && IX.prod.boden && IX.prod.g.basedOn && IX.prod.g.basedOn.boden === IX.prod.boden.v),
+    C = stadt(ctx, G, IX, worker, { old: [MARKT[0], MARKT[1], 520], areas, z0ok }),
     ST = strassen(ctx, G, IX),
     T = { index: Math.round(performance.now() - t0), enter: 0, warm: 0, first: 0 },
     A = { on: false, stage: 0, d: 1e9, quarter: null, mem0: null };
+  // ---- the drive (welt/fahrt.js, round 2 of the roads system) asks a zone with ground of its own where that ground is: true (drawn
+  // there), false (Suhl's land, the near tiles still loading – the vehicle waits instead of „Hier endet die Karte“), undefined (not
+  // Suhl's land, or Suhl is not built). Registered once per page; the drive has no way to take it back. ----
+  if (window.FAHRT && typeof window.FAHRT.ground === 'function' && !ctx.SUHL._fahrtGround) {
+    ctx.SUHL._fahrtGround = true;
+    window.FAHRT.ground((x, y) => (A.on && B.on && B.covers(x, y) ? WELT.heightAt(x, y) !== undefined : undefined));
+  }
   // ---- the observer: the walker, else the camera; from above the height of the picture counts ----
   const top = () => (P.mode === 'top' ? P.th : 0),
     where = () => (P.mode === 'top' ? [P.tx, P.ty] : KERN.where() || [cam.position.x, -cam.position.z]);
@@ -179,8 +188,9 @@ export async function start(ctx) {
     stops: () => [],
     signal: () => null,
     data: {
-      // the numbers of a building for scenarios: what the record's d holds (areas computed in UTM by the pipeline: gf footprint,
-      // bgf gross floor area, da roof area) with the roof faces – nothing is computed from model geometry here
+      // the numbers of a building for scenarios: what the record's d holds (computed in UTM by the pipeline, true m²: fa footprint,
+      // gfa gross floor area, vol volume, rf roof area, ro roof area by direction, ru usable roof, res residents, heat, pv) with the
+      // roof faces – nothing is computed from model geometry here
       building(id) {
         const b = api.building(id);
         if (!b) return null;
@@ -190,21 +200,22 @@ export async function start(ctx) {
           quarter: b.quarter,
           use: b.use,
           era: b.era,
-          levels: b.levels,
+          levels: d.lv ?? b.levels,
+          footprint: d.fa ?? null,
+          floorArea: d.gfa ?? null,
           height: b.h,
-          footprint: d.gf ?? null,
-          floorArea: d.bgf ?? null,
-          roofArea: d.da ?? null,
-          roof: b.roof.map(r => ({ area: r.area, az: r.az, slope: r.slope, cls: r.cls })),
+          volume: d.vol ?? null,
+          roof: b.roof.map(r => ({ area: r.area, areaPlan: r.areaPlan, az: r.az, slope: r.slope, cls: r.cls })),
+          roofArea: d.rf ?? null,
+          roofByDir: d.ro ?? null,
+          roofUsable: d.ru ?? null,
           roofFlat: b.roofForm === 0,
-          listed: !!(b.flags && b.flags.dm),
-          q: {
-            levels: b.raw.gsq ?? null,
-            era: b.raw.eraq ?? null,
-            height: b.raw.hq ?? null,
-            roof: b.raw.rq ?? null,
-            foot: b.raw.zq ?? null,
-          },
+          residents: d.res ?? null,
+          heat: d.heat ?? null,
+          pvKwp: d.pv ?? null,
+          listed: b.flags.listed,
+          vacant: b.flags.vacant,
+          q: Object.assign({}, b.q, d.q !== undefined ? { d: d.q } : {}),
           src: b.raw.src || null,
         };
       },
@@ -237,6 +248,7 @@ export async function start(ctx) {
       stadt: C.on ? C.state() : null,
       strassen: ST.on ? ST.state() : null,
       worker: worker.busy(),
+      live: Object.assign({}, LIVE),
       times: T,
       mem0: A.mem0,
       mem: mem(),

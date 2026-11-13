@@ -2,14 +2,15 @@
 # Markt; ground, buildings and trees of the sample area by distance; ground under the feet and a wall that stops; the drive; the view
 # from above; night; leaving frees everything; counts against the budgets of docs/plans/plan_suhl.md 3.4; the phone tier.
 # The sample set lies in viz3/extra/suhl-laufzeit/dist/suhl/ (copied into dist by the build; the test server serves dist).
-# Sections (optional second argument, comma-separated): start,sprung,stufen,boden,fahrt,oben,nacht,frei,zahlen,telefon
+# Sections (optional second argument, comma-separated): start,sprung,stufen,boden,fahrt,oben,nacht,frei,zahlen,telefon,uebergabe
+#   uebergabe  the streets handed to the region's road system (FAHRT.add/drop/ground, round 2 of the roads chat) – a page of its own
 #   tag1   the checks of the first day (not in the default run): package and worker, the sky and the top view at Suhl, precision
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
 port = sys.argv[1]
-ALL = ['start', 'sprung', 'stufen', 'boden', 'fahrt', 'oben', 'nacht', 'frei', 'zahlen', 'telefon']
+ALL = ['start', 'sprung', 'stufen', 'boden', 'fahrt', 'oben', 'nacht', 'frei', 'zahlen', 'telefon', 'uebergabe']
 ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else ALL
 want = lambda k: k in ONLY
 ck = lib.Checks('suhl')
@@ -119,12 +120,16 @@ def desktop():
     with lib.browser() as b:
         errs = []
         pg = lib.page(b, 1100, 680, errs, tier='mittel')
+        # every answer for Suhl's files, the worker's too (the page's own resource timing list holds 250 entries and misses the worker)
+        net = []
+        pg.on('response', lambda r: net.append((r.url, int(r.headers.get('content-length') or 0))) if ('/suhl/' in r.url or 'lazy/suhl' in r.url) else None)
         lib.boot(pg, port)
         E = pg.evaluate
         J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
         E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden'); GAME.setView3(false)")
-        st0 = J("""{ s: SUHL.status(), res: performance.getEntriesByType('resource').filter(e => /lazy\\/suhl|\\/suhl\\//.test(e.name)).length,
+        st0 = J("""{ s: SUHL.status(), res: 0,
             progs: (GAME.R.info.programs || []).length, tex: GAME.R.info.memory.textures, geo: GAME.R.info.memory.geometries, kern: KERN.providers(), welt: WELT.state() }""")
+        st0['res'] = len(net)
         print('start', json.dumps(st0), flush=True)
         if want('start'):
             ck('nothing of Suhl at the start: no request, no package, the zone idle', st0['s']['state'] == 'idle' and not st0['s']['loaded'] and st0['res'] == 0 and st0['s']['zone'] == 'idle', json.dumps(st0['s']))
@@ -166,8 +171,8 @@ def desktop():
             s = J("SUHL.status()")
             print('loaded', json.dumps(s), flush=True)
             p = J("{ x: GAME.P.x, y: GAME.P.y, feet: GAME.P.feet, g: KERN.ground(GAME.P.x, GAME.P.y), w: WELT.heightAt(GAME.P.x, GAME.P.y) ?? null, place: KERN.place(GAME.P.x, GAME.P.y), free: KERN.free(GAME.P.x, GAME.P.y) }")
-            res = J("performance.getEntriesByType('resource').filter(e => /lazy\\/suhl|\\/suhl\\//.test(e.name)).map(e => [e.name.replace(location.origin, ''), e.transferSize || e.encodedBodySize || 0])")
-            nbytes = sum(r[1] for r in res)
+            nbytes = sum(n for u, n in net)
+            res = net
             print('at the Markt', json.dumps(p), f'{len(res)} requests, {nbytes / 1e6:.2f} MB, {round(dt)} s', flush=True)
         if want('sprung'):
             st, bo = s.get('stadt') or {}, s.get('boden') or {}
@@ -175,6 +180,9 @@ def desktop():
             ck('at the Markt, on Suhl\'s own ground', math.hypot(p['x'] - MARKT[0], p['y'] - MARKT[1]) < 3 and p['free'] is True and (p['place'] or '').startswith('Suhl'), json.dumps(p, ensure_ascii=False))
             ck('ground under the feet: the near tiles of Suhl\'s set in WELT', p['w'] is not None and abs(p['feet'] - p['g']) < 0.05 and abs(p['g'] - p['w']) < 0.01 and '+suhl/' in s['boden'].get('sets', J("WELT.state().sets")), json.dumps(p) + ' ' + J("WELT.state().sets"))
             ck('buildings in full around the Markt (level 1), from the records', st.get('l1', 0) >= 4 and st.get('buildings', 0) > 500 and st.get('err') == 0 and st.get('mats'), json.dumps(st))
+            ck('the records as the data contract writes them (schema 1, revision 1.1): none unreadable, buildings no longer standing left out, the feet from the records because they were read on this ground',
+               st.get('bad') == 0 and st.get('gone', 0) >= 0 and st.get('z0') is True and st.get('offGround', 99) <= st.get('buildings', 0) * 0.02,
+               f"unreadable {st.get('bad')}, no longer standing {st.get('gone')}, foot from the record {st.get('z0')} (g based on {json.dumps((s.get('basedOn') or {}).get('g'))}, ground v{(s.get('versions') or {}).get('boden')}), {st.get('offGround')} of {st.get('buildings')} more than 2.5 m off the tiles")
             ck('trees of the sample tiles', st.get('trees', 0) >= 4 and st.get('nTrees', 0) > 1000 and st.get('atlas'), f"{st.get('nTrees')} trees in {st.get('trees')} tiles")
             ck('the far ground beyond the near tiles', bo.get('farDrawn', 0) >= 1 and bo.get('err') == 0 and bo.get('tileMat'), json.dumps(bo))
             ck('data until the first street picture within the budget (10 MB)', 0 < nbytes < 10e6, f'{nbytes / 1e6:.2f} MB in {len(res)} requests')
@@ -236,6 +244,21 @@ def desktop():
                     if (free && (!best || sd.len > best.len)) best = {{ id, len: sd.len, mx, my, nx, ny, n: ids.length, name: B.name, adr: B.adr, levels: B.levels, use: B.use }}; }} }}
                 return best; }})()""")
             ck('SUHL.buildingsIn / SUHL.building: the houses around the Markt with their sides', b is not None and b['n'] > 20, json.dumps(b, ensure_ascii=False))
+            # what a scenario reads of the houses around the Markt: the fields of the contract, numbers from the record's d (true m²), nothing that no longer stands
+            v = J(f"""(() => {{ const ids = SUHL.buildingsIn({{ center: [{MARKT[0]}, {MARKT[1]}], r: 220 }}), o = {{ n: ids.length, gone: 0, street: 0, signs: 0, roofs: 0, faces: 0, area: 0, foot: 0, lv: 0, cls: {{}}, typ: {{}}, bad: [] }};
+                for (const id of ids) {{ const B = SUHL.building(id), D = SUHL.data.building(id); if (!B || !D) {{ o.bad.push(id); continue; }}
+                  if (B.flags.gone) o.gone++;
+                  if (B.sides.some(q => q.street)) o.street++;
+                  o.signs += B.sides.reduce((n, q) => n + q.signs.length, 0);
+                  if (B.roof.length && B.roof.every(r => r.pts.length >= 3 && r.pts.every(p => p.every(Number.isFinite)))) o.roofs++;
+                  o.faces += B.roof.length; o.area += D.roofArea || 0; o.foot += D.footprint || 0; if (B.levels >= 1) o.lv++;
+                  for (const r of B.roof) o.cls[r.cls] = (o.cls[r.cls] || 0) + 1;
+                  o.typ[B.typ] = (o.typ[B.typ] || 0) + 1;
+                  if (!(D.footprint > 0) || !(B.h > 0) || !Number.isFinite(B.z0) || B.sides.length < 3 || B.pts.length < 3) o.bad.push(id); }}
+                return o; }})()""")
+            ck('SUHL.building / SUHL.data.building: storeys, streets, signs, roof faces with their class, footprint and roof area of every house around the Markt',
+               v['n'] > 40 and not v['bad'] and v['gone'] == 0 and v['roofs'] == v['n'] and v['street'] > 10 and v['lv'] > v['n'] * 0.5 and v['area'] > v['foot'] * 0.8 > 0 and 'null' not in v['cls'],
+               json.dumps(v, ensure_ascii=False))
             if b:
                 r = J(f"""(() => {{ const mx = {b['mx']}, my = {b['my']}, nx = {b['nx']}, ny = {b['ny']}, x = mx + nx * 4, y = my + ny * 4;
                     GAME.view(x, y, KERN.ground(x, y) + 1.62, Math.atan2(-nx, -ny) * 180 / Math.PI, 0, 60); GAME.step(0.5); GAME.step(5, 1);
@@ -335,7 +358,7 @@ def desktop():
                 ok = wait("SUHL.state === 'idle' && !WELT.state().active", 400, 0.5)
                 for _ in range(20):
                     E("GAME.step(0.5)")
-                E("GAME.view(3.6, 15.2, 1.7, 200, 0, 70); GAME.shot(); GAME.go('garten')")
+                # (no picture in the garden here: what lives there – neighbours, animals, cars – would be counted at its first draw)
                 return ok, m, J("{ tex: GAME.R.info.memory.textures, geo: GAME.R.info.memory.geometries, progs: (GAME.R.info.programs || []).length, welt: WELT.state(), over: !!(WELT.overlay && WELT.overlay()) }")
 
             ok, m1, m2 = runde()
@@ -344,9 +367,14 @@ def desktop():
             ck('back in the garden: the zone idle, no mesh of Suhl in the scene, no tile, no overlay',
                ok and s4['state'] == 'idle' and n_suhl == 0 and s4['stadt']['l1'] + s4['stadt']['l2'] + s4['stadt']['trees'] == 0 and s4['boden']['far'] == 0 and m2['welt']['tiles'] == 0 and m2['welt']['lowered'] == 0 and not m2['over'],
                json.dumps({'state': s4['state'], 'stadt': s4['stadt'], 'boden': s4['boden'], 'n': n_suhl}))
+            ck('every geometry, texture and material the package made is disposed (its own count)', s4.get('live') == {'geo': 0, 'tex': 0, 'mat': 0}, json.dumps(s4.get('live')))
             ok3, m3, m4 = runde()
-            ck('memory: a second visit leaves nothing behind (geometries, textures, programs after it as after the first, within 3)',
-               ok3 and abs(m4['geo'] - m2['geo']) <= 3 and abs(m4['tex'] - m2['tex']) <= 3 and m4['progs'] <= m2['progs'] + 1,
+            s5 = J("SUHL.status()")
+            ck('after a second visit again nothing of the package is left (its own count)', ok3 and s5.get('live') == {'geo': 0, 'tex': 0, 'mat': 0}, json.dumps(s5.get('live')))
+            # three.js' own counters between the two visits: textures and programs must be the same; geometries are also counted for
+            # things of the app drawn for the first time (they differ by a few between rounds) – reported, with a wide limit
+            ck('the renderer\'s counters after the second visit as after the first (textures and programs the same, geometries within 15)',
+               ok3 and abs(m4['geo'] - m2['geo']) <= 15 and abs(m4['tex'] - m2['tex']) <= 2 and m4['progs'] <= m2['progs'],
                f"before any visit {mem0['geo']} geometries / {mem0['tex']} textures / {mem0['progs']} programs; in Suhl {m1['geo']} / {m1['tex']} / {m1['progs']}; after the first visit {m2['geo']} / {m2['tex']} / {m2['progs']}; "
                f"in Suhl again {m3['geo']} / {m3['tex']} / {m3['progs']}; after the second {m4['geo']} / {m4['tex']} / {m4['progs']}")
             json.dump({'before': mem0, 'in_suhl': m1, 'after': m2, 'in_suhl_2': m3, 'after_2': m4}, open(os.path.join(OUT, 'frei.json'), 'w'), indent=1)
@@ -387,11 +415,13 @@ def telefon():
         pg = ctx.new_page()
         errs = []
         pg.on('pageerror', lambda e: errs.append('PAGEERR ' + str(e)))
+        net = []
+        pg.on('response', lambda r: net.append((r.url, int(r.headers.get('content-length') or 0))) if ('/suhl/' in r.url or 'lazy/suhl' in r.url) else None)
         lib.boot(pg, port)
         E = pg.evaluate
         J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
         m0 = json.loads(E(TEXMB))
-        res0 = J("performance.getEntriesByType('resource').filter(e => /lazy\\/suhl|\\/suhl\\//.test(e.name)).length")
+        res0 = len(net)
         E("GAME.go('suhl')")
         t0 = time.time()
         quiet = "SUHL.state === 'ready' && WELT.state().loading === 0 && SUHL.status().stadt.queue === 0 && SUHL.status().boden.farLoading === 0 && SUHL.status().worker === 0"
@@ -408,6 +438,7 @@ def telefon():
         print('telefon', json.dumps({'before': m0, 'in_suhl': m1, 'stadt': s.get('stadt'), 'boden': s.get('boden')}), flush=True)
         ck('phone: nothing of Suhl at the start, the city loads at the Markt', res0 == 0 and ok and s['state'] == 'ready', json.dumps({k: s.get(k) for k in ('state', 'err', 'd')}))
         ck('phone: shorter radii (full houses to 500 m, the lean level to 2 km, trees to 420 m)', (s.get('stadt') or {}).get('R') == [500, 2000, 420], str((s.get('stadt') or {}).get('R')))
+        ck('phone: the data loaded for the Markt', 0 < sum(n for u, n in net) < 10e6, f"{sum(n for u, n in net) / 1e6:.2f} MB in {len(net)} answers")
         ck('phone: the images Suhl adds stay within the budget (+90 MB unpacked)', 0 <= m1['mb'] - m0['mb'] < 90, f"{m0['mb']} → {m1['mb']} MB ({m1['n'] - m0['n']} images, texture level {m1['level']})")
         good, r = lib.check_gl(pg)
         ck('phone: every shader within 16 textures per stage', good, f"fragment {r['maxFrag']}, vertex {r['maxVert']}, {r['bad'][:3]}")
@@ -416,8 +447,74 @@ def telefon():
         b.close()
 
 
-if [k for k in ONLY if k != 'telefon']:
+def uebergabe():
+    """the hand-over of the streets to the region's road system (round 2 of the roads chat: FAHRT.add / FAHRT.drop / FAHRT.ground).
+    A page of its own. What the drive offers is wrapped and recorded; while it does not offer these functions yet, stand-ins that
+    only record take their place – so Suhl's side of the hand-over is tested either way: every street tile once, in absolute model
+    decimetres, with { carve: false, places: false }; the built-up areas once; where Suhl's ground is; everything taken back on leaving."""
+    with lib.browser() as b:
+        errs = []
+        pg = lib.page(b, 1100, 680, errs, tier='mittel')
+        lib.boot(pg, port)
+        E = pg.evaluate
+        J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
+        real = J("""(() => { const F = window.FAHRT, R = window.__fa = { add: [], drop: [], ground: [], real: !!(F && F.add && F.drop) }, a0 = F.add, d0 = F.drop, g0 = F.ground;
+            F.add = (name, j, o) => { let bb = [1e9, 1e9, -1e9, -1e9]; for (const w of j.ways) for (let k = 0; k + 2 < w[6].length; k += 3) { bb = [Math.min(bb[0], w[6][k]), Math.min(bb[1], w[6][k + 1]), Math.max(bb[2], w[6][k]), Math.max(bb[3], w[6][k + 1])]; }
+              R.add.push({ name, o: o || null, ways: j.ways.length, cols: j.ways.length ? j.ways[0].length : 0, whole: j.ways.every(w => w[6].every(Number.isInteger)), s0: (j.s0 || []).length, lanes: (j.lanes || []).length,
+                areas: (j.areas || []).length, area0: j.areas && j.areas[0] ? [j.areas[0].length, j.areas[0][3].length % 3] : null, orte: (j.orte || []).length, places: (j.places || []).length, tables: !!(j.kinds && j.surf && j.names), bb });
+              return a0 ? a0.call(F, name, j, o) : true; };
+            F.drop = name => { R.drop.push(name); return d0 ? d0.call(F, name) : true; };
+            F.ground = fn => { R.ground.push(fn); if (g0) g0.call(F, fn); };
+            return R.real; })()""")
+        E("GAME.go('suhl')")
+        t0 = time.time()
+        quiet = "SUHL.state === 'ready' && WELT.state().loading === 0 && SUHL.status().stadt.queue === 0 && SUHL.status().boden.farLoading === 0 && SUHL.status().worker === 0 && SUHL.status().strassen.tiles >= 4"
+        ok = False
+        while time.time() - t0 < 300:
+            E("GAME.step(0.25)")
+            if E(f"SUHL.levelAt({MARKT[0]}, {MARKT[1]}) === 1 && " + quiet):
+                ok = True
+                break
+            time.sleep(0.15)
+        for _ in range(6):
+            E("GAME.step(0.5)")
+        st = J("SUHL.status().strassen")
+        r = J("({ add: __fa.add, drop: __fa.drop, ground: __fa.ground.length })")
+        tiles = [a for a in r['add'] if a['name'].startswith('suhl/s/')]
+        orte = [a for a in r['add'] if a['name'] == 'suhl/orte']
+        print('uebergabe', json.dumps({'real': real, 'strassen': st, 'sets': [(a['name'], a['ways'], a['areas']) for a in r['add']]}), flush=True)
+        ck('hand-over: every street tile goes to the drive as a set of its own, once, and Suhl paints no streets itself then',
+           ok and st['tiles'] >= 4 and st['given'] == st['tiles'] and len({a['name'] for a in tiles}) == len(tiles) == st['tiles'] and not st['overlay'] and st['paints'] == 0 and not st['lastErr'],
+           json.dumps(st))
+        inside = lambda bb: bb[0] / 10 > MARKT[0] - 1500 and bb[2] / 10 < MARKT[0] + 1500 and bb[1] / 10 > MARKT[1] - 1500 and bb[3] / 10 < MARKT[1] + 1500
+        ck('hand-over: the layout of the drive data – rows of seven fields with the tables, whole absolute model decimetres, s0 and lanes beside the ways, no carving, no places',
+           bool(tiles) and all(a['cols'] == 7 and a['whole'] and a['tables'] and a['s0'] == a['ways'] and a['lanes'] == a['ways'] and inside(a['bb']) and a['o'] == {'carve': False, 'places': False} for a in tiles if a['ways'])
+           and sum(a['ways'] for a in tiles) > 500 and any(a['areas'] for a in tiles) and all(a['area0'] is None or a['area0'] == [6, 0] for a in tiles),
+           json.dumps([{k: a[k] for k in ('name', 'ways', 'cols', 'whole', 's0', 'lanes', 'areas', 'area0', 'o')} for a in tiles[:3]]) + f" … {sum(a['ways'] for a in tiles)} ways, {sum(a['areas'] for a in tiles)} areas in {len(tiles)} sets")
+        has_orte = J("!!(SUHL.status().strassen.orte)")
+        ck('hand-over: the built-up areas once, as a set of their own (they make the style „Stadt“)', (len(orte) == 1 and orte[0]['orte'] > 0 and orte[0]['ways'] == 0 and (orte[0]['o'] or {}).get('carve') is False) if has_orte else len(orte) == 0,
+           json.dumps(orte) if orte else 'the street index of this sample names no built-up areas (orte) – nothing sent')
+        g = J(f"__fa.ground.map(fn => [fn({MARKT[0]}, {MARKT[1]}), fn(-5597.9, 11658.5), fn(0, 0) === undefined, fn(-4700, 30000) === undefined])")
+        ck('hand-over: FAHRT.ground registered once – true where the near ground is drawn, false on Suhl\'s land still loading, undefined elsewhere', g == [[True, False, True, True]], json.dumps(g))
+        E("GAME.go('garten')")
+        t0 = time.time()
+        idle = False
+        while time.time() - t0 < 400:
+            E("GAME.step(0.5)")
+            if E("SUHL.state === 'idle'"):
+                idle = True
+                break
+            time.sleep(0.2)
+        r2 = J("({ add: __fa.add.map(a => a.name), drop: __fa.drop, ground: __fa.ground.map(fn => fn(%s, %s) === undefined) })" % MARKT)
+        ck('hand-over: on leaving every set is taken back, and the ground no longer answers', idle and sorted(set(r2['add'])) == sorted(set(r2['drop'])) and r2['ground'] == [True],
+           json.dumps({'added': len(set(r2['add'])), 'dropped': len(set(r2['drop'])), 'ground': r2['ground']}))
+        ck.errors(errs)
+
+
+if [k for k in ONLY if k not in ('telefon', 'uebergabe')]:
     desktop()
 if want('telefon'):
     telefon()
+if want('uebergabe'):
+    uebergabe()
 ck.done()

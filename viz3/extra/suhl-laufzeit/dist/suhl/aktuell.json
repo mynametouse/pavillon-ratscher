@@ -1,37 +1,101 @@
 {
- "platzhalter": true,
  "schema": 1,
- "stand": "Probesatz Zentrum (viz3/extra/suhl-laufzeit/probe_holen.py)",
- "quellen": {
-  "boden": "97084bf5",
-  "gebaeude": "29db4164",
-  "gruen": "025255f1",
-  "strassen": "b58357ad"
+ "made": "2026-11-13T01:44:06Z",
+ "base": "suhl/",
+ "platzhalter": true,
+ "note": "Probesatz Zentrum aus den Zweigen der Daten-Agenten (viz3/extra/suhl-laufzeit/probe_holen.py) – nicht veröffentlicht",
+ "sources": {
+  "boden": "8d5bffbc",
+  "gebaeude": "bacb45ed",
+  "gruen": "92f47feb",
+  "strassen": "7ef29c0e",
+  "daten": "b5c89d74"
  },
- "produkte": {
+ "products": {
   "b": {
-   "v": 0,
-   "schema": 1
+   "version": 1,
+   "schema": 1,
+   "path": "b/v1/",
+   "index": "b/v1/index.json",
+   "made": "2026-11-13T01:39:35Z",
+   "area": "probe",
+   "files": 12,
+   "bytes": 105776,
+   "based_on": {}
   },
   "boden": {
-   "v": 0,
-   "schema": 1
+   "version": 1,
+   "schema": 1,
+   "path": "boden/v1/",
+   "index": "boden/v1/meta.json",
+   "made": "2026-11-13T01:42:51Z",
+   "area": "probe",
+   "files": 264,
+   "bytes": 7364174,
+   "based_on": {
+    "s": 0
+   }
   },
   "g": {
-   "v": 0,
-   "schema": 1
+   "version": 1,
+   "schema": 1,
+   "path": "g/v1/",
+   "index": "g/v1/index.json",
+   "made": "2026-11-13T01:43:54Z",
+   "area": "probe",
+   "files": 12,
+   "bytes": 3003690,
+   "based_on": {
+    "boden": 1
+   }
   },
   "gr": {
-   "v": 0,
-   "schema": 1
+   "version": 1,
+   "schema": 1,
+   "path": "gr/v1/",
+   "index": "gr/v1/index.json",
+   "made": "2026-11-13T01:39:39Z",
+   "area": "probe",
+   "files": 23,
+   "bytes": 81753,
+   "based_on": {}
+  },
+  "m": {
+   "version": 1,
+   "schema": 1,
+   "path": "m/v1/",
+   "index": "m/v1/index.json",
+   "made": "2026-11-13T01:44:06Z",
+   "area": "probe",
+   "files": 12,
+   "bytes": 25160,
+   "based_on": {
+    "s": 1
+   }
   },
   "s": {
-   "v": 0,
-   "schema": 1
+   "version": 1,
+   "schema": 1,
+   "path": "s/v1/",
+   "index": "s/v1/index.json",
+   "made": "2026-11-13T01:44:02Z",
+   "area": "probe",
+   "files": 13,
+   "bytes": 293848,
+   "based_on": {
+    "boden": 1
+   }
   },
   "w": {
-   "v": 0,
-   "schema": 1
+   "version": 1,
+   "schema": 1,
+   "path": "w/v1/",
+   "index": "w/v1/index.json",
+   "made": "2026-11-13T01:39:39Z",
+   "area": "probe",
+   "files": 5,
+   "bytes": 11927,
+   "based_on": {}
   }
  }
 }

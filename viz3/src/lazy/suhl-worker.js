@@ -3,7 +3,7 @@
 // A worker cannot be handed objects of the app, only data: the transform xf, addresses, the tile, patches of a scenario.
 // Messages: { id, op, … } → { id, ok: true, … } or { id, ok: false, err }.
 //   init   { xf }                          the transform model <-> UTM (once)
-//   bau    { url, turl, frame, tile, level, old, patch, extra, recs? }   a tile of building records → walls and roofs (level 1) or the
+//   bau    { url, turl, frame, tile, level, z0ok, old, patch, extra, recs? }   a tile of building records → walls and roofs (level 1) or the
 //                                          lean far mesh (level 2), wall feet, the foot of every building; recs: true → the records too
 //   baum   { url, turl, tile }             the trees of a tile (8 bytes each) → [x, y, z, height, radius, kind, chance] each
 //   hoehen { url }                         a height tile (WTH1) → n, h
@@ -42,14 +42,21 @@ const OPS = {
   async bau(m) {
     const [j, ter] = await Promise.all([cached(m.url, r => r.json()), terrain(m.turl)]),
       recs = recsOf(j),
-      // the frame of the positions: a tile that names its centre `o` is tile-local (model metres from o), else as the caller says
+      // the frame of the positions: a tile of the data contract names its centre o and is tile-local (model metres from o)
       fr =
-        j && Array.isArray(j.o) ? 'modell' : j && (j.frame === 'utm' || j.frame === 'abs') ? j.frame : m.frame || 'abs',
-      [out, tr] = kachel(Object.assign({}, m, { recs, terrain: ter, frame: fr }), F);
+        j && Array.isArray(j.o)
+          ? 'modell'
+          : j && (j.frame === 'utm' || j.frame === 'abs')
+            ? j.frame
+            : m.frame || 'modell',
+      fat = (j && (j.fat || j.x_fat)) || null,
+      [out, tr] = kachel(Object.assign({}, m, { recs, fat, terrain: ter, frame: fr }), F);
     if (m.recs) {
       out.recs = recs.concat(m.extra || []);
       out.head =
-        j && !Array.isArray(j) ? { str: j.str || null, fn: j.fn || null, o: j.o || null, z: j.z || null } : null;
+        j && !Array.isArray(j)
+          ? { o: j.o || null, fat, tief: (j.tief || j.x_tief || []).length, src: j.src || null }
+          : null;
     }
     out.frame = fr;
     return [out, tr];

@@ -6,6 +6,13 @@
 // gravel), a window of 768 m that follows the observer. No geometry, no new program. The ground itself (with the road cut) comes from
 // suhl-boden's terrain tiles. Also from these tiles: the street name under the walker (KERN.place) and the ways for traffic
 // (SUHL.ways, the format of VNETZ.graph).
+// As soon as the drive offers FAHRT.add(name, json, opts) / FAHRT.drop(name) (round 2 of the roads system, docs/features/strassen.md;
+// feature-detected here), every street tile is handed over to it as a set of its own in the drive-data layout – absolute model
+// decimetres, { carve: false }: Suhl's ground carries the road cut; { places: false }: Suhl names its places itself – and the built-up
+// areas of the index once as the set 'suhl/orte' (they make the style „Stadt“). Nothing is painted here then: the region's road map
+// draws Suhl's streets. A tile the drive does not take (FAHRT off, an error) keeps the painting below.
+// Frames: the contract writes positions in whole decimetres relative to the tile's centre o; the sample of 13.11.2026 02:28 wrote
+// absolute model decimetres and said so in its index (unit „… absolute model coordinates …“) – read as declared, never guessed.
 const SIZE = 768, // the window (m) and its picture (px)
   N = 1024,
   MOVE = 150, // painted again when the observer is this far from the window's centre
@@ -17,12 +24,34 @@ export function strassen(ctx, G, IX) {
     S = {
       on: !!(sp && sp.index && sp.sets[10]),
       tiles: new Map(),
-      n: { req: 0, ok: 0, err: 0, paint: 0 },
+      n: { req: 0, ok: 0, err: 0, paint: 0, given: 0 },
       ms: 0,
       lastErr: '',
     };
   if (!S.on) return S;
-  const set = sp.sets[10];
+  const set = sp.sets[10],
+    ABS = /absolute/.test(String(sp.index.unit || '')),
+    // a flat ring [x, y, …] with its heights → [x, y, z, …]
+    xyz = (f, fz, z) => {
+      const p = [];
+      for (let k = 0; k + 1 < f.length; k += 2) p.push(f[k], f[k + 1], fz ? fz[k >> 1] : z || 0);
+      return p;
+    },
+    // an area as the row of the contract [type, surf, fl, name, osm, home, q, xyz, holes]; that sample wrote objects
+    rowOf = (a, types) =>
+      Array.isArray(a)
+        ? a
+        : [
+            Math.max(0, (types || []).indexOf(a.k)),
+            a.surf,
+            a.fl || 0,
+            a.n || 0,
+            a.osm,
+            a.home,
+            a.q,
+            xyz(a.f || [], a.fz, a.z),
+            (a.h || []).map((h, i) => xyz(h, a.hz && a.hz[i], a.z)),
+          ];
   let cv = null,
     tex = null,
     win = null, // [x0, y0] of the window painted last
@@ -37,16 +66,94 @@ export function strassen(ctx, G, IX) {
       .then(j => {
         if (t.st === 'gone') return;
         t.d = j;
-        t.o = j.o || [G.tile(10, x, y).cx, G.tile(10, x, y).cy];
+        j.ways = j.ways || [];
+        j.areas = (j.areas || []).map(a => rowOf(a, j.atypes));
+        j.names = j.names || [''];
+        // the origin the positions count from: the tile's centre, or the model's origin where the file says absolute
+        t.o =
+          /relative to o/.test(String(j.unit || '')) || !ABS
+            ? j.o || [G.tile(10, x, y).cx, G.tile(10, x, y).cy]
+            : [0, 0];
         t.st = 'ok';
         S.n.ok++;
         stale = true;
+        give(t);
       })
       .catch(e => {
         t.st = 'err';
         S.n.err++;
         S.lastErr = String((e && e.message) || e);
       });
+  }
+  // ---- the region's road system takes the tile (when it can): the layout of fahrt/strassen.json, positions absolute decimetres ----
+  const F = () =>
+    window.FAHRT && typeof window.FAHRT.add === 'function' && typeof window.FAHRT.drop === 'function'
+      ? window.FAHRT
+      : null;
+  let orte = false;
+  function give(t) {
+    const fa = F();
+    if (!fa) return;
+    const ox = Math.round(t.o[0] * 10),
+      oy = Math.round(t.o[1] * 10),
+      abs = p => {
+        const q = new Array(p.length);
+        for (let k = 0; k + 2 < p.length; k += 3) {
+          q[k] = ox + p[k];
+          q[k + 1] = oy + p[k + 1];
+          q[k + 2] = p[k + 2];
+        }
+        return q;
+      },
+      W = t.d.ways;
+    try {
+      // the built-up areas (and the place names for the drive's display) once, as a set of their own – not with every tile
+      if (!orte && sp.index.orte) {
+        orte =
+          fa.add('suhl/orte', { ways: [], places: sp.index.places || [], orte: sp.index.orte }, { carve: false }) !==
+          false;
+      }
+      t.given =
+        fa.add(
+          'suhl/s/' + t.k,
+          {
+            kinds: t.d.kinds,
+            surf: t.d.surf,
+            names: t.d.names,
+            // [kind, surface, width dm, flags, name, ref, x y z …] – the first seven fields of a street row are the drive's own
+            ways: W.map(w => [w[0], w[1], w[2], w[3], w[4], w[5], abs(w[6])]),
+            s0: W.map(w => w[8] || 0),
+            lanes: W.map(w => w[9] || null),
+            // an area lies in every tile it touches: handed over by the tile of its reference point (home) only
+            areas: t.d.areas.filter(a => a[5]).map(a => [a[1], a[2], a[3], abs(a[7]), (a[8] || []).map(abs), a[0]]),
+          },
+          { carve: false, places: false }
+        ) !== false;
+      if (t.given) S.n.given++;
+    } catch (e) {
+      t.given = false;
+      S.lastErr = 'FAHRT.add: ' + String((e && e.message) || e);
+    }
+  }
+  function take(t) {
+    const fa = F();
+    if (!t.given || !fa) return;
+    t.given = false;
+    try {
+      fa.drop('suhl/s/' + t.k);
+    } catch (e) {
+      S.lastErr = 'FAHRT.drop: ' + String((e && e.message) || e);
+    }
+  }
+  function takeOrte() {
+    const fa = F();
+    if (!orte || !fa) return;
+    orte = false;
+    try {
+      fa.drop('suhl/orte');
+    } catch (e) {
+      S.lastErr = 'FAHRT.drop: ' + String((e && e.message) || e);
+    }
   }
   // surface of the overlay (g of 255): asphalt 40, sett 120, paving slabs 200, gravel 240; -1: the photo shows it well enough
   const code = (surf, fl, foot) =>
@@ -133,15 +240,30 @@ export function strassen(ctx, G, IX) {
       }
     for (const t of [...S.tiles.values()])
       if (now - t.used > 4000 && t.st !== 'load') {
+        take(t);
         t.st = 'gone';
         S.tiles.delete(t.k);
       }
-    if (![...S.tiles.values()].some(t => t.st === 'ok')) return;
+    const L = [...S.tiles.values()].filter(t => t.st === 'ok');
+    if (!L.length) return;
+    // every tile is with the region's road system: its map draws the streets, nothing is painted here
+    if (F() && L.every(t => t.given)) {
+      if (tex) {
+        if (WELT.setOverlay && WELT.overlay && WELT.overlay() === tex) WELT.setOverlay(null);
+        else tex.dispose();
+        tex = cv = win = null;
+      }
+      return;
+    }
     if (!win || stale || Math.hypot(o[0] - win[0] - SIZE / 2, o[1] - win[1] - SIZE / 2) > MOVE) paint(o[0], o[1]);
   };
   S.clear = () => {
-    for (const t of S.tiles.values()) t.st = 'gone';
+    for (const t of S.tiles.values()) {
+      take(t);
+      t.st = 'gone';
+    }
     S.tiles.clear();
+    takeOrte();
     if (tex) {
       if (WELT.setOverlay && WELT.overlay && WELT.overlay() === tex) WELT.setOverlay(null);
       else tex.dispose();
@@ -212,6 +334,9 @@ export function strassen(ctx, G, IX) {
     tiles: [...S.tiles.values()].filter(t => t.st === 'ok').length,
     ways: [...S.tiles.values()].reduce((n, t) => n + (t.st === 'ok' ? t.d.ways.length : 0), 0),
     overlay: !!tex && !!WELT.overlay && WELT.overlay() === tex,
+    given: [...S.tiles.values()].filter(t => t.given).length,
+    orte,
+    frame: ABS ? 'absolut' : 'kachel',
     paints: S.n.paint,
     paintMs: S.ms,
     req: S.n.req,

@@ -16,20 +16,26 @@ const ck = (what, ok, info = '') => {
   console.log((ok ? 'OK   ' : 'FAIL ') + what, info);
   if (!ok) fail++;
 };
-const gi = JSON.parse(fs.readFileSync(path.join(D, 'g/v0/index.json'))),
-  set = tileSet((gi.has && gi.has['10']) || gi.kacheln || gi.tiles),
+// the versions that are valid in the sample: aktuell.json (the form of the data contract)
+const AKT = JSON.parse(fs.readFileSync(path.join(D, 'aktuell.json'))).products,
+  PG = AKT.g.path,
+  PB = AKT.boden.path,
+  PT = AKT.b ? AKT.b.path : null,
+  gi = JSON.parse(fs.readFileSync(path.join(D, AKT.g.index))),
+  z0ok = (gi.based_on || {}).boden === AKT.boden.version,
+  set = tileSet(gi.has['10']),
   tiles = [];
 set.each((x, y) => tiles.push([x, y]));
-ck('index: the tile list of the buildings', tiles.length > 0, tiles.length + ' tiles');
-const tot = { n: 0, bad: 0, off: 0, wallV: 0, roofV: 0, farV: 0, segs: 0, ms1: 0, ms2: 0, recs: 0, trees: 0 };
+ck('index: the tile list of the buildings', tiles.length > 0, `${tiles.length} tiles of ${PG} on the ground ${PB} (the feet of the records ${z0ok ? 'count: computed on this ground' : 'do not count: computed on another ground'})`);
+const tot = { n: 0, bad: 0, gone: 0, off: 0, wallV: 0, roofV: 0, farV: 0, segs: 0, ms1: 0, ms2: 0, recs: 0, trees: 0 };
 const finite = o => Object.values(o).every(a => !(a instanceof Float32Array) || a.every(Number.isFinite));
 for (const [x, y] of tiles) {
   const T = F.tile(10, x, y),
-    j = JSON.parse(fs.readFileSync(path.join(D, `g/v0/10/${x}/${y}.json`))),
-    tb = fs.readFileSync(path.join(D, `boden/v0/t/10/${x}/${y}.bin`)),
+    j = JSON.parse(fs.readFileSync(path.join(D, `${PG}10/${x}/${y}.json`))),
+    tb = fs.readFileSync(path.join(D, `${PB}t/10/${x}/${y}.bin`)),
     ter = await wth1(tb.buffer.slice(tb.byteOffset, tb.byteOffset + tb.byteLength)),
     recs = Array.isArray(j) ? j : j.b,
-    m = { recs, terrain: ter, frame: Array.isArray(j.o) ? 'modell' : 'abs', tile: { e0: T.e0, n0: T.n0, s: T.s, cx: T.cx, cy: T.cy }, old: [-4639.4, 12476.5, 520] };
+    m = { recs, fat: j.fat || j.x_fat || null, z0ok, terrain: ter, frame: 'modell', tile: { e0: T.e0, n0: T.n0, s: T.s, cx: T.cx, cy: T.cy }, old: [-4639.4, 12476.5, 520] };
   if (Array.isArray(j.o)) ck(`tile ${x}/${y}: its centre o is the tile centre of the runtime`, Math.hypot(j.o[0] - T.cx, j.o[1] - T.cy) < 0.01, `${j.o} / ${T.cx.toFixed(3)}, ${T.cy.toFixed(3)}`);
   let t0 = performance.now();
   const [o1] = kachel({ ...m, level: 1 }, F);
@@ -37,8 +43,8 @@ for (const [x, y] of tiles) {
   t0 = performance.now();
   const [o2] = kachel({ ...m, level: 2 }, F);
   tot.ms2 += performance.now() - t0;
-  const drawn = recs.filter(b => b.k !== 8).length;
-  if (o1.n !== drawn || o1.bad !== recs.length - drawn || !finite(o1.walls) || !finite(o1.roofs) || !finite(o2.far) || o2.n !== o1.n)
+  const drawn = recs.filter(b => !(b.fg & 32)).length;
+  if (o1.n !== drawn || o1.bad !== 0 || o1.gone !== recs.length - drawn || !finite(o1.walls) || !finite(o1.roofs) || !finite(o2.far) || o2.n !== o1.n)
     ck(`tile ${x}/${y}: every record built, no NaN`, false, JSON.stringify({ n: o1.n, bad: o1.bad, recs: recs.length, drawn, w: finite(o1.walls), r: finite(o1.roofs), f: finite(o2.far) }));
   // heights sane: every vertex between 20 m below the terrain's lowest point and 150 m above its highest
   const hmin = Math.min(...ter.h) - 20,
@@ -48,14 +54,15 @@ for (const [x, y] of tiles) {
   if (zb) ck(`tile ${x}/${y}: heights within the terrain's range`, false, zb + ' vertices');
   tot.n += o1.n;
   tot.bad += o1.bad;
+  tot.gone += o1.gone;
   tot.off += o1.off;
   tot.recs += recs.length;
   tot.wallV += o1.walls.position.length / 3;
   tot.roofV += o1.roofs.position.length / 3;
   tot.farV += o2.far.position.length / 3;
   tot.segs += o1.segs.length / 4;
-  const bp = path.join(D, `b/v0/10/${x}/${y}.bin`);
-  if (fs.existsSync(bp)) {
+  const bp = PT ? path.join(D, `${PT}10/${x}/${y}.bin`) : '';
+  if (bp && fs.existsSync(bp)) {
     const bb = fs.readFileSync(bp),
       [tr] = baeume({ buf: bb.buffer.slice(bb.byteOffset, bb.byteOffset + bb.byteLength), terrain: ter, tile: m.tile }, F);
     tot.trees += tr.n;
@@ -64,7 +71,7 @@ for (const [x, y] of tiles) {
     if (out) ck(`tile ${x}/${y}: trees inside their tile`, false, out + ' of ' + tr.n);
   }
 }
-ck('every record of the sample is built (underground ones left out)', tot.bad === tot.recs - tot.n && tot.n > 0, JSON.stringify(tot));
+ck('every record of the sample is built (those no longer standing left out)', tot.bad === 0 && tot.n > 0, JSON.stringify(tot));
 console.log(`note: the foot z0 of ${tot.off} of ${tot.n} records lies more than 2.5 m off the terrain tiles – those stand on the tiles (for suhl-gebaeude: fuss.py against the tiles of suhl-boden)`);
 console.log(`level 1: ${Math.round(tot.ms1)} ms for ${tot.n} buildings (${(tot.ms1 / tot.n).toFixed(2)} ms each), ${tot.wallV} wall + ${tot.roofV} roof vertices; level 2: ${Math.round(tot.ms2)} ms, ${tot.farV} vertices; ${tot.segs} wall feet; ${tot.trees} trees`);
 // ear clipping with a courtyard

@@ -137,27 +137,48 @@ export function styleOf(b, id, old) {
   }
   return o;
 }
-// ---- the look from the record's own facade parameters (tools/suhl/gebaeude/fassade.py: fa = { mat, col, gs, hf, sock, win, eg, balk, q })
-// as far as the village's facade program can show them: material → style, the wall colour, the axis spacing of the windows ----
-const MAT2ST = [ST.PLASTER, ST.MODERN, ST.BRICK, ST.SLATE, ST.FW, ST.PLASTER, ST.MODERN, ST.MODERN, ST.HALL, ST.SHED];
-const MODERN_TYP = { hochhaus: 1, platte: 1, zeile: 1, block: 1 };
+// ---- the look from the record's own facade parameters (data contract: fas over the tile's table fat = { mat, col, col2, sock,
+// win: [axis spacing, width, height, sill, kind, frame colour, bars], balk, lv, q }) as far as the village's facade program can
+// show them: material → style, the wall colour, the axis spacing of the windows. bt: the building type of the record. ----
+const MATST = {
+  putz: ST.PLASTER,
+  platte: ST.MODERN,
+  klinker: ST.BRICK,
+  schiefer: ST.SLATE,
+  fachwerk: ST.FW,
+  sandstein: ST.PLASTER,
+  sichtbeton: ST.MODERN,
+  glas: ST.MODERN,
+  blech: ST.HALL,
+  holz: ST.SHED,
+};
+const MATNR = ['putz', 'platte', 'klinker', 'schiefer', 'fachwerk', 'sandstein', 'sichtbeton', 'glas', 'blech', 'holz'];
+const MODERN_BT = { hochhaus: 1, punkthochhaus: 1, platte: 1, wbs70: 1, zeile: 1, zeilenbau: 1, block: 1 };
 export const hex = h => [
   parseInt(h.slice(1, 3), 16) / 255,
   parseInt(h.slice(3, 5), 16) / 255,
   parseInt(h.slice(5, 7), 16) / 255,
 ];
-export function styleFa(b, id, fa, typ) {
+const rgbOf = c => (typeof c === 'string' && c.length === 7 ? hex(c) : Array.isArray(c) && c.length >= 3 ? c : null);
+// the style of a material word (or its number in the list of tools/suhl/gebaeude/fassade.py) for a building type
+export function matStyle(mat, bt, k) {
+  let st = MATST[typeof mat === 'number' ? MATNR[mat] : mat];
+  if (st === undefined) st = ST.PLASTER;
+  if (st === ST.PLASTER && MODERN_BT[bt]) st = ST.MODERN;
+  if (st === ST.SHED && k === 1) st = ST.BARN_FULL;
+  return st;
+}
+export function styleFa(b, id, fa, bt) {
   const o = styleOf(b, id, 0),
-    win = fa.win;
-  o.style = MAT2ST[fa.mat] === undefined ? ST.PLASTER : MAT2ST[fa.mat];
-  if (o.style === ST.PLASTER && MODERN_TYP[typ]) o.style = ST.MODERN;
-  if (o.style === ST.SHED && b.k === 1) o.style = ST.BARN_FULL;
-  if (typeof fa.col === 'string' && fa.col.length === 7) o.col = linC(hex(fa.col), 0.82);
+    win = fa.win,
+    c = rgbOf(fa.col);
+  o.style = matStyle(fa.mat, bt, b.k);
+  if (c) o.col = linC(c, 0.82);
   o.orn = o.style === ST.SLATE && hh(id + 17) < 0.35;
   o.shutters = false;
-  o.raised = typ === 'stadthaus' || typ === 'villa' ? fa.sock >= 0.5 : false;
-  o.typ = b.k === 0 || b.k === 6 ? 0 : b.k === 2 ? 2 : 1;
-  if (win) {
+  o.raised = bt === 'stadthaus' || bt === 'villa' ? fa.sock >= 0.5 : false;
+  o.typ = b.k === 0 || b.church ? 0 : b.k === 2 ? 2 : 1;
+  if (Array.isArray(win)) {
     o.sp = Math.min(6, Math.max(2, win[0]));
     o.frame = win[5] ? 1 : 0;
     o.noWin = false;
@@ -165,7 +186,7 @@ export function styleFa(b, id, fa, typ) {
     o.noWin = true;
     if (b.k !== 2) o.doorW = -1;
   }
-  if (b.k === 2 && typ === 'garage')
+  if (bt === 'garage')
     Object.assign(o, { noWin: true, doorW: 2.3, door: [4, 4, 3, 0, 5, 4][Math.floor(hh(id + 9) * 6)], raised: false });
   return o;
 }
@@ -305,10 +326,14 @@ export function building(b, id, z0, WB, RB, segs) {
     const [ax, ay, bx, by, t0, uA0, tA0, t1, fl] = f,
       L = Math.hypot(bx - ax, by - ay);
     if (L < 0.05 || b.open) return;
-    const F = { dx: (bx - ax) / L, dy: (by - ay) / L },
+    // a wall may have a material and colour of its own (the record's S[i])
+    const own = f[10],
+      style = own && own.mat !== undefined ? matStyle(own.mat, b.typ, b.k) : o.style,
+      wcol = own && rgbOf(own.col) ? linC(rgbOf(own.col), 0.82) : o.col,
+      F = { dx: (bx - ax) / L, dy: (by - ay) / L },
       gable = tA0 > Math.max(t0, t1) + 0.6 && uA0 > 0.3 && uA0 < L - 0.3,
       blind = fl & 1 || o.noWin,
-      st = blind && (o.style === ST.FW || o.style === ST.FW_UP) ? ST.PLASTER : o.style,
+      st = blind && (style === ST.FW || style === ST.FW_UP) ? ST.PLASTER : style,
       sp = o.sp,
       nb = Math.max(1, Math.floor((L - 0.6) / sp)),
       bw = L / nb;
@@ -343,7 +368,7 @@ export function building(b, id, z0, WB, RB, segs) {
       dw,
       sp,
       fl: (gable ? 1 : 0) + (o.shutters ? 2 : 0) + (o.orn ? 4 : 0) + (o.raised ? 8 : 0),
-      col: o.col,
+      col: wcol,
       pk,
     };
     let low = Math.min(z0 - 1.5, b.zmin - 0.8);
@@ -389,7 +414,7 @@ export function building(b, id, z0, WB, RB, segs) {
   });
   // ---- roof: the faces of the record, each with its own cover and colour (b.tris: corners above the foot, kc = [cover, r, g, b]) ----
   const col = b.trim,
-    th = b.k === 0 || b.k === 6 ? 0.16 : 0.1,
+    th = b.k === 0 || b.church ? 0.16 : 0.1,
     T = [],
     V3 = [];
   for (const q of b.tris) {

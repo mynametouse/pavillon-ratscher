@@ -7,7 +7,7 @@
 // geometry, no new program), instanced per tile.
 // Nothing is built in a long frame: the worker makes the buffers, the main thread takes one finished tile per frame.
 // Collisions: the wall feet of the level-1 tiles and the trunks in an 8 m hash (KERN.pushOut).
-import { tsize, hh, inRing, ROOT_E0, ROOT_N0 } from './geo.js';
+import { tsize, hh, inRing, own, ROOT_E0, ROOT_N0 } from './geo.js';
 export function stadt(ctx, G, IX, worker, opt) {
   const { THREE, scene, markDirty, RATSCHER, VILLAGE, TREES, COARSE } = ctx,
     gp = IX.prod.g || IX.prod.gebaeude,
@@ -36,7 +36,10 @@ export function stadt(ctx, G, IX, worker, opt) {
   let farM = null;
   const farMat = () => {
     if (farM) return farM;
-    farM = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0, envMapIntensity: 0.6 });
+    farM = own(
+      new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0, envMapIntensity: 0.6 }),
+      'mat'
+    );
     farM.customProgramCacheKey = () => 'suhl-fern';
     return farM;
   };
@@ -112,10 +115,9 @@ export function stadt(ctx, G, IX, worker, opt) {
       else g.setAttribute(k, new THREE.BufferAttribute(a, sizes[k] || 4));
     }
     g.computeBoundingSphere();
-    return g;
+    return own(g, 'geo');
   };
-  const SZ = { position: 3, normal: 3, aTan: 3, uv: 2, color: 3 },
-    ROOFCLS = ['ziegel_rot', 'ziegel_dunkel', 'betonstein', 'schiefer', 'bitumen_kies', 'blech', 'gruendach', 'glas'];
+  const SZ = { position: 3, normal: 3, aTan: 3, uv: 2, color: 3 };
   function dropMeshes(t) {
     for (const m of t.meshes) {
       scene.remove(m);
@@ -143,6 +145,7 @@ export function stadt(ctx, G, IX, worker, opt) {
     t.off = r.off || 0;
     t.nb = r.n;
     t.bad = r.bad;
+    t.gone = r.gone || 0;
     S.n.built++;
     S.ms.push(Math.round((performance.now() - t0) * 10) / 10);
     if (S.ms.length > 40) S.ms.shift();
@@ -176,6 +179,7 @@ export function stadt(ctx, G, IX, worker, opt) {
         frame: gFrame,
         tile: { e0: t.T.e0, n0: t.T.n0, s: t.T.s, cx: t.T.cx, cy: t.T.cy },
         level,
+        z0ok: opt.z0ok(),
         old: opt.old,
         patch: S.patch,
         extra: S.extra.get(t.k) || null,
@@ -228,7 +232,7 @@ export function stadt(ctx, G, IX, worker, opt) {
     }
     const a = r.trees,
       n = r.n,
-      g = K.geo.clone(),
+      g = own(K.geo.clone(), 'geo'),
       kk = new Float32Array(n);
     g.setAttribute('aKind', new THREE.InstancedBufferAttribute(kk, 1));
     const im = new THREE.InstancedMesh(g, K.mat, n),
@@ -454,111 +458,138 @@ export function stadt(ctx, G, IX, worker, opt) {
       else WAIT.push({ x, y, n, res });
     });
   // ---- records ----
-  // the view of a record the contract promises (docs/plans/plan_suhl.md 6.1); positions in model metres
+  // the view of a record the contract SUHL.* promises (docs/plans/plan_suhl.md 6.1), from the fields of the data contract
+  // (docs/features/suhl-daten.md section 5); positions in model metres, heights as model z or metres above the foot as named
+  const COVERS = [
+    'ziegel_rot',
+    'faserzement',
+    'blech',
+    'schiefer',
+    'flach',
+    'ziegel_dunkel',
+    'betonstein',
+    'gruendach',
+    'glas',
+  ];
+  // what stands in the world: not the records of buildings no longer standing (fg 32), not what a scenario took away
+  const stands = b => !(b.fg & 32) && !(S.patch[b.id] && S.patch[b.id].hidden);
   function view(t, i) {
     const b = t.recs[i],
-      fr = b._abs ? 'abs' : t.frame || gFrame,
-      ox = fr === 'abs' ? 0 : t.T.cx,
-      oy = fr === 'abs' ? 0 : t.T.cy,
-      map =
-        fr === 'utm'
-          ? (x, y) => {
-              const p = G.dM(x, y);
-              return [t.T.cx + p[0], t.T.cy + p[1]];
-            }
-          : (x, y) => [ox + x, oy + y],
-      pts = [];
-    for (let k = 0; k + 1 < b.f.length; k += 2) pts.push(map(b.f[k], b.f[k + 1]));
-    const z0 = t.foot ? t.foot[i * 4 + 2] : (b.z0 ?? 0),
-      d = b.d || {},
-      str = (t.head && t.head.str) || [],
-      fnw = (t.head && t.head.fn) || [];
-    // sides: one per edge of the rings (outer ring, then the courtyards) with the record's S entry
-    // [top a, top b, flags (1 party wall, 2 gable, 4 courtyard, 8 faces a street), street distance, street index (, apex u, apex top)];
-    // records in the format of gebaeude/z carry their ends themselves (F)
+      ox = b._abs ? 0 : t.T.cx,
+      oy = b._abs ? 0 : t.T.cy,
+      map = (x, y) => [ox + x, oy + y],
+      ring = f => {
+        const o = [];
+        for (let k = 0; k + 1 < f.length; k += 2) o.push(map(f[k], f[k + 1]));
+        return o;
+      },
+      pts = ring(b.f),
+      z0 = t.foot && stands(b) ? t.foot[i * 4 + 2] : (b.z0 ?? 0),
+      fat = (t.head && t.head.fat) || [],
+      fas = b.fas || b.x_fa || null,
+      fa = fas ? Object.assign({}, fat[fas.t] || {}, fas) : null,
+      fg = b.fg | 0,
+      d = b.d || {};
+    // sides: one per wall of F with what S says of it; a record without walls: the edges of its footprint
     const sides = [];
     if (Array.isArray(b.F))
-      for (const q of b.F) {
+      b.F.forEach((q, n) => {
         const A = map(q[0], q[1]),
-          B = map(q[2], q[3]);
+          B = map(q[2], q[3]),
+          own = (Array.isArray(b.S) && b.S[n]) || null;
         sides.push({
           a: A,
           b: B,
           len: Math.hypot(B[0] - A[0], B[1] - A[1]),
           top: [q[4], q[7]],
+          apex: [q[5], q[6]],
           party: !!(q[8] & 1),
-          gable: q[6] > Math.max(q[4], q[7]) + 0.6,
+          gable: q[6] > Math.max(q[4], q[7]) + 0.3,
+          court: !!(own && own.hof),
+          street: own && own.st ? own.st : null,
+          streetDist: own && own.sd !== undefined ? own.sd : q[9] < 99 ? q[9] : null,
+          eg: own && own.eg ? own.eg : null,
+          signs: own && own.sign ? own.sign : [],
+          params: fa ? (own ? Object.assign({}, fa, own) : fa) : null,
+          q: own && own.q !== undefined ? own.q : fa && fa.q !== undefined ? fa.q : 0,
+        });
+      });
+    else
+      for (let k = 0; k < pts.length; k++) {
+        const A = pts[k],
+          B = pts[(k + 1) % pts.length];
+        sides.push({
+          a: A,
+          b: B,
+          len: Math.hypot(B[0] - A[0], B[1] - A[1]),
+          top: [b.e, b.e],
+          apex: [0.5, b.e],
+          party: false,
+          gable: false,
           court: false,
           street: null,
-          streetDist: q[9] > 90 ? null : q[9],
-          params: null,
+          streetDist: null,
+          eg: null,
+          signs: [],
+          params: fa,
+          q: 0,
         });
       }
-    else {
-      let n = 0;
-      for (const ring of [b.f].concat(Array.isArray(b.h) ? b.h : []))
-        for (let k = 0; k + 1 < ring.length; k += 2) {
-          const j = (k + 2) % ring.length,
-            A = map(ring[k], ring[k + 1]),
-            B = map(ring[j], ring[j + 1]),
-            q = (b.S && b.S[n]) || [b.e, b.e, 0, -1, -1],
-            own = b.Sp && b.Sp[n];
-          sides.push({
-            a: A,
-            b: B,
-            len: Math.hypot(B[0] - A[0], B[1] - A[1]),
-            top: [q[0], q[1]],
-            party: !!(q[2] & 1),
-            gable: !!(q[2] & 2),
-            court: !!(q[2] & 4),
-            street: q[4] >= 0 ? str[q[4]] || null : null,
-            streetDist: q[3] >= 0 ? q[3] : null,
-            params: b.fa ? (own ? Object.assign({}, b.fa, own) : b.fa) : null,
-          });
-          n++;
-        }
-    }
-    // roof faces: corners in model metres with their height (z0 + height above the foot), triangles; a flat roof is the footprint at the eave
-    const roof = (b.R || []).map(r => {
-      const v = [];
-      if (r.v) for (let k = 0; k + 2 < r.v.length; k += 3) v.push([...map(r.v[k], r.v[k + 1]), z0 + r.v[k + 2]]);
-      else for (const p of pts) v.push([p[0], p[1], z0 + (b.e || 0)]);
-      return {
-        pts: v,
-        tris: r.t || null,
-        area: r.a ?? null,
-        az: r.az ?? null,
-        slope: r.sl ?? (r.v ? null : 0),
-        cls: ROOFCLS[r.c] || r.c || null,
-        col: r.col ?? null,
-        q: r.cq ?? null,
-      };
-    });
+    // roof faces: the outline of each (model x, y and model z), with the numbers the pipeline computed in UTM (true m², true north)
+    const rv = b.rv || [],
+      corner = k => [...map(rv[k * 3], rv[k * 3 + 1]), z0 + rv[k * 3 + 2]],
+      roof = (Array.isArray(b.R) && b.R.length ? b.R : [{}]).map(r => {
+        const P = [];
+        if (r.vi) for (let k = r.vi[0]; k < r.vi[0] + r.vi[1]; k++) P.push(corner(k));
+        else if (rv.length && !b.R) for (let k = 0; k < rv.length / 3; k++) P.push(corner(k));
+        else for (const q of pts) P.push([q[0], q[1], z0 + (b.e || 0)]);
+        const c = r.c === undefined ? b.rk : r.c;
+        return {
+          pts: P,
+          tris: r.ti ? (b.rt || []).slice(r.ti[0] * 3, (r.ti[0] + r.ti[1]) * 3) : null,
+          area: r.a ?? null,
+          areaPlan: r.ap ?? null,
+          az: r.az ?? null,
+          slope: r.sl ?? (b.r === 0 ? 0 : (b.p ?? null)),
+          cls: COVERS[c] || null,
+          col: r.col || b.rc || null,
+        };
+      });
     return {
       id: String(b.id),
       osm: b.osm || null,
-      name: b.n || b.name || null,
+      name: b.n || null,
       adr: b.adr || null,
       use: b.use ?? null,
-      fn: Number.isInteger(b.fn) ? fnw[b.fn] || null : null,
-      typ: b.typ || null,
+      groundUse: b.eg ?? null,
+      fn: b.fkt ?? null,
+      typ: b.bt ?? null,
       era: b.era ?? null,
+      year: b.yr ?? null,
       kind: b.k ?? null,
-      quarter: b.q || b.quarter || null,
+      quarter: b.vt || null,
+      part: b.teil || b.x_teil || null,
+      landmark: b.lm || b.x_lm || null,
       pts,
-      holes: (Array.isArray(b.h) ? b.h : []).map(h => {
-        const o = [];
-        for (let k = 0; k + 1 < h.length; k += 2) o.push(map(h[k], h[k + 1]));
-        return o;
-      }),
+      holes: (Array.isArray(b.fh) ? b.fh : []).map(ring),
       z0,
       eave: b.e ?? null,
-      h: b.hr ?? (Number.isFinite(b.h) ? b.h : null),
-      levels: b.gs ?? b.levels ?? d.levels ?? (Number.isFinite(b.e) ? Math.max(1, Math.round(b.e / 2.9)) : null),
+      h: b.h ?? null,
+      levels: b.lv ?? (fa && fa.lv) ?? d.lv ?? (Number.isFinite(b.e) ? Math.max(1, Math.round(b.e / 2.9)) : null),
       roofForm: b.r ?? null,
       roof,
       sides,
-      flags: b.fl || null,
+      flags: {
+        landmark: !!(fg & 1),
+        listed: !!(fg & 2),
+        enter: !!(fg & 4),
+        vacant: !!(fg & 8),
+        demolition: !!(fg & 16),
+        gone: !!(fg & 32),
+        cadastreOnly: !!(fg & 64),
+        isNew: !!(fg & 128),
+      },
+      q: b.q || {},
       tile: '10/' + t.k,
       raw: b,
     };
@@ -568,7 +599,7 @@ export function stadt(ctx, G, IX, worker, opt) {
     for (const t of S.tiles.values())
       if (t.ids) {
         let i = t.ids.get(id);
-        if (i === undefined && id.startsWith('way/')) i = t.recs.findIndex(b => b.osm === id);
+        if (i === undefined && /^(way|relation)\//.test(id)) i = t.recs.findIndex(b => b.osm === id);
         if (i !== undefined && i >= 0) return [t, i];
       }
     return null;
@@ -585,6 +616,7 @@ export function stadt(ctx, G, IX, worker, opt) {
         const t = S.tiles.get(i + '/' + j);
         if (!t || !t.recs) continue;
         for (let n = 0; n < t.recs.length; n++) {
+          if (!stands(t.recs[n])) continue;
           const v = view(t, n),
             f = [];
           for (const p of v.pts) f.push(p[0], p[1]);
@@ -602,6 +634,7 @@ export function stadt(ctx, G, IX, worker, opt) {
     for (const t of S.tiles.values())
       if (t.recs && t.foot)
         t.recs.forEach((b, i) => {
+          if (!stands(b)) return;
           const x = t.T.cx + t.foot[i * 4],
             y = t.T.cy + t.foot[i * 4 + 1];
           if (A.poly ? inRing(A.poly.flat(), x, y) : Math.hypot(x - c[0], y - c[1]) <= r) out.push(String(b.id));
@@ -679,6 +712,9 @@ export function stadt(ctx, G, IX, worker, opt) {
       nTrees: L.reduce((n, t) => n + (t.tr ? t.tr.n : 0), 0),
       buildings: L.reduce((n, t) => n + (t.lvl ? t.nb || 0 : 0), 0),
       bad: L.reduce((n, t) => n + (t.lvl ? t.bad || 0 : 0), 0),
+      gone: L.reduce((n, t) => n + (t.lvl ? t.gone || 0 : 0), 0),
+      offGround: L.reduce((n, t) => n + (t.lvl ? t.off || 0 : 0), 0),
+      z0: opt.z0ok(),
       segs: SEG.length,
       trunks: TRUNK.length,
       queue: READY.length + L.filter(t => t.busy || t.trBusy).length,

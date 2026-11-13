@@ -1,10 +1,11 @@
 // Suhl runtime: what data there are (docs/features/suhl-daten.md, tools/suhl/lib/suhllib.py).
-//   <base>aktuell.json                      { schema, produkte: { <produkt>: { v, schema?, pfad? } } } – the valid version of every product
+//   <base>aktuell.json                      { schema, products: { <product>: { version, schema, path, index, based_on } } } – the valid
+//                                           version of every product (fetched without the cache: the only file that changes)
 //   <base><produkt>/v<N>/index.json         which tiles exist (ground: meta.json in the format of welt/welt.js), sources, attribution
 //   <base><produkt>/v<N>/<L>/<x>/<y>.<ext>   the tiles (ground: t/<L>/<x>/<y>.bin and i/<L>/<x>/<y>.webp)
 // Products read here: boden (terrain and aerial image, levels 6–12), g (building records), b (trees), s (streets) – level-10 tiles.
 // A tile list may be written as { "x_y": n, … }, ["x_y", …], [[x, y], …] or as the bit field of suhllib.tileset_encode
-// { x0, y0, w, h, n, bits } – per level under 'kacheln', 'tiles' or 'has'.
+// { x0, y0, w, h, n, bits } – per level under 'has' (the contract), 'tiles' or 'kacheln' (older indexes).
 export const READ = ['boden', 'g', 'b', 's'];
 export const SCHEMA = 1; // the schema this runtime reads; a product that asks for more is left out (and named in the status)
 // (aktuell.json changes with every publication and GitHub Pages lets it be cached for ten minutes: asked for without the cache;
@@ -57,8 +58,10 @@ export function tileSet(def) {
 // the tile lists of a product index: { level: tileSet }
 function setsOf(ix) {
   const out = {},
-    src = ix.has || ix.kacheln || ix.tiles || ix.sets,
     L0 = ix.level || ix.stufe || 10;
+  // 'has' is the contract's name; indexes written before revision 1.1 say 'tiles' (per sub-product, '' = the product itself) or 'kacheln'
+  let src = ix.has || ix.tiles || ix.kacheln || ix.sets;
+  if (src && !Array.isArray(src) && src[''] !== undefined) src = src[''];
   if (!src) return out;
   // per level ({ "10": … }) or one list for the product's level
   const perLevel =
@@ -70,27 +73,34 @@ function setsOf(ix) {
   else out[L0] = tileSet(src);
   return out;
 }
+// 'v1', '1' or 1 → 1
+const vnum = v => (typeof v === 'number' ? v : parseInt(String(v).replace(/^v/, ''), 10));
 export async function loadIndex(base) {
+  // aktuell.json of the contract: { schema, products: { g: { version, schema, path, index, based_on }, … } }
+  // (also read: 'produkte' with { v, pfad } as the first sample copies had it)
   const akt = await json(base + 'aktuell.json', true),
-    P = akt.produkte || akt.products || {},
+    P = akt.products || akt.produkte || {},
     IX = { akt, schema: akt.schema || 1, version: {}, skipped: [], prod: {} };
   const jobs = [];
-  for (const [name, p] of Object.entries(P)) {
+  for (const [name, p0] of Object.entries(P)) {
     if (!READ.includes(name)) continue; // a product this runtime does not read yet (m, f, w, gr, d …): not asked for
-    const v = typeof p === 'number' ? p : p.v,
-      need = (typeof p === 'object' && (p.schema || p.schema_min)) || 1;
+    const p = typeof p0 === 'object' && p0 ? p0 : { version: p0 },
+      v = vnum(p.version === undefined ? p.v : p.version),
+      need = p.schema || p.schema_min || 1;
     if (need > SCHEMA) {
       IX.skipped.push(name + ' (Schema ' + need + ')');
       continue;
     }
-    const path = base + ((typeof p === 'object' && (p.pfad || p.path)) || name + '/v' + v + '/'),
-      pr = (IX.prod[name] = { name, v, path, index: null, sets: {}, err: '' });
+    const path = base + (p.path || p.pfad || name + '/v' + v + '/'),
+      pr = (IX.prod[name] = { name, v, path, index: null, sets: {}, basedOn: p.based_on || null, err: '' });
     IX.version[name] = v;
     jobs.push(
-      json(path + (name === 'boden' ? 'meta.json' : 'index.json'))
+      json(p.index ? base + p.index : path + (name === 'boden' ? 'meta.json' : 'index.json'))
         .then(ix => {
           pr.index = ix;
           if (name !== 'boden') pr.sets = setsOf(ix);
+          // on which generation of the others a product was computed (z0 of the buildings on the ground, …)
+          pr.basedOn = ix.based_on || (ix.suhl && ix.suhl.based_on) || pr.basedOn || {};
         })
         .catch(e => {
           pr.err = String((e && e.message) || e);

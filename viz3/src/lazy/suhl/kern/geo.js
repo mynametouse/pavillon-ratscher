@@ -111,3 +111,15 @@ export function inRing(f, x, y) {
   }
   return c;
 }
+// what the package holds on the graphics card: every geometry, texture and material it makes is counted here until its dispose event –
+// after leaving Suhl all three must be 0 (SUHL.status().live; three.js itself counts an object only from its first draw)
+export const LIVE = { geo: 0, tex: 0, mat: 0 };
+export function own(o, k) {
+  LIVE[k]++;
+  const gone = () => {
+    LIVE[k]--;
+    o.removeEventListener('dispose', gone);
+  };
+  o.addEventListener('dispose', gone);
+  return o;
+}

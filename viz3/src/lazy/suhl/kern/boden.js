@@ -5,7 +5,7 @@
 // material of the near tiles (hook W4: WELT.tileMat), so no new shader program and the same look. The old 120 m terrain of
 // world/ratscher.js (it ends at model y = 11 864, in the south of the Kernstadt) sinks where Suhl's ground is drawn (hook W3).
 // Far tiles keep absolute model coordinates like WELT's (their shader reads the world position for the road map and the grain).
-import { tkey, tsize, ROOT_E0, ROOT_N0 } from './geo.js';
+import { own, tkey, tsize, ROOT_E0, ROOT_N0 } from './geo.js';
 import { bodenSets } from './index.js';
 const NS = 51, // vertices per side as drawn
   RING = { 9: 1700, 8: 3400, 7: 6800, 6: 1e9 }, // a tile of level L is wanted within this distance (m, UTM) of the observer
@@ -231,8 +231,8 @@ export function boden(ctx, G, IX, worker) {
           tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
           t.n = hr.n;
           t.h = hr.h;
-          t.tex = tex;
-          const me = new THREE.Mesh(geo(t), mat(tex));
+          t.tex = own(tex, 'tex');
+          const me = new THREE.Mesh(own(geo(t), 'geo'), own(mat(tex), 'mat'));
           me.userData.noMerge = true;
           me.castShadow = me.receiveShadow = false;
           me.visible = false;
