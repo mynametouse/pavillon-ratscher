@@ -1,0 +1,4 @@
+grenzland_kino:m1
+grenzland_kino:m3
+grenzland_kino:coup
+grenzland_kino:score

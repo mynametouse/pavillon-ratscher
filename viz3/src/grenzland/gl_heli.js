@@ -316,7 +316,8 @@ export const GLHELI = (() => {
     S.tail.rotation.x += dt * 97;
     // the cone of light from under the nose to where the light falls
     const lit = dk && H.st === 'kreist';
-    S.cone.visible = lit;
+    // (with the night's lights of agent licht its soft beam takes the place of this hard cone: grenzland/gl_licht.js)
+    S.cone.visible = lit && !window.GLLICHT;
     if (lit) {
       const gz = KERN.ground(H.lx, H.ly),
         lz = Number.isFinite(gz) ? gz : S.z0;
