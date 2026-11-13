@@ -40,6 +40,7 @@ def load(path, step=2.0, town=False, kinds=None):
     with op(path, 'rt', encoding='utf-8') as f:
         j = json.load(f)
     K, SF = j['kinds'], j['surf']
+    styles = j.get('style')              # one number per way (lauf.py from 13.11.2026 on); older files carry the areas `orte` instead
     orte = []
     for o in j.get('orte', []):
         for r in o['a']:
@@ -72,7 +73,7 @@ def load(path, step=2.0, town=False, kinds=None):
         x, y, z = np.interp(s, cum, P[:, 0]), np.interp(s, cum, P[:, 1]), np.interp(s, cum, P[:, 2])
         E, N = S.m2u(x, y)
         mid = len(x) // 2
-        walk = pavement(k, sf, fl, style_at(x[mid], y[mid]))
+        walk = pavement(k, sf, fl, styles[n] if styles else style_at(x[mid], y[mid]))
         w = w10 / 10
         if town and walk > 0:
             w += (0.15 + walk) * ((0 if fl & NO_L else 1) + (0 if fl & NO_R else 1))

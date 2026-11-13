@@ -34,7 +34,7 @@ def main():
     from shapely.ops import unary_union
     from shapely.prepared import prep
     from shapely.strtree import STRtree
-    fz = [p for p in sorted(glob.glob(os.path.join(a.out, 'fahrt', '*.json'))) if not os.path.basename(p).startswith('routen')]
+    fz = [p for p in sorted(glob.glob(os.path.join(a.out, 'fahrt', '*.json'))) if not os.path.basename(p).startswith('routen') and not p.endswith('-orte.json')]
     fz.sort(key=lambda q: ('anfahrt' in os.path.basename(q), q))
     F = json.load(open(fz[0], encoding='utf-8'))
     for extra in fz[1:]:                 # the approach roads belong to the same run
@@ -50,8 +50,9 @@ def main():
         F['hw'] = F['hw'] + [hm[i] for i in X['hw']]
         F['ids'] = F['ids'] + X['ids']
     Z = json.load(open(os.path.join(a.out, 'zahlen.json'), encoding='utf-8'))
-    idx = json.load(open(os.path.join(a.out, L.index_path('s', 0)), encoding='utf-8'))
-    T = [tuple(t) for t in L.tileset_decode(idx['tiles'][str(S.LEVEL)])]
+    sdir, sver = S.version_dir(a.out, 's')
+    idx = json.load(open(os.path.join(sdir, 'index.json'), encoding='utf-8'))
+    T = S.index_tiles(idx)
     cover = unary_union([sbox(*L.tbounds(S.LEVEL, x, y)) for x, y in T])
     res = {'made': S.now(), 'run': os.path.relpath(a.out, S.REPO), 'drive_file': os.path.basename(fz[0]), 'tiles': len(T)}
     # the ways in UTM
@@ -140,7 +141,7 @@ def main():
     # ---- 4. tile edges ----
     pieces = collections.defaultdict(list)
     for x, y in T:
-        t = json.load(open(os.path.join(a.out, L.tile_path('s', 0, S.LEVEL, x, y)), encoding='utf-8'))
+        t = json.load(open(os.path.join(a.out, L.tile_path('s', sver, S.LEVEL, x, y)), encoding='utf-8'))
         ox, oy = int(round(t['o'][0] * 10)), int(round(t['o'][1] * 10))
         for w in t['ways']:
             q = w[6]

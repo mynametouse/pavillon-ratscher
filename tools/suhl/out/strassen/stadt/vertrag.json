@@ -1,0 +1,21 @@
+{
+ "target": "out/stadt",
+ "schema": 1,
+ "rev": "1.1",
+ "valid": true,
+ "errors": [],
+ "warnings": [],
+ "n_errors": 0,
+ "n_warnings": 0,
+ "stats": {
+  "m: tiles": 1129,
+  "m: bytes": 940040,
+  "m: things": 11469,
+  "m: versions checked": 1,
+  "s: tiles": 1129,
+  "s: bytes": 4311652,
+  "s: ways": 15615,
+  "s: areas": 692,
+  "s: versions checked": 1
+ }
+}

@@ -44,7 +44,8 @@ def tables(name, d):
     if z.get('korridor'):
         c = z['korridor']
         o.append(f"Davon **Anfahrt** (Fahrstraßen an den zwei Routen außerhalb der Stadt-Kacheln): {c['tiles']} Kacheln, {gz(c['ways'])} Stücke, {de(c['km'])} km "
-                 f"({', '.join(f'`{k}` {de(v)}' for k, v in c['km_by_kind'].items())}); {gz(c['pinned_nodes'])} Punkte am Profil von `fahrt/strassen.json` gehalten.\n")
+                 f"({', '.join(f'`{k}` {de(v)}' for k, v in c['km_by_kind'].items())}); {gz(c['pinned_nodes'])} Punkte am Profil von `fahrt/strassen.json` gehalten"
+                 + (f"; {de(c['km_auf_suhls_boden'])} km liegen auf den Geländekacheln von `suhl-boden`, {de(c['km_ausserhalb'])} km außerhalb" if 'km_auf_suhls_boden' in c else '') + '.\n')
     ar = z.get('areas', {})
     nm = {'platz': 'Fußgängerflächen und Plätze', 'parken': 'Parkplätze', 'bus': 'Busbahnhöfe', 'steig': 'Bahn- und Bussteige'}
     o.append('Flächen: ' + '; '.join(f"{ar[k]['n']} {nm[k]} mit {gz(ar[k]['m2'])} m²" for k in ('platz', 'parken', 'bus', 'steig') if k in ar) + '. '
@@ -73,6 +74,11 @@ def tables(name, d):
              f"(Kreuzungen von Fahrstraßen: {gz(J['fahr']['n'])} Knoten, {de(J['fahr']['share_within_3cm'] * 100)} %).")
     C = z['clearance']
     o.append(f"Brücken über anderen Wegen: {C['crossings']} Stellen, an {C['low']} davon weniger als {de(C['clear_m'])} m Abstand.")
+    f = z.get('fit_to_ground')
+    if f:
+        o.append('Abstand der Profile zum Gelände, auf dem gerechnet wurde (Profil minus Gelände an der Achse; ohne Brücken, Tunnel, Treppen): '
+                 + '; '.join(f"{lab}: im Mittel {de(f[k]['mittel_m'], 2)} m, Betrag im Mittel {de(f[k]['mittel_betrag_m'], 2)} m, 95 % unter {de(f[k]['p95_betrag_m'], 2)} m"
+                             for k, lab in (('fahrstrassen', 'Fahrstraßen'), ('wege', 'Wege und Pfade'), ('bahn', 'Gleise')) if k in f) + '.')
     s = z['solve']
     o.append(f"Rechnung: {gz(z['nodes'])} Punkte; {gz(s['joints'])} Nahtstellen geglättet, {gz(s['flat'])} Zeilen für ebene Kreuzungen, {gz(s['twins'])} Verbindungen zwischen "
              f"Richtungsfahrbahnen; Brücken bis {de(s['lift_max_m'], 2)} m angehoben; Glättung der kleinen Klassen × {de(s['grob'])}. "

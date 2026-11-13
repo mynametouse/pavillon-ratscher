@@ -1,7 +1,15 @@
 Bestellung eines Laufs von suhl-strassen (Zeilen key=value; alles andere ist Text).
-bestellt 2026-11-13T01:19:48Z: ganze Stadt und Anfahrt noch einmal mit dem Stand nach den Antworten des Straßen-Chats (Fußgängerzone und
-verkehrsberuhigt als street mit Bit 64; Orte: Stadt und Dörfer; Abstand der Profile zum Boden als Zahl), auf den ungeschnittenen
-Geländekacheln von suhl-boden (Lauf 43340569202, Modus stadt, v1: Copernicus GLO-30, Kronenabzug 9,32 m). Der nächste Lauf nimmt
-das Artefakt suhl-boden-roh mit DGM1, sobald suhl-boden die Laufnummer nennt.
-boden_run=43340569202
-boden_artifact=suhl-boden-v1
+bestellt 2026-11-13T01:45:49Z: ganze Stadt und Anfahrt im Aufbau, den Schema 1 Revision 1.1 übernommen hat (ganze Dezimeter relativ
+zu o, Wege mit 13 Einträgen, Flächen mit 9, Möbel als Listen mit der Zeile unit), als Generation v1; Produkt-Ordner als Artefakte
+suhl-s-v1 und suhl-m-v1 für die eine Tür von suhl-daten (dieser Lauf veröffentlicht nichts selbst). Orte einmal als eigener Satz
+(orte.json), Routen mit Namen, Anfahrt geteilt in zwei Sätze (außerhalb von Suhls Boden / auf Suhls Boden), Leitplanken an der
+Kachelgrenze geschnitten.
+Gelände: ungeschnittene Kacheln von suhl-boden, Lauf 43340569202 (Copernicus GLO-30, Kronenabzug 9,32 m) = Boden-Generation 1 der
+ganzen Stadt. Der nächste Lauf nimmt das Artefakt suhl-boden-roh mit DGM1, sobald suhl-boden die Laufnummer nennt (dann version=2).
+bestellt 2026-11-13T02:48:35Z (vom Suhl-Chat, der Agent suhl-strassen ist fertig): ganze Stadt und Anfahrt als Generation v2 auf dem
+ungeschnittenen 1-m-Gelände von suhl-boden (Lauf 43347038164, Artefakt suhl-boden-roh: DGM1 unter der ganzen Gemeinde) – sonst
+unverändert gegenüber v1. Danach schneidet suhl-boden die Stadt mit diesen Profilen (Schritt c), suhl-gebaeude liest die Hausfüße neu.
+version=2
+boden_version=2
+boden_run=43347038164
+boden_artifact=suhl-boden-roh

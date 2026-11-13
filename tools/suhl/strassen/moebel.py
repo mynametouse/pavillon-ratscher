@@ -24,7 +24,7 @@ import sslib as S
 import suhllib as L
 import netz as NZ
 
-VERSION = 0
+VERSION = 1      # the generation of the street tiles s it belongs to
 ATTR = '© OpenStreetMap-Mitwirkende (ODbL 1.0); Haltestellennamen des Fahrplans: DELFI e.V. über gtfs.de (CC BY 4.0)'
 CAR = ('motorway', 'main', 'county', 'street', 'lane', 'service')
 
@@ -39,7 +39,26 @@ def load_daten(path):
     return m
 
 
+def split_run(r, tile_of, step=40.0):
+    """a polyline [(x, y)] in model metres cut where it changes tile: [(tile, [points])]. Segments longer than `step` get points in
+    between first, so a piece reaches at most half a step beyond its tile; neighbouring pieces share their end point"""
+    pts = [tuple(r[0][:2])]
+    for a_, b_ in zip(r, r[1:]):
+        n = max(1, int(math.ceil(math.hypot(b_[0] - a_[0], b_[1] - a_[1]) / step)))
+        for i in range(1, n + 1):
+            pts.append((a_[0] + (b_[0] - a_[0]) * i / n, a_[1] + (b_[1] - a_[1]) * i / n))
+    out = []
+    for a_, b_ in zip(pts, pts[1:]):
+        t = tile_of((a_[0] + b_[0]) / 2, (a_[1] + b_[1]) / 2)
+        if out and out[-1][0] == t:
+            out[-1][1].append(b_)
+        else:
+            out.append((t, [a_, b_]))
+    return out
+
+
 def main():
+    global VERSION
     ap = argparse.ArgumentParser()
     ap.add_argument('--daten', required=True)
     ap.add_argument('--out', default=os.path.join(S.OUT, 'probe'))
@@ -48,7 +67,7 @@ def main():
     a = ap.parse_args()
     t0 = time.time()
     fz = sorted(glob.glob(os.path.join(a.out, 'fahrt', '*.json')))
-    fz = [p for p in fz if not os.path.basename(p).startswith('routen')]
+    fz = [p for p in fz if not os.path.basename(p).startswith('routen') and not p.endswith('-orte.json')]
     if not fz:
         raise SystemExit('no drive-format file under ' + a.out + '/fahrt – run lauf.py first')
     fz.sort(key=lambda q: ('anfahrt' in os.path.basename(q), q))
@@ -65,8 +84,9 @@ def main():
                 hm[i] = len(F['hws']) - 1
         F['ways'] = F['ways'] + [w[:4] + [w[4] + off, w[5] + off, w[6]] for w in X['ways']]
         F['hw'] = F['hw'] + [hm[i] for i in X['hw']]
-    idx = json.load(open(os.path.join(a.out, L.index_path('s', 0)), encoding='utf-8'))
-    T = [tuple(t) for t in L.tileset_decode(idx['tiles'][str(S.LEVEL)])]
+    sdir, VERSION = S.version_dir(a.out, 's')      # the furniture carries the number of the street tiles it was made from
+    idx = json.load(open(os.path.join(sdir, 'index.json'), encoding='utf-8'))
+    T = S.index_tiles(idx)
     Tset = set(T)
     tb = [L.tbounds(S.LEVEL, x, y) for x, y in T]
     core = (min(b[0] for b in tb), min(b[1] for b in tb), max(b[2] for b in tb), max(b[3] for b in tb))
@@ -86,6 +106,9 @@ def main():
         N.add(kk, sf, w10 / 20.0, fl, P, 'f', F['names'][ri] or F['names'][ni])
     # ---------------- places ----------------
     # the places come with the drive file (lauf.py: the Kernstadt as a town, the villages as villages)
+    po = os.path.join(a.out, 'fahrt', name + '-orte.json')
+    if os.path.exists(po):
+        F['places'] = json.load(open(po, encoding='utf-8'))['places']
     places = F['places']
     FF = F
     PL = D.Places(FF)
@@ -235,9 +258,16 @@ def main():
     for p in posts:
         if put('pfosten', p[0], p[1], lambda o_: [dm(p[0]) - o_[0], dm(p[1]) - o_[1], int(round(p[2]))]):
             keep['pfosten'] += [dm(p[0]), dm(p[1]), int(round(p[2]))]
+    n_pieces = 0
     for tw, r in rails:
-        mx, my = r[len(r) // 2]
-        if put('planken', mx, my, lambda o_: [tw] + [v for q in r for v in (dm(q[0]) - o_[0], dm(q[1]) - o_[1])]):
+        # a run of guard rail is cut where it changes tile (as the ways are), so no tile holds a thing far outside itself
+        pieces = [(t, q) for t, q in split_run(r, tile_of) if t in Tset]
+        for t, q in pieces:
+            o_ = orig[t]
+            tiles[t]['planken'].append([tw] + [v for c in q for v in (dm(c[0]) - o_[0], dm(c[1]) - o_[1])])
+        if pieces:
+            cnt['planken'] += 1
+            n_pieces += len(pieces)
             keep['planken'].append([tw] + [dm(v) for q in r for v in q])
     for s in Sg:
         if put('schilder', s[1], s[2], lambda o_: [s[0], dm(s[1]) - o_[0], dm(s[2]) - o_[1], int(round(s[3]))] + ([s[4]] if s[4] else [])):
@@ -287,14 +317,15 @@ def main():
     nb = 0
     for t in T:
         fr = L.tile_frame(S.LEVEL, *t)
-        doc = {'v': VERSION, 'schema': L.SCHEMA, 'product': 'm', 'key': fr.key, 'o': fr.o_json()}
+        doc = {'v': VERSION, 'schema': L.SCHEMA, 'product': 'm', 'key': fr.key, 'o': fr.o_json(),
+               'unit': 'dm; x, y relative to o along the model axes; az in degrees clockwise from north; no heights'}
         d = tiles[t]
         doc['pfosten'] = [v for r in d.get('pfosten', []) for v in r]
         doc['lampen'] = [v for r in d.get('lampen', []) for v in r]
         for k_ in ('planken', 'schilder', 'linien', 'masten', 'ampeln', 'querungen', 'halte', 'namen'):
             doc[k_] = d.get(k_, [])
         nb += S.write_json(os.path.join(a.out, L.tile_path('m', VERSION, S.LEVEL, *t)), doc)
-    numbers = {'made': made, 'tiles': len(T), 'counts': dict(cnt), 'lamps_osm_in_box': n_osm,
+    numbers = {'made': made, 'tiles': len(T), 'counts': dict(cnt), 'planken_pieces': n_pieces, 'lamps_osm_in_box': n_osm,
                'signs_by_code': dict(collections.Counter(s[0].split('-')[0] for s in Sg)),
                'crossings_by_type': {['ohne Markierung', 'markiert', 'Zebrastreifen', 'Ampel'][k]: v for k, v in sorted(collections.Counter(q[0] for q in keep['querungen']).items())},
                'signals': {'Fahrzeuge': sum(1 for q in keep['ampeln'] if q[0] == 0), 'Fußgänger': sum(1 for q in keep['ampeln'] if q[0] == 1),
@@ -303,14 +334,18 @@ def main():
                'guard_rail_m': round(sum(sum(math.dist(p, q) for p, q in zip(r, r[1:])) for tw, r in rails) * S.MSCALE),
                'places': [(p['n'], p['k']) for p in places], 'bytes_tiles': nb,
                'tool': 'viz3/extra/strassen/daten.py of feat/strassen, unchanged: guard_rails, delineators, signs, lamps, power'}
-    index = {'v': VERSION, 'schema': L.SCHEMA, 'product': 'm', 'title': 'Möbel der Straße Suhl', 'made': made, 'level': S.LEVEL,
-             'tiles': {str(S.LEVEL): L.tileset_encode(T)}, 'attribution': ATTR, 'sources': {'osm': o.source, 'osm_stamp': o.stamp},
+    index = {'schema': L.SCHEMA, 'product': 'm', 'version': VERSION, 'area': idx.get('area', 'stadt'), 'title': 'Möbel der Straße Suhl', 'made': made, 'level': S.LEVEL,
+             'unit': 'dm; x, y relative to o along the model axes', 'attribution': ATTR, 'osm': o.source, 'osm_stamp': o.stamp,
              'fields': fields, 'numbers': numbers}
     S.write_json(os.path.join(a.out, L.index_path('m', VERSION)), index)
+    S.common_index(os.path.join(a.out, L.product_dir('m', VERSION)), idx.get('area', 'stadt'), ['osm', 'gtfs', 'regel'],
+                   'Möbel der Straße: Werkzeug des Straßen-Chats (viz3/extra/strassen/daten.py) und Ampeln, Querungen, Haltestellen, Straßennamen aus OSM',
+                   based_on='s=%d' % VERSION)
     one = {'v': 1, 'made': made[:10],
-           'note': 'Suhl: built-up areas and road furniture in the format of strassen/ausstattung.json (feat/strassen), model metres × 10; '
-                   'headings in degrees clockwise from north; ampeln, querungen, halte, namen are Suhl\'s additions',
-           'credits': ATTR, 'orte': PL.out}
+           'note': 'Suhl: road furniture in the format of strassen/ausstattung.json (feat/strassen), model metres × 10; headings in degrees '
+                   'clockwise from north; ampeln, querungen, halte, namen are Suhl\'s additions. The built-up areas (orte) are not repeated '
+                   'here: they come once, with fahrt/%s-orte.json' % name,
+           'credits': ATTR, 'orte': []}
     for k_ in ('pfosten', 'planken', 'schilder', 'lampen', 'masten', 'leitungen', 'linien', 'ampeln', 'querungen', 'halte', 'namen'):
         one[k_] = keep.get(k_, [])
     one['fields'] = fields
