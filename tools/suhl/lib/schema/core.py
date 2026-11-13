@@ -4,7 +4,7 @@ import math, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import suhllib as S   # noqa: E402
 
-REV = '1.0'            # revision of schema 1: raised with every compatible addition (new optional field); see docs/features/suhl-daten.md
+REV = '1.1'            # revision of schema 1: raised with every compatible change; see docs/features/suhl-daten.md, section 12
 MAX_NOTES = 40         # at most this many errors and warnings are kept per kind of problem
 
 
@@ -71,14 +71,15 @@ def ring_area(f):
 
 
 def check_envelope(doc, product, key, rep, where, need_o=True):
-    """the head every JSON tile carries: v, p, key, o. Returns the TileFrame or None."""
+    """the head every JSON tile carries: schema, product, key, o (the tile centre in model metres, for products whose positions are
+    tile-local). Other head fields (version, made, utm, frame, tables ...) are the product's own. Returns the TileFrame or None."""
     if not isinstance(doc, dict):
         rep.err(where, 'the file is not a JSON object')
         return None
-    if doc.get('v') != S.SCHEMA:
-        rep.err(where, f'"v" must be the schema number {S.SCHEMA}, found {doc.get("v")!r}', 'v')
-    if doc.get('p') != product:
-        rep.err(where, f'"p" must be the product {product!r}, found {doc.get("p")!r}', 'p')
+    if doc.get('schema') != S.SCHEMA:
+        rep.err(where, f'"schema" must be the schema number {S.SCHEMA}, found {doc.get("schema")!r}', 'schema')
+    if doc.get('product') != product:
+        rep.err(where, f'"product" must be {product!r}, found {doc.get("product")!r}', 'product')
     try:
         L, x, y = S.parse_key(doc.get('key'))
     except S.SuhlError:

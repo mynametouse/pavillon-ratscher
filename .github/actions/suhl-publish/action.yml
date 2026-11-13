@@ -1,42 +1,47 @@
-# suhl-publish: puts Suhl data into the data repo mynametouse/pavillon-daten (branch main, GitHub Pages from the root:
+# suhl-publish: the ONE door to the data repo mynametouse/pavillon-daten (branch main, GitHub Pages from the root:
 # https://mynametouse.github.io/pavillon-daten/suhl/...). Stage 2 of the Suhl plan, package S2-0 (agent suhl-daten);
-# how to use it: docs/features/suhl-daten.md, section "Veröffentlichen".
+# docs/features/suhl-daten.md, section 8.
+#
+# The data workflows do NOT publish. Each uploads its product folder (suhl/<product>/v<N> with its index) as a workflow artifact
+# with a stable name. A SET - tools/suhl/daten/satz.json: per product the run id, the artifact name and the version - is published
+# from the branch suhl/daten as ONE commit: every product downloaded, validated, checked against the generations of the others
+# (based_on), put under suhl/<product>/v<N>/, suhl/aktuell.json switched in the same commit, a report of what it costs.
 #
 #   jobs:
-#     publish:
-#       concurrency: { group: suhl-daten-publish, cancel-in-progress: false }     # one group for every publishing job of the repo
+#     satz:
+#       permissions: { contents: read, actions: read }                            # actions: read to download artifacts of other runs
+#       concurrency: { group: suhl-daten-publish, cancel-in-progress: false }
 #       steps:
 #         - uses: actions/checkout@v4
-#         - ...                                                                    # produce out/suhl/g/v1/ (tiles + index.json)
 #         - uses: ./.github/actions/suhl-publish
 #           with:
-#             folder: out/suhl/g/v1
+#             mode: set
+#             set: tools/suhl/daten/satz.json
 #             token: ${{ secrets.DATEN_TOKEN }}
+#             github-token: ${{ github.token }}
+#             dry-run: 'true'                                                      # everything except the push; needs no secret
 #
-# If the secret or the repo is missing nothing is published; the action says so in the log, in the job summary and in its outputs
-# (published=false, reason=...) and uploads the folder as a workflow artifact instead. The run does not fail for that.
-# It never writes to this repository (not to gh-pages either).
+# A missing secret or repo is not a failed run: the action says so in the log, the job summary and its outputs. A refused set
+# (a product not valid, generations that do not fit, a published version that would change, a site above 900 MB) IS a failed step.
+# The action never writes to this repository (not to gh-pages either).
 name: suhl-publish
-description: Commit a Suhl product version (or the probe file) into the data repo pavillon-daten and update suhl/aktuell.json
+description: Publish a set of Suhl products (or the probe file) into the data repo pavillon-daten as one commit and switch suhl/aktuell.json
 inputs:
   mode:
-    description: "'product' (default): publish the folder; 'hallo': only write suhl/_probe/hallo.json to prove the path works"
-    default: product
-  folder:
-    description: a product version folder <...>/suhl/<product>/v<N> with its index.json (mode product)
-    default: ''
+    description: "'set' (default): publish the set; 'hallo': only write suhl/_probe/hallo.json to prove the path works"
+    default: set
+  set:
+    description: the set file (per product run id, artifact name, version - or a folder of the checkout)
+    default: tools/suhl/daten/satz.json
   token:
     description: the write token of the data repo - pass secrets.DATEN_TOKEN (may be empty)
     default: ''
-  replace:
-    description: "'true': an existing version folder may be replaced (sample sets v0 only); otherwise published versions are never touched"
-    default: 'false'
-  aktuell:
-    description: "'false': do not point suhl/aktuell.json at this version yet"
-    default: 'true'
-  artifact:
-    description: name of the workflow artifact that holds the folder when nothing could be published ('' = suhl-<product>-v<N>)
+  github-token:
+    description: 'the workflow token (github.token) of a job with the permission actions read, to download the artifacts of the set'
     default: ''
+  dry-run:
+    description: "'true': do everything except the push and print the report (also when the set file says dry_run: true)"
+    default: 'false'
 outputs:
   published:
     description: "'true' when the data repo holds the data now"
@@ -58,17 +63,18 @@ runs:
       shell: bash
       env:
         PUB_MODE: ${{ inputs.mode }}
-        PUB_FOLDER: ${{ inputs.folder }}
-        PUB_REPLACE: ${{ inputs.replace }}
-        PUB_AKTUELL: ${{ inputs.aktuell }}
+        PUB_SET: ${{ inputs.set }}
+        PUB_DRY: ${{ inputs.dry-run }}
         DATEN_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.github-token }}
         PUB_REPO_ROOT: ${{ github.workspace }}
+        PUB_REPORT: ${{ runner.temp }}/satz-bericht.json
       run: python3 -I "$GITHUB_ACTION_PATH/publish.py"
-    - name: Stattdessen als Artefakt aufheben (nichts veröffentlicht)
-      if: ${{ steps.pub.outputs.published != 'true' && inputs.mode == 'product' && inputs.folder != '' }}
+    - name: Bericht aufheben
+      if: ${{ always() && inputs.mode == 'set' }}
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.artifact != '' && inputs.artifact || 'suhl-daten-unveroeffentlicht' }}
-        path: ${{ inputs.folder }}
+        name: suhl-satz-bericht
+        path: ${{ runner.temp }}/satz-bericht.json
         retention-days: 30
-        if-no-files-found: warn
+        if-no-files-found: ignore

@@ -56,7 +56,9 @@ class Tiles(unittest.TestCase):
         self.assertEqual(S.tile_path('boden', 1, 6, 31, 33, sub='i'), 'suhl/boden/v1/i/6/31/33.webp')
         self.assertEqual(S.tile_path('f', 2, 8, 124, 135), 'suhl/f/v2/8/124/135.bin')
         self.assertEqual(S.index_path('g', 0), 'suhl/g/v0/index.json')
-        self.assertEqual(S.index_path('boden', 1), 'suhl/boden/v1/index.json')
+        self.assertEqual(S.index_path('boden', 1), 'suhl/boden/v1/meta.json')
+        self.assertEqual(S.tile_path('gr', 0, 10, 497, 542), 'suhl/gr/v0/10/497/542.json')
+        self.assertEqual(S.tile_path('w', 0, 10, 497, 543), 'suhl/w/v0/10/497/543.bin')
         for bad in (lambda: S.tile_path('g', 0, 11, 1, 1), lambda: S.tile_path('x', 0, 10, 1, 1), lambda: S.tile_path('boden', 0, 10, 1, 1),
                     lambda: S.product_dir('g', -1)):
             with self.assertRaises(S.SuhlError):
