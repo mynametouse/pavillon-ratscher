@@ -6,7 +6,10 @@ suhl-s-v1 und suhl-m-v1 für die eine Tür von suhl-daten (dieser Lauf veröffen
 Kachelgrenze geschnitten.
 Gelände: ungeschnittene Kacheln von suhl-boden, Lauf 43340569202 (Copernicus GLO-30, Kronenabzug 9,32 m) = Boden-Generation 1 der
 ganzen Stadt. Der nächste Lauf nimmt das Artefakt suhl-boden-roh mit DGM1, sobald suhl-boden die Laufnummer nennt (dann version=2).
-version=1
-boden_version=1
-boden_run=43340569202
-boden_artifact=suhl-boden-v1
+bestellt 2026-11-13T02:48:35Z (vom Suhl-Chat, der Agent suhl-strassen ist fertig): ganze Stadt und Anfahrt als Generation v2 auf dem
+ungeschnittenen 1-m-Gelände von suhl-boden (Lauf 43347038164, Artefakt suhl-boden-roh: DGM1 unter der ganzen Gemeinde) – sonst
+unverändert gegenüber v1. Danach schneidet suhl-boden die Stadt mit diesen Profilen (Schritt c), suhl-gebaeude liest die Hausfüße neu.
+version=2
+boden_version=2
+boden_run=43347038164
+boden_artifact=suhl-boden-roh
