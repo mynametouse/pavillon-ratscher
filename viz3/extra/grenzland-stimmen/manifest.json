@@ -28,9 +28,7 @@
    "gl_kurt": "en-US-BrianMultilingualNeural",
    "gl_r_republik": "de-DE-ConradNeural",
    "gl_r_impuls": "de-DE-AmalaNeural",
-   "gl_r_west": "en-US-AndrewMultilingualNeural",
-   "gl_r_grenzland": "en-US-BrianMultilingualNeural",
-   "gl_r_kirmes": "de-AT-IngridNeural"
+   "gl_r_grenzland": "en-US-BrianMultilingualNeural"
   }
  },
  "vx_add": [
@@ -1533,55 +1531,6 @@
    "dur": 8.84
   },
   {
-   "who": "gl_r_west",
-   "id": "gl_r_west_1qm67ic",
-   "text": "Frankenwelle 3 – Pop für Oberfranken. Und seit gestern für die Nachbarn.",
-   "file": "voice/gl/gl_r_west_1qm67ic.mp3",
-   "dur": 4.37
-  },
-  {
-   "who": "gl_r_west",
-   "id": "gl_r_west_1nrrq1q",
-   "text": "Die Frankenwelle. Jetzt mit Gästen.",
-   "file": "voice/gl/gl_r_west_1nrrq1q.mp3",
-   "dur": 2.37
-  },
-  {
-   "who": "gl_r_west",
-   "id": "gl_r_west_1kh2rjj",
-   "text": "Frankenwelle 3, die Nachrichten.",
-   "file": "voice/gl/gl_r_west_1kh2rjj.mp3",
-   "dur": 2.42
-  },
-  {
-   "who": "gl_r_west",
-   "id": "gl_r_west_ern7sv",
-   "text": "Servus aus Coburg. In der Innenstadt hört man heute mehr Zweitakter als Kirchenglocken.",
-   "file": "voice/gl/gl_r_west_ern7sv.mp3",
-   "dur": 5.19
-  },
-  {
-   "who": "gl_r_west",
-   "id": "gl_r_west_q0u89g",
-   "text": "Einen herzlichen Gruß an alle, die uns bisher heimlich gehört haben. Ab heute dürft ihr laut drehen.",
-   "file": "voice/gl/gl_r_west_q0u89g.mp3",
-   "dur": 5.96
-  },
-  {
-   "who": "gl_r_west",
-   "id": "gl_r_west_1alyo9g",
-   "text": "Wer aus Thüringen kommt und den Marktplatz sucht: immer dem Stau nach.",
-   "file": "voice/gl/gl_r_west_1alyo9g.mp3",
-   "dur": 3.71
-  },
-  {
-   "who": "gl_r_west",
-   "id": "gl_r_west_15cdrp2",
-   "text": "Ich mache diesen Beruf seit zehn Jahren. So einen Freitag hatte ich noch nicht.",
-   "file": "voice/gl/gl_r_west_15cdrp2.mp3",
-   "dur": 4.25
-  },
-  {
    "who": "gl_r_grenzland",
    "id": "gl_r_grenzland_qb87ro",
    "text": "Radio Grenzland – wir senden, bis einer kommt.",
@@ -2063,13 +2012,6 @@
    "text": "Werbung: Zweirad-Schrauber Kolbe. Zweitakter aller Art. Wir kriegen ihn wieder an. Aus kriegen Sie ihn dann selber.",
    "file": "voice/gl/gl_r_grenzland_16vxdmk.mp3",
    "dur": 8.35
-  },
-  {
-   "who": "gl_r_kirmes",
-   "id": "gl_r_kirmes_qiufxm",
-   "text": "Kirmeswelle – Schlager und Volksmusik, bis das Zelt wackelt.",
-   "file": "voice/gl/gl_r_kirmes_qiufxm.mp3",
-   "dur": 3.73
   }
  ]
 }

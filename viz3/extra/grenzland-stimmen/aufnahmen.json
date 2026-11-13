@@ -2144,16 +2144,6 @@
   "sig": "de-DE-AmalaNeural|+8%|+4Hz|r|fx1",
   "voice": "de-DE-AmalaNeural"
  },
- "gl_r_kirmes_qiufxm": {
-  "bytes": 11672,
-  "dur": 3.73,
-  "kind": "r",
-  "lufs": -19.2,
-  "pitch": "-3Hz",
-  "rate": "-3%",
-  "sig": "de-AT-IngridNeural|-3%|-3Hz|r|fx1",
-  "voice": "de-AT-IngridNeural"
- },
  "gl_r_republik_19s70ag": {
   "bytes": 32300,
   "dur": 10.61,
@@ -2403,76 +2393,6 @@
   "rate": "-4%",
   "sig": "de-DE-ConradNeural|-4%|-4Hz|r|fx1",
   "voice": "de-DE-ConradNeural"
- },
- "gl_r_west_15cdrp2": {
-  "bytes": 13184,
-  "dur": 4.25,
-  "kind": "r",
-  "lufs": -18.5,
-  "pitch": "+3Hz",
-  "rate": "+6%",
-  "sig": "en-US-AndrewMultilingualNeural|+6%|+3Hz|r|fx1",
-  "voice": "en-US-AndrewMultilingualNeural"
- },
- "gl_r_west_1alyo9g": {
-  "bytes": 11672,
-  "dur": 3.71,
-  "kind": "r",
-  "lufs": -18.7,
-  "pitch": "+3Hz",
-  "rate": "+6%",
-  "sig": "en-US-AndrewMultilingualNeural|+6%|+3Hz|r|fx1",
-  "voice": "en-US-AndrewMultilingualNeural"
- },
- "gl_r_west_1kh2rjj": {
-  "bytes": 7784,
-  "dur": 2.42,
-  "kind": "r",
-  "lufs": -18.3,
-  "pitch": "+3Hz",
-  "rate": "+6%",
-  "sig": "en-US-AndrewMultilingualNeural|+6%|+3Hz|r|fx1",
-  "voice": "en-US-AndrewMultilingualNeural"
- },
- "gl_r_west_1nrrq1q": {
-  "bytes": 7568,
-  "dur": 2.37,
-  "kind": "r",
-  "lufs": -18.4,
-  "pitch": "+3Hz",
-  "rate": "+6%",
-  "sig": "en-US-AndrewMultilingualNeural|+6%|+3Hz|r|fx1",
-  "voice": "en-US-AndrewMultilingualNeural"
- },
- "gl_r_west_1qm67ic": {
-  "bytes": 13616,
-  "dur": 4.37,
-  "kind": "r",
-  "lufs": -17.4,
-  "pitch": "+3Hz",
-  "rate": "+6%",
-  "sig": "en-US-AndrewMultilingualNeural|+6%|+3Hz|r|fx1",
-  "voice": "en-US-AndrewMultilingualNeural"
- },
- "gl_r_west_ern7sv": {
-  "bytes": 16100,
-  "dur": 5.19,
-  "kind": "r",
-  "lufs": -19.0,
-  "pitch": "+3Hz",
-  "rate": "+6%",
-  "sig": "en-US-AndrewMultilingualNeural|+6%|+3Hz|r|fx1",
-  "voice": "en-US-AndrewMultilingualNeural"
- },
- "gl_r_west_q0u89g": {
-  "bytes": 18368,
-  "dur": 5.96,
-  "kind": "r",
-  "lufs": -18.9,
-  "pitch": "+3Hz",
-  "rate": "+6%",
-  "sig": "en-US-AndrewMultilingualNeural|+6%|+3Hz|r|fx1",
-  "voice": "en-US-AndrewMultilingualNeural"
  },
  "gl_renate_861su2": {
   "bytes": 31436,
