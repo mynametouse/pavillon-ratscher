@@ -13,6 +13,16 @@ def check(name, cond, info=''):
     (ok if cond else fails).append(name); print(('OK   ' if cond else 'FAIL ') + name, info, flush=True)
 with lib.browser() as b:
     errs = []; pg = lib.page(b, 1100, 680, errs, tier='mittel'); lib.boot(pg, port, figures=True); E = pg.evaluate
+    # the wall time at every picture (the test machines took twice as long with the traffic of V18b, the chat PC not – where is it spent?)
+    T0 = time.time(); _shot = lib.shot; lib.shot = lambda p, d, n, q=0.88: (_shot(p, d, n, q), print(f'  {n} at {time.time() - T0:.1f} s', flush=True))
+    # one frame drawn and waited for (a pixel read back): the second of two
+    FRAME = "(() => { const gl = GAME.R.getContext(), px = new Uint8Array(4); let ms = 0; for (let i = 0; i < 2; i++) { const a = performance.now(); GAME.shot(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); ms = performance.now() - a; } return +ms.toFixed(1); })()"
+    def frame_cost(where):   # the frame with the vehicles of verkehr/vk_modelle.js and without them
+        try:
+            a = E(FRAME); E("GAME.scene.traverse(o => { if (o.name && o.name.startsWith('verkehr')) { o.userData._vis = o.visible; o.visible = false; } })")
+            b2 = E(FRAME); E("GAME.scene.traverse(o => { if (o.userData && '_vis' in o.userData) { o.visible = o.userData._vis; delete o.userData._vis; } })")
+            print(f'frame {where}: {a} ms with the vehicles, {b2} ms without', E("JSON.stringify({ vk: window.VKMOD ? VKMOD.stats : null, cars: window.VAUTO ? VAUTO.cars.length : -1, calls: GAME.R.info.render.calls, tris: GAME.R.info.render.triangles })"), f'at {time.time() - T0:.1f} s', flush=True)
+        except Exception as ex: print('frame cost', where, repr(ex)[:200], flush=True)
     E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
     # the flow of traffic (verkehr/vk_strom.js) off: the car is driven on fixed routes here, a vehicle ahead would hold the test's driver
     E("window.VKSTROM && (VKSTROM.off = true)")
@@ -65,7 +75,8 @@ with lib.browser() as b:
         T = 0; places = set()
         for secs, shot in [(8, 'c_bridge'), (10, 'c_anger'), (16, 'c_village'), (24, 'c_fields'), (20, 'c_l1625'), (30, 'c_forest_edge'), (40, None), (30, None)]:
             for k in range(int(secs / 0.5)): steps(0.5); places.add(E("document.getElementById('where').textContent"))
-            T += secs; s = st()[0]; fs = E("window._fs"); print(T, 's', s, fs, flush=True)
+            T += secs; s = st()[0]; fs = E("window._fs"); print(T, 's', s, fs, f'at {time.time() - T0:.1f} s', flush=True)
+            if shot == 'c_village': frame_cost('in the village')
             if shot: lib.shot(pg, OUT, shot)
             if fs['done']: break
         print('places', sorted(places))
