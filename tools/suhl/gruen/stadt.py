@@ -160,6 +160,23 @@ def main():
             n_ndom = len(ndom.Ndom(ndir).files)
             ndir = ndir if n_ndom else ''
         res['ndom'] = {'kacheln_1km': n_ndom, 'ordner': bool(ndir)}
+        mp = os.path.join(os.path.dirname(os.path.abspath(ndir)), 'egd', 'manifest.json') if ndir else ''
+        if mp and os.path.exists(mp):
+            # when the laser flew, as the service says it per tile (the manifest of the easygeodata client)
+            try:
+                f = [v for k, v in json.load(open(mp, encoding='utf-8')).get('files', {}).items() if k.startswith('ndom/')]
+                stand = {}
+                for key in ('aktualitaet', 'datum_typ', 'befliegung_von', 'befliegung_bis', 'befliegung_quelle', 'quelle_typ', 'quelle_produkt',
+                            'dgm_aktualitaet', 'abstand_tage'):
+                    c = {}
+                    for v in f:
+                        if v.get(key) is not None:
+                            c[str(v[key])] = c.get(str(v[key]), 0) + 1
+                    if c:
+                        stand[key] = dict(sorted(c.items(), key=lambda kv: -kv[1])[:12])
+                res['ndom']['datenstand_laut_dienst'] = stand
+            except Exception as ex:
+                res['ndom']['datenstand_laut_dienst'] = f'nicht lesbar: {ex!r}'[:200]
         glib.log(f'nDOM1: {n_ndom} tiles' if ndir else 'nDOM1: none – heights stay estimated')
         if a.jobs > 1 and len(tiles) > 8:
             from multiprocessing import Pool

@@ -83,7 +83,10 @@ def cells_of_block(bx, by, U, ndom=None):
             a0 = np.nan_to_num(chm, nan=0.0)
             cells = a0.reshape(n, c, n, c).transpose(0, 2, 1, 3).reshape(n, n, c * c)
             hp = np.partition(cells, int(0.95 * c * c), axis=2)[:, :, int(0.95 * c * c)]      # 95 % quantile: the stand's top height
-            tall = (cells >= 5.0).mean(axis=2)
+            # the laser flew without leaves: bare broadleaf crowns let it through to the ground in many cells – the highest of
+            # every 3 x 3 cells is the canopy (for the cover and the tree tops); the height above comes from the raw cells
+            amax = ndi.maximum_filter(a0, size=3)
+            tall = agg((amax >= 5.0).astype(np.float32))
             darkv = np.where(v > 0.02, agg(dark.astype(np.float32)) / np.maximum(v, 1e-6), 0.0)
             cvm = agg(np.where(veg, cvs, 0.0)) / np.maximum(v, 1e-6)
             stocked = okc & (tall >= 0.35)
@@ -104,8 +107,8 @@ def cells_of_block(bx, by, U, ndom=None):
             C['geraeumt'] = cleared
             C['laser'] = okc
             con1 = ndi.uniform_filter(dark.astype(np.float32), 9) > 0.5
-            tr, tc, _ = baeume.chm_tops(chm, con1)
-            keep = veg[tr, tc] & forest[tr, tc] & (a0[tr, tc] >= 5.0) if len(tr) else np.zeros(0, bool)
+            tr, tc, _ = baeume.chm_tops(amax, con1)
+            keep = veg[tr, tc] & forest[tr, tc] & (amax[tr, tc] >= 5.0) if len(tr) else np.zeros(0, bool)
             tops = np.zeros((n, n), np.float32)
             if len(tr):
                 np.add.at(tops, (tr[keep] // c, tc[keep] // c), 1.0)

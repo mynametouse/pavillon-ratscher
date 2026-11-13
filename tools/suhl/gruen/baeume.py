@@ -361,22 +361,24 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     bld, road, water = U.raster(bb, PX)
     forest = U.forest_mask(bb, PX)
     k5 = int(round(1.0 / PX))
-    chm1 = chm = None
+    chm1 = chm = raw1 = near_b = None
     if ndom is not None:
         w1 = ndom.window(bb)
         if np.isfinite(w1).mean() > 0.02:
-            chm1 = w1
-            chm = np.repeat(np.repeat(w1, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]     # on the image grid, NaN = no data
-    near_b = None
-    if chm is not None:
-        near_b = ndi.distance_transform_edt(~bld) * PX < 1.7                    # within 2 m of a wall the model shows the house:
+            # The laser flew without leaves (seen on the first sheets of the real model, 13.11.2026): under a broadleaf crown
+            # many cells show the ground and only some the branches. So: walls and roofs out (houses + 2 m: there the model shows
+            # the house), then the highest of every 3 x 3 cells closes the holes – that is the canopy for the mask and the tops;
+            # a crown's height is read from the raw cells (the second highest one).
+            skip1 = ndi.binary_dilation(bld[k5 // 2::k5, k5 // 2::k5][:w1.shape[0], :w1.shape[1]], iterations=2)
+            raw1 = np.where(skip1, 0.0, np.nan_to_num(w1, nan=0.0)).astype(np.float32)
+            chm1 = ndi.maximum_filter(raw1, size=3)
+            chm1[~np.isfinite(w1)] = np.nan
+            chm = np.repeat(np.repeat(chm1, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]     # on the image grid, NaN = no data
+            near_b = ndi.distance_transform_edt(~bld) * PX < 1.7                    # within 2 m of a wall:
     # in the mapped forest shaded canopy counts too (slopes turned away from the sun; there is no lawn to mistake it for)
     wood, nd, tex, veg = woody(cir, water, shade_ok=forest,                     # there the laser cannot tell lawn from tree
                                chm=np.where(near_b, np.nan, chm) if chm is not None else None)
-    skip1 = None
-    if chm1 is not None:
-        skip1 = ndi.binary_dilation(bld[k5 // 2::k5, k5 // 2::k5][:chm1.shape[0], :chm1.shape[1]], iterations=2)   # houses + 2 m
-    seg, n, n_chm = crowns(cir, wood, chm1=chm1, skip1=skip1)
+    seg, n, n_chm = crowns(cir, wood, chm1=chm1)
     st = {'kronen_roh': int(n), 'kronen_aus_hoehenmodell': int(n_chm), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean()),
           'ndom_anteil': float(np.isfinite(chm).mean()) if chm is not None else 0.0}
     out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk', 'hm', 'hcap')}
@@ -389,10 +391,9 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     wsh = ww[:nc * g, :nc * g].reshape(nc, g, nc, g).mean(axis=(1, 3))
     vsh = vv[:nc * g, :nc * g].reshape(nc, g, nc, g).mean(axis=(1, 3))
     st['gruenmaske'] = np.where(wsh >= 0.5, 2, np.where(vsh >= 0.5, 1, 0)).astype(np.uint8)
-    med20 = None
+    raw20 = None
     if chm is not None:
-        med = ndi.median_filter(np.nan_to_num(chm1, nan=0.0), 3)                # one cell (a lamp, a wire) makes no height
-        med20 = np.repeat(np.repeat(med, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]
+        raw20 = np.repeat(np.repeat(raw1, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]
         # the time between laser and image, in numbers: green with a tall laser value but no crown in the image (lawn where a
         # tree stood, or the blocky edge of the 1 m cells), and tall things without green outside buildings (felled, mast, bridge)
         tall = np.nan_to_num(chm, nan=0.0) >= 5.0
@@ -410,10 +411,22 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
         mtex = ndi.mean(tex, seg, idx)
         peak = ndi.maximum(ndi.gaussian_filter(cir[..., 0], 3.0), seg, idx)     # the sunlit top of the crown
         if chm is not None:
-            hfar = ndi.maximum(np.where(near_b, 0.0, med20), seg, idx)
-            hall = ndi.maximum(np.where(bld, 0.0, med20), seg, idx)
+            hfar = ndi.maximum(np.where(near_b, 0.0, raw20), seg, idx)
+            hall = ndi.maximum(np.where(bld, 0.0, raw20), seg, idx)
             far_area = ndi.sum((~near_b).astype(np.float32), seg, idx) * PX * PX
             has = ndi.mean(np.isfinite(chm).astype(np.float32), seg, idx)
+            # the second highest raw cell of the crown (one cell alone may be a lamp or a wire); crowns with fewer than four
+            # cells keep their highest one
+            s1 = seg[k5 // 2::k5, k5 // 2::k5][:raw1.shape[0], :raw1.shape[1]]
+            m1 = s1 > 0
+            lab1, val1 = s1[m1], raw1[m1]
+            o = np.lexsort((val1, lab1))
+            lab1, val1 = lab1[o], val1[o]
+            cnt = np.bincount(lab1, minlength=n + 1)
+            end = np.cumsum(cnt)                                   # one past the last (highest) cell of each label
+            h2 = hfar.copy()
+            big = np.flatnonzero(cnt[1:] >= 4) + 1
+            h2[big - 1] = np.minimum(hfar[big - 1], val1[end[big] - 2])
         segA = np.where(allowed, seg, 0)
         com = ndi.center_of_mass(allowed.astype(np.float32), segA, idx)
         full = ndi.center_of_mass(np.ones(seg.shape, np.float32), seg, idx)
@@ -455,7 +468,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
             hm = hcap = float('nan')
             if chm is not None and has[k] > 0.5:
                 # the height: the highest (median-filtered) cell under the crown, away from walls where the crown reaches there
-                hm = float(hfar[k]) if far_area[k] >= 1.0 else float(hall[k])
+                hm = float(h2[k]) if far_area[k] >= 1.0 else float(hall[k])
                 if far_area[k] < 1.0 and hm > 1.8 * float(rule_height(r, kd)):
                     hm = float('nan')   # a small crown against a wall: the cell shows the house, not the tree
                 elif hm >= H_MEAS:
@@ -487,11 +500,11 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
 
     def h_at(ix, iy, rad=1.5):
         """the model's height at a mapped tree without a crown of its own (NaN without data or right at a wall)"""
-        if med20 is None:
+        if raw20 is None:
             return float('nan')
         q = int(rad / PX)
         sl = (slice(max(0, iy - q), iy + q + 1), slice(max(0, ix - q), ix + q + 1))
-        v = np.where(near_b[sl], 0.0, med20[sl])
+        v = np.where(near_b[sl], 0.0, raw20[sl])
         return float(v.max()) if v.size and np.isfinite(chm[sl]).mean() > 0.5 else float('nan')
     # mapped trees (OSM natural=tree): a crown found at a mapped tree is a tree (never a shrub) and takes the mapped species; the
     # position stays the crown's (the 20 cm image is sharper than most mapping, the Markt's rows lie 2-3 m off in OSM). A mapped tree
@@ -554,7 +567,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     m = (T['E'] >= te0 - BAND) & (T['E'] < te1 + BAND) & (T['N'] >= tn0 - BAND) & (T['N'] < tn1 + BAND)
     T = {k: v[m] for k, v in T.items()}
     if keep is not None:
-        keep.update(rgb=rgb, cir=cir8, seg=seg, wood=wood, veg=veg, bld=bld, road=road, bb=bb, chm1=chm1)
+        keep.update(rgb=rgb, cir=cir8, seg=seg, wood=wood, veg=veg, bld=bld, road=road, bb=bb, chm1=chm1, raw1=raw1)
     return T, st
 
 
