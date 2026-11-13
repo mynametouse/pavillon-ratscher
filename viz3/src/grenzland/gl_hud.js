@@ -581,8 +581,8 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
     S.subEl.hidden = false;
     S.subT = dur;
     S.subPrio = prio;
-    // the car radio's words step back while somebody speaks
-    if (!S.funkEl.hidden) {
+    // the car radio's words step back while somebody speaks (the police radio may stand under them – the stack keeps both apart)
+    if (prio > 0 && !S.funkEl.hidden) {
       S.funkEl.hidden = true;
       S.funkT = 0;
     }
@@ -600,12 +600,12 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
       if (l.age < 9) return zeige(l.name, l.text, l.dur, l.prio);
     }
   }
-  // what the car radio says: a line of its own above the subtitles – only while nobody speaks (GTA does not write the radio over a talk)
+  // what the car radio says: a line of its own above the subtitles – only while no person speaks (GTA does not write the radio over a talk)
   function funk(name, text, ms = 0) {
     build();
     const dur = text ? (ms || Math.max(2600, 1200 + String(text).length * 62)) / 1000 : 0;
     S.funkEl.innerHTML = '<b>♪ ' + esc(name || 'Radio') + '</b>' + esc(text || '');
-    S.funkEl.hidden = !text || S.subT > 0.05 || S.kinoOn;
+    S.funkEl.hidden = !text || (S.subT > 0.05 && S.subPrio > 0) || S.kinoOn;
     S.funkT = S.funkEl.hidden ? 0 : dur;
     return dur;
   }

@@ -256,7 +256,9 @@ with lib.browser() as b:
         X("GLFAHNDUNG.tat('einbruch', { force: [{ name: 'Testzeuge', knows: true }] }); GLFAHNDUNG.E.wait = 0.3")
         steps(1); E("TP.near(90)")
         t = until("GLFAHNDUNG.cars.some(u => Math.hypot(u.x - TP.x, u.y - TP.y) < 30)", 40, 0.5)
-        r = J("({ dark: !!VAUTO.dark(), head: GLAUTO.LM.head.emissiveIntensity, blau: Math.max(GLAUTO.LM.blau.emissiveIntensity, GLAUTO.LM.blau2.emissiveIntensity), cars: GLFAHNDUNG.stand().cars })")
+        # (the beacons flash in a double beat since round 2 – agent licht: the brightest of a second of frames)
+        r = J("(() => { let b = 0; for (let i = 0; i < 12; i++) { GAME.step(0.08); b = Math.max(b, GLAUTO.LM.blau.emissiveIntensity, GLAUTO.LM.blau2.emissiveIntensity); } "
+              "return { dark: !!VAUTO.dark(), head: GLAUTO.LM.head.emissiveIntensity, blau: b, cars: GLFAHNDUNG.stand().cars }; })()")
         ck('night: the patrol car comes with headlamps and blue light', t is not None and r['dark'] and r['head'] > 1 and r['blau'] > 1, str(r))
         X("(() => { const u = GLFAHNDUNG.cars[0]; if (u) TP.look(u.x, u.y, 11, u.hd * 180 / Math.PI + 150, 1.8) })()")
         pic('06_nacht')
