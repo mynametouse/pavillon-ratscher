@@ -1,14 +1,14 @@
 {
- "made": "2026-11-13T03:04:24Z",
+ "made": "2026-11-13T07:56:04Z",
  "mode": "stadt",
  "run": {
-  "id": "43355525248",
+  "id": "43388610327",
   "attempt": "1",
-  "sha": "bc443cb2e90ca6570db510d1c70225d1e73d551f",
+  "sha": "80f3600b2d7d7d6aa0ece1f199209b5fad576b5e",
   "ref": "suhl/boden",
-  "url": "https://github.com/mynametouse/pavillon-ratscher/actions/runs/43355525248"
+  "url": "https://github.com/mynametouse/pavillon-ratscher/actions/runs/43388610327"
  },
- "ok": false,
+ "ok": true,
  "version": "v2",
  "levels": {
   "6": {
@@ -38,7 +38,7 @@
   "10": {
    "tile_m": 400.0,
    "n": 1102,
-   "terrain_bytes": 8097640,
+   "terrain_bytes": 8097638,
    "image_bytes": 60891872
   },
   "11": {
@@ -312,12 +312,18 @@
    "blend_m": 300.0,
    "coarse_cell_m": 8.0,
    "blocks": 42,
-   "seconds": 260.6
+   "seam": {
+    "pairs": 593,
+    "aligned": 3,
+    "max_cm": 1,
+    "tiles_written": 3
+   },
+   "seconds": 275.4
   },
   "imagery_method": {
    "quality": 74,
    "requests": 0,
-   "seconds": 0.3,
+   "seconds": 0.2,
    "key": "th_dop-f2024-05-15-p2025-02-garten-2024-04-07-q74",
    "store": true,
    "note": "jede Stufe in ihrer eigenen Auflösung vom Dienst geholt"
@@ -850,20 +856,18 @@
  "cut": null,
  "build": {
   "files": 12700,
-  "bytes": 290554087,
-  "seconds": 264
+  "bytes": 290554147,
+  "seconds": 279
  },
- "seconds_all_steps": 321,
+ "seconds_all_steps": 340,
  "checks": {
-  "ok": false,
-  "fails": [
-   "edges: neighbouring terrain tiles agree"
-  ],
+  "ok": true,
+  "fails": [],
   "n": 16,
   "edges": {
    "pairs": 11930,
-   "worst_cm": 1,
-   "differ": 3
+   "worst_cm": 0,
+   "differ": 0
   },
   "heights_nhn": {
    "centre": 436.5,

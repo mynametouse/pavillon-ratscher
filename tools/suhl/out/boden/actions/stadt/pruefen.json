@@ -34,8 +34,8 @@
    "info": "(619762.0, 5607680.0)"
   },
   "edges: neighbouring terrain tiles agree": {
-   "ok": false,
-   "info": "11930 pairs, worst 1 cm, 3 differ: ['10/511/545|E 1 cm', '10/488/551|N 1 cm', '10/510/559|N 1 cm']"
+   "ok": true,
+   "info": "11930 pairs, worst 0 cm"
   },
   "centre: ground height plausible": {
    "ok": true,
@@ -66,9 +66,7 @@
    "info": ""
   }
  },
- "fails": [
-  "edges: neighbouring terrain tiles agree"
- ],
+ "fails": [],
  "counts": {
   "6": 23,
   "7": 40,
@@ -80,8 +78,8 @@
  },
  "edges": {
   "pairs": 11930,
-  "worst_cm": 1,
-  "differ": 3
+  "worst_cm": 0,
+  "differ": 0
  },
  "level_to_parent": {
   "7": {
@@ -159,7 +157,7 @@
   },
   "10": {
    "n": 1102,
-   "terrain_bytes": 8097640,
+   "terrain_bytes": 8097638,
    "image_bytes": 60891872,
    "terrain_mean": 7348,
    "image_mean": 55256,
