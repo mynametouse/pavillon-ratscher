@@ -80,6 +80,8 @@ jobs:
     continue-on-error: true
     strategy:
       fail-fast: false
+      # report-only: leave runners free for live, Pages and the candidates' required jobs (13.11.2026: 20 runners in all)
+      max-parallel: 4
       matrix:
         include:
           - { key: v16b-1, test: 'v16b:car,drive,crash,route' }
@@ -164,6 +166,8 @@ jobs:
     continue-on-error: true
     strategy:
       fail-fast: false
+      # report-only: at most 12 at once, so a live or Pages job never waits behind ~130 topic jobs (13.11.2026: 20 runners in all)
+      max-parallel: 12
       matrix: ${{ fromJSON(needs.themen-liste.outputs.m) }}
     steps:
       - uses: actions/checkout@v4

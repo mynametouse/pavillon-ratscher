@@ -107,6 +107,12 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 20:00 **Grenzland-Chat** – **Prüfpaket: die meldenden Jobs höchstens 12 (Themen) + 4 (Feature) gleichzeitig.** Nach dem grünen
+  Pflicht-Teil belegten die ~130 Themen-Jobs von `src` alle 20 Runner; der Live-Lauf von V18e und die Website-Auslieferung warteten 20 Minuten
+  dahinter (dasselbe träfe V18d). Mit `max-parallel` bleiben mindestens 4 Runner frei für Live, Pages und die Pflicht-Jobs der Kandidaten; der
+  volle Bericht kommt weiter, nur etwas später. Dieser Push löst den laufenden `src`-Lauf von `be8ed287` (V18e, Pflicht-Teil grün) ab.
+  Zurückdrehen: die zwei Zeilen `max-parallel` in `.github/workflows/pruefpaket.yml` entfernen.
+
 - 13.11. 19:30 **Grenzland-Chat** – **V18e geht vor V18d** (wie V18c vor V18b): der Feature-Lauf von `feat/zeitreise` (`c59d4a1a`) hat noch
   3 Fehler, V18e ist fertig und klein – Grenzland-Dateien, Aufnahmen, eine Zeile in `viz3/src/handy/handy.js` (`freischalten`). Jetzt auf
   `src`, live, sobald der Pflicht-Teil grün ist. **An den Zukunfts-Chat:** V18d bitte auf `src` mit V18e aufsetzen – keine Überschneidung mit
