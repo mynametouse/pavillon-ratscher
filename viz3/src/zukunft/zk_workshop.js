@@ -375,7 +375,7 @@ body.ws-playing:not(.ws-no-year) #ws-tl{display:block}
 #ws-card .q p{margin:.5vh 0}
 #ws-card .hint{margin-top:1.2vh;font-size:2.6vh;opacity:.8}
 #ws-intro{text-align:center;pointer-events:none;top:42%}
-#ws-intro h2{margin:0;font-size:6vh}
+#ws-intro h2{margin:0;font-size:5vh;white-space:nowrap}
 #ws-intro p{margin:1vh 0 0;font-size:3.4vh}
 #ws-evt .fork{display:block;font-size:3vh;margin-top:.6vh;color:#f0b060}
 #ws-evt .fork b{color:#f6f1e6}
@@ -653,6 +653,9 @@ body.ws-start #ws-start{display:block}
     setScreen('play');
     buildTimeline(pair[0]);
     R().start({ pair, split: pair.length > 1, chapter: S.chapter });
+    try {
+      R().bars && R().bars(0); // the letterbox is drawn by this mode's own bars (same 9 vh); the regie's canvas bars would double them
+    } catch (e) {}
     document.body.classList.toggle('ws-two', pair.length > 1);
     moved();
   }
@@ -723,6 +726,7 @@ body.ws-start #ws-start{display:block}
     else if (e.type === 'card') sync();
   }
   function showLine(l) {
+    if (R().state && 'line' in R().state()) return;
     S.sub = { who: l.who || '', text: l.text || '' };
     clearTimeout(subT);
     subT = setTimeout(
@@ -764,7 +768,7 @@ body.ws-start #ws-start{display:block}
           `<div class="seg" style="left:${g.l.toFixed(2)}%;width:${g.w.toFixed(2)}%"><i>${esc(g.c.title)} ${g.c.from}–${g.c.to}</i></div>`
       ).join('') +
       (C().events(w) || [])
-        .filter(ev => ev.halt > 0 || ev.kind === 'stresstest')
+        .filter(ev => ev.kind === 'stresstest' || ev.kind === 'entscheidung' || ev.halt >= 14)
         .map(
           ev =>
             `<div class="mk ${ev.kind === 'stresstest' ? 'st' : ''}" style="left:${tpos(G, ev.chapter, ev.y).toFixed(2)}%" title="${esc(ev.title)}"></div>`
@@ -790,6 +794,8 @@ body.ws-start #ws-start{display:block}
       C0 = C(),
       W = C0.WORLDS;
     const chap = C0.CHAPTERS.find(c => c.id === s.chapter);
+    // the real regie keeps the spoken line in state().line: it is the truth for the subtitle (events only serve the stand-in)
+    if ('line' in s) S.sub = s.line && s.line.text ? { who: s.line.who || '', text: s.line.text } : null;
     if (playing && s.chapter && s.chapter !== S.lastChap) {
       S.lastChap = s.chapter;
       const i = C0.CHAPTERS.findIndex(c => c.id === s.chapter);

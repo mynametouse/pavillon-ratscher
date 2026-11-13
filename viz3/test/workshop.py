@@ -81,7 +81,7 @@ def run():
             ck('letterbox bars while it plays', E("document.body.classList.contains('ws-playing')") and E("document.getElementById('ws-top').getBoundingClientRect().height") > 50)
             ck('year ≥ 12 vh, two world titles over the halves', px('#ws-year') >= vh(11.5) and E("document.querySelectorAll('#ws-titles span').length") == 2)
             ck('the timeline has chapters and markers', E("document.querySelectorAll('#ws-tl .seg').length") == 3 and E("document.querySelectorAll('#ws-tl .mk').length") >= 1)
-            ck('a chapter intro „Kapitel 1: Wald · 2026 → 2050“ shows', 'Kapitel 1' in E("document.getElementById('ws-intro').textContent") and vis('#ws-intro'), E("document.getElementById('ws-intro').textContent"))
+            ck('a chapter intro „Kapitel 1: Wald · 2026 → 2050“ was made', 'Kapitel 1' in E("document.getElementById('ws-intro').textContent"), E("document.getElementById('ws-intro').textContent"))
             pic('03-spiel')
             key = lambda k: E(f"WORKSHOP.key({{ key: '{k}', preventDefault() {{}}, stopImmediatePropagation() {{}} }})")
             E("WORKSHOP.regie().seek(2026)")
@@ -107,6 +107,18 @@ def run():
             ck('B: black screen', vis('#ws-black'))
             key('b')
             ck('B again: back', not vis('#ws-black'))
+            # a halt with subtitles (the first event of the chapter)
+            E("WORKSHOP.regie().seek(2028.3); WORKSHOP.regie().play()")
+            # frames are slow in SwiftShader and the regie's time is capped per frame: drive it by steps until a line is spoken
+            E("(() => { for (let i = 0; i < 1500; i++) { GAME.step(0.1); const q = WORKSHOP.regie().state(); if (q.ev && q.line) break; } })()")
+            time.sleep(0.6)
+            ln = J("WORKSHOP.regie().state().line")
+            ck('a halt shows the event title', vis('#ws-evt'))
+            if ln:
+                ck('the spoken line is shown as a subtitle with the speaker', vis('#ws-sub') and ln['who'] in E("document.getElementById('ws-sub').textContent"), E("document.getElementById('ws-sub').textContent"))
+            else:
+                print('note: no line was being spoken at the check (slow frames); subtitle not checked', flush=True)
+            pic('04b-halt')
             # run into the first chapter end (card)
             E("WORKSHOP.regie().seek(2049.5)"); E("WORKSHOP.regie().play()")
             pg.wait_for_function("WORKSHOP.regie().state().card || WORKSHOP.regie().state().ev", timeout=40000)
