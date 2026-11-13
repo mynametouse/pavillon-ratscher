@@ -10,7 +10,8 @@
    "jens": "de-DE-KillianNeural",
    "katrin": "de-DE-KatjaNeural",
    "ingrid": "de-DE-AmalaNeural",
-   "heike": "de-DE-SeraphinaMultilingualNeural"
+   "heike": "de-DE-SeraphinaMultilingualNeural",
+   "zk_sprecherin": "de-DE-SeraphinaMultilingualNeural"
   },
   "lines": [
    {
@@ -2462,6 +2463,139 @@
     "text": "Das Klima war nicht gnädiger als anderswo. Aber wir haben es zusammen getragen.",
     "file": "voice/x/x_katrin_ziw788.mp3",
     "dur": 5.39
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_dkql69",
+    "text": "Meine Batterie im Keller hält die Kühltruhe. Für mehr reicht es nicht.",
+    "file": "voice/x/x_jens_dkql69.mp3",
+    "dur": 4.39
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_1mv59mc",
+    "text": "Batterieradio. Der Landkreis meldet einen großflächigen Stromausfall. Die Ursache ist noch unklar.",
+    "file": "voice/x/x_zk_sprecherin_1mv59mc.mp3",
+    "dur": 7.33
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_jas0xk",
+    "text": "Einsatzkräfte sind unterwegs, aber nicht überall zugleich. Bleiben Sie, wo Sie sind, und sparen Sie Ihre Batterien.",
+    "file": "voice/x/x_zk_sprecherin_jas0xk.mp3",
+    "dur": 7.79
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1x4wcjd",
+    "text": "Rampe ist frei, Licht brennt. Der Generator läuft, Tee und Decken sind da.",
+    "file": "voice/x/x_manfred_1x4wcjd.mp3",
+    "dur": 5.75
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_16rfvk4",
+    "text": "Aus den Orten: Die Notfalltreffpunkte sind besetzt, in Ratscha die Alte Schule. Dort gibt es Licht, Wärme und Informationen.",
+    "file": "voice/x/x_zk_sprecherin_16rfvk4.mp3",
+    "dur": 8.93
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_kq6vwd",
+    "text": "Manfred, Feuerwehr. Die Straße am Bach ist dicht. Wir kommen nicht überall hin. Bleibt oben.",
+    "file": "voice/x/x_manfred_kq6vwd.mp3",
+    "dur": 8.31
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1ybk9b0",
+    "text": "Manfred hier. Die Sandsäcke sitzen, der Bach geht in die Wiese. Bleibt ruhig.",
+    "file": "voice/x/x_manfred_1ybk9b0.mp3",
+    "dur": 6.53
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_1yv1ziy",
+    "text": "Die Nachrichten. Trockenheit im Forst: Die Waldbrandgefahr bleibt hoch.",
+    "file": "voice/x/x_zk_sprecherin_1yv1ziy.mp3",
+    "dur": 5.62
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_hzfdv7",
+    "text": "Das Wetter: heiß und trocken, später vereinzelt Gewitter.",
+    "file": "voice/x/x_zk_sprecherin_hzfdv7.mp3",
+    "dur": 4.46
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_22bh8h",
+    "text": "Die Nachrichten aus der Region. Der Borkenkäfer hat die Fichtenhänge des Landkreises weitgehend erfasst.",
+    "file": "voice/x/x_zk_sprecherin_22bh8h.mp3",
+    "dur": 6.57
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_vuktjb",
+    "text": "Viele Waldbesitzer arbeiten allein, die Holzpreise sind im Keller.",
+    "file": "voice/x/x_zk_sprecherin_vuktjb.mp3",
+    "dur": 4.37
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_1jgoq3p",
+    "text": "Mehrere Dörfer verwerten das Käferholz gemeinsam in einem Heizhaus.",
+    "file": "voice/x/x_zk_sprecherin_1jgoq3p.mp3",
+    "dur": 4.56
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_v350vl",
+    "text": "Das Wetter: wechselhaft, am Abend kräftige Schauer, örtlich Starkregen.",
+    "file": "voice/x/x_zk_sprecherin_v350vl.mp3",
+    "dur": 5.19
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_dnlqlw",
+    "text": "Die Nachrichten aus der Region. Nach den Unwettern räumen viele Orte noch auf.",
+    "file": "voice/x/x_zk_sprecherin_dnlqlw.mp3",
+    "dur": 5.31
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_1xu5mvj",
+    "text": "Wer nicht vorgesorgt hatte, steht vor hohen Schäden und leeren Kassen.",
+    "file": "voice/x/x_zk_sprecherin_1xu5mvj.mp3",
+    "dur": 4.28
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_1qjbs4",
+    "text": "Orte mit Rückhaltebecken und Notfallplan kamen deutlich glimpflicher davon.",
+    "file": "voice/x/x_zk_sprecherin_1qjbs4.mp3",
+    "dur": 4.59
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_13df2ra",
+    "text": "Das Wetter: kalt, klar, in der Nacht Frost.",
+    "file": "voice/x/x_zk_sprecherin_13df2ra.mp3",
+    "dur": 3.69
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_15p1edk",
+    "text": "Die Nachrichten. Der Landkreis zieht Bilanz: Die Orte, die gemeinsam handeln, stehen besser da.",
+    "file": "voice/x/x_zk_sprecherin_15p1edk.mp3",
+    "dur": 6.8
+   },
+   {
+    "who": "zk_sprecherin",
+    "id": "x_zk_sprecherin_11s00c5",
+    "text": "Das Wetter: unbeständig, in den Hochlagen Schnee.",
+    "file": "voice/x/x_zk_sprecherin_11s00c5.mp3",
+    "dur": 3.55
    }
   ]
  }

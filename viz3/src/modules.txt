@@ -290,6 +290,8 @@ zukunft/zk_regie_bild.js    # feat/zeitreise-regie the picture: split screen (la
 zukunft/zk_regie.js         # feat/zeitreise-regie the director: time-lapse, chapters, halts, camera, voices, before/between hooks (ZKREGIE)
 zukunft/zk_workshop_mock.js # feat/workshop stand-ins for ZKCHRONIK and ZKREGIE until the real ones land (WSMOCK)
 zukunft/zk_workshop.js      # feat/workshop the Workshop mode: switch, Ebenen, start screen with the Szenario-Kreuz, overlays, clicker keys (WORKSHOP)
+zukunft/zk_medien_data.js    # feat/zeitreise-medien the media script: phone messages, radio news, verified real videos – pure data (ZKMEDIENDATA)
+zukunft/zk_medien.js         # feat/zeitreise-medien phone transitions, radio as sound bridge, real videos after a click (ZKMEDIEN)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
