@@ -13,19 +13,23 @@ import { KERN } from '../core/kern.js';
 export const ZKORTE = (() => {
   const EYE = 1.65;
   const FOV_SPLIT = 1.16;
-  // pos / look [x, y], heights above the ground; move: 'dolly' (m forward along the view), 'truck' (m sideways), 'pan' (degrees)
+  // pos / look [x, y], heights above the ground; or yaw (compass bearing of the view: 0 north, 90 east) and pitch (degrees up) instead of
+  // look – the look point then lies 100 m ahead. move: 'dolly' (m forward along the view), 'truck' (m sideways), 'pan' (degrees)
   const P = {
-    // the Anger: past the Dorflinde (217, −109; 21 m) towards the forested slopes south-west of the village
-    anger: { pos: [244, -92], h: EYE, look: [150, -190], lh: 14, fov: 50, move: { dolly: 4 }, label: 'Am Anger' },
-    // the overview: from the slope north-east of the village over the roofs to the forest at the Klinge
-    hang: { pos: [470, 120], h: 85, look: [120, -330], lh: 20, fov: 44, move: { truck: 14 }, label: 'Über dem Dorf' },
-    // the edge of the family forest at the Klinge (the what-if mode's „Untere Klinge“, zukunft/zk_modus.js)
+    // the establishing shot of each chapter's time-lapse: 90 m above the Anger towards the forests south and south-west, the lime below
+    ueberblick: { pos: [232, -92], h: 90, yaw: 195, pitch: -10, fov: 60, move: { truck: 10 }, label: 'Über dem Dorf' },
+    // the Anger: the Dorflinde (217, −109; 21 m) to the right of the view, the forested slopes south of the village behind (~5° high)
+    anger: { pos: [240, -60], h: EYE, yaw: 195, pitch: 4, fov: 55, move: { dolly: 4 }, label: 'Am Anger' },
+    // on the slope north-east of the village: the village below, the forests south and south-west (the Klinge lobe) behind
+    // (zeitreise-welt checked the line of sight on the terrain model, 13.11.: ~100 % of the conifers S/SW visible)
+    hang: { pos: [430, 90], h: EYE, yaw: 199, pitch: -2, fov: 55, move: { pan: -6 }, label: 'Am Hang über dem Dorf' },
+    // at the edge of the family forest at the Klinge, ~20 m before the first spruces (the what-if mode's „Untere Klinge“)
     waldrand: {
-      pos: [-112, -418],
+      pos: [-137, -473],
       h: EYE,
-      look: [-150, -500],
-      lh: 7,
-      fov: 52,
+      look: [-160, -523],
+      lh: 6,
+      fov: 55,
       move: { dolly: 3 },
       label: 'Am Waldrand an der Klinge',
     },
@@ -39,7 +43,7 @@ export const ZKORTE = (() => {
       move: { pan: 8 },
       label: 'Auf der Käferfläche',
     },
-    // the street in the flood area by the Anger (zeitreise-welt's water lies there)
+    // the street in the flood area by the brook (zeitreise-welt's water lies there)
     strasse: {
       pos: [214, -84],
       h: EYE,
@@ -49,35 +53,35 @@ export const ZKORTE = (() => {
       move: { dolly: 2 },
       label: 'In der Straße',
     },
-    // the bridge over the Schleuse (the what-if mode's „Schleusebrücke“)
+    // on the bridge over the Schleuse (the what-if mode's „Schleusebrücke“), looking down the river
     bruecke: {
       pos: [222, 12],
       h: EYE + 0.4,
       look: [284, -14],
-      lh: 1,
-      fov: 50,
+      lh: -2,
+      fov: 52,
       move: { pan: 7 },
       label: 'An der Schleusebrücke',
     },
     // the heating house at the edge of the village (zeitreise-welt builds it)
     heizhaus: { pos: [292, -150], h: EYE, look: [318, -168], lh: 4, fov: 52, move: { dolly: 3 }, label: 'Am Heizhaus' },
-    // the wind turbine on the beetle clearing, seen from the village's edge (zeitreise-welt builds it)
+    // the village's south edge by the lane: open fields up to the forest, the turbine on the ridge (230, −1290) straight ahead
     windrad: {
-      pos: [330, -260],
+      pos: [330, -330],
       h: EYE,
-      look: [900, -1100],
-      lh: 140,
-      fov: 48,
-      move: { pan: 5 },
-      label: 'Blick zum Windrad',
+      yaw: 186,
+      pitch: 6,
+      fov: 58,
+      move: { dolly: 3 },
+      label: 'Am Dorfrand, Blick zum Kamm',
     },
-    // the old school (Ratschner Anger 24) across the green – the village's emergency point in the blackout
+    // the old school (Ratschner Anger 24) from the green before it, by the signpost – the village's emergency point in the blackout
     schule: {
-      pos: [238, -116],
+      pos: [231, -105],
       h: EYE,
-      look: [227, -86],
-      lh: 5,
-      fov: 50,
+      look: [226, -82],
+      lh: 4,
+      fov: 55,
       move: { dolly: 2 },
       label: 'Vor der alten Schule',
     },
@@ -98,7 +102,14 @@ export const ZKORTE = (() => {
       if (!Number.isFinite(look[2])) look[2] = ground(look[0], look[1]) + 1;
     } else {
       pos = [d.pos[0], d.pos[1], ground(d.pos[0], d.pos[1]) + d.h];
-      look = [d.look[0], d.look[1], ground(d.look[0], d.look[1]) + d.lh];
+      if (Number.isFinite(d.yaw)) {
+        const a = (d.yaw * Math.PI) / 180;
+        look = [
+          pos[0] + Math.sin(a) * 100,
+          pos[1] + Math.cos(a) * 100,
+          pos[2] + Math.tan(((d.pitch || 0) * Math.PI) / 180) * 100,
+        ];
+      } else look = [d.look[0], d.look[1], ground(d.look[0], d.look[1]) + d.lh];
     }
     // never inside a hill: overviews keep 3 m above the ground under them
     pos[2] = Math.max(pos[2], ground(pos[0], pos[1]) + (d.h > 3 ? 3 : 1.2));
@@ -125,7 +136,11 @@ export const ZKORTE = (() => {
     if (m.dolly) {
       q.pos[0] += fx * m.dolly;
       q.pos[1] += fy * m.dolly;
-      if (p.foot) q.pos[2] = ground(q.pos[0], q.pos[1]) + (p.pos[2] - ground(p.pos[0], p.pos[1]));
+      if (p.foot) {
+        const dz = ground(q.pos[0], q.pos[1]) + (p.pos[2] - ground(p.pos[0], p.pos[1])) - q.pos[2];
+        q.pos[2] += dz;
+        q.look[2] += dz; // the view keeps its pitch over a sloping ground
+      }
     }
     if (m.truck) {
       // sideways to the right, the look point along (a parallel move)
