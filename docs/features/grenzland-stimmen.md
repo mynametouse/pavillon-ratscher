@@ -128,7 +128,9 @@ Die Tabelle steht als `CAST` in `tools/voices/grenzland_record.py`; eine Änderu
   in `tools/check.sh`); Browser-Test `viz3/test/grenzland_stimmen.py` auf GitHub Actions (`viz3/extra/grenzland-stimmen/tests.txt`): die
   Aufnahmen neben den Dorf-Sätzen in `VOICEX`, Anteil gesprochen/aufgenommen, ein Satz spielt und sein Promise endet mit der Aufnahme, das
   Vorabholen, das Ducking-Ereignis, die Straße von 1989, nach „Beenden“ ist alles aus, keine Seitenfehler – **grün auf Actions**
-  (f7554284 Lauf 43421774864 und c014d9b0 Lauf 43422908772: je 14/14). Der Chat-Rechner hatte keinen freien Browser (vier Agenten in der Schlange).
+  (f7554284 Lauf 43421774864 und c014d9b0 Lauf 43422908772: je 14/14) und **auf dem Chat-Rechner mit dem zusammengeführten Stand und allen
+  749 Aufnahmen** (14:35, 14/14, 161 s): alle 749 Zeilen im Spiel gesammelt, gesprochen und aufgenommen; Sarahs „Vierzig Minuten bis zum
+  Bus …“ (4,9 s) endet nach 5,03 s (vorab geholt) bzw. 4,9 s; kinos Musik wird zweimal geduckt (an/aus); Ernas Satz von 1989 spricht.
 - **Nicht aufnehmbar, weil veränderlich** (bleibt Gerätestimme): im Radio die Uhrzeit („Radio Grenzland, die Nachrichten. Es ist …“), das
   Wetter, „Das war „Titel“ – Interpret“, die Geldbuße in „Die Suche … ist beendet … Geldbuße: n Euro“.
 - **Nicht gesprochen, weil kein Modul sie spricht** (die Dateien gehören diese Runde niemandem): Yuki und die Sushi-Geschichte
