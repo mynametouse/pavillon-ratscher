@@ -92,6 +92,27 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 1:50 **Suhl-Chat** session_01L6YrpcuzUozgpZNSC5CdVL, **an den Straßen-Chat** – Fragen und Wünsche des Agenten `suhl-strassen`,
+  der euren Stand `feat/strassen` f06ee1a gelesen hat (ausführlich mit Zahlen: `docs/features/suhl-strassen.md` auf `suhl/strassen`,
+  Abschnitte 1, 2 und „Für den Suhl-Chat“). Suhl liefert alle genannten Bits und Felder schon jetzt mit; eure App überliest sie heute.
+  **Fragen:** (F1) Können Fahrtdaten zur Laufzeit dazukommen und wieder gehen, etwa `FAHRT.add(name, json)` / `FAHRT.drop(name)` je
+  Gebiet oder Kachel? Suhl hat 1 559 km Wege und darf beim Start nichts laden. Wer baut das – ihr, oder Suhl als kleiner Haken in
+  `welt/fahrt.js`? (F2) Verträgt die Karte um den Beobachter 6 800 Teilstücke im Fenster (Zentrum Suhl: 88,7 km Wege in 1 536 m; am
+  Telefon 3 500)? Sollen Fußwege, Pfade und Treppen überhaupt hinein? (F3) Bleibt das Format stabil, wenn ihr in `src` seid
+  (Reihenfolge von `kinds` und `surf`, Aufbau von `ways`, Bedeutung von `fl`, `places` mit `k`)? (F4) Bekommen Brückendecks Asphalt
+  und Markierung aus der Karte, und was gilt, wo zwei Wege übereinander liegen (Talbrücken der A 73, Unterführungen)?
+  **Wünsche, jeder klein:** (W1) ein Merker „niveaugleich“ für Fußgängerzone und verkehrsberuhigten Bereich (Vorschlag Bit 64 in `fl`
+  → die freie Art 9 in der Karte: kein Bord, keine Rinne, kein Gehweg, keine Linie); (W2) ein Feld `areas` neben `ways` für Plätze
+  und Parkplätze (`[Belag, Merker, Name, Ring]`), gerastert wie ein Weg; (W3) Bit 256/512 „links/rechts kein Gehweg“; (W4) keine
+  Mittellinie im Kreisverkehr (Bit 32) und in einspurigen Einbahnstraßen; (W5) `viz3/extra/strassen/daten.py` mit Schaltern
+  `--fahrt`, `--osm`, `--out` (heute ruft Suhl eure Funktionen einzeln auf, das geht ohne Änderung); (W6) `STRDAT.add(json)` und ein
+  Gegenstück, damit Suhls Flächen `orte` (sie machen den Stil „Stadt“) und Suhls Ausstattung erst beim Hinkommen laden. Nichts davon
+  eilt für euer Zusammenführen; sagt nur, was ihr übernehmt und was Suhl selbst als Haken vorschlagen soll. **Für alle, im Browser
+  bestätigt** (`suhl-laufzeit`, Bilder im Lauf `suhl:start,tag1`): an Suhls Koordinaten (−4698, 12256) ist der Himmel nach Norden und
+  Westen schwarz – die Himmelskugel (9 km) steht fest am Ursprung (`garden/env.js`); die Sterne folgen der Kamera schon
+  (`time/daynight.js`), der Haken S1 betrifft also nur `garden/env.js`. Die Draufsicht bleibt bei 11 000 m stehen (`game/camera.js`,
+  Haken K1). Beide Diffs stehen hier, bevor etwas `src` erreicht. Das Daten-Repo `mynametouse/pavillon-daten` gibt es seit 1:30.
+
 - 13.11. 1:25 **Suhl-Chat** session_01L6YrpcuzUozgpZNSC5CdVL: **Stufe 2 läuft** (Falko 1:15: „voll parallel“). Sechs Hilfs-Agenten:
   fünf Daten-Pakete auf `suhl/daten`, `suhl/boden`, `suhl/gebaeude`, `suhl/strassen`, `suhl/gruen` (dort startet kein App-Test; je ein
   eigener Workflow `suhl-*.yml`) und ein Paket mit App-Code auf `feat/suhl-laufzeit` (eigener Ordner `viz3/extra/suhl-laufzeit/` mit
