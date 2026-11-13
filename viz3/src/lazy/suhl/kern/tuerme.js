@@ -89,6 +89,23 @@ const TROMMELN = [
     mast: 15,
   },
 ];
+// pediments the records lack: the Haus der Geschichte (the former Kulturhaus, its portico of columns facing the Platz der Deutschen
+// Einheit; the photos: a wide triangle over the columns, its tip a little above the roof behind). at: the middle of the portico's
+// outer edge drawn 1.5 m in, az: the direction of that edge, w: its length, d: the depth, base and h: from the foot of the building
+// it crowns (on) – the portico record ends flat at 23.3 m
+const GIEBEL = [
+  {
+    name: 'Haus der Geschichte, Giebel der Säulenvorhalle',
+    on: 'DETHL57P00006Ibz',
+    at: [-4965.5, 12300.5],
+    az: 252,
+    w: 27.6,
+    d: 3.4,
+    base: 23.27,
+    h: 4.8,
+    col: 0xd9a47e,
+  },
+];
 export function tuerme(ctx, C) {
   const { THREE, scene, markDirty, KERN } = ctx,
     S = { on: true, built: false, at: [1e9, 1e9], n: 0, ref: [], wait: 0, rev: -1 };
@@ -107,6 +124,20 @@ export function tuerme(ctx, C) {
       disc: new THREE.CylinderGeometry(1, 1, 1, 20),
       drum: new THREE.CylinderGeometry(1, 1, 1, 72, 1, true),
       lid: new THREE.CylinderGeometry(1, 1, 1, 72),
+      prism: (() => {
+        // a triangle in the plane across x (z along, y up; tip at z 0, y 1), drawn out from x −0.5 to 0.5
+        const A = [-0.5, 0, -0.5],
+          B = [-0.5, 0, 0.5],
+          T = [-0.5, 1, 0],
+          A2 = [0.5, 0, -0.5],
+          B2 = [0.5, 0, 0.5],
+          T2 = [0.5, 1, 0],
+          tris = [A, B, T, A2, T2, B2, A, T2, A2, A, T, T2, B, T2, T, B, B2, T2, A, B2, B, A, A2, B2], // counter-clockwise from outside
+          g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(tris.flat(), 3));
+        g.computeVertexNormals();
+        return g;
+      })(),
     };
   function kit() {
     if (K) return K;
@@ -267,6 +298,20 @@ export function tuerme(ctx, C) {
         lid(B.roof, zT - 0.55, zT - 0.05, t.r - 0.05);
         if (t.dome) part(B.white, 'sph', d, 0, 0, 0, zT - 0.1, t.dome, t.dome, t.dome * 0.55);
       }
+      n++;
+    }
+    for (const t of GIEBEL) {
+      if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
+      const v = C.building(t.on);
+      if (!v || !Number.isFinite(v.z0)) {
+        wait = true;
+        continue;
+      }
+      ref.push([t.at[0], t.at[1], KERN.ground(t.at[0], t.at[1])]);
+      if (!walls.has(t.col)) walls.set(t.col, buf());
+      // the triangle: its base along the edge (local along = az), drawn out across by the depth; a cornice under it
+      part(walls.get(t.col), 'prism', t, v.z0, 0, 0, t.base, t.w, t.d, t.h);
+      part(B.white, 'box', t, v.z0, 0, 0, t.base + 0.15, t.w + 0.4, t.d + 0.4, 0.3);
       n++;
     }
     const put = (me, b) => {
