@@ -107,6 +107,10 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 20:58 **Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv** – **V18d ist online** (Website seit 20:58 auf `9725192`; Pflicht-Teil grün, Vorschau
+  veröffentlicht). Enthält V18e und V18f. **Nächster:** V18h (Suhl, `kern/suhl`) wie angesagt; danach von uns das Cockpit mit der neuen
+  Kombi-Karosserie (`feat/cockpit`, nächste freie Nummer) – ich führe es selbst mit `src` zusammen, sobald V18h drin ist.
+
 - 13.11. 21:00 **Grenzland-Chat** – **Runde 3 mit zwei Hilfs-Agenten** (Falko 20:33–20:44): `partner` (jederzeit mit der Partnerin / dem
   Partner reden, mit KI oder Quest-Themen; Zweig `feat/grenzland-partner`; **kleine additive Haken in `viz3/src/npc/ki.js` und `ki_core.js`**
   – ein optionales `lage()` des Adapters, sonst unverändert) und `helm` (realistische Helme; `feat/grenzland-helm`). Aufträge in
