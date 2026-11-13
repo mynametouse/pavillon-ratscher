@@ -335,9 +335,27 @@ export const GLRADIO = (() => {
     GL.emit('radio:sendung', { id: S.id, k: 'musik', art: '', titel: p.titel });
     if (p.rec) {
       playRec(p.rec);
-      S.item = { k: 'musik', rec: p.rec, titel: p.titel, von: p.von, left: p.dauer, dauer: p.dauer };
+      S.item = {
+        k: 'musik',
+        rec: p.rec,
+        titel: p.titel,
+        von: p.von,
+        left: p.dauer,
+        dauer: p.dauer,
+        i: it.i,
+        stumm: !raw(),
+      };
     } else if (!raw())
-      S.item = { k: 'musik', titel: p.titel, von: p.von, left: p.dauer - off, dauer: p.dauer, key: p.key };
+      S.item = {
+        k: 'musik',
+        titel: p.titel,
+        von: p.von,
+        left: p.dauer - off,
+        dauer: p.dauer,
+        key: p.key,
+        i: it.i,
+        stumm: true,
+      };
     else {
       // not rendered yet: noise until it is (a second or two after tuning in)
       S.item = { k: 'lade', titel: p.titel, von: p.von, key: p.key, dauer: p.dauer, off, t0: performance.now() };
@@ -808,6 +826,12 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     S.uhr += dt;
     uiTick(dt);
     if (!S.id) return;
+    // the sound came on only now (a reload starts silent until the first click): the piece that is „running“ is heard from here
+    if (S.item && S.item.stumm && raw()) {
+      const i = S.item.i;
+      S.count.musik--;
+      startMusik({ k: 'musik', i }, true);
+    }
     S.fadeT += dt;
     S.sig = signal();
     // (the display says when the reception turns weak or good)
