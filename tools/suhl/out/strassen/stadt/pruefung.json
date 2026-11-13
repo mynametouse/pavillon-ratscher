@@ -1,0 +1,665 @@
+{
+ "made": "2026-11-13T01:11:21Z",
+ "run": "out/stadt",
+ "drive_file": "suhl.json",
+ "tiles": 1013,
+ "zaehlung": {
+  "zentrum": {
+   "hier_km": 34.8,
+   "stufe1_km": 34.8,
+   "differenz_prozent": -0.12,
+   "klassen": {
+    "footway": {
+     "hier_km": 9.45,
+     "stufe1_km": 9.45,
+     "differenz_km": 0.0
+    },
+    "service": {
+     "hier_km": 7.84,
+     "stufe1_km": 7.84,
+     "differenz_km": -0.0
+    },
+    "residential": {
+     "hier_km": 7.11,
+     "stufe1_km": 7.11,
+     "differenz_km": 0.0
+    },
+    "secondary": {
+     "hier_km": 3.47,
+     "stufe1_km": 3.63,
+     "differenz_km": -0.16
+    },
+    "path": {
+     "hier_km": 2.75,
+     "stufe1_km": 2.75,
+     "differenz_km": 0.0
+    },
+    "living_street": {
+     "hier_km": 1.88,
+     "stufe1_km": 1.88,
+     "differenz_km": 0.0
+    },
+    "pedestrian": {
+     "hier_km": 0.89,
+     "stufe1_km": 0.89,
+     "differenz_km": 0.0
+    },
+    "steps": {
+     "hier_km": 0.59,
+     "stufe1_km": 0.59,
+     "differenz_km": -0.0
+    },
+    "unclassified": {
+     "hier_km": 0.25,
+     "stufe1_km": 0.25,
+     "differenz_km": 0.0
+    },
+    "busway": {
+     "hier_km": 0.21,
+     "stufe1_km": 0,
+     "differenz_km": 0.21
+    },
+    "secondary_link": {
+     "hier_km": 0.16,
+     "stufe1_km": 0,
+     "differenz_km": 0.16
+    },
+    "cycleway": {
+     "hier_km": 0.13,
+     "stufe1_km": 0.13,
+     "differenz_km": 0.0
+    },
+    "tertiary": {
+     "hier_km": 0.01,
+     "stufe1_km": 0.01,
+     "differenz_km": 0.0
+    }
+   },
+   "ok": true,
+   "hinweis": "Stufe 1 zählt auch Baustellen, Bahnsteige und Flächen-Wege (sonstige, platform); hier stehen Flächen in areas"
+  },
+  "kernstadt": {
+   "hier_km": 513.2,
+   "stufe1_km": 513.2,
+   "differenz_prozent": -0.01,
+   "klassen": {
+    "service": {
+     "hier_km": 146.95,
+     "stufe1_km": 146.96,
+     "differenz_km": -0.01
+    },
+    "residential": {
+     "hier_km": 118.53,
+     "stufe1_km": 118.53,
+     "differenz_km": 0.0
+    },
+    "track": {
+     "hier_km": 79.14,
+     "stufe1_km": 79.14,
+     "differenz_km": -0.0
+    },
+    "footway": {
+     "hier_km": 67.21,
+     "stufe1_km": 67.22,
+     "differenz_km": -0.01
+    },
+    "path": {
+     "hier_km": 51.48,
+     "stufe1_km": 51.49,
+     "differenz_km": -0.01
+    },
+    "secondary": {
+     "hier_km": 18.95,
+     "stufe1_km": 19.21,
+     "differenz_km": -0.26
+    },
+    "tertiary": {
+     "hier_km": 10.85,
+     "stufe1_km": 10.89,
+     "differenz_km": -0.04
+    },
+    "unclassified": {
+     "hier_km": 10.23,
+     "stufe1_km": 10.23,
+     "differenz_km": -0.0
+    },
+    "living_street": {
+     "hier_km": 4.25,
+     "stufe1_km": 4.25,
+     "differenz_km": -0.0
+    },
+    "steps": {
+     "hier_km": 2.01,
+     "stufe1_km": 2.01,
+     "differenz_km": 0.0
+    },
+    "motorway": {
+     "hier_km": 1.59,
+     "stufe1_km": 1.59,
+     "differenz_km": 0.0
+    },
+    "pedestrian": {
+     "hier_km": 0.95,
+     "stufe1_km": 0.95,
+     "differenz_km": 0.0
+    },
+    "cycleway": {
+     "hier_km": 0.5,
+     "stufe1_km": 0.5,
+     "differenz_km": -0.0
+    },
+    "secondary_link": {
+     "hier_km": 0.26,
+     "stufe1_km": 0,
+     "differenz_km": 0.26
+    },
+    "busway": {
+     "hier_km": 0.21,
+     "stufe1_km": 0,
+     "differenz_km": 0.21
+    },
+    "tertiary_link": {
+     "hier_km": 0.04,
+     "stufe1_km": 0,
+     "differenz_km": 0.04
+    },
+    "platform": {
+     "hier_km": 0,
+     "stufe1_km": 0.01,
+     "differenz_km": -0.01
+    }
+   },
+   "ok": true,
+   "hinweis": "Stufe 1 zählt auch Baustellen, Bahnsteige und Flächen-Wege (sonstige, platform); hier stehen Flächen in areas"
+  },
+  "stadt": {
+   "hier_km": 1559.1,
+   "stufe1_km": 1559.1,
+   "differenz_prozent": -0.0,
+   "klassen": {
+    "track": {
+     "hier_km": 684.29,
+     "stufe1_km": 684.32,
+     "differenz_km": -0.03
+    },
+    "path": {
+     "hier_km": 310.64,
+     "stufe1_km": 310.65,
+     "differenz_km": -0.01
+    },
+    "service": {
+     "hier_km": 199.25,
+     "stufe1_km": 199.25,
+     "differenz_km": -0.0
+    },
+    "residential": {
+     "hier_km": 155.56,
+     "stufe1_km": 155.56,
+     "differenz_km": -0.0
+    },
+    "footway": {
+     "hier_km": 71.67,
+     "stufe1_km": 71.68,
+     "differenz_km": -0.01
+    },
+    "secondary": {
+     "hier_km": 59.16,
+     "stufe1_km": 59.42,
+     "differenz_km": -0.26
+    },
+    "motorway": {
+     "hier_km": 30.55,
+     "stufe1_km": 34.15,
+     "differenz_km": -3.6
+    },
+    "tertiary": {
+     "hier_km": 20.21,
+     "stufe1_km": 20.25,
+     "differenz_km": -0.04
+    },
+    "unclassified": {
+     "hier_km": 13.41,
+     "stufe1_km": 13.41,
+     "differenz_km": 0.0
+    },
+    "living_street": {
+     "hier_km": 5.56,
+     "stufe1_km": 5.56,
+     "differenz_km": 0.0
+    },
+    "motorway_link": {
+     "hier_km": 3.6,
+     "stufe1_km": 0,
+     "differenz_km": 3.6
+    },
+    "steps": {
+     "hier_km": 2.94,
+     "stufe1_km": 2.94,
+     "differenz_km": -0.0
+    },
+    "pedestrian": {
+     "hier_km": 0.95,
+     "stufe1_km": 0.95,
+     "differenz_km": 0.0
+    },
+    "cycleway": {
+     "hier_km": 0.76,
+     "stufe1_km": 0.76,
+     "differenz_km": -0.0
+    },
+    "secondary_link": {
+     "hier_km": 0.26,
+     "stufe1_km": 0,
+     "differenz_km": 0.26
+    },
+    "busway": {
+     "hier_km": 0.21,
+     "stufe1_km": 0,
+     "differenz_km": 0.21
+    },
+    "tertiary_link": {
+     "hier_km": 0.04,
+     "stufe1_km": 0,
+     "differenz_km": 0.04
+    },
+    "platform": {
+     "hier_km": 0,
+     "stufe1_km": 0.01,
+     "differenz_km": -0.01
+    }
+   },
+   "ok": true,
+   "hinweis": "Stufe 1 zählt auch Baustellen, Bahnsteige und Flächen-Wege (sonstige, platform); hier stehen Flächen in areas"
+  }
+ },
+ "gebaeude_in_fahrbahn": {
+  "quelle_gebaeude": "OpenStreetMap (building=*, ohne Dächer und Carports, ohne Unterirdisches) – die Grundrisse von suhl-gebaeude folgen",
+  "gebaeude": 22155,
+  "strassen_geprueft": 4731,
+  "grenze_m": 0.3,
+  "treffer": 578,
+  "strassenstuecke_betroffen": 365,
+  "gebaeude_betroffen": 537,
+  "ok": false,
+  "tiefste": [
+   {
+    "tiefe_m": 2.5,
+    "osm_weg": 1418755000,
+    "strasse": "Simsonstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w107101098",
+    "art": "industrial",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.48,
+    "osm_weg": 1418754999,
+    "strasse": "Simsonstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w107101098",
+    "art": "industrial",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.44,
+    "osm_weg": 32821440,
+    "strasse": "Breitenbacher Straße",
+    "breite_m": 5.0,
+    "gebaeude": "w128524846",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.37,
+    "osm_weg": 37014456,
+    "strasse": "Langes Tal",
+    "breite_m": 5.0,
+    "gebaeude": "w900885867",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.17,
+    "osm_weg": 1418755001,
+    "strasse": "Simsonstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w107101098",
+    "art": "industrial",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.11,
+    "osm_weg": 53345628,
+    "strasse": "Ellerweg",
+    "breite_m": 5.0,
+    "gebaeude": "w193941290",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.1,
+    "osm_weg": 53093567,
+    "strasse": "Untere Teichstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w208266705",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.1,
+    "osm_weg": 53093567,
+    "strasse": "Untere Teichstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w208228102",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.04,
+    "osm_weg": 1418754998,
+    "strasse": "Simsonstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w107101098",
+    "art": "industrial",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.0,
+    "osm_weg": 135757313,
+    "strasse": "Heinrichser Straße",
+    "breite_m": 5.0,
+    "gebaeude": "w135752246",
+    "art": "house",
+    "name": ""
+   },
+   {
+    "tiefe_m": 2.0,
+    "osm_weg": 108069717,
+    "strasse": "Goldbachstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w192981288",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.99,
+    "osm_weg": 25151971,
+    "strasse": "Am Rasen",
+    "breite_m": 5.0,
+    "gebaeude": "w140098793",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.98,
+    "osm_weg": 118172373,
+    "strasse": "Oberlandstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w134380260",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.94,
+    "osm_weg": 108069717,
+    "strasse": "Goldbachstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w192981320",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.88,
+    "osm_weg": 144991714,
+    "strasse": "An der Lauter",
+    "breite_m": 5.0,
+    "gebaeude": "w145238584",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.87,
+    "osm_weg": 25418914,
+    "strasse": "Fuhrmannstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w278354616",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.86,
+    "osm_weg": 192956142,
+    "strasse": "Lindenweg",
+    "breite_m": 5.0,
+    "gebaeude": "w207919796",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.85,
+    "osm_weg": 32815612,
+    "strasse": "Mühlbergweg",
+    "breite_m": 5.0,
+    "gebaeude": "w336655807",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.83,
+    "osm_weg": 118172363,
+    "strasse": "Lauter",
+    "breite_m": 6.0,
+    "gebaeude": "w145238587",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.8,
+    "osm_weg": 32821426,
+    "strasse": "Suhler Weg",
+    "breite_m": 5.0,
+    "gebaeude": "w124353295",
+    "art": "detached",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.76,
+    "osm_weg": 32821426,
+    "strasse": "Suhler Weg",
+    "breite_m": 5.0,
+    "gebaeude": "w124353278",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.73,
+    "osm_weg": 32811814,
+    "strasse": "Dorfstraße",
+    "breite_m": 5.0,
+    "gebaeude": "w336683164",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.71,
+    "osm_weg": 60266175,
+    "strasse": "Nelkenweg",
+    "breite_m": 5.0,
+    "gebaeude": "w1358512217",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.7,
+    "osm_weg": 140096616,
+    "strasse": "Schnakenhügel",
+    "breite_m": 5.0,
+    "gebaeude": "w140096629",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 1.68,
+    "osm_weg": 53152560,
+    "strasse": "Zipfel",
+    "breite_m": 5.0,
+    "gebaeude": "w207555603",
+    "art": "yes",
+    "name": ""
+   }
+  ],
+  "hinweis": "Tiefe = halbe Fahrbahnbreite minus Abstand der Achse zum Grundriss; meist ist die angenommene Breite zu groß oder die OSM-Achse liegt neben der Fahrbahn"
+ },
+ "kreuzungen": {
+  "ziel": "jede Kreuzung eine Ebene, ±3 cm (3 m um den Knoten)",
+  "alle": {
+   "n": 9285,
+   "median_cm": 0.6,
+   "p95_cm": 9.0,
+   "max_cm": 57.8,
+   "share_within_3cm": 0.852
+  },
+  "fahrstrassen": {
+   "n": 3823,
+   "median_cm": 0.4,
+   "p95_cm": 7.6,
+   "max_cm": 45.5,
+   "share_within_3cm": 0.864
+  },
+  "ok": false
+ },
+ "profile": {
+  "klassen": {
+   "track": {
+    "km": 1063.13,
+    "wellen_je_km": 4.1,
+    "grenze_wellen": 6,
+    "steigungswechsel_10m": 1.3,
+    "grenze_steigungswechsel": 1.5,
+    "ok": true
+   },
+   "service": {
+    "km": 171.02,
+    "wellen_je_km": 4.4,
+    "grenze_wellen": 5,
+    "steigungswechsel_10m": 1.16,
+    "grenze_steigungswechsel": 1.2,
+    "ok": true
+   },
+   "street": {
+    "km": 153.91,
+    "wellen_je_km": 2.3,
+    "grenze_wellen": 4,
+    "steigungswechsel_10m": 0.79,
+    "grenze_steigungswechsel": 1.0,
+    "ok": true
+   },
+   "main": {
+    "km": 72.94,
+    "wellen_je_km": 0.5,
+    "grenze_wellen": 2,
+    "steigungswechsel_10m": 0.37,
+    "grenze_steigungswechsel": 0.5,
+    "ok": true
+   },
+   "motorway": {
+    "km": 36.74,
+    "wellen_je_km": 0.0,
+    "grenze_wellen": 1,
+    "steigungswechsel_10m": 0.19,
+    "grenze_steigungswechsel": 0.3,
+    "ok": true
+   },
+   "county": {
+    "km": 24.46,
+    "wellen_je_km": 1.2,
+    "grenze_wellen": 3,
+    "steigungswechsel_10m": 0.51,
+    "grenze_steigungswechsel": 0.7,
+    "ok": true
+   },
+   "lane": {
+    "km": 21.19,
+    "wellen_je_km": 2.8,
+    "grenze_wellen": 4,
+    "steigungswechsel_10m": 0.75,
+    "grenze_steigungswechsel": 1.0,
+    "ok": true
+   }
+  },
+  "ok": true,
+  "gerechnet_auf": "TECHNIKPROBE, zählt nicht: eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 9772841 Stützwerte); kleine Klassen 1.3-fach länger geglättet"
+ },
+ "bruecken": {
+  "kreuzungen_mit_anderen_wegen": 174,
+  "unter_4_5_m": 71,
+  "ok": false,
+  "niedrigste": [
+   {
+    "gap_m": -2.0,
+    "bridge_way": 25122136,
+    "name": "6298",
+    "below_way": 194479723
+   },
+   {
+    "gap_m": -1.4,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 297293073
+   },
+   {
+    "gap_m": -1.3,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 1257119748
+   },
+   {
+    "gap_m": -1.3,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 1257119749
+   },
+   {
+    "gap_m": -1.3,
+    "bridge_way": 25122141,
+    "name": "track",
+    "below_way": 211131942
+   },
+   {
+    "gap_m": -1.3,
+    "bridge_way": 53152561,
+    "name": "6298",
+    "below_way": 194296799
+   },
+   {
+    "gap_m": -1.1,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 1386295050
+   },
+   {
+    "gap_m": -0.9,
+    "bridge_way": 24929243,
+    "name": "6298",
+    "below_way": 32125359
+   }
+  ]
+ },
+ "kachelkanten": {
+  "uebergaenge": 5299,
+  "lage_ueber_0_1_m": 0,
+  "hoehe_ungleich": 0,
+  "groesster_abstand_m": 0.1,
+  "ok": true
+ },
+ "ok": {
+  "gebaeude_in_fahrbahn": false,
+  "kreuzungen": false,
+  "profile": true,
+  "bruecken": false,
+  "kachelkanten": true,
+  "zaehlung_zentrum": true,
+  "zaehlung_kernstadt": true,
+  "zaehlung_stadt": true
+ }
+}
