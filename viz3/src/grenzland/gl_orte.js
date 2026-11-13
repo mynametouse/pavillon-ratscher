@@ -7,7 +7,7 @@
 //     and a crate, a string of bulbs over the yard (they glow at night; one borrowed light, no new one), a noticeboard. In the
 //     flashback to 1989 the barn stands newer and emptier – straw, churns, a ladder; no alley, no sofa.
 //   the shop on wheels at the Anger – a sales van with its flap open as a roof, the counter, crates, a price board; shut outside its hours
-//   the angling spot at the dam of the Talsperre – stone steps down the bank, a little jetty, a sign
+//   the angling spot at the dam of the Talsperre – stone steps down the bank, a little jetty, a sign (today only)
 // Everything is merged meshes of vertex colours in the village props' materials (world/village_props.js – no new shader program), the
 // signs are written with a 5 × 7 dot font of small quads (no texture). Walls and furniture stop the walker and vehicles (VEH.extra) and
 // the mode's figures (a KERN pushOut provider); the alley's approach and the jetty are ground to stand on (a KERN ground provider).
@@ -1344,8 +1344,8 @@ export const GLORTE = (() => {
     KERN.provide(
       'ground',
       (x, y) => {
-        if (!S.built) return undefined;
-        if (S.era === 'heute' && near(x, y, KB.o, 8) && KB.F) {
+        if (!S.built || S.era !== 'heute') return undefined;
+        if (near(x, y, KB.o, 8) && KB.F) {
           const [r, f] = KB.F.loc(x, y);
           if (Math.abs(r) <= KB.hw && f >= -KB.anlauf - 0.25 && f <= 0.3) return KB.z;
         } else if (near(x, y, P.angel, 12) && AN.F) {
@@ -1373,7 +1373,7 @@ export const GLORTE = (() => {
           ];
           if (u > -9 && u < 9 && v > -4 && v < 13) return 'An der Feldscheune';
         } else if (S.era === 'heute' && Math.hypot(x - WG.o[0], y - WG.o[1]) < 5.5) return 'Verkaufswagen';
-        else if (near(x, y, P.angel, 14) && AN.F) {
+        else if (S.era === 'heute' && near(x, y, P.angel, 14) && AN.F) {
           const [r, s] = AN.F.loc(x, y);
           if (Math.abs(r) < 2.5 && s > AN.sA - 9 && s < AN.sB + 1) return 'Angelstelle an der Staumauer';
         }
@@ -1435,12 +1435,11 @@ export const GLORTE = (() => {
   function show() {
     const M = S.meshes,
       h = S.era === 'heute';
-    for (const k of ['treff', 'treffM', 'lampen', 'glut', 'wagenAuf', 'wagenAufM', 'wagenZu', 'wagenZuM'])
-      if (M[k]) M[k].visible = h;
+    for (const k of ['treff', 'treffM', 'lampen', 'glut', 'wagenAuf', 'wagenZu', 'steg']) if (M[k]) M[k].visible = h;
     for (const k of ['alt', 'altM']) if (M[k]) M[k].visible = !h;
     if (h) {
-      for (const k of ['wagenAuf', 'wagenAufM']) if (M[k]) M[k].visible = S.offen;
-      for (const k of ['wagenZu', 'wagenZuM']) if (M[k]) M[k].visible = !S.offen;
+      if (M.wagenAuf) M.wagenAuf.visible = S.offen;
+      if (M.wagenZu) M.wagenZu.visible = !S.offen;
     }
     markDirty(true);
   }
@@ -1550,7 +1549,7 @@ export const GLORTE = (() => {
         F = steg(K);
       M.steg = mesh(K, MT.paint, 'grenzland-steg');
       // the hand rail's posts and the sign need no box; the jetty's piles at its end keep one from stepping off behind the bench
-      addCol(F.col(-AN.hw - 0.05, -AN.hw + 0.4, AN.sB - 2.95, AN.sB - 1.85, -1, 20));
+      addCol(F.col(-AN.hw - 0.05, -AN.hw + 0.4, AN.sB - 2.95, AN.sB - 1.85, -1, 20), 'heute');
     } catch (e) {
       console.warn('grenzland orte: steg', e);
     }
