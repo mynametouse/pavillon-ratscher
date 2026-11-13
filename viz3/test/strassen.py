@@ -415,8 +415,11 @@ with lib.browser() as b:
         ck('add and drop answer what they did', E("FAHRT.drop('nie')") is False and E("STRDAT.drop('nie')") is False and E("FAHRT.add('', _probe)") is False and E("FAHRT.add('x', {})") is False)
         # a set may leave the place names to its zone; a zone with ground of its own tells where it is (or will be)
         np0 = E("FAHRT.data.places.length")
-        E("FAHRT.add('p2', { ways: [], places: _probe.places }, { places: false })")
-        ck('opts.places: false – the set brings no place names', E("FAHRT.data.places.length") == np0 and E("FAHRT.drop('p2')") and not E("FAHRT.data.dests.probe"))
+        rk = J("Object.keys(FAHRT.data.routes).sort()")
+        E("FAHRT.add('p2', { ways: [], places: _probe.places, routes: { markt: { pts: [0, 0, 10, 10], n: 'Falsch' } }, areas: [[0, 0, 0, [0, 0, 0, 100, 0, 0, 100, 100, 0], 'kein Ring']] }, { places: false })")
+        ck('opts.places: false – the set brings no place names; it cannot take the place of a route of the region; an area without holes',
+           E("FAHRT.data.places.length") == np0 and J("Object.keys(FAHRT.data.routes).sort()") == rk and E("FAHRT.data.routes.markt.length") > 100 and not E("FAHRT.data.dests.markt")
+           and E("FAHRT.data.areas.length") == 1 and E("FAHRT.drop('p2')") and E("FAHRT.data.routes.markt.length") > 100 and not E("FAHRT.data.dests.probe"))
         far = (-20500.0, 3000.0)
         r0 = E(f"FAHRT.ready_({far[0]}, {far[1]})")
         E(f"FAHRT.ground((x, y) => (Math.abs(x - {far[0]}) < 50 && Math.abs(y - {far[1]}) < 50 ? window._zg : undefined))")

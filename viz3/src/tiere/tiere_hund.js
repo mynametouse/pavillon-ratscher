@@ -6,6 +6,8 @@
 // driving game out of the garden, chasing game far into the fields, finding a sign for you, barking at a neighbour or staying calm) is
 // what your praise (+) or scolding (−) is about – the tendency to do it again rises or falls, a little each time, and his bond with you
 // grows with praise. Called with P (whistle), sent with Shift+P to where you look. Character and what he learned: pav-hund-v1.
+// Optional since 13.11.2026 (Falko: „der Hund, der ständig mitläuft, optional … hinzugefügt … und wieder ausgeblendet werden“): off
+// by default; Menü → Einstellungen → Spiel → „Hund“ (Aus / Dabei), remembered in pav-hund-v1 (field on). HUND.show(on) from code.
 import { $, R, scene } from '../core/head.js';
 import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
@@ -35,7 +37,7 @@ export const HUND = (() => {
     kommen: { k: null, s: 1, txt: 'auf den Pfiff gekommen' },
   };
   const D = {
-    on: true,
+    on: false, // (13.11.2026: only when chosen in the menu)
     name: 'Hasso',
     x: 4,
     y: 12,
@@ -69,9 +71,17 @@ export const HUND = (() => {
     if (v.char && typeof v.char === 'object')
       for (const k of Object.keys(D.char)) if (Number.isFinite(v.char[k])) D.char[k] = clamp01(v.char[k]);
     if (v.mode === 'home' || v.mode === 'follow') D.mode = v.mode;
+    if (typeof v.on === 'boolean') D.on = v.on;
   }
   function save() {
-    SAVE.set(LSK, { v: 1, name: D.name, learn: D.learn, char: D.char, mode: D.mode === 'home' ? 'home' : 'follow' });
+    SAVE.set(LSK, {
+      v: 1,
+      on: D.on,
+      name: D.name,
+      learn: D.learn,
+      char: D.char,
+      mode: D.mode === 'home' ? 'home' : 'follow',
+    });
   }
   // the model, made the first time he is needed
   function model() {
@@ -537,9 +547,49 @@ export const HUND = (() => {
     else if (k === '+' || e.code === 'NumpadAdd') lob(1);
     else if (k === '-' || e.code === 'NumpadSubtract') lob(-1);
   });
+  // ---------- optional: Menü → Einstellungen → Spiel → „Hund“ (put in by this module, below „Spielfigur“) ----------
+  function syncMenu() {
+    document
+      .querySelectorAll('#hundseg [data-hund]')
+      .forEach(b => b.setAttribute('aria-pressed', String((b.dataset.hund === '1') === D.on)));
+  }
+  function menuRow() {
+    const fig = $('figseg'),
+      after = fig && fig.closest('.mrow');
+    if (!after || $('hundseg')) return;
+    const row = document.createElement('div');
+    row.className = 'mrow';
+    row.innerHTML =
+      '<span>Hund</span><div class="mseg" id="hundseg"><button type="button" data-hund="0" aria-pressed="true" title="Ohne Hund">Aus</button>' +
+      '<button type="button" data-hund="1" aria-pressed="false" title="Hasso läuft mit: P ruft ihn, Umschalt+P schickt ihn, + lobt, − tadelt">Dabei</button></div>';
+    after.after(row);
+    row.querySelectorAll('[data-hund]').forEach(b => b.addEventListener('click', () => show(b.dataset.hund === '1')));
+    syncMenu();
+  }
+  function show(v) {
+    v = !!v;
+    if (v !== D.on) {
+      D.on = v;
+      if (!v) {
+        // away: out of sight, no buttons, nothing he was about to do
+        if (D.model) D.model.g.visible = false;
+        panel(false);
+        D.rideOn = false;
+        D.task = null;
+        if (D.mode !== 'home') D.mode = 'follow';
+      }
+      lastP = null; // back: he turns up beside the walker
+      save();
+      markDirty(true);
+    }
+    syncMenu();
+  }
+  menuRow();
   let ready = false;
   whenLoaded(() => {
+    menuRow();
     load();
+    syncMenu();
     // he starts beside the walker
     D.x = P.x - 1.6;
     D.y = P.y - 1.2;
@@ -556,6 +606,7 @@ export const HUND = (() => {
   Object.assign(D, {
     update,
     save,
+    show,
     lob,
     rufen: cmdRufen,
     schicken: cmdSchicken,

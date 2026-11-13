@@ -305,6 +305,13 @@ with lib.browser() as b:
         d1 = J("HUND.state()")
         print('dog', d0, d1, flush=True)
         ck('the dog follows the walker (stays within 5 m)', d1['visible'] and d1['dist'] < 5.0, str(d1))
+        # optional (13.11.2026): off by default, the menu switch hides him and brings him back, and is remembered
+        sw = J("""(() => { const seg = document.getElementById('hundseg'), b = v => seg.querySelector('[data-hund="' + v + '"]');
+          const r = { row: !!seg }; b(0).click(); GAME.step(0.1); r.off = !HUND.on && !HUND.state().visible && b(0).getAttribute('aria-pressed') === 'true';
+          r.saved0 = (SAVE.get('pav-hund-v1') || {}).on === false; b(1).click(); for (let i = 0; i < 6; i++) GAME.step(0.05);
+          r.on = HUND.on && HUND.state().visible && HUND.state().dist < 6 && b(1).getAttribute('aria-pressed') === 'true';
+          r.saved1 = (SAVE.get('pav-hund-v1') || {}).on === true; return r; })()""")
+        ck('the dog is optional: Menü → Einstellungen → Spiel → „Hund“ hides him and brings him back beside the walker, remembered', all(sw.values()), str(sw))
         steps(7)
         d2 = J("HUND.state()")
         ck('standing still he sits beside you (after a few seconds)', d2['still'] > 2.5 and d2['dist'] < 4.5, str(d2))
@@ -541,7 +548,7 @@ with lib.browser() as b:
         E2 = pp.evaluate
         E2(VIEWFN)
         E2("GAME.setView3(false, true); (() => { const d = Math.floor(CLOCK.t / 1440); DN.e0 = Date.UTC(2026, 10, 5) / 864e5 - d; CLOCK.t = d * 1440 + 16 * 60 + 50; DN.update(true); })()")
-        E2("__view(-150, -400, ROADS.groundAt(-150, -400) + 1.65, 40, -4, 60); GAME.step(0.1)")
+        E2("HUND.show(true); __view(-150, -400, ROADS.groundAt(-150, -400) + 1.65, 40, -4, 60); GAME.step(0.1)")
         for i in range(40): E2("GAME.step(0.05)")
         ph = json.loads(E2("""JSON.stringify((() => { const R = id => { const e = document.getElementById(id); if (!e || e.hidden) return null; const r = e.getBoundingClientRect();
           return r.width ? [r.left, r.top, r.right, r.bottom].map(Math.round) : null; }; return { coarse: TIERE.max, live: TIERE.live.length, dog: R('hund-panel'), moves: R('moves'), joy: R('joy'), w: innerWidth, h: innerHeight }; })())"""))
