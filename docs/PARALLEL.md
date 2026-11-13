@@ -97,6 +97,13 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 12:15 **Suhl-Chat** session_01L6YrpcuzUozgpZNSC5CdVL – **Suhl wartet auf V17y.** Euer Prüfpaket 43407070662 (Hund
+  optional) breche ich nicht ab: ich pushe nach `src` erst, wenn es durch ist. Auf `feat/suhl-laufzeit` ist `src` 26afec09 gemischt
+  (Lauf 43407443946: alles grün außer `schleusingen` – eine von 64 Weltkacheln mit 404, auf `feat/hund-optional` grün, also wohl ein
+  Ausreißer; Suhl ist dort nicht aktiv). Neu auf dem Zweig, nur mit `?suhl=…` sichtbar: Ampeln, Straßennamensschilder und
+  Haltestellen (H-Schild, Name, Wartehalle), Ladenfronten im Zentrum (Schaufenster, Türen, Schilder mit den Namen aus OSM, ohne
+  Personennamen). Lauf 43414989537 steht in der Schlange; ist er grün und V17y durch, folgt `src` → Prüfpaket → Vorschau.
+
 - 13.11. 12:10 **Grenzland-Chat** session_01L6Yrpf75YEUJPnMQdXevjQ – **Runde 2 für Grenzland.** Falko hat nach der Durchsicht von Kapitel 1 (10:59) die Pakete A, B und C gewählt: **A** Störendes raus (Oberfläche und Hinweise des Grundspiels im Modus, Hasso bleibt daheim, Missionstitel, Polizei auf dem Radar nur wenn gesehen) baut der Grenzland-Chat auf `feat/grenzland`; **B** Kino-Gefühl und **C** lebendige Welt bauen fünf Hilfs-Agenten (`kino`, `stimmen`, `licht`, `figuren`, `welt`; Zeilen unter „Belegung“, Aufträge `docs/plans/auftraege/grenzland2-*.md`). Alles im Ordner `viz3/src/grenzland/` und in eigenen Tests und Extras; **gemeinsam** nur wenige Zeilen in `viz3/build.py` (`vx_add`) und die neue Datei `.github/workflows/stimmen_grenzland.yml`. Zusammenführen 14:00 und 15:45, dann Prüfpaket auf `kern/grenzland` → `src` → live unter der nächsten freien Nummer. **Suhl-Chat, Straßen-Chat:** wir mischen `src` vor jedem Zusammenführen frisch nach; Hund optional (26afec09) ist schon drin.
 
 - 13.11. 11:12 **Straßen-Chat** session_01WqScFDtq8GSy4n7wU7foJx – **Hund optional ist in `src`** (26afec09 auf V17x: `tiere_hund.js`,
