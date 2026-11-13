@@ -28,6 +28,9 @@ export const CPBUILD = (() => {
     // the inside of the roof: a dark band on the windscreen from z0 to z1 (its frit and the header), the headliner from there back to
     // [y, z]; today's body glazes far up and back, so the cockpit closes it where a Logan's roof begins
     head: { z0: 1.3, z1: 1.35, back: [-1.15, 1.47], w: 0.635 },
+    heads: true, // door mirror heads of the cockpit's own (a body with housings: false; mirL/mirR then their centres)
+    apil: true, // A-pillar trims of the cockpit's own (a body with an inner shell: false)
+    mirBack: 0.0705, // from a mirror head's centre to its glass
   };
   // the tractor (vehicles/tractor.js): eye from its spec, the wheel on its column, the pod in front of it, the levers on the right
   const TRACTOR = {
@@ -40,8 +43,14 @@ export const CPBUILD = (() => {
   // what it leaves out stays as for today's estate
   function anchors(v) {
     const A = JSON.parse(JSON.stringify(v && v.id === 'tractor' ? TRACTOR : CAR));
+    let own = v && v.spec && v.spec.cockpit;
+    // anchors are a body's own (own.body: the name of its part in model.body); a vehicle that copied another's spec (the traffic car
+    // copies the estate's, verkehr/verkehr_auto.js) keeps today's anchors and today's eye
+    if (own && own.body && !(v.model && v.model.body && v.model.body.getObjectByName(own.body))) {
+      own = null;
+      v.spec.eye = A.eye.slice();
+    }
     if (v && v.spec && Array.isArray(v.spec.eye)) A.eye = v.spec.eye.slice();
-    const own = v && v.spec && v.spec.cockpit;
     if (own && typeof own === 'object')
       for (const k of Object.keys(A))
         if (own[k] != null && typeof own[k] === typeof A[k]) A[k] = JSON.parse(JSON.stringify(own[k]));
@@ -582,6 +591,7 @@ export const CPBUILD = (() => {
       put(st, spk, M.black, x - sx * 0.004, 0.36, A.floor + 0.12);
       put(st, rb(0.03, 0.62, 0.36, 0.03), M.hard, x + sx * 0.004, 0.1, A.floor + 0.19);
       // A-pillar trim: dark grey plastic over the body's pillar, from the dashboard's corner up to the header
+      if (!A.apil) continue;
       const H = A.head,
         z1 = H ? H.z1 : w.z1,
         k = (z1 - w.z0) / (w.z1 - w.z0);
@@ -595,12 +605,24 @@ export const CPBUILD = (() => {
         0.014
       );
     }
-    // interior mirror: a stem from the glass, a housing (its glass is the mirrors' module's)
-    const mi = A.mirI;
-    strut(st, [mi[0], mi[1] + 0.03, mi[2] + 0.06], [mi[0], mi[1] + 0.012, mi[2] + 0.01], 0.022, 0.016, M.hard, 0.006);
+    // interior mirror: a stem from the glass (its foot on the windscreen above the housing), a housing (its glass is the mirrors' module's)
+    const mi = A.mirI,
+      ys = mi[1] + 0.03,
+      zg = w.z0 + ((w.y0 - ys) / (w.y0 - w.y1)) * (w.z1 - w.z0) - 0.006,
+      zt = Math.min(Math.max(mi[2] + 0.06, zg), mi[2] + 0.16);
+    strut(st, [mi[0], ys, zt], [mi[0], mi[1] + 0.012, mi[2] + 0.01], 0.022, 0.016, M.hard, 0.006);
+    put(
+      st,
+      rb(0.045, 0.014, 0.035, 0.006),
+      M.hard,
+      mi[0],
+      ys - 0.004,
+      zt - 0.004,
+      Math.atan2(w.y0 - w.y1, w.z1 - w.z0)
+    );
     put(st, rb(0.25, 0.034, 0.07, 0.016, 3), M.black, mi[0], mi[1] + 0.012, mi[2], 0.05, -0.2);
     // door mirror heads (black housings) round the body's small ones
-    for (const p of [A.mirL, A.mirR]) put(st, rb(0.21, 0.14, 0.15, 0.045, 3), M.black, p[0], p[1], p[2]);
+    if (A.heads) for (const p of [A.mirL, A.mirR]) put(st, rb(0.21, 0.14, 0.15, 0.045, 3), M.black, p[0], p[1], p[2]);
   }
   // ---- the inside of the roof: the dark band on the windscreen (frit, header), the light headliner, the folded visors, the top frames of
   // the door windows – today's body has its glass far up and back; this closes it from inside where a real roof begins ----
@@ -618,7 +640,15 @@ export const CPBUILD = (() => {
       slope = Math.hypot(w.y0 - w.y1, dz) / dz;
     // the band: on the glass, a little inside it
     const zm = (H.z0 + H.z1) / 2;
-    put(st, rb(gw(zm) * 2 - 0.03, 0.006, (H.z1 - H.z0) * slope + 0.01, 0.003), M.black, 0, gy(zm) + ny, zm + nz, ang);
+    put(
+      st,
+      rb((gw(zm) - (H.inset ?? 0.015)) * 2, 0.006, (H.z1 - H.z0) * slope + 0.01, 0.003),
+      M.black,
+      0,
+      gy(zm) + ny,
+      zm + nz,
+      ang
+    );
     // the headliner: from the band's top back over the heads, a little rising
     const y0 = gy(H.z1) - 0.004,
       z0 = H.z1,
@@ -633,13 +663,16 @@ export const CPBUILD = (() => {
       put(st, rb(0.36, 0.16, 0.022, 0.01, 3), M.liner, sx * 0.33, yv, zAt(yv) - 0.012, tl);
       put(st, rb(0.03, 0.025, 0.02, 0.006), M.hard, sx * 0.13, yv + 0.06, zAt(yv + 0.06) - 0.004);
       put(st, rb(0.02, 0.03, 0.024, 0.006), M.hard, sx * 0.53, yv - 0.04, zAt(yv - 0.04) - 0.006);
-      // the top frames of the door windows along the headliner's edge
+      // the top frames of the door windows along the headliner's edge (fh, fw: their height and width, fx: how far out; the roof's
+      // side rail inside)
+      const fh = H.fh ?? 0.05,
+        fx = H.fx ?? 0.005;
       strut(
         st,
-        [sx * (H.w + 0.005), y0 - 0.01, z0 - 0.005],
-        [sx * (H.w + 0.01), y1, z1 - 0.01],
-        0.03,
-        0.05,
+        [sx * (H.w + fx), y0 - 0.01, z0 - 0.005 - (fh - 0.05) / 2],
+        [sx * (H.w + fx + 0.005), y1, z1 - 0.01 - (fh - 0.05) / 2],
+        H.fw ?? 0.03,
+        fh,
         M.hard,
         0.012
       );

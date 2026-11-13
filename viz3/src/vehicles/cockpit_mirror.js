@@ -64,8 +64,8 @@ export const CPMIRROR = (() => {
     // the housings of vehicles/cockpit_build.js (trims): centre, turn, how far behind the centre their back face is
     const spots = [
       { p: [A.mirI[0], A.mirI[1] + 0.012, A.mirI[2]], yaw: -0.2, tilt: 0.05, back: 0.0175 },
-      { p: A.mirL, yaw: 0, tilt: 0, back: 0.0705 },
-      { p: A.mirR, yaw: 0, tilt: 0, back: 0.0705 },
+      { p: A.mirL, yaw: 0, tilt: 0, back: A.mirBack ?? 0.0705 },
+      { p: A.mirR, yaw: 0, tilt: 0, back: A.mirBack ?? 0.0705 },
     ];
     spots.forEach((s, i) => {
       if (!which.includes(i)) return;
