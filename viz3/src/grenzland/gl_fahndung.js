@@ -13,13 +13,16 @@
 // In 1989 the Volkspolizei comes in its saloon with one blue beacon, and the ABV on foot knows everybody.
 //   GLFAHNDUNG.tat(id, { force, laut, quiet, k, sofort }) → stars gained now · zeugen(o) · wo() · los(ax, ay, bx, by) · versteckt(x, y, z)
 //   clear() · stand() · erwischt() · umziehen() · off · extra: [{ x, y, r }] · hooks.zeuge: () => [{ x, y, hd, r, name, knows, police }]
-//   Events: grenzland:tat, :zeuge, :sterne, :erwischt, :entkommen, :streife, :sperre, :funk
+//   ist() → the facts the police can know { wer, kleid, kopf, fz } · stand().wissen { gesicht, kleidung, fahrzeug } (what they know that
+//   still fits: GLLOGIK.sicht / wissen) · stand().cars[i].gesehen (that car sees him now or did within 4 s) · linien() (the radio's lines)
+//   Events: grenzland:tat, :zeuge, :sterne, :erwischt, :entkommen, :streife, :sperre, :funk, :wissen
 import * as THREE from 'three';
 import { COARSE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
+import { AVATAR } from '../game/avatar.js';
 import { WCOL } from '../world/worldcol.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { FOREST } from '../world/forest.js';
@@ -33,6 +36,7 @@ import { VFIG } from '../verkehr/verkehr_fig.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
 import { VERKEHR } from '../verkehr/verkehr.js';
 import { CLOCK } from '../time/clock.js';
+import { STIMME } from '../audio/stimme.js';
 import { GLLOGIK } from './gl_logik.js';
 import { GLDATA } from './gl_data.js';
 import { GL } from './gl_state.js';
@@ -63,6 +67,12 @@ export const GLFAHNDUNG = (() => {
     speedT: 0,
     helmT: 0,
     funkT: 0,
+    kleidVon: { m: '', f: '' }, // what each of the two wears over the own clothes: '' | 'warn' (the warning jacket from the bungalow)
+    haube: false, // a balaclava (nothing gives one yet: the radio has the words)
+    helmG: null, // the moped helmet on the player's head: { g, model }
+    warnAn: false, // the warning jacket is shown on the player's figure
+    wissen: { gesicht: false, kleidung: false, fahrzeug: false },
+    wissenT: 0,
   };
   const T = GLDATA.T;
   // texts of this module (the core's are GLDATA.T)
@@ -80,8 +90,14 @@ export const GLFAHNDUNG = (() => {
     opfer: wer => wer + ' ist wieder auf den Beinen – und ruft die Polizei.',
     fahrzeug: 'Jetzt kennen sie das Moped.',
     umziehen: 'Umziehen',
+    warnAn: 'Warnjacke anziehen',
+    warnAus: 'Warnjacke ausziehen',
+    warnJa: 'Warnjacke an. Wer Orange trägt, gehört zum Forst – da schaut keiner zweimal hin.',
+    warnNein: 'Wieder in den eigenen Sachen.',
     umFrei: 'Andere Jacke, andere Mütze – die Beschreibung passt nicht mehr.',
-    umBekannt: 'Umziehen hilft nicht mehr: Sie wissen, wer du bist.',
+    umBekannt: 'Andere Jacke – aber sie wissen, wer du bist.',
+    helmNimm: 'Helm mitnehmen',
+    helmOk: 'Der Helm ist dabei – auf dem Moped setzt du ihn auf.',
     umGesehen: 'Nicht jetzt – da schaut jemand zu.',
     schild: 'Kennzeichen tauschen',
     schildOk: 'Das Versicherungskennzeichen vom Vorjahr dran: Dieses Moped kennt keiner.',
@@ -240,6 +256,72 @@ export const GLFAHNDUNG = (() => {
     return unterBaeumen(x, y);
   }
   const sneak = () => !VEH.cur && (P.stance === 'crouch' || P.stance === 'crawl' || P.stance === 'prone');
+  // ---- what the player is like now – what the police can know of him: who, the clothes, headwear, the vehicle ----
+  const EIGEN = { m: 'karo', f: 'dunkel' }; // Falko's red checked shirt, Sarah's dark jacket
+  const fzArt = v =>
+    !v ? '' : v.id === 'gl-moped' ? 'moped' : v.id === 'gl-trabi' ? 'trabant' : v.id === 'tractor' ? 'traktor' : 'auto';
+  // the moped helmet: once taken from the moped's place in the garden it is worn on the moped (as GTA's riders do)
+  const helmAuf = () => GL.era === 'heute' && GL.has('helm') && !!VEH.cur && VEH.cur.id === 'gl-moped';
+  function ist() {
+    if (era89()) return { wer: 'm', kleid: 'parka', kopf: '', fz: fzArt(VEH.cur) };
+    const g = window.GEAR && window.GEAR.on;
+    return {
+      wer: GL.wer,
+      kleid: S.kleidVon[GL.wer] || (g && g.body === 'warnjacke' ? 'warn' : EIGEN[GL.wer] || 'dunkel'),
+      kopf: S.haube ? 'haube' : helmAuf() || (g && g.head === 'forsthelm') ? 'helm' : '',
+      fz: fzArt(VEH.cur),
+    };
+  }
+  // the player's figure as the facts say: the warning jacket (the game's own recolouring of the jacket: game/avatar.js wear), the
+  // helmet (a moped helmet of grenzland/gl_fig.js on the head bone; the hair and cap under it squashed as the game does for its forest
+  // helmet)
+  function aussehen() {
+    const heute = GL.on && GL.era === 'heute',
+      warn = heute && S.kleidVon[GL.wer] === 'warn';
+    if (warn !== S.warnAn) {
+      S.warnAn = warn;
+      try {
+        const on = Object.assign({}, (window.GEAR && window.GEAR.on) || {});
+        if (warn) on.body = 'warnjacke';
+        AVATAR.wear(on);
+      } catch (e) {}
+      markDirty();
+    }
+    const F = AVATAR.fig,
+      model = F && F.model,
+      want = heute && helmAuf() && !!model,
+      H = S.helmG;
+    if (H && (!want || H.model !== model)) {
+      if (H.g && H.g.parent) H.g.parent.remove(H.g);
+      if (H.F && H.F.helmU) H.F.helmU.value = H.u0;
+      S.helmG = null;
+      markDirty();
+    }
+    if (want && !S.helmG) {
+      let g = null;
+      try {
+        g = GLFIG.hatOn(model, null, 'helmrot');
+      } catch (e) {}
+      S.helmG = { g, model, F, u0: F.helmU ? F.helmU.value : 0 };
+      if (g && F.helmU) F.helmU.value = 1;
+      markDirty();
+    }
+  }
+  // the helmet hangs at the moped's place in the garden
+  const MOPED0 = (GLDATA.ORTE.moped && GLDATA.ORTE.moped.pos) || [5.6, 10.2];
+  KERN.act({
+    id: 'gl-helm',
+    prio: 4,
+    r: 2.4,
+    label: () => (GL.on && GL.era === 'heute' && !VEH.cur && !GL.has('helm') ? TX.helmNimm : null),
+    pos: () => [MOPED0[0] + 0.6, MOPED0[1] - 0.4, KERN.ground(MOPED0[0], MOPED0[1]) + 0.9],
+    run: () => {
+      if (GL.has('helm')) return;
+      GL.add('helm');
+      PLAY.think(TX.helmOk, 3200);
+      GLTON.fx('tick');
+    },
+  });
   // ---- the roads the police can come by: the square's graph, the town's (the traffic's network there) ----
   let netSq = null,
     netTown = null,
@@ -350,6 +432,11 @@ export const GLFAHNDUNG = (() => {
           q.ref = z.ref;
           q.x = p.x;
           q.y = p.y;
+          // (what he will describe: how the player looked then, from how far, by daylight or not)
+          q.ist = ist();
+          q.d = z.d;
+          q.dark = dark();
+          q.hd = p.v > 0.5 ? p.hd : null;
           q.quiet = !!o.quiet;
           if (z.ref && z.ref.F && z.ref.F.st !== 'geht') GLFIG.face(z.ref.F, p.x, p.y);
           if (!o.quiet) PLAY.think(TX.ruft(z.name, tatName(id)), 3600);
@@ -374,6 +461,18 @@ export const GLFAHNDUNG = (() => {
       fz: !!p.veh,
     });
     if (Z.length) {
+      // the description: what the nearest witness could make out (a report the police make themselves: from where they stand)
+      const z = Z[0];
+      beschrieben(
+        GLLOGIK.sicht(W, o.ist || ist(), {
+          d: o.d ?? (z.d > 0 ? z.d : undefined),
+          dark: o.dark ?? dark(),
+          knows: Z.some(a => a.knows),
+          x: p.x,
+          y: p.y,
+          hd: o.hd !== undefined ? o.hd : p.v > 0.5 ? p.hd : null,
+        })
+      );
       const full = GLLOGIK.starsOf(W.heat);
       E.melde(p.x, p.y, GLLOGIK.kraefte(full, GL.era).delay);
       S.last = E.last;
@@ -381,6 +480,7 @@ export const GLFAHNDUNG = (() => {
       if (!o.quiet) PLAY.think(T.zeuge(Z[0].name, tatName(id)), 3600);
       if (GLLOGIK.stars(W) > before) {
         GLTON.fx('stern');
+        funkBild('stufe');
         if (before === 0) {
           setTimeout(() => GL.on && GLLOGIK.stars(GL.W) > 0 && PLAY.think(T.streife, 3800), 3800);
           funk(era89() ? 'vopo' : 'los', 6);
@@ -443,13 +543,26 @@ export const GLFAHNDUNG = (() => {
       q.y = F.y;
       q.opfer = true;
       q.quiet = false;
+      // (he was close: he saw the face – unless a helmet hid it)
+      q.ist = ist();
+      q.d = 1.5;
+      q.dark = dark();
     }
     if (cut) PLAY.think(TX.ruftNicht(F.name), 2200);
   });
   // ---- new clothes at the bungalow: a description is worth nothing any more; the moped's plate at the carport ----
+  // the warning jacket from the bungalow over the own clothes, or off again: what the police describe does not fit any more
   function umziehen() {
-    if (!GL.on) return '';
-    const r = GLLOGIK.umziehen(GL.W, { seen: S.seen || zeugen().length > 0 });
+    if (!GL.on || GL.era !== 'heute') return '';
+    const seen = S.seen || zeugen().length > 0;
+    if (seen && GLLOGIK.stars(GL.W) > 0) {
+      PLAY.think(TX.umGesehen, 2600);
+      return 'gesehen';
+    }
+    S.kleidVon[GL.wer] = S.kleidVon[GL.wer] === 'warn' ? '' : 'warn';
+    aussehen();
+    GLTON.fx('tick');
+    const r = GLLOGIK.umziehen(GL.W, { seen });
     if (r === 'frei') {
       // (the police drive home by themselves once the level is calm: GLLOGIK.einsatz)
       PLAY.think(TX.umFrei, 3600);
@@ -457,7 +570,8 @@ export const GLFAHNDUNG = (() => {
       GL.emit('entkommen', { umgezogen: true });
       GL.emit('sterne', { n: 0, bekannt: false });
     } else if (r === 'bekannt') PLAY.think(TX.umBekannt, 3000);
-    else if (r === 'gesehen') PLAY.think(TX.umGesehen, 2600);
+    else PLAY.think(S.kleidVon[GL.wer] ? TX.warnJa : TX.warnNein, 3400);
+    GL.emit('kleid', { wer: GL.wer, kleid: ist().kleid });
     return r;
   }
   const BUNG = [9.6, 12.4],
@@ -466,7 +580,8 @@ export const GLFAHNDUNG = (() => {
     id: 'gl-umziehen',
     prio: 4,
     r: 3.2,
-    label: () => (GL.on && GL.era === 'heute' && !VEH.cur && GLLOGIK.stars(GL.W) > 0 ? TX.umziehen : null),
+    label: () =>
+      GL.on && GL.era === 'heute' && !VEH.cur ? (S.kleidVon[GL.wer] === 'warn' ? TX.warnAus : TX.warnAn) : null,
     pos: () => [BUNG[0], BUNG[1], KERN.ground(BUNG[0], BUNG[1])],
     run: umziehen,
   });
@@ -491,6 +606,192 @@ export const GLFAHNDUNG = (() => {
       }
     },
   });
+  // ---- what the police know: their description grows with every sighting (GLLOGIK.sicht); what of it still fits him (GLLOGIK.wissen)
+  //      changes when he changes – both are told on the radio (funkBild below) ----
+  function beschrieben(neu) {
+    if (!neu || !neu.length) return;
+    S.bildNeu = (S.bildNeu || 0) + 1;
+    GL.emit('wissen', { neu, wissen: Object.assign({}, S.wissen) });
+    funkBild('neu');
+  }
+  function wissenNeu(fakt, dt) {
+    const w = GLLOGIK.wissen(GL.W, fakt),
+      a = S.wissen;
+    if (w.gesicht === a.gesicht && w.kleidung === a.kleidung && w.fahrzeug === a.fahrzeug) return;
+    // what went is what he changed (the police know what they knew: the radio still gives the old description)
+    const weg = ['gesicht', 'kleidung', 'fahrzeug'].filter(k => a[k] && !w[k]);
+    S.wissen = w;
+    S.wissenT = 0;
+    GL.emit('wissen', { wissen: Object.assign({}, w), weg });
+    if (weg.length && GLLOGIK.stars(GL.W) > 0) funkBild('alt');
+  }
+  // ---- the radio describes him: fixed fragments said one after another (`stimmen` records each one – linien()); the subtitle shows
+  //      the sentence once. On a new wanted level, when the description grows – and when he changed: then the radio still gives the
+  //      old description („Weiterhin gesucht …“), and he knows they look for somebody else ----
+  const BILD = {
+    an: 'Zentrale an alle Streifen.',
+    wer: {
+      neu: { p: 'Gesucht wird eine Person,', m: 'Gesucht wird Falko,', f: 'Gesucht wird Sarah,' },
+      alt: {
+        p: 'Weiterhin gesucht wird eine Person,',
+        m: 'Weiterhin gesucht wird Falko,',
+        f: 'Weiterhin gesucht wird Sarah,',
+      },
+    },
+    sex: { m: 'männlich,', f: 'weiblich,' },
+    kleid: {
+      karo: 'rotes Karohemd,',
+      dunkel: 'dunkle Jacke,',
+      hell: 'helle Jacke,',
+      warn: 'orange Warnjacke,',
+      parka: 'grüner Parka,',
+    },
+    kopf: { helm: 'mit Helm,', haube: 'mit Sturmhaube,' },
+    fz: {
+      moped: 'auf einem Moped.',
+      trabant: 'in einem Trabant.',
+      auto: 'in einem Auto.',
+      traktor: 'auf einem Traktor.',
+      fuss: 'zu Fuß.',
+    },
+    dir: {
+      schleusingen: 'Richtung Schleusingen.',
+      ratscher: 'Richtung Ratscher.',
+      talsperre: 'Richtung Talsperre.',
+      klinge: 'Richtung Klinge.',
+    },
+    bei: {
+      schleusingen: 'Zuletzt gesehen in Schleusingen.',
+      ratscher: 'Zuletzt gesehen in Ratscher.',
+      talsperre: 'Zuletzt gesehen an der Talsperre.',
+      klinge: 'Zuletzt gesehen an der Klinge.',
+      '': 'Letzter Standort unbekannt.',
+    },
+    kommen: 'Kommen.',
+  };
+  // the places a direction is given by (the town's bus station, the Anger, the dam, the lower Klinge)
+  const RICHT = [
+    ['schleusingen', [-1340, 1243], 700],
+    ['ratscher', [222, -108], 380],
+    ['talsperre', [853, -817], 320],
+    ['klinge', [-548, -566], 260],
+  ];
+  // where he went: the place ahead (within 50° of his way, not the one he is in) – or the place he was last seen at
+  function richtung(B) {
+    const w = B.wo;
+    if (!w) return BILD.bei[''];
+    let best = null,
+      bd = 1e9;
+    for (const [k, c, r] of RICHT) {
+      const d = hyp(c[0] - w[0], c[1] - w[1]);
+      if (d < r) return BILD.bei[k];
+      if (B.hd == null) continue;
+      let a = Math.atan2(c[0] - w[0], c[1] - w[1]) - B.hd;
+      while (a > Math.PI) a -= 2 * Math.PI;
+      while (a < -Math.PI) a += 2 * Math.PI;
+      if (Math.abs(a) < 0.87 && d < bd) {
+        bd = d;
+        best = k;
+      }
+    }
+    if (best) return BILD.dir[best];
+    // standing, or nothing ahead: the nearest place
+    let nk = '',
+      nd = 2600;
+    for (const [k, c] of RICHT) {
+      const d = hyp(c[0] - w[0], c[1] - w[1]);
+      if (d < nd) {
+        nd = d;
+        nk = k;
+      }
+    }
+    return BILD.bei[nk];
+  }
+  // the sentence as fragments: alt – the old description, given again after he changed
+  function bildTeile(alt) {
+    const W = GL.W,
+      B = W.bild || GLLOGIK.bildLeer(),
+      wer = W.known || B.gesicht ? B.wer || GL.wer : '',
+      L = [BILD.an, BILD.wer[alt ? 'alt' : 'neu'][wer || 'p']];
+    if (!wer && BILD.sex[B.wer]) L.push(BILD.sex[B.wer]);
+    if (BILD.kleid[B.kleid]) L.push(BILD.kleid[B.kleid]);
+    if (BILD.kopf[B.kopf]) L.push(BILD.kopf[B.kopf]);
+    if (B.fuss) L.push(BILD.fz.fuss);
+    else if (W.fz && BILD.fz[B.fz]) L.push(BILD.fz[B.fz]);
+    L.push(richtung(B), BILD.kommen);
+    return L;
+  }
+  // the description in words (the HUD, tests)
+  const beschreibung = () => (GL.W.state === 'ruhe' ? '' : bildTeile(false).slice(1, -1).join(' '));
+  // ask for a description on the radio: art 'stufe' (a new level), 'neu' (the description grew), 'alt' (he changed)
+  function funkBild(art) {
+    if (!GL.on || GL.era !== 'heute' || GLLOGIK.stars(GL.W) < 1) return;
+    const R = S.rf || (S.rf = { want: '', wait: 0, t: 99, busy: false, n: 0, last: '' });
+    // (a new level at once; the description at most every 20 s, the old one again at most every 15 s – later, not lost; a moment's
+    // wait in any case, so that what they see now is in it)
+    if (R.want === 'stufe') return;
+    R.want = art;
+    R.wait = art === 'stufe' ? 2.5 : Math.max(art === 'alt' ? 1.5 : 2.5, (art === 'alt' ? 15 : 20) - R.t);
+  }
+  async function funkSprich(alt) {
+    const R = S.rf;
+    R.busy = true;
+    R.t = 0;
+    R.n++;
+    const L = bildTeile(alt),
+      satz = L.join(' ');
+    R.last = satz;
+    try {
+      GLTON.fx('funk');
+      GLHUD.sub('Funk', satz, Math.max(4200, satz.length * 58));
+      GL.emit('funk', { k: alt ? 'bild-alt' : 'bild', text: satz, teile: L });
+      for (const t of L) {
+        if (!GL.on) break;
+        let ok = false;
+        try {
+          ok = await STIMME.say('gl_funk', t);
+        } catch (e) {}
+        if (!ok) break; // (no voice to hear: the subtitle says it)
+      }
+    } finally {
+      R.busy = false;
+    }
+  }
+  function funkTick(dt) {
+    const R = S.rf;
+    if (!R) return;
+    R.t += dt;
+    if (!R.want || R.busy) return;
+    if ((R.wait -= dt) > 0) return;
+    // (not in a cut scene, not while another line of the radio is shown)
+    if (document.body.dataset.glKino === '1' || S.funkT > 0) return;
+    // (the old description only while it is old: seen again since, he is described as he is)
+    const w = S.wissen,
+      alt = R.want === 'alt' && !(w.kleidung && (w.fahrzeug || !ist().fz));
+    R.want = '';
+    if (!GL.on || GL.era !== 'heute' || GLLOGIK.stars(GL.W) < 1) return;
+    S.funkT = 6;
+    funkSprich(alt);
+  }
+  // every line this module speaks, for the recordings (grenzland/gl_stimmen.js): [who, text]
+  function linien() {
+    const L = [],
+      add = t => L.push(['funk', t]);
+    add(BILD.an);
+    for (const k of ['neu', 'alt']) for (const w of ['p', 'm', 'f']) add(BILD.wer[k][w]);
+    for (const g of ['sex', 'kleid', 'kopf', 'fz', 'dir', 'bei']) for (const t of Object.values(BILD[g])) add(t);
+    add(BILD.kommen);
+    for (const a of Object.values(FUNK)) for (const t of a) add(t);
+    for (const [who, t] of [
+      ['polizei1', TX.halt],
+      ['polizei2', TX.halt],
+      ['polizei1', TX.haltSek],
+      ['vopo', TX.halt89],
+      ['abv', TX.halt89],
+    ])
+      L.push([who, t]);
+    return L.filter((q, i) => L.findIndex(r => r[0] === q[0] && r[1] === q[1]) === i);
+  }
   // ---- the police radio: a line now and then as a subtitle (never while somebody speaks) ----
   function funk(k, pause = 9) {
     const L = FUNK[k];
@@ -500,6 +801,9 @@ export const GLFAHNDUNG = (() => {
     GLTON.fx('funk');
     GLHUD.sub('Funk', line, 3400);
     GL.emit('funk', { k, text: line });
+    try {
+      STIMME.say('gl_funk', line);
+    } catch (e) {}
   }
   // ---- the world the police act in (GLLOGIK.einsatz) ----
   const LOOK = {
@@ -843,6 +1147,16 @@ export const GLFAHNDUNG = (() => {
     if (!keepLog) GL.W.log.length = 0;
     clearWorld();
   }
+  // the mode's end: the own clothes again, no helmet (the figures of the mode are gone already)
+  KERN.on('grenzland:stop', () => {
+    S.kleidVon = { m: '', f: '' };
+    S.haube = false;
+    S.wissen = { gesicht: false, kleidung: false, fahrzeug: false };
+    if (S.rf) S.rf.want = '';
+    try {
+      aussehen();
+    } catch (e) {}
+  });
   // another time, another police: a search does not go on through a flashback (nor out of it)
   KERN.on('grenzland:era', () => {
     if (GL.on && (S.cars.length || S.cops.length || S.block || GLLOGIK.starsOf(GL.W.heat) > 0)) clear(true);
@@ -905,6 +1219,20 @@ export const GLFAHNDUNG = (() => {
       n = GLLOGIK.stars(W),
       full = GLLOGIK.starsOf(W.heat);
     if (S.funkT > 0) S.funkT -= dt;
+    if (!S.stimme) {
+      S.stimme = true;
+      try {
+        STIMME.person('gl_funk', { name: 'Funk', g: 'm', age: 46 });
+      } catch (e) {}
+    }
+    // (the looks and the radio's description must never stop the police)
+    try {
+      aussehen();
+      funkTick(dt);
+    } catch (e) {
+      if (!S.errW) console.warn('grenzland: looks or radio', e);
+      S.errW = String((e && e.stack) || e).slice(0, 300);
+    }
     // where he is, for the police: indoors, under trees (looked up a few times a second)
     if ((S.coverT -= dt) <= 0) {
       S.coverT = 0.3;
@@ -922,8 +1250,8 @@ export const GLFAHNDUNG = (() => {
       zaehlen(
         r.id,
         [{ name: r.name, knows: r.o.knows }],
-        { x: r.x, y: r.y, veh: r.o.fz },
-        { quiet: r.quiet || r.opfer, k: doppelt ? 0.25 : r.o.k }
+        { x: r.x, y: r.y, veh: r.o.fz, v: 0, hd: 0 },
+        { quiet: r.quiet || r.opfer, k: doppelt ? 0.25 : r.o.k, ist: r.ist, d: r.d, dark: r.dark, hd: r.hd ?? null }
       );
     }
     // deeds one does by driving: speeding through the village in front of somebody, no helmet in front of the police
@@ -934,7 +1262,7 @@ export const GLFAHNDUNG = (() => {
         S.speedT = 25;
         if (zeugen().length) tat('raserei', { quiet: n > 0 });
       }
-      if (S.helmT <= 0 && q.veh.id === 'gl-moped' && q.v > 3 && !GL.has('helm')) {
+      if (S.helmT <= 0 && q.veh.id === 'gl-moped' && q.v > 3 && !helmAuf()) {
         S.helmT = 4;
         // only the police mind – and only once per ride past them
         if (S.cars.some(u => u.st !== 'abzug' && hyp(u.x - q.x, u.y - q.y) < 30 && los(u.x, u.y, q.x, q.y))) {
@@ -966,7 +1294,18 @@ export const GLFAHNDUNG = (() => {
       cover: S.cover,
       sneak: sneak(),
     };
-    E.tick(dt, p, { W, era: GL.era, dark: dark(), off: S.off, split: !!GL.getrennt, air: S.luft });
+    const fk = ist(),
+      wn = GLLOGIK.wissen(W, fk);
+    E.tick(dt, p, {
+      W,
+      era: GL.era,
+      dark: dark(),
+      off: S.off,
+      split: !!GL.getrennt,
+      air: S.luft,
+      maske: !!fk.kopf,
+      fremd: W.look && !wn.gesicht && !wn.kleidung && !wn.fahrzeug,
+    });
     for (const ev of E.ev.splice(0)) {
       if (ev[0] === 'erwischt') {
         erwischt();
@@ -974,6 +1313,20 @@ export const GLFAHNDUNG = (() => {
       }
       erzaehlen(ev);
     }
+    // what the police see now goes into their description; what they know that still fits him
+    const fakt = fk;
+    if (E.seen && full > 0)
+      beschrieben(
+        GLLOGIK.sicht(W, fakt, {
+          d: E.sichtD,
+          dark: dark(),
+          fz: W.fz ? undefined : false,
+          x: q.x,
+          y: q.y,
+          hd: q.v > 0.5 ? q.hd : null,
+        })
+      );
+    wissenNeu(fakt, dt);
     // lights and horns; the vans at the far road ends are only drawn from near; the nearest beacon (for its flash on the walls at night)
     let nb = null,
       nd = 70;
@@ -1012,6 +1365,10 @@ export const GLFAHNDUNG = (() => {
     krone: S.krone,
     fz: GL.W.fz,
     offen: GL.W.offen.map(r => ({ id: r.id, wer: r.name, t: Math.round(r.t * 10) / 10 })),
+    // what the police know that still fits him (the HUD's icons) and their description (the radio's words)
+    wissen: Object.assign({}, S.wissen),
+    bild: Object.assign({}, GL.W.bild || {}),
+    beschreibung: beschreibung(),
     cars: S.cars.map(u => ({
       st: u.st,
       kind: u.kind,
@@ -1019,6 +1376,8 @@ export const GLFAHNDUNG = (() => {
       y: Math.round(u.y),
       v: Math.round(u.v * 10) / 10,
       crew: u.crew !== 'drin',
+      // (it sees him now or did within the last four seconds: the radar shows it)
+      gesehen: u.lost < 4,
     })),
     cops: S.cops.map(c => ({
       id: c.F ? c.F.id : c.kind,
@@ -1053,6 +1412,13 @@ export const GLFAHNDUNG = (() => {
     funk,
     E,
     TX,
+    ist,
+    aussehen,
+    funkBild,
+    bildTeile,
+    beschreibung,
+    linien,
+    BILD,
   });
   return S;
 })();
