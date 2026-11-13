@@ -833,7 +833,7 @@ export const GLKAP1 = (() => {
       const o = { era: '1989', sees: true, knows: true };
       if (!leute().abv) {
         const a = O.anger.pos;
-        A.fig('abv', 'abv', a[0] + 6, a[1] - 4, 0, Object.assign({ r: 34 }, o));
+        A.fig('abv', 'abv', a[0] + 6, a[1] - 4, 0, Object.assign({ r: 34, ready: F => (F.lampe = true) }, o));
       }
       if (Object.keys(leute()).length < 2) {
         const l = O.linde.pos,
@@ -1230,7 +1230,8 @@ export const GLKAP1 = (() => {
       const K = szeneKlinge();
       A.auto('van', 'kasten', K.van[0], K.van[1], K.hd, { col: '#d9d9d2' });
       if (i <= 3) {
-        for (const [key, cast, p, hd] of K.men) A.fig(key, cast, p[0], p[1], hd, { karte: 'feind' });
+        for (const [key, cast, p, hd] of K.men)
+          A.fig(key, cast, p[0], p[1], hd, { karte: 'feind', ready: F => (F.lampe = true) });
         A.ding('kisten', () => ding(stapel, K.kisten[0], K.kisten[1], K.hd));
       }
     },
@@ -1359,8 +1360,12 @@ export const GLKAP1 = (() => {
           MI.rede('leucht');
           GLTON.fx('boeller', MI.fern(K.van), 600);
           S.z0 = KERN.ground(K.van[0], K.van[1]) + 2;
-          MI.A.ding('leucht', leuchtkugel);
-          legen(MI.D('leucht'), K.van[0], K.van[1], S.z0, 0);
+          // (feat/grenzland-kino) the flare is agent licht's picture (grenzland/gl_licht.js); the small ball only while that is missing
+          GL.emit('flare', { x: K.van[0], y: K.van[1], z: S.z0 });
+          if (!window.GLLICHT) {
+            MI.A.ding('leucht', leuchtkugel);
+            legen(MI.D('leucht'), K.van[0], K.van[1], S.z0, 0);
+          }
           GLHUD.say(T.leucht, '', 4);
           // the van leaves over the tracks towards the road out of the square
           try {
@@ -1459,6 +1464,21 @@ export const GLKAP1 = (() => {
       if (y) MI.hin(y.hinten[0], y.hinten[1], yawTo(y.hinten, y.drin));
       if (plan() === 'leise' && !dark()) MI.uhr(23, 0);
     }
+  }
+  // (feat/grenzland-kino) the door gives way: a short look through it at the back wall, where the framed half of the map hangs
+  function blickInsBuero() {
+    const y = Y();
+    if (!y || !window.GLKAMERA || (GLLAGER.wachen || []).some(w => w.job === 'jagt')) return;
+    const B = y.H.buero,
+      bb = B.b - B.w / 2,
+      bf = B.b + B.w / 2,
+      z = Number.isFinite(GLLAGER.zF) ? GLLAGER.zF : KERN.ground(y.vorTuer[0], y.vorTuer[1]),
+      // (in the doorway itself, a step inside: whoever broke the door stands behind the camera, not in the picture)
+      p = y.w(B.tuer - 0.05, bb + 0.15),
+      t = y.w(B.tuer + 0.2, bf - 0.12);
+    try {
+      window.GLKAMERA.einstellung([p[0], p[1], z + 1.58], [t[0], t[1], z + 1.45], 3.4, 50);
+    } catch (e) {}
   }
   MI.def({
     id: 'coup',
@@ -1632,6 +1652,7 @@ export const GLKAP1 = (() => {
           if (Y() && !GLLAGER.offen) GLLAGER.tuerAuf();
           K5.tuer = true;
           MI.rede('tuerAuf');
+          blickInsBuero();
         },
       },
       {
