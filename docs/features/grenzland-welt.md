@@ -146,7 +146,7 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
   dieselben Sätze; Falko und Sarah ihre Antworten), `GLEREIGNIS.linien()`. Die Stimme `gl_funk` meldet das Modul selbst an
   (`STIMME.person`), solange es keine Aufnahme gibt.
 - **Radar:** `GLEREIGNIS` meldet eine Quelle an (`GLKARTE.src`): `{ x, y, k: 'ereignis', name: 'Blitzer' | 'Traktor' | 'Kirmes' |
-  'Korso' | 'Böller' | 'Reh' }` – das eigene Zeichen dafür kommt vom Lead (13:58).
+  'Korso' | 'Böller' | 'Reh' }` – mit eigenem Zeichen im Radar (Lead, 76152081).
 - **Wünsche der anderen umgesetzt:** das geborgte blaue Licht der Streife pulst im Takt von `GLAUTO.blauPuls` (`licht`; Farbe 0x2a5cff
   bleibt, Reichweite 12 m, Abfall 2); die Gerätestimme der Zentrale (`gl_funk`) ist eine Frau wie die Aufnahmen (`stimmen`).
 - **`modules.txt`:** drei Zeilen am Ende des Blocks `# feat/grenzland` (nach `gl_modus.js`): `gl_reaktion_data.js`, `gl_reaktion.js`,
@@ -177,4 +177,5 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
   dem zusammengeführten Stand hier 64/64 (14:13). Zwei Fehler, die erst mit den anderen sichtbar wurden: der Fahndungsaufruf hing an den
   *gezeigten* Sternen (einer weniger, solange Falko und Sarah getrennt sind) – jetzt an der Stufe selbst; und mit dem Rennen der Figuren
   holte der ABV von 1989 den Spieler ein, bevor der Test den Wartburg der Volkspolizei sah – gerannt wird jetzt nur von der Polizei von
-  heute.
+  heute. Danach: f5fb5bd3 auf Actions grün (23 + 15 + 30), `grenzland_polizei:1989,patrol,escape` hier 22/22 (mit dem Rennen der
+  Figuren).

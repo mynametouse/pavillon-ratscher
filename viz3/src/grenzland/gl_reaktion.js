@@ -233,11 +233,8 @@ export const GLREAKTION = (() => {
     try {
       GLTON.fx('sms');
     } catch (e) {}
-    // (a word only when the screen is free – a subtitle, a card or the car radio's line showing: the phone's badge says it)
-    const frei =
-      !(GLHANDY.isOpen && GLHANDY.isOpen()) &&
-      !(GLHUD.busy && GLHUD.busy()) &&
-      (document.getElementById('glfunk') || { hidden: true }).hidden !== false;
+    // (a word only when the screen is free – a subtitle or a card showing: the phone's badge says it)
+    const frei = !(GLHANDY.isOpen && GLHANDY.isOpen()) && !(GLHUD.busy && GLHUD.busy());
     if (frei)
       PLAY.think(
         q.live ? 'Du bist live im Feed. (Handy: T)' : 'Jemand hat dich gefilmt – jetzt im Feed. (Handy: T)',
