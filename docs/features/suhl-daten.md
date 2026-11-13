@@ -341,6 +341,21 @@ Regeln der Tür (`.github/actions/suhl-publish/publish.py`, Tests `test_publish.
 - GitHub lässt in einer `concurrency`-Gruppe höchstens einen Lauf warten; weil nur noch dieser eine Job schreibt, stört das nicht.
   Ein abgelehnter Push wird trotzdem geholt, umgesetzt und wiederholt (bis zu 8 Versuche).
 
+**So wird ein Satz bestellt** (nur auf Ansage des Suhl-Chats):
+
+1. `tools/suhl/daten/satz.json` ändern, zum Beispiel für den Probesatz Zentrum v1:
+   ```json
+   {"name": "zentrum-v1", "dry_run": true,
+    "products": {"boden": {"run": 123, "artifact": "suhl-boden-probe-v1", "version": 1},
+                 "s": {"branch": "suhl/strassen", "commit": "1aadb6c…", "path": "tools/suhl/out/strassen/probe/suhl/s/v1", "version": 1},
+                 "g": {"run": 456, "artifact": "suhl-g-v1", "version": 1}},
+    "remove": []}
+   ```
+2. In `tools/suhl/daten/lauf.txt` eine Zeile anfügen und die letzte Zeile auf `lauf: satz` setzen, beides committen und nach
+   `suhl/daten` pushen – der Job `satz` läuft.
+3. Bericht lesen (Zusammenfassung des Laufs oder Artefakt `suhl-satz-bericht`). Ist der Trockenlauf sauber: `"dry_run": false`
+   setzen, wieder `lauf.txt` ändern, pushen – jetzt wird geschrieben und `aktuell.json` umgeschaltet.
+
 Geprüft am 13.11.2026:
 
 | Lauf | Was | Ergebnis |
