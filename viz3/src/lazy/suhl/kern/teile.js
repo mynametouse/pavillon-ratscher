@@ -111,3 +111,18 @@ export function geometry(THREE, B) {
   g.setAttribute('uv', new THREE.Float32BufferAttribute(B.uv, 2));
   return g;
 }
+// a geometry of three.js (any, indexed or not) into the buffers, moved by a matrix
+export function addGeometry(B, g, m) {
+  const ng = (g.index ? g.toNonIndexed() : g.clone()).applyMatrix4(m),
+    p = ng.attributes.position.array,
+    n = ng.attributes.normal ? ng.attributes.normal.array : null,
+    uv = ng.attributes.uv ? ng.attributes.uv.array : null;
+  for (let i = 0; i < p.length / 3; i++) {
+    B.p.push(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]);
+    if (n) B.n.push(n[i * 3], n[i * 3 + 1], n[i * 3 + 2]);
+    else B.n.push(0, 1, 0);
+    if (uv) B.uv.push(uv[i * 2], uv[i * 2 + 1]);
+    else B.uv.push(0, 0);
+  }
+  ng.dispose();
+}

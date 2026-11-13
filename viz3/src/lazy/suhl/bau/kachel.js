@@ -5,6 +5,7 @@
 // · 'utm' UTM metres from the tile's centre.
 import { hGrid, hashStr, hh, linC } from '../kern/geo.js';
 import { building, buildingFar, farBuf, hex, roofBuf, styleFa, styleOf, wallBuf } from './haus.js';
+import { MARKEN, MARK_ST } from './marken.js';
 // ear clipping of a simple ring [[x, y], …] (counter-clockwise) → triangle indices
 export function ears(P) {
   const n = P.length,
@@ -296,6 +297,20 @@ export function kachel(m, F) {
     else {
       const d = m.old ? Math.hypot(T.cx + b.cx - m.old[0], T.cy + b.cy - m.old[1]) : 1e9;
       b.st = styleOf(b, b.hid, m.old && d < m.old[2] ? 1 - d / m.old[2] : 0);
+    }
+    // the look after photos (bau/marken.js) – a scenario's own colour still goes over it
+    const mk = MARKEN[rec.id];
+    if (mk) {
+      if (mk.mat && MARK_ST[mk.mat] !== undefined) b.st.style = MARK_ST[mk.mat];
+      if (mk.col) b.st.col = linC(rgb(mk.col), 0.82);
+      if (mk.surr !== undefined) b.st.surr = mk.surr;
+      if (mk.frame !== undefined) b.st.frame = mk.frame;
+      if (mk.roof) {
+        const rc = linC(rgb(mk.roof));
+        for (const t of b.tris) t.kc = [t.kc[0], ...rc];
+        b.trim = rc;
+      }
+      b.mark = mk;
     }
     if (pt && pt.col) b.st.col = linC(rgb(pt.col), 0.82);
     try {

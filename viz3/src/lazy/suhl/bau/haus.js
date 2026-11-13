@@ -425,7 +425,15 @@ export function building(b, id, z0, WB, RB, segs) {
     segs.push(ax, ay, bx, by);
     u0 += L;
   });
-  if (o.style === ST.MODERN && b.r === 0 && b.e >= 8 && (BALK[b.typ] || (b.typ === 'block' && b.era === 3)))
+  // (flats only: not the shops, offices and hotels among the blocks; not where the photos show none)
+  if (
+    o.style === ST.MODERN &&
+    b.r === 0 &&
+    b.e >= 8 &&
+    (BALK[b.typ] || (b.typ === 'block' && b.era === 3)) &&
+    (b.use === 'wohnen' || b.use === '') &&
+    !(b.mark && b.mark.balk === false)
+  )
     balconies(b, id, z0, RB, o);
   // ---- roof: the faces of the record, each with its own cover and colour (b.tris: corners above the foot, kc = [cover, r, g, b]) ----
   const col = b.trim,
@@ -466,7 +474,13 @@ export function building(b, id, z0, WB, RB, segs) {
         [ex, ey]
       );
   }
-  if (!flat && b.k === 0 && GAUBE_BT[b.typ] && (b.era === 1 || b.era === 2 || (b.era === 0 && b.typ === 'stadthaus')))
+  const gb = b.mark && b.mark.gauben;
+  if (
+    !flat &&
+    gb !== false &&
+    (gb === true ||
+      (b.k === 0 && GAUBE_BT[b.typ] && (b.era === 1 || b.era === 2 || (b.era === 0 && b.typ === 'stadthaus'))))
+  )
     dormers(b, id, RB, T, o);
   // edges: once and outside the walls = the outline (fascia, gutter); twice with a bend = ridge or hip (ridge tiles)
   const E = new Map(),
