@@ -174,9 +174,16 @@ async def main():
     bad = old.pop('_bad', {})
     def plan():
         """the budget: in the order of prio (the collector's order within one), the files that stay count with their size, new ones
-        estimated → want {id: (line, voice, rate, pitch, kind, sig, mp3, keep)}, the ids to record, the radio lines over the budget"""
+        estimated → want {id: (line, voice, rate, pitch, kind, sig, mp3, keep)}, the ids to record, the radio lines over the budget.
+        The other stations (prio 4) go in whole or not at all – one station with one natural line among device-voice ones sounds wrong"""
         order = sorted(range(len(lines)), key=lambda i: (lines[i].get('prio', 2), i))
         want, total, cut, todo = {}, 0, [], []
+        units = {}   # prio 4: who → [(line, setting, size)]
+        def take(l, st, size):
+            nonlocal total
+            total += size
+            want[l['id']] = (l,) + st
+            if not st[-1]: todo.append(l['id'])
         for i in order:
             l = lines[i]
             voice, rate, pitch, kind = setting(l, cast, have - set(bad.get(l['who'], [])))
@@ -187,10 +194,14 @@ async def main():
             keep = a.get('sig') == sig and os.path.exists(mp3) and sound(a, l['text'], rate)
             if only and l['who'] not in only and not keep: continue
             size = os.path.getsize(mp3) if keep else int(expect(l['text'], rate) * KIND[kind]['bps']) + 800
-            if l.get('prio', 2) >= 3 and total + size > BUDGET: cut.append(l); continue
-            total += size
-            want[l['id']] = (l, voice, rate, pitch, kind, sig, mp3, keep)
-            if not keep: todo.append(l['id'])
+            st = (voice, rate, pitch, kind, sig, mp3, keep)
+            p = l.get('prio', 2)
+            if p >= 4: units.setdefault(l['who'], []).append((l, st, size)); continue
+            if p >= 3 and total + size > BUDGET: cut.append(l); continue
+            take(l, st, size)
+        for w, U in units.items():
+            if total + sum(u[2] for u in U) > BUDGET: cut += [u[0] for u in U]; continue
+            for u in U: take(*u)
         return want, todo, cut, total
     want, todo, cut, total = plan()
     print(f'{len(want)} lines wanted ({len(todo)} to record), ≈ {total / 1e6:.2f} MB of {BUDGET / 1e6:.2f} MB; {len(cut)} radio lines over the budget', flush=True)
@@ -255,13 +266,19 @@ async def main():
         if f.endswith('.mp3') and f[:-4] not in want: os.remove(os.path.join(OUT, f)); old.pop(f[:-4], None); print('removed', f)
     for k in list(old):
         if k not in want: old.pop(k)
-    # the estimate was a guess: over the budget, the radio's last lines (in the order of prio) go again
+    # the estimate was a guess: over the budget, the radio goes again from the end – a whole other station (prio 4), else the talk
+    # stations' last lines
     size = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT))
-    for k in sorted(want, key=lambda k: (want[k][0].get('prio', 2), lines.index(want[k][0])), reverse=True):
-        if size <= BUDGET or want[k][0].get('prio', 2) < 3: break
-        size -= os.path.getsize(want[k][6]) if os.path.exists(want[k][6]) else 0
-        if os.path.exists(want[k][6]): os.remove(want[k][6])
+    def drop(k):
+        nonlocal size
+        if os.path.exists(want[k][6]): size -= os.path.getsize(want[k][6]); os.remove(want[k][6])
         cut.append(want.pop(k)[0]); old.pop(k, None)
+    for k in sorted(want, key=lambda k: (want[k][0].get('prio', 2), lines.index(want[k][0])), reverse=True):
+        if size <= BUDGET or k not in want or want[k][0].get('prio', 2) < 3: continue
+        if want[k][0].get('prio', 2) >= 4:
+            w = want[k][0]['who']
+            for j in [j for j in want if want[j][0]['who'] == w]: drop(j)
+        else: drop(k)
     # the manifest: the lines in the collector's order (the story first), the voices of the people
     vx_add, voices = [], {}
     for l in lines:

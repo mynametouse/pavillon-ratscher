@@ -38,7 +38,9 @@ with lib.browser() as b:
     ck('the first talks are fetched ahead (three at a time)', st['ahead'] >= 3 and st['fetched'] >= 3, str(st))
     lib.shot(pg, OUT, 'start')
 
-    # ---- 3 · the share spoken and recorded; what is missing ----
+    # ---- 3 · the share spoken and recorded; what is missing (the radio's presenters are known once it was on) ----
+    E("GLRADIO.next(); GLRADIO.off(); 0")
+    steps(0.2)
     cov = J("(() => { const L = GLSTIMMEN.linien(), F = GLSTIMMEN.fehlend(), f = new Set(F.map(l => l.id)), by = {}; "
             "for (const l of L) { const b = by[l.prio] || (by[l.prio] = [0, 0]); b[0]++; if (!f.has(l.id)) b[1]++; } "
             "return { n: L.length, ids: L.map(l => l.id), sp: L.filter(l => STIMME.speaks(l.who, l.text)).length, by, fehlend: F.map(l => [l.prio, l.who, l.text, l.src]) }; })()")

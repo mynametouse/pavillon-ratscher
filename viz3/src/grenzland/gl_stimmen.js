@@ -204,6 +204,8 @@ export const GLSTIMMEN = (() => {
     for (let j = Math.max(0, i); j < Math.min(m.steps.length, i + 3); j++)
       for (const k of reden(m.steps[j])) for (const [who, text] of GLMDATA.R[k] || []) if (who) hol('gl_' + who, text);
   }
+  // (the runner tells 'grenzland:schritt' just before the step begins – the mission is set a moment later)
+  const spaeter = fn => d => Promise.resolve().then(() => fn(d));
   function schritt(d) {
     const MI = W && W.GLMISSION;
     if (!St.on || !MI || !MI.St || !MI.St.m || (d && d.id && MI.St.m.id !== d.id)) return;
@@ -312,8 +314,11 @@ export const GLSTIMMEN = (() => {
     const K = W.KERN;
     K.on('grenzland:start', an);
     K.on('grenzland:stop', aus);
-    K.on('grenzland:schritt', schritt);
-    K.on('grenzland:mission', d => d && d.st === 'läuft' && schritt({ id: d.id, i: NaN }));
+    K.on('grenzland:schritt', spaeter(schritt));
+    K.on(
+      'grenzland:mission',
+      spaeter(d => d && d.st === 'läuft' && schritt({ id: d.id, i: NaN }))
+    );
     K.on('grenzland:sterne', funkVoraus);
     K.on('grenzland:sagt', sagt);
     K.tick(tick, 'grenzland/stimmen');
