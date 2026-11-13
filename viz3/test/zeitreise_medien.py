@@ -118,6 +118,8 @@ def run():
         ck('radio: ducking released', E("ZKMEDIEN.S.log.filter(c => c.k === 'duck:1').length > 0"), '')
         # ---- real videos: nothing before the click
         n0 = len(reqs)
+        # the workshop hangs its card-extra area into the chapter-end card only while a card shows; here it is filled without a card
+        E("(() => { const s = WORKSHOP.slot('card-extra'); if (!s.isConnected) document.body.appendChild(s); })()")
         N = E("ZKMEDIEN.videoCard(WORKSHOP.slot('card-extra'), 'energie')")
         ck('video card: consent stills for the chapter (2 videos)', N == 2, str(N))
         time.sleep(1)

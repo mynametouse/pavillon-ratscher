@@ -48,7 +48,8 @@ def run():
             E("WORKSHOP.key({ key: 'l', preventDefault() {}, stopImmediatePropagation() {} })")
             ck('the Ebenen panel opens (key L)', vis('#ws-lay'))
             n = E("document.querySelectorAll('#ws-lay label').length")
-            ck('eleven layers, each with a label and an explanation', n == 11 and E("[...document.querySelectorAll('#ws-lay label')].every(l => l.querySelector('b').textContent.length > 3 && l.querySelector('small').textContent.length > 10)"), str(n))
+            # eleven own layers; other helpers may add theirs through layers.define (zeitreise-medien: Handy-Meldungen, Radio, Videos)
+            ck('eleven layers (plus those other modules define), each with a label and an explanation', n >= 11 and E("[...document.querySelectorAll('#ws-lay label')].every(l => l.querySelector('b').textContent.length > 3 && l.querySelector('small').textContent.length > 10)"), str(n))
             ck('label text ≥ 2.6 vh and light', px('#ws-lay label small') >= vh(2.6) - 0.5 and E("(() => { const c = getComputedStyle(document.querySelector('#ws-lay label b')).color.match(/\\d+/g).map(Number); return Math.min(...c) > 180; })()"))
             ck('every label has its checkbox', E("[...document.querySelectorAll('#ws-lay label')].every(l => !!l.querySelector('input[type=checkbox]'))"))
             pic('02-ebenen')
@@ -68,7 +69,9 @@ def run():
             ck('Stimmen on: volume back', J("WORKSHOP.vols().stimmen") > 0)
             ck('the choices are remembered per browser', 'stimmen' in E("localStorage.getItem('pav-workshop-v1') || ''"), E("localStorage.getItem('pav-workshop-v1')"))
             E("WORKSHOP.layers.reset()")
-            ck('Voreinstellung: Leute, Verkehr, Busse, Tiere off, the overlays on', J("WORKSHOP.layers.list().filter(l => l.on && l.id !== 'testlayer').map(l => l.id)") == ['ortsnamen', 'untertitel', 'stimmen', 'umgebungston', 'jahr', 'kennzahlen'])
+            OWN = ['ortsnamen', 'untertitel', 'stimmen', 'umgebungston', 'jahr', 'kennzahlen', 'leute', 'verkehr', 'bus', 'tiere']
+            on = J("WORKSHOP.layers.list().filter(l => l.on && l.id !== 'testlayer').map(l => l.id)")
+            ck('Voreinstellung: Leute, Verkehr, Busse, Tiere off, the overlays on', [i for i in on if i in OWN] == ['ortsnamen', 'untertitel', 'stimmen', 'umgebungston', 'jahr', 'kennzahlen'], str(on))
             E("document.querySelector('#ws-lay [data-a=layers-close]').click()")
             ck('Fertig closes the panel', not vis('#ws-lay'))
         if 'spiel' in want:

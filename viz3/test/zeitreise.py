@@ -62,6 +62,8 @@ def run():
         E("window.__ev = []; window.__off = ZKREGIE.on(e => { if (e.type !== 'tick') __ev.push({ type: e.type, id: e.id || (e.ev && (e.ev.id || e.ev)) || e.chapter || '', state: e.state || '', who: e.who || '', text: e.text || '' }); }); 0")
 
         # ---------------- the time-lapse ----------------
+        # the media (the phone before halts, the radio between chapters) have their own test (zeitreise_medien) – here the regie's own timing
+        E("window.ZKMEDIEN && ['handy', 'radio', 'videos'].forEach(id => ZKMEDIEN.layer(id, false))")
         E("ZKREGIE.start({ pair: ['allein', 'gewappnet'], split: true })")
         steps(0.6)
         p1 = progs()
@@ -107,18 +109,25 @@ def run():
                 print('frame (one world):', json.dumps(info1), flush=True)
             else:
                 ck('split test objects', False, made)
-            # the two worlds in a year where they differ (only where zeitreise-welt draws them – a note until then)
-            E("ZKREGIE.seek(2045.5)"); steps(0.6)
+            # the two worlds where they differ most (zeitreise-chronik: about 2032 grey and cleared slopes when everyone acts alone, young growth
+            # when the village acts together; by 2045 both have grown back), seen with the long lens over the slopes ('fern'): world L, then
+            # world R on the whole picture – the same view, so only the world differs
+            E("ZKREGIE.seek(2032.0)"); steps(0.4)
+            E("ZKREGIE.split(false)"); steps(0.3)
+            E("ZKREGIE.side('L'); ZKREGIE.view('fern')"); steps(0.6)
+            l = J(f"({MEAN})([0.0, 0.1, 1.0, 0.9])")
+            save('welt_2032_L', E(SHOT))
+            E("ZKREGIE.side('R'); ZKREGIE.view('fern')"); steps(0.6)
+            r = J(f"({MEAN})([0.0, 0.1, 1.0, 0.9])")
+            save('welt_2032_R', E(SHOT))
+            E("ZKREGIE.split(true)"); steps(0.3)
             stats = J("(window.ZKZEITWELT && ZKZEITWELT.stats) ? ZKZEITWELT.stats() : null")
-            l = J(f"({MEAN})([0.0, 0.1, 0.5, 0.9])"); r = J(f"({MEAN})([0.5, 0.1, 1.0, 0.9])")
             diff = sum(abs(a - c) for a, c in zip(l, r))
-            save('split_2045', E(SHOT))
-            print('halves 2045 mean colour', [round(v) for v in l], [round(v) for v in r], 'objects on 21/22:', J("ZKBILD_LAYERS().length"), 'world', json.dumps(stats)[:300], flush=True)
-            layered = J("ZKBILD_LAYERS().length")
-            if layered > 0:
-                ck('split 2045: the halves differ (the worlds differ)', diff > 4, f'diff {diff:.1f}')
+            print('2032 over the slopes, mean colour L / R', [round(v) for v in l], [round(v) for v in r], 'world', json.dumps(stats)[:300], flush=True)
+            if stats and stats.get('warmed'):
+                ck('2032 over the slopes: the two worlds differ', diff > 4, f'diff {diff:.1f}')
             else:
-                print('note: zeitreise-welt draws nothing on 21/22 yet – halves', 'differ' if diff > 4 else 'alike', f'({diff:.1f})', flush=True)
+                print('note: zeitreise-welt is not there – the worlds look alike', f'({diff:.1f})', flush=True)
 
         # ---------------- the heavy-rain night halts ----------------
         if 'halt' in want:
@@ -256,7 +265,8 @@ def run():
             ck('stop: clock and calendar as before', abs(now['t'] - back['t']) < 0.01 and now['e0'] == back['e0'], f"{back['t']}/{back['e0']} → {now['t']}/{now['e0']}")
             ck('stop: view mode, place and camera as before', now['mode'] == back['mode'] and abs(now['x'] - back['x']) < 0.01 and abs(now['y'] - back['y']) < 0.01 and sum(abs(a - c) for a, c in zip(now['cam'], back['cam'])) < 0.05, json.dumps(now['cam']) + ' vs ' + json.dumps(back['cam']))
             ck('stop: light mode, weather, camera layers as before', now['light'] == back['light'] and now['wx'] == back['wx'] and now['mask'] == back['mask'], json.dumps([now['light'], now['wx'], now['mask']]))
-            ck('stop: own frame and camera off, nothing on layers 21/22, the crash key cleared', not J("ZKREGIE.info().bild.on") and J("ZKBILD_LAYERS()") == [] and E("SAVE.get('pav-zeitreise-v1') === null") and not st()['on'])
+            left = J("({ bild: ZKREGIE.info().bild.on, l2122: ZKBILD_LAYERS().slice(0, 8), key: SAVE.get('pav-zeitreise-v1') !== null, on: ZKREGIE.state().on })")
+            ck('stop: own frame and camera off, nothing on layers 21/22, the crash key cleared', not left['bild'] and left['l2122'] == [] and not left['key'] and not left['on'], json.dumps(left))
         E("__off && __off()")
         ck.errors(errs)
     ck.done()
