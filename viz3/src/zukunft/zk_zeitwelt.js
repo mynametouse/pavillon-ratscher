@@ -5,7 +5,7 @@
 // beetle clearing, the heavy-rain night with water in the street and the morning after, the blackout night. Two worlds at once (the split):
 // what is the same in both stays on THREE layer 0, what differs goes on layer 21 (left world L) or 22 (right world R); shared surfaces whose
 // look differs (terrain, far trees) take their uniforms per render from the camera's layers (scene.onBeforeRender).
-// STAGE 0 (this commit): the API with stub behaviour so the regie and the workshop can integrate; the visuals follow in the next commits.
+// Parts (each with its own signature – set() only rebuilds a part whose numbers changed): zk_zeitwelt_hang.js the slopes (ZKHANG).
 // INTERFACE (contract v1, docs/plans/auftraege/zeitreise-gemeinsam.md – keep it stable):
 //   ZKZEITWELT.warm()            once when the Zeitreise starts: compile every program it will use (warmUp) – none later
 //   ZKZEITWELT.set(L, R)         L, R = STATE v1 (R null: one world, everything on layer 0); idempotent, cheap when nothing changed
@@ -14,8 +14,14 @@
 //   ZKZEITWELT.sound(L, R, side) the ambience for the state(s); side 'L'|'R'|'both' (the split: which world one hears)
 //   ZKZEITWELT.clear()           everything back to today (meshes, uniforms, weather, lights, sound)
 // Extra (tests, the regie's stubs): stats(), demo(w, yf) → a stub STATE v1 for 'allein'|'gewappnet' until ZKCHRONIK exists, LAYER, S.
+import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
+import { ZKKIT } from './zk_zeitwelt_kit.js';
+import { ZKHANG } from './zk_zeitwelt_hang.js';
+import { ZKDINGE } from './zk_zeitwelt_dinge.js';
+import { ZKNACHT } from './zk_zeitwelt_nacht.js';
+import { ZKTON } from './zk_zeitwelt_ton.js';
 
 export const ZKZEITWELT = (() => {
   const LAYER = { both: 0, L: 21, R: 22 };
@@ -36,30 +42,65 @@ export const ZKZEITWELT = (() => {
     const t = clamp((v - a) / (b - a), 0, 1);
     return t * t * (3 - 2 * t);
   };
-  // ---------- places that depend on what this module builds (site metres; refined when the things stand) ----------
-  // eye height 1.65 m on foot; `look` is a point the camera looks at
+  // ---------- places that depend on what this module builds (site metres; the sites: zk_zeitwelt_dinge.js, zk_zeitwelt_nacht.js) ----------
+  // eye height 1.65 m on foot; `look` is a point the camera looks at (absolute heights)
   const EYE = 1.65;
   const PLACES = {
-    // the street in the low part of the village where heavy rain runs together (Annahme until the terrain survey of the next commit)
-    strasse: { pos: [214, -84], look: [224, -112], h: EYE, lh: 1.2 },
-    // the heating house at the village edge by a farmyard (Annahme: a site, not a plan)
-    heizhaus: { pos: [292, -150], look: [318, -168], h: EYE, lh: 4 },
-    // a beetle clearing on a slope above the village, from its lower edge
-    kahlflaeche: { pos: [470, -420], look: [520, -470], h: EYE, lh: 6 },
-    // the wind turbine on a beetle clearing, seen from the field path at the village edge (hub ~160 m)
-    windrad: { pos: [330, -260], look: [900, -1100], h: EYE, lh: 140 },
+    // in the street by the brook, on the pavement of its lower part, looking up the street towards the Anger (water, the fire engine)
+    strasse: () => {
+      const n = ZKNACHT.sites(),
+        P = n.flood,
+        c = n.cam,
+        e = P.length ? P[0] : [c.x + 40, c.y];
+      return [c.x, c.y, EYE, e[0], e[1], 1.3];
+    },
+    // in front of the heating house, from the lane: hall, bunker with the chips, chimney, the sign
+    heizhaus: () => {
+      const h = ZKDINGE.sites().heiz,
+        dx = h.road[0] - h.x,
+        dy = h.road[1] - h.y,
+        l = Math.hypot(dx, dy) || 1,
+        d = 24;
+      return [
+        h.x + (dx / l) * d + (h.y - h.road[1]) * 0.25,
+        h.y + (dy / l) * d - (h.x - h.road[0]) * 0.25,
+        EYE,
+        h.x + 3,
+        h.y,
+        4.5,
+      ];
+    },
+    // at the lower edge of the clearing with the planting, looking up into it
+    kahlflaeche: () => {
+      const k = ZKDINGE.sites().kahl;
+      return [k.x + 4, k.y + 44, EYE, k.x - 8, k.y - 40, 5];
+    },
+    // on the clearing below the ridge, ~380 m from the turbine (the hub at ~160 m fits the picture with the forest below)
+    windrad: () => {
+      const w = ZKDINGE.sites().wind;
+      return [w.x - 25, w.y + 380, EYE, w.x, w.y, ZKDINGE.HUB * 0.62];
+    },
   };
   function place(id) {
-    const p = PLACES[id];
-    if (!p) return null;
-    const [x, y] = p.pos,
-      [lx, ly] = p.look;
-    return { pos: [x, y, +(ter(x, y) + p.h).toFixed(2)], look: [lx, ly, +(ter(lx, ly) + p.lh).toFixed(2)] };
+    const f = PLACES[id];
+    if (!f) return null;
+    try {
+      const [x, y, h, lx, ly, lh] = f();
+      return {
+        pos: [+x.toFixed(2), +y.toFixed(2), +(ter(x, y) + h).toFixed(2)],
+        look: [+lx.toFixed(2), +ly.toFixed(2), +(ter(lx, ly) + lh).toFixed(2)],
+      };
+    } catch (e) {
+      S.err = 'place ' + id + ': ' + e;
+      return null;
+    }
   }
   // ---------- stub states (STATE v1) until zukunft/zk_chronik.js lands: plausible curves, both worlds of the heavy climate ----------
   // The beetle years are the same in both (same climate); what differs is what the village does: clearing and planting together, the
   // heating house on beetle wood, the turbine – or each for themselves (left standing, fallen, pioneer growth, oil trucks).
-  function demo(w, yf) {
+  // the chronicle's state when it is there (zukunft/zk_chronik.js), else the stub below
+  const demo = (w, yf) => (window.ZKCHRONIK && ZKCHRONIK.state ? ZKCHRONIK.state(w, yf) : stub(w, yf));
+  function stub(w, yf) {
     const g = w === 'gewappnet',
       y = yf;
     // share of the spruce area struck by the beetle so far (2026: 0.18 – much of the region is already dead)
@@ -146,27 +187,104 @@ export const ZKZEITWELT = (() => {
           st.signs,
         ])
       : '';
+  // ---------- the parts: each gets set(L, R) only when its own numbers changed; side(s) per render in the split ----------
+  const r3 = v => +(+v || 0).toFixed(3);
+  const PARTS = [
+    {
+      id: 'hang',
+      sig: st =>
+        st && st.forest
+          ? ['green', 'red', 'grey', 'cleared', 'fallen', 'young', 'regrowH'].map(k => r3(st.forest[k])).join() +
+            st.forest.regrow
+          : '',
+      warm: () => ZKHANG.warm(),
+      set: (L, R) => ZKHANG.set(L, R),
+      side: s => ZKHANG.side(s),
+      clear: () => ZKHANG.clear(),
+      stats: () => ZKHANG.stats(),
+    },
+    {
+      // the things (heating house, trench, turbine, logging, the rain night, the blackout, signs): each compares its own description
+      id: 'dinge',
+      sig: st => sigOf(st),
+      set: (L, R) => {
+        ZKNACHT.set(L, R);
+        ZKKIT.setAll(L, R);
+      },
+      clear: () => {
+        ZKKIT.clearAll();
+        ZKNACHT.clear();
+      },
+      stats: () => ({
+        err: ZKKIT.S.err || ZKDINGE.S.err || ZKNACHT.S.err,
+        anim: ZKKIT.S.animN,
+        dark: ZKNACHT.S.dark,
+        shown: ZKKIT.T.filter(t => (t.A && t.A.visible) || (t.B && t.B.visible)).map(
+          t => t.def.id + (t.B && t.B.visible ? ':2' : '')
+        ),
+      }),
+    },
+  ];
+  const psig = {};
+  const guard = (name, fn) => {
+    try {
+      return fn();
+    } catch (e) {
+      S.err = name + ': ' + String(e && e.message ? e.message : e);
+      console.warn('ZKZEITWELT ' + name, e);
+      return null;
+    }
+  };
+  // the split draws the scene twice (left camera layers 0+21, right 0+22): shared surfaces take that world's uniforms before each render.
+  // Installed once by warm() and left in place (inert outside the split), chained to whatever was there.
+  function hook() {
+    if (S.hooked) return;
+    const prev = scene.onBeforeRender;
+    scene.onBeforeRender = function (r, sc, cam, rt) {
+      if (prev) prev.call(this, r, sc, cam, rt);
+      if (!S.split || !cam || !cam.layers) return;
+      const m = cam.layers.mask,
+        side = (m >>> LAYER.R) & 1 && !((m >>> LAYER.L) & 1) ? 'R' : 'L';
+      if (side === S.drawn) return;
+      S.drawn = side;
+      for (const P of PARTS) if (P.side) P.side(side);
+    };
+    S.hooked = true;
+  }
   function warm() {
     if (S.warmed) return;
-    S.warmed = true; // stage 0: nothing to compile yet
+    S.warmed = true;
+    hook();
+    // the sign atlas first (its texture is part of the sign program), then every material of the kit, then the slopes' programs
+    guard('nacht warm', () => ZKNACHT.warm());
+    guard('kit warm', () => ZKKIT.warm());
+    for (const P of PARTS) if (P.warm) guard(P.id + ' warm', P.warm);
+    // animation and sound bursts run with the frame (the clock of the Zeitreise does not run by itself)
+    if (!S.offTick && KERN.tick)
+      S.offTick = KERN.tick(dt => {
+        if (!S.L) return;
+        ZKKIT.tick(dt);
+        ZKTON.tick(dt);
+      }, 'zukunft/zeitwelt');
   }
   function set(L, R) {
-    try {
-      if (!S.warmed) warm();
-      const sig = sigOf(L) + '|' + sigOf(R || null);
-      S.L = L || null;
-      S.R = R || null;
-      S.split = !!R;
-      if (sig === S.sig) return false;
-      S.sig = sig;
-      S.n.set++;
-      markDirty(true);
-      return true;
-    } catch (e) {
-      S.err = String(e && e.message ? e.message : e);
-      console.warn('ZKZEITWELT.set', e);
-      return false;
+    if (!S.warmed) warm();
+    const sig = sigOf(L) + '|' + sigOf(R || null);
+    S.L = L || null;
+    S.R = R || null;
+    S.split = !!R;
+    S.drawn = null;
+    if (sig === S.sig) return false;
+    S.sig = sig;
+    S.n.set++;
+    for (const P of PARTS) {
+      const k = P.sig(L) + '|' + (R ? P.sig(R) : '-');
+      if (psig[P.id] === k) continue;
+      psig[P.id] = k;
+      guard(P.id, () => P.set(S.L, S.R));
     }
+    markDirty(true);
+    return true;
   }
   // ---------- sound: the ambience mix for the state(s) (stage 0: computed, not played yet) ----------
   function mixOf(st) {
@@ -194,6 +312,7 @@ export const ZKZEITWELT = (() => {
     const mL = mixOf(L),
       mR = mixOf(R || null);
     S.mix = side === 'R' ? mR : side === 'L' || !mR ? mL : avgMix(mL, mR);
+    ZKTON.set(S.mix);
     return S.mix;
   }
   function avgMix(a, b) {
@@ -203,6 +322,9 @@ export const ZKZEITWELT = (() => {
     return o;
   }
   function clear() {
+    for (const P of PARTS) if (P.clear) guard(P.id + ' clear', P.clear);
+    guard('ton clear', () => ZKTON.clear());
+    for (const k of Object.keys(psig)) delete psig[k];
     S.L = S.R = null;
     S.split = false;
     S.sig = '';
@@ -219,8 +341,26 @@ export const ZKZEITWELT = (() => {
       mix: S.mix,
       err: S.err,
       places: Object.keys(PLACES),
+      parts: Object.fromEntries(PARTS.map(P => [P.id, P.stats ? guard(P.id + ' stats', P.stats) : null])),
+      ton: ZKTON.stats(),
     };
   }
-  return { warm, set, place, sound, clear, stats, demo, LAYER, S, PLACES };
+  return {
+    warm,
+    set,
+    place,
+    sound,
+    clear,
+    stats,
+    demo,
+    LAYER,
+    S,
+    PLACES,
+    hang: ZKHANG,
+    kit: ZKKIT,
+    dinge: ZKDINGE,
+    nacht: ZKNACHT,
+    ton: ZKTON,
+  };
 })();
 window.ZKZEITWELT = ZKZEITWELT;
