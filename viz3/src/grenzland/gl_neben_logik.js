@@ -403,6 +403,7 @@ export const GLNLOGIK = (() => {
     { k: 'wurm', name: 'Tauwürmer (Angelköder)', eur: 2.9, n: 5 },
     { k: 'blinker', name: 'Blinker', eur: 4.5, n: 3 },
     { k: 'angelkarte', name: 'Gastkarte Talsperre (Angelerlaubnis)', eur: 8, einmal: true },
+    { k: 'kanister', name: 'Kanister Gemisch 1:50 (5 Liter)', eur: 9.8 },
     { k: 'boeller', name: 'Böller „aus dem Kofferraum“', eur: 6, n: 4, unter: true },
   ];
   // open in the morning and in the late afternoon (minutes of the day)
