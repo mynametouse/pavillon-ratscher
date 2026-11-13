@@ -9,7 +9,8 @@
 import sys, os, json, time, math, base64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib, grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-# sections (second argument, comma separated; default all): strasse leute klinge 1989 heli
+# sections (second argument, comma separated; default all but stadt): strasse leute klinge 1989 heli · stadt (Schleusingen – a page of its own:
+# one area per page)
 SECT = [q for q in (sys.argv[2] if len(sys.argv) > 2 else 'strasse,leute,klinge,1989,heli').split(',') if q]
 ck = grenzland_ci.wrap(lib.Checks('grenzland_licht'), 'grenzland_licht')
 OUT = lib.out('grenzland_licht')
@@ -315,6 +316,25 @@ with lib.browser() as b:
         pass
     except Exception as e:
         print('note the helicopter part stopped:', str(e)[:300], flush=True)
+
+    # ---------------------------------------------------------------- Schleusingen at night: the street lamps' light on the ground (a page of its own: stadt) ----------------------------------------------------------------
+    try:
+        if 'stadt' not in SECT: raise StopIteration
+        do("if (VEH.cur) VEH.exit(); GLMISSION.stop(); GLFAHNDUNG.clear(); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 22 * 60 + 15; DN.update(true)")
+        zh = J("GLDATA.ORTE.zh.pos")
+        do(f"GRENZLAND.hin({zh[0]}, {zh[1]}, 110)")
+        ok = until("window.SCHL && SCHL.state === 'ready'", 180, 1.0, 0.6)
+        steps(3); lib.settle_light(pg)
+        st = J("({ s: GLLICHT.stand(), schl: window.SCHL && SCHL.state, lamps: window.SCHL ? SCHL.lamps.length : -1 })")
+        ck('Schleusingen at night: the town is there with its street lamps', ok and st['lamps'] > 0, str(st)[:300])
+        for i, (dx, dy, yaw) in enumerate([(0, 0, 110), (-25, 12, 200)]):
+            x, y = zh[0] + dx, zh[1] + dy
+            do(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + 1.62, {yaw}, -3, 62)"); steps(0.5)
+            paar('15_stadt_%d' % (i + 1))
+    except StopIteration:
+        pass
+    except Exception as e:
+        ck('Schleusingen ran through without an error of the test', False, str(e)[:300])
 
     # ---------------------------------------------------------------- shader programs ----------------------------------------------------------------
     try:
