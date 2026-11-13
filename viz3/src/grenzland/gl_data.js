@@ -249,7 +249,7 @@ export const GLDATA = (() => {
     intro: 'Freitagabend. Der Bus aus Erfurt ist weg, der nach Ratscher noch nicht da.',
     introSub: 'Kapitel 1 · Wechseln mit Tab · Handy mit T · Radio mit R',
     introKap: 'Kapitel 1',
-    introKeys: 'Wechseln mit Tab · Handy T · Radio R · Anzeigen aus und an mit O',
+    introKeys: 'Wechseln mit Tab · Reden mit E, beim Fahren B · Handy T · Radio R · Anzeigen aus und an mit O',
     introTouch: 'Wechseln ⇄ · Handy ☎ · alles Weitere unter ⋯',
     adult: 'Nur für Erwachsene. Die Karte ist echt, die Geschichte, die Firmen und die Gauner sind erfunden.',
     ende: 'Grenzland ist beendet – Ratscher ist wieder, wie es war.',

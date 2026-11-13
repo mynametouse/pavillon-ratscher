@@ -408,6 +408,18 @@ export const GRENZLAND = (() => {
       PLAY.think(T.endAsk, 3800);
     }
   };
+  // on foot in the mode B is nobody's: the base game's workshop and forest books (werk/werkui.js) stay shut – riding together, the partner
+  // talk takes B first (gl_partner.js, also in the capture phase)
+  window.addEventListener(
+    'keydown',
+    e => {
+      if (!GL.on || VEH.cur || e.ctrlKey || e.metaKey || e.altKey || (e.key !== 'b' && e.key !== 'B')) return;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    },
+    true
+  );
   window.addEventListener('keydown', e => {
     if (!GL.on || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
