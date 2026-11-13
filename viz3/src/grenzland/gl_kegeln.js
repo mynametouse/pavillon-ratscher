@@ -615,16 +615,16 @@ export const GLKEGELN = (() => {
     // the eye: behind the foul line while one aims, down the lane after the ball
     const F = S.meshes.F,
       roll = S.ph === 'rollt' || S.ph === 'schau',
-      fz = roll ? Math.max(-2.3, Math.min(Lb - 5.4, (S.ballS || 0) - 3.4)) : -2.3,
+      fz = roll ? Math.max(-2.3, Math.min(Lb - 3.3, (S.ballS || 0) - 3.0)) : -2.3,
       e = 1 - Math.exp(-dt * (roll ? 5 : 3.2));
     S.camF += (fz - S.camF) * e;
-    const k = Math.max(0, Math.min(1, (S.camF + 2.3) / (Lb - 3.1))),
-      c = F.P((roll ? (S.ballX || 0) * 0.35 : S.aim * 0.4) * (1 - k * 0.5), S.camF, 1.52 - 0.3 * k);
+    const k = Math.max(0, Math.min(1, (S.camF + 2.3) / (Lb - 1.0))),
+      c = F.P((roll ? (S.ballX || 0) * 0.35 : S.aim * 0.4) * (1 - k * 0.5), S.camF, 1.52 - 0.55 * k);
     S.cam.x = c[0];
     S.cam.y = c[1];
     S.cam.z = c[2];
     P.yaw = HDdeg();
-    P.pitch = -8.5 - 5 * k;
+    P.pitch = -8.5 - 4 * k;
     markDirty();
   }
   function ende(abbruch) {
@@ -828,11 +828,34 @@ export const GLKEGELN = (() => {
           spielen();
         },
       });
+      // the noticeboard by the way in: what there is to do around here
+      KERN.act({
+        id: 'gl:aushang',
+        r: 2.2,
+        prio: 0.2,
+        label: () =>
+          GL.on && GL.era === 'heute' && P.mode === 'walk' && !S.on && !PLAY.seated() ? 'Aushang lesen' : null,
+        pos: () => [GLORTE.P.tafel[0], GLORTE.P.tafel[1], GLORTE.gnd(GLORTE.P.tafel[0], GLORTE.P.tafel[1]) + 1.2],
+        run: () => {
+          GLHUD.wahl(
+            'Kegelfreunde Ratscher – Aushang',
+            'Freiluftbahn: fünf Wurf in die Vollen, ' +
+              FEE +
+              ' € in die Bahnkasse. Bahnrekord: ' +
+              Math.round(GL.stats.kegel || 0) +
+              ' Holz. · Der Verkaufswagen hält ' +
+              N.zeitenText() +
+              ' am Anger; dort gibt es auch Köder und die Gastkarte für die Talsperre. · Die Angelstelle ist der Steg unter der Tafel an der Staumauer. · Wer die Bahn nass hinterlässt, fegt.',
+            [{ t: 'Schließen' }]
+          );
+        },
+      });
       bauen();
       era(GLORTE.era);
     },
     drop() {
       KERN.unact('gl:kegeln');
+      KERN.unact('gl:aushang');
       if (S.on) ende(true);
       weg();
     },

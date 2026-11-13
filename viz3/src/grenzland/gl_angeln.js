@@ -127,6 +127,7 @@ export const GLANGELN = (() => {
       Lc(214, 44, 34)
     );
     M.pose = add(K, MT.paint, false);
+    M.pose.scale.setScalar(2.2); // a float one can read from the stool
     // the fish: a body with a darker back and a pale belly, a tail and fins; tinted by its kind (a clone of the material: the same program)
     K = GLORTE.kit();
     const back = Lc(96, 98, 92),
@@ -292,8 +293,8 @@ export const GLANGELN = (() => {
           };
         })()
       : N.fang(mon, h, S.koeder, sd);
-    const p = A.F.xy((R() - 0.5) * 3.5, A.sB + 5.5 + R() * 3);
-    S.pose = [p[0], p[1], A.w];
+    const p = A.F.xy((R() - 0.5) * 3, A.sB + 3.2 + R() * 2.2);
+    S.pose = [p[0], p[1], Math.max(A.w, GLORTE.gnd(p[0], p[1]))]; // the water one sees: the reservoir's level, or the ground model's lake surface
     S.ph = 'wurf';
     S.t = 0;
     S.zupf = 0;
@@ -442,7 +443,7 @@ export const GLANGELN = (() => {
           }
         }
       }
-      ziel = [S.pose[0], S.pose[1], A.w + dz];
+      ziel = [S.pose[0], S.pose[1], S.pose[2] + dz];
       if (S.t >= S.w.sek) {
         if (S.f) {
           S.ph = 'biss';
@@ -454,7 +455,7 @@ export const GLANGELN = (() => {
       } else if (S.o.auto === 'früh' && S.t > 0.5) anhieb();
     } else if (S.ph === 'biss') {
       const k = Math.min(1, S.t / 0.35);
-      ziel = [S.pose[0], S.pose[1], A.w - 0.14 * k];
+      ziel = [S.pose[0], S.pose[1], S.pose[2] - 0.16 * k];
       zug = 0.25;
       if (S.o.auto === true && S.t > 0.3) anhieb();
       else if (S.t > N.ANHIEB) aus('Zu spät – der Köder ist weg.');
@@ -466,7 +467,7 @@ export const GLANGELN = (() => {
       S.ang += dt * (D.ruck ? 1.3 : 0.5) * (Math.sin(D.t * 0.6) > 0 ? 1 : -1);
       S.ang = Math.max(-0.7, Math.min(0.7, S.ang));
       const q = A.F.xy(Math.sin(S.ang) * D.dist, A.sB + 0.4 + Math.cos(S.ang) * D.dist);
-      ziel = [q[0], q[1], A.w - 0.05];
+      ziel = [q[0], q[1], Math.max(A.w, GLORTE.gnd(q[0], q[1])) - 0.03];
       S.pose = ziel;
       zug = Math.min(1, D.sp);
       M.pose.visible = false;
@@ -525,15 +526,13 @@ export const GLANGELN = (() => {
       PLAY.think('Kein Köder. Mais, Würmer und Blinker hat der Verkaufswagen am Anger.', 4200);
       return null;
     }
-    const opts = have.map(k => ({
-      t: N.KOEDER[k] + ' (' + koederN(k) + ')',
-      s:
-        k === 'mais'
-          ? 'für Karpfen und Weißfisch'
-          : k === 'wurm'
-            ? 'für Barsch und Schleie'
-            : 'für Hecht, Zander und Barsch',
-    }));
+    // what takes this bait best at this month and hour
+    const jetzt = k => {
+      const W = N.biss(monat(), stunde(), k),
+        top = Object.keys(W).sort((a, b) => W[b] - W[a])[0];
+      return W[top] >= 0.5 ? 'jetzt am ehesten: ' + N.FISCH[top].name : 'gerade beißt darauf wenig';
+    };
+    const opts = have.map(k => ({ t: N.KOEDER[k] + ' (' + koederN(k) + ')', s: jetzt(k) }));
     opts.push({ t: 'Lieber nicht' });
     const i = await GLHUD.wahl(
       'Angeln an der Talsperre',
