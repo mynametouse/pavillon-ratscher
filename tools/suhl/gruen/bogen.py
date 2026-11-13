@@ -79,9 +79,10 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--tiles', default='')
     ap.add_argument('--zoom', action='store_true', help='also four quarter sheets per tile at 20 cm')
+    ap.add_argument('--kontext', default=os.path.join(glib.RAW, 'kontext.pkl'))
     a = ap.parse_args()
     import kontext
-    U = baeume.Umfeld(kontext.load())
+    U = baeume.Umfeld(kontext.load(a.kontext))
     os.makedirs(a.out, exist_ok=True)
     tiles = [tuple(int(v) for v in t.split('_')) for t in a.tiles.split(',') if t]
     if not tiles:

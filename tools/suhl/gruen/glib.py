@@ -77,33 +77,34 @@ def check_box(bbox, what=''):
 
 
 # ---------------- polite HTTP with a cache ----------------
-_last = [0.0]
+import threading
+_tl = threading.local()
 
 
-def http_get(url, timeout=180, tries=4, pause=1.2):
-    """GET with our User-Agent, at most one request at a time with a pause between requests, retries with backoff.
-    Returns (status, bytes, content-type)."""
+def http_get(url, timeout=180, tries=4, pause=1.0):
+    """GET with our User-Agent; every thread waits `pause` seconds after its own last request (gbild.prefetch runs at most two
+    threads, so the service sees at most two requests at a time); retries with backoff. Returns (status, bytes, content-type)."""
     import urllib.request, urllib.error
     last = (0, b'', '')
     for k in range(tries):
-        dt = time.time() - _last[0]
+        dt = time.time() - getattr(_tl, 'last', 0.0)
         if dt < pause:
             time.sleep(pause - dt)
         try:
             req = urllib.request.Request(url, headers={'User-Agent': UA})
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 b = r.read()
-                _last[0] = time.time()
+                _tl.last = time.time()
                 return r.status, b, r.headers.get('content-type', '')
         except urllib.error.HTTPError as ex:
             last = (ex.code, ex.read()[:2000], ex.headers.get('content-type', '') if ex.headers else '')
-            _last[0] = time.time()
+            _tl.last = time.time()
             if ex.code not in (429, 500, 502, 503, 504, 509):
                 return last
         except Exception as ex:
             last = (0, repr(ex).encode()[:400], '')
-            _last[0] = time.time()
-        time.sleep(4.0 * (k + 1))
+            _tl.last = time.time()
+        time.sleep(5.0 * (k + 1))
     return last
 
 

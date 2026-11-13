@@ -470,11 +470,11 @@ def merge(tiles, work):
     return out, stats
 
 
-def write_product(M, out, extra=None):
+def write_product(M, out, extra=None, ndom=None):
     """the tile files and index.json of product b under `out` (…/suhl/b/v<N>)"""
     tiles, n_all = {}, 0
     for (tx, ty), T in sorted(M.items()):
-        h, meas = hoehen(T['E'], T['N'], T['r'], T['kind'], oh=T.get('oh'))
+        h, meas = hoehen(T['E'], T['N'], T['r'], T['kind'], ndom=ndom, oh=T.get('oh'))
         T['h'] = h
         T['flags'] = (T['flags'] & ~F_H) | np.where(meas, F_H, 0)
         p = os.path.join(out, str(glib.L), str(tx), f'{ty}.bin')

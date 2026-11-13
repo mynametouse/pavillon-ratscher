@@ -1,0 +1,5 @@
+# Bestellung eines Laufs von .github/workflows/suhl-gruen.yml: diese Datei ändern = neuer Lauf (Skript-Änderungen allein starten keinen).
+# gebiet: zentrum | kernstadt | stadt        ohne: Schritte weglassen (baeume, wald, flaechen), durch Komma getrennt
+lauf=1
+gebiet=stadt
+ohne=

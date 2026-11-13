@@ -1,0 +1,171 @@
+# Suhl – Grün (Stufe 2, Paket S2-4, Auftrag docs/plans/auftraege/suhl-gruen.md): Bäume, Waldbestände und Grünflächen für das Gebiet,
+# das tools/suhl/gruen/lauf.txt bestellt (zentrum | kernstadt | stadt). Einzelbäume aus dem Infrarot-Luftbild (20 cm, WMS des Landes,
+# höchstens zwei Abrufe zugleich, mit Pausen, Bilder im Actions-Cache), OpenStreetMap aus dem Geofabrik-Auszug (osmium), Gebäude-
+# Grundrisse aus ETHOS.BUILDA (nur zum Ausschluss von Dächern). Ergebnis: die Produkte b, w, gr als Artefakt „suhl-gruen-produkte“
+# (bis das Daten-Repo steht), Zahlen und Prüfungen nach tools/suhl/out/gruen/actions/ auf suhl/gruen (sonst wird nichts angefasst).
+# Läuft nur auf suhl/gruen und nur, wenn diese Datei oder lauf.txt sich ändert; der Lauf nimmt beim Start den neuesten Stand des Zweigs.
+# Geheimnisse dürfen fehlen: ohne EASYGEODATA_KEY bleiben die Höhen geschätzt, ohne DATEN_TOKEN wird nichts veröffentlicht – der Lauf
+# sagt das im Protokoll und im Ergebnis und bleibt grün.
+name: Suhl – Grün (Bäume, Wald, Grünflächen)
+
+on:
+  push:
+    branches: ['suhl/gruen']
+    paths: ['.github/workflows/suhl-gruen.yml', 'tools/suhl/gruen/lauf.txt']
+
+concurrency:
+  group: suhl-gruen
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  gruen:
+    name: Bäume, Wald, Grünflächen
+    runs-on: ubuntu-latest
+    timeout-minutes: 170
+    env:
+      SUHL_RAW: /home/runner/suhl-raw
+      UA: 'PavillonRatscher-Suhl/0.1 (+https://github.com/mynametouse/pavillon-ratscher)'
+      HAS_EGD: ${{ secrets.EASYGEODATA_KEY != '' }}
+      HAS_DATEN: ${{ secrets.DATEN_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: suhl/gruen
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: |
+          pip install --quiet numpy scipy scikit-image shapely pyproj pillow tifffile
+          sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
+          mkdir -p "$SUHL_RAW" logs out
+          cat tools/suhl/gruen/lauf.txt
+      - name: Rohdaten aus dem Cache (Luftbilder und Auszüge früherer Läufe)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/suhl-raw
+          key: suhl-gruen-raw-v1-${{ github.run_id }}
+          restore-keys: |
+            suhl-gruen-raw-v1-
+      - name: OpenStreetMap – Geofabrik-Auszug Thüringen, auf Suhl geschnitten (OPL)
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          mkdir -p "$SUHL_RAW/geofabrik"
+          P="$SUHL_RAW/geofabrik/suhl.opl.gz"
+          if [ ! -s "$P" ]; then
+            curl -sSfL --retry 3 --retry-delay 20 -A "$UA" -o "$RUNNER_TEMP/th.osm.pbf" https://download.geofabrik.de/europe/germany/thueringen-latest.osm.pbf
+            osmium fileinfo "$RUNNER_TEMP/th.osm.pbf" | grep -E "timestamp|Bounding" | tee "$SUHL_RAW/geofabrik/fileinfo.txt"
+            # the bounding box of the municipality (OSM relation 62450) + 0.004 degrees, as in tools/suhl/bestand/osm_api.py
+            osmium extract -b 10.5482,50.5568,10.8466,50.6929 -s smart "$RUNNER_TEMP/th.osm.pbf" -o "$RUNNER_TEMP/suhl.osm.pbf"
+            osmium cat "$RUNNER_TEMP/suhl.osm.pbf" -f opl | gzip -6 > "$P"
+            rm -f "$RUNNER_TEMP/th.osm.pbf"
+          fi
+          ls -la "$SUHL_RAW/geofabrik"; cat "$SUHL_RAW/geofabrik/fileinfo.txt" || true
+      - name: ETHOS.BUILDA – Gebäude-Grundrisse (Zenodo 11845992, im Strom auf Suhl gefiltert)
+        continue-on-error: true
+        timeout-minutes: 25
+        run: |
+          set -o pipefail
+          mkdir -p "$SUHL_RAW/ethos"
+          P="$SUHL_RAW/ethos/suhl.jsonl"
+          if [ ! -s "$P" ]; then
+            curl -sSL --retry 3 --retry-delay 20 -A "$UA" https://zenodo.org/api/records/11845992/files/DEG.csv/content \
+              | python -I -u tools/suhl/bestand/ethos_filter.py "$P.part" 2>&1 | tee logs/ethos_filter.log
+            mv "$P.part" "$P"
+          fi
+          ls -la "$SUHL_RAW/ethos"
+      - name: Umfeld (Gebäude, Fahrbahnen, Wasser, kartierte Bäume, Wald- und Grünflächen)
+        run: |
+          set -o pipefail
+          python -I -u tools/suhl/gruen/kontext.py --opl "$SUHL_RAW/geofabrik/suhl.opl.gz" --ethos "$SUHL_RAW/ethos/suhl.jsonl" \
+            --out "$SUHL_RAW/kontext.pkl" 2>&1 | tee logs/kontext.log
+      - name: Höhenmodell nDOM1 (easygeodata) – nur mit Schlüssel
+        run: |
+          if [ "$HAS_EGD" != "true" ]; then
+            echo "EASYGEODATA_KEY fehlt: kein nDOM1 – Baumhöhen bleiben geschätzt (Merker Bit 2 = 0)." | tee logs/ndom.log
+          elif [ ! -f tools/suhl/lib/easygeodata.py ]; then
+            echo "Schlüssel vorhanden, aber der Abruf (tools/suhl/lib von suhl-daten) ist auf diesem Zweig noch nicht eingebunden – Höhen bleiben geschätzt." | tee logs/ndom.log
+          else
+            echo "Schlüssel und Bibliothek vorhanden – der Abruf wird mit dem nächsten Stand von suhl-gruen eingehängt (stadt.py --ndom)." | tee logs/ndom.log
+          fi
+      - name: Bäume, Waldbestände, Grünflächen
+        run: |
+          set -o pipefail
+          NDOM=""; [ -d "$SUHL_RAW/ndom1" ] && NDOM="--ndom $SUHL_RAW/ndom1"
+          python -I -u tools/suhl/gruen/stadt.py --out out --work "$SUHL_RAW/work-${{ github.run_id }}" --kontext "$SUHL_RAW/kontext.pkl" --jobs 3 $NDOM 2>&1 \
+            | grep -v -E "RuntimeWarning|results = \[sum_labels" | tee logs/stadt.log
+          rm -rf "$SUHL_RAW/work-${{ github.run_id }}"
+          du -sh out/suhl/* || true
+      - name: Bilderbögen (Luftbild mit Bäumen, drei Orte) – nur ins Artefakt
+        continue-on-error: true
+        run: |
+          python -I -u tools/suhl/gruen/bogen.py --b out/suhl/b/v0 --out out/bogen --tiles 497_542,495_541,496_543 --kontext "$SUHL_RAW/kontext.pkl" 2>&1 | tail -5
+      - name: Veröffentlichen ins Daten-Repo – nur mit DATEN_TOKEN
+        run: |
+          if [ "$HAS_DATEN" != "true" ]; then
+            echo "DATEN_TOKEN fehlt: nichts veröffentlicht – die Produkte liegen im Artefakt suhl-gruen-produkte." | tee logs/publish.log
+          elif [ ! -d .github/actions/suhl-publish ]; then
+            echo "DATEN_TOKEN vorhanden, aber die Aktion .github/actions/suhl-publish (suhl-daten) fehlt auf diesem Zweig – nichts veröffentlicht." | tee logs/publish.log
+          else
+            echo "DATEN_TOKEN und Aktion vorhanden – das Veröffentlichen hängt der Suhl-Chat ein, wenn suhl/daten eingemischt ist." | tee logs/publish.log
+          fi
+      - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
+        if: always()
+        run: |
+          rm -rf "$SUHL_RAW"/work-* || true
+          echo "RAWKEY=$(cd "$SUHL_RAW" 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+          du -sh "$SUHL_RAW" || true
+      - name: Rohdaten in den Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/suhl-raw
+          key: suhl-gruen-raw-v1-${{ env.RAWKEY }}
+      - name: Produkte als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-gruen-produkte
+          path: |
+            out/suhl/
+            out/statistik.json
+            out/kachel_statistik.json
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Bögen und Protokolle als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-gruen-logs
+          path: |
+            logs/
+            out/bogen/
+          if-no-files-found: ignore
+          retention-days: 10
+      - name: Zahlen nach suhl/gruen (nur tools/suhl/out/gruen/actions/)
+        if: always()
+        run: |
+          G=$(grep -E '^gebiet=' tools/suhl/gruen/lauf.txt | cut -d= -f2 | tr -d '[:space:]')
+          D="tools/suhl/out/gruen/actions/${G:-lauf}"
+          mkdir -p "$D"
+          [ -f out/statistik.json ] && cp out/statistik.json "$D/statistik.json"
+          for p in b w gr; do [ -f "out/suhl/$p/v0/index.json" ] && cp "out/suhl/$p/v0/index.json" "$D/index_$p.json"; done
+          [ -f out/suhl/w/v0/bestaende.geojson.gz ] && cp out/suhl/w/v0/bestaende.geojson.gz "$D/bestaende.geojson.gz"
+          { echo "lauf: ${GITHUB_RUN_ID}"; echo "commit: $(git rev-parse HEAD)"; cat logs/ndom.log logs/publish.log 2>/dev/null; } > "$D/lauf.txt"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$D"
+          if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+          if git diff --cached --name-only | grep -v '^tools/suhl/out/gruen/actions/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
+          printf '%s\n\n%s\n%s\n' "suhl-gruen: numbers of the Actions run ${GITHUB_RUN_ID} (area ${G})" \
+            "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>" \
+            "Claude-Session: https://claude.ai/code/session_01L6YrpcuzUozgpZNSC5CdVL" > "$RUNNER_TEMP/msg.txt"
+          git commit -q -F "$RUNNER_TEMP/msg.txt"
+          for i in 1 2 3 4 5; do
+            if git pull -q --rebase origin suhl/gruen && git push -q origin HEAD:suhl/gruen; then echo "gepusht"; break; fi
+            echo "Push abgelehnt (Versuch $i)"; sleep $((15 * i))
+          done
