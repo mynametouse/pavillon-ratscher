@@ -1,0 +1,281 @@
+{
+ "schema": 1,
+ "product": "d",
+ "version": 0,
+ "made": "2026-11-13T00:30:00Z",
+ "area": "probe",
+ "partial": true,
+ "crs": "EPSG:25832",
+ "meta": {
+  "stand": "2026-11-13T00:30:00Z",
+  "annahmen": [
+   {
+    "id": "beispiel",
+    "text": "BEISPIEL - erfunden, keine echten Daten (tools/suhl/lib/beispiel.py)"
+   }
+  ],
+  "felder": {
+   "R": [
+    "a",
+    "ap",
+    "az",
+    "sl",
+    "c",
+    "us",
+    "kwp",
+    "ir"
+   ]
+  }
+ },
+ "raster": {
+  "crs": "EPSG:25832",
+  "level": 12,
+  "cell": 100.0,
+  "x0": 1984,
+  "y0": 2168,
+  "w": 8,
+  "h": 8,
+  "e0": 619100.0,
+  "n0": 5607600.0,
+  "order": "row 0 = south, column 0 = west; byte = quarter number, 0 = outside the municipality",
+  "data": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ=="
+ },
+ "viertel": [
+  {
+   "nr": 1,
+   "id": "beispiel",
+   "name": "Beispielviertel (erfunden)",
+   "kind": "viertel",
+   "area": 0.64,
+   "center": [
+    619500,
+    5608000
+   ],
+   "r": 566,
+   "poly": [
+    [
+     [
+      619100,
+      5607600
+     ],
+     [
+      619900,
+      5607600
+     ],
+     [
+      619900,
+      5608400
+     ],
+     [
+      619100,
+      5608400
+     ]
+    ]
+   ],
+   "outline": {
+    "q": 0,
+    "src": "regel",
+    "how": "erfunden"
+   },
+   "tiles": [
+    "496/542",
+    "497/542"
+   ],
+   "official": {
+    "residents": 12,
+    "year": 2022,
+    "src": "erfunden"
+   },
+   "residents": {
+    "model": 43.6,
+    "q": 0,
+    "how": "erfunden: Geschossfläche / 45 m²"
+   },
+   "buildings": 3,
+   "byUse": {
+    "wohnen": [
+     2,
+     471,
+     1963
+    ],
+    "neben": [
+     1,
+     50,
+     50
+    ]
+   },
+   "byEra": {
+    "0": [
+     1,
+     260
+    ],
+    "3": [
+     1,
+     1703
+    ]
+   },
+   "footprint": 520,
+   "floorArea": 2012,
+   "floorAreaHousing": 1963,
+   "volume": 6657,
+   "roofArea": 611,
+   "roofBy": {
+    "SO": 87,
+    "NW": 87,
+    "SW": 188,
+    "NO": 188,
+    "O": 30,
+    "W": 30
+   },
+   "roofUsable": 214,
+   "pvKwp": 43,
+   "pvKwh": 39009,
+   "pvKwpToday": null,
+   "heatDemand": 235522,
+   "complete": false
+  }
+ ],
+ "gebiete": [
+  {
+   "id": "zentrum",
+   "name": "zentrum",
+   "kind": "gebiet",
+   "buildings": 3,
+   "byUse": {
+    "wohnen": [
+     2,
+     471,
+     1963
+    ],
+    "neben": [
+     1,
+     50,
+     50
+    ]
+   },
+   "byEra": {
+    "0": [
+     1,
+     260
+    ],
+    "3": [
+     1,
+     1703
+    ]
+   },
+   "footprint": 520,
+   "floorArea": 2012,
+   "floorAreaHousing": 1963,
+   "volume": 6657,
+   "roofArea": 611,
+   "roofBy": {
+    "SO": 87,
+    "NW": 87,
+    "SW": 188,
+    "NO": 188,
+    "O": 30,
+    "W": 30
+   },
+   "roofUsable": 214,
+   "pvKwp": 43,
+   "pvKwh": 39009,
+   "pvKwpToday": null,
+   "heatDemand": 235522,
+   "complete": false
+  },
+  {
+   "id": "kernstadt",
+   "name": "kernstadt",
+   "kind": "gebiet",
+   "buildings": 3,
+   "byUse": {
+    "wohnen": [
+     2,
+     471,
+     1963
+    ],
+    "neben": [
+     1,
+     50,
+     50
+    ]
+   },
+   "byEra": {
+    "0": [
+     1,
+     260
+    ],
+    "3": [
+     1,
+     1703
+    ]
+   },
+   "footprint": 520,
+   "floorArea": 2012,
+   "floorAreaHousing": 1963,
+   "volume": 6657,
+   "roofArea": 611,
+   "roofBy": {
+    "SO": 87,
+    "NW": 87,
+    "SW": 188,
+    "NO": 188,
+    "O": 30,
+    "W": 30
+   },
+   "roofUsable": 214,
+   "pvKwp": 43,
+   "pvKwh": 39009,
+   "pvKwpToday": null,
+   "heatDemand": 235522,
+   "complete": false
+  },
+  {
+   "id": "stadt",
+   "name": "stadt",
+   "kind": "gebiet",
+   "buildings": 3,
+   "byUse": {
+    "wohnen": [
+     2,
+     471,
+     1963
+    ],
+    "neben": [
+     1,
+     50,
+     50
+    ]
+   },
+   "byEra": {
+    "0": [
+     1,
+     260
+    ],
+    "3": [
+     1,
+     1703
+    ]
+   },
+   "footprint": 520,
+   "floorArea": 2012,
+   "floorAreaHousing": 1963,
+   "volume": 6657,
+   "roofArea": 611,
+   "roofBy": {
+    "SO": 87,
+    "NW": 87,
+    "SW": 188,
+    "NO": 188,
+    "O": 30,
+    "W": 30
+   },
+   "roofUsable": 214,
+   "pvKwp": 43,
+   "pvKwh": 39009,
+   "pvKwpToday": null,
+   "heatDemand": 235522,
+   "complete": false
+  }
+ ]
+}

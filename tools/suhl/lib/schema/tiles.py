@@ -6,7 +6,7 @@ The validator is strict about head and frame and tolerant about the rest.
 import struct
 
 from .core import S, check_envelope, is_int, is_num
-from .g import QUALITY, check_d
+from .g import QUALITY
 
 # ---------------------------------------------------------------- b: trees (binary) - the layout suhl-gruen delivers
 # n x 8 bytes, little endian, no head (the number of trees is the file size / 8):
@@ -248,17 +248,3 @@ def check_s_tile(doc, key, rep, where):
             rep.err(ww, 'an area lies far outside the tile - absolute model decimetres instead of tile-local ones?', 's area frame')
     rep.stat('s: ways', len(doc['ways']))
     rep.stat('s: areas', len(areas or []))
-
-
-# ---------------------------------------------------------------- d: scenario numbers per building (JSON)
-def check_d_tile(doc, key, rep, where):
-    """{schema, product: 'd', key, d: {building id: {gf, bgf, da, ...}}} - the same numbers as the field d of a building record"""
-    fr = check_envelope(doc, 'd', key, rep, where, need_o=False)
-    if fr is None:
-        return
-    if not isinstance(doc.get('d'), dict):
-        rep.err(where, '"d" must be an object {building id: numbers}', 'd')
-        return
-    for bid, d in doc['d'].items():
-        check_d(d, rep, f'{where} {bid}')
-    rep.stat('d: buildings', len(doc['d']))

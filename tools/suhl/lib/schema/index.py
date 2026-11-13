@@ -10,7 +10,7 @@ Layout in the data repo (plan 2.4), base = https://mynametouse.github.io/pavillo
 import json, os, re
 
 from .core import S, REV, check_envelope, is_int
-from . import g as G, tiles as T
+from . import g as G, tiles as T, d as D
 
 # sources every product names in its index (licences travel with the data). 'attribution' is the text the app shows.
 CATALOGUE = {
@@ -40,6 +40,11 @@ CATALOGUE = {
              'url': 'https://gtfs.de/de/feeds/', 'attribution': 'Fahrplan: DELFI e.V. (CC BY 4.0), aufbereitet von gtfs.de'},
     'worldcover': {'title': 'ESA WorldCover 2021 v200 (Landbedeckung 10 m)', 'by': 'ESA', 'licence': 'CC BY 4.0',
                    'url': 'https://esa-worldcover.org', 'attribution': 'Landbedeckung: © ESA WorldCover project 2021 (CC BY 4.0)'},
+    'zensus': {'title': 'Zensus 2022, Gitterdaten 100 m (Stichtag 15.05.2022; Werte zur Geheimhaltung leicht verändert)',
+               'by': 'Statistische Ämter des Bundes und der Länder', 'licence': 'dl-de/by-2-0',
+               'url': 'https://www.zensus2022.de', 'date': '2022-05-15',
+               'attribution': '© Statistische Ämter des Bundes und der Länder (Zensus 2022, Gitterdaten; Datenlizenz Deutschland – '
+                              'Namensnennung – Version 2.0)'},
     'wissen': {'title': 'Recherche des Projekts (docs/plans/suhl/*.md, Quellen dort je Angabe)', 'by': 'Pavillon Ratscher',
                'licence': 'eigene Zusammenstellung', 'url': 'https://github.com/mynametouse/pavillon-ratscher/tree/src/docs/plans/suhl',
                'attribution': 'Angaben zu Bauten und Vierteln: eigene Recherche'},
@@ -358,7 +363,7 @@ def check_aktuell(doc, rep, where, root=None):
             rep.err(w, f'the version v{e["version"]} it names does not exist (suhl/{p}/v{e["version"]}/{ix})', 'aktuell missing')
 
 
-_CHECK = {'g': G.check_g_tile, 's': T.check_s_tile, 'm': T.check_m_tile, 'd': T.check_d_tile, 'gr': T.check_gr_tile}
+_CHECK = {'g': G.check_g_tile, 's': T.check_s_tile, 'm': T.check_m_tile, 'd': D.check_d_tile, 'gr': T.check_gr_tile}
 _CHECK_BIN = {'b': T.check_b_tile, 'w': T.check_w_tile}
 _MAGIC = {'bin': {'t': b'WTH1'}, 'webp': {'i': b'RIFF', '': b'RIFF'}}
 
@@ -436,6 +441,16 @@ def check_product(folder, rep, probe=False):
                 check_index(doc, rep, f'{where}/index.json', folder=folder, product=product, version=version)
         except Exception as ex:
             rep.err(f'{where}/{spec["index"]}', f'cannot be read: {ex}', 'json')
+    if product == 'd':
+        vp = os.path.join(folder, 'viertel.json')
+        if not os.path.exists(vp):
+            rep.err(where, 'viertel.json is missing (the quarters: raster, outlines, sums) - tools/suhl/daten/zahlen.py writes it', 'no viertel.json')
+        else:
+            try:
+                D.check_viertel(S.read_json(vp), rep, f'{where}/viertel.json', version=version)
+                rep.stat('d: bytes viertel.json', os.path.getsize(vp))
+            except Exception as ex:
+                rep.err(f'{where}/viertel.json', f'cannot be read: {ex}', 'json')
     total = 0
     probe_set = set(S.probe_tiles()) if probe else None
     for sub, (levels, e) in spec['tiles'].items():

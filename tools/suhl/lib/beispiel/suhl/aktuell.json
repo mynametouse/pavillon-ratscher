@@ -32,8 +32,8 @@
    "index": "d/v0/index.json",
    "made": "2026-11-13T00:30:00Z",
    "area": "probe",
-   "tiles": 1,
-   "bytes": 201,
+   "tiles": 2,
+   "bytes": 1271,
    "based_on": {}
   },
   "g": {

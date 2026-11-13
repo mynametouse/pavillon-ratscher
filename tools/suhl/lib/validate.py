@@ -121,6 +121,12 @@ def doc_tables():
            '### Building record (product g, field b[] of a tile)', '', '| Field | R/O | Type | Unit, frame | Meaning |', '|---|---|---|---|---|']
     for k, req, typ, unit, mean in schema.BUILDING_FIELDS:
         out.append(f'| `{k}` | {req} | {typ} | {unit} | {mean} |')
+    out += ['', '### Scenario numbers of a building (product d, an entry of d{} in a tile)', '', '| Field | R/O | Type | Unit | Meaning |',
+            '|---|---|---|---|---|']
+    for k, req, typ, unit, mean in schema.D_FIELDS:
+        out.append(f'| `{k}` | {req} | {typ} | {unit} | {mean} |')
+    out += ['', 'HEAT_KINDS (d: heat.k): ' + '; '.join(f'{k} = {v}' for k, v in schema.HEAT_KINDS.items()),
+            '', 'viertel.json, sums of every quarter and area: ' + ', '.join(schema.QUARTER_SUMS)]
     for title, table in (('KINDS (k)', schema.KINDS), ('ROOF_FORMS (r)', schema.ROOF_FORMS), ('ROOF_CLASSES (rk, R[].c)', schema.ROOF_CLASSES),
                          ('ERAS (era)', schema.ERAS), ('FLAGS (fg, bits)', schema.FLAGS), ('QUALITY (rq, q, fas.q, S[].q)', schema.QUALITY),
                          ('TREE_KINDS (b)', schema.TREE_KINDS), ('TREE_FLAGS (b)', schema.TREE_FLAGS), ('GR_CLASSES (gr)', schema.GR_CLASSES),

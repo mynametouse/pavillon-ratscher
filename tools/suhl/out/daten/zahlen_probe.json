@@ -1,0 +1,604 @@
+{
+ "made": "2026-11-13T02:02:28Z",
+ "area": "probe",
+ "g_folder": "v1",
+ "g_version": 1,
+ "tiles": 11,
+ "buildings": 2479,
+ "dropped_not_standing_or_unreadable": 23,
+ "bytes": 678626,
+ "bytes_viertel": 82141,
+ "roof_check": {
+  "planes": 3885,
+  "n_az": 2377,
+  "az_here_minus_g_deg_p5_p50_p95": [
+   -0.096,
+   -0.0,
+   0.097
+  ],
+  "slope_here_minus_g_deg_p5_p50_p95": [
+   -0.095,
+   0.0,
+   0.068
+  ],
+  "true_area_x_cos_slope_over_plan_area_p5_p50_p95": [
+   0.998,
+   1.0,
+   1.002
+  ],
+  "plan_areas_over_footprint_p5_p50_p95": [
+   0.997,
+   1.0,
+   1.003
+  ],
+  "mesh_plan_over_footprint_p5_p50_p95": [
+   1.0,
+   1.0,
+   1.257
+  ],
+  "model_to_true_deg": -3.048,
+  "reading": "az_here_minus_g near 0: g gives roof directions from geographic north; near +3.05: g gives them in the model frame. mesh_plan_over_footprint above 1: the roof mesh of g carries an overhang; areas here are without it."
+ },
+ "stadt": {
+  "buildings": 2479,
+  "byUse": {
+   "wohnen": [
+    1461,
+    148166,
+    564815
+   ],
+   "kultur": [
+    14,
+    26714,
+    100979
+   ],
+   "verwaltung": [
+    54,
+    20566,
+    78320
+   ],
+   "handel": [
+    39,
+    25660,
+    45321
+   ],
+   "buero": [
+    18,
+    8027,
+    29686
+   ],
+   "sonst": [
+    81,
+    11302,
+    26599
+   ],
+   "hotel": [
+    7,
+    4736,
+    21882
+   ],
+   "neben": [
+    491,
+    14627,
+    21788
+   ],
+   "schule": [
+    19,
+    7126,
+    20798
+   ],
+   "gewerbe": [
+    52,
+    8751,
+    15404
+   ],
+   "gesundheit": [
+    14,
+    3808,
+    11515
+   ],
+   "verkehr": [
+    15,
+    4528,
+    10790
+   ],
+   "garage": [
+    177,
+    8138,
+    8697
+   ],
+   "kirche": [
+    9,
+    2757,
+    4135
+   ],
+   "industrie": [
+    8,
+    1234,
+    3463
+   ],
+   "versorgung": [
+    19,
+    598,
+    707
+   ],
+   "landwirtschaft": [
+    1,
+    32,
+    32
+   ]
+  },
+  "byEra": {
+   "0": [
+    755,
+    203930
+   ],
+   "1": [
+    530,
+    184025
+   ],
+   "2": [
+    199,
+    71753
+   ],
+   "3": [
+    212,
+    403675
+   ],
+   "4": [
+    115,
+    71061
+   ]
+  },
+  "footprint": 296769,
+  "floorArea": 964930,
+  "floorAreaHousing": 564815,
+  "attic": 68394,
+  "volume": 3489259,
+  "roofArea": 328929,
+  "roofBy": {
+   "flach": 155730,
+   "N": 10820,
+   "NO": 27276,
+   "O": 5646,
+   "SO": 41575,
+   "S": 11708,
+   "SW": 27165,
+   "W": 5833,
+   "NW": 43175
+  },
+  "roofUsable": 140510,
+  "pvKwp": 28102,
+  "pvKwh": 23767608,
+  "pvKwpToday": null,
+  "heatDemand": 98783864,
+  "listed": 18,
+  "vacant": 0,
+  "quality": {
+   "lv": [
+    430,
+    118,
+    1931,
+    0
+   ],
+   "roof": [
+    885,
+    1594,
+    0,
+    0
+   ]
+  }
+ },
+ "zentrum": {
+  "buildings": 1019,
+  "byUse": {
+   "wohnen": [
+    657,
+    74567,
+    294368
+   ],
+   "kultur": [
+    14,
+    26714,
+    100979
+   ],
+   "verwaltung": [
+    22,
+    10064,
+    38597
+   ],
+   "buero": [
+    16,
+    7206,
+    27351
+   ],
+   "handel": [
+    21,
+    12111,
+    25778
+   ],
+   "hotel": [
+    7,
+    4736,
+    21882
+   ],
+   "verkehr": [
+    13,
+    3861,
+    9526
+   ],
+   "schule": [
+    10,
+    2989,
+    8483
+   ],
+   "neben": [
+    144,
+    5509,
+    6572
+   ],
+   "sonst": [
+    23,
+    3695,
+    5182
+   ],
+   "gewerbe": [
+    16,
+    2186,
+    4038
+   ],
+   "kirche": [
+    5,
+    2352,
+    3221
+   ],
+   "garage": [
+    55,
+    3077,
+    3214
+   ],
+   "industrie": [
+    4,
+    589,
+    2222
+   ],
+   "gesundheit": [
+    5,
+    564,
+    1629
+   ],
+   "versorgung": [
+    6,
+    308,
+    308
+   ],
+   "landwirtschaft": [
+    1,
+    32,
+    32
+   ]
+  },
+  "byEra": {
+   "0": [
+    332,
+    107520
+   ],
+   "1": [
+    275,
+    124587
+   ],
+   "2": [
+    50,
+    24870
+   ],
+   "3": [
+    120,
+    243015
+   ],
+   "4": [
+    43,
+    43603
+   ]
+  },
+  "footprint": 160558,
+  "floorArea": 553382,
+  "floorAreaHousing": 294368,
+  "attic": 37115,
+  "volume": 2071595,
+  "roofArea": 178414,
+  "roofBy": {
+   "flach": 83395,
+   "N": 5068,
+   "NO": 13966,
+   "O": 2374,
+   "SO": 25600,
+   "S": 5702,
+   "SW": 13685,
+   "W": 2560,
+   "NW": 26065
+  },
+  "roofUsable": 78506,
+  "pvKwp": 15701,
+  "pvKwh": 13255353,
+  "pvKwpToday": null,
+  "heatDemand": 58093712,
+  "listed": 16,
+  "vacant": 0,
+  "quality": {
+   "lv": [
+    161,
+    28,
+    830,
+    0
+   ],
+   "roof": [
+    343,
+    676,
+    0,
+    0
+   ]
+  }
+ },
+ "complete": {
+  "stadt": false,
+  "kernstadt": false,
+  "zentrum": true
+ },
+ "viertel": {
+  "mitte": {
+   "area": 2.35,
+   "buildings": 1903,
+   "floorArea": 745311,
+   "floorAreaHousing": 428066,
+   "roofArea": 255969,
+   "pvKwp": 21995,
+   "heatDemand": 78659478,
+   "official": {
+    "residents": 5943,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "nord": {
+   "area": 7.84,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 3375,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "lautenberg": {
+   "area": 5.94,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 3988,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "aue": {
+   "area": 3.57,
+   "buildings": 217,
+   "floorArea": 160293,
+   "floorAreaHousing": 108118,
+   "roofArea": 44094,
+   "pvKwp": 3973,
+   "heatDemand": 13235618,
+   "official": {
+    "residents": 3179,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "friedberg": {
+   "area": 5.18,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 2609,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "doellberg": {
+   "area": 2.18,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 2346,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "ilmenauer": {
+   "area": 2.7,
+   "buildings": 56,
+   "floorArea": 5433,
+   "floorAreaHousing": 4837,
+   "roofArea": 3170,
+   "pvKwp": 224,
+   "heatDemand": 753123,
+   "official": {
+    "residents": 5503,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "goldlauter": {
+   "area": 21.07,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 2403,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "neundorf": {
+   "area": 5.47,
+   "buildings": 303,
+   "floorArea": 53893,
+   "floorAreaHousing": 23794,
+   "roofArea": 25695,
+   "pvKwp": 1910,
+   "heatDemand": 6135645,
+   "official": {
+    "residents": 770,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "heinrichs": {
+   "area": 9.09,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 1288,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "maebendorf": {
+   "area": 5.64,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 591,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "albrechts": {
+   "area": 9.37,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 1217,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "dietzhausen": {
+   "area": 6.73,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 1032,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "wichtshausen": {
+   "area": 5.41,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 486,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "vesser": {
+   "area": 10.24,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 165,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "schmiedefeld": {
+   "area": 18.27,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 1641,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  },
+  "gehlberg": {
+   "area": 20.62,
+   "buildings": 0,
+   "floorArea": 0,
+   "floorAreaHousing": 0,
+   "roofArea": 0,
+   "pvKwp": 0,
+   "heatDemand": 0,
+   "official": {
+    "residents": 463,
+    "year": 2022,
+    "date": "2022-12-31",
+    "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   }
+  }
+ }
+}

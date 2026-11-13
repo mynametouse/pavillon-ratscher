@@ -66,6 +66,75 @@ def house(fr, bid, cx, cy, length, width, az, eave, pitch, **extra):
     return b
 
 
+def d_record(h):
+    """the scenario numbers of an invented house in the layout of the product d (the real ones: tools/suhl/daten/zahlen.py)"""
+    sc = S.MODEL_SCALE ** 2
+    f = h['f']
+    fa = abs(schema.core.ring_area(f)) * sc
+    rows, ru, pv = [], 0.0, 0.0
+    for r in h['R']:
+        us = r2(0.7 * r['a'])
+        ir = 96 if 90 <= r['az'] <= 270 else 70
+        rows.append([r['a'], r['ap'], round(r['az']), round(r['sl']), r['c'], us, r2(us * 0.2), ir])
+        if ir >= 75:
+            ru, pv = ru + us, pv + us * 0.2
+    d = {'vt': 1, 'm': [r2(sum(f[0::2]) / (len(f) // 2)), r2(sum(f[1::2]) / (len(f) // 2))], 'use': h['use'], 'era': h['era'], 'k': h['k'],
+         'bt': h.get('bt', 'efh'), 'fa': r2(fa), 'lv': h['lv'], 'gfa': r2(fa * h['lv']), 'h': h['h'], 'e': h['e'],
+         'vol': r2(fa * (h['e'] + (h['h'] - h['e']) / 2)), 'rf': r2(sum(r[0] for r in rows)), 'R': rows,
+         'ru': r2(ru), 'pv': r2(pv), 'pe': round(pv * 950 * 0.96), 'q': {'lv': 0, 'rf': 0, 'pv': 0}}
+    if h['use'] == 'wohnen':
+        d.update({'res': round(fa * h['lv'] / 45.0, 1), 'heat': {'k': 'gas', 'd': round(0.8 * fa * h['lv'] * 150)}})
+        d['q'].update({'res': 0, 'heat': 0})
+    if h.get('fg'):
+        d['fg'] = h['fg']
+    return d
+
+
+def d_viertel(recs):
+    """viertel.json of the example: ONE invented quarter on a raster of 8 x 8 cells of 100 m around the Markt tile"""
+    import base64
+    L, x, y = 10, 497, 542
+    x0, y0 = (x - 1) * 4, y * 4                       # level-12 tile numbers of the south-west corner of the tile west of the Markt tile
+    e0, n0 = S.tbounds(12, x0, y0)[:2]
+    all_ = [d for t in recs.values() for d in t.values()]
+    use, era = {}, {}
+    for d in all_:
+        u = use.setdefault(d['use'], [0, 0.0, 0.0])
+        u[0], u[1], u[2] = u[0] + 1, u[1] + d['fa'], u[2] + d['gfa']
+        if d['use'] not in ('neben', 'garage'):
+            e = era.setdefault(str(d['era']), [0, 0.0])
+            e[0], e[1] = e[0] + 1, e[1] + d['gfa']
+    tot = lambda k: round(sum(d.get(k, 0) for d in all_))        # noqa: E731
+    roof = {}
+    for d in all_:
+        for r in d['R']:
+            k = 'flach' if r[2] is None else ('N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW')[int(((r[2] % 360) + 22.5) // 45) % 8]
+            roof[k] = roof.get(k, 0.0) + r[0]
+    sums = {'buildings': len(all_), 'byUse': {k: [v[0], round(v[1]), round(v[2])] for k, v in use.items()},
+            'byEra': {k: [v[0], round(v[1])] for k, v in era.items()}, 'footprint': tot('fa'), 'floorArea': tot('gfa'),
+            'floorAreaHousing': round(sum(d['gfa'] for d in all_ if d['use'] == 'wohnen')), 'volume': tot('vol'),
+            'roofArea': round(sum(roof.values())), 'roofBy': {k: round(v) for k, v in roof.items()}, 'roofUsable': tot('ru'), 'pvKwp': tot('pv'),
+            'pvKwh': tot('pe'), 'pvKwpToday': None, 'heatDemand': round(sum(d.get('heat', {}).get('d', 0) for d in all_)), 'complete': False}
+    q = {'nr': 1, 'id': 'beispiel', 'name': 'Beispielviertel (erfunden)', 'kind': 'viertel', 'area': 0.64,
+         'center': [int(e0 + 400), int(n0 + 400)], 'r': 566, 'poly': [[[int(e0), int(n0)], [int(e0 + 800), int(n0)], [int(e0 + 800), int(n0 + 800)],
+                                                                        [int(e0), int(n0 + 800)]]],
+         'outline': {'q': 0, 'src': 'regel', 'how': 'erfunden'}, 'tiles': sorted(f'{t[0]}/{t[1]}' for t in recs),
+         'official': {'residents': 12, 'year': 2022, 'src': 'erfunden'},
+         'residents': {'model': round(sum(d.get('res', 0) for d in all_), 1), 'q': 0, 'how': 'erfunden: Geschossfläche / 45 m²'}}
+    q.update(sums)
+    areas = []
+    for aid in ('zentrum', 'kernstadt', 'stadt'):
+        a = {'id': aid, 'name': aid, 'kind': 'gebiet'}
+        a.update(sums)
+        areas.append(a)
+    return {'schema': S.SCHEMA, 'product': 'd', 'version': 0, 'made': MADE, 'area': 'probe', 'partial': True, 'crs': 'EPSG:25832',
+            'meta': {'stand': MADE, 'annahmen': [{'id': 'beispiel', 'text': NOTE}], 'felder': {'R': list(schema.R_COLS)}},
+            'raster': {'crs': 'EPSG:25832', 'level': 12, 'cell': 100.0, 'x0': x0, 'y0': y0, 'w': 8, 'h': 8, 'e0': e0, 'n0': n0,
+                       'order': 'row 0 = south, column 0 = west; byte = quarter number, 0 = outside the municipality',
+                       'data': base64.b64encode(bytes([1]) * 64).decode('ascii')},
+            'viertel': [q], 'gebiete': areas}
+
+
 def write(root):
     """write the example below root; returns the list of product version folders"""
     L, x, y = 10, 497, 542                                           # the Markt tile
@@ -120,9 +189,13 @@ def write(root):
               'ways': [[3, 0, 60, 0, 1, 0, pts, 0, 0, 0, 0, 0, 2]],
               'areas': [[0, 2, 0, 0, 'w0', 1, 0, [-300, 600, 572, 100, 600, 572, 100, 1000, 573, -300, 1000, 573], []]]})
     S.write_json(os.path.join(root, S.tile_path('s', 0, L, x, y)), d)
-    # ---- d: scenario numbers as a product of their own
-    S.write_json(os.path.join(root, S.tile_path('d', 0, L, x, y)), {'schema': S.SCHEMA, 'product': 'd', 'version': 0, 'key': fr.key, 'made': MADE,
-                                                                    'd': {'BEISPIEL_1': h1['d']}})
+    # ---- d: scenario numbers as a product of their own (package S2-9): the numbers of the houses and viertel.json with one quarter
+    recs = {(fr.x, fr.y): {h['id']: d_record(h) for h in (h1, h2)}, (fr2.x, fr2.y): {h3['id']: d_record(h3)}}
+    for f in (fr, fr2):
+        d = head('d', f)
+        d.update({'n': len(recs[(f.x, f.y)]), 'd': recs[(f.x, f.y)]})
+        S.write_json(os.path.join(root, S.tile_path('d', 0, f.L, f.x, f.y)), d)
+    S.write_json(os.path.join(root, S.product_dir('d', 0), 'viertel.json'), d_viertel(recs), compact=False)
     # ---- _probe: what the publish test sends
     d = head('_probe', fr)
     d['b'] = []
