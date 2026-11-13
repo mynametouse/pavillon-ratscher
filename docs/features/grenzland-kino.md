@@ -43,7 +43,8 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   - Überblendung ~2 s; **stumm im freien Spiel und solange das Autoradio spielt**; **8 dB leiser**, solange eine Stimme spricht.
 - **Das Büro im Außenlager** (`gl_lager.js`, Wunsch des Leads): innen Holzvertäfelung, dunkle Decke, eine Leuchte, die nachts brennt – die
   gerahmte Karte hängt sichtbar **innen** an der Rückwand. Gibt die Tür nach, zeigt ein **Zwischenschnitt** (3,4 s, `GLKAMERA.einstellung`)
-  durch die Tür auf die Rückwand mit dem Rahmen; nicht, wenn ein Wachmann gerade jagt; Leertaste/Esc kürzt ab.
+  aus der Türöffnung (einen Schritt innen – wer die Tür aufgebrochen hat, steht hinter der Kamera) auf die Rückwand mit dem Rahmen; nicht,
+  wenn ein Wachmann gerade jagt; Leertaste/Esc kürzt ab.
 - **Leuchtkugel**: Mission 4 meldet `grenzland:flare { x, y, z }` (Bild: Agent licht). Die kleine rote Kugel bleibt nur, solange es
   `window.GLLICHT` nicht gibt.
 - **Taschenlampen**: `F.lampe = true` für die drei Männer an der Klinge, den ABV 1989 (Dämmerung) und – nachts – die Wachen im Außenlager
@@ -65,6 +66,8 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   wären die Gespräche an der Staumauer, an der Scheune und im Garten ohne Bild geblieben.
 - **Aufstellen**: steht man zu nah (unter 1,3 m) oder zu weit (3,2–9 m) vom Gegenüber, setzt der erste Schnitt einen auf gut zwei Meter
   (das verdeckt der Schnitt, so macht es GTA). Die Partnerin wird nur versetzt, wenn sie weiter als 3,5 m weg ist.
+- **Ein Meter Abstand zur Partnerin**: der Modus blendet sie aus, wenn die Kamera näher als 0,8 m kommt (gegen Haare im Bild) – jede
+  Einstellung hält deshalb einen Meter Abstand zu ihren Füßen (sonst war ihre Nahaufnahme leer).
 - **Ego-Sicht**: wer die Ich-Sicht gewählt hat, sieht in der Zwischensequenz seine Figur (die Sicht kommt danach zurück).
 - **Versetzt mitten im Gespräch** (z. B. ein Test mit `GAME.view`): die Zwischensequenz läuft dort weiter (neue Seite, neuer Schnitt), wenn
   die Leute in 14 m sind; versetzt die Mission selbst (`GLMISSION.hin`), endet sie ohne Rückfahrt.
