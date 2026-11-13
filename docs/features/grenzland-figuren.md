@@ -141,3 +141,109 @@ Noch offen: siehe unten.
 - Ein Barhocker oder Sitzplätze an der Kegelbahn stehen nicht in den Daten (`GLDATA.ORTE`); `GLFIG.platz` kennt nur die Bänke des
   Dorfkerns und den Ring der Dorflinde.
 - Füße gleiten beim Rennen kaum; sehr kleine oder sehr große Figuren etwas (die Schrittlänge folgt der Hüfthöhe).
+
+---
+
+# Grenzland, Runde 3: Helme, wie sie sind (Hilfs-Agent `helm`, 13.11.2026)
+
+Auftrag: `docs/plans/auftraege/grenzland3-helm.md` (Falko 20:44: „Die Helme sehen leider völlig unrealistisch aus“, zwei Fotos).
+Dateien: neu `viz3/src/grenzland/gl_helm.js` (`GLHELM`, eine Zeile in `viz3/src/modules.txt` vor `gl_fig.js`), in
+`viz3/src/grenzland/gl_fig.js` nur `HUTC` (die Helm-Schlüssel) und `hatOn` (Helme gehen an `GLHELM`), der alte `HUT.helm` ist weg;
+Test `viz3/test/grenzland_helm.py`, `viz3/extra/grenzland-helm/tests.txt`.
+
+## Was falsch war (Falkos Fotos)
+
+- Die Schale war eine grobe Halbkugel (16 × 8 Facetten, jede sichtbar – das Bau-Kit der Hüte rechnet je Dreieck eine eigene Normale),
+  blassgrau bei allen, matt, ohne Dicke und Kantenschutz, und saß zu tief: der Rand lag rundum auf Augenhöhe.
+- Der schwarze Balken über Stirn/Augen war ein Kasten als „Schirm“ – auf Timo eine Augenbinde, auf Jule ein Strich über die Stirn.
+- Kein Kinnriemen, kein Ohrteil, kein Visier. Die Frau mit Helm auf beiden Fotos ist übrigens Jule (`hut: 'helm'` in den Darstellerdaten),
+  nicht Sarah – Sarah und Falko tragen als Figuren keinen Helm, nur die Spielfigur auf dem Moped (`gl_fahndung.js`, `'helmrot'`).
+- Falkos Kopf auf dem ersten Foto (dunkles Gesicht, graues Band): das ist die **Sturmhaube** aus `gl_fahndung.js` (`sturmhaube()`): ein
+  dunkles Ei aus dem Hut-Kit über dem ganzen Kopf bis zum Hals mit Augenschlitz, die Oberseite spiegelt den Himmel grau. Kein Helm-Fehler
+  – siehe „Für den Lead“.
+
+## Was es jetzt gibt
+
+- **Jethelm** (offenes Gesicht, der Helm der Clique auf der Simson): eine ovale Schale, länger als breit, glatt (die Normalen der Fläche,
+  nicht der Facetten), unterhalb der breitesten Stelle fast senkrecht über die Ohren hinab; die Schnittkante vorn knapp über den
+  Augenbrauen (an den Augen-Knochen des Rigs ausgerichtet: Rand ≈ 3,6 cm über der Augenmitte), an den Schläfen schräg hinab vor das Ohr,
+  unter den Ohrläppchen entlang und im Nacken etwas höher; ein weicher dunkler Gummi-Kantenschutz rundum, man sieht die Dicke von Schale
+  und Polster, innen das dunkle Futter; ein Kinnriemen (zwei Riemen aus den Ohrteilen unter das Kinn, eine Steckschnalle); entweder ein
+  kurzer **Druckknopf-Schirm** (gebogen, leicht hoch, drei Knöpfe) oder ein **getöntes Visier**, hochgeklappt über der Stirnpartie, mit
+  Scharnierknöpfen an den Schläfen.
+- Lack in glaubhaften Farben, je Person einer (Schlüssel in `HUTC`): `helm` (creme, Schirm – der bisherige Standard der Darstellerdaten),
+  `helmcreme` (creme, Visier), `helmweiss` (weiß, schwarzer Schirm), `helmrot` (rot, Schirm – die Spielfigur), `helmrotvisier`,
+  `helmoliv` (oliv, schwarzer Schirm), `helmblau` (hellblau, Visier), `helmjetschwarz` (schwarz glänzend, Visier).
+- **Taktischer Helm** der Spezialkräfte (`helmschwarz`, `gl_fahndung.js`): hoch geschnitten (die Ohren frei), vorn über den Brauen,
+  hinten bis zum Nacken, Schienen an den Seiten, eine Halterung vorn, Vierpunkt-Riemen, matt schwarz.
+
+## Wie es gemacht ist (Entscheidungen)
+
+- **Eigene Geometrie statt Hut-Kit:** `gl_helm.js` baut die Schale als Fläche über (Winkel um den Kopf, Winkel von oben) mit Normalen aus
+  den Ableitungen – deshalb glatt bei ≈ 1 400 Dreiecken. Die Kante folgt einer Höhenlinie je Winkel; wo sie steil fällt (vor dem Ohr),
+  liegen die Stützstellen dichter.
+- **Passform je Kopf:** `GLFIG.headOf` liefert Breite/Tiefe der Schädelkrone und die Nasenspitze; die Augenhöhe kommt von den
+  Augen-Knochen des Rocketbox-Rigs (alle Darsteller haben sie; sonst 4,5 cm über der Nasenspitze – an den Darstellern gemessen
+  4,2–5,2 cm). Breite und Tiefe sind begrenzt (die Krone von `headOf` schließt Ohren und Haar ein – ein Helm sitzt auf dem Schädel; Haar
+  darf unten heraushängen, wie bei echten Helmen). Gebaut wird einmal je Art, Farbe und Kopf; alle teilen die Geometrie.
+- **Kein neues Shader-Programm:** der Lack ist der Lack der Fahrzeuge des Modus (`GLMOD.paint(Farbe, 0)` – der klarlackierte Lack des
+  Spielerautos, ein Material je Farbe, dasselbe Programm), Kante, Futter, Riemen, Schnalle, schwarze Schirme, das Visier und der
+  taktische Helm das Material des Verkehrs (`VFIG.mat()`). Ohne `GLMOD` fällt der Lack auf `VFIG.mat()` zurück. Zwei Draw-Calls
+  (der taktische Helm einer), ≈ 2,4–2,5 k Dreiecke je Helm.
+- **Visier ohne Durchsicht:** ein hochgeklapptes Visier liegt auf der Schale; man sieht von ihm vor allem die Tönung über dem Lack und
+  die Kante. Ein erster Versuch mit dem Glas der Fahrzeuge (`GLMOD.glass()`, durchsichtig) zeigte durch die Schale hindurch die Stirn
+  (`out/grenzland_helm_v2/4_jule_nah.jpg`) – deshalb ist das Visier jetzt getönter Kunststoff im Material des Verkehrs.
+- **Haare:** bei den Figuren des Modus bleiben die Haare des Modells; die Schale ist so groß, dass nichts durchsticht; was unten
+  herausschaut (Zopf, Nacken, Stirnfransen), ist wie bei echten Helmen. Bei der Spielfigur drückt `gl_fahndung.js` das Haar wie unter dem
+  Forsthelm des Grundspiels (`helmU`) – unverändert.
+- **1989:** in der Rückblende trägt niemand einen Helm (die Darstellerdaten von 1989 haben keinen) – nichts gebaut.
+
+## Getestet (Helme)
+
+- `viz3/test/grenzland_helm.py` (lokal Port 9015, auf Actions `viz3/extra/grenzland-helm/tests.txt`): sechs Köpfe – Jule, Timo, Basti,
+  Falko und Sarah als Figuren, ein Polizist mit dem Helm der Spezialkräfte – je von vorn, von der Seite, dreiviertel, ganz nah und von
+  hinten, zwei im Gespräch auf Gesprächsabstand, vier bei Nacht, Jule auf einer S 51, die Spielfigur mit ihrem Helm auf dem Moped (stehend,
+  von vorn, von hinten, in Fahrt), dazu die Sturmhaube zum Vergleich. Bilder in `out/grenzland_helm/`, frühere Stände in
+  `out/grenzland_helm_v1/` (erste Form, zu breit) und `out/grenzland_helm_v2/` (Visier aus Fahrzeugglas – verworfen).
+- Prüfungen: der tiefste Punkt der Kante vorn (im Bereich der Augen) liegt bei jedem Kopf ≥ 1,5 cm über den Augen-Knochen (im Stand in
+  der Welt und im Kopf-Rahmen, beim Fahren im Kopf-Rahmen – der Kopf neigt sich); kein Punkt des Helms (ohne Riemen) in einem Kasten vor
+  Augen und Brauen; ≤ 3 000 Dreiecke in ≤ 3 Meshes je Helm; **keine neuen Shader-Programme** (gezählt nach Figuren und Fahrzeugen des Modus
+  im Bild, vor und nach den Helmen); der Helm der Spielfigur nach dem Absteigen weg; nach „Beenden“ kein Helm mehr in der Szene; keine
+  Seitenfehler.
+- **Ergebnis:** lokal `grenzland_helm` **25/25** (21:41, 423 s; Programme 176 → 176, je Helm 2 436–2 480 Dreiecke in 1–2 Meshes, Kante
+  vorn im Kopf-Rahmen 3,2–3,6 cm über der Augenmitte, beim Fahren 3,2 cm). Auf Actions (Stand `e1ac32afb`): `grenzland_figuren`
+  beide Teile grün, `smoke` grün; `grenzland_helm` dort rot an einer Stelle – Falko stand mit leicht geneigtem Kopf (Leerlauf-Clip), die
+  Kante lag in der Welt nur 1,4 cm über dem Auge. Seitdem misst der Test die 1,5 cm im Kopf-Rahmen und in der Welt nur „über dem Auge“.
+- Der alte Figuren-Test lokal (21:52, Stand `d23a2b1cb`): `grenzland_figuren:moped,trabi,reiter` **21/21** – Timo auf der Schwalbe
+  mit dem Standard-`helm` in `out/grenzland_figuren/4_reiter_schwalbe_stand.jpg`.
+- Bilder: `out/grenzland_helm/uebersicht.jpg` (alle sechs aus fünf Richtungen), `6_gespraech_timo_jule.jpg`, `7_nacht_*.jpg`,
+  `8_jule_reitet_*.jpg`, `9_spieler_moped_*.jpg`, `9_spieler_sturmhaube.jpg`. Vorher: Falkos Fotos (13.11. 20:44).
+
+## Für den Lead (Helme)
+
+- **Vorschlag für `gl_data.js` (`hut`)**: Jule `'helmblau'` (hellblau, getöntes Visier), Timo `'helmweiss'` (weiß, schwarzer Schirm –
+  der klassische Simson-Helm), Basti, falls er fährt, `'helmjetschwarz'` (schwarz glänzend, Visier). Der bisherige Wert `'helm'` bleibt
+  gültig (creme mit Schirm). `'helmoliv'` gibt es, wirkt aber auf den Bildern militärisch – nicht für die Clique.
+- **Spielfigur auf dem Moped** (`gl_fahndung.js`, `aussehen()`, Zeile mit `GLFIG.hatOn(model, null, 'helmrot')`): je Person
+  `GL.wer === 'f' ? 'helmcreme' : 'helmrot'` (Sarah creme mit Visier, Falko rot mit Schirm).
+- **Sozius ohne Helm:** wer hinten mitfährt (`GLPOSE.sozius`, die Partnerfigur), trägt keinen Helm – in Deutschland Pflicht und auf
+  `9_spieler_moped_seite.jpg` gut zu sehen. Vorschlag für `gl_modus.js` (`partnerTick`), solange `F.rides` und sichtbar:
+  `F.helmG = F.helmG || GLFIG.hatOn(F.f.model, null, F.id === 'sarah' ? 'helmcreme' : 'helmrot')`, beim Absteigen
+  `F.helmG.parent && F.helmG.parent.remove(F.helmG); F.helmG = null`.
+- **Sturmhaube** (`gl_fahndung.js`, `sturmhaube()`, Falkos erstes Foto): ein Ei aus dem Hut-Kit (facettiert, Abstand zum Gesicht) im Material
+  des Verkehrs (Rauheit 0,55 – die Oberseite spiegelt den Himmel als graues Band). Besser: eine raue Kopie des Materials
+  (`VFIG.mat().clone()`, `roughness = 1`, dasselbe Programm), enger am Kopf (Breite/Tiefe wie `GLHELM.fit`, + 6–8 mm) und glatte Normalen
+  – die Schalen-Funktion `shell()` in `gl_helm.js` kann das (ein Rand rundum am Hals, der Augenschlitz als Lücke über der Augen-Höhe aus
+  den Augen-Knochen). Nicht gebaut – die Datei ist deine.
+- Neue Schlüssel in `HUTC` (`gl_fig.js`): `helmcreme`, `helmweiss`, `helmrotvisier`, `helmoliv`, `helmblau`, `helmjetschwarz`;
+  `helm`, `helmrot`, `helmschwarz` bleiben (jetzt Jethelm bzw. taktischer Helm).
+
+## Offen (Helme)
+
+- Ein Integralhelm (mit Kinnbügel) ist nicht gebaut (war „optional“); die Schalen-Funktion trägt ihn (die Kante vorn um Augen und Mund).
+- Die Riemen laufen über geschätzte Punkte unter Kiefer und Kinn (aus der Nasenspitze); bei sehr breiten Kiefern verschwinden sie stellenweise
+  in der Haut – bei Gesprächsabstand nicht zu sehen.
+- Das Visier ist hochgeklappt und nicht durchsichtig; ein heruntergeklapptes, klares Visier bräuchte ein durchsichtiges Material, das nicht
+  wie das Fahrzeugglas durch die Schale schaut.
+- Langes Haar fällt unter dem Helm heraus (Zopf, Nacken) – gewollt; bei sehr voluminösem Haar oben kann es an der Stirn unter der Kante
+  hervorschauen.

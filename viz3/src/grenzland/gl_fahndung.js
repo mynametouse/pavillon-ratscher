@@ -306,7 +306,7 @@ export const GLFAHNDUNG = (() => {
     if (want && !S.helmG) {
       let g = null;
       try {
-        g = GLFIG.hatOn(model, null, 'helmrot');
+        g = GLFIG.hatOn(model, null, GL.wer === 'f' ? 'helmcreme' : 'helmrot');
       } catch (e) {}
       S.helmG = { g, model, F, u0: F.helmU ? F.helmU.value : 0 };
       if (g && F.helmU) F.helmU.value = 1;
@@ -333,7 +333,8 @@ export const GLFAHNDUNG = (() => {
   }
   // a balaclava of dark knit over the head down to the neck, an eye slit – in the head's own frame (GLFIG.headOf: the crown at the
   // origin, x right, y ahead, z up), the traffic's material
-  let haubeGeo = null;
+  let haubeGeo = null,
+    haubeMat = null;
   function sturmhaube(model) {
     const H = GLFIG.headOf && GLFIG.headOf(model);
     if (!H) return null;
@@ -369,7 +370,14 @@ export const GLFAHNDUNG = (() => {
       }
       haubeGeo = K.geo();
     }
-    const m = new THREE.Mesh(haubeGeo, VFIG.mat()),
+    // (knit is matt: the traffic's material reflected the sky as a grey band – a clone keeps the program, rough and without sheen)
+    if (!haubeMat) {
+      haubeMat = VFIG.mat().clone();
+      if ('roughness' in haubeMat) haubeMat.roughness = 1;
+      if ('metalness' in haubeMat) haubeMat.metalness = 0;
+      if ('envMapIntensity' in haubeMat) haubeMat.envMapIntensity = 0.25;
+    }
+    const m = new THREE.Mesh(haubeGeo, haubeMat),
       g = new THREE.Group();
     m.userData.noMerge = true;
     m.userData.shared = true;
