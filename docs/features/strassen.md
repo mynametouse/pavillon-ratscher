@@ -65,8 +65,10 @@ Straßensystem, sondern liefert seine Straßen im Format von `fahrt/strassen.jso
 - **`FAHRT.add(name, json, opts)` / `FAHRT.drop(name)`** (`welt/fahrt.js`, Blöcke „feat/strassen round 2“; F1): eine Datei im Format von
   `fahrt/strassen.json` kommt dazu und geht wieder – `ways` (mit den Tabellen `kinds`, `surf`, `names`), dazu, was sie hat: `places`,
   `signs`, `routes`, `areas`, die Listen `lanes` und `s0` neben `ways`, `orte`. `opts.carve: false`: dort wird kein Boden
-  zurechtgeschnitten (eine Zone mit eigenem Boden); `opts.decks: false`: die Zone baut ihre Brücken selbst. Kommt ein Satz, bevor die
-  Straßen der Region geladen sind, wartet er auf sie. Ortsanzeige, Karte beim Fahren, `KERN.surface`, die Straßenkarte um den
+  zurechtgeschnitten (eine Zone mit eigenem Boden); `opts.decks: false`: die Zone baut ihre Brücken selbst; `opts.places: false`: sie
+  nennt ihre Orte selbst (`KERN.place`). Eine Route mit Namen (`routes.x.n`) ist ein Ziel auf der kleinen Karte („Suhl 12 km“). Kommt
+  ein Satz, bevor die Straßen der Region geladen sind, wartet er auf sie; ein Satz gehört dem, der ihn gebracht hat (er bleibt, wenn
+  `FAHRT` einschläft). Gedacht für viele kleine Sätze (je Kachel einer Stadt einer): ein Aufruf ordnet nur ein. Ortsanzeige, Karte beim Fahren, `KERN.surface`, die Straßenkarte um den
   Beobachter und die Farbe auf den Brückendecks ziehen nach; `FAHRT.rev` zählt die Änderungen, `FAHRT.sets()` nennt die Sätze.
   Intern hält das Raster jetzt (Weg, Teilstück)-Paare statt Indizes, Wege und Schilder tragen eine Kennung – so kann ein Satz gehen,
   ohne dass etwas neu aufgebaut wird (gemessen mit dem Probesatz des Suhler Zentrums, 1 328 Wege und 153 Flächen: dazu 6–9 ms, weg
@@ -92,8 +94,14 @@ Straßensystem, sondern liefert seine Straßen im Format von `fahrt/strassen.jso
 - **Das Bild der Schildflächen wächst** (`STRMOD.atlas(...).add(list)`): neue Flächen (ein Tempo, das es bisher nicht gab, ein
   Stationszeichen) kommen in die freien Felder; sind die Zeilen voll, wird das Bild nach unten größer. Die gebauten Schilder behalten
   ihre Texturkoordinaten – sie zählen in einem Bild von 32 Zeilen, die Transformation der Textur bildet sie auf die Zeilen ab, die es
-  gibt (bis 256 Flächen).
+  gibt (bis 256 Flächen). Die Farbe auf den Brückendecks folgt `FAHRT.rev` Brücke für Brücke (nur was kam oder ging, wird angefasst).
 - **`STRKARTE.refresh()`**: rastert das Fenster sofort neu (ruft `FAHRT.add`/`drop` selbst).
+- **`FAHRT.ground(fn)`**: eine Zone mit eigenem Boden jenseits der Kachelsätze, die `welt/fahrt.js` kennt, sagt, wo er ist –
+  `fn(x, y)` → `true` (da), `false` (wird geladen) oder `undefined` (nicht ihr Land). Ohne das hieße es am Rand noch ladender
+  Kacheln „Hier endet die Karte.“ statt „Gelände lädt …“.
+- **Bebaute Flächen einmal schicken:** `orte` und `places` einer Stadt als eigener Satz (`FAHRT.add('stadt/orte', { ways: [], places,
+  orte })`), nicht mit jeder Kachel – sonst liegt dieselbe Fläche vielfach in der Suche. Sätze von `STRDAT.add` ohne `orte` (nur
+  Ausstattung) lassen die Stile der Straßen in Ruhe (`STRDAT.orev` zählt nur Änderungen der Flächen).
 - **Werkzeug** (W5): `daten.py --fahrt <Straßendatei> --osm <Auszug.opl> --out <Datei>` rechnet die Ausstattung für ein anderes Gebiet
   (ohne das Quadrat der App; OpenStreetMap aus einer OPL-Datei von osmium statt aus den Zellen des API-Caches).
 - **Gemessen mit dem echten Probesatz des Suhler Zentrums** (`suhl/strassen`: 1 328 Wege, 6 759 Teilstücke, 153 Flächen im Fenster):
@@ -115,13 +123,14 @@ deren Achsen und Breiten ausgerichtet. Braucht `pyproj`, `numpy`. Nach neuen Fah
 ## Schnittstellen
 
 - `STRDAT` (früh geladen, vor `world/roads.js`): `ready`, `when(fn)`, `placeAt(x, y)` → 0/1/2, `ortAt`, `data`; Runde 2: `add(name,
-  json)`, `drop(name)`, `sets`, `rev`, `onChange(fn)`.
+  json)`, `drop(name)`, `sets`, `rev`, `orev`, `onChange(fn)`.
 - `STRSTIL` (rein): `code/decode`, `styles`, `solids`, `marks`, `raster`, `read`; Runde 2: `rasterArea`, `LEVEL` (Art 9), `NC`, die
   Felder `s0`, `nc`, `noL`, `noR` eines Wegs im Raster.
 - `ROADS`: neu `W` (Uniform-Halter der Fensterkarte), `gloss(fs)`, `edgeAt(x, y)` (Randabstand zwischen den Pixeln), `at().style`.
 - `STRKARTE`: `active`, `at(x, y)`, `flush()` (Tests), `n`, `ms`; Runde 2: `refresh()`, `optsOf(weg)`.
 - `STRASSEN`: `state()` (Runde 2: `sets`, `faces`), `fill()` (Tests: alles Nahe sofort bauen), `audit(x0, y0, x1, y1)`.
-- `FAHRT` (Runde 2): `add(name, json, opts)`, `drop(name)`, `sets()`, `rev`, `areaAt(x, y)`; `FAHRT.data.areas`.
+- `FAHRT` (Runde 2): `add(name, json, opts)`, `drop(name)`, `sets()`, `rev`, `areaAt(x, y)`, `ground(fn)`; `FAHRT.data.areas`,
+  `FAHRT.data.dests`.
 - `?nostrassen`: ohne Ausstattung, ohne Fensterkarte, alle Straßen als freie Strecke.
 
 ## Tests

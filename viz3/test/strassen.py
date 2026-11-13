@@ -73,7 +73,7 @@ def probe_town(cx, cy):
         'areas': [[2, 64, 2, rect(10, 22, 70, 60), [rect(37, 38, 43, 44)], 'platz'], [0, 0, 0, rect(-50, 2, -12, 40), [], 'parken']],
         'places': [{'n': 'Probestadt', 'k': 'town', 'x': cx, 'y': cy, 'a': [town]}],
         'orte': [{'n': 'Probestadt', 't': 2, 'a': [[dm(v) for v in town]]}],
-        'signs': [], 'routes': {},
+        'signs': [], 'routes': {'probe': {'n': 'Probestadt', 'pts': [dm(cx - 85), dm(cy - 30), dm(cx + 28), dm(cy - 30)]}},
     }
     furn = {
         'lampen': [c for x in (-75, -45, -15, 15) for c in (dm(cx + x), dm(cy - 23.5), 180, 0)],
@@ -357,7 +357,8 @@ with lib.browser() as b:
         ok = E("FAHRT.add('probe', _probe, { carve: false })")
         s1 = J("FAHRT.status()")
         ck('FAHRT.add takes a road file while the app runs: ways, areas, a place, its built-up area', ok and s1['sets'] == ['probe'] and s1['ways'] == base['ways'] + 9 and s1['areas'] == 2
-           and E("STRDAT.sets.has('fahrt:probe')") and E(f"STRDAT.placeAt({P(0, 0)})") == 2 and E(f"FAHRT.place({P(-40, -30)})") == 'Probestraße, Probestadt',
+           and E("STRDAT.sets.has('fahrt:probe')") and E(f"STRDAT.placeAt({P(0, 0)})") == 2 and E(f"FAHRT.place({P(-40, -30)})") == 'Probestraße, Probestadt'
+           and E("FAHRT.data.dests.probe") == 'Probestadt' and E("!!FAHRT.data.routes.probe"),
            json.dumps({k: s1[k] for k in ('sets', 'ways', 'areas', 'rev')}) + ' ' + str(E(f"FAHRT.place({P(-40, -30)})")))
         ck('the road map is rastered again at once', E("STRKARTE.busy || STRKARTE.n >= 0") and (E("STRKARTE.flush()") or True) and E("STRKARTE.n") > base['maps'], f"{base['maps']} → {E('STRKARTE.n')} maps, {E('STRKARTE.ms')} ms")
         m = {k: at_(*q) for k, q in {'main': (-40, -30), 'ring': (40, -18), 'ringE': (40, -42), 'level': (40, 5), 'square': (25, 40), 'hole': (40, 41), 'park': (-30, 10), 'lane': (-30, 20),
@@ -379,7 +380,8 @@ with lib.browser() as b:
         g1 = J(gnd)
         ck('carve: false – the ground stays as it was', all(abs(a - b) < 0.01 for a, b in zip(g0, g1)), json.dumps([round(b - a, 3) for a, b in zip(g0, g1)]))
         # its furniture: four lamps, a speed limit and a kilometre stone with faces the picture did not have, a zebra crossing
-        ok = E("STRDAT.add('probe', _probeF)")
+        orev = E("STRDAT.orev")
+        ok = E("STRDAT.add('probe', _probeF)") and E("STRDAT.orev") == orev   # (furniture alone: the styles of the roads stay)
         E("STRASSEN.fill()")
         steps(1, 0.05)
         E("STRASSEN.fill()")
@@ -411,6 +413,18 @@ with lib.browser() as b:
         # a set that comes before the region's own roads are loaded waits for them (FAHRT asleep: a fresh page would be needed – here only
         # the contract: add answers true and drop takes a waiting set out again)
         ck('add and drop answer what they did', E("FAHRT.drop('nie')") is False and E("STRDAT.drop('nie')") is False and E("FAHRT.add('', _probe)") is False and E("FAHRT.add('x', {})") is False)
+        # a set may leave the place names to its zone; a zone with ground of its own tells where it is (or will be)
+        np0 = E("FAHRT.data.places.length")
+        E("FAHRT.add('p2', { ways: [], places: _probe.places }, { places: false })")
+        ck('opts.places: false – the set brings no place names', E("FAHRT.data.places.length") == np0 and E("FAHRT.drop('p2')") and not E("FAHRT.data.dests.probe"))
+        far = (-20500.0, 3000.0)
+        r0 = E(f"FAHRT.ready_({far[0]}, {far[1]})")
+        E(f"FAHRT.ground((x, y) => (Math.abs(x - {far[0]}) < 50 && Math.abs(y - {far[1]}) < 50 ? window._zg : undefined))")
+        E("window._zg = false")
+        r1 = E(f"FAHRT.ready_({far[0]}, {far[1]})")
+        E("window._zg = true")
+        r2 = E(f"FAHRT.ready_({far[0]}, {far[1]})")
+        ck('FAHRT.ground: a zone with ground of its own says where it is there (and where it is still loading)', r0 is False and r1 is False and r2 is True and E(f"FAHRT.ready_({far[0] + 200}, {far[1]})") is False, f"{r0} {r1} {r2}")
     if want('gl'):
         # the programs the roads' own meshes are drawn with: all of them were compiled while the loading screen was up
         mine = J("""(() => { const out = {}; for (const c of [...STRASSEN.cells.values(), ...STRASSEN.big.values()]) for (const o of c.meshes) for (const m of [].concat(o.material)) {
