@@ -62,9 +62,10 @@ export const WELT = (() => {
   // ---- tile sets: the test block and the blocks of detail zones (sub path below the base, own meta.json) ----
   const MAIN = { sub: '', base: S.base, meta: null, p: null, fail: -1e9, err: '' },
     SETS = [MAIN];
-  S.addSet = sub => {
+  S.addSet = (sub, base) => {
     let st = SETS.find(q => q.sub === sub);
-    if (!st) SETS.push((st = { sub, base: S.base + sub, meta: null, p: null, fail: -1e9, err: '' }));
+    // feat/suhl (W1): a set may live at an address of its own (base: the data repo of Suhl), not below WELT's base
+    if (!st) SETS.push((st = { sub, base: base || S.base + sub, meta: null, p: null, fail: -1e9, err: '' }));
     return st;
   };
   // ---- zones that need the tiles (a zone may name its own tile set: WELT.need('vessra', true, 'zonen/vessra/')) ----
@@ -99,8 +100,13 @@ export const WELT = (() => {
   // the set whose level rect holds tile (L, x, y)
   const setOf = (L, x, y) => {
     for (const st of SETS) {
-      const r = st.meta && st.meta.tiling.levels[L] && st.meta.tiling.levels[L].rect;
-      if (r && x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3]) return st;
+      const lv = st.meta && st.meta.tiling.levels[L],
+        r = lv && lv.rect;
+      if (!r || x < r[0] || x > r[2] || y < r[1] || y > r[3]) continue;
+      // feat/suhl (W2): a level may list its tiles (has: [[x, y], …]) – a municipality is no rectangle; rect is then only their frame
+      if (lv.has && !(lv.hasSet || (lv.hasSet = new Set(lv.has.map(q => q[0] + '/' + q[1])))).has(x + '/' + y))
+        continue;
+      return st;
     }
     return null;
   };
@@ -262,6 +268,7 @@ export const WELT = (() => {
     m.customProgramCacheKey = () => 'welt-tile' + (window.GLCHECK && GLCHECK.lite ? '-lite' : '');
     return m;
   }
+  S.tileMat = tileMat; // feat/suhl (W4): Suhl's far ground (levels 6–9) is drawn with the tiles' own material – same look, no new program
   // ---- level pads: a zone may set the terrain flat inside a polygon (a courtyard, the floor of a hall) ----
   const pads = [];
   const inPoly = (P, x, y) => {
@@ -628,12 +635,14 @@ export const WELT = (() => {
         const [E, N] = toU(x, y);
         low = cov(E - 130, N - 130) && cov(E + 130, N - 130) && cov(E - 130, N + 130) && cov(E + 130, N + 130);
       }
+      if (!low && S.lowerAlso && !insideBox(x, y)) low = !!S.lowerAlso(x, y); // feat/suhl (W3): under the far ground a zone draws itself
       p[i + 1] = saved[i + 1] - (low ? 40 : 0);
       if (low) n++;
     }
     S.lowered = n;
     outer.geometry.attributes.position.needsUpdate = true;
   }
+  S.lowerOuter = lowerOuter; // feat/suhl (W3): asked again when a zone's far ground came or went
   // ---- heights for KERN: the triangles of the finest drawn tile (as drawn) ----
   function heightAt(x, y) {
     if (!S.active || !S.visible || !S.visible.size || insideBox(x, y)) return undefined;
