@@ -39,8 +39,10 @@ Aufnahmen sprechen sie ab sofort mit echten Stimmen, ohne dass jemand etwas änd
 
 ## Entscheidungen (Falko schlief, alle Freigaben)
 
-- **Rangfolge und Budget (alle Dateien ≤ 6 MB, Ziel 5,8 MB):** welts Reaktionen geben jedem von zehn Kommentatoren jeden Satz (350 Zeilen) –
-  zusammen mit allem anderen wären das gut 12 MB. Deshalb:
+- **Rangfolge und Budget:** zuerst ≤ 6 MB; welts Reaktionen geben aber jedem von zehn Kommentatoren jeden Satz (370 Zeilen), alles zusammen
+  sind gut 11 MB. **Der Lead hat um 14:00 12 MB erlaubt** (`GL_BUDGET`, MP3 11,6 MB, mit den beiden Listen < 12 MB; jede Datei < 5 MB; die
+  Dateien laden erst, wenn ein Satz gesagt wird – die Seite wird nicht schwerer). Damit ist **alles** aufgenommen. Die Rangfolge bleibt für
+  den Fall, dass es wieder enger wird:
   1 = Geschichte (Gespräche der Missionen) – immer;
   2 = Welt (Polizeifunk und Rufe, die Zufallsereignisse, die Straße 1989, die eigenen Sätze des Spielers) – immer;
   2.5 = die Reaktionen der Leute, die auch in der Geschichte sprechen (Gerhard, Jule, Timo, Basti) – ihre Stimme darf nicht zwischen
@@ -50,8 +52,8 @@ Aufnahmen sprechen sie ab sofort mit echten Stimmen, ohne dass jemand etwas änd
   3.5 = die Reaktionen aller anderen (Verkäuferin, Yuki, Böller-Mann, Bratwurst-Uwe, Kirmesbursche, Kirmesmädchen);
   4 = die anderen Sender.
   2.5, 3.5 und 4 gehen **nur als ganze Person** (ein Sender oder ein Nachbar mit einem echten Satz zwischen lauter Gerätestimmen klingt
-  falsch). Kommen nach einem Merge neue Zeilen dazu, fällt zuerst das Ende der Stufe 3 heraus – es spricht dann wieder die Gerätestimme.
-  Die Reaktionen klingen etwas dumpfer (16 kHz, 24 kbit/s) – man hört sie auf der Straße, meist aus ein paar Metern.
+  falsch); was über dem Budget liegt, spricht mit der Gerätestimme. Die Reaktionen klingen etwas dumpfer (16 kHz, 24 kbit/s) – man hört
+  sie auf der Straße, meist aus ein paar Metern.
 - **Klang:** Personen 24 kHz mono, MP3 40 kbit/s, −17 LUFS, Stille an den Enden weg. Radiosprecher: Sendeklang (Hochpass 120 Hz, Tiefpass
   7 kHz, Kompressor, etwas Präsenz), 16 kHz, 24 kbit/s, −18 LUFS. Polizeifunk: Telefonband 300–3400 Hz, stark komprimiert, leicht
   übersteuert, 16 kHz, 24 kbit/s, −19 LUFS, ein Rauschstoß („Squelch“) dort, wo eine Durchsage beginnt und endet – die Beschreibung des
@@ -86,10 +88,10 @@ einer Szene begegnet, klingt verschieden; eine Stimme für zwei nur, wo sie sich
 | Falko (40, echt) | de-DE Conrad (Florian lieferte keinen Ton) | ±0 % | −1 Hz | 19 + 4 Antworten |
 | Sarah (36, echt) | de-DE Seraphina (Multilingual) | ±0 % | ±0 Hz | 21 + 4 Antworten |
 | Der Fremde (55) | de-DE Killian | −8 % | −12 Hz | 4 |
-| Jule (26) | de-DE Katja | +5 % | +1 Hz | 17 + 35 Reaktionen |
-| Timo (24) | de-DE Killian | +6 % | +2 Hz | 6 + 35 |
-| Basti (22) | de-AT Jonas | −8 % | −6 Hz | 4 + 35 |
-| Gerhard (72) | en-US Andrew (Multilingual) – wie im Dorf | −10 % | −6 Hz | 8 + 35 |
+| Jule (26) | de-DE Katja | +5 % | +1 Hz | 17 + 37 Reaktionen |
+| Timo (24) | de-DE Killian | +6 % | +2 Hz | 6 + 37 |
+| Basti (22) | de-AT Jonas | −8 % | −6 Hz | 4 + 37 |
+| Gerhard (72) | en-US Andrew (Multilingual) – wie im Dorf | −10 % | −6 Hz | 8 + 37 |
 | Gerhard 1989 (35) | en-US Andrew (Multilingual) | −2 % | −1 Hz | – |
 | Wachmann 1 | de-CH Jan | −4 % | −8 Hz | 5 |
 | Wachmann 2 | en-US Brian (Multilingual) | −2 % | −6 Hz | 4 |
@@ -97,34 +99,41 @@ einer Szene begegnet, klingt verschieden; eine Stimme für zwei nur, wo sie sich
 | Polizist / Polizistin | de-CH Jan / de-AT Ingrid | ±0 / +2 % | −3 / ±0 Hz | 2 / 1 |
 | Polizeifunk: Leitstelle / Streife | de-DE Katja / de-DE Killian, Funkklang | −2 / +2 % | −2 / −5 Hz | 40 / 9 |
 | Dieter Krähwinkel (58) | en-US Brian (Multilingual) | −6 % | −8 Hz | – |
-| Yuki (29) · Verkäuferin (52) | de-CH Leni · de-DE Amala | +2 / −4 % | +2 / −4 Hz | – (Reaktionen über dem Budget) |
-| Böller-Mann (47) · Bratwurst-Uwe (56) | de-CH Jan · de-DE Killian | +1 / −5 % | +1 / −7 Hz | Ereignis-Sätze |
-| Kirmesbursche (21) · Kirmesmädchen (20) | de-AT Jonas · de-DE Amala | +3 / +6 % | ±0 / +3 Hz | Ereignis-Sätze |
+| Yuki (29) · Verkäuferin (52) | de-CH Leni · de-DE Amala | +2 / −4 % | +2 / −4 Hz | je 37 Reaktionen |
+| Böller-Mann (47) · Bratwurst-Uwe (56) | de-CH Jan · de-DE Killian | +1 / −5 % | +1 / −7 Hz | Ereignis-Sätze + je 37 Reaktionen |
+| Kirmesbursche (21) · Kirmesmädchen (20) | de-AT Jonas · de-DE Amala | +3 / +6 % | ±0 / +3 Hz | Ereignis-Sätze + je 37 Reaktionen |
 | 1989: Lutz (30) | de-DE Killian | −2 % | −3 Hz | 3 |
 | 1989: der ABV (50) · Volkspolizist (28) | de-DE Conrad · de-AT Jonas | −4 / +2 % | −6 / ±0 Hz | 3 · 1 |
 | 1989: Horst (58) · Werner (61) · Kurt (74) | de-CH Jan · de-DE Killian · en-US Brian | −6 / −6 / −14 % | −5 / −8 / −10 Hz | 4 · 3 · 3 |
 | 1989: Maik (19) | de-DE Killian | +10 % | +5 Hz | 3 |
 | 1989: Erna (66) · Renate (38) · Brigitte (57) | de-DE Amala · de-DE Katja · de-AT Ingrid | −8 / ±0 / −4 % | −8 / −2 / −4 Hz | 4 · 3 · 3 |
 | 1989: Gisela (46) · Ines (20) | de-DE Seraphina · de-CH Leni | −2 / +6 % | −3 / +4 Hz | 3 · 3 |
-| Radio Grenzland: Matze (45) | en-US Brian (Multilingual), Sendeklang | +8 % | +3 Hz | 41 von 69 |
-| 1989 Radio Republik: der Sprecher | de-DE Conrad, Sendeklang | −4 % | −4 Hz | – (über dem Budget) |
-| 1989 Impuls: Kati (24) | de-DE Amala, Sendeklang | +8 % | +4 Hz | – |
-| Kirmeswelle, Klassik am Kamm, Zweitakt, Blasius, Neon, Frankenwelle 3 | (Ingrid, Katja, Killian, Jonas, Emma, Andrew – über dem Budget) | | | – |
+| Radio Grenzland: Matze (45) | en-US Brian (Multilingual), Sendeklang | +8 % | +3 Hz | 69 |
+| 1989 Radio Republik: der Sprecher | de-DE Conrad, Sendeklang | −4 % | −4 Hz | 25 (mit dem Konsum) |
+| 1989 Impuls: Kati (24) | de-DE Amala, Sendeklang | +8 % | +4 Hz | 12 |
+| Kirmeswelle: Gundula · Klassik am Kamm: Frau Dr. Sommerlatte · Zweitakt: Ecki | de-AT Ingrid · de-DE Katja · de-DE Killian, Sendeklang | −3 / −10 / +10 % | −3 / −6 / +1 Hz | 18 · 9 · 13 |
+| Blasius: Schorsch · Neon: Synthia · 1989 Frankenwelle 3: Wolfi | de-AT Jonas · en-US Emma · en-US Andrew, Sendeklang | −6 / +4 / +6 % | −4 / +2 / +3 Hz | 13 · 13 · 14 |
 
 Die Tabelle steht als `CAST` in `tools/voices/grenzland_record.py`; eine Änderung dort nimmt die betroffenen Sätze beim nächsten Lauf neu auf.
 
-## Stand (13.11.2026, 13:25)
+## Stand (13.11.2026, 14:30)
 
-- **Gesammelt:** 728 Zeilen von 40 Sprechern (mit welt 034ef982 und kino b0c64a19).
-- **Aufgenommen:** 373 Sätze, MP3 5,75 MB (Ordner 5,88 MB): alle 92 Gesprächszeilen der Missionen, alle 100 der Welt (Polizeifunk, Rufe,
-  Zufallsereignisse, Straße 1989, die Antworten des Spielers), alle 140 Reaktionen von Gerhard, Jule, Timo und Basti, 41 von 69 Sätzen von
-  Matze (Ansagen, Moderation, der Polizeibericht über die eigenen Taten, ein Teil der Nachrichten). Mit der Gerätestimme: der Rest von
-  Matze, Radio Republik, die übrigen Sender, die Reaktionen der Leute ohne Geschichte (Verkäuferin, Yuki, die Leute der Ereignisse).
+- **Gesammelt:** 749 Zeilen von 40 Sprechern auf dem zusammengeführten Stand (Merge 1, 250a60b3, und danach `feat/grenzland` 686c7631 mit
+  welts neuesten Reaktionen f5fb5bd3; dazu die neuesten Dateien von kino, licht und figuren – dieselben 749 Zeilen, die Liste ist aktuell:
+  `node tools/voices/grenzland_linien.mjs --check`). Die sechs Ids, die dem Lauf auf `feat/grenzland` nach Merge 1 fehlten
+  (`gl_haendler|gerhard|jule_1ugwofi|1enph55`: „Ist dir kalt? Es ist September.“, „Mit der Mütze …“), sind in der Liste und aufgenommen.
+- **Aufgenommen: alle 749** – MP3 11,13 MB, der Ordner 11,40 MB, gut 50 Minuten: 92 Gesprächszeilen der Missionen, 101 Zeilen der Welt
+  (Polizeifunk mit der Beschreibung in Bruchstücken, Rufe, Zufallsereignisse, Straße 1989, die Antworten des Spielers), 370 Reaktionen
+  (alle zehn Kommentatoren), alle neun Radiosender (Matze mit dem Polizeibericht über die eigenen Taten und der Sushi-Geschichte, Radio
+  Republik mit dem Radio im Konsum, Kirmeswelle, Klassik am Kamm, Zweitakt, Blasius, Neon, Impuls, Frankenwelle 3). Kein Satz fehlt, keine
+  Aufnahme ist stumm oder abgeschnitten (geprüft: Dauer gegen Textlänge, Lautheit −23 … −14 LUFS).
 - **Getestet:** Unit-Test `viz3/test/unit/grenzland_stimmen.test.mjs` (Id wie im Dorf, Regeln des Sammlers, Liste passt zu den Gesprächen;
   in `tools/check.sh`); Browser-Test `viz3/test/grenzland_stimmen.py` auf GitHub Actions (`viz3/extra/grenzland-stimmen/tests.txt`): die
   Aufnahmen neben den Dorf-Sätzen in `VOICEX`, Anteil gesprochen/aufgenommen, ein Satz spielt und sein Promise endet mit der Aufnahme, das
   Vorabholen, das Ducking-Ereignis, die Straße von 1989, nach „Beenden“ ist alles aus, keine Seitenfehler – **grün auf Actions**
-  (f7554284 Lauf 43421774864 und c014d9b0 Lauf 43422908772: je 14/14). Der Chat-Rechner hatte keinen freien Browser (vier Agenten in der Schlange).
+  (f7554284 Lauf 43421774864 und c014d9b0 Lauf 43422908772: je 14/14) und **auf dem Chat-Rechner mit dem zusammengeführten Stand und allen
+  749 Aufnahmen** (14:35, 14/14, 161 s): alle 749 Zeilen im Spiel gesammelt, gesprochen und aufgenommen; Sarahs „Vierzig Minuten bis zum
+  Bus …“ (4,9 s) endet nach 5,03 s (vorab geholt) bzw. 4,9 s; kinos Musik wird zweimal geduckt (an/aus); Ernas Satz von 1989 spricht.
 - **Nicht aufnehmbar, weil veränderlich** (bleibt Gerätestimme): im Radio die Uhrzeit („Radio Grenzland, die Nachrichten. Es ist …“), das
   Wetter, „Das war „Titel“ – Interpret“, die Geldbuße in „Die Suche … ist beendet … Geldbuße: n Euro“.
 - **Nicht gesprochen, weil kein Modul sie spricht** (die Dateien gehören diese Runde niemandem): Yuki und die Sushi-Geschichte
@@ -133,22 +142,22 @@ Die Tabelle steht als `CAST` in `tools/voices/grenzland_record.py`; eine Änderu
 
 ## Für den Lead
 
-- **Zusammenführen:** `feat/grenzland-stimmen` bringt `gl_stimmen.js` (eine Zeile in `modules.txt` nach `gl_modus.js`), drei Zeilen in
-  `viz3/build.py`, das Extra (≈ 5,9 MB mit Liste) und den Workflow. Die Liste enthält schon die Zeilen von welt (034ef982) und kino
-  (b0c64a19) – nach dem Zusammenführen ist der Sammler-Lauf nur nötig, wenn die beiden danach noch Sätze geändert haben.
-- **Mehr Platz?** Mit 6 MB bleiben Matzes Rest, Radio Republik und die Reaktionen der Leute ohne Geschichte bei der Gerätestimme. Alles
-  zusammen bräuchte gut 12 MB; `GL_BUDGET` (Bytes) im Workflow hebt die Grenze, sobald du es erlaubst.
-- **Nach jedem Zusammenführen neuer Zeilen** (welt: `GLREAKTION.linien()`, `GLEREIGNIS.linien()`, Änderungen am Funk; kino): auf
-  `feat/grenzland` `node tools/voices/grenzland_linien.mjs`, die geänderte `tools/voices/grenzland_linien.json` committen und pushen – der
-  Workflow „Stimmen Grenzland“ nimmt das Neue in ~5 Minuten auf und committet es zurück (`[skip ci] Stimmen Grenzland: Aufnahmen`), danach
-  `git pull`. Der Unit-Test `grenzland_stimmen` schlägt fehl, solange ein Gespräch aus `GLMDATA.R` nicht in der Liste steht (mit Befehl in
-  der Meldung); der Browser-Test, solange das Spiel eine Zeile sammelt, die nicht in der Liste steht.
-- **`GLRADIO` hat keinen Ducking-Haken** (`gl_radio*.js` gehören diese Runde niemandem): das Radio tritt nur zurück, solange ein Untertitel
-  steht (`mixTick`, `talk`). Vorschlag, zwei Zeilen in `gl_radio.js`: im Rückgabeobjekt `duck: on => void (S.duckOn = !!on),` und in
-  `mixTick` `const talk = (GLHUD.funk && GLHUD.subT > 0.1) || S.duckOn;` – `GLSTIMMEN` ruft `GLRADIO.duck` schon auf, sobald es das gibt.
+- **Zusammenführen (Merge 2):** `feat/grenzland-stimmen` enthält Merge 1 (250a60b3) und darauf die Liste vom zusammengeführten Stand (749
+  Zeilen) mit dem Budget von 12 MB; der Bot-Commit 8913ba81 „[skip ci] Stimmen Grenzland: Aufnahmen“ bringt die Dateien (11,4 MB im Ordner).
+- **Der Workflow auf `feat/grenzland`: ja, lass ihn laufen.** Er startet bei jedem Push dorthin, der `tools/voices/grenzland_linien.json`,
+  das Skript oder den Workflow ändert. Der Merge-Push selbst ändert die Liste gegenüber dem alten `feat/grenzland` – der Lauf findet dann
+  nichts Neues (die Aufnahmen kommen mit dem Merge) und committet nichts. Ändern kino/welt danach noch Sätze: auf `feat/grenzland`
+  `node tools/voices/grenzland_linien.mjs`, die geänderte Liste committen und pushen – der Lauf nimmt nur das Neue auf (~5 Minuten, wenn die
+  Warteschlange der Actions frei ist) und committet es zurück; danach `git pull` (pushst du dazwischen, setzt der Bot seinen Commit oben
+  drauf). Der Unit-Test `grenzland_stimmen` schlägt fehl, solange ein Gespräch aus `GLMDATA.R` nicht in der Liste steht (mit Befehl in der
+  Meldung); der Browser-Test, solange das Spiel eine Zeile sammelt, die nicht in der Liste steht.
+- **Danke für `GLRADIO.duck(on)` und das Radio im Konsum** (`STIMME.say('gl_r_republik', …)`): `GLSTIMMEN` ruft `GLRADIO.duck` auf, sobald
+  es da ist – außer der Radiosprecher spricht gerade selbst; die Konsum-Sätze sind als `gl_r_republik` aufgenommen. **Bitte in
+  `gl_1989.js` `talk()` kein `STIMME.say` ergänzen:** die Sätze der Leute von 1989 spricht schon `GLSTIMMEN` auf das Ereignis
+  `grenzland:sagt` hin – zweimal wäre doppelt.
 - **Polizeifunk:** welt meldet für die Gerätestimme `STIMME.person('gl_funk', { g: 'm', age: 46 })` an; die Aufnahmen sprechen die Leitstelle
-  mit einer Frau. Für Sätze ohne Aufnahme passender wäre `g: 'f'` (ein Wort in `gl_fahndung.js`, welt).
-- **Das Radio im Konsum 1989** (`gl_1989.js` Zeile 347, nur Untertitel): die Sätze sind als `gl_r_republik` aufgenommen; sprechen ließe es
-  sich mit `STIMME.say('gl_r_republik', line, { at: [g[0], g[1]] })` neben dem `GLHUD.sub` (Import von `STIMME` dazu).
+  mit einer Frau. Für Sätze ohne Aufnahme passender wäre `g: 'f'` (ein Wort in `gl_fahndung.js`, welt). Beobachtung: welt ruft die Stimme
+  des Funks sofort, der Untertitel „Funk“ wartet aber in deiner Schlange, solange jemand spricht – Stimme und Untertitel können
+  auseinanderlaufen.
 - Falko kann Stimmen tauschen: Zeile in `CAST` (`tools/voices/grenzland_record.py`) ändern, pushen – die Sätze dieser Person werden neu
-  aufgenommen.
+  aufgenommen. Florian für Falko noch einmal versuchen: in `viz3/extra/grenzland-stimmen/aufnahmen.json` den Eintrag `_bad` löschen.

@@ -81,6 +81,16 @@
    "g": "m",
    "age": 50
   },
+  "gl_haendler": {
+   "name": "Verkäuferin",
+   "g": "f",
+   "age": 52
+  },
+  "gl_yuki": {
+   "name": "Yuki",
+   "g": "f",
+   "age": 29
+  },
   "gl_boellermann": {
    "name": "Der Böller-Mann",
    "g": "m",
@@ -100,16 +110,6 @@
    "name": "Kirmesmädchen",
    "g": "f",
    "age": 20
-  },
-  "gl_haendler": {
-   "name": "Verkäuferin",
-   "g": "f",
-   "age": 52
-  },
-  "gl_yuki": {
-   "name": "Yuki",
-   "g": "f",
-   "age": 29
   },
   "gl_erna": {
    "name": "Erna",
@@ -1226,55 +1226,6 @@
    "src": "GLFAHNDUNG.linien"
   },
   {
-   "who": "gl_boellermann",
-   "id": "gl_boellermann_ydrt7c",
-   "text": "Psst. Böller? Beste Qualität. Hast du nicht von mir.",
-   "prio": 2,
-   "src": "GLEREIGNIS.linien"
-  },
-  {
-   "who": "gl_boellermann",
-   "id": "gl_boellermann_s79fiu",
-   "text": "Drei Stück, fünf Euro. Und nicht vor Silvester zünden. Haha.",
-   "prio": 2,
-   "src": "GLEREIGNIS.linien"
-  },
-  {
-   "who": "gl_boellermann",
-   "id": "gl_boellermann_185195j",
-   "text": "Ich bin dann mal weg. Die Polizei mag keine Kofferraumgeschäfte.",
-   "prio": 2,
-   "src": "GLEREIGNIS.linien"
-  },
-  {
-   "who": "gl_wirt",
-   "id": "gl_wirt_166yqq9",
-   "text": "Rostbratwurst! Frisch vom Rost, mit Senf, drei Euro!",
-   "prio": 2,
-   "src": "GLEREIGNIS.linien"
-  },
-  {
-   "who": "gl_wirt",
-   "id": "gl_wirt_92m8a2",
-   "text": "Mit Senf. Natürlich mit Senf. Alles andere wäre eine Beleidigung.",
-   "prio": 2,
-   "src": "GLEREIGNIS.linien"
-  },
-  {
-   "who": "gl_bursche",
-   "id": "gl_bursche_1szkbsb",
-   "text": "Kirmes ist nur einmal im Jahr! Komm, tanz mit!",
-   "prio": 2,
-   "src": "GLEREIGNIS.linien"
-  },
-  {
-   "who": "gl_maedchen",
-   "id": "gl_maedchen_12mita5",
-   "text": "Hast du den Kirmesbaum gesehen? Den haben wir die ganze Nacht bewacht.",
-   "prio": 2,
-   "src": "GLEREIGNIS.linien"
-  },
-  {
    "who": "gl_haendler",
    "id": "gl_haendler_7hjwej",
    "text": "Ist was?",
@@ -1362,6 +1313,20 @@
    "who": "gl_haendler",
    "id": "gl_haendler_1vg8wjp",
    "text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
    "prio": 3.5,
    "src": "GLREAKTION.linien"
   },
@@ -1612,6 +1577,20 @@
   },
   {
    "who": "gl_gerhard",
+   "id": "gl_gerhard_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 2.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
+   "prio": 2.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_gerhard",
    "id": "gl_gerhard_1m2l44b",
    "text": "Eine Simson! Die läuft ja noch.",
    "prio": 2.5,
@@ -1852,6 +1831,20 @@
    "who": "gl_jule",
    "id": "gl_jule_1vg8wjp",
    "text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
+   "prio": 2.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 2.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
    "prio": 2.5,
    "src": "GLREAKTION.linien"
   },
@@ -2102,6 +2095,20 @@
   },
   {
    "who": "gl_timo",
+   "id": "gl_timo_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 2.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
+   "prio": 2.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_timo",
    "id": "gl_timo_1m2l44b",
    "text": "Eine Simson! Die läuft ja noch.",
    "prio": 2.5,
@@ -2342,6 +2349,20 @@
    "who": "gl_basti",
    "id": "gl_basti_1vg8wjp",
    "text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
+   "prio": 2.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 2.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
    "prio": 2.5,
    "src": "GLREAKTION.linien"
   },
@@ -2592,6 +2613,20 @@
   },
   {
    "who": "gl_yuki",
+   "id": "gl_yuki_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_yuki",
    "id": "gl_yuki_1m2l44b",
    "text": "Eine Simson! Die läuft ja noch.",
    "prio": 3.5,
@@ -2832,6 +2867,20 @@
    "who": "gl_boellermann",
    "id": "gl_boellermann_1vg8wjp",
    "text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
    "prio": 3.5,
    "src": "GLREAKTION.linien"
   },
@@ -3082,6 +3131,20 @@
   },
   {
    "who": "gl_wirt",
+   "id": "gl_wirt_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_wirt",
    "id": "gl_wirt_1m2l44b",
    "text": "Eine Simson! Die läuft ja noch.",
    "prio": 3.5,
@@ -3322,6 +3385,20 @@
    "who": "gl_bursche",
    "id": "gl_bursche_1vg8wjp",
    "text": "Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
    "prio": 3.5,
    "src": "GLREAKTION.linien"
   },
@@ -3572,6 +3649,20 @@
   },
   {
    "who": "gl_maedchen",
+   "id": "gl_maedchen_1ugwofi",
+   "text": "Ist dir kalt? Es ist September.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1enph55",
+   "text": "Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.",
+   "prio": 3.5,
+   "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_maedchen",
    "id": "gl_maedchen_1m2l44b",
    "text": "Eine Simson! Die läuft ja noch.",
    "prio": 3.5,
@@ -3779,6 +3870,62 @@
    "text": "Hast du ein Problem?",
    "prio": 2,
    "src": "GLREAKTION.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_ydrt7c",
+   "text": "Psst. Böller? Beste Qualität. Hast du nicht von mir.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_s79fiu",
+   "text": "Drei Stück, fünf Euro. Und nicht vor Silvester zünden. Haha.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1m7dy5a",
+   "text": "Eine Sturmhaube gibt es gratis dazu. Für den Winter. Oder für was auch immer.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_185195j",
+   "text": "Ich bin dann mal weg. Die Polizei mag keine Kofferraumgeschäfte.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_166yqq9",
+   "text": "Rostbratwurst! Frisch vom Rost, mit Senf, drei Euro!",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_92m8a2",
+   "text": "Mit Senf. Natürlich mit Senf. Alles andere wäre eine Beleidigung.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1szkbsb",
+   "text": "Kirmes ist nur einmal im Jahr! Komm, tanz mit!",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_12mita5",
+   "text": "Hast du den Kirmesbaum gesehen? Den haben wir die ganze Nacht bewacht.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
   },
   {
    "who": "gl_erna",

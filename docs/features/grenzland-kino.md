@@ -45,8 +45,10 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   gerahmte Karte hängt sichtbar **innen** an der Rückwand. Gibt die Tür nach, zeigt ein **Zwischenschnitt** (3,4 s, `GLKAMERA.einstellung`)
   aus der Türöffnung (einen Schritt innen – wer die Tür aufgebrochen hat, steht hinter der Kamera) auf die Rückwand mit dem Rahmen; nicht,
   wenn ein Wachmann gerade jagt; Leertaste/Esc kürzt ab.
-- **Leuchtkugel**: Mission 4 meldet `grenzland:flare { x, y, z }` (Bild: Agent licht). Die kleine rote Kugel bleibt nur, solange es
-  `window.GLLICHT` nicht gibt.
+- **Leuchtkugel**: Mission 4 meldet `grenzland:flare { x, y, z }` (z = Boden + 1,5 m am Transporter; Bild: Agent licht). Die kleine rote
+  Kugel bleibt nur, solange es `window.GLLICHT` nicht gibt.
+- **Gerhard sitzt auf der Bank** (Hinweis von Agent figuren): auf einem der sechs Sitze rund um den Stamm (`VPROPS.LINDE`, `GLFIG.platz`),
+  dem zum Anger hin – vorher saß er zwischen Stamm und Bänken in der Luft. Der Sitz wird einmal gewählt (danach ist er ja besetzt).
 - **Taschenlampen**: `F.lampe = true` für die drei Männer an der Klinge, den ABV 1989 (Dämmerung) und – nachts – die Wachen im Außenlager
   (Bild: Agent licht).
 - **Für die Aufnahmen**: `GLMISSION.linien()` → `[['gl_<Figur>', Satz], …]` – alle gesprochenen Sätze der Missionen (ohne Erzähler).
@@ -56,12 +58,13 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - Szene „Grenzland“: das erste Gespräch an der Zentralhaltestelle ist schon eine Zwischensequenz. Konsole: `GLMISSION.debug.go('gerhard')`
   und zu Gerhard unter die Linde gehen. `window.GLKINO_AUS = true` schaltet die Zwischensequenzen ab (Vergleich).
 - Test: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9012 --serve grenzland_kino:m1` (Abschnitte `m1`, `m3`, `coup`,
-  `score`; eine Mission je Seite); ohne Browser `node --test viz3/test/unit/grenzland_kino.test.mjs` (Titelzeilen, Musiktabelle, Taktung). Bilder in `out/grenzland_kino/`. In Actions je Abschnitt ein Job (`viz3/extra/grenzland-kino/tests.txt`).
+  `score`; eine Mission je Seite); ohne Browser `node --test viz3/test/unit/grenzland_kino.test.mjs` (Titelzeilen, Musiktabelle,
+  Taktung). Bilder in `out/grenzland_kino/`. In Actions je Abschnitt ein Job (`viz3/extra/grenzland-kino/tests.txt`).
 
 ## Entscheidungen (Falko schlief)
 
-- **Die Kamera hängt am Fahrzeug-Haken**: `applyCam` des Spiels fragt zuerst `VEH.applyCam` – den umhülle ich, solange eine
-  Zwischensequenz oder die Rückblende läuft, und gebe ihn bei „Beenden“ zurück. Keine Änderung an Grunddateien.
+- **Die Kamera hängt am Fahrzeug-Haken**: `applyCam` des Spiels fragt zuerst `VEH.applyCam` – den umhülle ich ab der ersten
+  Zwischensequenz (ohne Szene reicht die Hülle einfach durch) und gebe ihn bei „Beenden“ zurück. Keine Änderung an Grunddateien.
 - **Absteigen statt keine Szene**: steht man mit dem Moped still (unter 1,2 m/s), steigt man ab, dann beginnt die Zwischensequenz – sonst
   wären die Gespräche an der Staumauer, an der Scheune und im Garten ohne Bild geblieben.
 - **Aufstellen**: steht man zu nah (unter 1,3 m) oder zu weit (3,2–9 m) vom Gegenüber, setzt der erste Schnitt einen auf gut zwei Meter
@@ -89,17 +92,20 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 - `GLHUD.kino(on)`, `GLHUD.titel(name, ueber, sec, unter)`, `GLHUD.ruhig()` (Stand 28c6b702, in den Zweig gemischt) werden genutzt; fehlen
   sie, gibt es eigene Balken, `GLHUD.say` und einen eigenen Ruhe-Test (keine Blende, `#glpass`, `#glmsg`, `#glbust` verborgen). Titel:
   `ueber` = „Kapitel 1 · Mission n“, `unter` = Ort und Zeit.
-- Zum Überspringen (Esc) wäre `GLHUD.subAus()` gut (Untertitel sofort weg); bis dahin setze ich `GLHUD.subEl.hidden` und `GLHUD.subT = 0`.
+- Esc nimmt den Untertitel mit `GLHUD.subAus()` sofort weg (der Lead baut es nach Zusammenführen 1 ein); bis dahin `GLHUD.subEl.hidden`
+  und `GLHUD.subT = 0`.
 - `GLHUD.sub`: meine Sätze kommen in ihrer Taktung (Dauer = erwartete Satzlänge); Leute ersetzen einander sofort – passt so.
 - In `modules.txt` stehen `gl_kamera.js` und `gl_score.js` direkt vor `gl_mission.js`.
-- Beobachtet in den Testbildern: ein Spruch des Grundspiels („Ronald: Ruhe im Stall! Ha ha.“) erscheint mitten im Bild, auch in einer
-  Zwischensequenz – gehört zu „Störendes raus“ (Paket A).
+- Beobachtet in den Testbildern: ein Spruch des Grundspiels („Ronald: Ruhe im Stall! Ha ha.“, `#npcsub`) mitten im Bild, auch in einer
+  Zwischensequenz – der Lead blendet ihn in Szenen aus (13:58); unter dem Abschlussbild des Kapitels blende ich ihn selbst aus.
 - Regressionsnetz: mit den Gesprächen aller Missionen als Zwischensequenzen liefen `grenzland_mission:m1…m5` auf diesem Zweig in Actions
   grün (Lauf 43422482963, Stand 8d1d377b, zusammen mit `grenzland_kino:m1,m3,coup,score` und `smoke`); `tests.txt` hat jetzt wieder nur die
   vier `grenzland_kino`-Zeilen.
 
 ## Offen
 
+- Hinweis von figuren „wer an der Zentralhaltestelle wartet, sitzt auf der Bank des Wartehäuschens“: in Mission 1 wartet dort niemand
+  von der Besetzung (der Fremde kommt zu Fuß über den Platz) – nicht umgesetzt.
 - Gespräche auf dem fahrenden Moped bleiben ohne Bild (gewollt, wie GTA); ebenso alles bei Fahndung.
 - Die Musik ist nach Regeln komponiert und in Pegeln gemessen (Test `score`), gehört hat sie hier niemand: Falko bitte einmal anhören.
 - **Punkt 4 des Auftrags (Sucher für die Foto-Schritte) entfällt** – Lead 13:14: Falko wünscht ein echtes gemeinsames Handy (13:09), ein

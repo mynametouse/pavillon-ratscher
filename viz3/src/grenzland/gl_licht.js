@@ -6,8 +6,8 @@
 //   on the road ahead, a glare on the lamp glass, the red glow of the tail lamps, brighter while braking (their lamp glass too) – warm
 //   for 1989 and the Simson, whiter for the cars of today; only while the lamps burn;
 // - the police's beacons: a blue glow at each lamp in the double flash of today's patrol cars, a blue pulse on the ground round the car;
-//   the shared light that the wanted level borrows (grenzland/gl_fahndung.js 'grenzland:blau') kept short and pulsing, so that it flashes
-//   on the nearest wall instead of flooding the street;
+//   the shared light that the wanted level borrows (grenzland/gl_fahndung.js 'grenzland:blau') is short (12 m) and pulses with
+//   GLAUTO.blauPuls since merge 1 (it flooded the street before: 24 m, never dark), so it flashes on the nearest wall;
 // - the helicopter's search light: a bright patch where it falls and the glare of the lamp;
 // - torches: any figure of grenzland/gl_fig.js with F.lampe (set by the missions and the police), without the flag at night also the
 //   officers, the guards and the police of 1989 – the lamp glass at the hand, a beam, a patch of light on the ground that goes with it;
@@ -26,6 +26,8 @@
 //   GLLICHT.an(on)          everything on (default) or off – for pictures before and after
 //   GLLICHT.flare(x, y, z)  the flare (also on the event 'grenzland:flare')
 //   GLLICHT.regnen(on|null) rain by hand (null: as the mission wants)
+//   GLLICHT.hatLampe(F)     does figure F carry a torch now (F.lampe, else at night the police, the guards, the police of 1989) –
+//                           grenzland/gl_pose.js raises the lamp hand by it
 //   GLLICHT.stand()         numbers for the test
 //   GLLICHT.blauPuls(t)     [left, right] 0…1: the beacons' double flash at time t (s)
 import * as THREE from 'three';
@@ -219,12 +221,12 @@ export const GLLICHT = (() => {
   function mats() {
     if (MAT.kegel) return MAT;
     // the beams and pools: today white, 1989 and the Simson warm (a bulb of the time)
-    MAT.kegel = karte('kegel', 0xeef3ff, 0.16);
-    MAT.kegel89 = karte('kegel 1989', 0xffcf86, 0.18);
+    MAT.kegel = karte('kegel', 0xeef3ff, 0.12);
+    MAT.kegel89 = karte('kegel 1989', 0xffcf86, 0.13);
     MAT.glanz = karte('glanz', 0xf4f7ff, 0.6);
     MAT.glanz89 = karte('glanz 1989', 0xffd79a, 0.6);
-    MAT.pool = karte('pool', 0xeef3ff, 0.1);
-    MAT.pool89 = karte('pool 1989', 0xffcf86, 0.11);
+    MAT.pool = karte('pool', 0xeef3ff, 0.075);
+    MAT.pool89 = karte('pool 1989', 0xffcf86, 0.085);
     MAT.heck = karte('heck', 0xffffff, 0.55);
     MAT.bremse = karte('bremse', 0xffffff, 1);
     MAT.blauL = karte('blau links', 0x2f63ff, 0);
@@ -234,7 +236,8 @@ export const GLLICHT = (() => {
     MAT.fackelGlas = karte('fackel glas', 0xfff6e8, 0.9);
     MAT.fackelBoden = karte('fackel boden', 0xffeccc, 0.14);
     MAT.blauRund = karte('blau rundum', 0x2f63ff, 0);
-    MAT.heli = karte('heli', 0xe6efff, 0.55);
+    MAT.heli = karte('heli', 0xe6efff, 0.3);
+    MAT.heliStrahl = karte('heli strahl', 0xdfe8ff, 0.09);
     MAT.dunst = karte('leuchtkugel dunst', 0xff3018, 0.2);
     MAT.glut = karte('leuchtkugel glut', 0xff4020, 1);
     MAT.kern = karte('leuchtkugel kern', 0xffd8cc, 1);
@@ -531,8 +534,8 @@ export const GLLICHT = (() => {
       G.bremse = Br.n ? Br.geo() : null;
       GEOS.set(key, G);
     }
+    // (the glare is drawn with the beams, turned to the camera; this mesh only marks the lamps as dressed)
     D.kegel = own(new THREE.Mesh(G.kegel, D.warm ? MAT.glanz89 : MAT.glanz), 'glanz');
-    T.head.parent.add(D.kegel);
     // the beams: from each lamp, along the lamp's own forward and a little down
     D.lampen = zentren(T.head.geometry);
     D.dir = new V3(0, -Math.sin(moped ? 0.075 : 0.06), -1).normalize();
@@ -613,10 +616,14 @@ export const GLLICHT = (() => {
   function strahlBau() {
     if (SB) return SB;
     mats();
-    SB = { w: schar(48, MAT.kegel), y: schar(48, MAT.kegel89) };
+    SB = { w: schar(48, MAT.kegel), y: schar(48, MAT.kegel89), gw: schar(48, MAT.glanz), gy: schar(48, MAT.glanz89) };
     SB.w.m.name = 'grenzland licht strahlen';
     SB.y.m.name = 'grenzland licht strahlen 1989';
-    scene.add(SB.w.m, SB.y.m);
+    SB.gw.m.name = 'grenzland licht glanz';
+    SB.gy.m.name = 'grenzland licht glanz 1989';
+    // (the glare over the beams)
+    SB.gw.m.renderOrder = SB.gy.m.renderOrder = 4;
+    scene.add(SB.w.m, SB.y.m, SB.gw.m, SB.gy.m);
     return SB;
   }
   const _sp = new V3(),
@@ -624,6 +631,7 @@ export const GLLICHT = (() => {
   function strahlen(D) {
     const h = D.T.head,
       B = D.warm ? SB.y : SB.w,
+      Gl = D.warm ? SB.gy : SB.gw,
       L = D.moped ? 8 : 11,
       w1 = D.moped ? 1.5 : 2.0,
       w0 = D.moped ? 0.09 : 0.12;
@@ -631,6 +639,15 @@ export const GLLICHT = (() => {
     _sd.copy(D.dir).transformDirection(h.matrixWorld);
     for (const p of D.lampen) {
       _sp.copy(p).applyMatrix4(h.matrixWorld).addScaledVector(_sd, 0.05);
+      // the glare on the glass, turned to the camera: large when the lamp looks at it, a small glow from the side
+      _m1.copy(cam.position).sub(_sp);
+      const dd = _m1.length(),
+        vor = dd > 0.01 ? Math.max(0, _m1.dot(_sd) / dd) : 0;
+      Gl.card(_sp.x, _sp.y, _sp.z, (D.moped ? 0.16 : 0.2) + (D.moped ? 0.34 : 0.5) * vor * vor, REG.glow);
+      // (a camera inside a beam would see its card from within, filling the picture: then none)
+      _m1.copy(cam.position).sub(_sp);
+      const along = Math.max(0, Math.min(L, _m1.dot(_sd)));
+      if (_m1.addScaledVector(_sd, -along).length() < 1.2 + (w1 * along) / L) continue;
       B.strahl(_sp, _sd, L, w0, w1, REG.beam);
     }
   }
@@ -641,7 +658,7 @@ export const GLLICHT = (() => {
   function poolGitter(zf, moped) {
     const w = moped ? 2.0 : 3.0,
       z0 = zf + (moped ? 0.3 : 0.2),
-      z1 = zf + (moped ? 10.5 : 15),
+      z1 = zf + (moped ? 10 : 13),
       R = REG.pool,
       pos = new Float32Array(PX * PZ * 3),
       uv = new Float32Array(PX * PZ * 2),
@@ -679,14 +696,13 @@ export const GLLICHT = (() => {
       q = D.poolAt,
       x = r.position.x,
       z = r.position.z;
-    if (
-      q &&
-      Math.hypot(x - q[0], z - q[1]) < 0.35 &&
-      Math.abs(r.quaternion.y - q[2]) < 0.01 &&
-      Math.abs(r.quaternion.w - q[3]) < 0.01
-    )
-      return;
-    D.poolAt = [x, z, r.quaternion.y, r.quaternion.w];
+    // (laid anew when it has moved 35 cm or turned – at most ten times a second, unless it was set down elsewhere)
+    if (q) {
+      const d = Math.hypot(x - q[0], z - q[1]);
+      if (d < 0.35 && Math.abs(r.quaternion.y - q[2]) < 0.01 && Math.abs(r.quaternion.w - q[3]) < 0.01) return;
+      if (S.t - q[4] < 0.1 && d < 3) return;
+    }
+    D.poolAt = [x, z, r.quaternion.y, r.quaternion.w, S.t];
     r.updateWorldMatrix(true, false);
     _pm.copy(r.matrixWorld).invert();
     const P = D.pool.geometry.attributes.position,
@@ -729,6 +745,8 @@ export const GLLICHT = (() => {
     const B = strahlBau();
     B.w.begin();
     B.y.begin();
+    B.gw.begin();
+    B.gy.begin();
     // (from the driver's seat of one's own vehicle the beams would stand in the picture as a bright streak: there only the pool and the
     // real headlight of vehicles/vehicle.js)
     const sitz = VEH.cur && !CAM3.want ? VEH.cur : null;
@@ -767,16 +785,18 @@ export const GLLICHT = (() => {
     }
     B.w.end();
     B.y.end();
+    B.gw.end();
+    B.gy.end();
     // the shared materials follow the dusk (in the rain the beams show more); the beacons flash
     if (MAT.kegel) {
       const k = Math.max(0, lk),
-        nass = S.regnet ? 1.6 : 1;
-      MAT.kegel.opacity = 0.16 * k * nass;
-      MAT.kegel89.opacity = 0.18 * k * nass;
+        nass = S.regnet ? 1.25 : 1;
+      MAT.kegel.opacity = 0.12 * k * nass;
+      MAT.kegel89.opacity = 0.13 * k * nass;
       MAT.glanz.opacity = 0.6 * k;
       MAT.glanz89.opacity = 0.6 * k;
-      MAT.pool.opacity = 0.09 * k;
-      MAT.pool89.opacity = 0.1 * k;
+      MAT.pool.opacity = 0.075 * k;
+      MAT.pool89.opacity = 0.085 * k;
       MAT.heck.opacity = 0.55 * k;
       MAT.blauL.opacity = 1.1 * pl * k;
       MAT.blauR.opacity = 1.1 * pr * k;
@@ -789,22 +809,12 @@ export const GLLICHT = (() => {
     S.n.kegel = nk;
     S.n.blau = nb;
   }
-  // the wanted level's blue light on the walls (grenzland/gl_fahndung.js borrows it with 24 m reach and a steady glow between the flashes,
-  // which lit the whole street): kept short and dark between the flashes. A light lent from the pool, found by its colour; the owner sets it
-  // anew each frame before us.
-  function blauLicht(show) {
-    const L = window.LIGHTS;
-    if (!L || !S.n.blau) return;
-    const [pl, pr] = puls();
-    for (const l of L)
-      if (l && l.userData && l.userData.lent && l.color && l.color.getHex() === 0x2a5cff) {
-        l.distance = 12;
-        l.decay = 2;
-        l.intensity = show ? 46 * Math.max(pl, pr) : 0;
-      }
-  }
   // ================================================================ the helicopter's light ================================================================
-  const HELI = { spot: null, glanz: null };
+  // (grenzland/gl_heli.js draws a cone of its own – a mesh that stood as a hard pale wedge across the sky; while our lights are on it is
+  // hidden after its update and a soft card turned to the camera goes from the lamp to the patch instead)
+  const HELI = { spot: null, glanz: null, strahl: null },
+    _hs = new V3(),
+    _hd = new V3();
   function heli(show) {
     const H = GLHELI && GLHELI.H,
       lit = !!(show && H && GLHELI.on && GLHELI.st === 'kreist' && S.lampK > 0.3);
@@ -812,10 +822,13 @@ export const GLLICHT = (() => {
       if (HELI.spot && HELI.spot.visible) {
         HELI.spot.visible = false;
         HELI.glanz.visible = false;
+        HELI.strahl.begin();
+        HELI.strahl.end();
         markDirty();
       }
       return;
     }
+    if (GLHELI.cone && GLHELI.cone.visible) GLHELI.cone.visible = false;
     if (!HELI.spot) {
       mats();
       const K = bau();
@@ -824,7 +837,9 @@ export const GLLICHT = (() => {
       const G = bau();
       G.facing(new V3(), new V3(0, 0, 1), 1.6, REG.glow);
       HELI.glanz = own(new THREE.Mesh(G.geo(), MAT.heli), 'heli glanz');
-      scene.add(HELI.spot, HELI.glanz);
+      HELI.strahl = schar(1, MAT.heliStrahl);
+      HELI.strahl.m.name = 'grenzland licht heli strahl';
+      scene.add(HELI.spot, HELI.glanz, HELI.strahl.m);
     }
     const z = KERN.ground(H.lx, H.ly),
       z0 = Number.isFinite(GLHELI.z0) ? GLHELI.z0 : 0;
@@ -834,6 +849,19 @@ export const GLLICHT = (() => {
     HELI.glanz.position.set(H.x, z0 + H.h + 0.25, -H.y);
     HELI.glanz.quaternion.copy(cam.quaternion);
     HELI.glanz.visible = true;
+    // the beam: from the lamp to the patch, soft, as wide as the patch at its end (none while the camera stands in it)
+    _hs.copy(HELI.glanz.position);
+    _hd.set(H.lx, (Number.isFinite(z) ? z : z0) + 0.1, -H.ly).sub(_hs);
+    const len = _hd.length();
+    HELI.strahl.begin();
+    if (len > 3) {
+      _hd.multiplyScalar(1 / len);
+      _m1.copy(cam.position).sub(_hs);
+      const along = Math.max(0, Math.min(len, _m1.dot(_hd)));
+      if (_m1.addScaledVector(_hd, -along).length() > 1 + (6.5 * along) / len)
+        HELI.strahl.strahl(_hs, _hd, len, 0.35, 6.5, REG.beam);
+    }
+    HELI.strahl.end();
     markDirty();
   }
   // ================================================================ torches ================================================================
@@ -901,23 +929,31 @@ export const GLLICHT = (() => {
         L.glas.position.copy(_h);
         L.glas.quaternion.setFromEuler(_e);
         _fd.set(0, 0, -1).applyEuler(_e);
-        L.licht.begin();
-        L.licht.strahl(_h.clone().addScaledVector(_fd, 0.08), _fd, 7, 0.04, 1.2, REG.beam);
-        L.licht.end();
         const gz = Number.isFinite(F.z) ? F.z : KERN.ground(F.x, F.y),
           hh = Math.max(0.5, _h.y - gz),
           dist = Math.min(7.5, Math.max(2.2, hh / Math.tan(pitch))),
           gx = _h.x + Math.sin(yaw) * dist,
           gy = -_h.z + Math.cos(yaw) * dist,
           g2 = KERN.ground(gx, gy);
+        // the beam ends where it meets the ground (beyond, the ground cut it off in a hard line)
+        L.licht.begin();
+        L.licht.strahl(
+          _h.clone().addScaledVector(_fd, 0.08),
+          _fd,
+          Math.min(7, dist / Math.cos(pitch) + 0.2),
+          0.04,
+          1.1,
+          REG.beam
+        );
+        L.licht.end();
         L.boden.position.set(gx, (Number.isFinite(g2) ? g2 : gz) + 0.08, -gy);
         L.boden.rotation.y = -yaw;
         L.boden.scale.set(0.8 + dist * 0.12, 1, 1 + dist * 0.22);
         L.boden.visible = true;
         // seen from close by, along the beam, the cards would add up to a white wedge: fainter near the camera
         const nah = Math.max(0.12, Math.min(1, (_h.distanceTo(cam.position) - 1.2) / 6));
-        L.licht.m.material.opacity = 0.16 * S.lampK * nah;
-        L.boden.material.opacity = 0.075 * S.lampK * (0.4 + 0.6 * nah);
+        L.licht.m.material.opacity = 0.065 * S.lampK * nah;
+        L.boden.material.opacity = 0.042 * S.lampK * (0.4 + 0.6 * nah);
       }
     for (const [F, L] of S.fackeln) if (!seen.has(F)) fackelWeg(F, L);
     if (S.fackeln.size) {
@@ -980,28 +1016,6 @@ export const GLLICHT = (() => {
     };
     S.aktiv = true;
     markDirty();
-  }
-  // the red ball of the mission (grenzland/gl_kapitel1.js 'leuchtkugel', the step 'flucht' of „Nachts an der Klinge“): while our flare burns
-  // it is hidden (one flare, not two); a ball that goes up without the event starts ours where it is. Looked for twice a second, only
-  // while that mission runs at night.
-  const KUGEL = { o: null, t: 0, seen: new WeakSet() };
-  function kugel(dt) {
-    if ((KUGEL.t -= dt) > 0) return;
-    KUGEL.t = 0.5;
-    if (GL.cur !== 'klinge' || S.lampK < 0.3) {
-      KUGEL.o = null;
-      return;
-    }
-    const o = scene.getObjectByName('grenzland leuchtkugel');
-    KUGEL.o = o || null;
-    if (!o || KUGEL.seen.has(o)) return;
-    KUGEL.seen.add(o);
-    if (!S.fl) {
-      const x = o.position.x,
-        y = -o.position.z,
-        g = KERN.ground(x, y);
-      flare(x, y, Number.isFinite(g) ? g + 1.5 : o.position.y - 2);
-    }
   }
   // how bright it burns at its time t (0 … 1, a pop when the parachute opens), and a flicker
   function flareK(t) {
@@ -1372,13 +1386,10 @@ export const GLLICHT = (() => {
     S.aktiv = true;
     try {
       autos(dt, show);
-      blauLicht(show);
       heli(show);
       fackeln(dt, show);
-      kugel(dt);
       if (S.fl && show) flareTick(dt);
       else if (FB && !show) flareLeer();
-      if (KUGEL.o && KUGEL.o.visible === !!(S.fl && show)) KUGEL.o.visible = !(S.fl && show);
       licht(show);
       regen(show && regenWill());
     } catch (e) {
@@ -1392,11 +1403,12 @@ export const GLLICHT = (() => {
     S.autos.length = 0;
     for (const [F, L] of [...S.fackeln]) fackelWeg(F, L);
     if (HELI.spot) {
-      scene.remove(HELI.spot, HELI.glanz);
-      HELI.spot = HELI.glanz = null;
+      scene.remove(HELI.spot, HELI.glanz, HELI.strahl.m);
+      HELI.strahl.m.geometry.dispose();
+      HELI.spot = HELI.glanz = HELI.strahl = null;
     }
     if (SB) {
-      for (const b of [SB.w, SB.y]) {
+      for (const b of [SB.w, SB.y, SB.gw, SB.gy]) {
         scene.remove(b.m);
         b.m.geometry.dispose();
       }
@@ -1457,6 +1469,8 @@ export const GLLICHT = (() => {
   });
   return Object.assign(S, {
     an,
+    // (a torch that burns now: by day nobody carries a lit one)
+    hatLampe: F => !!(F && GL.on && S.zeigen && S.lampK > 0.05 && hatLampe(F)),
     flare,
     regnen: v => {
       S.regenHand = v === null || v === undefined ? null : !!v;

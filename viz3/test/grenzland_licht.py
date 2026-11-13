@@ -9,8 +9,9 @@
 import sys, os, json, time, math, base64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib, grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-# sections (second argument, comma separated; default all): strasse leute klinge 1989
-SECT = [q for q in (sys.argv[2] if len(sys.argv) > 2 else 'strasse,leute,klinge,1989').split(',') if q]
+# sections (second argument, comma separated; default all but stadt): strasse leute klinge 1989 heli · stadt (Schleusingen – a page of its own:
+# one area per page)
+SECT = [q for q in (sys.argv[2] if len(sys.argv) > 2 else 'strasse,leute,klinge,1989,heli').split(',') if q]
 ck = grenzland_ci.wrap(lib.Checks('grenzland_licht'), 'grenzland_licht')
 OUT = lib.out('grenzland_licht')
 # free play (as the lead gives it), at 22:00
@@ -250,11 +251,21 @@ with lib.browser() as b:
         lo = rgb(img2, (0, h // 2, w, h))
         ck('the forest and the ground are lit red', lo[0] > lo[1] * 1.15, str([round(q, 1) for q in lo]))
         NEU.update(pnames() - K0)
-        steps(20, 0.1)
+        # what the module costs per frame while the flare burns (the heaviest moment: smoke, sparks, torches, beams, pools) – script time
+        E("KERN.profile(true)"); steps(2, 0.05)
+        pr = J("(r => r ? { ms: r.ms, n: r.n } : null)((KERN.profile() || {})['grenzland/licht'])"); E("KERN.profile(false)")
+        per = pr['ms'] / max(1, pr['n']) if pr else -1
+        print('note gl_licht per frame (flare burning):', round(per, 3), 'ms', flush=True)
+        ck('the lights cost little script time per frame, even with the flare burning', 0 <= per < 4, f'{per:.3f} ms per frame')
+        steps(18, 0.1)
         do(f"GAME.view({q[0]}, {q[1]}, KERN.ground({q[0]}, {q[1]}) + 1.62, {yawTo(q, KL['van'])}, 18, 62)")
         grab('10_flare_sinkt')
         st = J("GLLICHT.stand()")
         ck('it sinks slowly on its parachute and still burns after 25 s', st['flare'] and st['flare']['k'] > 0.5 and 10 < st['flare']['z'] < 50, str(st['flare']))
+        # the mission's own flare: the step 'flucht' sends the event (grenzland/gl_kapitel1.js) – ours goes up anew, the old red ball not at all
+        do("GLMISSION.debug.go('klinge', 4)"); steps(1.0, 0.05)
+        st = J("({ s: GLLICHT.stand(), step: GLMISSION.debug.info().step, ball: (o => !!(o && o.visible))(GAME.scene.getObjectByName('grenzland leuchtkugel')) })")
+        ck('the mission\'s flare (step „flucht“) starts this one, and no second red ball', st['step'] == 'flucht' and st['s']['flare'] and st['s']['flare']['t'] < 3 and not st['ball'], str(st)[:300])
     except StopIteration:
         pass
     except Exception as e:
@@ -284,6 +295,46 @@ with lib.browser() as b:
         pass
     except Exception as e:
         ck('1989 ran through without an error of the test', False, str(e)[:300])
+
+    # ---------------------------------------------------------------- four stars at night: the helicopter's search light on the ground, the patrol cars ----------------------------------------------------------------
+    try:
+        if 'heli' not in SECT or not E("!!(window.GLHELI && GLHELI.fly)"): raise StopIteration
+        do("if (VEH.cur) VEH.exit(); GLMISSION.stop(); GLFAHNDUNG.clear(); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 23 * 60; DN.update(true)")
+        lib.settle_light(pg)
+        do("GAME.view(60, -420, KERN.ground(60, -420) + 1.62, 0, 10)")
+        do("for (const id of ['einbruch', 'widerstand', 'sperre']) GLFAHNDUNG.tat(id, { force: [{ name: 'Streife', police: true }] }); GLFAHNDUNG.E.wait = 999")
+        ok = until("GLHELI.on && GLHELI.st === 'kreist'", 90, 1, 0.02)
+        steps(2)
+        st = J("({ s: GLLICHT.stand(), h: GLHELI.stand() })")
+        # (the wanted level is the police agent's: if it does not bring the helicopter here, that is told, not failed)
+        if ok: ck('four stars at night: where the helicopter\'s search light falls there is a bright patch', st['s']['heli'], str(st)[:300])
+        else: print('note the helicopter did not come:', str(st)[:300], flush=True)
+        do("(() => { const H = GLHELI.H, x = H.lx - 22, y = H.ly - 18; GAME.view(x, y, KERN.ground(x, y) + 1.62, Math.atan2(H.lx - x, H.ly - y) * 180 / Math.PI, 12, 62); })()")
+        paar('14_heli')
+        do("GLFAHNDUNG.clear()"); steps(1)
+    except StopIteration:
+        pass
+    except Exception as e:
+        print('note the helicopter part stopped:', str(e)[:300], flush=True)
+
+    # ---------------------------------------------------------------- Schleusingen at night: the street lamps' light on the ground (a page of its own: stadt) ----------------------------------------------------------------
+    try:
+        if 'stadt' not in SECT: raise StopIteration
+        do("if (VEH.cur) VEH.exit(); GLMISSION.stop(); GLFAHNDUNG.clear(); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 22 * 60 + 15; DN.update(true)")
+        zh = J("GLDATA.ORTE.zh.pos")
+        do(f"GRENZLAND.hin({zh[0]}, {zh[1]}, 110)")
+        ok = until("window.SCHL && SCHL.state === 'ready'", 180, 1.0, 0.6)
+        steps(3); lib.settle_light(pg)
+        st = J("({ s: GLLICHT.stand(), schl: window.SCHL && SCHL.state, lamps: window.SCHL ? SCHL.lamps.length : -1 })")
+        ck('Schleusingen at night: the town is there with its street lamps', ok and st['lamps'] > 0, str(st)[:300])
+        for i, (dx, dy, yaw) in enumerate([(0, 0, 110), (-25, 12, 200)]):
+            x, y = zh[0] + dx, zh[1] + dy
+            do(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + 1.62, {yaw}, -3, 62)"); steps(0.5)
+            paar('15_stadt_%d' % (i + 1))
+    except StopIteration:
+        pass
+    except Exception as e:
+        ck('Schleusingen ran through without an error of the test', False, str(e)[:300])
 
     # ---------------------------------------------------------------- shader programs ----------------------------------------------------------------
     try:

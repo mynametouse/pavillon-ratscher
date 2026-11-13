@@ -8,6 +8,7 @@
 // Nothing is built in a long frame: the worker makes the buffers, the main thread takes one finished tile per frame.
 // Collisions: the wall feet of the level-1 tiles and the trunks in an 8 m hash (KERN.pushOut).
 import { tsize, hh, inRing, own, ROOT_E0, ROOT_N0 } from './geo.js';
+import { MARKEN } from '../bau/marken.js';
 export function stadt(ctx, G, IX, worker, opt) {
   const { THREE, scene, markDirty, RATSCHER, VILLAGE, TREES, COARSE } = ctx,
     gp = IX.prod.g || IX.prod.gebaeude,
@@ -694,6 +695,8 @@ export function stadt(ctx, G, IX, worker, opt) {
       quarter: b.vt || null,
       part: b.teil || b.x_teil || null,
       landmark: b.lm || b.x_lm || null,
+      // the look after a photo (bau/marken.js): its colours and the photo it came from
+      look: MARKEN[b.id] ? Object.assign({}, MARKEN[b.id]) : null,
       pts,
       holes: (Array.isArray(b.fh) ? b.fh : []).map(ring),
       z0,

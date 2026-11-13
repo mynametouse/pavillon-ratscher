@@ -172,6 +172,8 @@ body[data-gl="1"][data-clean="1"] :is(#glhud,#glort,#glvoll){display:none!import
 #glhandy .hb{display:block;gap:0;min-height:0;font:inherit;color:inherit;cursor:auto;backdrop-filter:none;-webkit-backdrop-filter:none}
 /* the game's own speech line (a villager, a thought) gives way while a subtitle of the mode shows */
 body[data-gl="1"]:has(#glsub:not([hidden])) #npcsub,body[data-gl-kino="1"] #npcsub{visibility:hidden}
+/* and the car radio's words give way to a thought of the player (a hint must be readable; found by agent welt) */
+body[data-gl="1"]:has(#npcsub:not([hidden])) #glfunk{visibility:hidden}
 body:has(#npcpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),body:has(#dorfpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),
 body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:none!important}
 

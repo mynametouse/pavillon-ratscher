@@ -392,6 +392,8 @@ export const GLKAMERA = (() => {
       S.shot.T += sec;
     }
     if (who) S.lastWho = who;
+    const vor = S.prev;
+    S.prev = X ? { party: X.party, sec } : null;
     // who speaks turns to whom he talks to; the others look at him
     if (X && L) {
       const lp = posOf(L.F);
@@ -405,9 +407,10 @@ export const GLKAMERA = (() => {
       }
       // the player's head goes to the speaker (the figure turns its head within its limits)
       if (X.F !== 'P') P.yaw = (Math.atan2(xh[0] - P.x, xh[1] - P.y) * 180) / PI;
+      // who answers after a long line of the other side nods first, now and then (the talking hands come with GLFIG.talking)
       try {
-        if (GLFIG.geste && X.F !== 'P' && sec > 4.2 && (S.n + i) % 3 === 1)
-          GLFIG.geste(X.F, i % 2 ? 'achsel' : 'nicken');
+        if (GLFIG.geste && X.F !== 'P' && vor && vor.sec > 3.5 && vor.party !== X.party && (S.n + i) % 2 === 1)
+          GLFIG.geste(X.F, 'nicken');
       } catch (err) {}
     }
     markDirty(true);
@@ -432,17 +435,18 @@ export const GLKAMERA = (() => {
     S.n = 0;
     S.shot = null;
     S.lastWho = '';
+    S.prev = null;
     zeile(S.cur.i, S.cur.who, S.cur.sec);
   }
   // ---------------- begin and end ----------------
   function start(o) {
     if (!GL.on) return false;
     // a talk that follows the last one at once: the same cutscene goes on
+    // (an insert that runs gives way to the talk)
+    if (S.on && S.insertT > 0) aus(false);
     const weiter = S.on && S.endT >= 0;
     S.talk = o;
     S.endT = -1;
-    // (an insert that runs gives way to the talk)
-    if (S.on && S.insertT > 0) aus(false);
     if (weiter) {
       const add = besetzen(o.lines, o.figOf);
       for (const q of add) if (!S.who.some(e => e.id === q.id)) S.who.push(q);
@@ -485,6 +489,7 @@ export const GLKAMERA = (() => {
     S.run = 0;
     S.shot = null;
     S.lastWho = '';
+    S.prev = null;
     S.blend = null;
     S.turn = [];
     S.stats.n++;
@@ -532,6 +537,7 @@ export const GLKAMERA = (() => {
     S.n = 1;
     S.run = 0;
     S.lastWho = '';
+    S.prev = null;
     S.blend = null;
     S.lineT = 0;
     S.shot = mk('insert', boden([p[0], p[1], p[2]]), [t[0], t[1], t[2]], fov, sec, 0.2);
