@@ -1,4 +1,5 @@
 Bestellung eines Laufs von suhl-strassen (Zeilen key=value; alles andere ist Text).
-bestellt 2026-11-13T01:08:15Z: ganze Stadt mit Gleisen, Wasser, Routen, Ausstattung, Prüfungen – Technikprobe auf eigener Copernicus-Abtastung,
-weil der Lauf von suhl-boden mit den ungeschnittenen Kacheln der Stadt noch rechnet. Sobald er fertig ist: boden_run=<Nummer> eintragen.
-# boden_run=
+bestellt 2026-11-13T01:15:33Z: ganze Stadt und Anfahrt auf den ungeschnittenen Geländekacheln von suhl-boden (Lauf 43340569202, Modus stadt, v1:
+Copernicus GLO-30 mit Kronenabzug 9,32 m – das Gelände, das suhl-boden für die Stadt heute hat). Ein Boden für alle.
+boden_run=43340569202
+boden_artifact=suhl-boden-v1

@@ -92,13 +92,8 @@ jobs:
           if [ ! -d "$TD" ]; then echo "im Artefakt $ART liegt kein Ordner mit Geländekacheln" | tee -a logs/hoehen.txt; exit 1; fi
           rm -rf "$RUNNER_TEMP/boden"/i "$RUNNER_TEMP/boden"/*/i 2>/dev/null || true
           echo "BODEN_T=$TD" >> "$GITHUB_ENV"
+          echo "BODEN_FROM=suhl-boden Lauf $RUN, Artefakt $ART" >> "$GITHUB_ENV"
           echo "Geländekacheln: $TD ($(find "$TD" -name '*.bin' | wc -l) Kacheln)" | tee -a logs/hoehen.txt
-      - name: Die ganze Stadt – Straßen und Wege, Profile, Flächen, Wasser, Bahn (Kacheln s, Datei im Format der Fahrtdaten)
-        timeout-minutes: 30
-        run: |
-          set -o pipefail
-          TILES=""; if [ -n "$BODEN_T" ]; then TILES="--tiles $BODEN_T"; fi
-          python -I -u tools/suhl/strassen/lauf.py --gebiet stadt --opl "$SUHL_RAW/geofabrik/suhl-strassen.opl.gz" --raw "$SUHL_RAW" --out "$OUT" $TILES 2>&1 | tee logs/lauf.log
       - name: Die zwei Routen Garten – Suhl (Landstraße; Autobahn über die Anschlussstelle Suhl-Zentrum)
         continue-on-error: true
         timeout-minutes: 15
@@ -109,6 +104,14 @@ jobs:
             git fetch -q --depth 1 origin feat/suhl-fahrt && git show FETCH_HEAD:viz3/extra/suhl-fahrt/recherche.json > "$SUHL_RAW/recherche.json" || true
             python -I -u tools/suhl/strassen/routen.py --opl "$SUHL_RAW/geofabrik/suhl-strassen.opl.gz" --raw "$SUHL_RAW" --out "$OUT" 2>&1 | tee logs/routen.log
           else echo "routen.py fehlt noch – übersprungen" | tee logs/routen.log; fi
+      - name: Die ganze Stadt und die Anfahrt – Straßen und Wege, Profile, Flächen, Wasser, Bahn (Kacheln s, Dateien im Format der Fahrtdaten)
+        timeout-minutes: 30
+        run: |
+          set -o pipefail
+          TILES=""; if [ -n "$BODEN_T" ]; then TILES="--tiles $BODEN_T"; fi
+          KOR=""; if [ -s "$OUT/fahrt/routen-suhl.json" ]; then KOR="--korridor $OUT/fahrt/routen-suhl.json"; fi
+          python -I -u tools/suhl/strassen/lauf.py --gebiet stadt --opl "$SUHL_RAW/geofabrik/suhl-strassen.opl.gz" --raw "$SUHL_RAW" --out "$OUT" \
+            $TILES --tiles-from "$BODEN_FROM" $KOR 2>&1 | tee logs/lauf.log
       - name: Ausstattung (Werkzeug des Straßen-Chats von feat/strassen, dazu Ampeln, Überwege, Haltestellen, Laternen, Straßenschilder)
         continue-on-error: true
         timeout-minutes: 15
