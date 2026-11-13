@@ -1,0 +1,4 @@
+lauf: 43340725672
+commit: 025255f15af0c74cefc2c482a041842a0acf117e
+Schlüssel vorhanden, aber der Abruf (tools/suhl/lib von suhl-daten) ist auf diesem Zweig noch nicht eingebunden – Höhen bleiben geschätzt.
+DATEN_TOKEN vorhanden, aber die Aktion .github/actions/suhl-publish (suhl-daten) fehlt auf diesem Zweig – nichts veröffentlicht.
