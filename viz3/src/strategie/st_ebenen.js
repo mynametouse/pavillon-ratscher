@@ -100,18 +100,58 @@ export const STEBENEN = (() => {
       return h;
     },
   });
-  // ---- traffic: the cars of the village's life on the streets (verkehr/*) ----
+  // ---- traffic: every vehicle of the streets (verkehr/*) in its real size and paint, its trailer behind it; far up a little
+  //      bigger than true, so it stays to be seen (feat/verkehr-real: Falko 13.11. „natürlich muss man den Verkehr auch von oben sehen
+  //      können“) ----
+  const CLS = { pkw: 'Pkw', lfz: 'Transporter', lkw: 'Lkw', trak: 'Traktor', zug: 'Anhänger' };
+  function shape(b, D, col, title, pr, W, H, lorry) {
+    const cx = b.x + Math.sin(b.hd) * D.CY,
+      cy = b.y + Math.cos(b.hd) * D.CY,
+      q = pr(cx, cy, 0.8);
+    if (q[2] >= 1 || q[0] < -30 || q[1] < -30 || q[0] > W + 30 || q[1] > H + 30) return '';
+    const f = [Math.sin(b.hd), Math.cos(b.hd)],
+      r = [Math.cos(b.hd), -Math.sin(b.hd)],
+      tip = pr(cx + f[0] * D.HL, cy + f[1] * D.HL, 0.8),
+      side = pr(cx + r[0] * D.HW, cy + r[1] * D.HW, 0.8),
+      // the screen's half length and half width of the vehicle; at least 5 × 2.4 px
+      ul = [tip[0] - q[0], tip[1] - q[1]],
+      ll = Math.hypot(ul[0], ul[1]) || 1e-6,
+      uw = [side[0] - q[0], side[1] - q[1]],
+      lw = Math.hypot(uw[0], uw[1]) || 1e-6,
+      k = Math.max(1, 5 / ll),
+      kw = Math.max(k, 2.4 / lw),
+      P4 = [
+        [1, 1],
+        [1, -1],
+        [-1, -1],
+        [-1, 1],
+      ].map(([a, s]) => [q[0] + ul[0] * k * a + uw[0] * kw * s, q[1] + ul[1] * k * a + uw[1] * kw * s]),
+      pts = P4.map(p => f1(p[0]) + ',' + f1(p[1])).join(' ');
+    let h = `<polygon points="${pts}" fill="${col}" stroke="#1b1d20" stroke-width="1" stroke-linejoin="round"><title>${title}</title></polygon>`;
+    // the front: the cab of a lorry darker, the windscreen of a car as a short line
+    if (ll * k > 7) {
+      const t = lorry ? 0.62 : 0.3,
+        a0 = [q[0] + ul[0] * k * t, q[1] + ul[1] * k * t];
+      h += `<line x1="${f1(a0[0] + uw[0] * kw * 0.8)}" y1="${f1(a0[1] + uw[1] * kw * 0.8)}" x2="${f1(a0[0] - uw[0] * kw * 0.8)}" y2="${f1(a0[1] - uw[1] * kw * 0.8)}" stroke="#1b1d20" stroke-opacity=".7" stroke-width="${lorry ? 1.4 : 1}"/>`;
+    }
+    return h;
+  }
   STRAT.layer.define({
     id: 'verkehr',
     draw: (pr, W, H) => {
       if (P.th > 2500) return '';
       let h = '';
       for (const c of VAUTO.cars || []) {
-        if (!Number.isFinite(c.x)) continue;
-        const q = pr(c.x, c.y, 0.8);
-        if (q[2] >= 1 || q[0] < -20 || q[1] < -20 || q[0] > W + 20 || q[1] > H + 20) continue;
-        const a = ((c.hd || 0) * 180) / Math.PI;
-        h += `<rect x="${f1(q[0] - 3)}" y="${f1(q[1] - 6)}" width="6" height="12" rx="2" fill="#cfd6de" stroke="#222" stroke-width="1" transform="rotate(${a.toFixed(0)} ${f1(q[0])} ${f1(q[1])})"/>`;
+        if (!Number.isFinite(c.x) || c.st === 'weg' || c.st === 'geliehen') continue;
+        const D = c.D || (VAUTO.dimsOf && VAUTO.dimsOf(null)),
+          T = c.vm && c.vm.T,
+          col = (c.paint && c.paint.col) || c.col || '#cfd6de',
+          name = T ? T.name : 'Pkw',
+          lorry = !!T && (T.cls === 'lkw' || T.cls === 'trak');
+        if (!D) continue;
+        const t = c.trailer;
+        if (t && t.init) h += shape(t, t.D, (c.paint && c.paint.col2) || '#e8e8e4', CLS.zug, pr, W, H, false);
+        h += shape(c, D, col, name, pr, W, H, lorry);
       }
       // feat/bus: its buses when it is there (BUS.state().inst → [{ x, y, line }])
       const B = window.BUS;

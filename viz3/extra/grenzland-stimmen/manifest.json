@@ -12,13 +12,13 @@
 "gl_wache1": "de-CH-JanNeural",
 "gl_wache2": "en-US-BrianMultilingualNeural",
 "gl_wache3": "de-AT-JonasNeural",
+"gl_yuki": "de-CH-LeniNeural",
 "gl_funk": "de-DE-KatjaNeural",
 "gl_polizei1": "de-CH-JanNeural",
 "gl_polizei2": "de-AT-IngridNeural",
 "gl_vopo": "de-AT-JonasNeural",
 "gl_abv": "de-DE-ConradNeural",
 "gl_haendler": "de-DE-AmalaNeural",
-"gl_yuki": "de-CH-LeniNeural",
 "gl_boellermann": "de-CH-JanNeural",
 "gl_wirt": "de-DE-KillianNeural",
 "gl_bursche": "de-AT-JonasNeural",
@@ -277,10 +277,10 @@
 },
 {
 "who": "gl_jule",
-"id": "gl_jule_lqgnuc",
-"text": "Bevor ich euch mehr erzähle, will ich wissen, ob ihr was taugt. Rennen bis zur Staumauer. Wer vor mir da ist, dem trau ich.",
-"file": "voice/gl/gl_jule_lqgnuc.mp3",
-"dur": 8.59
+"id": "gl_jule_15oxkj0",
+"text": "Bevor ich euch mehr erzähle, will ich wissen, ob ihr was taugt. Rennen bis zum Staudamm. Wer vor mir da ist, dem trau ich.",
+"file": "voice/gl/gl_jule_15oxkj0.mp3",
+"dur": 8.6
 },
 {
 "who": "gl_falko",
@@ -687,6 +687,153 @@
 "text": "Passiert.",
 "file": "voice/gl/gl_basti_ncndcm.mp3",
 "dur": 0.75
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_so5h8v",
+"text": "Ja? Ich bin noch im Garten.",
+"file": "voice/gl/gl_sarah_so5h8v.mp3",
+"dur": 2.36
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1pxitn5",
+"text": "Brauchst du was vom Wagen am Anger?",
+"file": "voice/gl/gl_falko_1pxitn5.mp3",
+"dur": 1.97
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1pxitn5",
+"text": "Brauchst du was vom Wagen am Anger?",
+"file": "voice/gl/gl_sarah_1pxitn5.mp3",
+"dur": 2.21
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_x1hd8d",
+"text": "Milch. Und komm nicht wieder mit Blaulicht hinter dir heim.",
+"file": "voice/gl/gl_sarah_x1hd8d.mp3",
+"dur": 3.95
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_h3ivoe",
+"text": "Na? Ich steh an der Werkstatt.",
+"file": "voice/gl/gl_falko_h3ivoe.mp3",
+"dur": 2.67
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_qhnlcd",
+"text": "Wollte nur hören, wo du steckst.",
+"file": "voice/gl/gl_falko_qhnlcd.mp3",
+"dur": 2.0
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_qhnlcd",
+"text": "Wollte nur hören, wo du steckst.",
+"file": "voice/gl/gl_sarah_qhnlcd.mp3",
+"dur": 2.43
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_g7fbyj",
+"text": "Hier. Mit Sägespänen bis zum Hals. Bis nachher.",
+"file": "voice/gl/gl_falko_g7fbyj.mp3",
+"dur": 4.66
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_phb58q",
+"text": "Was gibt’s? Ich schraub gerade, mach’s kurz.",
+"file": "voice/gl/gl_jule_phb58q.mp3",
+"dur": 3.49
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_1nunc9f",
+"text": "Läuft alles?",
+"file": "voice/gl/gl_falko_1nunc9f.mp3",
+"dur": 0.99
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_1nunc9f",
+"text": "Läuft alles?",
+"file": "voice/gl/gl_sarah_1nunc9f.mp3",
+"dur": 1.12
+},
+{
+"who": "gl_jule",
+"id": "gl_jule_1qknwqk",
+"text": "Läuft. Wie ’ne Schwalbe nach dem Vergaserputzen.",
+"file": "voice/gl/gl_jule_1qknwqk.mp3",
+"dur": 3.85
+},
+{
+"who": "gl_timo",
+"id": "gl_timo_s0amj3",
+"text": "Jo. Kann grad nicht, Mutti steht daneben. Später.",
+"file": "voice/gl/gl_timo_s0amj3.mp3",
+"dur": 4.64
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_vpum81",
+"text": "Ey! Nee, ich hab nix gesehen.",
+"file": "voice/gl/gl_basti_vpum81.mp3",
+"dur": 3.13
+},
+{
+"who": "gl_basti",
+"id": "gl_basti_vatgzq",
+"text": "Und wenn, dann nicht von hier.",
+"file": "voice/gl/gl_basti_vatgzq.mp3",
+"dur": 1.78
+},
+{
+"who": "gl_yuki",
+"id": "gl_yuki_tincxx",
+"text": "Ach, du bist’s! Ich stehe am Herd.",
+"file": "voice/gl/gl_yuki_tincxx.mp3",
+"dur": 3.18
+},
+{
+"who": "gl_yuki",
+"id": "gl_yuki_12adow0",
+"text": "Ruf später nochmal an, ja?",
+"file": "voice/gl/gl_yuki_12adow0.mp3",
+"dur": 2.14
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_1bs0ghg",
+"text": "Gerhard. Wer ist da?",
+"file": "voice/gl/gl_gerhard_1bs0ghg.mp3",
+"dur": 1.97
+},
+{
+"who": "gl_falko",
+"id": "gl_falko_437y8e",
+"text": "Ich bin’s.",
+"file": "voice/gl/gl_falko_437y8e.mp3",
+"dur": 0.67
+},
+{
+"who": "gl_sarah",
+"id": "gl_sarah_437y8e",
+"text": "Ich bin’s.",
+"file": "voice/gl/gl_sarah_437y8e.mp3",
+"dur": 0.92
+},
+{
+"who": "gl_gerhard",
+"id": "gl_gerhard_7jrkvu",
+"text": "Ach so. Am Telefon hör ich schlecht, Junge. Komm vorbei, dann reden wir.",
+"file": "voice/gl/gl_gerhard_7jrkvu.mp3",
+"dur": 6.78
 },
 {
 "who": "gl_funk",
@@ -4393,10 +4540,10 @@
 },
 {
 "who": "gl_r_grenzland",
-"id": "gl_r_grenzland_ls6ncc",
-"text": "Verkehr: An der Staumauer parken Mopeds in zweiter Reihe. In erster Reihe steht der Grill.",
-"file": "voice/gl/gl_r_grenzland_ls6ncc.mp3",
-"dur": 5.91
+"id": "gl_r_grenzland_1jmq9th",
+"text": "Verkehr: Am Staudamm parken Mopeds in zweiter Reihe. In erster Reihe steht der Grill.",
+"file": "voice/gl/gl_r_grenzland_1jmq9th.mp3",
+"dur": 5.71
 },
 {
 "who": "gl_r_grenzland",
@@ -4722,10 +4869,10 @@
 },
 {
 "who": "gl_r_zweitakt",
-"id": "gl_r_zweitakt_1piksyh",
-"text": "Meldung für Schrauber: Die Moped-Clique trifft sich an der Staumauer. Wer nicht anspringt, wird geschoben.",
-"file": "voice/gl/gl_r_zweitakt_1piksyh.mp3",
-"dur": 6.2
+"id": "gl_r_zweitakt_13o6z0m",
+"text": "Meldung für Schrauber: Die Moped-Clique trifft sich am Staudamm. Wer nicht anspringt, wird geschoben.",
+"file": "voice/gl/gl_r_zweitakt_13o6z0m.mp3",
+"dur": 6.05
 },
 {
 "who": "gl_r_zweitakt",

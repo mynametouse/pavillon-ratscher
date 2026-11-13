@@ -24,6 +24,10 @@ import { DINGE } from '../dinge/dinge.js';
 import { NPCS, TRACTOR } from '../npc/npc.js';
 import { VNETZ } from './verkehr_netz.js';
 import { VFIG } from './verkehr_fig.js';
+// feat/verkehr-real: today's vehicles after real measures (verkehr/vk_typen.js) as meshes of one material (verkehr/vk_modelle.js)
+import { VKTYPEN } from './vk_typen.js';
+import { VKMOD } from './vk_modelle.js';
+import { VKREGELN } from './vk_regeln.js';
 export const VAUTO = (() => {
   const S = { cars: [], n: 0, honks: 0 };
   // the measures of the player's car (vehicles/car.js): axles, overhangs, width, wheels
@@ -38,6 +42,12 @@ export const VAUTO = (() => {
     HL = (YF - YR) / 2,
     CY = (YF + YR) / 2;
   S.DIM = { A, B, YF, YR, HW, HL, CY };
+  // feat/verkehr-real: each car has its own measures (c.D) – its type's, or the player's car's for the old plain model
+  const OLD = { A, B, WB, YF, YR, HW, HL, CY, RW, H: 1.5 };
+  const dimsOf = T =>
+    T ? { A: T.a, B: -T.b, WB: T.a - T.b, YF: T.yf, YR: T.yr, HW: T.hw, HL: T.hl, CY: T.cy, RW: T.rw, H: T.h } : OLD;
+  S.dimsOf = dimsOf;
+  const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
   const L = VFIG.L;
   // ---- the model (car frame of the kit: x right, y forward, z up; origin on the ground under the centre of mass) ----
   function prism(k, b, t, z0, z1, col, top = true) {
@@ -248,6 +258,20 @@ export const VAUTO = (() => {
     scene.add(g);
     return { g, body, axF, axR, head, tail, pool };
   }
+  // feat/verkehr-real: a car of a type of today – one mesh of the vehicles' material (lamps, wheels through its uniforms), the paint by
+  // the statistics of the colours (VKMOD.farbe) unless given; a tractor unit or a tractor brings its trailer
+  function vmodel(typ, o) {
+    const T = VKTYPEN.TYP[typ],
+      p = Object.assign(VKMOD.farbe(typ, o.rnd ?? Math.random()), o.col ? { col: o.col } : {}, o.paint || {}),
+      vm = VKMOD.make(typ, p);
+    let trailer = null;
+    if (T.zug && VKMOD.ready(T.zug)) {
+      const tm = VKMOD.make(T.zug, { col: p.col2 || '#eceee9', col2: p.col2 || '#eceee9', metal: 0.15 });
+      trailer = { typ: T.zug, T: VKTYPEN.TYP[T.zug], vm: tm, g: tm.g, x: 0, y: 0, hd: 0, z: 0, dist: 0, init: false };
+      trailer.D = dimsOf(trailer.T);
+    }
+    return { g: vm.g, vm, body: vm.body, trailer, col: p.col, paint: p, dist: 0, steer: 0 };
+  }
   // ---- night: lamps on (as vehicles/vehicle.js: the sun below 4°, or the fixed dusk and night moods) ----
   const dark = () =>
     window.DN && DN.active
@@ -260,37 +284,85 @@ export const VAUTO = (() => {
   // place on the line: front and rear axle on the line (shifted by lat to the right), the body between them
   function pose(c) {
     const R = c.line,
-      off = c.lat;
-    VNETZ.at(R, c.s + A, _p);
+      off = c.lat,
+      D = c.D;
+    VNETZ.at(R, c.s + D.A, _p);
     const fx = _p.x + Math.cos(_p.hd) * off,
       fy = _p.y - Math.sin(_p.hd) * off;
-    VNETZ.at(R, c.s - B, _q);
+    VNETZ.at(R, c.s - D.B, _q);
     const rx = _q.x + Math.cos(_q.hd) * off,
       ry = _q.y - Math.sin(_q.hd) * off,
       hd = Math.atan2(fx - rx, fy - ry),
-      x = rx + (fx - rx) * (B / WB),
-      y = ry + (fy - ry) * (B / WB);
+      x = rx + (fx - rx) * (D.B / D.WB),
+      y = ry + (fy - ry) * (D.B / D.WB);
     c.x = x;
     c.y = y;
     c.hd = hd;
     const zF = KERN.ground(fx, fy, c.z + 0.6),
       zR = KERN.ground(rx, ry, c.z + 0.6),
-      z = zR + (zF - zR) * (B / WB);
+      z = zR + (zF - zR) * (D.B / D.WB);
     c.z = Number.isFinite(z) ? z : c.z;
-    const pitch = Math.atan2(zF - zR, WB);
+    const pitch = Math.atan2(zF - zR, D.WB);
     c.g.position.set(x, c.z, -y);
     _e.set(Number.isFinite(pitch) ? pitch : 0, -hd, 0, 'YXZ');
     c.g.quaternion.setFromEuler(_e);
+    if (c.trailer) poseTrailer(c);
+  }
+  // feat/verkehr-real: the trailer follows the hitch on a tractrix (its axles' middle drawn after the king pin or the drawbar's eye – it
+  // cuts the corners as a real one does); never folded more than 80° against the tractor
+  function poseTrailer(c) {
+    const t = c.trailer,
+      T = VKTYPEN.TYP[c.typ],
+      Lt = t.T.kp,
+      hx = c.x + Math.sin(c.hd) * T.hitch,
+      hy = c.y + Math.cos(c.hd) * T.hitch;
+    if (!t.init) {
+      t.x = hx - Math.sin(c.hd) * Lt;
+      t.y = hy - Math.cos(c.hd) * Lt;
+      t.z = c.z;
+      t.px = t.x;
+      t.py = t.y;
+      t.init = true;
+    }
+    const dx = hx - t.x,
+      dy = hy - t.y,
+      l = Math.hypot(dx, dy) || 1;
+    t.hd = Math.atan2(dx, dy);
+    const rel = wrap(t.hd - c.hd);
+    if (Math.abs(rel) > 1.4) t.hd = c.hd + Math.sign(rel) * 1.4;
+    t.x = hx - Math.sin(t.hd) * Lt;
+    t.y = hy - Math.cos(t.hd) * Lt;
+    if (l < 1e-6) {
+      t.x = hx - Math.sin(c.hd) * Lt;
+      t.y = hy - Math.cos(c.hd) * Lt;
+    }
+    const zA = KERN.ground(t.x, t.y, t.z + 0.6),
+      zH = KERN.ground(hx, hy, c.z + 0.6);
+    t.z = Number.isFinite(zA) ? zA : t.z;
+    const pitch = Number.isFinite(zH) ? Math.atan2(zH - t.z, Lt) : 0;
+    t.g.position.set(t.x, t.z, -t.y);
+    _e.set(pitch, -t.hd, 0, 'YXZ');
+    t.g.quaternion.setFromEuler(_e);
+    t.dist += Math.hypot(t.x - t.px, t.y - t.py);
+    t.px = t.x;
+    t.py = t.y;
+    t.v = c.v;
+    t.st = c.st;
   }
   function spawn(o) {
-    const m = model(o.col || '#888888');
+    // feat/verkehr-real: a type of today once its model is built (VKMOD.ready), else the old plain car
+    const typ = o.typ && VKMOD.ready(o.typ) ? o.typ : null,
+      m = typ ? vmodel(typ, o) : model(o.col || '#888888'),
+      D = dimsOf(typ ? VKTYPEN.TYP[typ] : null);
     const c = Object.assign(m, {
       id: ++S.n,
+      typ,
+      D,
       place: o.place,
       who: o.who || null,
-      col: o.col,
+      col: m.col || o.col,
       line: o.line,
-      s: Math.max(B, o.s || B),
+      s: Math.max(D.B, o.s || D.B),
       v: o.v || 0,
       lat: 0,
       latT: 0,
@@ -308,22 +380,22 @@ export const VAUTO = (() => {
     c.z = KERN.ground(_p.x, _p.y);
     pose(c);
     // an obstacle for the player's car and for walkers (vehicles/vehicle.js: VEH.extra – the trailer and the garage gates use it too)
-    c.box = {
-      box: () =>
-        c.g.visible
-          ? {
-              c: [c.x + Math.sin(c.hd) * CY, c.y + Math.cos(c.hd) * CY],
-              ax: [Math.cos(c.hd), -Math.sin(c.hd)],
-              ay: [Math.sin(c.hd), Math.cos(c.hd)],
-              ex: HW,
-              ey: HL,
-              z0: c.z,
-              z1: c.z + 1.5,
-            }
-          : null,
-      verkehr: c,
-    };
+    const boxOf = (b, D) => ({
+      c: [b.x + Math.sin(b.hd) * D.CY, b.y + Math.cos(b.hd) * D.CY],
+      ax: [Math.cos(b.hd), -Math.sin(b.hd)],
+      ay: [Math.sin(b.hd), Math.cos(b.hd)],
+      ex: D.HW,
+      ey: D.HL,
+      z0: b.z,
+      z1: b.z + D.H,
+    });
+    c.box = { box: () => (c.g.visible && c.st !== 'geliehen' ? boxOf(c, c.D) : null), verkehr: c };
     if (VEH && VEH.extra) VEH.extra.push(c.box);
+    if (c.trailer) {
+      const t = c.trailer;
+      c.tbox = { box: () => (t.g.visible && t.init ? boxOf(t, t.D) : null), verkehr: c };
+      if (VEH && VEH.extra) VEH.extra.push(c.tbox);
+    }
     S.cars.push(c);
     markDirty();
     return c;
@@ -331,11 +403,14 @@ export const VAUTO = (() => {
   function remove(c) {
     const i = S.cars.indexOf(c);
     if (i >= 0) S.cars.splice(i, 1);
-    if (VEH && VEH.extra) {
-      const j = VEH.extra.indexOf(c.box);
-      if (j >= 0) VEH.extra.splice(j, 1);
-    }
-    scene.remove(c.g);
+    if (VEH && VEH.extra)
+      for (const b of [c.box, c.tbox]) {
+        const j = b ? VEH.extra.indexOf(b) : -1;
+        if (j >= 0) VEH.extra.splice(j, 1);
+      }
+    if (c.vm) VKMOD.free(c.vm);
+    else scene.remove(c.g);
+    if (c.trailer) VKMOD.free(c.trailer.vm);
     c.st = 'weg';
     markDirty();
   }
@@ -475,29 +550,38 @@ export const VAUTO = (() => {
   const camF = new THREE.Vector3();
   function tick(dt, ctx) {
     sound(dt);
-    if (!S.cars.length) return;
     const night = dark();
+    if (!S.cars.length) {
+      VKMOD.tick(night);
+      return;
+    }
     if (night !== lampsOn) {
       lampsOn = night;
       LM.head.emissiveIntensity = night ? 3.2 : 0;
       LM.tail.emissiveIntensity = night ? 1.4 : 0;
-      for (const c of S.cars) c.pool.visible = night;
+      for (const c of S.cars) if (c.pool) c.pool.visible = night;
       markDirty();
     }
     const obs = obstacles(ctx.walkers || [], ctx.skipVeh);
+    bodies();
     cam.getWorldDirection(camF);
+    junctions(dt);
     for (const c of S.cars) {
       if (c.st === 'weg' || c.st === 'geliehen') continue;
       c.age += dt;
       drive(c, dt, obs, ctx);
       if (c.st !== 'weg') {
+        const h0 = c.hd;
         pose(c);
-        const spun = (c.spin += (c.v * dt) / RW);
-        c.axF.rotation.x = -spun;
-        c.axR.rotation.x = -spun;
-        const brk = c.brake || (c.v < 0.1 && c.st !== 'parkt');
-        c.tail.material = brk ? LM.brake : LM.tail;
-        c.pool.visible = night && c.g.visible;
+        const brk = c.st !== 'parkt' && (c.brake || c.v < 0.1);
+        if (c.vm) dress(c, dt, night, brk, h0);
+        else {
+          const spun = (c.spin += (c.v * dt) / RW);
+          c.axF.rotation.x = -spun;
+          c.axR.rotation.x = -spun;
+          c.tail.material = brk ? LM.brake : LM.tail;
+          c.pool.visible = night && c.g.visible;
+        }
         // V17g: a new frame only for a car that can be seen – within 60 m, or within 250 m ahead of the camera (cars anywhere in the village
         // kept the picture redrawing while standing still)
         if ((c.v > 0.01 || c.moved) && c.g.visible) {
@@ -509,6 +593,187 @@ export const VAUTO = (() => {
         c.moved = c.v > 0.01;
       }
     }
+    VKMOD.tick(night);
+  }
+  // feat/verkehr-real: the new model each frame – its level by its distance to the camera, the wheels turning (the front ones steered
+  // with the curve: the heading's turn per metre times the wheelbase), the lamps (head and tail at night, brake, day light by day,
+  // the indicators of c.blink: −1 left, +1 right, 2 both); the trailer with it
+  function dress(c, dt, night, brk, h0) {
+    VKMOD.place(c.vm, Math.hypot(c.x - cam.position.x, c.y + cam.position.z));
+    const ds = c.v * dt;
+    c.dist += ds;
+    c.spin += ds / c.D.RW; // (the front wheels' turn, as the old model counts it)
+    if (ds > 1e-3) {
+      const want = Math.max(-0.6, Math.min(0.6, Math.atan((wrap(c.hd - h0) / ds) * c.D.WB)));
+      c.steer += (want - c.steer) * Math.min(1, dt * 6);
+    }
+    const sp = SP;
+    for (let i = 0; i < 4; i++) sp[i] = i < c.vm.ax.length ? c.dist / c.vm.ax[i].r : 0;
+    VKMOD.wheels(c.vm, sp, -c.steer);
+    const bl = c.blink || c.blinkR || 0,
+      blink = bl ? (performance.now() % 760 < 380 ? 2.4 : 0) : 0,
+      L = LMP;
+    // a parked car is dark (its engine off)
+    const on = c.st !== 'parkt';
+    L.head = night && on ? 3.2 : 0;
+    L.tail = night && on ? 1.4 : 0;
+    L.brake = brk ? 3.2 : 0;
+    L.drl = night || !on || c.vm.T.cls === 'trak' ? 0 : 2.2;
+    L.left = bl && bl !== 1 ? blink : 0;
+    L.right = bl && bl !== -1 ? blink : 0;
+    L.rev = 0;
+    VKMOD.lamps(c.vm, L);
+    c.vm.pool = night && on;
+    const t = c.trailer;
+    if (t) {
+      VKMOD.place(t.vm, Math.hypot(t.x - cam.position.x, t.y + cam.position.z));
+      for (let i = 0; i < 4; i++) sp[i] = i < t.vm.ax.length ? t.dist / t.vm.ax[i].r : 0;
+      VKMOD.wheels(t.vm, sp, 0);
+      L.head = L.drl = 0;
+      VKMOD.lamps(t.vm, L);
+    }
+  }
+  const SP = [0, 0, 0, 0],
+    LMP = {};
+  // the cars and their trailers this frame: what each car keeps its distance to
+  const BODY = [];
+  function bodies() {
+    BODY.length = 0;
+    for (const o of S.cars) {
+      if (o.st === 'weg' || o.st === 'geliehen') continue;
+      BODY.push(o);
+      if (o.trailer && o.trailer.init) {
+        o.trailer.car = o;
+        BODY.push(o.trailer);
+      }
+    }
+  }
+  // circles along a standing body (one every ~1.5 widths), for going round it
+  function circles(o, out) {
+    const D = o.D,
+      half = Math.max(0, D.HL - D.HW),
+      n = Math.max(3, Math.ceil((2 * half) / (1.5 * D.HW)) + 1);
+    for (let i = 0; i < n; i++) {
+      const off = D.CY - half + (2 * half * i) / (n - 1);
+      out.push({ x: o.x + Math.sin(o.hd) * off, y: o.y + Math.cos(o.hd) * off, r: D.HW, kind: 'veh', moving: false });
+    }
+  }
+  // ---- feat/verkehr-real stage 2: right of way (verkehr/vk_regeln.js) ----
+  // c.jn: the junctions of the car's route (VKREGELN.events: node, where it stops, its role there, its turn), c.jk the next one.
+  // Each frame: who comes to which junction – the cars with rules (their own event), and, worked out from where they are and go, the
+  // player's vehicles, the buses and the cars without rules (their role from the approach they come along).
+  const JP = [];
+  function junctions(dt) {
+    JP.length = 0;
+    for (const c of S.cars) {
+      if (!c.jn || c.st === 'weg' || c.st === 'geliehen') continue;
+      while (c.jk < c.jn.length && c.s > c.jn[c.jk].sN + 4) c.jn[c.jk++].passed = true;
+      const ev = c.jn[c.jk];
+      if (!ev || ev.sN - c.s > 160) continue;
+      const front = c.s + c.D.YF,
+        rear = c.s + c.D.YR;
+      JP.push({
+        c,
+        ev,
+        x: ev.x,
+        y: ev.y,
+        role: ev.role,
+        h: ev.h,
+        turn: ev.turn,
+        eta: front >= ev.sStop ? 0 : (ev.sStop - front) / Math.max(c.v, 0.6),
+        inBox: front > ev.sStop + 0.8 && rear < ev.sN + 4,
+        wait: ev.wait,
+        v: c.v,
+        id: c.id,
+      });
+    }
+  }
+  const GEN = [];
+  // the vehicles without rules near a junction: whoever is heading for it (or stands in it) – role by the approach it comes along
+  function generic(ev, me) {
+    GEN.length = 0;
+    const R = ev.rule,
+      add = (x, y, hd, v, id) => {
+        const dx = ev.x - x,
+          dy = ev.y - y,
+          d = Math.hypot(dx, dy);
+        if (d > 120) return;
+        if (d < 6.5) {
+          // moving through the junction: wait for it; one standing there is an obstacle like any other (drive() goes round or waits)
+          if (v > 0.5) GEN.push({ role: 'prio', h: hd, turn: 0, eta: 0, inBox: true, wait: 0, v, id });
+          return;
+        }
+        if ((dx * Math.sin(hd) + dy * Math.cos(hd)) / d < 0.85) return;
+        let role = 'prio';
+        if (R)
+          for (const a of R.app)
+            if (Math.abs(VKREGELN.wrap(a.h - hd)) < 0.6) {
+              role = a.role;
+              break;
+            }
+        GEN.push({ role, h: hd, turn: 0, eta: Math.max(0, d - 6) / Math.max(v, 0.6), inBox: false, wait: 0, v, id });
+      };
+    if (VEH && VEH.list)
+      for (const v of VEH.list) {
+        if (v.g && !v.g.visible) continue;
+        const st = v.st,
+          sp = Math.hypot(st.u, st.v);
+        if (sp > 0.5 || Math.hypot(st.x - ev.x, st.y - ev.y) < 6.5) add(st.x, st.y, st.psi, sp, 1e6);
+      }
+    if (window.BUS && window.BUS.obstacles) {
+      const B = window.BUS.obstacles();
+      for (let i = 0; i + 3 < B.length; i += 4) {
+        if (!B[i].bus) continue;
+        const x = (B[i].x + B[i + 3].x) / 2,
+          y = (B[i].y + B[i + 3].y) / 2;
+        add(x, y, Math.atan2(B[i + 3].x - B[i].x, B[i + 3].y - B[i].y), B[i].moving ? 8 : 0, 2e6 + i);
+      }
+    }
+    for (const o of S.cars)
+      if (!o.jn && o !== me && o.st !== 'weg' && o.st !== 'geliehen' && o.st !== 'parkt')
+        add(o.x, o.y, o.hd, o.v, o.id);
+    return GEN;
+  }
+  const BLK = [];
+  // the stop of the rules for car c (s of the car, Infinity: none)
+  function rules(c, dt) {
+    let ev = c.jn[c.jk];
+    // the indicator: before the next turn, or just after the last one
+    const prev = c.jk > 0 ? c.jn[c.jk - 1] : null;
+    c.blinkR = VKREGELN.blink(ev, c.s) || VKREGELN.blink(prev, c.s);
+    if (!ev || ev.go) return Infinity;
+    const front = c.s + c.D.YF;
+    // decided only near the line: ahead of it as far as it takes to stop comfortably
+    if (ev.sStop - front > Math.max(22, (c.v * c.v) / 5 + 10)) return Infinity;
+    const stopS = ev.sStop - c.D.YF - 0.15;
+    // over the line: in the junction (it goes on)
+    if (front > ev.sStop + 0.6) {
+      ev.go = true;
+      return Infinity;
+    }
+    // sign 206: halt at the line first
+    if (ev.role === 'stop' && ev.halted < 0.7) {
+      if (c.v < 0.25 && ev.sStop - front < 2.5) ev.halted += dt;
+      return stopS;
+    }
+    const me = {
+      role: ev.role,
+      h: ev.h,
+      turn: ev.turn,
+      wait: ev.wait,
+      id: c.id,
+      v: c.v,
+    };
+    const T = ev.role === 'rvl' ? 3.5 : ev.role === 'prio' ? 4 : 4.5;
+    BLK.length = 0;
+    for (const o of JP) {
+      if (o.c === c || Math.abs(o.x - ev.x) > 6 || Math.abs(o.y - ev.y) > 6) continue;
+      if (VKREGELN.waitFor(me, [o], T)) BLK.push(o);
+    }
+    for (const o of generic(ev, c)) if (VKREGELN.waitFor(me, [o], T)) BLK.push(o);
+    if (!BLK.length || VKREGELN.goFirst(me, BLK)) return Infinity;
+    if (c.v < 0.3) ev.wait += dt;
+    return stopS;
   }
   // speed and lane: the line's limit, a stop ahead (waved down, letting someone out), the car in front, whoever stands in the way
   function drive(c, dt, obs, ctx) {
@@ -517,7 +782,7 @@ export const VAUTO = (() => {
       look = Math.min(60, 14 + (c.v * c.v) / 4);
     // the limit of the line, a little ahead (the front sees the curve before the middle is in it)
     const i = Math.min(R.n - 1, Math.max(0, Math.round((s + 2) / R.step)));
-    let vT = R.S[i] * (c.vk || 1),
+    let vT = Math.min(R.S[i] * (c.vk || 1), c.vcap || 99),
       stopAt = Infinity,
       latNeed = 0,
       why = null;
@@ -527,8 +792,8 @@ export const VAUTO = (() => {
     let oncoming = false;
     const own = OWN;
     own.length = 0;
-    for (const o of S.cars) {
-      if (o === c || o.st === 'weg' || o.st === 'geliehen' || o.place !== c.place) continue;
+    for (const o of BODY) {
+      if (o === c || o.car === c) continue;
       const dx = o.x - c.x,
         dy = o.y - c.y,
         d = Math.hypot(dx, dy);
@@ -539,18 +804,27 @@ export const VAUTO = (() => {
         same = Math.cos(o.hd - c.hd);
       if (ahead < 0) continue;
       if (same < -0.5 && ahead < 45) oncoming = true;
+      // feat/verkehr-real: one crossing my way ahead (at a junction): in my lane it stops me like anything standing there; waited 3 s
+      // for one that waits for me as well, I go (the rules of right of way come with stage 2)
+      if (Math.abs(same) <= 0.5 && d < 32 && !(c.crossT > 0)) {
+        const k0 = own.length;
+        circles(o, own);
+        for (let k = k0; k < own.length; k++) {
+          own[k].moving = true;
+          own[k].cross = true;
+        }
+        continue;
+      }
       if (same > 0.3 && (o.st === 'steht' || o.st === 'parkt') && o.v < 0.1) {
         // a car standing in front (stopped for someone, letting someone out): like a parked vehicle – wait, then round it
-        for (const t of [-1, 0, 1]) {
-          const off = CY + t * (HL - HW);
-          own.push({ x: o.x + Math.sin(o.hd) * off, y: o.y + Math.cos(o.hd) * off, r: HW, kind: 'veh', moving: false });
-        }
+        circles(o, own);
       } else if (same > 0.3) {
-        // a car in front on my way: keep the distance (bumper to bumper 2 m standing, about 1 s moving)
+        // a car (or a trailer) in front on my way: keep the distance – from my front to its rear 2 m standing, about 1 s moving
         const pr = VNETZ.project(R, o.x, o.y, s, s + look);
-        if (pr && pr.d < 1.6 && pr.s > s) {
-          const free = pr.s - s - 2 * HL - 2 - c.v * 0.8;
-          stopAt = Math.min(stopAt, s + Math.max(0, pr.s - s - 2 * HL - 2));
+        if (pr && pr.d < 1.6 + Math.max(0, o.D.HW - 0.9) && pr.s > s) {
+          const gap = pr.s + o.D.YR - (s + c.D.YF),
+            free = gap - 2 - c.v * 0.8;
+          stopAt = Math.min(stopAt, s + Math.max(0, gap - 2));
           vT = Math.min(vT, Math.max(0, o.v + free * 0.5));
           why = why || 'auto';
         }
@@ -563,7 +837,7 @@ export const VAUTO = (() => {
       const pr = VNETZ.project(R, o.x, o.y, s - 4, s + look);
       if (!pr || pr.d > 5) continue;
       const rel = pr.lat - c.lat,
-        clear = HW + o.r + 0.35;
+        clear = c.D.HW + o.r + 0.35;
       if (Math.abs(rel) > clear) continue;
       const ahead = pr.s - s;
       // a walker beside the way at once; the player, a parked car or one that stands after a moment of waiting: round it on the left
@@ -574,7 +848,7 @@ export const VAUTO = (() => {
           ((o.kind === 'veh' || o.kind === 'dcar') && !o.moving && (c.blockT > 3 || c.passT > 0))) &&
         !oncoming &&
         c.st === 'fahren';
-      const need = pr.lat - (HW + o.r + 0.5),
+      const need = pr.lat - (c.D.HW + o.r + 0.5),
         lo = c.laneOff || 1.2,
         maxLeft = -(lo + Math.max(0.7, 2.1 - lo)); // over the middle, on a narrow lane a wheel on the verge
       if (canPass && rel > -0.3 && need >= maxLeft) {
@@ -586,10 +860,11 @@ export const VAUTO = (() => {
       if (ahead < 1.2) continue; // beside or behind the front: nothing to stop for
       // (before something it may go round later: a few metres more, to swing out)
       const room = o.kind === 'player' || ((o.kind === 'veh' || o.kind === 'dcar') && !o.moving) ? 3.5 : 0,
-        stopS = s + ahead - (HL + 0.1 + o.r + 1.4 + room);
+        stopS = s + ahead - (c.D.YF + 0.1 + o.r + 1.4 + room);
       if (stopS < stopAt) {
         stopAt = stopS;
         why = o.kind;
+        c.whyCross = !!o.cross;
       }
       if (o.kind === 'player') playerBlocks = true;
     }
@@ -614,6 +889,14 @@ export const VAUTO = (() => {
       }
     }
     c.yieldT = Math.max(0, (c.yieldT || 0) - dt);
+    // feat/verkehr-real stage 2: the right of way at the next junction of the route (VKREGELN), and the indicators before a turn
+    if (c.jn) {
+      const r = rules(c, dt);
+      if (r < stopAt) {
+        stopAt = r;
+        why = why || 'vorfahrt';
+      }
+    }
     if (c.yieldT > 0 && !yieldLat) yieldLat = Math.max(0.8, 1.9 - (c.laneOff || 1.2));
     // lane: back to the middle of the lane when nothing needs passing; at a stop to the kerb (a little to the right)
     // (standing it keeps its place; sideways only while it rolls – or makes room for the player's car)
@@ -651,6 +934,14 @@ export const VAUTO = (() => {
       }
     } else if ((why === 'veh' || why === 'dcar') && c.v < 0.5) c.blockT += dt;
     else if (!playerBlocks) c.blockT = Math.max(0, c.blockT - dt * 0.5);
+    // a crossing deadlock: after 3 s waiting for a crossing vehicle, the crossing ones are ignored for 2 s
+    if (c.whyCross && c.v < 0.3) c.crossW = (c.crossW || 0) + dt;
+    else c.crossW = 0;
+    if (c.crossW > 3) {
+      c.crossT = 2;
+      c.crossW = 0;
+    }
+    c.crossT = Math.max(0, (c.crossT || 0) - dt);
     c.honkT -= dt;
     // the stop is reached
     if (c.stop && c.v < 0.05 && c.stop.s - c.s < 0.6) {
@@ -668,9 +959,9 @@ export const VAUTO = (() => {
     // stop so that the middle of the car is beside him (but not closer than braking allows)
     const brk = (c.v * c.v) / (2 * 3.5) + 1;
     let s = Math.max(c.s + brk, pr.s);
-    if (Math.abs(pr.lat) < HW + 0.6) s = Math.max(c.s + brk, pr.s - HL - 1.6); // in the lane: before him
+    if (Math.abs(pr.lat) < c.D.HW + 0.6) s = Math.max(c.s + brk, pr.s - c.D.YF - 1.6); // in the lane: before him
     c.stop = { s: Math.min(c.line.L - 1, s), kerb: true, then: 'steht', done };
-    c.kerbRoom = Math.max(0, Math.min(0.6, pr.lat - HW - 0.7));
+    c.kerbRoom = Math.max(0, Math.min(0.6, pr.lat - c.D.HW - 0.7));
     c.st = 'halt';
     return true;
   }
@@ -701,7 +992,9 @@ export const VAUTO = (() => {
     };
     lamps.brake[0].emissiveIntensity = 0;
     lamps.rev[0].emissive.setHex(0xffffff);
-    body.add(own(new THREE.Mesh(headGeo, lamps.head[0])), own(new THREE.Mesh(tailGeo, lamps.brake[0])));
+    const oldLamps = [own(new THREE.Mesh(headGeo, lamps.head[0])), own(new THREE.Mesh(tailGeo, lamps.brake[0]))],
+      wms = [];
+    body.add(...oldLamps);
     const wheels = [];
     for (const [x, y, steer, dr] of [
       [-TR / 2, A, 1, 1],
@@ -716,9 +1009,10 @@ export const VAUTO = (() => {
       g.add(piv);
       const wm = own(new THREE.Mesh(wheelGeo, VFIG.mat()));
       node.add(wm);
+      wms.push(wm);
       wheels.push({ x, y, r: RW, w: 0.185, steer, drive: dr, piv, node });
     }
-    const model = { g, body, wheels, lamps, beam: [0, YF - 0.12, 0.7], bodyMesh: bm };
+    const model = { g, body, wheels, lamps, beam: [0, YF - 0.12, 0.7], bodyMesh: bm, oldLamps, wms };
     const spec = Object.assign({}, base.spec, {
       id: 'verkehr',
       name: 'Fremdes Auto',
@@ -749,10 +1043,11 @@ export const VAUTO = (() => {
   function lend(c) {
     const v = borrowVeh();
     if (!v) return null;
-    v.model.bodyMesh.geometry = bodyOf(c.col || '#888888');
+    if (c.vm) wear(v, c);
+    else v.model.bodyMesh.geometry = bodyOf(c.col || '#888888');
     v.g.visible = true;
     VEH.place('verkehr', c.x, c.y, c.hd);
-    c.g.visible = false;
+    if (!c.vm) c.g.visible = false;
     c.st = 'geliehen';
     c.v = 0;
     S.lent = c;
@@ -765,12 +1060,14 @@ export const VAUTO = (() => {
       v = BV;
     if (!c || !v) return null;
     S.lent = null;
+    if (c.vm) unwear(v);
     v.g.visible = false;
     if (VEH.cur === v) VEH.exit();
     VEH.place('verkehr', HIDE[0], HIDE[1], 0);
     if (line) {
       c.line = line;
-      c.s = Math.max(B, s || B);
+      c.jn = null; // (the junctions of the old route do not belong to this one)
+      c.s = Math.max(c.D.B, s || c.D.B);
       c.lat = 0;
       c.v = 0;
       c.st = 'steht';
@@ -779,6 +1076,64 @@ export const VAUTO = (() => {
     }
     markDirty(true);
     return c;
+  }
+  // feat/verkehr-real: the borrowed vehicle wears the traffic car's own mesh (the same frame: its origin under the centre of mass) – the
+  // old body, its lamps and wheels hidden; the mesh's wheels and lamps follow the physics (model.update; the lamps as stand-ins the
+  // physics sets like materials)
+  function wear(v, c) {
+    const M = v.model,
+      vm = c.vm,
+      px = {};
+    M.bodyMesh.visible = false;
+    for (const x of M.oldLamps) x.visible = false;
+    for (const x of M.wms) x.visible = false;
+    M.body.add(vm.g);
+    vm.g.position.set(0, 0, 0);
+    vm.g.quaternion.identity();
+    vm.g.visible = true;
+    VKMOD.place(vm, 0);
+    for (const k of ['head', 'tail', 'brake', 'rev']) {
+      px[k] = {
+        userData: {},
+        v: 0,
+        get emissiveIntensity() {
+          return this.v;
+        },
+        set emissiveIntensity(x) {
+          this.v = x;
+        },
+      };
+      M.lamps[k].push(px[k]);
+    }
+    M.update = veh => {
+      const W = veh.W || [],
+        sp = SP,
+        ax = vm.ax;
+      // the physics turns its wheels of the player's car's radius: the mesh's wheels go the same distance
+      for (let i = 0; i < 4; i++) {
+        const w = i === 0 ? W[0] : W[2] || W[0];
+        sp[i] = w && i < ax.length ? (w.spin * (w.r || RW)) / ax[i].r : 0;
+      }
+      VKMOD.wheels(vm, sp, -(veh.st.steer || 0));
+      VKMOD.lamps(vm, { head: px.head.v, tail: px.tail.v, brake: px.brake.v, rev: px.rev.v, drl: px.head.v ? 0 : 2.2 });
+    };
+    S.worn = { vm, px };
+  }
+  function unwear(v) {
+    const M = v.model,
+      W = S.worn;
+    if (!W) return;
+    for (const k of ['head', 'tail', 'brake', 'rev']) {
+      const i = M.lamps[k].indexOf(W.px[k]);
+      if (i >= 0) M.lamps[k].splice(i, 1);
+    }
+    M.update = null;
+    M.bodyMesh.visible = true;
+    for (const x of M.oldLamps) x.visible = true;
+    for (const x of M.wms) x.visible = true;
+    scene.add(W.vm.g);
+    W.vm.g.visible = false;
+    S.worn = null;
   }
   S.where = () => (BV ? { x: BV.st.x, y: BV.st.y, psi: BV.st.psi, z: BV.st.z, shown: BV.g.visible } : null);
   S.veh = () => BV;

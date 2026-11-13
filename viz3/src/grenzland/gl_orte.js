@@ -1422,7 +1422,7 @@ export const GLORTE = (() => {
         } else if (S.era === 'heute' && Math.hypot(x - WG.o[0], y - WG.o[1]) < 5.5) return 'Verkaufswagen';
         else if (S.era === 'heute' && near(x, y, P.angel, 14) && AN.F) {
           const [r, s] = AN.F.loc(x, y);
-          if (Math.abs(r) < 2.5 && s > AN.sA - 9 && s < AN.sB + 1) return 'Angelstelle an der Staumauer';
+          if (Math.abs(r) < 2.5 && s > AN.sA - 9 && s < AN.sB + 1) return 'Angelstelle am Staudamm';
         }
         return undefined;
       },

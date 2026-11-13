@@ -16,7 +16,7 @@ export const GLDATA = (() => {
     garten: { pos: [4, 15], name: 'Garten' },
     moped: { pos: [5.6, 10.2], name: 'Moped', az: 10 },
     treff: { pos: [117, -304], name: 'Feldscheune', az: -154 }, // the clique's place by the field track: barn, skittle alley, grill
-    damm: { pos: [853, -817], name: 'Staumauer der Talsperre' },
+    damm: { pos: [853, -817], name: 'Staudamm der Talsperre' },
     klinge: { pos: [-548, -566], name: 'Untere Klinge' },
     lager: { pos: [523, 549], name: 'Außenlager Krähwinkel', az: 81 },
   };
@@ -303,7 +303,7 @@ export const GLDATA = (() => {
     ['Manfred', 'Blaulicht an der Landstraße. Weiß einer was?'],
   ];
   const FEED = [
-    ['suedthueringen.live', 'LIVE: Simson-Treffen an der Staumauer. 14 Mopeds, 1 Grill, 0 Helme mit Visier.', 'damm'],
+    ['suedthueringen.live', 'LIVE: Simson-Treffen am Staudamm. 14 Mopeds, 1 Grill, 0 Helme mit Visier.', 'damm'],
     [
       'Feldflur_Fuchs',
       'Wer stellt eigentlich Container mitten in die Feldflur Richtung Autobahn? Kein Schild, kein Name. #Ratscher',
