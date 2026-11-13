@@ -14,7 +14,7 @@
   },
   "ids unique": {
    "ok": true,
-   "info": "2501 records, 0 ids more than once []"
+   "info": "2502 records, 0 ids more than once []"
   },
   "footprints valid": {
    "ok": true,
@@ -22,7 +22,7 @@
   },
   "no building in two tiles": {
    "ok": true,
-   "info": "0 with their point outside their tile []"
+   "info": "0 with the middle of their corners outside their tile []"
   },
   "footprints near their tile": {
    "ok": true,
@@ -50,7 +50,7 @@
   },
   "floors fit the eave": {
    "ok": true,
-   "info": "7 houses whose floors do not fit their eave (1.9 m to 6.5 m per floor) [('DETHL57P00006FKH', 6, 8.71), ('DETHL57P00006FWi', 5, 6.82), ('DETHL57P00006FXv', 6, 8.55)]"
+   "info": "0 houses whose floors do not fit their eave (1.9 m to 6.5 m per floor) []"
   },
   "foot heights": {
    "ok": false,
@@ -62,11 +62,11 @@
   },
   "tall buildings against stage 1": {
    "ok": true,
-   "info": "36 records of 25 m and more (14 with 100 m² and more), stage 1 lists 59 in the city; height differs [], missing [], not in stage 1 []"
+   "info": "36 records of 25 m and more (14 with 100 m² and more), stage 1 lists 59 in the city; height differs [], missing [], not in stage 1 []; left out because smaller than 2 m²: []"
   },
   "size limit": {
    "ok": true,
-   "info": "2960266 bytes, limit 3000000"
+   "info": "2977965 bytes, limit 3000000"
   }
  },
  "tall": [
@@ -612,8 +612,8 @@
   }
  ],
  "tiles": 11,
- "buildings": 2501,
- "bytes": 2960266,
+ "buildings": 2502,
+ "bytes": 2977965,
  "kb_per_building": 1.16,
  "failed": [],
  "warnings": [

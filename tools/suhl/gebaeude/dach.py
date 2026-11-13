@@ -147,6 +147,8 @@ def estimate(sh, h, k, typ, use, gs, osm_tags, ridge=None, img=None, part=False)
 
 def planes_of(est, sid):
     """the roof as planes z = a t + b d + c in the frame of the ridge (t along it, d across), as prep.py make()"""
+    if est.get('planes'):
+        return est['planes']        # measured on the surface model (dom.py)
     eave, rise, form, Wd, Lr = est['eave'], est['rise'], est['form'], est['Wd'], est['Lr']
     if form == 0:
         return [(0.0, 0.0, eave)]

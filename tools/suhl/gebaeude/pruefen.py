@@ -83,10 +83,10 @@ def main():
                 bad_geom.append(b['id'])
                 continue
             rp = p.representative_point()
-            if G.tile_of(rp.x, rp.y) != (tx, ty):
-                # the tile is chosen with the source footprint; the simplified outline may move the point by centimetres at an edge
-                if not (e0 - 1 <= rp.x <= e1 + 1 and n0 - 1 <= rp.y <= n1 + 1):
-                    out_tile.append(b['id'])
+            # a building belongs to the tile that holds the middle of its corners (centimetres of rounding at an edge are tolerated)
+            mE, mN = float(np.mean(E)), float(np.mean(N))
+            if G.tile_of(mE, mN) != (tx, ty) and not (e0 - 1 <= mE <= e1 + 1 and n0 - 1 <= mN <= n1 + 1):
+                out_tile.append(b['id'])
             if p.bounds[0] < e0 - 250 or p.bounds[2] > e1 + 250 or p.bounds[1] < n0 - 250 or p.bounds[3] > n1 + 250:
                 far.append(b['id'])
             if a.area == 'stadt' and not pstadt.contains(rp):
@@ -121,7 +121,7 @@ def main():
     ck('fields complete', not bad_field, f'{len(bad_field)} records or headers with missing fields {bad_field[:3]}')
     ck('ids unique', not dup, f'{n} records, {len(dup)} ids more than once {dup[:3]}')
     ck('footprints valid', not bad_geom, f'{len(bad_geom)} invalid {bad_geom[:3]}')
-    ck('no building in two tiles', not out_tile, f'{len(out_tile)} with their point outside their tile {out_tile[:3]}')
+    ck('no building in two tiles', not out_tile, f'{len(out_tile)} with the middle of their corners outside their tile {out_tile[:3]}')
     ck('footprints near their tile', len(far) == 0, f'{len(far)} reach more than 250 m beyond their tile {far[:3]}', hard=False)
     ck('heights plausible', not bad_h, f'{len(bad_h)} outside 0.3..120 m or eave above the top {bad_h[:3]}')
     ck('roof mesh', not bad_mesh, f'{len(bad_mesh)} meshes with indices outside, triangles not covered by the faces or points above the top {bad_mesh[:3]}')
@@ -154,12 +154,15 @@ def main():
     mine = {b_['id']: b_ for b_ in tall}
     wrong = [(i_, mine[i_]['h'], ref_t[i_]['hoehe_m']) for i_ in mine if i_ in ref_t and abs(mine[i_]['h'] - ref_t[i_]['hoehe_m']) > 0.11]
     extra = [i_ for i_ in mine if i_ not in ref_t and mine[i_]['q'].get('h') == 2]
-    lost = [i_ for i_ in ref_t if i_ not in mine] if a.area == 'stadt' else []
+    # a body of less than 2 m² is no building (the pipeline drops footprints under 1 m²): named, not a failure
+    lost_all = [i_ for i_ in ref_t if i_ not in mine] if a.area == 'stadt' else []
+    lost = [i_ for i_ in lost_all if ref_t[i_].get('grundflaeche_m2', 99) >= 2]
+    tiny = [(i_, ref_t[i_].get('grundflaeche_m2'), ref_t[i_].get('hoehe_m')) for i_ in lost_all if i_ not in lost]
     res['tall'] = [{**{k_: mine[i_].get(k_) for k_ in ('id', 'h', 'k', 'bt', 'use', 'lv', 'r', 'n', 'adr', 'fg')}, 'q_lv': mine[i_]['q'].get('lv', 0),
                     'fa': mine[i_]['d']['fa'], 'stage1_m': ref_t.get(i_, {}).get('hoehe_m')} for i_ in sorted(mine, key=lambda q: -mine[q]['h'])]
     ck('tall buildings against stage 1', not wrong and not lost and not extra,
        f'{len(mine)} records of 25 m and more ({sum(1 for v in mine.values() if v["d"]["fa"] >= 100)} with 100 m² and more), stage 1 lists {len(ref_t)} in the city; '
-       f'height differs {wrong[:3]}, missing {lost[:3]}, not in stage 1 {extra[:3]}')
+       f'height differs {wrong[:3]}, missing {lost[:3]}, not in stage 1 {extra[:3]}; left out because smaller than 2 m²: {tiny}')
     if a.area == 'stadt':
         ref = json.load(open(os.path.join(G.BESTAND, 'bestand.json'), encoding='utf-8'))
         ne_ = None

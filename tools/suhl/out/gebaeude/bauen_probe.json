@@ -1,12 +1,12 @@
 {
- "made": "2026-11-13T01:10:20Z",
+ "made": "2026-11-13T01:23:02Z",
  "area": "probe",
  "version": "v0",
- "seconds": 11.2,
+ "seconds": 10.6,
  "tiles": 11,
- "buildings": 2501,
- "bytes": 2850806,
- "kb_per_building": 1.11,
+ "buildings": 2502,
+ "bytes": 2868446,
+ "kb_per_building": 1.12,
  "centre_tile_present": true,
  "ethos_in_frame": 4532,
  "cadastre_in_frame": 7951,
@@ -14,22 +14,22 @@
   "kataster_nur_ueberdeckt": 50
  },
  "kat": {
-  "2": 2451,
+  "2": 2452,
   "0": 23,
   "1": 33
  },
  "src": {
-  "e": 2430,
+  "e": 2431,
   "k": 77
  },
  "hq": {
-  "2": 2430,
+  "2": 2431,
   "0": 77
  },
  "kind": {
   "0": 1707,
   "1": 31,
-  "2": 548,
+  "2": 549,
   "3": 202,
   "4": 3,
   "5": 5,
@@ -40,18 +40,18 @@
   "wohnen": 1443,
   "neben": 335,
   "garage": 177,
-  "freizeit": 155,
+  "freizeit": 156,
   "unbekannt": 87,
   "gewerbe": 60,
-  "oeffentlich": 55,
+  "oeffentlich": 54,
   "handel": 39,
   "verkehr": 21,
   "versorgung": 19,
   "bildung": 19,
   "buero": 18,
   "gemischt": 18,
+  "gesundheit": 14,
   "kultur": 14,
-  "gesundheit": 13,
   "kirche": 9,
   "sozial": 8,
   "gastro": 7,
@@ -66,7 +66,7 @@
   "dach": 202,
   "block": 194,
   "garage": 177,
-  "laube": 106,
+  "laube": 107,
   "dorf": 78,
   "villa": 62,
   "hochhaus": 46,
@@ -79,60 +79,60 @@
   "tank": 3
  },
  "roof_form": {
-  "0": 1280,
-  "1": 79,
+  "0": 1281,
+  "1": 78,
   "2": 919,
-  "3": 229
+  "3": 230
  },
  "roof_rq": {
-  "0": 1556,
-  "1": 144,
-  "2": 807
+  "0": 1557,
+  "1": 145,
+  "2": 806
  },
  "floors_gsq": {
   "-1": 294,
-  "0": 130,
+  "0": 137,
   "1": 118,
-  "2": 1965
+  "2": 1959
  },
  "era": {
-  "0": 2211,
+  "0": 2212,
   "1": 160,
   "2": 2,
   "3": 123,
   "4": 11
  },
  "era_q": {
-  "0": 2468,
+  "0": 2469,
   "1": 39
  },
  "roof_class": {
-  "0": 942,
+  "0": 943,
   "1": 41,
   "2": 1019,
-  "3": 374,
-  "4": 1399,
-  "5": 306,
+  "3": 375,
+  "4": 1402,
+  "5": 305,
   "6": 44
  },
  "roof_class_q": {
   "0": 89,
-  "1": 4018,
+  "1": 4022,
   "2": 18
  },
- "with_address": 2480,
+ "with_address": 2481,
  "with_name": 128,
- "with_osm": 1814,
+ "with_osm": 1815,
  "with_street_side": 1771,
- "with_shop_zone": 194,
+ "with_shop_zone": 195,
  "landmarks": 50,
  "monuments": 18,
- "footprint_ha": 29.74,
- "floor_area_ha": 95.17,
- "roof_area_ha": 32.43,
+ "footprint_ha": 29.78,
+ "floor_area_ha": 94.57,
+ "roof_area_ha": 32.47,
  "function_to_use": {
   "Wohngebäude": [
-   1418,
+   1417,
    "wohnen"
   ],
   "Überdachung": [
@@ -144,7 +144,7 @@
    "garage"
   ],
   "Gebäude zur Freizeitgestaltung": [
-   155,
+   156,
    "freizeit"
   ],
   "Gebäude für Wirtschaft oder Gewerbe": [
@@ -171,16 +171,16 @@
    18,
    "gemischt"
   ],
+  "Gebäude für öffentliche Zwecke": [
+   14,
+   "oeffentlich"
+  ],
   "Gebäude zur Versorgung": [
    14,
    "versorgung"
   ],
-  "Gebäude für öffentliche Zwecke": [
-   13,
-   "oeffentlich"
-  ],
   "Gebäude für Gesundheitswesen": [
-   11,
+   12,
    "gesundheit"
   ],
   "Betriebsgebäude zu Verkehrsanlagen (allgemein)": [
@@ -227,10 +227,6 @@
    3,
    "verkehr"
   ],
-  "Feuerwehr": [
-   3,
-   "oeffentlich"
-  ],
   "Gebäude für religiöse Zwecke": [
    3,
    "kirche"
@@ -238,6 +234,10 @@
   "Wasserbehälter": [
    2,
    "versorgung"
+  ],
+  "Feuerwehr": [
+   2,
+   "oeffentlich"
   ],
   "Krankenhaus": [
    2,
@@ -284,25 +284,27 @@
    "land"
   ]
  },
+ "dom": null,
+ "zensus": null,
  "underground": 6,
  "floors_not_fitting_height": {
-  "0": 26,
+  "0": 33,
   "3": 9
  },
  "use_out": {
   "wohnen": 1461,
-  "neben": 506,
+  "neben": 507,
   "garage": 177,
   "sonst": 88,
-  "verwaltung": 55,
+  "verwaltung": 54,
   "gewerbe": 52,
   "handel": 39,
   "versorgung": 19,
   "schule": 19,
   "buero": 18,
   "verkehr": 15,
+  "gesundheit": 14,
   "kultur": 14,
-  "gesundheit": 13,
   "kirche": 9,
   "industrie": 8,
   "hotel": 7,
@@ -315,7 +317,7 @@
   "ueberdachung": 202,
   "block": 194,
   "garage": 177,
-  "laube": 106,
+  "laube": 107,
   "dorfhaus": 78,
   "villa": 62,
   "punkthochhaus": 46,
@@ -328,15 +330,15 @@
  },
  "rk": {
   "0": 393,
-  "2": 153,
+  "2": 152,
   "3": 172,
-  "4": 1302,
+  "4": 1304,
   "5": 17,
   "6": 420,
   "7": 44
  },
  "fg": {
-  "0": 2355,
+  "0": 2356,
   "1": 11,
   "2": 2,
   "3": 11,
@@ -346,10 +348,10 @@
   "64": 71
  },
  "r_out": {
-  "0": 1274,
-  "1": 79,
+  "0": 1275,
+  "1": 78,
   "2": 865,
-  "3": 173,
+  "3": 174,
   "4": 26,
   "5": 82,
   "6": 2

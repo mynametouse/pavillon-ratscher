@@ -185,6 +185,8 @@ def main():
     ap.add_argument('--opl', default=None)
     ap.add_argument('--dop', action='store_true', help='roof class and colour from the aerial image (WMS th_dop, cached per tile)')
     ap.add_argument('--dop-workers', type=int, default=0, help='fetch the aerial images ahead with this many requests at a time (GitHub Actions: 2)')
+    ap.add_argument('--dom', default=None, help='raw folder with DOM1 and DGM1 tiles of easygeodata (dom1/, dgm1/): roofs measured on the surface model')
+    ap.add_argument('--zensus', default=None, help='the census grid cells of Suhl (zensus.py --filter): era class of houses from their 100 m cell')
     ap.add_argument('--out', default=None)
     ap.add_argument('--version', default='v0')
     ap.add_argument('--limit-tiles', type=int, default=0, help='for tests: only the first n tiles')
@@ -255,7 +257,9 @@ def main():
     for b in B:
         rp = b['p'].representative_point()
         b['rp'] = (rp.x, rp.y)
-        b['tile'] = G.tile_of(rp.x, rp.y)
+        # the tile: where the middle of the footprint's corners lies (the rule of the data contract's validator)
+        c_ = np.array(b['p'].exterior.coords)[:-1]
+        b['tile'] = G.tile_of(float(c_[:, 0].mean()), float(c_[:, 1].mean()))
         b['on'] = (b['tile'] in want) if want is not None else stadt.contains(rp)
     tree = STRtree([b['p'] for b in B])
     ids = [b['id'] for b in B]
@@ -350,6 +354,26 @@ def main():
                 except Exception:
                     pass
 
+    zgrid = None
+    if a.zensus and os.path.exists(a.zensus):
+        import zensus as ZS
+        try:
+            zgrid = ZS.Grid(a.zensus)
+            G.log('census grid: cells with buildings by year', zgrid.n)
+            if zgrid.n < 50:
+                zgrid = None
+        except Exception as ex:
+            G.log('census grid not usable:', repr(ex)[:200])
+    zstat = Counter()
+    dom = None
+    if a.dom and (os.path.isdir(os.path.join(a.dom, 'dom1')) and os.path.isdir(os.path.join(a.dom, 'dgm1'))):
+        import dom as DM
+        dom = DM.Dom(a.dom)
+        G.log('surface model: tiles in', a.dom, len(os.listdir(os.path.join(a.dom, 'dom1'))), 'DOM1,', len(os.listdir(os.path.join(a.dom, 'dgm1'))), 'DGM1')
+    elif a.dom:
+        G.log('no DOM1 / DGM1 tiles in', a.dom, '- the roofs stay estimates by rule')
+    dstat = {'why': Counter(), 'form': Counter(), 'flat_flip': Counter(), 'ridge_turned': 0, 'both_pitched': 0, 'de': [], 'dp': [], 'h_new': 0, 'gone': 0,
+             'gone_seen': 0, 'dh': []}
     photo = None
     if a.dop:
         import dachbild as LB
@@ -414,6 +438,21 @@ def main():
                 # a part looks like the building it belongs to
                 pm = part_of
                 typ = RG.type_of(pm['k'], pm['use'], pm['sh'], pm['hh'], pm['gs'], 1, village, oldtown)
+            # the surface model: the cells of this footprint as heights above its foot
+            cells = None
+            h_src = 'ethos' if hq == 2 else 'regel'
+            if dom is not None and k != 8:
+                cells = DM.measure(dom, p)
+                if cells[0] is not None:
+                    top = cells[3]['top']
+                    if hq == 2:
+                        dstat['dh'].append(top - h)
+                    if b['kat'] == 0:
+                        dstat['gone_seen'] += 1
+                        dstat['gone'] += 1 if top < 2.0 else 0
+                    if hq == 0 and top >= 2.2:
+                        h, hq, h_src = float(top) + 0.2, 1, 'dom1'      # a building only the cadastre knows: its height measured
+                        dstat['h_new'] += 1
             # the roof (estimate)
             ridge = D.ridge_from_neighbours(p, mains, sh) if k in (0, 6) and mains else None
             iv = None
@@ -423,10 +462,34 @@ def main():
             sh_rel = dict(sh)
             sh_rel['ctr'] = np.array(sh['ctr']) - np.array([ec, nc])
             est = D.estimate(sh_rel, h, k, typ, use, gs, ot, ridge, iv, part=part_of is not None)
+            r_src = 'osm' if est['rq'] == 2 else 'dop' if est['rq'] == 1 else 'regel'
+            e_dom = False
+            if cells is not None and k in (0, 1, 2, 6):
+                if cells[0] is None:
+                    dstat['why'][cells[3]['why']] += 1
+                else:
+                    fitd, info = DM.fit_building(dom, p, sh, h if hq >= 1 else None, k, cells)
+                    if fitd is None:
+                        dstat['why'][info['why']] += 1
+                    else:
+                        dstat['why']['gemessen'] += 1
+                        dstat['form'][(est['form'], fitd['form'])] += 1
+                        if (est['form'] == 0) != (fitd['form'] == 0):
+                            dstat['flat_flip']['regel flach -> gemessen geneigt' if est['form'] == 0 else 'regel geneigt -> gemessen flach'] += 1
+                        elif est['form'] != 0:
+                            dstat['both_pitched'] += 1
+                            dstat['ridge_turned'] += 1 if abs(float(np.asarray(est['ux']) @ fitd['ux'])) < 0.5 else 0
+                            dstat['dp'].append(abs(est['pitch'] - fitd['pitch']))
+                        dstat['de'].append(abs(est['eave'] - fitd['eave']))
+                        est = dict(est, form=fitd['form'], pitch=fitd['pitch'], eave=fitd['eave'], rise=fitd['rise'], ux=fitd['ux'], Wd=fitd['Wd'], Lr=fitd['Lr'],
+                                   planes=fitd['planes'], rq=1, rs=est['rs'] if fitd['form'] != 0 else None)
+                        r_src, e_dom = 'dom1', True
+            # floors that do not fit the eave we now have (1.9 to 6.5 m per floor): kept aside, estimated below
+            gs_unfit = bool(gs and k == 0 and not (1.9 * gs <= max(est['eave'], 2.0) + 1.0 and est['eave'] <= 6.5 * gs + 3.0))
             faces, walls, rings = D.build(rel, est, sid, k, bool(others))
             # floors that do not fit under the measured height (a low part of a taller house): kept aside as x_lv, estimated from the eave
             gs_src = None
-            if gs and est['gs_fit'] is None:
+            if gs and (est['gs_fit'] is None or gs_unfit):
                 gs_src, gs, gsq = gs, None, 0
                 stats['lv_unfit'][k] += 1
             # floors where neither the cadastre nor OpenStreetMap knows them: from the eave
@@ -465,6 +528,21 @@ def main():
             if h >= 25 and sh['A'] >= 100:
                 fl['hh'] = 1
             era, eraq, year = RG.era_of(typ, use, ot, lm['year'] if lm else None, oldtown)
+            era_src = ('osm' if (ot or {}).get('start_date') else 'wissen') if eraq else 'regel'
+            if zgrid is not None and k == 0 and part_of is None and not eraq and typ not in ('hochhaus', 'platte'):
+                # the census grid: the age class most buildings of this 100 m cell have
+                ze = zgrid.era(b['rp'][0], b['rp'][1])
+                if ze is not None:
+                    if ze[1] >= 0.6:
+                        era, eraq, era_src = ze[0], 1, 'zensus'
+                        zstat['klar'] += 1
+                    elif era == 0:
+                        era, era_src = ze[0], 'zensus'
+                        zstat['haeufigste'] += 1
+                    else:
+                        zstat['regel bleibt'] += 1
+                else:
+                    zstat['keine Zelle'] += 1
             # the colours of a part follow its main building (the same choice from the palette)
             fa = F.params(part_of['id'] if part_of is not None else sid, typ, k, use, gs, gsq, est['eave'], ot, era, narrow=sh['Wd'] < 3.0)
             # shops and amenities inside (or within 2 m of) the footprint: the ground-floor shop zone and the signs
@@ -545,10 +623,10 @@ def main():
             by = {}
             for f_ in faces:
                 by[f_['c']] = by.get(f_['c'], 0.0) + f_['a']
-            dom = max(by, key=by.get)
-            wsum = sum(f_['a'] for f_ in faces if f_['c'] == dom) or 1.0
-            rcol = [round(sum(rgb(f_['col'])[i_] * f_['a'] for f_ in faces if f_['c'] == dom) / wsum, 2) for i_ in range(3)]
-            rec['rk'], rec['rc'] = RG.ROOF_CLASS_OUT[dom], rcol
+            top_c = max(by, key=by.get)
+            wsum = sum(f_['a'] for f_ in faces if f_['c'] == top_c) or 1.0
+            rcol = [round(sum(rgb(f_['col'])[i_] * f_['a'] for f_ in faces if f_['c'] == top_c) / wsum, 2) for i_ in range(3)]
+            rec['rk'], rec['rc'] = RG.ROOF_CLASS_OUT[top_c], rcol
             rv, rt, R = [], [], []
             ro = {}
             if form == 0:
@@ -689,13 +767,17 @@ def main():
             # the quality of these numbers follows from the building's q.lv (floors, floor area) and rq (roof areas)
             rec['d'] = d
             # quality and source of every field (absent = 0 = rule or assumption; absent source = regel)
-            q = {'f': 2, 'h': 2 if hq == 2 else 0, 'e': 1 if (form == 0 and hq == 2) else 0, 'k': b['kq'], 'use': b['useq'] if use != 'unbekannt' else 0,
+            q = {'f': 2, 'h': hq, 'e': 1 if (e_dom or (form == 0 and hq == 2)) else 0, 'k': b['kq'], 'use': b['useq'] if use != 'unbekannt' else 0,
                  'lv': gsq if gs else 0, 'era': eraq, 'yr': 1 if year else 0, 'rk': 1 if cqm else 0, 'rc': 1 if cqm else 0, 'n': nq, 'adr': adr_q if adr else 0,
                  'eg': 1 if (rec.get('eg') and shop_zone) else 0}
             rec['q'] = {kk: vv_ for kk, vv_ in q.items() if vv_}
             if not rec['q']:
                 rec['q'] = {'f': 2}
-            src = {'f': 'alkis' if b['src'] == 'k' else 'ethos', 'h': 'ethos' if hq == 2 else 'regel'}
+            src = {'f': 'alkis' if b['src'] == 'k' else 'ethos', 'h': h_src}
+            if r_src != 'regel':
+                src['r'] = r_src
+            if e_dom:
+                src['e'] = 'dom1'
             for kk, q_ in (('k', b['kq']), ('use', q.get('use', 0)), ('lv', q.get('lv', 0)), ('adr', q.get('adr', 0))):
                 src[kk] = 'alkis' if q_ == 2 else 'osm' if q_ == 1 else 'regel'
             if not gs:
@@ -706,8 +788,8 @@ def main():
             src['rc'] = 'dop' if cqm else 'regel'
             if name:
                 src['n'] = nsrc
-            if eraq:
-                src['era'] = 'osm' if ((ot or {}).get('start_date')) else 'wissen'
+            if era_src != 'regel':
+                src['era'] = era_src
             # only what differs from the tile's default sources (SRC0) is written with the building
             src = {kk: vv_ for kk, vv_ in src.items() if SRC0.get(kk) != vv_}
             if src:
@@ -750,6 +832,12 @@ def main():
     sys.path.insert(0, os.path.join(G.REPO, 'tools', 'suhl', 'lib'))
     from schema import index as IX       # the common index of the data contract (suhl-daten)
     sources = ['ethos', 'alkis', 'osm'] + (['dop'] if a.dop else []) + ['wissen', 'regel']
+    if zgrid is not None and (zstat['klar'] or zstat['haeufigste']):
+        sources.insert(-2, {'id': 'zensus', 'title': 'Zensus 2022, Gitterdaten 100 m: Gebäude nach Baujahr', 'by': 'Statistische Ämter des Bundes und der Länder',
+                            'licence': 'offene Daten mit Quellenangabe (Lizenzname für die Gitterdaten nicht geprüft)', 'url': 'https://www.zensus2022.de', 'date': '2022-05-15',
+                            'attribution': '© Statistische Ämter des Bundes und der Länder, Zensus 2022'})
+    if dom is not None and dstat['why'].get('gemessen'):
+        sources = sources[:-2] + [IX.source('dom1', via='bezogen über easygeodata.de'), IX.source('dgm1', via='bezogen über easygeodata.de')] + sources[-2:]
     note = ('Ein Datensatz je Gebäudekörper des Katasters/LoD2. Dach geschätzt (rq 0 Regel, 1 mit Luftbild oder OSM-Angabe); Dachdeckung und -farbe '
             'aus dem Luftbild; Fassaden nach Regeln (x_fa, Güte 0-1). Private Felder: x_fa (Fassaden-Parameter des Hauses), x_teil (Kennung des '
             'Hauptgebäudes eines Bauteils), x_fat (Kachel-Tabelle zu x_fa), x_lm (Nummer in wahrzeichen.md), x_kat (1 = dem Kataster nach Lage zugeordnet, 0 = nicht mehr im '
@@ -776,6 +864,17 @@ def main():
            'with_address': n_adr, 'with_name': n_name, 'with_osm': n_osm, 'with_street_side': n_front, 'with_shop_zone': n_shop, 'landmarks': n_lm,
            'monuments': n_dm, 'footprint_ha': round(sums['gf'] / 1e4, 2), 'floor_area_ha': round(sums['bgf'] / 1e4, 2), 'roof_area_ha': round(sums['dach'] / 1e4, 2),
            'function_to_use': {k: [stats['fn'][k], stats['fnmap'][k]] for k, _ in stats['fn'].most_common()},
+           'dom': None if dom is None else {
+               'tiles_read_missing': len(dom.missing), 'fit': dict(dstat['why']),
+               'form_rule_to_measured': {f'{a_}->{b_}': v for (a_, b_), v in sorted(dstat['form'].items())},
+               'form_changed': sum(v for (a_, b_), v in dstat['form'].items() if a_ != b_), 'form_same': sum(v for (a_, b_), v in dstat['form'].items() if a_ == b_),
+               'flat_or_pitched_changed': dict(dstat['flat_flip']), 'both_pitched': dstat['both_pitched'], 'ridge_turned': dstat['ridge_turned'],
+               'eave_change_m': {'median': round(float(np.median(dstat['de'])), 2), 'p90': round(float(np.percentile(dstat['de'], 90)), 2)} if dstat['de'] else None,
+               'pitch_change_deg': {'median': round(float(np.median(dstat['dp'])), 1), 'p90': round(float(np.percentile(dstat['dp'], 90)), 1)} if dstat['dp'] else None,
+               'height_surface_minus_ethos_m': {'median': round(float(np.median(dstat['dh'])), 2), 'p10': round(float(np.percentile(dstat['dh'], 10)), 2),
+                                                'p90': round(float(np.percentile(dstat['dh'], 90)), 2), 'n': len(dstat['dh'])} if dstat['dh'] else None,
+               'heights_measured_for_cadastre_only': dstat['h_new'], 'not_in_cadastre_seen': dstat['gone_seen'], 'not_in_cadastre_flat_ground': dstat['gone']},
+           'zensus': None if zgrid is None else dict(zstat, cells=zgrid.n),
            'underground': n_tief, 'floors_not_fitting_height': {str(k): v for k, v in sorted(stats['lv_unfit'].items())},
            'use_out': dict(stats['use_out'].most_common()), 'bt': dict(stats['bt'].most_common()), 'rk': {str(k): v for k, v in sorted(stats['rk'].items())},
            'fg': {str(k): v for k, v in sorted(stats['fg'].items())}, 'r_out': {str(k): v for k, v in sorted(stats['r_out'].items())},

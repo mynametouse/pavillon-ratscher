@@ -1,1 +1,8 @@
-run 1 - 2026-11-13 - the whole city, first run (v1)
+# Auftrag für den Workflow .github/workflows/suhl-gebaeude.yml: jede Änderung an dieser Datei bestellt einen neuen Lauf.
+# version: das N des Ordners suhl/g/v<N> (veröffentlichte Versionen werden nie überschrieben – für einen neuen Stand N erhöhen)
+# easygeodata: Prioritäten aus tools/suhl/out/bestand/kacheln.csv, für die DGM1 und DOM1 geholt werden (P1 Zentrum, P2 Kernstadt, P3 Rest)
+version: 1
+easygeodata: P1
+# veroeffentlichen: ja = die Kacheln gehen nach dem Lauf über die Aktion suhl-publish ins Daten-Repo (nur mit gültigem Prüfer)
+veroeffentlichen: nein
+lauf: 2 - 2026-11-13 - Vertragsformat (Schema 1), Dächer aus dem Oberflächenmodell DOM1 (zuerst P1 = Zentrum), Zensus-Gitter Baujahr, Probesatz v1
