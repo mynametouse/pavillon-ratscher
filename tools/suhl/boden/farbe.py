@@ -29,6 +29,10 @@ import tiles as wtiles
 CTX = wlib.aligned(5, wlib.CTX)            # the context square of the test block run: E 612700..638300, N 5582800..5608400
 FLUGTAGE = os.path.join(blib.HERE, 'flugtage.json')
 NAMES = ('garten-2024-04-07', 'wie-geflogen')
+# flight days of cells beyond the context square and the municipality (under the far tiles of the city plan). Kept apart from
+# flugtage.json: the balance does not read this file yet - using it changes far image tiles, so it is switched on together with
+# a new image key (docs/features/suhl-boden.md 3.3)
+FERN = os.path.join(blib.HERE, 'flugtage_fern.json')
 
 
 def km_cells(area):
@@ -50,9 +54,22 @@ def load_flugtage():
     return d
 
 
-def ask_flugtage(cells, pause=0.3, threads=2):
-    """the flight day of 1 km cells from the service (as tools/welt/fetch.py flight_dates, but gently) -> flugtage.json grows"""
+def cells_under(T):
+    """the 1 km cells (e, n in km) under the tiles of a plan (T: level -> [(x, y)])"""
+    cells = set()
+    for L, ts in T.items():
+        for x, y in ts:
+            e0, n0, e1, n1 = tbounds(int(L), x, y)
+            cells.update((e, n) for e in range(int(np.floor(e0 / 1000)), int(np.ceil(e1 / 1000)))
+                         for n in range(int(np.floor(n0 / 1000)), int(np.ceil(n1 / 1000))))
+    return cells
+
+
+def ask_flugtage(cells, pause=0.3, threads=2, path=None):
+    """the flight day of 1 km cells from the service (as tools/welt/fetch.py flight_dates, but gently) -> flugtage.json grows
+    (or the file named by path)"""
     from concurrent.futures import ThreadPoolExecutor
+    FLUGTAGE = path or globals()['FLUGTAGE']
     have = json.load(open(FLUGTAGE, encoding='utf-8')) if os.path.exists(FLUGTAGE) else {'cells': {}}
     todo = [k for k in cells if k not in have['cells']]
     log(f'Flugtage: {len(cells)} Zellen, {len(todo)} noch nicht gefragt')
@@ -141,6 +158,24 @@ class Balance:
                     out[r0:r1, c0:c1] = wtiles.shift_colours(t, img[r0:r1, c0:c1])
         return img if out is None else out
 
+    def cells_of(self, T):
+        """the 1 km cells under the image tiles of a set (T: level -> [(x, y)]) and where their flight day comes from. A property of
+        the tile lists - the same whether the images were fetched in this run or came out of the image store (the counters of
+        apply() only see what a run fetches and are empty when every tile is reused)."""
+        cells = cells_under(T)
+        keep = set(self.guessed)                   # day_of notes the cells it guesses; this count must not change the run's counters
+        by, near, none = {}, 0, 0
+        for e, n in sorted(cells):
+            asked = f'{e}_{n}' in self.dates
+            day = self.day_of(e, n)
+            by[str(day)] = by.get(str(day), 0) + 1
+            near += int(not asked and day is not None)
+            none += int(day is None)
+        self.guessed = keep
+        return {'cells': len(cells), 'by_day': dict(sorted(by.items())), 'day_from_nearest_cell': near, 'without_day': none,
+                'note': '1-km-Zellen unter den Bildkacheln des Satzes; day_from_nearest_cell = Zellen außerhalb der abgefragten Flugtage '
+                        '(flugtage.json), die den Tag der nächsten bekannten Zelle bekommen (höchstens 6 km); without_day = bleiben wie geflogen'}
+
     def info(self):
         return {'balance': self.name, 'model': 'tools/welt/tiles.py Harmonizer: je Flugtag eine 3-D-Farbübertragung, Bezug ist der Bildflug am Garten; '
                                                'gelernt am Kontextquadrat des Testblocks (Stufe 7), auf jede 1-km-Zelle nach ihrem Flugtag angewandt',
@@ -206,12 +241,21 @@ def naht(out, raw):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--flugtage', action='store_true')
+    ap.add_argument('--flugtage-plan', default='', help='probe | stadt: ask the flight day of the cells under the tiles of this plan that '
+                    'have no answer yet -> flugtage_fern.json (not read by the balance until it is switched on)')
     ap.add_argument('--naht', default='')
     ap.add_argument('--raw', default=blib.RAW)
     a = ap.parse_args()
     if a.flugtage:
         c = ask_flugtage(km_cells(CTX))
         log('Flugtage:', json.load(open(FLUGTAGE))['days'])
+    if a.flugtage_plan:
+        import plan as planmod
+        T, _ = planmod.make(a.flugtage_plan)
+        known = load_flugtage()
+        cells = sorted(k for k in (f'{e}_{n}' for e, n in cells_under(T)) if k not in known)
+        ask_flugtage(cells, path=FERN)
+        log('Flugtage fern:', json.load(open(FERN))['days'])
     if a.naht:
         naht(a.naht, a.raw)
 

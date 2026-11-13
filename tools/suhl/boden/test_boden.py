@@ -256,6 +256,21 @@ if os.path.exists(RF):
 else:
     print('SKIP roads: tools/suhl/out/strassen/probe/fahrt/suhl-zentrum.json not there (merge origin/suhl/strassen)')
 
+# ---- colour balance: where the flight days of a set's cells come from (no network: the days are committed) ----
+import farbe
+bal = farbe.Balance.__new__(farbe.Balance)
+bal.dates = farbe.load_flugtage()
+bal.guessed, bal._near = {'x'}, {}
+bal.known = np.array([[int(v) for v in k.split('_')] for k, d in bal.dates.items() if d], int)
+bal.known_day = [d for d in bal.dates.values() if d]
+cs = bal.cells_of(T)
+ck('balance: every 1 km cell under the sample has a count, the run counters stay as they were', cs['cells'] > 100
+   and sum(cs['by_day'].values()) == cs['cells'] and cs['by_day'].get('2024-05-15', 0) > 0 and 0 < cs['day_from_nearest_cell'] < cs['cells']
+   and bal.guessed == {'x'}, str({k: v for k, v in cs.items() if k != 'note'}))
+one = bal.cells_of({12: [blib.tile_of(12, *blib.CENTRE)]})
+ck('balance: the tile at the centre lies in one cell flown on 15.05.2024', one['cells'] == 1 and one['by_day'] == {'2024-05-15': 1}
+   and one['day_from_nearest_cell'] == 0, str(one['by_day']))
+
 # ---- image requests ----
 ts = [(1984, 2160), (1985, 2160), (1991, 2167), (1992, 2168)]
 rq = bild.requests_of(12, ts)

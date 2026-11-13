@@ -194,6 +194,8 @@ def main():
                 cut = shrink_probe(T, step)
                 log('Probesatz zu groß –', cut, '->', prune(a.out, T), 'Dateien entfernt')
                 pinfo['counts']['12'] = len(T[12])
+        if harm:
+            iinfo['balance_info']['set'] = harm.cells_of(T)
     prune(a.out, T)
 
     def on_disk(sub, ext, L):
