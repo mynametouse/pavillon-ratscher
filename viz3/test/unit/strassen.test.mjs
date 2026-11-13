@@ -303,3 +303,39 @@ test('power: the conductors hang where the models say, the same with and without
   assert.deepEqual([W[45], W[46], W[47]], [100, 10, -0]);
   for (let i = 6; i < W.length; i += 6) assert.deepEqual([W[i], W[i + 1], W[i + 2]], [W[i - 3], W[i - 2], W[i - 1]]);
 });
+
+test('paint: a stop line is solid, a give-way line in blocks, a zebra in stripes; a deck carries the marks of its road', () => {
+  const flat = () => 2,
+    area = K => tris(K.raw).reduce((a, t) => a + t.area, 0);
+  for (const [type, want] of [
+    ['halt', 2 * 1.6 * 0.5],
+    ['warte', 4 * 0.5 * 0.4],
+    ['zebra', 3 * 0.5 * 4],
+  ]) {
+    const K = M.kit();
+    M.paint(K, type, 10, 10, 0.3, 1.6, flat);
+    assert.ok(Math.abs(area(K) - want) < 1e-6, type + ' area ' + area(K) + ' / ' + want);
+    for (const t of tris(K.raw)) {
+      assert.ok(t.g[2] > 0.99, 'facing up');
+      assert.ok(Math.abs(t.m[2] - 2.022) < 1e-6, 'just above the ground');
+    }
+  }
+  // a deck of 60 m, a main road of 6.5 m in open country: 5 dashes of 4 m and two edge lines, 12 cm wide
+  const P = [
+      [0, 0, 5],
+      [30, 0, 5.3],
+      [60, 0, 5],
+    ],
+    K = M.kit();
+  M.deckMarks(K, P, 3.25, T.marks(1, 3.25, T.RURAL));
+  const T3 = tris(K.raw),
+    a = T3.reduce((s, t) => s + t.area, 0);
+  assert.ok(Math.abs(a - (5 * 4 + 2 * 60) * 0.12) < 0.05, 'paint ' + a);
+  for (const t of T3) assert.ok(t.g[2] > 0.99 && t.m[2] > 5.02 && t.m[2] < 5.34, 'on the deck, facing up');
+  const ys = T3.flatMap(t => t.v.map(q => Math.abs(q.p[1])));
+  assert.ok(Math.abs(Math.max(...ys) - (3.25 - 0.27 + 0.06)) < 1e-6, 'edge lines 0.27 m inside the edge');
+  // a village lane: nothing
+  const K2 = M.kit();
+  M.deckMarks(K2, P, 1.8, T.marks(4, 1.8, T.RURAL));
+  assert.equal(K2.count(), 0);
+});

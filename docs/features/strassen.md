@@ -25,8 +25,10 @@ umsetzen kannst, das tu“.
 - **Jenseits des Quadrats** (`strassen/strassen_karte.js`): dieselbe Karte für ein Fenster um den Beobachter (1536 m mit 1,5 m/px, auf
   Telefonen 1024 m mit 2 m/px), aus den Straßen von `welt/fahrt.js`, ein paar Wege je Bild in einen zweiten Puffer gerastert (2,5 ms je
   Bild) und dann getauscht. Der Kachel-Shader (`welt/welt.js`) liest sie über eigene Uniform-Halter (`ROADS.W`, derselbe Sampler-Platz wie
-  die Karte des Quadrats – keine zusätzliche Textur im Shader). Über dem Asphalt einer Zone (Schleusingen) gilt sie ebenfalls; Pflaster,
-  Platten und Kies einer Zone bleiben, wie die Zone sie gelegt hat. Die Straßen enden 70 m vor dem nächsten Fensterrand (`uRoad.z`).
+  die Karte des Quadrats – keine zusätzliche Textur im Shader). Über dem Asphalt einer Zone (Schleusingen, Kloster Veßra) gilt sie ebenfalls
+  (die helle Bordsteinlinie der Zone weicht dort dem Rand aus der Karte); Pflaster, Platten und Kies einer Zone bleiben, wie die Zone
+  sie gelegt hat. Graue Fotoflächen werden in einer Zone nahe der Kamera weiter zu Pflaster – aber nicht mehr dort, wo die Karte eine
+  Straße hat (vorher schien das Pflaster durch den Asphalt der L 1625 vor Kloster Veßra). Die Straßen enden 70 m vor dem nächsten Fensterrand (`uRoad.z`).
 - **Ausstattung** (`strassen/strassen.js`, Modelle `strassen/strassen_modelle.js`, Daten `dist/strassen/ausstattung.json`): je Zelle von
   128 m gebaut, wenn man näher als 430 m kommt (Telefon 300 m), 150 m weiter wieder frei; zwei Zellen je Runde (0,2 s). Alles steht auf
   dem Boden des Augenblicks (`KERN.ground`) und wird neu gesetzt, wenn feinere Kacheln kommen. Nichts steht auf einer Fahrbahn: jedes
@@ -47,6 +49,9 @@ umsetzen kannst, das tu“.
   - **Strommasten und Leitungen** (711 Masten, davon 203 Gittermasten; OSM `power`): Zellen von 512 m, sichtbar bis 1,5 km; die Seile als
     Linien (ein Pixel breit in jeder Entfernung), nur bis 800 m.
   - **Linien quer** (`linien`): Halt- und Wartelinien, Zebrastreifen – Farbe auf dem Asphalt, unter Schnee verdeckt.
+  - **Brücken:** die Straßenkarte lässt Brücken aus (sonst läge unter dem Deck eine Straße auf dem Talboden) – ihre Mittel- und
+    Randlinien liegen als Farbe auf dem Deck (`STRMOD.deckMarks`; die Decks des Quadrats und die von `welt/fahrt.js`).
+  - **Rückstrahler:** nachts leuchten die Rückstrahler der Leitpfosten dem Auto entgegen, das man fährt (kleine helle Flächen, addiert).
 - **Kein neues Shader-Programm zur Laufzeit:** alles mit Vertexfarben auf dem Material der geparkten Autos (`DMOD.mat`), die
   Schildflächen, das Lampenglas, die Seile und die Linien mit je einem Material, das beim Laden mitkompiliert wird (Träger-Dreiecke).
 
@@ -68,18 +73,20 @@ deren Achsen und Breiten ausgerichtet. Braucht `pyproj`, `numpy`. Nach neuen Fah
 
 ## Tests
 
-- `node --test viz3/test/unit/strassen.test.mjs` (11): Kodierung, Radius, durchgezogene Strecken, Stile, Raster; Geometrie nach außen
+- `node --test viz3/test/unit/strassen.test.mjs` (12): Kodierung, Radius, durchgezogene Strecken, Stile, Raster; Geometrie nach außen
   gewunden, Rückstrahler zur richtigen Seite, Welle der Planke zur Straße, Schildfläche gegen die Fahrtrichtung und nicht gespiegelt.
-- `python3 viz3/test/run.py --port 89xx --serve strassen` (29 Prüfungen, Abschnitte `start,moebel,stadt,nass,fahrt,gl`; Bilder in
+- `python3 viz3/test/run.py --port 89xx --serve strassen` (31 Prüfungen, Abschnitte `start,moebel,stadt,nass,fahrt,gl`; Bilder in
   `out/strassen/`).
 - Gemessen (13.11., SwiftShader im Chat-Rechner): auf 900 m Fahrt mit 70 km/h im Mittel 0,06 ms je Bild für die Ausstattung und
   0,02 ms für die Fensterkarte, längste Runde 4 ms, eine Karte 10–14 ms in Scheiben; ~10.000 Dreiecke auf freier Strecke.
 
 ## Offen
 
-- **Brücken:** die Decks tragen keine Markierung (die Karte lässt Brücken aus, damit darunter keine Straße auf dem Talboden liegt).
-- **Kloster Veßra:** die Zone zeichnet ihre Straßen selbst (eigene Deckschicht) – dort gilt die neue Straßenkarte nicht.
 - **Einmündungen in spitzem Winkel:** zwei Mittellinien nebeneinander, wo zwei Wege fast parallel zusammenlaufen (wie vorher).
-- **Rückstrahler bei Nacht** leuchten im Scheinwerferlicht nicht auf; Schilder sind nachts dunkel.
+- **Schilder** sind nachts dunkel (die Rückstrahler der Leitpfosten leuchten im Licht des Autos, das man fährt).
 - **Ampeln** (drei Fußgängerampeln in OSM) fehlen; **Gehwege** stehen überall in der Stadt beidseitig – OSM `sidewalk` wird nicht gelesen.
+- **Kloster Veßra:** der Asphalt der Zone bekommt die neue Straßenkarte, soweit die Fahrtdaten die Straße kennen; Wege nur der Zone
+  (Klosterhof, Baumschule) bleiben, wie die Zone sie zeichnet.
 - Durchgezogene Linien, Leitpfosten, die meisten Laternen und ein Teil der Schilder sind **nach Regel** gesetzt, nicht nach Vermessung.
+- Vorschläge für die nächsten Pakete (Bäume draußen, Gewässer, Eisenbahn, Verkehr nach Schildern): Projekt-Dokument
+  `claude/pavillon-realismus.md`.

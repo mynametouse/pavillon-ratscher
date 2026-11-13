@@ -155,6 +155,7 @@ with lib.browser() as b:
         ck('the place decides the style: in Schleusingen a town, on the Landstraße beside Ratscher open country',
            E("STRDAT.placeAt(-908, 1007) === 2 && STRDAT.placeAt(448, -125) === 0 && STRDAT.placeAt(200, -220) === 1"),
            str(J("[STRDAT.placeAt(-908, 1007), STRDAT.placeAt(448, -125), STRDAT.placeAt(200, -220)]")))
+        ck('the bridges of the square carry their markings as paint on the deck (the road map leaves bridges out)', s0['n']['decks'] > 0 and s0['n']['lines'] > 50, json.dumps(s0['n']))
         ck('at the start only the cells near the garden are built', s0['built'] < 60 and s0['extra'] < 500, f"{s0['built']} cells, {s0['extra']} colliders")
         # nothing stands on a carriageway: every post, sign, lamp and rail of the square against the road map
         au = J(f"STRASSEN.audit({RB[0] + 5}, {RB[1] + 5}, {RB[2] - 5}, {RB[3] - 5})")
@@ -285,6 +286,18 @@ with lib.browser() as b:
         ck('everything still stands on the ground under it (finer tiles came on the way)',
            E("[...STRASSEN.cells.values()].filter(c => c.built && Math.hypot(c.x - VEH.cur.st.x, c.y - VEH.cur.st.y) < 250).every(c => c.ref.every(r => Math.abs(KERN.ground(r[0], r[1]) - r[2]) < 0.15))"))
         lib.shot(pg, OUT, '09_weiter')
+        # at night the reflectors of the delineators shine back at the car one drives (its lamps come on in the dark); not at a walker
+        g0 = st()['glint']
+        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 23 * 60 + 40; DN.update(true)")
+        lib.settle_light(pg)
+        steps(1, 0.025)
+        g1 = st()['glint']
+        vis = E("[...STRASSEN.cells.values()].filter(c => c.built && c.glint && c.glint.visible).length")
+        ck('at night the reflectors shine back at the car one drives', not g0 and g1 and vis > 0, f"day {g0}, night {g1}, {vis} cells")
+        lib.shot(pg, OUT, '10_nachtfahrt')
+        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 14 * 60 + 30; DN.update(true)")
+        lib.settle_light(pg)
+        steps(1, 0.025)
         E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null")
     if want('gl'):
         # the programs the roads' own meshes are drawn with: all of them were compiled while the loading screen was up
