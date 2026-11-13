@@ -128,6 +128,8 @@ export function norm(rec, T, map) {
         own = Array.isArray(rec.S) && rec.S[i] && (rec.S[i].mat || rec.S[i].col) ? rec.S[i] : null;
       b.F.push([a[0], a[1], c[0], c[1], q[4], q[5] * L, q[6], q[7], q[8] | 0, q[9] === undefined ? 99 : q[9], own]);
     });
+    // what is on the ground floor of each side (S[i].eg: 'laden' – the shop canopies of bau/haus.js)
+    b.eg = Array.isArray(rec.S) ? rec.F.map((q, i) => (rec.S[i] && rec.S[i].eg) || null) : null;
   } else
     for (const r of [f].concat(holes))
       for (let k = 0; k < r.length; k += 2) {
@@ -275,6 +277,7 @@ export function kachel(m, F) {
     let zmin, z0;
     const zs = [];
     if (ground) for (const f of b.F) zs.push(ground(f[0], f[1]), ground((f[0] + f[2]) / 2, (f[1] + f[3]) / 2));
+    b.gz = ground; // the terrain, for what stands at a wall's foot (bau/haus.js vordach)
     zs.sort((p, q) => p - q);
     if (b.z0rec !== undefined) {
       z0 = b.z0rec;
@@ -305,6 +308,12 @@ export function kachel(m, F) {
       if (mk.col) b.st.col = linC(rgb(mk.col), 0.82);
       if (mk.surr !== undefined) b.st.surr = mk.surr;
       if (mk.frame !== undefined) b.st.frame = mk.frame;
+      // single walls in a colour of their own (the glass corner of the Einkaufszentrum before the Diana fountain)
+      if (mk.wand)
+        for (const [k, c] of Object.entries(mk.wand)) {
+          const f = b.F[+k];
+          if (f) f[10] = Object.assign({}, f[10] || {}, { col: c });
+        }
       if (mk.roof) {
         const rc = linC(rgb(mk.roof));
         for (const t of b.tris) t.kc = [t.kc[0], ...rc];

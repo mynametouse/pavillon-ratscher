@@ -23,7 +23,7 @@ if os.path.isdir(_probe):
     shutil.copytree(_probe, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dist', 'suhl'), dirs_exist_ok=True)
 OUT = lib.out('suhl')
 O = (-4698.2, 12255.7)     # SUHL.O, the centre of Suhl in model metres
-MARKT = (-4638.5, 12474.5)   # the place 'suhl' (SUHL.SPOTS.suhl)
+MARKT = (-4638.5, 12474.5)   # the middle of the Markt (the place 'suhl' until 13.11.2026; now 13 m from it, facing the Rathaus)
 
 # colours at points of the picture just drawn (u, v in 0..1 from the top left)
 PIX = """window.__pix = pts => { GAME.shot(); const c = document.querySelector('#stage canvas'), d = document.createElement('canvas'); d.width = c.width; d.height = c.height;
@@ -185,7 +185,8 @@ def desktop():
         if want('sprung'):
             st, bo = s.get('stadt') or {}, s.get('boden') or {}
             ck('the jump to Suhl: the zone built, the package and the index loaded', s['state'] == 'ready' and s['zone'] == 'ready' and s['loaded'] and not s['err'], json.dumps({k: s.get(k) for k in ('state', 'zone', 'err', 'versions', 'products', 'times')}))
-            ck('at the Markt, on Suhl\'s own ground', math.hypot(p['x'] - MARKT[0], p['y'] - MARKT[1]) < 3 and p['free'] is True and (p['place'] or '').startswith('Suhl'), json.dumps(p, ensure_ascii=False))
+            sp = J("SUHL.SPOTS.suhl[0]")   # the arrival on the Markt (facing the fountain and the Rathaus since 13.11.2026)
+            ck('at the Markt, on Suhl\'s own ground', math.hypot(p['x'] - sp[0], p['y'] - sp[1]) < 3 and math.hypot(p['x'] - MARKT[0], p['y'] - MARKT[1]) < 30 and p['free'] is True and (p['place'] or '').startswith('Suhl'), json.dumps(p, ensure_ascii=False))
             ck('ground under the feet: the near tiles of Suhl\'s set in WELT', p['w'] is not None and abs(p['feet'] - p['g']) < 0.05 and abs(p['g'] - p['w']) < 0.01 and '+suhl/' in s['boden'].get('sets', J("WELT.state().sets")), json.dumps(p) + ' ' + J("WELT.state().sets"))
             ck('buildings in full around the Markt (level 1), from the records', st.get('l1', 0) >= 4 and st.get('buildings', 0) > 500 and st.get('err') == 0 and st.get('mats'), json.dumps(st))
             for _ in range(4):
@@ -248,8 +249,8 @@ def desktop():
 
         if want('boden'):
             # ---- ground and walls: the feet on the tiles, a wall stops the walker, a house answers to its id ----
-            g = J("""(() => { const out = []; for (const [dx, dy] of [[0, 0], [60, 20], [-90, -60], [140, -130], [-200, 90]]) { const x = SUHL.SPOTS.suhl[0][0] + dx, y = SUHL.SPOTS.suhl[0][1] + dy;
-                out.push([KERN.ground(x, y), WELT.heightAt(x, y) ?? null, SUHL.ground(x, y) ?? null, KERN.free(x, y)]); } return out; })()""")
+            g = J("""(() => { const out = []; for (const [dx, dy] of [[0, 0], [60, 20], [-90, -60], [140, -130], [-200, 90]]) { const x = %s + dx, y = %s + dy;
+                out.push([KERN.ground(x, y), WELT.heightAt(x, y) ?? null, SUHL.ground(x, y) ?? null, KERN.free(x, y)]); } return out; })()""" % MARKT)
             ck('ground around the Markt: KERN.ground = the drawn tiles = SUHL.ground, walking allowed', all(q[1] is not None and abs(q[0] - q[1]) < 0.01 and abs(q[2] - q[1]) < 0.01 and q[3] is True for q in g), json.dumps(g))
             b = J(f"""(() => {{ const ids = SUHL.buildingsIn({{ center: [{MARKT[0]}, {MARKT[1]}], r: 160 }}); let best = null;
                 for (const id of ids) {{ const B = SUHL.building(id); if (!B || B.kind !== 0) continue;
@@ -384,6 +385,8 @@ def desktop():
                 GAME.view(x, y, KERN.ground(x, y) + 1.7, h, -7, 60); })()""")
             for _ in range(8):
                 E("GAME.step(0.5)")
+            au = J("SUHL.status().autos")
+            ck('parked cars on the car parks near the centre', au and au['parks'] >= 3 and au['cars'] >= 30, json.dumps(au))
             wa = J("SUHL.status().wasser")
             ck('open water near the centre: ponds and the Lauter as surfaces on the ground', wa and wa['areas'] >= 2 and wa['rivers'] >= 1 and wa['tris'] > 10,
                json.dumps(wa))
