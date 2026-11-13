@@ -2000,6 +2000,468 @@
     "text": "Geh einfach hinter ihnen her, dann laufen sie vor dir weg. Rein in den Unterstand, hinten in der Ecke.",
     "file": "voice/x/x_ronald_1n9lue6.mp3",
     "dur": 6.12
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_oiicue",
+    "text": "Seit 2018 sind im Thüringer Wald ganze Berge braun geworden. Bei uns stehen die Fichten noch – die Frage ist, wie lange.",
+    "file": "voice/x/x_gerhard_oiicue.mp3",
+    "dur": 8.88
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1lx4ecc",
+    "text": "Seit Mai kein richtiger Regen. Die Gerste war im Juli schon reif, und die Körner sind klein.",
+    "file": "voice/x/x_uwe_1lx4ecc.mp3",
+    "dur": 5.81
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_5j8hw8",
+    "text": "Siehst du das braune Mehl am Stamm? Da sitzt der Käfer drin, die Fichte ist schon tot und weiß es nur noch nicht.",
+    "file": "voice/x/x_wolfgang_5j8hw8.mp3",
+    "dur": 7.61
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1g7pd28",
+    "text": "Letztes Jahr waren es drei Bäume. Jetzt ist es der halbe Hang.",
+    "file": "voice/x/x_wolfgang_1g7pd28.mp3",
+    "dur": 4.76
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_kwtq5d",
+    "text": "Zwanzig Besitzer, zwanzig Meinungen. Ich kann keinen zwingen.",
+    "file": "voice/x/x_ingrid_kwtq5d.mp3",
+    "dur": 5.41
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_19wf4op",
+    "text": "Dann arbeite ich eben für den, der zuerst anruft. Wer zuletzt dran ist, hat Pech gehabt.",
+    "file": "voice/x/x_wolfgang_19wf4op.mp3",
+    "dur": 7.06
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_86ambj",
+    "text": "Drei Anrufe heute, alle wollen sofort. Der Harvester ist bis zum Herbst ausgebucht.",
+    "file": "voice/x/x_wolfgang_86ambj.mp3",
+    "dur": 6.67
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1eqhzfp",
+    "text": "Mein Stück lass ich stehen. Für das, was das Holz bringt, fass ich keine Säge an.",
+    "file": "voice/x/x_uwe_1eqhzfp.mp3",
+    "dur": 5.04
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_182ceoz",
+    "text": "Der Wald kommt wieder, sagen die Förster, nur anders. Holz machen wird hier so bald keiner mehr.",
+    "file": "voice/x/x_gerhard_182ceoz.mp3",
+    "dur": 6.78
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_xbsdps",
+    "text": "Hier haben wir früher Holz gerückt. Jetzt komme ich mit dem Traktor nicht mal mehr rein.",
+    "file": "voice/x/x_wolfgang_xbsdps.mp3",
+    "dur": 5.6
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_2es20t",
+    "text": "Grün ist es wieder. Aber von dem Wald lebt hier keiner mehr.",
+    "file": "voice/x/x_heike_2es20t.mp3",
+    "dur": 4.3
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1xt0rek",
+    "text": "Weihnachten 2023 haben wir Sandsäcke gefüllt. Da hat uns die Talsperre gerettet.",
+    "file": "voice/x/x_manfred_1xt0rek.mp3",
+    "dur": 6.84
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_abwgui",
+    "text": "Rückstauklappe, Sandsäcke, Versicherung … Ich bin den ganzen Tag im Dienst. Wann soll ich mich darum kümmern?",
+    "file": "voice/x/x_katrin_abwgui.mp3",
+    "dur": 7.35
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_3bxusy",
+    "text": "Die Sirene! Und das Wasser steht schon in der Straße.",
+    "file": "voice/x/x_manfred_3bxusy.mp3",
+    "dur": 4.06
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1tj3xqk",
+    "text": "Bei uns läuft es durchs Kellerfenster. Wo gibt es Sandsäcke?",
+    "file": "voice/x/x_katrin_1tj3xqk.mp3",
+    "dur": 4.35
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_m5f6cc",
+    "text": "Keiner geht mehr in den Keller! Strom aus, und raus da.",
+    "file": "voice/x/x_manfred_m5f6cc.mp3",
+    "dur": 4.36
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1utffe6",
+    "text": "Der Schlamm kommt vom kahlen Hang. Ich hab den Traktor geholt und schieb die Straße frei.",
+    "file": "voice/x/x_uwe_1utffe6.mp3",
+    "dur": 5.27
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_ib1tcf",
+    "text": "Die Truhe mit den Fotos, alles nass. Und die Versicherung zahlt nur, wer Elementar hat.",
+    "file": "voice/x/x_katrin_ib1tcf.mp3",
+    "dur": 6.53
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_eunrti",
+    "text": "Der Öltank in der Nummer zwölf ist aufgeschwommen. Jetzt haben wir auch noch Öl im Wasser.",
+    "file": "voice/x/x_jens_eunrti.mp3",
+    "dur": 5.14
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1odbd8t",
+    "text": "So hoch hab ich die Schleuse noch nie gesehen. Mein Vater auch nicht.",
+    "file": "voice/x/x_uwe_1odbd8t.mp3",
+    "dur": 4.35
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_dg02t6",
+    "text": "Für den Tank hab ich dieses Jahr viel mehr bezahlt. Und ich fahre jeden Tag in die Stadt zur Arbeit.",
+    "file": "voice/x/x_katrin_dg02t6.mp3",
+    "dur": 6.16
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1ydvmvs",
+    "text": "Alle finden es gut, aber keiner will in den Vorstand.",
+    "file": "voice/x/x_ingrid_1ydvmvs.mp3",
+    "dur": 3.97
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_9r799o",
+    "text": "Ich bau mir selbst was aufs Scheunendach. Da redet mir keiner rein.",
+    "file": "voice/x/x_uwe_9r799o.mp3",
+    "dur": 4.33
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1f67aqk",
+    "text": "Eine Wärmepumpe in unserem alten Haus? Erst mal läuft der Ölkessel weiter.",
+    "file": "voice/x/x_katrin_1f67aqk.mp3",
+    "dur": 5.19
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1hj9k1j",
+    "text": "Der Monteur sagt, der Kessel hält noch zwei, drei Jahre. Dann sehen wir weiter.",
+    "file": "voice/x/x_katrin_1hj9k1j.mp3",
+    "dur": 5.61
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_c71gth",
+    "text": "Das Holz ist weg, für ein Butterbrot. Und das Öl kommt von sonst wo.",
+    "file": "voice/x/x_uwe_c71gth.mp3",
+    "dur": 4.64
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_11sgala",
+    "text": "Ich bin nicht gegen Wind. Ich bin dagegen, dass wir nichts davon haben.",
+    "file": "voice/x/x_heike_11sgala.mp3",
+    "dur": 4.89
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1sdcb7p",
+    "text": "Die Pacht kriegt einer, das Rauschen hören alle.",
+    "file": "voice/x/x_wolfgang_1sdcb7p.mp3",
+    "dur": 3.39
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_1q4tpr0",
+    "text": "Wir haben jetzt einen Speicher im Keller. Wenn der Strom ausfällt, haben wenigstens wir Licht.",
+    "file": "voice/x/x_heike_1q4tpr0.mp3",
+    "dur": 6.34
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1l6vtya",
+    "text": "Bei meiner Patientin läuft das Sauerstoffgerät mit Strom. Der Akku hält noch drei Stunden.",
+    "file": "voice/x/x_katrin_1l6vtya.mp3",
+    "dur": 6.05
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_19h276p",
+    "text": "Die Leute kommen zum Gerätehaus, weil sie nicht wissen, wohin. Unser Aggregat reicht für die Pumpen, nicht fürs Dorf.",
+    "file": "voice/x/x_jens_19h276p.mp3",
+    "dur": 6.74
+   },
+   {
+    "who": "gerhard",
+    "id": "x_gerhard_1o1s1d1",
+    "text": "Wie früher. Nur dass früher jeder einen Ofen hatte.",
+    "file": "voice/x/x_gerhard_1o1s1d1.mp3",
+    "dur": 3.57
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1mzietx",
+    "text": "Die Heizung ist inzwischen mein größter Posten nach dem Auto.",
+    "file": "voice/x/x_katrin_1mzietx.mp3",
+    "dur": 3.53
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_g3zku",
+    "text": "Gerhards Chronik schreibe ich jetzt weiter. Die Linde hat alles gesehen.",
+    "file": "voice/x/x_jens_g3zku.mp3",
+    "dur": 4.38
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_k7e4vy",
+    "text": "Wir haben jeder für uns durchgehalten. Manche gut, manche gar nicht.",
+    "file": "voice/x/x_katrin_k7e4vy.mp3",
+    "dur": 4.94
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1cqzvw2",
+    "text": "Zwanzig Besitzer, ein Plan. Und das Forstamt hilft beim Antrag.",
+    "file": "voice/x/x_ingrid_1cqzvw2.mp3",
+    "dur": 6.12
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_evrvuf",
+    "text": "Allein kriegt keiner einen Harvester. Zusammen sind wir für die Unternehmer interessant.",
+    "file": "voice/x/x_wolfgang_evrvuf.mp3",
+    "dur": 6.01
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_2r43tl",
+    "text": "Zwanzig Parzellen in einem Rutsch. Das gute Holz ins Sägewerk, den Rest hacken wir fürs Dorf.",
+    "file": "voice/x/x_wolfgang_2r43tl.mp3",
+    "dur": 6.82
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1is5h2b",
+    "text": "Samstags sperren wir die Wege ab, wenn der Harvester arbeitet. Da darf keiner durch.",
+    "file": "voice/x/x_jens_1is5h2b.mp3",
+    "dur": 5.27
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1ket709",
+    "text": "Zweitausend Bäume an einem Samstag. Und hinterher Bratwurst am Holzplatz.",
+    "file": "voice/x/x_ingrid_1ket709.mp3",
+    "dur": 6.5
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_sll435",
+    "text": "Was wir heute pflanzen, ernten die Enkel. Aber es wird ein Wald, der mehr aushält.",
+    "file": "voice/x/x_wolfgang_sll435.mp3",
+    "dur": 6.51
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1xki36v",
+    "text": "Die Hüllen kommen jetzt weg. Die Bäume brauchen sie nicht mehr.",
+    "file": "voice/x/x_jens_1xki36v.mp3",
+    "dur": 3.6
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_63p7j0",
+    "text": "Grün ist es wieder. Und diesmal nicht alles eine Sorte.",
+    "file": "voice/x/x_heike_63p7j0.mp3",
+    "dur": 4.1
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_x0bqrm",
+    "text": "Wir sind die Straße Haus für Haus abgegangen: Wo läuft das Wasser rein, wer wohnt allein, wer braucht Hilfe?",
+    "file": "voice/x/x_manfred_x0bqrm.mp3",
+    "dur": 6.71
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_1ccnkjq",
+    "text": "Die Sirene, genau wie geübt. Sandsäcke an die Kellerfenster, die Pumpe an die Senke!",
+    "file": "voice/x/x_manfred_1ccnkjq.mp3",
+    "dur": 6.27
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_14exv54",
+    "text": "Die Warnung kam schon um elf aufs Handy. Bei uns ist die Schwelle drin, es bleibt draußen.",
+    "file": "voice/x/x_katrin_14exv54.mp3",
+    "dur": 5.94
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_f0gocy",
+    "text": "Ein nasser Keller, sonst nichts. Für so eine Nacht haben wir zwei Jahre geübt.",
+    "file": "voice/x/x_manfred_f0gocy.mp3",
+    "dur": 5.68
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_16prewa",
+    "text": "Die Mulden am Hang sind voll Schlamm. Den fahre ich heute wieder aufs Feld.",
+    "file": "voice/x/x_uwe_16prewa.mp3",
+    "dur": 4.47
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_8q4q3j",
+    "text": "Die Wände stehen seit gestern Abend. Wir haben das Wasser kommen sehen.",
+    "file": "voice/x/x_jens_8q4q3j.mp3",
+    "dur": 4.16
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1tiwu86",
+    "text": "Gut, dass kaum noch Öltanks in den Kellern stehen.",
+    "file": "voice/x/x_ingrid_1tiwu86.mp3",
+    "dur": 3.41
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_1tbw3g5",
+    "text": "Achtunddreißig Unterschriften an einem Abend. Ich hatte mit zehn gerechnet.",
+    "file": "voice/x/x_ingrid_1tbw3g5.mp3",
+    "dur": 5.83
+   },
+   {
+    "who": "uwe",
+    "id": "x_uwe_1q5i2z4",
+    "text": "Ich bringe den Platz für die Hackschnitzel ein. Dafür will ich mitreden.",
+    "file": "voice/x/x_uwe_1q5i2z4.mp3",
+    "dur": 4.24
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1xkjlxz",
+    "text": "Das Käferholz liegt eh da. Lieber heizen wir damit, als es für ein Butterbrot zu verkaufen.",
+    "file": "voice/x/x_wolfgang_1xkjlxz.mp3",
+    "dur": 6.79
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_10c5icy",
+    "text": "Den ganzen Sommer Baustelle vor der Tür. Aber im Winter haben wir Wärme wie in der Stadt.",
+    "file": "voice/x/x_jens_10c5icy.mp3",
+    "dur": 5.18
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_1q2je5s",
+    "text": "Der Anschluss kostet weniger als ein neuer Ölkessel. Da musste ich nicht lange überlegen.",
+    "file": "voice/x/x_heike_1q2je5s.mp3",
+    "dur": 5.82
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_1vvtzvm",
+    "text": "Das Holz vom Hang heizt jetzt das Dorf. So rum ist es richtig.",
+    "file": "voice/x/x_wolfgang_1vvtzvm.mp3",
+    "dur": 4.65
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_a2ltbk",
+    "text": "Vier von fünf Häusern sind angeschlossen. Die anderen kommen noch.",
+    "file": "voice/x/x_ingrid_a2ltbk.mp3",
+    "dur": 5.32
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_s8klcq",
+    "text": "Wenn schon ein Windrad, dann eins, das uns mitgehört.",
+    "file": "voice/x/x_ingrid_s8klcq.mp3",
+    "dur": 4.22
+   },
+   {
+    "who": "wolfgang",
+    "id": "x_wolfgang_sbhygx",
+    "text": "Die Pacht geht in die Waldgemeinschaft. Davon pflanzen wir die nächsten Hektar.",
+    "file": "voice/x/x_wolfgang_sbhygx.mp3",
+    "dur": 5.44
+   },
+   {
+    "who": "manfred",
+    "id": "x_manfred_18g1u9l",
+    "text": "Wenn alles dunkel ist, wissen die Leute, wo sie hingehen: in die Schule.",
+    "file": "voice/x/x_manfred_18g1u9l.mp3",
+    "dur": 4.27
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_1ae998",
+    "text": "Und meine Patienten mit Sauerstoffgerät kriegen dort Strom.",
+    "file": "voice/x/x_katrin_1ae998.mp3",
+    "dur": 3.3
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_vid35o",
+    "text": "Wir bringen sie in die Schule. Da läuft ihr Gerät die ganze Nacht.",
+    "file": "voice/x/x_katrin_vid35o.mp3",
+    "dur": 4.35
+   },
+   {
+    "who": "jens",
+    "id": "x_jens_1ldsjjt",
+    "text": "Funk steht, die Liste ist durch: Wer allein wohnt, haben wir besucht.",
+    "file": "voice/x/x_jens_1ldsjjt.mp3",
+    "dur": 3.91
+   },
+   {
+    "who": "ingrid",
+    "id": "x_ingrid_319vkh",
+    "text": "Wie geübt. Das Heizhaus hat Notstrom, und für die Heizungspumpen haben wir Akkustationen verteilt.",
+    "file": "voice/x/x_ingrid_319vkh.mp3",
+    "dur": 7.66
+   },
+   {
+    "who": "heike",
+    "id": "x_heike_otyv5g",
+    "text": "Die Genossenschaft hat wieder ausgeschüttet. Davon ist der Spielplatz neu gemacht.",
+    "file": "voice/x/x_heike_otyv5g.mp3",
+    "dur": 5.62
+   },
+   {
+    "who": "katrin",
+    "id": "x_katrin_ziw788",
+    "text": "Das Klima war nicht gnädiger als anderswo. Aber wir haben es zusammen getragen.",
+    "file": "voice/x/x_katrin_ziw788.mp3",
+    "dur": 5.39
    }
   ]
  }

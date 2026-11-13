@@ -121,13 +121,67 @@ export const ZKCHRONIK = (() => {
     laenderbet: Z.laenderbet,
     behg: Z.behg,
     mastr: Z.mastr,
-    schloeben: ['Bioenergiedorf Schlöben eG: Nahwärme aus Holzhackschnitzeln seit 2009', null],
-    feldheim: ['Energiequelle: Energieautarkes Dorf Feldheim (Brandenburg)', null],
-    enwg42c: ['§ 42c EnWG: Gemeinsame Nutzung von Strom (Energy Sharing, seit 1.6.2026)', null],
-    bverfg: ['Bundesverfassungsgericht, Beschluss 1 BvR 2661/21 (Windenergie im Wald, Thüringen)', null],
-    regionalplan: ['Regionale Planungsgemeinschaft Südwestthüringen: Entwurf Sachlicher Teilplan Windenergie', null],
-    hackschnitzel: ['C.A.R.M.E.N. e. V.: Energiegehalt von Holzhackschnitzeln', null],
-    blackout: ['Stromausfälle in Deutschland: Münsterland 2005, Berlin-Köpenick 2019', null],
+    thueringen: [
+      'top agrar (29.04.2025) nach der Landesforstverwaltung: 127 000 von 550 000 ha Wald in Thüringen (23 %) müssen neu bewaldet werden',
+      'https://www.topagrar.com/jagd-und-wald/news/23-der-walder-in-thuringen-kaputt-warum-anpflanzungen-nicht-reichen-werden-20013899.html',
+    ],
+    birke: [
+      'LWF Bayern, Wissen 28: Vom Pionier zum Furnier – die Birke wächst früh schnell und lässt nach 10–12 Jahren im Höhenwuchs nach',
+      'https://www.lwf.bayern.de/mam/cms04/waldbau-bergwald/dateien/w28_vom_pionier_zum_furnier-waldbauliche_behandlung_der_birke.pdf',
+    ],
+    kostra2: [
+      'DWD KOSTRA-DWD-2020, Rasterfeld bei Ratscher: 60 Minuten – 47,5 mm einmal in 100 Jahren (±26 %), 29,9 mm in 10 Jahren, 15,9 mm jährlich',
+      'https://opendata.dwd.de/climate_environment/CDC/grids_germany/return_periods/precipitation/KOSTRA/KOSTRA_DWD_2020/',
+    ],
+    elementar: [
+      'Versicherungsbote: In Thüringen kann über die Hälfte der Hausbesitzer bei Hochwasser und Starkregen nicht mit einer Versicherung rechnen',
+      'https://www.versicherungsbote.de/id/4824152/Elementarschaden-Wohngebaeude-Versicherungsschutz-GDV/',
+    ],
+    schloeben: [
+      'Agentur für Erneuerbare Energien: Bioenergiedorf Schlöben eG (gegründet 2009; 6 km Wärmenetz, 550-kW-Hackschnitzelkessel, 6,6 ct/kWh für Mitglieder, Holz aus höchstens 15 km)',
+      'https://www.unendlich-viel-energie.de/media/file/4161.210301_ReWA_Steckbrief_Schloeben.pdf',
+    ],
+    feldheim: [
+      'Land Brandenburg: Neue Energien Forum Feldheim – das energieautarke Dorf',
+      'https://mil.brandenburg.de/sixcms/media.php/9/NEF_Feldheim.pdf',
+    ],
+    hormus: [
+      'ZDFheute (03.03.2026): Iran-Krieg treibt Öl- und Spritpreise – Heizöl binnen Tagen rund 25 % teurer, die Straße von Hormus eingeschränkt',
+      'https://www.zdfheute.de/wirtschaft/iran-krieg-wirtschaft-oelpreise-spritpreise-benzin-diesel-100.html',
+    ],
+    hackschnitzel: [
+      'waldwissen.net: Energiegehalt von Hackschnitzeln (Nadelholz trocken 5,4 kWh/kg; Fichte rund 380 kg je Festmeter, also etwa 2 MWh)',
+      'https://www.waldwissen.net/de/waldwirtschaft/holz-und-markt/holzenergie/energiegehalt-von-hackschnitzeln',
+    ],
+    enwg42c: [
+      '§ 42c EnWG: Gemeinsame Nutzung von Strom aus Erneuerbaren (Energy Sharing, seit 1.6.2026)',
+      'https://www.gesetze-im-internet.de/enwg_2005/__42c.html',
+    ],
+    bverfg: [
+      'Bundesverfassungsgericht, Beschluss vom 27.09.2022, 1 BvR 2661/21: Thüringens ausnahmsloses Verbot von Windrädern im Wald ist nichtig',
+      'https://www.bundesverfassungsgericht.de/SharedDocs/Entscheidungen/DE/2022/09/rs20220927_1bvr266121.html',
+    ],
+    windbeteilg: [
+      'Thüringer Gesetz über die Beteiligung von Gemeinden an Windparks (2.7.2024): Beteiligung der Gemeinden wie § 6 EEG, sonst Ausgleichsabgabe 0,5 ct/kWh',
+      'https://umwelt-online.de/recht/allgemei/laender/th/windbeteilg.htm',
+    ],
+    regionalplan: [
+      'Regionalplan Südwestthüringen, 2. Entwurf (Beschluss vom 25.03.2026): 40 Vorranggebiete Windenergie (Bericht vom 18.05.2026)',
+      'https://www.berliner-zeitung.de/article/suedthueringen-landratsamt-hildburghausen-informiert-zu-windkraft-vorranggebieten-10036812',
+    ],
+    koepenick: [
+      'Tagesspiegel: Blackout in Köpenick 2019 – rund 31 Stunden ohne Strom nach einem Kabelschaden',
+      'https://www.tagesspiegel.de/berlin/blackout-koepenick-der-groesste-und-laengste-stromausfall-in-berlin-seit-jahrzehnten/24019418.html',
+    ],
+    muensterland: [
+      'wetter.com: Münsterländer Schneechaos 25.11.2005 – 250 000 Menschen ohne Strom, viele tagelang, in Ochtrup teils zwei Wochen',
+      'https://www.wetter.com/magazin/bis-zu-zwei-wochen-ohne-strom-so-verheerend-war-das-muensterlaender-schneechaos_aid_5fbe4ebeb95fd92aa362dd12.html',
+    ],
+    berlin26: [
+      'ingenieur.de (08.01.2026): Berlin, 3.–7. Januar 2026 – Brandanschlag, rund 45 000 Haushalte und 2 200 Betriebe vier Tage ohne Strom',
+      'https://www.ingenieur.de/technik/fachbereiche/energie/vier-tage-ohne-strom-was-der-berliner-blackout-ueber-unsere-netze-verraet/',
+    ],
+    dorf: ['Ratscher: rund 120 Einwohner, 55 Haushalte (Annahme des Spiels, wie in der ersten Fassung)', null],
     annahme: ['Annahme der Chronik (Überschlag, siehe „Warum?“)', null],
   };
 
@@ -139,10 +193,11 @@ export const ZKCHRONIK = (() => {
       sub: 'Der Käfer und die Hänge',
       from: 2026,
       to: 2050,
+      hour: 14, // the time of day of the time-lapse (stable light; events bring their own)
       places: ['anger', 'hang', 'waldrand', 'kahlflaeche', 'schule'],
       questions: [
         'Wem gehört der Wald um Ratscher – und wer entscheidet, was nach dem Käfer kommt?',
-        'Was würden Sie mit Ihrem Stück Wald tun, wenn die Fichten sterben – allein oder mit anderen?',
+        'Wenn die Fichten sterben: Wer sollte sich um den Wald kümmern – und wie?',
       ],
     },
     {
@@ -151,6 +206,7 @@ export const ZKCHRONIK = (() => {
       sub: 'Starkregen und Hochwasser',
       from: 2026,
       to: 2050,
+      hour: 12,
       places: ['bruecke', 'hang', 'strasse'],
       questions: [
         'Wo im Dorf steht bei Starkregen zuerst Wasser – und wer weiß das heute schon?',
@@ -163,9 +219,10 @@ export const ZKCHRONIK = (() => {
       sub: 'Wärme, Strom und die Nacht ohne Strom',
       from: 2026,
       to: 2060,
+      hour: 15,
       places: ['anger', 'schule', 'strasse', 'heizhaus', 'windrad'],
       questions: [
-        'Was müsste passieren, damit Sie Wärme oder Strom gemeinsam mit den Nachbarn machen?',
+        'Würden Sie Wärme oder Strom lieber selbst machen oder mit den Nachbarn zusammen – und warum?',
         'Wohin würden Sie in einer Winternacht ohne Strom gehen – und wer bräuchte dann Hilfe?',
       ],
     },
@@ -187,11 +244,11 @@ export const ZKCHRONIK = (() => {
       halt: 10,
       weather: 'heiter',
       title: 'Heute: grüne Hänge',
-      text: 'An den Hängen um Ratscher stehen vor allem Fichten. Im Harz und in Teilen des Thüringer Waldes hat der Borkenkäfer seit 2018 ganze Berge kahl gemacht. Beide Welten haben dasselbe heftige Klima.',
+      text: 'An den Hängen um Ratscher stehen vor allem Fichten. Seit 2018 hat der Borkenkäfer im Harz und im Thüringer Wald ganze Berge kahl gemacht; in Thüringen muss fast ein Viertel des Waldes neu wachsen. Beide Welten haben dasselbe heftige Klima.',
       lines: [
         [
           'gerhard',
-          'Seit 2018 sind im Thüringer Wald ganze Berge braun geworden. Bei uns stehen die Fichten noch. Die Frage ist, wie lange.',
+          'Seit 2018 sind im Thüringer Wald ganze Berge braun geworden. Bei uns stehen die Fichten noch – die Frage ist, wie lange.',
         ],
       ],
     },
@@ -204,7 +261,7 @@ export const ZKCHRONIK = (() => {
       halt: 9,
       weather: 'klar',
       title: 'Ein Dürresommer',
-      text: 'Ein mögliches Jahr: Wochen ohne Regen, Hitze über 35 Grad. Gestresste Fichten bilden kaum Harz, ihre Abwehr gegen den Borkenkäfer. In warmen Sommern schafft der Käfer eine Generation mehr.',
+      text: 'Ein mögliches Jahr: Wochen ohne Regen, Hitze über 35 Grad. Früher gab es hier etwa einen heißen Tag im Jahr, im heftigen Klima um 2040 schon sieben. Gestresste Fichten bilden kaum Harz, ihre Abwehr gegen den Käfer.',
       lines: [['uwe', 'Seit Mai kein richtiger Regen. Die Gerste war im Juli schon reif, und die Körner sind klein.']],
     },
     {
@@ -220,7 +277,7 @@ export const ZKCHRONIK = (() => {
       lines: [
         [
           'wolfgang',
-          'Siehst du das braune Mehl am Stamm? Da sitzt der Käfer drin. Die Fichte ist schon tot, sie weiß es nur noch nicht.',
+          'Siehst du das braune Mehl am Stamm? Da sitzt der Käfer drin, die Fichte ist schon tot und weiß es nur noch nicht.',
         ],
         ['wolfgang', 'Letztes Jahr waren es drei Bäume. Jetzt ist es der halbe Hang.'],
       ],
@@ -283,7 +340,7 @@ export const ZKCHRONIK = (() => {
       },
       gewappnet: {
         title: 'Kahle Hänge',
-        text: 'Den Winter über hat der Harvester die toten Fichten geholt, bevor die neuen Käfer ausfliegen. Die Hänge sind kahl, das Holz ist raus.',
+        text: 'Den Winter über hat der Harvester einen großen Teil der toten Fichten geholt, bevor die neuen Käfer ausfliegen. Wo geräumt ist, sind die Hänge kahl.',
         lines: [],
       },
     },
@@ -299,7 +356,7 @@ export const ZKCHRONIK = (() => {
         title: 'Holz für fast nichts',
         text: 'Der Holzmarkt ist voll, Käferholz bringt kaum mehr, als die Ernte kostet. Wer einen Unternehmer bekommt, lässt räumen. Auf vielen kleinen Parzellen bleibt das tote Holz stehen.',
         lines: [
-          ['wolfgang', 'Drei Anrufe heute, alle wollen sofort. Ich schaffe vielleicht einen Hektar in der Woche.'],
+          ['wolfgang', 'Drei Anrufe heute, alle wollen sofort. Der Harvester ist bis zum Herbst ausgebucht.'],
           ['uwe', 'Mein Stück lass ich stehen. Für das, was das Holz bringt, fass ich keine Säge an.'],
         ],
       },
@@ -308,7 +365,7 @@ export const ZKCHRONIK = (() => {
         text: 'Die Waldgemeinschaft hat einen Unternehmer für alle Parzellen. Das Stammholz geht gebündelt ans Sägewerk, das schlechte Holz wird gehackt: Hackschnitzel für ein Heizhaus im Dorf.',
         lines: [
           ['wolfgang', 'Zwanzig Parzellen in einem Rutsch. Das gute Holz ins Sägewerk, den Rest hacken wir fürs Dorf.'],
-          ['jens', 'Ich fahre samstags den Rückezug. Hätte nie gedacht, dass ich mal im Wald arbeite.'],
+          ['jens', 'Samstags sperren wir die Wege ab, wenn der Harvester arbeitet. Da darf keiner durch.'],
         ],
       },
     },
@@ -326,7 +383,7 @@ export const ZKCHRONIK = (() => {
         lines: [
           [
             'gerhard',
-            'Der Wald kommt wieder, sagen die Förster. Nur anders. Und Holz machen wird hier so bald keiner mehr.',
+            'Der Wald kommt wieder, sagen die Förster, nur anders. Holz machen wird hier so bald keiner mehr.',
           ],
         ],
       },
@@ -431,7 +488,7 @@ export const ZKCHRONIK = (() => {
       },
       gewappnet: {
         title: 'Das Dorf bereitet sich vor',
-        text: 'Mit der Starkregen-Gefahrenkarte geht das Dorf die Straße ab: Mulden und Querrinnen am Hang, Rückstauklappen und Schwellen an den Häusern, Sandsäcke im Gerätehaus. Die Feuerwehr übt den Ernstfall.',
+        text: 'Mit der Starkregen-Gefahrenkarte geht das Dorf die Straße ab: Mulden und Querrinnen am Hang, Rückstauklappen und Schwellen an den Häusern, mobile Wände und Sandsäcke im Gerätehaus. Die Feuerwehr übt den Ernstfall.',
         lines: [
           [
             'manfred',
@@ -451,7 +508,14 @@ export const ZKCHRONIK = (() => {
       weather: 'starkregen',
       allein: {
         title: 'Die Starkregennacht',
-        text: 'Über dem Hang bleibt ein Gewitter hängen: rund 60 Liter Regen je Quadratmeter in einer Stunde. Das Wasser schießt vom kahlen Hang in die Straße, die Gullys laufen über, Keller laufen voll.',
+        text: 'Über dem Hang bleibt ein Gewitter hängen: rund 55 Liter Regen je Quadratmeter in einer Stunde, mehr als ein Jahrhundertregen nach heutiger Statistik. Die Warnung kam aufs Handy, aber kaum einer wusste, was tun. Das Wasser schießt vom kahlen Hang in die Straße, Keller laufen voll.',
+        cues: [
+          [0, 'regen'],
+          [0.1, 'donner'],
+          [0.45, 'sirene'],
+          [0.5, 'blaulicht'],
+          [1.2, 'pumpe'],
+        ],
         lines: [
           ['manfred', 'Die Sirene! Und das Wasser steht schon in der Straße.'],
           ['katrin', 'Bei uns läuft es durchs Kellerfenster. Wo gibt es Sandsäcke?'],
@@ -460,7 +524,14 @@ export const ZKCHRONIK = (() => {
       },
       gewappnet: {
         title: 'Die Starkregennacht',
-        text: 'Über dem Hang bleibt ein Gewitter hängen: rund 60 Liter Regen je Quadratmeter in einer Stunde. Die Mulden am Hang bremsen das Wasser, Schwellen und Sandsäcke halten es aus den Häusern.',
+        text: 'Über dem Hang bleibt ein Gewitter hängen: rund 55 Liter Regen je Quadratmeter in einer Stunde, mehr als ein Jahrhundertregen nach heutiger Statistik. Die Mulden am Hang bremsen das Wasser, Schwellen und Sandsäcke halten es aus den Häusern.',
+        cues: [
+          [0, 'regen'],
+          [0.02, 'sirene'],
+          [0.05, 'blaulicht'],
+          [0.1, 'donner'],
+          [0.3, 'pumpe'],
+        ],
         lines: [
           ['manfred', 'Die Sirene, genau wie geübt. Sandsäcke an die Kellerfenster, die Pumpe an die Senke!'],
           ['katrin', 'Die Warnung kam schon um elf aufs Handy. Bei uns ist die Schwelle drin, es bleibt draußen.'],
@@ -523,6 +594,11 @@ export const ZKCHRONIK = (() => {
       allein: {
         title: 'Das große Hochwasser',
         text: 'Tauwetter auf viel Schnee und drei Tage Regen: Die Schleuse steigt höher als im Dezember 2023, fast wie ein hundertjährliches Hochwasser. Im Überschwemmungsgebiet steht Wasser in Kellern und Erdgeschossen, Öltanks schwimmen auf.',
+        cues: [
+          [0, 'blaulicht'],
+          [0.3, 'pumpe'],
+          [2, 'oel'],
+        ],
         lines: [
           ['jens', 'Der Öltank in der Nummer zwölf ist aufgeschwommen. Jetzt haben wir auch noch Öl im Wasser.'],
           ['uwe', 'So hoch hab ich die Schleuse noch nie gesehen. Mein Vater auch nicht.'],
@@ -531,6 +607,10 @@ export const ZKCHRONIK = (() => {
       gewappnet: {
         title: 'Das große Hochwasser',
         text: 'Tauwetter auf viel Schnee und drei Tage Regen: Die Schleuse steigt höher als im Dezember 2023, fast wie ein hundertjährliches Hochwasser. Mobile Wände stehen, Öltanks gibt es kaum noch: Wasser in Höfen und Gärten, in wenigen Kellern.',
+        cues: [
+          [0, 'blaulicht'],
+          [0.3, 'pumpe'],
+        ],
         lines: [
           ['jens', 'Die Wände stehen seit gestern Abend. Wir haben das Wasser kommen sehen.'],
           ['ingrid', 'Gut, dass kaum noch Öltanks in den Kellern stehen.'],
@@ -547,7 +627,7 @@ export const ZKCHRONIK = (() => {
       halt: 14,
       weather: 'bedeckt',
       title: 'Heute: Öl und Holz',
-      text: 'Die meisten Häuser heizen mit Heizöl oder Holz. 2022 und wieder 2026, in der Krise um die Straße von Hormus, sind die Preise gestiegen. Für Öl fließen jedes Jahr weit über 100 000 Euro aus dem Dorf (Überschlag).',
+      text: 'Die meisten Häuser heizen mit Heizöl oder Holz. 2022 und wieder im März 2026, im Krieg um Iran und die Straße von Hormus, stieg der Ölpreis sprunghaft. Für Heizöl fließen jedes Jahr rund 100 000 Euro aus dem Dorf (Überschlag).',
       lines: [
         [
           'katrin',
@@ -602,7 +682,7 @@ export const ZKCHRONIK = (() => {
         pick: 1,
         title: 'Der Wärmeplan: jedes Haus für sich',
         text: 'Der Wärmeplan der Stadt ist fertig, Pflicht bis Mitte 2028. Für Ratscher steht darin: Einzelversorgung. Jedes Haus sucht sich selbst eine neue Heizung.',
-        lines: [['katrin', 'Wärmepumpe? In unserem alten Haus? Erst mal läuft der Ölkessel weiter.']],
+        lines: [['katrin', 'Eine Wärmepumpe in unserem alten Haus? Erst mal läuft der Ölkessel weiter.']],
       },
       gewappnet: {
         pick: 0,
@@ -711,7 +791,7 @@ export const ZKCHRONIK = (() => {
       gewappnet: {
         pick: 0,
         title: 'Der Dorfspeicher',
-        text: 'Neben die alte Schule kommt ein Batteriespeicher, aufs Dach Solarmodule, dazu ein Notstromaggregat. Fällt der Strom aus, wird die Schule der Notfall-Treffpunkt: Licht, Wärme, Funk, erste Hilfe.',
+        text: 'Neben die alte Schule kommen ein Batteriespeicher und ein Notstromaggregat, aufs Dach Solarmodule, in jedes angeschlossene Haus eine Akkustation für die Heizungspumpe. Fällt der Strom aus, wird die Schule der Notfall-Treffpunkt.',
         lines: [
           ['manfred', 'Wenn alles dunkel ist, wissen die Leute, wo sie hingehen: in die Schule.'],
           ['katrin', 'Und meine Patienten mit Sauerstoffgerät kriegen dort Strom.'],
@@ -747,7 +827,7 @@ export const ZKCHRONIK = (() => {
       halt: 0,
       weather: 'wolkig',
       title: 'Das Bürgerwindrad dreht sich',
-      text: 'Das Windrad liefert im Jahr ein Vielfaches dessen, was das Dorf an Strom braucht. Ein Teil davon kommt über Energy Sharing günstiger in die Häuser.',
+      text: 'Das Windrad liefert im Jahr etwa fünfzigmal so viel Strom, wie das Dorf braucht (Überschlag). Ein Teil kommt über Energy Sharing günstiger in die Häuser.',
       lines: [],
     },
     {
@@ -757,11 +837,16 @@ export const ZKCHRONIK = (() => {
       kind: 'stresstest',
       place: 'schule',
       halt: 50,
-      dur: 6,
+      dur: 2,
       weather: 'klar',
       allein: {
         title: 'Die Nacht ohne Strom',
-        text: 'Eisregen hat Leitungen und Masten überlastet, Südthüringen ist ohne Strom, in dieser möglichen Zukunft 30 Stunden. Ohne Strom laufen weder Ölbrenner noch Wärmepumpe. Nur wenige Häuser mit eigenem Speicher haben Licht.',
+        text: 'Eisregen und Sturm haben Leitungen und Masten zerstört, Südthüringen ist ohne Strom, in dieser möglichen Zukunft 30 Stunden. Ohne Strom laufen weder Ölbrenner noch Wärmepumpe. Nur wenige Häuser mit eigenem Speicher haben Licht.',
+        cues: [
+          [0, 'licht-aus'],
+          [0.03, 'stille'],
+          [0.5, 'aggregat-feuerwehr'],
+        ],
         lines: [
           ['katrin', 'Bei meiner Patientin läuft das Sauerstoffgerät mit Strom. Der Akku hält noch drei Stunden.'],
           [
@@ -773,11 +858,20 @@ export const ZKCHRONIK = (() => {
       },
       gewappnet: {
         title: 'Die Nacht ohne Strom',
-        text: 'Eisregen hat Leitungen und Masten überlastet, Südthüringen ist ohne Strom, in dieser möglichen Zukunft 30 Stunden. Nach wenigen Minuten brennt Licht in der alten Schule; das Heizhaus läuft mit Notstrom weiter.',
+        text: 'Eisregen und Sturm haben Leitungen und Masten zerstört, Südthüringen ist ohne Strom, in dieser möglichen Zukunft 30 Stunden. Nach wenigen Minuten brennt Licht in der alten Schule. Das Heizhaus läuft mit Notstrom, Akkustationen treiben die Heizungspumpen.',
+        cues: [
+          [0, 'licht-aus'],
+          [0.03, 'stille'],
+          [0.12, 'aggregat'],
+          [0.2, 'schule-licht'],
+        ],
         lines: [
           ['katrin', 'Wir bringen sie in die Schule. Da läuft ihr Gerät die ganze Nacht.'],
           ['jens', 'Funk steht, die Liste ist durch: Wer allein wohnt, haben wir besucht.'],
-          ['ingrid', 'Wie geübt. Und die Heizung läuft, weil das Heizhaus Notstrom hat.'],
+          [
+            'ingrid',
+            'Wie geübt. Das Heizhaus hat Notstrom, und für die Heizungspumpen haben wir Akkustationen verteilt.',
+          ],
         ],
       },
     },
@@ -791,7 +885,7 @@ export const ZKCHRONIK = (() => {
       halt: 0,
       weather: 'wolkig',
       title: 'Das Windrad des Investors dreht sich',
-      text: 'Nach Jahren vor Gericht dreht sich das Windrad. Die Pacht bekommt ein Besitzer, das Dorf kaum etwas.',
+      text: 'Nach Jahren vor Gericht dreht sich das Windrad. Die Pacht bekommt ein Besitzer, die Stadt nach dem Landesgesetz 0,2 Cent je Kilowattstunde. Im Dorf kommt wenig an.',
       lines: [],
     },
     {
@@ -840,6 +934,13 @@ export const ZKCHRONIK = (() => {
     },
   ];
 
+  // the id of a line's recording: who + FNV-1a of the UTF-8 words in base 36, as tools/voices/linien.mjs makes it – the file is
+  // snd/voice/x/<rec>.mp3 of the extra viz3/extra/saetze (window.VOICEX); STIMME.say(who, text) finds it by the words as well
+  function fnv(s) {
+    let h = 0x811c9dc5;
+    for (const c of new TextEncoder().encode(s)) h = Math.imul(h ^ c, 0x01000193) >>> 0;
+    return h.toString(36);
+  }
   // speech time of a line in seconds (about 2.3 words per second with the recording settings, plus a breath)
   const speak = text => text.split(/\s+/).filter(Boolean).length / 2.3 + 0.8;
 
@@ -861,6 +962,7 @@ export const ZKCHRONIK = (() => {
         id: 'zk-' + b.id + '-' + (same ? 'x' : letter) + (i + 1),
         who,
         text,
+        rec: 'x_' + who + '_' + fnv(text),
       }));
       // the halt fits the longer talk of the two worlds (a shared moment halts equally long in both)
       const talk = Math.max(
@@ -884,14 +986,25 @@ export const ZKCHRONIK = (() => {
         weather: b.weather || null,
         same,
       };
+      ev.cues = ((part && part.cues) || b.cues || []).map(([h, id]) => ({ h, id, p: ev.dur ? clamp(h / ev.dur) : 0 }));
       if (b.fork) ev.fork = { q: b.fork.q, options: b.fork.options.slice(), pick: part ? part.pick : 0 };
       out.push(ev);
     }
     out.sort((a, b) => CH[a.chapter] - CH[b.chapter] || a.t - b.t);
     return out;
   }
-  const events = w => (CACHE[w] = CACHE[w] || build(w)).map(e => ({ ...e }));
-  const find = (w, id) => (CACHE[w] = CACHE[w] || build(w)).find(e => e.id === id) || null;
+  const copy = e => ({
+    ...e,
+    lines: e.lines.map(l => ({ ...l })),
+    cues: e.cues.map(c => ({ ...c })),
+    ...(e.fork ? { fork: { ...e.fork, options: e.fork.options.slice() } } : {}),
+  });
+  const list = w => (CACHE[w] = CACHE[w] || build(w));
+  const events = w => list(w).map(copy);
+  const find = (w, id) => {
+    const e = list(w).find(x => x.id === id);
+    return e ? copy(e) : null;
+  };
   // the float year of an event's phase p (0..1) and back
   const at = (ev, p) => ev.t + (clamp(p) * (ev.dur || 0)) / (days(ev.y) * 24);
   const phase = (ev, t) => (ev.dur ? clamp(hours(ev.t, t) / ev.dur) : t >= ev.t ? 1 : 0);
@@ -952,16 +1065,21 @@ export const ZKCHRONIK = (() => {
       red = Math.min(Math.max(0, a - ar), dead),
       greyS = dead - red;
     const main = MAIN[W.klima];
-    const fallen = greyS * 0.9 * ss(t, main + 2.5, main + 13); // dead spruces break and fall within about 5–12 years
-    const young = gem ? 0.85 * R(t - 0.7) + 0.08 * R(t - 3) : 0.7 * R(t - 2.5);
+    const down = greyS * 0.9 * ss(t, main + 2.5, main + 13); // dead spruces break and fall within about 5–12 years
+    const young0 = gem ? 0.85 * R(t - 0.7) + 0.08 * R(t - 3) : 0.7 * R(t - 2.5);
+    // slow succession: birch, rowan and spruce seedlings come up between the lying dead wood and, later, through the bramble
+    const yDown = down * 0.75 * ss(t, main + 7, main + 24),
+      yOpen = (r - young0) * 0.6 * ss(t, main + 10, main + 28);
+    const fallen = down - yDown,
+      young = young0 + yDown + yOpen;
     const est = gem ? main + 1.98 : main + 4.93; // mean year the young trees took root (planting the spring after removal; pioneers later)
     const regrow = gem ? 'mischwald' : 'pionier';
     const rate = (R(t + 0.05) - R(t - 0.05)) / 0.1;
     return {
       green: 1 - a,
       red,
-      grey: greyS - fallen,
-      cleared: r - young,
+      grey: greyS - down,
+      cleared: r - young0 - yOpen,
       fallen,
       young,
       regrow,
@@ -1028,7 +1146,7 @@ export const ZKCHRONIK = (() => {
     if (heavy) {
       const h = hours(T.dark, t);
       if (h >= 0 && h < DARK_H)
-        blackout = { school: gem && h >= 0.12, islands: (gem ? 0.25 : 0.12) * ss(h, 0.01, 0.06) };
+        blackout = { school: gem && h >= 0.2, islands: (gem ? 0.25 : 0.12) * ss(h, 0.01, 0.06) };
     }
     return { heatNet, oilTruck: winter && heatNet < 2, chips, windrad, pvRoof, battery, blackout };
   }
@@ -1048,6 +1166,27 @@ export const ZKCHRONIK = (() => {
     notpunkt: { place: 'schule', text: 'Notfall-Treffpunkt Alte Schule · Licht, Wärme, Hilfe bei Stromausfall' },
   };
   const SIGN_NOTE = 'Mögliche Zukunft';
+  // cues of the stress tests (ev.cues: [{ h hours after the start, p phase 0..1, id }]) – sound and light for the regie and the world
+  const CUES = {
+    regen: 'Starkregen setzt ein',
+    donner: 'Donner',
+    sirene: 'Sirene der Feuerwehr',
+    blaulicht: 'Blaulicht der Feuerwehr',
+    pumpe: 'Pumpe läuft',
+    oel: 'Ölfilm auf dem Wasser',
+    'licht-aus': 'Licht geht aus: Straßenlampen, Fenster, der Schein der Städte',
+    stille: 'Stille: kein Brummen, kein Kühlschrank',
+    aggregat: 'Notstromaggregat an der Schule springt an',
+    'schule-licht': 'Licht in der alten Schule',
+    'aggregat-feuerwehr': 'Aggregat am Gerätehaus',
+  };
+  // short notes for the screen (the workshop shows them where they fit)
+  const NOTES = {
+    jahre: 'Die Jahre der Ereignisse sind Beispiele – ein mögliches Jahr, keine Vorhersage.',
+    zukunft: 'Mögliche Zukunft',
+    klima: 'Beide Welten: heftiges Klima (hohe Emissionen) – dieselben Wetterereignisse in denselben Jahren.',
+    zahlen: 'Zahlen mit Spannen; „Annahme“ heißt Überschlag der Chronik.',
+  };
   function signs(W, t) {
     if (W.klima !== 'heftig') return [];
     const gem = W.handeln === 'gemeinsam',
@@ -1073,7 +1212,7 @@ export const ZKCHRONIK = (() => {
   const pct = v => Math.round(v * 100);
   const S = (...k) => k.map(x => SRC[x]);
   function K(id, label, unit, value, range, src, why, annahme = false) {
-    const f = v => (unit === 'Mio. €' ? dec(v, v < 1 ? 2 : 1) : unit === 'ct/kWh' ? dec(v, 0) : String(Math.round(v)));
+    const f = v => (unit === 'Mio. €' ? dec(v, v < 1 ? 2 : 1) : unit === 'm' ? dec(v, 1) : String(Math.round(v)));
     const sep = unit === '%' ? ' %' : ' ' + unit;
     return {
       id,
@@ -1088,45 +1227,68 @@ export const ZKCHRONIK = (() => {
       annahme,
     };
   }
+  // the two worlds side by side: [Allein im Sturm, Gewappnet]
+  const two = (gem, a, g) => (gem ? g : a);
   function kpiWald(W) {
-    const gem = W.handeln === 'gemeinsam';
-    const f45 = forest(W, 2045.5),
-      f32 = forest(W, 2032.9);
-    const dead = 1 - f32.green;
-    const used = removed(INC[W.klima][W.handeln], CLEAR[W.handeln], 2040) / attacked(INC[W.klima][W.handeln], 2040);
+    const gem = W.handeln === 'gemeinsam',
+      inc = INC[W.klima][W.handeln],
+      c = CLEAR[W.handeln];
+    const f32 = forest(W, 2032.9),
+      f40 = forest(W, 2040.5),
+      f60 = forest(W, 2060.5);
+    const used = removed(inc, c, 2040) / attacked(inc, 2040);
+    const h = round(f40.regrowH, 1);
     return [
       K(
         'tot',
         'Fichten abgestorben bis 2032',
         '%',
-        pct(dead),
+        pct(1 - f32.green),
         [70, 100],
-        S('waldbericht', 'rekis', 'forst'),
-        'Gleiches heftiges Klima, gleicher Käfer: In beiden Welten sterben fast alle Fichten an den Hängen, so wie seit 2018 in weiten Teilen des Harzes und des Thüringer Waldes. Schnelles Räumen rettet nur wenig.',
+        S('thueringen', 'waldbericht', 'rekis'),
+        'Gleiches heftiges Klima, gleicher Käfer: In beiden Welten sterben fast alle Fichten an den Hängen, wie seit 2018 in weiten Teilen des Harzes und des Thüringer Waldes. Schnelles Räumen vor dem Ausflug der Käfer rettet nur wenig.',
         true
       ),
       K(
         'jung',
-        'Wieder junger Wald 2045',
+        'Wieder junger Wald 2040',
         '%',
-        pct(f45.young),
-        gem ? [70, 95] : [30, 60],
+        pct(f40.young),
+        two(gem, [30, 60], [65, 90]),
         S('waldwissen', 'forst'),
-        gem
-          ? 'Gemeinsam geräumt und im Frühjahr danach gepflanzt, dazu was von selbst kommt. Anteil der früheren Fichtenfläche.'
-          : 'Auf geräumten Flächen kommen Birke, Vogelbeere und Weide von selbst, lückig und mit Brombeere. Wo das tote Holz liegt, dauert es länger.',
+        two(
+          gem,
+          'Auf geräumten Flächen kommen Birke, Vogelbeere und Weide von selbst, lückig und mit Brombeere. Wo das tote Holz liegt, dauert es länger.',
+          'Gemeinsam geräumt und im Frühjahr danach gepflanzt, dazu was von selbst kommt. Anteil der früheren Fichtenfläche.'
+        ),
         true
       ),
       K(
         'hoehe',
-        'Höhe der jungen Bäume 2045',
+        'Höhe der jungen Bäume 2040',
         'm',
-        f45.regrowH,
-        [f45.regrowH * 0.7, f45.regrowH * 1.3],
-        S('waldwissen', 'bwi'),
-        gem
-          ? 'Gepflanzte Buchen, Eichen und Tannen wachsen in den ersten Jahren langsam, dafür wird es ein gemischter Wirtschaftswald.'
-          : 'Birken wachsen anfangs schneller als gepflanzte Buchen, bleiben aber lückig. Holz fürs Sägewerk liefern sie kaum.',
+        h,
+        [round(h * 0.7, 1), round(h * 1.3, 1)],
+        S('birke', 'waldwissen'),
+        two(
+          gem,
+          'Birken wachsen anfangs schneller als gepflanzte Buchen, lassen aber nach 10–12 Jahren nach. Holz fürs Sägewerk liefern sie kaum.',
+          'Gepflanzte Buchen, Eichen und Tannen wachsen in den ersten Jahren langsam, dafür wird es ein gemischter Wald, der auch Holz liefert.'
+        ),
+        true
+      ),
+      K(
+        'misch',
+        'Gemischter, klimafester Wald 2060',
+        '%',
+        pct(f60.planted),
+        two(gem, [0, 15], [55, 85]),
+        S('forst', 'thueringen'),
+        two(
+          gem,
+          'Kaum jemand pflanzt; es wächst, was von selbst kommt: vor allem Birke und Weide, dazwischen wieder junge Fichten.',
+          'Buche, Traubeneiche, Weißtanne, Bergahorn auf dem größten Teil der Käferflächen. Gemischte Wälder überstehen Dürre, Sturm und Käfer besser als reine Fichte.'
+        ),
         true
       ),
       K(
@@ -1134,11 +1296,13 @@ export const ZKCHRONIK = (() => {
         'Käferholz geräumt und genutzt',
         '%',
         pct(used),
-        gem ? [85, 100] : [45, 75],
-        S('waldbericht', 'annahme'),
-        gem
-          ? 'Ein Unternehmer für alle Parzellen; das schlechte Holz wird Hackschnitzel für das Heizhaus.'
-          : 'Viele kleine Parzellen, die Unternehmer sind ausgebucht, das Holz bringt kaum etwas: Ein Teil bleibt stehen und fällt um.',
+        two(gem, [45, 75], [85, 100]),
+        S('hackschnitzel', 'annahme'),
+        two(
+          gem,
+          'Viele kleine Parzellen, die Unternehmer sind ausgebucht, das Holz bringt kaum etwas: Ein Teil bleibt stehen und fällt um.',
+          'Ein Unternehmer für alle Parzellen; das schlechte Holz wird Hackschnitzel für das Heizhaus, rund 2 MWh Wärme je Festmeter Fichte.'
+        ),
         true
       ),
     ];
@@ -1150,57 +1314,63 @@ export const ZKCHRONIK = (() => {
         'regen',
         'Regen in der Starkregennacht',
         'mm',
-        60,
-        [45, 80],
-        S('kostra', 'klimaatlas'),
-        'Liter je Quadratmeter in einer Stunde – in beiden Welten gleich. Ein Regen, wie er hier bisher etwa einmal in hundert Jahren fällt; mit dem heftigen Klima öfter (Annahme nach KOSTRA-DWD und den Projektionen).',
+        55,
+        [45, 70],
+        S('kostra2', 'rekis'),
+        'Liter je Quadratmeter in einer Stunde, in beiden Welten gleich. Nach KOSTRA fallen hier heute 47,5 mm in einer Stunde etwa einmal in hundert Jahren (±26 %). Wärmere Luft hält mehr Wasser, Gewitterregen werden eher heftiger (Annahme für das heftige Klima).',
         true
       ),
       K(
         'keller',
         'Keller unter Wasser in der Starkregennacht',
         'Keller',
-        gem ? 1 : 12,
-        gem ? [0, 3] : [6, 20],
-        S('annahme'),
-        gem
-          ? 'Mulden am Hang, Rückstauklappen und Schwellen, Sandsäcke und eine geübte Feuerwehr halten das meiste Wasser draußen.'
-          : 'Das Wasser kommt vom kahlen Hang durch Kellerfenster, Lichtschächte und den Kanal.',
+        two(gem, 12, 1),
+        two(gem, [6, 20], [0, 3]),
+        S('dorf', 'annahme'),
+        two(
+          gem,
+          'Das Wasser kommt vom kahlen Hang durch Kellerfenster, Lichtschächte und den Kanal.',
+          'Mulden am Hang, Rückstauklappen und Schwellen, Sandsäcke und eine geübte Feuerwehr halten das meiste Wasser draußen.'
+        ),
         true
       ),
       K(
         'schaden',
         'Schaden der Starkregennacht',
         'Mio. €',
-        gem ? 0.03 : 0.3,
-        gem ? [0.01, 0.08] : [0.15, 0.6],
-        S('annahme'),
-        'Überschlag: je vollgelaufenem Keller mit Heizung und Hausrat 15 000–40 000 €, dazu Straße und Kanal.',
+        two(gem, 0.3, 0.03),
+        two(gem, [0.15, 0.6], [0.01, 0.08]),
+        S('elementar', 'annahme'),
+        'Überschlag: je vollgelaufenem Keller mit Heizung und Hausrat 15 000–40 000 €, dazu Straße und Kanal. In Thüringen ist nicht einmal jedes zweite Haus gegen Elementarschäden versichert.',
         true
       ),
       K(
         'vorsorge',
         'Kosten der Vorsorge 2032–2033',
         'Mio. €',
-        gem ? 0.25 : 0.02,
-        gem ? [0.15, 0.4] : [0.01, 0.05],
+        two(gem, 0.02, 0.25),
+        two(gem, [0.01, 0.05], [0.15, 0.4]),
         S('hnz', 'annahme'),
-        gem
-          ? 'Mulden und Querrinnen am Hang, Rückstauklappen und Schwellen an den Häusern, mobile Wände, Pumpen und Sandsäcke; vor Förderung.'
-          : 'Einzelne Rückstauklappen und Sandsäcke, wer will.',
+        two(
+          gem,
+          'Einzelne Rückstauklappen und Sandsäcke, wer will.',
+          'Mulden und Querrinnen am Hang, Rückstauklappen und Schwellen an den Häusern, mobile Wände, Pumpen und Sandsäcke; vor Förderung.'
+        ),
         true
       ),
       K(
         'hochwasser',
         'Häuser mit Wasser drin beim großen Hochwasser',
         'Häuser',
-        gem ? 9 : 25,
-        gem ? [4, 15] : [18, 37],
-        S('uesg', 'dez23', 'annahme'),
-        'Im amtlichen Überschwemmungsgebiet (HQ100) liegen rund 37 Gebäude. ' +
-          (gem
-            ? 'Mobile Wände, Rückstauklappen und leere Keller halten das Wasser meist draußen.'
-            : 'Ohne Vorsorge steht das Wasser in vielen Kellern und Erdgeschossen.'),
+        two(gem, 25, 9),
+        two(gem, [18, 37], [4, 15]),
+        S('uesg', 'dez23', 'rekis', 'annahme'),
+        'Im amtlichen Überschwemmungsgebiet (HQ100) liegen rund 37 Gebäude; im heftigen Klima regnet es im Winter mehr (ReKIS: bis Ende des Jahrhunderts +15 %). ' +
+          two(
+            gem,
+            'Ohne Vorsorge steht das Wasser in vielen Kellern und Erdgeschossen.',
+            'Mobile Wände, Rückstauklappen und leere Keller halten das Wasser meist draußen.'
+          ),
         true
       ),
     ];
@@ -1210,62 +1380,72 @@ export const ZKCHRONIK = (() => {
     return [
       K(
         'waerme',
-        'Wärme aus Dorf und Region 2040',
+        'Häuser ohne Ölheizung 2040',
         '%',
-        gem ? 80 : 25,
-        gem ? [70, 90] : [15, 35],
-        S('schloeben', 'annahme'),
-        gem
-          ? 'Vier von fünf Häusern an der Nahwärme mit Hackschnitzeln aus der Gegend, dazu Holzöfen und Wärmepumpen.'
-          : 'Holzöfen und einige Wärmepumpen; die meisten Häuser heizen weiter mit Öl.',
+        two(gem, 40, 90),
+        two(gem, [30, 55], [80, 95]),
+        S('schloeben', 'wpg', 'dorf', 'annahme'),
+        two(
+          gem,
+          'Wer einen neuen Kessel braucht, nimmt oft eine Wärmepumpe; viele ältere Häuser heizen weiter mit Öl.',
+          'Vier von fünf Häusern an der Nahwärme mit Hackschnitzeln aus der Gegend, dazu Holzöfen und einige Wärmepumpen.'
+        ),
         true
       ),
       K(
         'preis',
         'Wärmepreis 2035',
         'ct/kWh',
-        gem ? 11 : 15,
-        gem ? [9, 13] : [11, 22],
-        S('schloeben', 'behg', 'annahme'),
-        gem
-          ? 'Nahwärme mit Grundpreis; Schlöben nennt 6,6 ct/kWh für Mitglieder ohne Grundpreis. Holz ist kaum vom CO₂-Preis betroffen.'
-          : 'Heizöl mit steigendem CO₂-Preis und schwankendem Weltmarkt (2022, Hormus 2026).',
+        two(gem, 17, 12),
+        two(gem, [13, 24], [10, 15]),
+        S('schloeben', 'behg', 'hormus', 'annahme'),
+        two(
+          gem,
+          'Heizöl mit steigendem CO₂-Preis und schwankendem Weltmarkt (2022, Hormus 2026), dazu Wartung und Schornsteinfeger.',
+          'Nahwärme mit Grund- und Arbeitspreis (Annahme nach neueren Bioenergiedörfern); Schlöben nennt 6,6 ct/kWh für Mitglieder. Holz trägt kaum CO₂-Preis.'
+        ),
         true
       ),
       K(
         'geld',
         'Geld für Energie, das im Dorf bleibt (je Jahr, 2040)',
         'Mio. €',
-        gem ? 0.2 : 0.02,
-        gem ? [0.12, 0.3] : [0.01, 0.05],
-        S('eeg6', 'annahme'),
-        gem
-          ? 'Wärmeverkauf statt Ölrechnung, Hackschnitzel aus der Gegend, Pacht und Anteile am Bürgerwindrad.'
-          : 'Einspeisevergütung einzelner Dächer; die Pacht des Windrads bekommt ein Besitzer.',
+        two(gem, 0.02, 0.2),
+        two(gem, [0.01, 0.05], [0.12, 0.3]),
+        S('windbeteilg', 'eeg6', 'dorf', 'annahme'),
+        two(
+          gem,
+          'Einspeisevergütung einzelner Dächer; die Pacht des Windrads bekommt ein Besitzer, die Stadt 0,2 ct je Kilowattstunde.',
+          'Wärmeverkauf statt Ölrechnung, Hackschnitzel aus der Gegend, Pacht und Anteile am Bürgerwindrad.'
+        ),
         true
       ),
       K(
         'warm',
         'Häuser mit Wärme in der Nacht ohne Strom',
         '%',
-        gem ? 75 : 25,
-        gem ? [60, 85] : [15, 35],
-        S('blackout', 'annahme'),
-        gem
-          ? 'Das Heizhaus läuft mit Notstrom weiter, die angeschlossenen Häuser bleiben warm; dazu Holzöfen.'
-          : 'Ölbrenner und Wärmepumpen brauchen Strom. Warm bleibt es nur mit Holzofen.',
+        two(gem, 25, 70),
+        two(gem, [15, 35], [50, 85]),
+        S('koepenick', 'berlin26', 'annahme'),
+        two(
+          gem,
+          'Ölbrenner, Heizungspumpen und Wärmepumpen brauchen Strom. Warm bleibt es nur mit Holzofen.',
+          'Das Heizhaus läuft mit Notstrom, eine Akkustation hält in jedem angeschlossenen Haus die Heizungspumpe am Laufen; dazu Holzöfen.'
+        ),
         true
       ),
       K(
         'notpunkt',
         'Stunden mit Licht und Wärme am Notfall-Treffpunkt',
         'h',
-        gem ? DARK_H : 0,
-        gem ? [24, 72] : [0, 0],
-        S('blackout', 'annahme'),
-        gem
-          ? 'Dorfspeicher und Aggregat an der alten Schule reichen für die ganze Nacht und den Tag danach.'
-          : 'Es gibt keinen Treffpunkt mit Strom; die Feuerwehr hat ein Aggregat für ihre Pumpen.',
+        two(gem, 0, DARK_H),
+        two(gem, [0, 2], [24, 72]),
+        S('muensterland', 'berlin26', 'annahme'),
+        two(
+          gem,
+          'Es gibt keinen Treffpunkt mit Strom; die Feuerwehr hat ein Aggregat für ihre Pumpen.',
+          'Dorfspeicher und Aggregat an der alten Schule reichen für die Nacht und den Tag danach. Lange Ausfälle gab es: Köpenick 2019 rund 31 Stunden, Berlin im Januar 2026 vier Tage.'
+        ),
         true
       ),
     ];
@@ -1295,6 +1475,8 @@ export const ZKCHRONIK = (() => {
     SRC,
     SIGNS,
     SIGN_NOTE,
+    NOTES,
+    CUES,
     events,
     find,
     state,
