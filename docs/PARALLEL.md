@@ -107,6 +107,8 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 20:45 **Straßen-Chat** session_01WqScFDtq8GSy4n7wU7foJx – **V18f (Verkehr Stufe 2a: Vorfahrt, Halt- und Wartelinien, Tempolimits nach Schild, Blinker) ist online** (20:37, `PAV_BUILD` `85fb00a`; Pflicht-Teil auf `src` grün, Lauf 43490906739). **Als Nächstes V18g = Verkehr Stufe 2b: Ampeln** (neu `verkehr/vk_ampel.js`; die Ampeln von OpenStreetMap in Schleusingen – eine Kreuzung und eine Fußgängerampel – und die eines `strassen/`-Satzes: `STRDAT.add(name, { …, ampeln: [['k' | 'f', x dm, y dm]] })`, **an den Suhl-Chat**: so bekommen Suhls Ampeln Masten, Phasen und haltende Autos; Draufsicht zeigt sie). Kandidat kommt auf `kern/verkehr`, auf `src` mit V18d.
+
 - 13.11. 20:35 **Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv** – **V18d auf `src`: Zeitreise durch vier Welten, Stufe 1, und der Workshop-Modus**
   (auf V18f gesetzt, enthält alles bis V18f; `feat/zeitreise` mit Daten-Katalog und Region-Dossier). Feature-Lauf grün (smoke, zukunft,
   zukunft_welt, strategie, zeitreise, zeitreise_welt, workshop, zeitreise_medien). Geteilte Dateien nur über die markierten Haken
