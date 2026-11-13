@@ -15,7 +15,7 @@ sind hier hineingemergt.
 | Gelände des Zentrums **vor** dem Einschnitt | `tools/suhl/out/boden/probe/roh/v1/` | darauf rechnet `suhl-strassen`; Lauf 43342715807, Commit `d262745d` |
 | Probesatz v0 | `tools/suhl/out/boden/probe/suhl/boden/v0/` | erster Stand: Copernicus, ohne Einschnitt, Farben wie geflogen – bleibt zum Vergleich |
 | **Ganze Stadt, Lauf 1** | Artefakt `suhl-boden-v1` des Laufs 43340569202 (14 Tage) | Messung der Mengen: Copernicus, ohne Einschnitt, Farben wie geflogen. Nicht zum Veröffentlichen. |
-| **Ganze Stadt, Lauf 2** | Artefakte `suhl-boden-v1` und `suhl-boden-roh` des Laufs 43347038164 | bestellt 02:43: DGM1 für alle 228 Kacheln, Farben angeglichen, noch ohne Einschnitt (Schritt a, siehe 5.3) – Zahlen in Abschnitt 2.1, sobald er durch ist |
+| **Ganze Stadt, Lauf 2** | Artefakte `suhl-boden-v1` (292 MB) und `suhl-boden-roh` (40 MB) des Laufs 43347038164, bis 27.11. | grün, alle Prüfungen bestanden: DGM1 unter der ganzen Gemeinde (228 Kacheln), Farben angeglichen, **noch ohne Einschnitt** (Schritt a, siehe 5.3). 290 MB. |
 | Zahlen der Läufe | `tools/suhl/out/boden/actions/<modus>/` (`lauf.json`, `pruefen.json`, `meta.json`, `validate*.json`, `easygeodata.json`) | vom Workflow geschrieben |
 | Kachel-Plan | `tools/suhl/out/boden/plan/stadt.json`, `probe.json`; Regel in `tools/suhl/boden/plan.py` | fertig |
 | Bildbögen | Wegwerf-Zweig `ref/suhl-boden`: `probe-v0/`, `probe-roh-v1/`, `probe-v1/`, `stadt-v1/`, `farbe/` | angesehen (Abschnitt 7) |
@@ -43,13 +43,34 @@ Lauf 1 (43340569202, 13.11. 01:52–02:13): Copernicus-Gelände, kein Einschnitt
   75 % größer. Die Annahme war am Testblock und an der Zone Veßra gemessen (Wald und Dörfer); eine Kachel der Stufe 12 hat in Suhl
   26,6 kB statt der angenommenen knapp 18 kB.
 - Laufzeit: 20 Minuten. Bauschritt 1 136 s, davon Gelände 60 s (29 Blöcke) und Luftbild 1 076 s (182 Abrufe beim WMS).
-- Echtes Gelände ist je Kachel etwa 2,5-mal so groß wie Copernicus (gemessen am Zentrum: 5,8 statt 2,3 kB je Kachel der Stufe 12).
-  Erwartung für einen Stand mit DGM1 überall: rund 290 MB. **Entschieden (Suhl-Chat, 13.11.): nichts wird verkleinert**, Qualität 74
-  und der ganze Plan bleiben.
+- **Entschieden (Suhl-Chat, 13.11.): nichts wird verkleinert**, Qualität 74 und der ganze Plan bleiben.
 - Kleinere Qualität brächte wenig (an den Probekacheln gemessen): Qualität 68 spart 7 %, 62 spart 13 %, 56 spart 20 %, 50 spart 25 %.
 
-Lauf 2 (43347038164): Zahlen folgen hier, sobald er durch ist (`tools/suhl/out/boden/actions/stadt/lauf.json`). Sein Plan hat
-andere Fernstufen (Regel 4 in Abschnitt 3.1): 9: 364, 8: 116, 7: 40, 6: 23 – zusammen 6 349 Kacheln, 70 mehr als in Lauf 1.
+**Lauf 2 (43347038164, 13.11. 02:43–03:00): der Stand der ganzen Stadt.** DGM1 unter der ganzen Gemeinde, Farben angeglichen,
+Fernstufen als Quadtree, noch kein Einschnitt. Quelle: `tools/suhl/out/boden/actions/stadt/lauf.json`, `pruefen.json`, `meta.json`,
+`validate.json`, `easygeodata.json` (Stand `48718d2f`).
+
+| Stufe | Kacheln | Gelände | je Kachel | Luftbild | je Kachel |
+|---|---|---|---|---|---|
+| 12 | 2 884 | 17,08 MB | 5,9 kB | 76,83 MB | 26,6 kB |
+| 11 | 1 820 | 12,14 MB | 6,7 kB | 73,58 MB | 40,4 kB |
+| 10 | 1 102 | 8,07 MB | 7,3 kB | 60,89 MB | 55,3 kB |
+| 9 | 364 | 3,00 MB | 8,2 kB | 23,88 MB | 65,6 kB |
+| 8 | 116 | 1,17 MB | 10,1 kB | 8,23 MB | 70,9 kB |
+| 7 | 40 | 0,50 MB | 12,5 kB | 2,87 MB | 71,6 kB |
+| 6 | 23 | 0,34 MB | 14,7 kB | 1,58 MB | 68,7 kB |
+| **Summe** | **6 349** (12 698 Dateien) | **42,30 MB** | | **247,85 MB** | |
+
+- Zusammen **290,15 MB**. Das echte Gelände ist fast doppelt so groß wie das glatte (42,3 statt 22,1 MB).
+- DGM1: alle 228 Kacheln da (220 in diesem Lauf von easygeodata geholt, 8 lagen im Cache; 319 MB, 221 Aufrufe, kein Fehler).
+  1 082 der 1 102 Kacheln der Stufe 10 stehen ganz auf echtem Gelände; die übrigen 20 liegen dort, wo die geholten Kacheln enden
+  (13 am Rand der Gemeinde, 7 im Korridor außerhalb).
+- Laufzeit: 16,5 Minuten. DGM1 holen 8 min; Bauschritt 394 s, davon Gelände 93 s (42 Blöcke) und Luftbild 277 s (16 neue Abrufe
+  für die Fernstufen – die Stufen 10 bis 12 lagen vom ersten Lauf im Cache und wurden nur neu angeglichen und kodiert).
+- Caches bei GitHub nach diesem Lauf: Rohdaten 418 MB, DGM1 rund 320 MB, kodierte Bilder rund 250 MB (dazu die kleinen des
+  Probesatzes).
+- Prüfungen: 16 von 16 bestanden; 11 930 Nachbarpaare, größter Unterschied 0 cm; Höhen 279,2 bis 983,0 m NHN; Mittelpunkt 436,5 m.
+  Schema: gültig, 0 Fehler, 0 Warnungen.
 
 ### 2.2 Probesatz v1 (Lauf 43346733058, `tools/suhl/out/boden/actions/probe/lauf.json`)
 
@@ -134,7 +155,7 @@ Was die Laufzeit an der Naht tun muss:
 3. **Höhenstufe am Rand von Suhls Kacheln.** Das alte Gelände ist ein Oberflächenmodell (Wald steht darin als Erhebung), Suhls Boden
    ist blanke Erde. Im Wald liegt das alte Gelände deshalb um Baumhöhe darüber – am Rand der Abdeckung steht es wie eine Böschung
    über Suhls Boden. Schürzen an den Fernkacheln verdecken nur Lücken, in denen Suhls Boden höher liegt. Das ist dieselbe Stufe, die
-   man heute am Rand der `WELT`-Ringe in Schleusingen sieht. Offen: wie hoch sie mit DGM1 wirklich ist (Lauf 2).
+   man heute am Rand der `WELT`-Ringe in Schleusingen sieht. Nicht gemessen: wie hoch sie mit DGM1 wirklich ist.
 4. **Ring nur dort, wo die alte Welt nichts hat.** Stufe 6 hat einen Ring von 13 Kacheln für den Horizont, aber nur nördlich und
    westlich des alten Quadrats. Im Süden liefert die alte Welt den Horizont.
 
@@ -158,11 +179,19 @@ Größter Einzelwert einer Kachel: 41,7 wie geflogen, 4,0 angeglichen.
 - **Für `suhl-gebaeude`:** Dachfarben ab jetzt aus den Kacheln `i/` lesen, nicht vom WMS – sonst passen Dach und Boden nicht zusammen.
 - Die Flugtage der 729 Zellen des Kontextquadrats sind einmal abgefragt und liegen in `tools/suhl/boden/flugtage.json` (298 Zellen
   07.04.2024, 317 Zellen 15.05.2024, 107 Zellen 12.05.2025, 7 ohne Angabe). Kein Lauf fragt noch einmal.
-- Offen: Fernkacheln außerhalb des Kontextquadrats und der Gemeinde nehmen den Flugtag der nächsten bekannten Zelle (höchstens 6 km).
-  Im Probesatz betraf das 29 von 344 Zellen (Lauf 43345897029). Liegt dort ein anderer Bildflug, stimmt die Farbe dieser fernen
-  Kacheln nicht.
-- Kleiner Mangel: kommen alle Bilder aus der Ablage (kein Abruf), steht in `meta.json` unter `sources.imagery_balance`
-  `cells_day_from_nearest: 0` – die Zählung gilt nur für neu geholte Bilder. So im endgültigen Probesatz v1.
+- **Offen – der Horizont (nur Stufen 6 und 7).** Die Fernkacheln reichen über die abgefragten Flugtage hinaus. Dort nimmt der
+  Ausgleich den Tag der nächsten bekannten Zelle (höchstens 6 km weit), sonst bleibt die Zelle wie geflogen. Im Stand von Lauf 2:
+  Stufe 6 hat 1 018 Zellen, davon 326 mit geratenem Tag und **388 wie geflogen** (dunkler); Stufe 7 hat 442 Zellen, davon 150
+  geraten und 2 wie geflogen. Die Stufen 8 bis 12 sind ganz vom 15.05.2024 – dort stimmt alles. Im Probesatz: 29 von 182 Zellen
+  der Stufe 6 geraten, keine wie geflogen.
+- Die Tage dieser 714 Zellen sind inzwischen einmal abgefragt: `tools/suhl/boden/flugtage_fern.json` (385 Zellen 15.05.2024,
+  120 Zellen 30.04.2024 – ganz im Westen, E 599 bis 604 km; 195 Zellen 09.07.2024 – ganz im Norden, N 5 621 bis 5 627 km; 14 Zellen
+  07.04.2024). Von den 326 geratenen Tagen waren 300 richtig, 26 falsch. **Die Datei wird noch nicht benutzt:** sie ändert die
+  Bilder der Stufen 6 und 7 (höchstens 63 Dateien), und für die beiden neuen Bildflüge (30.04. und 09.07.2024) gibt es noch keine
+  Farbtabelle. Nächster Schritt: zwei Tabellen dazulernen, `image.key` um die Fassung der Flugtage ergänzen, Stufen 6 und 7 neu.
+- `meta.json` nennt je Satz, woher die Flugtage kommen (`sources.imagery_balance.set`, ab `c00b9432`) – auch wenn alle Bilder aus
+  der Ablage kommen. Die älteren Zähler daneben (`cells_used_by_day`, `cells_day_from_nearest`) zählen nur neu geholte Bilder; im
+  endgültigen Probesatz v1 stehen sie deshalb auf 0.
 
 ## 4 Der Kachel-Plan der ganzen Stadt
 
@@ -188,15 +217,16 @@ Stufe 1; `bebaut.py` macht sie neu). Sie ist eingecheckt, damit sich die Listen 
   Actions-Cache. Ohne Schlüssel steht das im Protokoll, der Lauf rechnet mit Copernicus weiter.
 - **Copernicus GLO-30** sonst, mit abgesenktem Wald wie in `tools/welt/dem.py`. Die Absenkung ist für Suhl immer im selben Fenster
   geschätzt (Rahmen der Gemeinde): **9,33 m**; 82 % des Fensters sind Wald.
-- Höhenversatz Copernicus → DGM1 (30-%-Quantil, eine Zahl für den ganzen Lauf): **−4,90 m**, gemessen an den 8 Kacheln des Zentrums.
-  Der abgesenkte Copernicus liegt in der Stadt also 4,9 m unter dem echten Boden. Das zählt nur dort, wo DGM1 endet; DGM1 läuft über
-  300 m in Copernicus aus.
+- Höhenversatz Copernicus → DGM1 (30-%-Quantil, eine Zahl für den ganzen Lauf): **−2,20 m** über die ganze Gemeinde (Lauf 2, 228
+  Kacheln); an den 8 Kacheln des Zentrums allein waren es −4,90 m (Probesatz v1). Das zählt nur dort, wo DGM1 endet – an den
+  Korridoren und am Rand der Gemeinde; DGM1 läuft über 300 m in Copernicus aus. Der Probesatz und der Stadt-Stand haben also am
+  Rand des Probesatzes verschiedene Übergänge, im Inneren (DGM1) sind sie gleich: Mittelpunkt beide 436,5 m.
 
 ### 5.2 Rechnen in Blöcken
 
 Die Gemeinde ist für ein einziges 1-m-Mosaik zu groß. Ein Block = eine Kachel der Stufe 7 (3,2 km) plus 320 m Rand. Die Stufen 10
 bis 12 kommen aus dem 1-m-Mosaik des Blocks, die Stufen 6 bis 9 aus einem einzigen 8-m-Mosaik über das ganze Gebiet. Alle Blöcke
-teilen sich Wald-Absenkung und Höhenversatz. Ergebnis: 11 777 Nachbarpaare in Lauf 1, größter Unterschied 0 cm.
+teilen sich Wald-Absenkung und Höhenversatz. Ergebnis: 11 930 Nachbarpaare in Lauf 2 (42 Blöcke, 93 s), größter Unterschied 0 cm.
 
 ### 5.3 Straßen einschneiden – die Reihenfolge je Datenstand
 
@@ -249,8 +279,9 @@ Ergebnis.
 Dazu Kurztests ohne Netz (`test_boden.py`, 41 Prüfungen: Plan, Blöcke mit und ohne DGM1, Einschnitt, Grenze, Höhenabfrage).
 
 Bildbögen, selbst angesehen (`ref/suhl-boden`): das Zentrum in 20 cm; das Gelände als Schummerung (v0: Blöcke des 30-m-Modells und
-Stufen am Waldrand; v1: Terrassen, Bahndamm, Rampen, Straßen als glatte Bänder); die ganze Stadt aus Stufe 8 ohne Farbnaht und ohne
-Blockkante; die Kachel-Listen als Karte; der Farbvergleich.
+Stufen am Waldrand; v1: Terrassen, Bahndamm, Rampen, Straßen als glatte Bänder); die ganze Stadt aus Stufe 8 (Lauf 2) ohne Farbnaht
+und ohne Blockkante, ihr Gelände mit Tälern, Autobahn- und Bahndämmen ohne Stufe am Rand des DGM1; die Kachel-Listen als Karte; der
+Farbvergleich. Nicht auf einem Bogen: die ganze Stufe 6 – der Horizont aus Abschnitt 3.3 ist also gezählt, nicht angesehen.
 
 `validate.py --probe` meldet am Probesatz v1 36 Fehler „keine Kachel des Probesatzes“: das sind die 18 Fernkacheln des Rings, den die
 Laufzeit braucht. Ohne `--probe` ist der Satz gültig. Die Probe-Regel muss für den Boden Fernkacheln um den Probesatz erlauben.
@@ -287,6 +318,9 @@ Commit-Nachricht**. Ohne Marke baut der Workflow nichts. Stadt- und Probe-Läufe
 | `stadt.version`, `stadt.t`, `stadt.i` | Versionsordner und die Versionen der beiden Teile |
 | `probe.schritt = roh \| produkt` | nur das Gelände vor dem Einschnitt, oder der Probesatz |
 
+Flugtage für den Farbausgleich (einmal gefragt, eingecheckt): `python3 -I tools/suhl/boden/farbe.py --flugtage` (Kontextquadrat) und
+`--flugtage-plan stadt` (Zellen unter den Fernkacheln, in `flugtage_fern.json`). Ein zweiter Aufruf fragt nichts noch einmal.
+
 Lokal (nur Probesatz und Tests; easygeodata läuft nur in GitHub Actions):
 
 ```
@@ -309,9 +343,15 @@ Ein zweiter Start macht dort weiter, wo der erste aufgehört hat.
 
 - **Probesatz v1 ist der Stand für alle:** `02a4b9be`. `suhl-gebaeude` liest die Hausfüße davon, `suhl-gruen` und `suhl-laufzeit` den Boden.
 - **Veröffentlicht wird hier nichts.** Die Artefakte heißen `suhl-boden-v1` (Produkt) und `suhl-boden-roh` (nur für `suhl-strassen`).
-- **Nächster Schritt der ganzen Stadt:** `suhl-strassen` rechnet auf `suhl-boden-roh` des Laufs 43347038164; danach ein Lauf mit
-  `stadt.strassen = tools/suhl/out/strassen/stadt/fahrt/suhl.json.gz,…/suhl-anfahrt.json.gz` und `stadt.t = 2`. Das Luftbild bleibt
-  dabei Byte für Byte gleich.
+- **Nächster Schritt der ganzen Stadt:** `suhl-strassen` rechnet auf `suhl-boden-roh` des Laufs 43347038164 (in
+  `tools/suhl/strassen/lauf.txt`: `boden_run=43347038164`, `boden_artifact=suhl-boden-roh`). Danach `origin/suhl/strassen` hier
+  hineinmergen und einen Lauf bestellen: in `lauf.txt` bei `stadt.strassen` die beiden Dateien
+  `tools/suhl/out/strassen/stadt/fahrt/suhl.json.gz` und `…/suhl-anfahrt.json.gz` mit Komma und ohne Leerzeichen, dazu
+  `stadt.version = v2`, `stadt.t = 2`, und `[stadt]` in die Commit-Nachricht.
+  Das Luftbild bleibt dabei Byte für Byte gleich (Ablage im Cache, Schlüssel unverändert).
+- **Der Stand von Lauf 2 heißt `v1` und ist ohne Einschnitt** (`based_on: {}`), der Probesatz `v1` ist mit Einschnitt. Zum
+  Ausprobieren in der Laufzeit taugt der Stadt-Stand schon; Straßen liegen darin neben dem Boden (im Probesatz vor dem Einschnitt:
+  die Hälfte der Punkte unter 0,2 m, 5 % über 0,7 m). Der richtige Stand für alle ist der mit Einschnitt.
 - **Platz im Daten-Repo:** Gleiche Bilddateien in einem neuen Versionsordner kosten in git nichts, auf der Seite (1 GB) zählen sie
   aber doppelt, solange beide Ordner liegen: zwei Boden-Stände sind rund 580 MB. Alte Stände also zügig löschen.
 - **Geht der Bild-Cache verloren** (GitHub wirft Caches nach 7 Tagen ohne Zugriff weg), werden die Bilder neu kodiert – gleiche
@@ -324,9 +364,12 @@ Ein zweiter Start macht dort weiter, wo der erste aufgehört hat.
 
 ## 13 Offen und unsicher
 
-- Zahlen des Stadt-Laufs 2 (DGM1 überall): Größe des Geländes, Höhenversatz über die ganze Gemeinde, Höhenstufe an der Naht.
-- Der Höhenversatz −4,9 m ist nur am Zentrum gemessen. Mit DGM1 für die ganze Gemeinde bleibt er nur an den Korridoren wirksam.
-- Flugtage ferner Kacheln (Abschnitt 3.3). Lage der Dächer im Bild (Abschnitt 6).
+- Der Einschnitt für die ganze Stadt fehlt noch (wartet auf die Profile von `suhl-strassen` auf dem Gelände von Lauf 2).
+- Der Horizont: Farbe der Stufen 6 und 7 außerhalb der bekannten Flugtage (Abschnitt 3.3).
+- Die Höhenstufe an der Naht zum alten Fern-Gelände ist beschrieben, nicht gemessen (Abschnitt 3.2).
+- Auf Copernicus-Boden (Korridore außerhalb der Gemeinde) hat der Einschnitt keine 2,5-m-Grenze; dort können Dämme oder Gruben
+  entstehen, wenn Profil und Boden nicht zusammenpassen. Zu prüfen im ersten Stadt-Lauf mit Einschnitt (`fit_before_cut`).
+- Lage der Dächer im Bild (Abschnitt 6).
 - Die Fernstufen zeigen blanke Erde. Wald steht dort nicht als Erhebung wie im alten Fern-Gelände – Sache von Grün und Fernmodell.
 - Der erste Stadt-Lauf (43340569202) und der erste Probe-Lauf (43342715807) stehen bei GitHub rot, obwohl Bau, Prüfungen und Ergebnisse
   vollständig sind: ihr letzter Schritt „Zahlen des Laufs“ kopierte eine Datei auf sich selbst. Behoben in `a77adc4d`.
