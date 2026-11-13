@@ -1,15 +1,17 @@
-"""KartaView pictures of the Kernstadt of Suhl through the public API at api.kartaview.org (no account, no token): one question per
-circle of 500 m (the largest radius the API accepts) on a 700 m grid over the Kernstadt, pages of 500. Works from the chat machine.
+"""KartaView pictures of Suhl through the public API at api.kartaview.org (no account, no token): one question per circle of 500 m
+(the largest radius the API accepts) on a 700 m grid over the municipality (--kernstadt: the Kernstadt only), pages of 500.
+Works from the chat machine.
 Replaces the first probe collect_kartaview.py, which asked the old host api.openstreetcam.org (invalid certificate) - that file is
 left as it is because a change to it would start the whole workflow again.
-    python3 tools/suhl/fotos/kartaview.py     ->  tools/suhl/out/fotos/kartaview.json"""
+    python3 tools/suhl/fotos/kartaview.py [--kernstadt]     ->  tools/suhl/out/fotos/kartaview.json"""
 import sys, os, json, datetime, collections, urllib.error
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import slib
 
 API = 'https://api.kartaview.org/2.0/photo/'
 areas = slib.Areas()
-b = areas.bbox('kernstadt')
+AREA = 'kernstadt' if '--kernstadt' in sys.argv else 'stadt'   # the whole municipality by default (about 350 circles, 7 minutes)
+b = areas.bbox(AREA)
 x0, y0 = slib.xy(b[1], b[0]); x1, y1 = slib.xy(b[3], b[2])
 S, R = 700.0, 500
 cells = []
@@ -17,7 +19,7 @@ for i in range(int((x1 - x0) / S) + 2):
     for j in range(int((y1 - y0) / S) + 2):
         cx, cy = x0 + i * S, y0 + j * S
         ring = [(cx, cy)] + [(cx + R * dx, cy + R * dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1), (.7, .7), (-.7, .7), (.7, -.7), (-.7, -.7))]
-        if any(areas.has('kernstadt', *slib.ll(px, py)) for px, py in ring): cells.append((cx, cy))
+        if any(areas.has(AREA, *slib.ll(px, py)) for px, py in ring): cells.append((cx, cy))
 def control():
     """The same question at a place that has pictures (Erfurt, Domplatz): shows that an empty answer for Suhl means 'no pictures', not 'wrong question'."""
     try:
@@ -63,7 +65,7 @@ for n, (cx, cy) in enumerate(cells):
 ps = sorted(photos.values(), key=lambda p: (p['seq'], p['rank']))
 for p in ps: p['gebiet'] = areas.of(p['lat'], p['lon'])
 out = dict(version=2, fetched=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), api=API, where='chat machine',
-           note='Kernstadt only (circles of 500 m on a 700 m grid). Licence CC BY-SA 4.0 as stated for KartaView in the OpenStreetMap wiki; no author names in the API answer. '
+           area=AREA, note='Circles of 500 m on a 700 m grid over the area. Licence CC BY-SA 4.0 as stated for KartaView in the OpenStreetMap wiki; no author names in the API answer. '
                 'The first probe from GitHub Actions asked the old host and failed (log/kartaview.log).',
            circles=len(cells), calls=calls, errors=log, item_keys=first_keys, control=control(), photos=ps)
 print(slib.save('kartaview.json', out, indent=None), len(ps), 'pictures in', len(cells), 'circles,', calls, 'calls,', len(log), 'errors')

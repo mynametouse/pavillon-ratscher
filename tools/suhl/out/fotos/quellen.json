@@ -1,6 +1,6 @@
 {
  "version": 1,
- "made": "2026-11-12T23:51Z",
+ "made": "2026-11-13T00:00Z",
  "areas": "suhl-bestand",
  "quellen": {
   "commons": {
@@ -296,11 +296,11 @@
    }
   },
   "kartaview": {
-   "fetched": "2026-11-12T23:50Z",
+   "fetched": "2026-11-12T23:59Z",
    "where": "chat machine",
    "api": "https://api.kartaview.org/2.0/photo/",
-   "circles": 81,
-   "calls": 81,
+   "circles": 369,
+   "calls": 369,
    "errors": 0,
    "control": {
     "place": "Erfurt 50.9787 N, 11.0328 E",

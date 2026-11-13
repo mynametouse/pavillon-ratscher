@@ -15,7 +15,7 @@ Stadt 141,8 km², Kernstadt 22,0 km², **Zentrum 0,68 km²** (Hülle um Markt, S
 3. **Fast kein Foto blickt quer auf eine Fassade.** Die Kameras schauen nach vorn durch die Frontscheibe. Quer auf eine Straßenseite blickt ein
    Foto nur auf 1,5 % der Straßenlänge in der Kernstadt und auf 2,6 % / 4,5 % (je Seite) im Zentrum.
 4. **Die gespeicherte Blickrichtung der Handy-Fotos ist unzuverlässig.** Bei allen Fotos des Zentrums (Urheber „sixsixfive“, Handy-Kompass)
-   weicht sie im Mittel 42° von der Fahrtrichtung ab; nur 19 % liegen innerhalb von 20°. Ich rechne deshalb dort mit der Fahrtrichtung
+   weicht sie im Median 42° von der Fahrtrichtung ab; nur 19 % liegen innerhalb von 20°. Ich rechne deshalb dort mit der Fahrtrichtung
    (Feld `blick` im Katalog). Für den späteren Foto-Abgleich im Test ist das wichtig.
 5. **Wikimedia Commons füllt die Mitte – aber nur mit Einzelbildern.** 6 229 Fotos, davon 512 mit Standort im Zentrum (meist 2014 und 2023–2025).
    Am Steinweg stehen 130 Kamerastandorte, am Marktplatz 91, rund ums Rathaus 154. Nur 23 dieser 512 haben eine Blickrichtung.
@@ -45,17 +45,17 @@ Ansehen: `git fetch origin ref/suhl-fotos && git show FETCH_HEAD:karten/abdeckun
 | **Panoramax** (Straßenfotos) | 3 254 im Rechteck um die Stadt, davon 284 doppelt hochgeladen → **2 970 verschiedene**; im Gemeindegebiet 2 139 (Zentrum 171, übrige Kernstadt 1 070, übrige Stadt 898) | 2025: 2 095, 2026: 1 159 | alle CC BY-SA 4.0 | alle (aber siehe unten); kein 360°-Foto | Chat-Rechner, `api.panoramax.xyz`, 28 Abfragen |
 | **Wikimedia Commons** (Einzelfotos) | **6 229**; mit Standort 3 358 (Kamera 3 299, nur Objekt 59); Zentrum 512, übrige Kernstadt 826, übrige Stadt 1 025, außerhalb 995, ohne Standort 2 871 | vor 1945: 55 · 1945–1990: 457 · 1991–2009: 230 · 2010–2019: 1 613 · 2020–2026: 3 794 · ohne: 80 | CC BY-SA 4.0: 3 985 · CC BY-SA 3.0 de: 691 · CC BY 4.0: 392 · CC BY-SA 3.0: 386 · CC0: 347 · CC BY 3.0: 122 · CC BY-SA 2.0: 100 · gemeinfrei: 97 · sonst 109; **frei nutzbar 6 185**, nur ansehen 44 | 250 | GitHub Actions (Lauf 43326964578), 1 107 Abfragen |
 | **Openverse** (vor allem Flickr) | 183, alle ohne Standort | nicht angegeben | CC BY-NC 2.0: 99 · CC BY-SA 2.0: 28 · CC BY-ND 2.0: 23 · CC BY-NC-SA 2.0: 16 · CC BY 2.0: 12 · sonst 5; **frei 41, nur ansehen 142** | 0 | Chat-Rechner |
-| **KartaView** | **0 in der Kernstadt** (81 Kreisabfragen, alle leer) | – | laut OpenStreetMap-Wiki CC BY-SA 4.0 | – | Chat-Rechner, `api.kartaview.org` (ohne Konto); Gegenprobe in Erfurt liefert Bilder (`kartaview.json`) |
+| **KartaView** | **0 im ganzen Gemeindegebiet** (369 Kreisabfragen, alle leer) | – | laut OpenStreetMap-Wiki CC BY-SA 4.0 | – | Chat-Rechner, `api.kartaview.org` (ohne Konto); Gegenprobe in Erfurt liefert Bilder (`kartaview.json`) |
 | **Mapillary** | nicht abgefragt | – | laut Mapillary CC BY-SA 4.0 (nicht geprüft) | – | braucht einen Zugangsschlüssel und damit ein Konto – keines angelegt |
 
 **Panoramax im Einzelnen** (`quellen.json`, verschiedene Fotos): „sixsixfive“ 1 449 (Fairphone 6, Bildwinkel 74°, 26.–30.12.2025) – von ihm stammen
-alle Fotos der Kernstadt und des Zentrums bis auf eines; „R_A“ 773 (12.4.2026: Garmin VIRB nach vorn, 380; Sony-Kamera seitlich, 393 – auf der
-Autobahn und den Straßen ins Umland); „r_a“ 385 (23.5.2026, andere Panoramax-Instanz); „cucu“ 362 (Juni 2025, alle außerhalb der Stadtgrenze);
-„mapcomplete“ 1. 284 Fotos von „sixsixfive“ liegen in zwei Folgen doppelt vor; sie zählen überall nur einmal.
+alle Fotos der Kernstadt und des Zentrums bis auf eines; „R_A“ 773 (12.4.2026: Garmin VIRB nach vorn, 380; Sony-Kamera seitlich, 393 –
+alle außerhalb der Kernstadt, die Sony-Bilder zeigen die Autobahn); „r_a“ 385 (23.5.2026, andere Panoramax-Instanz, außerhalb der Kernstadt);
+„cucu“ 362 (Juni 2025; 69 im Gemeindegebiet außerhalb der Kernstadt, 293 jenseits der Stadtgrenze); „mapcomplete“ 1. 284 Fotos von „sixsixfive“ liegen in zwei Folgen doppelt vor; sie zählen überall nur einmal.
 
 **Blickrichtung geprüft** (`abdeckung.json` → `method.heading_check`): Ich habe die gespeicherte Richtung mit der Fahrtrichtung aus der Bildfolge
-verglichen. „R_A“/Garmin: gleich (mittlere Abweichung 6°). „R_A“/Sony: fest 120° nach links – eine echte Seitenkamera. „sixsixfive“: streut
-(mittlere Abweichung 42°, nur 19 % innerhalb 20°), „cucu“ ebenso (70°). Auf den Kontaktabzügen sieht man: beide fotografieren nach vorn durch die
+verglichen. „R_A“/Garmin: gleich (Abweichung im Median 6°). „R_A“/Sony: fest 120° nach links – eine echte Seitenkamera. „sixsixfive“: streut
+(Abweichung im Median 42°, nur 19 % innerhalb 20°), „cucu“ ebenso (70°). Auf den Kontaktabzügen sieht man: beide fotografieren nach vorn durch die
 Frontscheibe. Für sie gilt deshalb die Fahrtrichtung als Blickrichtung (Katalogfelder `heading` = gespeichert, `heading_fahrt`, `blick`, `blick_quelle`).
 Beispiel für den Fehler: `pmx:3ae9acd8…` und `pmx:5555523f…` zeigen dasselbe Autohaus vom selben Punkt, gespeichert sind 36° und 158°.
 
@@ -153,23 +153,24 @@ Mühltorstraße, Alte Schmiedefelder Straße, Paul-Greifzu-Straße, Auf der Maue
 ## Blick ins Zentrum – was die Straßenfotos zeigen
 
 Ich habe die Kontaktabzüge auf `ref/suhl-fotos` selbst angesehen (zu jeder der 34 Straßen und Orte das erste Blatt, bei den Hauptstraßen beide). Hier steht nur, was auf den
-Bildern zu sehen ist. Alle Bilder: Dezember 2025, Bäume kahl, tiefe Sonne, durch die Frontscheibe – Farben oft verfälscht, einige Bilder fast nur Gegenlicht.
+Bildern zu sehen ist. Alle Bilder bis auf eines: Dezember 2025, Bäume kahl, tiefe Sonne, durch die Frontscheibe – Farben oft verfälscht, einige Bilder fast nur Gegenlicht.
+Baustoffe nenne ich nach dem Aussehen (zum Beispiel „Schiefer“ für dunkelgraue Schindeln); geprüft sind sie nicht.
 
 - **Friedrich-König-Straße** (`friedrich-koenig-strasse_1/2`): breite Hauptstraße, zwei bis vier Spuren mit Abbiegepfeilen, Ampeln an Auslegermasten,
-  Grünstreifen, Gehweg aus Betonpflaster. Daneben Scheibenhochhäuser mit gemusterter Fassade (eines rot-weiß gewürfelt, weitere blau-gelb und grau),
+  Grünstreifen, Gehweg aus grauem Rechteckpflaster. Daneben Scheibenhochhäuser mit gemusterter Fassade (eines rot-weiß gewürfelt, weitere blau-gelb und grau),
   etwa elf bis vierzehn Geschosse. Eine lange Ladenzeile mit durchlaufendem Vordach und Schaufenstern, darüber Wohnblöcke mit verglasten Balkonen
   (sechs bis acht Geschosse), Erdgeschoss teils Klinker. Eine hohe Stützmauer aus dunklem Naturstein mit Geländer; Bushaltestelle am Gehweg.
 - **Dr.-Theodor-Neubauer-Straße** (`dr-theodor-neubauer-strasse_1/2`): mehrspurige Talstraße. Sie unterquert ein **Eisenbahnviadukt**: Pfeiler und
-  Bögen aus rotbraunem Bossenquader-Sandstein, dazwischen ein grauer Stahlträger über der Fahrbahn; Graffiti an den Pfeilern. Ein Autohaus mit
+  Bögen aus rotbraunen Bossenquadern (Naturstein), dazwischen ein grauer Stahlträger über der Fahrbahn; Graffiti an den Pfeilern. Ein Autohaus mit
   gerundeter Glasfront an einer Ampelkreuzung, große gelbe Wegweiser, braune Hinweisschilder (Waffenmuseum, Fahrzeugmuseum). Am Nordende
   schieferverkleidete Giebelhäuser (zwei bis drei Geschosse) direkt an der Fahrbahn.
 - **Würzburger Straße** (`wuerzburger-strasse_1/2`): vier Spuren unter dem Viadukt. Blickfang ist ein **weißes rundes Hochhaus** mit Ringaufsatz;
-  dahinter ein bewaldeter Hang. Autohäuser mit Fahnen und Werbepylon, Geländer am Gehweg, hohe Peitschenleuchten, Granitbord.
+  dahinter ein bewaldeter Hang. Autohäuser mit Fahnen und Werbepylon, Geländer am Gehweg, hohe Peitschenleuchten.
 - **Mühltorstraße, Ort CCS** (`muehltorstrasse_1`, `ort-congress-centrum-suhl-ccs_1`): große Kreuzung. Zu sehen sind ein **runder, ockergelb
   gebänderter Baukörper mit offenen Decks** und Fahnen auf dem Dach, eine stählerne Außentreppe, daneben das rot-weiß gewürfelte Hochhaus
   (etwa dreizehn Geschosse) und ein graues Turmhochhaus mit Mast. Den Haupteingang des CCS zeigt kein Bild.
 - **Werner-Seelenbinder-Straße, Burgweg** (`werner-seelenbinder-strasse_1`, `burgweg_1`): läuft unter einer Grasböschung mit Leitplanke. Ein langes
-  modernes Bürohaus mit Fensterbändern und weißen Sonnenschutz-Lamellen (vier Geschosse), weiße Wohnhäuser mit Flachdach über einer Sichtbeton-Stützmauer,
+  modernes Bürohaus mit Fensterbändern und weißen Sonnenschutz-Lamellen (vier Geschosse), weiße Wohnhäuser mit Flachdach über einer glatten grauen Stützmauer,
   ältere Putzhäuser mit rotem Ziegeldach, Werbetafel, Parkschilder.
 - **Bahnhofstraße, Am Bahnhof** (`bahnhofstrasse_1`, `am-bahnhof_1`): nur die Einmündung an der Hauptstraße ist erfasst: ein großer Altbau mit
   geschweiftem Giebel (vier bis fünf Geschosse, grau, ein Teil gelb), daneben ein moderner Bau mit dunkler Glas-Metall-Fassade und spitzem Giebel,
@@ -206,19 +207,19 @@ ehemalige Rathaus von Schmiedefeld.
 
 - **Rathaus am Markt:** dreigeschossiger Barockbau, **dunkelrot verputzt**, weiße Fensterrahmen und Lisenen, geschweifter Mittelgiebel mit Uhr,
   Schiefer-Mansarddach mit Dachreiter. Freitreppe, Fahnen. Rechts schließt ein weißer zweigeschossiger Bau mit rotem Ziegeldach an.
-- **Marktplatz:** Kleinpflaster aus Granit, Bäume mit Bänken, ein Brunnen aus großen Findlingen. Dreigeschossige Häuser in Rosa, Creme und Weiß mit
+- **Marktplatz:** graues Kleinpflaster, Bäume mit Bänken, ein Brunnen aus großen Findlingen. Dreigeschossige Häuser in Rosa, Creme und Weiß mit
   roten Ziegeldächern und Gauben, Läden im Erdgeschoss. Die Adler-Apotheke (Marktplatz 4) trägt einen goldenen Adler an der rosa Fassade.
-  Marktplatz 10: Sandstein-Erdgeschoss mit Rundbögen, darüber Schiefer. Marktplatz 2: weiß verputzt mit Sandstein-Ecken.
+  Marktplatz 10: Erdgeschoss aus hellem Naturstein mit Rundbögen, darüber Schiefer. Marktplatz 2: weiß verputzt, Ecken und Fensterrahmen aus Naturstein.
 - **Steinweg:** Fußgängerzone mit hellem Platten- und Pflasterbelag. Steinweg 13: drei Geschosse und Dachgauben, gelb verputzt, Läden mit
   Schriftzügen, verglaster Eck-Erker. Am Nordende das Einkaufszentrum „Am Steinweg“ mit dunkelroter Fassade – **im August 2025 eingerüstet** –,
   davor Bushaltestellen mit langem Dach an der Friedrich-König-Straße und ein Imbiss-Häuschen aus Holz. Über die Friedrich-König-Straße
   führt beim Lauterbogen-Center eine Fußgängerbrücke (auf einem Foto im Hintergrund zu sehen). Am Südende die Kreuzkirche und das ehemalige Postamt aus rotem Backstein.
 - **Hauptkirche St. Marien:** gelb verputzt, graue Gliederung, hohe Rundbogenfenster, rotes Ziegeldach, Turm mit Schieferhaube. Sie steht erhöht:
-  eine breite Steintreppe führt vom Steinweg hinauf, davor ein großer alter Baum. Westportal aus Sandstein, im Giebel ein vergoldetes Strahlenrelief.
+  eine breite Steintreppe führt vom Steinweg hinauf, davor ein großer alter Baum. Westportal mit Natursteinrahmen, im Giebel ein goldfarbenes Strahlenrelief.
 - **Kreuzkirche:** Barockkirche, gelb und weiß, Turm mit Schieferzwiebel und grüner Laterne, rotes Ziegeldach; steht über der Schleusinger Straße
   an einem Hang mit Treppen und Geländern. Ein Drohnenfoto von 2025 (CC0) zeigt Kirche, Postamt und die Dächer ringsum.
 - **Waffenmuseum (Malzhaus):** langer Bau, Erdgeschoss hell verputzt, Obergeschoss **Fachwerk** (dunkles Holz, weiße Felder), großes rotes Ziegeldach;
-  davor eine Bronzefigur auf einer Bank. Daneben ein kleineres Fachwerkhaus mit roten Fensterrahmen, dahinter Hochhäuser.
+  davor eine dunkle Metallfigur auf einer Bank. Daneben ein kleineres Fachwerkhaus mit roten Fensterrahmen, dahinter Hochhäuser.
 - **CCS und Platz der Deutschen Einheit:** großer gepflasterter Platz mit Streifenmuster. Das CCS ist ein langer, niedriger, gelber Bau mit einer
   runden Trommel darüber und einem Glasvordach am Eingang; der Eingang zum Fahrzeugmuseum liegt in einem runden Eckbau auf Säulen. Daneben ein graues
   Turmhochhaus mit rundem Kranz und Antenne. Am Platz: das Haus der Geschichte (Pfeilerfront mit Giebel, auf einer Terrasse mit breiter Treppe),
@@ -227,31 +228,29 @@ ehemalige Rathaus von Schmiedefeld.
   mit rotem Dach (Nr. 10), eine bemalte Unterführung, das Grand Hotel. Das Empfangsgebäude ist auf dem angesehenen Blatt nicht dabei.
 - **Kirchgasse, Untere Kirchgasse:** enge Gassen mit grauem Kleinpflaster, ein rot verputztes viergeschossiges Haus mit Erker, Reste einer Bruchsteinmauer.
 
-Was OpenStreetMap so nicht hat und die Bilder zeigen: die **Stützmauern** (Bruchstein in der Altstadt, Quader und Sichtbeton an den Hauptstraßen),
+Was OpenStreetMap so nicht hat und die Bilder zeigen: die **Stützmauern** (Bruchstein in der Altstadt, Quader und glatte Betonwände an den Hauptstraßen),
 die **Schieferfassaden**, die **Muster der Hochhausfassaden**, Vordächer der Ladenzeilen, Geländer, Leuchtenformen (Bogenhals in der Altstadt,
-Peitschenmast an den Hauptstraßen), Pflasterstreifen vor den Häusern, das Viadukt mit seinen zwei Bauarten (Sandsteinbogen und Stahlträger).
+Peitschenmast an den Hauptstraßen), Pflasterstreifen vor den Häusern, das Viadukt mit seinen zwei Bauarten (Natursteinbogen und Stahlträger).
 
 ## Fotoliste für Falko
 
-Am meisten helfen eigene Fotos hier, in dieser Reihenfolge:
+Eigene Fotos helfen am meisten hier, in dieser Reihenfolge (zehn Zeilen):
 
-1. **Steinweg** ganz (Fußgängerzone, 417 m) – beide Seiten, jedes Haus.
-2. **Marktplatz** mit Rathaus, Waffenschmied-Brunnen, Kirchgasse, Marienstieg, Hauptkirche St. Marien von allen Seiten.
-3. **Bahnhof**: Vorplatz, Empfangsgebäude, „Am Bahnhof“, Bahnhofstraße bis zur Friedrich-König-Straße.
-4. **Platz der Deutschen Einheit** und der Weg zum CCS (Haupteingang), Lauterbogen-Center, Rimbachstraße.
-5. **Kreuzkirche**, Waffenmuseum (Malzhaus) mit Haus der Geschichte, Stadtbücherei.
-6. Straßen ohne jedes Foto oder mit wenig: Am Domberg, Kefersteinstraße, Lauwetter, Friedrich-Engels-Straße, Gutenbergstraße, Am Burghof, Döllstraße, Dombergweg, Pfarrstraße.
-7. **Friedrich-König-Straße** zu Fuß auf dem Gehweg: die Hochhäuser, die Ladenzeile – quer fotografiert, das fehlt ganz.
-
-So werden sie brauchbar: Standort und Kompass am Handy einschalten (Position und Richtung stehen dann im Foto). Querformat, nicht zoomen. Alle
-5 bis 8 Schritte stehen bleiben: ein Bild geradeaus, eines genau quer nach links, eines genau quer nach rechts – so überlappen sich die Bilder
-um mehr als die Hälfte. Jede Fassade einmal ganz von gegenüber. Bedeckter, heller Tag; nicht durch eine Scheibe. Noch besser: eine 360°-Kamera
-am Stab, ein Bild alle 3 bis 5 m, einmal durch jede Straße.
+1. **Steinweg** ganz (417 m Fußgängerzone): beide Seiten, jedes Haus.
+2. **Marktplatz** mit Rathaus, Kirchgasse, Marienstieg und der Hauptkirche St. Marien von allen Seiten.
+3. **Bahnhof:** Vorplatz, Empfangsgebäude, „Am Bahnhof“, Bahnhofstraße bis zur Friedrich-König-Straße.
+4. **Platz der Deutschen Einheit**, Haupteingang des CCS, Lauterbogen-Center, Rimbachstraße; dazu Kreuzkirche, Waffenmuseum, Stadtbücherei.
+5. Straßen ohne oder fast ohne Fotos: Am Domberg, Kefersteinstraße, Lauwetter, Friedrich-Engels-Straße, Gutenbergstraße, Am Burghof, Döllstraße, Dombergweg, Backstraße.
+6. **Friedrich-König-Straße** zu Fuß auf dem Gehweg: Hochhäuser und Ladenzeile quer fotografiert – das fehlt ganz.
+7. So aufnehmen: Standort und Kompass am Handy einschalten, Querformat, nicht zoomen, nicht durch eine Scheibe, heller bedeckter Tag.
+8. Alle 5 bis 8 Schritte stehen bleiben: ein Bild geradeaus, eines genau quer nach links, eines genau quer nach rechts – so überlappen die Bilder um mehr als die Hälfte.
+9. Jede Fassade zusätzlich einmal ganz von gegenüber, Ecken von beiden Straßen aus.
+10. Noch besser: eine 360°-Kamera am Stab, ein Bild alle 3 bis 5 m, einmal durch jede Straße.
 
 ## Lücken und Unsicheres
 
-- **KartaView:** in der Kernstadt keine Bilder (`kartaview.json`: 81 Kreise von 500 m, alle leer; dieselbe Abfrage liefert in Erfurt Bilder von 2016).
-  Die Ortsteile außerhalb der Kernstadt sind nicht abgefragt. Der erste Versuch aus GitHub Actions ging an die alte Adresse `api.openstreetcam.org`
+- **KartaView:** im ganzen Gemeindegebiet keine Bilder (`kartaview.json`: 369 Kreise von 500 m, alle leer, kein Fehler; dieselbe Abfrage liefert in
+  Erfurt Bilder von 2016). Der erste Versuch aus GitHub Actions ging an die alte Adresse `api.openstreetcam.org`
   und scheiterte am Zertifikat (`log/kartaview.log`); die Schnittstelle `api.kartaview.org/2.0/photo/` antwortet ohne Konto, höchstens 500 m Umkreis je Frage.
   Lizenz laut OpenStreetMap-Wiki CC BY-SA 4.0 (https://wiki.openstreetmap.org/wiki/KartaView).
 - **Mapillary:** nicht abgefragt (Konto nötig). Abdeckung von Suhl unbekannt.
@@ -259,7 +258,7 @@ am Stab, ein Bild alle 3 bis 5 m, einmal durch jede Straße.
   dort können Fotos fehlen. „Außenansicht“ und die Zuordnung zu Wahrzeichen gehen nach Wörtern, nicht nach dem Bild. Von den 77 Commons-Blättern
   habe ich zwölf angesehen (siehe oben); die übrigen sind ungesehen.
 - **Blick quer:** hängt an der Blickrichtung. Für „sixsixfive“ und „cucu“ ist sie aus der Fahrtrichtung geschätzt; stehende Autos haben keine (418 verschiedene Fotos, im Katalog „metadaten (unsicher)“).
-- **Position:** Handy-GPS, laut Panoramax etwa 5 m genau (`acc_m`). Für den Foto-Abgleich im Test reicht das nicht ohne Nachrichten von Hand.
+- **Position:** Handy-GPS, laut Panoramax etwa 5 m genau (`acc_m`). Für den Foto-Abgleich im Test reicht das nicht ohne Nachjustieren von Hand.
 - **Seiten A/B** sind nach der Himmelsrichtung der Straßenachse benannt; bei gewundenen Straßen nur grob.
 - **Viertel** = nächster Ortspunkt aus OpenStreetMap, keine amtlichen Grenzen.
 - Zwei Vorschaubilder ließ der Panoramax-Server bei einem früheren Lauf nicht laden; in der jetzigen Auswahl kommen sie nicht vor (122 von 122 geladen).
@@ -281,15 +280,18 @@ am Stab, ein Bild alle 3 bis 5 m, einmal durch jede Straße.
 - **Für den Foto-Abgleich `blick` nehmen, nicht `heading`.** Beste Kandidaten für eine automatische Gegenüberstellung: die Folgen von „R_A“/Garmin
   (Richtung stimmt mit der Fahrt überein) – sie liegen aber außerhalb des Zentrums. Im Zentrum gibt es nur die Handy-Folgen.
 - **Stufe 3 braucht je Fassade ein Foto mit bekanntem Standort.** Vorschlag: Commons-Fotos des Zentrums über Kamerastandort und Gebäudegrundrisse
-  (`suhl-bestand`) dem Haus zuordnen, das sie zeigen, und je Haus ein Blatt machen. Die Liste je Straße steht schon in `commons_zentrum_lokal.json`.
+  (`suhl-bestand`) dem Haus zuordnen, das sie zeigen, und je Haus ein Blatt machen. Viele Dateinamen nennen Straße und Hausnummer („Gebäude Steinweg 13 Suhl …“,
+  „Marktplatz 4“) – das lässt sich mit den Adressen aus OpenStreetMap abgleichen. Die Liste je Straße steht in `commons_zentrum.json`.
 - Der Workflow startet nur, wenn sich `collect_commons.py`, `collect_kartaview.py` oder die Workflow-Datei ändern. `nach_commons.py` läuft am Ende
   jedes Laufs vom dann aktuellen Stand des Zweigs. `collect_kartaview.py` fragt noch die alte, tote Adresse – ich habe es nicht angefasst, weil die
   Änderung den ganzen Lauf (1 100 Abfragen an Wikimedia) neu gestartet hätte. Beim nächsten Lauf im Workflow durch `kartaview.py` ersetzen.
 - **Die Gruppen der Commons-Blätter sind nach Wörtern gebildet und teils zu weit:** „Bahnhof“ enthält auch die Bahnhöfe Dietzhausen und Rennsteig,
   „Luftbilder und Stadtansichten“ auch die Dombergbaude. Für Stufe 3 besser nach Kamerastandort und Gebäude gruppieren.
 - Weitere Funde auf den Commons-Blättern: das Hochhaus Friedrich-König-Straße 44 von nahem (rot-weißes Fassadenmuster), Drohnenfotos der Punkthochhäuser
-  im Wohngebiet Nord (Januar 2024), ein Blick über die Stadt von Südwesten, Bodenplatten aus Bronze im Pflaster der Friedrich-König-Straße.
+  im Wohngebiet Nord (Januar 2024), ein Blick über die Stadt von Südwesten, Metallplatten mit Schrift im Pflaster (unter „Friedrich-König-Straße“ einsortiert).
 - Die 393 Seitenkamera-Fotos von „R_A“ (12.4.2026) zeigen die Autobahn mit Tunnelportalen und Leitplanken – brauchbar für die Anfahrt über A 73/A 71.
+- Die Kopie der Gebiete neu holen, wenn `suhl-bestand` sie ändert: `git show origin/suhl/bestand:tools/suhl/out/bestand/gebiete.geojson > tools/suhl/out/fotos/gebiete.geojson`,
+  dann `collect_panoramax.py`, `collect_osm.py`, `merge.py`, `coverage.py` neu laufen lassen.
 - Die Karte `karten/abdeckung_zentrum.png` zeigt auf einen Blick, wo Falkos Rundgang nötig ist: alles Rote innerhalb des Rings der Hauptstraßen.
 
 ## Neu erzeugen
@@ -298,7 +300,7 @@ am Stab, ein Bild alle 3 bis 5 m, einmal durch jede Straße.
 python3 tools/suhl/fotos/collect_panoramax.py        # Panoramax, etwa 1 Minute
 python3 tools/suhl/fotos/collect_osm.py              # Straßennetz der Kernstadt, 30 Abfragen an die OSM-API
 python3 tools/suhl/fotos/collect_openverse.py        # Openverse, etwa 10 Minuten
-python3 tools/suhl/fotos/kartaview.py                # KartaView, 81 Abfragen über die Kernstadt
+python3 tools/suhl/fotos/kartaview.py                # KartaView, 369 Abfragen über das Gemeindegebiet, etwa 7 Minuten
 # Commons: nur in GitHub Actions – ein Push, der collect_commons.py ändert, startet den Lauf (etwa 30 Minuten)
 python3 tools/suhl/fotos/merge.py                    # katalog_suhl.json.gz, quellen.json
 python3 tools/suhl/fotos/coverage.py                 # abdeckung.json, abdeckung_strassen.csv
