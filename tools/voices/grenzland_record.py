@@ -1,0 +1,241 @@
+# Records the fixed spoken lines of the mode „Grenzland“ (tools/voices/grenzland_linien.json, made by grenzland_linien.mjs) with a natural
+# Microsoft Edge voice per person (edge-tts, free, private use) – on GitHub Actions (.github/workflows/stimmen_grenzland.yml; the chat
+# machine cannot reach the speech service). Writes the feature extra
+#   viz3/extra/grenzland-stimmen/dist/snd/voice/gl/<id>.mp3   one file per line (loaded in the game only when the line is said)
+#   viz3/extra/grenzland-stimmen/manifest.json                {"vx": {"voices": {who: voice}}, "vx_add": [{who, id, text, file, dur}]}
+#                                                             (viz3/build.py appends vx_add to the village's VOICEX.lines)
+#   viz3/extra/grenzland-stimmen/aufnahmen.json               per id: voice settings, seconds, loudness, bytes (what to record again)
+# Only what is new or changed is recorded (same id = same words; same voice, pace, pitch and sound: the file stays); lines no longer in the
+# list go. The budget (all files ≤ 6 MB): the story (prio 1) and the world (2) always, the radio's presenters (3, 4) as far as it goes.
+#   python3 tools/voices/grenzland_record.py        (GL_BUDGET=bytes, GL_ONLY=<who,…> to try a few people, GL_DRY=1 nothing recorded)
+import asyncio, json, os, re, subprocess, sys, zlib
+H = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(H, '..', '..'))
+EX = os.path.join(ROOT, 'viz3', 'extra', 'grenzland-stimmen'); OUT = os.path.join(EX, 'dist', 'snd', 'voice', 'gl')
+TMP = os.path.join(ROOT, 'out', 'grenzland-stimmen')
+BUDGET = int(os.environ.get('GL_BUDGET', 5_800_000))
+FX = 'fx1'   # the version of the sound chains below: a new one records everything again
+
+# ---- the cast: who → (voices, the first one edge-tts offers; rate; pitch; kind) ----
+# kind: 'p' a person in the world, 'r' a radio presenter (the sound of a broadcast), 'f' the police radio (band-pass, drive, squelch).
+# edge-tts offers three German men (Conrad, Killian, Florian), the Austrian Jonas and the Swiss Jan, the women Katja, Amala, Seraphina,
+# Ingrid (AT), Leni (CH); the multilingual US voices speak German with a light accent (the village has Andrew for Gerhard, Brian for
+# Wolfgang). People who meet in a scene get different voices; one voice for two people only where they never meet, then with another
+# pace and pitch. Falko and Sarah are real people (Sarah agreed 13.11.2026 10:44): the most natural German voices, unchanged.
+CAST = {
+    # the two one plays
+    'gl_falko': (['de-DE-FlorianMultilingualNeural', 'de-DE-KillianNeural'], '+0%', '-1Hz', 'p'),
+    'gl_sarah': (['de-DE-SeraphinaMultilingualNeural', 'de-DE-KatjaNeural'], '+0%', '+0Hz', 'p'),
+    # today
+    'gl_fremder': (['de-DE-ConradNeural'], '-6%', '-9Hz', 'p'),                       # 55, calm, a little too friendly
+    'gl_jule': (['de-DE-KatjaNeural', 'de-DE-AmalaNeural'], '+5%', '+1Hz', 'p'),     # 26, leads the clique, quick
+    'gl_timo': (['de-DE-KillianNeural'], '+6%', '+2Hz', 'p'),                         # 24, the joker
+    'gl_basti': (['de-AT-JonasNeural', 'de-DE-KillianNeural'], '-8%', '-6Hz', 'p'),  # 22, says four words a day
+    'gl_gerhard': (['en-US-AndrewMultilingualNeural', 'de-DE-KillianNeural'], '-10%', '-6Hz', 'p'),   # 72: his voice in the village (record_lines.py)
+    'gl_gerhard89': (['en-US-AndrewMultilingualNeural', 'de-DE-KillianNeural'], '-2%', '-1Hz', 'p'),  # the same man at 35, in 1989
+    'gl_kraeh': (['en-US-BrianMultilingualNeural', 'de-DE-ConradNeural'], '-6%', '-8Hz', 'p'),
+    'gl_wache1': (['de-CH-JanNeural', 'de-DE-KillianNeural'], '-4%', '-8Hz', 'p'),
+    'gl_wache2': (['de-DE-ConradNeural'], '+4%', '-3Hz', 'p'),
+    'gl_wache3': (['de-AT-JonasNeural', 'de-DE-KillianNeural'], '-4%', '-9Hz', 'p'),
+    'gl_polizei1': (['de-DE-KillianNeural'], '-3%', '-6Hz', 'p'),
+    'gl_polizei2': (['de-AT-IngridNeural', 'de-DE-AmalaNeural'], '+2%', '+0Hz', 'p'),
+    'gl_yuki': (['de-CH-LeniNeural', 'de-DE-AmalaNeural'], '+2%', '+2Hz', 'p'),
+    'gl_haendler': (['de-DE-AmalaNeural'], '-4%', '-4Hz', 'p'),
+    # 1989 (Gerhard is played, he does not speak there; the others never meet today's people)
+    'gl_lutz': (['de-DE-KillianNeural'], '-2%', '-3Hz', 'p'),
+    'gl_abv': (['de-DE-ConradNeural'], '-4%', '-6Hz', 'p'),
+    'gl_vopo': (['de-AT-JonasNeural', 'de-DE-KillianNeural'], '+2%', '+0Hz', 'p'),
+    'gl_horst': (['de-CH-JanNeural', 'de-DE-ConradNeural'], '-6%', '-5Hz', 'p'),
+    'gl_werner': (['de-DE-FlorianMultilingualNeural'], '-4%', '-5Hz', 'p'),
+    'gl_kurt': (['en-US-BrianMultilingualNeural', 'de-DE-ConradNeural'], '-14%', '-10Hz', 'p'),
+    'gl_maik': (['de-DE-KillianNeural'], '+10%', '+5Hz', 'p'),
+    'gl_erna': (['de-DE-AmalaNeural'], '-8%', '-8Hz', 'p'),
+    'gl_renate': (['de-DE-KatjaNeural'], '+0%', '-2Hz', 'p'),
+    'gl_brigitte': (['de-AT-IngridNeural', 'de-DE-AmalaNeural'], '-4%', '-4Hz', 'p'),
+    'gl_gisela': (['de-DE-SeraphinaMultilingualNeural', 'de-DE-KatjaNeural'], '-2%', '-3Hz', 'p'),
+    'gl_ines': (['de-CH-LeniNeural', 'de-DE-AmalaNeural'], '+6%', '+4Hz', 'p'),
+    # the villagers, should a module let them speak in Grenzland ('gl_' + their key): their voices of the village (record_lines.py)
+    'gl_hubert': (['de-DE-ConradNeural'], '-10%', '-8Hz', 'p'),
+    'gl_ronald': (['de-DE-FlorianMultilingualNeural'], '+2%', '-2Hz', 'p'),
+    'gl_manfred': (['de-DE-KillianNeural'], '-4%', '-6Hz', 'p'),
+    'gl_wolfgang': (['en-US-BrianMultilingualNeural', 'de-DE-KillianNeural'], '-6%', '-6Hz', 'p'),
+    'gl_uwe': (['de-AT-JonasNeural', 'de-DE-KillianNeural'], '+0%', '-2Hz', 'p'),
+    'gl_jens': (['de-DE-KillianNeural'], '+7%', '+3Hz', 'p'),
+    'gl_katrin': (['de-DE-KatjaNeural', 'de-DE-AmalaNeural'], '+2%', '+0Hz', 'p'),
+    'gl_ingrid': (['de-DE-AmalaNeural', 'de-DE-SeraphinaMultilingualNeural'], '-4%', '-6Hz', 'p'),
+    'gl_heike': (['de-DE-SeraphinaMultilingualNeural', 'de-DE-AmalaNeural'], '+0%', '-2Hz', 'p'),
+    # the police radio: the control room „Rennsteig“ (a woman) – a patrol's lines get the patrol's voice (FUNK_PATROL below)
+    'gl_funk': (['de-DE-KatjaNeural', 'de-DE-AmalaNeural'], '-2%', '-2Hz', 'f'),
+    # the radio's presenters (grenzland/gl_radio_data.js SENDER: who speaks on which station)
+    'gl_r_grenzland': (['en-US-BrianMultilingualNeural', 'de-DE-KillianNeural'], '+8%', '+3Hz', 'r'),   # Matze, 45, local radio
+    'gl_r_kirmes': (['de-AT-IngridNeural', 'de-DE-AmalaNeural'], '-3%', '-3Hz', 'r'),                   # Gundula, 58, Schlager
+    'gl_r_klassik': (['de-DE-KatjaNeural'], '-10%', '-6Hz', 'r'),                                       # Frau Dr. Sommerlatte, 61
+    'gl_r_zweitakt': (['de-DE-KillianNeural'], '+10%', '+1Hz', 'r'),                                    # Ecki, 52, rock
+    'gl_r_blasius': (['de-AT-JonasNeural', 'de-DE-ConradNeural'], '-6%', '-4Hz', 'r'),                  # Schorsch, 63, brass band
+    'gl_r_neon': (['en-US-EmmaMultilingualNeural', 'de-DE-SeraphinaMultilingualNeural'], '+4%', '+2Hz', 'r'),  # Synthia, 31
+    'gl_r_republik': (['de-DE-ConradNeural'], '-4%', '-4Hz', 'r'),                                      # 1989: the GDR's news reader
+    'gl_r_impuls': (['de-DE-AmalaNeural'], '+8%', '+4Hz', 'r'),                                         # 1989: Kati, 24, youth radio
+    'gl_r_west': (['en-US-AndrewMultilingualNeural', 'de-DE-FlorianMultilingualNeural'], '+6%', '+3Hz', 'r'),  # 1989: Wolfi, the West
+}
+# a patrol on the police radio („Schleuse 12 …“, „Bussard 1 …“, „Verstanden …“) – the control room says the rest
+FUNK_PATROL = (['de-DE-KillianNeural'], '+2%', '-5Hz')
+PATROL = re.compile(r'^(Schleuse \d+|Bussard \d+|Verstanden)\b')
+# someone not in the table (a module's new speaker): a voice of the right gender, by the name's hash; pace and pitch by age
+POOL = {'m': ['de-DE-KillianNeural', 'de-AT-JonasNeural', 'de-CH-JanNeural', 'de-DE-ConradNeural', 'de-DE-FlorianMultilingualNeural'],
+        'f': ['de-DE-KatjaNeural', 'de-DE-AmalaNeural', 'de-AT-IngridNeural', 'de-CH-LeniNeural', 'de-DE-SeraphinaMultilingualNeural']}
+# the sound of each kind: the filter after the trimmed silence, the target loudness, sample rate, bit rate (bytes per second for the budget)
+TRIM = ('silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05,areverse,'
+        'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.12,areverse')
+KIND = {
+    'p': {'af': 'highpass=f=75,loudnorm=I=-17:TP=-1.5:LRA=9', 'ar': 24000, 'br': '40k', 'bps': 5000},
+    'r': {'af': ('highpass=f=120,lowpass=f=7000,acompressor=threshold=-21dB:ratio=3:attack=6:release=120:makeup=2,'
+                 'equalizer=f=2800:t=q:w=1.4:g=2.5,loudnorm=I=-18:TP=-1.5:LRA=7'), 'ar': 16000, 'br': '24k', 'bps': 3000},
+    # the police radio: a squelch burst before and after, telephone band, compressed and driven
+    'f': {'af': ('highpass=f=320,highpass=f=320,lowpass=f=3300,lowpass=f=3300,'
+                 'acompressor=threshold=-26dB:ratio=8:attack=2:release=50:makeup=6,asoftclip=type=atan,'
+                 'highpass=f=300,lowpass=f=3400,lowpass=f=3400,loudnorm=I=-19:TP=-2:LRA=6'), 'ar': 16000, 'br': '24k', 'bps': 3000},
+}
+
+FEM = re.compile(r'Katja|Amala|Seraphina|Ingrid|Leni|Emma|Ava|Elke|Tanja')
+def h32(s): return zlib.crc32(s.encode('utf8'))
+def setting(l, cast, have):
+    """(voice, rate, pitch, kind) of a line"""
+    w = l['who']
+    if w in CAST:
+        pref, rate, pitch, kind = CAST[w]
+        if kind == 'f' and PATROL.match(l['text']): pref, rate, pitch = FUNK_PATROL
+    else:
+        c = cast.get(w, {}); g = c.get('g') if c.get('g') in POOL else ('f' if h32(w) % 2 else 'm'); age = c.get('age') or 40
+        pool = POOL[g]; pref = [pool[h32(w) % len(pool)]] + pool
+        j = h32(w) % 7 - 3
+        rate = '%+d%%' % ((-8 if age >= 65 else 6 if age < 30 else 0) + j); pitch = '%+dHz' % ((-6 if age >= 65 else 3 if age < 30 else 0) + j)
+        kind = 'r' if w.startswith('gl_r_') else 'f' if w.startswith('gl_funk') else 'p'
+    g = 'f' if FEM.search(pref[0]) else 'm'
+    voice = next((v for v in pref if v in have), None) or next((v for v in POOL[g] if v in have), None)
+    return voice, rate, pitch, kind
+
+async def tts(text, voice, rate, pitch, raw):
+    import edge_tts
+    for k in range(4):
+        try:
+            await edge_tts.Communicate(text, voice, rate=rate, pitch=pitch).save(raw)
+            if os.path.getsize(raw) > 1000: return True
+        except Exception as e:
+            print('retry', k, voice, e, flush=True)
+        await asyncio.sleep(3 + 4 * k)
+    return False
+
+def encode(raw, mp3, kind):
+    K = KIND[kind]
+    if kind == 'f':
+        fc = ('anoisesrc=d=0.07:c=white:a=0.3:r=24000,aformat=sample_fmts=fltp:channel_layouts=mono[n1];'
+              'anoisesrc=d=0.16:c=white:a=0.3:r=24000,afade=t=out:st=0.05:d=0.11,aformat=sample_fmts=fltp:channel_layouts=mono[n2];'
+              f'[0:a]{TRIM},aresample=24000,aformat=sample_fmts=fltp:channel_layouts=mono[v];'
+              f'[n1][v][n2]concat=n=3:v=0:a=1,{K["af"]}[o]')
+        cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-filter_complex', fc, '-map', '[o]']
+    else:
+        cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-af', TRIM + ',' + K['af']]
+    subprocess.run(cmd + ['-ac', '1', '-ar', str(K['ar']), '-b:a', K['br'], mp3], check=True)
+
+def dur(f): return float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], capture_output=True, text=True).stdout.strip() or 0)
+def lufs(f):
+    e = subprocess.run(['ffmpeg', '-hide_banner', '-nostats', '-i', f, '-af', 'ebur128=framelog=quiet', '-f', 'null', '-'], capture_output=True, text=True).stderr
+    m = re.findall(r'I:\s+(-?[\d.]+) LUFS', e)
+    return float(m[-1]) if m else None
+
+async def main():
+    os.makedirs(OUT, exist_ok=True); os.makedirs(TMP, exist_ok=True)
+    doc = json.load(open(os.path.join(H, 'grenzland_linien.json')))
+    lines, cast = doc['lines'], doc.get('cast', {})
+    only = [w for w in os.environ.get('GL_ONLY', '').split(',') if w]
+    if os.environ.get('GL_DRY'):
+        have = {v for pref, *_ in CAST.values() for v in pref} | {v for p in POOL.values() for v in p} | set(FUNK_PATROL[0])
+    else:
+        import edge_tts
+        have = {v['ShortName'] for v in await edge_tts.list_voices()}
+        print('German and multilingual voices:', ' '.join(sorted(v for v in have if v.startswith('de-') or 'Multilingual' in v)), flush=True)
+    af = os.path.join(EX, 'aufnahmen.json')
+    old = json.load(open(af)) if os.path.exists(af) else {}
+    # the budget: in the order of prio (the collector's order within one), the files that stay count with their size, new ones estimated
+    order = sorted(range(len(lines)), key=lambda i: (lines[i].get('prio', 2), i))
+    want, total, cut, todo = {}, 0, [], []
+    for i in order:
+        l = lines[i]
+        voice, rate, pitch, kind = setting(l, cast, have)
+        if not voice: print('no voice for', l['who']); continue
+        sig = '|'.join([voice, rate, pitch, kind, FX])
+        mp3 = os.path.join(OUT, l['id'] + '.mp3')
+        keep = old.get(l['id'], {}).get('sig') == sig and os.path.exists(mp3)
+        if only and l['who'] not in only and not keep: continue
+        pace = 1 + int(rate.rstrip('%')) / 100
+        size = os.path.getsize(mp3) if keep else int(len(l['text']) / 14 / pace * KIND[kind]['bps']) + 800
+        if l.get('prio', 2) >= 3 and total + size > BUDGET: cut.append(l); continue
+        total += size
+        want[l['id']] = (l, voice, rate, pitch, kind, sig, mp3, keep)
+        if not keep: todo.append(l['id'])
+    print(f'{len(want)} lines wanted ({len(todo)} to record), ≈ {total / 1e6:.2f} MB of {BUDGET / 1e6:.2f} MB; {len(cut)} radio lines over the budget', flush=True)
+    if os.environ.get('GL_DRY'):
+        for k in todo[:12]: l, voice, rate, pitch, kind, *_ = want[k]; print('  would record', l['who'], voice, rate, pitch, kind, l['text'][:60])
+        return
+    sem = asyncio.Semaphore(4)
+    async def one(k):
+        l, voice, rate, pitch, kind, sig, mp3, keep = want[k]
+        raw = os.path.join(TMP, k + '.raw.mp3')
+        async with sem:
+            ok = await tts(l['text'].replace('…', ','), voice, rate, pitch, raw)
+        if not ok: print('FAILED', k, flush=True); return False
+        await asyncio.to_thread(encode, raw, mp3, kind)
+        old[k] = {'sig': sig, 'voice': voice, 'rate': rate, 'pitch': pitch, 'kind': kind, 'dur': round(dur(mp3), 2),
+                  'lufs': lufs(mp3), 'bytes': os.path.getsize(mp3)}
+        print('ok', k, old[k]['dur'], 's', old[k]['lufs'], 'LUFS', flush=True)
+        return True
+    res = await asyncio.gather(*(one(k) for k in todo))
+    failed = [k for k, r in zip(todo, res) if not r]
+    # what is no longer wanted goes
+    for f in os.listdir(OUT):
+        if f.endswith('.mp3') and f[:-4] not in want: os.remove(os.path.join(OUT, f)); old.pop(f[:-4], None); print('removed', f)
+    for k in list(old):
+        if k not in want: old.pop(k)
+    # the estimate was a guess: over the budget, the radio's last lines (in the order of prio) go again
+    size = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT))
+    for k in sorted(want, key=lambda k: (want[k][0].get('prio', 2), lines.index(want[k][0])), reverse=True):
+        if size <= BUDGET or want[k][0].get('prio', 2) < 3: break
+        size -= os.path.getsize(want[k][6]) if os.path.exists(want[k][6]) else 0
+        if os.path.exists(want[k][6]): os.remove(want[k][6])
+        cut.append(want.pop(k)[0]); old.pop(k, None)
+    # the manifest: the lines in the collector's order (the story first), the voices of the people
+    vx_add, voices = [], {}
+    for l in lines:
+        w = want.get(l['id'])
+        if not w or l['id'] in failed or not os.path.exists(w[6]): continue
+        vx_add.append({'who': l['who'], 'id': l['id'], 'text': l['text'], 'file': 'voice/gl/' + l['id'] + '.mp3', 'dur': old[l['id']]['dur']})
+        if not (w[4] == 'f' and PATROL.match(l['text'])): voices.setdefault(l['who'], w[1])
+    json.dump({'vx': {'voices': voices}, 'vx_add': vx_add}, open(os.path.join(EX, 'manifest.json'), 'w'), ensure_ascii=False, indent=1)
+    json.dump(old, open(af, 'w'), ensure_ascii=False, indent=1, sort_keys=True)
+    size = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT))
+    print(f'DONE {len(vx_add)} lines, {len(todo) - len(failed)} new, {len(failed)} failed, {size / 1e6:.2f} MB', flush=True)
+    summary(lines, want, old, todo, failed, cut, size)
+    if size > 6_000_000: print('WARNING: over 6 MB – the story and the world alone (prio 1, 2) are too much')
+
+def summary(lines, want, old, todo, failed, cut, size):
+    """the job summary: the new lines (line, voice, seconds, loudness), per person, what is over the budget"""
+    rows = ['## Grenzland-Stimmen', '', f'{len(want)} Sätze aufgenommen ({len(todo) - len(failed)} neu, {len(failed)} fehlgeschlagen), {size / 1e6:.2f} MB; '
+            f'{len(cut)} Radio-Sätze über dem Budget.', '', '| wer | Stimme | Tempo | Höhe | s | LUFS | Satz |', '|---|---|---|---|---|---|---|']
+    def row(l):
+        a = old.get(l['id'], {})
+        return f"| {l['who'][3:]} | {a.get('voice', '').replace('Neural', '')} | {a.get('rate', '')} | {a.get('pitch', '')} | {a.get('dur', '')} | {a.get('lufs', '')} | {l['text'][:70].replace('|', '/')} |"
+    new = [l for l in lines if l['id'] in todo and l['id'] in old]
+    rows += [row(l) for l in new[:400]]
+    per = {}
+    for l in lines:
+        a = old.get(l['id'])
+        if l['id'] in want and a: p = per.setdefault(l['who'], [a['voice'], a['rate'], a['pitch'], 0, 0.0, 0]); p[3] += 1; p[4] += a['dur']; p[5] += a['bytes']
+    rows += ['', '### Je Person', '', '| wer | Stimme | Tempo | Höhe | Sätze | s | KB |', '|---|---|---|---|---|---|---|']
+    rows += [f'| {w[3:]} | {p[0].replace("Neural", "")} | {p[1]} | {p[2]} | {p[3]} | {round(p[4])} | {round(p[5] / 1000)} |' for w, p in per.items()]
+    if cut: rows += ['', '### Über dem Budget (Gerätestimme)', ''] + [f"- {l['who'][3:]}: {l['text'][:90]}" for l in cut]
+    if failed: rows += ['', '### Fehlgeschlagen', ''] + [f'- {k}' for k in failed]
+    text = '\n'.join(rows) + '\n'
+    print(text)
+    if os.environ.get('GITHUB_STEP_SUMMARY'): open(os.environ['GITHUB_STEP_SUMMARY'], 'a').write(text)
+
+if __name__ == '__main__':
+    asyncio.run(main())
