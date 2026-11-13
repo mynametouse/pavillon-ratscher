@@ -14,6 +14,86 @@ Grenzland-Chat (Lead) und sechs Hilfs-Agenten; ihre Teile stehen in eigenen Doku
 
 Gemeinsame Regeln für alle Teile: `docs/plans/auftraege/grenzland-gemeinsam.md`.
 
+## Runde 2 (13.11.2026 ab ~12:00): GTA-Gefühl und Immersion
+
+Falko hat um 10:59 eine Durchsicht von Kapitel 1 erbeten („Verbesserungsvorschläge für gta6 vibes und immersivität“) und gegen 11:25 die
+Pakete **A** (Störendes raus), **B** (Kino-Gefühl) und **C** (lebendige Welt) gewählt; um 13:09 kam das **gemeinsame Handy** dazu. A baut der
+Lead, B und C fünf Hilfs-Agenten (`kino`, `stimmen`, `licht`, `figuren`, `welt`), das Handy der Agent `handy` (Aufträge
+`docs/plans/auftraege/grenzland2-*.md`, ihre Dokumente `docs/features/grenzland-<thema>.md` und `docs/features/handy.md`).
+
+### Paket A – ruhig wie bei GTA (Lead, `gl_hud.js`, `gl_modus.js`, Test `grenzland_ruhe.py`)
+
+- **Weg im Modus:** Kopfzeile der Seite mit den Reitern, die Leiste der Dinge (1–8), die Knöpfe des Hundes, Uhrzeit-, Figur- und
+  Sicht-Knopf (die Tasten bleiben), die Hinweise und „Neu im Entdeckerbuch“ des Spiels, das Banner „Neue Aufgabe“, die Tastenhilfe beim
+  Fahren; am Rechner auch die Knöpfe der Fahrzeugtafel (Tempo und Gang bleiben). Oben rechts bleiben nur das Auge (freie Sicht) und das Menü
+  als kleine runde Knöpfe.
+- **Tafel oben rechts:** nur noch die fünf Sterne und das Geld (wie GTA); gesucht zusätzlich, **was die Polizei weiß** – Gesicht, Kleidung,
+  Fahrzeug als drei Zeichen (rot, wenn bekannt; aus `GLFAHNDUNG.stand().wissen`, Agent `welt`) – und eine kurze Zeile („Sie sehen dich!“).
+  Ein Tipp auf Sterne oder Geld (oder ⋯) öffnet die alte Tafel mit Wechseln, Handy, Radio, Warte hier, Böller, Stoßen, „Anzeigen“ und
+  Beenden; sie klappt nach ein paar Sekunden von selbst zu. Ein Knopf einer Mission steht gelb unter dem Geld.
+- **Taste O** (oder „Anzeigen“): alles aus – Tafel und Radar weg (die freie Sicht des Spiels); O noch einmal holt sie zurück. Beim Start
+  wird **Vollbild** angeboten, wo der Browser es kann.
+- **Titelkarte:** der Modus beginnt mit „Kapitel 1 · Grenzland“ und den Tasten groß in der Mitte; Missionen bekommen ihre eigene Karte
+  (`GLHUD.titel(name, über, sek, unter)`, Agent `kino`), Karten warten aufeinander und auf „Mission bestanden“; `GLHUD.ruhig()` wartet, bis
+  keine Karte mehr steht (davor kommt die Abschlusskarte des Kapitels nicht mehr über „Bestanden“).
+- **Szenen:** `GLHUD.kino(an)` legt schwarze Balken über und unter das Bild, die Untertitel stehen im unteren Balken, Tafel, Radar,
+  Aufgabenkarte gehen aus dem Weg (Gespräche als Filmszenen: Agent `kino`).
+- **Eine Zeile zur Zeit:** Untertitel stehen untereinander statt übereinander; spricht gerade jemand, steht der Polizeifunk sofort in der
+  oberen Zeile (gleichzeitig mit seiner Stimme), sonst unten; die Worte des Autoradios treten zurück, solange jemand spricht oder ein Gedanke
+  steht; die Sprechzeile des Spiels (Dorfbewohner) weicht einem Untertitel und jeder Szene.
+- **Leiser:** das Aufgabenbuch zeigt im Modus nur die Aufgaben des Modus (die Gartenaufgaben „Futter für die Ziegen“ usw. ruhen); Gedanken
+  des Spiels über gesehene Tiere, Gartenaufgaben und neue Funktionen („Neu: …“) kommen nicht, die eigenen Gedanken des Modus warten, bis
+  kein Untertitel und keine Karte mehr steht.
+- **Hasso bleibt daheim:** war der Hund dabei, ist er während des Modus weg und kommt beim Beenden zurück (`GL.hund`).
+- **Kamera und Mitspieler:** steht die Kamera in der oder dem anderen des Duos (nach einer Fahrt, eng), blendet die Figur aus, statt das Bild
+  mit Haaren zu füllen.
+- **Radar:** eine Streife oder ein Beamter steht nur auf dem Radar, solange sie dich sehen oder eben gesehen haben (`gesehen`, wie GTA 6).
+- **Altes Handy:** seine Einträge standen nebeneinander (die Klasse `.hb` teilt es mit den runden Knöpfen des Spiels) – wieder
+  untereinander, bis das gemeinsame Handy (Agent `handy`) es ersetzt.
+
+### Paket B – Kino-Gefühl (Agenten `kino`, `stimmen`, `licht`, `figuren`)
+
+- **Gespräche als Zwischensequenzen** (`gl_kamera.js`, `GLKAMERA`): stehen die Leute, wird ein Gespräch zur Szene – Zweier-Einstellung zum
+  Auftakt, dann je Satz ein Schnitt auf den Sprecher (über die Schulter, nah), die 180°-Linie bleibt, lange Sätze mit langsamer Fahrt;
+  Balken, Leertaste/E/Tippen weiter, Esc überspringt; Sprecher wenden sich zu, Zuhörer schauen hin, nicken. Auf dem fahrenden Moped und
+  in der Verfolgung bleiben es Untertitel. Missionen beginnen mit Titelkarte und Stich; die Abschlusskarte wartet auf „Bestanden“.
+- **Musik nach Lage** (`gl_score.js`, `GLSCORE`): selbst erzeugt (WebAudio, d-Moll) – Spannung, Flucht (dichter mit mehr Sternen), 1989,
+  ein leiser Teppich unter Szenen; Stiche Start/Bestanden/Gescheitert; still im freien Spiel und bei laufendem Autoradio, leiser unter Stimmen.
+- **Echte Stimmen** (`gl_stimmen.js`, `tools/voices/grenzland_*`, Workflow `stimmen_grenzland.yml`): jede feste Zeile mit einer
+  Edge-Stimme je Person, aufgenommen auf Actions, im Spiel über `STIMME.say` (Aufnahme, wenn die Worte stimmen); Funk mit Sprechfunk-Klang,
+  Radiosprecher mit Sendeklang; vorab geladen je Missionsschritt; Radio und Musik treten zurück, solange jemand spricht.
+- **Licht** (`gl_licht.js`, `GLLICHT`): Scheinwerferkegel und Lichtflecken, Rücklichter, Blaulicht im Doppeltakt, Taschenlampen
+  (`F.lampe`), die Leuchtkugel der Klinge-Nacht färbt den Wald rot (~47 s), Regen an der Klinge, lesbarere Nächte, eine Farbstimmung für
+  heute, die kahle Linde 1989 mit feinen Zweigen.
+- **Figuren** (`gl_pose.js`, `GLPOSE`; `GLFIG.geste/blick/sitz/steh/platz/reite`): Fahrhaltung auf Simson und Schwalbe (Hände am Lenker,
+  Füße auf den Rasten, in die Kurve legen), Fahrer im Trabant, **die oder der andere fährt sichtbar mit** (Sozius, Beifahrersitz),
+  Polizisten rennen (heute; 1989 nicht), Gesten (zeigen, nicken, Kopf schütteln, Achseln, winken, telefonieren, filmen, Hände hoch …),
+  Blicke, Sitzen auf echten Bänken (Gerhard unter der Linde).
+
+### Paket C – lebendige Welt (Agent `welt`)
+
+- **Was die Polizei weiß** (`GLFAHNDUNG.stand().wissen`): Gesicht, Kleidung, Fahrzeug aus Sichtungen; Helm, Sturmhaube, andere Kleidung,
+  ein ungesehen verlassenes Fahrzeug ändern es; die Tafel zeigt es als Zeichen, das Radar Streifen nur, solange sie dich sehen.
+- **Der Funk beschreibt dich** in festen Bruchstücken („Gesucht wird Falko, rotes Karohemd, auf einem Moped, Richtung Schleusingen“).
+- **Zeugen filmen** (`gl_reaktion.js`): Leute heben das Handy, im Feed erscheint ein Beitrag mit echtem Bild der Szene, Likes und
+  Kommentaren, große Sachen als „LIVE“.
+- **Leute reagieren** und kommentieren; vor benannten Leuten vier Antworten – Grüßen, Sprüche klopfen, Beruhigen, Provozieren (kann einen
+  Stern bringen).
+- **Zufallsereignisse** (`gl_ereignis.js`): Blitzer auf der L 1625, Traktorstau, Kirmes, Hochzeitskorso, Böller aus dem Kofferraum,
+  Wildunfall – mit eigenem Zeichen auf dem Radar.
+
+### Das gemeinsame Handy (Agent `handy`, `viz3/src/handy/`)
+
+Falko 13:09: realistisches Gerät, Apps zum Öffnen und Schließen, Chats hochkant, Anrufe, später freischaltbar, die Figur hält es vors
+Gesicht – und für alle Welten nutzbar (der Zukunfts-Chat will es auch). `HANDY` (`handy.js`, `handy_apps.js`, `handy_pose.js`): ein Gerät
+ohne Marke mit Sperr- und Startbildschirm, Dock, Abzeichen; Apps wachsen aus ihrem Symbol und schließen sich hinein; alles scrollt von oben
+nach unten (die alten Reihen nebeneinander kamen von der Klasse `.hb` des Grundspiels). Apps: Nachrichten (Antwort-Knöpfe, Tipp-Punkte),
+Telefon (Anrufe, Liste), Kamera-Sucher mit echtem Bild, Fotos, Karte, Feed (Bilder, LIVE, Likes, Kommentare), Bank, Notizen, Einstellungen,
+Uhr; Grenzland bringt Radio und „Aufträge“ (gesperrt bis Kapitel 2). Die Figur hebt es vor die Brust, schaut darauf, der Daumen tippt; beim
+Anruf ans Ohr, im Sucher vor die Augen; die Kamera rückt etwas näher. Esc steckt es weg, Rücktaste geht zurück. Grenzland ist die erste Welt
+(`gl_handy.js` hält die alte `GLHANDY`-Schnittstelle, neu `GLHANDY.ruf` für Anrufe als Szene); für den Zukunfts-Chat gibt es die große
+Darstellung am rechten Rand (`HANDY.layout('gross')`), `HANDY.mount(el)`, Mitteilungen und Anrufe nach Drehbuch – `docs/features/handy.md`.
+
 ## Stand (13.11.2026, 9:30)
 
 - **V17x**: Kern und die Endstände der sechs Hilfs-Agenten (sie sind gegen 4 Uhr am Nutzungslimit stehen geblieben) zusammen mit

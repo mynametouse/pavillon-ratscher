@@ -29,30 +29,35 @@ export const GLMDATA = (() => {
   // ---- the missions: titles for the journal ----
   const M = {
     gefallen: {
+      unter: 'Schleusingen · Freitagabend',
       title: 'Ein Gefallen',
       who: 'Ein Fremder in Schleusingen',
       teaser: 'Freitagabend an der Zentralhaltestelle in Schleusingen.',
       done: 'Das Paket ist nie angekommen: Sarah hat es geöffnet. Darin lag die Hälfte einer Grenzkarte von 1989 – mit einem Kreuz.',
     },
     clique: {
+      unter: 'Ratscher · Feldscheune am Feldweg',
       title: 'Die Clique',
       who: 'Jule',
       teaser: 'Jemand weiß von der Karte. Abwarten, wer sich meldet.',
       done: 'Jule, Timo und Basti trauen euch. Die Karte zeigt den alten Kolonnenweg – Gerhard war damals dabei.',
     },
     gerhard: {
+      unter: 'Ratscher · unter der Dorflinde',
       title: 'Gerhards Geschichte',
       who: 'Gerhard, der Dorfchronist',
       teaser: 'Gerhard sitzt meistens unter der Dorflinde.',
       done: 'Am 10. November 1989 hat Gerhard eine Kiste für Lutz versteckt. Die zweite Hälfte der Karte hatte Lutz – jetzt wohl Krähwinkel.',
     },
     klinge: {
+      unter: 'Untere Klinge · nachts',
       title: 'Nachts an der Klinge',
       who: 'Jule',
       teaser: 'Jule hört sich um, was Krähwinkels Leute nachts im Wald treiben.',
       done: 'Drei Fotos vom Umladen an der Unteren Klinge – und der Polizei über die Feldwege entwischt.',
     },
     coup: {
+      unter: 'Außenlager in der Feldflur',
       title: 'Der Coup',
       who: 'Die Clique',
       teaser: 'Mit den Fotos zu Jule.',
@@ -60,6 +65,21 @@ export const GLMDATA = (() => {
     },
   };
   const ORDER = ['gefallen', 'clique', 'gerhard', 'klinge', 'coup'];
+  // (feat/grenzland-kino) the music under a step: 'mission:step' → a layer of grenzland/gl_score.js (wanted and 1989 decide by
+  // themselves; a step not named here has none – a talk's cutscene brings its own soft pad)
+  const LAGE = {
+    'clique:start': 'spannung',
+    'clique:rennen': 'flucht',
+    'klinge:ansehen': 'spannung',
+    'klinge:ablenken': 'spannung',
+    'klinge:fotos': 'spannung',
+    'klinge:flucht': 'spannung',
+    'coup:rein': 'spannung',
+    'coup:tuer': 'spannung',
+    'coup:karte': 'spannung',
+    'coup:raus': 'spannung',
+    'coup:flucht': 'spannung',
+  };
   // ---- the steps' texts (the task card and the journal show them) ----
   const S = {
     gefallen: {
@@ -583,7 +603,7 @@ export const GLMDATA = (() => {
       mast: w(H.mast.a, H.mast.b),
     };
   }
-  return { M, ORDER, S, R, SMS, CHAT, T, HOF, lager };
+  return { M, ORDER, LAGE, S, R, SMS, CHAT, T, HOF, lager };
 })();
 export const GLMLOGIK = (() => {
   // ---- the step machine ----

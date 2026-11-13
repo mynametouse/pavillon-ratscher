@@ -1,0 +1,54 @@
+# Grenzland's voices (feat/grenzland-stimmen, 13.11.2026): the fixed spoken lines of the mode, recorded with Microsoft Edge voices – here,
+# because the chat machine cannot reach the speech service. A push that changes the list of lines (tools/voices/grenzland_linien.json, made
+# by tools/voices/grenzland_linien.mjs), the record script or this workflow records what is new or changed
+# (tools/voices/grenzland_record.py) and commits the feature extra viz3/extra/grenzland-stimmen back to the same branch ([skip ci]; the
+# tests run with the next push). After a merge of new lines: node tools/voices/grenzland_linien.mjs, commit, push – nothing else.
+name: Stimmen Grenzland
+
+on:
+  push:
+    branches: ['feat/grenzland-stimmen', 'feat/grenzland']
+    paths: ['tools/voices/grenzland_linien.json', 'tools/voices/grenzland_record.py', '.github/workflows/stimmen_grenzland.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: stimmen-grenzland-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    name: Aufnehmen
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: edge-tts und ffmpeg
+        run: |
+          pip install -q edge-tts
+          command -v ffmpeg || (sudo apt-get update -q && sudo apt-get install -y -q ffmpeg)
+          ffmpeg -hide_banner -filters 2>/dev/null | grep -E ' (asoftclip|anoisesrc|loudnorm|ebur128) ' || true
+      - name: Aufnehmen
+        run: python tools/voices/grenzland_record.py
+      - name: Ins Repo
+        env:
+          B: ${{ github.ref_name }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A viz3/extra/grenzland-stimmen
+          git diff --cached --quiet && { echo 'nothing new'; exit 0; }
+          git commit -q -m "[skip ci] Stimmen Grenzland: Aufnahmen (tools/voices/grenzland_record.py)"
+          # the branch may have moved meanwhile (a push of the agent or the lead): on top of it, a few tries
+          for i in 1 2 3 4 5; do
+            git pull -q --rebase origin "$B" && git push -q origin "HEAD:$B" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1

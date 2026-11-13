@@ -8,6 +8,10 @@
 //                 a step needs them; a rider sits on his moped, somebody sits on a bench
 //   talks         subtitles with the speaker's name (GLHUD.sub), spoken where the player has voices on (STIMME.say 'gl_<castId>'), the
 //                 figure talks and faces the player; „Weiter“ (E, the action button) skips a line
+//                 (feat/grenzland-kino) standing, a talk is a cutscene (grenzland/gl_kamera.js): bars, cuts to the speakers; a line
+//                 lasts as long as its recording (at most 1.6 × the reading time, at least 1.6 s), 0.25 s between lines; Esc skips the rest
+//   score         (feat/grenzland-kino) a mission's start: its title card and a sting; a step's lage (spannung, flucht) for the music
+//                 (grenzland/gl_score.js); a failure's sting under the fade; the chapter's closing screen waits until the screen is calm
 //   the journal   KERN.tasks.source 'grenzland': what is done, what runs (tracked: the task card shows text, arrow, distance), the next
 //   checkpoints   fehl(big, small): a fade, the wanted level calm, the step's checkpoint again; an arrest (grenzland:nochmal) does the same
 //   the end       the chapter's closing screen (what was done), then free play
@@ -37,6 +41,8 @@ import { GLHUD } from './gl_hud.js';
 import { GLFAHNDUNG } from './gl_fahndung.js';
 import { GLLAGER } from './gl_lager.js';
 import { GLMDATA, GLMLOGIK } from './gl_mission_data.js';
+import { GLKAMERA } from './gl_kamera.js';
+import { GLSCORE } from './gl_score.js';
 export const GLMISSION = (() => {
   const T = GLMDATA.T,
     hyp = Math.hypot;
@@ -49,6 +55,9 @@ export const GLMISSION = (() => {
     talk: null,
     nextT: -1, // seconds until the next mission starts
     busy: false, // a failure's fade runs
+    titelN: 0, // counts the title cards asked for (a newer one wins)
+    titelZ: null, // the last title card shown (tests)
+    endeN: 0,
     act: false,
     karte: false,
     endEl: null,
@@ -227,21 +236,61 @@ export const GLMISSION = (() => {
     for (const k in B.figs) if (B.figs[k].cast === who && F(k)) return F(k);
     return null;
   }
+  // the length of a line's recording (s), where agent stimmen's manifest names one (window.VOICEX.lines: { who, text, dur })
+  let REC = null;
+  function aufnahme(who, text) {
+    const L = (window.VOICEX && window.VOICEX.lines) || [];
+    if (!REC || REC.n !== L.length) {
+      REC = { n: L.length, m: new Map() };
+      for (const l of L) if (l && l.who && Number.isFinite(l.dur)) REC.m.set(l.who + ':' + l.text, l.dur);
+    }
+    return REC.m.get('gl_' + who + ':' + text) || 0;
+  }
   // lines: a key of GLMDATA.R or [[who, text], …]; o: { done }
+  // the other one of the two speaks in the talk but her (his) figure is still loading – the scene's very start: the talk waits a moment
+  // for her, so that it opens as a cutscene with both (at most 4 s; grenzland_kino m1 saw the first line without the camera)
+  function fehltPartner(lines) {
+    try {
+      if (!lines || !GL.folgt || GL.era !== 'heute') return false;
+      const G = window.GRENZLAND;
+      if (!G || !G.partnerOf || G.partnerOf()) return false;
+      const other = GL.other() === 'm' ? 'falko' : 'sarah';
+      return lines.some(l => l && l[0] === other);
+    } catch (e) {
+      return false;
+    }
+  }
   function rede(key, o = {}) {
     const lines = typeof key === 'string' ? GLMDATA.R[key] : key;
     redeAus();
     if (!lines || !lines.length) return void (o.done && o.done());
-    St.talk = {
+    if (!o.gewartet && fehltPartner(lines)) {
+      St.redeWarte = { key, o: Object.assign({}, o, { gewartet: true }), t: 4 };
+      return;
+    }
+    const k = (St.talk = {
       lines,
       i: -1,
       t: 0,
       T: 0,
+      cap: 0,
+      gap: -1,
       done: o.done || null,
       F: null,
       spoken: true,
+      voice: false,
       key: typeof key === 'string' ? key : '',
-    };
+      kino: false,
+    });
+    // standing: the talk as a cutscene (grenzland/gl_kamera.js)
+    try {
+      k.kino = !!(
+        GLKAMERA.darf(lines, k.key, figOf) && GLKAMERA.start({ lines, key: k.key, figOf, weiter, skip: alles })
+      );
+    } catch (e) {
+      console.warn('grenzland kamera', e);
+      k.kino = false;
+    }
     zeile();
   }
   function zeile() {
@@ -252,39 +301,78 @@ export const GLMISSION = (() => {
     k.i++;
     if (k.i >= k.lines.length) {
       St.talk = null;
+      GLSCORE.rede(false);
+      if (k.kino) GLKAMERA.ende();
       if (k.done) k.done();
       return;
     }
     const [who, text] = k.lines[k.i],
       c = GLDATA.CAST[who],
-      f = figOf(who);
-    k.T = GLMLOGIK.dauer(text) / 1000;
+      f = figOf(who),
+      lese = GLMLOGIK.dauer(text) / 1000,
+      rec = aufnahme(who, text);
+    // as long as its recording (where one is known), else the reading time; never under 1.6 s
+    k.T = Math.max(1.6, rec ? rec + 0.1 : lese);
+    k.cap = Math.max(1.6, lese * 1.6);
     k.t = 0;
+    k.gap = -1;
     k.spoken = true;
-    GLHUD.sub(who ? (c ? c.name : who) : '', text, k.T * 1000 + 500);
+    k.voice = false;
+    GLHUD.sub(who ? (c ? c.name : who) : '', text, Math.round(Math.min(k.T, k.cap) * 1000) + 250);
     if (f) {
       k.F = f;
       GLFIG.talking(f, true);
-      if (f.st !== 'geht' && !f.sitzt && !f.reitet && !f.partner) GLFIG.face(f, P.x, P.y);
+      if (!k.kino && f.st !== 'geht' && !f.sitzt && !f.reitet && !f.partner) GLFIG.face(f, P.x, P.y);
     }
+    // (not a cutscene at its start – somebody was not there yet: it may become one while two lines and more are left)
+    if (!k.kino && k.i > 0 && k.lines.length - k.i >= 2)
+      try {
+        const rest = k.lines.slice(k.i);
+        k.kino = !!(
+          GLKAMERA.darf(rest, k.key, figOf) && GLKAMERA.start({ lines: rest, key: k.key, figOf, weiter, skip: alles })
+        );
+      } catch (e) {
+        k.kino = false;
+      }
+    if (k.kino) GLKAMERA.zeile(k.i, who, Math.min(k.T, k.cap));
     try {
       if (who && !window.FREEZE && STIMME.speaks('gl_' + who, text)) {
         const n = k.i,
-          end = () => {
-            if (St.talk === k && k.i === n) k.spoken = true;
+          end = r => {
+            if (St.talk !== k || k.i !== n) return;
+            k.spoken = true;
+            // (not said after all: the reading time counts)
+            if (r === false) k.voice = false;
+            GLSCORE.rede(false);
           };
         k.spoken = false;
-        STIMME.say('gl_' + who, text, f ? { at: [f.x, f.y] } : {}).then(end, end);
-      }
+        k.voice = true;
+        GLSCORE.rede(true);
+        STIMME.say('gl_' + who, text, f ? { at: [f.x, f.y] } : {}).then(end, () => end(false));
+      } else GLSCORE.rede(false);
     } catch (e) {
       k.spoken = true;
+      k.voice = false;
     }
   }
+  // per frame: the line is over when its voice is (but 1.6 s at least, 1.6 × the reading time at most) or its time is up; then a pause
+  function redeTick(dt) {
+    const k = St.talk;
+    if (!k) return;
+    k.t += dt;
+    const um = k.voice ? (k.spoken && k.t >= 1.6) || k.t >= k.cap : k.t >= k.T;
+    if (!um) return;
+    if (k.gap < 0) k.gap = 0.25;
+    else if ((k.gap -= dt) <= 0) zeile();
+  }
   function redeAus() {
+    St.redeWarte = null;
     const k = St.talk;
     if (!k) return;
     St.talk = null;
+    GLSCORE.rede(false);
     if (k.F) GLFIG.talking(k.F, false);
+    if (k.kino) GLKAMERA.ende();
   }
   // skip the line that is being said
   function weiter() {
@@ -294,6 +382,37 @@ export const GLMISSION = (() => {
     } catch (e) {}
     zeile();
     return true;
+  }
+  // skip the rest of the talk (Esc in a cutscene): what follows it still happens
+  function alles() {
+    const k = St.talk;
+    if (!k) return false;
+    try {
+      if (!k.spoken) STIMME.stop();
+    } catch (e) {}
+    try {
+      if (GLHUD.subAus) GLHUD.subAus();
+      else if (GLHUD.subEl) {
+        GLHUD.subEl.hidden = true;
+        GLHUD.subT = 0;
+      }
+    } catch (e) {}
+    k.i = k.lines.length - 1;
+    zeile();
+    return true;
+  }
+  // every line of the missions that is spoken, for the recordings (agent stimmen): [['gl_<cast>', text], …]
+  function linien() {
+    const out = [],
+      seen = new Set();
+    for (const L of Object.values(GLMDATA.R))
+      for (const [who, text] of L) {
+        const k = 'gl_' + who + ':' + text;
+        if (!who || seen.has(k)) continue;
+        seen.add(k);
+        out.push(['gl_' + who, text]);
+      }
+    return out;
   }
   // ---------------- small helpers for the missions ----------------
   const wo = () => GLFAHNDUNG.wo();
@@ -305,6 +424,8 @@ export const GLMISSION = (() => {
   };
   const zuFuss = () => !VEH.cur && !PLAY.seated() && P.mode === 'walk';
   function hin(x, y, yaw = 0) {
+    // (somewhere else: a cutscene that runs ends without a blend)
+    GLKAMERA.weg();
     try {
       if (VEH.cur) VEH.exit();
       if (PLAY.seated()) PLAY.stand();
@@ -343,11 +464,11 @@ export const GLMISSION = (() => {
       St.nextT = -1;
       const s = St.step;
       if (QUESTS.track !== 'grenzland:' + m.id) QUESTS.track = 'grenzland:' + m.id;
-      if (why === 'start') {
-        try {
-          QUESTS.banner(T.neu, GLMDATA.M[m.id].title);
-        } catch (e) {}
-      }
+      // a mission begins: its title card and the sting (feat/grenzland-kino) – the chapter's card at the very start is the mode's
+      if (why === 'start' || (why === 'debug' && i === 0)) titel(m);
+      // the music: what the step wants (grenzland/gl_score.js; wanted and 1989 decide there by themselves)
+      GLSCORE.mission(m.id);
+      GLSCORE.lage(s.lage || GLMDATA.LAGE[m.id + ':' + s.id] || '');
       szene(m, i);
       try {
         if (s.an) s.an(St.S, why);
@@ -388,6 +509,9 @@ export const GLMISSION = (() => {
       if (name === 'mission' && d.st === 'erledigt') {
         const m = M.find(q => q.id === d.id);
         d = Object.assign({ titel: GLMDATA.M[d.id].title, lohn: (m && m.lohn) || '' }, d);
+        // (the sting „bestanden“ plays the mode with „Mission bestanden“, grenzland/gl_modus.js)
+        GLSCORE.lage('');
+        GLSCORE.mission('');
       } else if (name === 'schritt') {
         const m = M.find(q => q.id === d.id);
         d = Object.assign({ schritt: m && m.steps[d.i] ? m.steps[d.i].id : '' }, d);
@@ -414,11 +538,57 @@ export const GLMISSION = (() => {
     M.sort((a, b) => GLMDATA.ORDER.indexOf(a.id) - GLMDATA.ORDER.indexOf(b.id));
     return m;
   }
+  // ---------------- a mission's title card: when the screen is calm (after the opening's fade, not over another card) ----------------
+  const fadeOn = () => {
+    const f = document.getElementById('glfade');
+    return !!(f && f.classList.contains('on'));
+  };
+  // nothing big on the screen: no fade, no „Mission bestanden“, no big line (the lead's GLHUD.ruhig where it is there)
+  const ruhig = () => {
+    const q = id => {
+      const e = document.getElementById(id);
+      return !e || e.hidden;
+    };
+    return !fadeOn() && q('glpass') && q('glmsg') && q('glbust');
+  };
+  async function warteRuhig(sek) {
+    try {
+      if (GLHUD.ruhig) await GLHUD.ruhig();
+      else await KERN.until(() => ruhig() || !GL.on, sek);
+    } catch (e) {}
+  }
+  // the screen is calm now: no fade, no title shown or waiting, no „Mission bestanden“, no big line (the lead's GLHUD state, else the page)
+  const ruhigJetzt = () => {
+    const H = GLHUD;
+    if (H.titelT > 0 || (H.titelQ && H.titelQ.length) || H.passT > 0 || H.msgT > 0) return false;
+    return ruhig();
+  };
+  function titel(m) {
+    const g = ++St.titelN;
+    let n = 0;
+    (async () => {
+      // frame by frame (a test's steps count; GLHUD.ruhig answers at once under FREEZE), from the second frame on: the step's opening
+      // may begin a fade first
+      try {
+        await KERN.until(() => g !== St.titelN || !GL.on || (++n > 2 && ruhigJetzt()), 180);
+      } catch (e) {}
+      if (g !== St.titelN || !GL.on || GL.cur !== m.id || St.busy) return;
+      const D = GLMDATA.M[m.id];
+      try {
+        if (GLHUD.titel)
+          GLHUD.titel(D.title, 'Kapitel 1 · Mission ' + (GLMDATA.ORDER.indexOf(m.id) + 1), 5, D.unter || '');
+        else GLHUD.say(D.title, D.unter || '', 5);
+      } catch (e) {}
+      GLSCORE.stich('start');
+      St.titelZ = { id: m.id, title: D.title, unter: D.unter || '', at: performance.now() };
+    })();
+  }
   // a failure: black, the wanted level calm, the checkpoint again
   async function fehl(a, b) {
     if (St.busy || !R.cur()) return;
     St.busy = true;
     redeAus();
+    GLSCORE.stich('gescheitert');
     try {
       await GLHUD.fade(true, a || T.nochmal, b || '');
       if (GL.on && R.cur()) {
@@ -533,10 +703,14 @@ export const GLMISSION = (() => {
     const m = R.cur();
     if (m) io.leave(m, GL.m[m.id].i, 'abbruch');
     St.gen++;
+    St.titelN++;
+    St.endeN++;
     St.m = St.step = null;
     St.nextT = -1;
     St.busy = false;
     redeAus();
+    GLKAMERA.stop();
+    GLSCORE.stop();
     leer();
     endeZu();
     if (St.act) {
@@ -550,11 +724,18 @@ export const GLMISSION = (() => {
   function tick(dt) {
     if (!GL.on) return;
     reiterTick();
-    const k = St.talk;
-    if (k) {
-      k.t += dt;
-      if (k.t >= k.T && (k.spoken || k.t > k.T * 2 + 3)) zeile();
+    const w = St.redeWarte;
+    if (w && ((w.t -= dt) <= 0 || !fehltPartner(typeof w.key === 'string' ? GLMDATA.R[w.key] : w.key))) {
+      St.redeWarte = null;
+      rede(w.key, w.o);
     }
+    redeTick(dt);
+    lauf(dt);
+    // the cutscene after the step (a talk that follows at once stays in the same cutscene), the music last
+    GLKAMERA.tick(dt);
+    GLSCORE.tick(dt);
+  }
+  function lauf(dt) {
     if (St.busy) return;
     if (St.nextT >= 0 && (St.nextT -= dt) < 0) {
       const nx = R.nextOpen();
@@ -607,6 +788,7 @@ export const GLMISSION = (() => {
   const CSS = `
 #glende{position:absolute;inset:0;z-index:18;display:flex;align-items:center;justify-content:center;background:rgba(8,10,12,.82);color:#f1ead8;pointer-events:auto}
 #glende[hidden]{display:none!important}
+body:has(#glende:not([hidden])) #npcsub{display:none!important}
 #glende .ge{width:min(520px,90vw);max-height:92vh;overflow:auto;padding:22px 24px;text-align:center}
 #glende h2{margin:0 0 6px;font:700 clamp(24px,4.2vw,40px)/1.15 var(--f-display,Georgia,serif);color:#f3c64f;letter-spacing:.01em}
 #glende p{margin:0 0 16px;font:400 15px/1.45 var(--f-body,system-ui);opacity:.94}
@@ -617,7 +799,18 @@ export const GLMISSION = (() => {
 #glende button{font:600 15px/1 var(--f-body,system-ui);padding:12px 22px;border-radius:999px;border:0;background:#f3c64f;color:#1a1608;cursor:pointer}
 `;
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  function ende() {
+  // (feat/grenzland-kino) the closing screen comes when „Mission bestanden“ and every other card are gone
+  async function ende() {
+    const g = ++St.endeN;
+    // frame by frame until nothing big shows (so also in tests, where GLHUD.ruhig answers at once), then the lead's own word on it
+    try {
+      await KERN.until(() => g !== St.endeN || !GL.on || ruhigJetzt(), 25);
+    } catch (e) {}
+    await warteRuhig(20);
+    if (g !== St.endeN || !GL.on) return;
+    endeZeigen();
+  }
+  function endeZeigen() {
     if (!St.endEl) {
       const st = document.createElement('style');
       st.textContent = CSS;
@@ -683,6 +876,8 @@ export const GLMISSION = (() => {
       autos: Object.keys(B.autos),
       dinge: Object.keys(B.dinge),
       ende: !!(St.endEl && !St.endEl.hidden),
+      kino: GLKAMERA.on(),
+      titel: St.titelZ ? St.titelZ.title : '',
     }),
   };
   return {
@@ -695,6 +890,8 @@ export const GLMISSION = (() => {
     neu,
     def,
     weiter,
+    alles,
+    linien,
     debug,
     // for the missions (grenzland/gl_kapitel1.js)
     R,
