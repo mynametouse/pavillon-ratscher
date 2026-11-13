@@ -30,7 +30,8 @@ Programm), `gl_handy.js` (`GLHANDY`: das Handy). Tests: `viz3/test/unit/grenzlan
   zum Anklicken (auch: die Anzeige antippen; im Handy der Reiter „Radio“). Beim Einschalten landet man mitten in einem laufenden Stück.
   Die Wahl bleibt (`GL.radio`), nach einem Neuladen läuft der Sender weiter. Wer zum ersten Mal in einem Fahrzeug sitzt, hört das Radio
   von selbst (wie in GTA); einmal ausgeschaltet, bleibt es aus.
-- **Die Anzeige** oben in der Mitte (nicht in der Ecke oben links, dort ist das Radar): Frequenz, Name, eine Skala mit Zeiger, der zum
+- **Die Anzeige** oben, etwas links der Mitte (frei vom Radar und vom Ortsnamen links und von Uhr und Menü rechts; auf schmalen
+  Fenstern eine Zeile tiefer): Frequenz, Name, eine Skala mit Zeiger, der zum
   Sender fährt, darunter Titel und Interpret bzw. was gerade läuft. Sie blendet nach ein paar Sekunden aus und kommt bei jedem neuen
   Beitrag kurz wieder. 1989 sieht sie aus wie ein Gerät der Zeit (cremefarbene Skala, braunes Gehäuse).
 - **Wo es klingt:** im Auto über die Lautsprecher, zu Fuß und auf dem Moped aus dem Handy (dünn, leiser), 1989 aus dem Autoradio oder
@@ -79,6 +80,8 @@ Ein Gehäuse in Handyform mit sieben Reitern (Ziffern 1–7 wechseln):
   Teile gesendet hat, und „Was am 10. November 1989 im Radio kam“ nach der Rückblende – beide mit ihren Quellen als Links.
 - **Kamera** – ein Sucher über dem Bild; eine Mission verlangt Fotos mit `GLHANDY.kamera({ ziel: [x, y], r, n, sicht, done, name })`
   und kann den Sucher mit `GLHANDY.open('kamera')` gleich öffnen. Auslösen: Knopf „Foto“ oder `E`/Enter. Ohne Auftrag: Schnappschuss.
+  `GLHANDY.open(tab)` gibt `true`/`false` zurück (kein Promise – ein Test, der es mit `evaluate` aufruft, würde sonst ewig warten);
+  wer weitermachen will, wenn das Handy weggelegt ist: `GLHANDY.zu()` (Promise) oder das Ereignis `grenzland:handy`.
 - **Radio** – die Sender zum Antippen, was läuft, und ob die Moderatoren vorgelesen werden.
 
 Oben die Spielzeit und die Netzbalken (im Wald an der Klinge: „Funkloch“). 1989 hat niemand ein Handy. Auf dem Telefon füllt es den

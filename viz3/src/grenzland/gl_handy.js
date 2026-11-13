@@ -65,7 +65,7 @@ export const GLHANDY = (() => {
   ];
   const CSS = `
 #glhandy{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:9;width:300px;
-  height:min(570px,calc(100% - 96px));display:flex;flex-direction:column;background:#0c0e12;color:#eef0f2;border:2px solid #343942;border-radius:30px;
+  height:min(570px,calc(100% - 140px));display:flex;flex-direction:column;background:#0c0e12;color:#eef0f2;border:2px solid #343942;border-radius:30px;
   box-shadow:0 14px 40px rgba(0,0,0,.55),inset 0 0 0 3px #15181d;padding:10px 9px 9px;font:400 13px/1.38 var(--f-body,system-ui);pointer-events:auto;user-select:none}
 #glhandy[hidden],#glcam[hidden]{display:none!important}
 #glhandy .ht{display:flex;justify-content:space-between;align-items:center;padding:0 12px 4px;font:600 11px/1 var(--f-mono,monospace);opacity:.85}
