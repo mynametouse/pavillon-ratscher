@@ -14,7 +14,7 @@ from itertools import groupby
 H = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(H, '..', '..'))
 EX = os.path.join(ROOT, 'viz3', 'extra', 'grenzland-stimmen'); OUT = os.path.join(EX, 'dist', 'snd', 'voice', 'gl')
 TMP = os.path.join(ROOT, 'out', 'grenzland-stimmen')
-BUDGET = int(os.environ.get('GL_BUDGET', 5_800_000))
+BUDGET = int(os.environ.get('GL_BUDGET', 5_750_000))   # the MP3 files; with the two lists the folder stays under 6 MB
 FX = 'fx1'   # the version of the sound chains below: a new one records everything again
 
 # ---- the cast: who → (voices, the first one edge-tts offers; rate; pitch; kind) ----
@@ -309,16 +309,18 @@ async def main():
         if not w or l['id'] in failed or not os.path.exists(w[6]) or l['id'] not in old: continue
         vx_add.append({'who': l['who'], 'id': l['id'], 'text': l['text'], 'file': 'voice/gl/' + l['id'] + '.mp3', 'dur': old[l['id']]['dur']})
         if not (w[4].startswith('f') and PATROL.match(l['text'])): voices.setdefault(l['who'], w[1])
-    json.dump({'vx': {'voices': voices}, 'vx_add': vx_add}, open(os.path.join(EX, 'manifest.json'), 'w'), ensure_ascii=False, indent=1)
+    json.dump({'vx': {'voices': voices}, 'vx_add': vx_add}, open(os.path.join(EX, 'manifest.json'), 'w'), ensure_ascii=False, indent=0)
     if bad: old['_bad'] = bad
-    json.dump(old, open(af, 'w'), ensure_ascii=False, indent=1, sort_keys=True)
+    json.dump(old, open(af, 'w'), ensure_ascii=False, separators=(',', ':'), sort_keys=True)
     old.pop('_bad', None)
     size = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT))
     print(f'DONE {len(vx_add)} lines, {len(todo) - len(failed)} new, {len(failed)} failed, {size / 1e6:.2f} MB', flush=True)
     print(f'::notice title=grenzland_record::{len(vx_add)} lines recorded, {len(todo) - len(failed)} new, {len(failed)} without audio, '
           f'{len(cut)} radio lines over the budget, {size / 1e6:.2f} MB' + (f'; voices switched: {switch}' if switch else ''), flush=True)
     summary(lines, want, old, todo, failed, cut, size)
-    if size > 6_000_000: print('WARNING: over 6 MB – the story and the world alone (prio 1, 2) are too much')
+    folder = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(EX) for f in fs)
+    print(f'the folder viz3/extra/grenzland-stimmen: {folder / 1e6:.2f} MB')
+    if folder > 6_000_000: print('::warning title=grenzland_record::the folder is over 6 MB – lower GL_BUDGET')
 
 def summary(lines, want, old, todo, failed, cut, size):
     """the job summary: the new lines (line, voice, seconds, loudness), per person, what is over the budget"""
