@@ -1,0 +1,72 @@
+{
+ "checks": {
+  "index lists the files": {
+   "ok": true,
+   "info": "11 files, 11 in the index"
+  },
+  "centre of Suhl inside": {
+   "ok": true,
+   "info": "tile 497/542"
+  },
+  "fields complete": {
+   "ok": true,
+   "info": "0 records or headers with missing fields []"
+  },
+  "ids unique": {
+   "ok": true,
+   "info": "2507 records, 0 ids more than once []"
+  },
+  "footprints valid": {
+   "ok": true,
+   "info": "0 invalid []"
+  },
+  "no building in two tiles": {
+   "ok": true,
+   "info": "0 with their point outside their tile []"
+  },
+  "footprints near their tile": {
+   "ok": true,
+   "info": "0 reach more than 250 m beyond their tile []"
+  },
+  "heights plausible": {
+   "ok": true,
+   "info": "0 outside 0.3..120 m or eave above the top []"
+  },
+  "roof closed": {
+   "ok": true,
+   "info": "0 roofs whose faces do not cover the footprint (plan area differs by more than 6 %) []"
+  },
+  "areas in true m²": {
+   "ok": true,
+   "info": "0 footprint areas differ from the outline by more than 3 % []"
+  },
+  "sides match the edges": {
+   "ok": true,
+   "info": "0 []"
+  },
+  "floors fit the eave": {
+   "ok": true,
+   "info": "0 houses where plinth + floors x storey height misses the eave by more than 1 m []"
+  },
+  "foot heights": {
+   "ok": true,
+   "info": "0 records without z0 (run fuss.py)"
+  },
+  "footprints do not overlap": {
+   "ok": false,
+   "info": "37 pairs overlap by more than 1 m² (largest [(19.7, 'DETHL57P00006G2t', 'DETHL57P00006G3j'), (18.7, 'DETHL57P00006G0F', 'DETHL57P00006G0X'), (14.5, 'DETHL57P00002jO1', 'DETHL57P00002jOX')])"
+  },
+  "size limit": {
+   "ok": true,
+   "info": "2129990 bytes, limit 3000000"
+  }
+ },
+ "tiles": 11,
+ "buildings": 2507,
+ "bytes": 2129990,
+ "kb_per_building": 0.83,
+ "failed": [],
+ "warnings": [
+  "footprints do not overlap"
+ ]
+}
