@@ -6,7 +6,7 @@
 // mat: putz, schiefer (slate all over), schiefer_og (slate above a plastered ground floor), fachwerk, fachwerk_og (framing above a
 // plastered ground floor), klinker, platte. balkCol: the balconies' parapets. frame: 0 white, 1 brown, 2 green, 3 grey.
 // rise: the roof above the eave this many times higher (a roof the fit from the aerial photo made too flat). e: a flat roof lower.
-// vordach: a canopy along the sides with shops ({ col, post, d, z }).
+// vordach: a canopy along the sides with shops ({ col, post, d, z }). wand: single walls in a colour of their own (side index → colour).
 export const MARKEN = {
   // Marktplatz
   DETHL57P00006G2R: {
@@ -75,6 +75,7 @@ export const MARKEN = {
     col: '#efefec',
     frame: 3,
     balk: false,
+    wand: { 4: '#4a5862', 5: '#4a5862' }, // the glass corner towards the Diana fountain (photo Einkaufscentrum Am Steinweg 2024-12-27)
     foto: 'Einkaufszentrum Am Steinweg Suhl mit dem Dianabrunnen davor 2023-04-07 (Strubbl, CC BY-SA 4.0)',
   },
   // churches

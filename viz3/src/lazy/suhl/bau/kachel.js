@@ -308,6 +308,12 @@ export function kachel(m, F) {
       if (mk.col) b.st.col = linC(rgb(mk.col), 0.82);
       if (mk.surr !== undefined) b.st.surr = mk.surr;
       if (mk.frame !== undefined) b.st.frame = mk.frame;
+      // single walls in a colour of their own (the glass corner of the Einkaufszentrum before the Diana fountain)
+      if (mk.wand)
+        for (const [k, c] of Object.entries(mk.wand)) {
+          const f = b.F[+k];
+          if (f) f[10] = Object.assign({}, f[10] || {}, { col: c });
+        }
       if (mk.roof) {
         const rc = linC(rgb(mk.roof));
         for (const t of b.tris) t.kc = [t.kc[0], ...rc];
