@@ -36,7 +36,23 @@ import { VLEUTE } from './verkehr_leute.js';
 import { VNETZ } from './verkehr_netz.js';
 import { VFIG } from './verkehr_fig.js';
 import { VAUTO } from './verkehr_auto.js';
+// feat/verkehr-real: the types of today and their models (the drivers' own cars)
+import { VKTYPEN } from './vk_typen.js';
+import { VKMOD } from './vk_modelle.js';
+import { VKSTROM } from './vk_strom.js';
 export const VERKEHR = (() => {
+  // feat/verkehr-real: each driver of the cast has a car of today of his own (by his name: the same type every time; the colour stays
+  // his, VLEUTE) – the cars by their share of the stock (VKTYPEN.PKW); their models asked for at once, in the order of that share
+  const typFor = who => {
+    let h = 2166136261;
+    for (const ch of String(who || '')) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+    let sum = 0;
+    for (const e of VKTYPEN.PKW) sum += e[1];
+    let x = ((h % 10007) / 10007) * sum;
+    for (const [t, w] of VKTYPEN.PKW) if ((x -= w) <= 0) return t;
+    return VKTYPEN.PKW[0][0];
+  };
+  for (const [t] of VKTYPEN.PKW.slice().sort((a, b) => b[1] - a[1])) VKMOD.need(t, 1);
   const PP = VLEUTE.P;
   const S = {
     places: {},
@@ -544,6 +560,9 @@ export const VERKEHR = (() => {
   function spawnCar(Pl, o, opt = {}) {
     const who = driverFor(Pl, opt.who);
     if (!who || Pl.exits.length < 2) return null;
+    // feat/verkehr-real: the first seconds of play the models are still built in the worker – wait for the driver's own car rather
+    // than send the old plain one (after 25 s it may, should the worker never answer)
+    if (!opt.who && !VKMOD.ready(typFor(who)) && S.t < 25) return null;
     // a route between two exits that passes near the observer; it starts out of sight, some 150–260 m before that point
     const cands = [];
     for (const a of Pl.exits)
@@ -579,7 +598,15 @@ export const VERKEHR = (() => {
     VNETZ.at(line, s, _a);
     if (!opt.prime && opt.s === undefined && seen(_a.x, _a.y) && Math.hypot(_a.x - o[0], _a.y - o[1]) < 120)
       return null;
-    const c = VAUTO.spawn({ place: Pl.id, line, s, who, col: PP[who].car, v: Math.min(line.S[Math.round(s)] || 8, 9) });
+    const c = VAUTO.spawn({
+      place: Pl.id,
+      line,
+      s,
+      who,
+      typ: typFor(who),
+      col: PP[who].car,
+      v: Math.min(line.S[Math.round(s)] || 8, 9),
+    });
     c.vk = 0.92 + rnd() * 0.12;
     c.laneOff = 1.2;
     S.busy[who] = 'car';
@@ -902,7 +929,12 @@ export const VERKEHR = (() => {
     const eye = () => {
       const r = [Math.cos(c.hd), -Math.sin(c.hd)],
         f = [Math.sin(c.hd), Math.cos(c.hd)];
-      return { x: c.x + r[0] * 0.36 - f[0] * 0.22, y: c.y + r[1] * 0.36 - f[1] * 0.22, z: c.z + 1.17 };
+      // (feat/verkehr-real: in a car of today the eye a hand under its roof – higher in an SUV, lower in a small car)
+      return {
+        x: c.x + r[0] * 0.36 - f[0] * 0.22,
+        y: c.y + r[1] * 0.36 - f[1] * 0.22,
+        z: c.z + (c.vm ? c.D.H - 0.32 : 1.17),
+      };
     };
     PLAY.sit({
       kind: 'ride',
@@ -1269,7 +1301,7 @@ export const VERKEHR = (() => {
     const r = roadLine(v.st.x, v.st.y, v.st.psi);
     if (!r) return;
     const k = pick(who),
-      c = VAUTO.spawn({ place: 'fahrt', line: r.line, s: r.s0, who: k, col: PP[k].car, v: 14 });
+      c = VAUTO.spawn({ place: 'fahrt', line: r.line, s: r.s0, who: k, typ: typFor(k), col: PP[k].car, v: 14 });
     c.vk = 0.9 + rnd() * 0.1;
     c.laneOff = 1.3;
     S.busy[k] = 'car';
@@ -1329,7 +1361,7 @@ export const VERKEHR = (() => {
       walkers: W,
       onHonk: c => {
         S.stats.honk++;
-        UI.subtitle({ key: c.who }, pick(VLEUTE.DRIVE.hupe), 2400);
+        if (c.who) UI.subtitle({ key: c.who }, pick(VLEUTE.DRIVE.hupe), 2400);
       },
     });
     // a car coming towards the player: „Auto anhalten“ (5 times a second)
@@ -1348,7 +1380,8 @@ export const VERKEHR = (() => {
         !KERN.inside(P.x, P.y, P.feet + 1)
       )
         for (const c of VAUTO.cars) {
-          if (c.st !== 'fahren' || !c.g.visible) continue;
+          // (feat/verkehr-real: only a car of the cast stops – the flow's strangers drive on)
+          if (c.st !== 'fahren' || !c.g.visible || !c.who) continue;
           const d = Math.hypot(c.x - P.x, c.y - P.y);
           if (d > 48 || d < 7) continue;
           const pr = VNETZ.project(c.line, P.x, P.y, c.s + 6, c.s + 46);
@@ -1379,6 +1412,14 @@ export const VERKEHR = (() => {
     }
     if (S.lent) lentTick(dt);
     fahrTick(dt, o);
+    // feat/verkehr-real: the traffic on every road round the observer (verkehr/vk_strom.js) – not while a test fixes the place traffic
+    // (VERKEHR.force) unless it fixes the flow too (VKSTROM.force)
+    try {
+      VKSTROM.tick(dt, o, S.auto && (!S.force || !!VKSTROM.force));
+    } catch (e) {
+      if (!S.errStrom) console.warn('verkehr strom', e);
+      S.errStrom = String((e && e.message) || e);
+    }
     // figures nobody needs any more: freed after a while (memory on the phone)
     for (const k of Object.keys(VFIG.figs)) {
       // feat/bus: or a passenger at a bus stop (bus/bus_leute.js marks them busy 'bus')
@@ -1467,7 +1508,7 @@ export const VERKEHR = (() => {
       const line = carRoute(Pl, o.from, o.to),
         who = driverFor(Pl, o.who);
       if (!line || !who) return null;
-      const c = VAUTO.spawn({ place: Pl.id, line, s: o.s || 0, who, col: PP[who].car, v: o.v ?? 0 });
+      const c = VAUTO.spawn({ place: Pl.id, line, s: o.s || 0, who, typ: typFor(who), col: PP[who].car, v: o.v ?? 0 });
       c.vk = 1;
       c.laneOff = 1.2;
       S.busy[who] = 'car';

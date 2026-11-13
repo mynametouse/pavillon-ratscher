@@ -144,7 +144,8 @@ export const SUHL = (() => {
     );
   // ---- places to jump to and the start situation (the heights are set from the ground once it is there) ----
   const SPOTS = {
-    suhl: [[-4638.5, 12474.5], 62, 'Suhl (Markt)'], // the middle of the square, clear of the crowns of its trees (10 m)
+    // on the square, the Waffenschmied fountain 13 m ahead and the Rotes Rathaus behind it – the first view of the city (13.11.2026)
+    suhl: [[-4630.0, 12486.0], -130, 'Suhl (Markt)'],
     suhl_steinweg: [[-4753.5, 12321.8], -131, 'Suhl, Steinweg'], // on the street's axis, 5 m from the houses on both sides (was inside Steinweg 18)
     suhl_bahnhof: [[-5352, 11938], -120, 'Suhl, Bahnhof'],
     suhl_ccs: [[-4990, 12400], -62, 'Suhl, Congress Centrum'],

@@ -29,6 +29,17 @@ veröffentlicht.
   beendet Chrome bei ~3,7 GB; die Probe auf dem Zweig `feat/grenzland-speicher`). Fehlermeldungen der Browser-Tests stehen als
   öffentliche Anmerkungen am Job (`viz3/test/grenzland_ci.py`). Sarah ist einverstanden (Falko 13.11. 10:44). Offen: Speicher auf älteren iPhones; Kapitel 2
   (Detailzone an der alten Grenze); zu zweit über das Internet; Coups von oben planen.
+- **13.11.2026 nachmittags/abends: Grenzland Runde 2 und das gemeinsame Handy (V18a, auf `live` 13.11. 18:29; Grenzland-Chat).**
+  Falko 10:59/11:25 angeklickt: Pakete A (Immersions-Bremsen raus), B (Kino-Gefühl), C (lebendige Welt); 13:09 ein realistisches Handy, das
+  man vors Gesicht hebt, mit Apps zum Starten und Schließen, Chats von oben nach unten, Anrufen und später freischaltbaren Funktionen –
+  gemeinsam mit dem Zukunfts-Chat. Gebaut mit sechs Hilfs-Agenten (`kino`, `stimmen`, `licht`, `figuren`, `welt`, `handy`; Aufträge
+  `docs/plans/auftraege/grenzland2-*.md`), Einzelheiten in `docs/features/grenzland.md` (Runde 2). Neu: `viz3/src/handy/` (`HANDY`,
+  `HANDYPOSE`, Adapter `GLHANDY`), Aufnahmen in `viz3/extra/grenzland-stimmen` (Workflow `stimmen_grenzland.yml`, Liste
+  `tools/voices/grenzland_linien.json`, sammeln mit `node tools/voices/grenzland_linien.mjs`), 29 Testzeilen in
+  `viz3/extra/grenzland/tests.txt`. **Nachtrag auf `feat/grenzland`** (kommt nach V18d): 21 Anrufsätze aufgenommen, Schloss-Symbol
+  freigeschalteter Apps, „Staudamm“ statt „Staumauer“ (Region-Dossier K2; drei Sätze nimmt der Workflow beim Push neu auf). Offen: K4
+  (keine A 73 in der Rückblende 1989) und K5 (Schild „Grenzgebiet“ – Ratscher lag wohl außerhalb der 5-km-Zone), Paket D (Autos knacken,
+  Nahkampf, Coup), Kapitel 2.
 - **13.11.2026 nachts: Zukünfte erproben (V17w, live seit 13.11. 8:45 nach Falkos OK; Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, `docs/features/zukunft.md`, `zukunft-welt.md`).** Falko 12.11.: Geschäftsmodell 1 „virtuelles Reallabor / Szenario-Werkstatt“ – erste Fassung für Kommune/Dorf, halber Tag vor Ort, Themen Mobilität, Energie, Klimaanpassung, Wald nach dem Käfer, „möglichst realistisch“. Daten und Rechnung rein in `zukunft/zk_data.js` (Unit-Test `viz3/test/unit/zukunft.test.mjs`), Oberfläche `zk_modus.js`, Welt `zk_welt.js` (Haken `WXBODEN.setDry`, `FOREST.canopy`); Tests `zukunft.py`, `zukunft_welt.py` (Programme: Start +4, Umschalten 0). Entscheidungen: Stimmen als Rollen („Sicht …“, erfundene Stimme), Ereignisse ohne Votum, Regler ab 2030, HQ100 = amtliches Gebiet (37 Gebäude, Schaden als Spanne), Solarpark-Platz ist Annahme. **Offen:** Mitmach-Schicht (Stimmen der Teilnehmenden am Telefon), Ablaufplan für den halben Tag, Gespräch mit Ratscher/Schleusingen über einen Piloten; zu Fuß spiegelt ein schmaler Streifen fernes Hochwasser noch den Himmel; blau-graue Bodenflecken im heutigen Wald, wo die Kronenkarte dünn ist (Abhilfe in `world/forest.js` wie im Modus).
 - **13.11.2026 nachts: Straßen realistischer (Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx, Zweig `feat/strassen`,
   `docs/features/strassen.md`).** Falko 12.11. 23:10/23:13: die Region „noch realistischer“, „starte mit Paket 1“ (die Straßen).

@@ -63,7 +63,7 @@ with lib.browser() as b:
       return { t: Math.round(CLOCK.t * 10) / 10, e0: DN.e0, era: GLSTATE.era, body: document.body.dataset.glEra || '', hold: !!DORF.S.hold, frozen: !!DINGE.frozen, busAuto: BUS.S.auto, vAuto: VERKEHR.S.auto,
         preset: WETTER.state().preset, wand: RATSCHER.bld[0].material.color.getHex(), dach: RATSCHER.bld[1].material.color.getHex(), fogOwn: !!Object.getOwnPropertyDescriptor(GAME_SCENE().fog, 'density').get,
         laub: RATSCHER.trees[0].material.color.getHex(), laubA: RATSCHER.trees[0].material.alphaTest, linde: VPROPS.lindeMeshes ? VPROPS.lindeMeshes[1].material.alphaTest : 0,
-        kind: AVATAR.kind, maps: maps.join(','), figs: GLFIG.figs.filter(F => F.era === '1989').length, cars: GL89WELT.state().cars, focus: CLOCK.focused, modern: GL89WELT.modern(),
+        kind: AVATAR.kind, maps: maps.join(','), figs: GLFIG.figs.filter(F => F.era === '1989').length, cars: GL89WELT.state().cars, focus: CLOCK.focused, modern: GL89WELT.modern(), strom: window.VKSTROM ? VKSTROM.cars.filter(c => c.st !== 'weg').length : 0,
         kids: GAME_SCENE().children.filter(o => /grenzland 1989/.test(o.name || '')).length }; })()"""
     # free play (in the merged game the scene starts mission 1 with a fade in Schleusingen): missions done, the garden, the police off
     for _ in range(6):
@@ -170,9 +170,10 @@ with lib.browser() as b:
     for _ in range(4):
         steps(0.5); time.sleep(0.2)
     s2 = J(SNAP)
-    same = [k for k in s0 if k not in ('modern', 't', 'kids') and s0[k] != s2[k]]
+    same = [k for k in s0 if k not in ('modern', 't', 'kids', 'strom') and s0[k] != s2[k]]
     ck('leaving puts every flag, colour, date and figure back', ok and not same and abs(s2['t'] - s0['t']) < 8, 'differs: ' + str({k: (s0[k], s2[k]) for k in same}) + f" t {s0['t']} {s2['t']}")
-    ck('the cars and lanterns of today are back', s2['modern']['autos'] >= s0['modern']['autos'] - 1 and s2['modern']['laternen'] == s0['modern']['laternen'], str(s0['modern']) + ' ' + str(s2['modern']))
+    # (the flow of traffic – verkehr/vk_strom.js – comes and goes with the hour: its vehicles are not counted against the ones before)
+    ck('the cars and lanterns of today are back', s2['modern']['autos'] - s2['strom'] >= s0['modern']['autos'] - s0['strom'] - 1 and s2['modern']['laternen'] == s0['modern']['laternen'], str(s0['modern']) + ' ' + str(s2['modern']) + f" (flow {s0['strom']} / {s2['strom']})")
     ck('nothing of 1989 is left in the scene', s1['kids'] >= 2 and s2['kids'] == 0 and not E("GL89WELT.on") and E("GL89WELT.state().undo") == 0, f"{s1['kids']} {s2['kids']}")
     # ---- again, and the mode ends in the middle of it ----
     X("window.__in = false; GL89.enter({ pos: [238.5, -72.5], yaw: 320 }).then(() => { window.__in = true; })")
@@ -182,7 +183,7 @@ with lib.browser() as b:
     steps(1)
     s3 = J(SNAP)
     # (e0: the mode's own end puts back the date from before the mode – the baseline here was taken inside the mode)
-    skip = ('modern', 't', 'kids', 'e0')
+    skip = ('modern', 't', 'kids', 'e0', 'strom')
     same = [k for k in s0 if k not in skip and s0[k] != s3[k]]
     ck('the mode\'s end inside the flashback restores too', not same and not E("GL89.on") and not E("GLSTATE.on") and E("GLFIG.figs.length") == 0, 'differs: ' + str({k: (s0[k], s3[k]) for k in same}))
     okgl, rep = lib.check_gl(pg)

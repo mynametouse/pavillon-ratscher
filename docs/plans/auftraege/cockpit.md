@@ -58,3 +58,26 @@ Rules: work only in your worktree on `feat/cockpit`; merge `origin/src` now and 
 only via `bash tools/browser_lock.sh` on port 9016; GitHub's runners are congested – push real increments only (part 0 first, then about hourly),
 run your test locally before pushing. Credits are scarce: read with `rg` and line ranges, few screenshot rounds. Report to the lead (SendMessage to
 `main`) on every green push with screenshots of the driver view (day, night, rain), then a final report and stop.
+
+---
+
+**Erweiterung 13.11. ~18:05** (Falko 17:59 auf die Frage, wer die Karosserie baut, nachdem der Straßen-Chat nicht antwortete: „Sofort selbst
+bauen“; vorher 17:59: „wenn es noch kein Dach gibt, dann ist das natürlich Quatsch. Wann gedenkst du denn, das Ganze realistisch
+fertigzustellen?“). Wörtlich an den Agenten (englisch):
+
+A) The interior fixes (roof header, headliner, sun visors, door-window frames, slim dark A-pillar trim, eye point about 1.15–1.2 m and about
+0.35 m behind the rim, vertical FOV not wider than about 60–65° in the driver view, a little dash detail); local screenshots (day, night, rain)
+to the lead; push when done (it only replaces the queued run).
+
+B) The body of the player's estate (today in `vehicles/car.js`) in a new file of yours, e.g. `vehicles/kombi.js`, inside your modules.txt block:
+Logan-MCV-sized estate, own design – no logo or badge anywhere, no copy of a brand's grille or lamps; 4.47 × 1.74 × 1.64 m with roof rails,
+wheelbase 2.905 m; roof rails, a third side window, split rear doors (asymmetric, hinge seam visible); warm beige metallic („Beige Sable“-like);
+plates with a fictitious HBN number. Not a toy: rounded, curved panels with bevelled edges and a slight shoulder line, panel seams, door handles,
+wheel arches with real tyres and rims or hubcaps, mirror housings, lamps with lenses (headlamps, vertical rear lamps, indicators front/side/rear
+tied to the blink state), bumpers in body colour with a black lower part, dark underside, tinted glass with environment reflections; the same
+mesh shows its inner faces from inside (no culled roof). Near and far detail levels; outside at most about +20 draw calls near; no new shader
+programs after the first load; shadows as today; physics and collision unchanged (box from the new size). The Grenzland chat's `GLK`
+(`grenzland/gl_karosse.js`) may be used read-only; nothing from `verkehr/`. Test: outside front 3/4, rear 3/4, side with the measures as a line
+overlay, night with lights and indicator, rain, before/after, driver view again; push once, report with paths, update
+`docs/features/cockpit.md`.
+
