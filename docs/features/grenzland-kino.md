@@ -41,11 +41,6 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   - Stiche: `start` (Paukenschlag und Akkord), `bestanden` (B-Dur → D-Dur), `gescheitert` (fallende Linie, dumpfer Schlag) – letzterer
     unter der Blende eines Fehlschlags.
   - Überblendung ~2 s; **stumm im freien Spiel und solange das Autoradio spielt**; **8 dB leiser**, solange eine Stimme spricht.
-- **Sucher beim Fotografieren** (Mission 4, `gl_kapitel1.js`): in den Foto-Schritten, zu Fuß, sobald man auf den Transporter zielt
-  (höchstens 35° neben der Blickrichtung, unter 60 m): Rahmen mit Ecken, Fokuskreis, Zähler „● FOTO 1/3 · 34 m“, grün, wenn das Foto
-  zählen würde (≤ 40 m, freie Sicht), sonst „zu weit“ / „keine Sicht“; bei jedem Foto ein weißer Blitz (der Auslöser-Ton kommt wie bisher
-  aus `GLTON.fx('foto')`). Ist die Handy-Kamera offen, zeigt deren Sucher. Das Bild fürs Handy: gibt es `GLHANDY.bild(url, info)` (oder
-  `galerie`), bekommt es ein kleines JPEG (320 px) jedes Missionsfotos.
 - **Das Büro im Außenlager** (`gl_lager.js`, Wunsch des Leads): innen Holzvertäfelung, dunkle Decke, eine Leuchte, die nachts brennt – die
   gerahmte Karte hängt sichtbar **innen** an der Rückwand. Gibt die Tür nach, zeigt ein **Zwischenschnitt** (3,4 s, `GLKAMERA.einstellung`)
   durch die Tür auf die Rückwand mit dem Rahmen; nicht, wenn ein Wachmann gerade jagt; Leertaste/Esc kürzt ab.
@@ -102,6 +97,7 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
 ## Offen
 
 - Gespräche auf dem fahrenden Moped bleiben ohne Bild (gewollt, wie GTA); ebenso alles bei Fahndung.
-- 1989 hat in Kapitel 1 keinen Foto-Schritt – der Sucher einer Filmkamera mit Bildzähler wartet auf Kapitel 2.
 - Die Musik ist nach Regeln komponiert und in Pegeln gemessen (Test `score`), gehört hat sie hier niemand: Falko bitte einmal anhören.
-- Für die Handy-Galerie fehlt eine Schnittstelle bei Agent welt (`GLHANDY.bild(url, info)`), die Bilder werden schon geliefert.
+- **Punkt 4 des Auftrags (Sucher für die Foto-Schritte) entfällt** – Lead 13:14: Falko wünscht ein echtes gemeinsames Handy (13:09), ein
+  neuer Agent `handy` baut es mit der Kamera-App und übernimmt `GLHANDY.kamera(o)` für die Foto-Schritte. Mein Sucher-Überzug war schon
+  gebaut und ist wieder entfernt (keine zwei Sucher).
