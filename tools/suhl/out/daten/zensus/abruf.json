@@ -1,0 +1,253 @@
+{
+ "made": "2026-11-13T02:14:19Z",
+ "page": "https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Zensus2022/_inhalt.html",
+ "themes": {
+  "einwohner": {
+   "file": "Zensus2022_Bevoelkerungszahl.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Zensus2022_Bevoelkerungszahl.zip",
+   "listed_on_page": true,
+   "bytes": 18501524,
+   "cells": 1346,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Einwohner"
+   ],
+   "rows": 3088037,
+   "ok": true
+  },
+  "alter": {
+   "file": "Alter_in_5_Altersklassen.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Alter_in_5_Altersklassen.zip",
+   "listed_on_page": true,
+   "bytes": 32352246,
+   "cells": 1346,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Insgesamt_Bevoelkerung",
+    "Unter18",
+    "a18bis29",
+    "a30bis49",
+    "a50bis64",
+    "a65undaelter"
+   ],
+   "rows": 3088037,
+   "ok": true
+  },
+  "alter10": {
+   "file": "Alter_in_10er-Jahresgruppen.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Alter_in_10er-Jahresgruppen.zip",
+   "listed_on_page": true,
+   "bytes": 36796386,
+   "cells": 1346,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Insgesamt_Bevoelkerung",
+    "Unter10",
+    "a10bis19",
+    "a20bis29",
+    "a30bis39",
+    "a40bis49",
+    "a50bis59",
+    "a60bis69",
+    "a70bis79",
+    "a80undaelter"
+   ],
+   "rows": 3088037,
+   "ok": true
+  },
+  "haushalte": {
+   "file": "Zensus2022_Groesse_des_privaten_Haushalts_in_Gitterzellen.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Zensus2022_Groesse_des_privaten_Haushalts_in_Gitterzellen.zip",
+   "listed_on_page": true,
+   "bytes": 24208870,
+   "cells": 1161,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Insgesamt_Haushalte",
+    "1_Person",
+    "2_Personen",
+    "3_Personen",
+    "4_Personen",
+    "5_Personen",
+    "6_Personen_und_mehr"
+   ],
+   "rows": 2557261,
+   "ok": true
+  },
+  "heizungsart": {
+   "file": "Gebaeude_mit_Wohnraum_nach_ueberwiegender_Heizungsart.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Gebaeude_mit_Wohnraum_nach_ueberwiegender_Heizungsart.zip",
+   "listed_on_page": true,
+   "bytes": 18674123,
+   "cells": 1126,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Insgesamt_Heizungsart",
+    "Fernheizung",
+    "Etagenheizung",
+    "Blockheizung",
+    "Zentralheizung",
+    "Einzel_Mehrraumoefen",
+    "keine_Heizung"
+   ],
+   "rows": 2371676,
+   "ok": true
+  },
+  "energietraeger": {
+   "file": "Gebaeude_mit_Wohnraum_nach_Energietraeger_der_Heizung.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Gebaeude_mit_Wohnraum_nach_Energietraeger_der_Heizung.zip",
+   "listed_on_page": true,
+   "bytes": 20943358,
+   "cells": 1126,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Insgesamt_Energietraeger",
+    "Gas",
+    "Heizoel",
+    "Holz_Holzpellets",
+    "Biomasse_Biogas",
+    "Solar_Geothermie_Waermepumpen",
+    "Strom",
+    "Kohle",
+    "Fernwaerme",
+    "kein_Energietraeger"
+   ],
+   "rows": 2371676,
+   "ok": true
+  },
+  "wohnungen": {
+   "file": "Wohnungen_nach_Gebaeudetyp_Groesse.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Wohnungen_nach_Gebaeudetyp_Groesse.zip",
+   "listed_on_page": true,
+   "bytes": 27285217,
+   "cells": 1209,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Insgesamt_Wohnungen",
+    "FreiEFH",
+    "EFH_DHH",
+    "EFH_Reihenhaus",
+    "Freist_ZFH",
+    "ZFH_DHH",
+    "ZFH_Reihenhaus",
+    "MFH_3bis6Wohnungen",
+    "MFH_7bis12Wohnungen",
+    "MFH_13undmehrWohnungen",
+    "AndererGebaeudetyp"
+   ],
+   "rows": 2628942,
+   "ok": true
+  },
+  "leerstand": {
+   "file": "Leerstandsquote_in_Gitterzellen.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Leerstandsquote_in_Gitterzellen.zip",
+   "listed_on_page": true,
+   "bytes": 15466245,
+   "cells": 1177,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Leerstandsquote",
+    "werterlaeuternde_Zeichen"
+   ],
+   "rows": 2566712,
+   "ok": true
+  },
+  "eigentum": {
+   "file": "Eigentuemerquote_in_Gitterzellen.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Eigentuemerquote_in_Gitterzellen.zip",
+   "listed_on_page": true,
+   "bytes": 17024936,
+   "cells": 1149,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Eigentuemerquote",
+    "werterlaeuternde_Zeichen"
+   ],
+   "rows": 2525440,
+   "ok": true
+  },
+  "wohnflaeche": {
+   "file": "Durchschnittliche_Wohnflaeche_je_Bewohner_in_Gitterzellen.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Durchschnittliche_Wohnflaeche_je_Bewohner_in_Gitterzellen.zip",
+   "listed_on_page": true,
+   "bytes": 19329151,
+   "cells": 1162,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "durchschnFlaechejeBew",
+    "werterlaeuternde_Zeichen"
+   ],
+   "rows": 2554606,
+   "ok": true
+  },
+  "gebaeudetyp": {
+   "file": "Gebaeude_mit_Wohnraum_nach_Gebaeudetyp_Groesse.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Gebaeude_mit_Wohnraum_nach_Gebaeudetyp_Groesse.zip",
+   "listed_on_page": true,
+   "bytes": 22088112,
+   "cells": 1126,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Insgesamt_Gebaeude",
+    "FreiEFH",
+    "EFH_DHH",
+    "EFH_Reihenhaus",
+    "Freist_ZFH",
+    "ZFH_DHH",
+    "ZFH_Reihenhaus",
+    "MFH_3bis6Wohnungen",
+    "MFH_7bis12Wohnungen",
+    "MFH_13undmehrWohnungen",
+    "AndererGebaeudetyp"
+   ],
+   "rows": 2371676,
+   "ok": true
+  },
+  "baujahr": {
+   "file": "Gebaeude_nach_Baujahr_in_Mikrozensus_Klassen.zip",
+   "url": "https://www.destatis.de/static/DE/zensus/gitterdaten/Gebaeude_nach_Baujahr_in_Mikrozensus_Klassen.zip",
+   "listed_on_page": true,
+   "bytes": 21739935,
+   "cells": 1126,
+   "columns": [
+    "GITTER_ID_100m",
+    "x_mp_100m",
+    "y_mp_100m",
+    "Insgesamt_Gebaeude",
+    "Vor1919",
+    "a1919bis1948",
+    "a1949bis1978",
+    "a1979bis1990",
+    "a1991bis2000",
+    "a2001bis2010",
+    "a2011bis2019",
+    "a2020undspaeter"
+   ],
+   "rows": 2371676,
+   "ok": true
+  }
+ },
+ "ok": 12
+}

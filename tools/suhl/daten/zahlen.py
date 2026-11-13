@@ -305,7 +305,7 @@ def numbers(b, fr, quarters, stats=None):
     d['q'] = q
     ex = {'E': cE, 'N': cN, 'nr': nr, 'fa': fa, 'gfa': gfa, 'dg': dg, 'vol': vol, 'rf': rf, 'ro': ro, 'ru': ru, 'pv': pv, 'pe': pe,
           'demand': demand, 'use': use, 'era': era, 'lv': lv, 'qlv': qlv, 'rq': rq, 'mesh_ok': mesh_ok, 'fg': fg, 'k': b.get('k', 0),
-          'bt': b.get('bt'), 'eg': b.get('eg'), 'id': b['id']}
+          'bt': b.get('bt'), 'eg': b.get('eg'), 'id': b['id'], 'ring': ring}
     return d, ex
 
 

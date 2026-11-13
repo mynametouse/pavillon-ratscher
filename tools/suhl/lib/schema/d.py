@@ -43,8 +43,9 @@ D_FIELDS = (
     ('pe', 'O', 'number', 'kWh per year', 'yearly yield of that potential'),
     ('res', 'O', 'number', 'persons', 'residents: MODEL ESTIMATE - the residents of the census cell (100 m) distributed by housing floor area; '
      'absent where the census shows no value for the cell'),
-    ('heat', 'O', '{k, d}', 'HEAT_KINDS, kWh per year', 'k: how the building is probably heated (the most frequent energy carrier of its census '
-     'cell - an estimate), d: heat demand per year by rule (floor area x value by use and era)'),
+    ('heat', 'O', '{k, p, d}', 'HEAT_KINDS, share 0..1, kWh per year', 'k: how the building is probably heated - the most frequent energy '
+     'carrier among the buildings with dwellings of its census cell (a MODEL ESTIMATE, dwelling houses only), p: the share of that carrier '
+     'in the cell (q.heat 1 from 0.6, else 0), d: heat demand per year, always by rule (floor area x value by use and era)'),
     ('fg', 'O', 'int', 'FLAGS', 'the flags of g (2 monument, 8 vacant, 16 demolition planned, 64 cadastre only, 128 new)'),
     ('q', 'R', '{field: 0..3}', 'QUALITY', 'quality of lv, rf (the roof planes), pv, era, vol, res, heat. A field missing here counts as 0.'),
     ('src', 'O', '{field: source id}', '', 'only where a field has another source than the tile names'),
@@ -128,9 +129,10 @@ def check_d_record(d, rep, where, half=None):
         rep.err(where, f'"pv"/"ru" = {d.get("pv")}/{d.get("ru")} exceed the sums of the planes {skw:.1f}/{sus:.1f}', 'd pv')
     if 'heat' in d:
         h = d['heat']
-        if not (isinstance(h, dict) and set(h) <= {'k', 'd'} and (('k' not in h) or h['k'] in HEAT_KINDS)
+        if not (isinstance(h, dict) and set(h) <= {'k', 'p', 'd'} and (('k' not in h) or h['k'] in HEAT_KINDS)
+                and (('p' not in h) or (is_num(h['p']) and 0 <= h['p'] <= 1 and 'k' in h))
                 and (('d' not in h) or (is_num(h['d']) and 0 <= h['d'] <= 1e9))):
-            rep.err(where, f'"heat" must be {{k: {" | ".join(HEAT_KINDS)}, d: kWh per year}}: {h!r}', 'd heat')
+            rep.err(where, f'"heat" must be {{k: {" | ".join(HEAT_KINDS)}, p: 0..1, d: kWh per year}}: {h!r}', 'd heat')
     if 'fg' in d and not (is_int(d['fg']) and 0 <= d['fg'] < 256):
         rep.err(where, '"fg" must be the flags of g (0..255)', 'd fg')
     q = d['q']
@@ -242,7 +244,7 @@ def check_viertel(doc, rep, where='d/viertel.json', version=None):
         if not isinstance(j, dict):
             rep.err(w, 'a quarter must be an object')
             continue
-        unknown_keys(j, QUARTER_KEYS + ('listed', 'vacant', 'attic', 'quality', 'residents', 'census', 'heat', 'age', 'households', 'housing'),
+        unknown_keys(j, QUARTER_KEYS + ('listed', 'vacant', 'attic', 'quality', 'residents', 'census'),
                      rep, w, 'quarter')
         miss = [k for k in ('nr', 'id', 'name', 'kind', 'area', 'center', 'poly', 'outline', 'tiles', 'official') if k not in j]
         if miss:

@@ -1,13 +1,13 @@
 {
- "made": "2026-11-13T02:02:28Z",
+ "made": "2026-11-13T02:14:55Z",
  "area": "probe",
  "g_folder": "v1",
  "g_version": 1,
  "tiles": 11,
  "buildings": 2479,
  "dropped_not_standing_or_unreadable": 23,
- "bytes": 678626,
- "bytes_viertel": 82141,
+ "bytes": 736208,
+ "bytes_viertel": 102266,
  "roof_check": {
   "planes": 3885,
   "n_az": 2377,
@@ -358,6 +358,74 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 5567.4,
+    "q": 1,
+    "buildings": 1083,
+    "unassigned": 696,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 135,
+    "residents": 5496,
+    "age": {
+     "u18": 668,
+     "18_29": 504,
+     "30_49": 1167,
+     "50_64": 1241,
+     "65plus": 1916,
+     "shown": 5496,
+     "share65": 0.349,
+     "shareU18": 0.122
+    },
+    "households": {
+     "1": 1776,
+     "2": 872,
+     "3": 258,
+     "4": 149,
+     "5": 39,
+     "6plus": 12,
+     "n": 3215,
+     "share1": 0.552
+    },
+    "housingBuildings": 933,
+    "heatBy": {
+     "gas": 641,
+     "fern": 168,
+     "kohle": 14,
+     "oel": 28,
+     "kein": 7,
+     "holz": 9,
+     "strom": 3,
+     "wp": 6,
+     "shown": 876
+    },
+    "heatType": {
+     "fern": 168,
+     "etage": 133,
+     "zentral": 529,
+     "ofen": 23,
+     "keine": 7,
+     "block": 12
+    },
+    "buildingTypes": {
+     "efh": 340,
+     "zfh": 115,
+     "mfh_3_6": 171,
+     "mfh_7_12": 100,
+     "mfh_13plus": 29,
+     "anderer": 40
+    },
+    "dwellings": 3668,
+    "vacantShown": 273,
+    "vacancyMin": 0.074,
+    "ownerShown": 779,
+    "ownerRateMin": 0.212,
+    "livingArea": 267723,
+    "livingAreaPerResident": 49.2
    }
   },
   "nord": {
@@ -373,6 +441,73 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 2933.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 2933,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 120,
+    "residents": 2933,
+    "age": {
+     "65plus": 742,
+     "50_64": 720,
+     "u18": 417,
+     "30_49": 698,
+     "18_29": 336,
+     "shown": 2913,
+     "share65": 0.255,
+     "shareU18": 0.143
+    },
+    "households": {
+     "2": 448,
+     "1": 743,
+     "3": 152,
+     "4": 75,
+     "6plus": 34,
+     "5": 20,
+     "n": 1528,
+     "share1": 0.486
+    },
+    "housingBuildings": 512,
+    "heatBy": {
+     "oel": 18,
+     "fern": 113,
+     "gas": 269,
+     "strom": 21,
+     "kein": 15,
+     "kohle": 6,
+     "holz": 21,
+     "wp": 6,
+     "shown": 469
+    },
+    "heatType": {
+     "ofen": 37,
+     "zentral": 244,
+     "fern": 113,
+     "etage": 31,
+     "keine": 15
+    },
+    "buildingTypes": {
+     "efh": 328,
+     "mfh_7_12": 75,
+     "mfh_13plus": 13,
+     "anderer": 21,
+     "mfh_3_6": 6,
+     "zfh": 36
+    },
+    "dwellings": 2023,
+    "vacantShown": 393,
+    "vacancyMin": 0.194,
+    "ownerShown": 423,
+    "ownerRateMin": 0.209,
+    "livingArea": 133239,
+    "livingAreaPerResident": 47.3
    }
   },
   "lautenberg": {
@@ -388,6 +523,72 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 3529.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 3529,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 174,
+    "residents": 3529,
+    "age": {
+     "u18": 423,
+     "30_49": 689,
+     "65plus": 1206,
+     "18_29": 220,
+     "50_64": 939,
+     "shown": 3477,
+     "share65": 0.347,
+     "shareU18": 0.122
+    },
+    "households": {
+     "1": 633,
+     "2": 688,
+     "3": 226,
+     "4": 139,
+     "5": 6,
+     "6plus": 15,
+     "n": 1795,
+     "share1": 0.353
+    },
+    "housingBuildings": 1195,
+    "heatBy": {
+     "gas": 835,
+     "oel": 124,
+     "fern": 57,
+     "wp": 52,
+     "kohle": 9,
+     "holz": 21,
+     "strom": 9,
+     "shown": 1107
+    },
+    "heatType": {
+     "zentral": 931,
+     "etage": 72,
+     "fern": 63,
+     "ofen": 38,
+     "block": 20,
+     "keine": 3
+    },
+    "buildingTypes": {
+     "efh": 920,
+     "zfh": 106,
+     "mfh_3_6": 57,
+     "mfh_7_12": 47,
+     "anderer": 6
+    },
+    "dwellings": 1931,
+    "vacantShown": 25,
+    "vacancyMin": 0.013,
+    "ownerShown": 1222,
+    "ownerRateMin": 0.633,
+    "livingArea": 190147,
+    "livingAreaPerResident": 55.6
    }
   },
   "aue": {
@@ -403,6 +604,71 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 3829.0,
+    "q": 1,
+    "buildings": 43,
+    "unassigned": 1711,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 74,
+    "residents": 3934,
+    "age": {
+     "50_64": 836,
+     "65plus": 1674,
+     "30_49": 666,
+     "u18": 451,
+     "18_29": 329,
+     "shown": 3956,
+     "share65": 0.423,
+     "shareU18": 0.114
+    },
+    "households": {
+     "1": 1308,
+     "5": 31,
+     "2": 675,
+     "6plus": 15,
+     "3": 170,
+     "4": 86,
+     "n": 2303,
+     "share1": 0.568
+    },
+    "housingBuildings": 399,
+    "heatBy": {
+     "gas": 201,
+     "fern": 161,
+     "oel": 23,
+     "kohle": 9,
+     "strom": 9,
+     "wp": 3,
+     "holz": 6,
+     "shown": 412
+    },
+    "heatType": {
+     "fern": 158,
+     "zentral": 185,
+     "etage": 36,
+     "block": 6,
+     "ofen": 21
+    },
+    "buildingTypes": {
+     "mfh_7_12": 110,
+     "mfh_13plus": 21,
+     "zfh": 50,
+     "efh": 143,
+     "mfh_3_6": 21
+    },
+    "dwellings": 2544,
+    "vacantShown": 190,
+    "vacancyMin": 0.075,
+    "ownerShown": 283,
+    "ownerRateMin": 0.111,
+    "livingArea": 179145,
+    "livingAreaPerResident": 45.9
    }
   },
   "friedberg": {
@@ -418,6 +684,74 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 1863.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 1863,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 77,
+    "residents": 1863,
+    "age": {
+     "50_64": 362,
+     "30_49": 527,
+     "65plus": 298,
+     "u18": 269,
+     "18_29": 375,
+     "shown": 1831,
+     "share65": 0.163,
+     "shareU18": 0.147
+    },
+    "households": {
+     "2": 213,
+     "1": 342,
+     "3": 55,
+     "4": 33,
+     "5": 6,
+     "6plus": 3,
+     "n": 718,
+     "share1": 0.476
+    },
+    "housingBuildings": 279,
+    "heatBy": {
+     "gas": 101,
+     "oel": 82,
+     "fern": 9,
+     "kein": 9,
+     "wp": 16,
+     "kohle": 6,
+     "strom": 6,
+     "holz": 5,
+     "shown": 234
+    },
+    "heatType": {
+     "zentral": 193,
+     "etage": 12,
+     "fern": 9,
+     "ofen": 9,
+     "keine": 12,
+     "block": 3
+    },
+    "buildingTypes": {
+     "efh": 174,
+     "zfh": 20,
+     "mfh_3_6": 6,
+     "mfh_7_12": 31,
+     "mfh_13plus": 9,
+     "anderer": 6
+    },
+    "dwellings": 887,
+    "vacantShown": 114,
+    "vacancyMin": 0.129,
+    "ownerShown": 208,
+    "ownerRateMin": 0.234,
+    "livingArea": 58704,
+    "livingAreaPerResident": 47.6
    }
   },
   "doellberg": {
@@ -433,6 +767,72 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 2863.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 2863,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 69,
+    "residents": 2863,
+    "age": {
+     "30_49": 501,
+     "50_64": 707,
+     "65plus": 1204,
+     "u18": 219,
+     "18_29": 195,
+     "shown": 2826,
+     "share65": 0.426,
+     "shareU18": 0.077
+    },
+    "households": {
+     "1": 851,
+     "2": 525,
+     "3": 163,
+     "4": 49,
+     "5": 9,
+     "6plus": 6,
+     "n": 1623,
+     "share1": 0.524
+    },
+    "housingBuildings": 509,
+    "heatBy": {
+     "gas": 394,
+     "oel": 13,
+     "holz": 15,
+     "fern": 64,
+     "kein": 3,
+     "wp": 3,
+     "shown": 492
+    },
+    "heatType": {
+     "zentral": 386,
+     "ofen": 6,
+     "fern": 64,
+     "block": 12,
+     "etage": 18,
+     "keine": 3
+    },
+    "buildingTypes": {
+     "efh": 318,
+     "zfh": 21,
+     "mfh_3_6": 33,
+     "anderer": 3,
+     "mfh_7_12": 106,
+     "mfh_13plus": 13
+    },
+    "dwellings": 1817,
+    "vacantShown": 143,
+    "vacancyMin": 0.079,
+    "ownerShown": 389,
+    "ownerRateMin": 0.214,
+    "livingArea": 131588,
+    "livingAreaPerResident": 47.1
    }
   },
   "ilmenauer": {
@@ -448,6 +848,72 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 4439.2,
+    "q": 1,
+    "buildings": 30,
+    "unassigned": 4378,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 75,
+    "residents": 4406,
+    "age": {
+     "18_29": 465,
+     "50_64": 906,
+     "65plus": 1695,
+     "30_49": 878,
+     "u18": 460,
+     "shown": 4404,
+     "share65": 0.385,
+     "shareU18": 0.104
+    },
+    "households": {
+     "1": 1567,
+     "2": 851,
+     "3": 190,
+     "4": 81,
+     "6plus": 6,
+     "5": 24,
+     "n": 2784,
+     "share1": 0.563
+    },
+    "housingBuildings": 472,
+    "heatBy": {
+     "gas": 154,
+     "strom": 15,
+     "fern": 231,
+     "wp": 14,
+     "oel": 3,
+     "kohle": 3,
+     "holz": 3,
+     "shown": 423
+    },
+    "heatType": {
+     "zentral": 181,
+     "fern": 238,
+     "block": 3,
+     "ofen": 6,
+     "etage": 3
+    },
+    "buildingTypes": {
+     "efh": 109,
+     "zfh": 18,
+     "mfh_7_12": 231,
+     "mfh_13plus": 18,
+     "mfh_3_6": 40,
+     "anderer": 12
+    },
+    "dwellings": 3375,
+    "vacantShown": 401,
+    "vacancyMin": 0.119,
+    "ownerShown": 168,
+    "ownerRateMin": 0.05,
+    "livingArea": 195425,
+    "livingAreaPerResident": 44.5
    }
   },
   "goldlauter": {
@@ -463,6 +929,73 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 2439.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 2439,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 126,
+    "residents": 2439,
+    "age": {
+     "u18": 283,
+     "30_49": 535,
+     "50_64": 607,
+     "65plus": 810,
+     "18_29": 140,
+     "shown": 2375,
+     "share65": 0.341,
+     "shareU18": 0.119
+    },
+    "households": {
+     "1": 330,
+     "2": 434,
+     "3": 150,
+     "4": 83,
+     "5": 21,
+     "6plus": 3,
+     "n": 1119,
+     "share1": 0.295
+    },
+    "housingBuildings": 911,
+    "heatBy": {
+     "gas": 493,
+     "oel": 128,
+     "strom": 34,
+     "kohle": 12,
+     "fern": 44,
+     "holz": 27,
+     "wp": 6,
+     "kein": 12,
+     "shown": 756
+    },
+    "heatType": {
+     "fern": 47,
+     "zentral": 651,
+     "ofen": 74,
+     "etage": 86,
+     "block": 6,
+     "keine": 12
+    },
+    "buildingTypes": {
+     "efh": 610,
+     "zfh": 114,
+     "mfh_3_6": 32,
+     "anderer": 15,
+     "mfh_7_12": 6
+    },
+    "dwellings": 1269,
+    "vacantShown": 70,
+    "vacancyMin": 0.055,
+    "ownerShown": 893,
+    "ownerRateMin": 0.704,
+    "livingArea": 119529,
+    "livingAreaPerResident": 53.9
    }
   },
   "neundorf": {
@@ -478,6 +1011,70 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 1273.7,
+    "q": 1,
+    "buildings": 141,
+    "unassigned": 934,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 69,
+    "residents": 1274,
+    "age": {
+     "u18": 178,
+     "30_49": 250,
+     "50_64": 337,
+     "65plus": 421,
+     "18_29": 78,
+     "shown": 1264,
+     "share65": 0.333,
+     "shareU18": 0.141
+    },
+    "households": {
+     "2": 213,
+     "3": 86,
+     "1": 183,
+     "4": 50,
+     "5": 15,
+     "n": 599,
+     "share1": 0.306
+    },
+    "housingBuildings": 439,
+    "heatBy": {
+     "gas": 331,
+     "holz": 21,
+     "oel": 24,
+     "kein": 3,
+     "fern": 18,
+     "wp": 13,
+     "shown": 410
+    },
+    "heatType": {
+     "zentral": 352,
+     "ofen": 15,
+     "etage": 35,
+     "keine": 3,
+     "block": 6,
+     "fern": 21
+    },
+    "buildingTypes": {
+     "efh": 313,
+     "zfh": 42,
+     "mfh_3_6": 38,
+     "mfh_7_12": 3,
+     "anderer": 3
+    },
+    "dwellings": 683,
+    "vacantShown": 38,
+    "vacancyMin": 0.056,
+    "ownerShown": 500,
+    "ownerRateMin": 0.731,
+    "livingArea": 66647,
+    "livingAreaPerResident": 53.3
    }
   },
   "heinrichs": {
@@ -493,6 +1090,73 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 1074.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 1074,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 64,
+    "residents": 1074,
+    "age": {
+     "u18": 144,
+     "18_29": 66,
+     "30_49": 220,
+     "50_64": 286,
+     "65plus": 307,
+     "shown": 1023,
+     "share65": 0.3,
+     "shareU18": 0.141
+    },
+    "households": {
+     "2": 174,
+     "3": 66,
+     "4": 38,
+     "5": 6,
+     "1": 149,
+     "6plus": 3,
+     "n": 502,
+     "share1": 0.297
+    },
+    "housingBuildings": 405,
+    "heatBy": {
+     "gas": 301,
+     "oel": 22,
+     "kein": 18,
+     "kohle": 6,
+     "fern": 19,
+     "holz": 16,
+     "wp": 6,
+     "strom": 6,
+     "shown": 394
+    },
+    "heatType": {
+     "zentral": 257,
+     "ofen": 22,
+     "etage": 34,
+     "fern": 22,
+     "block": 6,
+     "keine": 15
+    },
+    "buildingTypes": {
+     "efh": 250,
+     "mfh_3_6": 30,
+     "mfh_7_12": 6,
+     "anderer": 15,
+     "zfh": 62
+    },
+    "dwellings": 605,
+    "vacantShown": 60,
+    "vacancyMin": 0.099,
+    "ownerShown": 409,
+    "ownerRateMin": 0.675,
+    "livingArea": 53234,
+    "livingAreaPerResident": 51.4
    }
   },
   "maebendorf": {
@@ -508,6 +1172,68 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 608.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 608,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 44,
+    "residents": 608,
+    "age": {
+     "u18": 72,
+     "50_64": 188,
+     "65plus": 166,
+     "30_49": 125,
+     "18_29": 39,
+     "shown": 590,
+     "share65": 0.281,
+     "shareU18": 0.122
+    },
+    "households": {
+     "1": 99,
+     "2": 128,
+     "4": 24,
+     "3": 39,
+     "5": 3,
+     "n": 309,
+     "share1": 0.32
+    },
+    "housingBuildings": 206,
+    "heatBy": {
+     "gas": 107,
+     "oel": 37,
+     "fern": 16,
+     "holz": 3,
+     "wp": 3,
+     "shown": 166
+    },
+    "heatType": {
+     "etage": 12,
+     "zentral": 162,
+     "fern": 22,
+     "ofen": 3,
+     "block": 3
+    },
+    "buildingTypes": {
+     "efh": 152,
+     "zfh": 41,
+     "mfh_3_6": 9,
+     "mfh_7_12": 3,
+     "anderer": 6
+    },
+    "dwellings": 314,
+    "vacantShown": 3,
+    "vacancyMin": 0.01,
+    "ownerShown": 199,
+    "ownerRateMin": 0.632,
+    "livingArea": 32498,
+    "livingAreaPerResident": 56.3
    }
   },
   "albrechts": {
@@ -523,6 +1249,72 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 1135.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 1135,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 76,
+    "residents": 1135,
+    "age": {
+     "u18": 170,
+     "18_29": 64,
+     "30_49": 256,
+     "50_64": 319,
+     "65plus": 312,
+     "shown": 1121,
+     "share65": 0.278,
+     "shareU18": 0.152
+    },
+    "households": {
+     "1": 166,
+     "2": 208,
+     "3": 58,
+     "4": 36,
+     "5": 9,
+     "6plus": 3,
+     "n": 542,
+     "share1": 0.306
+    },
+    "housingBuildings": 420,
+    "heatBy": {
+     "gas": 229,
+     "strom": 9,
+     "oel": 94,
+     "kein": 16,
+     "holz": 12,
+     "kohle": 3,
+     "wp": 6,
+     "fern": 21,
+     "shown": 390
+    },
+    "heatType": {
+     "zentral": 316,
+     "ofen": 28,
+     "keine": 16,
+     "etage": 20,
+     "fern": 24
+    },
+    "buildingTypes": {
+     "efh": 302,
+     "mfh_3_6": 12,
+     "zfh": 45,
+     "anderer": 9,
+     "mfh_7_12": 8
+    },
+    "dwellings": 624,
+    "vacantShown": 38,
+    "vacancyMin": 0.061,
+    "ownerShown": 388,
+    "ownerRateMin": 0.621,
+    "livingArea": 58914,
+    "livingAreaPerResident": 54.8
    }
   },
   "dietzhausen": {
@@ -538,6 +1330,73 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 1038.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 1038,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 63,
+    "residents": 1038,
+    "age": {
+     "50_64": 284,
+     "u18": 181,
+     "30_49": 222,
+     "65plus": 267,
+     "18_29": 52,
+     "shown": 1006,
+     "share65": 0.265,
+     "shareU18": 0.18
+    },
+    "households": {
+     "1": 113,
+     "2": 176,
+     "3": 57,
+     "4": 30,
+     "5": 24,
+     "6plus": 3,
+     "n": 448,
+     "share1": 0.252
+    },
+    "housingBuildings": 395,
+    "heatBy": {
+     "gas": 178,
+     "oel": 109,
+     "holz": 18,
+     "strom": 22,
+     "kohle": 3,
+     "wp": 9,
+     "fern": 3,
+     "kein": 3,
+     "shown": 345
+    },
+    "heatType": {
+     "zentral": 296,
+     "etage": 9,
+     "ofen": 27,
+     "block": 9,
+     "fern": 3,
+     "keine": 3
+    },
+    "buildingTypes": {
+     "anderer": 18,
+     "efh": 318,
+     "mfh_3_6": 15,
+     "zfh": 52,
+     "mfh_7_12": 3
+    },
+    "dwellings": 493,
+    "vacantShown": 12,
+    "vacancyMin": 0.024,
+    "ownerShown": 390,
+    "ownerRateMin": 0.792,
+    "livingArea": 57604,
+    "livingAreaPerResident": 59.0
    }
   },
   "wichtshausen": {
@@ -553,6 +1412,67 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 434.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 434,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 25,
+    "residents": 434,
+    "age": {
+     "u18": 54,
+     "30_49": 87,
+     "65plus": 163,
+     "50_64": 102,
+     "18_29": 26,
+     "shown": 432,
+     "share65": 0.377,
+     "shareU18": 0.125
+    },
+    "households": {
+     "1": 54,
+     "2": 95,
+     "6plus": 6,
+     "4": 15,
+     "3": 36,
+     "n": 203,
+     "share1": 0.266
+    },
+    "housingBuildings": 174,
+    "heatBy": {
+     "gas": 62,
+     "oel": 59,
+     "holz": 6,
+     "kein": 6,
+     "strom": 9,
+     "wp": 3,
+     "shown": 145
+    },
+    "heatType": {
+     "zentral": 146,
+     "ofen": 15,
+     "etage": 9,
+     "keine": 6
+    },
+    "buildingTypes": {
+     "efh": 106,
+     "zfh": 31,
+     "anderer": 9,
+     "mfh_3_6": 12
+    },
+    "dwellings": 231,
+    "vacantShown": 5,
+    "vacancyMin": 0.021,
+    "ownerShown": 178,
+    "ownerRateMin": 0.769,
+    "livingArea": 22718,
+    "livingAreaPerResident": 52.8
    }
   },
   "vesser": {
@@ -568,6 +1488,63 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 143.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 143,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 15,
+    "residents": 143,
+    "age": {
+     "50_64": 52,
+     "65plus": 40,
+     "u18": 12,
+     "30_49": 17,
+     "18_29": 7,
+     "shown": 128,
+     "share65": 0.312,
+     "shareU18": 0.094
+    },
+    "households": {
+     "2": 38,
+     "3": 6,
+     "1": 16,
+     "5": 3,
+     "4": 3,
+     "n": 81,
+     "share1": 0.198
+    },
+    "housingBuildings": 96,
+    "heatBy": {
+     "oel": 40,
+     "gas": 20,
+     "holz": 18,
+     "kein": 3,
+     "shown": 81
+    },
+    "heatType": {
+     "zentral": 77,
+     "ofen": 3,
+     "keine": 3
+    },
+    "buildingTypes": {
+     "efh": 68,
+     "zfh": 9,
+     "anderer": 3
+    },
+    "dwellings": 114,
+    "vacantShown": 11,
+    "vacancyMin": 0.095,
+    "ownerShown": 101,
+    "ownerRateMin": 0.89,
+    "livingArea": 9215,
+    "livingAreaPerResident": 67.3
    }
   },
   "schmiedefeld": {
@@ -583,6 +1560,73 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 1600.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 1600,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 97,
+    "residents": 1600,
+    "age": {
+     "u18": 200,
+     "30_49": 318,
+     "50_64": 435,
+     "65plus": 487,
+     "18_29": 99,
+     "shown": 1539,
+     "share65": 0.316,
+     "shareU18": 0.13
+    },
+    "households": {
+     "1": 222,
+     "2": 270,
+     "4": 39,
+     "3": 109,
+     "5": 18,
+     "6plus": 9,
+     "n": 745,
+     "share1": 0.298
+    },
+    "housingBuildings": 629,
+    "heatBy": {
+     "gas": 454,
+     "holz": 50,
+     "wp": 15,
+     "oel": 19,
+     "kohle": 19,
+     "fern": 9,
+     "kein": 13,
+     "strom": 3,
+     "shown": 582
+    },
+    "heatType": {
+     "etage": 50,
+     "zentral": 484,
+     "block": 6,
+     "ofen": 54,
+     "fern": 12,
+     "keine": 21
+    },
+    "buildingTypes": {
+     "efh": 366,
+     "zfh": 97,
+     "mfh_3_6": 49,
+     "anderer": 22,
+     "mfh_7_12": 6
+    },
+    "dwellings": 931,
+    "vacantShown": 75,
+    "vacancyMin": 0.08,
+    "ownerShown": 629,
+    "ownerRateMin": 0.676,
+    "livingArea": 80194,
+    "livingAreaPerResident": 52.6
    }
   },
   "gehlberg": {
@@ -598,7 +1642,144 @@
     "year": 2022,
     "date": "2022-12-31",
     "src": "Stadt Suhl, Einwohner mit Hauptwohnsitz je Stadtteil (Sozialplan 2025-29, Jugendatlas 2022); docs/plans/suhl/stadt.md"
+   },
+   "residents": {
+    "model": 465.0,
+    "q": 1,
+    "buildings": 0,
+    "unassigned": 465,
+    "how": "Modell-Schätzung: Einwohner jeder Zensus-Zelle (100 m, 15.05.2022) nach Wohn-Geschossfläche auf ihre Wohngebäude verteilt; „unassigned“ = Einwohner von Zellen ohne passendes Gebäude, hier nach Zellmitte gezählt"
+   },
+   "census": {
+    "year": 2022,
+    "date": "2022-05-15",
+    "cells": 43,
+    "residents": 465,
+    "age": {
+     "18_29": 23,
+     "50_64": 116,
+     "30_49": 84,
+     "65plus": 173,
+     "u18": 45,
+     "shown": 441,
+     "share65": 0.392,
+     "shareU18": 0.102
+    },
+    "households": {
+     "1": 59,
+     "2": 74,
+     "3": 15,
+     "4": 12,
+     "6plus": 3,
+     "n": 218,
+     "share1": 0.271
+    },
+    "housingBuildings": 205,
+    "heatBy": {
+     "gas": 157,
+     "holz": 21,
+     "kohle": 3,
+     "strom": 6,
+     "kein": 3,
+     "oel": 3,
+     "shown": 193
+    },
+    "heatType": {
+     "zentral": 159,
+     "ofen": 15,
+     "etage": 15,
+     "keine": 3
+    },
+    "buildingTypes": {
+     "efh": 158,
+     "zfh": 21,
+     "mfh_3_6": 15,
+     "anderer": 3
+    },
+    "dwellings": 283,
+    "vacantShown": 28,
+    "vacancyMin": 0.099,
+    "ownerShown": 206,
+    "ownerRateMin": 0.729,
+    "livingArea": 22830,
+    "livingAreaPerResident": 52.2
    }
+  }
+ },
+ "zensus": {
+  "cells": 1386,
+  "city": {
+   "year": 2022,
+   "date": "2022-05-15",
+   "cells": 1346,
+   "residents": 35234,
+   "age": {
+    "30_49": 7240,
+    "50_64": 8437,
+    "65plus": 11881,
+    "u18": 4246,
+    "18_29": 3018,
+    "shown": 34822,
+    "share65": 0.341,
+    "shareU18": 0.122
+   },
+   "households": {
+    "1": 8611,
+    "2": 6082,
+    "3": 1836,
+    "4": 942,
+    "5": 234,
+    "6plus": 121,
+    "n": 18732,
+    "share1": 0.46
+   },
+   "housingBuildings": 8179,
+   "heatBy": {
+    "gas": 4927,
+    "oel": 826,
+    "strom": 152,
+    "kohle": 93,
+    "fern": 933,
+    "holz": 272,
+    "kein": 111,
+    "wp": 161,
+    "shown": 7475
+   },
+   "heatType": {
+    "zentral": 5549,
+    "fern": 964,
+    "ofen": 396,
+    "etage": 575,
+    "block": 92,
+    "keine": 122
+   },
+   "buildingTypes": {
+    "efh": 4975,
+    "zfh": 880,
+    "mfh_3_6": 546,
+    "mfh_7_12": 735,
+    "anderer": 191,
+    "mfh_13plus": 103
+   },
+   "dwellings": 21792,
+   "vacantShown": 1878,
+   "vacancyMin": 0.086,
+   "ownerShown": 7364,
+   "ownerRateMin": 0.338,
+   "livingArea": 1679355,
+   "livingAreaPerResident": 49.9
+  },
+  "buildings_with_residents": {
+   "q1": 1287,
+   "q0": 10
+  },
+  "residents_on_buildings": 7390.3,
+  "residents_unassigned": 27843,
+  "cells_unassigned": 1213,
+  "cells_dense_over_1_per_10m2": 3,
+  "buildings_with_heat_kind": {
+   "q1": 1079,
+   "q0": 151
   }
  }
 }

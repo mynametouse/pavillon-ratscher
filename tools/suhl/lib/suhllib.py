@@ -28,7 +28,7 @@ ALL functions take and return (lon, lat) - x first, like GeoJSON - and refuse sw
 """
 import base64, hashlib, json, math, os, sys, time, urllib.error, urllib.parse, urllib.request
 
-VERSION = '0.2.0'          # of this library
+VERSION = '0.3.0'          # of this library
 SCHEMA = 1                 # schema number of the Suhl products (docs/features/suhl-daten.md); raised when a reader must change
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -297,6 +297,69 @@ def model_from_lonlat(lon, lat):
 
 def lonlat_from_model(x, y):
     return lonlat_from_utm(*utm_from_model(x, y))
+
+
+# ETRS89-LAEA Europe (EPSG:3035) on GRS80 - the grid of the census 2022 (cells of 100 m named by their south-west corner).
+# Lambert azimuthal equal area, oblique, as in EPSG Guidance Note 7-2; scalars only.
+_L_LAT0, _L_LON0, _L_FE, _L_FN = math.radians(52.0), math.radians(10.0), 4321000.0, 3210000.0
+_E2 = 2 * _F - _F * _F
+_EC = math.sqrt(_E2)
+
+
+def _laea_q(ph):
+    s = math.sin(ph)
+    return (1 - _E2) * (s / (1 - _E2 * s * s) - math.log((1 - _EC * s) / (1 + _EC * s)) / (2 * _EC))
+
+
+_L_QP = _laea_q(math.pi / 2)
+_L_B0 = math.asin(_laea_q(_L_LAT0) / _L_QP)
+_L_RQ = _A * math.sqrt(_L_QP / 2)
+_L_D = _A * math.cos(_L_LAT0) / (math.sqrt(1 - _E2 * math.sin(_L_LAT0) ** 2) * _L_RQ * math.cos(_L_B0))
+
+
+def laea_from_lonlat(lon, lat):
+    """ETRS89 (lon, lat in degrees) -> ETRS89-LAEA Europe, EPSG:3035 (x east, y north)"""
+    _check_lonlat(lon, lat, False)
+    be = math.asin(_laea_q(math.radians(lat)) / _L_QP)
+    dl = math.radians(lon) - _L_LON0
+    b = _L_RQ * math.sqrt(2 / (1 + math.sin(_L_B0) * math.sin(be) + math.cos(_L_B0) * math.cos(be) * math.cos(dl)))
+    return (_L_FE + b * _L_D * math.cos(be) * math.sin(dl),
+            _L_FN + b / _L_D * (math.cos(_L_B0) * math.sin(be) - math.sin(_L_B0) * math.cos(be) * math.cos(dl)))
+
+
+def lonlat_from_laea(x, y):
+    """EPSG:3035 -> ETRS89 (lon, lat in degrees)"""
+    x, y = x - _L_FE, y - _L_FN
+    rho = math.hypot(x / _L_D, _L_D * y)
+    if rho < 1e-9:
+        return math.degrees(_L_LON0), math.degrees(_L_LAT0)
+    c = 2 * math.asin(rho / (2 * _L_RQ))
+    be = math.asin(math.cos(c) * math.sin(_L_B0) + _L_D * y * math.sin(c) * math.cos(_L_B0) / rho)
+    lon = _L_LON0 + math.atan2(x * math.sin(c), _L_D * rho * math.cos(_L_B0) * math.cos(c) - _L_D * _L_D * y * math.sin(_L_B0) * math.sin(c))
+    e4, e6 = _E2 * _E2, _E2 ** 3
+    lat = (be + (_E2 / 3 + 31 * e4 / 180 + 517 * e6 / 5040) * math.sin(2 * be) + (23 * e4 / 360 + 251 * e6 / 3780) * math.sin(4 * be)
+           + 761 * e6 / 45360 * math.sin(6 * be))
+    return math.degrees(lon), math.degrees(lat)
+
+
+def laea_from_utm(E, N):
+    """UTM 32N -> EPSG:3035 (the census grid); both on ETRS89"""
+    return laea_from_lonlat(*lonlat_from_utm(E, N))
+
+
+def utm_from_laea(x, y):
+    return utm_from_lonlat(*lonlat_from_laea(x, y))
+
+
+def census_cell(E, N, size=100):
+    """the census grid cell a UTM point lies in: (column, row) = (x // size, y // size) in EPSG:3035"""
+    x, y = laea_from_utm(E, N)
+    return int(x // size), int(y // size)
+
+
+def census_cell_id(col, row, size=100):
+    """the INSPIRE name of a cell, as the census files write it: CRS3035RES100mN<south edge>E<west edge>"""
+    return f'CRS3035RES{size}mN{row * size}E{col * size}'
 
 
 def convergence_deg(E, N):

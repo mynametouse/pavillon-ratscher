@@ -99,6 +99,22 @@ class Coordinates(unittest.TestCase):
             S.utm_from_lonlat(10.69, 95.0)
         S.utm_from_lonlat(10.6926, 50.6087)
 
+    def test_census_grid(self):
+        # ETRS89-LAEA Europe (EPSG:3035): the worked example of EPSG Guidance Note 7-2 and the origin of the projection
+        x, y = S.laea_from_lonlat(5.0, 50.0)
+        self.assertAlmostEqual(x, 3962799.45, delta=0.01)
+        self.assertAlmostEqual(y, 2999718.85, delta=0.01)
+        self.assertEqual(tuple(round(v, 6) for v in S.laea_from_lonlat(10.0, 52.0)), (4321000.0, 3210000.0))
+        lon, lat = S.lonlat_from_laea(x, y)
+        self.assertAlmostEqual(lon, 5.0, places=7)
+        self.assertAlmostEqual(lat, 50.0, places=7)
+        E, N = S.utm_from_laea(*S.laea_from_utm(*S.CENTRE_UTM))
+        self.assertAlmostEqual(E, S.CENTRE_UTM[0], delta=0.002)
+        self.assertAlmostEqual(N, S.CENTRE_UTM[1], delta=0.002)
+        # the census cell of the Markt and its name as the census files write it
+        self.assertEqual(S.census_cell(*S.CENTRE_UTM), (43700, 30554))
+        self.assertEqual(S.census_cell_id(43700, 30554), 'CRS3035RES100mN3055400E4370000')
+
     def test_azimuth(self):
         g = S.convergence_deg(*S.CENTRE_UTM)
         self.assertAlmostEqual(g, 1.308, places=2)
