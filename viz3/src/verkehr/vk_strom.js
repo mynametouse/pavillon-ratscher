@@ -24,6 +24,8 @@ import { VAUTO } from './verkehr_auto.js';
 import { VKTYPEN } from './vk_typen.js';
 import { VKMOD } from './vk_modelle.js';
 import { VKDICHTE } from './vk_dichte.js';
+import { VKREGELN } from './vk_regeln.js';
+import { STRDAT } from '../strassen/strassen_daten.js';
 export const VKSTROM = (() => {
   const S = {
     R: COARSE ? 380 : 520, // the ring (m)
@@ -126,6 +128,29 @@ export const VKSTROM = (() => {
       ? [13.9, 13.9, 13.9, 13.9, 8.3, 5.6][e.kind] || 8.3
       : [33, 25, 22, 16.7, 11, 6][e.kind] || 8.3;
   const laneOf = e => Math.max(0.75, Math.min(1.75, e.w / 4));
+  // feat/verkehr-real stage 2: the signs and painted lines of strassen/ (the file and the sets that came with STRDAT.add) as indices,
+  // made again when they change
+  const SL = { rev: -1, S: null, L: null };
+  function signIdx() {
+    const rev = STRDAT.ready ? STRDAT.rev : -2;
+    if (rev !== SL.rev) {
+      SL.rev = rev;
+      const sg = [],
+        ln = [];
+      const take = d => {
+        if (!d) return;
+        sg.push(...VKREGELN.signs(d.schilder));
+        ln.push(...VKREGELN.lines(d.linien));
+      };
+      if (STRDAT.ready) {
+        take(STRDAT.data);
+        if (STRDAT.sets) for (const st of STRDAT.sets.values()) take(st.data);
+      }
+      SL.S = sg.length ? VKREGELN.index(sg) : null;
+      SL.L = ln.length ? VKREGELN.index(ln) : null;
+    }
+    return SL;
+  }
   function build(o) {
     const t0 = performance.now(),
       { ways, src } = waysNear(o[0], o[1], S.R + 60);
@@ -191,6 +216,15 @@ export const VKSTROM = (() => {
               Math.abs(n.y - B[3]) < 10);
         if (e.kind <= 2 || atBox) n.exit = true;
       }
+    }
+    {
+      const I = signIdx(),
+        R = new Map();
+      G.ruleOf = ni => {
+        let r = R.get(ni);
+        if (r === undefined) R.set(ni, (r = G.nodes[ni].edges.length >= 3 ? VKREGELN.rule(G, ni, I.S, I.L) : null));
+        return r;
+      };
     }
     S.G = G;
     S.stats.graphMs = Math.round(performance.now() - t0);
@@ -293,6 +327,61 @@ export const VKSTROM = (() => {
     for (const [k, w] of L) if (VKMOD.ready(k) && (r -= w) <= 0) return k;
     return null;
   }
+  // a vehicle on a route (path of the graph): its line with the limits of the signs and the junctions with their rules; s0 along it.
+  // → the car, false (no room there / the line too short), null (no model). Tests put vehicles on chosen routes with it.
+  function put(path, end, typ, s0, check) {
+    const G = S.G,
+      e = path[0].e,
+      line = VNETZ.line(path, {
+        off: x => x.lane,
+        vmax: x => x.v,
+        cut: 6,
+        aLat: 2.0,
+        aBrk: 2.0,
+        vMin: 2.6,
+        vEnd: end === 'sack' ? 0 : null,
+      });
+    if (!line || line.L < 30) return false;
+    // stage 2: the limits of the signs along the route, then the speeds again; the junctions with their rules
+    const I = signIdx();
+    line.lim = VKREGELN.limits(G, path, line, I.S, VNETZ.project);
+    if (line.lim) line.S = VNETZ.speeds(line, 2.0, 2.0, 2.6, end === 'sack' ? 0 : null);
+    const jn = VKREGELN.events(G, path, line, G.ruleOf, VNETZ.project);
+    const T = VKTYPEN.TYP[typ];
+    s0 = Math.max(T.b < 0 ? -T.b : 2, Math.min(line.L - 10, s0));
+    // not onto another vehicle
+    VNETZ.at(line, s0, _a);
+    if (check && VAUTO.cars.some(c => hyp(c.x - _a.x, c.y - _a.y) < 14 + (c.D ? c.D.HL : 3))) return false;
+    line.lane = new Float32Array(line.n);
+    {
+      let s = 0;
+      for (const { e: pe } of path) {
+        const n = Math.ceil(pe.len);
+        for (let i = 0; i < n && s < line.n; i++, s++) line.lane[s] = pe.lane;
+      }
+    }
+    const c = VAUTO.spawn({
+      place: 'strom',
+      typ,
+      line,
+      s: s0,
+      v: Math.min(line.S[Math.round(s0)] || 8, T.vmax / 3.6) * 0.9,
+    });
+    if (!c.vm) {
+      VAUTO.remove(c);
+      return null;
+    }
+    c.vk = 0.9 + rnd() * 0.16;
+    c.laneOff = e.lane;
+    c.vcap = T.cls === 'trak' ? 11.1 : T.cls === 'lkw' ? (e.kind === 0 ? 24.7 : 22.2) : T.cls === 'lfz' ? 36 : 50;
+    c.strom = { end, born: performance.now(), stuck: 0 };
+    c.jn = jn;
+    c.jk = 0;
+    while (c.jk < jn.length && jn[c.jk].sN < s0 + 2) c.jn[c.jk++].passed = true;
+    S.cars.push(c);
+    S.stats.spawned++;
+    return c;
+  }
   // ---- a vehicle: where it is wanted most, out of sight ----
   const _a = {};
   function spawn(o, W, prime) {
@@ -338,46 +427,8 @@ export const VKSTROM = (() => {
         return null;
       }
       const { path, end } = walk(e, fwd, S.R * 2.2),
-        line = VNETZ.line(path, {
-          off: x => x.lane,
-          vmax: x => x.v,
-          cut: 6,
-          aLat: 2.0,
-          aBrk: 2.0,
-          vMin: 2.6,
-          vEnd: end === 'sack' ? 0 : null,
-        });
-      if (!line || line.L < 30) continue;
-      const T = VKTYPEN.TYP[typ],
-        s0 = Math.max(T.b < 0 ? -T.b : 2, Math.min(line.L - 10, at[2]));
-      // not onto another vehicle
-      VNETZ.at(line, s0, _a);
-      if (VAUTO.cars.some(c => hyp(c.x - _a.x, c.y - _a.y) < 14 + (c.D ? c.D.HL : 3))) continue;
-      line.lane = new Float32Array(line.n);
-      {
-        let s = 0;
-        for (const { e: pe } of path) {
-          const n = Math.ceil(pe.len);
-          for (let i = 0; i < n && s < line.n; i++, s++) line.lane[s] = pe.lane;
-        }
-      }
-      const c = VAUTO.spawn({
-        place: 'strom',
-        typ,
-        line,
-        s: s0,
-        v: Math.min(line.S[Math.round(s0)] || 8, T.vmax / 3.6) * 0.9,
-      });
-      if (!c.vm) {
-        VAUTO.remove(c);
-        return null;
-      }
-      c.vk = 0.9 + rnd() * 0.16;
-      c.laneOff = e.lane;
-      c.vcap = T.cls === 'trak' ? 11.1 : T.cls === 'lkw' ? (e.kind === 0 ? 24.7 : 22.2) : T.cls === 'lfz' ? 36 : 50;
-      c.strom = { end, born: performance.now(), stuck: 0 };
-      S.cars.push(c);
-      S.stats.spawned++;
+        c = put(path, end, typ, at[2], true);
+      if (c === false) continue;
       return c;
     }
     return null;
@@ -478,7 +529,7 @@ export const VKSTROM = (() => {
       stats: S.stats,
     };
   }
-  Object.assign(S, { tick, state, build, spawn, drop, seen, moment, clipOut, walk });
+  Object.assign(S, { tick, state, build, spawn, put, drop, seen, moment, clipOut, walk, signIdx });
   return S;
 })();
 window.VKSTROM = VKSTROM;
