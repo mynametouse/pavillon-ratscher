@@ -14,6 +14,9 @@
 // - Signs: the yellow place-name signs at the village entries (front: name and municipality, back: the next place, the name struck
 //   through) and direction signs where the routes turn, built within 450 m of the vehicle; routes and roads on the small map (MMAP).
 // - Walls of the zones (Schleusingen) stop vehicles through KERN.pushOut (VEH.hitsOut).
+// - feat/strassen, round 2 (13.11.2026, question F1 of the Suhl chat): further road data may come and go while the app runs –
+//   FAHRT.add(name, json, opts) / FAHRT.drop(name), a file of the same shape as fahrt/strassen.json (a town that loads only when one
+//   gets there, a tile of it); the blocks marked „feat/strassen round 2“ below.
 // © OpenStreetMap contributors (ODbL 1.0) for the roads, places and signs.
 import * as THREE from 'three';
 import { BASE, COARSE, scene } from '../core/head.js';
@@ -52,8 +55,29 @@ export const FAHRT = (() => {
     return -Math.min(x - RB[0], RB[2] - x, y - RB[1], RB[3] - y);
   };
   // ---------------- road data ----------------
-  const D = { ways: [], seg: null, grid: new Map(), places: [], signs: [], routes: {}, park: {}, names: [] };
-  const CELL = 32;
+  // feat/strassen round 2: the grid keeps (way, segment) pairs instead of indices into two tables, so that ways can leave again; areas
+  // (squares, car parks) with their own grid; ways and signs carry an id (the keys of what is built near the vehicle)
+  const D = {
+    ways: [],
+    grid: new Map(),
+    places: [],
+    signs: [],
+    routes: {},
+    park: {},
+    names: [],
+    areas: [],
+    agrid: new Map(),
+    dests: {},
+  };
+  const CELL = 32,
+    ACELL = 64,
+    KINDS = ['motorway', 'main', 'county', 'street', 'lane', 'service', 'track', 'path', 'foot'],
+    SURFS = ['asphalt', 'concrete', 'paving', 'gravel', 'ground', 'grass'],
+    wById = new Map(),
+    sById = new Map(),
+    SETS = new Map(); // name → what FAHRT.add brought
+  let ids = 0,
+    PENDING = [];
   const KIND_DE = {
     motorway: 'Autobahn',
     main: 'Landstraße',
@@ -62,82 +86,150 @@ export const FAHRT = (() => {
     lane: 'Gemeindeverbindungsstraße',
     service: 'Zufahrt',
   };
+  // the grid cells a segment touches (widened by the reach of the carving, or a little where the set does not carve)
+  function cellsOf(w, i, fn) {
+    const p = w.p,
+      ax = p[i * 3],
+      ay = p[i * 3 + 1],
+      bx = p[i * 3 + 3],
+      by = p[i * 3 + 4],
+      r = w.hw + (w.nocarve ? 6 : 20),
+      c0 = Math.floor((Math.min(ax, bx) - r) / CELL),
+      c1 = Math.floor((Math.max(ax, bx) + r) / CELL),
+      r0 = Math.floor((Math.min(ay, by) - r) / CELL),
+      r1 = Math.floor((Math.max(ay, by) + r) / CELL);
+    for (let cx = c0; cx <= c1; cx++) for (let cy = r0; cy <= r1; cy++) fn(cx * 100003 + cy);
+  }
+  const bbOf = (r, st, n = r.length / st) => {
+    const bb = [1e9, 1e9, -1e9, -1e9];
+    for (let i = 0; i < n; i++) {
+      bb[0] = Math.min(bb[0], r[i * st]);
+      bb[1] = Math.min(bb[1], r[i * st + 1]);
+      bb[2] = Math.max(bb[2], r[i * st]);
+      bb[3] = Math.max(bb[3], r[i * st + 1]);
+    }
+    return bb;
+  };
+  // a ring of the data (x, y, z in dm) as x, y pairs in metres
+  const ringOf = q => {
+    const n = Math.floor(q.length / 3),
+      r = new Float32Array(n * 2);
+    for (let i = 0; i < n; i++) {
+      r[i * 2] = q[i * 3] / 10;
+      r[i * 2 + 1] = q[i * 3 + 1] / 10;
+    }
+    return r;
+  };
+  // the ways, places, signs, routes and areas of one file into the tables; set '' is the region's own file
+  function ingest(j, set, o) {
+    const km = (j.kinds || KINDS).map(k => KINDS.indexOf(k)),
+      sm = (j.surf || SURFS).map(k => SURFS.indexOf(k)),
+      names = j.names || [''],
+      st = { ways: [], areas: [], signs: [], places: [], routes: [], carve: o.carve !== false };
+    (j.ways || []).forEach((row, wi) => {
+      const [k0, sf0, w10, fl, ni, ri, q] = row,
+        k = km[k0],
+        sf = sm[sf0];
+      if (!(k >= 0) || !(sf >= 0) || !q || q.length < 6) return;
+      const n = Math.floor(q.length / 3),
+        p = new Float32Array(n * 3);
+      for (let i = 0; i < n * 3; i++) p[i] = q[i] / 10;
+      const w = {
+        id: ++ids,
+        set,
+        kind: k,
+        kname: KINDS[k],
+        surf: sf,
+        hw: w10 / 20,
+        fl,
+        name: names[ni],
+        ref: names[ri],
+        p,
+        n,
+      };
+      if (o.carve === false) w.nocarve = true;
+      if (o.decks === false) w.nodeck = true;
+      if (j.lanes && j.lanes[wi] != null) w.lanes = j.lanes[wi];
+      if (j.s0 && j.s0[wi]) w.s0 = j.s0[wi] / 10;
+      w.bb = bbOf(p, 3, n);
+      D.ways.push(w);
+      st.ways.push(w);
+      wById.set(w.id, w);
+      // into every grid cell the segment touches
+      for (let i = 0; i < n - 1; i++)
+        cellsOf(w, i, kk => {
+          let a = D.grid.get(kk);
+          if (!a) D.grid.set(kk, (a = []));
+          a.push(w, i);
+        });
+    });
+    for (const pl of o.places === false ? [] : j.places || []) {
+      const q = { n: pl.n, k: pl.k, x: pl.x, y: pl.y, set, a: pl.a.map(r => ({ r, bb: bbOf(r, 2) })) };
+      D.places.push(q);
+      st.places.push(q);
+    }
+    for (const sg of j.signs || []) {
+      sg.id = ++ids;
+      sg.set = set;
+      D.signs.push(sg);
+      st.signs.push(sg);
+      sById.set(sg.id, sg);
+    }
+    for (const k in j.routes || {}) {
+      D.routes[k] = Array.from(j.routes[k].pts, v => v / 10);
+      // (a route with a name is a destination on the small map: „Suhl 12 km“)
+      if (set && j.routes[k].n) D.dests[k] = j.routes[k].n;
+      st.routes.push(k);
+    }
+    // areas: [surface, flags, name, ring (x, y, z in dm), holes, type …] – squares, pedestrian precincts, car parks
+    for (const row of j.areas || []) {
+      const sf = sm[row[0]];
+      if (!(sf >= 0) || !row[3] || row[3].length < 9) continue;
+      const r = ringOf(row[3]),
+        a = {
+          id: ++ids,
+          set,
+          surf: sf,
+          fl: row[1] || 0,
+          name: typeof row[2] === 'string' ? row[2] : names[row[2]] || '',
+          r,
+          holes: (row[4] || []).map(ringOf),
+          type: row[5],
+        };
+      a.bb = bbOf(r, 2);
+      D.areas.push(a);
+      st.areas.push(a);
+      for (let cx = Math.floor(a.bb[0] / ACELL); cx <= Math.floor(a.bb[2] / ACELL); cx++)
+        for (let cy = Math.floor(a.bb[1] / ACELL); cy <= Math.floor(a.bb[3] / ACELL); cy++) {
+          const kk = cx * 100003 + cy;
+          let g = D.agrid.get(kk);
+          if (!g) D.agrid.set(kk, (g = []));
+          g.push(a);
+        }
+    }
+    return st;
+  }
   function parse(j) {
     D.names = j.names;
     D.kinds = j.kinds;
     D.surfs = j.surf;
-    const segW = [],
-      segI = [];
-    for (const [k, sf, w10, fl, ni, ri, q] of j.ways) {
-      const n = q.length / 3,
-        p = new Float32Array(q.length);
-      for (let i = 0; i < q.length; i++) p[i] = q[i] / 10;
-      const w = { kind: k, kname: j.kinds[k], surf: sf, hw: w10 / 20, fl, name: j.names[ni], ref: j.names[ri], p, n };
-      w.bb = [1e9, 1e9, -1e9, -1e9];
-      for (let i = 0; i < n; i++) {
-        w.bb[0] = Math.min(w.bb[0], p[i * 3]);
-        w.bb[1] = Math.min(w.bb[1], p[i * 3 + 1]);
-        w.bb[2] = Math.max(w.bb[2], p[i * 3]);
-        w.bb[3] = Math.max(w.bb[3], p[i * 3 + 1]);
-      }
-      const wi = D.ways.length;
-      D.ways.push(w);
-      for (let i = 0; i < n - 1; i++) {
-        const s = segW.length;
-        segW.push(wi);
-        segI.push(i);
-        // into every grid cell the segment (widened by the reach of the carving) touches
-        const ax = p[i * 3],
-          ay = p[i * 3 + 1],
-          bx = p[i * 3 + 3],
-          by = p[i * 3 + 4],
-          r = w.hw + 20,
-          c0 = Math.floor((Math.min(ax, bx) - r) / CELL),
-          c1 = Math.floor((Math.max(ax, bx) + r) / CELL),
-          r0 = Math.floor((Math.min(ay, by) - r) / CELL),
-          r1 = Math.floor((Math.max(ay, by) + r) / CELL);
-        for (let cx = c0; cx <= c1; cx++)
-          for (let cy = r0; cy <= r1; cy++) {
-            const kk = cx * 100003 + cy;
-            let a = D.grid.get(kk);
-            if (!a) D.grid.set(kk, (a = []));
-            a.push(s);
-          }
-      }
-    }
-    D.segW = Int32Array.from(segW);
-    D.segI = Int32Array.from(segI);
-    D.places = j.places.map(p => ({
-      n: p.n,
-      k: p.k,
-      x: p.x,
-      y: p.y,
-      a: p.a.map(r => {
-        const bb = [1e9, 1e9, -1e9, -1e9];
-        for (let i = 0; i < r.length; i += 2) {
-          bb[0] = Math.min(bb[0], r[i]);
-          bb[1] = Math.min(bb[1], r[i + 1]);
-          bb[2] = Math.max(bb[2], r[i]);
-          bb[3] = Math.max(bb[3], r[i + 1]);
-        }
-        return { r, bb };
-      }),
-    }));
-    D.signs = j.signs;
-    D.routes = {};
-    for (const k in j.routes) D.routes[k] = Array.from(j.routes[k].pts, v => v / 10);
+    ingest(j, '', {});
     D.park = j.park || {};
     // a parking sign beside the place to park at the nursery, facing the arriving car
     const pk = D.park.baumschule;
     if (pk) {
-      const a = (pk[2] * Math.PI) / 180;
-      D.signs.push({
-        t: 'park',
-        n: 'Baumschule Kammbach',
-        x: pk[0] + Math.cos(a) * 4.5,
-        y: pk[1] - Math.sin(a) * 4.5,
-        h: pk[2] + 180,
-      });
+      const a = (pk[2] * Math.PI) / 180,
+        sg = {
+          t: 'park',
+          n: 'Baumschule Kammbach',
+          x: pk[0] + Math.cos(a) * 4.5,
+          y: pk[1] - Math.sin(a) * 4.5,
+          h: pk[2] + 180,
+          id: ++ids,
+          set: '',
+        };
+      D.signs.push(sg);
+      sById.set(sg.id, sg);
     }
   }
   // the nearest road under / near (x, y) within reach of its edge: the segment, the lateral offset, the profile height there
@@ -147,10 +239,11 @@ export const FAHRT = (() => {
     if (!a) return null;
     let best = null,
       be = 1e9;
-    for (const s of a) {
-      const w = D.ways[D.segW[s]];
+    for (let k = 0; k < a.length; k += 2) {
+      const w = a[k];
       if (skipBridge && w.fl & 3) continue;
-      const i = D.segI[s] * 3,
+      const s = a[k + 1],
+        i = s * 3,
         p = w.p,
         ax = p[i],
         ay = p[i + 1],
@@ -181,12 +274,36 @@ export const FAHRT = (() => {
   const paved = w => w.surf <= 2;
   S.roadAt = roadAt;
   // ---------------- KERN: surface, ground, place ----------------
+  // feat/strassen round 2: the area (a square, a car park) at (x, y), or null
+  const inRing = (r, x, y) => {
+    let c = false;
+    for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2)
+      if (r[i + 1] > y !== r[j + 1] > y && x < ((r[j] - r[i]) * (y - r[i + 1])) / (r[j + 1] - r[i + 1]) + r[i]) c = !c;
+    return c;
+  };
+  function areaAt(x, y) {
+    const g = D.agrid.get(Math.floor(x / ACELL) * 100003 + Math.floor(y / ACELL));
+    if (!g) return null;
+    for (const a of g) {
+      if (x < a.bb[0] || x > a.bb[2] || y < a.bb[1] || y > a.bb[3] || !inRing(a.r, x, y)) continue;
+      if (a.holes.some(h => inRing(h, x, y))) continue;
+      return a;
+    }
+    return null;
+  }
+  S.areaAt = areaAt;
   KERN.provide(
     'surface',
     (x, y) => {
       if (!S.ready || insideRB(x, y)) return undefined;
-      const r = roadAt(x, y, 0.4);
-      return r && !(r.w.fl & 2) ? { e: r.e, kind: r.w.kind, surf: r.w.surf, lat: r.lat } : null;
+      const r = roadAt(x, y, 0.4),
+        on = r && !(r.w.fl & 2);
+      // on a road: the road; else on a square or a car park: its surface (kind 9, e 1 – no edge distance); else the road's edge
+      if (D.areas.length && !(on && r.e > 0)) {
+        const a = areaAt(x, y);
+        if (a) return { e: 1, kind: 9, surf: a.surf, lat: 0, area: true };
+      }
+      return on ? { e: r.e, kind: r.w.kind, surf: r.w.surf, lat: r.lat } : null;
     },
     5
   );
@@ -254,6 +371,7 @@ export const FAHRT = (() => {
       if (!r || ownFade(x, y) < 0.5) return undefined; // in a zone with its own roads (Kloster Veßra) its ground carries
       if (!(r.w.fl & 1))
         return outRB(x, y) < 3 && !(r.w.fl & 2) ? r.z - (paved(r.w) ? 0.025 : 0.04) * Math.min(r.d, r.w.hw) : undefined;
+      if (r.w.nodeck) return undefined; // (a set that builds its own bridges)
       const deck = r.z;
       if (z != null && z < deck - 1.2) return undefined;
       // a road passing under the bridge: below the deck's level that road carries
@@ -273,10 +391,10 @@ export const FAHRT = (() => {
     CAND.length = 0;
     const a = D.grid.get(Math.floor(x / CELL) * 100003 + Math.floor(y / CELL));
     if (!a) return CAND;
-    for (const s of a) {
-      const w = D.ways[D.segW[s]];
-      if (w.fl & 3) continue;
-      const i = D.segI[s] * 3,
+    for (let k = 0; k < a.length; k += 2) {
+      const w = a[k];
+      if (w.fl & 3 || w.nocarve) continue; // (a set that brings its own ground is not carved)
+      const i = a[k + 1] * 3,
         p = w.p,
         ax = p[i],
         ay = p[i + 1],
@@ -421,14 +539,34 @@ export const FAHRT = (() => {
       s = 409600 / 1024;
     return [420700 + r[0] * s, 5390800 + r[1] * s, 420700 + (r[2] + 1) * s, 5390800 + (r[3] + 1) * s];
   }
+  // feat/strassen round 2: a zone with ground of its own beyond the tile sets known here says so – FAHRT.ground(fn), fn(x, y) → true
+  // (its ground is there), false (it will be: loading) or undefined (not its land). Without it a vehicle at the edge of such ground
+  // was told „Hier endet die Karte.“ instead of waiting for it.
+  const GROUNDS = [];
+  S.ground = fn => {
+    if (typeof fn === 'function') GROUNDS.push(fn);
+  };
+  const zoneGround = (x, y) => {
+    let r;
+    for (const fn of GROUNDS) {
+      const v = fn(x, y);
+      if (v === true) return true;
+      if (v === false) r = false;
+    }
+    return r;
+  };
   const exists = (x, y) => {
     const R = rects();
     if (!R.length) return true; // not known yet: wait
     const [E, N] = WELT.toU(x, y);
-    return R.some(r => E > r[0] + 2 && E < r[2] - 2 && N > r[1] + 2 && N < r[3] - 2);
+    return (
+      R.some(r => E > r[0] + 2 && E < r[2] - 2 && N > r[1] + 2 && N < r[3] - 2) ||
+      (GROUNDS.length > 0 && zoneGround(x, y) !== undefined)
+    );
   };
-  // loaded: the 10 m terrain of the square, or a drawn tile
-  const ready = (x, y) => insideRB(x, y) || WELT.heightAt(x, y) !== undefined;
+  // loaded: the 10 m terrain of the square, or a drawn tile (or the ground of a zone that says so)
+  const ready = (x, y) =>
+    insideRB(x, y) || WELT.heightAt(x, y) !== undefined || (GROUNDS.length > 0 && zoneGround(x, y) === true);
   S.ready_ = ready;
   // ---------------- the edge (vehicles/vehicle.js) ----------------
   VEH.edge = v => {
@@ -502,6 +640,8 @@ export const FAHRT = (() => {
         S.state = 'ready';
         S.loadMs = Math.round(performance.now() - t0);
         carve(true);
+        // sets that came before the region's own roads were there
+        for (const [name, js, o] of PENDING.splice(0)) S.add(name, js, o);
         markDirty(true);
       })
       .catch(e => {
@@ -511,25 +651,32 @@ export const FAHRT = (() => {
   }
   // the carving goes under the pads of the zones (welt/welt.js sorts 'under' last)
   let carved = false;
-  function carve(on) {
-    if (!WELT.setPads || on === carved || !D.ways.length) return;
-    carved = on;
-    if (!on) return WELT.setPads('fahrt', []);
+  // the pad of a list of ways: the rectangle around those that are carved
+  function padOf(ways) {
     let x0 = 1e9,
       y0 = 1e9,
       x1 = -1e9,
       y1 = -1e9;
-    for (const w of D.ways) {
+    for (const w of ways) {
+      if (w.nocarve) continue;
       x0 = Math.min(x0, w.bb[0]);
       y0 = Math.min(y0, w.bb[1]);
       x1 = Math.max(x1, w.bb[2]);
       y1 = Math.max(y1, w.bb[3]);
     }
+    if (x0 > x1) return [];
     x0 -= 30;
     y0 -= 30;
     x1 += 30;
     y1 += 30;
-    WELT.setPads('fahrt', [{ poly: [x0, y0, x1, y0, x1, y1, x0, y1], z: carveZ, under: true }]);
+    return [{ poly: [x0, y0, x1, y0, x1, y1, x0, y1], z: carveZ, under: true }];
+  }
+  function carve(on) {
+    if (!WELT.setPads || on === carved || !D.ways.length) return;
+    carved = on;
+    // the region's own roads, and one pad per set that came later and wants its roads carved (feat/strassen round 2)
+    WELT.setPads('fahrt', on ? padOf(D.ways.filter(w => !w.set)) : []);
+    for (const [name, st] of SETS) if (st.carve) WELT.setPads('fahrt:' + name, on ? padOf(st.ways) : []);
   }
   function headingOut(s) {
     if (Math.abs(s.u) < 2) return false;
@@ -1086,24 +1233,24 @@ export const FAHRT = (() => {
     // the ground near the square is the 10 m terrain: signs there wait until the vehicle comes
     let ch = false;
     const want = new Set();
-    D.signs.forEach((sg, i) => {
-      if (Math.hypot(sg.x - x, sg.y - y) < 450) want.add('s' + i);
-    });
-    D.ways.forEach((w, i) => {
+    for (const sg of D.signs) if (Math.hypot(sg.x - x, sg.y - y) < 450) want.add('s' + sg.id);
+    for (const w of D.ways) {
       if (
         w.fl & 1 &&
+        !w.nodeck &&
         x > w.bb[0] - 500 &&
         x < w.bb[2] + 500 &&
         y > w.bb[1] - 500 &&
         y < w.bb[3] + 500 &&
         ownFade((w.bb[0] + w.bb[2]) / 2, (w.bb[1] + w.bb[3]) / 2) >= 0.5
       )
-        want.add('b' + i);
-    });
+        want.add('b' + w.id);
+    }
     for (const k of [...built.keys()])
       if (!want.has(k)) {
-        const sg = k[0] === 's' ? D.signs[+k.slice(1)] : null,
-          w = k[0] === 'b' ? D.ways[+k.slice(1)] : null,
+        // (a sign or a way that left with its set is gone from the tables: far)
+        const sg = k[0] === 's' ? sById.get(+k.slice(1)) : null,
+          w = k[0] === 'b' ? wById.get(+k.slice(1)) : null,
           far = sg
             ? Math.hypot(sg.x - x, sg.y - y) > 650
             : w
@@ -1119,12 +1266,12 @@ export const FAHRT = (() => {
       if (built.has(k) || n >= 2) continue;
       const i = +k.slice(1);
       if (k[0] === 's') {
-        const sg = D.signs[i];
+        const sg = sById.get(i);
         // the ground under the sign must be there (tiles), else next time
         if (!ready(sg.x, sg.y)) continue;
         built.set(k, buildSign(sg));
       } else {
-        const w = D.ways[i];
+        const w = wById.get(i);
         if (!ready(w.p[0], w.p[1])) continue;
         built.set(k, buildDeck(w));
       }
@@ -1134,8 +1281,8 @@ export const FAHRT = (() => {
     }
     // a finer tile under a sign: the sign follows the ground
     for (const [k, b] of built)
-      if (k[0] === 's' && b.gz !== undefined) {
-        const sg = D.signs[+k.slice(1)],
+      if (k[0] === 's' && b.gz !== undefined && sById.has(+k.slice(1))) {
+        const sg = sById.get(+k.slice(1)),
           g = KERN.ground(sg.x, sg.y);
         if (Math.abs(g - b.gz - b.dz) > 0.08) {
           b.dz = g - b.gz;
@@ -1143,7 +1290,7 @@ export const FAHRT = (() => {
           ch = true;
         }
       }
-    S.signs = [...built.keys()].filter(k => k[0] === 's').map(k => D.signs[+k.slice(1)].n);
+    S.signs = [...built.keys()].filter(k => k[0] === 's' && sById.has(+k.slice(1))).map(k => sById.get(+k.slice(1)).n);
     S.decks = [...built.keys()].filter(k => k[0] === 'b').length;
     if (ch) markDirty(true);
   }
@@ -1189,6 +1336,11 @@ export const FAHRT = (() => {
         rb = D.routes.baumschule;
       if (rm) T.push(['Markt Schleusingen', rm[rm.length - 2], rm[rm.length - 1]]);
       if (rb) T.push(['Baumschule', rb[rb.length - 2], rb[rb.length - 1]]);
+      // feat/strassen round 2: the named routes of sets that came later
+      for (const k in D.dests) {
+        const r = D.routes[k];
+        if (r && !T.some(t => t[0] === D.dests[k])) T.push([D.dests[k], r[r.length - 2], r[r.length - 1]]);
+      }
       let best = null,
         bs = -2;
       for (const t of T) {
@@ -1232,6 +1384,9 @@ export const FAHRT = (() => {
     ready: !!S.ready,
     ramps: (rampAt(0, 0), ramps.length), // the ramps up to the decks of the square (built with the decks)
     ways: D.ways.length,
+    sets: [...SETS.keys()],
+    areas: D.areas.length,
+    rev: S.rev,
     signsNear: S.signs.slice(),
     decks: S.decks,
     built: S.n.built,
@@ -1245,6 +1400,84 @@ export const FAHRT = (() => {
     welt: WELT.state(),
   });
   S.data = D;
+  // ---------------- feat/strassen round 2: road data that comes and goes while the app runs ----------------
+  // FAHRT.add(name, json, opts): a file of the shape of fahrt/strassen.json – `ways` (with the tables `kinds`, `surf`, `names`), and
+  // what else it has of `places`, `signs`, `routes`, `areas` ([surface, flags, name, ring x, y, z in dm, holes, type]), the lists
+  // `lanes` and `s0` (dm along the whole way at a piece's first point) beside `ways`, `orte` (the built-up areas that make the styles
+  // town and village: handed on to STRDAT). opts.carve: false – the ground there is the set's own (a zone like Kloster Veßra), nothing
+  // is carved; opts.decks: false – it builds its bridges itself; opts.places: false – it names its places itself (KERN.place). A route
+  // with a name (routes.x.n) is a destination on the small map. The road map around the observer (strassen/strassen_karte.js), the
+  // small map, the place names and KERN.surface follow. FAHRT.drop(name) takes it all out again. FAHRT.rev counts the changes. A set
+  // belongs to its caller: it stays when this module falls asleep. Meant for many small sets (a tile of a town each): a call only
+  // files the ways into the grid.
+  S.rev = 0;
+  const changed = () => {
+    S.rev++;
+    plKey = '';
+    plX = 1e9;
+    const K = window.STRKARTE;
+    if (K && K.refresh) K.refresh();
+    markDirty(true);
+  };
+  S.drop = name => {
+    PENDING = PENDING.filter(q => q[0] !== name);
+    const st = SETS.get(name);
+    if (!st) return false;
+    SETS.delete(name);
+    // the segments out of their grid cells
+    const cells = new Set();
+    for (const w of st.ways) {
+      for (let i = 0; i < w.n - 1; i++) cellsOf(w, i, kk => cells.add(kk));
+      wById.delete(w.id);
+    }
+    for (const kk of cells) {
+      const a = D.grid.get(kk),
+        b = [];
+      if (!a) continue;
+      for (let k = 0; k < a.length; k += 2) if (a[k].set !== name) b.push(a[k], a[k + 1]);
+      if (b.length) D.grid.set(kk, b);
+      else D.grid.delete(kk);
+    }
+    for (const [kk, g] of D.agrid) {
+      const b = g.filter(a => a.set !== name);
+      if (b.length === g.length) continue;
+      if (b.length) D.agrid.set(kk, b);
+      else D.agrid.delete(kk);
+    }
+    D.ways = D.ways.filter(w => w.set !== name);
+    D.areas = D.areas.filter(a => a.set !== name);
+    D.places = D.places.filter(q => q.set !== name);
+    D.signs = D.signs.filter(q => q.set !== name);
+    for (const sg of st.signs) sById.delete(sg.id);
+    for (const k of st.routes) {
+      delete D.routes[k];
+      delete D.dests[k];
+    }
+    // what was built of it near the vehicle
+    for (const k of [...built.keys()])
+      if (k[0] === 's' ? !sById.has(+k.slice(1)) : k[0] === 'b' ? !wById.has(+k.slice(1)) : false) dropKey(k);
+    if (st.carve && carved && WELT.setPads) WELT.setPads('fahrt:' + name, []);
+    if (st.orte && window.STRDAT) window.STRDAT.drop('fahrt:' + name);
+    changed();
+    return true;
+  };
+  S.add = (name, j, opts = {}) => {
+    if (!S.on || !name || !j || !Array.isArray(j.ways)) return false;
+    if (!S.ready) {
+      // the region's own roads first (their tables); the set follows as soon as they are there
+      PENDING = PENDING.filter(q => q[0] !== name);
+      PENDING.push([name, j, opts]);
+      return true;
+    }
+    S.drop(name);
+    const st = ingest(j, name, opts);
+    SETS.set(name, st);
+    if (st.carve && carved && WELT.setPads) WELT.setPads('fahrt:' + name, padOf(st.ways));
+    if (j.orte && window.STRDAT && window.STRDAT.add) st.orte = window.STRDAT.add('fahrt:' + name, { orte: j.orte });
+    changed();
+    return true;
+  };
+  S.sets = () => [...SETS.keys()];
   return S;
 })();
 window.FAHRT = FAHRT;

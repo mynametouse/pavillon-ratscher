@@ -73,6 +73,9 @@ game/quests.js              # tasks with the neighbours, journal, tracker (QUEST
 # feat/welt-gebaeude: Ratscher's ground without the printed roofs – the switch and the roof colours (before world/ratscher.js reads the names)
 gebaeude/geb_dach.js        # feat/welt-gebaeude the retouched ground images of Ratscher, ?bodenalt for the originals, the originals' roof colours for the village (GEBDACH)
 world/ratscher.js           # real surroundings from geodata: terrain, orthophotos, buildings, trees (RATSCHER)
+# feat/strassen: the roads' styles and data (before world/roads.js: its raster asks them); the furniture follows further down
+strassen/strassen_stil.js   # feat/strassen how a road is marked and edged (open country, no overtaking, town, village) and its raster – pure (STRSTIL)
+strassen/strassen_daten.js  # feat/strassen towns and villages, delineators, guard rails, signs, lamps, power lines – the data file (STRDAT)
 world/roads.js              # V16b roads and paths from OSM: road map for the ground shaders, surface under the wheels, bridges (ROADS)
 world/forest.js             # V16c the forest at the Klinge: stand, procedural spruce/larch/pine in three levels of detail, forest floor, cover (FOREST)
 # feat/dorfkern: the houses of the centre as Falko filmed them – data for world/village.js and world/dorfkern.js (below this line)
@@ -114,6 +117,8 @@ vehicles/trailer.js         # V16d the stake trailer: tandem axle, stakes, towed
 vehicles/minimap.js         # V16b small map while driving: roads, route to the Klinge, destination (MMAP)
 # feat/fahrt: driving beyond the square below this line
 welt/fahrt.js               # feat/fahrt driving out of the square: tiles ahead, the edge, roads with profiles, signs, the map (FAHRT)
+# feat/strassen: the road map beyond the square below this line (after welt/fahrt.js: its roads)
+strassen/strassen_karte.js  # feat/strassen the road map of a window around the observer for the tiles' shader, rastered a few ways per frame (STRKARTE)
 world/fell.js               # V16c2 felling at the Klinge: forest gear, chainsaw, felling the professional way, delimbing, bucking, measuring (FELL)
 werk/holz.js                # V16d wood 1: the logs as objects – on the fork, the trailer, the log yard (HOLZ)
 werk/holz_saw.js            # V16d wood 2: the band sawmill – clamp, plan, cut board by board, blocks beside the mill (HOLZSAW)
@@ -190,6 +195,9 @@ wetter/wx_ton.js            # feat/wetter the sound of the weather: rain outside
 wetter/wx_boden.js          # feat/wetter wet ground and roofs: darker and glossier while it rains and for hours after (WXBODEN)
 wetter/wx_wind.js           # feat/wetter the garden's trees sway with the real wind: a few lines in their leaf shader at load (WXWIND)
 wetter/wetter.js            # feat/wetter live as the default, switchable to the calendar's: the game's moment, easing, clock window, menu (WETTER)
+# feat/strassen: the furniture of the roads below this line (after the parked things, the traffic and the weather; before the frame loop)
+strassen/strassen_modelle.js # feat/strassen delineators, guard rails, traffic signs, street lamps, power poles and towers as geometry – pure (STRMOD)
+strassen/strassen.js        # feat/strassen the furniture built per cell near the observer, lamps at night, wet roads (STRASSEN)
 # feat/bus: the real buses after the timetable below this line (after the traffic and the zombie night it asks; before the frame loop)
 bus/bus_fahrplan.js         # feat/bus the real timetable (gtfs.de, DELFI e.V.): service days, departures, a trip's run through the minutes – pure (BUSPLAN)
 bus/bus_modell.js           # feat/bus the regional bus and the stop sign as models; their few materials compiled at load (BUSMOD)
@@ -231,6 +239,10 @@ wissen/wissen.js            # feat/wissen the Entdeckerbuch (N): chapters, found
 wissen/wissen_lehrer.js     # feat/wissen people as teachers: Gerhard, Wolfgang, Ingrid, Hubert, Ronald – a topic opens an entry (WLEHRER)
 wissen/wissen_orte.js       # feat/wissen information boards at the real places: old school, Dorflinde, brook, Klinge, dam (WORTE)
 wissen/wissen_daten.js      # feat/wissen data views on the plan view: noise, traffic, sun hours, nature value, mood – SVG, a legend (WDATEN)
+# feat/zukunft: „Zukünfte erproben“ below this line (the what-if mode: numbers, changes in the world, the panel; after everything it shows and the book)
+zukunft/zk_data.js          # feat/zukunft topics, variants, five indicators with „Warum?“ and sources, the dying stand – pure (ZKDATA)
+zukunft/zk_welt.js          # feat/zukunft PV on the 3D roofs, the field, heat pumps, bench and Rufbus, the flood ribbon, the forest's stages, dry ground (ZKWELT)
+zukunft/zk_modus.js         # feat/zukunft the mode: panel, year slider, A/B, presentation, saved state pav-zukunft-v1, discovery book entries (ZUKUNFT)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue

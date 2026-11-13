@@ -16,6 +16,18 @@ veröffentlicht.
 
 ## Stand
 
+- **13.11.2026 nachts: Zukünfte erproben (V17w, live seit 13.11. 8:45 nach Falkos OK; Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, `docs/features/zukunft.md`, `zukunft-welt.md`).** Falko 12.11.: Geschäftsmodell 1 „virtuelles Reallabor / Szenario-Werkstatt“ – erste Fassung für Kommune/Dorf, halber Tag vor Ort, Themen Mobilität, Energie, Klimaanpassung, Wald nach dem Käfer, „möglichst realistisch“. Daten und Rechnung rein in `zukunft/zk_data.js` (Unit-Test `viz3/test/unit/zukunft.test.mjs`), Oberfläche `zk_modus.js`, Welt `zk_welt.js` (Haken `WXBODEN.setDry`, `FOREST.canopy`); Tests `zukunft.py`, `zukunft_welt.py` (Programme: Start +4, Umschalten 0). Entscheidungen: Stimmen als Rollen („Sicht …“, erfundene Stimme), Ereignisse ohne Votum, Regler ab 2030, HQ100 = amtliches Gebiet (37 Gebäude, Schaden als Spanne), Solarpark-Platz ist Annahme. **Offen:** Mitmach-Schicht (Stimmen der Teilnehmenden am Telefon), Ablaufplan für den halben Tag, Gespräch mit Ratscher/Schleusingen über einen Piloten; zu Fuß spiegelt ein schmaler Streifen fernes Hochwasser noch den Himmel; blau-graue Bodenflecken im heutigen Wald, wo die Kronenkarte dünn ist (Abhilfe in `world/forest.js` wie im Modus).
+- **13.11.2026 nachts: Straßen realistischer (Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx, Zweig `feat/strassen`,
+  `docs/features/strassen.md`).** Falko 12.11. 23:10/23:13: die Region „noch realistischer“, „starte mit Paket 1“ (die Straßen).
+  **Paket 1:** Markierung nach Klasse, Breite und Ortslage, Bankett, Bordstein, Rinne, Gehweg, Flickstellen, nasser Asphalt; dieselbe
+  Straßenkarte jenseits des Quadrats (Fenster um den Beobachter); Leitpfosten, Schutzplanken, Verkehrszeichen, Laternen, Strommasten
+  je Zelle nahe dem Beobachter (Daten `viz3/extra/strassen/daten.py`). **Runde 2** (Falko 13.11. 1:54: „erfüllt bitte gegenseitig eure
+  Wünsche. Ihr habt die Freigabe.“ – die Wünsche des Suhl-Chats): `FAHRT.add`/`FAHRT.drop` und `STRDAT.add`/`STRDAT.drop` (Straßen,
+  Flächen, Orte und Ausstattung kommen und gehen zur Laufzeit), Fußgängerzonen und Plätze ohne Bord (Art 9 in der Karte), Gehweg je
+  Seite, keine Mittellinie im Kreisverkehr. Die weiteren Pakete (Gebäude, Landschaft, Verkehr, Himmel) und Vorschläge stehen im
+  Projekt-Dokument `claude/pavillon-realismus.md`. Wichtig für Prüfläufe: ein Push auf `kern/<name>` startet das Prüfpaket nur, wenn er
+  **neue** Commits bringt (liegen sie schon auf einem anderen Zweig, ist der Diff leer und der Lauf entfällt) – zuerst nach `kern/…`
+  pushen, dann auf den Feature-Zweig.
 - **7.11.2026 Runde D (V17v, Falko: wenig Credits – Nachzügler, Kacheln, Doku, Bilder):** welt-gebaeude b7ededcd (Kacheln v2 als Standard) mit Rückfall auf die alte Kachel in `welt/welt.js`, wissen d5ab3565, strategie-dorf abb912c2, tiere 7f72ad36; geht automatisch live, wenn im Prüfpaket nur `ktx2` rot ist.
 - **Stand 6.11.2026 ~5:25 (Falko: „keine weiteren Credits … Arbeit stoppen, wir arbeiten später weiter“):** live **V17t** (24be07de,
   Prüfpaket 42152070883: 77 grün, 6 bekannte Themen rot – alle in Runde C behoben). `src` = **Runde C / V17u-Kandidat** (wip/runde-c,

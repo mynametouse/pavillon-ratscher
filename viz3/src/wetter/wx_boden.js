@@ -7,27 +7,29 @@
 // Snow lying (the snow depth of the data, a few centimetres cover it all): the same surfaces turn white – their own colour damped, a white
 // that follows the light of the moment added as emission (grey under clouds, faint at night; walls, trees and grass stay as they are, as
 // they do under a thin snow cover).
+import * as THREE from 'three'; // feat/zukunft
 import { markDirty } from '../core/assets.js';
 import { scene } from '../core/head.js';
 import { gpaint } from '../garden/env.js';
+const DRYC = new THREE.Color(0xb59a58); // feat/zukunft
 export const WXBODEN = (() => {
   // ground material → { c: original colour, r: original roughness, k: how much it darkens, g: how glossy it gets }; materials that are
   // not ground are remembered as such (weakly: dropped zones are not held)
   const M = new Map(),
     NO = new WeakSet();
-  const S = { wet: 0, shown: 0, snow: 0, snowShown: 0, frostShown: 0, lightShown: 1, scanT: 1e9 };
+  const S = { dry: 0, wet: 0, shown: 0, snow: 0, snowShown: 0, frostShown: 0, lightShown: 1, scanT: 1e9 };
   function kind(m, o) {
     if (!m || !m.isMeshStandardMaterial) return null;
     // the lawn's grass tufts (garden/grass.js: instanced, thinned with distance): a little darker and glossier when wet, white under
     // snow and hoarfrost (frost whitens the blades first)
-    if (o && o.isInstancedMesh && o.userData && o.userData.thin) return { k: 0.08, g: 0.15, s: 0.75, f: 1 };
-    if (m.map && m.map.image === gpaint) return { k: 0.26, g: 0.25, s: 1, f: 0.45 };
+    if (o && o.isInstancedMesh && o.userData && o.userData.thin) return { k: 0.08, g: 0.15, s: 0.75, f: 1, dk: 0.8 };
+    if (m.map && m.map.image === gpaint) return { k: 0.26, g: 0.25, s: 1, f: 0.45, dk: 0.5 };
     let key = '';
     try {
       key = m.customProgramCacheKey ? String(m.customProgramCacheKey()) : '';
     } catch (e) {}
     if (/^geoterrain(?!\|zinnen)/.test(key) || key.startsWith('welt-tile') || key.startsWith('fields'))
-      return { k: 0.3, g: 0.45 };
+      return { k: 0.3, g: 0.45, dk: 0.55 };
     if (key.startsWith('roaddeck')) return { k: 0.35, g: 0.5 };
     if (key.startsWith('georoof') || key.startsWith('v16e-roof')) return { k: 0.16, g: 0.3, s: 0.9 };
     return null;
@@ -55,6 +57,7 @@ export const WXBODEN = (() => {
           g: q.g,
           s: q.s ?? 1,
           f: q.f ?? 0.4,
+          dk: q.dk ?? 0, // feat/zukunft: how far a dry summer turns it to straw
         };
         M.set(m, e);
         seen.add(m);
@@ -71,6 +74,7 @@ export const WXBODEN = (() => {
       fr = 0.38 * S.frostShown * e.f,
       wh = Math.max(sn, fr);
     m.color.copy(e.c).multiplyScalar((1 - e.k * w) * (1 - 0.72 * wh));
+    if (S.dry > 0.01 && e.dk) m.color.lerp(DRYC, S.dry * e.dk); // feat/zukunft: dry summer, colour towards straw
     m.roughness = e.r - (e.r - 0.25) * e.g * w * (1 - wh);
     const L = S.lightShown;
     m.emissive.copy(e.em);
@@ -107,5 +111,14 @@ export const WXBODEN = (() => {
     for (const [m, e] of M) paint(m, e);
     markDirty();
   }
-  return { set, S, count: () => M.size };
+  // feat/zukunft: a dry summer (0–1) – ground and grass turn to straw; colours only, no program is touched
+  function setDry(v) {
+    v = Math.max(0, Math.min(1, +v || 0));
+    if (Math.abs(v - S.dry) < 0.005) return;
+    S.dry = v;
+    scan();
+    for (const [m, e] of M) paint(m, e);
+    markDirty();
+  }
+  return { set, setDry, S, count: () => M.size };
 })();

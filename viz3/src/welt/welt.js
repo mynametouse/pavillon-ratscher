@@ -208,7 +208,7 @@ export const WELT = (() => {
       vec4 o = texture( tOver, clamp( ou, 0.0, 1.0 ) ) * ins;
       float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), chroma = ( mx - mn ) / max( mx, 0.02 ), lum = dot( c, vec3( 0.3, 0.59, 0.11 ) );
       float near = 1.0 - smoothstep( 40.0, 90.0, dist ), pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * near * uPave;
-      vec3 g = landDetail( p, c, dist );
+      vec3 g = landDetail( p, c, dist ), kc = vec3( 0.0 ); float pk = 0.0, kb = 0.0;
       if ( o.r > 0.03 ) {
         float code = o.g / max( o.r, 0.01 ), cov = o.r, n1 = rdN( p * 0.6 ), n2 = rdN( p * 5.0 );
         vec3 r;
@@ -217,13 +217,21 @@ export const WELT = (() => {
         else if ( code < 0.86 ) r = setts( p * vec2( 1.0, 0.5 ), vec3( 0.27, 0.26, 0.245 ), 3.3, fwp );   // paving slabs
         else { float fg = 1.0 - smoothstep( 0.25, 0.8, fwp * 23.0 ), fg2 = 1.0 - smoothstep( 0.25, 0.8, fwp * 6.0 );   // water-bound gravel, reddish (the paths and yards of Kloster Veßra): fine grain, a few coarser patches
           r = vec3( 0.34, 0.25, 0.19 ) * clamp( lum / 0.3, 0.8, 1.15 ) * ( 0.86 + 0.2 * n1 ) * mix( 1.0, 0.9 + 0.2 * rdH( floor( p * 23.0 ) ), fg ) * mix( 1.0, 0.95 + 0.1 * rdH( floor( p * 6.0 ) + 3.1 ), fg2 ); }
-        float kerb = code < 0.3 ? ( 1.0 - smoothstep( 0.08, 0.2, abs( cov - 0.42 ) ) ) * near : 0.0;   // a light kerb stone along the asphalt
-        r = mix( r, vec3( 0.36, 0.355, 0.34 ) * ( 0.9 + 0.2 * n2 ), kerb );
-        g = mix( g, r, clamp( smoothstep( 0.3, 0.55, cov ) + kerb, 0.0, 1.0 ) );
-      } else if ( pave > 0.01 ) g = mix( g, setts( p, landHi( c ) * 0.78, 7.5, fwp ), pave );
+        float kerb = code < 0.3 ? ( 1.0 - smoothstep( 0.08, 0.2, abs( cov - 0.42 ) ) ) * near * uPave : 0.0;   // a light kerb stone along the asphalt (a zone's streets; the country roads of welt/fahrt.js get their edges from the road map below)
+        g = mix( g, r, smoothstep( 0.3, 0.55, cov ) ); kb = kerb; kc = vec3( 0.36, 0.355, 0.34 ) * ( 0.9 + 0.2 * n2 );
+      } else pk = pave;
+      // feat/strassen: the roads from the map of a window around the vehicle (ROADS.W, strassen/strassen_karte.js) – asphalt with its
+      // wear, shoulders, kerbs, pavements and markings like in the square, also over the asphalt a zone has laid; a zone's sett,
+      // slabs and gravel stay as the zone made them (mode 2: nothing)
+      g = roadShade( p, g, dist, o.r > 0.03 && uPave > 0.5 && o.g / max( o.r, 0.01 ) >= 0.3 ? 2.0 : 0.0 );
+      // grey land near the camera as sett (a zone's squares and yards on the photo) – not where the road map has a road: the asphalt
+      // took its brightness from the stones and showed them (the L 1625 before Kloster Veßra)
+      if ( pk * ( 1.0 - gRdCov ) > 0.01 ) g = mix( g, setts( p, landHi( c ) * 0.78, 7.5, fwp ), pk * ( 1.0 - gRdCov ) );
+      // the zone's kerb line along its asphalt – where the road map knows the street it has drawn its own edge (kerb, gutter, shoulder)
+      g = mix( g, kc, kb * ( 1.0 - gRdCov ) );
       return g; }`;
   const STUB =
-    'float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }';
+    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }';
   // one material per tile (its photo); all share one program
   function tileMat(tex) {
     const m = new THREE.MeshStandardMaterial({
@@ -238,6 +246,7 @@ export const WELT = (() => {
     m.onBeforeCompile = sh => {
       const G = ROADS.shader ? ROADS.shader(sh) : STUB;
       Object.assign(sh.uniforms, OVER);
+      if (ROADS.W) Object.assign(sh.uniforms, ROADS.W); // feat/strassen: the tiles read the road map of the window, not the square's
       sh.vertexShader =
         'varying vec2 vGeo;\n' +
         sh.vertexShader.replace(
@@ -254,6 +263,7 @@ export const WELT = (() => {
           '#include <map_fragment>',
           '#include <map_fragment>\n diffuseColor.rgb = weltGround( vGeo, diffuseColor.rgb, length( vViewPosition ) );'
         );
+      if (ROADS.gloss) sh.fragmentShader = ROADS.gloss(sh.fragmentShader);
     };
     m.customProgramCacheKey = () => 'welt-tile' + (window.GLCHECK && GLCHECK.lite ? '-lite' : '');
     return m;
