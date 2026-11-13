@@ -117,7 +117,9 @@ with lib.browser() as b:
             break
     ck('it reaches the village and searches', ok, str(J("GLFAHNDUNG.stand().cars")))
     bl = J("GLKARTE.blips()")
-    ck('the radar marks the patrol car, the place they search and the garden', any(q['k'] == 'polizei' for q in bl) and any(q['k'] == 'such' for q in bl)
+    # (like GTA 6 since round 2: a patrol is on the radar only while it sees the player – welt's `gesehen`)
+    seen = E("GLFAHNDUNG.stand().cars.some(c => c.gesehen !== false)")
+    ck('the radar marks the patrol car (while it sees him), the place they search and the garden', (any(q['k'] == 'polizei' for q in bl) or not seen) and any(q['k'] == 'such' for q in bl)
        and any(q['k'] == 'ort' for q in bl), str(bl))
     pic('03_streife')
     ok = wait("GLLOGIK.stars(GLSTATE.W) === 0", 200)

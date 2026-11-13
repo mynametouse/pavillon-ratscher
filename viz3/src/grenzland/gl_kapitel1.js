@@ -706,14 +706,33 @@ export const GLKAP1 = (() => {
   // ================================================================ 3 · Gerhards Geschichte (1989) ================================================================
   ORT.linde = () => (DKDATA && DKDATA.open && DKDATA.open.linde) || O.linde.pos;
   // Gerhard's place on the round bench of the lime: on its side towards the Anger
+  // (feat/grenzland-kino, after agent figuren) a seat of the six benches round the trunk (VPROPS.LINDE, radius 2.25 m), the one towards
+  // the Anger – he sat in the air between trunk and benches before. Chosen once: once he sits there the seat counts as taken.
+  let BANK = null;
   function bank() {
-    const l = ORT.linde(),
+    const l = (VPROPS && VPROPS.LINDE) || ORT.linde(),
       a = O.anger.pos,
-      hd = Math.atan2(a[0] - l[0], a[1] - l[1]);
+      h0 = Math.atan2(a[0] - l[0], a[1] - l[1]),
+      key = l.join();
+    if (BANK && BANK.key === key) return BANK;
+    let s = null;
+    try {
+      if (GLFIG.platz) s = GLFIG.platz(l[0] + Math.sin(h0) * 2.25, l[1] + Math.cos(h0) * 2.25, 2.6);
+    } catch (e) {}
+    if (s && Number.isFinite(s.x) && Number.isFinite(s.hd))
+      return (BANK = {
+        key,
+        p: [s.x, s.y],
+        hd: s.hd,
+        z: s.z || 0.455,
+        vor: [s.x + Math.sin(s.hd) * 1.7, s.y + Math.cos(s.hd) * 1.7],
+      });
+    const L0 = ORT.linde();
     return {
-      p: [l[0] + Math.sin(hd) * 1.05, l[1] + Math.cos(hd) * 1.05],
-      hd,
-      vor: [l[0] + Math.sin(hd) * 2.9, l[1] + Math.cos(hd) * 2.9],
+      p: [L0[0] + Math.sin(h0) * 1.05, L0[1] + Math.cos(h0) * 1.05],
+      hd: h0,
+      z: 0.47,
+      vor: [L0[0] + Math.sin(h0) * 2.9, L0[1] + Math.cos(h0) * 2.9],
     };
   }
   // the crate stands by the school, on the side of the yard one starts in
@@ -822,7 +841,7 @@ export const GLKAP1 = (() => {
       // (he stays on his bench until the picture is dark: the memory takes him away, not the step)
       if (i === 0 || i === 6 || (i === 1 && GL.era === 'heute')) {
         const b = bank();
-        A.fig('gerhard', 'gerhard', b.p[0], b.p[1], b.hd, { sitz: 0.47, era: 'heute' });
+        A.fig('gerhard', 'gerhard', b.p[0], b.p[1], b.hd, { sitz: b.z, era: 'heute' });
         if (i !== 1) return;
       }
       // 1989: the crate, the ABV, and – while the village of the time has no people of its own – two neighbours as witnesses
@@ -833,7 +852,7 @@ export const GLKAP1 = (() => {
       const o = { era: '1989', sees: true, knows: true };
       if (!leute().abv) {
         const a = O.anger.pos;
-        A.fig('abv', 'abv', a[0] + 6, a[1] - 4, 0, Object.assign({ r: 34 }, o));
+        A.fig('abv', 'abv', a[0] + 6, a[1] - 4, 0, Object.assign({ r: 34, ready: F => (F.lampe = true) }, o));
       }
       if (Object.keys(leute()).length < 2) {
         const l = O.linde.pos,
@@ -1230,7 +1249,8 @@ export const GLKAP1 = (() => {
       const K = szeneKlinge();
       A.auto('van', 'kasten', K.van[0], K.van[1], K.hd, { col: '#d9d9d2' });
       if (i <= 3) {
-        for (const [key, cast, p, hd] of K.men) A.fig(key, cast, p[0], p[1], hd, { karte: 'feind' });
+        for (const [key, cast, p, hd] of K.men)
+          A.fig(key, cast, p[0], p[1], hd, { karte: 'feind', ready: F => (F.lampe = true) });
         A.ding('kisten', () => ding(stapel, K.kisten[0], K.kisten[1], K.hd));
       }
     },
@@ -1359,8 +1379,12 @@ export const GLKAP1 = (() => {
           MI.rede('leucht');
           GLTON.fx('boeller', MI.fern(K.van), 600);
           S.z0 = KERN.ground(K.van[0], K.van[1]) + 2;
-          MI.A.ding('leucht', leuchtkugel);
-          legen(MI.D('leucht'), K.van[0], K.van[1], S.z0, 0);
+          // (feat/grenzland-kino) the flare is agent licht's picture (grenzland/gl_licht.js); the small ball only while that is missing
+          GL.emit('flare', { x: K.van[0], y: K.van[1], z: KERN.ground(K.van[0], K.van[1]) + 1.5 });
+          if (!window.GLLICHT) {
+            MI.A.ding('leucht', leuchtkugel);
+            legen(MI.D('leucht'), K.van[0], K.van[1], S.z0, 0);
+          }
           GLHUD.say(T.leucht, '', 4);
           // the van leaves over the tracks towards the road out of the square
           try {
@@ -1459,6 +1483,21 @@ export const GLKAP1 = (() => {
       if (y) MI.hin(y.hinten[0], y.hinten[1], yawTo(y.hinten, y.drin));
       if (plan() === 'leise' && !dark()) MI.uhr(23, 0);
     }
+  }
+  // (feat/grenzland-kino) the door gives way: a short look through it at the back wall, where the framed half of the map hangs
+  function blickInsBuero() {
+    const y = Y();
+    if (!y || !window.GLKAMERA || (GLLAGER.wachen || []).some(w => w.job === 'jagt')) return;
+    const B = y.H.buero,
+      bb = B.b - B.w / 2,
+      bf = B.b + B.w / 2,
+      z = Number.isFinite(GLLAGER.zF) ? GLLAGER.zF : KERN.ground(y.vorTuer[0], y.vorTuer[1]),
+      // (in the doorway itself, a step inside: whoever broke the door stands behind the camera, not in the picture)
+      p = y.w(B.tuer - 0.05, bb + 0.15),
+      t = y.w(B.tuer + 0.2, bf - 0.12);
+    try {
+      window.GLKAMERA.einstellung([p[0], p[1], z + 1.58], [t[0], t[1], z + 1.45], 3.4, 50);
+    } catch (e) {}
   }
   MI.def({
     id: 'coup',
@@ -1632,6 +1671,7 @@ export const GLKAP1 = (() => {
           if (Y() && !GLLAGER.offen) GLLAGER.tuerAuf();
           K5.tuer = true;
           MI.rede('tuerAuf');
+          blickInsBuero();
         },
       },
       {

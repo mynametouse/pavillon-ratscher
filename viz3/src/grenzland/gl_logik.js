@@ -41,7 +41,10 @@ export const GLLOGIK = (() => {
     for (const s of STEPS) if (h >= s) n++;
     return n;
   };
-  // look: the police have a description of the clothes; fz: they know the vehicle; offen: reports that are being made
+  // the police's description of the player (see sicht below)
+  const bildLeer = () => ({ wer: '', gesicht: false, kleid: '', kopf: '', fz: '', fuss: false, wo: null, hd: null });
+  // look: the police have a description of the clothes; fz: they know the vehicle; offen: reports that are being made; bild: the
+  // description they have (sicht / wissen below)
   const fresh = () => ({
     heat: 0,
     known: false,
@@ -54,6 +57,7 @@ export const GLLOGIK = (() => {
     look: false,
     fz: false,
     offen: [],
+    bild: bildLeer(),
   });
   // a deed. o: { seen: witnesses who saw it, police: an officer saw it, knows: a witness knows the two by name, k: weight, t: game minute,
   // fz: the witness saw the vehicle too }
@@ -96,7 +100,8 @@ export const GLLOGIK = (() => {
         W.state = 'verfolgt';
         ev = 'gesehen';
       }
-      if (!W.known && W.seeT > (ctx.close ? 1.5 : 6)) {
+      // (a helmet or a balaclava: nobody is recognised by sight – only by name)
+      if (!W.known && !ctx.maske && W.seeT > (ctx.close ? 1.5 : 6)) {
         W.known = true;
         ev = 'erkannt';
       }
@@ -107,7 +112,8 @@ export const GLLOGIK = (() => {
         ev = 'verloren';
       }
       // (hold: nobody of the police is there yet – the search has not begun, so it cannot run out)
-      if (!ctx.hold) W.unseen += dt * (ctx.hidden ? 1.8 : 1);
+      // (fremd: nothing of their description fits him any more – the search runs out sooner)
+      if (!ctx.hold) W.unseen += dt * (ctx.hidden ? 1.8 : 1) * (ctx.fremd ? 1.4 : 1);
       if (W.unseen >= loseT(W)) {
         W.unseen = 0;
         const n = starsOf(W.heat);
@@ -117,6 +123,7 @@ export const GLLOGIK = (() => {
           W.known = false;
           W.look = false;
           W.seeT = 0;
+          W.bild = bildFz(W);
           ev = 'entkommen';
         } else ev = 'stern';
       }
@@ -171,8 +178,10 @@ export const GLLOGIK = (() => {
   const busse = (W, geld) =>
     Math.max(0, Math.min(geld | 0, Math.round((40 + 60 * starsOf(W.heat)) * (W.known ? 1 : 0.7))));
   function clear(W) {
-    Object.assign(W, fresh(), { log: W.log, fz: W.fz });
+    Object.assign(W, fresh(), { log: W.log, fz: W.fz, bild: bildFz(W) });
   }
+  // a fresh description that keeps only the vehicle they have on record
+  const bildFz = W => Object.assign(bildLeer(), { fz: W.fz && W.bild ? W.bild.fz : '' });
   // does a witness see a point? w: { x, y, hd (compass rad, or null: looks around), r (reach in m) }; o: { dark, sneak, cover }
   function sieht(w, px, py, o = {}) {
     const dx = px - w.x,
@@ -235,8 +244,9 @@ export const GLLOGIK = (() => {
     if (o.seen) return 'gesehen';
     if (W.known) return 'bekannt';
     const log = W.log,
-      fz = W.fz;
-    Object.assign(W, fresh(), { log, fz });
+      fz = W.fz,
+      bild = bildFz(W);
+    Object.assign(W, fresh(), { log, fz, bild });
     return 'frei';
   }
   // the vehicle looks different now (another plate): the police no longer know it
@@ -245,6 +255,99 @@ export const GLLOGIK = (() => {
     W.fz = false;
     return was;
   };
+  // ---- what the police know (GTA 6, autumn 2026: face, outfit, vehicle – built from sightings; change the facts and it goes) ----
+  // W.bild is their description: { wer: 'm' | 'f' | '' (man or woman), gesicht: they know the face (seen close and in light, or a witness
+  // named the two), kleid: the clothes ('' none yet), kopf: '' | 'helm' | 'haube' (headwear is part of the clothes), fz: the vehicle,
+  // fuss: last seen on foot, wo: [x, y] where, hd: which way (compass rad, null: standing) }.
+  // ist: the facts now (from the world) { wer, kleid, kopf, fz: '' on foot | 'moped' | 'trabant' | 'auto' | … }.
+  // Distances (m) by day / at night: the face from 9 / 4 (a torch in the face), the clothes from 34 / 15, a vehicle from 70.
+  const SICHT = { gesicht: 9, gesichtNacht: 4, kleid: 34, kleidNacht: 15, fz: 70 };
+  // a sighting. o: { d: how far (undefined: a report – the clothes and the vehicle, no face), dark, knows: the witness named the two,
+  // fz: false – the vehicle is not taken (yet), x, y, hd: where and which way }. Returns what is new in the description:
+  // [] or some of 'gesicht', 'kleidung', 'fahrzeug', 'fuss'
+  function sicht(W, ist, o = {}) {
+    const B = W.bild || (W.bild = bildLeer()),
+      out = [],
+      bericht = o.d === undefined,
+      d = bericht ? SICHT.kleidNacht : o.d,
+      maske = !!ist.kopf,
+      kleidD = o.dark ? SICHT.kleidNacht : SICHT.kleid;
+    if (!B.gesicht && (o.knows || (!bericht && !maske && d <= (o.dark ? SICHT.gesichtNacht : SICHT.gesicht)))) {
+      B.gesicht = true;
+      out.push('gesicht');
+    }
+    if (o.knows || d <= kleidD) {
+      if (ist.wer) B.wer = ist.wer;
+      if (B.kleid !== ist.kleid || B.kopf !== (ist.kopf || '')) {
+        B.kleid = ist.kleid || '';
+        B.kopf = ist.kopf || '';
+        out.push('kleidung');
+      }
+    }
+    if (ist.fz) {
+      if (o.fz !== false && d <= SICHT.fz && (B.fz !== ist.fz || B.fuss || !W.fz)) {
+        B.fz = ist.fz;
+        B.fuss = false;
+        W.fz = true;
+        out.push('fahrzeug');
+      }
+    } else if (d <= kleidD && !B.fuss) {
+      B.fuss = true;
+      out.push('fuss');
+    }
+    if (Number.isFinite(o.x) && Number.isFinite(o.y)) {
+      B.wo = [o.x, o.y];
+      B.hd = o.hd ?? null;
+    }
+    return out;
+  }
+  // what the police know that still fits him now: a helmet or a balaclava hides the face while worn; other clothes or headwear do not
+  // fit the description; a vehicle counts while he is in the one they know
+  function wissen(W, ist) {
+    const B = W.bild || bildLeer(),
+      maske = !!ist.kopf;
+    return {
+      gesicht: !!(B.gesicht || W.known) && !maske,
+      kleidung: !!B.kleid && B.kleid === ist.kleid && B.kopf === (ist.kopf || ''),
+      fahrzeug: !!ist.fz && !!W.fz && B.fz === ist.fz,
+    };
+  }
+  // ---- random events on the way (feat/grenzland-welt, grenzland/gl_ereignis.js): which one may come now – pure ----
+  // Every few minutes of driving (2½–5), one at a time, in free play today only; each where it fits (a speed camera on a road, the
+  // harvest lorry outside the villages, the fair in a village, the wedding convoy in the town, the man with the bangers in a village or
+  // the town, the deer at dusk on a country road), none of them twice within a quarter of an hour.
+  const EREIGNISSE = {
+    blitzer: { wo: ['land', 'dorf'], fahrt: true },
+    traktorstau: { wo: ['land'], fahrt: true },
+    kirmes: { wo: ['dorf'], tag: true },
+    korso: { wo: ['stadt'] },
+    boeller: { wo: ['dorf', 'stadt'] },
+    wildunfall: { wo: ['land'], fahrt: true, dunkel: true },
+  };
+  const planNeu = () => ({ fahrt: 0, next: 150, zuletzt: {} });
+  // P: planNeu() kept by the caller; ctx: { t: game seconds, dt, frei: free play and today, fahrt: driving now, ort: 'dorf' | 'stadt' |
+  // 'land', dunkel: dusk or night, laeuft: one runs now }. Returns the name of the event to start now, or ''.
+  function plan(P, ctx, rnd = Math.random) {
+    if (!ctx.frei || ctx.laeuft) return '';
+    if (ctx.fahrt) P.fahrt += ctx.dt || 0;
+    if (P.fahrt < P.next) return '';
+    const ok = Object.keys(EREIGNISSE).filter(k => {
+      const e = EREIGNISSE[k];
+      return (
+        e.wo.includes(ctx.ort) &&
+        (!e.fahrt || ctx.fahrt) &&
+        (!e.dunkel || ctx.dunkel) &&
+        (!e.tag || !ctx.dunkel) &&
+        !(ctx.t - (P.zuletzt[k] ?? -1e9) < 900)
+      );
+    });
+    if (!ok.length) return '';
+    const k = ok[Math.floor(rnd() * ok.length) % ok.length];
+    P.fahrt = 0;
+    P.next = 150 + rnd() * 150;
+    P.zuletzt[k] = ctx.t;
+    return k;
+  }
   // ---- walls: is the straight line between two points free? segs: flat [x1, y1, x2, y2, …] or [[x1, y1, x2, y2], …] ----
   function waende(segs, cs = 16) {
     const flat = segs.length && Array.isArray(segs[0]),
@@ -713,7 +816,8 @@ export const GLLOGIK = (() => {
   //   world.tat(id, name)                a deed the police saw themselves
   //   world.block(B), world.unblock(B)   the road block is put up, taken away
   // E.tick(dt, p, env): p = { x, y, v, hd, veh: in a vehicle, hidden: indoors, cover: under trees, sneak }, env = { W, era, dark, off,
-  // split, air: the helicopter sees him }. What happened goes to E.ev as [name, data] (the world tells it and empties the list).
+  // split, air: the helicopter sees him, maske: his face is hidden, fremd: nothing of their description fits him }. E.sichtD: how near
+  // the nearest who saw him this frame was. What happened goes to E.ev as [name, data] (the world tells it and empties the list).
   function einsatz(world) {
     const E = {
       units: [],
@@ -1064,7 +1168,8 @@ export const GLLOGIK = (() => {
         era89 = env.era === '1989';
       E.t += dt;
       let seen = !!(env.air && env.air.seen),
-        close = false;
+        close = false,
+        sd = seen ? 30 : Infinity; // (how near the nearest who sees him is: what they can make out – the helicopter's camera: the clothes)
       const sight = () => {
         E.last = [p.x, p.y];
         E.lastT = 0;
@@ -1100,6 +1205,7 @@ export const GLLOGIK = (() => {
         if (sees) {
           seen = true;
           if (d < 26) close = true;
+          if (d < sd) sd = d;
           sight();
           u.lost = 0;
           u.sawT += dt;
@@ -1286,10 +1392,12 @@ export const GLLOGIK = (() => {
         c.t += dt;
         const d = hyp(c.x - p.x, c.y - p.y),
           sees = full > 0 && c.st !== 'zurück' && copSees(c, p, env);
+        c.lost = sees ? 0 : (c.lost ?? 99) + dt; // (seconds since he last saw him: the radar shows him only while he sees)
         c.v = K.schritt || 2.15;
         if (sees) {
           seen = true;
           if (d < 26) close = true;
+          if (d < sd) sd = d;
           sight();
           if (c.unit) c.unit.lost = 0; // (while its officers see him, their car does not call them back)
           if (c.knows && !W.known) {
@@ -1382,6 +1490,7 @@ export const GLLOGIK = (() => {
         if (sees) {
           seen = true;
           if (d < 26) close = true;
+          if (d < sd) sd = d;
           sight();
         }
         const side = along > 4 ? 1 : along < -4 ? -1 : 0;
@@ -1399,6 +1508,7 @@ export const GLLOGIK = (() => {
       }
       E.seen = seen;
       E.close = close;
+      E.sichtD = sd;
       if (seen) E.seenT = 0;
       else E.seenT += dt;
       if (E.last) E.lastT += dt;
@@ -1427,6 +1537,8 @@ export const GLLOGIK = (() => {
         close,
         hidden: (p.hidden || p.cover || !!env.versteck) && !E.sawHide,
         split: !!env.split,
+        maske: !!env.maske,
+        fremd: !!env.fremd,
         hold:
           (!there && coming && !env.off) ||
           (E.sawHide &&
@@ -1675,6 +1787,13 @@ export const GLLOGIK = (() => {
     still,
     umziehen,
     umkennzeichnen,
+    SICHT,
+    sicht,
+    wissen,
+    bildLeer,
+    EREIGNISSE,
+    plan,
+    planNeu,
     waende,
     kreuzt,
     netz,

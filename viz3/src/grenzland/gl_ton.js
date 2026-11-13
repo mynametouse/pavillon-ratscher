@@ -4,6 +4,7 @@
 // jingle and a little dance tune for the station; the camera's click; the crackle that opens the memory of 1989. Everything goes to the
 // game's own buses (audio/audio.js audio.raw(): effects, music), so the volume sliders and „Ton aus“ hold.
 import { audio } from '../audio/audio.js';
+import { KERN } from '../core/kern.js';
 export const GLTON = (() => {
   const S = { siren: null, moped: null, radio: null };
   const raw = () => {
@@ -238,6 +239,19 @@ export const GLTON = (() => {
       noise(R, t, { type: 'lowpass', f: 900, f1: 200, peak: 0.5 * k, d: 0.25 });
       tone(R, t + 0.05, { f0: 300, f1: 90, type: 'square', peak: 0.12 * k, d: 0.2 });
     },
+    // the flare (agent licht, grenzland:flare): a whoosh up, then ~40 s of a burning hiss and crackle, dying away
+    flare(R, t, k) {
+      noise(R, t, { type: 'bandpass', f: 900, f1: 2600, peak: 0.5 * k, a: 0.04, d: 1.4 });
+      noise(R, t + 3.2, { type: 'highpass', f: 3200, peak: 0.07 * k, a: 1.2, d: 40 });
+      for (let i = 0; i < 34; i++)
+        noise(R, t + 3.4 + i * 1.15 + Math.random() * 0.8, {
+          type: 'highpass',
+          f: 2400,
+          peak: 0.05 * k,
+          a: 0.004,
+          d: 0.05,
+        });
+    },
     kanister(R, t, k) {
       for (let i = 0; i < 16; i++) {
         const f = 190 + Math.random() * 170;
@@ -309,6 +323,13 @@ export const GLTON = (() => {
   const add = (name, fn) => {
     FX[name] = fn;
   };
+  // the flare of the Klinge night (agent licht draws it on the same event): heard far over the fields
+  KERN.on('grenzland:flare', d => {
+    try {
+      const w = KERN.where();
+      fx('flare', d && w ? Math.hypot(d.x - w[0], d.y - w[1]) : 0, 700);
+    } catch (e) {}
+  });
   return { fx, add, tone, noise, raw, siren, moped, jingle, musik, stop, vol, ready: () => !!raw() };
 })();
 window.GLTON = GLTON;
