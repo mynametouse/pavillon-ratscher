@@ -1,8 +1,9 @@
-"""suhl-gruen: the switch for measured heights – the object-height model nDOM1 (surface minus terrain, 1 m; Thuringia, © GDI-Th,
-CC BY 4.0, through easygeodata.de once the key EASYGEODATA_KEY exists). Give stadt.py `--ndom DIR` with 1 km tiles in DIR (GeoTIFF
-or the state's zip with GeoTIFF/XYZ, the tile's lower-left corner in km in the file name as `…32_{E}_{N}…` or `…_{E}_{N}_…`):
-tree heights then come from the highest point of the model under the crown, the flag "height measured" is set, and trees stay
-estimated where no tile lies. NOT YET RUN AGAINST REAL DATA (no key on 13.11.2026) – the reader follows tools/welt/fetch.read_dgm1.
+"""suhl-gruen: measured heights – the object-height model nDOM1 (surface minus terrain, 1 m; Thuringia, © GDI-Th, CC BY 4.0,
+laser flights 2020–2025, fetched through easygeodata.de by tools/suhl/lib/easygeodata.py, only in GitHub Actions). The tiles lie as
+<raw>/ndom1/ndom1_32_{E}_{N}.zip (1 km, the GeoTIFF inside, LERC: reading needs tifffile and imagecodecs).
+
+Ndom(dir).window(box) gives the heights of a box on the 1 m grid (NaN where no tile lies); baeume.py uses it for the woody mask,
+the tree tops, the heights; wald.py for the stand heights. Without tiles everything stays estimated – nothing else changes.
 """
 import glob, os, re, sys
 import numpy as np
@@ -17,54 +18,58 @@ class Ndom:
         for p in sorted(glob.glob(os.path.join(d, '**', '*'), recursive=True)):
             if not p.lower().endswith(('.tif', '.tiff', '.zip')):
                 continue
-            m = re.search(r'(?:32_)?(\d{3})_(\d{4})(?!\d)', os.path.basename(p))
+            m = re.search(r'(\d{3})_(\d{4})(?!\d)', os.path.basename(p))
             if m:
                 self.files[(int(m.group(1)), int(m.group(2)))] = p
         self.cache = {}
-        glib.log(f'nDOM1: {len(self.files)} tiles in {d}')
+        self.bad = 0
+
+    def __bool__(self):
+        return bool(self.files)
 
     def tile(self, key):
+        """-> 1000 x 1000 float32 (row 0 = north) or None"""
         if key not in self.cache:
-            if len(self.cache) > 6:
+            if len(self.cache) >= 6:
                 self.cache.pop(next(iter(self.cache)))
             p = self.files.get(key)
             a = None
             if p:
                 try:
                     if p.lower().endswith('.zip'):
-                        import fetch                       # tools/welt/fetch.py (read only)
-                        a = fetch.read_dgm1(p)
+                        import fetch                       # tools/welt/fetch.py (read only): GeoTIFF or XYZ in a zip
+                        arr, e0, n1, px = fetch.read_dgm1(p)
                     else:
                         import tifffile
                         with tifffile.TiffFile(p) as t:
                             pg = t.pages[0]
                             arr = pg.asarray().astype(np.float32)
                             tp, sc = pg.tags[33922].value, pg.tags[33550].value
-                        arr[arr < -100] = np.nan
-                        a = (arr, float(tp[3]) - float(tp[0]) * float(sc[0]), float(tp[4]) + float(tp[1]) * float(sc[1]), float(sc[0]))
+                        arr[arr < -1000] = np.nan
+                        e0, n1, px = float(tp[3]) - float(tp[0]) * float(sc[0]), float(tp[4]) + float(tp[1]) * float(sc[1]), float(sc[0])
+                    ok = abs(px - 1.0) < 1e-6 and arr.shape == (1000, 1000) and abs(e0 - key[0] * 1000) < 0.6 and abs(n1 - (key[1] + 1) * 1000) < 0.6
+                    if ok:
+                        a = arr.astype(np.float32)
+                    else:
+                        glib.log('nDOM1 tile with an unexpected frame', p, arr.shape, e0, n1, px)
+                        self.bad += 1
                 except Exception as ex:
-                    glib.log('nDOM1 tile unreadable', p, ex)
+                    glib.log('nDOM1 tile unreadable', p, repr(ex)[:200])
+                    self.bad += 1
             self.cache[key] = a
         return self.cache[key]
 
-    def __call__(self, E, N, r):
-        """the highest model value within min(r, 4 m) of every tree; NaN where there is no tile"""
-        from scipy import ndimage as ndi
-        E, N, r = np.asarray(E, float), np.asarray(N, float), np.asarray(r, float)
-        out = np.full(len(E), np.nan)
-        kx, ky = np.floor(E / 1000).astype(int), np.floor(N / 1000).astype(int)
-        for key in set(zip(kx.tolist(), ky.tolist())):
-            t = self.tile(key)
-            if t is None:
-                continue
-            a, e0, n1, px = t
-            m = (kx == key[0]) & (ky == key[1])
-            for rad in (1, 2, 3, 4):
-                sel = m & (np.clip(np.round(r), 1, 4) == rad)
-                if not sel.any():
+    def window(self, bb):
+        """heights on the 1 m grid of a box with whole-metre edges (E0, N0, E1, N1) -> float32 (rows from the north), NaN = no data"""
+        e0, n0, e1, n1 = (int(round(v)) for v in bb)
+        out = np.full((n1 - n0, e1 - e0), np.nan, np.float32)
+        for kx in range(e0 // 1000, (e1 - 1) // 1000 + 1):
+            for ky in range(n0 // 1000, (n1 - 1) // 1000 + 1):
+                a = self.tile((kx, ky))
+                if a is None:
                     continue
-                mx = ndi.maximum_filter(np.nan_to_num(a, nan=0.0), size=2 * int(rad / px) + 1)
-                c = np.clip(((E[sel] - e0) / px).astype(int), 0, a.shape[1] - 1)
-                rr = np.clip(((n1 - N[sel]) / px).astype(int), 0, a.shape[0] - 1)
-                out[sel] = mx[rr, c]
+                te0, tn1 = kx * 1000, (ky + 1) * 1000
+                c0, c1 = max(e0, te0), min(e1, te0 + 1000)
+                r0, r1 = max(n0, tn1 - 1000), min(n1, tn1)          # northings of the overlap
+                out[n1 - r1:n1 - r0, c0 - e0:c1 - e0] = a[tn1 - r1:tn1 - r0, c0 - te0:c1 - te0]
         return out

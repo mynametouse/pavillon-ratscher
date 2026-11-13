@@ -80,7 +80,7 @@ def single_tree_tiles(rows, gebiet):
     return [r['t'] for r in rows if r['kern'] or r['geb'] >= 3 or (r['str_m'] > 100 and r['wald'] < 0.85)]
 
 
-def schema_check(out, gebiet, skip):
+def schema_check(out, gebiet, skip, version=0):
     """the shared keys of index.json and the validation of suhl-daten (tools/suhl/lib/validate.py), where that library is on the
     branch; the products w and gr are not in the schema yet (proposal), the validator names them as unknown folders"""
     import subprocess
@@ -88,9 +88,10 @@ def schema_check(out, gebiet, skip):
     if not os.path.exists(val):
         return {'geprueft': False, 'grund': 'tools/suhl/lib/validate.py fehlt auf diesem Zweig'}
     res = {'geprueft': True}
-    b = os.path.join(out, 'suhl', 'b', 'v0')
+    b = os.path.join(out, 'suhl', 'b', f'v{version}')
     if 'baeume' not in skip and os.path.exists(os.path.join(b, 'index.json')):
-        r = subprocess.run([sys.executable, '-I', val, '--index', b, '--area', gebiet, '--sources', 'dop,osm,ethos'], capture_output=True, text=True)
+        src = 'dop,osm,ethos' + (',ndom1' if json.load(open(os.path.join(b, 'index.json'), encoding='utf-8')).get('ndom_kacheln') else '')
+        r = subprocess.run([sys.executable, '-I', val, '--index', b, '--area', gebiet, '--sources', src], capture_output=True, text=True)
         res['index_b'] = (r.stdout + r.stderr).strip()[-300:]
     r = subprocess.run([sys.executable, '-I', val, out] + (['--probe'] if gebiet == 'zentrum' else []), capture_output=True, text=True)
     lines = (r.stdout + r.stderr).strip().splitlines()
@@ -102,9 +103,13 @@ def schema_check(out, gebiet, skip):
 
 
 def _work(args):
-    tiles, work, kpath = args
+    tiles, work, kpath, ndir = args
     U = baeume.Umfeld(kontext.load(kpath))
-    baeume.run(tiles, work, U)
+    nd = None
+    if ndir:
+        import ndom
+        nd = ndom.Ndom(ndir) or None
+    baeume.run(tiles, work, U, ndom=nd)
     return len(tiles)
 
 
@@ -118,8 +123,10 @@ def main():
     ap.add_argument('--jobs', type=int, default=2)
     ap.add_argument('--ndom', default='')
     ap.add_argument('--skip', default='', help='comma list of steps to leave out: baeume, wald, flaechen')
+    ap.add_argument('--version', type=int, default=-1, help='version folder of b and w (default: from lauf.txt, else 0)')
     a = ap.parse_args()
     order = read_order(a.order)
+    version = a.version if a.version >= 0 else int(order.get('version', 0) or 0)
     gebiet = a.gebiet or order.get('gebiet', 'zentrum')
     skip = set(x for x in (a.skip or order.get('ohne', '')).split(',') if x)
     t00 = time.time()
@@ -139,23 +146,27 @@ def main():
         bad = gbild.prefetch(tiles, workers=2)
         res['schritte']['luftbild'] = {'kacheln': len(tiles), 'fehlgeschlagen': bad, 'sekunden': round(time.time() - t0)}
         t0 = time.time()
+        ndir = a.ndom if (a.ndom and os.path.isdir(a.ndom)) else ''
+        n_ndom = 0
+        if ndir:
+            import ndom
+            n_ndom = len(ndom.Ndom(ndir).files)
+            ndir = ndir if n_ndom else ''
+        res['ndom'] = {'kacheln_1km': n_ndom, 'ordner': bool(ndir)}
+        glib.log(f'nDOM1: {n_ndom} tiles' if ndir else 'nDOM1: none – heights stay estimated')
         if a.jobs > 1 and len(tiles) > 8:
             from multiprocessing import Pool
             parts = [tiles[i::a.jobs] for i in range(a.jobs)]
             with Pool(a.jobs) as pool:
-                pool.map(_work, [(p, a.work, a.kontext) for p in parts])
+                pool.map(_work, [(p, a.work, a.kontext, ndir) for p in parts])
         else:
-            _work((tiles, a.work, a.kontext))
+            _work((tiles, a.work, a.kontext, ndir))
         M, stats = baeume.merge(tiles, a.work)
-        sampler = None
-        if a.ndom and os.path.isdir(a.ndom):
-            import ndom
-            sampler = ndom.Ndom(a.ndom)
-        res['ndom'] = bool(sampler and sampler.files)
-        idx = baeume.write_product(M, os.path.join(a.out, 'suhl', 'b', 'v0'),
+        idx = baeume.write_product(M, os.path.join(a.out, 'suhl', 'b', f'v{version}'),
                                    {'stand': f'Gebiet {gebiet}, Lauf {order.get("lauf", "")}', 'gebiet': gebiet,
-                                    'hoehen': 'gemessen (nDOM1), wo eine Kachel vorlag' if res['ndom'] else 'geschätzt (kein nDOM1)'},
-                                   ndom=sampler if res['ndom'] else None)
+                                    'hoehen': ('gemessen im Höhenmodell nDOM1 (Laser 2020–2025, bezogen über easygeodata.de), wo eine Kachel vorlag und der '
+                                               'Laser dort Gehölz sah; sonst geschätzt' if ndir else 'geschätzt (kein nDOM1)'),
+                                    'ndom_kacheln': n_ndom})
         res['schritte']['baeume'] = {'anzahl': idx['anzahl'], 'kacheln': len(idx['kacheln']), 'sekunden': round(time.time() - t0)}
         glib.write_json(os.path.join(a.out, 'kachel_statistik.json'), stats, indent=0)
         import pruefen
@@ -164,15 +175,19 @@ def main():
     if 'wald' not in skip:
         import wald
         t0 = time.time()
-        res['wald'] = wald.build(K, gebiet, rows, os.path.join(a.out, 'suhl', 'w', 'v0'), set(tiles) if 'baeume' not in skip else set(),
-                                 os.path.join(a.out, 'suhl', 'b', 'v0') if 'baeume' not in skip else None)
+        nd = None
+        if a.ndom and os.path.isdir(a.ndom):
+            import ndom
+            nd = ndom.Ndom(a.ndom) or None
+        res['wald'] = wald.build(K, gebiet, rows, os.path.join(a.out, 'suhl', 'w', f'v{version}'), set(tiles) if 'baeume' not in skip else set(),
+                                 os.path.join(a.out, 'suhl', 'b', f'v{version}') if 'baeume' not in skip else None, ndom=nd)
         res['schritte']['wald'] = {'sekunden': round(time.time() - t0)}
     if 'flaechen' not in skip:
         import flaechen
         t0 = time.time()
         res['flaechen'] = flaechen.build(K, gebiet, rows, os.path.join(a.out, 'suhl', 'gr', 'v0'))
         res['schritte']['flaechen'] = {'sekunden': round(time.time() - t0)}
-    res['schema'] = schema_check(a.out, gebiet, skip)
+    res['schema'] = schema_check(a.out, gebiet, skip, version)
     res['sekunden'] = round(time.time() - t00)
     res['kachel_tabelle'] = [[r['t'][0], r['t'][1], r['geb'], r['str_m'], r['wald'], int(r['t'] in set(tiles))] for r in rows]
     glib.write_json(os.path.join(a.out, 'statistik.json'), res, indent=1)

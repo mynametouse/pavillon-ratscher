@@ -37,6 +37,11 @@ DT_CAP, BRIGHT, SIGMA_TOP, MIN_DIST = 2.5, 4.0, 8.0, 11   # crown tops: see crow
 SIGMA_TOP_CON, MIN_DIST_CON, NIR_CON_AREA = 3.5, 6, 118.0   # the same for conifer canopy (narrow crowns)
 NIR_CON_PEAK, NIR_CON_MEAN, TEX_CON = 152.0, 125.0, 0.09   # conifer: crown top and crown mean darker than this, and rough
 R_MIN = 0.9          # m, smaller crowns are dropped
+H_TREE = 2.5         # m in the height model nDOM1: something woody stands here
+H_MEAS = 1.5         # m: from here on a crown's height counts as measured
+H_NONE = 0.4         # m: below this nothing woody stood here when the laser flew
+H_SHRUB = 3.0        # m: a measured crown lower than this is a shrub or a very small tree
+R_NEW_MAX = 2.5      # m: an image crown wider than this without any height in the laser data is no tree planted since
 R_SHRUB = 1.6        # m, below this a crown counts as a shrub or a very small tree
 BAND = 6.0           # m around a tile kept for the merge of neighbours
 KINDS = {
@@ -121,7 +126,19 @@ class Umfeld:
             c, hw, kind, bridge = self.roads[i]
             if hw <= 0 or (public_only and kind in ('service', 'track')):
                 continue
-            d.line(xy(c), fill=1, width=max(1, int(round(2 * (hw + grow_road) / px))), joint='curve')
+            # every segment as its own rectangle and a disc at every vertex: PIL's wide polylines leave holes at some joints
+            # (found by the check "no tree in a carriageway": 207 pixels of one tile lay in the narrow line but not in the wide one)
+            wpx = (hw + grow_road) / px
+            P = xy(c)
+            for (x0, y0), (x1, y1) in zip(P[:-1], P[1:]):
+                dx, dy = x1 - x0, y1 - y0
+                ln = (dx * dx + dy * dy) ** 0.5
+                if ln > 1e-9:
+                    ox, oy = -dy / ln * wpx, dx / ln * wpx
+                    d.polygon([(x0 + ox, y0 + oy), (x1 + ox, y1 + oy), (x1 - ox, y1 - oy), (x0 - ox, y0 - oy)], fill=1)
+            for x0, y0 in P:
+                if -wpx <= x0 <= ir.width + wpx and -wpx <= y0 <= ir.height + wpx:
+                    d.ellipse([x0 - wpx, y0 - wpx, x0 + wpx, y0 + wpx], fill=1)
         road = np.asarray(ir, bool)
         iw = Image.new('L', (w, h), 0)
         d = ImageDraw.Draw(iw)
@@ -160,8 +177,11 @@ class Umfeld:
         return [(self.trees[i, 0], self.trees[i, 1], self.ttags[i]) for i in np.flatnonzero(m)]
 
 
-def woody(cir, water=None, shade_ok=None):
-    """-> (woody mask, ndvi, relative roughness, vegetation mask) from the infrared image (float32 channels nir, red, green)"""
+def woody(cir, water=None, shade_ok=None, chm=None):
+    """-> (woody mask, ndvi, relative roughness, vegetation mask) from the infrared image (float32 channels nir, red, green).
+    chm: the object-height model on the image grid (NaN = no data). The image (flown later) decides whether something
+    green is there; where the laser saw something tall, green counts as canopy also in the shade (where the image cannot
+    judge roughness) and with a calmer surface – but lit, smooth green under a tall laser value is lawn where a tree stood."""
     from scipy import ndimage as ndi
     nir, red = cir[..., 0], cir[..., 1]
     nd = ndi.uniform_filter((nir - red) / (nir + red + 1.0), 3)
@@ -175,10 +195,11 @@ def woody(cir, water=None, shade_ok=None):
     sd = np.sqrt(np.maximum(m2 - m * m, 0))
     tex = np.where(veg, sd / (m + 20.0), 0).astype(np.float32)
     texs = ndi.uniform_filter(tex * vf, 15) / (ndi.uniform_filter(vf, 15) + 1e-6)
-    lit = ndi.gaussian_filter(nir, 4.0) > NIR_LIT           # in direct sun (or `shade_ok`: the even shade of a building)
-    if shade_ok is not None:
-        lit |= shade_ok
+    lit0 = ndi.gaussian_filter(nir, 4.0) > NIR_LIT          # in direct sun
+    lit = lit0 | shade_ok if shade_ok is not None else lit0   # shade_ok: shade where roughness still tells (mapped forest)
     wood = veg & (texs > TEX_MIN) & lit
+    if chm is not None:
+        wood |= veg & (chm >= H_TREE) & ((texs > 0.5 * TEX_MIN) | ~lit0)       # NaN compares False: no data, no change
     from skimage.morphology import disk
     wood = ndi.binary_opening(wood, structure=disk(3))       # strips thinner than ~1.4 m go (hedge lines, lawn edges)
     wood = ndi.binary_closing(wood, structure=disk(3)) & veg
@@ -187,8 +208,27 @@ def woody(cir, water=None, shade_ok=None):
     return wood, nd, texs, veg
 
 
-def crowns(cir, wood, px=PX):
-    """watershed crowns -> label image (0 = none) and the number of crowns"""
+def chm_tops(chm1, con1):
+    """tree tops of the 1 m height model: a cell is a top when it is the highest within a window that grows with its height
+    (broadleaf: radius 0.9 + 0.11 h m, conifer 0.7 + 0.05 h m – wide crowns on tall broadleaf trees, narrow ones on spruce).
+    -> (rows, cols) of the tops, the smoothed model"""
+    from scipy import ndimage as ndi
+    a = np.nan_to_num(chm1, nan=0.0)
+    f = np.where(con1, ndi.gaussian_filter(a, 0.6), ndi.gaussian_filter(a, 1.0))
+    R = np.rint(np.where(con1, np.clip(0.7 + 0.05 * f, 1.0, 2.2), np.clip(0.9 + 0.11 * f, 1.4, 4.0))).astype(int)
+    top = np.zeros(a.shape, bool)
+    for rad in (1, 2, 3, 4):
+        top |= (R == rad) & (f >= ndi.maximum_filter(f, size=2 * rad + 1) - 1e-6) & (f >= H_TREE)
+    lab, n = ndi.label(top)                                     # a flat top of several cells counts once
+    if not n:
+        return np.zeros(0, int), np.zeros(0, int), f
+    c = np.rint(np.array(ndi.center_of_mass(top, lab, np.arange(1, n + 1)))).astype(int)
+    return c[:, 0], c[:, 1], f
+
+
+def crowns(cir, wood, px=PX, chm1=None):
+    """watershed crowns -> label image (0 = none), the number of crowns, how many of them start at a top of the height model
+    (labels 1..n_chm). chm1: the object-height model of the same box at 1 m (NaN = no data), or None."""
     from scipy import ndimage as ndi
     from skimage.feature import peak_local_max
     from skimage.segmentation import watershed
@@ -201,30 +241,78 @@ def crowns(cir, wood, px=PX):
     fc = dts + BRIGHT * ndi.gaussian_filter(nir, SIGMA_TOP_CON) / 255.0
     wf = wood.astype(np.float32)                              # mean over the canopy only (5 m: a stand, not the shaded side of
     con = ndi.gaussian_filter(nir * wf, 25.0) / (ndi.gaussian_filter(wf, 25.0) + 1e-3) < NIR_CON_AREA   # one broadleaf crown)
-    lab = wood.astype(np.int32)
-    pk = peak_local_max(f, min_distance=MIN_DIST, labels=lab * ~con, exclude_border=False)
-    pc = peak_local_max(fc, min_distance=MIN_DIST_CON, labels=lab * con, exclude_border=False)
-    pk = np.concatenate([pk, pc]) if len(pc) else pk
     f = np.where(con, fc, f)
+    lab = wood.astype(np.int32)
+    k = int(round(1.0 / px))
     mk = np.zeros(wood.shape, np.int32)
-    mk[pk[:, 0], pk[:, 1]] = np.arange(1, len(pk) + 1)
+    n_chm = 0
+    if chm1 is not None and np.isfinite(chm1).any():
+        # where the laser has canopy, its tops are the trees (measured, free of light and shade); the image's bright tops serve
+        # only where the laser has none (grown or planted since, or shrubs) and not within 1.5 m of the laser's canopy
+        tr, tc, fs = chm_tops(chm1, con[k // 2::k, k // 2::k][:chm1.shape[0], :chm1.shape[1]])
+        up = np.repeat(np.repeat(fs, k, 0), k, 1)[:wood.shape[0], :wood.shape[1]]
+        ups = ndi.gaussian_filter(up, 2.5)
+        dom = wood & (ups >= H_TREE - 0.5)
+        for r1, c1 in zip(tr, tc):
+            y, x = r1 * k + k // 2, c1 * k + k // 2
+            if not (0 <= y < wood.shape[0] and 0 <= x < wood.shape[1]):
+                continue
+            if not wood[y, x]:
+                blk = wood[r1 * k:(r1 + 1) * k, c1 * k:(c1 + 1) * k]
+                yy, xx = np.nonzero(blk)
+                if not len(yy):
+                    continue
+                y, x = r1 * k + yy[0], c1 * k + xx[0]
+            if mk[y, x] == 0:
+                n_chm += 1
+                mk[y, x] = n_chm
+        f = np.where(dom, 10.0 + ups, f)
+        from skimage.morphology import disk
+        free = wood & ~ndi.binary_dilation(dom, structure=disk(7))
+        lab = free.astype(np.int32)
+    pk = peak_local_max(f, min_distance=MIN_DIST, labels=lab * ~con, exclude_border=False)
+    pc = peak_local_max(f, min_distance=MIN_DIST_CON, labels=lab * con, exclude_border=False)
+    pk = np.concatenate([pk, pc]) if len(pc) else pk
+    n = n_chm
+    for y, x in pk:
+        if mk[y, x] == 0:
+            n += 1
+            mk[y, x] = n
     seg = watershed(-f, mk, mask=wood)
-    return seg, len(pk)
+    # a top whose crown stays below the smallest crown is no tree of its own: take it out and let its neighbours have the area
+    area = np.bincount(seg.ravel(), minlength=n + 1)
+    small = area < np.pi * R_MIN ** 2 / (px * px)
+    small[0] = False
+    if small[1:].any():
+        new = np.cumsum(~small) - 1                     # label 0 stays 0; kept labels are renumbered in their order
+        new[small] = 0
+        n_chm = int((~small[1:n_chm + 1]).sum())
+        n = int((~small[1:]).sum())
+        seg = watershed(-f, new[mk].astype(np.int32), mask=wood)
+    return seg, n, n_chm
 
 
-def hoehen(E, N, r, kind, ndom=None, oh=None):
-    """heights of the trees: measured from the object-height model where one is given (ndom(E, N, r) -> heights, NaN where it has
-    no data), otherwise estimated from crown radius and kind. -> (height m, measured bool array)"""
+def rule_height(r, kind):
+    """height estimated from crown radius and kind (m) – the stand-in where nothing is measured"""
     con = np.isin(kind, list(CONIFER))
-    h = np.where(kind == 30, np.clip(1.0 + 1.3 * r, 1.2, 4.0), np.where(con, np.clip(4.0 + 4.5 * r, 5.0, 34.0), np.clip(3.0 + 2.4 * r, 4.0, 28.0)))
+    return np.where(np.asarray(kind) == 30, np.clip(1.0 + 1.3 * r, 1.2, 4.0),
+                    np.where(con, np.clip(4.0 + 4.5 * r, 5.0, 34.0), np.clip(3.0 + 2.4 * r, 4.0, 28.0)))
+
+
+def hoehen(r, kind, hm=None, oh=None, hcap=None):
+    """heights of the trees -> (height m, measured bool array). hm: the height measured in the object-height model (NaN where
+    there is none); it counts from H_MEAS on (shrubs from 0.5 m). Otherwise the rule, a mapper's estimate from OSM (oh) where
+    there is one, and at most hcap where the laser data say that nothing tall stood there when it flew (a young tree)."""
+    r, kind = np.asarray(r, float), np.asarray(kind)
+    h = rule_height(r, kind)
     meas = np.zeros(len(r), bool)
     if oh is not None:
         h = np.where(np.isfinite(oh), oh, h)       # a mapper's estimate beats the rule; it is still an estimate
-    if ndom is not None:
-        hm = ndom(E, N, r)
-        ok = np.isfinite(hm) & (hm > 1.5)
-        h = np.where(ok, hm, h)
-        meas = ok
+    if hcap is not None:
+        h = np.where(np.isfinite(hcap), np.minimum(h, hcap), h)
+    if hm is not None:
+        meas = np.isfinite(hm) & ((hm >= H_MEAS) | ((kind == 30) & (hm >= 0.5)))
+        h = np.where(meas, hm, h)
     return h, meas
 
 
@@ -251,7 +339,9 @@ def osm_height(tags):
 
 
 def tile_trees(tx, ty, U, ndom=None, keep=None):
-    """the trees of one tile -> dict of arrays (E, N, h, r, kind, flags, + nd, nir, tex for the statistics) and counters"""
+    """the trees of one tile -> dict of arrays (E, N, r, kind, flags, hm = measured height or NaN, hcap, + nd, nir, tex … for the
+    statistics) and counters. ndom: ndom.Ndom or None – with it the tree tops, the heights and the woody mask in the shade come
+    from the object-height model; the image (flown 15.05.2024, after or during the laser period 2020–2025) decides what is there."""
     from scipy import ndimage as ndi
     bb = gbild.tile_box(tx, ty)
     e0, n0, e1, n1 = bb
@@ -259,11 +349,29 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     cir = cir8.astype(np.float32)
     bld, road, water = U.raster(bb, PX)
     forest = U.forest_mask(bb, PX)
+    k5 = int(round(1.0 / PX))
+    chm1 = chm = None
+    if ndom is not None:
+        w1 = ndom.window(bb)
+        if np.isfinite(w1).mean() > 0.02:
+            chm1 = w1
+            chm = np.repeat(np.repeat(w1, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]     # on the image grid, NaN = no data
     # in the mapped forest shaded canopy counts too (slopes turned away from the sun; there is no lawn to mistake it for)
-    wood, nd, tex, veg = woody(cir, water, shade_ok=forest)
-    seg, n = crowns(cir, wood)
-    st = {'kronen_roh': int(n), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean())}
-    out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk')}
+    wood, nd, tex, veg = woody(cir, water, shade_ok=forest, chm=chm)
+    seg, n, n_chm = crowns(cir, wood, chm1=chm1)
+    st = {'kronen_roh': int(n), 'kronen_aus_hoehenmodell': int(n_chm), 'gruen_anteil': float(veg.mean()), 'gehoelz_anteil': float(wood.mean()),
+          'ndom_anteil': float(np.isfinite(chm).mean()) if chm is not None else 0.0}
+    out = {k: [] for k in ('E', 'N', 'r', 'kind', 'flags', 'nd', 'nir', 'tex', 'red', 'grn', 'pk', 'hm', 'hcap')}
+    med20 = None
+    if chm is not None:
+        med = ndi.median_filter(np.nan_to_num(chm1, nan=0.0), 3)                # one cell (a lamp, a wire) makes no height
+        med20 = np.repeat(np.repeat(med, k5, 0), k5, 1)[:cir.shape[0], :cir.shape[1]]
+        near_b = ndi.distance_transform_edt(~bld) * PX < 1.7                    # within 2 m of a wall the model shows the house
+        # the time between laser and image, in numbers: green with a tall laser value but no crown in the image (lawn where a
+        # tree stood, or the blocky edge of the 1 m cells), and tall things without green outside buildings (felled, mast, bridge)
+        tall = np.nan_to_num(chm, nan=0.0) >= 5.0
+        st['gruen_hoch_ohne_krone_m2'] = float((veg & tall & ~wood & ~near_b).sum() * PX * PX)
+        st['hoch_ohne_gruen_m2'] = float((tall & ~veg & ~near_b & ~road).sum() * PX * PX)
     if n:
         idx = np.arange(1, n + 1)
         area = ndi.sum(np.ones(seg.shape, np.float32), seg, idx) * PX * PX
@@ -275,13 +383,20 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
         mgrn = ndi.mean(cir[..., 2], seg, idx)
         mtex = ndi.mean(tex, seg, idx)
         peak = ndi.maximum(ndi.gaussian_filter(cir[..., 0], 3.0), seg, idx)     # the sunlit top of the crown
+        if chm is not None:
+            hfar = ndi.maximum(np.where(near_b, 0.0, med20), seg, idx)
+            hall = ndi.maximum(np.where(bld, 0.0, med20), seg, idx)
+            far_area = ndi.sum((~near_b).astype(np.float32), seg, idx) * PX * PX
+            has = ndi.mean(np.isfinite(chm).astype(np.float32), seg, idx)
         segA = np.where(allowed, seg, 0)
         com = ndi.center_of_mass(allowed.astype(np.float32), segA, idx)
         full = ndi.center_of_mass(np.ones(seg.shape, np.float32), seg, idx)
         obj = ndi.find_objects(seg)
         H, W = seg.shape
-        drop_roof = drop_small = moved = 0
+        drop_roof = drop_small = moved = drop_nohi = young = n_meas = 0
         for k in range(n):
+            if obj[k] is None:
+                continue
             r = float(np.sqrt(area[k] / np.pi))
             if r < R_MIN:
                 drop_small += 1
@@ -291,7 +406,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
                 continue
             cy, cx = com[k]
             iy, ix = int(round(cy)), int(round(cx))
-            fl = POS_IMAGE | F_R
+            fl = (POS_NDOM if k < n_chm else POS_IMAGE) | F_R
             if not (0 <= iy < H and 0 <= ix < W and segA[iy, ix] == k + 1):
                 sl = obj[k]
                 sub = segA[sl] == k + 1
@@ -307,22 +422,51 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
             E, N = e0 + (ix + 0.5) * PX, n1 - (iy + 0.5) * PX
             # kind: conifers are dark in the near infrared even where the sun is on them (two clear modes in the forest above
             # Goldlauter: crown tops 130-150 against 170-190); in the mapped forest a conifer counts as spruce (the usual
-            # conifer of the Thuringian Forest – an estimate); small crowns outside the forest are shrubs
+            # conifer of the Thuringian Forest – an estimate)
             inf = bool(forest[iy, ix])
             con = peak[k] < NIR_CON_PEAK and mnir[k] < NIR_CON_MEAN and mtex[k] > TEX_CON
             kd = (2 if inf else 1) if con else 0
-            if r < R_SHRUB and not inf:
-                kd = 30
+            hm = hcap = float('nan')
+            if chm is not None and has[k] > 0.5:
+                # the height: the highest (median-filtered) cell under the crown, away from walls where the crown reaches there
+                hm = float(hfar[k]) if far_area[k] >= 1.0 else float(hall[k])
+                if far_area[k] < 1.0 and hm > 1.8 * float(rule_height(r, kd)):
+                    hm = float('nan')   # a small crown against a wall: the cell shows the house, not the tree
+                elif hm >= H_MEAS:
+                    n_meas += 1
+                    if hm < H_SHRUB and not inf:
+                        kd = 30
+                elif hm < H_NONE and r >= R_NEW_MAX and not inf:
+                    drop_nohi += 1      # wide, textured green with no height at all when the laser flew: tall grass, perennials
+                    continue            # or dappled shade on lawn – not a tree planted since
+                else:
+                    # nothing tall here when the laser flew: a shrub, or a tree planted or grown since – small, height estimated
+                    young += 1
+                    hcap = 5.0
+                    if r < R_SHRUB or r >= R_NEW_MAX:
+                        kd = 30
+            elif r < R_SHRUB and not inf:
+                kd = 30                 # no height model: small crowns outside the forest count as shrubs
             if inf:
                 fl |= F_FOREST
             out['E'].append(E); out['N'].append(N); out['r'].append(r); out['kind'].append(kd); out['flags'].append(fl)
             out['nd'].append(mnd[k]); out['nir'].append(mnir[k]); out['tex'].append(mtex[k]); out['red'].append(mred[k]); out['grn'].append(mgrn[k])
-            out['pk'].append(peak[k])
-        st.update(verworfen_klein=drop_small, verworfen_dach_fahrbahn=drop_roof, geruecket=moved)
+            out['pk'].append(peak[k]); out['hm'].append(hm); out['hcap'].append(hcap)
+        st.update(verworfen_klein=drop_small, verworfen_dach_fahrbahn=drop_roof, geruecket=moved, verworfen_ohne_hoehe=drop_nohi,
+                  hoehe_gemessen=n_meas, ohne_hoehe_im_laser_behalten=young)
     T = {k: np.array(v, float) for k, v in out.items()}
     T['kind'] = T['kind'].astype(int)
     T['flags'] = T['flags'].astype(int)
     T['oh'] = np.full(len(T['E']), np.nan)      # height tagged in OSM (a mapper's estimate), where there is one
+
+    def h_at(ix, iy, rad=1.5):
+        """the model's height at a mapped tree without a crown of its own (NaN without data or right at a wall)"""
+        if med20 is None:
+            return float('nan')
+        q = int(rad / PX)
+        sl = (slice(max(0, iy - q), iy + q + 1), slice(max(0, ix - q), ix + q + 1))
+        v = np.where(near_b[sl], 0.0, med20[sl])
+        return float(v.max()) if v.size and np.isfinite(chm[sl]).mean() > 0.5 else float('nan')
     # mapped trees (OSM natural=tree): a crown found at a mapped tree is a tree (never a shrub) and takes the mapped species; the
     # position stays the crown's (the 20 cm image is sharper than most mapping, the Markt's rows lie 2-3 m off in OSM). A mapped tree
     # without a crown of its own is added at the mapped position where the image shows vegetation there.
@@ -366,14 +510,15 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
                 pass
             for k, v in (('E', oe), ('N', on), ('r', r), ('kind', 0 if kd is None else kd),
                          ('flags', POS_OSM | F_OSM | (F_KIND if kd is not None else 0)), ('nd', nd[iy, ix]), ('nir', cir[iy, ix, 0]),
-                         ('tex', tex[iy, ix]), ('red', cir[iy, ix, 1]), ('grn', cir[iy, ix, 2]), ('pk', cir[iy, ix, 0]), ('oh', osm_height(tags))):
+                         ('tex', tex[iy, ix]), ('red', cir[iy, ix, 1]), ('grn', cir[iy, ix, 2]), ('pk', cir[iy, ix, 0]), ('oh', osm_height(tags)),
+                         ('hm', h_at(ix, iy)), ('hcap', float('nan'))):
                 T[k] = np.append(T[k], v)
         elif inside and tags.get('_v') == 1 and str(tags.get('_t', '')) > FLIGHT and not (bld[iy, ix] or road[iy, ix] or water[iy, ix]):
             # mapped for the first time after the flight and not in the image: a new planting, set as a young tree
             osm_new += 1
             for k, v in (('E', oe), ('N', on), ('r', 1.0), ('kind', 0 if kd is None else kd),
                          ('flags', POS_OSM | F_OSM | (F_KIND if kd is not None else 0)), ('nd', 0.0), ('nir', 0.0), ('tex', 0.0),
-                         ('red', 0.0), ('grn', 0.0), ('pk', 0.0), ('oh', 4.0)):
+                         ('red', 0.0), ('grn', 0.0), ('pk', 0.0), ('oh', 4.0), ('hm', float('nan')), ('hcap', float('nan'))):
                 T[k] = np.append(T[k], v)
         else:
             osm_gone += 1
@@ -383,7 +528,7 @@ def tile_trees(tx, ty, U, ndom=None, keep=None):
     m = (T['E'] >= te0 - BAND) & (T['E'] < te1 + BAND) & (T['N'] >= tn0 - BAND) & (T['N'] < tn1 + BAND)
     T = {k: v[m] for k, v in T.items()}
     if keep is not None:
-        keep.update(rgb=rgb, cir=cir8, seg=seg, wood=wood, veg=veg, bld=bld, road=road, bb=bb)
+        keep.update(rgb=rgb, cir=cir8, seg=seg, wood=wood, veg=veg, bld=bld, road=road, bb=bb, chm1=chm1)
     return T, st
 
 
@@ -411,7 +556,7 @@ def unpack(b, tx, ty):
 # ---------------- run over tiles, merge of neighbours, product files ----------------
 
 
-def run(tiles, work, U, redo=False):
+def run(tiles, work, U, redo=False, ndom=None):
     """detect the trees of every tile (with its band) into work/t/{tx}_{ty}.npz; a tile that is there is not computed again"""
     os.makedirs(os.path.join(work, 't'), exist_ok=True)
     for k, (tx, ty) in enumerate(tiles):
@@ -419,7 +564,7 @@ def run(tiles, work, U, redo=False):
         if os.path.exists(p) and not redo:
             continue
         t0 = time.time()
-        T, st = tile_trees(tx, ty, U)
+        T, st = tile_trees(tx, ty, U, ndom=ndom)
         st['sekunden'] = round(time.time() - t0, 1)
         np.savez_compressed(p + '.part.npz', st=json.dumps(st), **T)
         os.replace(p + '.part.npz', p)
@@ -471,11 +616,11 @@ def merge(tiles, work):
     return out, stats
 
 
-def write_product(M, out, extra=None, ndom=None):
+def write_product(M, out, extra=None):
     """the tile files and index.json of product b under `out` (…/suhl/b/v<N>)"""
     tiles, n_all = {}, 0
     for (tx, ty), T in sorted(M.items()):
-        h, meas = hoehen(T['E'], T['N'], T['r'], T['kind'], ndom=ndom, oh=T.get('oh'))
+        h, meas = hoehen(T['r'], T['kind'], hm=T.get('hm'), oh=T.get('oh'), hcap=T.get('hcap'))
         T['h'] = h
         T['flags'] = (T['flags'] & ~F_H) | np.where(meas, F_H, 0)
         p = os.path.join(out, str(glib.L), str(tx), f'{ty}.bin')
@@ -514,10 +659,15 @@ def main():
     ap.add_argument('--kontext', default=os.path.join(glib.RAW, 'kontext.pkl'))
     ap.add_argument('--redo', action='store_true')
     ap.add_argument('--stand', default='', help='a note for the index, e.g. "Probesatz Zentrum"')
+    ap.add_argument('--ndom', default='', help='folder with nDOM1 tiles (ndom.py): measured heights')
     a = ap.parse_args()
     tiles = [tuple(int(v) for v in t.split('_')) for t in a.tiles.split(',') if t] or glib.tiles_of(glib.area_utm(a.gebiet))
     U = Umfeld(kontext.load(a.kontext))
-    run(tiles, a.work, U, redo=a.redo)
+    nd = None
+    if a.ndom:
+        import ndom
+        nd = ndom.Ndom(a.ndom) or None
+    run(tiles, a.work, U, redo=a.redo, ndom=nd)
     M, stats = merge(tiles, a.work)
     idx = write_product(M, a.out, {'stand': a.stand or f'Gebiet {a.gebiet}', 'gebiet': a.gebiet if not a.tiles else None})
     glib.log(f"{idx['anzahl']} trees in {len(idx['kacheln'])} tiles -> {a.out}")

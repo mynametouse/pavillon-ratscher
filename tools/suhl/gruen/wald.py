@@ -40,8 +40,9 @@ def block_image(bx, by):
     return glib.wms_image('th_dop20cir', (e0, n0, e0 + BLOCK * 400.0, n0 + BLOCK * 400.0), PXW), (e0, n0)
 
 
-def cells_of_block(bx, by, U):
-    """-> dict of (BLOCK*NC)² arrays per plane for one image block (rows from the NORTH here), from the 1 m infrared image"""
+def cells_of_block(bx, by, U, ndom=None):
+    """-> dict of (BLOCK*NC)² arrays per plane for one image block (rows from the NORTH here), from the 1 m infrared image and,
+    where there is one, the object-height model nDOM1 (stand height = 95 % quantile of the cell, tree tops counted)"""
     from scipy import ndimage as ndi
     img, (e0, n0) = block_image(bx, by)
     cir = img.astype(np.float32)
@@ -52,8 +53,10 @@ def cells_of_block(bx, by, U):
     m = ndi.uniform_filter(nir, 7)
     m2 = ndi.uniform_filter(nir * nir, 7)
     cv = np.sqrt(np.maximum(m2 - m * m, 0)) / (m + 20.0)
-    rough = veg & (ndi.uniform_filter(cv, 5) > CV_ROUGH)
-    con = rough & (nirs < NIR_CON)
+    cvs = ndi.uniform_filter(cv, 5)
+    rough = veg & (cvs > CV_ROUGH)
+    dark = veg & (nirs < NIR_CON)
+    con = rough & dark
     bb = (e0, n0, e0 + BLOCK * 400.0, n0 + BLOCK * 400.0)
     forest = U.forest_mask(bb, PXW)
     n = BLOCK * NC
@@ -71,8 +74,43 @@ def cells_of_block(bx, by, U):
     art[wood & (nadel >= 0.7)] = 2
     art[wood & (nadel <= 0.3)] = 1
     art[wood & (nadel > 0.3) & (nadel < 0.7)] = 3
-    return {'art': art, 'nadel': np.round(100 * nadel).astype(np.uint8), 'deckung': np.round(100 * r).astype(np.uint8),
-            'wald_osm': fo, 'gruen': v}
+    C = {'art': art, 'nadel': np.round(100 * nadel).astype(np.uint8), 'deckung': np.round(100 * r).astype(np.uint8), 'wald_osm': fo, 'gruen': v,
+         'hoehe': None, 'tops': None, 'geraeumt': np.zeros((n, n), bool), 'laser': np.zeros((n, n), bool)}
+    if ndom is not None:
+        chm = ndom.window(bb)
+        okc = agg(np.isfinite(chm).astype(np.float32)) > 0.9
+        if okc.any():
+            a0 = np.nan_to_num(chm, nan=0.0)
+            cells = a0.reshape(n, c, n, c).transpose(0, 2, 1, 3).reshape(n, n, c * c)
+            hp = np.partition(cells, int(0.95 * c * c), axis=2)[:, :, int(0.95 * c * c)]      # 95 % quantile: the stand's top height
+            tall = (cells >= 5.0).mean(axis=2)
+            darkv = np.where(v > 0.02, agg(dark.astype(np.float32)) / np.maximum(v, 1e-6), 0.0)
+            cvm = agg(np.where(veg, cvs, 0.0)) / np.maximum(v, 1e-6)
+            stocked = okc & (tall >= 0.35)
+            # the image (2024) decides what stands; the laser (2020–2025) gives the height where both agree
+            cleared = inf & stocked & (art == 6)                                   # forest in the laser data, bare in the image
+            smooth = inf & stocked & (art == 5)
+            stand = smooth & ((cvm >= 0.045) | (darkv >= 0.5))                     # a calm canopy (pole wood, thicket), not grass
+            art[stand & (darkv >= 0.7)] = 2
+            art[stand & (darkv <= 0.3)] = 1
+            art[stand & (darkv > 0.3) & (darkv < 0.7)] = 3
+            C['nadel'] = np.where(stand, np.round(100 * darkv), C['nadel']).astype(np.uint8)
+            C['deckung'] = np.where(stand, np.round(100 * tall), C['deckung']).astype(np.uint8)
+            cleared |= smooth & ~stand                                             # very smooth and bright: grass where forest stood
+            young = okc & inf & np.isin(art, (1, 2, 3)) & (hp < 3.0)               # rough green, but low: regrowth, shrubs
+            art[young] = 5
+            hm = np.where(okc & np.isin(art, (1, 2, 3, 5)) & ~cleared, hp, np.nan)
+            C['hoehe'] = hm
+            C['geraeumt'] = cleared
+            C['laser'] = okc
+            con1 = ndi.uniform_filter(dark.astype(np.float32), 9) > 0.5
+            tr, tc, _ = baeume.chm_tops(chm, con1)
+            keep = veg[tr, tc] & forest[tr, tc] & (a0[tr, tc] >= 5.0) if len(tr) else np.zeros(0, bool)
+            tops = np.zeros((n, n), np.float32)
+            if len(tr):
+                np.add.at(tops, (tr[keep] // c, tc[keep] // c), 1.0)
+            C['tops'] = np.where(okc, tops, np.nan)
+    return C
 
 
 def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
@@ -82,11 +120,11 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
     tiles = [r['t'] for r in rows]
     blocks = sorted({(t[0] // BLOCK, t[1] // BLOCK) for t in tiles})
     os.makedirs(out, exist_ok=True)
-    idx_tiles, areas, n_cells = {}, {}, 0
+    idx_tiles, areas, n_cells, n_cleared, n_meas, n_trees = {}, {}, 0, 0, 0, 0.0
     big = {}                                  # the class raster of the whole area for the stand polygons: (tx, ty) -> art
     planes_all = {}
     for bi, (bx, by) in enumerate(blocks):
-        C = cells_of_block(bx, by, U)
+        C = cells_of_block(bx, by, U, ndom)
         glib.log(f'forest image block {bi + 1}/{len(blocks)} ({bx}, {by})')
         for tx, ty in tiles:
             if tx // BLOCK != bx or ty // BLOCK != by:
@@ -106,6 +144,20 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
                     hoehe[art == k] = HOEHE[k]
                     dichte[art == k] = DICHTE[k]
             dichte = dichte * np.where(np.isin(art, (1, 2, 3)), np.clip(deck / 100.0, 0.2, 1.0), 1.0)
+            if C['hoehe'] is not None:
+                hm = C['hoehe'][sl][::-1]
+                ok = np.isfinite(hm)
+                hoehe[ok] = hm[ok]
+                merker[ok] |= 2                                   # stand height measured
+                tp = C['tops'][sl][::-1]
+                st = np.isfinite(tp) & np.isin(art, (1, 2, 3))
+                dichte[st] = tp[st] / (CELL * CELL / 1e4)         # tree tops of the laser model per hectare
+                merker[st] |= 4
+                gz = C['geraeumt'][sl][::-1]
+                merker[gz] |= 8                                   # forest in the laser data, none in the image of 2024
+                hoehe[gz & (art == 5)] = 2.0                      # regrowth on a fresh clearing (estimate)
+                n_cleared += int(gz.sum())
+                n_meas += int(ok.sum())
             if (tx, ty) in b_tiles:
                 merker[art > 0] |= 1
                 p = os.path.join(b_dir or '', str(glib.L), str(tx), f'{ty}.bin')
@@ -120,6 +172,7 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
                     st = np.isin(art, (1, 2, 3))
                     dichte[st] = cnt[st]
                     merker[st] |= 4
+            n_trees += float((dichte * (CELL * CELL / 1e4))[np.isin(art, (1, 2, 3))].sum())
             planes = [art, nadel, deck, np.clip(np.round(hoehe / 0.25), 0, 255).astype(np.uint8),
                       np.clip(np.round(dichte / 10.0), 0, 255).astype(np.uint8), merker]
             p = os.path.join(out, str(glib.L), str(tx), f'{ty}.bin')
@@ -139,9 +192,11 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
         'format': {'ebenen': ['art', 'nadel', 'deckung', 'hoehe', 'dichte', 'merker'], 'bytes_je_ebene': NC * NC,
                    'reihenfolge': 'je Ebene 20 Zeilen zu 20 Zellen; Zeile 0 = Südrand, Zelle 0 = Westrand',
                    'einheiten': {'nadel': 'Prozent Nadelholz an der Krone', 'deckung': 'Prozent Kronendeckung', 'hoehe': '0,25 m (geschätzt, solange merker Bit 1 = 0)',
-                                 'dichte': 'Bäume je Hektar / 10', 'merker': 'Bit 0: Einzelbäume dieser Zelle stehen im Produkt b (zeichnen statt füllen); Bit 1: Höhe gemessen (nDOM1); Bit 2: Dichte aus gezählten Kronen'}},
+                                 'dichte': 'Bäume je Hektar / 10', 'merker': 'Bit 0: Einzelbäume dieser Zelle stehen im Produkt b (zeichnen statt füllen); Bit 1: Höhe gemessen (nDOM1, 95-%-Quantil der Zelle); Bit 2: Dichte gezählt (Kronen aus b oder Baumspitzen des Höhenmodells); Bit 3: seit dem Laserflug geräumt (Laser 2020–2025 zeigt Wald, das Luftbild vom 15.05.2024 keinen)'}},
         'arten': {str(k): v for k, v in ARTEN.items()}, 'hoehe_schaetzung_m': HOEHE, 'dichte_schaetzung_je_ha': DICHTE,
         'kacheln': idx_tiles, 'zellen': n_cells, 'flaeche_ha': {ARTEN[k]: round(v, 1) for k, v in sorted(areas.items())},
+        'hoehe_gemessen_ha': round(n_meas * CELL * CELL / 1e4, 1), 'seit_laserflug_geraeumt_ha': round(n_cleared * CELL * CELL / 1e4, 1),
+        'baeume_in_bestaenden_geschaetzt_oder_gezaehlt': int(round(n_trees)),
         'bestaende': {'datei': 'bestaende.geojson.gz', 'anzahl': stands},
         'attribution': glib.ATTRIBUTION,
         'quellen': [{'name': 'DOP20 CIR Thüringen (th_dop20cir, auf 1 m gerechnet), Bildflug 15.05.2024', 'lizenz': 'CC BY 4.0, © GDI-Th', 'url': glib.WMS},
@@ -149,7 +204,8 @@ def build(K, gebiet, rows, out, b_tiles=(), b_dir=None, ndom=None):
     }
     glib.write_json(os.path.join(out, 'index.json'), idx, indent=1)
     return {'kacheln': len(idx_tiles), 'zellen': n_cells, 'flaeche_ha': idx['flaeche_ha'], 'flaeche_ha_summe': round(sum(areas.values()), 1),
-            'bestaende': stands, 'bildbloecke': len(blocks)}
+            'bestaende': stands, 'bildbloecke': len(blocks), 'hoehe_gemessen_ha': idx['hoehe_gemessen_ha'],
+            'seit_laserflug_geraeumt_ha': idx['seit_laserflug_geraeumt_ha'], 'baeume_in_bestaenden': idx['baeume_in_bestaenden_geschaetzt_oder_gezaehlt']}
 
 
 def polygons(big, planes, out, min_cells=3):
@@ -233,6 +289,7 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--b', default='', help='the tree product of the same area (its tiles get "single trees in b")')
     ap.add_argument('--kontext', default=os.path.join(glib.RAW, 'kontext.pkl'))
+    ap.add_argument('--ndom', default='')
     a = ap.parse_args()
     import stadt
     K = kontext.load(a.kontext)
@@ -240,7 +297,11 @@ def main():
     bt = set()
     if a.b:
         bt = {tuple(int(v) for v in k.split('_')) for k in json.load(open(os.path.join(a.b, 'index.json')))['kacheln']}
-    print(json.dumps(build(K, a.gebiet, rows, a.out, bt, a.b or None), ensure_ascii=False, indent=1))
+    nd = None
+    if a.ndom:
+        import ndom
+        nd = ndom.Ndom(a.ndom) or None
+    print(json.dumps(build(K, a.gebiet, rows, a.out, bt, a.b or None, ndom=nd), ensure_ascii=False, indent=1))
 
 
 if __name__ == '__main__':

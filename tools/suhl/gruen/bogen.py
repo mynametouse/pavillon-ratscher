@@ -11,7 +11,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import glib, gbild, baeume
 
-COL = {'laub': (255, 235, 60), 'nadel': (60, 220, 255), 'strauch': (255, 150, 40), 'osm': (255, 60, 255)}
+COL = {'laub': (255, 235, 60), 'nadel': (60, 220, 255), 'strauch': (255, 150, 40), 'osm': (255, 60, 255), 'mess': (90, 230, 255), 'schaetz': (255, 150, 40)}
 CREDIT = 'Luftbild © GDI-Th (TLBG), CC BY 4.0, Bildflug 15.05.2024 · Bäume: suhl-gruen (Schätzung aus dem Infrarot-Luftbild), OSM-Bäume © OpenStreetMap-Mitwirkende'
 
 
@@ -19,7 +19,7 @@ def colour(kind):
     return COL['strauch'] if kind == 30 else COL['nadel'] if kind in baeume.CONIFER else COL['laub']
 
 
-def draw(img, bb, T, osm=(), scale=1.0, label=''):
+def draw(img, bb, T, osm=(), scale=1.0, label='', mode='art', legend=None):
     """img: uint8 array of the box bb (rows from the north) -> PIL image with the trees drawn, scaled by `scale`"""
     from PIL import Image, ImageDraw, ImageFont
     e0, n0, e1, n1 = bb
@@ -31,7 +31,7 @@ def draw(img, bb, T, osm=(), scale=1.0, label=''):
         x, y = (E - e0) * s, (n1 - N) * s
         if x < -20 or y < -20 or x > im.width + 20 or y > im.height + 20:
             continue
-        c = colour(int(k))
+        c = colour(int(k)) if mode == 'art' else (COL['mess'] if int(f) & baeume.F_H else COL['schaetz'])
         rr = r * s
         d.ellipse([x - rr, y - rr, x + rr, y + rr], outline=c, width=1 if scale < 0.8 else 2)
         q = 1.5 if scale < 0.8 else 2.5
@@ -46,7 +46,8 @@ def draw(img, bb, T, osm=(), scale=1.0, label=''):
             font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 13)
         except OSError:
             font = ImageFont.load_default()
-        lines = [label, 'gelb Laubbaum · blau Nadelbaum · orange Strauch/sehr klein · weißer Punkt = Lage aus OSM · magenta Kreuz = OSM-Baum', CREDIT]
+        lines = [label, legend or ('gelb Laubbaum · blau Nadelbaum · orange Strauch/sehr klein · weißer Punkt = Lage aus OSM · magenta Kreuz = OSM-Baum'
+                                   if mode == 'art' else 'hellblau Höhe gemessen (nDOM1) · orange Höhe geschätzt · weißer Punkt = Lage aus OSM · magenta Kreuz = OSM-Baum'), CREDIT]
         hh = 17 * len(lines) + 6
         out = Image.new('RGB', (im.width, im.height + hh), (20, 20, 20))
         out.paste(im, (0, 0))
@@ -57,7 +58,7 @@ def draw(img, bb, T, osm=(), scale=1.0, label=''):
     return im
 
 
-def tile_sheet(tx, ty, T, U=None, layer='th_dop', window=None, width=1024, label=None):
+def tile_sheet(tx, ty, T, U=None, layer='th_dop', window=None, width=1024, label=None, mode='art'):
     """a sheet of one tile (or of a window (E0, N0, E1, N1) inside it)"""
     bb = gbild.tile_box(tx, ty)
     rgb, cir = gbild.fetch(tx, ty)
@@ -70,7 +71,7 @@ def tile_sheet(tx, ty, T, U=None, layer='th_dop', window=None, width=1024, label
         bb = window
     osm = U.osm_trees(bb) if U is not None else ()
     lab = label or f'Kachel 10/{tx}/{ty}  UTM32 E {bb[0]:.0f}–{bb[2]:.0f}  N {bb[1]:.0f}–{bb[3]:.0f}  ({"RGB" if layer == "th_dop" else "Infrarot CIR"})  {len(T["E"])} Bäume in der Kachel'
-    return draw(img, bb, T, osm, scale=width / img.shape[1], label=lab)
+    return draw(img, bb, T, osm, scale=width / img.shape[1], label=lab, mode=mode)
 
 
 def model_picture(bb, T, U, scale, wald_dir=None):
@@ -147,6 +148,88 @@ def vergleich_sheet(tx, ty, T, U, window, title, width=500):
                  'kronendeckung_modell_prozent': round(100 * float(disc.mean()), 1), 'gehoelz_im_bild_prozent': round(100 * float(wood.mean()), 1)}
 
 
+def _font():
+    from PIL import ImageFont
+    try:
+        return ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 13)
+    except OSError:
+        return ImageFont.load_default()
+
+
+def _window(tx, ty, window):
+    bb = gbild.tile_box(tx, ty)
+    rgb, cir = gbild.fetch(tx, ty)
+    c0, c1 = int(round((window[0] - bb[0]) / gbild.PX)), int(round((window[2] - bb[0]) / gbild.PX))
+    r0, r1 = int(round((bb[3] - window[3]) / gbild.PX)), int(round((bb[3] - window[1]) / gbild.PX))
+    return rgb[r0:r1, c0:c1], cir[r0:r1, c0:c1]
+
+
+def _inside(T, w):
+    return (T['E'] >= w[0]) & (T['E'] < w[2]) & (T['N'] >= w[1]) & (T['N'] < w[3])
+
+
+def height_colours(h):
+    """heights (m) -> RGB: 0 dark blue, 5 green, 15 yellow, 30 red; NaN grey"""
+    stops = np.array([0.0, 2.5, 8.0, 15.0, 22.0, 32.0])
+    cols = np.array([(20, 24, 60), (40, 90, 150), (60, 170, 80), (235, 225, 70), (240, 140, 40), (200, 40, 40)], float)
+    v = np.nan_to_num(h, nan=0.0)
+    out = np.stack([np.interp(v, stops, cols[:, c]) for c in range(3)], -1).astype(np.uint8)
+    out[~np.isfinite(h)] = (110, 110, 110)
+    return out
+
+
+def v0v1_sheet(tx, ty, T0, T1, U, window, title, width=500):
+    """the same place twice: the trees estimated from the image alone (v0) | with the object-height model (v1)"""
+    from PIL import Image, ImageDraw
+    rgb, _ = _window(tx, ty, window)
+    sc = width / rgb.shape[1]
+    a = draw(rgb, window, T0, (), scale=sc)
+    b = draw(rgb, window, T1, (), scale=sc, mode='mess')
+    m0, m1 = _inside(T0, window), _inside(T1, window)
+    meas = (T1['flags'][m1] & baeume.F_H) > 0
+    q = lambda v: (f'{np.median(v):.1f}' if len(v) else '–')
+    lines = [f'{title} – Kachel 10/{tx}/{ty}, UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}',
+             f'links v0 (nur Luftbild): {int(m0.sum())} Bäume, Höhe geschätzt, Median {q(T0["h"][m0])} m, Kronenradius Median {q(T0["r"][m0])} m (gelb Laub, blau Nadel, orange Strauch)',
+             f'rechts v1 (Luftbild + Höhenmodell nDOM1): {int(m1.sum())} Bäume, davon {int(meas.sum())} mit gemessener Höhe (hellblau), Median {q(T1["h"][m1][meas])} m; '
+             f'{int((~meas).sum())} geschätzt (orange); Kronenradius Median {q(T1["r"][m1])} m',
+             CREDIT + ' · Höhenmodell nDOM1 © GDI-Th, bezogen über easygeodata.de']
+    out = Image.new('RGB', (2 * width + 4, a.height + 17 * len(lines) + 6), (20, 20, 20))
+    out.paste(a, (0, 0))
+    out.paste(b, (width + 4, 0))
+    d = ImageDraw.Draw(out)
+    for i, t in enumerate(lines):
+        d.text((5, a.height + 3 + 17 * i), t, fill=(235, 235, 235), font=_font())
+    res = {'ort': title, 'kachel': f'{tx}_{ty}', 'v0_baeume': int(m0.sum()), 'v1_baeume': int(m1.sum()), 'v1_hoehe_gemessen': int(meas.sum()),
+           'v0_hoehe_median_m': float(np.median(T0['h'][m0])) if m0.any() else None,
+           'v1_hoehe_median_gemessen_m': float(np.median(T1['h'][m1][meas])) if meas.any() else None}
+    return out, res
+
+
+def hoehen_sheet(tx, ty, T, U, nd, window, title, width=500):
+    """orthophoto with the crowns | the object-height model in colours with the same crowns – to look whether tops and crowns fit"""
+    from PIL import Image, ImageDraw
+    rgb, _ = _window(tx, ty, window)
+    sc = width / rgb.shape[1]
+    a = draw(rgb, window, T, (), scale=sc, mode='mess')
+    chm = nd.window(window)
+    # draw() takes an image on the 20 cm grid: bring the colours of the 1 m model to that grid first
+    k5 = int(round(1.0 / gbild.PX))
+    hc = np.repeat(np.repeat(height_colours(chm), k5, 0), k5, 1)[:rgb.shape[0], :rgb.shape[1]]
+    b = draw(hc, window, T, (), scale=sc, mode='mess')
+    m = _inside(T, window)
+    meas = (T['flags'][m] & baeume.F_H) > 0
+    lines = [f'{title} – Kachel 10/{tx}/{ty}, UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}: links Luftbild, rechts Höhenmodell nDOM1 (1 m)',
+             f'{int(m.sum())} Bäume, {int(meas.sum())} mit gemessener Höhe (links hellblau), {int((~meas).sum())} geschätzt (orange) · Farben rechts: 0 m dunkelblau, 5 m grün, 15 m gelb, 30 m rot, grau = keine Daten',
+             CREDIT + ' · Höhenmodell nDOM1 © GDI-Th, bezogen über easygeodata.de']
+    out = Image.new('RGB', (2 * width + 4, a.height + 17 * len(lines) + 6), (20, 20, 20))
+    out.paste(a, (0, 0))
+    out.paste(b, (width + 4, 0))
+    d = ImageDraw.Draw(out)
+    for i, t in enumerate(lines):
+        d.text((5, a.height + 3 + 17 * i), t, fill=(235, 235, 235), font=_font())
+    return out
+
+
 WALD_COL = {0: (90, 90, 90), 1: (120, 220, 90), 2: (10, 90, 40), 3: (120, 150, 40), 5: (250, 230, 80), 6: (170, 110, 70)}
 
 
@@ -197,6 +280,8 @@ def main():
     ap.add_argument('--kontext', default=os.path.join(glib.RAW, 'kontext.pkl'))
     ap.add_argument('--vergleich', action='store_true', help='the three comparison sheets model against orthophoto')
     ap.add_argument('--wald', default='', help='forest stand sheets for image blocks, e.g. 49_54,51_55')
+    ap.add_argument('--v0v1', default='', help='folder of the older tree product: sheets old against --b for the three places')
+    ap.add_argument('--hoehen', default='', help='folder with nDOM1 tiles: sheets orthophoto against height model for the three places')
     a = ap.parse_args()
     import kontext
     U = baeume.Umfeld(kontext.load(a.kontext))
@@ -205,6 +290,28 @@ def main():
     if not tiles:
         import json
         tiles = [tuple(int(v) for v in k.split('_')) for k in json.load(open(os.path.join(a.b, 'index.json')))['kacheln']]
+    if a.v0v1 or a.hoehen:
+        import pruefen
+        res = []
+        for tx, ty, (x0, y0, x1, y1), title in ORTE:
+            e0, n0, _, _ = glib.wlib.tbounds(glib.L, tx, ty)
+            w = (e0 + x0, n0 + y0, e0 + x1, n0 + y1)
+            p1 = os.path.join(a.b, str(glib.L), str(tx), f'{ty}.bin')
+            if not os.path.exists(p1):
+                continue
+            T1 = baeume.unpack(open(p1, 'rb').read(), tx, ty)
+            if a.v0v1:
+                T0 = baeume.unpack(open(os.path.join(a.v0v1, str(glib.L), str(tx), f'{ty}.bin'), 'rb').read(), tx, ty)
+                im, r = v0v1_sheet(tx, ty, T0, T1, U, w, title)
+                im.save(os.path.join(a.out, f'v0v1_{tx}_{ty}.jpg'), quality=85)
+                res.append(r)
+            if a.hoehen:
+                import ndom
+                hoehen_sheet(tx, ty, T1, U, ndom.Ndom(a.hoehen), w, title).save(os.path.join(a.out, f'hoehen_{tx}_{ty}.jpg'), quality=85)
+        if res:
+            glib.write_json(os.path.join(a.out, 'v0v1.json'), res, indent=1)
+            print(json.dumps(res, ensure_ascii=False, indent=1))
+        return
     if a.wald:
         for blk in a.wald.split(','):
             bx, by = (int(v) for v in blk.split('_'))
