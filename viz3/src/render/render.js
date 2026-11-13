@@ -34,6 +34,9 @@ export const RENDER = {
   rp: null,
   smaa: null,
   bench: null,
+  // feat/zeitreise-regie: a frame drawn by someone else (the split screen of the time journey, zukunft/zk_regie_bild.js) – true when it drew
+  /** @type {null | ((kind?: string) => boolean)} */
+  draw: null,
   get hq() {
     return this.tier !== 'schnell';
   },
@@ -213,6 +216,7 @@ applyTier(RENDER.tier, false);
 export function renderFrame(kind) {
   if (window.PREFRAME) window.PREFRAME();
   if (window.FIGSHADOW) window.FIGSHADOW();
+  if (RENDER.draw && RENDER.draw(kind)) return; // feat/zeitreise-regie: the time journey draws its frame (one world or the split)
   if (kind === 'motion' && MOTION.level > 0 && MOTION.comp) MOTION.comp.render();
   else if (RENDER.composer) RENDER.composer.render();
   else R.render(scene, cam);

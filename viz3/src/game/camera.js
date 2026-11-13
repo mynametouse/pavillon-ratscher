@@ -21,7 +21,11 @@ function topH() {
 export const TOPMAX = () => (window.RATSCHER && LATE.RATSCHER.ready ? 9000 : 170); // the plan view zooms out to the whole valley once the real surroundings are there
 export const FAR0 = () => (window.RATSCHER && LATE.RATSCHER.ready ? 30000 : 12000);
 export const ORBMAX = () => (window.RATSCHER && LATE.RATSCHER.ready ? 420 : 70); // the model view may step back far enough to see the village
+// feat/zeitreise-regie: a film camera sets the view before every view mode (the time journey, zukunft/zk_regie.js): fn() → true when it did
+/** @type {{ fn: null | (() => boolean) }} */
+export const CAMSET = { fn: null };
 export function applyCam() {
+  if (CAMSET.fn && CAMSET.fn()) return; // feat/zeitreise-regie
   if (P.mode === 'top') {
     P.th = Math.min(P.th, TOPMAX());
     const lim = TOPMAX() > 1000 ? 11000 : 400,
