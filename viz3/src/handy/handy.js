@@ -214,7 +214,7 @@ export const HANDY = (() => {
 .hy-dock{display:grid;grid-template-columns:repeat(auto-fit,minmax(18cqmin,1fr));gap:1cqmin;margin:2cqmin -1cqmin 0;padding:3.2cqmin 2.6cqmin;border-radius:7.5cqmin;
   background:rgba(255,255,255,.17);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3)}
 .hy-dock .hy-ic>b{display:none}
-.hy-app{position:absolute;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;padding-top:12.5cqmin;transform-origin:var(--ox,50%) var(--oy,50%)}
+.hy-app{position:absolute;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;padding-top:12.5cqmin;padding-bottom:6cqmin;transform-origin:var(--ox,50%) var(--oy,50%)}
 .hy-app[hidden]{display:none}
 .hy-app.hy-auf{animation:hyAuf .3s cubic-bezier(.2,.8,.25,1)}
 .hy-app.hy-ab{animation:hyAb .24s cubic-bezier(.4,0,.8,.4) forwards}
@@ -233,7 +233,7 @@ export const HANDY = (() => {
 .hy-body.hy-vr{animation:hyVr .26s cubic-bezier(.2,.8,.25,1)} .hy-body.hy-vl{animation:hyVl .26s cubic-bezier(.2,.8,.25,1)}
 @keyframes hyVr{from{transform:translateX(38%);opacity:.2}to{transform:none;opacity:1}}
 @keyframes hyVl{from{transform:translateX(-30%);opacity:.2}to{transform:none;opacity:1}}
-.hy-fuss{flex:none;padding:0 3cqmin 7.5cqmin}
+.hy-fuss{flex:none;padding:0 3cqmin 2cqmin}
 .hy-fuss:empty{display:none}
 .hy-fuss .hy-chips{display:flex;flex-wrap:wrap;gap:1.8cqmin;justify-content:flex-end;padding-top:2.4cqmin;border-top:.3cqmin solid rgba(255,255,255,.08)}
 .hy-chip{border-radius:99px!important;border:.35cqmin solid var(--hy-ak,#4da3ff)!important;color:var(--hy-ak,#4da3ff);padding:2cqmin 3.6cqmin!important;font-size:3.8cqmin;
@@ -1502,7 +1502,13 @@ export const HANDY = (() => {
       S.el.style.setProperty('--hy-e', ease(S.k).toFixed(4));
       if (!S.open && S.k <= 0) S.el.hidden = true;
     }
-    if (S.sperre >= 0 && S.open && (S.sperre -= dt) < 0) entsperren();
+    if (S.sperre >= 0 && S.open) {
+      S.sperre -= dt;
+      if (S.sperre < 0) {
+        S.sperre = 0;
+        entsperren();
+      }
+    }
     if (S.bannerT > 0 && (S.bannerT -= dt) <= 0) {
       $('.hy-ban').classList.add('hy-weg');
       S.banner = null;

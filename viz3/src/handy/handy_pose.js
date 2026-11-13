@@ -176,8 +176,9 @@ export const HANDYPOSE = (() => {
       T3.getWorldPosition(_t1);
       _t2
         .copy(_t1)
-        .addScaledVector(_n, -(0.012 + 0.022 * tap) * w)
-        .addScaledVector(_f, 0.01 * w);
+        .addScaledVector(_n, (0.03 - 0.014 * tap) * w)
+        .addScaledVector(_f, 0.012 * w)
+        .addScaledVector(_s, -0.012 * w);
       aim(sv, T1, _t1, _t2, 0.9);
     }
   }
