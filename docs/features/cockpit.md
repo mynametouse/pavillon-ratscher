@@ -1,9 +1,10 @@
 # Cockpit: realistische Innenansicht der Autos, Spiegel, Wischer, Blinker, Navi – und die Grafik beim Bewegen
 
 Hilfs-Agent `cockpit` (Auftrag `docs/plans/auftraege/cockpit.md`), Branch `feat/cockpit`. Falko, 13.11.2026 15:54/16:05: das Auto innen
-„viel realistischer … nicht so spielzeughaft … mit Tacho, bewegtem Lenkrad, Händen am Lenkrad, Schalten“; Karosserien baut der Straßen-Chat,
-das Innere dieser Agent; dazu echte Spiegel, Wischer bei Regen, Blinker und Lichtschalter, Navi in der Mitte; die Grafik beim Fahren
-einstellbar (Stufen und Automatik, Bildrate anzeigen).
+„viel realistischer … nicht so spielzeughaft … mit Tacho, bewegtem Lenkrad, Händen am Lenkrad, Schalten“; dazu echte Spiegel, Wischer bei
+Regen, Blinker und Lichtschalter, Navi in der Mitte; die Grafik beim Fahren einstellbar (Stufen und Automatik, Bildrate anzeigen). Seit
+Falko 13.11. 17:59 („Sofort selbst bauen“) baut dieser Agent auch die **Karosserie von Falkos Kombi** (Teil B) – innen und außen aus einem
+Guss; die Karosserien des Verkehrs bleiben beim Straßen-Chat.
 
 ## Was es gibt
 
@@ -68,20 +69,53 @@ einstellbar (Stufen und Automatik, Bildrate anzeigen).
   der Säule (Drehzahl 0–3000, rot ab 2350; Geschwindigkeit, Gang F/R, Betriebsstunden, Tank, Licht, Handbremse), Blinkpfeile, die Hände am
   Lenkrad, bei Gangwechsel die rechte zu den Hebeln. Keine Spiegel, kein Navi.
 
+### Teil B – die Karosserie von Falkos Kombi (`vehicles/kombi.js`, `KOMBI`)
+- Ein Kombi der Klasse eines Logan MCV (2012), **eigene Form ohne Hersteller- oder Typzeichen** (kein Logo, kein Markengrill, keine
+  Markenleuchten): 4,47 × 1,74 × 1,64 m mit Dachreling, Radstand 2,905 m, Spur 1,47 m, Räder 0,31 m – die Maße von `car.js`, also
+  bleiben Fahrphysik, Kollisionskasten, Radpunkte und Laderaum unverändert.
+- Gebaut mit dem Karosserie-Baukasten des Grenzland-Chats (`grenzland/gl_karosse.js`, nur gelesen): Querschnitte entlang der Länge mit
+  weichen Kanten und leichter Schulterlinie, Radhäuser mit Kästen, Türfugen, drei Seitenfenster, B- und C-Säule schwarz, A- und D-Säule in
+  Wagenfarbe, langes Dach mit Reling auf drei Füßen, Heck mit zwei ungleich breiten Türen (die linke breiter, Fuge und Scharniere sichtbar),
+  senkrechte Rückleuchten in den D-Säulen (Schluss, Bremse, Blinker, Rückfahrlicht, rote Gläser auch bei Tag), dritte Bremsleuchte,
+  Scheinwerfer mit Gläsern und Blinkern, Nebelleuchten, Seitenblinker, Stoßfänger in Wagenfarbe mit schwarzem Unterteil, dunkler
+  Unterboden, Türgriffe, Spiegelgehäuse in Wagenfarbe auf schwarzem Fuß, Scheiben getönt mit Spiegelung des Himmels, Kennzeichen vorn und
+  hinten mit der erfundenen Nummer „HBN PR 216“. Lack warmes Beige-Metallic mit Klarlack.
+- Blinker vorn, seitlich und hinten an `model.lamps.blinkL`/`blinkR` (das Cockpit lässt sie blinken), Licht, Bremse und Rückfahrlicht an
+  `model.lamps` wie bisher (`vehicles/vehicle.js` schaltet sie).
+- Innen: die Innenschale zeigt Verkleidungen und Dachhimmel; die A-Säulen sind innen ganz dunkler Kunststoff (keine helle Kante mehr) und
+  schmaler (Säule 5,8 cm am Fuß, Dachkante r 6 cm). Das Cockpit hängt den echten Dachhimmel 6 cm unter das Dach, dazu das dunkle Band
+  auf der Scheibe (3,5 cm, daran der Innenspiegel), die Sonnenblenden und die Dachrahmen über den Türen (10 cm, über den Fenstern).
+- Zwei Detailstufen (`THREE.LOD`, Wechsel bei 45 m): nah 10 Meshes Karosserie + Kennzeichen + 4 Räder, ~26 000 Dreiecke; fern 5 Meshes
+  ohne Innenschale und Kleinteile, ~5 800 Dreiecke (die Leuchten bleiben, nachts sieht man sie).
+- Ersetzt beim Laden die Karosserie von `car.js` (vor dem ersten Bild – die Materialien werden mit allem anderen übersetzt). Mit
+  `?altkombi=1` bleibt zum Vergleich die alte.
+
 ### Ankerpunkte (für neue Karosserien, Absprache mit dem Straßen-Chat in `docs/PARALLEL.md`, 13.11. 17:05)
 Modellrahmen wie `car.js` (x rechts, y vorn, z oben, Meter). Eine Karosserie mit eigenen Werten nennt sie in `spec.cockpit` (gleiche
 Felder; was fehlt, bleibt wie beim Kombi – `CPBUILD.anchors`). Heute für den Kombi (`CPBUILD.CAR`): `eye` [−0,36, −0,22, 1,17] (= `spec.eye`),
 `hp` (H-Punkt) [−0,36, −0,10, 0,62], `wheel` { c [−0,36, 0,24, 0,875], tilt 0,44, r 0,185 }, `dash` { face 0,49, top 0,966, ws 0,84,
 x 0,745 }, `ws` { y0 0,82, z0 0,97, w0 0,8, y1 −0,05, z1 1,55, w1 0,64 }, `floor` 0,45, `door` 0,755, `mirL` [−0,99, 0,67, 1,04],
 `mirR` [0,99, 0,67, 1,04], `mirI` [0, 0,22, 1,285], `roof` 1,51, `head` { z0 1,30, z1 1,35, back [−1,15, 1,47], w 0,635 }
-(dunkles Band auf der Scheibe von z0 bis z1, Dachhimmel von dort bis `back`; eine Karosserie mit echtem Dach lässt `head` weg: `null`).
+(dunkles Band auf der Scheibe von z0 bis z1, Dachhimmel von dort bis `back`; eine Karosserie, die das Dach innen selbst schließt, setzt
+`head: null`), `heads` (eigene Spiegelköpfe, true), `apil` (eigene A-Säulen-Verkleidung, true), `mirBack` (Spiegelkopf-Mitte bis Glas).
+In `head` außerdem `inset` (Band schmaler als die Scheibe), `fh`/`fw`/`fx` (Höhe, Breite, Lage der Dachrahmen über den Türen).
+**Die neue Karosserie** (`vehicles/kombi.js`) nennt ihre Werte in `spec.cockpit` mit `body: 'kombi'` – sie gelten nur, wenn dieser Teil
+in `model.body` steckt; das fremde Auto im Verkehr kopiert die Spec des Kombi (`verkehr/verkehr_auto.js`) und behält so die Werte und das
+Auge von heute. Für den Kombi: `eye` [−0,36, −0,30, 1,17] (Dachvorderkante ~0,5 m davor, Kranz oben ~0,33 m), `hp` [−0,36, −0,19, 0,6],
+`wheel` { c [−0,36, 0,11, 0,875] }, `dash` { face 0,47, top 0,97, ws 0,84, x 0,77 }, `ws` aus der Karosserie (Fuß y 0,82, Oberkante
+y 0,21), `floor` 0,315, `door` 0,78, `mirL`/`mirR` in den Gehäusen der Karosserie, `mirI` [0, 0,30, 1,31] (25 × 7 cm, Mitte des Autos,
+0,36 m rechts vom Auge, 0,6 m davor), `head` { z0/z1 aus der Scheibenoberkante, `fh` 0,1 }, `heads` false, `apil` false.
 
 ## Testen
-`python3 viz3/test/run.py --port 9016 --serve cockpit` (über `bash tools/browser_lock.sh`), Abschnitte: `grafik`, `cockpit`, `phone`.
-Bilder in `out/cockpit/`.
+`python3 viz3/test/run.py --port 9016 --serve cockpit` (über `bash tools/browser_lock.sh`), Abschnitte: `grafik`, `cockpit`, `tractor`,
+`kombi`, `phone`. Bilder in `out/cockpit/` – Teil B: `k_front34`, `k_rear34`, `k_side_mass` (Maße als Linien), `k_driver_day`,
+`k_driver_left` (Blick nach links oben: A-Säule, Dachrahmen, Blende), `k_night_front`, `k_night_rear` (Licht, linker Blinker), `k_rain`,
+`k_driver_rain`, `k_verkehr_driver`, zum Vergleich die alte Karosserie `k_alt_front34`, `k_alt_rear34`, `k_alt_side`.
 Themen-Tests auf CI: `viz3/extra/cockpit/tests.txt`.
 
 ## Leistung (gemessen im Test, SwiftShader – Zeiten dort ohne Aussage)
+- Karosserie (Teil B): nah 19 Meshes am ganzen Auto gegen 41 der alten (weniger Zeichenaufrufe), keine neuen Programme beim
+  Hinsehen (alle Materialien beim Laden übersetzt, geprüft über `renderer.properties`); gebaut in ~0,15–0,2 s beim Laden (SwiftShader).
 - Cockpit: ~43 Meshes im Bild (9 zusammengeführte statische je Material, ~31 bewegliche, 3 der Arme) = Zeichenaufrufe je Szenen-Durchgang;
   ein volles Bild mit Umgebungsverdeckung zeichnet sie zweimal. Gebaut in ~130 ms beim ersten Einsteigen, Arme ~10 ms.
 - Programme: 2 neue beim ersten Einsteigen (beim Bauen vorübersetzt bzw. mit dem ersten vollen Bild), danach keine mehr (Fahren,
@@ -90,9 +124,10 @@ Themen-Tests auf CI: `viz3/extra/cockpit/tests.txt`.
   512 × 256 (Handy 256 × 128, dort standardmäßig aus).
 
 ## Offen
-- Beine der Figur: im heutigen Kombi liegt der Boden (0,45 m) zu hoch für Augenhöhe 1,17 m – sie bleiben ausgeblendet; mit einer
-  Karosserie mit echtem H-Punkt (Straßen-Chat) lassen sie sich mit demselben Löser auf die Pedale setzen.
-- Spiegelgehäuse und A-Säulen-Verkleidung passen zur heutigen Karosserie; die neue nennt ihre Ankerpunkte (Absprache in PARALLEL).
+- Beine der Figur: bleiben ausgeblendet; im neuen Kombi liegt der Boden jetzt richtig (0,315 m), mit demselben Löser lassen sie sich auf
+  die Pedale setzen (nächster Schritt).
+- Bei 62° senkrecht (96° waagerecht auf 16:9) sieht die Ecke oben links durch das Seitenfenster – wie in einem echten Auto bei diesem
+  Blickwinkel; Dachrahmen und Blende kommen ins Bild, sobald man nach links oben schaut (`k_driver_left`).
 - Warnblinker ohne eigene Taste (der rote Schalter ist da, noch ohne Funktion).
 
 ## Für den Lead (gemeinsame Dateien, alle Stellen markiert `feat/cockpit`)
@@ -100,7 +135,8 @@ Themen-Tests auf CI: `viz3/extra/cockpit/tests.txt`.
   von `prepareGPU`, `MOTION.frames++` in `renderFrame`.
 - `viz3/src/core/save.js`: Schlüssel `pav-cockpit-v1`.
 - `viz3/shell/menu.html`: Abschnitt „Grafik“ in den Einstellungen (dorthin auch `#qualbtn`, Text „Qualität“).
-- `viz3/src/modules.txt`: Block `# feat/cockpit` vor `game/tutorial.js`.
+- `viz3/src/modules.txt`: Block `# feat/cockpit` vor `game/tutorial.js` (darin jetzt auch `vehicles/kombi.js`; es braucht
+  `grenzland/gl_karosse.js` weiter oben – seit V18b steht es vor dem Verkehr).
 - `viz3/src/vehicles/car.js`: das einfache Innere (Armaturenbrett, Konsole, Lenkrad, Vordersitze, Hebel) in der Gruppe `model.inside`
   (eigens zusammengeführt), die Blinker je Seite mit eigenem Material (`model.lamps.blinkL` / `blinkR`).
 - `viz3/src/vehicles/vehicle.js`: eine Zeile in `applyCam` (Fahrersicht 62° statt 70° auf breiten Bildschirmen).
