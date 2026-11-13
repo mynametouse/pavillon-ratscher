@@ -41,7 +41,7 @@ R = [
  # --- Kloster Veßra ----------------------------------------------------------------------------------------------------------------------------
  ('Kloster Veßra', 'Klosteranlage, 25 Gebäude mit Namen', 'Namen und Nutzung aller Klostergebäude als Beschriftung/Wissensbuch: Backhaus, Dorfbrauhaus, Kornhaus, Schmiede, Südklausur, Westklausur, Domänenscheune u. a.', 'Ort', 'pois.csv (historic=yes, alle als Denkmal gekennzeichnet); Hennebergisches Museum (Fläche 52 797 m², 17 Türen in OSM)', 3, 'OSM', ''),
  ('Kloster Veßra', 'Hennebergisches Museum', '17 Eingänge in OSM erfasst: sind Haupt- und Hofzugänge im Spiel begehbar?', 'Eingang/Hof', 'entrances.csv (Ort vessra)', 3, 'OSM', ''),
- ('Kloster Veßra', 'Goldener Löwe, Café am Klostergarten, Refektorium', 'Gaststätten mit echtem Namen fehlen oder sind unbenannt', 'Geschäft', 'pois.csv', 3, 'OSM', ''),
+ ('Kloster Veßra', 'Café am Klostergarten, Refektorium', 'Gaststätten mit echtem Namen fehlen oder sind unbenannt', 'Geschäft', 'pois.csv', 3, 'OSM', ''),
  ('Kloster Veßra', 'Klostermühle und Karstmühle', 'Zwei Wassermühlen: im Spiel prüfen', 'Ort', 'OSM man_made=watermill', 4, 'OSM', ''),
  ('Kloster Veßra', 'ganzer Ort', 'Nur 7 von 168 Gebäuden tragen eine Adresse', 'Zahlen/Adressen', 'stats.json', 5, 'OSM-Auswertung', ''),
  # --- Region -----------------------------------------------------------------------------------------------------------------------------------

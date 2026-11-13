@@ -58,7 +58,7 @@ Gut abgedeckt (Panoramax 100 Bilder, OSM 25 Klostergebäude benannt); nur das, w
 | Ansicht | Warum |
 |---|---|
 | **Hennebergisches Museum**: Haupteingang, Hofzugänge, Torkirche, Backhaus, Schmiede (17 Türen in OSM) | prüfen, ob alle Türen im Spiel offen sind |
-| **Goldener Löwe**, Café am Klostergarten, Refektorium | Schriftzüge und Eingänge |
+| Café am Klostergarten, Refektorium | Schriftzüge und Eingänge (den „Goldenen Löwen“ nicht: siehe Region-Dossier K6) |
 | Klostermühle und Karstmühle | zwei Wassermühlen |
 
 ## 6. Strecken (nur wenn ohnehin unterwegs)

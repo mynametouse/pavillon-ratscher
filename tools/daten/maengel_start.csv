@@ -29,7 +29,7 @@ Ratscher;Dorflinde (gepflanzt 1888);Baum im Dorf: an der richtigen Stelle?;Ort;"
 Ratscher;Aussichtspunkt und Brunnen im Dorf;OSM kennt tourism=viewpoint und amenity=fountain im Dorf: im Spiel prüfen;Ort;pois.csv, Ort ratscher;5;OSM;
 Kloster Veßra;Klosteranlage, 25 Gebäude mit Namen;Namen und Nutzung aller Klostergebäude als Beschriftung/Wissensbuch: Backhaus, Dorfbrauhaus, Kornhaus, Schmiede, Südklausur, Westklausur, Domänenscheune u. a.;Ort;"pois.csv (historic=yes, alle als Denkmal gekennzeichnet); Hennebergisches Museum (Fläche 52 797 m², 17 Türen in OSM)";3;OSM;
 Kloster Veßra;Hennebergisches Museum;17 Eingänge in OSM erfasst: sind Haupt- und Hofzugänge im Spiel begehbar?;Eingang/Hof;entrances.csv (Ort vessra);3;OSM;
-Kloster Veßra;Goldener Löwe, Café am Klostergarten, Refektorium;Gaststätten mit echtem Namen fehlen oder sind unbenannt;Geschäft;pois.csv;3;OSM;
+Kloster Veßra;Café am Klostergarten, Refektorium;Gaststätten mit echtem Namen fehlen oder sind unbenannt;Geschäft;pois.csv;3;OSM;
 Kloster Veßra;Klostermühle und Karstmühle;Zwei Wassermühlen: im Spiel prüfen;Ort;OSM man_made=watermill;4;OSM;
 Kloster Veßra;ganzer Ort;Nur 7 von 168 Gebäuden tragen eine Adresse;Zahlen/Adressen;stats.json;5;OSM-Auswertung;
 Region;Windkraft bei Ratscher (Zeitreise);Kein Windvorranggebiet in der Nähe: im Entwurf des Regionalplans liegt das nächste (W-22 „Ahlstädter Berg“) etwa 4,6 km west-nordwestlich von Ratscher;Zahlen/Adressen;"2. Entwurf Regionalplan Südwestthüringen (03/2026), Raumnutzungskarte Ost; Beteiligung bis 20.07.2026; Lage nach der Beschriftung in der Karte";3;Regionalplan;
