@@ -79,6 +79,10 @@ export const skyMat = new THREE.ShaderMaterial({
 export const sky = new THREE.Mesh(new THREE.SphereGeometry(9000, 48, 24), skyMat);
 sky.userData.noMerge = true;
 sky.renderOrder = -10;
+// feat/suhl (S1): the sphere stands around whichever camera draws it (only its place; the directions stay) – beyond 9 km from the garden
+// the sky was a ball in a black void (Suhl), and it must not be culled as an object far away
+sky.frustumCulled = false;
+sky.onBeforeRender = (r, s, c) => sky.matrixWorld.copyPosition(c.matrixWorld);
 scene.add(sky); // drawn first: the real land reaches beyond the sky sphere
 // photographic sky (Poly Haven CC0, log-encoded upper hemisphere, see tools/mksky.py): replaces the painted sky as soon as its image is loaded;
 // rotated so the bright sun region of the photo lies where the modelled sun stands
