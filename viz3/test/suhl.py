@@ -345,6 +345,27 @@ def desktop():
                 lib.shot(pg, OUT, 'suhl_laeden')
                 E("GAME.go('suhl')")
                 wait(QUIET, 60)
+            # fountains of the street tiles with their sculptures (the Waffenschmied on the Markt, Diana before the Einkaufszentrum)
+            br = J("SUHL.status().brunnen")
+            ck('fountains near the Markt: basins with water, the Waffenschmied and Diana as figures',
+               br and br['basins'] >= 2 and br['figures'] >= 2 and br['near'] is not None, json.dumps(br, ensure_ascii=False))
+            if br and br.get('near'):
+                bx, by, bz = br['near']['at']
+                E(f"GAME.view({bx} + 9, {by} - 9, KERN.ground({bx} + 9, {by} - 9) + 1.7, -45, 10, 60)")
+                for _ in range(6):
+                    E("GAME.step(0.5)")
+                lib.shot(pg, OUT, 'suhl_brunnen')
+            # the look after photos (bau/marken.js): the Rotes Rathaus carries its colour and the photo it came from
+            lk = J("(() => { const B = SUHL.building('DETHL57P00006G2R'); return B ? { look: B.look, name: B.name } : null; })()")
+            ck('a landmark after its photo: the Rotes Rathaus with its colour and source', lk and lk['look'] and lk['look'].get('col') == '#9b2d2a' and 'Strubbl' in lk['look'].get('foto', ''),
+               json.dumps(lk, ensure_ascii=False))
+            E(f"""(() => {{ const p = SUHL.toModel(50.61063, 10.69358), q = SUHL.toModel(50.61041, 10.69300), h = Math.atan2(q[0] - p[0], q[1] - p[1]) * 180 / Math.PI;
+                GAME.view(p[0], p[1], KERN.ground(p[0], p[1]) + 1.6, h, 6, 46); }})()""")
+            for _ in range(8):
+                E("GAME.step(0.5)")
+            lib.shot(pg, OUT, 'suhl_rathaus')
+            E("GAME.go('suhl')")
+            wait(QUIET, 60)
             ck('street furniture of Suhl in the roads system: lamps, signs and lines of every street tile, the lamps around the Markt built',
                fu['furn'] > 0 and fu['sets'] == fu['furn'] and fu['err'] == 0 and fu['n'] and fu['n'].get('lamps', 0) > 300 and fu['shown'] and fu['shown'].get('lamps', 0) > 5,
                json.dumps(fu))
