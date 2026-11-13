@@ -765,6 +765,7 @@ export const GLMISSION = (() => {
   const CSS = `
 #glende{position:absolute;inset:0;z-index:18;display:flex;align-items:center;justify-content:center;background:rgba(8,10,12,.82);color:#f1ead8;pointer-events:auto}
 #glende[hidden]{display:none!important}
+body:has(#glende:not([hidden])) #npcsub{display:none!important}
 #glende .ge{width:min(520px,90vw);max-height:92vh;overflow:auto;padding:22px 24px;text-align:center}
 #glende h2{margin:0 0 6px;font:700 clamp(24px,4.2vw,40px)/1.15 var(--f-display,Georgia,serif);color:#f3c64f;letter-spacing:.01em}
 #glende p{margin:0 0 16px;font:400 15px/1.45 var(--f-body,system-ui);opacity:.94}
