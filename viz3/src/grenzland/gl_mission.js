@@ -687,7 +687,7 @@ export const GLMISSION = (() => {
   };
   return {
     start,
-    cur: () => (R.cur() ? GL.cur : ''),
+    cur: () => (GL.on && R.cur() ? GL.cur : ''),
     list,
     tick,
     stop,

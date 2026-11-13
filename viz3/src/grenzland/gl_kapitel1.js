@@ -1422,13 +1422,20 @@ export const GLKAP1 = (() => {
   // ================================================================ 5 · Der Coup ================================================================
   const Y = () => (GLLAGER.on ? GLLAGER.Y : null);
   ORT.lager = () => (Y() ? Y().hinten : O.lager.pos);
-  const K5 = { plan: '', tuer: false, gemeldet: false };
+  const K5 = { plan: '', tuer: false, gem: {} };
   const plan = () => K5.plan || (GL.m.coup && GL.m.coup.plan) || 'leise';
+  // a guard has seen somebody inside: he reports it – trespassing before the door is broken, burglary after (each once)
   function gemeldet() {
-    if (K5.gemeldet) return;
-    K5.gemeldet = true;
-    GLFAHNDUNG.tat(K5.tuer ? 'einbruch' : 'hausfrieden', { force: [{ name: T.wachmann, knows: false }] });
+    const id = K5.tuer ? 'einbruch' : 'hausfrieden';
+    if (K5.gem[id]) return;
+    K5.gem[id] = K5.gem.hausfrieden = true;
+    GLFAHNDUNG.tat(id, { force: [{ name: T.wachmann, knows: false }] });
     if (!MI.redet()) MI.rede('wacheFunk');
+    coupChat();
+  }
+  function coupChat() {
+    if (K5.gem.chat) return;
+    K5.gem.chat = true;
     chat('coup');
   }
   const lagerEv = {
@@ -1444,7 +1451,8 @@ export const GLKAP1 = (() => {
     };
     if (why !== 'weiter') {
       GLLAGER.reset();
-      K5.tuer = K5.gemeldet = false;
+      K5.tuer = false;
+      K5.gem = {};
       weg('karte2');
       const y = Y();
       if (y) MI.hin(y.hinten[0], y.hinten[1], yawTo(y.hinten, y.drin));
@@ -1572,7 +1580,7 @@ export const GLKAP1 = (() => {
             }
             if (b.n === 8) {
               GLFAHNDUNG.tat('boeller', { force: [{ name: T.anwohner, knows: false }], k: 2.2, quiet: true });
-              chat('coup');
+              coupChat();
             }
           }
           return y.innen(P.x, P.y, 0.4) && MI.zuFuss();

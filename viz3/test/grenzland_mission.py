@@ -481,8 +481,8 @@ with lib.browser() as b:
         ck('a reload in the middle of a mission goes on at its step, set up again', ok and st['on'] and st['geld'] == 91 and st['x'] == 'Mitfahrgelegenheit' and st['track'] == 'grenzland:gefallen' and st['lager'] and ['gefallen', 'läuft'] in st['j'], str(st))
         E("GRENZLAND.stop()"); steps(0.5)
         st = J("({ figs: GLFIG.figs.length, cars: GLAUTO.cars.length, lager: GLLAGER.on, extra: VEH.extra.filter(e => e.grenzland).length, j: KERN.tasks.list().filter(e => e.src === 'grenzland').length, "
-               "act: KERN.acts().filter(a => String(a.id).startsWith('gl:')).length, x: document.getElementById('glextra').hidden, cur: GLMISSION.cur() })")
-        ck('„Beenden“ takes everything of the missions out of the world', st['figs'] == 0 and st['cars'] == 0 and not st['lager'] and st['extra'] == 0 and st['j'] == 0 and st['act'] == 0 and st['x'], str(st))
+               "act: KERN.acts().filter(a => String(a.id).startsWith('gl:') && a.id !== 'gl:tanken').length, x: document.getElementById('glhud').hidden && !GLHUD.xl, cur: GLMISSION.cur() })")
+        ck('„Beenden“ takes everything of the missions out of the world', st['figs'] == 0 and st['cars'] == 0 and not st['lager'] and st['extra'] == 0 and st['j'] == 0 and st['act'] == 0 and st['x'] and st['cur'] == '', str(st))
     okgl, rep = lib.check_gl(pg)
     ck('at most 16 textures per shader program, none broken', okgl, str({k: rep[k] for k in ('maxFrag', 'maxVert')}))
     ck.errors(errs)

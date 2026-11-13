@@ -589,7 +589,7 @@ export const GLLAGER = (() => {
   function wachenTick(dt) {
     const Y = S.Y,
       p = GLFAHNDUNG.wo(),
-      inYard = Y.innen(p.x, p.y, -0.8);
+      inYard = Y.innen(p.x, p.y, 0.15);
     for (const w of S.wachen) {
       const F = w.F;
       if (!F || F.gone) continue;
