@@ -1685,6 +1685,7 @@ export const GLORTE = (() => {
     inScheune,
     tick,
     hook,
+    zeit: () => S.built && setEra(), // tests: take over GL.era without the mode's event (only these places change)
     kit: () => VPROPS.kit(),
     frame,
     beam,

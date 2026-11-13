@@ -199,7 +199,10 @@ with lib.browser() as b:
     ck('against Timo for 10 €: both throw five times in turns, the stake goes to who has more wood', ok and r and len(r['gegner']['liste']) == 5 and len(r['liste']) == 5
        and g1 - g0 == (8 if won else -2 if won is None else -12) and (won is None) == (r['punkte'] == r['gegner']['punkte']) and r['gegner']['punkte'] > 10, f'{r} money {g0} → {g1}')
     # ------------------------------------------------------------------ 1989: the barn newer and emptier, no alley ------------------------------------------------------------------
-    E("GLSTATE.era = '1989'; KERN.emit('grenzland:era', { era: '1989' }); 0")
+    # (only these places are told – in the merged game the event 'grenzland:era' would turn the whole village back; the event's own path
+    #  is the 1989 agent's test)
+    ERA = "GLORTE.zeit ? GLORTE.zeit() : KERN.emit('grenzland:era', { era: GLSTATE.era })"
+    E("GLSTATE.era = '1989'; " + ERA + "; 0")
     steps(0.6)
     e = J("({ alt: GLORTE.meshes.alt.visible, treff: GLORTE.meshes.treff.visible, wagen: GLORTE.meshes.wagenAuf.visible || GLORTE.meshes.wagenZu.visible, "
           "kegel: KERN.place(...GLORTE.P.kegel, 5), scheune: KERN.place(...GLORTE.P.scheune, 5), hid: GLFAHNDUNG.versteckt(...GLORTE.P.scheune, 5), "
@@ -207,7 +210,7 @@ with lib.browser() as b:
     ck('1989: the barn of then, no alley, no van; it still hides', e['alt'] and not e['treff'] and not e['wagen'] and e['kegel'] != 'Kegelbahn'
        and e['scheune'] == 'Feldscheune' and e['hid'] and abs(e['g']) < 0.01, str(e))
     p = BX(0.5, 9.5); look(p[0], p[1], HD - 90 + 8, -2); pic('09_scheune_1989')
-    E("GLSTATE.era = 'heute'; KERN.emit('grenzland:era', { era: 'heute' }); 0")
+    E("GLSTATE.era = 'heute'; " + ERA + "; 0")
     steps(0.6)
     ck('and today again', E("GLORTE.meshes.treff.visible && !GLORTE.meshes.alt.visible"))
     # ------------------------------------------------------------------ the shop on wheels ------------------------------------------------------------------
@@ -306,14 +309,16 @@ with lib.browser() as b:
        and 'gerissen' in e2['letzter'] and J("window.__f") == 'nichts', f'{e1} {e2}')
     # without the permit a cast is a deed – if somebody sees it
     E("GLSTATE.use('angelkarte'); GLSTATE.add('mais', 2); GLFAHNDUNG.clear(); GLFAHNDUNG.hooks.zeuge = () => [{ x: KERN.where()[0] + 4, y: KERN.where()[1], hd: null, r: 30, name: 'Ein Angler', knows: false }]; 0")
-    t0 = J("({ heat: GLSTATE.W.heat, n: GLSTATE.stats.taten })")
+    t0 = J("({ heat: GLSTATE.W.heat, n: GLSTATE.stats.taten, ruf: (GLSTATE.W.offen || []).length })")
     E("GLANGELN.angeln('mais', { seed: 2, biss: 40 }); 0"); steps(0.5)
-    t1 = J("({ heat: GLSTATE.W.heat, n: GLSTATE.stats.taten })")
+    t1 = J("({ heat: GLSTATE.W.heat, n: GLSTATE.stats.taten, ruf: (GLSTATE.W.offen || []).length })")
     E("GLANGELN.taste('aus'); GLFAHNDUNG.hooks.zeuge = null; GLFAHNDUNG.clear(); GLSTATE.add('angelkarte', 1); 0"); steps(0.2)
     E("GLANGELN.angeln('mais', { seed: 2, biss: 40 }); 0"); steps(0.5)
-    t2 = J("({ heat: GLSTATE.W.heat, n: GLSTATE.stats.taten })")
+    t2 = J("({ heat: GLSTATE.W.heat, n: GLSTATE.stats.taten, ruf: (GLSTATE.W.offen || []).length })")
     E("GLANGELN.taste('aus')"); steps(0.2)
-    ck('fishing without the guest permit is a deed when somebody sees it; with the permit it is none', t1['n'] == t0['n'] + 1 and t1['heat'] > t0['heat'] and t2['n'] == t1['n'] and t2['heat'] == 0, f'{t0} {t1} {t2}')
+    # (with the police module of the merged game the witness telephones first: the report is on its way, the stars come when the call is through)
+    ck('fishing without the guest permit is a deed when somebody sees it; with the permit it is none', t1['n'] == t0['n'] + 1 and (t1['heat'] > t0['heat'] or t1['ruf'] > t0['ruf'])
+       and t2['n'] == t1['n'] and t2['heat'] == 0 and t2['ruf'] == 0, f'{t0} {t1} {t2}')
     # ------------------------------------------------------------------ the side mission „Karpfen für Suhl“ ------------------------------------------------------------------
     # (the story's event 'grenzland:mission' { id: 'clique', st: 'erledigt' } starts it in the game – the node run of the modules checks
     #  that; here it is started by its own function, the story's missions being marked done already)
@@ -357,14 +362,16 @@ with lib.browser() as b:
     lib.settle_light(pg)
     steps(2)
     n = J("({ dark: GLORTE.dark, lamp: GLORTE.meshes.lampen.material.emissiveIntensity, glut: GLORTE.meshes.glut.material.emissiveIntensity, "
-          "light: KERN.lights.status().filter(b => b.id === 'grenzland:hof').map(b => b.has)[0] })")
-    ck('at night the bulbs and the embers glow, one borrowed light over the yard', n['dark'] and n['lamp'] > 1 and n['glut'] > 1 and n['light'] == 1, str(n))
+          "light: KERN.lights.status().filter(b => b.id === 'grenzland:hof').map(b => b.has)[0], "
+          "busy: KERN.lights.status().filter(b => b.id !== 'grenzland:hof').reduce((a, b) => a + (b.has || 0), 0) })")
+    ck('at night the bulbs and the embers glow, one borrowed light over the yard (if the others left one)', n['dark'] and n['lamp'] > 1 and n['glut'] > 1
+       and (n['light'] == 1 or n['busy'] >= 4), str(n))
     pic('18_hof_nacht')
     # ------------------------------------------------------------------ the end: everything gone ------------------------------------------------------------------
     n0 = E("VEH.extra.length")
     E("GRENZLAND.stop()")
     steps(0.5)
-    s = J("({ built: GLORTE.built, m: Object.keys(GLORTE.meshes).length, gl: VEH.extra.filter(x => x.gl).length, n: VEH.extra.length, hide: GLFAHNDUNG.extra.length, "
+    s = J("({ built: GLORTE.built, m: Object.keys(GLORTE.meshes).length, gl: VEH.extra.filter(x => x.gl).length, n: VEH.extra.length, hide: GLFAHNDUNG.extra.filter(q => q.gl).length, "
           "g: KERN.ground(...GLORTE.P.kegel) - KERN.terrain(...GLORTE.P.kegel), place: KERN.place(...GLORTE.P.scheune, 5), ins: KERN.inside(...GLORTE.P.scheune, 5), "
           "act: KERN.acts().filter(a => ['gl:wagen', 'gl:kegeln', 'gl:aushang', 'gl:angeln', 'gl:yuki'].includes(a.id)).map(a => a.id), frau: !!GLWAGEN.frau, light: KERN.lights.status().filter(b => b.id === 'grenzland:hof').map(b => b.has)[0] })")
     ck('„Beenden“: the places are gone – no meshes, no walls, no names, no ground, no actions, the light back', not s['built'] and s['m'] == 0 and s['gl'] == 0 and s['n'] < n0
