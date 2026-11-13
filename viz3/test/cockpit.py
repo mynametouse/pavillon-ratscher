@@ -246,6 +246,20 @@ with lib.browser() as b:
         ck('kombi: the cockpit in the new body (the mirrors there)', ci['built'] and ci['view'] and ci['mirrors']['renders'] > 0 and not ci['bad'],
            json.dumps({k: ci.get(k) for k in ('bad', 'meshes', 'mirrors')}))
         E("VEH.exit()"); E("GAME.step(0.3)")
+        # the traffic car one may drive copies the estate's spec: its cockpit keeps today's anchors and eye (vehicles/cockpit_build.js)
+        vk = E("""(() => { const v = window.VAUTO && VAUTO.borrowVeh && VAUTO.borrowVeh(); if (!v) return false;
+            const s = VEH.by.car.st; VEH.place('verkehr', s.x + Math.cos(s.psi) * 4, s.y - Math.sin(s.psi) * 4, s.psi);
+            v.model.g.visible = true; VEH.enter('verkehr'); return VEH.cur === v; })()""")
+        if vk:
+            E("GAME.setView3(false)"); E("for (let i = 0; i < 20; i++) GAME.step(0.05)")
+            vi = json.loads(E("JSON.stringify(COCKPIT.info())"))
+            an = vi.get('anchors') or {}
+            ck('kombi: the traffic car keeps today\'s anchors and eye', vi.get('id') == 'verkehr' and an.get('apil') and an.get('head') and abs(an['eye'][1] + 0.22) < 1e-6 and not vi['bad'],
+               json.dumps({k: vi.get(k) for k in ('id', 'anchors', 'bad')}))
+            lib.shot(pg, OUT, 'k_verkehr_driver')
+            E("VEH.exit(); GAME.step(0.2); VEH.place('verkehr', VAUTO.HIDE[0], VAUTO.HIDE[1], 0); VEH.by.verkehr.model.g.visible = false")
+        else:
+            print('info: no traffic car to borrow here', flush=True)
         # night: the parked car with its engine running and its lights on (automatic), the left indicator lit, from the front and behind
         E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 22 * 60 + 40; DN && DN.update && DN.update(true)"); lib.settle_light(pg)
         E("VEH.by.car.st.engine = true; for (const m of VEH.by.car.model.lamps.blinkL) m.emissiveIntensity = 2.6"); E("GAME.step(0.2)")

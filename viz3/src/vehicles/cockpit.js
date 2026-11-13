@@ -653,6 +653,7 @@ export const COCKPIT = (() => {
       navi: { n: c.naviN || 0, label: c.label },
       mapHidden: !!($('vmap') && $('vmap').hidden),
       mirrors: CPMIRROR.info(),
+      anchors: { eye: c.A.eye, head: !!c.A.head, apil: c.A.apil, heads: c.A.heads },
       odo: +c.odo.toFixed(1),
       meshes: (() => {
         const n = { st: 0, mov: 0, arms: 0 };
