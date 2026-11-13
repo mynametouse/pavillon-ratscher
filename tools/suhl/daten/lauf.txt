@@ -6,6 +6,6 @@ Lauf bestellt 2026-11-13T01:29Z: satz - Trockenlauf mit dem Boden der ganzen Sta
 Lauf bestellt 2026-11-13T01:36Z: egd-client - zweiter Lauf (Cache muss greifen) und zwei Korridor-Kacheln P4 ueber einen Rahmen -> Lauf 43345805762 gruen (Cache greift, 0 geholt; 618/5611 und 626/5594 ueber einen Rahmen)
 Lauf bestellt 2026-11-13T02:19Z: zahlen - Paket S2-9: Zensus-Gitter holen und schneiden, Szenario-Zahlen der ganzen Stadt aus dem Artefakt suhl-g-v1 des Laufs 43345898563 (tools/suhl/daten/zahlen.json) -> Artefakt suhl-d-v1 -> Lauf 43351295880 gruen: 12 von 12 Zensus-Themen geholt, 396 Kacheln, 31437 Gebaeude, 8.75 MB, gueltig; Ergebnis gleich der Rechnung auf dem Chat-Rechner
 Lauf bestellt 2026-11-13T02:24Z: zahlen - zweiter Lauf mit Fassung 1.2 (Index nennt die Zensus-Lizenz dl-de/by-2-0 mit Abrufdatum); sein Artefakt suhl-d-v1 ist das fuer die Tuer -> Lauf 43351917320 gruen
-Lauf bestellt 2026-11-13T02:28Z: satz - TROCKENLAUF des Probesatzes Zentrum v1 mit acht Produkten von den Zweigen (boden 64a37c21, s und m 5d38f16c, g e7836b7d, b gr w 8f8b77ff, d e0baac9f); nichts wird geschrieben
+Lauf bestellt 2026-11-13T02:28Z: satz - TROCKENLAUF des Probesatzes Zentrum v1 mit acht Produkten von den Zweigen (boden 64a37c21, s und m 5d38f16c, g e7836b7d, b gr w 8f8b77ff, d e0baac9f); nichts wird geschrieben -> Lauf 43352453040: alle acht gueltig, 356 Dateien, 11.68 MB; ABGELEHNT (rot, so gewollt): boden v1 nennt based_on s 0, der Satz traegt s 1
 phase: docs
-lauf: satz
+lauf: nichts

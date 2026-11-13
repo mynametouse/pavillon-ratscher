@@ -355,7 +355,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/suhl-raw/zensus
-          key: suhl-raw-zensus-v1-${{ github.run_id }}
+          # a fixed key: the grid files of the census do not change, so the cache is written once and never grows
+          # (the repository's caches are shared with the other Suhl workflows)
+          key: suhl-raw-zensus-v2
           restore-keys: |
             suhl-raw-zensus-v1-
       - name: Zensus-Gitter 2022 holen und auf Suhl schneiden (fehlt ein Thema, wird es übersprungen)

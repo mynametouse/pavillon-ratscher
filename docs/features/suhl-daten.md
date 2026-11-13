@@ -471,6 +471,28 @@ Sonst:
   `content-type`, `content-encoding`, Bytes) für `aktuell.json`, jeden Index und eine Kachel je Produkt. An `_probe/hallo.json` geprüft:
   200, `*`, `max-age=600`, `application/json`, gzip, 332 von 464 Byte.
 
+**Die Tür – Trockenlauf des Probesatzes Zentrum v1 (Lauf 43352453040, 13.11.2026, 03:29; nichts geschrieben):**
+
+| Produkt | Quelle (Zweig, Commit) | Dateien | Bytes | Prüfer | `based_on` |
+|---|---|---|---|---|---|
+| `boden` v1 | `suhl/boden` 64a37c21 | 264 | 7 364 174 | gültig | `{"s": 0}` |
+| `s` v1 | `suhl/strassen` 5d38f16c | 13 | 293 848 | gültig | `{"boden": 1}` |
+| `m` v1 | `suhl/strassen` 5d38f16c | 12 | 25 160 | gültig | `{"s": 1}` |
+| `g` v1 | `suhl/gebaeude` e7836b7d | 12 | 2 967 702 | gültig | `{"boden": 1}` |
+| `b`, `gr`, `w` v1 | `suhl/gruen` 8f8b77ff | 12, 23, 5 | 82 566, 80 030, 11 909 | gültig | `{}` |
+| `d` v1 | `suhl/daten` e0baac9f | 13 | 842 375 | gültig | `{"g": 1}` |
+
+Alle acht gültig (0 Fehler, 0 Warnungen), 356 Dateien, 11,68 MB neu im Daten-Repo. **Abgelehnt mit einer Zeile:** „boden v1 was computed on
+s v0, but after this set s is v1“. Nachgesehen, was dahinter steht:
+
+- Die Wege in `s/v0`, die im Baum von `suhl-boden` liegen (damit wurde eingeschnitten), sind in allen 11 Kacheln **gleich** den Wegen in
+  `s/v1` von `suhl-strassen` (5d38f16c) – `suhl-strassen` hat seine Generation nur umbenannt. Der Einschnitt passt also zu den Straßen
+  des Satzes; es fehlt allein die Angabe `"based_on": {"s": 1}` in `meta.json` des Bodens (Sache von `suhl-boden`, Kacheln unverändert).
+- `g` hat seine Hausfüße vom Boden am Commit 7a7b068 gelesen; `t/`, `i/` und `meta.json` sind dort und an 64a37c21 dieselben (gleiche
+  Baum-Kennungen in git).
+- Sobald der Boden `{"s": 1}` sagt: neue Commit-Nummer in `tools/suhl/daten/satz.json`, `lauf: satz` – der Trockenlauf wird grün, und auf
+  Ansage des Suhl-Chats `"dry_run": false`.
+
 ## 12 Änderungen am Schema
 
 | Fassung | Datum | Was |
