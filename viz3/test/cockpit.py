@@ -101,6 +101,10 @@ with lib.browser() as b:
         ck('programs: the cockpit\'s few, compiled on getting in (warmed) and with the first frame', p2 - p0 <= 6, f'{p0} → {p1} → {p2}: {names}')
         ck('no part of the cockpit broken (NaN corners)', not i1['bad'], json.dumps(i1['bad']))
         ck('hands on the wheel', i1['handsShown'] and bool(i1['hands']), json.dumps(i1['hands']))
+        # from outside (chase camera): the new inside through the glass, the figure itself at the wheel, no arms of the cockpit
+        E("GAME.setView3(true)"); steps(0.6); lib.shot(pg, OUT, 'i_chase')
+        ck('third person: the arms of the cockpit hidden', not st()['handsShown'])
+        E("GAME.setView3(false)"); steps(0.4)
         print('info', json.dumps(i1), flush=True)
         if want('cockpit'):
             s0 = st(); drive(4, thr=1); s1 = st()
@@ -184,6 +188,11 @@ with lib.browser() as b:
         ck('phone: the cockpit in the driver\'s view', i['built'] and i['view'], json.dumps({k: i.get(k) for k in ('built', 'view', 'buildMs', 'frameMs')}))
         ck('phone: mirrors off by default', not i['mirrors']['live'] and i['mirrors']['renders'] == 0, json.dumps(i['mirrors']))
         lib.shot(pg, OUT, 'g_phone')
+        n = E("document.querySelectorAll('#vhud .cpblink').length")
+        pg.locator('#vhud .cpblink').first.dispatch_event('pointerdown'); E("for (let i = 0; i < 8; i++) GAME.step(0.025)")
+        bl = json.loads(E("JSON.stringify(COCKPIT.info())"))['blink']
+        ck('phone: two indicator buttons, the left one blinks', n == 2 and bl == 'L', f'{n} buttons, blink {bl}')
+        pg.locator('#vhud .cpblink').first.dispatch_event('pointerdown')
         E("VEH.exit()")
     ck.errors(errs)
 ck.done()

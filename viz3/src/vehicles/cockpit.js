@@ -264,6 +264,7 @@ export const COCKPIT = (() => {
     set(L.blinkR, on && c.blink === 'R' ? 2.6 : 0);
     c.P.cl.arL.visible = on && c.blink === 'L';
     c.P.cl.arR.visible = on && c.blink === 'R';
+    blinkButtons(c);
   }
   const typing = () => ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
   window.addEventListener('keydown', e => {
@@ -275,6 +276,39 @@ export const COCKPIT = (() => {
     S.keys++;
     e.preventDefault();
   });
+  // the same on the screen (phones have no keys): two arrows among the vehicle's touch buttons (#vhud .vbtns), lit while blinking
+  const tb = {};
+  {
+    const row = document.querySelector('#vhud .vbtns');
+    const arrow = d =>
+      `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d < 0 ? 'M14 6l-6 6 6 6M8 12h11' : 'M10 6l6 6-6 6M16 12H5'}"/></svg>`;
+    if (row)
+      for (const [side, d, t] of [
+        ['L', -1, 'Blinker links (,)'],
+        ['R', 1, 'Blinker rechts (.)'],
+      ]) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'cpblink';
+        b.title = t;
+        b.setAttribute('aria-label', t);
+        b.setAttribute('aria-pressed', 'false');
+        b.innerHTML = arrow(d);
+        b.addEventListener('pointerdown', e => {
+          e.preventDefault();
+          blink(side);
+        });
+        row.appendChild(b);
+        tb[side] = b;
+      }
+  }
+  function blinkButtons(c) {
+    for (const k of ['L', 'R'])
+      if (tb[k]) {
+        const on = String(!!c && c.blink === k);
+        if (tb[k].getAttribute('aria-pressed') !== on) tb[k].setAttribute('aria-pressed', on);
+      }
+  }
   // ---- the hands' frames (in the rig's frame: x the back of the hand, y its index side, z towards the wrist) ----
   const _x = new THREE.Vector3(),
     _y = new THREE.Vector3(),

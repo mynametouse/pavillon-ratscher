@@ -33,9 +33,15 @@ export const CPBUILD = (() => {
     pod: [0, 0.17, 2.27], // above the rim, on a stem from the column
     lever: [0.42, -0.48, 2.05],
   };
+  // a body that brings its own anchor points names them in its spec (spec.cockpit, the same fields as CAR – docs/features/cockpit.md);
+  // what it leaves out stays as for today's estate
   function anchors(v) {
     const A = JSON.parse(JSON.stringify(v && v.id === 'tractor' ? TRACTOR : CAR));
     if (v && v.spec && Array.isArray(v.spec.eye)) A.eye = v.spec.eye.slice();
+    const own = v && v.spec && v.spec.cockpit;
+    if (own && typeof own === 'object')
+      for (const k of Object.keys(A))
+        if (own[k] != null && typeof own[k] === typeof A[k]) A[k] = JSON.parse(JSON.stringify(own[k]));
     return A;
   }
   // ---- materials: plain lit ones like the body's (vehicles/car.js), unlit faces whose brightness the cockpit sets (day light or backlight) ----
@@ -95,6 +101,7 @@ export const CPBUILD = (() => {
       rubber: S({ color: 0x111111, roughness: 0.92 }),
       metal: S({ color: 0x45484c, roughness: 0.45, metalness: 0.7 }),
       black: S({ color: 0x08090a, roughness: 0.62 }),
+      red: S({ color: 0x8a1410, roughness: 0.35 }),
       // unlit: the cluster, the navi, the needles and the arrows (the cockpit sets their colour – day light or backlight)
       needle: new THREE.MeshBasicMaterial({ color: 0xff4d1a }),
       arrow: new THREE.MeshBasicMaterial({ color: 0x2bd968 }),
@@ -263,6 +270,9 @@ export const CPBUILD = (() => {
     put(st, ext(normal, -W, x0), M.pad);
     put(st, ext(recess, x0, x1), M.pad);
     put(st, ext(normal, x1, W), M.pad);
+    // the defroster's outlets along the windscreen's foot: a dark strip with slats
+    put(st, rb(W * 1.7, 0.035, 0.008, 0.003), M.gloss, 0, d.ws - 0.03, t + 0.004);
+    for (let k = -6; k <= 6; k++) put(st, rb(0.004, 0.03, 0.006, 0.0015), M.hard, k * 0.09, d.ws - 0.03, t + 0.007);
     // a softer seam along the face: the lower dashboard in the harder plastic (knee bolster, glovebox line)
     put(st, rb(W * 2 - 0.08, 0.03, 0.2, 0.012), M.hard, 0, f + 0.012, A.floor + 0.25);
     put(st, rb(0.42, 0.012, 0.15, 0.01), M.hard, 0.37, f - 0.006, t - 0.24);
@@ -335,7 +345,7 @@ export const CPBUILD = (() => {
     // the indicator arrows (green, shown while blinking), top middle of the face
     const arrow = dir => {
       const s = new THREE.Shape(),
-        a = 0.011;
+        a = 0.0078;
       s.moveTo(dir * a, 0);
       s.lineTo(0, a * 0.8);
       s.lineTo(0, a * 0.32);
@@ -345,7 +355,7 @@ export const CPBUILD = (() => {
       s.lineTo(0, -a * 0.8);
       s.closePath();
       const m = new THREE.Mesh(new THREE.ShapeGeometry(s), M.arrow);
-      m.position.set(dir * 0.026, H / 2 - 0.016, 0.003);
+      m.position.set(dir * 0.039, 0.04, 0.003);
       m.visible = false;
       g.add(m);
       return m;
@@ -433,8 +443,8 @@ export const CPBUILD = (() => {
       for (let k = 0; k < 3; k++)
         put(st, rb(0.07, 0.006, 0.004, 0.0015), M.satin, sx * 0.055, f - 0.064, t - 0.27 + k * 0.014);
     }
-    // the hazard switch between them, climate knobs below
-    put(st, rb(0.022, 0.012, 0.022, 0.004), M.gloss, 0, f - 0.055, t - 0.255);
+    // the hazard switch between them (red), climate knobs below
+    put(st, rb(0.022, 0.012, 0.022, 0.004), M.red, 0, f - 0.055, t - 0.255);
     for (const x of [-0.075, 0, 0.075]) {
       const k = new THREE.CylinderGeometry(0.019, 0.02, 0.022, 24);
       k.rotateX(Math.PI / 2);

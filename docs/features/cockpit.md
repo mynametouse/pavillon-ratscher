@@ -46,7 +46,8 @@ einstellbar (Stufen und Automatik, Bildrate anzeigen).
   → Grafik; Computer an, Handy aus) – aus: poliertes Metall mit dem Himmelslicht.
 - **Wischer** bei Regen (`WETTER.fall.S.kR`/`kS`): Intervall (alle ~4,5 s), normal (1,35 s), schnell (0,95 s); Tropfen sammeln sich auf der
   Scheibe zwischen den Wischerstrichen (eine durchsichtige Fläche innen an der Scheibe), der rechte Hebel rastet je Stufe.
-- **Blinker**: `,` links, `.` rechts (noch einmal: aus; frei geprüft gegen alle Tasten), Klick des Relais, grüne Pfeile im Kombi, die
+- **Blinker**: `,` links, `.` rechts (noch einmal: aus; frei geprüft gegen alle Tasten), am Handy zwei Pfeil-Knöpfe bei den
+  Fahrzeug-Knöpfen (`#vhud .vbtns`, gelb solange er blinkt), Klick des Relais, grüne Pfeile im Kombi, die
   Blinker der Karosserie (heute `car.js`, je Seite ein Material), der linke Hebel geht hoch/runter; nach dem Abbiegen schaltet er sich aus,
   wenn das Lenkrad zurückkommt. Zustand für die Karosserie: `v.st.blink` (`'L' | 'R' | null`), `v.st.blinkOn`.
 - **Lichtschalter**: Drehknopf links vom Lenkrad (0 – AUTO – Abblendlicht) folgt `L`; im Kombi die Leuchte (mit „A“ bei Automatik).
@@ -61,7 +62,8 @@ einstellbar (Stufen und Automatik, Bildrate anzeigen).
   Lenkrad, bei Gangwechsel die rechte zu den Hebeln. Keine Spiegel, kein Navi.
 
 ### Ankerpunkte (für neue Karosserien, Absprache mit dem Straßen-Chat in `docs/PARALLEL.md`, 13.11. 17:05)
-Modellrahmen wie `car.js` (x rechts, y vorn, z oben, Meter). Heute für den Kombi (`CPBUILD.CAR`): `eye` [−0,36, −0,22, 1,17] (= `spec.eye`),
+Modellrahmen wie `car.js` (x rechts, y vorn, z oben, Meter). Eine Karosserie mit eigenen Werten nennt sie in `spec.cockpit` (gleiche
+Felder; was fehlt, bleibt wie beim Kombi – `CPBUILD.anchors`). Heute für den Kombi (`CPBUILD.CAR`): `eye` [−0,36, −0,22, 1,17] (= `spec.eye`),
 `hp` (H-Punkt) [−0,36, −0,10, 0,62], `wheel` { c [−0,36, 0,30, 0,86], tilt 0,44, r 0,185 }, `dash` { face 0,49, top 0,966, ws 0,84,
 x 0,745 }, `ws` { y0 0,82, z0 0,97, w0 0,8, y1 −0,05, z1 1,55, w1 0,64 }, `floor` 0,45, `door` 0,755, `mirL` [−0,99, 0,67, 1,04],
 `mirR` [0,99, 0,67, 1,04], `mirI` [0, 0,22, 1,285], `roof` 1,51.
@@ -83,7 +85,7 @@ Themen-Tests auf CI: `viz3/extra/cockpit/tests.txt`.
 - Beine der Figur: im heutigen Kombi liegt der Boden (0,45 m) zu hoch für Augenhöhe 1,17 m – sie bleiben ausgeblendet; mit einer
   Karosserie mit echtem H-Punkt (Straßen-Chat) lassen sie sich mit demselben Löser auf die Pedale setzen.
 - Spiegelgehäuse und A-Säulen-Verkleidung passen zur heutigen Karosserie; die neue nennt ihre Ankerpunkte (Absprache in PARALLEL).
-- Warnblinker ohne eigene Taste (der Schalter ist da); Blinker am Handy nur über die Tastatur.
+- Warnblinker ohne eigene Taste (der rote Schalter ist da, noch ohne Funktion).
 
 ## Für den Lead (gemeinsame Dateien, alle Stellen markiert `feat/cockpit`)
 - `viz3/src/render/render.js`: `MOTION.user`, `MOTION.auto`, `setMotionUser()`, eine Zeile in `motionTrack`, das Setzen der Stufe am Ende
