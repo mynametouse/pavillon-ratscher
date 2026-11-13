@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hörprobe – Pavillon Ratscher</title>
+<!-- Built by tools/ton/holen.py (hoerprobe / sammeln) from this template: the data replace the marker in the script below.
+     ?base=<url> plays the processed files of the sound repository (e.g. https://mynametouse.github.io/pavillon-ton/);
+     without it the player plays the original file of the track's own page. Votes stay in this browser (localStorage). -->
+<style>
+  :root { --bg: #14161a; --kar: #1e2128; --rand: #2c313b; --text: #e9ebef; --leise: #9aa3b2; --gut: #2f9e5b; --schlecht: #c2453d; --akz: #e0a63a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding-bottom: 92px; }
+  header { padding: 18px 16px 8px; max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  header p { margin: 4px 0; color: var(--leise); font-size: 14px; }
+  nav { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--rand); overflow-x: auto; white-space: nowrap; padding: 8px 12px; }
+  nav a { display: inline-block; color: var(--text); text-decoration: none; padding: 6px 10px; margin-right: 6px; border-radius: 16px; background: var(--kar); font-size: 14px; }
+  nav a b { color: var(--akz); font-weight: 600; margin-left: 4px; }
+  main { max-width: 760px; margin: 0 auto; padding: 0 12px; }
+  h2 { font-size: 19px; margin: 26px 4px 4px; }
+  .unter { color: var(--leise); font-size: 14px; margin: 0 4px 10px; }
+  .karte { background: var(--kar); border: 1px solid var(--rand); border-radius: 12px; padding: 12px 12px 10px; margin: 10px 0; }
+  .karte.gut { border-color: var(--gut); box-shadow: inset 4px 0 0 var(--gut); }
+  .karte.schlecht { border-color: var(--schlecht); box-shadow: inset 4px 0 0 var(--schlecht); opacity: .82; }
+  .kopf { display: flex; gap: 10px; align-items: flex-start; }
+  .kopf .t { flex: 1; min-width: 0; }
+  .titel { font-weight: 650; font-size: 17px; }
+  .von { color: var(--leise); }
+  .id { font: 12px ui-monospace, Menlo, monospace; color: var(--leise); }
+  .mark { font-size: 12px; padding: 2px 7px; border-radius: 9px; background: #2a3140; color: var(--leise); margin-right: 4px; display: inline-block; margin-top: 4px; }
+  audio { width: 100%; margin: 10px 0 4px; height: 40px; }
+  .link { display: block; text-align: center; padding: 12px; margin: 10px 0 4px; border-radius: 10px; background: #2a3140; color: var(--text); text-decoration: none; font-weight: 600; }
+  .text { margin: 8px 0 2px; padding: 8px 10px; border-left: 3px solid var(--rand); color: #cfd4dc; font-style: italic; font-size: 14px; white-space: pre-line; }
+  .notiz { color: var(--leise); font-size: 14px; margin-top: 6px; }
+  .notiz b { color: var(--text); font-weight: 600; }
+  .knoepfe { display: flex; gap: 8px; margin-top: 10px; }
+  .knoepfe button { flex: 1; font-size: 22px; padding: 8px 0; border-radius: 10px; border: 1px solid var(--rand); background: #232833; color: var(--text); }
+  .knoepfe button.an.gut { background: var(--gut); border-color: var(--gut); }
+  .knoepfe button.an.schlecht { background: var(--schlecht); border-color: var(--schlecht); }
+  footer { position: fixed; left: 0; right: 0; bottom: 0; background: #0f1114ee; border-top: 1px solid var(--rand); padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
+  footer .in { max-width: 760px; margin: 0 auto; display: flex; gap: 10px; align-items: center; }
+  footer .zahl { flex: 1; font-size: 14px; color: var(--leise); }
+  footer button { font-size: 16px; font-weight: 650; padding: 12px 16px; border-radius: 10px; border: 0; background: var(--akz); color: #1b1300; }
+  .leer { color: var(--leise); padding: 30px 6px; }
+  .ok { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); background: var(--gut); color: #fff; padding: 8px 14px; border-radius: 10px; display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Hörprobe</h1>
+  <p>Freie Musik und Töne für „Pavillon Ratscher“ – jedes Stück mit 👍 oder 👎 bewerten, am Ende <b>„Auswahl kopieren“</b> und in den Chat einfügen.</p>
+  <p id="stand"></p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<div class="ok" id="ok">Kopiert</div>
+<footer><div class="in"><div class="zahl" id="zahl"></div><button id="kopieren">Auswahl kopieren</button></div></footer>
+<script>
+  'use strict';
+  const DATA = /*DATEN*/null;
+  const KEY = 'pavillon-hoerprobe-v1';
+  const qs = new URLSearchParams(location.search);
+  let BASE = qs.get('base') || (DATA && DATA.basis) || '';
+  if (BASE && !BASE.endsWith('/')) BASE += '/';
+  let urteil = {};
+  try { urteil = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { urteil = {}; }
+  const el = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === undefined || v === null || v === false) continue;
+      if (k === 'class') n.className = v; else if (k === 'text') n.textContent = v; else n.setAttribute(k, v);
+    }
+    for (const c of kids) if (c) n.append(c);
+    return n;
+  };
+  const zeit = (s) => (s || s === 0) ? Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart(2, '0') : '';
+  function speichern() { try { localStorage.setItem(KEY, JSON.stringify(urteil)); } catch (e) { /* private mode */ } zaehlen(); }
+  function zaehlen() {
+    const v = Object.values(urteil);
+    document.getElementById('zahl').textContent = '👍 ' + v.filter((x) => x === 'gut').length + ' · 👎 ' + v.filter((x) => x === 'schlecht').length;
+  }
+  function quelleVon(e, art) {
+    if (BASE && e.datei) return BASE + e.datei;
+    if (e.url) return /^https?:/.test(e.url) || !BASE ? e.url : BASE + e.url;
+    if (art !== 'liste' && e.orig) return e.orig;
+    if (e.datei && /^https?:/.test(e.datei)) return e.datei;
+    return '';
+  }
+  function karte(e, art) {
+    const k = el('div', { class: 'karte' + (urteil[e.id] ? ' ' + urteil[e.id] : ''), id: 'k-' + e.id });
+    const t = el('div', { class: 't' },
+      el('div', { class: 'titel', text: e.titel || e.id }),
+      e.von ? el('div', { class: 'von', text: e.von }) : null,
+      el('div', { class: 'id', text: e.id }));
+    const marks = el('div');
+    const add = (s) => s && marks.append(el('span', { class: 'mark', text: s }));
+    if (e.lizenz) {
+      const m = el('span', { class: 'mark' });
+      if (e.lizenz_url) m.append(el('a', { href: e.lizenz_url, target: '_blank', rel: 'noopener', text: e.lizenz, style: 'color:inherit' }));
+      else m.textContent = e.lizenz;
+      marks.append(m);
+    }
+    add(e.sek ? zeit(e.sek) : '');
+    add(e.sprache && e.sprache !== '-' ? ({ de: 'deutsch', en: 'englisch' }[e.sprache] || e.sprache) : (e.gesang === false ? 'instrumental' : ''));
+    add(e.schicht ? 'Schicht: ' + e.schicht + (e.stich ? ' / ' + e.stich : '') : '');
+    add(e.intro ? 'Intro ' + zeit(e.intro) : '');
+    t.append(marks);
+    k.append(el('div', { class: 'kopf' }, t));
+    const src = quelleVon(e, art);
+    if (src) k.append(el('audio', { controls: '', preload: 'none', src }));
+    if (e.quelle) k.append(el('a', { class: 'link', href: e.quelle, target: '_blank', rel: 'noopener', text: src ? 'Seite des Stücks öffnen' : '▶ Auf der Seite des Stücks anhören' }));
+    if (e.text && e.text.length) k.append(el('div', { class: 'text', text: e.text.join('\n') }));
+    const n = el('div', { class: 'notiz' });
+    if (e.was) n.append(el('div', {}, el('b', { text: 'Worauf hören: ' }), e.was));
+    if (e.risiko) n.append(el('div', {}, el('b', { text: 'Zu bedenken: ' }), e.risiko));
+    if (e.notiz) n.append(el('div', { text: e.notiz }));
+    if (n.childNodes.length) k.append(n);
+    const gut = el('button', { type: 'button', 'aria-label': 'gefällt', text: '👍' });
+    const schlecht = el('button', { type: 'button', 'aria-label': 'gefällt nicht', text: '👎' });
+    const zeigen = () => {
+      gut.className = urteil[e.id] === 'gut' ? 'an gut' : '';
+      schlecht.className = urteil[e.id] === 'schlecht' ? 'an schlecht' : '';
+      k.className = 'karte' + (urteil[e.id] ? ' ' + urteil[e.id] : '');
+    };
+    gut.onclick = () => { urteil[e.id] = urteil[e.id] === 'gut' ? undefined : 'gut'; if (!urteil[e.id]) delete urteil[e.id]; zeigen(); speichern(); };
+    schlecht.onclick = () => { urteil[e.id] = urteil[e.id] === 'schlecht' ? undefined : 'schlecht'; if (!urteil[e.id]) delete urteil[e.id]; zeigen(); speichern(); };
+    zeigen();
+    k.append(el('div', { class: 'knoepfe' }, gut, schlecht));
+    return k;
+  }
+  function bauen() {
+    const main = document.getElementById('main');
+    const nav = document.getElementById('nav');
+    if (!DATA || !DATA.abschnitte || !DATA.abschnitte.length) { main.append(el('div', { class: 'leer', text: 'Noch keine Einträge.' })); return; }
+    document.getElementById('stand').textContent = 'Stand ' + new Date(DATA.stand).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }) + (BASE ? ' · Dateien aus ' + BASE : ' · Wiedergabe der Originaldateien');
+    for (const a of DATA.abschnitte) {
+      nav.append(el('a', { href: '#a-' + a.id }, a.titel, el('b', { text: String(a.eintraege.length) })));
+      main.append(el('h2', { id: 'a-' + a.id, text: a.titel }));
+      if (a.art === 'score') main.append(el('p', { class: 'unter', text: 'Instrumental, für die Missionen: Spannung (Schleichen), Flucht, 1989, Szene; kurze Stiche.' }));
+      for (const e of a.eintraege) main.append(karte(e, a.art));
+    }
+    zaehlen();
+  }
+  document.getElementById('kopieren').onclick = async () => {
+    const d = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'numeric', timeZone: 'Europe/Berlin' });
+    const ids = (w) => Object.keys(urteil).filter((i) => urteil[i] === w);
+    const txt = 'Hörprobe ' + d + ': 👍 ' + (ids('gut').join(', ') || '–') + ' · 👎 ' + (ids('schlecht').join(', ') || '–');
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) { ok = false; }
+    if (!ok) { const ta = el('textarea'); ta.value = txt; document.body.append(ta); ta.select(); try { ok = document.execCommand('copy'); } catch (e) { ok = false; } ta.remove(); }
+    const o = document.getElementById('ok'); o.textContent = ok ? 'Kopiert: ' + txt.slice(0, 60) + (txt.length > 60 ? '…' : '') : txt;
+    o.style.display = 'block'; setTimeout(() => { o.style.display = 'none'; }, ok ? 2500 : 9000);
+  };
+  bauen();
+</script>
+</body>
+</html>
