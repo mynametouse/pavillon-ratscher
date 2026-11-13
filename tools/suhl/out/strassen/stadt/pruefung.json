@@ -1,8 +1,8 @@
 {
- "made": "2026-11-13T01:11:21Z",
+ "made": "2026-11-13T01:18:08Z",
  "run": "out/stadt",
  "drive_file": "suhl.json",
- "tiles": 1013,
+ "tiles": 1129,
  "zaehlung": {
   "zentrum": {
    "hier_km": 34.8,
@@ -274,236 +274,237 @@
  },
  "gebaeude_in_fahrbahn": {
   "quelle_gebaeude": "OpenStreetMap (building=*, ohne Dächer und Carports, ohne Unterirdisches) – die Grundrisse von suhl-gebaeude folgen",
-  "gebaeude": 22155,
-  "strassen_geprueft": 4731,
+  "gebaeude": 23809,
+  "strassen_geprueft": 4884,
+  "fuehren_in_ein_gebaeude": 45,
   "grenze_m": 0.3,
-  "treffer": 578,
-  "strassenstuecke_betroffen": 365,
-  "gebaeude_betroffen": 537,
+  "treffer": 80,
+  "strassenstuecke_betroffen": 73,
+  "gebaeude_betroffen": 76,
   "ok": false,
   "tiefste": [
    {
-    "tiefe_m": 2.5,
-    "osm_weg": 1418755000,
-    "strasse": "Simsonstraße",
-    "breite_m": 5.0,
-    "gebaeude": "w107101098",
-    "art": "industrial",
-    "name": ""
-   },
-   {
-    "tiefe_m": 2.48,
-    "osm_weg": 1418754999,
-    "strasse": "Simsonstraße",
-    "breite_m": 5.0,
-    "gebaeude": "w107101098",
-    "art": "industrial",
-    "name": ""
-   },
-   {
-    "tiefe_m": 2.44,
+    "tiefe_m": 1.04,
     "osm_weg": 32821440,
     "strasse": "Breitenbacher Straße",
-    "breite_m": 5.0,
+    "breite_m": 2.2,
     "gebaeude": "w128524846",
     "art": "yes",
     "name": ""
    },
    {
-    "tiefe_m": 2.37,
+    "tiefe_m": 0.93,
+    "osm_weg": 200758555,
+    "strasse": "service",
+    "breite_m": 4.0,
+    "gebaeude": "w200758558",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.92,
     "osm_weg": 37014456,
     "strasse": "Langes Tal",
-    "breite_m": 5.0,
+    "breite_m": 2.2,
     "gebaeude": "w900885867",
     "art": "yes",
     "name": ""
    },
    {
-    "tiefe_m": 2.17,
+    "tiefe_m": 0.91,
+    "osm_weg": 70114731,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w42871444",
+    "art": "hotel",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.89,
+    "osm_weg": 1359848070,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w127176973",
+    "art": "apartments",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.88,
+    "osm_weg": 55567768,
+    "strasse": "Auf der Mauer",
+    "breite_m": 2.5,
+    "gebaeude": "w127249681",
+    "art": "house",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.86,
+    "osm_weg": 70115857,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w314472767",
+    "art": "office",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.84,
+    "osm_weg": 1387795016,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w109379702",
+    "art": "industrial",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.84,
+    "osm_weg": 142690987,
+    "strasse": "path",
+    "breite_m": 2.2,
+    "gebaeude": "w270675175",
+    "art": "garages",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.82,
+    "osm_weg": 248886868,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w141129763",
+    "art": "garages",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.77,
     "osm_weg": 1418755001,
     "strasse": "Simsonstraße",
-    "breite_m": 5.0,
+    "breite_m": 2.2,
     "gebaeude": "w107101098",
     "art": "industrial",
     "name": ""
    },
    {
-    "tiefe_m": 2.11,
+    "tiefe_m": 0.74,
+    "osm_weg": 32866273,
+    "strasse": "Gründle",
+    "breite_m": 3.0,
+    "gebaeude": "w759106932",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.71,
+    "osm_weg": 250364583,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w141119497",
+    "art": "detached",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.71,
     "osm_weg": 53345628,
     "strasse": "Ellerweg",
-    "breite_m": 5.0,
+    "breite_m": 2.2,
     "gebaeude": "w193941290",
     "art": "yes",
     "name": ""
    },
    {
-    "tiefe_m": 2.1,
+    "tiefe_m": 0.7,
     "osm_weg": 53093567,
     "strasse": "Untere Teichstraße",
-    "breite_m": 5.0,
+    "breite_m": 2.2,
     "gebaeude": "w208266705",
     "art": "yes",
     "name": ""
    },
    {
-    "tiefe_m": 2.1,
+    "tiefe_m": 0.7,
     "osm_weg": 53093567,
     "strasse": "Untere Teichstraße",
-    "breite_m": 5.0,
+    "breite_m": 2.2,
     "gebaeude": "w208228102",
     "art": "yes",
     "name": ""
    },
    {
-    "tiefe_m": 2.04,
+    "tiefe_m": 0.69,
+    "osm_weg": 142677834,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w1462563287",
+    "art": "service",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.68,
+    "osm_weg": 901290651,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w136999827",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.66,
+    "osm_weg": 1432760418,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w146240583",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.65,
+    "osm_weg": 200758556,
+    "strasse": "service",
+    "breite_m": 4.0,
+    "gebaeude": "w200758558",
+    "art": "yes",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.64,
     "osm_weg": 1418754998,
     "strasse": "Simsonstraße",
-    "breite_m": 5.0,
+    "breite_m": 2.2,
     "gebaeude": "w107101098",
     "art": "industrial",
     "name": ""
    },
    {
-    "tiefe_m": 2.0,
-    "osm_weg": 135757313,
-    "strasse": "Heinrichser Straße",
-    "breite_m": 5.0,
-    "gebaeude": "w135752246",
-    "art": "house",
-    "name": ""
-   },
-   {
-    "tiefe_m": 2.0,
-    "osm_weg": 108069717,
-    "strasse": "Goldbachstraße",
-    "breite_m": 5.0,
-    "gebaeude": "w192981288",
+    "tiefe_m": 0.63,
+    "osm_weg": 1185584843,
+    "strasse": "Am Auhammer",
+    "breite_m": 2.2,
+    "gebaeude": "w138357489",
     "art": "yes",
     "name": ""
    },
    {
-    "tiefe_m": 1.99,
-    "osm_weg": 25151971,
-    "strasse": "Am Rasen",
-    "breite_m": 5.0,
-    "gebaeude": "w140098793",
+    "tiefe_m": 0.63,
+    "osm_weg": 1161282130,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w45393693",
+    "art": "apartments",
+    "name": ""
+   },
+   {
+    "tiefe_m": 0.63,
+    "osm_weg": 901290310,
+    "strasse": "service",
+    "breite_m": 2.2,
+    "gebaeude": "w901290319",
     "art": "yes",
     "name": ""
    },
    {
-    "tiefe_m": 1.98,
-    "osm_weg": 118172373,
-    "strasse": "Oberlandstraße",
-    "breite_m": 5.0,
-    "gebaeude": "w134380260",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.94,
-    "osm_weg": 108069717,
-    "strasse": "Goldbachstraße",
-    "breite_m": 5.0,
-    "gebaeude": "w192981320",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.88,
-    "osm_weg": 144991714,
-    "strasse": "An der Lauter",
-    "breite_m": 5.0,
-    "gebaeude": "w145238584",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.87,
-    "osm_weg": 25418914,
-    "strasse": "Fuhrmannstraße",
-    "breite_m": 5.0,
-    "gebaeude": "w278354616",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.86,
-    "osm_weg": 192956142,
-    "strasse": "Lindenweg",
-    "breite_m": 5.0,
-    "gebaeude": "w207919796",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.85,
-    "osm_weg": 32815612,
-    "strasse": "Mühlbergweg",
-    "breite_m": 5.0,
-    "gebaeude": "w336655807",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.83,
-    "osm_weg": 118172363,
-    "strasse": "Lauter",
-    "breite_m": 6.0,
-    "gebaeude": "w145238587",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.8,
-    "osm_weg": 32821426,
-    "strasse": "Suhler Weg",
-    "breite_m": 5.0,
-    "gebaeude": "w124353295",
-    "art": "detached",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.76,
-    "osm_weg": 32821426,
-    "strasse": "Suhler Weg",
-    "breite_m": 5.0,
+    "tiefe_m": 0.62,
+    "osm_weg": 32821406,
+    "strasse": "Schmiedefelder Straße",
+    "breite_m": 2.2,
     "gebaeude": "w124353278",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.73,
-    "osm_weg": 32811814,
-    "strasse": "Dorfstraße",
-    "breite_m": 5.0,
-    "gebaeude": "w336683164",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.71,
-    "osm_weg": 60266175,
-    "strasse": "Nelkenweg",
-    "breite_m": 5.0,
-    "gebaeude": "w1358512217",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.7,
-    "osm_weg": 140096616,
-    "strasse": "Schnakenhügel",
-    "breite_m": 5.0,
-    "gebaeude": "w140096629",
-    "art": "yes",
-    "name": ""
-   },
-   {
-    "tiefe_m": 1.68,
-    "osm_weg": 53152560,
-    "strasse": "Zipfel",
-    "breite_m": 5.0,
-    "gebaeude": "w207555603",
     "art": "yes",
     "name": ""
    }
@@ -513,33 +514,33 @@
  "kreuzungen": {
   "ziel": "jede Kreuzung eine Ebene, ±3 cm (3 m um den Knoten)",
   "alle": {
-   "n": 9285,
+   "n": 9386,
    "median_cm": 0.6,
-   "p95_cm": 9.0,
-   "max_cm": 57.8,
-   "share_within_3cm": 0.852
+   "p95_cm": 8.9,
+   "max_cm": 57.9,
+   "share_within_3cm": 0.854
   },
   "fahrstrassen": {
-   "n": 3823,
+   "n": 3943,
    "median_cm": 0.4,
-   "p95_cm": 7.6,
-   "max_cm": 45.5,
-   "share_within_3cm": 0.864
+   "p95_cm": 7.5,
+   "max_cm": 44.6,
+   "share_within_3cm": 0.867
   },
   "ok": false
  },
  "profile": {
   "klassen": {
    "track": {
-    "km": 1063.13,
-    "wellen_je_km": 4.1,
+    "km": 1050.06,
+    "wellen_je_km": 3.9,
     "grenze_wellen": 6,
-    "steigungswechsel_10m": 1.3,
+    "steigungswechsel_10m": 1.26,
     "grenze_steigungswechsel": 1.5,
     "ok": true
    },
    "service": {
-    "km": 171.02,
+    "km": 176.45,
     "wellen_je_km": 4.4,
     "grenze_wellen": 5,
     "steigungswechsel_10m": 1.16,
@@ -547,23 +548,23 @@
     "ok": true
    },
    "street": {
-    "km": 153.91,
-    "wellen_je_km": 2.3,
+    "km": 165.89,
+    "wellen_je_km": 2.2,
     "grenze_wellen": 4,
-    "steigungswechsel_10m": 0.79,
+    "steigungswechsel_10m": 0.8,
     "grenze_steigungswechsel": 1.0,
     "ok": true
    },
    "main": {
-    "km": 72.94,
-    "wellen_je_km": 0.5,
+    "km": 79.66,
+    "wellen_je_km": 0.4,
     "grenze_wellen": 2,
     "steigungswechsel_10m": 0.37,
     "grenze_steigungswechsel": 0.5,
     "ok": true
    },
    "motorway": {
-    "km": 36.74,
+    "km": 42.95,
     "wellen_je_km": 0.0,
     "grenze_wellen": 1,
     "steigungswechsel_10m": 0.19,
@@ -571,28 +572,28 @@
     "ok": true
    },
    "county": {
-    "km": 24.46,
+    "km": 25.48,
     "wellen_je_km": 1.2,
     "grenze_wellen": 3,
-    "steigungswechsel_10m": 0.51,
+    "steigungswechsel_10m": 0.49,
     "grenze_steigungswechsel": 0.7,
     "ok": true
    },
    "lane": {
-    "km": 21.19,
-    "wellen_je_km": 2.8,
+    "km": 22.48,
+    "wellen_je_km": 2.6,
     "grenze_wellen": 4,
-    "steigungswechsel_10m": 0.75,
+    "steigungswechsel_10m": 0.73,
     "grenze_steigungswechsel": 1.0,
     "ok": true
    }
   },
   "ok": true,
-  "gerechnet_auf": "TECHNIKPROBE, zählt nicht: eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 9772841 Stützwerte); kleine Klassen 1.3-fach länger geglättet"
+  "gerechnet_auf": "ungeschnittene Geländekacheln von suhl-boden (Copernicus DEM GLO-30 (Oberflächenmodell 30 m) mit abgesenktem Wald (ESA WorldCover); DGM1 Thüringen noch nicht verfügbar; Stand 2026-11-13T01:12:29Z, suhl-boden Lauf 43340569202, Artefakt suhl-boden-v1; 9800808 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 78270 Stützwerte – nur am Rand außerhalb der Kacheln); kleine Klassen 1.3-fach länger geglättet"
  },
  "bruecken": {
-  "kreuzungen_mit_anderen_wegen": 174,
-  "unter_4_5_m": 71,
+  "kreuzungen_mit_anderen_wegen": 177,
+  "unter_4_5_m": 75,
   "ok": false,
   "niedrigste": [
    {
@@ -602,7 +603,7 @@
     "below_way": 194479723
    },
    {
-    "gap_m": -1.4,
+    "gap_m": -1.3,
     "bridge_way": 24929243,
     "name": "6298",
     "below_way": 297293073
@@ -626,7 +627,7 @@
     "below_way": 211131942
    },
    {
-    "gap_m": -1.3,
+    "gap_m": -1.2,
     "bridge_way": 53152561,
     "name": "6298",
     "below_way": 194296799
@@ -646,7 +647,7 @@
   ]
  },
  "kachelkanten": {
-  "uebergaenge": 5299,
+  "uebergaenge": 5458,
   "lage_ueber_0_1_m": 0,
   "hoehe_ungleich": 0,
   "groesster_abstand_m": 0.1,

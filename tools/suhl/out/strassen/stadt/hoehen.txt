@@ -1,1 +1,2 @@
-Geländekacheln: keine bestellt – Technikprobe auf eigener Copernicus-Abtastung, zählt nicht
+suhl-boden: Lauf 43340569202, Artefakt suhl-boden-v1
+Geländekacheln: /home/runner/work/_temp/boden/t (6279 Kacheln)

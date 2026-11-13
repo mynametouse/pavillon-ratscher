@@ -1,45 +1,46 @@
 {
- "made": "2026-11-13T01:11:20Z",
- "tiles": 1013,
+ "made": "2026-11-13T01:18:07Z",
+ "tiles": 1129,
  "counts": {
-  "pfosten": 2930,
-  "planken": 297,
-  "schilder": 510,
-  "lampen": 5187,
-  "linien": 174,
-  "masten": 250,
-  "ampeln": 178,
-  "querungen": 186,
-  "halte": 240,
-  "namen": 411
+  "pfosten": 3413,
+  "planken": 403,
+  "schilder": 603,
+  "lampen": 5237,
+  "linien": 151,
+  "masten": 358,
+  "ampeln": 180,
+  "querungen": 191,
+  "halte": 249,
+  "namen": 416
  },
- "lamps_osm_in_box": 885,
+ "lamps_osm_in_box": 973,
  "signs_by_code": {
-  "274": 77,
-  "278": 25,
+  "274": 90,
+  "278": 33,
   "274.1": 1,
-  "205": 195,
+  "205": 219,
   "206": 8,
-  "301": 1,
+  "301": 22,
+  "205+215": 3,
   "201": 8,
   "350": 12,
-  "km": 74,
+  "km": 98,
   "625": 110
  },
  "crossings_by_type": {
-  "ohne Markierung": 87,
-  "markiert": 23,
-  "Zebrastreifen": 5,
-  "Ampel": 71
+  "ohne Markierung": 88,
+  "markiert": 24,
+  "Zebrastreifen": 7,
+  "Ampel": 72
  },
  "signals": {
-  "Fahrzeuge": 111,
-  "Fußgänger": 67,
-  "masts": 289
+  "Fahrzeuge": 112,
+  "Fußgänger": 68,
+  "masts": 294
  },
- "bus_stops_named": 240,
+ "bus_stops_named": 249,
  "bus_stops_in_timetable_names": 21,
- "guard_rail_m": 56791,
+ "guard_rail_m": 77780,
  "places": [
   [
    "Suhl",
@@ -82,7 +83,7 @@
    "village"
   ]
  ],
- "bytes_tiles": 689096,
+ "bytes_tiles": 828619,
  "tool": "viz3/extra/strassen/daten.py of feat/strassen, unchanged: guard_rails, delineators, signs, lamps, power",
- "bytes_one_file": 667810
+ "bytes_one_file": 816280
 }
