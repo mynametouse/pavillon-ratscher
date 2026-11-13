@@ -417,12 +417,13 @@ export const GLFAHNDUNG = (() => {
         }
       } else {
         // on the way to where the player was last seen; then round the roads near it
-        if (c.ende || u.routeT > 40) {
+        if (u.st === 'anfahrt' && S.last && hyp(c.x - S.last[0], c.y - S.last[1]) < 70) u.st = 'suche';
+        if (c.ende || (u.st === 'suche' && u.routeT > 40)) {
           u.st = 'suche';
           c.horn = false;
           const G = GLAUTO.netz(),
             o = S.last || [p.x, p.y],
-            cand = G.nodes.filter(q => hyp(q.x - o[0], q.y - o[1]) < 260 && hyp(q.x - c.x, q.y - c.y) > 50);
+            cand = G.nodes.filter(q => hyp(q.x - o[0], q.y - o[1]) < 150 && hyp(q.x - c.x, q.y - c.y) > 40);
           const q = cand[Math.floor(Math.random() * cand.length)];
           if (!q || !reroute(u, [q.x, q.y], 0.75)) u.routeT = 30;
         }
@@ -494,7 +495,16 @@ export const GLFAHNDUNG = (() => {
       }
     }
     // the rules
-    const ev = GLLOGIK.tick(W, dt, { seen, close, hidden: S.hidden, split: !!GL.getrennt });
+    // the search runs out only once somebody searches: a car that has arrived, officers on foot – or nobody could come at all
+    const there = S.cars.some(u => u.st !== 'anfahrt') || S.cops.length > 0 || !!S.block,
+      coming = S.cars.length > 0 || S.wait > 0 || S.busy;
+    const ev = GLLOGIK.tick(W, dt, {
+      seen,
+      close,
+      hidden: S.hidden,
+      split: !!GL.getrennt,
+      hold: !there && coming && !S.off,
+    });
     if (ev === 'gesehen') {
       GLHUD.say(T.gesehen, '', 2.5);
       GLTON.fx('stern');

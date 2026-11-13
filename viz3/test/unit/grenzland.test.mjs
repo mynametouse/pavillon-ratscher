@@ -110,3 +110,13 @@ test('witnesses: reach, the half circle ahead, the dark, sneaking, cover', () =>
   assert.equal(G.sieht(w, 0, 20, { sneak: true }), false);
   assert.equal(G.sieht({ x: 0, y: 0, hd: null, r: 30 }, 0, -20), true, 'somebody looking around sees all round');
 });
+
+test('while the police are still on their way the search cannot run out', () => {
+  const W = G.fresh();
+  G.crime(W, 'einbruch', { seen: 1 });
+  for (let i = 0; i < 400; i++) assert.equal(G.tick(W, 0.5, { hold: true }), null);
+  assert.equal(G.stars(W), 2);
+  let ev = null;
+  for (let i = 0; i < 400 && !ev; i++) ev = G.tick(W, 0.5, {});
+  assert.equal(ev, 'stern');
+});

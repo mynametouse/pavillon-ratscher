@@ -53,7 +53,8 @@ export const GLLOGIK = (() => {
   };
   // seconds out of sight until one star goes
   const loseT = W => (16 + 7 * starsOf(W.heat)) * (W.known ? 1 : 0.6);
-  // per frame. ctx: { seen: the police see the player now, close: from close by, hidden: in a hiding place, split: the two are apart }
+  // per frame. ctx: { seen: the police see the player now, close: from close by, hidden: in a hiding place, split: the two are apart,
+  // hold: the police are still on their way }
   // returns an event or null: 'gesehen' | 'erkannt' | 'verloren' | 'stern' | 'entkommen'
   function tick(W, dt, ctx = {}) {
     W.split = !!ctx.split;
@@ -76,7 +77,8 @@ export const GLLOGIK = (() => {
         W.state = 'gesucht';
         ev = 'verloren';
       }
-      W.unseen += dt * (ctx.hidden ? 1.8 : 1);
+      // (hold: nobody of the police is there yet – the search has not begun, so it cannot run out)
+      if (!ctx.hold) W.unseen += dt * (ctx.hidden ? 1.8 : 1);
       if (W.unseen >= loseT(W)) {
         W.unseen = 0;
         const n = starsOf(W.heat);
