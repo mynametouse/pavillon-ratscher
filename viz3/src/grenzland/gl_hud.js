@@ -12,11 +12,24 @@ import { GLLOGIK } from './gl_logik.js';
 import { GLDATA } from './gl_data.js';
 import { GL } from './gl_state.js';
 export const GLHUD = (() => {
-  const S = { el: null, shown: false, acts: {}, last: '', msgT: 0, subT: 0, ask: null, folded: false, tip: '', xl: '' };
+  const S = {
+    el: null,
+    shown: false,
+    acts: {},
+    last: '',
+    msgT: 0,
+    subT: 0,
+    passT: 0,
+    ortT: 0,
+    ask: null,
+    folded: false,
+    tip: '',
+    xl: '',
+  };
   const CSS = `
 #glhud{position:absolute;top:66px;right:max(12px,env(safe-area-inset-right,0px));z-index:6;width:min(250px,44vw);background:rgba(14,18,22,.66);color:#eef1f2;
   border-radius:10px;padding:8px 10px 9px;font:400 12px/1.35 var(--f-body,system-ui);backdrop-filter:blur(5px);pointer-events:auto;user-select:none}
-#glhud[hidden],#glmsg[hidden],#glsub[hidden],#glwahl[hidden],#glfade[hidden],#gltouch[hidden],#glbust[hidden]{display:none!important}
+#glhud[hidden],#glmsg[hidden],#glsub[hidden],#glwahl[hidden],#glfade[hidden],#gltouch[hidden],#glbust[hidden],#glpass[hidden]{display:none!important}
 #glhud .gt{display:flex;justify-content:space-between;align-items:baseline;gap:8px;cursor:pointer}
 #glhud .gt b{font:700 11px/1.3 var(--f-mono,monospace);letter-spacing:.09em;text-transform:uppercase;color:#f3c64f}
 #glhud .gt em{font:600 13px/1.2 var(--f-mono,monospace);font-style:normal;color:#8fe08a}
@@ -57,6 +70,18 @@ body[data-gl-era="1989"] #glhud .gt b{color:#d8c79a}
   color:#eaf0ff;font:700 clamp(24px,4.4vw,44px)/1.2 var(--f-display,Georgia,serif);text-align:center;padding:0 6vw}
 #glbust small{font:400 15px/1.45 var(--f-body,system-ui);opacity:.92;max-width:520px}
 #glbust button{font:600 15px/1 var(--f-body,system-ui);padding:12px 22px;border-radius:999px;border:0;background:#eaf0ff;color:#0c1430;cursor:pointer}
+#glpass{position:absolute;left:50%;top:27%;transform:translateX(-50%);z-index:7;width:min(760px,90vw);text-align:center;pointer-events:none;color:#fff;
+  animation:glpa .5s ease-out}
+#glpass b{display:block;font:800 clamp(24px,4.6vw,48px)/1.1 var(--f-display,Georgia,serif);color:#f3c64f;letter-spacing:.05em;text-transform:uppercase;
+  text-shadow:0 3px 18px rgba(0,0,0,.95)}
+#glpass em{display:block;font-style:normal;margin-top:7px;font:600 clamp(15px,2.2vw,20px)/1.3 var(--f-body,system-ui);text-shadow:0 2px 10px rgba(0,0,0,.95)}
+#glpass span{display:block;margin-top:9px;font:600 clamp(13px,1.8vw,16px)/1.3 var(--f-mono,monospace);color:#8fe08a;text-shadow:0 2px 8px rgba(0,0,0,.95)}
+@keyframes glpa{from{opacity:0;transform:translateX(-50%) scale(1.12)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+#glort{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(224px + env(safe-area-inset-bottom,0px));z-index:5;max-width:46vw;pointer-events:none;
+  color:#fff;font:italic 700 clamp(15px,2vw,21px)/1.2 var(--f-display,Georgia,serif);text-shadow:0 2px 10px rgba(0,0,0,.95);opacity:0;transition:opacity .7s}
+#glort.on{opacity:1} #glort small{display:block;margin-top:2px;font:500 11px/1.3 var(--f-mono,monospace);font-style:normal;opacity:.88;letter-spacing:.04em}
+@media (pointer:coarse),(max-width:720px){#glort{bottom:auto;top:calc(256px + env(safe-area-inset-top,0px))}}
+@media (max-width:560px){#glort{top:calc(294px + env(safe-area-inset-top,0px))}}
 #gltouch{position:absolute;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;flex-direction:column;gap:9px;align-items:flex-end}
 #gltouch button{width:48px;height:48px;border-radius:50%;border:0;background:rgba(20,26,32,.74);color:#fff;font:700 17px/1 system-ui;touch-action:manipulation}
 /* 1989: a faded colour print – on the picture only, the panels stay as they are */
@@ -64,9 +89,10 @@ body[data-gl-era="1989"] #stage canvas:first-of-type{filter:sepia(.34) saturate(
 #glvig,#glkorn{position:absolute;inset:0;pointer-events:none;z-index:4;display:none}
 body[data-gl-era="1989"] #glvig{display:block;background:radial-gradient(ellipse at center,rgba(40,24,6,0) 52%,rgba(40,24,6,.5) 100%)}
 body[data-gl-era="1989"] #glkorn{display:block;width:100%;height:100%;opacity:.11;mix-blend-mode:overlay;image-rendering:pixelated}
-#gldatum{position:absolute;left:max(14px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:6;pointer-events:none;display:none;
+#gldatum{position:absolute;left:calc(max(14px,env(safe-area-inset-left,0px)) + 190px);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:6;pointer-events:none;display:none;
   color:#f0e3c0;font:600 13px/1.3 var(--f-mono,monospace);letter-spacing:.06em;text-shadow:0 1px 6px rgba(0,0,0,.9)}
 body[data-gl-era="1989"] #gldatum{display:block}
+@media (pointer:coarse),(max-width:720px){#gldatum{left:max(14px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px))}}
 @media (min-width:721px) and (min-height:501px){body[data-gl="1"] .toast{top:var(--gl-bottom,60px)}}
 @media (min-width:721px) and (pointer:coarse){#glhud{right:calc(max(14px,env(safe-area-inset-right,0px)) + 60px)}}
 @media (orientation:landscape) and (max-height:500px){#glhud{top:48px}}
@@ -102,6 +128,9 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
         `<button data-g="extra" id="glextra" hidden></button><button data-g="end">Beenden</button></div>`
     );
     S.msg = div('glmsg');
+    S.pass = div('glpass');
+    S.ortEl = div('glort');
+    S.ortEl.hidden = false;
     S.subEl = div('glsub');
     S.askEl = div('glwahl');
     S.fadeEl = div('glfade');
@@ -173,7 +202,8 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
     else {
       delete document.body.dataset.gl;
       delete document.body.dataset.glEra;
-      S.msg.hidden = S.subEl.hidden = S.askEl.hidden = S.bust.hidden = true;
+      S.msg.hidden = S.subEl.hidden = S.askEl.hidden = S.bust.hidden = S.pass.hidden = true;
+      S.ortEl.classList.remove('on');
       S.fadeEl.classList.remove('on');
       if (S.ask) {
         const w = S.ask;
@@ -265,6 +295,24 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
     S.msg.hidden = false;
     S.msgT = sec;
   }
+  // a mission is done: „Mission bestanden“, its title, what it brought
+  function passed(titel, lohn, sec = 7) {
+    build();
+    S.pass.innerHTML =
+      '<b>Mission bestanden</b>' +
+      (titel ? '<em>' + esc(titel) + '</em>' : '') +
+      (lohn ? '<span>' + esc(lohn) + '</span>' : '');
+    S.pass.hidden = false;
+    S.passT = sec;
+    S.msg.hidden = true;
+  }
+  // a name for a moment under the map: what one has just got onto or into
+  function ort(name, small, sec = 4.5) {
+    build();
+    S.ortEl.innerHTML = esc(name) + (small ? '<small>' + esc(small) + '</small>' : '');
+    S.ortEl.classList.add('on');
+    S.ortT = sec;
+  }
   // what somebody says (a subtitle); ms: how long it stays
   function sub(name, text, ms = 0) {
     build();
@@ -324,6 +372,8 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
     if (!S.shown) return;
     if (S.msgT > 0 && (S.msgT -= dt) <= 0) S.msg.hidden = true;
     if (S.subT > 0 && (S.subT -= dt) <= 0) S.subEl.hidden = true;
+    if (S.passT > 0 && (S.passT -= dt) <= 0) S.pass.hidden = true;
+    if (S.ortT > 0 && (S.ortT -= dt) <= 0) S.ortEl.classList.remove('on');
     S.acc = (S.acc || 0) + dt;
     if (S.acc > 0.25) {
       S.acc = 0;
@@ -333,7 +383,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glsub){display:none!i
   KERN.on('grenzland:geld', () => {
     S.last = '';
   });
-  Object.assign(S, { build, show, era, refresh, say, sub, wahl, pick, fade, busted, tick, hint, extra });
+  Object.assign(S, { build, show, era, refresh, say, sub, wahl, pick, fade, busted, tick, hint, extra, passed, ort });
   return S;
 })();
 window.GLHUD = GLHUD;

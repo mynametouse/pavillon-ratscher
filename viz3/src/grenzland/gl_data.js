@@ -272,7 +272,10 @@ export const GLDATA = (() => {
     sperre: 'Sperre auf der Landstraße!',
     heli: 'Ein Hubschrauber kreist über dem Tal.',
     versteck: 'Hier sieht dich so schnell keiner.',
-    tank: 'Der Tank ist leer.',
+    tank: 'Der Tank ist leer. Im Garten steht ein Kanister – oder du hast einen dabei.',
+    tankHeim: 'Moped betanken (Gemisch 1:50 aus dem Kanister)',
+    tankKan: 'Moped betanken (dein Kanister)',
+    getankt: 'Vollgetankt: fünf Liter Gemisch, eins zu fünfzig.',
     tankVoll: 'Gemisch 1 : 50 eingefüllt. Der Zweitakter dankt es.',
     geldFehlt: 'Dafür reicht das Geld nicht.',
     schlagLuft: 'Daneben.',
@@ -398,6 +401,7 @@ export const GLDATA = (() => {
     { k: 'mais', name: 'Dosenmais (Angelköder)', eur: 0.99, n: 5 },
     { k: 'wurm', name: 'Tauwürmer (Angelköder)', eur: 2.9, n: 5 },
     { k: 'blinker', name: 'Blinker', eur: 4.5, n: 3 },
+    { k: 'kanister', name: 'Kanister Gemisch 1:50 (5 Liter)', eur: 9.8 },
     { k: 'boeller', name: 'Böller „aus dem Kofferraum“', eur: 6, n: 4, unter: true },
   ];
   // ---- 1989: the afternoon of Friday, 10 November – what people say, what the radio says, what is in the street ----
