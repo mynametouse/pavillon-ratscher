@@ -109,6 +109,14 @@ export const SUHL = (() => {
     get VEH() {
       return window.VEH;
     },
+    // the world's parked cars (dinge/dinge_modelle.js): their models and materials for Suhl's car parks
+    get DMOD() {
+      return window.DMOD;
+    },
+    // the traffic's detailed vehicle models (verkehr/vk_modelle.js) for the parked cars nearest the camera
+    get VKMOD() {
+      return window.VKMOD;
+    },
   });
   S.load = () =>
     pkgP ||

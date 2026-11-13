@@ -2,11 +2,32 @@
 // with its height in decimetres; an area comes with the tile that owns it, home = 1). Each car park is filled row by row along its
 // longest side: bays 2.5 m wide and 5 m deep, a 6 m aisle after every second row; a narrow strip (under 7 m) takes the cars lengthwise,
 // 6 m apart. About seven bays in ten are taken (the same ones every time: a hash of the place), the colours as they run on German roads
-// (grey, black, white and silver ahead). One low car shape – body, glasshouse, wheels – drawn as one instanced mesh, each car turned
-// to its bay, lying on the ground and pitched with it. Built within R, again after MOVE metres or when a street tile comes or goes.
+// (grey, black, white and silver ahead). The cars are the world's parked cars (dinge/dinge_modelle.js, window.DMOD: small car, compact,
+// estate, SUV, van – true measures, glass, wheels, lamps, plates; Falko 13.11.2026 22:03: the boxes looked „wie Spielzeug Autos“): one
+// instanced mesh per type on the world's material (its programs are warm from the start), each car on the ground under its wheels,
+// pitched and rolled with it, and its soft shadow (one instanced mesh, the world's shadow material). Without DMOD the old low box shape.
+// Near the camera the nearest of them become the traffic's detailed models (verkehr/vk_modelle.js, window.VKMOD: body, glass, the cab
+// inside, lamps; three levels, built in a worker) – the instance shrinks to nothing meanwhile, its soft shadow stays.
+// Built within R, again after MOVE metres or when a street tile comes or goes.
 const R = 380,
   MOVE = 90,
   MAX = 2400;
+// the traffic's types for each body type of the world's parked cars
+const VKT = {
+  klein: ['klein', 'klein2', 'mini'],
+  kompakt: ['kompakt', 'kompakt2', 'elektro'],
+  kombi: ['kombi', 'kombi2', 'limo'],
+  suv: ['suv', 'suv2'],
+  van: ['hochdach', 'transporter'],
+};
+// the body types of the world's parked cars and their shares (KBA stock by segment, rounded)
+const TYPES = [
+  ['kompakt', 0.33],
+  ['klein', 0.22],
+  ['suv', 0.2],
+  ['kombi', 0.18],
+  ['van', 0.07],
+];
 // the colours (sRGB) and their shares
 const COLS = [
   ['#5f6266', 0.22],
@@ -21,9 +42,34 @@ const COLS = [
   ['#d06a1c', 0.03],
 ];
 export function autos(ctx, ST) {
-  const { THREE, scene, markDirty, KERN, WELT } = ctx,
-    S = { on: true, rev: -1, at: [1e9, 1e9], tz: 0, retry: 0, n: { parks: 0, cars: 0 } };
+  const { THREE, scene, markDirty, KERN, WELT, cam } = ctx,
+    DM = ctx.DMOD && ctx.DMOD.on && ctx.DMOD.car && ctx.DMOD.mat && ctx.DMOD.CARS ? ctx.DMOD : null,
+    S = { on: true, rev: -1, at: [1e9, 1e9], tz: 0, retry: 0, n: { parks: 0, cars: 0 }, models: !!DM, by: {} };
   let me = null;
+  // with the world's models: one instanced mesh per type and one of shadows, grown when a build needs more
+  const IM = new Map();
+  let SH = null;
+  function inst(key, geo, mat, need) {
+    let m = key === 'sh' ? SH : IM.get(key);
+    if (m && m.instanceMatrix.count >= need) return m;
+    const cap = Math.max(64, 1 << Math.ceil(Math.log2(Math.max(1, need))));
+    if (m) {
+      scene.remove(m);
+      m.dispose(); // the geometry and the material are the world's: not ours to free
+    }
+    m = new THREE.InstancedMesh(geo, mat, cap);
+    m.name = key === 'sh' ? 'suhl autos schatten' : 'suhl autos ' + key;
+    m.count = 0;
+    m.visible = false;
+    m.frustumCulled = false;
+    m.userData.noMerge = true;
+    if (key === 'sh') {
+      m.renderOrder = -1;
+      SH = m;
+    } else IM.set(key, m);
+    scene.add(m);
+    return m;
+  }
   const hsh = (x, y, k) => {
     const s = Math.sin(x * 12.9898 + y * 78.233 + k * 37.719) * 43758.5453;
     return s - Math.floor(s);
@@ -105,37 +151,113 @@ export function autos(ctx, ST) {
     SC = new THREE.Vector3(1, 1, 1),
     C = new THREE.Color(),
     PAL = COLS.map(([c, w]) => [new THREE.Color(c), w]);
-  function colour(k) {
+  function colourAt(k) {
     let a = 0;
-    for (const [c, w] of PAL) if ((a += w) >= k) return c;
-    return PAL[0][0];
+    for (let i = 0; i < PAL.length; i++) if ((a += PAL[i][1]) >= k) return i;
+    return 0;
   }
-  function build(o) {
-    const m = mesh(),
-      n = { parks: 0, cars: 0 };
-    let missed = 0,
-      i = 0;
-    const put = (x, y, h) => {
-      if (i >= MAX) return;
+  const colour = k => PAL[colourAt(k)][0];
+  // the old low shape (no DMOD): turned by h about up, pitched with the ground (a kerb or a wall in reach: level)
+  function boxes(list) {
+    const m = mesh();
+    let i = 0;
+    for (const [x, y, h, zc] of list) {
       const c = Math.cos(h),
         s = Math.sin(h),
-        zc = gz(x, y),
         zf = gz(x + c * 1.8, y + s * 1.8),
-        zb = gz(x - c * 1.8, y - s * 1.8);
-      if (zc === null || zf === null || zb === null) {
-        missed++;
-        return;
-      }
-      // three.js: x, up, −y; the car's length along its local x, turned by h about up, pitched with the ground (a kerb or a wall
-      // in reach: level)
-      const fall = Math.abs(zf - zb) < 1.2 ? zf - zb : 0;
+        zb = gz(x - c * 1.8, y - s * 1.8),
+        fall = zf !== null && zb !== null && Math.abs(zf - zb) < 1.2 ? zf - zb : 0;
       E.set(0, h, Math.atan2(fall, 3.6), 'YXZ');
       Q.setFromEuler(E);
       M.compose(V.set(x, (fall ? Math.max(zc, (zf + zb) / 2) : zc) - 0.02, -y), Q, SC);
       m.setMatrixAt(i, M);
       m.setColorAt(i, C.copy(colour(hsh(x, y, 3))));
       i++;
-      n.cars++;
+    }
+    m.count = i;
+    m.instanceMatrix.needsUpdate = true;
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    m.visible = i > 0;
+  }
+  // the world's cars (as dinge/dinge.js sets them): on the ground under the middle, pitched by the ground under the axles, rolled by
+  // the ground under both sides; a kerb or a wall under one end (more than 1.2 m): level. Its compass bearing az: the car's front.
+  const cars = []; // the cars of the last build with the world's models: { t, j, x, y, z, h, q, col }
+  const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
+  function models(list) {
+    releaseAll();
+    cars.length = 0;
+    const by = {};
+    for (const q of list) (by[typeOf(q[0], q[1])] = by[typeOf(q[0], q[1])] || []).push(q);
+    const sh = inst('sh', DM.shGeo, DM.shMat, list.length);
+    let si = 0;
+    S.by = {};
+    for (const [key, m] of IM) if (!by[key]) ((m.count = 0), (m.visible = false));
+    for (const t in by) {
+      const L = by[t],
+        T = DM.CARS[t],
+        m = inst(t, DM.car(t), DM.mat, L.length),
+        hb = T.wb / 2,
+        ht = T.W / 2 - 0.15;
+      S.by[t] = L.length;
+      L.forEach(([x, y, h, zc], j) => {
+        const fx = Math.cos(h),
+          fy = Math.sin(h),
+          rx = fy,
+          ry = -fx,
+          zF = gz(x + fx * hb, y + fy * hb),
+          zR = gz(x - fx * hb, y - fy * hb),
+          zL = gz(x - rx * ht, y - ry * ht),
+          zRi = gz(x + rx * ht, y + ry * ht),
+          ok = [zF, zR, zL, zRi].every(v => v !== null) && Math.abs(zF - zR) < 1.2 && Math.abs(zL - zRi) < 0.8,
+          z = ok ? (zF + zR + zL + zRi) / 4 : zc,
+          pitch = ok ? THREE.MathUtils.clamp(Math.atan2(zF - zR, T.wb), -0.25, 0.25) : 0,
+          roll = ok ? THREE.MathUtils.clamp(Math.atan2(zRi - zL, 2 * ht), -0.2, 0.2) : 0,
+          az = Math.PI / 2 - h;
+        E.set(pitch, -az, -roll, 'YXZ');
+        Q.setFromEuler(E);
+        V.set(x, z, -y);
+        M.compose(V, Q, SC);
+        m.setMatrixAt(j, M);
+        const ci = colourAt(hsh(x, y, 3));
+        m.setColorAt(j, C.copy(PAL[ci][0]));
+        cars.push({ t, j, x, y, z, h, q: Q.clone(), col: COLS[ci][0] });
+        M.compose(V, Q, SCS.set(T.W, T.H, T.L));
+        sh.setMatrixAt(si++, M);
+      });
+      m.count = L.length;
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+      m.visible = L.length > 0;
+    }
+    sh.count = si;
+    sh.instanceMatrix.needsUpdate = true;
+    sh.visible = si > 0;
+  }
+  function typeOf(x, y) {
+    const k = hsh(x, y, 5);
+    let a = 0;
+    for (const [t, w] of TYPES) if ((a += w) >= k) return t;
+    return 'kompakt';
+  }
+  // the half length and half width a bay must hold for the car standing there
+  const dims = (x, y) => {
+    if (!DM) return [2.35, 1.0];
+    const T = DM.CARS[typeOf(x, y)];
+    return [T.L / 2 + 0.05, T.W / 2 + 0.05];
+  };
+  const SCS = new THREE.Vector3();
+  function build(o) {
+    const n = { parks: 0, cars: 0 },
+      list = [];
+    let missed = 0;
+    const put = (x, y, h) => {
+      if (list.length >= MAX) return;
+      const zc = gz(x, y);
+      if (zc === null) {
+        missed++;
+        return;
+      }
+      list.push([x, y, h, zc]);
     };
     for (const t of ST.tiles.values()) {
       if (!t.d || !t.o || !Array.isArray(t.d.areas)) continue;
@@ -197,7 +319,8 @@ export function autos(ctx, ST) {
           // a strip: lengthwise, 6 m apart
           for (let u = u0 + 3; u <= u1 - 3; u += 6) {
             const [x, y] = at(u, (v0 + v1) / 2);
-            if (hsh(x, y, 1) < 0.72 && fits(x, y, ex, ey, 2.3, 1.0))
+            const [hl, hw] = dims(x, y);
+            if (hsh(x, y, 1) < 0.72 && fits(x, y, ex, ey, Math.max(2.3, hl), Math.max(1.0, hw)))
               put(x, y, Math.atan2(ey, ex) + (hsh(x, y, 2) < 0.5 ? 0 : Math.PI));
           }
           continue;
@@ -210,21 +333,86 @@ export function autos(ctx, ST) {
             const [x, y] = at(u, v),
               dx = -ey * facing,
               dy = ex * facing;
-            if (hsh(x, y, 1) < 0.7 && fits(x, y, dx, dy, 2.35, 1.0)) put(x, y, Math.atan2(dy, dx));
+            const [hl, hw] = dims(x, y);
+            if (hsh(x, y, 1) < 0.7 && fits(x, y, dx, dy, Math.min(2.5, Math.max(2.35, hl)), Math.max(1.0, hw)))
+              put(x, y, Math.atan2(dy, dx));
           }
           v += row % 2 === 0 ? 5.0 : 5.0 + 6.0;
         }
       }
     }
-    m.count = i;
-    m.instanceMatrix.needsUpdate = true;
-    if (m.instanceColor) m.instanceColor.needsUpdate = true;
-    m.visible = i > 0;
+    n.cars = list.length;
+    if (DM) models(list);
+    else boxes(list);
     S.n = n;
     S.retry = missed ? 2 : 0;
     markDirty(true);
   }
+  // ---- near the camera: the traffic's detailed models in place of the nearest instances ----
+  const VK = ctx.VKMOD && ctx.VKMOD.make && ctx.VKMOD.place && ctx.VKMOD.ready && ctx.VKMOD.free ? ctx.VKMOD : null,
+    NEARR = ctx.COARSE ? 22 : 40,
+    NEARN = ctx.COARSE ? 6 : 16,
+    near = new Map(); // index in cars → the model
+  let nearT = 0;
+  const camXY = () => [cam.position.x, -cam.position.z];
+  function swapIn(i) {
+    const c = cars[i],
+      L = VKT[c.t] || VKT.kompakt,
+      vt = L[Math.floor(hsh(c.x, c.y, 7) * L.length) % L.length];
+    if (!VK.ready(vt)) {
+      VK.need(vt, 1);
+      return;
+    }
+    const m = VK.make(vt, { col: c.col, metal: c.col === '#e9eaea' || c.col === '#1d1f22' ? 0.05 : 0.45 });
+    if (!m) return;
+    m.shade = false; // the instance's soft shadow stays under it
+    // the model's origin: its axles' middle over the bay's middle
+    const ym = m.T && Number.isFinite(m.T.a) && Number.isFinite(m.T.b) ? (m.T.a + m.T.b) / 2 : 0,
+      fx = Math.cos(c.h),
+      fy = Math.sin(c.h);
+    m.g.position.set(c.x - fx * ym, c.z, -(c.y - fy * ym));
+    m.g.quaternion.copy(c.q);
+    const im = IM.get(c.t);
+    if (im) {
+      im.setMatrixAt(c.j, ZERO);
+      im.instanceMatrix.needsUpdate = true;
+    }
+    near.set(i, m);
+  }
+  function release(i) {
+    const m = near.get(i),
+      c = cars[i];
+    near.delete(i);
+    if (m) VK.free(m);
+    const im = c && IM.get(c.t);
+    if (im) {
+      im.setMatrixAt(c.j, M.compose(V.set(c.x, c.z, -c.y), c.q, SC));
+      im.instanceMatrix.needsUpdate = true;
+    }
+  }
+  function releaseAll() {
+    for (const i of [...near.keys()]) release(i);
+  }
+  function nearTick(dt) {
+    if (!VK || !cars.length) return;
+    const [cx, cy] = camXY();
+    if ((nearT -= dt) <= 0) {
+      nearT = 0.4;
+      const want = [];
+      for (let i = 0; i < cars.length; i++) {
+        const d = Math.hypot(cars[i].x - cx, cars[i].y - cy);
+        if (d < NEARR) want.push([d, i]);
+      }
+      want.sort((a, b) => a[0] - b[0]);
+      const keep = new Set(want.slice(0, NEARN).map(w => w[1]));
+      for (const i of [...near.keys()]) if (!keep.has(i)) release(i);
+      for (const i of keep) if (!near.has(i)) swapIn(i);
+      if (near.size) markDirty(true);
+    }
+    for (const [i, m] of near) VK.place(m, Math.hypot(cars[i].x - cx, cars[i].y - cy));
+  }
   S.tick = (dt, o) => {
+    nearTick(dt);
     const rev = ST.n.ok + '/' + ST.tiles.size;
     let again = rev !== S.rev || Math.hypot(o[0] - S.at[0], o[1] - S.at[1]) > MOVE;
     if (!again && S.retry > 0 && (S.retry -= dt) <= 0) again = true;
@@ -234,22 +422,37 @@ export function autos(ctx, ST) {
     build(o);
   };
   S.away = () => {
-    if (!me || !me.visible) return;
-    me.visible = false;
+    if (VK) releaseAll();
+    const shown = (me && me.visible) || (SH && SH.visible) || [...IM.values()].some(m => m.visible);
+    if (!shown) return;
+    if (me) me.visible = false;
+    if (SH) SH.visible = false;
+    for (const m of IM.values()) m.visible = false;
     S.rev = -1;
     S.at = [1e9, 1e9];
     markDirty(true);
   };
   S.leave = () => {
-    if (!me) return;
-    scene.remove(me);
-    me.geometry.dispose();
-    me.material.dispose();
-    me.dispose();
-    me = null;
+    if (VK) releaseAll();
+    cars.length = 0;
+    if (me) {
+      scene.remove(me);
+      me.geometry.dispose();
+      me.material.dispose();
+      me.dispose();
+      me = null;
+    }
+    // the world's geometries and materials stay (dinge/ uses them); only our instance buffers go
+    for (const m of [...IM.values(), SH]) {
+      if (!m) continue;
+      scene.remove(m);
+      m.dispose();
+    }
+    IM.clear();
+    SH = null;
     S.rev = -1;
     S.at = [1e9, 1e9];
   };
-  S.state = () => Object.assign({}, S.n);
+  S.state = () => Object.assign({ models: S.models, by: Object.assign({}, S.by), near: near.size }, S.n);
   return S;
 }
