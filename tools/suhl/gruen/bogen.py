@@ -226,7 +226,8 @@ def v0v1_sheet(T0, T1, window, title, width=500, rings=None):
     lines = [f'{title} – UTM32 E {window[0]:.0f}–{window[2]:.0f}, N {window[1]:.0f}–{window[3]:.0f}',
              f'links v0 (nur Luftbild): {int(m0.sum())} Bäume, Höhe geschätzt (Median {q(T0["h"][m0])} m), Kronenradius Median {q(T0["r"][m0])} m – gelb Laub, blau Nadel, orange Strauch',
              f'rechts v1 (mit Höhenmodell): {int(m1.sum())} Bäume, {int(meas.sum())} mit gemessener Höhe (hellblau, Median {q(T1["h"][m1][meas])} m), {int((~meas).sum())} geschätzt (orange)',
-             f'magenta Ring: breite Krone ohne einen Laser-Treffer ({nz}) – gefällt nach dem Bildflug, seither gewachsen oder hohes Gras; bleibt im Produkt',
+             *([f'magenta Ring: breite Krone ohne einen Laser-Treffer ({nz}) – gefällt nach dem Bildflug, seither gewachsen oder hohes Gras; bleibt im Produkt']
+               if rings is not None else []),
              'Luftbild © GDI-Th, CC BY 4.0, 15.05.2024 · nDOM1 © GDI-Th, über easygeodata.de · Bäume: suhl-gruen · OSM © OpenStreetMap-Mitwirkende']
     out = Image.new('RGB', (2 * width + 4, a.height + 17 * len(lines) + 6), (20, 20, 20))
     out.paste(a, (0, 0))
