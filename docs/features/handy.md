@@ -115,7 +115,7 @@ HANDY.welt(null);   // kein Handy (Ende der Welt)
   sub, unten }, fuss(el, ctx, view, arg), klick(key, button, ctx) (für Elemente mit data-hy="key"), tick(dt, ctx), oeffnen(ctx) → false })`.
   `ctx.zu(view, arg)` öffnet eine Unteransicht (schiebt von rechts herein), `ctx.zurueck()`, `ctx.neu()`, `ctx.av(name)` ein rundes
   Bild mit Initialen. Klassen in Apps bitte `hy-…` (oder eigene mit Präfix).
-- **Steuern:** `HANDY.open(app?, { view, arg })`, `close()`, `toggle()`, `home()`, `back()`, `zeige(app, view, arg)`, `refresh()`,
+- **Steuern:** `HANDY.mount(el)`, `HANDY.open(app?, { view, arg })`, `close()`, `toggle()`, `home()`, `back()`, `zeige(app, view, arg)`, `refresh()`,
   `zu()` (Promise bis weggelegt), `isOpen()`, `S` (Zustand).
 - **Ereignisse** (`KERN.on`): `handy:auf`, `handy:zu`, `handy:app` { app, view }, `handy:tipp`, `handy:mitteilung` { app },
   `handy:anruf` { st, wer }, `handy:foto` { n }, `handy:sucher` { on }, `handy:alarm`, `handy:frei` { app }.
@@ -123,6 +123,8 @@ HANDY.welt(null);   // kein Handy (Ende der Welt)
 ### Für den Zukunfts-Chat (große Leinwand, ohne Spielfigur)
 
 - **Gerät groß am rechten Rand:** `HANDY.layout('gross')` oder `layout: 'gross'` in der Welt (~72 vh, senkrecht mittig, rechts 3,5 vw).
+  `HANDY.mount(el)` hängt Handy, Peek und Sucher in einen eigenen Container (z. B. `WORKSHOP.slot('phone')`); `sperre: false` in der Welt
+  lässt den Sperrbildschirm weg.
 - **Push zu einem Zeitpunkt der Regie:** `HANDY.mitteilung({ app: 'nachrichten', von: 'Dorfgruppe …', text: '…', ziel: { v: 'faden', arg:
   'gruppe' } })` – Banner mit Ton; ist das Handy zu, öffnet `HANDY.open('nachrichten', { view: 'faden', arg: 'gruppe' })` die Stelle.
 - **Anruf als Szene:** `HANDY.eingehend({ id: 'manfred', name: 'Manfred', rolle: 'Feuerwehr' }, { annehmen: 2.5, szene: async (k, ctl) => {

@@ -504,6 +504,13 @@ export const HANDY = (() => {
     $('.hy-sperre').style.backgroundSize = 'cover';
     S.el.style.setProperty('--hy-ak', W().farbe || '#4da3ff');
   }
+  // into another container (a presentation's slot, e.g. WORKSHOP.slot('phone')): the phone, its peek and its viewfinder move there
+  function mount(el) {
+    build();
+    const to = el || stage || document.body;
+    for (const x of [S.el, S.peekEl, S.suEl]) if (x && x.parentNode !== to) to.appendChild(x);
+    return S.el;
+  }
   function layout(l) {
     S.layout = l === 'gross' ? 'gross' : 'auto';
     lay();
@@ -1588,6 +1595,7 @@ export const HANDY = (() => {
     schnapp,
     alarm,
     layout,
+    mount,
     tapete,
     speichern,
     ton,

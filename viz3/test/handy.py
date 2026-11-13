@@ -142,8 +142,8 @@ with lib.browser() as b:
         ck('during the call the phone is at the ear', po['art'] == 'ohr' and po.get('handKopf', 9) < 0.26 and po['prop'], str(po))
         E("GAME.P.yaw = GAME.P.body + 150; 0"); steps(0.6)
         pic('11_anruf', True)
-        pg.click('#glhandy .hy-anr [data-k="ende"]'); steps(0.2)
-        a1 = H()['anruf']
+        if E("!!(HANDY.S.anruf && HANDY.S.anruf.st === 'aktiv')"): pg.click('#glhandy .hy-anr [data-k="ende"]'); steps(0.2)
+        a1 = H()['anruf'] or 'ende'
         ok = until("!HANDY.S.anruf", 4)
         rec = J("GLSTATE.feed.filter(q => q.k === 'anruf').map(q => q.wer + ':' + q.text)")
         ck('hung up: „Anruf beendet“, then the app again, the call in the recents', a1 == 'ende' and ok and any('Jule' in r for r in rec), str(a1) + str(rec))

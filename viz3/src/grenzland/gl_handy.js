@@ -245,7 +245,7 @@ export const GLHANDY = (() => {
           () => false
         );
     } catch (e) {}
-    return new Promise(res => setTimeout(() => res(true), window.FREEZE ? 300 : ms));
+    return new Promise(res => setTimeout(() => res(true), ms));
   }
   async function gespraech(zeilen, ctl) {
     for (const [w, text] of zeilen) {
@@ -645,6 +645,15 @@ export const GLHANDY = (() => {
     if (HANDY.S.sucher) return (HANDY.sucher(false, { heim: false }), false);
     return S.open ? (close(), false) : open();
   };
+  // a scene with black bars (the lead's GLHUD.kino: body[data-gl-kino="1"]): the phone goes into the pocket, the peek too
+  if (typeof MutationObserver !== 'undefined' && document.body)
+    new MutationObserver(() => {
+      if (document.body.dataset.glKino !== '1' || HANDY.S.wid !== 'grenzland') return;
+      if (HANDY.S.sucher) HANDY.sucher(false, { heim: false });
+      if (HANDY.S.open && !HANDY.S.anruf) close();
+      const pk = document.querySelector('.hy-peek');
+      if (pk) pk.classList.add('hy-weg');
+    }).observe(document.body, { attributes: true, attributeFilter: ['data-gl-kino'] });
   KERN.on('handy:zu', () => {
     if (HANDY.S.wid === 'grenzland' && GL.on) GL.emit('handy', { gelesen: S.gelesen || 0 });
   });
