@@ -3,6 +3,8 @@
 #                mynametouse/pavillon-daten und prüft, ob GitHub Pages sie ausliefert (Aktion .github/actions/suhl-publish).
 #   easygeodata  fragt mit secrets.EASYGEODATA_KEY die Schnittstelle von easygeodata.de: gilt der Schlüssel, was bietet sie für
 #                Suhl (DGM1, DOM1, nDOM1), eine Kachel als Beweis. Nur über die Schnittstelle, höflich, nichts wird veröffentlicht.
+#   egd-client   der Client tools/suhl/lib/easygeodata.py so, wie ihn die anderen Workflows benutzen: die 8 Kacheln P1 von DGM1,
+#                DOM1 und nDOM1 in einen Rohdaten-Ordner mit Cache, dann jede Kachel mit tools/welt/fetch.py gelesen.
 # Fehlt ein Geheimnis, sagt der Lauf das klar (Protokoll und Zusammenfassung) und schlägt nicht fehl. In dieses Repo schreibt er nichts.
 # Läuft nur auf suhl/daten und nur, wenn tools/suhl/daten/lauf.txt sich ändert (lauf.txt ändern = neuen Lauf bestellen); die letzte
 # Zeile "lauf: <job> <job> …" nennt die Jobs. Der Lauf nimmt den neuesten Stand des Zweigs.
@@ -24,6 +26,7 @@ jobs:
     outputs:
       hallo: ${{ steps.p.outputs.hallo }}
       easygeodata: ${{ steps.p.outputs.easygeodata }}
+      egd-client: ${{ steps.p.outputs.egd-client }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,7 +36,7 @@ jobs:
         run: |
           line=$(grep -E '^lauf:' tools/suhl/daten/lauf.txt | tail -1 || true)
           echo "bestellt: $line"
-          for j in hallo easygeodata; do
+          for j in hallo easygeodata egd-client; do
             if echo " ${line#lauf:} " | grep -q " $j "; then echo "$j=true" >> "$GITHUB_OUTPUT"; else echo "$j=false" >> "$GITHUB_OUTPUT"; fi
           done
           echo "Bestellt: \`$line\`" >> "$GITHUB_STEP_SUMMARY"
@@ -116,3 +119,64 @@ jobs:
           path: probe-out/easygeodata_probe.json
           retention-days: 30
           if-no-files-found: warn
+
+  egd-client:
+    name: Probe – easygeodata-Client (P1, drei Produkte, mit Cache)
+    needs: plan
+    if: ${{ needs.plan.outputs.egd-client == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: suhl-daten-easygeodata
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: suhl/daten
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Rohdaten aus dem Cache (Kacheln früherer Läufe)
+        uses: actions/cache@v4
+        with:
+          path: ~/suhl-raw
+          key: suhl-raw-egd-v1-${{ github.run_id }}
+          restore-keys: suhl-raw-egd-v1-
+      - name: Werkzeuge
+        run: pip install --quiet numpy tifffile imagecodecs
+      - name: Tests des Clients (ohne Netz)
+        run: python3 -I tools/suhl/lib/test_easygeodata.py
+      - name: Höhen von easygeodata (übersprungen, wenn der Schlüssel fehlt)
+        env:
+          EASYGEODATA_KEY: ${{ secrets.EASYGEODATA_KEY }}
+        run: python3 -I tools/suhl/lib/easygeodata.py --product dgm,dom,ndom --prio P1 --raw ~/suhl-raw --report egd.json
+      - name: Jede Kachel mit dem Leser der Welt-Pipeline lesen
+        run: |
+          python3 -I - <<'PY'
+          import json, os, sys
+          sys.path.insert(0, 'tools/suhl/lib')
+          import easygeodata as EG
+          import numpy as np
+          egd = EG.Easygeodata(raw=os.path.expanduser('~/suhl-raw'))
+          print('files in the raw folder:', sum(len(f) for _, _, f in os.walk(egd.raw)), 'MB:', round(sum(os.path.getsize(os.path.join(d, x)) for d, _, f in os.walk(egd.raw) for x in f) / 1e6, 1))
+          for prod in ('dgm', 'dom', 'ndom'):
+              for e, n in EG.prio_tiles(['P1']):
+                  t = egd.read(prod, e, n)
+                  if t is None:
+                      print(prod, e, n, 'not there')
+                      continue
+                  a, e0, n1, px = t
+                  ok = a.shape == (1000, 1000) and e0 == e * 1000.0 and n1 == n * 1000.0 + 1000.0 and px == 1.0
+                  print(f'{prod} {e}/{n}: {a.shape} px {px} corner {e0:.0f}/{n1:.0f} min {np.nanmin(a):.2f} max {np.nanmax(a):.2f} mean {np.nanmean(a):.2f} empty {int(np.isnan(a).sum())} fits {ok}')
+              print(prod, 'data stand:', egd.data_stand(prod), '| source entry:', json.dumps(egd.sources_entry(prod), ensure_ascii=False))
+          PY
+      - name: Bericht aufheben
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: easygeodata-client-bericht
+          path: egd.json
+          retention-days: 30
+          if-no-files-found: warn
+
