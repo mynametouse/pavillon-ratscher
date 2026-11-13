@@ -13,6 +13,7 @@ const R = 900;
 const TUERME = [
   {
     name: 'Kreuzkirche',
+    gate: 'DETHL57P00006FVy',
     at: [-4854.0, 12236.2],
     az: 49,
     w: 7.4,
@@ -25,6 +26,7 @@ const TUERME = [
   },
   {
     name: 'Hauptkirche St. Marien',
+    gate: 'DETHL57P00006G2Q',
     at: [-4611.0, 12394.0],
     az: 92,
     w: 7.6,
@@ -61,6 +63,7 @@ const TUERME = [
 const TROMMELN = [
   {
     name: 'Congress Centrum Suhl, Großer Saal',
+    gate: 'DETHL57P00006G0F',
     at: [-5018.48, 12480.07],
     r: 32.8,
     top: 18.1,
@@ -86,9 +89,9 @@ const TROMMELN = [
     mast: 15,
   },
 ];
-export function tuerme(ctx) {
+export function tuerme(ctx, C) {
   const { THREE, scene, markDirty, KERN } = ctx,
-    S = { on: true, built: false, at: [1e9, 1e9], n: 0, ref: [], wait: 0 };
+    S = { on: true, built: false, at: [1e9, 1e9], n: 0, ref: [], wait: 0, rev: -1 };
   let K = null;
   const M = new THREE.Matrix4(),
     Q = new THREE.Quaternion(),
@@ -149,10 +152,14 @@ export function tuerme(ctx) {
       wait = false;
     for (const t of TUERME) {
       if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
+      if (t.gate && !C.building(t.gate)) {
+        wait = true; // its building's tile is not in yet: no tower over an empty town
+        continue;
+      }
       let zg = null;
       if (t.on) {
         // the ridge of its building: the foot as the worker placed it, the eave and the top of the record, the roof raised by rise
-        const v = ctx.SUHL && ctx.SUHL.building ? ctx.SUHL.building(t.on) : null,
+        const v = C.building(t.on),
           e = v ? (v.eave ?? v.h) : null,
           h = v ? (v.h ?? v.eave) : null;
         if (v && Number.isFinite(v.z0) && Number.isFinite(e) && Number.isFinite(h))
@@ -208,9 +215,13 @@ export function tuerme(ctx) {
       if (Math.hypot(t.at[0] - o[0], t.at[1] - o[1]) > R) continue;
       // the reference height: the foot of the building it sits on (as the worker placed it), else the lowest of the ground at the
       // centre and on the rim, the wall reaching a little below it (a slope must not show a gap)
+      if (t.gate && !C.building(t.gate)) {
+        wait = true;
+        continue;
+      }
       let zr = null;
       if (t.on) {
-        const v = ctx.SUHL && ctx.SUHL.building ? ctx.SUHL.building(t.on) : null;
+        const v = C.building(t.on);
         if (v && Number.isFinite(v.z0)) zr = v.z0;
         else wait = true;
       } else {
@@ -291,6 +302,10 @@ export function tuerme(ctx) {
   }
   S.tick = (dt, o) => {
     if (S.wait > 0 && (S.wait -= dt) <= 0) S.built = false; // a crown waited for its building: try again
+    if (C.n.built !== S.rev) {
+      S.rev = C.n.built; // a tile of the city came (again): feet and gates may have changed
+      S.built = false;
+    }
     if (
       S.built &&
       Math.hypot(o[0] - S.at[0], o[1] - S.at[1]) < 200 &&

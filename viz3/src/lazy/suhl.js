@@ -77,7 +77,7 @@ export async function start(ctx) {
     ZE = ST.on ? zeichen(ctx, ST) : null,
     LA = C.on ? laeden(ctx, C) : null,
     BR = ST.on ? brunnen(ctx, ST) : null,
-    TU = C.on ? tuerme(ctx) : null,
+    TU = C.on ? tuerme(ctx, C) : null,
     WA = ST.on ? wasser(ctx, ST) : null,
     T = { index: Math.round(performance.now() - t0), enter: 0, warm: 0, first: 0 },
     A = { on: false, stage: 0, d: 1e9, quarter: null, mem0: null };

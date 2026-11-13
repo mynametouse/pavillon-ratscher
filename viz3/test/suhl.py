@@ -23,7 +23,7 @@ if os.path.isdir(_probe):
     shutil.copytree(_probe, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dist', 'suhl'), dirs_exist_ok=True)
 OUT = lib.out('suhl')
 O = (-4698.2, 12255.7)     # SUHL.O, the centre of Suhl in model metres
-MARKT = (-4638.5, 12474.5)   # the place 'suhl' (SUHL.SPOTS.suhl)
+MARKT = (-4638.5, 12474.5)   # the middle of the Markt (the place 'suhl' until 13.11.2026; now 13 m from it, facing the Rathaus)
 
 # colours at points of the picture just drawn (u, v in 0..1 from the top left)
 PIX = """window.__pix = pts => { GAME.shot(); const c = document.querySelector('#stage canvas'), d = document.createElement('canvas'); d.width = c.width; d.height = c.height;
@@ -248,8 +248,8 @@ def desktop():
 
         if want('boden'):
             # ---- ground and walls: the feet on the tiles, a wall stops the walker, a house answers to its id ----
-            g = J("""(() => { const out = []; for (const [dx, dy] of [[0, 0], [60, 20], [-90, -60], [140, -130], [-200, 90]]) { const x = SUHL.SPOTS.suhl[0][0] + dx, y = SUHL.SPOTS.suhl[0][1] + dy;
-                out.push([KERN.ground(x, y), WELT.heightAt(x, y) ?? null, SUHL.ground(x, y) ?? null, KERN.free(x, y)]); } return out; })()""")
+            g = J("""(() => { const out = []; for (const [dx, dy] of [[0, 0], [60, 20], [-90, -60], [140, -130], [-200, 90]]) { const x = %s + dx, y = %s + dy;
+                out.push([KERN.ground(x, y), WELT.heightAt(x, y) ?? null, SUHL.ground(x, y) ?? null, KERN.free(x, y)]); } return out; })()""" % MARKT)
             ck('ground around the Markt: KERN.ground = the drawn tiles = SUHL.ground, walking allowed', all(q[1] is not None and abs(q[0] - q[1]) < 0.01 and abs(q[2] - q[1]) < 0.01 and q[3] is True for q in g), json.dumps(g))
             b = J(f"""(() => {{ const ids = SUHL.buildingsIn({{ center: [{MARKT[0]}, {MARKT[1]}], r: 160 }}); let best = null;
                 for (const id of ids) {{ const B = SUHL.building(id); if (!B || B.kind !== 0) continue;
