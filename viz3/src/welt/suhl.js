@@ -5,7 +5,9 @@
 // lazy/suhl-worker.js): index, streaming by distance, detail levels, ground and collisions for KERN. A package cannot import modules
 // of the app (it is bundled on its own – a second three.js otherwise), so everything it needs is handed in here (ctx).
 // Data: SUHL.BASE – the data repo's GitHub Pages (same origin as the site), ?suhl=<url> for another base, the local test server
-// serves dist/suhl/ (the test puts viz3/extra/suhl-laufzeit/probe there). ?suhl=1 shows the menu entry (hidden until Falko has seen the city).
+// serves dist/suhl/ (the test puts viz3/extra/suhl-laufzeit/probe there). Part of the standard game since 13.11.2026 (Falko 20:29: „die
+// Suhl-Version nun auch in die Standard-Version“): the menu entries, the way there by car and the buses into the city are on; ?suhl=0 turns
+// them off (an emergency switch), ?suhl=1 is still read (it changes nothing now).
 // Contract and plan: docs/features/suhl.md, docs/plans/plan_suhl.md (sections 3 and 6).
 import * as THREE from 'three';
 import { BASE, COARSE, QS, R, cam, scene } from '../core/head.js';
@@ -25,12 +27,19 @@ export const SUHL = (() => {
   if (!M || !M.xf || !WELT.on) return S;
   S.on = true;
   // ---- where the data live: ?suhl=<url>, the data repo beside the site, or dist/suhl/ of a test server ----
-  S.BASE = (() => {
-    if (q && q !== '1') return q.endsWith('/') ? q : q + '/';
-    const k = location.pathname.indexOf('/pavillon-ratscher/');
-    return k >= 0 ? location.origin + location.pathname.slice(0, k) + '/pavillon-daten/suhl/' : 'suhl/';
-  })();
-  S.MENU = q !== null;
+  const site = location.pathname.indexOf('/pavillon-ratscher/');
+  S.BASE =
+    q && q !== '1' && q !== '0'
+      ? q.endsWith('/')
+        ? q
+        : q + '/'
+      : site >= 0
+        ? location.origin + location.pathname.slice(0, site) + '/pavillon-daten/suhl/'
+        : 'suhl/';
+  S.MENU = q !== '0';
+  // data to be had without asking: on the site (the data repo beside it) or with ?suhl=1 / ?suhl=<url>; a test server serves dist/suhl/ only
+  // for the tests that ask – the others get no failed request from the way there
+  S.DATA = S.MENU && (site >= 0 || q !== null);
   // ---- model metres (x east, y north) <-> ETRS89 / UTM 32N <-> WGS84 (Krüger series; exact to a millimetre) ----
   const { a: XA, b: XB, ex: EX, ey: EY } = M.xf,
     S2 = XA * XA + XB * XB,
@@ -144,8 +153,9 @@ export const SUHL = (() => {
     );
   // ---- places to jump to and the start situation (the heights are set from the ground once it is there) ----
   const SPOTS = {
-    // on the square, the Waffenschmied fountain 13 m ahead and the Rotes Rathaus behind it – the first view of the city (13.11.2026)
-    suhl: [[-4630.0, 12486.0], -130, 'Suhl (Markt)'],
+    // on the square, the Waffenschmied fountain 10 m ahead, the Rotes Rathaus to its left – the first view of the city; 5 m from the first
+    // place (13.11.2026), where a tree of the square stood between the camera behind the figure and the fountain
+    suhl: [[-4630.5, 12480.4], -106, 'Suhl (Markt)'],
     suhl_steinweg: [[-4753.5, 12321.8], -131, 'Suhl, Steinweg'], // on the street's axis, 5 m from the houses on both sides (was inside Steinweg 18)
     suhl_bahnhof: [[-5352, 11938], -120, 'Suhl, Bahnhof'],
     suhl_ccs: [[-4990, 12400], -62, 'Suhl, Congress Centrum'],
@@ -155,7 +165,7 @@ export const SUHL = (() => {
     KERN.spot(k, { mode: 'walk', pos, z: 60, yaw, pitch: 4, label });
   KERN.scenario('suhl', { label: 'Suhl, Markt', order: 33, menu: S.MENU, run: () => go('suhl') });
   if (S.MENU) {
-    // the menu entry until the city is released: only with ?suhl=… (game/input.js has bound its chips before this module runs)
+    // the menu entries (off with ?suhl=0; game/input.js has bound its chips before this module runs)
     // the menu was bound before this chip existed (game/hud.js closes it for every data-spot it found): close it here as well
     const there = () => {
       if (window.HUD && HUD.open) HUD.setMenu(false);
@@ -179,11 +189,22 @@ export const SUHL = (() => {
       c.className = 'mtut';
       c.id = 'suhlbtn';
       c.innerHTML =
-        '<b>Nach Suhl</b><span>Vorschau: die Stadt aus Daten – Markt mit Rotem Rathaus, Dianabrunnen, Congress Centrum. ' +
+        '<b>Nach Suhl</b><span>Die Stadt aus Daten – Markt mit Rotem Rathaus, Dianabrunnen, Congress Centrum. ' +
         'Lädt beim ersten Mal etwas.</span>';
       c.addEventListener('click', there);
       r.after(c);
+      // one card at a time on the start page (the menu stays lean – menu.py counts its buttons): „Neu hier?“ while the introduction
+      // waits, „Nach Suhl“ once it is done or closed
+      const t = document.getElementById('tutbtn');
+      if (t) {
+        const sync = () => (c.hidden = !t.hidden);
+        sync();
+        new MutationObserver(sync).observe(t, { attributes: true, attributeFilter: ['hidden'] });
+      }
     }
+    // the page „Hingehen“ names Suhl in its line on the start page
+    const sm = document.querySelector('#menu .mnav [data-go="orte"] small');
+    if (sm && !/Suhl/.test(sm.textContent)) sm.textContent = sm.textContent.replace('Ausflüge', 'Ausflüge, Suhl');
   }
   // one may walk where Suhl's ground is; walls, place names and the ground come from the package (the near ground itself is a tile
   // set of WELT; above it later the street surfaces, below it the far ground while the near tiles are not in yet)
@@ -201,13 +222,13 @@ export const SUHL = (() => {
   // and the named routes garden → Suhl come into welt/fahrt.js from the data repo – "Suhl" becomes a destination on the small map, the
   // A 73 with its viaducts and the country road lead there. Two small files of the street product (anfahrt.json: the ways outside
   // Suhl's ground, carved as the region's; anfahrt-grund.json: the ways on Suhl's corridor tiles, whose ground already holds the cut),
-  // never at the start. Only with ?suhl=… until the city is released (Falko, 13.11.2026: preview first). ----
-  const approach = { state: S.MENU ? 'waiting' : 'off', err: '', sets: [] };
+  // never at the start. Off with ?suhl=0. ----
+  const approach = { state: S.DATA ? 'waiting' : 'off', err: '', sets: [] };
   // by bus (S2-7): the world's timetable with Suhl's roads (tools/suhl/bus/fahrplan_suhl.py) – lines 200–203, 300, 400 run on into the
-  // city, and its own buses (SNG Suhl/Zella-Mehlis) run; bus/bus.js loads it instead of bus/fahrplan.json (hook B1), only with ?suhl=…
+  // city, and its own buses (SNG Suhl/Zella-Mehlis) run; bus/bus.js loads it instead of bus/fahrplan.json (hook B1; off with ?suhl=0)
   S.busPlan = S.MENU ? BASE + 'bus/fahrplan_suhl.json' : null;
   S.approach = approach;
-  if (S.MENU)
+  if (S.DATA)
     KERN.until(() => window.FAHRT && FAHRT.add && FAHRT.active, 1e9)
       .then(() => {
         approach.state = 'loading';
