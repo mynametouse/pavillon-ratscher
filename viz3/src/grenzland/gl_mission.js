@@ -247,10 +247,27 @@ export const GLMISSION = (() => {
     return REC.m.get('gl_' + who + ':' + text) || 0;
   }
   // lines: a key of GLMDATA.R or [[who, text], …]; o: { done }
+  // the other one of the two speaks in the talk but her (his) figure is still loading – the scene's very start: the talk waits a moment
+  // for her, so that it opens as a cutscene with both (at most 4 s; grenzland_kino m1 saw the first line without the camera)
+  function fehltPartner(lines) {
+    try {
+      if (!lines || !GL.folgt || GL.era !== 'heute') return false;
+      const G = window.GRENZLAND;
+      if (!G || !G.partnerOf || G.partnerOf()) return false;
+      const other = GL.other() === 'm' ? 'falko' : 'sarah';
+      return lines.some(l => l && l[0] === other);
+    } catch (e) {
+      return false;
+    }
+  }
   function rede(key, o = {}) {
     const lines = typeof key === 'string' ? GLMDATA.R[key] : key;
     redeAus();
     if (!lines || !lines.length) return void (o.done && o.done());
+    if (!o.gewartet && fehltPartner(lines)) {
+      St.redeWarte = { key, o: Object.assign({}, o, { gewartet: true }), t: 4 };
+      return;
+    }
     const k = (St.talk = {
       lines,
       i: -1,
@@ -349,6 +366,7 @@ export const GLMISSION = (() => {
     else if ((k.gap -= dt) <= 0) zeile();
   }
   function redeAus() {
+    St.redeWarte = null;
     const k = St.talk;
     if (!k) return;
     St.talk = null;
@@ -706,6 +724,11 @@ export const GLMISSION = (() => {
   function tick(dt) {
     if (!GL.on) return;
     reiterTick();
+    const w = St.redeWarte;
+    if (w && ((w.t -= dt) <= 0 || !fehltPartner(typeof w.key === 'string' ? GLMDATA.R[w.key] : w.key))) {
+      St.redeWarte = null;
+      rede(w.key, w.o);
+    }
     redeTick(dt);
     lauf(dt);
     // the cutscene after the step (a talk that follows at once stays in the same cutscene), the music last
