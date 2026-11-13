@@ -952,8 +952,8 @@ export const GLLICHT = (() => {
         L.boden.visible = true;
         // seen from close by, along the beam, the cards would add up to a white wedge: fainter near the camera
         const nah = Math.max(0.12, Math.min(1, (_h.distanceTo(cam.position) - 1.2) / 6));
-        L.licht.m.material.opacity = 0.1 * S.lampK * nah;
-        L.boden.material.opacity = 0.055 * S.lampK * (0.4 + 0.6 * nah);
+        L.licht.m.material.opacity = 0.065 * S.lampK * nah;
+        L.boden.material.opacity = 0.042 * S.lampK * (0.4 + 0.6 * nah);
       }
     for (const [F, L] of S.fackeln) if (!seen.has(F)) fackelWeg(F, L);
     if (S.fackeln.size) {

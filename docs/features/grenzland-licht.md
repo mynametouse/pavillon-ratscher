@@ -172,3 +172,6 @@ Argument: `strasse,leute,klinge,1989,heli` (Standard) und `stadt` (Schleusingen,
 - ~14:30: lokal `strasse,klinge,heli` 19/19 (die Mission löst die Leuchtkugel selbst aus, keine zweite Kugel; Hubschrauber mit
   weichem Strahl), auf Actions `ff527f94` grün. ~14:40: `feat/grenzland` noch einmal hereingeholt (`welt` hat das Blaulicht selbst
   auf 12 m und den Doppeltakt gestellt – unser Übergang ist weg), der Glanz der Scheinwerfer als zur Kamera gedrehte Karte.
+- **14:51: grün** – lokal `grenzland_licht` **22/22** (346 s) auf diesem Stand (`5b28a394`, mit `feat/grenzland` von 14:35);
+  0,17 ms Skriptzeit je Bild mit brennender Leuchtkugel. Danach nur noch die Taschenlampen etwas schwächer (Kegel 0,065, Fleck
+  0,042 – drei Wachleute am Wagen ergaben an der Klinge noch eine helle Fläche).
