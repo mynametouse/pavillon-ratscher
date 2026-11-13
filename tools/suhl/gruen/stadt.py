@@ -98,6 +98,10 @@ def schema_check(out, gebiet, skip, version=0):
         doc = json.load(open(ip, encoding='utf-8'))
         if prod in ('b', 'w') and (doc.get('ndom_kacheln') or doc.get('hoehe_gemessen_ha')):
             src += ',ndom1'
+            if 'nDOM1' not in doc.get('attribution', ''):           # the line the app shows names the height model too
+                doc['attribution'] = (doc.get('attribution', '') + '; Objekthöhen nDOM1 (Laser 2020–2025): © GDI-Th, CC BY 4.0, '
+                                      'bezogen über easygeodata.de').lstrip('; ')
+                glib.write_json(ip, doc, indent=1)
         r = subprocess.run([sys.executable, '-I', val, '--index', d, '--area', area, '--sources', src], capture_output=True, text=True)
         res['index'][prod] = (r.stdout + r.stderr).strip()[-240:]
     r = subprocess.run([sys.executable, '-I', val, out] + (['--probe'] if gebiet == 'zentrum' else []), capture_output=True, text=True)
