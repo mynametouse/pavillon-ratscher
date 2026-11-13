@@ -33,6 +33,12 @@ with lib.browser() as b:
     ck('the scene starts the mode (on, panel, Friday 17:20, Falko, the moped in the garden)',
        st['on'] and st['hud'] and st['wer'] == 'm' and st['fig'] == 'm' and abs(st['m'] - (17 * 60 + 20)) < 3 and st['moped'] and st['scen'], str(st))
     ck('the address no longer names the scene (a reload goes on)', 'szenario' not in st['url'], st['url'])
+    KAL = ("({ wd: new Date((DN.e0 + Math.floor(CLOCK.t / 1440)) * 864e5).getUTCDay(), iso: new Date((DN.e0 + Math.floor(CLOCK.t / 1440)) * 864e5)"
+           ".toISOString().slice(0, 10), alt: GLSTATE.e0alt, e0: DN.e0, map: !document.getElementById('glmap').hidden })")
+    kal = J(KAL)
+    e0alt = kal['alt']
+    ck('the story begins on Friday, 4 September 2026; the radar is there', kal['wd'] == 5 and kal['iso'] == '2026-09-04' and kal['map']
+       and kal['e0'] != e0alt, str(kal))
     ok = wait("!!GRENZLAND.partnerOf()", 60)
     p = J("(() => { const F = GRENZLAND.partnerOf(); return F ? { id: F.id, vis: F.g.visible, d: Math.hypot(F.x - KERN.where()[0], F.y - KERN.where()[1]) } : null })()")
     ck('Sarah stands by as a figure', ok and p and p['id'] == 'sarah' and p['vis'] and p['d'] < 6, str(p))
@@ -62,6 +68,8 @@ with lib.browser() as b:
     steps(0.5)
     E("VEH.enter('gl-moped')")
     steps(1)
+    ort = J("({ on: document.getElementById('glort').classList.contains('on'), t: document.getElementById('glort').textContent })")
+    ck('getting onto the moped shows its name for a moment', ort['on'] and len(ort['t']) > 2, str(ort))
     E("VEH.auto = () => ({ thr: 1, brk: 0, steer: 0, hand: false })")
     steps(9, 0.05)
     mv = J("({ id: VEH.cur && VEH.cur.id, u: VEH.cur.st.u, tank: GLSTATE.tank, km: GLSTATE.stats.km })")
@@ -98,6 +106,9 @@ with lib.browser() as b:
             ok = True
             break
     ck('it reaches the village and searches', ok, str(J("GLFAHNDUNG.stand().cars")))
+    bl = J("GLKARTE.blips()")
+    ck('the radar marks the patrol car, the place they search and the garden', any(q['k'] == 'polizei' for q in bl) and any(q['k'] == 'such' for q in bl)
+       and any(q['k'] == 'ort' for q in bl), str(bl))
     pic('03_streife')
     ok = wait("GLLOGIK.stars(GLSTATE.W) === 0", 200)
     ck('out of sight the stars go – escaped', ok and E("GLSTATE.stats.entkommen") >= 1, str(J("GLFAHNDUNG.stand()")))
@@ -111,6 +122,12 @@ with lib.browser() as b:
         time.sleep(0.5); steps(0.3)
     st = J("({ w: KERN.where(), m: Math.floor(CLOCK.t) % 1440, bust: document.getElementById('glbust').hidden })")
     ck('the next morning in the garden', st['bust'] and abs(st['w'][0]) < 30 and abs(st['w'][1]) < 40 and abs(st['m'] - 450) < 20, str(st))
+    # ---- a mission that is done: the big line ----
+    E("KERN.emit('grenzland:mission', { id: 'probe', st: 'erledigt', titel: 'Ein Gefallen', lohn: '+50 €' })")
+    steps(0.3)
+    ps = J("({ on: !document.getElementById('glpass').hidden, t: document.getElementById('glpass').textContent })")
+    ck('„Mission bestanden“ with title and reward', ps['on'] and 'Mission bestanden' in ps['t'] and 'Ein Gefallen' in ps['t'] and '50' in ps['t'], str(ps))
+    pic('04_bestanden')
     # ---- a reload goes on ----
     E("GLSTATE.geld = 77; GLSTATE.save(true)")
     lib.boot(pg, port, '', figures=True)
@@ -119,12 +136,16 @@ with lib.browser() as b:
         steps(0.3); time.sleep(0.4)
     st = J("({ on: GLSTATE.on, geld: GLSTATE.geld, hud: !document.getElementById('glhud').hidden, mode: KERN.where().length })")
     ck('a reload goes on with the saved state', st['on'] and st['geld'] == 77 and st['hud'], str(st))
+    kal = J(KAL)
+    ck('and with the story\'s calendar (the Saturday after the night at the station), the radar again', kal['iso'] == '2026-09-05' and kal['map'], str(kal))
     # ---- the end ----
     E("GRENZLAND.stop()")
     steps(0.5)
     st = J("({ on: GLSTATE.on, hud: document.getElementById('glhud').hidden, figs: GLFIG.figs.length, cars: GLAUTO.cars.length, fig: AVATAR.kind, "
            "moped: GLAUTO.moped ? GLAUTO.moped.g.visible : false, era: document.body.dataset.glEra || '' })")
     ck('„Beenden“ puts everything back', not st['on'] and st['hud'] and st['figs'] == 0 and st['cars'] == 0 and not st['moped'] and st['era'] == '', str(st))
+    kal = J(KAL)
+    ck('the game\'s own calendar is back, the radar gone', kal['e0'] == e0alt and not kal['map'], str(kal) + ' ' + str(e0alt))
     okgl, rep = lib.check_gl(pg)
     ck('at most 16 textures per shader program, none broken', okgl, str({k: rep[k] for k in ('maxFrag', 'maxVert')}))
     ck.errors(errs)

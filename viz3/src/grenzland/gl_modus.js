@@ -30,6 +30,7 @@ import { GLFIG } from './gl_fig.js';
 import { GLAUTO } from './gl_auto.js';
 import { GLCOCKPIT } from './gl_cockpit.js';
 import { GLHUD } from './gl_hud.js';
+import { GLKARTE } from './gl_karte.js';
 import { GLRADIO } from './gl_radio.js';
 import { GLHANDY } from './gl_handy.js';
 import { GLFAHNDUNG } from './gl_fahndung.js';
@@ -38,6 +39,8 @@ import { GLORTE } from './gl_orte.js';
 import { GL89 } from './gl_1989.js';
 import { GLLAGER } from './gl_lager.js';
 import { GLMISSION } from './gl_mission.js';
+// the story's first day: Friday, 4 September 2026 (days since 1970)
+const DAY0 = Date.UTC(2026, 8, 4) / 864e5;
 export const GRENZLAND = (() => {
   const T = GLDATA.T;
   const S = {
@@ -222,6 +225,15 @@ export const GRENZLAND = (() => {
       GL.wer = 'm';
       GL.inv.boeller = 0;
     }
+    // the story's calendar: it begins on a Friday in late summer (4 September 2026); the game's own date comes back at the end
+    try {
+      const d = Math.floor(CLOCK.t / 1440);
+      if (fresh || !GL.e0neu) {
+        GL.e0alt = DN.e0;
+        GL.e0neu = DAY0 - d;
+      }
+      DN.e0 = GL.e0neu;
+    } catch (e) {}
     S.prevMode = MODE === 'auto' || MODE === 'night' ? null : MODE;
     if (MODE !== 'auto') setMode('auto');
     S.prevTrack = QUESTS.track;
@@ -234,6 +246,8 @@ export const GRENZLAND = (() => {
       } catch (e) {}
     }
     GLHUD.show(true);
+    GLKARTE.show(true);
+    S.vehWas = VEH.cur || null;
     GLORTE.build();
     GLAUTO.netz();
     partnerMake();
@@ -284,6 +298,11 @@ export const GRENZLAND = (() => {
     GLAUTO.mopedHide();
     GLTON.stop();
     GLHUD.show(false);
+    GLKARTE.show(false);
+    try {
+      if (GL.e0neu && Number.isFinite(GL.e0alt)) DN.e0 = GL.e0alt;
+    } catch (e) {}
+    GL.e0neu = 0;
     GL.on = false;
     GL.era = 'heute';
     S.fuseT.length = 0;
@@ -341,6 +360,12 @@ export const GRENZLAND = (() => {
     GLHANDY.tick(dt);
     GLCOCKPIT.tick(dt);
     GLHUD.tick(dt);
+    GLKARTE.tick(dt);
+    // getting onto or into something: its name for a moment, as GTA shows it
+    if ((VEH.cur || null) !== S.vehWas) {
+      S.vehWas = VEH.cur || null;
+      if (S.vehWas && S.vehWas.name) GLHUD.ort(S.vehWas.name, S.vehWas.gl && S.vehWas.gl.sub);
+    }
     // bangers
     for (const f of S.fuseT.slice())
       if ((f.t -= dt) <= 0) {
@@ -371,6 +396,98 @@ export const GRENZLAND = (() => {
       }
     }
   }
+  // ---- the moped's tank in free play: at home from the canister in the garden, elsewhere from a canister one carries (the shop on
+  // wheels sells it). Fuel matters, as in GTA 6. ----
+  const tankWo = () => {
+    const m = GLAUTO.moped;
+    if (!GL.on || GL.era !== 'heute' || !m || VEH.cur || PLAY.seated() || GL.tank > 4.4) return null;
+    const h = GLDATA.ORTE.moped.pos;
+    return Math.hypot(m.st.x - h[0], m.st.y - h[1]) < 14 ? 'heim' : GL.has('kanister') ? 'kanister' : null;
+  };
+  KERN.act({
+    id: 'gl:tanken',
+    r: 2.3,
+    prio: 0.2,
+    pos: () => {
+      const m = GLAUTO.moped;
+      return m && GL.on ? [m.st.x, m.st.y, KERN.ground(m.st.x, m.st.y) + 0.8] : [1e6, 1e6, 0];
+    },
+    label: () => {
+      const w = tankWo();
+      return w === 'heim' ? T.tankHeim : w === 'kanister' ? T.tankKan : null;
+    },
+    hold: () => 2.4,
+    run: () => {
+      const w = tankWo();
+      if (!w) return;
+      if (w === 'kanister') GL.use('kanister');
+      GL.tank = 5;
+      GL.save();
+      GLTON.fx('kanister');
+      PLAY.think(T.getankt, 2600);
+      GL.emit('getankt', { wo: w });
+    },
+  });
+  // ---- the radar's marks: the mission's targets, the other one of the two, the police, the garden ----
+  GLKARTE.src(out => {
+    const now = performance.now();
+    if (!S.zielT || now - S.zielT > 500) {
+      S.zielT = now;
+      S.ziele = [];
+      S.pol = null;
+      try {
+        const tr = String(QUESTS.track || '');
+        for (const e of KERN.tasks.list()) {
+          if (!String(e.src).startsWith('grenzland') || e.status === 'erledigt' || !e.target) continue;
+          const t = typeof e.target === 'function' ? e.target() : e.target;
+          if (t && Number.isFinite(t[0]) && Number.isFinite(t[1]))
+            S.ziele.push({ x: t[0], y: t[1], k: e.key === tr ? 'ziel' : 'ziel2', name: e.ort || '' });
+        }
+      } catch (e) {}
+      try {
+        S.pol = GLFAHNDUNG.stand();
+        // the panel: who is on the phone to the police, what they know, the helicopter; the phone's unread messages
+        GLHUD.pol = S.pol;
+        GLHUD.neu = GLHANDY.unread ? GLHANDY.unread() | 0 : 0;
+      } catch (e) {}
+    }
+    for (const z of S.ziele) out.push(z);
+    const st = S.pol;
+    if (st) {
+      if (st.last && st.sterne > 0 && st.state !== 'verfolgt')
+        out.push({ x: st.last[0], y: st.last[1], k: 'such', r: 70 });
+      for (const c of st.cars || []) out.push({ x: c.x, y: c.y, k: 'polizei' });
+      for (const c of st.cops || []) out.push({ x: c.x, y: c.y, k: 'beamter' });
+      if (st.block) out.push({ x: st.block[0], y: st.block[1], k: 'sperre' });
+      if (st.heli) out.push({ x: st.heli[0], y: st.heli[1], k: 'heli' });
+    }
+    // a place sent to the phone (a message's „Zum Ziel“): a waypoint, gone when one is there
+    const z = S.punkt;
+    if (z) {
+      const p = GLFAHNDUNG.wo();
+      if (Math.hypot(p.x - z.x, p.y - z.y) < 14) S.punkt = null;
+      else out.push(z);
+    }
+    const F = S.partner;
+    if (F && GL.era === 'heute' && !F.rides) out.push({ x: F.x, y: F.y, k: 'partner' });
+    if (GL.era === 'heute') out.push({ x: 2, y: 2, k: 'ort', name: 'Garten' });
+  });
+  KERN.on('grenzland:ziel', d => {
+    const p = d && d.pos;
+    S.punkt =
+      p && Number.isFinite(p[0]) && Number.isFinite(p[1]) ? { x: p[0], y: p[1], k: 'punkt', name: d.name || '' } : null;
+  });
+  KERN.on('grenzland:stop', () => {
+    S.punkt = null;
+    GLHUD.pol = null;
+    GLHUD.neu = 0;
+  });
+  // a mission is done: the big line, the reward, the jingle
+  KERN.on('grenzland:mission', d => {
+    if (!GL.on || !d || d.st !== 'erledigt') return;
+    GLHUD.passed(d.titel || d.title || '', d.lohn || d.reward || '');
+    GLTON.fx('frei');
+  });
   KERN.tick(tick, 'grenzland/modus');
   KERN.on('reset', () => {
     if (GL.on) stop(true);
@@ -379,7 +496,7 @@ export const GRENZLAND = (() => {
   KERN.scenario('grenzland', {
     label: 'Grenzland',
     order: 6,
-    ask: 'eine eigene Welt für Erwachsene mit eigener Geschichte und eigenem Spielstand – stellt die Spieluhr auf Freitagabend',
+    ask: 'eine eigene Welt für Erwachsene mit eigener Geschichte und eigenem Spielstand – stellt Kalender und Spieluhr auf einen Freitagabend im September',
     run: start,
   });
   // a reload while the mode runs: it goes on
