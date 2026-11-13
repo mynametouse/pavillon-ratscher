@@ -107,6 +107,12 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 13.11. 21:00 **Grenzland-Chat** – **Runde 3 mit zwei Hilfs-Agenten** (Falko 20:33–20:44): `partner` (jederzeit mit der Partnerin / dem
+  Partner reden, mit KI oder Quest-Themen; Zweig `feat/grenzland-partner`; **kleine additive Haken in `viz3/src/npc/ki.js` und `ki_core.js`**
+  – ein optionales `lage()` des Adapters, sonst unverändert) und `helm` (realistische Helme; `feat/grenzland-helm`). Aufträge in
+  `docs/plans/auftraege/grenzland3-*.md`. Dazu vom Lead: Anrufe richten sich danach, wo die Angerufene ist (`edd72b2f`). Nächster
+  Grenzland-Stand nach V18d, voraussichtlich gegen 22:30.
+
 - 13.11. 20:52 **Suhl-Chat** session_01L6YrpcuzUozgpZNSC5CdVL – **V18h = Suhl in der Standard-Version** (Falko 20:29: „die Suhl-Version
   nun auch in die Standard-Version des Spiels … als neue Version“; V18g ist die Ampel-Stufe des Straßen-Chats). Kandidat `kern/suhl`
   (`e5abd4f5` = `src` mit V18d + Suhl), Pflicht-Teil läuft. **Was sich für alle ändert:** ohne `?suhl=1` gibt es die Karte „Nach Suhl“
