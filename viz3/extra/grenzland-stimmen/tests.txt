@@ -1,0 +1,2 @@
+# feat/grenzland-stimmen: browser tests on GitHub Actions (one name[:args] per line)
+grenzland_stimmen

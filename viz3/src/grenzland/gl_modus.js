@@ -236,7 +236,7 @@ export const GRENZLAND = (() => {
     queueMicrotask(() => {
       if (S.denkP === p) S.denkP = null;
       if (!p.ok || !S.think) return;
-      if (GLHUD.busy && GLHUD.busy()) S.denkH = { text, ms, at: performance.now() };
+      if (GLHUD.busy && GLHUD.busy()) S.denkH = { text, ms, age: 0 };
       else S.think(text, ms);
     });
   }
@@ -444,8 +444,8 @@ export const GRENZLAND = (() => {
     if (S.denkH && S.think && !GLHUD.busy()) {
       const h = S.denkH;
       S.denkH = null;
-      if (performance.now() - h.at < 9000) S.think(h.text, h.ms);
-    }
+      if (h.age < 9) S.think(h.text, h.ms);
+    } else if (S.denkH) S.denkH.age += dt;
     // getting onto or into something: its name for a moment, as GTA shows it
     if ((VEH.cur || null) !== S.vehWas) {
       S.vehWas = VEH.cur || null;

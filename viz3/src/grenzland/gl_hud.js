@@ -34,6 +34,7 @@ export const GLHUD = (() => {
     openT: 0, // the opened panel folds again after a while
     vollT: 0,
     kinoOn: false,
+    spielT: 0, // game seconds while shown (ruhig() gives up after max of them)
     ask: null,
     tip: '',
     xl: '',
@@ -160,6 +161,11 @@ body[data-gl="1"] #vhud .vrpm{display:none}
 @media (pointer:fine){body[data-gl="1"] #vhud .vbtns{display:none}}
 /* the game's free view (the eye, key O): the mode's panel goes too */
 body[data-gl="1"][data-clean="1"] :is(#glhud,#glort,#glvoll){display:none!important}
+/* the phone's body shares the class name .hb with the game's round buttons (shell/css/hud.css: display:flex) – its entries stood side by
+   side; stacked again (found by agent welt; the shared phone of agent handy replaces this panel) */
+#glhandy .hb{display:block;gap:0;min-height:0;font:inherit;color:inherit;cursor:auto;backdrop-filter:none;-webkit-backdrop-filter:none}
+/* the game's own speech line (a villager, a thought) gives way while a subtitle of the mode shows */
+body[data-gl="1"]:has(#glsub:not([hidden])) #npcsub{visibility:hidden}
 body:has(#npcpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),body:has(#dorfpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),
 body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:none!important}
 
@@ -517,9 +523,10 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
       S.msgT > 0 ||
       S.kinoOn ||
       (S.fadeEl && S.fadeEl.classList.contains('on')));
-  // resolves when no card shows (a title, „Mission bestanden“, a big line, a fade) – e.g. before the chapter's end card
+  // resolves when no card shows (a title, „Mission bestanden“, a big line, a fade) – e.g. before the chapter's end card; at the latest
+  // after max seconds of game time
   function ruhig(max = 20) {
-    const t0 = performance.now();
+    const t0 = S.spielT;
     return new Promise(res => {
       const look = () => {
         const frei =
@@ -530,7 +537,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
             !(S.passT > 0) &&
             !(S.msgT > 0) &&
             !(S.fadeEl && S.fadeEl.classList.contains('on')));
-        if (frei || performance.now() - t0 > max * 1000) res(true);
+        if (frei || S.spielT - t0 > max) res(true);
         else setTimeout(look, 150);
       };
       look();
@@ -544,7 +551,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
     S.ortT = sec;
   }
   // what somebody says (a subtitle); ms: how long it stays. One line at a time: people come first – a line of the police radio
-  // ('Funk', 'Radio', 'Zentrale') waits while somebody speaks and shows after (it is dropped when it waited too long). Returns the
+  // ('Funk', 'Radio', 'Zentrale') waits while somebody speaks and shows after (it is dropped when it waited more than 9 s of game time). Returns the
   // seconds until the line is gone (with the wait).
   const prioOf = name => (/^(Funk|Polizeifunk|Zentrale|Radio)$/i.test(String(name || '').trim()) ? 0 : 1);
   function sub(name, text, ms = 0) {
@@ -555,7 +562,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
     if (S.subT > 0.4 && prio < S.subPrio) {
       let wait = S.subT;
       for (const l of S.subQ) wait += l.dur;
-      S.subQ.push({ name, text, dur, prio, at: performance.now() });
+      S.subQ.push({ name, text, dur, prio, age: 0 });
       if (S.subQ.length > 3) S.subQ.shift();
       return wait + dur;
     }
@@ -575,10 +582,9 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
     }
   }
   function subNext() {
-    const now = performance.now();
     while (S.subQ.length) {
       const l = S.subQ.shift();
-      if (now - l.at < 9000) return zeige(l.name, l.text, l.dur, l.prio);
+      if (l.age < 9) return zeige(l.name, l.text, l.dur, l.prio);
     }
   }
   // what the car radio says: a line of its own above the subtitles – only while nobody speaks (GTA does not write the radio over a talk)
@@ -639,7 +645,9 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
   }
   function tick(dt) {
     if (!S.shown) return;
+    S.spielT += dt;
     if (S.msgT > 0 && (S.msgT -= dt) <= 0) S.msg.hidden = true;
+    for (const l of S.subQ) l.age += dt;
     if (S.subT > 0 && (S.subT -= dt) <= 0) {
       S.subEl.hidden = true;
       subNext();

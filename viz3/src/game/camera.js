@@ -24,9 +24,10 @@ export const ORBMAX = () => (window.RATSCHER && LATE.RATSCHER.ready ? 420 : 70);
 export function applyCam() {
   if (P.mode === 'top') {
     P.th = Math.min(P.th, TOPMAX());
-    const lim = TOPMAX() > 1000 ? 11000 : 400;
-    P.tx = THREE.MathUtils.clamp(P.tx, -lim, lim);
-    P.ty = THREE.MathUtils.clamp(P.ty, -lim, lim);
+    const lim = TOPMAX() > 1000 ? 11000 : 400,
+      big = lim > 1000; // feat/suhl (K1): the frame holds the municipality of Suhl too (west to −14.9 km, north to 21.9 km)
+    P.tx = THREE.MathUtils.clamp(P.tx, big ? -16000 : -lim, lim);
+    P.ty = THREE.MathUtils.clamp(P.ty, -lim, big ? 23000 : lim);
     const h = topH();
     cam.fov = TOP_FOV;
     cam.near = Math.max(0.5, h * 0.04);
