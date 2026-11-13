@@ -67,6 +67,7 @@ export const FAHRT = (() => {
     names: [],
     areas: [],
     agrid: new Map(),
+    dests: {},
   };
   const CELL = 32,
     ACELL = 64,
@@ -162,7 +163,7 @@ export const FAHRT = (() => {
           a.push(w, i);
         });
     });
-    for (const pl of j.places || []) {
+    for (const pl of o.places === false ? [] : j.places || []) {
       const q = { n: pl.n, k: pl.k, x: pl.x, y: pl.y, set, a: pl.a.map(r => ({ r, bb: bbOf(r, 2) })) };
       D.places.push(q);
       st.places.push(q);
@@ -176,6 +177,8 @@ export const FAHRT = (() => {
     }
     for (const k in j.routes || {}) {
       D.routes[k] = Array.from(j.routes[k].pts, v => v / 10);
+      // (a route with a name is a destination on the small map: „Suhl 12 km“)
+      if (set && j.routes[k].n) D.dests[k] = j.routes[k].n;
       st.routes.push(k);
     }
     // areas: [surface, flags, name, ring (x, y, z in dm), holes, type …] – squares, pedestrian precincts, car parks
@@ -536,14 +539,34 @@ export const FAHRT = (() => {
       s = 409600 / 1024;
     return [420700 + r[0] * s, 5390800 + r[1] * s, 420700 + (r[2] + 1) * s, 5390800 + (r[3] + 1) * s];
   }
+  // feat/strassen round 2: a zone with ground of its own beyond the tile sets known here says so – FAHRT.ground(fn), fn(x, y) → true
+  // (its ground is there), false (it will be: loading) or undefined (not its land). Without it a vehicle at the edge of such ground
+  // was told „Hier endet die Karte.“ instead of waiting for it.
+  const GROUNDS = [];
+  S.ground = fn => {
+    if (typeof fn === 'function') GROUNDS.push(fn);
+  };
+  const zoneGround = (x, y) => {
+    let r;
+    for (const fn of GROUNDS) {
+      const v = fn(x, y);
+      if (v === true) return true;
+      if (v === false) r = false;
+    }
+    return r;
+  };
   const exists = (x, y) => {
     const R = rects();
     if (!R.length) return true; // not known yet: wait
     const [E, N] = WELT.toU(x, y);
-    return R.some(r => E > r[0] + 2 && E < r[2] - 2 && N > r[1] + 2 && N < r[3] - 2);
+    return (
+      R.some(r => E > r[0] + 2 && E < r[2] - 2 && N > r[1] + 2 && N < r[3] - 2) ||
+      (GROUNDS.length > 0 && zoneGround(x, y) !== undefined)
+    );
   };
-  // loaded: the 10 m terrain of the square, or a drawn tile
-  const ready = (x, y) => insideRB(x, y) || WELT.heightAt(x, y) !== undefined;
+  // loaded: the 10 m terrain of the square, or a drawn tile (or the ground of a zone that says so)
+  const ready = (x, y) =>
+    insideRB(x, y) || WELT.heightAt(x, y) !== undefined || (GROUNDS.length > 0 && zoneGround(x, y) === true);
   S.ready_ = ready;
   // ---------------- the edge (vehicles/vehicle.js) ----------------
   VEH.edge = v => {
@@ -1313,6 +1336,11 @@ export const FAHRT = (() => {
         rb = D.routes.baumschule;
       if (rm) T.push(['Markt Schleusingen', rm[rm.length - 2], rm[rm.length - 1]]);
       if (rb) T.push(['Baumschule', rb[rb.length - 2], rb[rb.length - 1]]);
+      // feat/strassen round 2: the named routes of sets that came later
+      for (const k in D.dests) {
+        const r = D.routes[k];
+        if (r && !T.some(t => t[0] === D.dests[k])) T.push([D.dests[k], r[r.length - 2], r[r.length - 1]]);
+      }
       let best = null,
         bs = -2;
       for (const t of T) {
@@ -1377,8 +1405,11 @@ export const FAHRT = (() => {
   // what else it has of `places`, `signs`, `routes`, `areas` ([surface, flags, name, ring x, y, z in dm, holes, type]), the lists
   // `lanes` and `s0` (dm along the whole way at a piece's first point) beside `ways`, `orte` (the built-up areas that make the styles
   // town and village: handed on to STRDAT). opts.carve: false – the ground there is the set's own (a zone like Kloster Veßra), nothing
-  // is carved; opts.decks: false – it builds its bridges itself. The road map around the observer (strassen/strassen_karte.js), the
-  // small map, the place names and KERN.surface follow. FAHRT.drop(name) takes it all out again. FAHRT.rev counts the changes.
+  // is carved; opts.decks: false – it builds its bridges itself; opts.places: false – it names its places itself (KERN.place). A route
+  // with a name (routes.x.n) is a destination on the small map. The road map around the observer (strassen/strassen_karte.js), the
+  // small map, the place names and KERN.surface follow. FAHRT.drop(name) takes it all out again. FAHRT.rev counts the changes. A set
+  // belongs to its caller: it stays when this module falls asleep. Meant for many small sets (a tile of a town each): a call only
+  // files the ways into the grid.
   S.rev = 0;
   const changed = () => {
     S.rev++;
@@ -1418,7 +1449,10 @@ export const FAHRT = (() => {
     D.places = D.places.filter(q => q.set !== name);
     D.signs = D.signs.filter(q => q.set !== name);
     for (const sg of st.signs) sById.delete(sg.id);
-    for (const k of st.routes) delete D.routes[k];
+    for (const k of st.routes) {
+      delete D.routes[k];
+      delete D.dests[k];
+    }
     // what was built of it near the vehicle
     for (const k of [...built.keys()])
       if (k[0] === 's' ? !sById.has(+k.slice(1)) : k[0] === 'b' ? !wById.has(+k.slice(1)) : false) dropKey(k);

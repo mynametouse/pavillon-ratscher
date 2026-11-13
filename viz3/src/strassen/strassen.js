@@ -133,7 +133,9 @@ export const STRASSEN = (() => {
   }
   // ---- the data into cells: the file's own things (set '') and those of sets that come later. Returns the signs of the set and
   // marks the cells it touched (c.redo: a built cell is built again) ----
+  const known = new Set(); // the sets that have things in the cells
   function index(D, set) {
+    if (set) known.add(set);
     const hit = c => {
       c.redo = c.built;
       return c;
@@ -276,7 +278,7 @@ export const STRASSEN = (() => {
   // sets of furniture that come and go (STRDAT.add / STRDAT.drop)
   STRDAT.onChange((name, added) => {
     if (!S.ready) return; // (before init: init takes the sets that are there)
-    unindex(name);
+    if (known.delete(name)) unindex(name);
     if (added) {
       const st = STRDAT.sets.get(name),
         signs = st ? index(st.data, name) : [];
@@ -598,17 +600,27 @@ export const STRASSEN = (() => {
   // ---- bridges: the road map leaves them out (no road on the valley floor under a deck) – their markings are laid on the decks as
   // paint. The decks of the square come with the terrain (world/roads.js), those beyond it with the roads of welt/fahrt.js ----
   let decksQ = 0,
-    decksRev = -1;
+    decksRev = -1,
+    decksO = -1;
+  const fdecks = new Map(); // the decks of welt/fahrt.js by the id of their way → { c, d } (null: a bridge that carries no marks)
   function bridges() {
-    const add = (P, hw, kind, surf, style, f, nc) => {
+    const add = (P, hw, kind, surf, style, nc) => {
       const m = STRSTIL.marks(kind, hw, style, surf <= 1);
       if (nc) m.centre = null;
-      if (!m.centre && !m.edge) return;
+      if (!m.centre && !m.edge) return null;
       const mid = P[P.length >> 1],
-        c = cellOf(S.cells, CELL, mid[0], mid[1]);
-      c.decks.push({ P, hw, m, f });
+        c = cellOf(S.cells, CELL, mid[0], mid[1]),
+        d = { P, hw, m };
+      c.decks.push(d);
       S.n.decks++;
       c.redo = c.built; // built already: once more, with the paint
+      return { c, d };
+    };
+    const cut = g => {
+      if (!g) return;
+      g.c.decks = g.c.decks.filter(d => d !== g.d);
+      S.n.decks--;
+      g.c.redo = g.c.built;
     };
     if (ROADS.decks && ROADS.decks.length !== decksQ) {
       // (the decks are built once, after the terrain)
@@ -621,31 +633,37 @@ export const STRASSEN = (() => {
       }
       decksQ = ROADS.decks.length;
     }
-    if (FAHRT.ready && FAHRT.data && decksRev !== (FAHRT.rev || 0)) {
-      // the decks of welt/fahrt.js – once more whenever its road data changed (a set came or went)
-      if (decksRev >= 0)
-        for (const c of S.cells.values()) {
-          const b = c.decks.filter(d => !d.f);
-          if (b.length === c.decks.length) continue;
-          S.n.decks -= c.decks.length - b.length;
-          c.decks = b;
-          c.redo = c.built;
-        }
+    if (FAHRT.ready && FAHRT.data && (decksRev !== (FAHRT.rev || 0) || decksO !== STRDAT.orev)) {
+      // the decks of welt/fahrt.js – looked through again whenever its road data changed (a set came or went): only the bridges that
+      // came or went are touched; when the places changed (town or open country: other marks) all of them
+      if (decksO !== STRDAT.orev) {
+        for (const g of fdecks.values()) cut(g);
+        fdecks.clear();
+      }
       decksRev = FAHRT.rev || 0;
+      decksO = STRDAT.orev;
       // (not in a zone that lays its own roads and bridges: Kloster Veßra, as welt/fahrt.js keeps out of it)
       const V = window.VESSRA,
-        Z = V && V.ORT ? V.ZONE || [V.ORT[0] - 650, V.ORT[1] - 650, V.ORT[0] + 650, V.ORT[1] + 650] : null;
+        Z = V && V.ORT ? V.ZONE || [V.ORT[0] - 650, V.ORT[1] - 650, V.ORT[0] + 650, V.ORT[1] + 650] : null,
+        seen = new Set();
       for (const w of FAHRT.data.ways) {
         if (!(w.fl & 1) || w.fl & 194 || w.nodeck) continue; // no tunnel, no steps, nothing level; not a set's own bridge
         const mx = (w.bb[0] + w.bb[2]) / 2,
           my = (w.bb[1] + w.bb[3]) / 2;
         if (Z && mx > Z[0] - 50 && mx < Z[2] + 50 && my > Z[1] - 50 && my < Z[3] + 50) continue;
+        seen.add(w.id);
+        if (fdecks.has(w.id)) continue;
         const P = [];
         for (let i = 0; i < w.n; i++) P.push([w.p[i * 3], w.p[i * 3 + 1], w.p[i * 3 + 2] + 0.01]);
         const st = STRSTIL.styles(w.p, 3, w.n, w.kind, STRDAT.placeAt),
           o = STRKARTE.optsOf ? STRKARTE.optsOf(w) : null;
-        add(P, w.hw, w.kind, w.surf, st[Math.min(st.length - 1, w.n >> 1)] || 0, true, o && o.nc);
+        fdecks.set(w.id, add(P, w.hw, w.kind, w.surf, st[Math.min(st.length - 1, w.n >> 1)] || 0, o && o.nc));
       }
+      for (const [id, g] of fdecks)
+        if (!seen.has(id)) {
+          cut(g);
+          fdecks.delete(id);
+        }
     }
   }
   // ---- the round: the nearest unbuilt cells built (two per round), far ones freed; built ones near set down again when the ground

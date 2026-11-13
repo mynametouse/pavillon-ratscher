@@ -9,7 +9,7 @@
 // Round 2 (13.11.2026, wishes of the Suhl chat): the flags of a way decide how it goes into the map – 32 a roundabout and 4 a one-way
 // road of one lane: no centre line; 64 level (a pedestrian zone, a living street): kind 9, no kerb, no line; 128 steps: left out;
 // 256 / 512 no pavement on the left / right. The areas of the road data (squares, car parks) are rastered after the ways. When road
-// data comes or goes (FAHRT.add / FAHRT.drop) or the places change (STRDAT.rev), STRKARTE.refresh() rasters the window again.
+// data comes or goes (FAHRT.add / FAHRT.drop) or the places change (STRDAT.orev), STRKARTE.refresh() rasters the window again.
 import * as THREE from 'three';
 import { COARSE } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -40,9 +40,9 @@ export const STRKARTE = (() => {
   const U = ROADS.W;
   // the styles of a way's segments, worked out again when the places have changed (a town that came with its roads)
   function styleOf(w) {
-    if (!w.st || w.stRev !== STRDAT.rev) {
+    if (!w.st || w.stRev !== STRDAT.orev) {
       w.st = STRSTIL.styles(w.p, 3, w.n, w.kind, STRDAT.ready || STRDAT.sets.size ? STRDAT.placeAt : null);
-      w.stRev = STRDAT.rev;
+      w.stRev = STRDAT.orev;
     }
     return w.st;
   }
@@ -77,7 +77,7 @@ export const STRKARTE = (() => {
     }
     if (!back) back = new Uint8Array(N * N * 4);
     STRSTIL.clear(back);
-    job = { x0, y0, list, i: 0, t0: performance.now(), ms: 0, rev: FAHRT.rev || 0, drev: STRDAT.rev };
+    job = { x0, y0, list, i: 0, t0: performance.now(), ms: 0, rev: FAHRT.rev || 0, drev: STRDAT.orev };
     S.busy = true;
   }
   function work(budget) {
@@ -144,7 +144,7 @@ export const STRKARTE = (() => {
     if (
       !S.active ||
       again ||
-      S.drev !== STRDAT.rev ||
+      S.drev !== STRDAT.orev ||
       Math.abs(w[0] - S.x0 - SZ / 2) > MOVE ||
       Math.abs(w[1] - S.y0 - SZ / 2) > MOVE
     ) {

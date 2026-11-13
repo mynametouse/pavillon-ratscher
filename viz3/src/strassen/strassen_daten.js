@@ -6,7 +6,8 @@
 // file is missing or ?nostrassen is set (then every road is open country, as before).
 // Round 2 (13.11.2026, wish W6 of the Suhl chat): further sets of the same shape may come and go while the app runs – STRDAT.add(name,
 // json) / STRDAT.drop(name): the built-up areas of a town that loads only when one gets there, and its furniture. STRDAT.rev counts the
-// changes (the road map works out the styles of its ways again), STRDAT.onChange(fn) tells the furniture (strassen/strassen.js).
+// changes, STRDAT.orev those of the built-up areas (the road map works out the styles of its ways again), STRDAT.onChange(fn) tells
+// the furniture (strassen/strassen.js). Send the built-up areas of a town once, as a set of their own – not with every tile of it.
 // © OpenStreetMap contributors (ODbL 1.0).
 import * as THREE from 'three';
 import { BASE } from '../core/head.js';
@@ -19,7 +20,8 @@ export const STRDAT = (() => {
     data: null,
     orte: [],
     sets: new Map(), // name → { data, orte }: what came with STRDAT.add
-    rev: 0,
+    rev: 0, // counts every change
+    orev: 0, // counts the changes of the built-up areas (the road map works out its styles again)
   };
   const waiting = [];
   // fn runs once the data is there or has failed – at once when that is already so; inside the file's load callback otherwise, so the
@@ -87,8 +89,9 @@ export const STRDAT = (() => {
   // ---- further sets while the app runs: { orte, pfosten, planken, schilder, lampen, masten, leitungen, linien } as in the file ----
   const subs = [];
   S.onChange = fn => subs.push(fn);
-  const tell = (name, added) => {
+  const tell = (name, added, orte) => {
     S.rev++;
+    if (orte) S.orev++;
     for (const fn of subs) {
       try {
         fn(name, added);
@@ -98,19 +101,20 @@ export const STRDAT = (() => {
     }
   };
   S.drop = name => {
-    if (!S.sets.has(name)) return false;
+    const st = S.sets.get(name);
+    if (!st) return false;
     S.sets.delete(name);
-    S.orte = S.orte.filter(o => o.set !== name);
-    tell(name, false);
+    if (st.orte.length) S.orte = S.orte.filter(o => o.set !== name);
+    tell(name, false, st.orte.length > 0);
     return true;
   };
   S.add = (name, j) => {
     if (!S.on || !name || !j) return false;
     S.drop(name);
     const orte = orteOf(j, name);
-    S.orte = S.orte.concat(orte);
+    if (orte.length) S.orte = S.orte.concat(orte);
     S.sets.set(name, { data: j, orte });
-    tell(name, true);
+    tell(name, true, orte.length > 0);
     return true;
   };
   if (!S.on) {
