@@ -83,7 +83,13 @@ with lib.browser() as b:
     else:
         ck('a recorded line to play', False, 'no recording of 1.5 … 6 s in the manifest')
 
-    # ---- 5 · after „Beenden“ nothing of it runs ----
+    # ---- 5 · the street of 1989 speaks with its recordings (gl_1989.js tells 'grenzland:sagt'; a moment of 1989, without stepping) ----
+    s89 = J("(() => { const t = GL89DATA.SAGT.erna[0], was = GLSTATE.era, n0 = GLSTIMMEN.stand().sagt; GLSTATE.era = '1989'; "
+            "KERN.emit('grenzland:sagt', { id: 'erna', text: t }); KERN.emit('grenzland:sagt', { id: 'erna', text: 'nicht aus der Liste' }); "
+            "GLSTATE.era = was; STIMME.stop(); return { n: GLSTIMMEN.stand().sagt - n0, rec: !!(VOICEX.lines || []).find(l => l.who === 'gl_erna' && l.text === t) }; })()")
+    ck('a line of the street of 1989 is spoken by its recording (only lines of the list)', s89['n'] == (1 if s89['rec'] else 0) and s89['rec'], str(s89))
+
+    # ---- 6 · after „Beenden“ nothing of it runs ----
     E("GLHUD.acts.end(); GLHUD.acts.end(); 0")
     steps(0.5)
     st = J("GLSTIMMEN.stand()")

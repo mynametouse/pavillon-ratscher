@@ -130,7 +130,7 @@ async def tts(text, voice, rate, pitch, raw, tries=4):
             if os.path.getsize(raw) > 1000: return True
         except Exception as e:
             print('retry', k, voice, e, flush=True)
-        await asyncio.sleep(3 + 4 * k)
+        await asyncio.sleep(1.5 + 2 * k)
     return False
 
 KIND.update({k: KIND['f'] for k in ('fi', 'fo', 'fm')})
@@ -215,10 +215,25 @@ async def main():
         sem = asyncio.Semaphore(par)
         res = await asyncio.gather(*(one(k, sem, tries) for k in ids))
         return [k for k, r in zip(ids, res) if not r]
-    # 1: four at a time; 2: what failed, one at a time and more patient; 3: who still has a line without audio gets the next voice of
-    # the list for all their lines (one voice per person), recorded the same way
-    failed = await runs(todo, 4, 4)
-    if failed: failed = await runs(failed, 1, 6)
+    async def again(ids):
+        """what failed, one at a time, a person's voice after the other – a voice that fails twice in a row is given up at once (its
+        remaining lines count as failed: the person then gets the next voice)"""
+        out, by = [], {}
+        for k in ids: by.setdefault((want[k][0]['who'], want[k][1]), []).append(k)
+        sem = asyncio.Semaphore(1)
+        for (w, v), ks in by.items():
+            # (a person without another voice – Gerhard keeps his voice of the village – gets more patience instead)
+            alt = any(x in have and x != v and x not in bad.get(w, []) for x in CAST.get(w, ([],))[0])
+            row = 0
+            for i, k in enumerate(ks):
+                if await one(k, sem, 3 if alt else 6): row = 0; continue
+                out.append(k); row += 1
+                if alt and row >= 2: out += ks[i + 1:]; print('giving up', v, 'for', w, flush=True); break
+        return out
+    # 1: four at a time; 2: what failed, one at a time; 3: who still has a line without audio gets the next voice of the list for all
+    # their lines (one voice per person), recorded the same way
+    failed = await runs(todo, 4, 3)
+    if failed: failed = await again(failed)
     switch = {}
     for k in failed:
         l, voice = want[k][0], want[k][1]
@@ -229,10 +244,10 @@ async def main():
         for w, v in switch.items(): bad.setdefault(w, []).append(v); print('voice switched for', w, 'from', v, flush=True)
         want, todo2, cut, total = plan()
         todo += [k for k in todo2 if k not in todo]
-        again = [k for k in todo2 if want[k][0]['who'] in switch]
+        redo = [k for k in todo2 if want[k][0]['who'] in switch]
         failed = [k for k in failed if want.get(k) and want[k][0]['who'] not in switch]
-        f3 = await runs(again, 2, 4)
-        if f3: f3 = await runs(f3, 1, 6)
+        f3 = await runs(redo, 3, 3)
+        if f3: f3 = await again(f3)
         failed += f3
     for k in failed: print(f'::warning title=grenzland_record::no audio for {k} ({want[k][1]}): {want[k][0]["text"][:80]}', flush=True)
     # what is no longer wanted goes

@@ -161,6 +161,8 @@ export const GLSTIMMEN = (() => {
     radioItem: null,
     ducks: 0, // how often a duck was asked of the score or the radio
     funk: false, // the police radio's lines are fetched ahead
+    era: '', // the era seen last (the flashback's street is fetched ahead when 1989 begins)
+    sagt: 0, // lines of the street of 1989 spoken by their recording
   };
   const base = () => (W && W.ASSET_BASE) || '';
   function pump() {
@@ -213,6 +215,25 @@ export const GLSTIMMEN = (() => {
     St.funk = true;
     for (const l of (W && W.VOICEX && W.VOICEX.lines) || []) if (/^gl_funk/.test(l.who)) hol(l.who, l.text);
   }
+  // the street of 1989: grenzland/gl_1989.js shows what the people say as a subtitle and tells 'grenzland:sagt' { id, text } – the
+  // recording speaks it at the figure (only a recording: a line without one stays a subtitle, as before)
+  function sagt(d) {
+    const S = W && W.STIMME,
+      G = W && W.GL89,
+      L = d && GL89DATA.SAGT[d.id];
+    if (!St.on || !S || !L || !L.includes(d.text) || !(W.GLSTATE && W.GLSTATE.era === '1989')) return;
+    const who = 'gl_' + d.id;
+    if (!vxf(who, d.text)) return;
+    const F = G && G.who && G.who[d.id] && G.who[d.id].F;
+    try {
+      S.say(who, d.text, F && Number.isFinite(F.x) ? { at: [F.x, F.y] } : {});
+      St.sagt++;
+    } catch (e) {}
+  }
+  // the flashback begins: the street's recordings ahead
+  function strasse() {
+    for (const [k, L] of Object.entries(GL89DATA.SAGT)) for (const t of L || []) hol('gl_' + k, t);
+  }
   // is a voice speaking? (STIMME.whenIdle calls at once when nobody does, else when the last one has finished)
   function spricht() {
     const S = W && W.STIMME;
@@ -250,9 +271,14 @@ export const GLSTIMMEN = (() => {
       St.voc = v;
       duck(v);
     }
-    // the radio: the words of the item that runs and of the next one decided (gl_radio.js decides one ahead)
+    // once a second: the flashback, the radio's words of the item that runs
     if ((St.radioT -= dt) > 0) return;
     St.radioT = 1;
+    const era = W.GLSTATE && W.GLSTATE.era;
+    if (era !== St.era) {
+      St.era = era;
+      if (era === '1989') strasse();
+    }
     const R = W.GLRADIO;
     try {
       const S = R && R.S,
@@ -271,6 +297,7 @@ export const GLSTIMMEN = (() => {
     St.vocT = 0;
     St.funk = false;
     St.pend = false;
+    St.era = '';
     St.radioT = 0;
     St.radioItem = null;
   }
@@ -288,6 +315,7 @@ export const GLSTIMMEN = (() => {
     K.on('grenzland:schritt', schritt);
     K.on('grenzland:mission', d => d && d.st === 'läuft' && schritt({ id: d.id, i: NaN }));
     K.on('grenzland:sterne', funkVoraus);
+    K.on('grenzland:sagt', sagt);
     K.tick(tick, 'grenzland/stimmen');
     // (the mode may already run: a reload of the page goes on where one stood)
     if (W.GLSTATE && W.GLSTATE.on) an();
@@ -300,6 +328,7 @@ export const GLSTIMMEN = (() => {
     ahead: St.have.size,
     voice: St.voc,
     ducks: St.ducks,
+    sagt: St.sagt,
     recorded: (W && W.VOICEX && W.VOICEX.lines ? W.VOICEX.lines : []).filter(l => /^gl_/.test(l.who)).length,
   });
   return { id, fnv, sammeln, linien, fehlend, stand, reden, voraus };
