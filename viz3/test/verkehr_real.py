@@ -247,6 +247,9 @@ with lib.browser() as b:
                     if d < 2.5:
                         close.append((pos[i][2], pos[j][2], round(d, 2)))
             ck('no two vehicles in one another', not close, str(close[:3]))
+            # parked only at the end of a small street, never on a bigger road (where the data ends the road goes on: an exit there)
+            pk = J(pg, "VAUTO.cars.filter(c => c.place === 'strom' && c.st === 'parkt').map(c => { const s = KERN.surface(c.x, c.y); return [c.typ, s ? s.kind : -1, Math.round(c.x), Math.round(c.y)]; })")
+            ck('none parks on a bigger road (the square\'s edge is an exit)', all(p[1] >= 3 or p[1] < 0 for p in pk), str(pk[:4]))
             # a picture along the road
             ids = J(pg, "VAUTO.cars.filter(c => c.place === 'strom' && c.st !== 'weg').map(c => [c.id, Math.hypot(c.x + 430, c.y + 230)]).sort((a, b) => a[1] - b[1]).map(q => q[0])")
             if ids:
