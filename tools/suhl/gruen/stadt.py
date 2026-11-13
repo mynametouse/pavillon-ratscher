@@ -218,6 +218,7 @@ def main():
         import pruefen
         res['baeume'] = pruefen.statistik(M, K, rows)
         res['pruefung'] = pruefen.pruefe(M, K)
+        res['nach_gebiet'] = pruefen.nach_gebiet(M)
     if 'wald' not in skip:
         import wald
         t0 = time.time()

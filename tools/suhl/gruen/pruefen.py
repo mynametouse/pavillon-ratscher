@@ -113,14 +113,44 @@ def statistik(M, K, rows=None):
             'nach_nutzung': dens, 'max_je_kachel': max(per_tile.values()) if per_tile else 0}
 
 
+def nach_gebiet(M):
+    """the trees by area of gebiete.geojson (point in polygon, UTM): zentrum, kernstadt, stadt"""
+    import shapely
+    if not M:
+        return {}
+    E = np.concatenate([T['E'] for T in M.values()])
+    N = np.concatenate([T['N'] for T in M.values()])
+    K = np.concatenate([T['kind'] for T in M.values()])
+    F = np.concatenate([T['flags'] for T in M.values()])
+    H = np.concatenate([T['h'] for T in M.values()])
+    con = np.isin(K, list(baeume.CONIFER))
+    out = {}
+    for name in ('zentrum', 'kernstadt', 'stadt'):
+        g = glib.area_utm(name)
+        m = shapely.contains_xy(g, E, N)
+        meas = m & ((F & baeume.F_H) > 0)
+        out[name] = {'flaeche_km2': round(g.area / 1e6, 2), 'baeume': int(m.sum()), 'laub': int((m & ~con & (K != 30)).sum()),
+                     'nadel': int((m & con).sum()), 'straeucher': int((m & (K == 30)).sum()), 'im_wald': int((m & ((F & baeume.F_FOREST) > 0)).sum()),
+                     'ausserhalb_wald_ohne_straeucher': int((m & ((F & baeume.F_FOREST) == 0) & (K != 30)).sum()),
+                     'hoehe_gemessen': int(meas.sum()), 'hoehe_median_gemessen_m': round(float(np.median(H[meas])), 1) if meas.any() else None,
+                     'je_ha': round(float(m.sum()) / (g.area / 1e4), 1)}
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--b', required=True)
+    ap.add_argument('--gebiete', default='', help='write the trees by area (zentrum, kernstadt, stadt) to this JSON file and stop')
     ap.add_argument('--kontext', default=os.path.join(glib.RAW, 'kontext.pkl'))
     ap.add_argument('--out', default='')
     a = ap.parse_args()
-    K = kontext.load(a.kontext)
     M, idx = load_product(a.b)
+    if a.gebiete:
+        res = {'made': glib.now(), 'produkt': a.b, 'gebiete': nach_gebiet(M)}
+        glib.write_json(a.gebiete, res, indent=1)
+        print(json.dumps(res, ensure_ascii=False, indent=1))
+        return
+    K = kontext.load(a.kontext)
     res = {'made': glib.now(), 'produkt': a.b, 'pruefung': pruefe(M, K), 'baeume': statistik(M, K)}
     if a.out:
         glib.write_json(a.out, res, indent=1)
