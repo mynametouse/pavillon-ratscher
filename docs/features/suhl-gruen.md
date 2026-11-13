@@ -26,23 +26,55 @@ trägt jedes solche Feld einen Merker.
 
 ## 2 Zahlen
 
-### Probesatz Zentrum, v0 (nur Luftbild) – `statistik_v0.json`, `kachel_statistik_v0.json`
+### Probesatz Zentrum: v0 (nur Luftbild) gegen v1 (mit Höhenmodell)
+
+Beide aus demselben Lauf (43348531474, 13.11.2026), denselben Bildern und demselben Code. Dateien:
+`tools/suhl/out/gruen/probe/statistik_v0.json`, `statistik_v1.json`, `v0v1.json`, `vergleich_v1.json`.
+
+| Größe | v0 | v1 |
+|---|---|---|
+| Bäume in 11 Kacheln (176 ha) | 9 724 | 9 802 |
+| Höhe gemessen | 0 | 4 925 (50 %) |
+| Lage aus Baumspitzen des Lasers (dichtes Kronendach) | 0 | 3 108 (32 %) |
+| Laubbäume / Nadelbäume / Sträucher | 8 814 / 249 / 647 | 8 627 / 292 / 869 |
+| mit kartierter Art (OSM) | 14 | 14 |
+| Höhe: 5 % / 25 % / Median / 75 % / 95 % | 2,9 / 9,7 / 12,9 / 16,8 / 23,3 m (geschätzt) | 2,7 / 8,2 / 11,8 / 16,9 / 26,9 m |
+| Kronenradius: Median (5 % … 95 %) | 4,0 m (1,4 … 8,4) | 4,1 m (1,3 … 8,7) |
+| Standort (ohne Sträucher): Wald / Straße / Park / Garten, Hof / sonst | 1 695 / 1 418 / 879 / 3 771 / 1 314 | 1 631 / 1 400 / 854 / 3 714 / 1 334 |
+| auf Dach / in Fahrbahn / auf Wasser / doppelt | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 |
+| Waldzellen (`w`), 21,4 ha | 16,6 ha Laubwald, 1,0 ha Mischwald, 3,8 ha „glatte Krone“; Höhe geschätzt | 20,2 ha Laubwald, 0,9 ha Mischwald, 0,3 ha Jungbestand; **Höhe überall gemessen** |
+| Grünmaske (`gr`) | 11,6 ha niedriges Grün, 73,7 ha Gehölz | 7,8 ha niedriges Grün, 77,4 ha Gehölz |
+
+Was das Höhenmodell geändert hat:
+
+- **Höhen stimmen jetzt, wo gemessen.** Im Fenster Steinweg / Markt / Herrenteich (E 619 500–619 900, N 5 607 500–5 607 900):
+  514 Bäume, 214 gemessen, Median gemessen 7,25 m – die Schätzung von v0 lag bei 10,75 m. Die Bäume der Altstadt und des
+  Parks sind kleiner, als die Regel annahm. Am Waldrand des Dombergs ist es umgekehrt: gemessen 22,75 m, geschätzt 15 m.
+- **Der Wald ist vermessen:** jede Waldzelle des Probesatzes hat eine gemessene Bestandshöhe; die „glatte Krone“ von v0 war
+  fast überall geschlossener Laubwald mit ruhigem Kronendach.
+- **Bäume im Schatten** von Häusern kommen dazu, wo der Laser Treffer hat (Gehölz 77,4 statt 73,7 ha).
+- **Nicht geändert:** die Lage der Stadtbäume (weiter aus dem Luftbild) und die Art.
+
+### Ganze Stadt, v0 (nur Luftbild) – Lauf 43340725672
+
+Dateien: `tools/suhl/out/gruen/actions/stadt_v0/statistik.json`, `index_b.json`, `index_w.json`, `index_gr.json`,
+`bestaende.geojson.gz`. Produkte: Artefakt `suhl-gruen-produkte` des Laufs (7,2 MB).
 
 | Größe | Zahl |
 |---|---|
-| Bäume in 11 Kacheln (176 ha) | 9 730, das sind 55 je Hektar |
-| nach Art | 8 816 Laubbäume, 250 Nadelbäume (2,6 %), 650 Sträucher/sehr kleine Bäume, 14 mit kartierter Art (13 Buchen, 1 Erle) |
-| nach Standort (ohne Sträucher) | 1 695 im Wald, 1 249 Straßenbäume, 897 in Park/Grünanlage/Friedhof, 3 892 in Garten/Hof/Wohngebiet, 1 347 sonst |
-| Kronenradius | Median 4,0 m (5 %: 1,4 m, 95 %: 8,4 m); Kronenfläche zusammen 72 ha |
-| Höhe | alle geschätzt (Median 12,9 m) |
-| Dichte nach Nutzung | Wald 78 je ha, Wohngebiet 45, Kleingarten 107, Parkplatz 21, Sportplatz 6 |
-| kartierte OSM-Bäume | 389 der Bäume sind in OSM kartiert; 86 stehen an der OSM-Lage (keine eigene Krone gefunden) |
-| auf Dach / in Fahrbahn / auf Wasser / doppelt | 0 / 0 / 0 / 0 |
-| Waldzellen (`w`) | 21,4 ha in 3 Kacheln: 16,6 ha Laubwald, 1,0 ha Mischwald, 3,8 ha „glatte Krone“ |
+| Kacheln der Stadt (Stufe 10) | 1 013; Einzelbäume in 416 davon (66,6 km²) |
+| Einzelbäume (`b`) | **710 792** (107 je ha): 441 471 Laubbäume, 235 151 Fichten (Nadelbäume im kartierten Wald), 15 771 andere Nadelbäume, 18 349 Sträucher, 48 mit kartierter Art |
+| davon im kartierten Wald | 437 734 |
+| Dichte nach Nutzung | Wald 151 je ha, Wohngebiet 76, Kleingarten 105, Gewerbe 42, Parkplatz 24, Sportplatz 35 |
+| Kronenradius Median | 3,5 m; Kronenfläche zusammen 4 065 ha |
+| auf Dach / in Fahrbahn / auf Wasser / doppelt | 0 / **5** / 0 / 0 – die fünf standen in Löchern des Fahrbahn-Rasters (Fehler der Zeichenbibliothek, seither behoben) |
+| Waldzellen (`w`) | 293 592 Zellen in 959 Kacheln = 11 744 ha (mit den Rändern der Kacheln außerhalb der Gemeinde): 6 481 ha Nadelwald, 2 162 ha Laubwald, 2 335 ha Mischwald, 449 ha Jungbestand/Schlagflur, 317 ha Blöße; 10 110 Bestands-Umrisse |
+| Grünflächen (`gr`) | 4 895 Flächen in 1 013 Kacheln; im Gemeindegebiet 9 966 ha Wald, 1 357 ha Wiese, 348 ha Kleingärten, 370 ha Gebüsch, 98 ha Rasen, 30 ha Sportplätze, 8 ha Friedhöfe, 5 ha Parks |
+| Rechenzeit | 39 Minuten: Luftbilder holen 20, Bäume 14, Wald 4 |
 
-### Probesatz Zentrum, v1 (mit Höhenmodell) und ganze Stadt
+### Ganze Stadt, v1 (mit Höhenmodell)
 
-Stehen nach den Läufen in Abschnitt 9 („Läufe“) und in den dort genannten Dateien.
+Siehe Abschnitt 9 („Läufe“) und `tools/suhl/out/gruen/actions/stadt_v1/`.
 
 ## 3 Wie die Bäume gefunden werden
 
@@ -91,6 +123,15 @@ kahle Laubkrone sieht er oft kaum. Die Regel:
 Kurz: **Das Bild entscheidet, ob etwas da ist. Der Laser gibt die Höhe, wo er genug gesehen hat. Der Laser beweist nie, dass
 eine Krone des Bilds nicht da ist.** Bäume, die nach dem Bildflug gefällt wurden, bleiben deshalb stehen, bis ein neueres
 Luftbild kommt.
+
+**Zweifelsliste.** Auf den Bögen gibt es große Kronen im Luftbild ohne einen einzigen Laser-Treffer – im Hof südlich des
+Steinwegs und in einem Streifen am Domberg neben den neuen Wohnblöcken –, während die Bäume daneben im Laser gut zu sehen sind.
+Das passt zu einem Laserflug **nach** dem Mai 2024 und Fällungen dazwischen; beweisen lässt es sich ohne Flugtag nicht (es kann
+auch hohes Gras sein oder ein Baum, der seit einem älteren Laserflug gewachsen ist). Diese Bäume bleiben im Produkt. Der Lauf
+schreibt sie als Liste `zweifel.json` (Lage und Kronenradius; Kronen ab 2,5 m Radius ohne Treffer über 1 m), und die Bögen
+zeigen sie mit magenta Ring. Im Probesatz sind es etwa 860 von 11 200 Kronen (mit den Rändern der Kacheln gezählt,
+`statistik_v1.json` → `kachel_summen`). **Entscheidung für später:** stehen lassen (wie jetzt) oder streichen, sobald der Flugtag
+des Lasers bekannt ist.
 
 ## 4 Wald: Bestände statt Einzelbäume (Produkt `w`) – Vorschlag
 
@@ -152,13 +193,14 @@ Die Geländehöhe steht nicht in der Datei – die Laufzeit fragt den Boden. Les
 
 | Feld | ohne Höhenmodell (v0) | mit Höhenmodell (v1) |
 |---|---|---|
-| Lage | Mitte der Krone im Luftbild; frei stehende Bäume auf etwa 1 m, in geschlossenem Kronendach 2–4 m (eine Krone kann zwei Bäume sein oder umgekehrt) | Baumspitze des Lasers bestimmt die Krone; in geschlossenem Kronendach deutlich sicherer |
+| Lage | Mitte der Krone im Luftbild; frei stehende Bäume auf etwa 1 m, in geschlossenem Kronendach 2–4 m (eine Krone kann zwei Bäume sein oder umgekehrt) | in großem, dichtem Kronendach (Nadelholz, Wald) aus den Baumspitzen des Lasers; in der Stadt unverändert aus dem Luftbild |
 | Kronenradius | aus der Kronenfläche bei 20 cm; frei stehend gut, im Kronendach von der Trennung abhängig | gleich, Trennung besser |
-| Höhe | **geschätzt** aus Radius und Art – kann um mehrere Meter falsch sein | **gemessen**, Laser auf wenige Dezimeter; gilt für den Tag des Laserflugs (bis zu vier Jahre vor dem Bild) |
+| Höhe | **geschätzt** aus Radius und Art – kann um mehrere Meter falsch sein (im Fenster Steinweg/Markt lag der Median der Schätzung 3,5 m über dem der gemessenen Höhen, am Waldrand des Dombergs 7,75 m darunter) | **gemessen** bei etwa der Hälfte der Bäume (Laser ohne Laub: eher etwas zu niedrig als zu hoch); die andere Hälfte bleibt geschätzt |
 | Art Laub/Nadel | aus der Infrarot-Signatur; im Wald zuverlässig, in der Stadt unsicher (Laubbäume im Halbschatten sehen wie Nadelbäume aus) | gleich |
 | Baumart | nur wo OSM sie nennt | gleich |
-| Bäume im Schatten von Häusern | **fehlen** | gefunden |
-| Sträucher | nach Kronengröße geraten | nach gemessener Höhe (unter 3 m) |
+| Bäume im Schatten von Häusern | **fehlen** | gefunden, wo der Laser Treffer hat |
+| Sträucher | nach Kronengröße geraten | nach gemessener Höhe (dicht gesehen und unter 3 m), sonst nach Kronengröße |
+| Gibt es den Baum heute noch? | Stand des Luftbilds, 15.05.2024 | gleich; die **Zweifelsliste** nennt breite Kronen ohne einen einzigen Laser-Treffer (Abschnitt 3) |
 
 ## 8 Prüfungen
 
@@ -174,6 +216,8 @@ Vergleich Modell gegen Luftbild an drei Orten (`bogen.py --vergleich`, Bögen au
 | Plattenbau-Gebiet (Aue) | 190 | 85 % | 4 % |
 | Waldrand (Domberg) | 288 | 86 % | 2 % |
 
+Für v1 (`vergleich_v1.json`): Markt 71 Bäume, 86 % / 12,5 %; Aue 199, 86 % / 4,7 %; Waldrand 276, 85 % / 2,4 %.
+
 Die Kreise sind eine Vereinfachung der Kronen: 100 % sind nicht erreichbar. Am Markt stehen kleine Bäume vor Pflaster, dort
 ragt ein Kreis schnell über das Grün hinaus.
 
@@ -181,7 +225,11 @@ ragt ein Kreis schnell über das Grün hinaus.
 
 | Lauf | Gebiet | Was | Ergebnis |
 |---|---|---|---|
-| 43340725672 | stadt | v0: nur Luftbild, ganze Stadt | siehe unten |
+| 43340725672 | stadt | v0: nur Luftbild, ganze Stadt (Code `025255f1`) | grün; 710 792 Bäume; Artefakt `suhl-gruen-produkte`; Zahlen `actions/stadt_v0/` |
+| 43346253676 | zentrum | v1, erster Versuch mit nDOM1 (P1, 8 Kacheln, 6,2 MB) | grün, aber **überholt**: Höhen aus einem Median-Filter – bei kahlen Kronen viel zu niedrig |
+| 43347272870 | zentrum | v1, zweiter Versuch | grün, aber **überholt**: verwarf 937 Kronen, weil der Laser sie nicht sah |
+| 43348531474 | zentrum | **v0 und v1 des Probesatzes** (Code `50e49e89`) | grün; der Stand in `tools/suhl/out/gruen/probe/` |
+| 43349414221 | stadt | v1: ganze Stadt mit nDOM1 für alle 193 Kacheln | siehe `actions/stadt_v1/` |
 
 ## 10 Quellen und Nennung
 
