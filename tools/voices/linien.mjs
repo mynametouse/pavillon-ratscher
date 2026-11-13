@@ -103,6 +103,10 @@ for (const [who, part] of [
     for (const s of rest.matchAll(STR)) add(who, unq(s[1]));
   }
 
+// feat/zeitreise-chronik: the voices of the Zeitreise – the invented villagers in the futures (zukunft/zk_chronik.js, ZKCHRONIK.lines())
+const { ZKCHRONIK } = await import(path.join(SRC, "zukunft", "zk_chronik.js"));
+for (const l of ZKCHRONIK.lines()) add(l.who, l.text);
+
 fs.writeFileSync(
   path.join(here, "linien.json"),
   JSON.stringify(out, null, 1) + "\n",

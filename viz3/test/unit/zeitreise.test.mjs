@@ -3,6 +3,7 @@
 // number with a range and a source, line ids unique, only the invented villagers.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { ZKCHRONIK as C } from '../../src/zukunft/zk_chronik.js';
 
 const PLACES = ['anger', 'hang', 'waldrand', 'kahlflaeche', 'strasse', 'bruecke', 'heizhaus', 'windrad', 'schule'];
@@ -35,6 +36,8 @@ test('contract: worlds, pairs, span, chapters, places', () => {
     for (const q of c.questions) assert.ok(q.endsWith('?') && q.length < 140, q);
   }
   assert.deepEqual(Object.keys(C.PLACES).sort(), [...PLACES].sort());
+  for (const c of C.CHAPTERS) assert.ok(c.hour >= 8 && c.hour <= 18, c.id + ': a daylight hour for the time-lapse');
+  assert.ok(C.NOTES.jahre && C.NOTES.zukunft === C.SIGN_NOTE);
 });
 
 test('events: playback order, inside SPAN and the chapter, known places and kinds, readable lengths', () => {
@@ -74,6 +77,8 @@ test('events: playback order, inside SPAN and the chapter, known places and kind
         assert.ok(e.fork.pick >= 0 && e.fork.pick < e.fork.options.length, e.id + ' pick');
       }
       if (e.kind === 'stresstest') assert.ok(e.halt > 0 && e.dur > 0, e.id + ': a stress test halts and has a phase');
+      for (const c of e.cues) assert.ok(C.CUES[c.id] && c.h >= 0 && c.p >= 0 && c.p <= 1, e.id + ' cue ' + c.id);
+      if (e.kind === 'stresstest') assert.ok(e.cues.length >= 2, e.id + ': cues');
     }
     for (const c of C.CHAPTERS)
       assert.ok(
@@ -232,7 +237,8 @@ test('state: the worlds differ the way the chronicle says', () => {
   assert.ok(G(2035).energy.windrad === 2 && A(2035).energy.windrad === 0);
   assert.equal(A(2040).energy.windrad, 2, 'the investor turbine later');
   assert.ok(A(2028.85).forest.red > 0.4 && G(2028.85).forest.red > 0.3, 'red-brown slopes in both');
-  assert.ok(G(2045).forest.young > 0.75 && A(2045).forest.young < 0.6, 'green again by the 2040s in Gewappnet');
+  assert.ok(G(2040).forest.young > 0.7 && A(2040).forest.young < 0.55, 'green again by the 2040s in Gewappnet');
+  assert.ok(A(2060).forest.young > A(2040).forest.young + 0.15, 'succession closes the gaps slowly');
   assert.ok(A(2040).forest.fallen > 0.2 && G(2040).forest.fallen < 0.1, 'dead wood lying in Allein im Sturm');
   assert.ok(G(2045).forest.regrow === 'mischwald' && A(2045).forest.regrow === 'pionier');
   assert.ok(A(2047).water.marks.length > G(2047).water.marks.length, 'more marks on the wall');
@@ -273,6 +279,7 @@ test('lines: unique stable ids, only the invented villagers, never Hubert or Ron
     assert.ok(VILLAGERS.includes(l.who), l.id + ' ' + l.who);
     assert.ok(C.WHO[l.who], l.who);
     assert.ok(l.text.length > 5 && !/[{}]/.test(l.text), l.id);
+    assert.ok((l.text.match(/[.!?](\s|$)/g) || []).length <= 2, l.id + ': one or two sentences');
   }
   const all = JSON.stringify([C.events('allein'), C.events('gewappnet'), C.CHAPTERS, C.SIGNS, C.kpi('allein', 'wald')]);
   assert.ok(!/hubert|ronald/i.test(all), 'no real neighbours');
@@ -281,4 +288,15 @@ test('lines: unique stable ids, only the invented villagers, never Hubert or Ron
     for (const e of C.events(w))
       for (const l of e.lines)
         assert.ok(e.y - C.WHO[l.who].born <= 86, `${l.id}: ${l.who} at ${e.y - C.WHO[l.who].born}`);
+});
+
+test('voices: every line is in the recording list (tools/voices/linien.json, made by linien.mjs) under its rec id', () => {
+  const list = JSON.parse(fs.readFileSync(new URL('../../../tools/voices/linien.json', import.meta.url), 'utf8'));
+  const by = new Map(list.map(l => [l.id, l]));
+  for (const l of C.lines()) {
+    const r = by.get(l.rec);
+    assert.ok(r, l.id + ': ' + l.rec + ' missing – run node tools/voices/linien.mjs');
+    assert.equal(r.who, l.who);
+    assert.equal(r.text, l.text);
+  }
 });
