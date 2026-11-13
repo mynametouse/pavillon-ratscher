@@ -194,10 +194,26 @@ with lib.browser() as b:
     except Exception as e:
         ck('the people at night ran through without an error of the test', False, str(e)[:300])
 
+    # ---------------------------------------------------------------- dusk on the village road: lamps coming on, the warm evening, the grade ----------------------------------------------------------------
+    try:
+        if 'strasse' not in SECT or not R0: raise StopIteration
+        do("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 20 * 60 + 5; DN.update(true)")
+        lib.settle_light(pg); steps(0.5)
+        bx, by, bh = R0['b']
+        sx, sy = bx - math.sin(bh) * 14 - math.cos(bh) * 3, by - math.cos(bh) * 14 + math.sin(bh) * 3
+        do(f"GAME.view({sx}, {sy}, KERN.ground({sx}, {sy}) + 1.65, {math.degrees(math.atan2(bx - sx, by - sy))}, -2, 62)")
+        st = J("({ s: GLLICHT.stand(), el: DN.state.sunEl })")
+        paar('13_daemmerung')
+        ck('at dusk the lamps come on with their beams (fainter), the grade of today is on', st['s']['kegel'] >= 2 and st['s']['lampK'] > 0.2 and st['s']['grade'][2] > 0.4, str(st))
+    except StopIteration:
+        pass
+    except Exception as e:
+        ck('dusk ran through without an error of the test', False, str(e)[:300])
+
     # ---------------------------------------------------------------- the Klinge: rain, the guards' torches, the flare ----------------------------------------------------------------
     try:
         if 'klinge' not in SECT: raise StopIteration
-        do("if (VEH.cur) VEH.exit(); GLFAHNDUNG.clear(); GLMISSION.debug.go('klinge', 2)"); steps(0.5)
+        do("if (VEH.cur) VEH.exit(); GLFAHNDUNG.clear(); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 22 * 60 + 40; DN.update(true); GLMISSION.debug.go('klinge', 2)"); steps(0.5)
         ok = until("['w1', 'w2', 'w3'].every(k => GLMISSION.F(k)) && !!GLMISSION.C('van')", 160, 0.3, 0.5)
         lib.settle_light(pg)
         steps(3)

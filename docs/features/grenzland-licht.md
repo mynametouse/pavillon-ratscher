@@ -14,12 +14,14 @@ Mischart gehört nicht zum Programm), mit einem kleinen Atlas, den das Modul sel
 Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo echtes Licht nötig ist, wird es geliehen
 (`KERN.lights.borrow`). Am Tag wird nichts gezeigt; bei „Beenden“ ist alles weg und jeder Wert wieder genau wie vorher.
 
-- **Fahrzeuge:** Sobald die Lampen brennen (Dämmerung, Nacht): weiche Lichtkegel vor den Scheinwerfern (drei gekreuzte Karten je
-  Lampe), ein Lichtfleck auf der Straße voraus, ein Glanz auf dem Glas, rotes Glühen der Rückleuchten, beim Bremsen größer und heller
+- **Fahrzeuge:** Sobald die Lampen brennen (Dämmerung, Nacht): weiche Lichtkegel vor den Scheinwerfern (drei Karten je Lampe, eine
+  flach und zwei um 38° gekippt – eine senkrechte stand von hinten als heller Strich im Bild), ein schwacher Lichtfleck auf der Straße
+  voraus, ein Glanz auf dem Glas, rotes Glühen der Rückleuchten, beim Bremsen größer und heller
   – auch das Glas der Bremsleuchten selbst (eine hellere Kopie des Rückleuchten-Materials). Warm (Glühlampe der Zeit) für 1989 und
   die Simson, weißer für die Autos von heute. Das gilt für alle Fahrzeuge von `gl_auto.js` (Streife, Kombi, Kasten, Trabant, Wartburg,
   Barkas, W 50, Mopeds der Clique) und für Moped und Trabant des Spielers; beim Moped hängt der Kegel an der Gabel (lenkt und legt
-  sich mit), der Fleck bleibt flach auf der Straße. Das echte Abblendlicht des Spielerfahrzeugs ist der Scheinwerfer, den
+  sich mit), der Fleck bleibt flach auf der Straße; aus dem eigenen Sattel bzw. vom Fahrersitz sieht man die Kegel des eigenen
+  Fahrzeugs nicht (sie stünden als Streifen mitten im Bild), nur Fleck und Licht. Das echte Abblendlicht des Spielerfahrzeugs ist der Scheinwerfer, den
   `vehicles/vehicle.js` ohnehin für das nächste Fahrzeug mit Licht hat – dafür war kein geliehenes Licht nötig.
 - **Blaulicht:** Die beiden blauen Lampen auf dem Dach blitzen im Doppeltakt von heute (zweimal links, zweimal rechts, 0,84 s,
   `GLAUTO.blauPuls`), dazu ein blaues Glühen an jeder Lampe und ein blauer Puls auf dem Boden um den Wagen. Die Rundumleuchte der
@@ -30,14 +32,16 @@ Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo ech
 - **Hubschrauber:** wo der Suchscheinwerfer auf den Boden fällt, ein heller Fleck (dreht sich langsam), am Hubschrauber der Glanz
   der Lampe (der Lichtkegel und das geliehene Licht sind schon in `gl_heli.js`).
 - **Taschenlampen:** Jede Figur von `gl_fig.js` mit `F.lampe = true` trägt eine: Glanz an der Hand (die linke, wenn die rechte etwas
-  hält), ein Lichtkegel nach vorn unten, der beim Gehen und Umsehen pendelt, und ein Lichtfleck auf dem Boden, der mitgeht. Ohne die
+  hält), ein schwacher Lichtkegel nach vorn unten, der beim Gehen und Umsehen pendelt (nahe an der Kamera blasser – von nah gesehen
+  addierten sich die Karten zu einem weißen Keil), und ein Lichtfleck auf dem Boden, der mitgeht. Ohne die
   Angabe tragen nachts von sich aus eine: die Beamten der Polizei (`F.cop`), die Wachleute (`kleid: 'wache'`), Volkspolizei und Grenzer
   1989. `F.lampe = false` schaltet das ab.
-- **Leuchtkugel** (`KERN.emit('grenzland:flare', { x, y, z })` oder `GLLICHT.flare(x, y, z)`): steigt in gut 3 s auf etwa 75 m
-  mit einer Rauchspur, ploppt auf, brennt dann 40 s am Fallschirm, sinkt langsam (knapp 1 m/s) und treibt mit dem Wind des
+- **Leuchtkugel** (`KERN.emit('grenzland:flare', { x, y, z })` oder `GLLICHT.flare(x, y, z)`): steigt in 3 s auf etwa 60 m
+  mit einer weißen Rauchspur (alle 30 cm ein Wölkchen), ploppt auf, brennt dann 40 s am Fallschirm, sinkt langsam (knapp 1 m/s) und treibt mit dem Wind des
   Wetters, Funken fallen, ein weißglühender Kern, ein roter Hof und ein großer roter Dunst in der Luft, darüber eine dünne Rauchfahne,
   rot angeleuchtet; ein geliehenes rotes Licht folgt ihr (das macht den Wald rot), Nebel und Himmelslicht werden rot getönt; dann
-  erlischt sie in 3,5 s, der Rauch zieht noch ab.
+  erlischt sie in 3,5 s, der Rauch zieht noch ab. Geht in der Mission die rote Kugel von `gl_kapitel1.js` hoch, ohne dass das
+  Ereignis kam, startet `gl_licht.js` die Leuchtkugel selbst an ihrer Stelle; solange unsere brennt, ist die Kugel ausgeblendet.
 - **Lesbare Nächte:** Solange der Modus läuft, gibt es nachts mehr Himmelslicht (das Halbkugel-Licht, mondblau, unten ein dunkles
   Blaugrau) und etwas mehr Belichtung (bis ×1,28), die Lichtflecken der Straßenlaternen sind heller (1989 oranger). Alles wird auf
   den Wert gesetzt, den der Tageslauf gerade will, plus unseren Teil – und beim Beenden genau zurück.
