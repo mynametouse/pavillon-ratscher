@@ -1,0 +1,107 @@
+{
+ "made": "2026-11-13T01:27:11Z",
+ "where": "Nordkante von Testblock B, N 5 600 400; je Kachel der Stufe 10 24 Bildzeilen (19 m) beiderseits der Linie: Suhl-Kachel (y = 524) minus Block-B-Kachel (y = 523), Mittel der Grauwerte R, G, B",
+ "tiles": {
+  "504/524": {
+   "wie_geflogen": [
+    -28.3,
+    -34.2,
+    -38.5
+   ],
+   "angeglichen": [
+    -1.0,
+    -0.7,
+    0.5
+   ]
+  },
+  "505/524": {
+   "wie_geflogen": [
+    -28.1,
+    -34.4,
+    -39.3
+   ],
+   "angeglichen": [
+    -0.5,
+    -0.2,
+    -0.1
+   ]
+  },
+  "506/524": {
+   "wie_geflogen": [
+    -28.8,
+    -34.9,
+    -40.0
+   ],
+   "angeglichen": [
+    -0.1,
+    -1.4,
+    -0.7
+   ]
+  },
+  "507/524": {
+   "wie_geflogen": [
+    -25.9,
+    -32.6,
+    -37.6
+   ],
+   "angeglichen": [
+    0.4,
+    -0.3,
+    0.7
+   ]
+  },
+  "508/524": {
+   "wie_geflogen": [
+    -31.1,
+    -37.1,
+    -41.7
+   ],
+   "angeglichen": [
+    -4.0,
+    -3.9,
+    -2.3
+   ]
+  },
+  "509/524": {
+   "wie_geflogen": [
+    -22.9,
+    -32.3,
+    -36.3
+   ],
+   "angeglichen": [
+    3.5,
+    2.3,
+    3.2
+   ]
+  },
+  "510/524": {
+   "wie_geflogen": [
+    -28.2,
+    -33.6,
+    -39.5
+   ],
+   "angeglichen": [
+    -1.7,
+    -0.2,
+    -0.8
+   ]
+  }
+ },
+ "balance": "garten-2024-04-07",
+ "mean": {
+  "wie_geflogen": [
+   -27.6,
+   -34.2,
+   -39.0
+  ],
+  "angeglichen": [
+   -0.5,
+   -0.6,
+   0.1
+  ]
+ },
+ "worst_abs": {
+  "wie_geflogen": 41.7,
+  "angeglichen": 4.0
+ }
+}
