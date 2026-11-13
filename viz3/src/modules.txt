@@ -277,7 +277,8 @@ wissen/wissen_daten.js      # feat/wissen data views on the plan view: noise, tr
 zukunft/zk_data.js          # feat/zukunft topics, variants, five indicators with „Warum?“ and sources, the dying stand – pure (ZKDATA)
 zukunft/zk_welt.js          # feat/zukunft PV on the 3D roofs, the field, heat pumps, bench and Rufbus, the flood ribbon, the forest's stages, dry ground (ZKWELT)
 zukunft/zk_modus.js         # feat/zukunft the mode: panel, year slider, A/B, presentation, saved state pav-zukunft-v1, discovery book entries (ZUKUNFT)
-# feat/zeitreise
+# feat/zeitreise: „Zeitreise durch vier Welten“ below this line (chronicle data, the world's look and sound, the regie, the workshop mode)
+zukunft/zk_zeitwelt.js      # feat/zeitreise-welt what the chronicle's states look and sound like: slopes, logging, heating house, wind turbine, heavy rain, blackout (ZKZEITWELT)
 zukunft/zk_workshop_mock.js # feat/workshop stand-ins for ZKCHRONIK and ZKREGIE until the real ones land (WSMOCK)
 zukunft/zk_workshop.js      # feat/workshop the Workshop mode: switch, Ebenen, start screen with the Szenario-Kreuz, overlays, clicker keys (WORKSHOP)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
