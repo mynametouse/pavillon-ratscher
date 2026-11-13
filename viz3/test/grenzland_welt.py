@@ -118,6 +118,8 @@ with lib.browser() as b:
         st = stand()
         ck('wissen: seen on the moped from nearer: the vehicle and the helmet are in the description', t is not None and st['bild']['fz'] == 'moped' and st['bild']['kopf'] == 'helm' and st['wissen']['fahrzeug'] and st['wissen']['kleidung'], str((t, st['bild'], st['wissen'], st['cars'])))
         pic('03_gesehen', True)
+        fa = J("GLREAKTION.gepostet.filter(q => /Fahndung/.test(q.text)).map(q => q.text)")
+        ck('wissen: from two stars the blue-light page posts the police\'s description', len(fa) == 1 and 'Gesucht wird' in fa[0], str(fa))
         E("VEH.exit()")
         X("GLFAHNDUNG.clear()")
         steps(1)

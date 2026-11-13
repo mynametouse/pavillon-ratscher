@@ -149,6 +149,7 @@ export const GLREAKTION = (() => {
     if (url && url.length > 1000) {
       S.snaps++;
       S.lastImg = url;
+      S.imgT = 0;
       return url;
     }
     return null;
@@ -205,6 +206,15 @@ export const GLREAKTION = (() => {
     return true;
   }
   function posten(q) {
+    if (q.kind === 'fahndung') {
+      const b = GLFAHNDUNG.beschreibung ? GLFAHNDUNG.beschreibung() : '',
+        p = where(),
+        ort = ortName(p[0], p[1]) || 'Südthüringen';
+      if (!b || GLLOGIK.stars(GL.W) < 1) return;
+      q.text = D.FAHNDUNG.replace('{ort}', ort)
+        .replace('{bild}', b)
+        .replace('{tag}', D.TAG[ort] || D.TAG['']);
+    }
     const likes = 12 + Math.floor(Math.random() * (q.live ? 900 : 240)),
       kom = [];
     const pool = D.KOMMENTAR.slice();
@@ -412,12 +422,28 @@ export const GLREAKTION = (() => {
   KERN.on('grenzland:boeller', () => heute() && wild('boeller'));
   KERN.on('grenzland:sterne', d => {
     if (heute() && d && d.n >= 4 && S.filmT <= 0) wild('live', { force: false });
+    // from two stars: the region's blue-light page posts the police's description (once per search; the words when it is posted)
+    if (heute() && d && d.n >= 2 && !S.fahndung) {
+      S.fahndung = true;
+      S.posts.push({
+        t: 14,
+        kind: 'fahndung',
+        text: '',
+        wer: D.BLAULICHT,
+        img: S.lastImg && S.imgT < 90 ? S.lastImg : '',
+        live: false,
+      });
+    }
   });
+  KERN.on('grenzland:entkommen', () => (S.fahndung = false));
+  KERN.on('grenzland:erwischt', () => (S.fahndung = false));
   KERN.on('grenzland:stop', () => {
     for (const q of S.filmer) q.F.filmt = 0;
     S.filmer.length = 0;
     S.posts.length = 0;
     S.gepostet.length = 0;
+    S.fahndung = false;
+    S.lastImg = '';
     S.blick.clear();
     S.gemerkt = {};
     S.sagVon = {};
@@ -435,6 +461,7 @@ export const GLREAKTION = (() => {
     }
   }
   function lauf(dt) {
+    S.imgT = (S.imgT ?? 999) + dt;
     if (S.filmT > 0) S.filmT -= dt;
     if (S.sagT > 0) S.sagT -= dt;
     S.tatT += dt;

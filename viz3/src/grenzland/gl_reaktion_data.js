@@ -119,6 +119,9 @@ export const GLRXDATA = (() => {
     'Kirmesbursche_Kai',
   ];
   const LIVE_WER = 'suedthueringen.live';
+  // the region's blue-light page (invented): the police's description as a call for witnesses – {bild}: GLFAHNDUNG.beschreibung()
+  const BLAULICHT = 'blaulicht_schleusetal';
+  const FAHNDUNG = '🚨 Fahndung bei {ort}: {bild} Hinweise bitte an die Polizei. Teilen erwünscht! #{tag} #Fahndung';
   const KOMMENTAR = [
     ['Uwe_S', 'Wer war das?'],
     ['Heike_K', 'Ich hab den Knall bis Hinternah gehört.'],
@@ -131,5 +134,5 @@ export const GLRXDATA = (() => {
     ['Petra_B', 'Fake. Bei uns passiert nie was.'],
     ['Grenzer_a.D.', 'Damals hätte es das nicht gegeben. Oder doch. Egal.'],
   ];
-  return { SAGT, WAHL, POST, TAG, WER, LIVE_WER, KOMMENTAR };
+  return { SAGT, WAHL, POST, TAG, WER, LIVE_WER, BLAULICHT, FAHNDUNG, KOMMENTAR };
 })();
