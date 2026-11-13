@@ -510,7 +510,7 @@ export const ZKREGIE = (() => {
     if (s && s.t >= s.T && !ZKBILD.S.cut) {
       const places = lapsePlaces();
       if (places.length > 1) {
-        S.pi = (S.pi + 1) % places.length;
+        S.pi = nextPlace(places.length);
         cutTo(places[S.pi]);
       } else s.t = s.T;
     }
@@ -650,13 +650,16 @@ export const ZKREGIE = (() => {
     ZKBILD.set(t ? { split: false, side: 'L' } : { split: S.split, side: 'L' });
     emit({ type: 'take', take: t, world: t ? S.pair[t === 'R' ? 1 : 0] : null });
   }
+  // the time-lapse's places: [0] the wide opening (once per chapter), then the long lens over the slopes and the chapter's own places
   function lapsePlaces() {
     const ch = S.ch,
       own = (ch && ch.places) || [],
-      out = ['ueberblick'];
+      out = ['ueberblick', 'fern'];
     for (const p of own) if (!out.includes(p) && !(S.side === 'both' && TAKES.has(p))) out.push(p);
-    return out.length > 1 ? out : ['ueberblick', 'anger'];
+    return out;
   }
+  // the next place of the cycle – the opening is not shown again
+  const nextPlace = n => (S.pi + 1 >= n ? Math.min(1, n - 1) : S.pi + 1);
   function endHalt() {
     const m = S.ev;
     hush();
@@ -680,7 +683,7 @@ export const ZKREGIE = (() => {
       }
     }
     const places = lapsePlaces();
-    S.pi = (S.pi + 1) % places.length;
+    S.pi = nextPlace(places.length);
     cutTo(places[S.pi], {
       swap: () => {
         if (S.take) setTake(null);

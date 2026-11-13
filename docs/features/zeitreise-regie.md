@@ -23,7 +23,10 @@ Solange die Zeitreise aus ist, sind beide `null`: nichts läuft, nichts wird gel
 ## Ablauf
 
 - **Kapitel nacheinander**, jedes durch seine eigenen Jahre (Wald 2026–2050, Wasser 2026–2050, Energie 2026–2060).
-- **Erste Einstellung jedes Zeitraffers:** der Überblick 90 m über dem Anger (Richtung 195°, 10° nach unten), dann die Orte des Kapitels.
+- **Einstellungen im Zeitraffer:** Zu Beginn jedes Kapitels einmal der weite Überblick 90 m über dem Anger (Richtung 195°, 10° nach
+  unten). Danach wechseln sich `fern` und die Orte des Kapitels ab. `fern` ist ein langes Objektiv (30°) von derselben Höhe auf die Hänge
+  im Süden und Südwesten, sodass der Wald das Bild füllt. Die Hänge werden gefilmt, wie Dokumentarfilme Landschaftswandel zeigen: lange
+  Brennweiten (25–35°), die Kamera steht oder schwenkt sehr langsam, keine Augenhöhe über offene Felder.
 - **Zeitraffer:** 2 s je Jahr bei Tempo 1 (`speed(k)`), eine feste Uhrzeit je Kapitel (Wald 11:30, Wasser 12:00, Energie 12:30). Die Tage
   laufen weiter, Jahreszeiten und Sonnenhöhe wechseln, ohne Tag-Nacht-Flackern. Wetter „heiter“. Etwa alle 10 s ein anderer Ort des
   Kapitels mit 1 s Überblendung. Die Kamera bewegt sich langsam: einige Meter Fahrt oder ein langsamer Schwenk.
@@ -141,9 +144,25 @@ und `stop` und prüft:
 Bilder liegen in `out/zeitreise/` (`orte_<kapitel>.jpg` als Kontaktbogen, `lapse_split`, `split_2045`, `halt_starkregen`, `snapshot_*`).
 Themen-Tests in `viz3/extra/zeitreise-regie/tests.txt`: `smoke`, `zeitreise`, `zukunft`.
 
+## Orte (Stand 13.11., nach drei Kontaktbögen in CI)
+
+| Ort | Zeitraffer | Halt |
+|---|---|---|
+| `ueberblick` | 90 m über dem Anger, Richtung 195°, 10° nach unten, 60° – nur am Kapitelanfang | – |
+| `fern` | von derselben Höhe, Richtung 205°, 30°: die Hänge im Süden, der Kamm mit dem Windrad links | – |
+| `anger` | vom Spielort „Dorf (Anger)“ (241,5/−101,5) an der Dorflinde vorbei nach Südwesten | gleich |
+| `hang` | vom Hang nordöstlich des Dorfs (85 m über dem Boden), 30°, über das Tal auf die Klinge und die Hänge dahinter | zu Fuß am Hang (430/90), dieselbe lange Sicht (Sichtprüfung `zeitreise-welt`) |
+| `waldrand` | vor dem Nordost-Rand des Familienwalds (`world/forest.js` CORE), ~20 m vor den ersten Fichten | gleich; im geteilten Bild zwei Einstellungen |
+| `schule` | vom Rasen vor der alten Schule beim Wegweiser | gleich |
+| `bruecke` | an der Schleusebrücke auf der Linie des Flusses, flussaufwärts zum Dorf | gleich |
+| `strasse`, `heizhaus`, `windrad`, `kahlflaeche` | von `ZKZEITWELT.place(id)` (`windrad`: die Lichtung 255 m nördlich), sonst die Tabelle in `zk_regie_orte.js` | gleich |
+
 ## Offen
 
-- Die Orte nach dem Kontaktbogen nachstellen, vor allem `hang`, `schule` und `anger`.
-- Bildkosten auf einer Onboard-Grafik messen; Ziel sind 30 fps bei 1080p in Stufe „mittel“.
-- Aufnahmen der Chronik nach Kennung, sobald `stimmen/zeitreise` da ist.
-- Telefon im Hochformat: Das geteilte Bild wird dort sehr schmal.
+- Die Orte nach dem nächsten Kontaktbogen (`out/zeitreise/orte.jpg`) weiter nachstellen: `anger`, `bruecke`, `waldrand` sind noch nicht im
+  Bild geprüft.
+- Bildkosten auf einer Onboard-Grafik messen; Ziel sind 30 fps bei 1080p in Stufe „mittel“. Gemessen in CI, SwiftShader:
+  - geteiltes Bild: 638 Draw-Calls, 1,08 Mio. Dreiecke;
+  - eine Welt: 349 Draw-Calls, 0,56 Mio. Dreiecke;
+  - der Zeitraffer hat höchstens zwei neue Schattenkarten je Sekunde.
+- Telefon im Hochformat: Das geteilte Bild wird dort sehr schmal (der Workshop ist für große Bildschirme).
