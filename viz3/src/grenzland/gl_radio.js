@@ -81,7 +81,7 @@ export const GLRADIO = (() => {
   const cur = () => S.id;
   const sender = () => (S.id ? D.byId[S.id] : null);
   const raw = () => GLTON.raw();
-  const pos = () => (VEH.cur && VEH.cur.st ? [VEH.cur.st.x, VEH.cur.st.y] : [P.x, P.y]);
+  const posY = () => (VEH.cur && VEH.cur.st ? VEH.cur.st.y : P.y);
 
   // ---------------- sound: the chain under the music bus ----------------
   // source(s) → duck → tone (high-pass, low-pass: car, phone, the sets of 1989) → sig (reception) → out → music bus; noise → out
@@ -158,7 +158,7 @@ export const GLRADIO = (() => {
   function signal() {
     const s = sender();
     if (!s || !s.fern) return 1;
-    if (s.fern === 'sued') return Math.max(0.12, Math.min(1, (-pos()[1] - 150) / 600));
+    if (s.fern === 'sued') return Math.max(0.12, Math.min(1, (-posY() - 150) / 600));
     return 0.62 + 0.2 * Math.sin(S.fadeT * 0.7) + 0.1 * Math.sin(S.fadeT * 2.3);
   }
   function mixTick(dt) {
@@ -438,8 +438,19 @@ export const GLRADIO = (() => {
     }
     if (it.taten) S.pend.length = 0;
     if (it.eil) S.eil = '';
-    if (it.k === 'musik') startMusik(it);
-    else startWort(it);
+    if (it.k === 'musik') return startMusik(it);
+    // the presenter talks into the beginning of the next piece, the music ducks under the words
+    if (it.art === 'mod' || it.art === 'gruss') {
+      c.taten = null;
+      c.eil = '';
+      const nx = D.PROG.next(st, c);
+      if (nx.k === 'musik') {
+        startMusik(nx);
+        return startWort(it, true);
+      }
+      st.vor = nx;
+    }
+    startWort(it);
   }
 
   // ---------------- tuning ----------------
@@ -787,6 +798,8 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     mixTick(dt);
     // a special report over the music
     if (S.over) {
+      if (S.item && S.item.k === 'musik') S.item.left -= dt;
+      else if (S.item && S.item.k === 'lade') S.item.t += dt;
       if (wortTick(S.over, dt)) {
         S.over = null;
         show();

@@ -664,7 +664,6 @@ export const GLHANDY = (() => {
   // ---------------- per frame ----------------
   function tick(dt) {
     if (!GL.on) return;
-    for (const k of Object.keys(S.evT)) if (S.evT[k] > 0) S.evT[k] -= dt;
     for (let i = S.q.length - 1; i >= 0; i--)
       if ((S.q[i].t -= dt) <= 0) {
         const f = S.q[i].fn;
@@ -687,6 +686,7 @@ export const GLHANDY = (() => {
       }
     }
     if ((S.acc += dt) < 0.25) return;
+    for (const k in S.evT) if (S.evT[k] > 0) S.evT[k] -= S.acc;
     S.acc = 0;
     if (S.open) {
       if (S.dirty) render();
