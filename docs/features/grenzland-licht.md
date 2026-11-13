@@ -138,3 +138,10 @@ neue Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden�
   nachgeführt (das Wetter von 1989 hatte sonst den Regen als „vorher“ gemerkt und nach der Rückblende wieder eingeschaltet), die
   Zweige der Linde lichter und dunkler und im Programm der Blätter (eine Kopie des Materials hatte den Shader-Zusatz nicht – `three`
   kopiert `onBeforeCompile` nicht mit). Gemessen: keine neuen Shader-Programme, der Farbausgleich nach „Beenden“ wieder 1,06/1,08/0,32.
+- ~13:30: Kegel als je eine zur Kamera gedrehte Karte (zwei Zeichenaufrufe für alle Fahrzeuge), Flecken auf den Boden gelegt,
+  Regen nach dem Schritt, den der Missionsablauf wirklich spielt (`GLMISSION.stop()` lässt den Stand für ein Neuladen stehen – der
+  Regen lief sonst weiter und wurde von der Rückblende als „vorher“ gemerkt).
+- **13:43: grün** – `ebe4b006`: lokal `grenzland_licht` 19/19 (430 s), auf Actions Lauf 43426168394 grün. Bilder:
+  `out/grenzland_licht/*_vergleich.jpg` (Straße mit Moped, Sattel, Streife, Leute, Dämmerung, Klinge im Regen, Linde 1989, Abend
+  1989) und `7_flare_steigt.jpg` … `10_flare_sinkt.jpg`. Gemessen: Straße 7 m vor dem Moped 97 → 132 (seitlich außerhalb 13 → 46),
+  eine Figur in 15 m 6,6 → 19, unter der Leuchtkugel obere Bildhälfte Rot 72 / Grün 50, keine neuen Shader-Programme.
