@@ -13,12 +13,15 @@ Spezialkräfte; 1989 die Volkspolizei. Module: `viz3/src/grenzland/gl_logik.js` 
 - Dadurch läuft **die ganze Polizei ohne Browser** auf dem echten Straßennetz und zwischen den echten Hauswänden des Quadrats
   (`viz3/extra/grenzland-polizei/fixtures/ratscher.json`: die OSM-Wege und die Wandfüße, wie sie die Website ausliefert;
   `viz3/extra/grenzland-polizei/sim/welt.mjs`: eine Welt ohne Bild, die Autos fahren wie in `GLAUTO.drive`). Die Unit-Tests
-  (`viz3/test/unit/grenzland_polizei.test.mjs`, 15 Stück, ~15 s) spielen Szenen in Sekunden durch: Anfahrt von jedem Straßenende,
+  (`viz3/test/unit/grenzland_polizei.test.mjs`, 20 Stück, ~8 s) spielen Szenen in Sekunden durch: Anfahrt von jedem Straßenende,
   Suche, Sehen bei Tag und Nacht und nicht durch Wände, Festnahme, Flucht zu Fuß, Moped auf und neben der Straße, Sperre, 1989,
   Spezialkräfte, Hubschrauber, eine halbe Stunde Durcheinander im ganzen Quadrat (kein Auto verlässt die Straße, keines steht ewig).
   Eine Szene Schritt für Schritt ansehen: `node viz3/extra/grenzland-polizei/sim/lauf.mjs suche | fuss | flucht | moped | acker`.
 - Der Browser-Test `viz3/test/grenzland_polizei.py` (Port 9016) prüft dasselbe in der echten Welt und macht die Bilder
-  (`out/grenzland_polizei/`): Zeugin, Streife, Beamte, Verfolgung, Sperre, Nacht, ABV 1989, Hubschrauber.
+  (`out/grenzland_polizei/`): Zeugin, Streife, Beamte, Verfolgung, Sperre, Nacht, ABV 1989, Hubschrauber, Riegel, Stadt. Er läuft in
+  Teilen (`grenzland_polizei:roads,witness,patrol,escape`, `…:moped,block,night,1989,heli`, einzeln auch `sek`, `stadt`), weil
+  eine Seite mit allen Szenen hier an die Speichergrenze kam. Bei GitHub schreibt er, was fehlschlug, als Anmerkung des Jobs
+  (öffentlich lesbar: `curl https://api.github.com/repos/…/check-runs/<job>/annotations`) – die Logs selbst sind es nicht.
 
 ## Was es gibt
 
@@ -40,11 +43,13 @@ Spezialkräfte; 1989 die Volkspolizei. Module: `viz3/src/grenzland/gl_logik.js` 
   an dem man steht; die zweite lieber von einer anderen Seite), mit Blaulicht und Horn, fährt **zuerst genau dorthin**, hält 3 s,
   dreht dann Runden über die Kreuzungen in der Nähe (noch nicht besuchte zuerst, eher in der Richtung, in die man lief; der Kreis
   wächst mit der Zeit bis 380 m). Sieht sie einen (Tag 80 m, Nacht 42 m; auf dem Moped ×1,25, geduckt ×0,5, unter Bäumen ×0,35; nie
-  durch Hauswände, nicht durch einen Wald – ab fünf Stämmen auf der Sichtlinie –, nie ins Haus), folgt sie **auf der Straße**: einem
+  durch Hauswände, nicht durch einen Wald – mehr als gut 20 m unter Kronen auf der Sichtlinie, eine Straße durch den Wald zählt
+  nicht –, nie ins Haus), folgt sie **auf der Straße**: einem
   Moped fährt sie auf 7–8 m auf (so schnell wie es, plus was der Abstand hergibt), wendet auf der Fahrbahn, wenn es an ihr vorbei ist.
   Neben der Straße kann sie nicht folgen: sie fährt zum nächsten Straßenpunkt, und wenn man dort draußen steht (bis 170 m), steigen
   die Beamten aus und kommen zu Fuß.
-- **Die Beamten** (zwei je Streife, höchstens vier zu Fuß zugleich – jede Figur kostet Speicher): steigen aus, wenn man zu Fuß näher
+- **Die Beamten** (zwei je Streife, höchstens vier zu Fuß zugleich, am Handy zwei – jede Figur kostet Speicher; die Figuren werden
+  geladen, wenn die Streife losfährt, und bleiben bis zum Ende der Fahndung versteckt erhalten, damit das Aussteigen nicht ruckelt): steigen aus, wenn man zu Fuß näher
   als 24 m ist, gehen hinterher (1–2 Sterne 2,15 m/s – wer geht, ist schneller; 3: 2,7; 4: 3,0; 5: 3,3 – dann muss man rennen),
   rufen „Halt! Polizei!“. **Wer steht, wird erwischt** (ein Beamter 1,2 s auf Armlänge; auch auf dem stehenden Moped; ein Auto dicht
   hinter dem stehenden Moped). Außer Sicht gehen sie dorthin, wo man zuletzt gesehen wurde, 16 m weiter um die Ecke, schauen sich 4 s
@@ -55,12 +60,14 @@ Spezialkräfte; 1989 die Volkspolizei. Module: `viz3/src/grenzland/gl_logik.js` 
   Straßenenden (16 s). Fällt die Fahndung, fährt heim, wer zu viel ist. Kein Auto verlässt die Straße; steht eines 20 s, obwohl es
   fahren soll, bekommt es erst einen neuen Weg und wird sonst weggenommen (Meldung in der Konsole – in den Tests kommt das nicht vor).
 - **Die Sperre**: 320 m voraus auf der Straße, die man fährt (an Kreuzungen die Straße, die am geradesten weitergeht, nie auf Wege),
-  mindestens 150 m entfernt und nicht direkt vor den Augen: zwei Streifenwagen quer, Leitkegel, ein Schild. Sie sieht 70 m weit
+  mindestens 150 m entfernt und nicht direkt vor den Augen: zwei Streifenwagen quer, Leitkegel, ein Schild, daneben ein Beamter
+  (nicht am Handy). Sie sieht 70 m weit
   (nachts 45). Mit dem Moped vorbei, solange sie einen sieht – ob durch die Lücke oder über den Acker –, ist „Sperre durchbrochen“.
 - **Der Hubschrauber** (`gl_heli.js`): fliegt 12 s nach dem vierten Stern aus 900 m an, kreist in 44 m Höhe mit 58 m Radius über der
   Stelle, an der man zuletzt gesehen wurde – über einem selbst, solange er einen sieht. Er sieht, wer im Freien ist: am Tag 95 m im
   Umkreis (Moped 120 m), nachts nur, worauf der Suchscheinwerfer fällt (15 m Radius, wandert um die Mitte, bleibt auf einem, wenn er
-  einen hat). Nie unter einem Dach oder unter den Bäumen eines Waldes. Was er sieht, wissen die Streifen. Modell ohne Marke (blau/
+  einen hat). Nie unter einem Dach oder unter einer Baumkrone (die gemessenen Kronen des Quadrats, `RATSCHER.treeRecs`, und der Wald
+  an der Klinge, `FOREST.owns`). Was er sieht, wissen die Streifen. Modell ohne Marke (blau/
   silber, Vertexfarben im Material des Verkehrs), Rotoren drehen, das Schlagen der Blätter synthetisch; nachts ein geliehenes
   Punktlicht am Boden und ein schwacher Lichtkegel.
 - **1989** (`GL.era === '1989'`): ein Wartburg der Volkspolizei mit einer Rundumleuchte (Typ `limo89`), 60 % der Wartezeit; der **ABV
@@ -105,6 +112,12 @@ suchen. In der Konsole: `GLFAHNDUNG.stand()`, `GLFAHNDUNG.tat('einbruch', { forc
 - `tat()` gibt bei gewöhnlichen Zeugen 0 zurück – die Sterne kommen mit der Meldung (Ereignis `grenzland:sterne`). Wer sofort zählen
   will (Missionen, Tests): `{ force: […] }` oder `{ sofort: true }`.
 - Die Anhaltekelle hält kein Beamter in der Hand (Armhaltung der Figuren ist Sache von `gl_fig.js`): an der Sperre steht ein Schild.
+- **Versteck ist, wo Bäume sind – nicht, wo die Karte „Wald“ sagt**: „im Wald“ (Streifen sehen nur 35 % so weit, die Suche läuft
+  1,8-mal so schnell ab) heißt Krone über einem und in mindestens drei der vier Himmelsrichtungen 7 m weiter auch, nicht auf einer
+  Straße; das sind 8 % des Quadrats. Unter einem einzelnen Baum sieht einen nur der Hubschrauber nicht.
+- Wer vor ihren Augen in ein Haus geht, hat kein Versteck: die Suche läuft dann normal schnell ab und beginnt erst nach bis zu 45 s
+  (solange sie noch davor stehen).
+- Fällt die Fahndung auf null – entkommen, umgezogen, von einer Mission beendet –, fahren alle von selbst heim (`GLLOGIK.einsatz`).
 
 ## Offen
 
