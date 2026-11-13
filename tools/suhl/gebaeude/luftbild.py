@@ -182,6 +182,29 @@ class Tiles:
             raise RuntimeError(f'picture {layer} {tx}/{ty}: size {im.size}, asked {(w, h)}')
         return np.asarray(im, dtype=np.float32) / 255.0, e0, n1
 
+    def prefetch(self, keys, workers=2):
+        """fetch the pictures of many tiles ahead (two requests at a time at most, each followed by its pause); returns how many are there"""
+        from concurrent.futures import ThreadPoolExecutor
+        layers = ['th_dop'] + (['th_dop20cir'] if self.cir else [])
+        jobs = [(tx, ty, l_) for tx, ty in keys for l_ in layers
+                if not os.path.exists(os.path.join(self.raw, f'{G.LEVEL}_{tx}_{ty}_{l_}.jpg'))]
+        G.log('aerial images to fetch', len(jobs), 'of', len(keys) * len(layers))
+        done = [0]
+
+        def one(j):
+            try:
+                self._get(*j)
+                done[0] += 1
+                if done[0] % 100 == 0:
+                    G.log('aerial images fetched', done[0], 'of', len(jobs))
+                return True
+            except Exception as ex:
+                G.log('aerial image failed', j, repr(ex)[:160])
+                return False
+        with ThreadPoolExecutor(max(1, workers)) as ex:
+            ok = sum(1 for r in ex.map(one, jobs) if r)
+        return ok, len(jobs)
+
     def tile(self, tx, ty):
         try:
             rgb, e0, n1 = self._get(tx, ty, 'th_dop')

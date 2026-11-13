@@ -46,6 +46,7 @@ def main():
     ck('centre of Suhl inside', f'{cx}/{cy}' in keys, f'tile {cx}/{cy}')
     ids, n, bytes_ = Counter(), 0, 0
     bad_field, bad_geom, out_tile, far, bad_h, open_roof, bad_area, bad_sides, bad_floor, no_z0 = [], [], [], [], [], [], [], [], [], 0
+    tall = []
     polys, pid = [], []
     stadt = G.areas()['stadt']
     from shapely.prepared import prep
@@ -108,6 +109,8 @@ def main():
                     bad_floor.append((b['id'], round(top, 1), b['e']))
             if 'z0' not in b:
                 no_z0 += 1
+            if b['hr'] >= 25:
+                tall.append(b)
             if b['k'] != 8:
                 polys.append(p)
                 pid.append(b['id'])
@@ -139,6 +142,20 @@ def main():
                 worst.append((round(ia, 1), pid[i], pid[j]))
     worst.sort(reverse=True)
     ck('footprints do not overlap', ov <= 0.01 * n, f'{ov} pairs overlap by more than 1 m² (largest {worst[:3]})', hard=ov > 0.03 * n)
+    # the tall buildings (25 m and more) one by one against stage 1 (tools/suhl/out/bestand/ethos.json)
+    try:
+        ref_t = {t_['id'][4:]: t_ for t_ in json.load(open(os.path.join(G.BESTAND, 'ethos.json'), encoding='utf-8'))['hohe_gebaeude_ab_25_m']['liste']}
+    except Exception:
+        ref_t = {}
+    mine = {b_['id']: b_ for b_ in tall}
+    wrong = [(i_, mine[i_]['hr'], ref_t[i_]['hoehe_m']) for i_ in mine if i_ in ref_t and abs(mine[i_]['hr'] - ref_t[i_]['hoehe_m']) > 0.11]
+    extra = [i_ for i_ in mine if i_ not in ref_t and mine[i_].get('hq') == 2]
+    lost = [i_ for i_ in ref_t if i_ not in mine] if a.area == 'stadt' else []
+    res['tall'] = [{**{k_: mine[i_].get(k_) for k_ in ('id', 'hr', 'k', 'typ', 'use', 'gs', 'gsq', 'r', 'n', 'adr')}, 'gf': mine[i_]['d']['gf'],
+                    'stage1_m': ref_t.get(i_, {}).get('hoehe_m')} for i_ in sorted(mine, key=lambda q: -mine[q]['hr'])]
+    ck('tall buildings against stage 1', not wrong and not lost and not extra,
+       f'{len(mine)} records of 25 m and more ({sum(1 for v in mine.values() if v["d"]["gf"] >= 100)} with 100 m² and more), stage 1 lists {len(ref_t)} in the city; '
+       f'height differs {wrong[:3]}, missing {lost[:3]}, not in stage 1 {extra[:3]}')
     if a.area == 'stadt':
         ref = json.load(open(os.path.join(G.BESTAND, 'bestand.json'), encoding='utf-8'))
         ne_ = None

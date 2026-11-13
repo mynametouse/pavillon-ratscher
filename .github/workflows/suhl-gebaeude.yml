@@ -1,0 +1,184 @@
+# Suhl-Gebäude (Stufe 2 des Suhl-Plans, Paket S2-2, Auftrag docs/plans/auftraege/suhl-gebaeude.md): ein Datensatz je Gebäude der ganzen
+# Stadt Suhl in Kacheln der Stufe 10 (suhl/g/v<N>/10/<x>/<y>.json) – ETHOS.BUILDA (Zenodo, 882 MB im Strom gefiltert), Kataster-WFS
+# „ALKIS vereinfacht“ (nur ave:GebaeudeBauwerk, in Kästen, mit Pausen), OpenStreetMap aus dem Geofabrik-Auszug (osmium), Luftbild des
+# Landes (WMS, je Kachel ein Bild 0,4 m) für Dachklasse und Dachfarbe, Fußhöhen aus dem Gelände. Dazu die Prüfungen (Plan 5.3).
+# Ergebnis: Artefakt „suhl-gebaeude-kacheln“ (alle Kacheln, index.json) und kleine Zahlen-Dateien nach tools/suhl/out/gebaeude/actions/
+# auf suhl/gebaeude. Veröffentlicht wird ins Daten-Repo erst, wenn die Aktion von suhl-daten da ist und secrets.DATEN_TOKEN gesetzt ist
+# (sonst wird der Schritt mit einer klaren Zeile übersprungen – nie ein roter Lauf deswegen).
+# Läuft nur auf suhl/gebaeude und nur, wenn diese Datei oder tools/suhl/gebaeude/lauf.txt sich ändert (lauf.txt ändern = neuen Lauf
+# bestellen); der Lauf nimmt beim Start den neuesten Stand des Zweigs. Ein neuer Lauf bricht einen älteren ab (wiederholbar: alle
+# Downloads liegen im Actions-Cache).
+name: Suhl – Gebäude (ganze Stadt)
+
+on:
+  push:
+    branches: ['suhl/gebaeude']
+    paths: ['.github/workflows/suhl-gebaeude.yml', 'tools/suhl/gebaeude/lauf.txt']
+
+concurrency:
+  group: suhl-gebaeude
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  gebaeude:
+    name: Datensätze der ganzen Stadt
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    env:
+      SUHL_RAW: /home/runner/suhl-raw
+      UA: 'PavillonRatscher-Suhl/0.1 (+https://github.com/mynametouse/pavillon-ratscher)'
+      VERSION: v1
+      OUT: /home/runner/suhl-out
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: suhl/gebaeude
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: |
+          pip install --quiet numpy shapely pyproj pillow mapbox_earcut tifffile imagecodecs requests
+          sudo apt-get update -q && sudo apt-get install -y -q osmium-tool
+          mkdir -p "$SUHL_RAW" "$OUT" logs tools/suhl/out/gebaeude/actions
+          cat tools/suhl/gebaeude/lauf.txt || true
+      - name: Rohdaten aus dem Cache (Downloads früherer Läufe)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/suhl-raw
+          key: suhl-gebaeude-raw-v1-${{ github.run_id }}
+          restore-keys: |
+            suhl-gebaeude-raw-v1-
+      - name: OpenStreetMap – Geofabrik-Auszug Thüringen, auf Suhl geschnitten (OPL)
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          mkdir -p "$SUHL_RAW/geofabrik"
+          P="$SUHL_RAW/geofabrik/suhl.opl.gz"
+          if [ ! -s "$P" ]; then
+            curl -sSfL --retry 3 --retry-delay 20 -A "$UA" -o "$RUNNER_TEMP/th.osm.pbf" https://download.geofabrik.de/europe/germany/thueringen-latest.osm.pbf
+            osmium fileinfo "$RUNNER_TEMP/th.osm.pbf" | grep -E "timestamp|Bounding" | tee "$SUHL_RAW/geofabrik/fileinfo.txt"
+            # the bounding box of the municipality (OSM relation 62450) + 0.004 degrees, as in tools/suhl/bestand/osm_api.py
+            osmium extract -b 10.5482,50.5568,10.8466,50.6929 -s smart "$RUNNER_TEMP/th.osm.pbf" -o "$RUNNER_TEMP/suhl.osm.pbf"
+            osmium cat "$RUNNER_TEMP/suhl.osm.pbf" -f opl | gzip -6 > "$P"
+            rm -f "$RUNNER_TEMP/th.osm.pbf"
+          fi
+          ls -la "$SUHL_RAW/geofabrik"; cat "$SUHL_RAW/geofabrik/fileinfo.txt" || true
+      - name: ETHOS.BUILDA – DEG.csv (Zenodo 11845992) im Strom auf Suhl gefiltert
+        timeout-minutes: 25
+        run: |
+          set -o pipefail
+          mkdir -p "$SUHL_RAW/ethos"
+          P="$SUHL_RAW/ethos/suhl.jsonl"
+          if [ ! -s "$P" ]; then
+            curl -sSL --retry 3 --retry-delay 20 -A "$UA" https://zenodo.org/api/records/11845992/files/DEG.csv/content \
+              | python -I -u tools/suhl/bestand/ethos_filter.py "$P.part" 2>&1 | tee logs/ethos_filter.log
+            mv "$P.part" "$P"
+          fi
+          ls -la "$SUHL_RAW/ethos"; wc -l "$P"
+      - name: Kataster – WFS „ALKIS vereinfacht“, nur ave:GebaeudeBauwerk, in Kästen mit Pausen
+        timeout-minutes: 25
+        run: |
+          set -o pipefail
+          python -I -u tools/suhl/gebaeude/alkis.py --area stadt --summary tools/suhl/out/gebaeude/actions/alkis_stadt.json 2>&1 | tee logs/alkis.log
+      - name: Datensätze bauen (Dach geschätzt, Dachklasse und -farbe aus dem Luftbild, Seiten, Nutzung, Baualter)
+        timeout-minutes: 60
+        run: |
+          set -o pipefail
+          python -I -u tools/suhl/gebaeude/bauen.py --area stadt --opl "$SUHL_RAW/geofabrik/suhl.opl.gz" --dop --dop-workers 2 \
+            --out "$OUT/suhl/g/$VERSION" --version "$VERSION" 2>&1 | tee logs/bauen.log
+      - name: Fußhöhen – Geländekacheln von suhl-boden, sonst Copernicus (vorläufig)
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          # the terrain tiles of suhl-boden once they are published (plan 2.4: suhl/boden/v<N>/t/<L>/<x>/<y>.bin, version from aktuell.json)
+          BASE="https://mynametouse.github.io/pavillon-daten/suhl"
+          V=$(curl -sSfL -m 30 -A "$UA" "$BASE/aktuell.json" 2>/dev/null | python -c "import json,sys; d=json.load(sys.stdin); p=d.get('boden') or d.get('products',{}).get('boden') or {}; print(p.get('version', p.get('v', '')) if isinstance(p, dict) else p)" 2>/dev/null || true)
+          if [ -n "$V" ]; then
+            echo "Geländekacheln von suhl-boden, Version $V"
+            python -I -u tools/suhl/gebaeude/fuss.py --tiles "$OUT/suhl/g/$VERSION" --terrain "$BASE/boden/v${V#v}/t" --source "suhl-boden v${V#v} (pavillon-daten)" --q 1 2>&1 | tee logs/fuss.log \
+              || { echo "Geländekacheln decken die Stadt nicht – Copernicus"; V=""; }
+          fi
+          if [ -z "$V" ]; then
+            echo "keine veröffentlichten Geländekacheln von suhl-boden – Fußhöhen aus Copernicus GLO-30 (vorläufig, Merker zq 0)"
+            python -I -u tools/suhl/gebaeude/fuss.py --tiles "$OUT/suhl/g/$VERSION" --cop "$SUHL_RAW" 2>&1 | tee logs/fuss.log
+          fi
+      - name: Prüfungen (Plan 5.3)
+        id: pruefen
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          python -I -u tools/suhl/gebaeude/pruefen.py --tiles "$OUT/suhl/g/$VERSION" --area stadt \
+            --out tools/suhl/out/gebaeude/actions/pruefen_stadt.json 2>&1 | tee logs/pruefen.log
+      - name: Zahlen und Größen
+        if: always()
+        run: |
+          cp "$OUT/suhl/g/bauen_stadt.json" tools/suhl/out/gebaeude/actions/bauen_stadt.json 2>/dev/null || true
+          cp "$OUT/suhl/g/$VERSION/index.json" tools/suhl/out/gebaeude/actions/index_stadt.json 2>/dev/null || true
+          if [ -d "$OUT/suhl/g/$VERSION" ]; then
+            ( cd "$OUT" && tar -czf "$RUNNER_TEMP/suhl-g-$VERSION.tar.gz" suhl/g )
+            RAWB=$(du -sb "$OUT/suhl/g/$VERSION" | cut -f1); GZB=$(stat -c %s "$RUNNER_TEMP/suhl-g-$VERSION.tar.gz")
+            NT=$(find "$OUT/suhl/g/$VERSION" -name '*.json' -path '*/10/*' | wc -l)
+            printf '{"run_id": "%s", "version": "%s", "tiles": %s, "bytes_raw": %s, "bytes_tar_gz": %s, "made": "%s"}\n' "$GITHUB_RUN_ID" "$VERSION" "$NT" "$RAWB" "$GZB" "$(date -u +%FT%TZ)" \
+              | tee tools/suhl/out/gebaeude/actions/lauf.json
+          fi
+          du -sh "$SUHL_RAW"/* 2>/dev/null || true
+      - name: Veröffentlichen ins Daten-Repo (nur mit der Aktion von suhl-daten und secrets.DATEN_TOKEN)
+        if: success()
+        env:
+          DATEN_TOKEN: ${{ secrets.DATEN_TOKEN }}
+        run: |
+          if [ ! -f .github/actions/suhl-publish/action.yml ]; then
+            echo "ÜBERSPRUNGEN: die Aktion .github/actions/suhl-publish ist auf diesem Zweig noch nicht da – die Kacheln liegen im Artefakt suhl-gebaeude-kacheln (Lauf $GITHUB_RUN_ID)"
+          elif [ -z "$DATEN_TOKEN" ]; then
+            echo "ÜBERSPRUNGEN: secrets.DATEN_TOKEN fehlt – die Kacheln liegen im Artefakt suhl-gebaeude-kacheln (Lauf $GITHUB_RUN_ID)"
+          else
+            echo "ÜBERSPRUNGEN: die Übergabe an die Aktion suhl-publish ist noch nicht verdrahtet (Eingaben der Aktion abwarten) – Artefakt suhl-gebaeude-kacheln (Lauf $GITHUB_RUN_ID)"
+          fi
+      - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
+        if: always()
+        run: echo "RAWKEY=$(cd "$SUHL_RAW" 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+      - name: Rohdaten in den Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/suhl-raw
+          key: suhl-gebaeude-raw-v1-${{ env.RAWKEY }}
+      - name: Kacheln als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-gebaeude-kacheln
+          path: ${{ runner.temp }}/suhl-g-*.tar.gz
+          if-no-files-found: ignore
+          retention-days: 30
+          compression-level: 0
+      - name: Zahlen nach suhl/gebaeude (nur tools/suhl/out/gebaeude/actions/)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f tools/suhl/out/gebaeude/actions
+          if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+          if git diff --cached --name-only | grep -v '^tools/suhl/out/gebaeude/actions/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
+          printf '%s\n\n%s\n%s\n' "suhl-gebaeude: numbers of the Actions run ${GITHUB_RUN_ID} (the whole city: counts, checks, sizes)" \
+            "Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>" \
+            "Claude-Session: https://claude.ai/code/session_01L6YrpcuzUozgpZNSC5CdVL" > "$RUNNER_TEMP/msg.txt"
+          git commit -q -F "$RUNNER_TEMP/msg.txt"
+          for i in 1 2 3 4 5; do
+            if git pull -q --rebase origin suhl/gebaeude && git push -q origin HEAD:suhl/gebaeude; then echo "gepusht"; break; fi
+            echo "Push abgelehnt (Versuch $i)"; sleep $((15 * i))
+          done
+      - name: Protokolle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-gebaeude-logs
+          path: |
+            logs/
+            tools/suhl/out/gebaeude/actions/
+          if-no-files-found: ignore
+          retention-days: 10

@@ -162,6 +162,7 @@ def main():
     ap.add_argument('--osm-api', default=None)
     ap.add_argument('--opl', default=None)
     ap.add_argument('--dop', action='store_true', help='roof class and colour from the aerial image (WMS th_dop, cached per tile)')
+    ap.add_argument('--dop-workers', type=int, default=0, help='fetch the aerial images ahead with this many requests at a time (GitHub Actions: 2)')
     ap.add_argument('--out', default=None)
     ap.add_argument('--version', default='v0')
     ap.add_argument('--limit-tiles', type=int, default=0, help='for tests: only the first n tiles')
@@ -315,12 +316,14 @@ def main():
         nb_ = [j for j in tree.query(p.buffer(0.35)) if j != i and polys[j].distance(p) < 0.35]
         b['nb'] = nb_
         b['bt'] = None
-        if nb_ and b['k'] in (0, 2, 5) and b['sh']['A'] < 60:
+        if nb_ and b['k'] in (0, 2, 3, 5) and b['sh']['A'] < 60:
             j = max(nb_, key=lambda j_: B[j_]['sh']['A'])
             if B[j]['sh']['A'] >= 2.0 * b['sh']['A'] and B[j]['k'] in (0, 1, 6):
                 try:
                     if p.buffer(0.35).intersection(polys[j].exterior).length >= 1.5:
                         b['bt'] = j
+                        if b['k'] == 3 and b['hh'] >= 6.0:
+                            b['k'] = 0      # a tall 'roofing' against a house is a stack of balconies or loggias, not a carport
                 except Exception:
                     pass
 
@@ -337,6 +340,10 @@ def main():
     if a.limit_tiles:
         tkeys = tkeys[:a.limit_tiles]
     G.log('buildings to build', sum(len(tiles[k]) for k in tkeys), 'tiles', len(tkeys))
+    if a.area == 'stadt':
+        G.S.guard(buildings=sum(len(tiles[k]) for k in tkeys), area='stadt', what='suhl-gebaeude bauen')
+    if photo is not None and a.dop_workers > 0:
+        photo.prefetch(tkeys, a.dop_workers)
     stats = {'k': Counter(), 'use': Counter(), 'typ': Counter(), 'r': Counter(), 'rq': Counter(), 'gsq': Counter(), 'era': Counter(), 'eraq': Counter(),
              'kat': Counter(), 'src': Counter(), 'cls': Counter(), 'cq': Counter(), 'fn': Counter(), 'fnmap': {}, 'hq': Counter()}
     tall, index, total_bytes, nb = [], {}, 0, 0
