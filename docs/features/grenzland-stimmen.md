@@ -106,25 +106,25 @@ einer Szene begegnet, klingt verschieden; eine Stimme für zwei nur, wo sie sich
 | 1989: Maik (19) | de-DE Killian | +10 % | +5 Hz | 3 |
 | 1989: Erna (66) · Renate (38) · Brigitte (57) | de-DE Amala · de-DE Katja · de-AT Ingrid | −8 / ±0 / −4 % | −8 / −2 / −4 Hz | 4 · 3 · 3 |
 | 1989: Gisela (46) · Ines (20) | de-DE Seraphina · de-CH Leni | −2 / +6 % | −3 / +4 Hz | 3 · 3 |
-| Radio Grenzland: Matze (45) | en-US Brian (Multilingual), Sendeklang | +8 % | +3 Hz | 42 von 69 |
+| Radio Grenzland: Matze (45) | en-US Brian (Multilingual), Sendeklang | +8 % | +3 Hz | 41 von 69 |
 | 1989 Radio Republik: der Sprecher | de-DE Conrad, Sendeklang | −4 % | −4 Hz | – (über dem Budget) |
 | 1989 Impuls: Kati (24) | de-DE Amala, Sendeklang | +8 % | +4 Hz | – |
 | Kirmeswelle, Klassik am Kamm, Zweitakt, Blasius, Neon, Frankenwelle 3 | (Ingrid, Katja, Killian, Jonas, Emma, Andrew – über dem Budget) | | | – |
 
 Die Tabelle steht als `CAST` in `tools/voices/grenzland_record.py`; eine Änderung dort nimmt die betroffenen Sätze beim nächsten Lauf neu auf.
 
-## Stand (13.11.2026, 13:10)
+## Stand (13.11.2026, 13:25)
 
 - **Gesammelt:** 728 Zeilen von 40 Sprechern (mit welt 034ef982 und kino b0c64a19).
-- **Aufgenommen:** 373 Sätze, 5,73 MB: alle 92 Gesprächszeilen der Missionen, 99 von 100 der Welt (Polizeifunk, Rufe, Ereignisse, Straße
-  1989 – ein Satz von Bratwurst-Uwe fehlte, weil der Zufall ihm Florian gab; jetzt fest Killian), alle 140 Reaktionen von Gerhard, Jule,
-  Timo und Basti, 42 von 69 Sätzen von Matze (Ansagen, Moderation, Polizeibericht, ein Teil der Nachrichten). Mit der Gerätestimme: der
-  Rest von Matze, Radio Republik, die übrigen Sender, die Reaktionen der Leute ohne Geschichte.
+- **Aufgenommen:** 373 Sätze, MP3 5,75 MB (Ordner 5,88 MB): alle 92 Gesprächszeilen der Missionen, alle 100 der Welt (Polizeifunk, Rufe,
+  Zufallsereignisse, Straße 1989, die Antworten des Spielers), alle 140 Reaktionen von Gerhard, Jule, Timo und Basti, 41 von 69 Sätzen von
+  Matze (Ansagen, Moderation, der Polizeibericht über die eigenen Taten, ein Teil der Nachrichten). Mit der Gerätestimme: der Rest von
+  Matze, Radio Republik, die übrigen Sender, die Reaktionen der Leute ohne Geschichte (Verkäuferin, Yuki, die Leute der Ereignisse).
 - **Getestet:** Unit-Test `viz3/test/unit/grenzland_stimmen.test.mjs` (Id wie im Dorf, Regeln des Sammlers, Liste passt zu den Gesprächen;
   in `tools/check.sh`); Browser-Test `viz3/test/grenzland_stimmen.py` auf GitHub Actions (`viz3/extra/grenzland-stimmen/tests.txt`): die
   Aufnahmen neben den Dorf-Sätzen in `VOICEX`, Anteil gesprochen/aufgenommen, ein Satz spielt und sein Promise endet mit der Aufnahme, das
-  Vorabholen, das Ducking-Ereignis, die Straße von 1989, nach „Beenden“ ist alles aus, keine Seitenfehler – **grün auf Actions (f7554284,
-  Lauf 43421774864: 14/14, 170 s)**. Der Chat-Rechner hatte keinen freien Browser (vier Agenten in der Schlange).
+  Vorabholen, das Ducking-Ereignis, die Straße von 1989, nach „Beenden“ ist alles aus, keine Seitenfehler – **grün auf Actions**
+  (f7554284 Lauf 43421774864 und c014d9b0 Lauf 43422908772: je 14/14). Der Chat-Rechner hatte keinen freien Browser (vier Agenten in der Schlange).
 - **Nicht aufnehmbar, weil veränderlich** (bleibt Gerätestimme): im Radio die Uhrzeit („Radio Grenzland, die Nachrichten. Es ist …“), das
   Wetter, „Das war „Titel“ – Interpret“, die Geldbuße in „Die Suche … ist beendet … Geldbuße: n Euro“.
 - **Nicht gesprochen, weil kein Modul sie spricht** (die Dateien gehören diese Runde niemandem): Yuki und die Sushi-Geschichte
