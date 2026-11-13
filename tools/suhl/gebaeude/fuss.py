@@ -8,14 +8,15 @@ and written into the building tiles WITHOUT touching anything else of a record. 
   # until such tiles exist: Copernicus GLO-30 straight from the open data bucket (tools/welt/fetch.py Cop30), 30 m, a SURFACE model:
   python3 -I tools/suhl/gebaeude/fuss.py --tiles … --cop RAW
 
-Per record:  z0  the lowest ground height under the outline of the footprint (outer ring and courtyards), as model z = NHN - H0 in true
-                 metres - the level all heights of the record count from (e, hr, the roof, the top lines of the sides). This is how
-                 LoD2 / ETHOS define the height of a building: from its lowest ground point to its highest roof point.
-             zv  the ground above z0 at every corner of the footprint, in the order of `f` and then the holes `h` (metres, >= 0;
-                 left out when the ground is level within 0.25 m): on a slope a house stands deeper in the ground on its uphill side.
-             zq  what the ground is: 0 = Copernicus GLO-30 (30 m, surface model: preliminary), 1 = terrain tiles from Copernicus,
-                 2 = terrain tiles with DGM1 (1 m), 3 = LoD2 ground surface
-Tile header: `z` = {src, q, made}.
+Per record:  z0    the lowest ground height under the outline of the footprint (outer ring and courtyards), as model z = NHN - H0 in
+                   true metres - the level all heights of the record count from (e, h, the roof rv, the wall tops of F). This is how
+                   LoD2 / ETHOS define the height of a building: from its lowest ground point to its highest roof point.
+             x_zv  the ground above z0 at every corner of the footprint, in the order of `f` and then the holes `fh` (metres, >= 0;
+                   left out when the ground is level within 0.4 m): on a slope a house stands deeper in the ground on its uphill side.
+             q.z0  1 = from a surface model or terrain derived from it (Copernicus GLO-30: preliminary), 2 = from terrain with DGM1 (1 m)
+             src.z0  cop30 | dgm1
+Index: `based_on` {boden: N} when the terrain tiles of suhl-boden version N were read (docs/features/suhl-daten.md section 3), the
+source entry of the terrain, `x_z0` = {src, q, made, with_z0, z0_min, z0_max}.
 """
 import argparse, glob, json, os, sys, time
 import numpy as np
@@ -85,14 +86,14 @@ class Wth:
 
 def outline(rec, fr):
     """the corners of a record's rings in UTM: (E, N, number of corners)"""
-    rings = [rec['f']] + list(rec.get('h') or [])
+    rings = [rec['f']] + list(rec.get('fh') or [])
     xs = np.array([v for r in rings for v in r[0::2]], dtype=float)
     ys = np.array([v for r in rings for v in r[1::2]], dtype=float)
     E, N = fr.to_utm(xs, ys)
     return rings, np.asarray(E), np.asarray(N)
 
 
-def patch(doc, ground, q, src):
+def patch(doc, ground, q, src_id):
     """z0, zv, zq of every record of one tile; returns (records, records without ground)"""
     L, x, y = S.parse_key(doc['key'])
     fr = S.tile_frame(L, x, y)
@@ -114,8 +115,13 @@ def patch(doc, ground, q, src):
                     PN.append(nn[i] + (nn[j] - nn[i]) * k / m)
         hz = ground(np.array(PE), np.array(PN))
         hc = ground(E, N)
-        for key in ('z0', 'zv', 'zq'):
+        for key in ('z0', 'x_zv'):
             rec.pop(key, None)
+        rec.get('q', {}).pop('z0', None)
+        if 'src' in rec:
+            rec['src'].pop('z0', None)
+            if not rec['src']:
+                del rec['src']
         if not np.isfinite(hz).any() or not np.isfinite(hc).all():
             miss += 1
             continue
@@ -124,14 +130,17 @@ def patch(doc, ground, q, src):
         # keep the record's key order: z0, zq, zv go in front of the footprint
         new = {}
         for kk, vv in rec.items():
-            if kk == 'f':
-                new['z0'], new['zq'] = round(z0 - wlib.H0, 2), q
-                if float(zv.max()) >= 0.25:
-                    new['zv'] = [round(float(v), 1) for v in zv]
             new[kk] = vv
+            if kk == 'e':       # z0 follows the heights h, e
+                new['z0'] = round(z0 - wlib.H0, 2)
+                if float(zv.max()) >= 0.4:
+                    new['x_zv'] = [round(float(v), 1) for v in zv]
+        new.setdefault('q', {})['z0'] = q
         rec.clear()
         rec.update(new)
-    doc['z'] = {'src': src, 'q': q, 'made': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+    # the tile's default source of z0 (a building's src lists only what differs)
+    if isinstance(doc.get('src'), dict):
+        doc['src']['z0'] = src_id
     return len(doc['b']), miss
 
 
@@ -142,7 +151,9 @@ def main():
     ap.add_argument('--levels', default='12,11,10,9,8,7,6')
     ap.add_argument('--cop', default=None, help='raw folder for Copernicus GLO-30 (tools/welt/fetch.py)')
     ap.add_argument('--source', default=None)
-    ap.add_argument('--q', type=int, default=None)
+    ap.add_argument('--q', type=int, default=None, help='quality of z0: 1 terrain from a surface model (Copernicus), 2 terrain with DGM1')
+    ap.add_argument('--src-id', default=None, help='source id of the terrain in the catalogue: cop30 | dgm1')
+    ap.add_argument('--boden', type=int, default=None, help='version N of the product boden the terrain tiles belong to -> based_on {boden: N}')
     a = ap.parse_args()
     files = sorted(glob.glob(os.path.join(a.tiles, str(G.LEVEL), '*', '*.json')))
     if not files:
@@ -153,35 +164,46 @@ def main():
     if a.terrain:
         ground = Wth(a.terrain, [int(v) for v in a.levels.split(',')])
         q, src = (a.q if a.q is not None else 1), (a.source or f'terrain tiles {a.terrain}')
+        src_id = a.src_id or ('dgm1' if q >= 2 else 'cop30')
     elif a.cop:
         import fetch as WF      # tools/welt/fetch.py (read only)
         ground = WF.Cop30(a.cop, (bb[0] - 200, bb[1] - 200, bb[2] + 200, bb[3] + 200))
-        q, src = 0, a.source or 'Copernicus DEM GLO-30 (30 m surface model, © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018, provided under COPERNICUS by the European Union and ESA) - preliminary'
+        q, src, src_id = 1, a.source or 'Copernicus DEM GLO-30 straight from the open data bucket (30 m surface model) - preliminary', 'cop30'
     else:
         raise SystemExit('give --terrain or --cop')
     n = miss = 0
     zs = []
     for f in files:
         doc = json.load(open(f, encoding='utf-8'))
-        a_, m_ = patch(doc, ground, q, src)
+        a_, m_ = patch(doc, ground, q, src_id)
         n += a_
         miss += m_
         zs += [r['z0'] for r in doc['b'] if 'z0' in r]
         G.write_json(f, doc)
     ip = os.path.join(a.tiles, 'index.json')
     if os.path.exists(ip):
+        sys.path.insert(0, os.path.join(G.REPO, 'tools', 'suhl', 'lib'))
+        from schema import index as IX
         idx = json.load(open(ip, encoding='utf-8'))
-        idx['z0'] = {'src': src, 'q': q, 'made': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'with_z0': n - miss, 'without': miss,
-                     'z0_min': round(min(zs), 1) if zs else None, 'z0_max': round(max(zs), 1) if zs else None, 'H0': wlib.H0}
-        tl = {}
+        idx['x_z0'] = {'src': src, 'q': q, 'made': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'with_z0': n - miss, 'without': miss,
+                       'z0_min': round(min(zs), 1) if zs else None, 'z0_max': round(max(zs), 1) if zs else None, 'H0': wlib.H0}
+        if a.boden is not None:
+            idx['based_on'] = {'boden': a.boden}
+        else:
+            idx.pop('based_on', None)
+        srcs = [s_ for s_ in idx.get('sources', []) if s_.get('id') not in ('cop30', 'dgm1')]
+        srcs.append(IX.source(src_id))
+        idx['sources'] = srcs
+        idx['attribution'] = IX.attribution_line(srcs)
         tot = 0
         for f in files:
             L, x, y = S.parse_key(f)
             sz = os.path.getsize(f)
             tot += sz
-            if f'{x}/{y}' in idx.get('tiles', {}):
-                idx['tiles'][f'{x}/{y}'][1] = sz
-        idx['bytes'] = tot
+            if f'{x}/{y}' in idx.get('counts', {}):
+                idx['counts'][f'{x}/{y}'][1] = sz
+        if isinstance(idx.get('n'), dict):
+            idx['n']['bytes'] = tot
         G.write_json(ip, idx)
     G.log('z0 written for', n - miss, 'of', n, 'buildings; source:', src[:60], '; levels used:', getattr(ground, 'used', None),
           '; z0 (model z) from', round(min(zs), 1) if zs else None, 'to', round(max(zs), 1) if zs else None)

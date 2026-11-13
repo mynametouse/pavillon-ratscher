@@ -95,6 +95,28 @@ def robust(g):
     return g
 
 
+def tri_rings(rings):
+    """a polygon given by its rings (outer first, then the holes) as triangles: (vertices (n, 2), triangles (m, 3), counter-clockwise)"""
+    import mapbox_earcut as earcut
+    vv = np.vstack(rings).astype(np.float64)
+    ends = np.cumsum([len(r) for r in rings]).astype(np.uint32)
+    tri = earcut.triangulate_float64(vv, ends).reshape(-1, 3)
+    cr = ((vv[tri[:, 1], 0] - vv[tri[:, 0], 0]) * (vv[tri[:, 2], 1] - vv[tri[:, 0], 1])
+          - (vv[tri[:, 1], 1] - vv[tri[:, 0], 1]) * (vv[tri[:, 2], 0] - vv[tri[:, 0], 0]))
+    tri[cr < 0] = tri[cr < 0][:, ::-1]
+    return vv, tri
+
+
+def rgb(hexcol):
+    """'#rrggbb' -> [r, g, b] in sRGB 0..1"""
+    return [round(int(hexcol[i:i + 2], 16) / 255.0, 2) for i in (1, 3, 5)]
+
+
+SECTORS = ('N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW')
+# where a field comes from when a building says nothing else (the tile's `src`); a building's `src` lists only what differs
+SRC0 = {'f': 'ethos', 'h': 'ethos', 'k': 'alkis', 'use': 'alkis', 'lv': 'alkis', 'adr': 'alkis', 'rk': 'dop', 'rc': 'dop'}
+
+
 def footprint(rings):
     """one valid polygon (CCW, holes CW, simplified by 0.12 m like prep.py clean) from [outer, hole, ...] in UTM, or None"""
     from shapely.geometry import Polygon
@@ -307,6 +329,7 @@ def main():
                 h = 0.5
         b['use'], b['useq'], b['gs'], b['gsq'], b['hh'] = use, useq, gs, gsq, float(h)
         b['k'] = RG.kind_of(use, khint, sh, h, gs)
+        b['kq'] = useq if khint is not None else 0
         b['main'] = b['k'] in (0, 1, 6) and sh['A'] >= 40 and h >= 5.0
     # the neighbours that touch a footprint; a small body attached to a bigger one is a part of it (`bt`): a stair tower, a bay, an annex
     for i, b in enumerate(B):
@@ -345,7 +368,10 @@ def main():
     if photo is not None and a.dop_workers > 0:
         photo.prefetch(tkeys, a.dop_workers)
     stats = {'k': Counter(), 'use': Counter(), 'typ': Counter(), 'r': Counter(), 'rq': Counter(), 'gsq': Counter(), 'era': Counter(), 'eraq': Counter(),
-             'kat': Counter(), 'src': Counter(), 'cls': Counter(), 'cq': Counter(), 'fn': Counter(), 'fnmap': {}, 'hq': Counter()}
+             'kat': Counter(), 'src': Counter(), 'cls': Counter(), 'cq': Counter(), 'fn': Counter(), 'fnmap': {}, 'hq': Counter(),
+             'rk': Counter(), 'use_out': Counter(), 'bt': Counter(), 'fg': Counter(), 'r_out': Counter(), 'lv_unfit': Counter()}
+    made = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    n_tief = 0
     tall, index, total_bytes, nb = [], {}, 0, 0
     sums = {'gf': 0.0, 'bgf': 0.0, 'dach': 0.0}
     n_adr = n_name = n_osm = n_front = n_shop = n_lm = n_dm = 0
@@ -363,7 +389,7 @@ def main():
                 streets.append(name)
             return sidx[name]
         img = photo.tile(tx, ty) if photo is not None else None
-        recs = []
+        recs, tief, fat, fat_idx = [], [], [], {}
         for i in tiles[(tx, ty)]:
             b = B[i]
             p, sid, alk = b['p'], b['id'], b['alk']
@@ -398,6 +424,11 @@ def main():
             sh_rel['ctr'] = np.array(sh['ctr']) - np.array([ec, nc])
             est = D.estimate(sh_rel, h, k, typ, use, gs, ot, ridge, iv, part=part_of is not None)
             faces, walls, rings = D.build(rel, est, sid, k, bool(others))
+            # floors that do not fit under the measured height (a low part of a taller house): kept aside as x_lv, estimated from the eave
+            gs_src = None
+            if gs and est['gs_fit'] is None:
+                gs_src, gs, gsq = gs, None, 0
+                stats['lv_unfit'][k] += 1
             # floors where neither the cadastre nor OpenStreetMap knows them: from the eave
             if gs is None and k in (0, 1, 6):
                 hf0 = D.STOREY.get(typ, 3.0)
@@ -433,7 +464,7 @@ def main():
                 fl['nk'] = 1        # not in the cadastre at the time of the request: possibly demolished since LoD2
             if h >= 25 and sh['A'] >= 100:
                 fl['hh'] = 1
-            era, eraq = RG.era_of(typ, use, ot, lm['year'] if lm else None, oldtown)
+            era, eraq, year = RG.era_of(typ, use, ot, lm['year'] if lm else None, oldtown)
             # the colours of a part follow its main building (the same choice from the palette)
             fa = F.params(part_of['id'] if part_of is not None else sid, typ, k, use, gs, gsq, est['eave'], ot, era, narrow=sh['Wd'] < 3.0)
             # shops and amenities inside (or within 2 m of) the footprint: the ground-floor shop zone and the signs
@@ -443,7 +474,12 @@ def main():
                     nm, kd, e, n, pid = pois[j]
                     if p.distance(Point(e, n)) <= 2.0:
                         shops.append((nm, kd, e, n))
-            name = (alk or {}).get('name') or ot.get('name') or (lm['name'] if lm and lm['nr'].startswith('Z') and oid_ in lm['osm'] else None)
+            name, nq, nsrc = None, 0, None
+            for cand, q_, s_src in (((alk or {}).get('name'), 2, 'alkis'), (ot.get('name'), 1, 'osm'),
+                                    (lm['name'] if lm and lm['nr'].startswith('Z') and oid_ in lm['osm'] else None, 1, 'wissen')):
+                if cand and cand.strip():
+                    name, nq, nsrc = cand.strip(), q_, s_src
+                    break
             Sp = {}
             if fa is not None and k == 0 and front:
                 shoplike = [s_ for s_ in shops if RG.shoplike(s_[1])]
@@ -474,95 +510,231 @@ def main():
                 stats['cls'][cls] += 1
                 stats['cq'][cq] += 1
             gf = b['p'].area   # the footprint as the source gives it, true m² in UTM (the simplified outline differs by less than 1 %)
-            rec = {'id': sid}
-            if oid_:
-                rec['osm'] = oid_
-                n_osm += 1
-            rec['k'] = k
-            rec['use'] = use
-            if fn:
-                if fn not in fidx:
-                    fidx[fn] = len(fnT)
-                    fnT.append(fn)
-                rec['fn'] = fidx[fn]
-            rec['typ'] = typ
-            if rec_bt:
-                rec['bt'] = rec_bt
-            if gs:
-                rec['gs'], rec['gsq'] = int(gs), gsq
-            rec['era'], rec['eraq'] = era, eraq
-            if name:
-                rec['n'] = name
-                n_name += 1
-            adr = (alk or {}).get('adr') or ''
-            if not adr and ot.get('addr:street') and ot.get('addr:housenumber'):
-                adr = ot['addr:street'] + ' ' + ot['addr:housenumber']
-            if adr:
-                rec['adr'] = adr
-                n_adr += 1
-            if fl:
-                rec['fl'] = fl
-            rec['kat'] = b['kat']
-            if b['src'] != 'e':
-                rec['src'] = b['src']
-            rec['f'] = flat2(rings[0])
-            if len(rings) > 1:
-                rec['h'] = [flat2(r) for r in rings[1:]]
-            rec['e'], rec['hr'], rec['hq'] = G.r2(est['eave']), G.r2(h), hq
-            rec['r'], rec['rq'] = est['form'], est['rq']
-            if est['form']:
-                rec['az'] = round((math.degrees(math.atan2(est['ux'][0], est['ux'][1])) + G.CONV) % 180.0, 1)
-                rec['p'] = round(est['pitch'], 1)
-            if est['rs']:
-                rec['rs'] = est['rs']
-            R = []
-            for f_ in faces:
-                o_ = {'c': f_['c'], 'col': f_['col'], 'cq': f_['cq'], 'a': f_['a']}
-                if est['form'] != 0:
-                    v3 = np.asarray(f_['v'], dtype=float).reshape(-1, 3)
-                    lx, ly = G.local(v3[:, 0], v3[:, 1])
-                    o_['sl'], o_['az'], o_['t'] = f_['sl'], f_['az'], f_['t']
-                    o_['v'] = [G.r2(q) for row in zip(lx, ly, v3[:, 2]) for q in row]
-                R.append(o_)
-            rec['R'] = R
-            # sides: [top a, top b, flags, street distance, street index (, apex u, apex top)] - one per ring edge, outer ring first
-            rec['S'] = [[s_[4], s_[7], s_[8], s_[9], s_[10]] + ([G.r2(s_[5] / G.SCALE), s_[6]] if s_[8] & 2 else []) for s_ in S]
-            if len(S) != sum(len(r) for r in rings):
-                # sides do not match the ring edges one to one (should not happen): explicit ends
-                rec['Sx'] = [[G.r2(q) for q in (*G.local(s_[0], s_[1]), *G.local(s_[2], s_[3]))] for s_ in S]
-            if fa is not None:
-                rec['fa'] = fa
-            if Sp:
-                rec['Sp'] = {str(k_): v for k_, v in sorted(Sp.items())}
-                n_shop += 1
-            if front:
-                n_front += 1
-            d = {'gf': G.r1(gf)}
-            if k in (0, 1, 6) and gs:
-                d['bgf'] = int(round(gf * gs))      # gross floor area above ground = footprint x floors
-            d['da'] = G.r1(sum(f_['a'] for f_ in faces))
-            rec['d'] = d
-            recs.append(rec)
-            # statistics
-            for key, val in (('k', k), ('use', use), ('typ', typ), ('r', est['form']), ('rq', est['rq']), ('era', era), ('eraq', eraq), ('kat', b['kat']),
+            adr, adr_q = (alk or {}).get('adr') or '', 2
+            if not adr:
+                adr_q = 0
+                if ot.get('addr:street') and ot.get('addr:housenumber'):
+                    adr, adr_q = ot['addr:street'] + ' ' + ot['addr:housenumber'], 1
+            form = est['form']
+            # statistics (our own categories; the contract's words follow below)
+            for key, val in (('k', k), ('use', use), ('typ', typ), ('r', form), ('rq', est['rq']), ('era', era), ('eraq', eraq), ('kat', b['kat']),
                              ('src', b['src']), ('hq', hq)):
                 stats[key][val] += 1
             stats['gsq'][gsq if gs else -1] += 1
             stats['fn'][fn or '(nicht im Kataster)'] += 1
             stats['fnmap'][fn or '(nicht im Kataster)'] = use
+            if k == 8:
+                # an underground car park: nothing to draw above ground - kept beside the buildings (private field of the tile)
+                tief.append({'id': sid, 'f': flat2(rings[0]), 'fkt': fn, 'adr': adr, 'fa': G.r1(gf)})
+                continue
+            rec = {'id': sid, 'f': flat2(rings[0])}
+            if len(rings) > 1:
+                rec['fh'] = [flat2(r) for r in rings[1:]]
+            rec['k'] = RG.KIND_OUT[k]
+            hh_ = G.r2(h)
+            ee_ = min(G.r2(est['eave']), hh_)
+            rec['h'], rec['e'] = hh_, ee_
+            rec['r'] = RG.ROOF_FORM_OSM.get(est['rs'], form) if est['rs'] else form
+            if form != 0:
+                mx, my = G.local(est['ux'][0], est['ux'][1])
+                az_ = round(math.degrees(math.atan2(mx, my)) % 180.0, 1)
+                rec['az'] = 0.0 if az_ >= 180.0 else az_          # the ridge, clockwise from the model's +y axis
+                rec['p'] = round(est['pitch'], 1)
+            rec['rq'] = 1 if est['rq'] >= 1 else 0
+            # the roof: one mesh (rv, rt) and its faces (R)
+            by = {}
+            for f_ in faces:
+                by[f_['c']] = by.get(f_['c'], 0.0) + f_['a']
+            dom = max(by, key=by.get)
+            wsum = sum(f_['a'] for f_ in faces if f_['c'] == dom) or 1.0
+            rcol = [round(sum(rgb(f_['col'])[i_] * f_['a'] for f_ in faces if f_['c'] == dom) / wsum, 2) for i_ in range(3)]
+            rec['rk'], rec['rc'] = RG.ROOF_CLASS_OUT[dom], rcol
+            rv, rt, R = [], [], []
+            ro = {}
+            if form == 0:
+                vv, tri = tri_rings(rings)
+                lx, ly = G.local(vv[:, 0], vv[:, 1])
+                for x_, y_ in zip(lx, ly):
+                    rv += [G.r2(x_), G.r2(y_), ee_]
+                rt = [int(q_) for q_ in tri.ravel()]
+                a_ = max(0.1, faces[0]['a'])
+                R.append({'vi': [0, len(vv)], 'ti': [0, len(tri)], 'c': RG.ROOF_CLASS_OUT[faces[0]['c']], 'sl': 0, 'a': a_})
+            else:
+                for f_ in faces:
+                    v3 = np.asarray(f_['v'], dtype=float).reshape(-1, 3)
+                    base, t0 = len(rv) // 3, len(rt) // 3
+                    lx, ly = G.local(v3[:, 0], v3[:, 1])
+                    for x_, y_, z_ in zip(lx, ly, v3[:, 2]):
+                        rv += [G.r2(x_), G.r2(y_), G.r2(min(z_, hh_))]
+                    rt += [int(q_) + base for q_ in f_['t']]
+                    a_ = max(0.1, f_['a'])
+                    o_ = {'vi': [base, len(v3)], 'ti': [t0, len(f_['t']) // 3], 'c': RG.ROOF_CLASS_OUT[f_['c']], 'sl': f_['sl'], 'az': f_['az'], 'a': a_,
+                          'ap': max(0.1, min(a_, round(a_ * math.cos(math.radians(f_['sl'])), 1)))}
+                    c_ = rgb(f_['col'])
+                    if max(abs(c_[i_] - rcol[i_]) for i_ in range(3)) > 0.02:
+                        o_['col'] = c_
+                    if f_['az'] is None or f_['sl'] < 6.0:
+                        o_.pop('az') if f_['az'] is None else None
+                        sec = 'flach'
+                    else:
+                        sec = SECTORS[int(((f_['az'] + 22.5) % 360.0) // 45.0)]
+                    ro[sec] = ro.get(sec, 0.0) + a_
+                    R.append(o_)
+            rec['rv'], rec['rt'], rec['R'] = rv, rt, R
+            cqm = max(f_['cq'] for f_ in faces)
+            # the walls (F) and what is known about each side (S, one entry per wall)
+            Fw, So, any_s, sq = [], [], False, 0
+            fa_out = None
+            if fa is not None:
+                # what is the same for all houses of a kind goes into the tile's table x_fat, the house keeps its own values
+                common = {'mat': F.MAT[fa['mat']], 'col2': rgb(fa['col2']), 'sock': fa['sock']}
+                if fa.get('win'):
+                    common['win'] = fa['win']
+                if fa.get('balk'):
+                    common['balk'] = F.BALK[fa['balk']]
+                ck_ = json.dumps(common, sort_keys=True)
+                if ck_ not in fat_idx:
+                    fat_idx[ck_] = len(fat)
+                    fat.append(common)
+                # storeys: the building's lv; storey height hf = (e - sock) / lv and ground floor h0 = hf unless given here
+                fa_out = {'t': fat_idx[ck_], 'col': rgb(fa['col'])}
+                if not gs:
+                    fa_out['lv'] = int(fa['gs'])
+            for i_, s_ in enumerate(S):
+                ax, ay = G.local(s_[0], s_[1])
+                bx, by_ = G.local(s_[2], s_[3])
+                L_ = math.hypot(s_[2] - s_[0], s_[3] - s_[1])
+                u_ = round(min(1.0, max(0.0, s_[5] / L_)), 2) if L_ > 1e-6 else 0.5
+                Fw.append([G.r2(ax), G.r2(ay), G.r2(bx), G.r2(by_), min(s_[4], hh_), u_, min(s_[6], hh_), min(s_[7], hh_), s_[8] & 1,
+                           G.r1(s_[9]) if s_[9] >= 0 else 99])
+                o_ = {}
+                q_ = 0
+                if s_[8] & 8:
+                    if s_[10] >= 0:
+                        o_['st'] = streets[s_[10]]
+                    else:
+                        o_['sd'] = G.r1(s_[9])     # an unnamed road; the distance of every wall is also the last number of its row in F
+                    q_ = 1
+                if s_[8] & 4:
+                    o_['x_hof'] = 1
+                sp = Sp.get(i_)
+                if sp:
+                    if sp.get('eg'):
+                        o_['eg'] = 'laden'
+                    if sp.get('sign'):
+                        o_['sign'] = sp['sign']
+                    q_ = 1
+                if o_:
+                    o_['q'] = q_
+                    sq = max(sq, q_)
+                    any_s = True
+                So.append(o_ or None)
+            rec['F'] = Fw
+            if any_s:
+                rec['S'] = So
+            if fa_out is not None:
+                fq = 1 if (gsq >= 1 or fa.get('q')) else 0
+                if fq:
+                    fa_out['q'] = fq
+                rec['x_fa'] = fa_out      # the facade parameters of all sides by rule (with x_fat[t] of the tile); a side of S overrides single values
+            if rec['r'] == 0:
+                rec['fl'] = 1
+            if gs:
+                rec['lv'] = int(gs)
+            if gs_src:
+                rec['x_lv'] = int(gs_src)
+            uw, egw = RG.use_word(use, fn, ot, k)
+            rec['use'] = uw
+            shop_zone = any(v.get('eg') for v in Sp.values())
+            if uw == 'wohnen' and (egw or shop_zone):
+                rec['eg'] = 'handel'
+            if fn:
+                rec['fkt'] = fn
+            rec['era'] = era
+            if year:
+                rec['yr'] = int(year)
+            rec['bt'] = RG.BT_OUT[typ]
+            if name:
+                rec['n'] = name
+                n_name += 1
+            if adr:
+                rec['adr'] = adr
+                n_adr += 1
+            if oid_:
+                rec['osm'] = oid_
+                n_osm += 1
+            fg = (1 if 'lm' in fl else 0) | (2 if 'dm' in fl else 0) | (4 if 'in' in fl else 0) | (32 if b['kat'] == 0 else 0) | (64 if b['src'] == 'k' else 0)
+            if fg:
+                rec['fg'] = fg
+            if 'lm' in fl:
+                rec['x_lm'] = fl['lm']
+            if rec_bt:
+                rec['x_teil'] = rec_bt
+            if b['kat'] != 2:
+                rec['x_kat'] = b['kat']
+            if Sp:
+                n_shop += 1
+            if front:
+                n_front += 1
+            # scenario numbers: true m² and m³, computed in UTM
+            rf = round(sum(max(0.1, f_['a']) for f_ in faces), 1)
+            vol = gf * (ee_ + (hh_ - ee_) * (0.5 if form in (1, 2) else (1.0 / 3.0) if form == 3 else 0.0)) if form else gf * hh_
+            d = {'fa': max(1.0, G.r1(gf))}
+            dq = {'rf': rec['rq'], 'ro': rec['rq'], 'vol': 1 if (hq == 2 and form == 0) else 0}
+            if gs and k in (0, 1, 6):
+                d['lv'], d['gfa'] = int(gs), max(1, int(round(gf * gs)))      # gross floor area above ground = footprint x floors
+                dq['lv'] = dq['gfa'] = gsq
+            d['rf'] = max(1.0, rf)
+            # (the roof area by direction is not repeated here: every face of R carries its area `a` and its direction `az`)
+            # the quality of these numbers follows from the building's q.lv (floors, floor area) and rq (roof areas)
+            rec['d'] = d
+            # quality and source of every field (absent = 0 = rule or assumption; absent source = regel)
+            q = {'f': 2, 'h': 2 if hq == 2 else 0, 'e': 1 if (form == 0 and hq == 2) else 0, 'k': b['kq'], 'use': b['useq'] if use != 'unbekannt' else 0,
+                 'lv': gsq if gs else 0, 'era': eraq, 'yr': 1 if year else 0, 'rk': 1 if cqm else 0, 'rc': 1 if cqm else 0, 'n': nq, 'adr': adr_q if adr else 0,
+                 'eg': 1 if (rec.get('eg') and shop_zone) else 0}
+            rec['q'] = {kk: vv_ for kk, vv_ in q.items() if vv_}
+            if not rec['q']:
+                rec['q'] = {'f': 2}
+            src = {'f': 'alkis' if b['src'] == 'k' else 'ethos', 'h': 'ethos' if hq == 2 else 'regel'}
+            for kk, q_ in (('k', b['kq']), ('use', q.get('use', 0)), ('lv', q.get('lv', 0)), ('adr', q.get('adr', 0))):
+                src[kk] = 'alkis' if q_ == 2 else 'osm' if q_ == 1 else 'regel'
+            if not gs:
+                src.pop('lv')
+            if not adr:
+                src.pop('adr')
+            src['rk'] = 'osm' if cqm == 2 else 'dop' if cqm else 'regel'
+            src['rc'] = 'dop' if cqm else 'regel'
+            if name:
+                src['n'] = nsrc
+            if eraq:
+                src['era'] = 'osm' if ((ot or {}).get('start_date')) else 'wissen'
+            # only what differs from the tile's default sources (SRC0) is written with the building
+            src = {kk: vv_ for kk, vv_ in src.items() if SRC0.get(kk) != vv_}
+            if src:
+                rec['src'] = src
+            recs.append(rec)
             sums['gf'] += gf
-            sums['bgf'] += d.get('bgf', 0)
-            sums['dach'] += d['da']
+            sums['bgf'] += d.get('gfa', 0)
+            sums['dach'] += rf
             n_lm += 1 if 'lm' in fl else 0
             n_dm += 1 if 'dm' in fl else 0
+            for cc in ('rk',):
+                stats['rk'][rec['rk']] += 1
+            stats['use_out'][rec['use']] += 1
+            stats['bt'][rec['bt']] += 1
+            stats['fg'][rec.get('fg', 0)] += 1
+            stats['r_out'][rec['r']] += 1
             if h >= 25:
-                tall.append({'id': sid, 'hr': G.r1(h), 'gf': round(gf), 'gs': gs, 'gsq': gsq if gs else None, 'use': use, 'fn': fn, 'typ': typ, 'k': k, 'r': est['form'],
-                             'n': name, 'adr': adr[:60], 'utm': [round(b['rp'][0]), round(b['rp'][1])], 'kat': b['kat']})
+                tall.append({'id': sid, 'h': G.r1(h), 'fa': round(gf), 'lv': gs, 'q_lv': gsq if gs else None, 'use': rec['use'], 'fkt': fn, 'bt': rec['bt'], 'k': rec['k'],
+                             'r': rec['r'], 'n': name, 'adr': adr[:60], 'utm': [round(b['rp'][0]), round(b['rp'][1])], 'x_kat': b['kat']})
         recs.sort(key=lambda r_: r_['id'])
         fr = G.S.tile_frame(G.LEVEL, tx, ty)
-        doc = {'schema': G.SCHEMA, 'product': 'g', 'version': a.version, 'key': fr.key, 'o': fr.o_json(), 'utm': list(fr.utm),
-               'frame': 'tile local: x = model x - o[0], y = model y - o[1] (model metres); heights true metres above the foot z0',
-               'str': streets, 'fn': fnT, 'n': len(recs), 'b': recs}
+        if not recs and not tief:
+            continue
+        doc = {'v': G.S.SCHEMA, 'p': 'g', 'key': fr.key, 'o': fr.o_json(), 'made': made, 'n': len(recs), 'src': SRC0, 'x_fat': fat, 'b': recs}
+        if tief:
+            doc['x_tief'] = tief        # underground car parks: footprints only, not drawn
+            n_tief += len(tief)
         fn_out = os.path.join(out_root, str(G.LEVEL), str(tx), f'{ty}.json')
         G.write_json(fn_out, doc)
         sz = os.path.getsize(fn_out)
@@ -572,21 +744,26 @@ def main():
         if len(index) % 25 == 0:
             G.log('tiles', len(index), 'of', len(tkeys), 'buildings', nb, f'{total_bytes / 1e6:.1f} MB')
     # ---------------- index and statistics ----------------
-    xs = [int(k.split('/')[0]) for k in index]
-    ys = [int(k.split('/')[1]) for k in index]
+    if a.area == 'stadt' and not index:
+        raise SystemExit('no tile written')
     cx, cy = G.tile_of(*G.CENTRE)
-    tl = sorted(((int(k.split('/')[0]), int(k.split('/')[1])) for k in index), key=lambda t_: (t_[1], t_[0]))
-    idx = {'schema': G.SCHEMA, 'product': 'g', 'version': a.version, 'area': a.area, 'level': G.LEVEL,
-           'frame': 'tile local (tools/suhl/lib/suhllib.py TileFrame): model metres relative to the tile centre o',
-           'made': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'attribution': ATTR,
-           'has': {str(G.LEVEL): G.S.tileset_encode(tl)},
-           'sources': {'ethos': 'ETHOS.BUILDA v1.0.0, Zenodo 11845992, DEG.csv; ODbL 1.0', 'alkis': 'WFS ALKIS vereinfacht, ave:GebaeudeBauwerk; © GDI-Th, CC BY 4.0',
-                       'osm': osm['source'] + (' ' + osm['stamp'] if osm['stamp'] else '') + '; © OpenStreetMap contributors, ODbL 1.0',
-                       'dop': 'WMS th_dop (DOP20, flight 15.05.2024); © GDI-Th, CC BY 4.0' if a.dop else None,
-                       'landmarks': 'docs/plans/suhl/wahrzeichen.md'},
-           'model_scale': round(G.SCALE, 6), 'model_turn_deg': round(G.ROT, 5),
-           'range': [min(xs), min(ys), max(xs), max(ys)], 'centre_tile': [cx, cy], 'buildings': nb, 'bytes': total_bytes, 'tiles': index}
-    G.write_json(os.path.join(out_root, 'index.json'), idx)
+    sys.path.insert(0, os.path.join(G.REPO, 'tools', 'suhl', 'lib'))
+    from schema import index as IX       # the common index of the data contract (suhl-daten)
+    sources = ['ethos', 'alkis', 'osm'] + (['dop'] if a.dop else []) + ['wissen', 'regel']
+    note = ('Ein Datensatz je Gebäudekörper des Katasters/LoD2. Dach geschätzt (rq 0 Regel, 1 mit Luftbild oder OSM-Angabe); Dachdeckung und -farbe '
+            'aus dem Luftbild; Fassaden nach Regeln (x_fa, Güte 0-1). Private Felder: x_fa (Fassaden-Parameter des Hauses), x_teil (Kennung des '
+            'Hauptgebäudes eines Bauteils), x_fat (Kachel-Tabelle zu x_fa), x_lm (Nummer in wahrzeichen.md), x_kat (1 = dem Kataster nach Lage zugeordnet, 0 = nicht mehr im '
+            'Kataster), x_zv (Gelände über z0 an den Ecken), x_hof (Hofseite), Kachel: x_tief (Tiefgaragen).')
+    extra = {'counts': index, 'centre_tile': [cx, cy], 'osm': (osm['source'] + ' ' + osm['stamp']).strip(),
+             'x_fields': {'x_fa': 'facade parameters of the whole building by rule: {t, col, q, lv (only when the building has no lv)} merged over the tile table x_fat[t] = {mat, col2, sock, win, balk}; storey height hf = (e - sock) / lv, ground floor h0 = hf; a side of S overrides single values',
+                          'x_fat': 'tile: table of the facade parameters that houses of a kind share',
+                          'x_teil': 'id of the bigger building a small part (stair tower, bay, balcony stack, annex) is attached to',
+                          'x_lv': 'floors of the cadastre that do not fit under the measured height of this body (lv is then an estimate)',
+                          'x_lm': 'number of the landmark in docs/plans/suhl/wahrzeichen.md', 'x_kat': '1 = joined to the cadastre by position, 0 = not in the cadastre',
+                          'x_zv': 'ground above z0 at every corner of f, then of the holes fh (metres)', 'x_hof': 'side of S: faces a courtyard',
+                          'x_tief': 'tile: underground car parks [{id, f, fkt, adr, fa}], not drawn'}}
+    idx = IX.make_index(out_root, 'g', a.version, a.area, sources, note=note, extra=extra,
+                        run=os.environ.get('GITHUB_RUN_ID') and {'id': os.environ['GITHUB_RUN_ID'], 'workflow': 'suhl-gebaeude.yml'})
     res = {'made': idx['made'], 'area': a.area, 'version': a.version, 'seconds': round(time.time() - t_start, 1), 'tiles': len(index), 'buildings': nb,
            'bytes': total_bytes, 'kb_per_building': round(total_bytes / 1024 / max(nb, 1), 2), 'centre_tile_present': f'{cx}/{cy}' in index,
            'ethos_in_frame': len(E), 'cadastre_in_frame': len(K), 'join': dict(st),
@@ -599,7 +776,10 @@ def main():
            'with_address': n_adr, 'with_name': n_name, 'with_osm': n_osm, 'with_street_side': n_front, 'with_shop_zone': n_shop, 'landmarks': n_lm,
            'monuments': n_dm, 'footprint_ha': round(sums['gf'] / 1e4, 2), 'floor_area_ha': round(sums['bgf'] / 1e4, 2), 'roof_area_ha': round(sums['dach'] / 1e4, 2),
            'function_to_use': {k: [stats['fn'][k], stats['fnmap'][k]] for k, _ in stats['fn'].most_common()},
-           'tall': sorted(tall, key=lambda t_: -t_['hr'])}
+           'underground': n_tief, 'floors_not_fitting_height': {str(k): v for k, v in sorted(stats['lv_unfit'].items())},
+           'use_out': dict(stats['use_out'].most_common()), 'bt': dict(stats['bt'].most_common()), 'rk': {str(k): v for k, v in sorted(stats['rk'].items())},
+           'fg': {str(k): v for k, v in sorted(stats['fg'].items())}, 'r_out': {str(k): v for k, v in sorted(stats['r_out'].items())},
+           'tall': sorted(tall, key=lambda t_: -t_['h'])}
     G.write_json(os.path.join(G.OUT, f'bauen_{a.area}.json') if not a.out else os.path.join(os.path.dirname(out_root.rstrip('/')), f'bauen_{a.area}.json'), res, compact=False)
     G.log(json.dumps({k: v for k, v in res.items() if k not in ('function_to_use', 'tall')}, ensure_ascii=False))
 

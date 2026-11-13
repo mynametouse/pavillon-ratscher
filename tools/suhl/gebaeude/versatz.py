@@ -33,7 +33,7 @@ def main():
         doc = json.load(open(f, encoding='utf-8'))
         L, tx, ty = S.parse_key(doc['key'])
         fr = S.tile_frame(L, tx, ty)
-        cand = [b for b in doc['b'] if b['hr'] >= a.min_height and b['d']['gf'] >= a.min_area and b['hq'] == 2 and b['k'] in (0, 1)]
+        cand = [b for b in doc['b'] if b['h'] >= a.min_height and b['d']['fa'] >= a.min_area and b['q'].get('h') == 2 and b['k'] in (0, 1)]
         if not cand:
             continue
         img = T.tile(tx, ty)
@@ -71,9 +71,9 @@ def main():
                         best = (sc, float(de), float(dn))
             if best[0] <= 0:
                 continue
-            rows.append({'id': b['id'], 'hr': b['hr'], 'gf': b['d']['gf'], 'adr': (b.get('adr') or '')[:40], 'de': round(best[1], 1), 'dn': round(best[2], 1),
+            rows.append({'id': b['id'], 'h': b['h'], 'fa': b['d']['fa'], 'adr': (b.get('adr') or '')[:40], 'de': round(best[1], 1), 'dn': round(best[2], 1),
                          'shift_m': round(float(np.hypot(best[1], best[2])), 1), 'edge_best': round(best[0], 4), 'edge_at_zero': round(zero, 4)})
-    rows.sort(key=lambda r: -r['hr'])
+    rows.sort(key=lambda r: -r['h'])
     sh = np.array([r['shift_m'] for r in rows]) if rows else np.array([0.0])
     res = {'made': S.now() if hasattr(S, 'now') else '', 'quelle': 'WMS th_dop (DOP20, Bildflug 15.05.2024), © GDI-Th, CC BY 4.0; 0,4 m je Bildpunkt',
            'gebaeude': len(rows), 'min_hoehe_m': a.min_height, 'versatz_median_m': round(float(np.median(sh)), 2),

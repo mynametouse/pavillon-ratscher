@@ -1,12 +1,12 @@
 {
- "made": "2026-11-13T00:56:42Z",
+ "made": "2026-11-13T01:10:20Z",
  "area": "probe",
  "version": "v0",
- "seconds": 14.2,
+ "seconds": 11.2,
  "tiles": 11,
- "buildings": 2507,
- "bytes": 2042404,
- "kb_per_building": 0.8,
+ "buildings": 2501,
+ "bytes": 2850806,
+ "kb_per_building": 1.11,
  "centre_tile_present": true,
  "ethos_in_frame": 4532,
  "cadastre_in_frame": 7951,
@@ -79,21 +79,21 @@
   "tank": 3
  },
  "roof_form": {
-  "0": 1289,
+  "0": 1280,
   "1": 79,
-  "2": 911,
-  "3": 228
+  "2": 919,
+  "3": 229
  },
  "roof_rq": {
-  "0": 1557,
-  "1": 143,
+  "0": 1556,
+  "1": 144,
   "2": 807
  },
  "floors_gsq": {
-  "-1": 285,
-  "0": 104,
-  "1": 134,
-  "2": 1984
+  "-1": 294,
+  "0": 130,
+  "1": 118,
+  "2": 1965
  },
  "era": {
   "0": 2211,
@@ -107,29 +107,29 @@
   "1": 39
  },
  "roof_class": {
-  "0": 940,
+  "0": 942,
   "1": 41,
-  "2": 1008,
-  "3": 372,
-  "4": 1402,
-  "5": 305,
-  "6": 46
+  "2": 1019,
+  "3": 374,
+  "4": 1399,
+  "5": 306,
+  "6": 44
  },
  "roof_class_q": {
   "0": 89,
-  "1": 4007,
+  "1": 4018,
   "2": 18
  },
- "with_address": 2486,
+ "with_address": 2480,
  "with_name": 128,
  "with_osm": 1814,
- "with_street_side": 1774,
+ "with_street_side": 1771,
  "with_shop_zone": 194,
  "landmarks": 50,
  "monuments": 18,
- "footprint_ha": 29.75,
- "floor_area_ha": 96.87,
- "roof_area_ha": 33.21,
+ "footprint_ha": 29.74,
+ "floor_area_ha": 95.17,
+ "roof_area_ha": 32.43,
  "function_to_use": {
   "Wohngebäude": [
    1418,
@@ -284,16 +284,86 @@
    "land"
   ]
  },
+ "underground": 6,
+ "floors_not_fitting_height": {
+  "0": 26,
+  "3": 9
+ },
+ "use_out": {
+  "wohnen": 1461,
+  "neben": 506,
+  "garage": 177,
+  "sonst": 88,
+  "verwaltung": 55,
+  "gewerbe": 52,
+  "handel": 39,
+  "versorgung": 19,
+  "schule": 19,
+  "buero": 18,
+  "verkehr": 15,
+  "kultur": 14,
+  "gesundheit": 13,
+  "kirche": 9,
+  "industrie": 8,
+  "hotel": 7,
+  "landwirtschaft": 1
+ },
+ "bt": {
+  "efh": 1037,
+  "nebengebaeude": 266,
+  "stadthaus": 217,
+  "ueberdachung": 202,
+  "block": 194,
+  "garage": 177,
+  "laube": 106,
+  "dorfhaus": 78,
+  "villa": 62,
+  "punkthochhaus": 46,
+  "platte": 44,
+  "halle": 37,
+  "zeilenbau": 22,
+  "turm": 5,
+  "kirche": 5,
+  "behaelter": 3
+ },
+ "rk": {
+  "0": 393,
+  "2": 153,
+  "3": 172,
+  "4": 1302,
+  "5": 17,
+  "6": 420,
+  "7": 44
+ },
+ "fg": {
+  "0": 2355,
+  "1": 11,
+  "2": 2,
+  "3": 11,
+  "5": 23,
+  "7": 5,
+  "32": 23,
+  "64": 71
+ },
+ "r_out": {
+  "0": 1274,
+  "1": 79,
+  "2": 865,
+  "3": 173,
+  "4": 26,
+  "5": 82,
+  "6": 2
+ },
  "tall": [
   {
    "id": "DETHL57P00006G0l",
-   "hr": 56.6,
-   "gf": 584,
-   "gs": 19,
-   "gsq": 2,
-   "use": "gastro",
-   "fn": "Gebäude für Handel und Dienstleistungen",
-   "typ": "hochhaus",
+   "h": 56.6,
+   "fa": 584,
+   "lv": 19,
+   "q_lv": 2,
+   "use": "hotel",
+   "fkt": "Gebäude für Handel und Dienstleistungen",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": "Hotelturm (City Hotel am CCS)",
@@ -302,17 +372,17 @@
     619314,
     5607787
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P0000jrup",
-   "hr": 47.9,
-   "gf": 71,
-   "gs": 16,
-   "gsq": 2,
+   "h": 47.9,
+   "fa": 71,
+   "lv": 16,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -321,17 +391,17 @@
     620078,
     5608244
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00006G1W",
-   "hr": 46.1,
-   "gf": 480,
-   "gs": 16,
-   "gsq": 2,
+   "h": 46.1,
+   "fa": 480,
+   "lv": 16,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -340,17 +410,17 @@
     619817,
     5607978
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00006G1Y",
-   "hr": 45.9,
-   "gf": 5,
-   "gs": 15,
-   "gsq": 2,
+   "h": 45.9,
+   "fa": 5,
+   "lv": 15,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -359,17 +429,17 @@
     619830,
     5607975
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00006IbC",
-   "hr": 45.9,
-   "gf": 7,
-   "gs": 16,
-   "gsq": 0,
+   "h": 45.9,
+   "fa": 7,
+   "lv": 16,
+   "q_lv": 0,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -378,17 +448,17 @@
     619519,
     5607972
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00006G0d",
-   "hr": 45.7,
-   "gf": 510,
-   "gs": 15,
-   "gsq": 2,
+   "h": 45.7,
+   "fa": 510,
+   "lv": 15,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -397,17 +467,17 @@
     619531,
     5607969
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00006G0c",
-   "hr": 45.5,
-   "gf": 506,
-   "gs": 15,
-   "gsq": 2,
+   "h": 45.5,
+   "fa": 506,
+   "lv": 15,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -416,17 +486,17 @@
     619474,
     5607952
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P0000jruo",
-   "hr": 45.5,
-   "gf": 434,
-   "gs": 15,
-   "gsq": 2,
+   "h": 45.5,
+   "fa": 434,
+   "lv": 15,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -435,17 +505,17 @@
     620063,
     5608252
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00006G0m",
-   "hr": 45.4,
-   "gf": 508,
-   "gs": 15,
-   "gsq": 2,
+   "h": 45.4,
+   "fa": 508,
+   "lv": 15,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -454,17 +524,17 @@
     619592,
     5607972
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00006G0z",
-   "hr": 45.1,
-   "gf": 507,
-   "gs": 15,
-   "gsq": 2,
+   "h": 45.1,
+   "fa": 507,
+   "lv": 15,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -473,17 +543,17 @@
     619676,
     5607965
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00006FW1",
-   "hr": 40.3,
-   "gf": 400,
-   "gs": 14,
-   "gsq": 2,
+   "h": 40.3,
+   "fa": 400,
+   "lv": 14,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -492,17 +562,17 @@
     619639,
     5607774
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002jt0",
-   "hr": 35.4,
-   "gf": 987,
-   "gs": 12,
-   "gsq": 2,
+   "h": 35.4,
+   "fa": 987,
+   "lv": 12,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -511,17 +581,17 @@
     618952,
     5607539
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002jwM",
-   "hr": 35.4,
-   "gf": 991,
-   "gs": 12,
-   "gsq": 2,
+   "h": 35.4,
+   "fa": 991,
+   "lv": 12,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -530,17 +600,17 @@
     618765,
     5607290
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002jtE",
-   "hr": 35.3,
-   "gf": 349,
-   "gs": 12,
-   "gsq": 2,
+   "h": 35.3,
+   "fa": 349,
+   "lv": 12,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -549,17 +619,17 @@
     618787,
     5607531
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002jsf",
-   "hr": 35.2,
-   "gf": 988,
-   "gs": 12,
-   "gsq": 2,
+   "h": 35.2,
+   "fa": 988,
+   "lv": 12,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -568,17 +638,17 @@
     618857,
     5607406
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002jtn",
-   "hr": 35.2,
-   "gf": 988,
-   "gs": 12,
-   "gsq": 2,
+   "h": 35.2,
+   "fa": 988,
+   "lv": 12,
+   "q_lv": 2,
    "use": "wohnen",
-   "fn": "Wohngebäude",
-   "typ": "hochhaus",
+   "fkt": "Wohngebäude",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -587,17 +657,17 @@
     618740,
     5607496
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lPf",
-   "hr": 34.5,
-   "gf": 27,
-   "gs": 11,
-   "gsq": 1,
+   "h": 34.5,
+   "fa": 27,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -606,17 +676,17 @@
     618769,
     5607277
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lPe",
-   "hr": 34.4,
-   "gf": 28,
-   "gs": 11,
-   "gsq": 1,
+   "h": 34.4,
+   "fa": 28,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -625,17 +695,17 @@
     618750,
     5607297
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lPd",
-   "hr": 34.2,
-   "gf": 14,
-   "gs": 11,
-   "gsq": 1,
+   "h": 34.2,
+   "fa": 14,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -644,17 +714,17 @@
     618736,
     5607313
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lO2",
-   "hr": 34.1,
-   "gf": 14,
-   "gs": 11,
-   "gsq": 1,
+   "h": 34.1,
+   "fa": 14,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -663,17 +733,17 @@
     618785,
     5607520
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lO3",
-   "hr": 34.1,
-   "gf": 13,
-   "gs": 11,
-   "gsq": 1,
+   "h": 34.1,
+   "fa": 13,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -682,17 +752,17 @@
     618796,
     5607531
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lPg",
-   "hr": 34.1,
-   "gf": 14,
-   "gs": 11,
-   "gsq": 1,
+   "h": 34.1,
+   "fa": 14,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -701,17 +771,17 @@
     618784,
     5607261
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOo",
-   "hr": 34.0,
-   "gf": 27,
-   "gs": 11,
-   "gsq": 1,
+   "h": 34.0,
+   "fa": 27,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -720,17 +790,17 @@
     618735,
     5607483
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOp",
-   "hr": 34.0,
-   "gf": 14,
-   "gs": 11,
-   "gsq": 1,
+   "h": 34.0,
+   "fa": 14,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -739,17 +809,17 @@
     618719,
     5607468
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOT",
-   "hr": 34.0,
-   "gf": 13,
-   "gs": 11,
-   "gsq": 1,
+   "h": 34.0,
+   "fa": 13,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -758,17 +828,17 @@
     618876,
     5607377
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOR",
-   "hr": 33.9,
-   "gf": 28,
-   "gs": 11,
-   "gsq": 1,
+   "h": 33.9,
+   "fa": 28,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -777,17 +847,17 @@
     618842,
     5607413
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOS",
-   "hr": 33.9,
-   "gf": 27,
-   "gs": 11,
-   "gsq": 1,
+   "h": 33.9,
+   "fa": 27,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -796,17 +866,17 @@
     618861,
     5607393
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOn",
-   "hr": 33.8,
-   "gf": 27,
-   "gs": 11,
-   "gsq": 1,
+   "h": 33.8,
+   "fa": 27,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -815,17 +885,17 @@
     618755,
     5607502
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOm",
-   "hr": 33.8,
-   "gf": 13,
-   "gs": 11,
-   "gsq": 1,
+   "h": 33.8,
+   "fa": 13,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -834,17 +904,17 @@
     618771,
     5607517
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOa",
-   "hr": 33.7,
-   "gf": 14,
-   "gs": 11,
-   "gsq": 1,
+   "h": 33.7,
+   "fa": 14,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -853,17 +923,17 @@
     618923,
     5607561
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOb",
-   "hr": 33.7,
-   "gf": 27,
-   "gs": 11,
-   "gsq": 1,
+   "h": 33.7,
+   "fa": 27,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -872,17 +942,17 @@
     618938,
     5607545
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOc",
-   "hr": 33.7,
-   "gf": 27,
-   "gs": 11,
-   "gsq": 1,
+   "h": 33.7,
+   "fa": 27,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -891,17 +961,17 @@
     618956,
     5607525
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOQ",
-   "hr": 33.6,
-   "gf": 14,
-   "gs": 11,
-   "gsq": 1,
+   "h": 33.6,
+   "fa": 14,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -910,17 +980,17 @@
     618827,
     5607429
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002lOd",
-   "hr": 33.6,
-   "gf": 13,
-   "gs": 11,
-   "gsq": 1,
+   "h": 33.6,
+   "fa": 13,
+   "lv": 11,
+   "q_lv": 1,
    "use": "neben",
-   "fn": "Überdachung",
-   "typ": "hochhaus",
+   "fkt": "Überdachung",
+   "bt": "punkthochhaus",
    "k": 0,
    "r": 0,
    "n": null,
@@ -929,17 +999,17 @@
     618971,
     5607509
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00002jRj",
-   "hr": 31.1,
-   "gf": 7,
-   "gs": 2,
-   "gsq": 2,
-   "use": "friedhof",
-   "fn": "Friedhofsgebäude",
-   "typ": "turm",
+   "h": 31.1,
+   "fa": 7,
+   "lv": 2,
+   "q_lv": 2,
+   "use": "sonst",
+   "fkt": "Friedhofsgebäude",
+   "bt": "turm",
    "k": 5,
    "r": 0,
    "n": null,
@@ -948,17 +1018,17 @@
     619864,
     5607315
    ],
-   "kat": 2
+   "x_kat": 2
   },
   {
    "id": "DETHL57P00012Wyt",
-   "hr": 25.8,
-   "gf": 981,
-   "gs": 5,
-   "gsq": 2,
-   "use": "oeffentlich",
-   "fn": "Gebäude für öffentliche Zwecke",
-   "typ": "block",
+   "h": 25.8,
+   "fa": 981,
+   "lv": 5,
+   "q_lv": 2,
+   "use": "verwaltung",
+   "fkt": "Gebäude für öffentliche Zwecke",
+   "bt": "block",
    "k": 0,
    "r": 3,
    "n": "Archiv",
@@ -967,7 +1037,7 @@
     619496,
     5607687
    ],
-   "kat": 2
+   "x_kat": 2
   }
  ]
 }

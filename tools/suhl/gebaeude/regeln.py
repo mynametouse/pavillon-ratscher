@@ -220,14 +220,51 @@ def era_of(typ, use, osm_tags, lm_year=None, oldtown=False):
     elif lm_year:
         y = lm_year
     if y:
-        return (1 if y <= 1918 else 2 if y <= 1948 else 3 if y <= 1990 else 4), 1
+        return (1 if y <= 1918 else 2 if y <= 1948 else 3 if y <= 1990 else 4), 1, y
     if typ in ('hochhaus', 'platte'):
-        return 3, 0
+        return 3, 0, None
     if typ == 'zeile':
-        return 3, 0
+        return 3, 0, None
     if typ == 'dorf' or typ == 'kirche' or (typ == 'stadthaus' and oldtown):
-        return 1, 0
-    return 0, 0
+        return 1, 0, None
+    return 0, 0, None
+
+
+# ---------------- the words of the data contract (tools/suhl/lib/schema/g.py, docs/features/suhl-daten.md) ----------------
+KIND_OUT = {0: 0, 1: 1, 2: 2, 3: 2, 4: 4, 5: 5, 6: 3}        # our kinds -> the contract's k (an open roof is an outbuilding there, a church 3)
+BT_OUT = {'hochhaus': 'punkthochhaus', 'platte': 'platte', 'zeile': 'zeilenbau', 'stadthaus': 'stadthaus', 'villa': 'villa', 'efh': 'efh',
+          'dorf': 'dorfhaus', 'block': 'block', 'halle': 'halle', 'kirche': 'kirche', 'garage': 'garage', 'neben': 'nebengebaeude',
+          'laube': 'laube', 'dach': 'ueberdachung', 'tank': 'behaelter', 'turm': 'turm', 'tief': 'tiefgarage'}
+ROOF_CLASS_OUT = {0: 0, 1: 5, 2: 6, 3: 3, 4: 4, 5: 2, 6: 7, 7: 8}   # ours (dachbild.CLASSES) -> the contract's rk
+ROOF_FORM_OSM = {'half-hipped': 4, 'half_hipped': 4, 'mansard': 5, 'gambrel': 5, 'pyramidal': 6, 'round': 7, 'sawtooth': 8}
+
+
+def use_word(use, fn, osm_tags, k):
+    """our use -> (use of the contract, use of the ground floor when it differs or None)"""
+    f, t = (fn or '').lower(), (osm_tags or {})
+    if use == 'gemischt':
+        return 'wohnen', 'handel'
+    if use == 'gastro':
+        hotel = 'hotel' in f or 'beherbergung' in f or t.get('building') == 'hotel' or t.get('tourism') in ('hotel', 'guest_house', 'hostel', 'motel')
+        return ('hotel' if hotel else 'gastro'), None
+    if use == 'oeffentlich':
+        return 'verwaltung', None
+    if use == 'bildung':
+        kita = 'kinder' in f or 'hort' in f or t.get('amenity') == 'kindergarten' or t.get('building') == 'kindergarten'
+        return ('kita' if kita else 'schule'), None
+    if use == 'sozial':
+        return ('wohnen' if re.search(r'wohnheim|seniorenheim|altenheim|pflege|studenten', f) else 'sonst'), None
+    if use == 'freizeit':
+        return ('neben' if k in (2, 3) else 'sonst'), None
+    if use == 'gewerbe':
+        return ('industrie' if re.search(r'industrie|fabrik|produktion', f) else 'lager' if re.search(r'lager|speicher', f) else 'gewerbe'), None
+    if use == 'land':
+        return 'landwirtschaft', None
+    if use in ('friedhof', 'turm'):
+        return 'sonst', None
+    if use == 'unbekannt':
+        return ('neben' if k in (2, 3) else 'sonst'), None
+    return use, None        # wohnen, handel, buero, kultur, kirche, gesundheit, sport, verkehr, versorgung, garage, neben
 
 
 # ---------------- the landmark list of stage 1 (docs/plans/suhl/wahrzeichen.md) ----------------

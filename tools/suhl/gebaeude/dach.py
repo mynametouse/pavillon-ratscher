@@ -36,8 +36,15 @@ def estimate(sh, h, k, typ, use, gs, osm_tags, ridge=None, img=None, part=False)
         pitch = PITCH_SHAPE.get(shape)
         why.append('osm')
     hf, pl = STOREY.get(typ, 3.0), PLINTH.get(typ, 0.4)
+    if g and g * 2.5 > h + 0.5:
+        g = None                # the floors of the cadastre do not fit under the measured height (a low part of a taller house): not used
     wall = (g * hf + pl) if g else None
     room = (h - wall) if wall is not None else None        # what is left above the storeys for a roof
+    attic = False
+    if form in (1, 2, 3) and room is not None and room < 1.2 and g and g >= 2 and k in (0, 6):
+        # a pitched roof (known from a tag) but no room above the storeys: the top storey lies in the roof
+        wall = (g - 1) * hf + pl
+        room, attic = h - wall, True
     if form is None:
         if k in (3, 4, 5, 8):
             form = 0
@@ -120,15 +127,22 @@ def estimate(sh, h, k, typ, use, gs, osm_tags, ridge=None, img=None, part=False)
             else:
                 p0 = {'stadthaus': 45.0, 'dorf': 47.0, 'villa': 40.0, 'efh': 40.0, 'zeile': 35.0, 'block': 25.0, 'halle': 14.0}.get(typ, 38.0)
                 rise = span * math.tan(math.radians(p0))
+                if k in (0, 6) and h >= 6.0:
+                    rise = min(rise, 0.5 * h)       # a roof is at most half of a house
         else:
             rise = span * math.tan(math.radians(pitch))
+            if room is not None and room >= 1.2:
+                rise = min(rise, room) if not attic else room
+            elif k in (0, 6) and h >= 6.0:
+                rise = min(rise, 0.5 * h)
         if h - rise < emin:
             rise = max(0.0, h - emin)
         eave = h - rise
         if rise < 0.35:
             form, eave, rise = 0, h, 0.0
         pitch = math.degrees(math.atan2(rise, max(span, 0.5))) if form else 0.0
-    return dict(form=form, pitch=pitch, eave=eave, rise=rise, ux=ux, Wd=Wd, Lr=Lr, ctr=np.array(sh['ctr'], dtype=float), rq=rq, rs=rs, why=why, h=h)
+    return dict(form=form, pitch=pitch, eave=eave, rise=rise, ux=ux, Wd=Wd, Lr=Lr, ctr=np.array(sh['ctr'], dtype=float), rq=rq, rs=rs, why=why, h=h,
+                gs_fit=g)
 
 
 def planes_of(est, sid):
@@ -199,7 +213,7 @@ def build(poly, est, sid, k, shared):
         az = None
         if gn > 1e-6:
             dv = -(gt * ux + gd * uy) / gn                 # the way the water runs (east, north)
-            az = (math.degrees(math.atan2(dv[0], dv[1])) + G.CONV) % 360.0
+            az = round((math.degrees(math.atan2(dv[0], dv[1])) + G.CONV) % 360.0, 1) % 360.0
         plan = inside.get(q, 0.0) * ta / max(dsum[q], 1e-9)
         X = ctr[0] + vv[:, 0] * ux[0] + vv[:, 1] * uy[0]
         Y = ctr[1] + vv[:, 0] * ux[1] + vv[:, 1] * uy[1]
