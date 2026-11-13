@@ -450,7 +450,8 @@ export const KERN = (() => {
     for (const L of TICK_LISTS)
       for (let i = 0; i < L.length; i++) {
         const T = L[i];
-        if (T.fn && !(MUTED.size && MUTED.has(T.name))) // feat/workshop: a muted callback does not run (KERN.mute)
+        if (T.fn && !(MUTED.size && MUTED.has(T.name)))
+          // feat/workshop: a muted callback does not run (KERN.mute)
           try {
             if (PROF) {
               const a = now();

@@ -21,8 +21,21 @@ export const WORKSHOP = (() => {
     check: v => !!v && typeof v === 'object' && !Array.isArray(v),
   });
   // screen: 'menu' (start screen) | 'play' (the Zeitreise runs or is paused) | 'werk' (the first version's panel, the Werkbank)
-  const S = { on: false, screen: 'menu', sel: 'pair', chapter: null, black: false, wasPlaying: false, layersOpen: false, snap: null, sub: null, ended: false, ctlT: 0 };
-  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const S = {
+    on: false,
+    screen: 'menu',
+    sel: 'pair',
+    chapter: null,
+    black: false,
+    wasPlaying: false,
+    layersOpen: false,
+    snap: null,
+    sub: null,
+    ended: false,
+    ctlT: 0,
+  };
+  const esc = s =>
+    String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   let root = null,
     syncT = 0,
     offReg = null,
@@ -33,7 +46,11 @@ export const WORKSHOP = (() => {
   // Each layer: what it is, what it does in the workshop, the default and why, and the real switch. A system without its own switch is
   // stopped with KERN.mute (its per-frame callback) and its figures are kept hidden while the layer is off (hold()).
   const HIDE = {}; // layer id → () => list of THREE objects to keep invisible while it is off
-  const MUTES = { leute: ['dorf/dorf', 'npc/life'], bus: ['bus'], tiere: ['tiere', 'tiere-huehner', 'tiere-einfluss', 'hund'] };
+  const MUTES = {
+    leute: ['dorf/dorf', 'npc/life'],
+    bus: ['bus'],
+    tiere: ['tiere', 'tiere-huehner', 'tiere-einfluss', 'hund'],
+  };
   const grp = f => () => {
     try {
       return f() || [];
@@ -41,7 +58,10 @@ export const WORKSHOP = (() => {
       return [];
     }
   };
-  HIDE.leute = grp(() => [...Object.values(window.DPEOPLE?.figs || {}).map(f => f.g), ...Object.values(window.LIFE?.AG || {}).map(a => a.w?.fig?.g)]);
+  HIDE.leute = grp(() => [
+    ...Object.values(window.DPEOPLE?.figs || {}).map(f => f.g),
+    ...Object.values(window.LIFE?.AG || {}).map(a => a.w?.fig?.g),
+  ]);
   HIDE.bus = grp(() => (window.BUS?.S?.inst || []).map(i => i.B?.g));
   HIDE.tiere = grp(() => (window.TIERE?.live || []).map(a => a.g));
   const vols = {};
@@ -53,17 +73,105 @@ export const WORKSHOP = (() => {
   };
   const cls = (name, on) => document.body.classList.toggle(name, !on);
   const LAYERS = [
-    { id: 'leute', icon: '🧑', label: 'Leute', text: 'Dorfbewohner und Nachbarn im Alltag', def: false, why: 'Im Zeitraffer vergehen Jahre; ein Alltag mit Spaziergängern passt nicht dazu.', apply: on => mutes('leute', on) },
-    { id: 'verkehr', icon: '🚗', label: 'Verkehr', text: 'Autos und Spaziergänger auf den Straßen', def: false, why: 'Ruhiges Bild, spart Rechenzeit für die geteilte Ansicht.', apply: on => traffic(on) },
-    { id: 'bus', icon: '🚌', label: 'Busse', text: 'Der Linienbus nach Fahrplan', def: false, why: 'Wie Verkehr: ruhiges Bild.', apply: on => mutes('bus', on) },
-    { id: 'tiere', icon: '🦌', label: 'Tiere', text: 'Wild, Vögel, Hühner und Hunde', def: false, why: 'Rechenzeit; im Zeitraffer wirken einzelne Tiere zufällig.', apply: on => mutes('tiere', on) },
-    { id: 'ortsnamen', icon: '📍', label: 'Ortsnamen', text: 'Der Name des Ortes oben im Bild', def: true, why: 'Orientierung für den Raum.', apply: on => cls('ws-no-where', on) },
-    { id: 'untertitel', icon: '💬', label: 'Untertitel', text: 'Was die Dorfbewohner sagen, als Text mit Namen', def: true, why: 'Im Saal oft schwer zu verstehen.', apply: on => cls('ws-no-sub', on) },
-    { id: 'stimmen', icon: '🗣', label: 'Stimmen', text: 'Gesprochene Sätze der Dorfbewohner', def: true, why: 'Gehört zum Erlebnis.', apply: on => setVol('stimmen', on) },
-    { id: 'umgebungston', icon: '🌲', label: 'Umgebungston', text: 'Wind, Regen, Wald, Dorf', def: true, why: 'Trägt die Stimmung der Zeitsprünge.', apply: on => setVol('umgebung', on) },
-    { id: 'jahr', icon: '📅', label: 'Jahreszahl und Zeitleiste', text: 'Das Jahr groß, unten die Kapitel und Ereignisse', def: true, why: 'Der Raum soll immer wissen, wann er ist.', apply: on => cls('ws-no-year', on) },
-    { id: 'kennzahlen', icon: '📊', label: 'Kennzahlen am Kapitelende', text: 'Karte mit Zahlen beider Welten und Fragen', def: true, why: 'Grundlage für das Gespräch.', apply: on => cls('ws-no-card', on) },
-    { id: 'daten', icon: '🗺', label: 'Daten-Ansichten', text: 'Lärm, Verkehr, Sonne, Naturwert, Stimmung auf der Karte (Draufsicht)', def: false, why: 'Gehört zur Werkbank und zur Draufsicht, nicht zum Film.', apply: on => daten(on) },
+    {
+      id: 'leute',
+      icon: '🧑',
+      label: 'Leute',
+      text: 'Dorfbewohner und Nachbarn im Alltag',
+      def: false,
+      why: 'Im Zeitraffer vergehen Jahre; ein Alltag mit Spaziergängern passt nicht dazu.',
+      apply: on => mutes('leute', on),
+    },
+    {
+      id: 'verkehr',
+      icon: '🚗',
+      label: 'Verkehr',
+      text: 'Autos und Spaziergänger auf den Straßen',
+      def: false,
+      why: 'Ruhiges Bild, spart Rechenzeit für die geteilte Ansicht.',
+      apply: on => traffic(on),
+    },
+    {
+      id: 'bus',
+      icon: '🚌',
+      label: 'Busse',
+      text: 'Der Linienbus nach Fahrplan',
+      def: false,
+      why: 'Wie Verkehr: ruhiges Bild.',
+      apply: on => mutes('bus', on),
+    },
+    {
+      id: 'tiere',
+      icon: '🦌',
+      label: 'Tiere',
+      text: 'Wild, Vögel, Hühner und Hunde',
+      def: false,
+      why: 'Rechenzeit; im Zeitraffer wirken einzelne Tiere zufällig.',
+      apply: on => mutes('tiere', on),
+    },
+    {
+      id: 'ortsnamen',
+      icon: '📍',
+      label: 'Ortsnamen',
+      text: 'Der Name des Ortes oben im Bild',
+      def: true,
+      why: 'Orientierung für den Raum.',
+      apply: on => cls('ws-no-where', on),
+    },
+    {
+      id: 'untertitel',
+      icon: '💬',
+      label: 'Untertitel',
+      text: 'Was die Dorfbewohner sagen, als Text mit Namen',
+      def: true,
+      why: 'Im Saal oft schwer zu verstehen.',
+      apply: on => cls('ws-no-sub', on),
+    },
+    {
+      id: 'stimmen',
+      icon: '🗣',
+      label: 'Stimmen',
+      text: 'Gesprochene Sätze der Dorfbewohner',
+      def: true,
+      why: 'Gehört zum Erlebnis.',
+      apply: on => setVol('stimmen', on),
+    },
+    {
+      id: 'umgebungston',
+      icon: '🌲',
+      label: 'Umgebungston',
+      text: 'Wind, Regen, Wald, Dorf',
+      def: true,
+      why: 'Trägt die Stimmung der Zeitsprünge.',
+      apply: on => setVol('umgebung', on),
+    },
+    {
+      id: 'jahr',
+      icon: '📅',
+      label: 'Jahreszahl und Zeitleiste',
+      text: 'Das Jahr groß, unten die Kapitel und Ereignisse',
+      def: true,
+      why: 'Der Raum soll immer wissen, wann er ist.',
+      apply: on => cls('ws-no-year', on),
+    },
+    {
+      id: 'kennzahlen',
+      icon: '📊',
+      label: 'Kennzahlen am Kapitelende',
+      text: 'Karte mit Zahlen beider Welten und Fragen',
+      def: true,
+      why: 'Grundlage für das Gespräch.',
+      apply: on => cls('ws-no-card', on),
+    },
+    {
+      id: 'daten',
+      icon: '🗺',
+      label: 'Daten-Ansichten',
+      text: 'Lärm, Verkehr, Sonne, Naturwert, Stimmung auf der Karte (Draufsicht)',
+      def: false,
+      why: 'Gehört zur Werkbank und zur Draufsicht, nicht zum Film.',
+      apply: on => daten(on),
+    },
   ];
   const lay = {}; // id → bool
   const savedLayers = () => {
@@ -107,7 +215,15 @@ export const WORKSHOP = (() => {
     // another module adds its layer to the panel: { id, icon, label, text, on (default), set(bool) }
     define(d) {
       if (!d || !d.id || typeof d.set !== 'function') return false;
-      const L = { id: d.id, icon: d.icon || '•', label: d.label || d.id, text: d.text || '', def: d.on !== false, why: d.why || '', apply: d.set };
+      const L = {
+        id: d.id,
+        icon: d.icon || '•',
+        label: d.label || d.id,
+        text: d.text || '',
+        def: d.on !== false,
+        why: d.why || '',
+        apply: d.set,
+      };
       const i = LAYERS.findIndex(x => x.id === d.id);
       i >= 0 ? (LAYERS[i] = L) : LAYERS.push(L);
       if (S.on) {
@@ -179,7 +295,7 @@ export const WORKSHOP = (() => {
   }
   function leaveOtherModes() {
     try {
-      if (window.STRAT?.on) (STRAT.exit ? STRAT.exit() : document.querySelector('.stb[data-a="exit"]')?.click());
+      if (window.STRAT?.on) STRAT.exit ? STRAT.exit() : document.querySelector('.stb[data-a="exit"]')?.click();
     } catch (e) {}
     try {
       if (window.ZOMBIE?.on) (ZOMBIE.stop || ZOMBIE.exit || (() => {}))();
@@ -192,7 +308,8 @@ export const WORKSHOP = (() => {
     } catch (e) {}
   }
   // ---------------- styles and DOM (made once, at the first entry) ----------------
-  const HUDIDS = '#hotbar,#moves,#act2,#actrow,#joy,#hudtr,#hint,#hbname,#geoattr,#camtog,#orbithud,#menubtn,#talkbtn,#npcsub,#npcpanel,#toast,#vhud,#vmap,#xhair,#stancetag,#qtrack,#planbar,#clockbtn,#gearbtn,#cleanbtn,#doorbtn,#perfbox,#palette,#sitebar,#ppanel,#sharebox,#topscale,#invwin,#machwin,#clockwin,#gearwin,#werkbuch,#wpcard,#gearfx,#sthud,#stppl,#stpan,#stnotes,#sttime,#stcard,#stlayers,#glhud,#zhud,.ov.where';
+  const HUDIDS =
+    '#hotbar,#moves,#act2,#actrow,#joy,#hudtr,#hint,#hbname,#geoattr,#camtog,#orbithud,#menubtn,#talkbtn,#npcsub,#npcpanel,#toast,#vhud,#vmap,#xhair,#stancetag,#qtrack,#planbar,#clockbtn,#gearbtn,#cleanbtn,#doorbtn,#perfbox,#palette,#sitebar,#ppanel,#sharebox,#topscale,#invwin,#machwin,#clockwin,#gearwin,#werkbuch,#wpcard,#gearfx,#sthud,#stppl,#stpan,#stnotes,#sttime,#stcard,#stlayers,#glhud,#zhud,.ov.where';
   const CSS = `
 body.ws-on ${HUDIDS.split(',').join(',body.ws-on ')}{display:none!important}
 body.ws-on.ws-werk #zk{display:flex!important}
@@ -203,7 +320,7 @@ body.ws-card-on #ws-year,body.ws-card-on #ws-chap{visibility:hidden}
 #ws-slot-phone>*{pointer-events:auto}
 #ws-card-extra:empty{display:none}
 #ws-card-extra{display:flex;gap:2vh;margin-top:1.4vh}
-body.ws-on:not(.ws-no-where) .ov.where{display:block!important;top:19vh!important;left:auto!important;right:5vw!important;font-size:3vh!important;text-align:right;z-index:66}
+body.ws-on:not(.ws-no-where):not(.ws-where-none) .ov.where{display:block!important;top:19vh!important;left:auto!important;right:5vw!important;font-size:3vh!important;text-align:right;z-index:66}
 #ws{position:fixed;inset:0;z-index:70;pointer-events:none;color:#f6f1e6;font:600 2.8vh/1.3 var(--f-body,system-ui,sans-serif);text-shadow:0 .2vh .8vh rgba(0,0,0,.85)}
 #ws[hidden]{display:none}
 #ws button{font:inherit;color:inherit;cursor:pointer;pointer-events:auto}
@@ -257,6 +374,11 @@ body.ws-playing:not(.ws-no-year) #ws-tl{display:block}
 #ws-card .q{margin-top:1.6vh;font-size:3.4vh;color:#f0b060}
 #ws-card .q p{margin:.5vh 0}
 #ws-card .hint{margin-top:1.2vh;font-size:2.6vh;opacity:.8}
+#ws-intro{text-align:center;pointer-events:none;top:42%}
+#ws-intro h2{margin:0;font-size:6vh}
+#ws-intro p{margin:1vh 0 0;font-size:3.4vh}
+#ws-evt .fork{display:block;font-size:3vh;margin-top:.6vh;color:#f0b060}
+#ws-evt .fork b{color:#f6f1e6}
 body.ws-no-card #ws-card{display:none!important}
 #ws-black{position:absolute;inset:0;background:#000;display:none;z-index:5}
 #ws-black.on{display:block}
@@ -303,7 +425,7 @@ body.ws-start #ws-start{display:block}
 <div id="ws-top"></div><div id="ws-bot"></div><div id="ws-split"></div>
 <div id="ws-year"></div><div id="ws-chap"></div><div id="ws-titles"></div><div id="ws-evt"></div>
 <div id="ws-slot-phone"></div><div id="ws-sub"></div><div id="ws-tl" aria-label="Zeitleiste"></div>
-<div id="ws-pause" class="wsplate"></div><div id="ws-end" class="wsplate"></div><div id="ws-card" class="wsplate"></div>
+<div id="ws-intro" class="wsplate"></div><div id="ws-pause" class="wsplate"></div><div id="ws-end" class="wsplate"></div><div id="ws-card" class="wsplate"></div>
 <div id="ws-badge"><b>Workshop</b><button type="button" class="wsb" data-a="leave">Zurück ins Spiel</button></div>
 <div id="ws-ctl">
 <button type="button" class="wsb" data-a="prev" title="Zurück (Bild auf)" aria-label="Zurück">⏮</button>
@@ -324,8 +446,9 @@ body.ws-start #ws-start{display:block}
     });
     root.querySelector('#ws-tl').addEventListener('click', e => {
       const r = e.currentTarget.getBoundingClientRect(),
-        [a, b] = C().SPAN;
-      R().seek(Math.round(a + ((e.clientX - r.left) / r.width) * (b - a)));
+        x = ((e.clientX - r.left) / r.width) * 100,
+        g = tlGeom().find(q => x >= q.l && x <= q.l + q.w) || tlGeom()[0];
+      R().seek(Math.round(g.c.from + ((x - g.l) / g.w) * (g.c.to - g.c.from)), g.c.id);
     });
     window.addEventListener('mousemove', moved, { passive: true });
   }
@@ -338,7 +461,10 @@ body.ws-start #ws-start{display:block}
           sel = !w.stub && (S.sel === 'pair' ? id === 'allein' || id === 'gewappnet' : S.sel === id);
         return `<button type="button" class="cell wsb ${w.stub ? 'stub' : ''} ${sel ? 'sel' : ''}" style="--c:${w.color}" ${w.stub ? 'disabled' : `data-world="${id}"`} aria-pressed="${sel}"><b>${esc(w.title)}</b><span>${w.stub ? 'kommt in Stufe 2' : esc(w.claim || '')}</span></button>`;
       };
-    const chips = (items, cur, attr) => items.map(([v, l]) => `<button type="button" class="wsb" ${attr}="${v}" aria-pressed="${cur === v}">${l}</button>`).join('');
+    const chips = (items, cur, attr) =>
+      items
+        .map(([v, l]) => `<button type="button" class="wsb" ${attr}="${v}" aria-pressed="${cur === v}">${l}</button>`)
+        .join('');
     $('ws-start').innerHTML = `<div class="grid"><div>
 <h1>Ratscher 2026 → 2060</h1>
 <p class="lead">Wie könnte sich unser Dorf verändern? Die Zeitreise zeigt zwei mögliche Zukünfte nebeneinander – Wald, Wasser, Energie – und hält bei Ereignissen an, damit wir darüber reden können.</p>
@@ -350,14 +476,25 @@ body.ws-start #ws-start{display:block}
 <div id="ws-cross"><span></span><span class="ax">jeder für sich</span><span class="ax">gemeinsam</span>
 <span class="ax">Klima mild</span>${cell('glueck')}${cell('rueckenwind')}
 <span class="ax">Klima heftig</span>${cell('allein')}${cell('gewappnet')}</div>
-<div class="lab">Ansicht</div><div class="row">${chips([['pair', 'Zwei Wege nebeneinander'], ['allein', 'Nur Allein im Sturm'], ['gewappnet', 'Nur Gewappnet']], S.sel, 'data-sel')}</div>
+<div class="lab">Ansicht</div><div class="row">${chips(
+      [
+        ['pair', 'Zwei Wege nebeneinander'],
+        ['allein', 'Nur Allein im Sturm'],
+        ['gewappnet', 'Nur Gewappnet'],
+      ],
+      S.sel,
+      'data-sel'
+    )}</div>
 <div class="lab">Kapitel</div><div class="row">${chips([['', 'Alles'], ...C().CHAPTERS.map(c => [c.id, c.title])], S.chapter || '', 'data-chap')}</div>
 </div></div>`;
   }
   function renderLayers() {
     const el = $('ws-lay');
     if (!el) return;
-    const items = LAYERS.map(L => `<label><i>${L.icon}</i><b>${esc(L.label)}</b><input type="checkbox" data-lay="${L.id}" ${lay[L.id] !== false ? 'checked' : ''} aria-label="${esc(L.label)}"><small>${esc(L.text)}</small></label>`);
+    const items = LAYERS.map(
+      L =>
+        `<label><i>${L.icon}</i><b>${esc(L.label)}</b><input type="checkbox" data-lay="${L.id}" ${lay[L.id] !== false ? 'checked' : ''} aria-label="${esc(L.label)}"><small>${esc(L.text)}</small></label>`
+    );
     el.innerHTML = `<h2>Ebenen</h2><div>Was im Workshop zu sehen und zu hören ist. Alles lässt sich jederzeit ein- und ausschalten; der Browser merkt sich die Auswahl.</div>
 <div class="cols"><div>${items.slice(0, Math.ceil(items.length / 2)).join('')}</div><div>${items.slice(Math.ceil(items.length / 2)).join('')}</div></div>
 <div class="rowb"><button type="button" class="wsb" data-a="layers-close">Fertig</button><button type="button" class="wsb" data-a="layers-reset">Voreinstellung</button></div>`;
@@ -555,7 +692,21 @@ body.ws-start #ws-start{display:block}
     S.sub = null;
     root.hidden = true;
     const b = document.body.classList;
-    for (const c of ['ws-on', 'ws-start', 'ws-werk', 'ws-playing', 'ws-two', 'ws-ctl', 'ws-no-where', 'ws-no-sub', 'ws-no-year', 'ws-no-card', 'ws-card-on', 'ws-where-none']) b.remove(c);
+    for (const c of [
+      'ws-on',
+      'ws-start',
+      'ws-werk',
+      'ws-playing',
+      'ws-two',
+      'ws-ctl',
+      'ws-no-where',
+      'ws-no-sub',
+      'ws-no-year',
+      'ws-no-card',
+      'ws-card-on',
+      'ws-where-none',
+    ])
+      b.remove(c);
     restore(S.snap);
     S.snap = null;
     KERN.emit('workshop:modus', { on: false });
@@ -565,7 +716,7 @@ body.ws-start #ws-start{display:block}
     if (!S.on || !e) return;
     if (e.type === 'line') showLine(e);
     else if (e.type === 'event') showEvt(e.ev || e);
-    else if (e.type === 'end') {
+    else if (e.type === 'end' && !e.stopped) {
       S.ended = true;
       sync();
     } else if (e.type === 'chapter') sync();
@@ -574,22 +725,51 @@ body.ws-start #ws-start{display:block}
   function showLine(l) {
     S.sub = { who: l.who || '', text: l.text || '' };
     clearTimeout(subT);
-    subT = setTimeout(() => {
-      S.sub = null;
-      sync();
-    }, Math.max(3500, S.sub.text.length * 70));
+    subT = setTimeout(
+      () => {
+        S.sub = null;
+        sync();
+      },
+      Math.max(3500, S.sub.text.length * 70)
+    );
     sync();
   }
   function showEvt() {
     sync();
   }
+  // the chapters play one after another, each through its own years (2026 → end): three segments, the year jumps back at each new chapter
+  function tlGeom() {
+    const cs = C().CHAPTERS,
+      gap = 1.2,
+      tot = cs.reduce((n, c) => n + (c.to - c.from), 0),
+      room = 100 - gap * (cs.length - 1);
+    let l = 0;
+    return cs.map(c => {
+      const w = ((c.to - c.from) / tot) * room,
+        g = { c, l, w };
+      l += w + gap;
+      return g;
+    });
+  }
+  const tpos = (G, id, y) => {
+    const g = G.find(q => q.c.id === id) || G[0];
+    return g.l + ((Math.max(g.c.from, Math.min(g.c.to, y)) - g.c.from) / (g.c.to - g.c.from)) * g.w;
+  };
   function buildTimeline(w) {
-    const [a, b] = C().SPAN,
-      p = y => (((y - a) / (b - a)) * 100).toFixed(2),
+    const G = tlGeom(),
       el = $('ws-tl');
     el.innerHTML =
-      C().CHAPTERS.map(c => `<div class="seg" style="left:${p(c.from)}%;width:${(p(c.to) - p(c.from)).toFixed(2)}%"><i>${esc(c.title)}</i></div>`).join('') +
-      (C().events(w) || []).map(ev => `<div class="mk ${ev.kind === 'stresstest' ? 'st' : ''}" style="left:${p(ev.y)}%" title="${esc(ev.title)}"></div>`).join('') +
+      G.map(
+        g =>
+          `<div class="seg" style="left:${g.l.toFixed(2)}%;width:${g.w.toFixed(2)}%"><i>${esc(g.c.title)} ${g.c.from}–${g.c.to}</i></div>`
+      ).join('') +
+      (C().events(w) || [])
+        .filter(ev => ev.halt > 0 || ev.kind === 'stresstest')
+        .map(
+          ev =>
+            `<div class="mk ${ev.kind === 'stresstest' ? 'st' : ''}" style="left:${tpos(G, ev.chapter, ev.y).toFixed(2)}%" title="${esc(ev.title)}"></div>`
+        )
+        .join('') +
       '<div class="ph"></div>';
   }
   const memo = {};
@@ -608,28 +788,57 @@ body.ws-start #ws-start{display:block}
     } catch (e) {}
     const playing = S.screen === 'play' && s.on,
       C0 = C(),
-      [a, b] = C0.SPAN,
       W = C0.WORLDS;
     const chap = C0.CHAPTERS.find(c => c.id === s.chapter);
-    put('ws-year', playing ? String(Math.floor(s.y || a)) : '');
+    if (playing && s.chapter && s.chapter !== S.lastChap) {
+      S.lastChap = s.chapter;
+      const i = C0.CHAPTERS.findIndex(c => c.id === s.chapter);
+      put(
+        'ws-intro',
+        `<h2>Kapitel ${i + 1}: ${esc(chap.title)} · ${chap.from} → ${chap.to}</h2>${chap.sub ? `<p>${esc(chap.sub)}</p>` : ''}`
+      );
+      show('ws-intro', true);
+      clearTimeout(S.introT);
+      S.introT = setTimeout(() => show('ws-intro', false), 4000);
+    }
+    if (!playing) {
+      S.lastChap = null;
+      show('ws-intro', false);
+    }
+    put('ws-year', playing ? String(Math.floor(s.y || 2026)) : '');
     put('ws-chap', playing && chap ? esc(chap.title) : '');
     if (playing) {
       const pair = s.pair || ['allein', 'gewappnet'],
         two = s.split && pair.length > 1;
-      put('ws-titles', pair.map((id, i) => `<span style="left:${two ? (i ? 75 : 25) : 50}%;--c:${(W[id] || {}).color || '#fff'}">${esc((W[id] || { title: id }).title)}</span>`).join(''));
+      put(
+        'ws-titles',
+        pair
+          .map(
+            (id, i) =>
+              `<span style="left:${two ? (i ? 75 : 25) : 50}%;--c:${(W[id] || {}).color || '#fff'}">${esc((W[id] || { title: id }).title)}</span>`
+          )
+          .join('')
+      );
       document.body.classList.toggle('ws-two', !!two);
       const ph = document.querySelector('#ws-tl .ph');
-      if (ph) ph.style.left = (((s.y - a) / (b - a)) * 100).toFixed(2) + '%';
+      if (ph) ph.style.left = tpos(tlGeom(), s.chapter, s.y).toFixed(2) + '%';
     }
     // an event's title while the time stands still
-    put('ws-evt', playing && s.ev ? esc(s.ev.title || '') : '');
-    show('ws-evt', playing && s.ev);
+    put(
+      'ws-evt',
+      playing && s.ev
+        ? esc(s.ev.title || '') + forkHtml(s.ev, s.pair || [])
+        : playing && s.note
+          ? esc(typeof s.note === 'string' ? s.note : s.note.text || s.note.title || '')
+          : ''
+    );
+    show('ws-evt', playing && (s.ev || s.note));
     put('ws-sub', S.sub ? `<b>${esc(S.sub.who)}</b>${esc(S.sub.text)}` : '');
     show('ws-sub', playing && S.sub);
     // chapter-end card
     const cardCh = s.card && (s.card.chapter || (typeof s.card === 'string' ? s.card : s.chapter));
     if (playing && cardCh) {
-      put('ws-card', cardHtml(cardCh, s.pair || ['allein', 'gewappnet']));
+      put('ws-card', cardHtml(cardCh, s.pair || ['allein', 'gewappnet'], typeof s.card === 'object' ? s.card : null));
       const cd = $('ws-card');
       if (cardExtra.parentNode !== cd) cd.querySelector('.src').before(cardExtra);
       show('ws-card', true);
@@ -638,25 +847,47 @@ body.ws-start #ws-start{display:block}
     document.body.classList.toggle('ws-where-none', /^Modellansicht/.test(($('where') || {}).textContent || ''));
     // pause (for discussion) and the end
     const pause = playing && !s.playing && !s.card && !s.ev && !S.ended;
-    put('ws-pause', pause ? `<h2>Pause</h2><p>Zeit zum Reden.</p>${chap ? chap.questions.map(q => `<p>${esc(q)}</p>`).join('') : ''}<p style="font-size:2.6vh;opacity:.8">Leertaste oder Bild ab: weiter</p>` : '');
+    put(
+      'ws-pause',
+      pause
+        ? `<h2>Pause</h2><p>Zeit zum Reden.</p>${chap ? chap.questions.map(q => `<p>${esc(q)}</p>`).join('') : ''}<p style="font-size:2.6vh;opacity:.8">Leertaste oder Bild ab: weiter</p>`
+        : ''
+    );
     show('ws-pause', pause);
-    put('ws-end', S.ended && playing ? '<h2>2060</h2><p>Das war die Reise. Bild ab: zurück ins Workshop-Menü.</p>' : '');
+    put(
+      'ws-end',
+      S.ended && playing ? '<h2>2060</h2><p>Das war die Reise. Bild ab: zurück ins Workshop-Menü.</p>' : ''
+    );
     show('ws-end', S.ended && playing);
   }
-  function cardHtml(ch, pair) {
+  // a decision event: the question and what each world decided
+  function forkHtml(ev, pair) {
+    if (!ev || !ev.fork) return '';
+    const W = C().WORLDS,
+      one = w => {
+        const e = (C().find && C().find(w, ev.id)) || ev,
+          f = e.fork || ev.fork;
+        return `<b>${esc((W[w] || { title: w }).title)}:</b> ${esc(f.options[f.pick] || '')}`;
+      };
+    return `<span class="fork">${esc(ev.fork.q)}</span><span class="fork">${pair.map(one).join(' · ')}</span>`;
+  }
+  function cardHtml(ch, pair, card) {
     const c = C(),
       W = c.WORLDS,
       chap = c.CHAPTERS.find(x => x.id === ch) || { title: ch, questions: [] },
-      cols = pair.map(w => c.kpi(w, ch) || []),
+      cols = pair.map(w => (card && card.kpi && card.kpi[w]) || c.kpi(w, ch) || []),
       rows = cols[0] || [],
       src = [...new Set(rows.flatMap(r => (r.src || []).map(x => x[0])))];
     const fmt = (r, i) => {
       const q = cols[i].find(x => x.id === r.id) || r;
-      return `<td class="v">${esc(q.value)} ${esc(q.unit)}<small>${q.range ? 'Spanne ' + q.range[0] + '–' + q.range[1] : ''}</small></td>`;
+      return `<td class="v">${esc(q.text || q.value + ' ' + q.unit)}<small>${q.rangeText ? 'Spanne ' + esc(q.rangeText) : q.range ? 'Spanne ' + q.range[0] + '–' + q.range[1] : ''}${q.annahme ? ' · Annahme' : ''}</small></td>`;
     };
     return `<h2>${esc(chap.title)}: die Zahlen</h2><table><tr><th></th>${pair.map(w => `<th style="color:${(W[w] || {}).color}">${esc((W[w] || { title: w }).title)}</th>`).join('')}</tr>${rows.map(r => `<tr><td>${esc(r.label)}</td>${pair.map((w, i) => fmt(r, i)).join('')}</tr>`).join('')}</table>
 <div class="src">Quellen: ${esc(src.join('; ') || 'Annahmen, siehe Werkbank')} · Beispielwerte einer möglichen Zukunft</div>
-<div class="q">${chap.questions.slice(0, 2).map(q => `<p>${esc(q)}</p>`).join('')}</div><div class="hint">Bild ab: weiter</div>`;
+<div class="q">${((card && card.questions) || chap.questions)
+      .slice(0, 2)
+      .map(q => `<p>${esc(q)}</p>`)
+      .join('')}</div><div class="hint">Bild ab: weiter</div>`;
   }
   // ---------------- entry points ----------------
   KERN.scenario('workshop', { label: 'Workshop: Zukünfte erproben', order: 4, run: () => enter() });
@@ -683,7 +914,11 @@ body.ws-start #ws-start{display:block}
       KERN.until(() => window.GAME && GAME.loaded && GAME.loaded(), 3600).then(
         () => {
           const v = q.get('workshop') || '';
-          const sel = /allein-gewappnet|gewappnet-allein/.test(v) ? 'pair' : v === 'allein' || v === 'gewappnet' ? v : undefined;
+          const sel = /allein-gewappnet|gewappnet-allein/.test(v)
+            ? 'pair'
+            : v === 'allein' || v === 'gewappnet'
+              ? v
+              : undefined;
           enter({ sel, autoplay: q.get('autoplay') === '1' });
         },
         () => {}
