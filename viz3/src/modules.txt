@@ -209,6 +209,7 @@ grenzland/gl_neben_logik.js # feat/grenzland skittles and fishing as pure logic 
 grenzland/gl_data.js        # feat/grenzland places, cast, clothes, texts – data (GLDATA)
 grenzland/gl_state.js       # feat/grenzland the shared state: who plays, money, missions, things, saving pav-grenzland-v1 (GL)
 grenzland/gl_ton.js         # feat/grenzland the sounds, all synthesised: the patrol car's horn, mopeds, bangers, skittles (GLTON)
+grenzland/gl_pose.js        # feat/grenzland-figuren poses over the clips: riding the moped, running, gestures, looks, sitting (GLPOSE)
 grenzland/gl_fig.js         # feat/grenzland the cast as figures: clothes painted by body zone, headwear, walking (GLFIG)
 grenzland/gl_karosse.js     # feat/grenzland-auto vehicle bodies as pure geometry: the kit, bodies lofted from cross-sections, wheels (GLKAROSSE)
 grenzland/gl_typen.js       # feat/grenzland-auto the cars, vans and the lorry in their real measures – pure geometry (GLTYPEN)
