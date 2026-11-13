@@ -231,6 +231,11 @@ Index `based_on: {boden: N}`. Ein neuer Boden braucht nur diesen Schritt.
 
 - **Probesatz v1:** Geländekacheln von `suhl-boden`, Probesatz v1 (DGM1 im Zentrum, außen Copernicus; Straßen eingeschnitten mit dem
   Straßensatz v0; Stand `origin/suhl/boden` 7a7b068). Alle 2 502 Gebäude, Güte 2, `based_on: {boden: 1}`.
+- **Was der bessere Boden ausmacht** (gerechnet aus den Probesätzen v0 und v1 auf diesem Zweig): Zwischen den Fußhöhen auf dem
+  Copernicus-Boden (v0) und auf dem 1-m-Gelände (v1) liegen in der Mitte 2,6 m, bei jedem zehnten Haus mehr als 7,7 m, höchstens
+  18 m; 1 294 von 2 500 Füßen weichen um mehr als 2,5 m ab. Das erklärt den Befund von `suhl-laufzeit` (Füße neben dem Boden): Die
+  Füße müssen von denselben Kacheln gelesen sein, die die App zeigt. Im Probesatz v1 tragen 1 869 Gebäude `zv`; das Gelände steigt
+  am Umriss in der Mitte um 1,3 m über den Fuß, bei jedem zehnten um mehr als 3,3 m, höchstens 8,2 m.
 - **Ganze Stadt:** noch Copernicus GLO-30 (30 m, vorläufig, Güte 1, ohne `based_on`), weil `suhl-boden` für die Stadt noch nichts
   veröffentlicht hat. Der Workflow fragt bei jedem Lauf `…/pavillon-daten/suhl/aktuell.json` und nimmt die Geländekacheln, sobald sie
   dort stehen.
@@ -315,7 +320,8 @@ Jeder `index.json` trägt die Quellen und die Zeile für die App. Rohdaten und L
 
 1. **Für `suhl-daten` (veröffentlichen):** ganze Stadt = Lauf **43348109758**, Artefakt **`suhl-g-v1`** (Versionsordner `v1` mit
    `index.json` und `10/{x}/{y}.json`; 397 Kacheln, 35,0 MB, gültig nach Fassung 1.1). Probesatz v1 =
-   `tools/suhl/out/gebaeude/probe/suhl/g/v1/` auf `suhl/gebaeude` (Stand des Laufs: Commit 60e89c49).
+   `tools/suhl/out/gebaeude/probe/suhl/g/v1/` auf `suhl/gebaeude` (Stand des Laufs: Commit 60e89c49). Die Stadt hat noch
+   vorläufige Fußhöhen (Punkt 3) – das gehört in den Hinweis zur Veröffentlichung.
 2. **Nicht zeichnen:** `fg` & 32 und `tief`. `fg` 128 heißt hier: steht im Kataster, im Oberflächenmodell noch nicht.
 3. **Fußhöhen der Stadt:** Sobald `suhl-boden` das eingeschnittene Gelände der Stadt veröffentlicht, genügt eine neue Zeile `lauf:` in
    `tools/suhl/gebaeude/lauf.txt` (etwa 4 Minuten); der Lauf liest `z0`/`zv` dann von dort und setzt `based_on`.
