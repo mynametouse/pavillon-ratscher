@@ -32,8 +32,10 @@ import { KOMBI } from './kombi.js';
 export const COCKPIT = (() => {
   const RATIO = 15; // the steering's ratio: turns of the wheel per turn of the road wheels
   const LEVER = { P: -0.24, R: -0.09, N: 0.03, D: 0.15 };
-  // the vehicles with this cockpit: Falko's estate and the traffic car one may drive (verkehr/verkehr_auto.js: the same spec)
-  const KIND = { car: 'car', verkehr: 'car', tractor: 'tractor' };
+  // the vehicles with this cockpit: Falko's estate and the tractor. Not the traffic car one may drive (verkehr/verkehr_auto.js): its
+  // body brings a simple inside of its own in the same mesh (floor, dashboard, a wheel of beams, seats) that the cockpit cannot hide –
+  // it comes back here ('verkehr: car') once that inside is a part of its own (model.inside, as in vehicles/car.js)
+  const KIND = { car: 'car', tractor: 'tractor' };
   // cs: one cockpit per vehicle id; c: the one driven now (or last)
   const S = { cs: {}, c: null, view: false, rainK: null, buildMs: 0, frameMs: 0, warm: 0, keys: 0 };
   const rad = d => (d * Math.PI) / 180;
@@ -453,6 +455,12 @@ export const COCKPIT = (() => {
   // ---- per frame (right after the vehicles' physics, VEH.after) ----
   function frame(dt) {
     const v = VEH.cur;
+    // a copy of the estate's spec on another body (the traffic car's): today's eye, no anchors of the estate (vehicles/kombi.js)
+    const own = v && v.spec && v.spec.cockpit;
+    if (own && own.body && !(v.model && v.model.body && v.model.body.getObjectByName(own.body))) {
+      v.spec.eye = CPBUILD.CAR.eye.slice();
+      delete v.spec.cockpit;
+    }
     if (v && KIND[v.id] && !S.cs[v.id]) build(v);
     const t0 = performance.now();
     let any = false;

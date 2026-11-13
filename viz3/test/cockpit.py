@@ -246,16 +246,17 @@ with lib.browser() as b:
         ck('kombi: the cockpit in the new body (the mirrors there)', ci['built'] and ci['view'] and ci['mirrors']['renders'] > 0 and not ci['bad'],
            json.dumps({k: ci.get(k) for k in ('bad', 'meshes', 'mirrors')}))
         E("VEH.exit()"); E("GAME.step(0.3)")
-        # the traffic car one may drive copies the estate's spec: its cockpit keeps today's anchors and eye (vehicles/cockpit_build.js)
+        # the traffic car one may drive copies the estate's spec (verkehr/verkehr_auto.js): it keeps today's eye and gets no cockpit of
+        # ours – its body brings a simple inside of its own in the same mesh (vehicles/cockpit.js, KIND)
         vk = E("""(() => { const v = window.VAUTO && VAUTO.borrowVeh && VAUTO.borrowVeh(); if (!v) return false;
             const s = VEH.by.car.st; VEH.place('verkehr', s.x + Math.cos(s.psi) * 4, s.y - Math.sin(s.psi) * 4, s.psi);
             v.model.g.visible = true; VEH.enter('verkehr'); return VEH.cur === v; })()""")
         if vk:
             E("GAME.setView3(false)"); E("for (let i = 0; i < 20; i++) GAME.step(0.05)")
-            vi = json.loads(E("JSON.stringify(COCKPIT.info())"))
-            an = vi.get('anchors') or {}
-            ck('kombi: the traffic car keeps today\'s anchors and eye', vi.get('id') == 'verkehr' and an.get('apil') and an.get('head') and abs(an['eye'][1] + 0.22) < 1e-6 and not vi['bad'],
-               json.dumps({k: vi.get(k) for k in ('id', 'anchors', 'bad')}))
+            vi = json.loads(E("""JSON.stringify({ eye: VEH.by.verkehr.spec.eye, anchors: !!VEH.by.verkehr.spec.cockpit,
+                cockpit: !!COCKPIT.S.cs.verkehr, view: COCKPIT.info().view, car: VEH.by.car.spec.eye })"""))
+            ck('kombi: the traffic car keeps today\'s eye, no cockpit of ours in it', abs(vi['eye'][1] + 0.22) < 1e-6 and not vi['anchors'] and not vi['cockpit'] and not vi['view'] and abs(vi['car'][1] + 0.3) < 1e-6,
+               json.dumps(vi))
             lib.shot(pg, OUT, 'k_verkehr_driver')
             E("VEH.exit(); GAME.step(0.2); VEH.place('verkehr', VAUTO.HIDE[0], VAUTO.HIDE[1], 0); VEH.by.verkehr.model.g.visible = false")
         else:
