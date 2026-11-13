@@ -3,7 +3,7 @@
 # is finished by its real check; talks are skipped with the action a player has (GLMISSION.weiter). Sections (second argument, comma
 # separated; default all): m1 m2 m3 m4 m5 lager reload. Pictures of every scene in out/grenzland_mission/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9017 --serve grenzland_mission:m1,reload
-import sys, os, json, time
+import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
 SECT = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'm1,m2,m3,m4,m5,lager,reload').split(',') if s]
@@ -68,7 +68,7 @@ with lib.browser() as b:
     def put(p, yaw=0, off=(0, 0)):
         """the player to a place on foot, standing on the ground"""
         E(f"GRENZLAND.hin({p[0] + off[0]}, {p[1] + off[1]}, {yaw})"); steps(0.3)
-    E("window.__ev = []; KERN.on('*', (d, n) => { if (n === 'grenzland:mission' || n === 'grenzland:schritt') __ev.push([n.slice(10), d.id, d.st !== undefined ? d.st : d.schritt, d.titel || '', d.lohn || '']) })")
+    E("window.__ev = []; KERN.on('*', (d, n) => { if (n === 'grenzland:mission' || n === 'grenzland:schritt') __ev.push([n.slice(10), d.id, d.st !== undefined ? d.st : d.schritt, d.titel || '', d.lohn || '']) }); 0")
     ORT = J("({ zh: GLDATA.ORTE.zh.pos, schule: GLKAP1.ORT.schule(), halt: GLKAP1.ORT.halt(), garten: GLDATA.ORTE.garten.pos, lager: GLDATA.ORTE.lager.pos })")
     if 'm1' not in SECT:
         # (a section on its own: let the first mission's opening – the fade, the town – finish before jumping elsewhere)
@@ -309,7 +309,6 @@ with lib.browser() as b:
         lib.settle_light(pg)
         st = J("({ van: (c => [c.x, c.y, c.g.visible])(GLMISSION.C('van')), d: ['w1', 'w2', 'w3'].map(k => Math.round(Math.hypot(GLMISSION.F(k).x - GLMISSION.C('van').x, GLMISSION.F(k).y - GLMISSION.C('van').y) * 10) / 10), k: !!GLMISSION.D('kisten'), dark: VAUTO.dark(), lamp: GLAUTO.LM.head.emissiveIntensity })")
         ck('in the forest: a van with its lamps on, three men, crates', ok and ok2 and st['van'][2] and max(st['d']) < 8 and st['k'] and st['dark'] and st['lamp'] > 1, str(st))
-        import math
         f = (math.sin(KL['hd']), math.cos(KL['hd'])); r = (math.cos(KL['hd']), -math.sin(KL['hd']))
         P = lambda a, b: (KL['van'][0] + f[0] * a + r[0] * b, KL['van'][1] + f[1] * a + r[1] * b)
         yawTo = lambda p, q: math.degrees(math.atan2(q[0] - p[0], q[1] - p[1]))
@@ -375,7 +374,7 @@ with lib.browser() as b:
         opts = J("[...document.querySelectorAll('#glwahl button')].map(b => b.textContent.slice(0, 5))")
         pic('50_plan')
         ck('Jule knows where the crates go; the plan is a choice: leise or laut', ok and n >= 8 and ok2 and opts == ['Leise', 'LautD'][:1] + [opts[1]] and opts[1].startswith('Laut'), str(opts))
-        E("GLHUD.pick(0)"); steps(0.3); time.sleep(0.2); steps(0.3); talk()
+        E("GLHUD.pick(0)"); steps(0.3); time.sleep(0.2); steps(0.3); talk(); steps(0.8)
         st = J("({ step: GLMISSION.debug.info().step, plan: GLSTATE.m.coup.plan, x: document.getElementById('glextra').textContent, text: GLMISSION.debug.info().text })")
         ck('leise: at night through the gap (the panel offers to wait for the night)', st['step'] == 'hin' and st['plan'] == 'leise' and st['x'] == 'Bis zur Nacht warten' and 'Nacht' in st['text'], str(st))
         E("GLMISSION.debug.go('coup', 'plan')"); steps(0.3)

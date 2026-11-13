@@ -384,7 +384,7 @@ export const GLKAP1 = (() => {
     if (RENN && RENN.key === key) return RENN.line ? RENN : null;
     let line = null;
     try {
-      line = GLAUTO.route(a, b, { k: 2.2, aLat: 3.4 });
+      line = GLAUTO.route(a, b, { k: 2.2, aLat: 3.4, vEnd: 6 });
     } catch (e) {}
     if (!line || !(line.L > 150)) {
       RENN = { key, line: null };
@@ -402,6 +402,8 @@ export const GLKAP1 = (() => {
     RENN = { key, line, L: line.L, cps, start: [p0.x, p0.y], hd: p0.hd, end: [cps[n - 1].x, cps[n - 1].y], at };
     return RENN;
   }
+  // a rival has reached the end of the course (a line slows down towards its end: the last metres count as there)
+  const amZiel = (c, R) => !c || !c.line || !!c.ende || c.s >= R.L - 3.5;
   const CLIQUE = [
     ['jule', 'mj', '#a23a2a', 0, 0],
     ['timo', 'mt', '#2f6b4f', 1.7, 0.5],
@@ -663,7 +665,7 @@ export const GLKAP1 = (() => {
             return true;
           }
           const j = MI.C('mj');
-          if (j && j.ende && !S.aus) {
+          if (j && amZiel(j, R) && !S.aus) {
             S.aus = true;
             MI.fehl(T.verloren, 'Noch einmal von der Scheune.');
           }
@@ -680,7 +682,7 @@ export const GLKAP1 = (() => {
           let da = true;
           for (const k of ['mj', 'mt']) {
             const c = MI.C(k);
-            if (c && c.line && !c.ende) {
+            if (c && renn() && !amZiel(c, RENN)) {
               GLAUTO.drive(c, dt, { vmax: 16, acc: 3.5 });
               if (k === 'mj') da = false;
             } else if (c && !S[k]) {
