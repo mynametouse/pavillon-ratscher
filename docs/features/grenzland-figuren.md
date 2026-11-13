@@ -69,8 +69,9 @@ Dateien: `viz3/src/grenzland/gl_fig.js` (die Schnittstelle `GLFIG`), neu `viz3/s
 
 ## Getestet
 
-Stand 13:36: lokal 42/42 (`grenzland_figuren`, alle Teile), auf GitHub Actions grün (Lauf 43424172075 auf 2c18ef10: smoke, beide
-Teile des Tests – 17 und 26 Prüfungen).
+Stand 14:45: lokal 48/48 (`grenzland_figuren`, alle Teile, auf dem Stand mit Merge 1 von `feat/grenzland`, Lauf 6); auf GitHub
+Actions grün auf 2c18ef10 (Lauf 43424172075: smoke, beide Teile – 17 und 26 Prüfungen). Langsamste Haltungsarbeit eines Bildes im
+Testbrowser: Reiten 0,1 ms, Gesten und Rennen bis 1,3 ms (einmal beim ersten Dekodieren des Sprint-Clips).
 
 
 `viz3/test/grenzland_figuren.py` (eine Seite, freies Spiel in Ratscher; Teile `moped,reiter,rennen,sitzen,gesten,blick`), Bilder in
