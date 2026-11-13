@@ -232,7 +232,8 @@ test('state: the worlds differ the way the chronicle says', () => {
   assert.ok(G(2035).energy.windrad === 2 && A(2035).energy.windrad === 0);
   assert.equal(A(2040).energy.windrad, 2, 'the investor turbine later');
   assert.ok(A(2028.85).forest.red > 0.4 && G(2028.85).forest.red > 0.3, 'red-brown slopes in both');
-  assert.ok(G(2045).forest.young > 0.75 && A(2045).forest.young < 0.6, 'green again by the 2040s in Gewappnet');
+  assert.ok(G(2040).forest.young > 0.7 && A(2040).forest.young < 0.55, 'green again by the 2040s in Gewappnet');
+  assert.ok(A(2060).forest.young > A(2040).forest.young + 0.15, 'succession closes the gaps slowly');
   assert.ok(A(2040).forest.fallen > 0.2 && G(2040).forest.fallen < 0.1, 'dead wood lying in Allein im Sturm');
   assert.ok(G(2045).forest.regrow === 'mischwald' && A(2045).forest.regrow === 'pionier');
   assert.ok(A(2047).water.marks.length > G(2047).water.marks.length, 'more marks on the wall');
