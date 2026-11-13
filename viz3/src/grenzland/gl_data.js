@@ -240,6 +240,8 @@ export const GLDATA = (() => {
     widerstand: 'Widerstand',
     kiste: 'Verdächtige Kiste',
     ausweis: 'Der Kontrolle entzogen',
+    angeln: 'Angeln ohne Erlaubnisschein',
+    helm: 'Fahren ohne Helm',
   };
   // ---- texts ----
   const T = {
@@ -343,7 +345,7 @@ export const GLDATA = (() => {
         'Polizeibericht: Handgreiflichkeiten im Raum Ratscher. Die Beteiligten kannten sich danach besser als vorher.',
       rempeln: 'Polizeibericht: Ein Passant wurde angerempelt. Die Kriminalität erreicht damit ein Zehnjahreshoch.',
       raserei: 'Polizeibericht: Ein Moped wurde in der Ortslage gemessen. Das Messgerät wird überprüft.',
-      boeller: 'Polizeibericht: Knallkörper im November. Die Polizei erinnert daran, dass Silvester ein Datum ist.',
+      boeller: 'Polizeibericht: Knallkörper im September. Die Polizei erinnert daran, dass Silvester ein Datum ist.',
       einbruch:
         'Polizeibericht: Einbruch in ein Containerlager bei Ratscher. Der Eigentümer möchte „keine große Sache daraus machen“.',
       hausfrieden: 'Polizeibericht: Unbekannte im Wald bei Geisenhöhn. Anwohner hörten Knall und Motoren.',

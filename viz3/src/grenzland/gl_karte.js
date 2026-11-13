@@ -6,7 +6,8 @@
 // the garden). The rim flashes red and blue while they see the player. On a vehicle the map shows more the faster one goes. In 1989 there is
 // no radar: the map is a sheet of paper, drawn by hand in brown ink. Drawn on a 2D canvas ten times a second; nothing in the 3D scene.
 //   GLKARTE.src(fn)     a source of blips: fn(out) pushes { x, y, k, name?, r?, hd? } – k: 'ziel' | 'ziel2' | 'partner' | 'polizei' |
-//                       'beamter' | 'heli' | 'sperre' | 'such' (r: radius in metres) | 'clique' | 'feind' | 'ort' (name's first letter is drawn)
+//                       'beamter' | 'heli' | 'sperre' | 'such' (r: radius in metres) | 'clique' | 'feind' | 'punkt' (a waypoint) |
+//                       'ort' (name's first letter is drawn)
 //   GLKARTE.show(on) · GLKARTE.tick(dt) · GLKARTE.blips() (tests: what was drawn last)
 import { stage } from '../core/head.js';
 import { P } from '../game/walkable.js';
@@ -185,7 +186,7 @@ body[data-gl-era="1989"] #glmaplab{color:#f0e3c0}
     let ziel = null;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    const RIM = { ziel: 1, partner: 1, polizei: 1, heli: 1, clique: 1 };
+    const RIM = { ziel: 1, punkt: 1, partner: 1, polizei: 1, heli: 1, clique: 1 };
     // areas first, then the marks
     for (const b of out) {
       if (b.k !== 'such') continue;
@@ -227,6 +228,18 @@ body[data-gl-era="1989"] #glmaplab{color:#f0e3c0}
         g.fill();
         g.stroke();
         if (b.k === 'ziel' && (!ziel || d < ziel.d)) ziel = b;
+      } else if (b.k === 'punkt') {
+        // a waypoint from the phone: a magenta pin
+        g.fillStyle = old ? '#6a2a4a' : '#e85ad8';
+        g.strokeStyle = 'rgba(0,0,0,0.75)';
+        g.lineWidth = 1.2;
+        g.beginPath();
+        g.arc(x, y - 3, 4.2, Math.PI * 0.85, Math.PI * 0.15);
+        g.lineTo(x, y + 5);
+        g.closePath();
+        g.fill();
+        g.stroke();
+        if (!ziel) ziel = b;
       } else if (b.k === 'partner') {
         g.fillStyle = old ? '#3d5a2c' : '#6fd6ff';
         g.strokeStyle = 'rgba(0,0,0,0.75)';
