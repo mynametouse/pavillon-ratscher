@@ -406,7 +406,7 @@ export const VAUTO = (() => {
       dyn: () => {
         if (!alive()) return null;
         const b = VKUNFALL.body(c);
-        b.knock = (v, h) => knocked(c, b, v, h);
+        b.knock = (v, h) => safe(() => knocked(c, b, v, h));
         return b;
       },
     };
@@ -1124,9 +1124,18 @@ export const VAUTO = (() => {
       cb.st.v += du * Math.sin(a);
       cb.st.x += st.x - b.x0;
       cb.st.y += st.y - b.y0;
-      knocked(c, cb, v, h, c.M + t.M);
+      safe(() => knocked(c, cb, v, h, c.M + t.M));
     };
     return b;
+  }
+  // the knock runs inside the physics of vehicles/vehicle.js: whatever goes wrong here must not stop the player's car
+  function safe(f) {
+    try {
+      f();
+    } catch (e) {
+      if (!S.errU) console.warn('verkehr knock', e);
+      S.errU = String((e && e.message) || e);
+    }
   }
   // a car after the knock, each frame: it rolls and slides on, brakes, stands; then its driver (verkehr/verkehr.js: ctx.onUnfall) has his
   // say, and it turns back into its lane – or, far off the road or turned round, it waits until nobody sees it

@@ -172,6 +172,14 @@ export const VKUNFALL = (() => {
       'Na toll. Und wie komm ich hier jetzt wieder raus?',
       'Das darf doch nicht wahr sein. Jetzt brauch ich einen Abschlepper.',
     ],
+    // stage 4a: a walker, up again after the fall – and one only stumbling
+    fuss: [
+      'Aua! Bist du verrückt geworden?',
+      'Mensch! Hast du mich denn nicht gesehen?',
+      'Nichts passiert … glaub ich. Aber fahr doch langsamer!',
+      'Das war knapp! Hier laufen Leute, weißt du?',
+    ],
+    stolpert: ['He! Vorsicht!', 'Hoppla! Pass doch auf!'],
     // a villager at the end (they know the player)
     endDorf: [
       'Na, wir kennen uns ja. Das klären wir beim Bier.',

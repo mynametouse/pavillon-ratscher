@@ -42,8 +42,9 @@ import { VKMOD } from './vk_modelle.js';
 import { VKSTROM } from './vk_strom.js';
 import { VKREGELN } from './vk_regeln.js';
 import { VKAMPEL } from './vk_ampel.js';
-// stage 3: harmless accidents – the other driver's lines (VKUNFALL)
+// stage 3: harmless accidents – the other driver's lines (VKUNFALL); stage 4a: the walkers solid, a fall and up again (VKFUSS)
 import { VKUNFALL } from './vk_unfall.js';
+import { VKFUSS } from './vk_fuss.js';
 export const VERKEHR = (() => {
   // feat/verkehr-real: each driver of the cast has a car of today of his own (by his name: the same type every time; the colour stays
   // his, VLEUTE) – the cars by their share of the stock (VKTYPEN.PKW); their models asked for at once, in the order of that share
@@ -362,6 +363,7 @@ export const VERKEHR = (() => {
     S.busy[key] = 'ped';
     S.peds.push(d);
     S.stats.peds++;
+    VKFUSS.add(d, pedSaid); // stage 4a: solid for vehicles
     VFIG.load(key).then(f => {
       if (!f || !S.peds.includes(d)) return;
       d.f = f;
@@ -373,6 +375,7 @@ export const VERKEHR = (() => {
   function removePed(d) {
     const i = S.peds.indexOf(d);
     if (i >= 0) S.peds.splice(i, 1);
+    VKFUSS.drop(d);
     if (d.f) {
       d.f.g.visible = false;
       d.f.walker.talking = false;
@@ -417,7 +420,22 @@ export const VERKEHR = (() => {
       }
     return O;
   }
+  // stage 4a: a walker's word after a knock (VKFUSS) – stumbled, or up again after a fall
+  function pedSaid(d, kind) {
+    if (UI.cur && UI.cur.d === d) UI.close();
+    const text = kind === 'stolpert' ? pick(VKUNFALL.LINES.stolpert) : VKUNFALL.line('fuss', rnd());
+    UI.subtitle(d, text, Math.max(2600, text.length * 70));
+    S.stats.said = (S.stats.said || 0) + 1;
+    S.lastSaid = text;
+    const U = (S.stats.unfall = S.stats.unfall || {});
+    U[kind] = (U[kind] || 0) + 1;
+  }
   function pedTick(d, dt, O) {
+    // stage 4a: knocked down – on the ground, then up again (VKFUSS has him meanwhile)
+    if (d.fall) {
+      if (UI.cur && UI.cur.d === d) UI.close();
+      if (VKFUSS.tick(d, dt)) return;
+    }
     const L = d.line,
       f = d.f,
       pl = P.mode === 'walk' && !PLAY.seated() && !VEH.cur && !S.ride,
@@ -1546,9 +1564,10 @@ export const VERKEHR = (() => {
     const O = S.peds.length ? pedObstacles() : [];
     let near = null,
       nd = 2.6;
+    VKFUSS.now = S.t;
     for (const d of S.peds) {
       pedTick(d, dt, O);
-      if (d.f && d.f.g.visible) {
+      if (d.f && d.f.g.visible && !d.fall) {
         const dd = Math.hypot(d.x - P.x, d.y - P.y);
         if (dd < nd) {
           nd = dd;

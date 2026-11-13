@@ -467,6 +467,7 @@ export function rbPerson(gl, set, o) {
     aI = act('idle'),
     aT = act('talk');
   if (aI) aI.timeScale = o.idleRate ?? 0.85;
+  const xa = {}; // feat/verkehr-real: clips of the set laid over all the others (self.over), made when first asked for
   const walkSp = ((set.clips.walk && set.clips.walk.speed) || 1.25) * s; // m/s of the cycle at this size
   // a limp now and then (o.limp, Falko 23.10.2026: Hubert "läuft manchmal ein bisschen hinkend"): the right leg hurts – the walk hurries over
   // its stance and lingers on the left, the body dips and leans over it. Where in the clip the right foot stands: its lowest point
@@ -513,6 +514,7 @@ export function rbPerson(gl, set, o) {
     hipH,
     walker: null, // set by swapFig: talking shows the gestures
     pose: null, // { k, t }: a work pose (POSE above), set by npc/life.js
+    over: null, // feat/verkehr-real: { k: a clip of the set ('lie', 'kneelIdle' …), w: 0…1 } (or a list of them) over walking and standing (verkehr/vk_fuss.js)
     speak: false, // talking on a chair (npc/life.js): gestures
     after: null, // called after each pose update (npc/life.js puts the tools into the hands)
     anim(dt, speed) {
@@ -540,13 +542,29 @@ export function rbPerson(gl, set, o) {
         lim = o.limp * w * THREE.MathUtils.clamp(Math.sin(limT * 0.11) * 1.6, 0, 1); // limps for a while, then walks evenly again
         ph = (aW.time / aW.getClip().duration - phR) * Math.PI * 2; // 0: the right foot stands
       }
+      // feat/verkehr-real: clips over everything (lying after a knock, kneeling to get up; one { k, w } or a list for a crossfade): the
+      // others fade by as much
+      const ov = self.over ? (Array.isArray(self.over) ? self.over : [self.over]) : null;
+      let ow = 0;
+      if (ov)
+        for (const q of ov) {
+          if (!(q.k in xa)) xa[q.k] = act(q.k);
+          ow += Math.max(0, q.w || 0);
+        }
+      ow = Math.min(1, ow);
+      for (const k in xa) {
+        if (!xa[k]) continue;
+        let wk = 0;
+        if (ov) for (const q of ov) if (q.k === k) wk += Math.max(0, q.w || 0);
+        xa[k].setEffectiveWeight(wk);
+      }
       if (aW) {
-        aW.setEffectiveWeight(w);
+        aW.setEffectiveWeight(w * (1 - ow));
         aW.timeScale =
           (speed > 0.05 ? THREE.MathUtils.clamp(speed / walkSp, 0.55, 1.6) : 1) * (1 + 0.32 * lim * Math.cos(ph));
       }
-      if (aT) aT.setEffectiveWeight(sit ? 0 : rest * tk);
-      if (aI) aI.setEffectiveWeight(sit ? 1 : rest * (1 - (aT ? tk : 0)));
+      if (aT) aT.setEffectiveWeight(sit ? 0 : rest * tk * (1 - ow));
+      if (aI) aI.setEffectiveWeight((sit ? 1 : rest * (1 - (aT ? tk : 0))) * (1 - ow));
       for (const [b, q] of sv) b.quaternion.copy(q);
       sv.clear();
       mixer.update(acc);
