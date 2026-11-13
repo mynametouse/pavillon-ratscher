@@ -35,9 +35,8 @@ export const ZKORTE = (() => {
       move: { dolly: 3 },
       label: 'Am Anger bei der Dorflinde',
     },
-    // from the slope north-east of the village with a long lens across the valley onto the Klinge lobe and the slopes behind it;
-    // a halt there stands on the slope at eye height, the same long view (zeitreise-welt's line-of-sight check: ~100 % of the
-    // conifers S/SW in view from (430, 90))
+    // from the slope north-east of the village with a long lens across the valley onto the Klinge lobe and the slopes behind it – a
+    // halt there keeps this view (from eye height on the slope the forest is a thin band over a field: zeitreise-welt's (430, 90))
     hang: {
       pos: [470, 120],
       h: 85,
@@ -46,7 +45,6 @@ export const ZKORTE = (() => {
       fov: 30,
       move: { pan: -3 },
       label: 'Am Hang über dem Dorf',
-      halt: { pos: [430, 90], h: EYE, look: [-300, -760], lh: 20, fov: 32 },
     },
     // outside the family forest's north-east edge (world/forest.js CORE: the tip of the lobe, its edge (−518, −536)–(−423, −494)), ~20 m
     // from the first spruces, looking across the edge into the stand – the sun from the right in the afternoon

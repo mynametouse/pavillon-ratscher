@@ -212,12 +212,12 @@ def run():
 
         # ---------------- the places per chapter: a contact sheet ----------------
         if 'orte' in want:
-            # one sheet: every place once (the time-lapse's pose; 'hang' also as a halt stands), in the forest chapter ten years on
+            # one sheet: every place once (the time-lapse's pose), in the forest chapter ten years on
             E("ZKREGIE.start({ pair: ['allein'], split: false, chapter: 'wald', play: false, instant: true })"); steps(0.4)
             E("ZKREGIE.seek(2036)"); steps(0.4)
             ids = J("ZKREGIE.places()")
             items = []
-            for pid, still in [(p, False) for p in ids] + [('hang', True)]:
+            for pid, still in [(p, False) for p in ids]:
                 E(f"ZKREGIE.view('{pid}', {{ still: {'true' if still else 'false'} }})"); steps(0.6)
                 q = J(f"ZKREGIE.pose('{pid}', {{ halt: {'true' if still else 'false'} }})")
                 items.append([pid + (' (Halt)' if still else '') + ' · ' + str([round(v) for v in q['pos']]), E(SHOT)])

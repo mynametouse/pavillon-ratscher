@@ -151,7 +151,7 @@ Themen-Tests in `viz3/extra/zeitreise-regie/tests.txt`: `smoke`, `zeitreise`, `z
 | `ueberblick` | 90 m über dem Anger, Richtung 195°, 10° nach unten, 60° – nur am Kapitelanfang | – |
 | `fern` | von derselben Höhe, Richtung 205°, 30°: die Hänge im Süden, der Kamm mit dem Windrad links | – |
 | `anger` | vom Spielort „Dorf (Anger)“ (241,5/−101,5) an der Dorflinde vorbei nach Südwesten | gleich |
-| `hang` | vom Hang nordöstlich des Dorfs (85 m über dem Boden), 30°, über das Tal auf die Klinge und die Hänge dahinter | zu Fuß am Hang (430/90), dieselbe lange Sicht (Sichtprüfung `zeitreise-welt`) |
+| `hang` | vom Hang nordöstlich des Dorfs (85 m über dem Boden), 30°, über das Tal auf die Klinge und die Hänge dahinter | gleich (zu Fuß am Hang wäre der Wald nur ein schmales Band über einem Feld) |
 | `waldrand` | vor dem Nordost-Rand des Familienwalds (`world/forest.js` CORE), ~20 m vor den ersten Fichten | gleich; im geteilten Bild zwei Einstellungen |
 | `schule` | vom Rasen vor der alten Schule beim Wegweiser | gleich |
 | `bruecke` | an der Schleusebrücke auf der Linie des Flusses, flussaufwärts zum Dorf | gleich |
