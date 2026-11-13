@@ -168,7 +168,7 @@ export const GL89 = (() => {
       return null;
     }
     F.knows = true;
-    F.r = 26;
+    F.r = d.r || 20;
     GLFIG.place(F, d.pos[0], d.pos[1], rad(d.hd));
     S.who[id] = { id, F, d, t: 1 + (id.length % 3), ph: 0, i: 0, said: -99, n: 0 };
     S.leute[id] = F;

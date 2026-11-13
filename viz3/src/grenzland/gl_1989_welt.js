@@ -793,6 +793,122 @@ export const GL89WELT = (() => {
     }
     bar(K, [a[0], a[1], za + 1.97], [b[0], b[1], zb + 1.97], 0.006, L(200, 200, 196));
   }
+  // ---- the back gardens: what stood behind every house ----
+  // the rabbit hutch: a cupboard of boards with wire doors in two rows, tar paper on top; its front faces az
+  function hutch(K, x, y, az) {
+    const a = ((180 - az) * Math.PI) / 180,
+      c = Math.cos(a),
+      s = Math.sin(a),
+      z = gz(x, y),
+      lp = (u, v) => [x + c * u - s * v, y + s * u + c * v];
+    K.box(x, y, z + 0.35, 2.1, 0.7, 1.25, a, C.holzG, true);
+    for (const u of [-0.95, 0.95]) {
+      const p = lp(u, 0);
+      K.box(p[0], p[1], z, 0.09, 0.6, 0.35, a, C.holzD);
+    }
+    K.box(x, y, z + 1.6, 2.3, 0.95, 0.05, a, L(46, 46, 48), true);
+    for (let r = 0; r < 2; r++)
+      for (let i = 0; i < 3; i++) {
+        const p = lp(-0.68 + i * 0.68, -0.36);
+        K.box(p[0], p[1], z + 0.42 + r * 0.6, 0.56, 0.02, 0.5, a, L(58, 56, 50));
+        const q = lp(-0.68 + i * 0.68, -0.375);
+        K.box(q[0], q[1], z + 0.42 + r * 0.6, 0.06, 0.02, 0.5, a, C.holzD);
+        K.box(q[0], q[1], z + 0.65 + r * 0.6, 0.56, 0.02, 0.04, a, C.holzD);
+      }
+    return { c: [x, y], ax: [c, s], ay: [-s, c], ex: 1.1, ey: 0.4, z0: z, z1: z + 1.6 };
+  }
+  // the chopping block with the axe in it, split wood beside
+  function block(K, x, y) {
+    const z = gz(x, y);
+    K.cyl(x, y, z, z + 0.48, 0.24, 0.22, 10, L(138, 108, 72), true);
+    bar(K, [x + 0.05, y, z + 0.5], [x - 0.42, y + 0.1, z + 0.86], 0.016, C.holz);
+    K.box(x + 0.06, y, z + 0.46, 0.05, 0.16, 0.1, 0.2, L(70, 72, 76));
+    for (let i = 0; i < 22; i++) {
+      const a = hh(i * 3.3) * 6.283,
+        d = 0.6 + hh(i * 5.1) * 0.9;
+      K.box(
+        x + Math.cos(a) * d,
+        y + Math.sin(a) * d * 0.7 - 1.0,
+        z + hh(i) * 0.12,
+        0.33,
+        0.1,
+        0.09,
+        hh(i * 7.7) * 3.1,
+        L(150 + (i % 3) * 14, 118, 78)
+      );
+    }
+  }
+  // a vegetable bed in November: dug earth, the bean poles still standing, a row of kale
+  function beet(K, x, y, az, w, l) {
+    const a = ((90 - az) * Math.PI) / 180,
+      c = Math.cos(a),
+      s = Math.sin(a),
+      z = gz(x, y),
+      lp = (u, v) => [x + c * u - s * v, y + s * u + c * v];
+    K.box(x, y, z - 0.02, l, w, 0.1, a, L(58, 46, 36), true);
+    for (let i = 0; i < 4; i++) {
+      const p = lp(-l / 2 + 0.6 + i * 0.75, w * 0.22),
+        q = lp(-l / 2 + 0.6 + i * 0.75, -w * 0.02),
+        t = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, z + 2.0];
+      bar(K, [p[0], p[1], z], t, 0.012, L(120, 104, 80));
+      bar(K, [q[0], q[1], z], t, 0.012, L(120, 104, 80));
+    }
+    for (let i = 0; i < 7; i++) {
+      const p = lp(-l / 2 + 0.45 + i * ((l - 0.9) / 6), -w * 0.3);
+      K.cyl(p[0], p[1], z + 0.05, z + 0.4, 0.02, 0.02, 5, L(96, 104, 70));
+      K.ball(p[0], p[1], z + 0.5, 0.17, L(52, 82, 60), 6);
+    }
+  }
+  // the compost: a box of slats, half full
+  function compost(K, x, y, az) {
+    const a = ((90 - az) * Math.PI) / 180,
+      z = gz(x, y);
+    for (let i = 0; i < 4; i++) {
+      K.box(x, y - 0.0, z + 0.05 + i * 0.2, 1.3, 0.03, 0.14, a, C.holzG);
+      K.box(x, y, z + 0.05 + i * 0.2, 0.03, 1.3, 0.14, a, C.holzG);
+    }
+    for (const [u, v] of [
+      [-0.63, -0.63],
+      [0.63, -0.63],
+      [-0.63, 0.63],
+      [0.63, 0.63],
+    ]) {
+      const c = Math.cos(a),
+        s = Math.sin(a);
+      K.box(x + c * u - s * v, y + s * u + c * v, z, 0.07, 0.07, 0.9, a, C.holzD);
+    }
+    K.lathe(
+      x,
+      y,
+      z,
+      [
+        [0.6, 0],
+        [0.45, 0.4],
+        [0, 0.55],
+      ],
+      8,
+      L(62, 54, 40)
+    );
+  }
+  // a wheelbarrow of sheet steel
+  function barrow(K, x, y, az) {
+    const a = ((90 - az) * Math.PI) / 180,
+      c = Math.cos(a),
+      s = Math.sin(a),
+      z = gz(x, y);
+    K.box(x, y, z + 0.32, 0.85, 0.58, 0.26, a, L(70, 86, 78), true);
+    wheel(K, x + c * 0.62, y + s * 0.62, z + 0.18, c, s, 0.18, C.eisen, 8);
+    for (const sd of [-1, 1]) {
+      bar(
+        K,
+        [x + c * 0.62, y + s * 0.62, z + 0.18],
+        [x - c * 0.95 - s * sd * 0.3, y - s * 0.95 + c * sd * 0.3, z + 0.52],
+        0.016,
+        C.holz
+      );
+      K.box(x - c * 0.3 - s * sd * 0.25, y - s * 0.3 + c * sd * 0.25, z, 0.04, 0.04, 0.32, a, C.eisen);
+    }
+  }
   // a street lamp of the time: a wooden pole, an arm towards the road, an enamel shade; the bulb is apart (it glows)
   function lampPole(K, x, y) {
     const z = gz(x, y);
@@ -937,7 +1053,17 @@ export const GL89WELT = (() => {
     box(pillar(K, Q, 219.2, -101.2));
     box(milk(K, 213.4, -79.6, 78));
     washing(K, [247.2, -70.4], [253.4, -73.6]);
-    washing(K, [181.5, -118.2], [176.6, -123.4]);
+    // the back gardens west of the lane (the way to the fields): washing, the rabbit hutch, the chopping block, a bed, compost
+    washing(K, [199.6, -69.6], [205.6, -71.8]);
+    box(hutch(K, 197.4, -80.6, 82));
+    block(K, 203.6, -76.4);
+    beet(K, 206.4, -83.0, 10, 2.6, 4.6);
+    compost(K, 208.0, -89.6, 8);
+    barrow(K, 201.6, -87.6, 300);
+    bucket(K, 198.8, -82.0, false);
+    box(hutch(K, 172.2, -124.6, 188));
+    bike(K, 187.2, -129.9, 118, L(86, 30, 30));
+    barrow(K, 178.6, -125.6, 60);
     for (const [x, y] of [
       [226.4, -90.1],
       [201.2, -125.6],

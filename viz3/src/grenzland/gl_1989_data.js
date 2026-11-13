@@ -347,17 +347,19 @@ export const GL89DATA = (() => {
   //      buckets, 'schlange' queueing, 'laden' in the shop's door, 'moped' bent over the moped, 'stehen', 'lesen' before the notice
   //      board, 'gehen' walking a round (weg) with pauses; zu: whom they talk to while nobody else is near ----
   const LEUTE = {
-    gisela: { pos: [235.9, -63.3], hd: 204, tun: 'laden' },
-    brigitte: { pos: [235.2, -65.0], hd: 22, tun: 'schlange', zu: 'gisela' },
-    renate: { pos: [234.4, -66.3], hd: 30, tun: 'schlange', zu: 'brigitte' },
-    erna: { pos: [228.6, -92.2], hd: 250, tun: 'kehren' },
-    kurt: { pos: [219.4, -86.4], hd: 27, tun: 'lesen' },
-    maik: { pos: [221.6, -103.4], hd: 115, tun: 'moped' },
-    ines: { pos: [223.4, -104.6], hd: 300, tun: 'stehen', zu: 'maik' },
-    horst: { pos: [199.3, -103.6], hd: 200, tun: 'kohlen' },
+    //      r: how far this one sees what the teacher carries (m; busy people look at their work, the queue at the shop's door)
+    gisela: { pos: [235.9, -63.3], hd: 204, tun: 'laden', r: 13 },
+    brigitte: { pos: [235.2, -65.0], hd: 22, tun: 'schlange', zu: 'gisela', r: 11 },
+    renate: { pos: [234.4, -66.3], hd: 30, tun: 'schlange', zu: 'brigitte', r: 11 },
+    erna: { pos: [228.6, -92.2], hd: 250, tun: 'kehren', r: 15 },
+    kurt: { pos: [220.4, -86.2], hd: 27, tun: 'lesen', r: 10 },
+    maik: { pos: [221.6, -103.4], hd: 115, tun: 'moped', r: 11 },
+    ines: { pos: [223.4, -104.6], hd: 300, tun: 'stehen', zu: 'maik', r: 22 },
+    horst: { pos: [199.3, -103.6], hd: 200, tun: 'kohlen', r: 15 },
     werner: {
       pos: [262.0, -110.6],
       hd: 290,
+      r: 26,
       tun: 'gehen',
       weg: [
         [262.0, -110.6],
