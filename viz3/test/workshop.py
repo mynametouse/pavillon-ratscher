@@ -76,6 +76,8 @@ def run():
             time.sleep(1)
             s = J("WORKSHOP.regie().state()")
             ck('begin starts the regie with the pair, split', s['on'] and s['pair'] == ['allein', 'gewappnet'] and s['split'], str(s))
+            try: pg.wait_for_function("document.body.classList.contains('ws-playing') && document.getElementById('ws-top').getBoundingClientRect().height > 50", timeout=20000)
+            except Exception: pass
             ck('letterbox bars while it plays', E("document.body.classList.contains('ws-playing')") and E("document.getElementById('ws-top').getBoundingClientRect().height") > 50)
             ck('year ≥ 12 vh, two world titles over the halves', px('#ws-year') >= vh(11.5) and E("document.querySelectorAll('#ws-titles span').length") == 2)
             ck('the timeline has chapters and markers', E("document.querySelectorAll('#ws-tl .seg').length") == 3 and E("document.querySelectorAll('#ws-tl .mk').length") >= 1)
