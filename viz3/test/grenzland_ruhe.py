@@ -12,6 +12,15 @@ import grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
 ck = grenzland_ci.wrap(lib.Checks('grenzland_ruhe'), 'grenzland_ruhe')
 OUT = lib.out('grenzland_ruhe')
+def note(title, msg):
+    # a notice on the Actions job (its log is not public, its annotations are – grenzland_ci.py does the same for failures)
+    print(title, msg)
+    if not os.environ.get('GITHUB_ACTIONS'): return
+    try:
+        with open(f'/proc/{os.getppid()}/fd/1', 'w') as f:
+            f.write('::notice title=grenzland_ruhe ' + title + '::' + str(msg)[:1500].replace('%', '%25').replace('\n', '%0A') + '\n')
+    except Exception as e:
+        print('note failed', e)
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs)
@@ -121,12 +130,13 @@ with lib.browser() as b:
     E("GLFAHNDUNG.tat('einbruch', { force: [{ name: 'Testzeuge', knows: false }] })")
     E("GRENZLAND.zielT = 0")   # the radar's marks are refreshed every half second of real time: now
     steps(1.2)
-    print('radar diag', J("({ zielT: GRENZLAND.zielT, pol: GRENZLAND.pol ? Object.keys(GRENZLAND.pol) : null, w: GRENZLAND.pol && GRENZLAND.pol.wissen, "
+    diag = J("({ zielT: GRENZLAND.zielT, pol: GRENZLAND.pol ? Object.keys(GRENZLAND.pol) : null, w: GRENZLAND.pol && GRENZLAND.pol.wissen, "
       "cars: GRENZLAND.pol && GRENZLAND.pol.cars, hud: GLHUD.pol && GLHUD.pol.wissen, st: String(GLFAHNDUNG.stand).slice(0, 60), "
-      "blips: GLKARTE.blips().map(b => b.k), mode: GAME.P.mode, stars: GLLOGIK.stars(GLSTATE.W) })"))
+      "blips: GLKARTE.blips().map(b => b.k), mode: GAME.P.mode, stars: GLLOGIK.stars(GLSTATE.W) })")
+    note('radar', diag)
     p = J("({ pol: GLKARTE.blips().filter(b => b.k === 'polizei').length, wis: !document.getElementById('glwissen').hidden, "
           "an: [...document.querySelectorAll('#glwissen i.an')].map(i => i.dataset.w) })")
-    ck('the radar shows only the patrol that sees you', p['pol'] == 1, str(p))
+    ck('the radar shows only the patrol that sees you', p['pol'] == 1, str(p) + ' ' + str(diag))
     ck('the panel shows what the police know (face, vehicle)', p['wis'] and sorted(p['an']) == ['fahrzeug', 'gesicht'], str(p))
     pic('06_gesucht')
     E("GLFAHNDUNG.stand = window._st0; GLFAHNDUNG.clear()")
@@ -168,7 +178,7 @@ with lib.browser() as b:
                 steps(0.3); time.sleep(0.4)
         pic(f'08_angel_{yaw}')
         if yaw == 180:   # what stands in the water there? (the review saw a house in the reservoir)
-            print('angel 180 hits', J("""(() => { const T = window.THREE, rc = new T.Raycaster(), out = [];
+            note('angel 180 hits', J("""(() => { const T = window.THREE, rc = new T.Raycaster(), out = [];
               for (const [u, v] of [[0, 0.1], [0.12, 0.15], [-0.1, 0.12], [0.05, 0.3]]) { rc.setFromCamera(new T.Vector2(u, v), GAME.cam); const h = rc.intersectObjects(GAME.scene ? GAME.scene.children : [], true)[0];
                 if (!h) { out.push(null); continue; } const chain = []; let o = h.object; while (o && chain.length < 6) { chain.push((o.name || o.type) + (o.userData && Object.keys(o.userData).length ? '{' + Object.keys(o.userData).slice(0, 4).join(',') + '}' : '')); o = o.parent; }
                 out.push({ d: Math.round(h.distance), x: Math.round(h.point.x), y: Math.round(-h.point.z), z: Math.round(h.point.y), chain }); } return out; })()"""))
