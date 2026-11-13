@@ -422,29 +422,64 @@ export const GLLOGIK = (() => {
     // seconds along an edge (field tracks are rougher than their limit; meiden: edges to keep away from)
     const kosten = (e, k, meiden) =>
       (e.len / speed(e, k)) * (e.kind === 6 ? 1.25 : 1) * (meiden && meiden.has(e) ? 6 : 1);
-    // seconds to every node from the sources [[node, seconds], …]: { dist, prev }
+    // seconds to every node from the sources [[node, seconds], …]: { dist, prev } (Dijkstra with a small binary heap)
     function wege(srcs, k = 1, meiden = null) {
       const n = nodes.length,
         dist = new Float64Array(n).fill(Infinity),
         prev = new Array(n).fill(null),
-        done = new Uint8Array(n);
-      for (const [i, c] of srcs) if (c < dist[i]) dist[i] = c;
-      for (;;) {
-        let u = -1,
-          bd = Infinity;
-        for (let i = 0; i < n; i++)
-          if (!done[i] && dist[i] < bd) {
-            bd = dist[i];
-            u = i;
+        done = new Uint8Array(n),
+        hd = [],
+        hn = [];
+      const push = (d, i) => {
+        let j = hd.length;
+        hd.push(d);
+        hn.push(i);
+        while (j > 0) {
+          const q = (j - 1) >> 1;
+          if (hd[q] <= hd[j]) break;
+          [hd[q], hd[j]] = [hd[j], hd[q]];
+          [hn[q], hn[j]] = [hn[j], hn[q]];
+          j = q;
+        }
+      };
+      const pop = () => {
+        const i = hn[0],
+          ld = hd.pop(),
+          ln = hn.pop();
+        if (hd.length) {
+          hd[0] = ld;
+          hn[0] = ln;
+          for (let j = 0; ;) {
+            const l = j * 2 + 1,
+              r = l + 1;
+            let m = j;
+            if (l < hd.length && hd[l] < hd[m]) m = l;
+            if (r < hd.length && hd[r] < hd[m]) m = r;
+            if (m === j) break;
+            [hd[m], hd[j]] = [hd[j], hd[m]];
+            [hn[m], hn[j]] = [hn[j], hn[m]];
+            j = m;
           }
-        if (u < 0) break;
+        }
+        return i;
+      };
+      for (const [i, c] of srcs)
+        if (c < dist[i]) {
+          dist[i] = c;
+          push(c, i);
+        }
+      while (hd.length) {
+        const u = pop();
+        if (done[u]) continue;
         done[u] = 1;
+        const bd = dist[u];
         for (const e of nodes[u].edges) {
           const v = e.a === u ? e.b : e.a,
             nd = bd + kosten(e, k, meiden);
           if (nd < dist[v]) {
             dist[v] = nd;
             prev[v] = e;
+            push(nd, v);
           }
         }
       }
@@ -698,6 +733,7 @@ export const GLLOGIK = (() => {
       spur: new Map(),
       ev: [],
       sawHide: false,
+      hideT: 0,
       seenT: 9,
       footT: 0,
       blockT: 0,
@@ -939,10 +975,14 @@ export const GLLOGIK = (() => {
         bs = -1;
       for (let i = 0; i < 10; i++) {
         const a = a0 + (i * 6.283) / 10,
-          x = p.x + Math.sin(a) * R,
-          y = p.y + Math.cos(a) * R,
-          q = [x, y];
-        if (world.frei && !world.frei(q)) continue;
+          q = [p.x + Math.sin(a) * R, p.y + Math.cos(a) * R],
+          N = world.netz(q[0], q[1]),
+          A = N && N.nah(q[0], q[1], 30);
+        // on a road if there is one near (never inside a house), else pushed out of the walls
+        if (A) {
+          q[0] = A.x;
+          q[1] = A.y;
+        } else if (world.frei && !world.frei(q)) continue;
         // out of his sight if there is such a corner; else behind his back
         const s = (world.los(q[0], q[1], p.x, p.y) ? 0 : 2) + (Math.cos(a - p.hd) < 0 ? 1 : 0) + rnd() * 0.5;
         if (s > bs) {
@@ -1106,7 +1146,7 @@ export const GLLOGIK = (() => {
             // somebody on foot close by, or he stands off the road (with his moped in the field) and the car is as near as the road
             // goes: stop, out of the car and over to him
             sees &&
-            ((!p.veh && d < 24) || (p.v < 2.5 && d < 170 && A && A.d > 12 && there && u.v < 2))
+            ((!p.veh && d < 24) || (p.v < (p.veh ? 2.5 : 3.2) && d < 170 && A && A.d > 12 && there && u.v < 2))
           ) {
             u.st = 'steht';
             u.horn = false;
@@ -1151,7 +1191,8 @@ export const GLLOGIK = (() => {
               u.first = !sees;
               u.routeT = 99;
               if (!sees && E.last) route(u, E.last, 1.0);
-            } else if (sees && E.cops.length + K.crew <= maxCops() && p.v < 2.5 && d < 170) crewOut(u, K.crew); // (it stood by while the others' officers were out; now it is its turn)
+            } else if (sees && E.cops.length + K.crew <= maxCops() && p.v < (p.veh ? 2.5 : 3.2) && d < 170)
+              crewOut(u, K.crew); // (it stood by while the others' officers were out; now it is its turn)
           }
         } else {
           // on the way to where he was last seen or reported; there a look around, then the roads near it
@@ -1339,9 +1380,13 @@ export const GLLOGIK = (() => {
       if (seen) E.seenT = 0;
       else E.seenT += dt;
       if (E.last) E.lastT += dt;
-      // he went indoors in front of their eyes: that is no hiding place
+      // he went indoors (or under the trees) in front of their eyes: that is no hiding place – and for a while they wait outside
       if (p.hidden || p.cover) {
-        if (!E.wasHidden && E.seenT < 2.5) E.sawHide = true;
+        if (!E.wasHidden && E.seenT < 2.5) {
+          E.sawHide = true;
+          E.hideT = 0;
+        }
+        if (E.sawHide) E.hideT += dt;
       } else E.sawHide = false;
       E.wasHidden = !!(p.hidden || p.cover);
       // a long chase is a deed of its own (they get more determined)
@@ -1360,13 +1405,19 @@ export const GLLOGIK = (() => {
         close,
         hidden: (p.hidden || p.cover || !!env.versteck) && !E.sawHide,
         split: !!env.split,
-        hold: !there && coming && !env.off,
+        hold:
+          (!there && coming && !env.off) ||
+          (E.sawHide &&
+            p.hidden &&
+            E.hideT < 45 &&
+            (E.units.some(u => hyp(u.x - p.x, u.y - p.y) < 60) || E.cops.length > 0)),
       });
       if (ev) say(ev, { hidden: !!(p.hidden || p.cover) });
-      if (ev === 'entkommen') {
-        for (const u of E.units.slice()) leave(u);
-        for (const c of E.cops) if (c.unit) c.st = 'zurück';
+      // the level is calm (he got away, he changed his clothes, a mission ended it): everybody drives home
+      if (starsOf(W.heat) === 0 && (E.last || E.block || E.units.some(u => u.st !== 'abzug'))) {
+        for (const u of E.units.slice()) if (u.st !== 'abzug') leave(u);
         blockOff();
+        E.riegel = null;
         E.sent = 0;
         E.last = null;
         E.dir = null;

@@ -9,6 +9,8 @@
 #   night      the patrol car with its lights at night (picture)
 #   1989       the Volkspolizei's saloon, the ABV on foot who knows everybody, the arrest ends the flashback's attempt
 #   heli       four stars: the helicopter flies in, circles, sees him in the open and not under the trees
+#   sek        five stars: vans of the special forces across the road ends, others hunt
+#   stadt      Schleusingen: a patrol car over the town's streets (its own run: the town takes memory)
 # Pictures in out/grenzland_polizei/.   python3 viz3/test/grenzland_polizei.py 9016 [scenes, comma separated]   (~8 min here)
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -46,6 +48,7 @@ with lib.browser() as b:
       look(x, y, d, az, h) { const a = az * Math.PI / 180; GAME.view(x - Math.sin(a) * d, y - Math.cos(a) * d, KERN.ground(x - Math.sin(a) * d, y - Math.cos(a) * d) + (h || 1.7), az, -6) },
       onRoad(x, y) { const s = KERN.surface(x, y); return !!s && s.e > -1.5 },
       figs() { return GLFIG.figs.filter(F => F.cop).length },
+      figsVis() { return GLFIG.figs.filter(F => F.cop && F.g.visible).length },
       events: [],
     }; KERN.on('grenzland:erwischt', d => TP.events.push(['erwischt', d])); KERN.on('grenzland:sperre', d => TP.events.push(['sperre', d])); KERN.on('grenzland:zeuge', d => TP.events.push(['zeuge', d])); 0""")
     ok = E("GLSTATE.on")
@@ -142,14 +145,15 @@ with lib.browser() as b:
         st = stand()
         ck('escape: they go to where he was last seen, walk back and get in; the car searches',
            t1 is not None and t2 is not None and t3 is not None, str((t1, t2, t3, st['cars'], st['cops'])))
-        ck('escape: the figures of the officers are gone with them', E("TP.figs()") == 0)
+        ck('escape: the officers\' figures are out of the picture (kept for the next time they get out)', E("TP.figsVis()") == 0, str(E("TP.figs()")))
         E("GAME.view(60, -420, KERN.ground(60, -420) + 1.62, 0, -3)")
         t = until("GLLOGIK.stars(GLSTATE.W) === 0", 240, 2)
         ck('escape: out of sight the stars go', t is not None and E("GLSTATE.stats.entkommen") >= 1, str((t, stand())))
         st = stand()
         ck('escape: the cars drive off, lights out', all(c['st'] == 'abzug' for c in st['cars']) and E("GLFAHNDUNG.cars.every(u => !u.c.blau && !u.c.horn)"), str(st['cars']))
         t = until("GLFAHNDUNG.cars.length === 0", 260, 4)
-        ck('escape: and are gone', t is not None and E("GLAUTO.cars.length") == 0, str((t, stand()['cars'])))
+        steps(1)
+        ck('escape: and are gone, the officers\' figures freed', t is not None and E("GLAUTO.cars.length") == 0 and E("TP.figs()") == 0, str((t, stand()['cars'], E("TP.figs()"))))
     # ------------------------------------------------------------------ moped ------------------------------------------------------------------
     if want('moped'):
         # on the main road south of the village, heading north; the car comes up the same road from the south
@@ -257,18 +261,61 @@ with lib.browser() as b:
         ck('heli: it sees him in the open (the radar gets its place)', t is not None and st['seen'] and st['heli'] is not None, str((t, st['seen'], st['heli'])))
         E("(() => { const H = GLHELI.stand(); GAME.view(P.x, P.y, P.feet + 1.62, Math.atan2(H.x - P.x, H.y - P.y) * 180 / Math.PI, 28) })()")
         pic('08_hubschrauber', True)
-        # under the trees of the Klinge it does not
+        # under the trees of the Klinge it does not (they are told he is there: it comes over and circles – and sees nothing)
         E("GAME.view(-548, -566, KERN.ground(-548, -566) + 1.62, 0, 0)")
-        steps(2)
+        steps(1)
+        E("GLFAHNDUNG.E.melde(P.x, P.y, 0)")
         w = J("({ wald: GLFAHNDUNG.stand().wald, place: KERN.place(P.x, P.y, 0) })")
-        t = until("GLHELI.st === 'kreist' && Math.hypot(GLHELI.stand().x - P.x, GLHELI.stand().y - P.y) < 120", 120, 2)
-        steps(10)
+        t = until("GLHELI.st === 'kreist' && Math.hypot(GLHELI.stand().x - P.x, GLHELI.stand().y - P.y) < 110", 120, 2)
+        steps(12)
         r = J("({ sieht: GLHELI.sieht, seen: GLFAHNDUNG.seen, h: GLHELI.stand() })")
-        ck('heli: under the trees of the Klinge it does not see him', w['wald'] and t is not None and not r['sieht'], str((w, t, r)))
+        ck('heli: under the trees of the Klinge it does not see him', w['wald'] and t is not None and not r['sieht'] and not r['seen'], str((w, t, r)))
         E("GLFAHNDUNG.clear()")
         steps(1)
         t = until("!GLHELI.on", 60, 2)
-        ck('heli: the search over, it flies off and is gone', t is not None and E("GLFAHNDUNG.stand().heli") is None, str((t, J("GLHELI.stand()"))))
+        ck('heli: the search over, it flies off and is gone', t is not None and E("GLFAHNDUNG.stand().heli") is None and not J("GLHELI.stand()")['modell'], str((t, J("GLHELI.stand()"))))
+    # ------------------------------------------------------------------ sek ------------------------------------------------------------------
+    if want('sek'):
+        E("GLFAHNDUNG.clear(); GAME.view(60, -420, KERN.ground(60, -420) + 1.62, 0, 0)")
+        E("for (const id of ['einbruch', 'widerstand', 'sperre', 'einbruch']) GLFAHNDUNG.tat(id, { force: [{ name: 'Streife', police: true }] }); GLFAHNDUNG.E.wait = 0.5")
+        steps(12)
+        r = J("({ voll: GLFAHNDUNG.stand().voll, riegel: GLFAHNDUNG.cars.filter(u => u.st === 'riegel').map(u => ({ x: Math.round(u.x), y: Math.round(u.y), typ: u.c.typ, d: Math.round(GLFAHNDUNG.netz(u.x, u.y).abstand(u.x, u.y) * 10) / 10 })), jagd: GLFAHNDUNG.cars.filter(u => u.st !== 'riegel').map(u => u.kind + ':' + u.c.typ) })")
+        ck('sek: five stars – a van of the special forces across the road at each of the five road ends', r['voll'] == 5 and len(r['riegel']) == 5 and all(q['typ'] == 'kasten' and q['d'] < 3 for q in r['riegel']), str(r))
+        t = until("GLFAHNDUNG.cars.some(u => u.kind === 'sek' && u.st !== 'riegel')", 60, 2)
+        ck('sek: and vans that hunt with the patrol cars', t is not None, str((t, stand()['cars'])))
+        if r['riegel']:
+            q = min(r['riegel'], key=lambda q: (q['x'] - 60) ** 2 + (q['y'] + 420) ** 2)
+            E(f"(() => {{ const u = GLFAHNDUNG.cars.find(v => v.st === 'riegel' && Math.round(v.x) === {q['x']}); GAME.view(u.x + Math.sin(u.hd + 1.2) * 13, u.y + Math.cos(u.hd + 1.2) * 13, KERN.ground(u.x, u.y) + 1.9, (u.hd + 1.2) * 180 / Math.PI + 180, -5) }})()")
+            steps(0.5)
+            pic('09_riegel')
+        E("GLFAHNDUNG.clear()")
+        steps(0.5)
+        ck('sek: clear() leaves nothing', E("GLFAHNDUNG.cars.length + GLFAHNDUNG.cops.length + GLAUTO.cars.length") == 0)
+    # ------------------------------------------------------------------ stadt ------------------------------------------------------------------
+    if want('stadt'):
+        E("GLFAHNDUNG.clear(); GAME.go('schleusingen')")
+        okz = None
+        for i in range(300):
+            steps(0.2)
+            if E("SCHL.state === 'ready' && !!(VERKEHR.places.stadt && VERKEHR.places.stadt.on && VERKEHR.places.stadt.G)"): okz = i; break
+            time.sleep(1)
+        n = J("(() => { const N = GLFAHNDUNG.netz(P.x, P.y); return N ? { exits: N.exits.length, nodes: N.G.nodes.length, d: N.abstand(P.x, P.y), sq: GLFAHNDUNG.inSquare(P.x, P.y) } : null })()")
+        ck('stadt: Schleusingen has its own road network for the police', okz is not None and n and n['exits'] >= 2 and not n['sq'], str((okz, n)))
+        if n:
+            E("(() => { const N = GLFAHNDUNG.netz(P.x, P.y), A = N.nah(P.x, P.y); GAME.view(A.x + A.dy * 4, A.y - A.dx * 4, KERN.ground(A.x, A.y) + 1.62, 0, -3) })()")
+            E("GLFAHNDUNG.tat('einbruch', { force: [{ name: 'Testzeuge', knows: false }] }); GLFAHNDUNG.E.wait = 0.3")
+            steps(1)
+            c0 = stand()['cars']
+            E("TP.near(140)")
+            t = until("GLFAHNDUNG.seen", 60, 0.5)
+            on = J("GLFAHNDUNG.cars.map(u => Math.round(GLFAHNDUNG.netz(P.x, P.y).abstand(u.x, u.y) * 10) / 10)")
+            ck('stadt: a patrol car comes over the town\'s streets and sees him', len(c0) == 1 and t is not None and on and max(on) < 3.6, str((c0, t, on)))
+            t = until("GLFAHNDUNG.cops.some(c => c.da)", 60, 0.5, 0.3)
+            E("(() => { const c = GLFAHNDUNG.cops[0]; if (c) GAME.view(P.x, P.y, P.feet + 1.62, Math.atan2(c.x - P.x, c.y - P.y) * 180 / Math.PI, -3) })()")
+            pic('10_stadt')
+            t2 = until("TP.events.some(e => e[0] === 'erwischt')", 90, 0.5)
+            ck('stadt: the officers get out and take him', t is not None and t2 is not None, str((t, t2, stand())))
+            E("document.getElementById('glbust').hidden = true; GLFAHNDUNG.clear(); TP.events.length = 0")
     # ------------------------------------------------------------------ the end ------------------------------------------------------------------
     E("GRENZLAND.stop()")
     steps(0.5)

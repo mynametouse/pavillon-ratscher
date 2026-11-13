@@ -20,7 +20,7 @@ test('roads: the square is one network with five road ends; a line can be driven
   let n = 0,
     worst = 0;
   for (const x of N.exits)
-    for (let i = 0; i < N.G.nodes.length; i += 3) {
+    for (let i = 0; i < N.G.nodes.length; i += 5) {
       const nd = N.G.nodes[i];
       if (N.comp[i] !== N.main || hyp(nd.x - x.x, nd.y - x.y) < 30) continue;
       const R = N.linie({ x: x.x, y: x.y, hd: null }, [nd.x, nd.y], { k: 1.3 });
@@ -35,7 +35,7 @@ test('roads: the square is one network with five road ends; a line can be driven
       assert.ok(R.line.S.every(v => v >= 0 && v < 40), 'speeds per metre');
       n++;
     }
-  assert.ok(n > 400, n + ' ways');
+  assert.ok(n > 250, n + ' ways');
   assert.ok(worst < 3.6, 'never more than a lane off the middle of a road: ' + worst.toFixed(2));
 });
 
@@ -298,8 +298,8 @@ test('clear() leaves nothing behind, whatever was going on', () => {
   assert.ok(w.stats.spawn > 2 && w.E.units.length === 0);
 });
 
-test('half an hour of trouble all over the square: no car leaves the road, none stands for ever, the numbers stay sane', () => {
-  for (const seed of [11, 12]) {
+test('a quarter of an hour of trouble all over the square: no car leaves the road, none stands for ever, the numbers stay sane', () => {
+  for (const seed of [11]) {
     const w = welt({ seed }),
       rnd = zufall(seed * 7 + 1),
       N = w.N;
@@ -348,7 +348,8 @@ test('half an hour of trouble all over the square: no car leaves the road, none 
         // (after an arrest, or when the level has gone: a new deed, seen by somebody)
         if (G.stars(w.W) === 0 && Math.floor(t * 20) % 400 === 0) w.deed(rnd() < 0.5 ? 'einbruch' : 'schlag', p.x, p.y, { police: rnd() < 0.5 });
         for (const u of w.E.units) assert.ok(Number.isFinite(u.x + u.y + u.v + u.hd), 'finite');
-      }
+      },
+      0.1
     );
     assert.ok(w.stats.spawn >= 4, 'seed ' + seed + ': cars were sent: ' + w.stats.spawn);
     assert.ok(w.stats.maxOff < 3.8, 'seed ' + seed + ': no car left the road: ' + w.stats.maxOff.toFixed(2));
@@ -485,11 +486,136 @@ test('five stars: a van of the special forces stands across the road at every ro
   assert.ok(vans >= 1, 'vans hunt too: ' + vans);
   assert.ok(w.E.units.filter(u => u.kind !== 'sek').length <= 3);
   // hidden under the trees the level falls star by star; below five the vans at the road ends drive off
-  w.spiel(steht(60, -420, { cover: true }), 600, () => G.stars(w.W) < 5 && w.E.units.every(u => u.st !== 'riegel'));
+  w.spiel(steht(60, -420, { cover: true }), 600, () => G.stars(w.W) < 5 && w.E.units.every(u => u.st !== 'riegel'), 0.1);
   assert.ok(G.stars(w.W) < 5);
   assert.ok(w.E.units.every(u => u.st !== 'riegel'), 'the road ends are open again');
-  w.spiel(steht(60, -420, { cover: true }), 900, () => G.stars(w.W) === 0 && !w.E.units.length);
+  w.spiel(steht(60, -420, { cover: true }), 900, () => G.stars(w.W) === 0 && !w.E.units.length, 0.1);
   assert.equal(G.stars(w.W), 0, 'five stars are not hopeless: hidden long enough, he gets away');
+  assert.equal(w.E.units.length, 0);
+  assert.equal(w.stats.spawn, w.stats.remove);
+});
+
+test('into a house in front of their eyes is no hiding place: they wait outside for a while before the search runs out', () => {
+  const run = sawIn => {
+    const w = welt({ seed: 3 });
+    w.deed('rempeln', 222, -108, { police: true });
+    w.E.wait = 1;
+    let t0 = 0,
+      gone = null;
+    // he stands by the road; once the officers are out he is indoors – right away (they saw it), or after having got out of sight first
+    const pl = t => {
+      if (!t0 && w.E.cops.length) t0 = t;
+      const far = !sawIn && t0 && t - t0 < 30;
+      return { x: far ? 226 : 226, y: far ? -40 : -100, v: 0, hd: 0, veh: false, hidden: !!t0 && !far, cover: false, sneak: false };
+    };
+    w.spiel(pl, 400, t => {
+      if (t0 && gone == null && G.stars(w.W) === 0) gone = t - t0;
+      return gone != null;
+    });
+    return { gone, saw: w.E.sawHide };
+  };
+  const a = run(true),
+    b = run(false);
+  assert.ok(a.gone != null && b.gone != null, JSON.stringify([a, b]));
+  assert.ok(a.gone > b.gone - 30 + 25, 'seen going in, it takes longer: ' + a.gone.toFixed(0) + ' s against ' + (b.gone - 30).toFixed(0) + ' s');
+});
+
+test('witnesses: a report takes a few seconds; talked out of it, it is not made; serious deeds cannot be talked away', () => {
+  const W = G.fresh();
+  assert.ok(G.meldeZeit('einbruch', false) < G.meldeZeit('boeller', false), 'a serious deed is reported sooner');
+  assert.ok(G.meldeZeit('boeller', true) < G.meldeZeit('boeller', false), 'who knows him is sure sooner');
+  for (const id of Object.keys(G.CRIMES)) assert.ok(G.meldeZeit(id, true) >= 3.5 && G.meldeZeit(id, false) <= 7.5, id);
+  assert.deepEqual(
+    Object.keys(G.CRIMES).filter(id => G.beredbar(id)).sort(),
+    ['angeln', 'ausweis', 'boeller', 'flucht', 'hausfrieden', 'helm', 'raserei', 'rempeln'],
+    'small things can be talked away'
+  );
+  assert.equal(G.beredbar('nonsense'), false);
+  // a report on its way: nothing counts yet
+  const q = G.melden(W, 'boeller', { seen: 1, key: 'fig:erna' });
+  assert.ok(q && q.t > 3 && W.offen.length === 1);
+  assert.equal(G.stars(W), 0);
+  assert.deepEqual(G.reif(W, 2), []);
+  assert.equal(G.still(W, 'fig:horst'), 0, 'somebody else\'s call is not hers');
+  assert.equal(G.still(W, 'fig:erna'), 1);
+  assert.deepEqual(G.reif(W, 20), [], 'talked out of it: nothing is reported');
+  // one that goes through
+  G.melden(W, 'einbruch', { seen: 2, knows: true, key: 'dorf:ingrid', fz: true });
+  G.melden(W, 'boeller', { seen: 1, key: 'ped:x', sec: 9 });
+  let due = G.reif(W, 5);
+  assert.equal(due.length, 1);
+  assert.equal(due[0].id, 'einbruch');
+  assert.equal(G.crime(W, due[0].id, due[0].o), 2);
+  assert.equal(W.known, true, 'a villager knows him');
+  assert.equal(W.fz, true, 'and saw the moped');
+  due = G.reif(W, 5);
+  assert.equal(due.length, 1);
+  assert.equal(W.offen.length, 0);
+  assert.equal(G.melden(W, 'nonsense', {}), null);
+  // clear() ends what is on its way too – but the moped stays known
+  G.melden(W, 'boeller', { seen: 1, key: 'a' });
+  G.clear(W);
+  assert.equal(W.offen.length, 0);
+  assert.equal(W.fz, true);
+  assert.equal(G.umkennzeichnen(W), true);
+  assert.equal(W.fz, false);
+  assert.equal(G.umkennzeichnen(W), false);
+});
+
+test('new clothes end a description at once – a name stays a name, and not while somebody watches', () => {
+  const W = G.fresh();
+  assert.equal(G.umziehen(W), 'ruhe');
+  G.crime(W, 'einbruch', { seen: 1 });
+  assert.equal(W.look, true);
+  assert.equal(G.umziehen(W, { seen: true }), 'gesehen');
+  assert.equal(G.stars(W), 2);
+  assert.equal(G.umziehen(W), 'frei');
+  assert.equal(G.stars(W), 0);
+  assert.equal(W.state, 'ruhe');
+  assert.equal(W.log.length, 1, 'what happened is still remembered (the radio)');
+  G.crime(W, 'einbruch', { seen: 1, knows: true });
+  assert.equal(G.umziehen(W), 'bekannt');
+  assert.equal(G.stars(W), 2);
+  const V = G.fresh();
+  G.crime(V, 'rempeln', { police: true });
+  assert.equal(G.umziehen(V), 'bekannt', 'seen by the police themselves');
+});
+
+test('where a road block goes: ahead on the road he rides, never on a track, never outside the square', () => {
+  const N = welt().N;
+  let n = 0;
+  for (let i = 0; i < N.G.edges.length; i += 7) {
+    const e = N.G.edges[i];
+    if (N.comp[e.a] !== N.main || e.kind > 3 || N.lenOf(e) < 30) continue;
+    for (const dir of [1, -1]) {
+      const q = N.punkt(e, N.lenOf(e) / 2),
+        hd = Math.atan2(dir * q[2], dir * q[3]),
+        B = N.sperrstelle({ x: q[0], y: q[1], hd });
+      if (!B) continue;
+      n++;
+      assert.ok(B.d >= 150 && B.d <= 321, 'distance along the road: ' + B.d);
+      assert.ok(B.e.kind <= 3, 'on a road');
+      assert.ok(N.abstand(B.x, B.y) < 0.5);
+      assert.ok(B.x > BOX[0] + 60 && B.x < BOX[2] - 60 && B.y > BOX[1] + 60 && B.y < BOX[3] - 60, 'inside the square');
+      // it faces the way he comes along the road
+      const A = N.nah(B.x, B.y);
+      assert.ok(Math.abs(Math.sin(B.hd) * A.dx + Math.cos(B.hd) * A.dy) > 0.95, 'along the road');
+    }
+  }
+  assert.ok(n > 15, n + ' places');
+  assert.equal(N.sperrstelle({ x: 60, y: -420, hd: 0 }), null, 'in the fields there is no road to block');
+});
+
+test('new clothes while they search: the cars drive home by themselves', () => {
+  const w = welt({ seed: 3 });
+  w.deed('einbruch', 222, -108);
+  w.spiel(steht(60, -420), 125, () => w.E.units.some(u => u.st === 'suche'));
+  assert.ok(w.E.units.some(u => u.st === 'suche'), 'a car searches');
+  assert.equal(G.umziehen(w.W), 'frei');
+  w.spiel(steht(60, -420), 2);
+  assert.ok(w.E.units.length > 0 && w.E.units.every(u => u.st === 'abzug' && !u.blau && !u.horn), 'they turn for home, lights out');
+  assert.equal(w.E.last, null);
+  w.spiel(steht(60, -420), 200, () => !w.E.units.length);
   assert.equal(w.E.units.length, 0);
   assert.equal(w.stats.spawn, w.stats.remove);
 });

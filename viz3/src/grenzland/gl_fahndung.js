@@ -15,7 +15,7 @@
 //   clear() · stand() · erwischt() · umziehen() · off · extra: [{ x, y, r }] · hooks.zeuge: () => [{ x, y, hd, r, name, knows, police }]
 //   Events: grenzland:tat, :zeuge, :sterne, :erwischt, :entkommen, :streife, :sperre, :funk
 import * as THREE from 'three';
-import { scene } from '../core/head.js';
+import { COARSE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
@@ -403,8 +403,7 @@ export const GLFAHNDUNG = (() => {
     if (!GL.on) return '';
     const r = GLLOGIK.umziehen(GL.W, { seen: S.seen || zeugen().length > 0 });
     if (r === 'frei') {
-      E.clear();
-      clearWorld();
+      // (the police drive home by themselves once the level is calm: GLLOGIK.einsatz)
       PLAY.think(TX.umFrei, 3600);
       GLTON.fx('frei');
       GL.emit('entkommen', { umgezogen: true });
@@ -466,6 +465,43 @@ export const GLFAHNDUNG = (() => {
     abv: ['abv', 'abv'],
     sek: ['polizei1', 'polizei2'],
   };
+  // ---- the officers' figures: made once per search and kept (hidden while they sit in the car), freed when it is over ----
+  const pool = [], // { key, F, busy }
+    POOL = { pool: true };
+  const wer = (kind, i) => {
+    const ids = WHO[kind] || WHO.streife,
+      id = ids[i % ids.length],
+      sek = kind === 'sek';
+    return [
+      id,
+      sek ? { era: GL.era, kleid: 'wache', hut: 'helmschwarz' } : { era: GL.era },
+      id + '|' + GL.era + (sek ? '|sek' : ''),
+    ];
+  };
+  // a figure for an officer: a free one of the pool, or a new one (resolves to the pool's entry, taken; null without the files)
+  function figur(id, o, key) {
+    const q = pool.find(a => a.key === key && !a.busy && a.F && !a.F.gone);
+    if (q) {
+      q.busy = true;
+      return Promise.resolve(q);
+    }
+    return GLFIG.make(id, o).then(F => {
+      if (!F) return null;
+      if (!GL.on) {
+        GLFIG.drop(F);
+        return null;
+      }
+      F.cop = POOL;
+      F.g.visible = false;
+      const e = { key, F, busy: true };
+      pool.push(e);
+      return e;
+    });
+  }
+  function poolDrop() {
+    for (const q of pool) if (q.F && !q.F.gone) GLFIG.drop(q.F);
+    pool.length = 0;
+  }
   const carOf = u => {
     const c = u.c;
     return c && !c.gone ? c : null;
@@ -493,6 +529,12 @@ export const GLFAHNDUNG = (() => {
     spawn(u) {
       const L = LOOK[u.kind] || LOOK.streife;
       u.c = GLAUTO.spawn(L[0], L[1]) || GLAUTO.spawn('streife', LOOK.streife[1]);
+      // its crew's figures are loaded now, while it is still far (loading and painting a figure takes a moment)
+      if (u.st !== 'riegel')
+        for (let i = 0; i < (era89() ? 1 : 2); i++) {
+          const [id, o, key] = wer(u.kind, i);
+          if (!pool.some(q => q.key === key && !q.busy)) figur(id, o, key).then(q => q && (q.busy = false));
+        }
     },
     remove(u) {
       if (u.c) GLAUTO.remove(u.c);
@@ -522,22 +564,24 @@ export const GLFAHNDUNG = (() => {
       back(u);
     },
     copMake(c) {
-      const ids = WHO[c.kind] || WHO.streife,
-        id = ids[c.i % ids.length],
-        o = { era: GL.era };
-      if (c.kind === 'sek') Object.assign(o, { kleid: 'wache', hut: 'helmschwarz' });
+      const [id, o, key] = wer(c.kind, c.i);
       c.name = (GLDATA.CAST[id] || {}).name || 'Polizist';
-      GLFIG.make(id, o).then(F => {
+      figur(id, o, key).then(q => {
+        const F = q && q.F;
         if (!F) {
           // (no figure to show – a phone without the files: he is there all the same, as a voice)
           c.da = !c.gone;
           return;
         }
-        if (c.gone || !GL.on) return GLFIG.drop(F);
+        if (c.gone || !GL.on) {
+          q.busy = false;
+          return;
+        }
         F.era = GL.era;
         F.cop = c;
         F.r = 38;
         F.knows = !!c.knows;
+        F.downT = 0;
         c.F = F;
         // where he was to stand by now (the car has stopped; without a car: where he came round the corner)
         const at = c.unit
@@ -551,7 +595,15 @@ export const GLFAHNDUNG = (() => {
       });
     },
     copDrop(c) {
-      if (c.F) GLFIG.drop(c.F);
+      // back into the car: the figure is kept (hidden) while the search lasts – getting out again costs nothing
+      const q = c.F && pool.find(a => a.F === c.F);
+      if (q) {
+        q.busy = false;
+        GLFIG.stop(c.F);
+        c.F.g.visible = false;
+        c.F.cop = POOL;
+        markDirty();
+      } else if (c.F) GLFIG.drop(c.F);
       c.F = null;
     },
     copStep(c, dt) {
@@ -644,6 +696,22 @@ export const GLFAHNDUNG = (() => {
     B.cars = cars;
     B.mesh = m;
     S.block = B;
+    // an officer beside the sign, facing the way one comes (not on a phone: every figure costs memory)
+    if (!COARSE)
+      GLFIG.make('polizei2', { era: 'heute' }).then(F => {
+        if (!F) return;
+        if (S.block !== B || !GL.on) return GLFIG.drop(F);
+        F.cop = { block: true };
+        F.r = 45;
+        F.knows = false;
+        GLFIG.place(
+          F,
+          B.x + Math.sin(hd) * 6.5 + Math.cos(hd) * 1.5,
+          B.y + Math.cos(hd) * 6.5 - Math.sin(hd) * 1.5,
+          hd
+        );
+        B.F = F;
+      });
     PLAY.think(T.sperre, 3500);
     funk('sperre', 7);
     GL.emit('sperre', { x: B.x, y: B.y });
@@ -652,8 +720,9 @@ export const GLFAHNDUNG = (() => {
   function blockDrop(B) {
     for (const c of B.cars || []) GLAUTO.remove(c);
     if (B.mesh) scene.remove(B.mesh);
+    if (B.F) GLFIG.drop(B.F);
     B.cars = [];
-    B.mesh = null;
+    B.mesh = B.F = null;
     if (S.block === B) S.block = null;
     markDirty(true);
   }
@@ -700,6 +769,7 @@ export const GLFAHNDUNG = (() => {
   // everything of the police away, the level calm (the mode's end, an arrest, a mission's reset)
   function clear(keepLog) {
     E.clear();
+    poolDrop();
     // (whatever a restart of the page or an error left behind)
     for (const F of GLFIG.figs.slice()) if (F.cop) GLFIG.drop(F);
     if (S.block) blockDrop(S.block);
@@ -768,11 +838,13 @@ export const GLFAHNDUNG = (() => {
       const F = r.ref && r.ref.F;
       if (F && (F.gone || F.downT > 0) && !r.opfer) continue; // (he lies on the ground: this call is not made – his own follows)
       if (r.opfer && !r.quiet) PLAY.think(TX.opfer(r.name), 3200);
+      // (what a bystander has reported already is not counted twice in full: the victim adds his word – and whether he knows the two)
+      const doppelt = r.opfer && W.log.some(q => q.id === r.id && q.wit > 0 && Math.abs(q.t - CLOCK.t) < 1.5);
       zaehlen(
         r.id,
         [{ name: r.name, knows: r.o.knows }],
         { x: r.x, y: r.y, veh: r.o.fz },
-        { quiet: r.quiet || r.opfer, k: r.o.k }
+        { quiet: r.quiet || r.opfer, k: doppelt ? 0.25 : r.o.k }
       );
     }
     // deeds one does by driving: speeding through the village in front of somebody, no helmet in front of the police
@@ -835,6 +907,8 @@ export const GLFAHNDUNG = (() => {
       }
     S.blauU = nb;
     GLAUTO.hornAlt = era89();
+    // the search is over and everybody has gone: the officers' figures are freed
+    if (pool.length && full === 0 && !S.cars.length && !S.cops.length) poolDrop();
     S.seen = E.seen;
     S.close = E.close;
     S.last = E.last;
