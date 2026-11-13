@@ -3,6 +3,7 @@
 // number with a range and a source, line ids unique, only the invented villagers.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { ZKCHRONIK as C } from '../../src/zukunft/zk_chronik.js';
 
 const PLACES = ['anger', 'hang', 'waldrand', 'kahlflaeche', 'strasse', 'bruecke', 'heizhaus', 'windrad', 'schule'];
@@ -282,4 +283,15 @@ test('lines: unique stable ids, only the invented villagers, never Hubert or Ron
     for (const e of C.events(w))
       for (const l of e.lines)
         assert.ok(e.y - C.WHO[l.who].born <= 86, `${l.id}: ${l.who} at ${e.y - C.WHO[l.who].born}`);
+});
+
+test('voices: every line is in the recording list (tools/voices/linien.json, made by linien.mjs) under its rec id', () => {
+  const list = JSON.parse(fs.readFileSync(new URL('../../../tools/voices/linien.json', import.meta.url), 'utf8'));
+  const by = new Map(list.map(l => [l.id, l]));
+  for (const l of C.lines()) {
+    const r = by.get(l.rec);
+    assert.ok(r, l.id + ': ' + l.rec + ' missing – run node tools/voices/linien.mjs');
+    assert.equal(r.who, l.who);
+    assert.equal(r.text, l.text);
+  }
 });
