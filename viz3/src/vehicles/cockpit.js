@@ -28,6 +28,7 @@ import { CPBUILD } from './cockpit_build.js';
 import { CPFACE } from './cockpit_cluster.js';
 import { CPHANDS } from './cockpit_hands.js';
 import { CPMIRROR } from './cockpit_mirror.js';
+import { KOMBI } from './kombi.js';
 export const COCKPIT = (() => {
   const RATIO = 15; // the steering's ratio: turns of the wheel per turn of the road wheels
   const LEVER = { P: -0.24, R: -0.09, N: 0.03, D: 0.15 };
@@ -668,6 +669,7 @@ export const COCKPIT = (() => {
   return {
     S,
     set: CPSET,
+    kombi: KOMBI,
     info,
     blink,
     build: (id = 'car') => build(VEH.by && VEH.by[id]),
