@@ -409,7 +409,7 @@ export function laeden(ctx, C) {
     const ni = VILLAGE && VILLAGE.night ? VILLAGE.night() : 0;
     if (K && Math.abs(ni - S.night) > 0.01) {
       S.night = ni;
-      K.mats.glass.emissiveIntensity = 0.55 * ni;
+      K.mats.glass.emissiveIntensity = 0.38 * ni;
       markDirty(true);
     }
   };
