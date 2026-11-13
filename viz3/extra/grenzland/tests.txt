@@ -24,3 +24,4 @@ grenzland_figuren:rennen,sitzen,gesten,blick
 grenzland_welt:wissen,funk
 grenzland_welt:film,wahl
 grenzland_welt:ereignis
+grenzland_licht:stadt
