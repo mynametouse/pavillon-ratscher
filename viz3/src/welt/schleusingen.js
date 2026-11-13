@@ -749,6 +749,7 @@ export const SCHL = (() => {
     const WB = wallBuf(),
       RB = roofBuf();
     data.b.forEach((b, i) => {
+      if (window.LAEDEN && LAEDEN.skipStadt && LAEDEN.skipStadt(b)) return; // feat/laeden: McDonald's and Lidl build themselves (laeden/laeden.js)
       let cx = 0,
         cy = 0;
       const n = b.f.length / 2;

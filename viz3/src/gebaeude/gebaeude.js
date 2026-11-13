@@ -704,7 +704,8 @@ export const GEB = (() => {
       const J = JOBS[0];
       if (!J.dead && J.i < J.list.length) {
         try {
-          one(J, J.list[J.i], J.id0 + J.i);
+          // feat/laeden: a building another feature builds itself (the shops of Schleusingen, laeden/laeden.js sets GEB.skip) stays out
+          if (!(S.skip && S.skip(J.list[J.i]))) one(J, J.list[J.i], J.id0 + J.i);
         } catch (e) {
           console.warn('gebaeude', J.id0 + J.i, e); // a broken record is skipped, the job goes on
         }
