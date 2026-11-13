@@ -16,6 +16,18 @@ veröffentlicht.
 
 ## Stand
 
+- **13.11.2026 abends: Zeitreise durch vier Welten, Stufe 1, und der Workshop-Modus (V18d; Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, Plan
+  `docs/plans/plan_zeitreise.md`, `docs/features/zeitreise-chronik|regie|welt|medien.md`, `workshop.md`).** Falko 12:15–13:30: ein
+  immersives Zeitsprung-Gefühl statt leicht verfärbter Bäume, ein klar umschaltbarer Workshop-Modus für den großen Bildschirm (Ebenen mit
+  Schrift), Handy-Übergänge, Radio, echte Videos. Fünf Hilfs-Agenten (`zeitreise-chronik`, `-regie`, `-welt`, `-medien`, `workshop`) auf
+  eigenen Zweigen, zusammengeführt auf `feat/zeitreise`; Tests `viz3/extra/zeitreise/tests.txt` (smoke, zukunft, zukunft_welt, strategie,
+  zeitreise, zeitreise_welt, workshop, zeitreise_medien). Offen: Stufe 2 Politik (Entscheidungswege, Planspiel im Workshop, Kampagne „Dorf im
+  Wandel“, „Post aus 2045“); das gemeinsame Handy `HANDY` des Grenzland-Chats statt des eigenen Overlays (`docs/features/handy.md`);
+  Brombeeren der Kahlfläche als Karten statt Körper; der Ort `windrad` vor dem Bau zeigt nur Himmel; Leistung am Laptop und iPhone prüfen
+  (geteiltes Bild ~640 Draw Calls); die Welten „Rückenwind“ und „Glück gehabt“ sind Platzhalter. Daten-Katalog und Region-Dossier:
+  `docs/plans/daten_*.md`, `region_dossier.md` (Projektdokumente `pavillon-daten`, `pavillon-region`); Mapillary wartet auf Falkos Secret
+  `MAPILLARY_TOKEN`. Cockpit und Karosserie des Kombis: Hilfs-Agent `cockpit` auf `feat/cockpit` (Falko 17:59: „Sofort selbst bauen“).
+  Das Prüfpaket prüft Kandidaten auf `kern/*` nur im Pflicht-Teil, meldende Tests nur auf `src` nach grünem Pflicht-Teil (Falko 18:12).
 - **13.11.2026 nachts/morgens: Grenzland – der GTA-Modus, Kapitel 1 (V17x; Grenzland-Chat session_01L6Yrpf75YEUJPnMQdXevjQ,
   `docs/features/grenzland.md` und `grenzland-auto|radio|1989|neben|polizei|mission.md`, Plan `docs/plans/plan_grenzland.md`).**
   Falko 13.11. 0:21–1:25 (wörtlich im Plan): GTA-6-Vibes passend zur Region; Geschichte „Grenzland“, Duo Falko und Sarah, Ton wie GTA,
