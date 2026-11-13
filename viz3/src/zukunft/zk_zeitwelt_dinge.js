@@ -9,9 +9,11 @@
 // road, a timber truck through the village.
 // Built from the kit (zk_zeitwelt_kit.js): one geometry per part, instanced, per world on layer 0 / 21 / 22.
 import * as THREE from 'three';
-import { cam } from '../core/head.js';
+import { cam, scene } from '../core/head.js';
+import { warmUp } from '../render/render.js';
 import { ZKKIT as K } from './zk_zeitwelt_kit.js';
 import { ZKHANG } from './zk_zeitwelt_hang.js';
+import { TREES, treeLeafLevels } from '../garden/trees.js';
 
 export const ZKDINGE = (() => {
   const G = w => window[w];
@@ -43,7 +45,7 @@ export const ZKDINGE = (() => {
     kite: C(0x9a4e2c),
     dark: C(0x2a2a2a),
     silver: C(0xb8bcc0),
-    guard: C(0x9fae8f),
+    guard: C(0xb9c4b0),
     young: C(0x4f7a32),
     birch: C(0x7d9a45),
     fir: C(0x2f4f2a),
@@ -204,8 +206,10 @@ export const ZKDINGE = (() => {
     if (P.length < 2) return g;
     const L = P[P.length - 1][2],
       z = (x, y) => K.gnd(x, y);
-    const open0 = d.stage === 1 ? Math.max(0, L - 95) : L + 1,
-      open1 = d.stage === 1 ? L - 25 : L + 1;
+    // the construction: the last ~150 m before the Anger lie open (seen from the street, zk_zeitwelt.js place-free: the test looks from
+    // 10 m before it), the excavator 40 m in, the pipe sections at the start; behind it the trench is closed again (patched)
+    const open0 = d.stage === 1 ? Math.max(0, L - 170) : L + 1,
+      open1 = d.stage === 1 ? L - 20 : L + 1;
     const D = K.GB(true);
     // the patched strip (fresh asphalt, a shade darker and bluer) where the trench is closed again
     const closed = P.filter(p => p[2] <= open0 + 0.5);
@@ -216,7 +220,7 @@ export const ZKDINGE = (() => {
         0.62,
         0.62,
         (x, y) => z(x, y) + 0.015,
-        () => [0.032, 0.034, 0.038, 0.97]
+        () => [0.05, 0.052, 0.056, 0.97]
       );
     if (d.stage === 2)
       for (let i = 6; i < P.length - 2; i += 13) {
@@ -236,7 +240,7 @@ export const ZKDINGE = (() => {
           0.45,
           0.45,
           (x, y) => z(x, y) + 0.016,
-          () => [0.034, 0.036, 0.04, 0.97]
+          () => [0.052, 0.054, 0.058, 0.97]
         );
       }
     g.add(K.inst(D.geo(), K.mats().decal, 1, 'zeitreise flicken'));
@@ -347,8 +351,14 @@ export const ZKDINGE = (() => {
             c1 = [ox + Math.cos(an) * 6 + nx * v, oy + Math.sin(an) * 6 + ny * v, h];
           B.tube(c0, c1, 0.12, 10, PAL.pipe, 0.12, PAL.steel);
         }
-        const [ex, ey] = open[open.length - 1];
-        excavator(B, ex - nx * 3.6, ey - ny * 3.6, z(ex, ey), an + Math.PI / 2);
+        // the excavator 40 m along the open stretch, beside the trench, its bucket in it
+        const ie = Math.min(open.length - 2, 20),
+          [ex, ey] = open[ie],
+          [fx, fy] = open[ie + 1],
+          ea = Math.atan2(fy - ey, fx - ex),
+          enx = -Math.sin(ea),
+          eny = Math.cos(ea);
+        excavator(B, ex - enx * 3.4, ey - eny * 3.4, z(ex, ey), ea + Math.PI / 2);
       }
       g.add(K.mesh(B, K.mats().kit, 'zeitreise graben'));
     }
@@ -620,75 +630,175 @@ export const ZKDINGE = (() => {
   }
   // ---- the clearing near the camera: stumps and slash where cleared, lying grey trunks where fallen, young trees (in guards where
   // planted and small) – the same stages as the slope field there ----
+  // young trees of the garden's generated kinds (garden/trees.js, as the first version's young stand: the far bark and the thinnest leaf
+  // level, leaves with an instance colour): pine for spruce and fir, aspen for birch, ash for rowan and maple, oakB for beech, oakA for oak
+  const EZ = {
+    fichte: 'pine',
+    tanne: 'pine',
+    birke: 'aspen',
+    eberesche: 'ash',
+    ahorn: 'ash',
+    buche: 'oakB',
+    eiche: 'oakA',
+  };
+  const TINTS = { tanne: [0.78, 0.92, 0.86], fichte: [0.95, 1.06, 0.95], birke: [1.08, 1.12, 0.9] };
+  const CONIF = { fichte: true, tanne: true };
+  const _m4 = new THREE.Matrix4(),
+    _q = new THREE.Quaternion(),
+    _sv = new THREE.Vector3(),
+    _up = new THREE.Vector3(0, 1, 0),
+    _col = new THREE.Color();
+  function ezTrees(list, g) {
+    const by = {};
+    for (const t of list) (by[EZ[t.kind]] = by[EZ[t.kind]] || []).push(t);
+    for (const [key, L] of Object.entries(by)) {
+      const Kt = TREES[key];
+      if (!Kt || !Kt.bark || !Kt.leaf) continue;
+      const LV = treeLeafLevels(Kt),
+        bark = new THREE.InstancedMesh(Kt.bgFar || Kt.bgMid || Kt.bg, Kt.bark, L.length),
+        leaf = new THREE.InstancedMesh(LV[2] || LV[1] || Kt.lg, Kt.leaf, L.length),
+        H = Kt.H || 10;
+      L.forEach((t, i) => {
+        const sc = t.h / H,
+          w = sc * (CONIF[t.kind] ? 0.62 : 0.78);
+        _q.setFromAxisAngle(_up, t.rot);
+        _m4.compose(_sv.set(t.x, t.z - 0.05, -t.y), _q, new THREE.Vector3(w, sc, w));
+        bark.setMatrixAt(i, _m4);
+        leaf.setMatrixAt(i, _m4);
+        const f = TINTS[t.kind] || [1, 1, 1],
+          v = 0.85 + 0.3 * K.hash((t.x * 31 + t.y * 17) | 0);
+        leaf.setColorAt(i, _col.setRGB(f[0] * v, f[1] * v, f[2] * v));
+      });
+      for (const im of [bark, leaf]) {
+        im.castShadow = false;
+        im.receiveShadow = true;
+        im.userData.noMerge = true;
+        im.userData.sharedGeo = true; // the garden's geometry: never disposed with the clearing
+        im.name = 'zeitreise jung-' + key;
+        im.computeBoundingSphere();
+        g.add(im);
+      }
+    }
+  }
+  // the clearing near the camera: stumps with their light cut, brush, lying grey trunks where fallen, bramble on the bare ground, young
+  // trees – the pioneers where the stand was left (birch, rowan, spruce), the planted mix in rows with pale tree guards (beech, oak,
+  // maple, fir) – the same stages as the slope field there; the young within 50 m of the camera, the far cards show the rest
   function lichtung(d, slot) {
     const st = sites(),
       k = st.kahl,
+      cx = k.x + 4,
+      cy = k.y + 44,
       g = new THREE.Group(),
       H = ZKHANG,
-      state = slot === 'B' ? S.lastR : S.lastL;
+      state = slot === 'B' ? S.lastR : S.lastL,
+      phone = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches),
+      cap = phone ? 90 : 240;
     const stumps = K.GB(),
-      young = K.GB(),
-      guards = K.GB();
-    let n = 0;
+      brush = K.GB(),
+      bramble = K.GB(),
+      seed = K.GB(),
+      guards = K.GB(),
+      trees = [];
+    const stage = (x, y) => (H && state ? H.stageAt(x, y, state) : 0);
+    const near = (x, y) => Math.hypot(x - cx, y - cy);
     for (let gy = -70; gy <= 70; gy += 3.4)
       for (let gx = -70; gx <= 70; gx += 3.4) {
-        const h = K.hash((gx * 131 + gy * 7919) | 0),
-          x = k.x + gx + (h - 0.5) * 2.4,
-          y = k.y + gy + (K.hash(((gx + 3) * 97 + gy * 31) | 0) - 0.5) * 2.4;
         if (Math.hypot(gx, gy) > 72) continue;
-        const sg = H && state ? H.stageAt(x, y, state) : 0;
-        const z = K.ter(x, y);
-        if (sg === 4 || sg === 5 || sg === 3) {
-          // the stump of the spruce that stood here (cut ~40 cm high), slash around it
-          stumps.cyl(x, y, z - 0.1, 0.27, 0.24, 0.45, 7, PAL.bark, PAL.wood);
-          if (sg !== 5 && h < 0.5)
-            stumps.box(x + 0.9, y - 0.4, z - 0.05, 2.4, 1.3, 0.35 + 0.2 * h, h * 6.28, PAL.rust, PAL.bark);
+        const h = K.hash((gx * 131 + gy * 7919) | 0),
+          h2 = K.hash(((gx + 3) * 97 + gy * 31) | 0),
+          x = k.x + gx + (h - 0.5) * 2.4,
+          y = k.y + gy + (h2 - 0.5) * 2.4;
+        const sg = stage(x, y),
+          z = K.ter(x, y);
+        if (sg === 3 || sg === 4 || sg === 5) {
+          // the stump of the spruce that stood here: cut ~35 cm high, the root flare below, the light cut face on top
+          const r = 0.22 + 0.12 * h;
+          stumps.cyl(x, y, z - 0.12, r * 1.25, r, 0.22, 12, PAL.bark, false);
+          stumps.cyl(x, y, z + 0.1, r, r * 0.97, 0.24 + 0.12 * h2, 12, PAL.bark, C(0xcfae7c));
+        }
+        if (sg === 4 && h < 0.55) {
+          // brush: the crown's branches lying criss-cross, grey-brown, some still with rusty needles
+          for (let b = 0; b < 6; b++) {
+            const a = (h * 7 + b * 1.1) % 6.283,
+              l = 1.4 + 1.8 * K.hash((gx * 7 + gy * 3 + b) | 0),
+              ox = x + 1.2 + Math.cos(a * 2.3) * 0.6,
+              oy = y - 0.6 + Math.sin(a * 1.7) * 0.6;
+            brush.tube(
+              [ox, oy, z + 0.08 + 0.06 * b],
+              [ox + Math.cos(a) * l, oy + Math.sin(a) * l, z + 0.05 + 0.04 * (b % 3)],
+              0.035 + 0.02 * (b % 2),
+              4,
+              b % 3 ? C(0x6e5a46) : C(0x7a4a2c)
+            );
+          }
         }
         if (sg === 3 && h < 0.6) {
-          const a = h * 12.56;
-          stumps.tube(
-            [x, y, z + 0.3],
-            [x + Math.cos(a) * 14, y + Math.sin(a) * 14, K.ter(x + Math.cos(a) * 14, y + Math.sin(a) * 14) + 0.25],
-            0.22,
-            6,
-            PAL.grey
-          );
+          const a = h * 12.56,
+            ex = x + Math.cos(a) * 14,
+            ey = y + Math.sin(a) * 14;
+          stumps.tube([x, y, z + 0.3], [ex, ey, K.ter(ex, ey) + 0.25], 0.22, 8, PAL.grey, 0.12, C(0xb9a785));
         }
-        if (sg === 5 && d.h > 0.15) {
-          // young growth: planted mixed (beech, oak, maple, fir) or pioneers (birch, rowan, spruce)
-          const kind = d.mix
-            ? h < 0.35
-              ? 'b'
-              : h < 0.55
-                ? 'f'
-                : h < 0.75
-                  ? 'o'
-                  : 'm'
-            : h < 0.5
-              ? 'birke'
-              : h < 0.75
-                ? 's'
-                : 'r';
-          const th = d.h * (0.6 + 0.6 * K.hash((gx * 17 + gy * 13) | 0)),
+        // bramble and raspberry on the bare ground (more where nobody planted)
+        if ((sg === 4 || sg === 3 || (sg === 5 && d.h < 1.5)) && h2 < (d.mix ? 0.12 : 0.32)) {
+          const bx = x - 1.1,
+            by = y + 0.9,
+            bz = K.ter(bx, by);
+          for (let b = 0; b < 4; b++)
+            bramble.blob(
+              bx + (K.hash((gx + b) * 13) - 0.5) * 1.6,
+              by + (K.hash((gy + b) * 17) - 0.5) * 1.6,
+              bz,
+              0.55 + 0.4 * K.hash(b * 7 + gx),
+              0.45 + 0.6 * K.hash(b * 11 + gy),
+              b % 2 ? C(0x3a5228) : C(0x2f4522),
+              (gx * 7 + gy * 13 + b) | 0
+            );
+        }
+        // pioneers where the stand was left: birch, rowan and spruce come by themselves, irregular
+        if (sg === 5 && !d.mix && d.h > 0.15 && near(x, y) < 52) {
+          const kind = h < 0.5 ? 'birke' : h < 0.75 ? 'fichte' : 'eberesche',
+            th = d.h * (0.55 + 0.7 * K.hash((gx * 17 + gy * 13) | 0)),
             xx = x + 1.3,
             yy = y + 0.7;
-          const zz = K.ter(xx, yy);
-          const conifer = kind === 'f' || kind === 's',
-            green = kind === 'birke' ? PAL.birch : kind === 'f' ? PAL.fir : kind === 's' ? C(0x35522c) : PAL.young;
-          young.cyl(xx, yy, zz, 0.03 + th * 0.012, 0.01, th * 0.45, 5, kind === 'birke' ? PAL.white : PAL.bark);
-          if (conifer) young.cyl(xx, yy, zz + th * 0.12, th * 0.28, 0.02, th * 0.9, 7, green);
-          else young.cyl(xx, yy, zz + th * 0.35, th * 0.22, th * 0.12, th * 0.6, 7, green, green);
-          if (d.guards && th < 2.2 && kind !== 's') guards.cyl(xx, yy, zz, 0.07, 0.07, 1.4, 6, PAL.guard, false);
-          n++;
+          trees.push({ x: xx, y: yy, z: K.ter(xx, yy), h: th, kind, rot: h * 6.28, d: near(xx, yy) });
         }
       }
+    // the planted mix: rows 3 m apart, 2 m in the row, along the contour, where the field says young
+    if (d.mix && d.h > 0.15)
+      for (let ry = -50; ry <= 10; ry += 3)
+        for (let rx = -48; rx <= 48; rx += 2) {
+          const x = cx + rx + (ry % 2 ? 1 : 0),
+            y = cy + ry - 6;
+          if (stage(x, y) !== 5 || near(x, y) > 52) continue;
+          const hh = K.hash((rx * 29 + ry * 53) | 0),
+            kind = hh < 0.38 ? 'buche' : hh < 0.52 ? 'eiche' : hh < 0.66 ? 'ahorn' : 'tanne',
+            th = d.h * (0.7 + 0.5 * K.hash((rx * 7 + ry * 11) | 0)),
+            z = K.ter(x, y);
+          trees.push({ x, y, z, h: th, kind, rot: hh * 6.28, d: near(x, y) });
+          // tree guards while the saplings are small: pale grey-green tubes, 1.2 m, 12 cm across
+          if (d.guards && th < 2.5 && kind !== 'tanne')
+            guards.cyl(x, y, z - 0.05, 0.06, 0.06, 1.25, 8, PAL.guard, false);
+        }
+    // the nearest young trees as the garden's trees, the smallest (seedlings, under 0.7 m) as simple shoots
+    trees.sort((a, b) => a.d - b.d);
+    const big = [];
+    for (const t of trees.slice(0, cap))
+      if (t.h >= 0.7) big.push(t);
+      else {
+        const green = t.kind === 'tanne' ? PAL.fir : CONIF[t.kind] ? C(0x35522c) : PAL.young;
+        seed.cyl(t.x, t.y, t.z, 0.02, 0.01, t.h * 0.4, 5, PAL.bark);
+        seed.cyl(t.x, t.y, t.z + t.h * 0.2, t.h * 0.25, 0.02, t.h * 0.8, 6, green);
+      }
+    ezTrees(big, g);
     for (const [B, name] of [
       [stumps, 'stubben'],
-      [young, 'jung'],
+      [brush, 'reisig'],
+      [bramble, 'brombeere'],
+      [seed, 'saemlinge'],
       [guards, 'wuchshuellen'],
     ])
       if (B.n()) g.add(K.mesh(B, K.mats().kit, 'zeitreise ' + name));
-    g.userData.young = n;
+    g.userData.young = trees.length;
     return g;
   }
   // ---------- the things and what each state wants ----------
@@ -799,9 +909,23 @@ export const ZKDINGE = (() => {
     },
     build: (d, slot) => lichtung(d, slot),
   });
+  // the young trees' programs (the garden's kinds, instanced, leaves with an instance colour) once with the others
+  function warm() {
+    const g = new THREE.Group(),
+      kinds = ['fichte', 'birke', 'eberesche', 'buche', 'eiche'];
+    ezTrees(
+      kinds.map((kind, i) => ({ x: i, y: 0, z: -500, h: 1.5, kind, rot: 0 })),
+      g
+    );
+    g.traverse(o => (o.frustumCulled = false));
+    scene.add(g);
+    warmUp(g);
+    scene.remove(g);
+    g.traverse(o => o.isInstancedMesh && o.dispose && o.dispose());
+  }
   function nearKahl() {
     const k = sites().kahl;
     return Math.hypot(cam.position.x - k.x, -cam.position.z - k.y) < 600;
   }
-  return { S, sites, nearKahl, HUB, ROT };
+  return { S, sites, nearKahl, warm, HUB, ROT };
 })();
