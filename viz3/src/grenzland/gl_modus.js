@@ -8,8 +8,12 @@
 //         apart, one star less is shown, as in GTA 6)
 //   T     the phone (grenzland/gl_handy.js)        R   the radio (grenzland/gl_radio.js)
 //   G     a shove or a punch at whoever stands in front (a deed, if somebody sees it)
+//   O     the screen free (the game's free view, the eye at the top right): no panel, no radar – O again brings them back
+// Quiet like GTA (Falko 13.11. 10:59 → package A): while it runs the game's own garden tasks, its thoughts about animals and tasks and
+// its hints stay out (the journal lists the mode's tasks only), Hasso stays at home, the page's header and bars are hidden (gl_hud.js).
 // Bangers (the panel's button) are thrown a few metres ahead: a bang is heard far – a deed in the village, a distraction elsewhere.
 // Caught by the police: a fine, the next morning in the garden. A reload goes on where one stood.
+import { cam, COARSE } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { P } from '../game/walkable.js';
@@ -52,6 +56,10 @@ export const GRENZLAND = (() => {
     posT: 0,
     fuseT: [],
     voices: false,
+    tasksList: null, // the journal's own list() while the mode filters it
+    think: null, // PLAY.think of the game while the mode filters it
+    denkP: null, // a thought being decided (a game event in the same moment can still drop it)
+    denkH: null, // a thought that waits for a subtitle or a card
   };
   const hyp = Math.hypot;
   // ---- put the player somewhere (walking) ----
@@ -116,6 +124,7 @@ export const GRENZLAND = (() => {
       }
     }
     GL.getrennt = !F.rides && d > 60;
+    nahCam(F);
   }
   // the other one is played now: places and figures swap
   function wechsel() {
@@ -213,6 +222,72 @@ export const GRENZLAND = (() => {
       await GLHUD.fade(false);
     });
   });
+  // ---- quiet like GTA: the game's own tasks, thoughts and the dog stay out while the mode runs ----
+  // A thought of the game: shown a moment later – unless a game event of the same moment says where it came from (an animal seen for
+  // the book, a step of a garden task) – and not over a subtitle or a card (it waits for them a few seconds).
+  function denk(text, ms) {
+    const f = S.think;
+    if (!f) return;
+    if (!GL.on) return f(text, ms);
+    // the dog, the book, the game's hints about its new features („Neu: …“) do not belong into the story
+    if (/^Neu:|Hasso|Entdeckerbuch/.test(String(text))) return;
+    const p = { text, ms, ok: true };
+    S.denkP = p;
+    queueMicrotask(() => {
+      if (S.denkP === p) S.denkP = null;
+      if (!p.ok || !S.think) return;
+      if (GLHUD.busy && GLHUD.busy()) S.denkH = { text, ms, at: performance.now() };
+      else S.think(text, ms);
+    });
+  }
+  const denkWeg = () => {
+    if (S.denkP) S.denkP.ok = false;
+  };
+  KERN.on('tiere:gesehen', denkWeg);
+  KERN.on('task:step', denkWeg);
+  KERN.on('task:start', denkWeg);
+  function ruhe(on) {
+    const TK = KERN.tasks;
+    if (on && !S.tasksList) {
+      S.tasksList = TK.list;
+      TK.list = () => S.tasksList.call(TK).filter(e => String(e.src).startsWith('grenzland'));
+    } else if (!on && S.tasksList) {
+      TK.list = S.tasksList;
+      S.tasksList = null;
+    }
+    if (on && !S.think && PLAY.think) {
+      S.think = PLAY.think;
+      PLAY.think = denk;
+    } else if (!on && S.think) {
+      PLAY.think = S.think;
+      S.think = null;
+      S.denkP = S.denkH = null;
+    }
+    // Hasso stays at home (tiere/tiere_hund.js: optional; if he was with the walker he comes back at the end)
+    const H = window.HUND;
+    try {
+      if (on && H && H.on && H.show) {
+        GL.hund = true;
+        H.show(false);
+      } else if (!on && GL.hund) {
+        GL.hund = false;
+        if (H && H.show) H.show(true);
+      }
+    } catch (e) {}
+  }
+  // the camera close to the other one (after a ride, in a narrow place): he steps out of the picture instead of filling it with hair
+  function nahCam(F) {
+    const c = cam && cam.position;
+    if (!c || !F || !F.g) return;
+    const near = F.g.visible && Math.hypot(F.x - c.x, F.y + c.z) < 0.8 && c.y > F.z - 0.3 && c.y < F.z + 2.4;
+    if (near && !F.camAus) {
+      F.camAus = F.g.children.filter(ch => ch.visible);
+      for (const ch of F.camAus) ch.visible = false;
+    } else if (!near && F.camAus) {
+      for (const ch of F.camAus) ch.visible = true;
+      F.camAus = null;
+    }
+  }
   // ---- on ----
   function begin(fresh) {
     if (fresh) GL.reset();
@@ -247,6 +322,8 @@ export const GRENZLAND = (() => {
     }
     GLHUD.show(true);
     GLKARTE.show(true);
+    ruhe(true);
+    GLHUD.voll();
     S.vehWas = VEH.cur || null;
     GLORTE.build();
     GLAUTO.netz();
@@ -275,7 +352,7 @@ export const GRENZLAND = (() => {
     go('garten');
     GLAUTO.mopedAt(GLDATA.ORTE.moped.pos[0], GLDATA.ORTE.moped.pos[1], (GLDATA.ORTE.moped.az * Math.PI) / 180);
     GLMISSION.neu();
-    GLHUD.say(T.titel, T.introSub, 9);
+    GLHUD.titel(T.titel, T.introKap, 5.5, COARSE ? T.introTouch : T.introKeys);
     PLAY.think(T.adult, 6000);
     return true;
   }
@@ -299,6 +376,7 @@ export const GRENZLAND = (() => {
     GLTON.stop();
     GLHUD.show(false);
     GLKARTE.show(false);
+    ruhe(false);
     try {
       if (GL.e0neu && Number.isFinite(GL.e0alt)) DN.e0 = GL.e0alt;
     } catch (e) {}
@@ -340,6 +418,7 @@ export const GRENZLAND = (() => {
     } else if (k === 't') GLHANDY.toggle();
     else if (k === 'r' && !(VEH.cur && VEH.cur.id === 'tractor')) GLRADIO.next();
     else if (k === 'g' && !VEH.cur) schlag();
+    else if (k === 'o') GLHUD.acts.aus && GLHUD.acts.aus();
   });
   // ---- per frame ----
   function tick(dt) {
@@ -361,6 +440,12 @@ export const GRENZLAND = (() => {
     GLCOCKPIT.tick(dt);
     GLHUD.tick(dt);
     GLKARTE.tick(dt);
+    // a thought that waited for a subtitle or a card
+    if (S.denkH && S.think && !GLHUD.busy()) {
+      const h = S.denkH;
+      S.denkH = null;
+      if (performance.now() - h.at < 9000) S.think(h.text, h.ms);
+    }
     // getting onto or into something: its name for a moment, as GTA shows it
     if ((VEH.cur || null) !== S.vehWas) {
       S.vehWas = VEH.cur || null;
@@ -456,8 +541,9 @@ export const GRENZLAND = (() => {
     if (st) {
       if (st.last && st.sterne > 0 && st.state !== 'verfolgt')
         out.push({ x: st.last[0], y: st.last[1], k: 'such', r: 70 });
-      for (const c of st.cars || []) out.push({ x: c.x, y: c.y, k: 'polizei' });
-      for (const c of st.cops || []) out.push({ x: c.x, y: c.y, k: 'beamter' });
+      // like GTA 6: a patrol is on the radar only while it sees you or saw you a moment ago (gesehen; without that field: always)
+      for (const c of st.cars || []) if (c.gesehen !== false) out.push({ x: c.x, y: c.y, k: 'polizei' });
+      for (const c of st.cops || []) if (c.gesehen !== false) out.push({ x: c.x, y: c.y, k: 'beamter' });
       if (st.block) out.push({ x: st.block[0], y: st.block[1], k: 'sperre' });
       if (st.heli) out.push({ x: st.heli[0], y: st.heli[1], k: 'heli' });
     }
@@ -486,7 +572,8 @@ export const GRENZLAND = (() => {
   KERN.on('grenzland:mission', d => {
     if (!GL.on || !d || d.st !== 'erledigt') return;
     GLHUD.passed(d.titel || d.title || '', d.lohn || d.reward || '');
-    GLTON.fx('frei');
+    if (window.GLSCORE && window.GLSCORE.stich) window.GLSCORE.stich('bestanden');
+    else GLTON.fx('frei');
   });
   KERN.tick(tick, 'grenzland/modus');
   KERN.on('reset', () => {
