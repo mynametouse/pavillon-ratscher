@@ -2,3 +2,4 @@
 zukunft_welt
 zukunft
 strategie
+strategie_telefon

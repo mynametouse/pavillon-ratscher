@@ -7,7 +7,7 @@
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'start,pv,park,mobil,wasser,wald,budget,ende,telefon').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'programme,start,pv,park,mobil,wasser,wald,budget,ende,telefon').split(','))
 ck = lib.Checks('zukunft_welt')
 OUT = lib.out('zukunft_welt')
 NOBLUR = "document.head.insertAdjacentHTML('beforeend', '<style>*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}</style>')"
@@ -61,7 +61,7 @@ def run():
     with lib.browser() as b:
         errs = []
         P = {}
-        if want & {'start', 'pv', 'park', 'mobil', 'wasser', 'wald', 'budget', 'ende'}:
+        if want & {'programme', 'start', 'pv', 'park', 'mobil', 'wasser', 'wald', 'budget', 'ende'}:
             pg = lib.page(b, 1280, 760, errs, tier='hoch')
             lib.boot(pg, port)
             E, J, steps, progs, st, world, look, pic, calls = session(pg, errs)
@@ -79,9 +79,43 @@ def run():
             print('programs: after load', P['load'], 'after the mode started (warm)', P['warm'], flush=True)
             s = st()
             ck('the mode started, its materials compiled once (warm)', s['warmed'] and E("ZUKUNFT.S.on"), str(s))
-            ck('starting the mode adds at most two shader programs (the mud band, the plate)', P['warm'] - P['load'] <= 2, f"{P['load']} → {P['warm']}")
+            ck('starting the mode adds at most four shader programs (the mud band, the plate, the bench of the village office)', P['warm'] - P['load'] <= 4, f"{P['load']} → {P['warm']}")
             sp = J("ZKWELT.spots()")
+            dbg = J("""(() => { const out = []; const ms = []; if (window.RATSCHER && RATSCHER.bld && RATSCHER.bld[1]) ms.push(RATSCHER.bld[1]);
+              GAME.scene.traverse(o => { if (o.isMesh && /^gebaeude roofs/.test(o.name || '')) ms.push(o); });
+              for (const m of ms) { const g = m.geometry, a = g.attributes.aR, n = (g.index ? g.index.count : g.attributes.position.count) / 3, h = {};
+                for (let t = 0; t < n; t++) { const i = g.index ? g.index.getX(t * 3) : t * 3; const k = a ? Math.round(a.getX(i)) : -1; h[k] = (h[k] || 0) + 1; }
+                out.push([m.name || 'village', n, h]); } return out; })()""")
+            print('roof meshes', json.dumps(dbg)[:600], flush=True)
             print('spots', json.dumps({k: v for k, v in sp.items() if k != 'river'}), flush=True)
+
+            if 'programme' in want:
+                # like the mode's own test: first every topic's top and walk view with „Heute“ (the world loads there), then every variant
+                # and year at those views – the futures must compile nothing (the new ones are listed by name and key)
+                for t in ('mobil', 'energie', 'klima', 'wald'):
+                    E(f"ZUKUNFT.setTopic('{t}'); ZUKUNFT.show('heute')"); time.sleep(0.3)
+                    for v in ('top', 'walk'):
+                        E(f"ZUKUNFT.view('{v}')"); steps(2.0); E("GAME.shot()")
+                E("window.__zkP2 = new Set(GAME.R.info.programs.map(p => p.cacheKey))")
+                pa = progs()
+                VAR = (('mobil', ('bank', 'ruf', 'takt')), ('energie', ('dach', 'park', 'waerme')), ('klima', ('regen', 'vorsorge', 'dez23', 'hoch', 'duerre')), ('wald', ('natur', 'umbau')))
+                for t, vids in VAR:
+                    for v in vids:
+                        for y in (2030, 2060):
+                            world(t, v, y)
+                            for vw in ('top', 'walk'):
+                                E(f"ZUKUNFT.view('{vw}')"); steps(0.6); E("GAME.shot()")
+                pb = progs()
+                added = J("GAME.R.info.programs.filter(p => !__zkP2.has(p.cacheKey)).map(p => p.name + ' …' + String(p.cacheKey).slice(-60).replace(/\\s+/g, ' '))")
+                print('programs: views visited', pa, 'after every variant and year', pb, added, flush=True)
+                # which of the new ones the futures use: the programs of every mesh named zukunft:… and of the village office's bench
+                mine = J("""(() => { const keys = new Set(), R = GAME.R, objs = [];
+                  GAME.scene.traverse(o => { if (o.isMesh && (o.name || '').startsWith('zukunft')) objs.push(o); });
+                  const b = window.AMTWORLD && AMTWORLD.S.items.mitfahrbank; if (b && b.g) b.g.traverse(o => o.isMesh && objs.push(o));
+                  for (const o of objs) for (const m of [].concat(o.material)) { const p = R.properties.get(m).currentProgram; if (p) keys.add(p.cacheKey); }
+                  return GAME.R.info.programs.filter(p => !__zkP2.has(p.cacheKey) && keys.has(p.cacheKey)).map(p => p.name); })()""")
+                ck('every variant and year at the views seen before: no new shader program of the futures (the world may load its own)', not mine, f"{pa} → {pb}; of the futures: {mine}; all new: {added}")
+                E("ZUKUNFT.setTopic('energie'); ZUKUNFT.show('heute')"); time.sleep(0.3)
 
             if 'start' in want:
                 R = J("(() => { const R = ZKWELT.scanRoofs(); return { mods: R.mods.length, flats: R.flats.length, planes: R.P.length, all: R.planes, n: R.n, kwp: Math.round(R.kwp), ms: R.ms }; })()")
@@ -156,7 +190,12 @@ def run():
                     look(bq[0] - 4.5, bq[1] - 5.5, 1.7, (math.degrees(math.atan2(4.5, 5.5)) + 360) % 360, -6); pic('31-haltestelle-mitfahrbank')
                 world('mobil', 'ruf', 2030)
                 s = st()
-                ck('Rufbus: plates at the real stops of Ratscher, the van at the Anger', s['plates'] >= 1 and s['van'], str({k: s[k] for k in ('plates', 'van', 'bank')}))
+                ck('Rufbus on a weekday at noon: the plate at the stop by the old school, no minibus (the regular buses run)', s['plates'] >= 1 and not s['van'], str({k: s[k] for k in ('plates', 'van', 'rufbusRuns')}))
+                # a Sunday at noon: the Rufbus runs (it fills the gaps of the timetable)
+                E("window.__zkT = CLOCK.t; CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + ((7 - new Date((DN.e0 + Math.floor(CLOCK.t / 1440)) * 864e5).getUTCDay()) % 7) * 1440 + 12 * 60 + 30")
+                steps(6.0)
+                s = st()
+                ck('Rufbus on a Sunday: the minibus waits at the stop', s['van'] and s['rufbusRuns'], str({k: s[k] for k in ('plates', 'van', 'rufbusRuns')}))
                 vp = J("ZKWELT.S.ruf && ZKWELT.S.ruf.vp")
                 look(236, -121, 1.7, 30, 0); pic('32-haltestelle-rufbus')
                 if vp:
@@ -170,6 +209,7 @@ def run():
                     e = [q for q in stops if not q[3]][:1] or stops[:1]
                     e = e[0]; a = math.radians(e[2])
                     look(e[0] + math.sin(a) * 4 - math.cos(a) * 2.5, e[1] + math.cos(a) * 4 + math.sin(a) * 2.5, 1.7, (e[2] + 200) % 360, 2); pic('34-rufbus-schild')
+                E("CLOCK.t = window.__zkT"); steps(6.0)
 
             if 'wasser' in want:
                 print('programs before', 'wasser', progs(), newp(), flush=True)
@@ -213,22 +253,26 @@ def run():
             if 'wald' in want:
                 print('programs before', 'wald', progs(), newp(), flush=True)
                 c = sp['core']
+                fin = sp['forest'].get('inside') or [c[0], c[1], 200]
+                fed = sp['forest'].get('edge') or [-470, -505, 200]
                 world('wald', 'heute', 2026)
                 look(-420, -470, 60, 215, -27); pic('50-wald-60m-heute')
-                look(c[0], c[1], 1.7, 200, 4); pic('51-wald-zu-fuss-heute')
+                look(fin[0], fin[1], 1.7, fin[2], 6); pic('51-wald-zu-fuss-heute')
+                look(fed[0], fed[1], 1.7, fed[2], 3); pic('51-wald-rand-heute')
                 last = None
                 for vid, year in (('umbau', 2030), ('umbau', 2035), ('umbau', 2045), ('umbau', 2060), ('natur', 2035), ('natur', 2060)):
                     world('wald', vid, year)
                     s = st()
                     print(vid, year, json.dumps(s['forest']), json.dumps(s['young']), flush=True)
                     look(-420, -470, 60, 215, -27); pic(f'5{2 if vid == "umbau" else 7}-wald-{vid}-{year}-60m')
-                    look(c[0], c[1], 1.7, 200, 4); pic(f'5{2 if vid == "umbau" else 7}-wald-{vid}-{year}-zu-fuss')
+                    look(fin[0], fin[1], 1.7, fin[2], 6); pic(f'5{2 if vid == "umbau" else 7}-wald-{vid}-{year}-zu-fuss')
+                    look(fed[0], fed[1], 1.7, fed[2], 3); pic(f'5{2 if vid == "umbau" else 7}-wald-{vid}-{year}-rand')
                     if vid == 'umbau' and year == 2030:
                         ck('2030: spruces struck – red and grey crowns', s['forest'].get('rot', 0) + s['forest'].get('grau', 0) > 100, str(s['forest']))
                     if vid == 'umbau' and year == 2060:
-                        ck('2060 Waldumbau: the spruces cleared, a young mixed stand', s['forest'].get('kahl', 0) > 500 and sum(s['young'].get(k, 0) for k in ('buche', 'tanne', 'eiche', 'ahorn')) > 200, str(s['young']))
+                        ck('2060 Waldumbau: the spruces cleared, a young mixed stand (the garden\'s real tree kinds for the tall broadleaf ones)', s['forest'].get('kahl', 0) > 500 and sum(v for k, v in s['young'].items() if k.startswith('ez-')) > 100, str(s['young']))
                     if vid == 'natur' and year == 2060:
-                        ck('2060 natural regeneration: spruce and birch, dead trees lying in the family forest', s['young'].get('fichte', 0) + s['young'].get('birke', 0) > 100 and s['forest'].get('liegt', 0) > 20, str(s['forest']) + str(s['young']))
+                        ck('2060 natural regeneration: spruce and birch, dead trees lying in the family forest', s['forest'].get('jung', 0) + s['young'].get('birke', 0) + s['young'].get('ez-aspen', 0) > 100 and s['forest'].get('liegt', 0) > 20, str(s['forest']) + str(s['young']))
                     last = s
                 # the year slider changes the forest
                 world('wald', 'umbau', 2035); a = st()['young']
@@ -271,7 +315,11 @@ def run():
                             look(*VIEWS[t]); E("GAME.shot()")
                 P['end'] = progs()
                 added = J("GAME.R.info.programs.filter(p => !__zkP1.has(p.cacheKey)).map(p => p.name + ' …' + String(p.cacheKey).slice(-48))")
-                ck('no new shader programs while switching topics, variants and years', P['end'] == P['mid'], f"{P['mid']} → {P['end']} {added}")
+                mine = J("""(() => { const keys = new Set(), R = GAME.R, objs = [];
+                  GAME.scene.traverse(o => { if (o.isMesh && (o.name || '').startsWith('zukunft')) objs.push(o); });
+                  for (const o of objs) for (const m of [].concat(o.material)) { const p = R.properties.get(m).currentProgram; if (p) keys.add(p.cacheKey); }
+                  return GAME.R.info.programs.filter(p => !__zkP1.has(p.cacheKey) && keys.has(p.cacheKey)).map(p => p.name); })()""")
+                ck('no new shader programs of the futures while switching topics, variants and years again', not mine, f"{P['mid']} → {P['end']}; of the futures: {mine}; all new (the world's): {added}")
                 print('programs: load', P['load'], 'warm', P['warm'], 'after the pictures (the world loading where the camera went)', P['mid'], 'end', P['end'], flush=True)
                 E("window.__zkT = FOREST.list.filter(t => t.sp === 'spruce').slice(0, 3000).map(t => [t.h, t.w, t.tint ? 1 : 0, t.tilt ? 1 : 0])")
                 E("ZUKUNFT.exit()"); steps(0.5)

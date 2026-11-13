@@ -37,8 +37,10 @@ import { KERN } from '../core/kern.js';
 import { markDirty, plain } from '../core/assets.js';
 import { warmUp } from '../render/render.js';
 import { CLOCK } from '../time/clock.js';
+import { DN } from '../time/daynight.js';
 import { WXBODEN } from '../wetter/wx_boden.js';
 import { FENCE_MAT } from '../garden/fences.js';
+import { TREES, treeLeafLevels } from '../garden/trees.js';
 import { ZKDATA } from './zk_data.js';
 
 export const ZKWELT = (() => {
@@ -329,7 +331,7 @@ export const ZKWELT = (() => {
     S.mats = {
       kit,
       // module glass: the same program, glossier (the sky in it at a flat angle)
-      pv: cloneOf(kit, { roughness: 0.17, metalness: 0.05, envMapIntensity: 1.15 }),
+      pv: cloneOf(kit, { roughness: 0.12, metalness: 0.05, envMapIntensity: 1.35 }),
       // bark, wood and leaves: matt
       wood: cloneOf(kit, { roughness: 0.88, envMapIntensity: 0.6 }),
       water: brookMat(),
@@ -458,6 +460,16 @@ export const ZKWELT = (() => {
       }
       if (seen.size) warmUp(scene);
     }
+    // the Mitfahrbank is the village office's own build (its kit and sign materials): build it once, compile it, take it away again
+    try {
+      const A = G('AMTWORLD');
+      if (A && A.S && !A.S.items.mitfahrbank && bank(true) && A.S.items.mitfahrbank) {
+        warmUp(A.S.items.mitfahrbank.g);
+        bank(false);
+      }
+    } catch (e) {
+      console.warn('zukunft warm bank', e);
+    }
     for (const x of [tg, tga, pl, wg]) x.dispose();
     return true;
   }
@@ -475,8 +487,8 @@ export const ZKWELT = (() => {
       H = MOD.h / 2,
       T = MOD.t / 2,
       F = 0.026;
-    const GL = L(0.07, 0.085, 0.12),
-      GL2 = L(0.085, 0.1, 0.14),
+    const GL = L(0.04, 0.05, 0.078),
+      GL2 = L(0.05, 0.06, 0.09),
       LINE = L(0.3, 0.32, 0.35),
       SIDE = L(0.18, 0.19, 0.2),
       BACK = L(0.74, 0.74, 0.72);
@@ -730,7 +742,13 @@ export const ZKWELT = (() => {
       });
       for (const T of groups.values()) {
         const area = T.reduce((s, t) => s + t.area, 0);
-        if (area < 9) continue;
+        S.roofDbg = S.roofDbg || { groups: 0, small: 0, tris: 0 };
+        S.roofDbg.groups++;
+        S.roofDbg.tris += T.length;
+        if (area < 9) {
+          S.roofDbg.small++;
+          continue;
+        }
         const n = [0, 0, 0];
         for (const t of T) for (let k = 0; k < 3; k++) n[k] += t.n[k] * t.area;
         const nl = Math.hypot(...n);
@@ -1035,21 +1053,21 @@ export const ZKWELT = (() => {
   // =====================================================================================================================================
   const PARK = {
     poly: [
-      [172, -357],
-      [306, -351],
-      [378, -379],
-      [383, -427],
-      [336, -445],
-      [172, -411],
+      [156, -354],
+      [306, -349],
+      [378, -378],
+      [383, -428],
+      [336, -447],
+      [156, -413],
     ],
     tilt: 22,
     low: 0.8,
     n: 12,
-    pitch: 6.4,
+    pitch: 5.9,
     gapT: 0.6,
     inset: 6,
     station: [366, -384],
-    gate: [352, -369],
+    gate: [352, -367.5],
   };
   const TABLE = (() => {
     const k = (PARK.tilt * Math.PI) / 180,
@@ -1403,6 +1421,46 @@ export const ZKWELT = (() => {
         }
       });
     }
+    // the service track: gravel from the gate north to the farm yard's way, draped on the field
+    const wg = GB(true),
+      [gx0, gy0] = PARK.gate,
+      tx = 356,
+      ty = -336,
+      tl = Math.hypot(tx - gx0, ty - gy0),
+      ux = (tx - gx0) / tl,
+      uy = (ty - gy0) / tl;
+    const gp = (a, b) => {
+      const x = gx0 + ux * a - uy * b,
+        y = gy0 + uy * a + ux * b,
+        n = noise(x / 2.5, y / 2.5),
+        c = mix3(L(0.44, 0.42, 0.38), L(0.56, 0.54, 0.49), n),
+        edge = Math.abs(b) > 1.45 ? 0.55 : 0.95;
+      return { p: new THREE.Vector3(x, ter(x, y) + 0.04, -y), c: [c[0], c[1], c[2], edge] };
+    };
+    for (let a = -1; a < tl; a += 1)
+      for (const [b0, b1] of [
+        [-1.9, -1.1],
+        [-1.1, 1.1],
+        [1.1, 1.9],
+      ]) {
+        const A = gp(a, b0),
+          B = gp(a + 1, b0),
+          C = gp(a + 1, b1),
+          D = gp(a, b1);
+        wg.tri(A.p, B.p, C.p, A.c);
+        wg.tri(A.p, C.p, D.p, A.c);
+        S._wtri = S._wtri || [];
+        S._wtri.push([A.c, B.c, C.c, A.c, C.c, D.c]);
+      }
+    const wgeo = wg.geo();
+    {
+      const Ca = wgeo.attributes.color;
+      let v = 0;
+      for (const six of S._wtri) for (const c of six) Ca.setXYZW(v++, c[0], c[1], c[2], c[3]);
+      S._wtri = null;
+    }
+    const wm = plainMesh(wgeo, mats().mud, 'pv-weg');
+    wm.renderOrder = 1;
     const rg = new THREE.BufferGeometry();
     rg.setAttribute('position', new THREE.Float32BufferAttribute(rib.pos, 3));
     rg.setAttribute('uv', new THREE.Float32BufferAttribute(rib.uv, 2));
@@ -1426,7 +1484,7 @@ export const ZKWELT = (() => {
       ],
       'park'
     );
-    S.parkMeshes = { tm, tb, fm, pm, sm, rm, sh, nT: Pk.T.length };
+    S.parkMeshes = { tm, tb, fm, pm, sm, rm, wm, sh, nT: Pk.T.length };
     out.push(tm, fm, pm, sm);
     return S.parkMeshes;
   }
@@ -1462,7 +1520,7 @@ export const ZKWELT = (() => {
     K.tm.visible = n > 0;
     K.tb.count = n;
     K.tb.visible = n > 0;
-    for (const m of [K.fm, K.pm, K.sm, K.rm]) m.visible = n > 0;
+    for (const m of [K.fm, K.pm, K.sm, K.rm, K.wm]) m.visible = n > 0;
     if (K.sh) {
       K.sh.count = n > 0 ? Pk.T.length + 1 : 0;
       K.sh.visible = n > 0;
@@ -1594,7 +1652,9 @@ export const ZKWELT = (() => {
     try {
       L0 = B && B.STOPS ? B.STOPS() : [];
     } catch (e) {}
-    return L0.filter(e => /^Ratscher\b/.test(e.name || '') && Math.hypot(e.x - ANGER[0], e.y - ANGER[1]) < 900);
+    return L0.filter(
+      e => /^Ratscher\b.*Schulbus/.test(e.name || '') && Math.hypot(e.x - ANGER[0], e.y - ANGER[1]) < 900
+    );
   }
   function rufbusBuild() {
     const st = ratscherStops();
@@ -1703,13 +1763,39 @@ export const ZKWELT = (() => {
     }
     return { plates, posts, van, vsh, win, n: st.length, vp };
   }
+  // when the Rufbus runs (one offer, daily): evenings after the last bus (21:10 from Schleusingen) until midnight, Saturday afternoons,
+  // Sundays from 8 o'clock (Annahme, as zk_data.js describes it)
+  function rufbusRuns() {
+    try {
+      const t = (CLOCK && CLOCK.t) || 0,
+        e = (DN && Number.isFinite(DN.e0) ? DN.e0 : 20605) + Math.floor(t / 1440),
+        wd = new Date(e * 864e5).getUTCDay(),
+        h = (t % 1440) / 60;
+      if (wd === 0) return h >= 8;
+      if (wd === 6) return h >= 13;
+      return h >= 20.75;
+    } catch (e) {
+      return true;
+    }
+  }
   function rufbus(on) {
     if (on && !S.ruf) S.ruf = rufbusBuild();
     const R = S.ruf;
     if (!R) return;
-    for (const m of [R.plates, R.posts, R.van, R.vsh, R.win]) if (m) m.visible = !!on;
+    S.rufOn = !!on;
+    for (const m of [R.plates, R.posts]) if (m) m.visible = !!on;
+    const v = !!on && rufbusRuns();
+    for (const m of [R.van, R.vsh, R.win]) if (m) m.visible = v;
     markDirty(true);
   }
+  // the minibus follows the clock while the variant is shown
+  let rufT = 0;
+  KERN.tick(dt => {
+    if (!S.rufOn || !S.ruf || (rufT += dt) < 5) return;
+    rufT = 0;
+    const v = rufbusRuns();
+    if (S.ruf.van && S.ruf.van.visible !== v) rufbus(true);
+  }, 'zukunft-welt/rufbus');
 
   // =====================================================================================================================================
   // Water: the Schleuse below the Talsperre Ratscher – the flood, mud and flotsam; the brook's level; rain and drought
@@ -2515,7 +2601,7 @@ export const ZKWELT = (() => {
   function leafCol(kind, rnd) {
     let doy = 300;
     try {
-      const e = (CLOCK && Number.isFinite(CLOCK.e0) ? CLOCK.e0 : 20393) + Math.floor(((CLOCK && CLOCK.t) || 0) / 1440),
+      const e = (DN && Number.isFinite(DN.e0) ? DN.e0 : 20605) + Math.floor(((CLOCK && CLOCK.t) || 0) / 1440),
         d = new Date(e * 864e5);
       doy = Math.floor((d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5);
     } catch (e) {}
@@ -2570,9 +2656,10 @@ export const ZKWELT = (() => {
       }
       if (age <= 0.3) continue;
       // young trees: in the family forest planted in groups (umbau) or seeded (natur), elsewhere fewer
-      const occ = ZKDATA.OCC[mode] * (core ? 1 : 0.45);
+      // natural regeneration comes denser and uneven (pioneers in groups), the planting in the family forest in groups of three
+      const occ = ZKDATA.OCC[mode] * (core ? 1 : mode === 'natur' ? 0.6 : 0.45);
       if (hash(t.id * 29 + 3) > occ) continue;
-      const n = core ? (mode === 'umbau' ? 3 : 2) : 1;
+      const n = core ? 3 : mode === 'natur' ? 2 : 1;
       for (let k = 0; k < n; k++) {
         const r = hash(t.id * 97 + k * 13),
           kind = pickKind(mode, hash(t.id * 53 + k * 7)),
@@ -2613,7 +2700,6 @@ export const ZKWELT = (() => {
       ['buche', 0.12],
     ],
   };
-  const GROW = { birke: 1.15, fichte: 1.05, eberesche: 0.8, buche: 0.85, tanne: 0.75, eiche: 0.8, ahorn: 0.95 };
   const CONIFER = { fichte: 1, tanne: 1 };
   function pickKind(mode, r) {
     const mix = MIX[mode];
@@ -2624,8 +2710,21 @@ export const ZKWELT = (() => {
     }
     return mix[mix.length - 1][0];
   }
-  const youngH = (mode, kind, age, r) =>
-    Math.max(0.25, ZKDATA.regrow[mode](age) * (GROW[kind] || 1) * (0.75 + 0.5 * r));
+  // the height drawn: young trees as they grow in Thuringian conditions (planted beech and oak ~0,3–0,5 m a year when young: about
+  // 4–5 m after 15 years, 10–13 m after 30; pioneers – birch, rowan, spruce from seed – faster, fir slower; Annahme after yield tables)
+  const VIS = {
+    birke: [18, 16, 1.15],
+    eberesche: [11, 15, 1.15],
+    fichte: [20, 22, 1.3],
+    tanne: [16, 30, 1.45],
+    buche: [17, 26, 1.4],
+    eiche: [16, 26, 1.4],
+    ahorn: [17, 24, 1.35],
+  };
+  const youngH = (mode, kind, age, r) => {
+    const [H, T, p] = VIS[kind] || VIS.buche;
+    return Math.max(0.25, H * Math.pow(1 - Math.exp(-Math.max(0, age) / T), p) * (0.8 + 0.4 * r));
+  };
   // young conifers taller than this grow on as the forest's own tree in the cleared slot (its model is a real spruce; the simple cone
   // of the sapling would look like a toy at that size)
   const SLOT_H = 2.5;
@@ -2709,16 +2808,111 @@ export const ZKWELT = (() => {
       }
       if (moved) F.retilt(t);
     }
+    // the light: where a crown is gone (cleared, fallen, or a young tree there) the canopy opens – the sun reaches the ground again
+    if (n && F.canopy && F.canopy.save) {
+      F.canopy.save();
+      F.canopy.reset();
+      if (mode)
+        for (let i = 0; i < Fo.L.length; i++) {
+          const c = Fo.code[i],
+            o = Fo.orig[i],
+            t = Fo.L[i],
+            k = c === 3 || c === 5 ? 1 : c >= 10 && c < 900 ? 0.6 : c === 2 ? 0.35 : 0;
+          if (k) F.canopy.open(t.x, t.y, o.h, o.w, k);
+        }
+      F.canopy.upload(mode ? 0.5 : 0);
+    }
     // the young stand, stumps, brush and guards
     youngShow(mode ? youngStand(mode, y) : null);
     if (n) markDirty(true);
     return n;
   }
   const KINDS = ['fichte', 'tanne', 'birke', 'buche', 'eiche', 'ahorn', 'eberesche'];
+  // young broadleaf trees above sapling size: the garden's ez-tree kinds (garden/trees.js – built at load, real bark and leaf cards,
+  // lit like the garden's trees, their programs exist): beech and maple as ash/oak shapes, oak as oak, birch and rowan as aspen
+  const EZ = { buche: 'oakB', eiche: 'oakA', ahorn: 'ash', birke: 'aspen', eberesche: 'aspen' };
+  const ezKind = k => (EZ[k] && TREES[EZ[k]] && TREES[EZ[k]].lg ? EZ[k] : null);
+  // the season's leaf colour as a factor on the green leaf cards (instance colour): beech and oak keep dry brown leaves in winter
+  function leafMul(kind) {
+    let doy = 300;
+    try {
+      const e = (DN && Number.isFinite(DN.e0) ? DN.e0 : 20605) + Math.floor(((CLOCK && CLOCK.t) || 0) / 1440),
+        d = new Date(e * 864e5);
+      doy = Math.floor((d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 864e5);
+    } catch (e) {}
+    if (doy >= 120 && doy < 275) return [1, 1, 1];
+    const late = doy >= 315 || doy < 120;
+    if (kind === 'buche' || kind === 'eiche') return late ? [1.5, 0.82, 0.45] : [1.55, 0.95, 0.4];
+    if (kind === 'ahorn') return late ? [0.75, 0.65, 0.55] : [1.6, 1.15, 0.3];
+    return late ? [0.8, 0.72, 0.6] : [1.5, 1.25, 0.35];
+  }
+  function ezShow(list) {
+    // the nearest to the family forest (each tree ~1 800 triangles in its lighter level: the cap keeps a stand within budget)
+    const cap = COARSE ? 110 : 380;
+    // the family forest first, then the nearest to it
+    const F = G('FOREST'),
+      core = F && F.CORE ? F.CORE : null,
+      cx = core ? core.reduce((a, p) => a + p[0], 0) / core.length : -475,
+      cy = core ? core.reduce((a, p) => a + p[1], 0) / core.length : -600;
+    const sorted = list.map(t => ({ t, d: Math.hypot(t.x - cx, t.y - cy) })).sort((a, b) => a.d - b.d),
+      L0 = sorted.slice(0, cap).map(o => o.t),
+      rest = sorted.slice(cap).map(o => o.t);
+    S.ez = S.ez || {};
+    const groups = {};
+    for (const t of L0) (groups[EZ[t.kind]] = groups[EZ[t.kind]] || []).push(t);
+    const _m = new THREE.Matrix4(),
+      _qq = new THREE.Quaternion(),
+      _s = new THREE.Vector3(),
+      up = new THREE.Vector3(0, 1, 0),
+      col = new THREE.Color();
+    for (const key of new Set([...Object.keys(S.ez), ...Object.keys(groups)])) {
+      const K = TREES[key],
+        g = groups[key] || [];
+      if (!S.ez[key]) {
+        if (!g.length) continue;
+        const LV = treeLeafLevels(K),
+          n = cap,
+          bark = new THREE.InstancedMesh(K.bgFar || K.bgMid || K.bg, K.bark, n),
+          leaf = new THREE.InstancedMesh(LV[2] || LV[1] || K.lg, K.leaf, n);
+        for (let i = 0; i < n; i++) leaf.setColorAt(i, col.setRGB(1, 1, 1));
+        for (const im of [bark, leaf]) {
+          im.count = 0;
+          im.castShadow = false;
+          im.receiveShadow = true;
+          im.frustumCulled = false;
+          im.userData.noMerge = true;
+          im.name = 'zukunft:jung-' + key;
+          scene.add(im);
+        }
+        S.ez[key] = { bark, leaf, H: K.H || 10 };
+      }
+      const E = S.ez[key];
+      g.forEach((t, i) => {
+        const s = t.h / E.H,
+          w = s * 0.78;
+        _qq.setFromAxisAngle(up, t.rot);
+        _m.compose(T3(t.x, t.y, gnd(t.x, t.y) - 0.05), _qq, _s.set(w, s, w));
+        E.bark.setMatrixAt(i, _m);
+        E.leaf.setMatrixAt(i, _m);
+        const f = leafMul(t.kind),
+          v = 0.85 + 0.3 * hash(t.id * 7);
+        E.leaf.setColorAt(i, col.setRGB(f[0] * v, f[1] * v, f[2] * v));
+      });
+      for (const im of [E.bark, E.leaf]) {
+        im.count = g.length;
+        im.visible = g.length > 0;
+        im.instanceMatrix.needsUpdate = true;
+      }
+      if (E.leaf.instanceColor) E.leaf.instanceColor.needsUpdate = true;
+    }
+    S.ezN = L0.length;
+    return rest;
+  }
   function youngShow(Y) {
     const M = mats();
     if (!Y) {
       if (S.young) for (const im of Object.values(S.young)) im.visible = false;
+      if (S.ez) for (const E of Object.values(S.ez)) E.bark.visible = E.leaf.visible = false;
       return;
     }
     if (!S.young) {
@@ -2735,7 +2929,13 @@ export const ZKWELT = (() => {
     }
     const by = {};
     for (const k of KINDS) by[k] = [];
-    for (const t of Y.out) by[t.kind].push(t);
+    const tall = [];
+    for (const t of Y.out) {
+      if (t.h > SLOT_H && !CONIFER[t.kind] && ezKind(t.kind)) tall.push(t);
+      else by[t.kind].push(t);
+    }
+    // beyond the cap (far from the family forest): the simple shapes
+    for (const t of ezShow(tall)) by[t.kind].push(t);
     const _m = new THREE.Matrix4(),
       _p = new THREE.Vector3(),
       _s = new THREE.Vector3(),
@@ -2827,12 +3027,14 @@ export const ZKWELT = (() => {
       if (m) m.visible = false;
     if (S.parkMeshes) for (const m of Object.values(S.parkMeshes)) if (m && m.isObject3D) m.visible = false;
     if (S.ruf) for (const m of [S.ruf.plates, S.ruf.posts, S.ruf.van, S.ruf.vsh, S.ruf.win]) if (m) m.visible = false;
+    S.rufOn = false;
     S.floodLevel = 0;
     bank(false);
     dry(0);
     weather(null);
     if (S.brookMeshes) brookLevel(0);
     forest(null, 2026, 0);
+    if (G('FOREST') && FOREST.canopy) FOREST._cov0 = null;
     // trees back to what they were
     if (S.forest) {
       const Fo = S.forest,
@@ -2871,7 +3073,7 @@ export const ZKWELT = (() => {
     }
     const rat = new Set(bp.S.stations.filter(x => /^Ratscher\b/.test(x.n) && !/Stausee/.test(x.n)).map(x => x.i)),
       sch = new Set(bp.S.stations.filter(x => /^Schleusingen\b/.test(x.n)).map(x => x.i));
-    const e0 = (CLOCK && Number.isFinite(CLOCK.e0) ? CLOCK.e0 : 20393) + Math.floor(((CLOCK && CLOCK.t) || 0) / 1440);
+    const e0 = (DN && Number.isFinite(DN.e0) ? DN.e0 : 20605) + Math.floor(((CLOCK && CLOCK.t) || 0) / 1440);
     const out = { werk: 0, sa: 0, so: 0, min: 0, src: 'fahrplan' };
     const want = { werk: 3, sa: 6, so: 0 };
     for (const k of Object.keys(want)) {
@@ -2964,11 +3166,60 @@ export const ZKWELT = (() => {
       fx = core.reduce((s, p) => s + p[0], 0) / core.length;
       fy = core.reduce((s, p) => s + p[1], 0) / core.length;
     }
+    // the forest: a clear place 10–18 m from the spruces of the family forest the beetle takes first (looking at them), and one at the
+    // edge of the family forest towards the field, looking in
+    const forest = {};
+    if (F && F.list && F.inCore) {
+      const Fo = forestInit(),
+        first = Fo.L.map((t, i) => ({ t, i }))
+          .filter(o => Fo.core[o.i])
+          .sort((a, b) => Fo.rank[a.i] - Fo.rank[b.i])
+          .slice(0, 25);
+      const free = (x, y, r) =>
+        !F.list.some(
+          t => !t.gone && Math.abs(t.x - x) < r && Math.abs(t.y - y) < r && Math.hypot(t.x - x, t.y - y) < r
+        );
+      if (first.length) {
+        const mx = first.reduce((a, o) => a + o.t.x, 0) / first.length,
+          my = first.reduce((a, o) => a + o.t.y, 0) / first.length;
+        outer: for (const d of [12, 15, 10, 18])
+          for (let k = 0; k < 16; k++) {
+            const a = (k / 16) * Math.PI * 2,
+              x = mx + Math.cos(a) * d,
+              y = my + Math.sin(a) * d;
+            if (!F.inCore(x, y) || !free(x, y, 2.6)) continue;
+            forest.inside = [
+              +x.toFixed(1),
+              +y.toFixed(1),
+              +(((Math.atan2(mx - x, my - y) * 180) / Math.PI + 360) % 360).toFixed(1),
+            ];
+            break outer;
+          }
+      }
+      if (core) {
+        const a = core[1],
+          b = core[2],
+          ex = (a[0] + b[0]) / 2,
+          ey = (a[1] + b[1]) / 2,
+          l = Math.hypot(b[0] - a[0], b[1] - a[1]),
+          nx = -(b[1] - a[1]) / l,
+          ny = (b[0] - a[0]) / l,
+          sg = nx * (ex - fx) + ny * (ey - fy) > 0 ? 1 : -1,
+          x = ex + nx * sg * 7,
+          y = ey + ny * sg * 7;
+        forest.edge = [
+          +x.toFixed(1),
+          +y.toFixed(1),
+          +(((Math.atan2(fx - x, fy - y) * 180) / Math.PI + 360) % 360).toFixed(1),
+        ];
+      }
+    }
     return {
       roofs: big,
       park: [+cx.toFixed(1), +cy.toFixed(1)],
       station: PARK.station,
       core: [fx, fy],
+      forest,
       river: RIVER,
       anger: ANGER,
     };
@@ -2996,25 +3247,33 @@ export const ZKWELT = (() => {
     if (Fo) for (const c of Fo.code) codes[name(c)] = (codes[name(c)] || 0) + 1;
     const young = {};
     if (S.young) for (const [k, im] of Object.entries(S.young)) young[k] = cnt(im);
+    if (S.ez) for (const [k, E] of Object.entries(S.ez)) young['ez-' + k] = cnt(E.leaf);
     return {
       roofModules: cnt(S.roofMesh) + cnt(S.flatMesh),
       roofTotal: S.roof ? S.roof.mods.length + S.roof.flats.length : 0,
       roofPlanes: S.roof ? S.roof.P.length : 0,
       roofMs: S.roof ? S.roof.ms : 0,
       roofWhy: S.roofWhy || null,
+      roofDbg: S.roofDbg || null,
       fieldTables: S.parkMeshes ? cnt(S.parkMeshes.tm) : 0,
       fieldTotal: S.park ? S.park.T.length : 0,
       fence: S.parkMeshes ? cnt(S.parkMeshes.fm) : 0,
       station: !!(S.parkMeshes && S.parkMeshes.sm.visible),
       wp: cnt(S.wpMesh),
       van: !!(S.ruf && S.ruf.van && S.ruf.van.visible),
+      rufbusRuns: rufbusRuns(),
       plates: S.ruf && S.ruf.plates && S.ruf.plates.visible ? S.ruf.n : 0,
       bank: !!(G('AMTWORLD') && AMTWORLD.S && AMTWORLD.S.items.mitfahrbank),
       flood: S.floodMesh && S.floodMesh.visible ? S.floodLevel : 0,
       floodInfo: S.floodInfo || null,
       mud: !!(S.mudMesh && S.mudMesh.visible),
       brookDz: S.brookDz || 0,
-      forest: codes,
+      // 'jung': every young tree – the regrown slots and the young stand's instances (saplings, tall broadleaf)
+      forest: Object.assign({}, codes, {
+        jung:
+          (codes.jung || 0) +
+          Object.entries(young).reduce((a, [k, v]) => a + (/^(stump|brush|guard)$/.test(k) ? 0 : v), 0),
+      }),
       young,
       warmed: S.warmed,
       dry: WXBODEN && WXBODEN.S ? WXBODEN.S.dry : 0,
