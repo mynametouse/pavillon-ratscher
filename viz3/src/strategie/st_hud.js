@@ -44,7 +44,7 @@ export const STHUD = (() => {
 body[data-strat="1"] #sitebar,body[data-strat="1"] #qtrack,body[data-strat="1"] .ov.where,body[data-strat="1"] #topscale b{display:none!important}
 body[data-strat="1"] #geoattr{left:auto;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(6px + env(safe-area-inset-bottom,0px));max-width:300px;font-size:10px}
 body[data-strat="1"] #topscale{left:auto;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(64px + env(safe-area-inset-bottom,0px))}
-#sthud,#stppl,#stpan,#stnotes,#sttime,#stcard{position:absolute;z-index:6;font:400 12px/1.35 var(--f-body,system-ui);color:#f3efe6;user-select:none}
+#sthud,#stppl,#stpan,#stnotes,#sttime,#stcard,#stlayers{position:absolute;z-index:6;font:400 12px/1.35 var(--f-body,system-ui);color:#f3efe6;user-select:none}
 #sthud[hidden],#stppl[hidden],#stpan[hidden],#stnotes[hidden],#sttime[hidden],#stcard[hidden],#stsvg[hidden]{display:none!important}
 .stbox{background:rgba(24,28,22,.86);border-radius:9px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 #sthud{top:10px;left:max(10px,env(safe-area-inset-left,0px));display:flex;flex-wrap:wrap;gap:4px;max-width:calc(100vw - 250px)}

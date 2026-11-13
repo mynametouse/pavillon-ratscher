@@ -40,6 +40,7 @@ import { VAUTO } from './verkehr_auto.js';
 import { VKTYPEN } from './vk_typen.js';
 import { VKMOD } from './vk_modelle.js';
 import { VKSTROM } from './vk_strom.js';
+import { VKREGELN } from './vk_regeln.js';
 export const VERKEHR = (() => {
   // feat/verkehr-real: each driver of the cast has a car of today of his own (by his name: the same type every time; the colour stays
   // his, VLEUTE) – the cars by their share of the stock (VKTYPEN.PKW); their models asked for at once, in the order of that share
@@ -535,6 +536,23 @@ export const VERKEHR = (() => {
         for (let i = 0; i < n && s < line.n; i++, s++) line.lane[s] = laneOff(e);
       }
       line.ex = [a, b];
+      // feat/verkehr-real stage 2: the limits of the signs along the route, and its junctions with their rules (each car takes a copy)
+      try {
+        const I = VKSTROM.signIdx();
+        if (!Pl.G.ruleOf) {
+          const R = new Map();
+          Pl.G.ruleOf = ni => {
+            let r = R.get(ni);
+            if (r === undefined)
+              R.set(ni, (r = Pl.G.nodes[ni].edges.length >= 3 ? VKREGELN.rule(Pl.G, ni, I.S, I.L) : null));
+            return r;
+          };
+        }
+        if (VKREGELN.limits(Pl.G, path, line, I.S, VNETZ.project)) line.S = VNETZ.speeds(line, 2.0, 2.0, 2.6, null);
+        line.jnT = VKREGELN.events(Pl.G, path, line, Pl.G.ruleOf, VNETZ.project);
+      } catch (e) {
+        line.jnT = null;
+      }
     }
     Pl.routes.set(k, line);
     return line;
@@ -609,6 +627,11 @@ export const VERKEHR = (() => {
     });
     c.vk = 0.92 + rnd() * 0.12;
     c.laneOff = 1.2;
+    if (line.jnT) {
+      c.jn = line.jnT.map(e => Object.assign({}, e, { passed: false, go: false, halted: 0, wait: 0 }));
+      c.jk = 0;
+      while (c.jk < c.jn.length && c.jn[c.jk].sN < s + 2) c.jn[c.jk++].passed = true;
+    }
     S.busy[who] = 'car';
     S.stats.cars++;
     return c;

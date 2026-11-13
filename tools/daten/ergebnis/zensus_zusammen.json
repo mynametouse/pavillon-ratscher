@@ -1,0 +1,189 @@
+{
+ "ratscher": {
+  "einwohner_summe": 93,
+  "zellen_mit_einwohnern": 8,
+  "haushalte_summe": 43,
+  "zellen_mit_haushalten": 7,
+  "haushalte_nach_groesse": {
+   "1_Person": 12,
+   "2_Personen": 23,
+   "3_Personen": 9,
+   "4_Personen": 3,
+   "5_Personen": 0,
+   "6_Personen_und_mehr": 0
+  },
+  "gebaeude_mit_wohnraum_summe": 46,
+  "gebaeude_nach_baujahr": {
+   "Vor1919": 31,
+   "a1919bis1949": 6,
+   "a1950bis1959": 0,
+   "a1960bis1969": 0,
+   "a1970bis1979": 0,
+   "a1980bis1989": 6,
+   "a1990bis1999": 3,
+   "a2000bis2009": 0,
+   "a2010bis2015": 0,
+   "a2016undspaeter": 0
+  },
+  "gebaeude_nach_typ": {
+   "FreiEFH": 37,
+   "EFH_DHH": 3,
+   "EFH_Reihenhaus": 0,
+   "Freist_ZFH": 6,
+   "ZFH_DHH": 0,
+   "ZFH_Reihenhaus": 0,
+   "MFH_3bis6Wohnungen": 0,
+   "MFH_7bis12Wohnungen": 0,
+   "MFH_13undmehrWohnungen": 0,
+   "AndererGebaeudetyp": 0
+  },
+  "heizung_gebaeude": {
+   "Insgesamt_Heizungsart": 57,
+   "Fernheizung": 0,
+   "Etagenheizung": 3,
+   "Blockheizung": 0,
+   "Zentralheizung": 45,
+   "Einzel_Mehrraumoefen": 9,
+   "keine_Heizung": 0
+  },
+  "alter_10er": {
+   "Insgesamt_Bevoelkerung": 93,
+   "Unter10": 6,
+   "a10bis19": 13,
+   "a20bis29": 0,
+   "a30bis39": 6,
+   "a40bis49": 10,
+   "a50bis59": 19,
+   "a60bis69": 26,
+   "a70bis79": 24,
+   "a80undaelter": 6
+  },
+  "durchschnittsalter_gewichtet": 53.3,
+  "ausland_summe": 0
+ },
+ "schleusingen": {
+  "einwohner_summe": 4008,
+  "zellen_mit_einwohnern": 204,
+  "haushalte_summe": 1990,
+  "zellen_mit_haushalten": 172,
+  "haushalte_nach_groesse": {
+   "1_Person": 831,
+   "2_Personen": 644,
+   "3_Personen": 229,
+   "4_Personen": 110,
+   "5_Personen": 30,
+   "6_Personen_und_mehr": 3
+  },
+  "gebaeude_mit_wohnraum_summe": 1165,
+  "gebaeude_nach_baujahr": {
+   "Vor1919": 307,
+   "a1919bis1949": 138,
+   "a1950bis1959": 44,
+   "a1960bis1969": 29,
+   "a1970bis1979": 76,
+   "a1980bis1989": 88,
+   "a1990bis1999": 115,
+   "a2000bis2009": 56,
+   "a2010bis2015": 27,
+   "a2016undspaeter": 34
+  },
+  "gebaeude_nach_typ": {
+   "FreiEFH": 568,
+   "EFH_DHH": 42,
+   "EFH_Reihenhaus": 119,
+   "Freist_ZFH": 91,
+   "ZFH_DHH": 18,
+   "ZFH_Reihenhaus": 38,
+   "MFH_3bis6Wohnungen": 156,
+   "MFH_7bis12Wohnungen": 46,
+   "MFH_13undmehrWohnungen": 6,
+   "AndererGebaeudetyp": 27
+  },
+  "heizung_gebaeude": {
+   "Insgesamt_Heizungsart": 2222,
+   "Fernheizung": 75,
+   "Etagenheizung": 358,
+   "Blockheizung": 3,
+   "Zentralheizung": 1586,
+   "Einzel_Mehrraumoefen": 104,
+   "keine_Heizung": 49
+  },
+  "alter_10er": {
+   "Insgesamt_Bevoelkerung": 4008,
+   "Unter10": 260,
+   "a10bis19": 317,
+   "a20bis29": 232,
+   "a30bis39": 458,
+   "a40bis49": 434,
+   "a50bis59": 615,
+   "a60bis69": 606,
+   "a70bis79": 509,
+   "a80undaelter": 405
+  },
+  "durchschnittsalter_gewichtet": 49.8,
+  "ausland_summe": 141
+ },
+ "vessra": {
+  "einwohner_summe": 125,
+  "zellen_mit_einwohnern": 13,
+  "haushalte_summe": 61,
+  "zellen_mit_haushalten": 9,
+  "haushalte_nach_groesse": {
+   "1_Person": 15,
+   "2_Personen": 17,
+   "3_Personen": 13,
+   "4_Personen": 3,
+   "5_Personen": 0,
+   "6_Personen_und_mehr": 0
+  },
+  "gebaeude_mit_wohnraum_summe": 38,
+  "gebaeude_nach_baujahr": {
+   "Vor1919": 3,
+   "a1919bis1949": 3,
+   "a1950bis1959": 0,
+   "a1960bis1969": 4,
+   "a1970bis1979": 3,
+   "a1980bis1989": 11,
+   "a1990bis1999": 3,
+   "a2000bis2009": 0,
+   "a2010bis2015": 0,
+   "a2016undspaeter": 0
+  },
+  "gebaeude_nach_typ": {
+   "FreiEFH": 16,
+   "EFH_DHH": 0,
+   "EFH_Reihenhaus": 0,
+   "Freist_ZFH": 3,
+   "ZFH_DHH": 0,
+   "ZFH_Reihenhaus": 0,
+   "MFH_3bis6Wohnungen": 4,
+   "MFH_7bis12Wohnungen": 0,
+   "MFH_13undmehrWohnungen": 0,
+   "AndererGebaeudetyp": 0
+  },
+  "heizung_gebaeude": {
+   "Insgesamt_Heizungsart": 73,
+   "Fernheizung": 0,
+   "Etagenheizung": 0,
+   "Blockheizung": 0,
+   "Zentralheizung": 64,
+   "Einzel_Mehrraumoefen": 5,
+   "keine_Heizung": 0
+  },
+  "alter_10er": {
+   "Insgesamt_Bevoelkerung": 125,
+   "Unter10": 9,
+   "a10bis19": 0,
+   "a20bis29": 6,
+   "a30bis39": 11,
+   "a40bis49": 12,
+   "a50bis59": 25,
+   "a60bis69": 13,
+   "a70bis79": 14,
+   "a80undaelter": 16
+  },
+  "durchschnittsalter_gewichtet": 48.8,
+  "ausland_summe": 0
+ },
+ "_hinweis": "Zensus 2022, Gitterzellen 100 m, © Statistische Ämter des Bundes und der Länder, 2024 (Vervielfältigung und Verbreitung mit Quellenangabe gestattet); Zellen mit weniger als 3 Fällen sind verdeckt – Summen sind Untergrenzen; die Boxen der Orte stehen in tools/daten/zensus_gitter.py."
+}

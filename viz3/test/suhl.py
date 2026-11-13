@@ -143,7 +143,7 @@ def desktop():
             ck('nothing of Suhl at the start: no request, no package, the zone idle', st0['s']['state'] == 'idle' and not st0['s']['loaded'] and st0['res'] == 0 and st0['s']['zone'] == 'idle', json.dumps(st0['s']))
             kz = J("""{ sc: (KERN.scenario('suhl') || {}).label || null, menu: (KERN.scenario('suhl') || {}).menu, spots: ['suhl', 'suhl_steinweg', 'suhl_bahnhof', 'suhl_ccs'].map(n => !!KERN.spots()[n]),
                 chip: !!document.querySelector('#menu [data-spot=suhl]') || !!document.getElementById('suhlbtn'), ll: SUHL.toLatLon(SUHL.O[0], SUHL.O[1]), back: SUHL.toModel(50.6086518, 10.6926437), utm: SUHL.toUTM(SUHL.O[0], SUHL.O[1]) }""")
-            ck('a zone of the core, the start situation and the places to jump to; no menu entry without ?suhl=1', bool(kz['sc']) and kz['menu'] is False and all(kz['spots']) and not kz['chip'], json.dumps(kz))
+            ck('a zone of the core, the start situation and the places to jump to; the menu entry in the standard game (since 13.11.2026)', bool(kz['sc']) and kz['menu'] is True and all(kz['spots']) and kz['chip'], json.dumps(kz))
             ck('SUHL.toLatLon / toModel / toUTM: the centre of Suhl (50.60865 N, 10.69264 E = UTM 619765, 5607674)',
                abs(kz['ll'][0] - 50.60865) < 2e-5 and abs(kz['ll'][1] - 10.69264) < 2e-5 and math.hypot(kz['back'][0] - O[0], kz['back'][1] - O[1]) < 0.2 and abs(kz['utm'][0] - 619765) < 1.5 and abs(kz['utm'][1] - 5607674) < 1.5, json.dumps(kz))
             ck('the contract answers before the package is there', J("[SUHL.near, SUHL.levelAt(-4700, 12300), SUHL.building('x'), SUHL.ground(-4700, 12300) === undefined, SUHL.quarters().length, !!SUHL.areas.zentrum]") == [False, -1, None, True, 0, True])
@@ -652,12 +652,13 @@ def anfahrt():
         J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
         a0 = J("({ st: SUHL.approach.state, asked: %d, sets: FAHRT.sets ? FAHRT.sets() : null, active: !!FAHRT.active })" % len(net))
         ck('way there: nothing of it at the start (it waits for the drive)', a0['st'] == 'waiting' and a0['asked'] == 0 and not a0['active'], json.dumps(a0))
-        # with ?suhl=1 the way in by menu: a card on its start page (and the chip under Hingehen → Weiter weg) – it closes the menu
-        mk = J("""(() => { const c = document.getElementById('suhlbtn'), chip = document.querySelector('#menu [data-spot=suhl]');
-            HUD.setMenu(true); const open = HUD.open; if (c) c.click();
-            return { card: !!c, chip: !!chip, open, after: HUD.open, pressed: chip ? chip.getAttribute('aria-pressed') : null }; })()""")
-        ck('with ?suhl=1: the card „Nach Suhl“ on the menu\'s start page and the chip; the card closes the menu and goes there',
-           mk['card'] and mk['chip'] and mk['open'] and not mk['after'] and mk['pressed'] == 'true', json.dumps(mk))
+        # the way in by menu: a card on its start page (and the chip under Hingehen → Weiter weg) – it closes the menu
+        mk = J("""(() => { const c = document.getElementById('suhlbtn'), chip = document.querySelector('#menu [data-spot=suhl]'), t = document.getElementById('tutbtn');
+            HUD.setMenu(true); const open = HUD.open, both = !!(c && !c.hidden && t && !t.hidden), hingehen = (document.querySelector('#menu .mnav [data-go=orte] small') || {}).textContent || '';
+            if (c) c.click();
+            return { card: !!c, chip: !!chip, open, both, hingehen, after: HUD.open, pressed: chip ? chip.getAttribute('aria-pressed') : null }; })()""")
+        ck('the card „Nach Suhl“ on the menu\'s start page (one card at a time with „Neu hier?“), the chip, Suhl named under Hingehen; the card closes the menu and goes there',
+           mk['card'] and mk['chip'] and mk['open'] and not mk['both'] and 'Suhl' in mk['hingehen'] and not mk['after'] and mk['pressed'] == 'true', json.dumps(mk, ensure_ascii=False))
         E("GAME.go('suhl_bahnhof')")            # outside the square: the drive wakes
         t0 = time.time()
         while time.time() - t0 < 300:
@@ -676,8 +677,8 @@ def anfahrt():
 
 
 def bus():
-    """by bus (S2-7): without ?suhl the world's timetable as before; with ?suhl=1 the bus module loads bus/fahrplan_suhl.json (hook B1)
-    – line 203 runs from Ratscher on to Suhl, the city's own buses are in it, and the departures in Ratscher name Suhl. Pages of their own."""
+    """by bus (S2-7): in the standard game the bus module loads bus/fahrplan_suhl.json (hook B1) – line 203 runs from Ratscher on to Suhl,
+    the city's own buses are in it, and the departures in Ratscher name Suhl; with ?suhl=0 the world's timetable as before. Pages of their own."""
     Q = """(() => { const S = BUS.plan.S, st = S.stations, rat = new Set(st.filter(s => s.n.startsWith('Ratscher')).map(s => s.i)),
         suhl = new Set(st.filter(s => s.n.startsWith('Suhl')).map(s => s.i)), heads = new Set();
         let n203 = 0;
@@ -687,7 +688,7 @@ def bus():
         }
         return { state: BUS.S.state, stations: st.length, suhl: suhl.size, lines: Object.keys(S.lines).length, city: ['A1', 'B', 'C1', 'G'].filter(l => S.lines[l]),
           n203, heads: [...heads], zentrum: st.some(s => s.n === 'Suhl, Zentrum'), plan: window.SUHL ? SUHL.busPlan : undefined }; })()"""
-    for query in ('', '?suhl=1'):
+    for query in ('?suhl=0', ''):
         with lib.browser() as b:
             errs = []
             pg = lib.page(b, 1100, 680, errs, tier='mittel')
@@ -700,11 +701,11 @@ def bus():
                 E("GAME.step(0.5)")
                 time.sleep(0.3)
             r = J(Q)
-            if not query:
-                ck('by bus, without ?suhl: the world\'s timetable as before (no stop of Suhl, the plan not replaced)',
+            if query:
+                ck('by bus, with ?suhl=0: the world\'s timetable as before (no stop of Suhl, the plan not replaced)',
                    r['state'] == 'ready' and r['suhl'] == 0 and r['plan'] is None and r['n203'] == 0, json.dumps(r, ensure_ascii=False))
             else:
-                ck('by bus, with ?suhl=1: line 203 runs from Ratscher to Suhl, the city buses run, the Zentrum is a stop',
+                ck('by bus in the standard game: line 203 runs from Ratscher to Suhl, the city buses run, the Zentrum is a stop',
                    r['state'] == 'ready' and r['suhl'] >= 40 and r['n203'] >= 10 and len(r['city']) == 4 and r['zentrum'] and (r['plan'] or '').endswith('bus/fahrplan_suhl.json'),
                    json.dumps(r, ensure_ascii=False))
             ck.errors(errs)
