@@ -269,8 +269,13 @@ def desktop():
                 lib.shot(pg, OUT, 'suhl_wand')
             tr = J("""(() => { const C = SUHL.status().stadt; const p = [GAME.P.x + 7, GAME.P.y + 3]; return { trunks: C.trunks, segs: C.segs }; })()""")
             ck('wall feet and trunks in the collisions', tr['segs'] > 3000 and tr['trunks'] > 1000, json.dumps(tr))
-            pl = J("[KERN.place(-4753.5, 12321.8), KERN.place(SUHL.SPOTS.suhl[0][0], SUHL.SPOTS.suhl[0][1]), SUHL.areaAt(-4753.5, 12321.8), SUHL.ways(-4753.5, 12321.8, 60).length, SUHL.status().strassen]")
-            ck('place names from the street tiles (a named way: „Steinweg, Suhl“; a named square: „Marktplatz, Suhl“), the ways for traffic, the streets painted on the ground', (pl[0] or '').endswith(', Suhl') and pl[1] == 'Marktplatz, Suhl' and pl[2] == 'zentrum' and pl[3] > 0 and pl[4] and pl[4]['overlay'] and pl[4]['err'] == 0, json.dumps(pl, ensure_ascii=False))
+            pl = J("[KERN.place(-4753.5, 12321.8), KERN.place(SUHL.SPOTS.suhl[0][0], SUHL.SPOTS.suhl[0][1]), SUHL.areaAt(-4753.5, 12321.8), SUHL.ways(-4753.5, 12321.8, 60).length, SUHL.status().strassen, "
+                   "window.FAHRT && FAHRT.sets ? FAHRT.sets().filter(n => n.startsWith('suhl/s/')).length : -1, window.KERN && KERN.surface ? KERN.surface(-4753.5, 12321.8) : null]")
+            # the streets on the ground: painted by Suhl itself into WELT's overlay - or, since the roads' round 2 is in src, handed to
+            # FAHRT.add tile by tile (then Suhl leaves the overlay to the road map and FAHRT holds one set per tile)
+            st_ = pl[4] or {}
+            painted = bool(st_.get('overlay')) or (st_.get('tiles', 0) > 0 and st_.get('given') == st_.get('tiles') and pl[5] >= st_['tiles'])
+            ck('place names from the street tiles (a named way: „Steinweg, Suhl“; a named square: „Marktplatz, Suhl“), the ways for traffic, the streets painted on the ground', (pl[0] or '').endswith(', Suhl') and pl[1] == 'Marktplatz, Suhl' and pl[2] == 'zentrum' and pl[3] > 0 and painted and st_.get('err') == 0, json.dumps(pl, ensure_ascii=False))
             E("GAME.go('suhl')")
             wait(QUIET, 60)
 
