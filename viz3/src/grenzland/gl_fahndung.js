@@ -96,7 +96,8 @@ export const GLFAHNDUNG = (() => {
     warnNein: 'Wieder in den eigenen Sachen.',
     umFrei: 'Andere Jacke, andere Mütze – die Beschreibung passt nicht mehr.',
     umBekannt: 'Andere Jacke – aber sie wissen, wer du bist.',
-    helmNimm: 'Helm mitnehmen',
+    helmNimm: 'Helm vom Haken nehmen',
+    helmTipp: 'Ohne Helm? Der hängt im Carport am Haken.',
     helmOk: 'Der Helm ist dabei – auf dem Moped setzt du ihn auf.',
     umGesehen: 'Nicht jetzt – da schaut jemand zu.',
     schild: 'Kennzeichen tauschen',
@@ -307,14 +308,14 @@ export const GLFAHNDUNG = (() => {
       markDirty();
     }
   }
-  // the helmet hangs at the moped's place in the garden
-  const MOPED0 = (GLDATA.ORTE.moped && GLDATA.ORTE.moped.pos) || [5.6, 10.2];
+  // the helmet hangs on a hook in the carport (not at the moped: there the button mounts it)
+  const HAKEN = [-1.0, 14.0];
   KERN.act({
     id: 'gl-helm',
     prio: 4,
-    r: 2.4,
+    r: 2.6,
     label: () => (GL.on && GL.era === 'heute' && !VEH.cur && !GL.has('helm') ? TX.helmNimm : null),
-    pos: () => [MOPED0[0] + 0.6, MOPED0[1] - 0.4, KERN.ground(MOPED0[0], MOPED0[1]) + 0.9],
+    pos: () => [HAKEN[0], HAKEN[1], KERN.ground(HAKEN[0], HAKEN[1]) + 1.4],
     run: () => {
       if (GL.has('helm')) return;
       GL.add('helm');
@@ -322,6 +323,8 @@ export const GLFAHNDUNG = (() => {
       GLTON.fx('tick');
     },
   });
+  // on the moped without it: once a word where it is
+  KERN.on('grenzland:wer', () => (S.helmTipp = false));
   // ---- the roads the police can come by: the square's graph, the town's (the traffic's network there) ----
   let netSq = null,
     netTown = null,
@@ -1288,6 +1291,10 @@ export const GLFAHNDUNG = (() => {
       if (q.v > 15.5 && S.speedT <= 0 && /Ratscher ·|Anger|Dorf/.test(String(KERN.place(q.x, q.y, 0) || ''))) {
         S.speedT = 25;
         if (zeugen().length) tat('raserei', { quiet: n > 0 });
+      }
+      if (q.veh.id === 'gl-moped' && !GL.has('helm') && !S.helmTipp && q.v > 2) {
+        S.helmTipp = true;
+        PLAY.think(TX.helmTipp, 3200);
       }
       if (S.helmT <= 0 && q.veh.id === 'gl-moped' && q.v > 3 && !helmAuf()) {
         S.helmT = 4;

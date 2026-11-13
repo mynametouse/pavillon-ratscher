@@ -21,8 +21,10 @@ Wie in den Vorschauen zu GTA 6: Die Polizei kennt nur, was jemand gesehen hat, u
   (wieder aufgestiegen auf dasselbe Moped: passt wieder – das Moped ist bekannt). Neues Kennzeichen → Fahrzeug unbekannt.
 - **Wirkung auf die Suche:** Mit Helm erkennt niemand den Spieler beim bloßen Hinsehen (die Sterne bleiben hohl, nur ein Name füllt
   sie); passt nichts mehr von der Beschreibung, läuft die Suche 1,4-mal so schnell aus.
-- **Der Helm:** hängt am Moped im Garten („Helm mitnehmen“, `GL.inv.helm`); danach setzt der Spieler ihn auf dem Moped von selbst auf (wie
-  in GTA), ein roter Jethelm aus `GLFIG.hatOn` auf dem Kopfknochen der Spielfigur. Die Tat „Fahren ohne Helm“ zählt nur noch ohne Helm.
+- **Der Helm:** hängt im Carport am Haken („Helm vom Haken nehmen“, `GL.inv.helm`; nicht am Moped selbst – dort steigt der Knopf auf);
+  wer ohne ihn losfährt, bekommt einmal den Hinweis, wo er hängt. Danach setzt der Spieler ihn auf dem Moped von selbst auf (wie in
+  GTA), ein roter Jethelm aus `GLFIG.hatOn` auf dem Kopfknochen der Spielfigur. Die Tat „Fahren ohne Helm“ zählt nur noch ohne Helm.
+- **Knöpfe:** „Ansprechen“ hat die kleinste Priorität (0,1) – am Verkaufswagen bleibt „Einkaufen“ vorn.
 - **Die Warnjacke:** am Bungalow „Warnjacke anziehen / ausziehen“ (vorher „Umziehen“, nur mit Sternen). Sichtbar über die eigene
   Umfärbung des Spiels (`AVATAR.wear`, wie die Forstkleidung; keine neue Textur, kein neues Shader-Programm). Mit Sternen gilt weiter die
   Regel von vorher (`GLLOGIK.umziehen`: hohle Sterne sind sofort weg, ein Name bleibt ein Name; nicht, wenn jemand zuschaut).
@@ -86,9 +88,9 @@ Punkt auf dem Radar (`GLKARTE.src`, Art `ort`) und wird weggeräumt, wenn es vor
 |---|---|---|
 | Blitzer | ein Kombi am Straßenrand, die Kamera auf dem Stativ daneben | schneller als 50 km/h: weißer Blitz, eine Minute später der Brief im Handy, 30 € |
 | Traktorstau | ein roter Traktor nach Art des Fortschritt ZT 300 mit Strohballen-Hänger (hier aus dem Bausatz gebaut, fährt auf der Linie der Straße, fest für Fahrzeug und Fußgänger), 19 km/h, zwei Autos dahinter, die hupen | überholen: der Fahrer tippt sich an die Mütze |
-| Kirmes | Kirmesbaum, Bratwurststand „ROSTBRATWURST“, Bank, Wirt, Kirmesbursche und -mädchen, Polka | Rostbratwurst für 3 € |
-| Hochzeitskorso | vier Autos mit weißen Schleifen kommen entgegen und hupen | 20 s mitfahren: 10 € vom Brautvater |
-| Böller aus dem Kofferraum | ein Kombi, bunte Kisten, der Böller-Mann in Ballonseide | drei Böller für 5 € |
+| Kirmes | auf einem freien Platz am Anger (abseits der Straßen, 9 m frei von Mauern und Stämmen, nicht unter der Linde): Kirmesbaum, Bratwurststand „ROSTBRATWURST“ (zum Spieler gedreht), Bank, Wirt, Kirmesbursche und -mädchen, Polka (nicht über dem Autoradio) | Rostbratwurst für 3 € |
+| Hochzeitskorso | vier Autos mit weißen Bändern von den Spiegeln zur Schleife auf der Motorhaube (mit Sträußchen) kommen entgegen und hupen | 20 s mitfahren: 10 € vom Brautvater |
+| Böller aus dem Kofferraum | ein Kombi mit offenem Kofferraum, bunte Kisten auf dem Gehweg, der Böller-Mann in Ballonseide | drei Böller für 5 € |
 | Wildwechsel | in der Dämmerung springt ein Reh über die Landstraße | gebremst oder „Rums!“ – das Reh läuft davon, niemandem passiert etwas |
 
 Die Leute der Ereignisse (Böller-Mann, Bratwurst-Uwe, Kirmesbursche, Kirmesmädchen) und ihre Kleider werden beim Laden in `GLDATA.CAST`
@@ -107,6 +109,17 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
 - „Pöbelei“ ist eine eigene kleine Tat (0,5 Hitze, ein Stern, beredbar); sie wird von `gl_reaktion.js` beim Laden in `GLLOGIK.CRIMES`
   eingetragen, damit der Unit-Test der Polizei (er zählt die beredbaren Taten) unverändert bleibt.
 
+## Offen
+
+- **Sturmhaube:** es gibt kein Modell; die Wörter sind im Funk und in `linien()`, `GLFAHNDUNG.haube = true` würde reichen (Gesicht
+  verdeckt, Kleidung „mit Sturmhaube“). Ein Verkauf beim Böller-Mann wäre der natürliche Ort.
+- Leute der Basis-Welt (Dorfbewohner, Fußgänger des Verkehrs) zählen als Zeugen für einen Post, heben aber kein Handy – dafür hat nur
+  `GLFIG` Gesten.
+- Die Gesten (`filmen`, `telefon`, `nicken`) und das Rennen der Beamten wirken erst mit den Figuren von Runde 2 (`feat/grenzland-figuren`);
+  ohne sie bleibt es beim Hinwenden und schnellem Gehen.
+- Die Kirmes gibt es nur in Ratscher; der Hochzeitskorso kommt nach dem Plan nur in Schleusingen (mit `debug.start` überall).
+- Stimmen: bis `stimmen` aufnimmt, spricht die Gerätestimme (wenn Vorlesen an ist) – die Sätze sind alle feste Texte.
+
 ## Für den Lead
 
 - **HUD aus `wissen`:** drei Symbole (Gesicht, Kleidung/Jacke, Fahrzeug), an = die Polizei weiß es und es passt noch. Hilfreich als
@@ -124,6 +137,11 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
   'Böller' | 'Reh' }`. Eine eigene Art (z. B. `k: 'ereignis'` mit einem Symbol) wäre schöner – gern im Radar ergänzen.
 - **`modules.txt`:** drei Zeilen am Ende des Blocks `# feat/grenzland` (nach `gl_modus.js`): `gl_reaktion_data.js`, `gl_reaktion.js`,
   `gl_ereignis.js`.
+- **Daten zur Laufzeit ergänzt** (damit eure Dateien unberührt bleiben): `GLDATA.CAST` + `GLDATA.KLEID` um die Leute der Ereignisse
+  (`boellermann`, `wirt`, `bursche`, `maedchen`; Kleider `el_*`), `GLLOGIK.CRIMES.poebeln`. Gern fest in `gl_data.js` übernehmen; für
+  `poebeln` müsste dann die Liste der beredbaren Taten im Unit-Test der Polizei (`grenzland_polizei.test.mjs`) mit.
+- **`GLHUD.ort(titel, sub, 4)`** zeigt den Titel eines Ereignisses (wie GTAs „Zufallsereignis“); wenn ihr dafür lieber `GLHUD.titel`
+  nehmt, ist es eine Zeile in `gl_ereignis.js` (`start`).
 - **Ereignisse:** `grenzland:gefilmt`, `grenzland:post`, `grenzland:feedpost`, `grenzland:reaktion`, `grenzland:antwort`,
   `grenzland:ereignis` `{ name, ende? }`, `grenzland:geblitzt`, `grenzland:wildunfall`, `grenzland:kleid`.
 

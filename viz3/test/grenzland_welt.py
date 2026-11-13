@@ -71,7 +71,7 @@ with lib.browser() as b:
         steps(0.3)
         ck('wissen: and off again', J("GLFAHNDUNG.ist()")['kleid'] == 'karo', str(J("GLFAHNDUNG.ist()")))
         hl = E("TW.act('gl-helm')")
-        ck('wissen: the helmet can be taken at the moped', hl == 'Helm mitnehmen', str(hl))
+        ck('wissen: the helmet can be taken from its hook in the carport', hl == 'Helm vom Haken nehmen', str(hl))
         X("TW.run('gl-helm')")
         ck('wissen: the helmet is in the bag', E("GLSTATE.has('helm')"))
         # a report: the description

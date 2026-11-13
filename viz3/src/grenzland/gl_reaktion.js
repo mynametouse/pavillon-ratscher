@@ -369,7 +369,7 @@ export const GLREAKTION = (() => {
   const warte = sec => new Promise(res => (window.FREEZE ? setTimeout(res, 0) : setTimeout(res, sec * 1000)));
   KERN.act({
     id: 'gl-ansprechen',
-    prio: 5,
+    prio: 0.1, // (below every action of the places: the van's shopping, the stalls)
     r: 3.2,
     label: () => {
       const F = gegenueber();
