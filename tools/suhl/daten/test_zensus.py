@@ -142,5 +142,50 @@ class Distributing(unittest.TestCase):
         self.assertNotIn('res', h[1])
 
 
+
+class Published(unittest.TestCase):
+    """Falko, 13.11.2026: residents only per quarter - a d tile never carries an estimate of the people in one building"""
+
+    def test_residents_stay_per_quarter(self):
+        tmp = tempfile.mkdtemp(prefix='suhl-zensus-')
+        try:
+            beispiel.write(tmp)
+            g = os.path.join(tmp, 'suhl', 'g', 'v0')
+            Q = V.build()
+            cells = set()                                       # the census cells of the invented buildings
+            for root, _, files in os.walk(os.path.join(g, '10')):
+                for f in files:
+                    t = S.read_json(os.path.join(root, f))
+                    x, y = int(os.path.basename(root)), int(f[:-5])
+                    fr = S.tile_frame(10, x, y)
+                    for b in t['b']:
+                        d, ex = Z.numbers(b, fr, Q)
+                        if d is not None:
+                            cells.add(S.census_cell(ex['E'], ex['N']))
+            zf = os.path.join(tmp, 'zensus')
+            os.makedirs(zf)
+            S.write_json(os.path.join(zf, 'einwohner.json'), grid_doc('einwohner', ['Einwohner'], [(c, r, 40) for c, r in sorted(cells)]))
+            for per_house in (False, True):
+                out = os.path.join(tmp, 'aus' + str(per_house), 'suhl', 'd', 'v1')
+                Z.run(g, out, 1, area='probe', census=zf, quiet=True, min_buildings=1, res_per_building=per_house)
+                recs = []
+                for root, _, files in os.walk(os.path.join(out, '10')):
+                    for f in files:
+                        recs += list(S.read_json(os.path.join(root, f))['d'].values())
+                with_res = [d for d in recs if 'res' in d or 'res' in (d.get('q') or {})]
+                v = S.read_json(os.path.join(out, 'viertel.json'))
+                model = sum((q.get('residents') or {}).get('model', 0) for q in v['viertel'])
+                idx = S.read_json(os.path.join(out, 'index.json'))
+                if per_house:
+                    self.assertTrue(with_res)                  # the switch for internal work still writes them
+                    self.assertTrue(idx['residents_per_building'])
+                else:
+                    self.assertEqual(with_res, [])             # the default: no person numbers per building
+                    self.assertFalse(idx['residents_per_building'])
+                    self.assertIn('Falko', idx['residents_note'])
+                self.assertAlmostEqual(model, 40 * len(cells), delta=0.5)      # the quarters keep every resident either way
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
 if __name__ == '__main__':
     unittest.main(verbosity=1)

@@ -412,7 +412,7 @@ def g_version(folder):
         return None
 
 
-def run(g_folder, out, version, area='stadt', census=None, report=None, quiet=False, min_buildings=50, g_from=None):
+def run(g_folder, out, version, area='stadt', census=None, report=None, quiet=False, min_buildings=50, g_from=None, res_per_building=False):
     """g tiles -> d tiles, viertel.json, index.json; returns the report dict"""
     lv, _ = S.scan_tiles(g_folder, 'json')
     tiles = sorted(lv.get(L10, []))
@@ -467,6 +467,13 @@ def run(g_folder, out, version, area='stadt', census=None, report=None, quiet=Fa
         for a, ar in areas.items():
             if ar.contains(ex['E'], ex['N']):
                 sums_a[a].add(ex, key)
+    # Falko, 13.11.2026: residents (and everything about people) only per quarter - a building's record keeps the building and energy
+    # numbers; the estimate per building is computed (the sums per quarter and area above use it) but not written
+    if not res_per_building:
+        for _, d, _ in exs:
+            d.pop('res', None)
+            if isinstance(d.get('q'), dict):
+                d['q'].pop('res', None)
     # files
     made = S.now()
     gv = g_version(g_folder)
@@ -533,6 +540,9 @@ def run(g_folder, out, version, area='stadt', census=None, report=None, quiet=Fa
                         note='Szenario-Zahlen je Gebäude (Schätzungen mit Güte) und Summen je Stadtteil (viertel.json). Flächen in echten m², '
                              'in UTM gerechnet; Richtungen von geografisch Nord.',
                         extra={'fields': {'R': list(R_COLS)}, 'viertel': 'viertel.json',
+                               'residents_per_building': bool(res_per_building and cz),
+                               'residents_note': 'Einwohner, Alter und Haushalte stehen nur je Stadtteil und Gebiet (viertel.json), nicht je Gebäude '
+                                                 '(Entscheidung Falko, 13.11.2026)' if not res_per_building else None,
                                'counts': {'buildings': len(exs), 'dropped': dropped},
                                'g_from': g_from or (f'run {gi["run"]["id"]}' if isinstance(gi.get('run'), dict) and gi['run'].get('id') else None)})
     rep = {'made': made, 'area': area, 'g_folder': os.path.basename(os.path.abspath(g_folder)), 'g_version': gv, 'tiles': len(tiles),
@@ -564,8 +574,10 @@ if __name__ == '__main__':
     ap.add_argument('--zensus', default=None, help='folder with the census cells of Suhl (tools/suhl/out/daten/zensus)')
     ap.add_argument('--report', default=None)
     ap.add_argument('--g-from', dest='g_from', default=None, help='where the g folder came from (branch and commit, or run and artifact) - written into the index')
+    ap.add_argument('--einwohner-je-haus', dest='res_per_building', action='store_true',
+                    help='also write the residents estimate per building (default: only per quarter - decision Falko, 13.11.2026; never for a public set)')
     a = ap.parse_args()
     v = a.version if a.version is not None else os.path.basename(os.path.abspath(a.out))
     if SC.version_of(v) is None:
         raise SystemExit(f'zahlen: cannot tell the version from {a.out!r} - name the folder v<N> or pass --version')
-    run(a.g, a.out, SC.version_of(v), a.area, census=a.zensus, report=a.report, g_from=a.g_from)
+    run(a.g, a.out, SC.version_of(v), a.area, census=a.zensus, report=a.report, g_from=a.g_from, res_per_building=a.res_per_building)

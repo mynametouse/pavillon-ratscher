@@ -554,7 +554,7 @@ Kacheln und Kennungen wie `g` (`based_on: {"g": N}` im Index), ohne Gebäude mit
 | `rf` | P | m² | Dachfläche (geneigt gemessen, ohne Überstand) = Summe der Flächen in `R` |
 | `R` | P | Liste | **Dachebenen in der Reihenfolge von `g.R`** (gleiche Nummern): `[a, ap, az, sl, c, us, kwp, ir]` = Fläche m², Grundfläche m², Richtung in Grad von geografisch Nord (`null` = flach, unter 10°), Neigung °, Deckung (Klasse von `g`), belegbare Fläche m² (Regel), deren Leistung kWp, Einstrahlung in % der besten Fläche |
 | `ru`, `pv`, `pe` | F | m², kWp, kWh/Jahr | belegbare Fläche, **Solar-Potenzial** und Jahresertrag auf den geeigneten Ebenen (`ir` ≥ 75). Was heute auf dem Dach liegt, ist nicht bekannt. |
-| `res` | F | Personen | Bewohner – **Modell-Schätzung** (13.4); fehlt, wo der Zensus für die Zelle nichts zeigt |
+| `res` | F | Personen | Bewohner – **Modell-Schätzung** (13.4); fehlt, wo der Zensus für die Zelle nichts zeigt. **Nicht im veröffentlichten Satz:** Einwohner, Alter und Haushalte stehen nur je Stadtteil und Gebiet (`viertel.json`; Entscheidung Falko, 13.11.2026). `zahlen.py` rechnet die Schätzung je Gebäude für die Summen, schreibt sie aber nur mit `--einwohner-je-haus` (für interne Auswertungen, nie für die Tür); der Index sagt es in `residents_per_building` |
 | `heat` | F | `{k, p, d}` | `k` wahrscheinlicher Energieträger der Heizung (nur Wohngebäude; der häufigste seiner Zensus-Zelle: `fern`, `gas`, `oel`, `holz`, `bio`, `wp`, `strom`, `kohle`, `kein`), `p` dessen Anteil in der Zelle (`q.heat` 1 ab 0,6), `d` Wärmebedarf in kWh/Jahr – immer nach Regel |
 | `fg` | F | Bits | Merker von `g` (2 Denkmal, 8 Leerstand, 16 Abriss geplant, 64 nur im Kataster, 128 neu) |
 | `q` | P | `{Feld: 0…3}` | Güte von `lv`, `rf` (Dachebenen: wie `rq` von `g`), `pv`, `era`, `vol`, `res`, `heat` |
@@ -601,7 +601,7 @@ Themen (je 15–37 MB, bleiben außerhalb von git) und behält die Zellen, die d
 
 | Thema | Datei | Zellen | Verwendung |
 |---|---|---|---|
-| `einwohner` | Zensus2022_Bevoelkerungszahl | 1 346 | **je Gebäude verteilt** (`res`), Summe je Stadtteil |
+| `einwohner` | Zensus2022_Bevoelkerungszahl | 1 346 | je Gebäude verteilt (nur für die Summen, nicht veröffentlicht), Summe je Stadtteil |
 | `alter`, `alter10` | Alter_in_5_Altersklassen, Alter_in_10er-Jahresgruppen | 1 346 | nur je Stadtteil |
 | `haushalte` | Zensus2022_Groesse_des_privaten_Haushalts_in_Gitterzellen | 1 161 | nur je Stadtteil |
 | `energietraeger` | Gebaeude_mit_Wohnraum_nach_Energietraeger_der_Heizung | 1 126 | je Stadtteil gezählt; je Gebäude der häufigste der Zelle als Schätzung (`heat.k`) |
