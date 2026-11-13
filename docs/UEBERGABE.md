@@ -16,6 +16,7 @@ veröffentlicht.
 
 ## Stand
 
+- **13.11.2026 nachts: Zukünfte erproben (V17w, Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, `docs/features/zukunft.md`, `zukunft-welt.md`).** Falko 12.11.: Geschäftsmodell 1 „virtuelles Reallabor / Szenario-Werkstatt“ – erste Fassung für Kommune/Dorf, halber Tag vor Ort, Themen Mobilität, Energie, Klimaanpassung, Wald nach dem Käfer, „möglichst realistisch“. Daten und Rechnung rein in `zukunft/zk_data.js` (Unit-Test `viz3/test/unit/zukunft.test.mjs`), Oberfläche `zk_modus.js`, Welt `zk_welt.js` (Haken `WXBODEN.setDry`, `FOREST.canopy`); Tests `zukunft.py`, `zukunft_welt.py` (Programme: Start +4, Umschalten 0). Entscheidungen: Stimmen als Rollen („Sicht …“, erfundene Stimme), Ereignisse ohne Votum, Regler ab 2030, HQ100 = amtliches Gebiet (37 Gebäude, Schaden als Spanne), Solarpark-Platz ist Annahme. **Offen:** Mitmach-Schicht (Stimmen der Teilnehmenden am Telefon), Ablaufplan für den halben Tag, Gespräch mit Ratscher/Schleusingen über einen Piloten; zu Fuß spiegelt ein schmaler Streifen fernes Hochwasser noch den Himmel; blau-graue Bodenflecken im heutigen Wald, wo die Kronenkarte dünn ist (Abhilfe in `world/forest.js` wie im Modus).
 - **13.11.2026 nachts: Straßen realistischer (Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx, Zweig `feat/strassen`,
   `docs/features/strassen.md`).** Falko 12.11. 23:10/23:13: die Region „noch realistischer“, „starte mit Paket 1“ (die Straßen).
   **Paket 1:** Markierung nach Klasse, Breite und Ortslage, Bankett, Bordstein, Rinne, Gehweg, Flickstellen, nasser Asphalt; dieselbe
