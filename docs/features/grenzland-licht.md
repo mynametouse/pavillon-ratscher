@@ -37,7 +37,8 @@ Glühen weiß/rot, Fleck einer Taschenlampe, Stern), und einem Rauchbild. Wo ech
   hält), ein schwacher Lichtkegel nach vorn unten (eine zur Kamera gedrehte Karte), der beim Gehen und Umsehen pendelt (nahe an
   der Kamera blasser), und ein Lichtfleck auf dem Boden, der mitgeht. Ohne die
   Angabe tragen nachts von sich aus eine: die Beamten der Polizei (`F.cop`), die Wachleute (`kleid: 'wache'`), Volkspolizei und Grenzer
-  1989. `F.lampe = false` schaltet das ab.
+  1989. `F.lampe = false` schaltet das ab. `GLLICHT.hatLampe(F)` sagt, ob eine Figur gerade eine trägt (für `figuren`: die Hand mit
+  der Lampe heben).
 - **Leuchtkugel** (`KERN.emit('grenzland:flare', { x, y, z })` oder `GLLICHT.flare(x, y, z)`): steigt in 3 s auf etwa 60 m
   mit einer weißen Rauchspur (alle 30 cm ein Wölkchen), ploppt auf, brennt dann 40 s am Fallschirm, sinkt langsam (knapp 1 m/s) und treibt mit dem Wind des
   Wetters, Funken fallen, ein weißglühender Kern, ein roter Hof und ein großer roter Dunst in der Luft, darüber eine dünne Rauchfahne,

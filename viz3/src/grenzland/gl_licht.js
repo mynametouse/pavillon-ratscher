@@ -26,6 +26,8 @@
 //   GLLICHT.an(on)          everything on (default) or off – for pictures before and after
 //   GLLICHT.flare(x, y, z)  the flare (also on the event 'grenzland:flare')
 //   GLLICHT.regnen(on|null) rain by hand (null: as the mission wants)
+//   GLLICHT.hatLampe(F)     does figure F carry a torch now (F.lampe, else at night the police, the guards, the police of 1989) –
+//                           grenzland/gl_pose.js raises the lamp hand by it
 //   GLLICHT.stand()         numbers for the test
 //   GLLICHT.blauPuls(t)     [left, right] 0…1: the beacons' double flash at time t (s)
 import * as THREE from 'three';
@@ -1468,6 +1470,8 @@ export const GLLICHT = (() => {
   });
   return Object.assign(S, {
     an,
+    // (a torch that burns now: by day nobody carries a lit one)
+    hatLampe: F => !!(F && GL.on && S.zeigen && S.lampK > 0.05 && hatLampe(F)),
     flare,
     regnen: v => {
       S.regenHand = v === null || v === undefined ? null : !!v;
