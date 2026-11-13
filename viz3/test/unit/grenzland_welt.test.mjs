@@ -102,3 +102,37 @@ test('the stars: a mask keeps them hollow (nobody is recognised by sight), a des
   while (G.stars(B) > 0 && tb < 200) (G.tick(B, 0.5, { fremd: true }), (tb += 0.5));
   assert.ok(tb < ta * 0.8, 'nothing fits: sooner (' + tb + ' s against ' + ta + ' s)');
 });
+
+test('random events: only in free play, after minutes of driving, where they fit, one at a time, not twice within 15 minutes', () => {
+  const P = G.planNeu(),
+    r = () => 0;
+  const ctx = (o = {}) => Object.assign({ t: 0, dt: 10, frei: true, fahrt: true, ort: 'land', dunkel: false, laeuft: false }, o);
+  for (let i = 0; i < 14; i++) assert.equal(G.plan(P, ctx({ t: i * 10 }), r), '', 'not before two and a half minutes of driving');
+  assert.equal(G.plan(P, ctx({ t: 150, frei: false }), r), '', 'never in a mission (nor in 1989)');
+  assert.equal(G.plan(P, ctx({ t: 150, laeuft: true }), r), '', 'one at a time');
+  assert.equal(G.plan(P, ctx({ t: 150, fahrt: false, dt: 1000 }), r), '', 'standing about does not count');
+  const k = G.plan(P, ctx({ t: 160 }), r);
+  assert.ok(['blitzer', 'traktorstau'].includes(k), 'on a country road by day: the speed camera or the harvest lorry – ' + k);
+  assert.equal(P.fahrt, 0);
+  assert.ok(P.next >= 150 && P.next <= 300);
+  // the same again only after a quarter of an hour
+  const Q = G.planNeu();
+  Q.zuletzt = { blitzer: 100, traktorstau: 100 };
+  Q.fahrt = 999;
+  assert.equal(G.plan(Q, ctx({ t: 500 }), r), '', 'both were there a few minutes ago');
+  assert.equal(G.plan(Q, ctx({ t: 1100 }), r), 'blitzer');
+  // where they fit
+  const town = G.planNeu();
+  town.fahrt = 999;
+  assert.ok(['korso', 'boeller'].includes(G.plan(town, ctx({ ort: 'stadt' }), r)));
+  const dusk = G.planNeu();
+  dusk.fahrt = 999;
+  dusk.zuletzt = { blitzer: 0, traktorstau: 0 };
+  assert.equal(G.plan(dusk, ctx({ t: 300, dunkel: true }), r), 'wildunfall', 'a deer at dusk');
+  const vil = G.planNeu();
+  vil.fahrt = 999;
+  vil.zuletzt = { blitzer: 0, boeller: 0 };
+  assert.equal(G.plan(vil, ctx({ t: 300, ort: 'dorf' }), r), 'kirmes');
+  vil.fahrt = 999;
+  assert.equal(G.plan(vil, ctx({ t: 400, ort: 'dorf', dunkel: true }), r), '', 'no fair at night');
+});

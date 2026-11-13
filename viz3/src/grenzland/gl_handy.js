@@ -14,6 +14,8 @@
 // Interface (the core's, kept): GLHANDY.sms(von, text) · chat(wer, text) · feed(wer, text, ort) · note(titel, zeilen, quellen) ·
 //   open(tab) → true | false · close() · toggle() · isOpen() · unread() · tick(dt) · stop() · kamera(o | null) · foto() · cam() ·
 //   zu() → a promise that resolves when the phone is put away
+//   post({ wer, text, img, live, likes, kom }) – feat/grenzland-welt: a post with a picture (a data URL, kept in memory only – the save
+//   keeps the words), likes and comments counting up (grenzland/gl_reaktion.js: what witnesses filmed)
 // Events: 'grenzland:sms' { von, text }, 'grenzland:foto' { n }, 'grenzland:handy' { gelesen }, 'grenzland:ziel' { pos, name }.
 import { COARSE, stage } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -50,6 +52,10 @@ export const GLHANDY = (() => {
     ziel: null,
     frei: 0,
     unlocked: false,
+    bilder: new Map(), // the posts' pictures by key (not saved)
+    uhr: 0, // seconds of play since the page began (posts count up by it)
+    fotoT: 0, // a filmed post is coming: the feed's own reaction stays away meanwhile
+    zaehlT: 0,
   };
   const TABS = [
     ['sms', 'Nachrichten', 'SMS', 'M4 5h16v11H9l-5 4z'],
@@ -95,6 +101,9 @@ export const GLHANDY = (() => {
 #glhandy .po h5 i{flex:none;width:22px;height:22px;border-radius:50%;background:#3c6e58;color:#fff;font:700 11px/22px system-ui;text-align:center;font-style:normal}
 #glhandy .po h5 u{text-decoration:none;margin-left:auto;background:#e5484d;color:#fff;border-radius:4px;padding:1px 5px;font:700 9px/1.5 system-ui;letter-spacing:.06em}
 #glhandy .po button,#glhandy .kn{margin-top:7px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;padding:7px 12px;font:500 12px/1 var(--f-body,system-ui);cursor:pointer}
+#glhandy .po img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;margin:7px 0 5px;background:#000}
+#glhandy .pl{display:flex;gap:12px;font:600 11px/1.4 var(--f-mono,monospace);color:#c9ced6;margin-top:4px}
+#glhandy .km{font-size:11.5px;line-height:1.35;margin-top:4px;opacity:.88} #glhandy .km b{font-weight:600;margin-right:5px;color:#9cc4ff}
 #glhandy .bk{text-align:center;padding:14px 6px 10px}
 #glhandy .bk strong{display:block;font:700 30px/1.2 var(--f-mono,monospace);color:#8fe08a}
 #glhandy .bk small{opacity:.65}
@@ -166,6 +175,32 @@ export const GLHANDY = (() => {
       'feed',
       Object.assign({ wer: String(wer), text: String(text), ort: ort || '', neu: !(S.open && S.tab === 'feed') }, o)
     );
+  // a filmed moment as a post: the picture stays in memory (the save keeps the words)
+  function post(o = {}) {
+    let bild = '';
+    if (o.img && typeof o.img === 'string') {
+      bild = 'b' + (S.bilder.size + 1) + '_' + Math.round(S.uhr * 10);
+      S.bilder.set(bild, o.img);
+      // (the newest dozen pictures)
+      if (S.bilder.size > 12) S.bilder.delete(S.bilder.keys().next().value);
+    }
+    feed(o.wer || 'ratscher_rudi', (o.live && !/^LIVE/.test(o.text) ? 'LIVE: ' : '') + (o.text || ''), o.ort || '', {
+      i: -1,
+      bild,
+      likes: o.likes | 0,
+      kom: (o.kom || []).slice(0, 5),
+      t0: Math.round(S.uhr),
+    });
+    S.fotoT = 0;
+    GLTON.fx('sms');
+    if (!(S.open && S.tab === 'feed'))
+      PLAY.think(
+        o.live ? 'Du bist live im Feed. (Handy: T)' : 'Jemand hat dich gefilmt – jetzt im Feed. (Handy: T)',
+        3200
+      );
+    GL.emit('feedpost', { wer: o.wer, live: !!o.live, bild: !!bild });
+    return bild;
+  }
   function note(titel, zeilen, quellen) {
     if (S.notes.some(n => n.titel === titel)) return false;
     S.notes.push({ titel, zeilen: [].concat(zeilen || []), quellen: quellen || [] });
@@ -308,8 +343,16 @@ export const GLHANDY = (() => {
         .map(q => {
           const live = /^LIVE/.test(q.text),
             O = q.ort && GLDATA.ORTE[q.ort];
+          // (a filmed moment: the picture, the likes and the comments as far as they have come in)
+          const img = q.bild ? S.bilder.get(q.bild) : null,
+            age = q.t0 > S.uhr ? 1e9 : S.uhr - (q.t0 || 0),
+            likes = q.likes ? Math.round(q.likes * (1 - Math.exp(-age / 22))) : 0,
+            kom = (q.kom || []).filter((k, i) => age > 7 + i * 9);
           return (
             `<div class="po"><h5><i>${esc(q.wer.charAt(0).toUpperCase())}</i>${esc(q.wer)}${live ? '<u>LIVE</u>' : ''}</h5>${esc(q.text.replace(/^LIVE:\s*/, ''))}` +
+            (img ? `<img src="${img}" alt="">` : '') +
+            (q.likes ? `<div class="pl"><span>♥ ${likes}</span><span>💬 ${kom.length}</span></div>` : '') +
+            kom.map(k => `<div class="km"><b>${esc(k[0])}</b>${esc(k[1])}</div>`).join('') +
             (O
               ? `<div><button type="button" data-ort="${esc(q.ort)}">Auf der Karte zeigen · ${esc(O.name)}</button></div>`
               : '') +
@@ -614,7 +657,7 @@ export const GLHANDY = (() => {
       // (somebody always answers)
       if (c.length > 1 && i % c.length === 0) later(delay + 5, () => chat(c[1][0], c[1][1], { i: -1 }));
     }
-    if (f) {
+    if (f && !(S.fotoT > 0)) {
       const a = f[i % f.length];
       later(delay + 3, () => feed(a[0], a[1], a[2], { i: -1 }));
     }
@@ -698,8 +741,15 @@ export const GLHANDY = (() => {
         feed(D.FEED[i][0], D.FEED[i][1], D.FEED[i][2], { i });
       }
     }
+    S.uhr += dt;
     if ((S.acc += dt) < 0.25) return;
     for (const k in S.evT) if (S.evT[k] > 0) S.evT[k] -= S.acc;
+    if (S.fotoT > 0) S.fotoT -= S.acc;
+    // the likes and comments of fresh posts count up while one looks
+    if (S.open && S.tab === 'feed' && (S.zaehlT += S.acc) > 1) {
+      S.zaehlT = 0;
+      if (of('feed').some(q => q.likes && S.uhr - (q.t0 || 0) < 120)) S.dirty = true;
+    }
     S.acc = 0;
     if (S.open) {
       if (S.dirty) render();
@@ -716,11 +766,15 @@ export const GLHANDY = (() => {
     S.ziel = null;
     S.note = -1;
     S.tab = 'sms';
+    S.bilder.clear();
+    S.fotoT = 0;
   }
   return {
     sms,
     chat: (wer, text) => chat(wer, text, { i: -1 }),
     feed: (wer, text, ort) => feed(wer, text, ort, { i: -1 }),
+    post,
+    posts: () => of('feed').map(q => Object.assign({}, q, { img: q.bild ? S.bilder.get(q.bild) || '' : '' })),
     note,
     unlock,
     open,

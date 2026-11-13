@@ -312,6 +312,42 @@ export const GLLOGIK = (() => {
       fahrzeug: !!ist.fz && !!W.fz && B.fz === ist.fz,
     };
   }
+  // ---- random events on the way (feat/grenzland-welt, grenzland/gl_ereignis.js): which one may come now – pure ----
+  // Every few minutes of driving (2½–5), one at a time, in free play today only; each where it fits (a speed camera on a road, the
+  // harvest lorry outside the villages, the fair in a village, the wedding convoy in the town, the man with the bangers in a village or
+  // the town, the deer at dusk on a country road), none of them twice within a quarter of an hour.
+  const EREIGNISSE = {
+    blitzer: { wo: ['land', 'dorf'], fahrt: true },
+    traktorstau: { wo: ['land'], fahrt: true },
+    kirmes: { wo: ['dorf'], tag: true },
+    korso: { wo: ['stadt'] },
+    boeller: { wo: ['dorf', 'stadt'] },
+    wildunfall: { wo: ['land'], fahrt: true, dunkel: true },
+  };
+  const planNeu = () => ({ fahrt: 0, next: 150, zuletzt: {} });
+  // P: planNeu() kept by the caller; ctx: { t: game seconds, dt, frei: free play and today, fahrt: driving now, ort: 'dorf' | 'stadt' |
+  // 'land', dunkel: dusk or night, laeuft: one runs now }. Returns the name of the event to start now, or ''.
+  function plan(P, ctx, rnd = Math.random) {
+    if (!ctx.frei || ctx.laeuft) return '';
+    if (ctx.fahrt) P.fahrt += ctx.dt || 0;
+    if (P.fahrt < P.next) return '';
+    const ok = Object.keys(EREIGNISSE).filter(k => {
+      const e = EREIGNISSE[k];
+      return (
+        e.wo.includes(ctx.ort) &&
+        (!e.fahrt || ctx.fahrt) &&
+        (!e.dunkel || ctx.dunkel) &&
+        (!e.tag || !ctx.dunkel) &&
+        !(ctx.t - (P.zuletzt[k] ?? -1e9) < 900)
+      );
+    });
+    if (!ok.length) return '';
+    const k = ok[Math.floor(rnd() * ok.length) % ok.length];
+    P.fahrt = 0;
+    P.next = 150 + rnd() * 150;
+    P.zuletzt[k] = ctx.t;
+    return k;
+  }
   // ---- walls: is the straight line between two points free? segs: flat [x1, y1, x2, y2, …] or [[x1, y1, x2, y2], …] ----
   function waende(segs, cs = 16) {
     const flat = segs.length && Array.isArray(segs[0]),
@@ -1356,6 +1392,7 @@ export const GLLOGIK = (() => {
         c.t += dt;
         const d = hyp(c.x - p.x, c.y - p.y),
           sees = full > 0 && c.st !== 'zurück' && copSees(c, p, env);
+        c.lost = sees ? 0 : (c.lost ?? 99) + dt; // (seconds since he last saw him: the radar shows him only while he sees)
         c.v = K.schritt || 2.15;
         if (sees) {
           seen = true;
@@ -1754,6 +1791,9 @@ export const GLLOGIK = (() => {
     sicht,
     wissen,
     bildLeer,
+    EREIGNISSE,
+    plan,
+    planNeu,
     waende,
     kreuzt,
     netz,

@@ -742,8 +742,12 @@ export const GLFAHNDUNG = (() => {
       satz = L.join(' ');
     R.last = satz;
     try {
+      const ms = Math.max(4200, satz.length * 58),
+        // (the subtitles take one line at a time: the radio waits its turn – the voice with it)
+        sek = GLHUD.sub('Funk', satz, ms),
+        warte = Math.max(0, (Number(sek) || 0) - ms / 1000);
+      if (warte > 0.05) await new Promise(res => setTimeout(res, window.FREEZE ? 0 : warte * 1000));
       GLTON.fx('funk');
-      GLHUD.sub('Funk', satz, Math.max(4200, satz.length * 58));
       GL.emit('funk', { k: alt ? 'bild-alt' : 'bild', text: satz, teile: L });
       for (const t of L) {
         if (!GL.on) break;
@@ -797,13 +801,21 @@ export const GLFAHNDUNG = (() => {
     const L = FUNK[k];
     if (!L || S.funkT > 0 || !GL.on) return;
     S.funkT = pause;
-    const line = L[Math.floor(Math.random() * L.length)];
-    GLTON.fx('funk');
-    GLHUD.sub('Funk', line, 3400);
+    const line = L[Math.floor(Math.random() * L.length)],
+      sek = GLHUD.sub('Funk', line, 3400),
+      warte = Math.max(0, (Number(sek) || 0) - 3.4);
     GL.emit('funk', { k, text: line });
-    try {
-      STIMME.say('gl_funk', line);
-    } catch (e) {}
+    // (the voice when the subtitle comes: it may wait while somebody speaks)
+    setTimeout(
+      () => {
+        if (!GL.on) return;
+        GLTON.fx('funk');
+        try {
+          STIMME.say('gl_funk', line);
+        } catch (e) {}
+      },
+      window.FREEZE ? 0 : warte * 1000
+    );
   }
   // ---- the world the police act in (GLLOGIK.einsatz) ----
   const LOOK = {
@@ -990,11 +1002,15 @@ export const GLFAHNDUNG = (() => {
       }
       if (F.downT > 0) return;
       if (c.goal) {
-        const far = hyp(c.goal[0] - F.x, c.goal[1] - F.y);
+        const far = hyp(c.goal[0] - F.x, c.goal[1] - F.y),
+          // after him: they run (the figures' run of round 2, GLFIG.go(F, pts, { renn }) – with the old figures they walk fast)
+          renn = c.st === 'jagt' && !!GLFIG.geste,
+          v = renn ? Math.max(c.v, 3.2) : c.v;
         if (far > 0.5 && (F.st !== 'geht' || !c.went || hyp(c.goal[0] - c.went[0], c.goal[1] - c.went[1]) > 0.45)) {
           c.went = [c.goal[0], c.goal[1]];
-          GLFIG.go(F, c.goal, c.v);
-        } else if (F.st === 'geht') F.v = c.v;
+          if (renn) GLFIG.go(F, c.goal, { renn: true, v });
+          else GLFIG.go(F, c.goal, c.v);
+        } else if (F.st === 'geht') F.v = v;
       } else {
         if (F.st === 'geht') GLFIG.stop(F);
         if (c.lookT > 0) F.hd = c.hd;
@@ -1385,6 +1401,7 @@ export const GLFAHNDUNG = (() => {
       y: Math.round(c.y),
       st: c.st,
       da: !!c.da,
+      gesehen: (c.lost ?? 99) < 4,
     })),
     block: S.block ? [Math.round(S.block.x), Math.round(S.block.y)] : null,
     wait: Math.round(S.wait * 10) / 10,
