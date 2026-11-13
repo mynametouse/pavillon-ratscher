@@ -8,8 +8,12 @@ list `has` per level: the municipality and the road corridors are no rectangles.
       --raw DIR        raw downloads and intermediate results (default $SUHL_RAW or /tmp/suhl-boden/raw); kept between runs
       --no-dgm         do not look for DGM1 (Copernicus GLO-30 only)
       --skip-terrain | --skip-imagery   build only one of the two (meta.json then keeps the other's numbers of the last run)
-      --cut N          mode probe: 1 = level 12 only for the quads of the level-12 tiles touching `zentrum`, 2 = only the four tiles
-                       around the Markt;  --max-mb M  raises the cut by itself while everything is bigger than M MB
+      --cut N          mode probe: 1 = level 12 only for the quads of the level-12 tiles touching `zentrum`, 2 = only within 300 m of
+                       the centre, 3 = only the four tiles around the Markt;  --max-mb M  raises the cut by itself while the tiles
+                       are bigger than M MB (a sample set of the ground may have 8 MB)
+      --roads FILE     cut the roads into the ground from the profiles of suhl-strassen (file in the format of the drive data)
+      --roh DIR        also write the terrain tiles BEFORE the cut (levels 10-12) to DIR - what suhl-strassen solves its profiles on
+  python3 -I tools/suhl/boden/boden.py --mode probe-roh --skip-imagery --out TMP --roh DIR         only the ground before the cut, a ring wider
 A second start goes on where the first stopped: downloads, finished blocks and image tiles are kept.
 Sources and licences: aerial image and DGM1 (c) GDI-Th, CC BY 4.0; Copernicus DEM GLO-30; ESA WorldCover 2021; areas and routes from
 OpenStreetMap (ODbL) - written into meta.json and ATTRIBUTION.md of the product.
@@ -48,9 +52,22 @@ def shrink_probe(T, step):
     if step == 1:
         T[12] = kids(parents(blib.touching(12, G['zentrum'])))
         return 'level 12 only for the quads of the level-12 tiles touching zentrum'
+    if step == 2:
+        from shapely.geometry import Point
+        T[12] = kids(blib.touching(11, Point(*blib.CENTRE).buffer(300)))
+        return 'level 12 only for the level-11 tiles within 300 m of the centre of Suhl'
     c = blib.tile_of(11, *blib.CENTRE)
     T[12] = kids({c})
     return 'level 12 only for the four tiles around the Markt'
+
+
+def tile_bytes(out):
+    """bytes of the tiles t/ and i/ (what the 8 MB limit of a sample set counts, tools/suhl/lib/validate.py --probe)"""
+    tot = 0
+    for sub in ('t', 'i'):
+        for root, _, fs in os.walk(os.path.join(out, sub)):
+            tot += sum(os.path.getsize(os.path.join(root, f)) for f in fs)
+    return tot
 
 
 def total_bytes(out):
@@ -83,6 +100,38 @@ def prune(out, T):
     return gone
 
 
+def write_index(out, version, mode, meta, T):
+    """index.json of the common Suhl schema (tools/suhl/lib, docs/features/suhl-daten.md): the tile sets of t/ and i/ as bit fields,
+    the mark `dgm` (level-10 tiles on real 1 m terrain), sources, numbers. meta.json stays what WELT reads."""
+    try:
+        sys.path.insert(0, os.path.join(blib.REPO, 'tools', 'suhl', 'lib'))
+        from schema import index as IX
+    except Exception as e:
+        log('index.json nicht geschrieben (tools/suhl/lib/schema fehlt):', repr(e)[:120])
+        return None
+    finally:
+        sys.path.pop(0)
+    s = meta['sources']
+    src = ['dop', 'cop30', 'worldcover', 'osm']
+    if s.get('dgm1_tiles_km'):
+        src.insert(1, IX.source('dgm1', via=IX.VIA_EASYGEODATA) if (s.get('dgm1') or {}).get('via') == 'easygeodata' else IX.source('dgm1'))
+    lv = meta['tiling']['levels']
+    dgm = [tuple(t) for t, f in zip(lv['10']['has'], lv['10'].get('dgm') or []) if f]
+    r = s.get('roads')
+    e = os.environ
+    return IX.make_index(
+        out, 'boden', version, 'probe' if mode.startswith('probe') else 'stadt', src,
+        marks={'dgm': {10: dgm}} if dgm else None,
+        stats={'levels': {L: {'n': len(v['has']), 'terrain_bytes': (v.get('terrain') or {}).get('bytes'), 'image_bytes': (v.get('image') or {}).get('bytes')}
+                          for L, v in lv.items()},
+               'terrain_source': s.get('terrain_source'), 'dgm1_tiles_km': len(s.get('dgm1_tiles_km') or []), 'canopy_m': s.get('canopy_m'),
+               'roads_cut': bool(r), 'roads_fit_before_cut': (r or {}).get('fit_before_cut')},
+        run={'id': e.get('GITHUB_RUN_ID'), 'sha': e.get('GITHUB_SHA'), 'ref': e.get('GITHUB_REF_NAME')} if e.get('GITHUB_RUN_ID') else None,
+        note='Boden von Suhl: Gelände t/ (WTH1) und Luftbild i/ (WebP 512 px); meta.json ist das Format, das WELT liest (mit has-Listen). '
+             + ('Straßen aus den Profilen von suhl-strassen eingeschnitten.' if r else 'Ohne Straßeneinschnitt.'),
+        extra={'meta': 'meta.json', 'cut': (meta.get('suhl') or {}).get('cut')})
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--mode', default='probe')
@@ -99,7 +148,9 @@ def main():
     ap.add_argument('--roads', default='', help='road profiles of suhl-strassen to cut into the ground: file(s) in the format of the drive data, comma separated')
     ap.add_argument('--roh', default='', help='folder for the terrain tiles before the cut (levels 10-12, with a meta.json) - for suhl-strassen')
     ap.add_argument('--max-mb', type=float, default=0)
-    ap.add_argument('--cut', type=int, default=0, help='mode probe: 1 = level 12 only for the quads touching zentrum, 2 = only the four tiles around the Markt')
+    ap.add_argument('--cut', type=int, default=0, help='mode probe: 1 = level 12 only for the quads touching zentrum, 2 = only within 300 m of the centre, '
+                                                       '3 = only the four tiles around the Markt')
+    ap.add_argument('--dgm-via', default='', help="how the DGM1 tiles of the raw folder came: 'easygeodata' adds 'bezogen über easygeodata.de' to the sources")
     a = ap.parse_args()
     t0 = time.time()
     os.makedirs(a.out, exist_ok=True)
@@ -121,30 +172,27 @@ def main():
     tinfo = None
     if not a.skip_terrain:
         import gelaende
-        providers = []
-        try:      # the easygeodata client of suhl-daten (tools/suhl/lib), once it is merged and a key is set
-            sys.path.insert(0, os.path.join(blib.REPO, 'tools', 'suhl'))
-            from lib import easygeodata as egd      # noqa
-            if os.environ.get('EASYGEODATA_KEY') and hasattr(egd, 'dgm1_zip'):
-                providers.append(egd.dgm1_zip)
-        except Exception:
-            pass
-        if not providers:
-            log('DGM1 über easygeodata: übersprungen (' + ('kein Schlüssel EASYGEODATA_KEY' if not os.environ.get('EASYGEODATA_KEY') else
-                                                         'der Client tools/suhl/lib fehlt noch') + ')')
+        providers = []      # DGM1 comes into <raw>/dgm1/ before the build: the workflow fetches it with tools/suhl/lib/easygeodata.py
         roads = [p for p in a.roads.split(',') if p]
         tinfo = gelaende.build(a.raw, a.out, T, jobs=a.jobs, use_dgm=not a.no_dgm, providers=providers, use_trees=not a.no_trees,
                                roads=roads, roh=a.roh or None)
+        if a.dgm_via and tinfo['dgm'].get('from_cache'):
+            tinfo['dgm']['via'] = a.dgm_via
         if a.roh:      # a small meta.json so that the folder is a tile set of its own (hoehe.py, suhl-strassen --tiles <roh>/t)
             fine = {L: T[L] for L in (10, 11, 12)}
             os.makedirs(a.roh, exist_ok=True)
-            json.dump({'format': 'welt-test/1', 'generated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'plan': 'suhl-' + a.mode + '-roh',
+            json.dump({'format': 'welt-test/1', 'generated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'plan': 'suhl-' + a.mode.replace('-roh', '') + '-roh',
                        'H0': wlib.H0, 'note': 'Gelände VOR dem Straßeneinschnitt (nur Stufen 10-12): darauf rechnet suhl-strassen seine Profile. '
                                                'Nicht für die App.',
                        'tiling': {'root': [wlib.ROOT_E0, wlib.ROOT_N0, wlib.ROOT_SIZE], 'terrain': 't/{z}/{x}/{y}.bin', 'terrain_n': wlib.TERR_N,
-                                  'levels': {str(L): {'size': tsize(L), 'rect': rect_of(v), 'has': sorted(list(t) for t in v)} for L, v in fine.items()}},
-                       'sources': {'terrain_source': tinfo['source'], 'dgm1_tiles_km': tinfo['dgm_tiles_km'], 'canopy_m': tinfo['canopy_m'],
-                                   'copernicus_offset_m': tinfo['copernicus_offset_m']}},
+                                  'levels': {str(L): {'size': tsize(L), 'rect': rect_of(v), 'has': sorted(list(t) for t in v),
+                                                      'terrain': {'n': len(v), 'bytes': sum(os.path.getsize(os.path.join(a.roh, 't', str(L), str(x), f'{y}.bin'))
+                                                                                            for x, y in v)}} for L, v in fine.items()}},
+                       'sources': {'terrain_source': tinfo['source'], 'dgm1': tinfo['dgm'], 'dgm1_tiles_km': tinfo['dgm_tiles_km'], 'canopy_m': tinfo['canopy_m'],
+                                   'copernicus_offset_m': tinfo['copernicus_offset_m'],
+                                   'dgm1_share_level10': {k: v for k, v in sorted(tinfo['dgm10'].items())}},
+                       'attribution': ATTRIBUTION.format(dgm=' · Geländemodell DGM1: © GDI-Th (CC BY 4.0)' + (', bezogen über easygeodata.de'
+                                                         if tinfo['dgm'].get('via') == 'easygeodata' else '') if tinfo['dgm_tiles_km'] else '')},
                       open(os.path.join(a.roh, 'meta.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
     # ---- imagery ----
@@ -153,7 +201,7 @@ def main():
         import bild
         iinfo = bild.build(a.raw, a.out, T, quality=a.quality, jobs=a.jobs, threads=a.wms_threads)
         if a.mode == 'probe' and a.max_mb:
-            while total_bytes(a.out)[1] > a.max_mb * 1e6 and step < 2:
+            while tile_bytes(a.out) > a.max_mb * 1e6 and step < 3:
                 step += 1
                 cut = shrink_probe(T, step)
                 log('Probesatz zu groß –', cut, '->', prune(a.out, T), 'Dateien entfernt')
@@ -222,11 +270,13 @@ def main():
                    'levels': lv, **hm},
         'sources': {**terr, **img, 'areas': 'Gebiete und Ortsteile: tools/suhl/out/bestand/gebiete.geojson; Korridore: tools/suhl/boden/korridor.json '
                                             '(© OpenStreetMap-Mitwirkende, ODbL 1.0)'},
-        'attribution': ATTRIBUTION.format(dgm=' · Geländemodell DGM1: © GDI-Th (CC BY 4.0)' if has_dgm else ''),
+        'attribution': ATTRIBUTION.format(dgm=(' · Geländemodell DGM1: © GDI-Th (CC BY 4.0)'
+                                              + (', bezogen über easygeodata.de' if (terr.get('dgm1') or {}).get('via') == 'easygeodata' else '')) if has_dgm else ''),
     }
     json.dump(meta, open(mp, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-    via = ', bezogen über easygeodata.de' if (terr.get('dgm1') or {}).get('from_providers') else ''
+    via = ', bezogen über easygeodata.de' if (terr.get('dgm1') or {}).get('via') == 'easygeodata' else ''
     open(os.path.join(a.out, 'ATTRIBUTION.md'), 'w', encoding='utf-8').write(ATTR_DE.replace('{via}', via))
+    write_index(a.out, version, a.mode, meta, T)
     nf, tot = total_bytes(a.out)
     log(f'fertig in {time.time() - t0:.0f} s: {nf} Dateien, {tot / 1e6:.2f} MB in {a.out}')
     for L in sorted(T):

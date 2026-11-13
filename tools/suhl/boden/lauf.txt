@@ -1,7 +1,20 @@
-# Einen Lauf des Workflows .github/workflows/suhl-boden.yml bestellen: diese Datei ändern und auf suhl/boden pushen.
+# Einen Lauf des Workflows .github/workflows/suhl-boden.yml bestellen: diese Datei ändern und auf suhl/boden pushen –
+# mit einer Commit-Nachricht, die [stadt] oder [probe] enthält. Ohne eine der beiden Marken baut der Lauf nichts
+# (eine Änderung am Workflow allein stößt so keinen teuren Lauf an). Stadt- und Probe-Läufe haben je ihre eigene
+# Warteschlange: ein Probe-Lauf bricht einen laufenden Stadt-Lauf nicht ab.
 # Zeilen "name = wert"; alles hinter # ist Kommentar.
-lauf = 1              # fortlaufende Nummer (nur damit sich die Datei ändert)
-mode = stadt          # stadt = die ganze Stadt (Artefakt, später Daten-Repo) | probe = Probesatz Zentrum (wird auf den Zweig geschrieben)
-version = v1          # Versionsordner des Produkts: suhl/boden/<version>/
-veroeffentlichen = nein   # ja = die Aktion suhl-publish von suhl-daten legt das Produkt ins Daten-Repo (nur mode stadt)
-grund = erste Messung der ganzen Stadt: Kacheln und Megabyte je Stufe, Laufzeit (ohne DGM1, ohne Straßeneinschnitt)
+lauf = 2                      # fortlaufende Nummer (nur damit sich die Datei ändert)
+
+# ---- [stadt]: die ganze Gemeinde und die Straßenkorridore; das Produkt bleibt Artefakt suhl-boden-<version> ----
+stadt.version = v1
+stadt.dgm = P1,P2             # DGM1 (1 m) über easygeodata für diese Prioritäten aus tools/suhl/out/bestand/kacheln.csv; leer = keins holen
+stadt.strassen =              # Datei mit den Straßenprofilen von suhl-strassen (Format der Fahrtdaten); leer = kein Einschnitt
+stadt.roh = nein              # ja = das Gelände vor dem Einschnitt zusätzlich als Artefakt suhl-boden-roh-<version>
+stadt.veroeffentlichen = nein # ja = die Aktion suhl-publish von suhl-daten legt das Produkt ins Daten-Repo
+
+# ---- [probe]: der Probesatz Zentrum; das Ergebnis wird auf den Zweig geschrieben ----
+probe.schritt = roh           # roh = nur das Gelände VOR dem Einschnitt nach tools/suhl/out/boden/probe/roh/<version>/ (darauf rechnet
+                              #       suhl-strassen seine Profile) | produkt = der Probesatz nach .../probe/suhl/boden/<version>/
+probe.version = v1
+probe.dgm = P1                # die 8 Kacheln um das Zentrum
+probe.strassen =              # für schritt = produkt: z. B. tools/suhl/out/strassen/probe/fahrt/suhl-zentrum.json

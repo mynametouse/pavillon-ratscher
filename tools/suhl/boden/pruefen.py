@@ -34,6 +34,7 @@ def main():
     ap.add_argument('--mode', default='')
     ap.add_argument('--json', default='')
     ap.add_argument('--images', default='all', help="'all' or a number: how many images per level are opened")
+    ap.add_argument('--terrain-only', action='store_true', help='a set without images (the ground before the road cut)')
     a = ap.parse_args()
     R = {'set': a.set, 'checks': {}, 'fails': []}
 
@@ -50,7 +51,7 @@ def main():
 
     # ---- lists ----
     missing, extra = [], []
-    for sub, ext in (('t', '.bin'), ('i', '.webp')):
+    for sub, ext in ((('t', '.bin'),) if a.terrain_only else (('t', '.bin'), ('i', '.webp'))):
         found = {}
         base = os.path.join(a.set, sub)
         for Ls in (os.listdir(base) if os.path.isdir(base) else []):
@@ -64,7 +65,7 @@ def main():
         for L in sorted(set(T) | set(found)):
             missing += [f'{sub}/{L}/{x}/{y}' for x, y in sorted(T.get(L, set()) - found.get(L, set()))]
             extra += [f'{sub}/{L}/{x}/{y}' for x, y in sorted(found.get(L, set()) - T.get(L, set()))]
-    ck('lists: every listed tile has terrain and image', not missing, f'{len(missing)} missing {missing[:5]}' if missing else f'{sum(len(v) for v in T.values())} tiles in {len(T)} levels')
+    ck('lists: every listed tile has its terrain' if a.terrain_only else 'lists: every listed tile has terrain and image', not missing, f'{len(missing)} missing {missing[:5]}' if missing else f'{sum(len(v) for v in T.values())} tiles in {len(T)} levels')
     ck('lists: no file besides the lists', not extra, f'{len(extra)} extra {extra[:5]}' if extra else '')
     ck('lists: rect is the frame of has', all(lv[str(L)]['rect'] == rect_of(T[L]) for L in T))
     ck('lists: levels 11 and 12 in complete quads', all(T[L] == kids(parents(T[L])) for L in (11, 12) if L in T))
@@ -74,7 +75,7 @@ def main():
         import plan as planmod
         P, _ = planmod.make(a.mode)
         cut = (meta.get('suhl') or {}).get('cut')
-        same = all(T.get(L) == P[L] for L in P if not (cut and L == 12))
+        same = all(T[L] == P[L] for L in T if not (cut and L == 12)) and (a.terrain_only or set(T) == set(P))
         ck('lists: equal to the plan of mode ' + a.mode, same and (not cut or T[12] <= P[12]), f'cut: {cut}' if cut else '')
     R['counts'] = {str(L): len(T[L]) for L in sorted(T)}
 
@@ -143,8 +144,9 @@ def main():
     ck('heights: inside what Suhl has', H_ALL[0] <= lo and hi <= H_ALL[1], f'{lo:.1f} .. {hi:.1f} m NHN')
     R['heights_nhn'] = {'centre': None if hc is None else round(hc, 1), 'min': round(lo, 1), 'max': round(hi, 1)}
     mm = meta['tiling']
-    ck('heights: meta hmin/hmax hold every tile', mm.get('hmin') is not None and mm['hmin'] - 0.011 <= lo - H0 and hi - H0 <= mm['hmax'] + 0.011,
-       f"meta {mm.get('hmin')} .. {mm.get('hmax')}, tiles {lo - H0:.2f} .. {hi - H0:.2f} (relative to H0)")
+    if not a.terrain_only:
+        ck('heights: meta hmin/hmax hold every tile', mm.get('hmin') is not None and mm['hmin'] - 0.011 <= lo - H0 and hi - H0 <= mm['hmax'] + 0.011,
+           f"meta {mm.get('hmin')} .. {mm.get('hmax')}, tiles {lo - H0:.2f} .. {hi - H0:.2f} (relative to H0)")
 
     # ---- sizes, images ----
     from PIL import Image
@@ -157,7 +159,7 @@ def main():
         sizes[str(L)] = {'n': n, 'terrain_bytes': tb[L], 'image_bytes': sum(ib), 'terrain_mean': round(tb[L] / max(n, 1)), 'image_mean': round(sum(ib) / max(len(ib), 1)),
                          'image_min': min(ib) if ib else 0, 'image_max': max(ib) if ib else 0}
         okT &= T_RANGE[0] <= tb[L] / max(n, 1) <= T_RANGE[1]
-        okI &= bool(ib) and I_RANGE[L][0] <= sum(ib) / len(ib) <= I_RANGE[L][1]
+        okI &= a.terrain_only or (bool(ib) and I_RANGE[L][0] <= sum(ib) / len(ib) <= I_RANGE[L][1])
         todo = sorted(T[L])
         if a.images != 'all':
             todo = todo[::max(1, len(todo) // max(1, int(a.images)))]
@@ -171,9 +173,10 @@ def main():
                 okImg &= im.size == (wlib.TILE_PX, wlib.TILE_PX) and im.mode == 'RGB'
     R['sizes'] = sizes
     ck('sizes: terrain bytes per tile in range', okT, ', '.join(f"{L}: {v['terrain_mean']}" for L, v in sizes.items()))
-    ck('sizes: image bytes per tile in range', okI, ', '.join(f"{L}: {v['image_mean']}" for L, v in sizes.items()))
-    ck('images: 512 x 512 RGB', okImg)
-    ck('images: none blank', not blank, f'{len(blank)} under {I_MIN} bytes: {blank[:8]}' if blank else '')
+    if not a.terrain_only:
+        ck('sizes: image bytes per tile in range', okI, ', '.join(f"{L}: {v['image_mean']}" for L, v in sizes.items()))
+        ck('images: 512 x 512 RGB', okImg)
+        ck('images: none blank', not blank, f'{len(blank)} under {I_MIN} bytes: {blank[:8]}' if blank else '')
     tot_t, tot_i = sum(v['terrain_bytes'] for v in sizes.values()), sum(v['image_bytes'] for v in sizes.values())
     R['total'] = {'tiles': sum(v['n'] for v in sizes.values()), 'terrain_mb': round(tot_t / 1e6, 2), 'image_mb': round(tot_i / 1e6, 2)}
     print(f"     {R['total']['tiles']} tiles: terrain {tot_t / 1e6:.2f} MB, image {tot_i / 1e6:.2f} MB", flush=True)

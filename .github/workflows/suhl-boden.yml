@@ -1,14 +1,24 @@
 # Suhl-Boden (Stufe 2 des Suhl-Plans, Paket S2-1, Auftrag docs/plans/auftraege/suhl-boden.md): Gelände und Luftbild der ganzen Stadt
 # als Kacheln (Stufen 6–12, Kachel-Listen statt Rechtecke) – tools/suhl/boden/boden.py, aufgebaut auf tools/welt/ (nur importiert).
-#   mode = stadt  die ganze Gemeinde und die Straßenkorridore Garten → Suhl; das Produkt bleibt als Artefakt suhl-boden-<version>
-#                 und geht mit „veroeffentlichen = ja“ über die Aktion suhl-publish von suhl-daten ins Daten-Repo pavillon-daten
-#   mode = probe  der Probesatz Zentrum; er wird nach tools/suhl/out/boden/probe/suhl/boden/<version>/ auf suhl/boden geschrieben
-# Dazu: Kurztests, Prüfungen (Kanten, Listen, Größen, Mittelpunkt), Zahlen nach tools/suhl/out/boden/actions/<mode>/ auf suhl/boden,
+#
+# Ein Lauf wird über tools/suhl/boden/lauf.txt bestellt, und die Commit-Nachricht des Pushs sagt, was gebaut wird:
+#   [stadt]  die ganze Gemeinde und die Straßenkorridore Garten → Suhl; das Produkt bleibt als Artefakt suhl-boden-<version> und geht
+#            mit „stadt.veroeffentlichen = ja“ über die Aktion suhl-publish von suhl-daten ins Daten-Repo pavillon-daten
+#   [probe]  der Probesatz Zentrum: „probe.schritt = roh“ schreibt nur das Gelände VOR dem Straßeneinschnitt nach
+#            tools/suhl/out/boden/probe/roh/<version>/ (darauf rechnet suhl-strassen seine Profile), „probe.schritt = produkt“ den
+#            Probesatz nach tools/suhl/out/boden/probe/suhl/boden/<version>/ – beides auf suhl/boden
+#   ohne Marke: nichts wird gebaut (eine Änderung an dieser Datei allein stößt keinen teuren Lauf an)
+# Stadt- und Probe-Läufe haben je ihre eigene concurrency-Gruppe: ein Probe-Lauf bricht einen laufenden Stadt-Lauf nicht ab.
+#
+# Reihenfolge je Datenstand (Entscheidung des Suhl-Chats, 13.11.2026): (a) Gelände vor dem Einschnitt („roh“) → (b) suhl-strassen
+# rechnet darauf seine Profile → (c) hier werden die Straßen eingeschnitten → (d) suhl-gebaeude liest die Hausfüße vom Ergebnis.
+# DGM1 (1 m): zuerst die alte Landes-Adresse (zeigt seit 22.10.2026 die Wartungsseite), dann easygeodata mit dem Geheimnis
+# EASYGEODATA_KEY über den Client von suhl-daten (tools/suhl/lib/easygeodata.py). Fehlt der Schlüssel, steht das im Protokoll und in
+# der Zusammenfassung – der Lauf schlägt nicht fehl und rechnet mit Copernicus.
+# Dazu: Kurztests, Prüfungen (Kanten, Listen, Größen, Mittelpunkt, Schema), Zahlen nach tools/suhl/out/boden/actions/ auf suhl/boden,
 # Bildbögen auf den Wegwerf-Zweig ref/suhl-boden. Sonst wird nichts angefasst; nichts geht nach gh-pages.
-# DGM1 (1 m): jeder Lauf fragt zuerst die alte Landes-Adresse; mit dem Geheimnis EASYGEODATA_KEY danach easygeodata (Client von
-# suhl-daten). Fehlt der Schlüssel oder der Client, steht das im Protokoll und in der Zusammenfassung – der Lauf schlägt nicht fehl.
-# Läuft nur auf suhl/boden und nur, wenn diese Datei oder tools/suhl/boden/lauf.txt sich ändert (lauf.txt ändern = neuen Lauf
-# bestellen). Der Lauf nimmt beim Start den neuesten Stand des Zweigs.
+# Läuft nur auf suhl/boden und nur, wenn diese Datei oder tools/suhl/boden/lauf.txt sich ändert. Der Lauf nimmt beim Start den
+# neuesten Stand des Zweigs.
 name: Suhl – Boden (Gelände und Luftbild)
 
 on:
@@ -17,7 +27,7 @@ on:
     paths: ['.github/workflows/suhl-boden.yml', 'tools/suhl/boden/lauf.txt']
 
 concurrency:
-  group: suhl-boden
+  group: suhl-boden-${{ contains(github.event.head_commit.message, '[probe]') && 'probe' || contains(github.event.head_commit.message, '[stadt]') && 'stadt' || 'ohne' }}
   cancel-in-progress: true
 
 permissions:
@@ -29,107 +39,180 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 150
     outputs:
-      mode: ${{ steps.lauf.outputs.mode }}
+      order: ${{ steps.lauf.outputs.order }}
       version: ${{ steps.lauf.outputs.version }}
       veroeffentlichen: ${{ steps.lauf.outputs.veroeffentlichen }}
       gebaut: ${{ steps.bau.outcome }}
     env:
       SUHL_RAW: /home/runner/suhl-boden-raw
+      DGM_DIR: /home/runner/suhl-boden-dgm
+      MSG: ${{ github.event.head_commit.message }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: suhl/boden
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Werkzeuge
-        run: |
-          pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests rasterio
-          mkdir -p "$SUHL_RAW" logs results sheets
-      - name: Bestellung lesen (tools/suhl/boden/lauf.txt)
+      - name: Bestellung lesen (Commit-Nachricht und tools/suhl/boden/lauf.txt)
         id: lauf
         run: |
           python3 - <<'EOF'
           import os, re
+          msg = os.environ.get('MSG', '')
+          order = 'probe' if '[probe]' in msg else ('stadt' if '[stadt]' in msg else 'ohne')
           kv = {}
           for ln in open('tools/suhl/boden/lauf.txt', encoding='utf-8'):
               ln = ln.split('#', 1)[0].strip()
               if '=' in ln:
                   k, v = ln.split('=', 1)
                   kv[k.strip()] = v.strip()
-          mode = kv.get('mode', 'stadt')
-          version = kv.get('version', 'v1')
-          pub = kv.get('veroeffentlichen', 'nein')
-          assert mode in ('stadt', 'probe') and re.fullmatch(r'v\d+', version) and pub in ('ja', 'nein'), kv
-          for f in (os.environ['GITHUB_ENV'], os.environ['GITHUB_OUTPUT']):
-              with open(f, 'a') as o:
-                  o.write(f'MODE={mode}\nVERSION={version}\nPUBLISH={pub}\nmode={mode}\nversion={version}\nveroeffentlichen={pub}\n')
-          print(kv)
+          g = lambda k, d='': kv.get(f'{order}.{k}', d)
+          version, dgm, roads = g('version', 'v1'), g('dgm'), g('strassen')
+          schritt = g('schritt', 'produkt') if order == 'probe' else 'produkt'
+          roh = 'ja' if (order == 'probe' and schritt == 'roh') else g('roh', 'nein')
+          pub = g('veroeffentlichen', 'nein') if order == 'stadt' else 'nein'
+          assert re.fullmatch(r'v\d+', version) and schritt in ('roh', 'produkt') and roh in ('ja', 'nein') and pub in ('ja', 'nein'), kv
+          assert re.fullmatch(r'(P[1-4](,P[1-4])*)?', dgm), dgm
+          assert re.fullmatch(r'[A-Za-z0-9_./,-]*', roads) and '..' not in roads, roads
+          mode = {'stadt': 'stadt', 'probe': 'probe-roh' if schritt == 'roh' else 'probe', 'ohne': ''}[order]
+          out = {'ORDER': order, 'MODE': mode, 'SCHRITT': schritt, 'VERSION': version, 'DGM': dgm, 'STRASSEN': roads, 'ROH': roh, 'PUBLISH': pub}
+          with open(os.environ['GITHUB_ENV'], 'a') as o:
+              o.write(''.join(f'{k}={v}\n' for k, v in out.items()))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as o:
+              o.write(f'order={order}\nversion={version}\nveroeffentlichen={pub}\n')
+          print(out)
+          if order == 'ohne':
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as o:
+                  o.write('### Suhl – Boden\n\nDie Commit-Nachricht enthält weder `[stadt]` noch `[probe]`: nichts gebaut.\n')
           EOF
           echo "START=$(date +%s)" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        if: env.ORDER != 'ohne'
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        if: env.ORDER != 'ohne'
+        run: |
+          pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests rasterio
+          mkdir -p "$SUHL_RAW" "$DGM_DIR" logs results sheets
       - name: Kurztests (Sekunden, ohne Netz)
+        if: env.ORDER != 'ohne'
         run: python -I tools/suhl/boden/test_boden.py
-      - name: Rohdaten aus dem Cache (Downloads und Zwischenstände früherer Läufe)
+      - name: Rohdaten aus dem Cache (Abrufe des Luftbilds, Copernicus, Zwischenstände früherer Läufe)
+        if: env.ORDER != 'ohne'
         uses: actions/cache/restore@v4
         with:
           path: ~/suhl-boden-raw
-          key: suhl-boden-raw-v1-${{ github.run_id }}
+          key: ${{ env.ORDER == 'probe' && 'suhl-boden-probe-raw-v1' || 'suhl-boden-raw-v1' }}-${{ github.run_id }}
           restore-keys: |
-            suhl-boden-raw-v1-
-      - name: Boden bauen (Gelände in Blöcken, Luftbild vom WMS)
-        id: bau
-        timeout-minutes: 120
+            ${{ env.ORDER == 'probe' && 'suhl-boden-probe-raw-v1' || 'suhl-boden-raw-v1' }}-
+      - name: DGM1 aus dem Cache (einmal geholt, nie noch einmal)
+        if: env.ORDER != 'ohne'
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/suhl-boden-dgm
+          key: suhl-boden-dgm-v1-${{ github.run_id }}
+          restore-keys: |
+            suhl-boden-dgm-v1-
+      - name: DGM1 über easygeodata (Client von suhl-daten; ohne Schlüssel übersprungen)
+        if: env.ORDER != 'ohne'
+        timeout-minutes: 40
         env:
           EASYGEODATA_KEY: ${{ secrets.EASYGEODATA_KEY }}
         run: |
+          # the DGM1 tiles live in a cache of their own; the raw folder only links to them (tools/welt/fetch.py looks in <raw>/dgm1)
+          mkdir -p "$DGM_DIR/dgm1" "$DGM_DIR/egd"
+          for d in dgm1 egd; do
+            if [ -d "$SUHL_RAW/$d" ] && [ ! -L "$SUHL_RAW/$d" ]; then cp -rn "$SUHL_RAW/$d/." "$DGM_DIR/$d/" 2>/dev/null || true; rm -rf "$SUHL_RAW/$d"; fi
+            ln -sfn "$DGM_DIR/$d" "$SUHL_RAW/$d"
+          done
+          echo "DGM1 im Cache vor dem Lauf: $(ls "$DGM_DIR/dgm1" 2>/dev/null | wc -l) Kacheln"
+          if [ -z "$DGM" ]; then
+            echo "DGM1 über easygeodata: nicht bestellt (lauf.txt)."
+          elif [ ! -f tools/suhl/lib/easygeodata.py ]; then
+            echo "DGM1 über easygeodata: übersprungen – der Client tools/suhl/lib/easygeodata.py fehlt (origin/suhl/daten mergen)."
+          else
+            # no key: the client says so and fetches nothing; the run goes on with what is in the cache
+            python -I -u tools/suhl/lib/easygeodata.py --product dgm --prio "$DGM" --raw "$SUHL_RAW" --report results/easygeodata.json 2>&1 | tee logs/easygeodata.log \
+              || echo "::warning::easygeodata: der Client endete mit einem Fehler – der Lauf rechnet mit dem, was im Cache liegt"
+          fi
+          echo "DGM1 im Cache nach dem Abruf: $(ls "$DGM_DIR/dgm1" 2>/dev/null | wc -l) Kacheln, $(du -sm "$DGM_DIR" | cut -f1) MB"
+          echo "DGMKEY=$(cd "$DGM_DIR" && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+      - name: DGM1 in den Cache
+        if: ${{ always() && env.ORDER != 'ohne' && env.DGMKEY != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ~/suhl-boden-dgm
+          key: suhl-boden-dgm-v1-${{ env.DGMKEY }}
+      - name: Boden bauen (Gelände in Blöcken, Luftbild vom WMS)
+        id: bau
+        if: env.ORDER != 'ohne'
+        timeout-minutes: 120
+        run: |
           set -o pipefail
           EXTRA=""
-          if [ "$MODE" = probe ]; then EXTRA="--cut 1"; fi
-          if [ -z "$EASYGEODATA_KEY" ]; then echo "Hinweis: das Geheimnis EASYGEODATA_KEY ist nicht gesetzt – DGM1 über easygeodata wird übersprungen."; fi
-          python -I -u tools/suhl/boden/boden.py --mode "$MODE" --raw "$SUHL_RAW" --out "site/suhl/boden/$VERSION" --jobs 4 $EXTRA 2>&1 | tee logs/build.log
+          if [ -f "$DGM_DIR/egd/manifest.json" ]; then EXTRA="$EXTRA --dgm-via easygeodata"; fi
+          if [ -n "$STRASSEN" ]; then EXTRA="$EXTRA --roads $STRASSEN"; fi
+          case "$MODE" in
+            stadt)
+              if [ "$ROH" = ja ]; then EXTRA="$EXTRA --roh site/roh/$VERSION"; fi
+              python -I -u tools/suhl/boden/boden.py --mode stadt --raw "$SUHL_RAW" --out "site/suhl/boden/$VERSION" --jobs 4 $EXTRA 2>&1 | tee logs/build.log
+              echo "SET=site/suhl/boden/$VERSION" >> "$GITHUB_ENV" ;;
+            probe)
+              python -I -u tools/suhl/boden/boden.py --mode probe --cut 1 --max-mb 7.9 --raw "$SUHL_RAW" --out "site/suhl/boden/$VERSION" --jobs 4 $EXTRA 2>&1 | tee logs/build.log
+              echo "SET=site/suhl/boden/$VERSION" >> "$GITHUB_ENV" ;;
+            probe-roh)
+              python -I -u tools/suhl/boden/boden.py --mode probe-roh --skip-imagery --raw "$SUHL_RAW" --out "site/tmp/suhl/boden/$VERSION" --roh "site/roh/$VERSION" --jobs 4 $EXTRA 2>&1 | tee logs/build.log
+              echo "SET=site/roh/$VERSION" >> "$GITHUB_ENV" ;;
+          esac
       - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
-        if: always()
+        if: ${{ always() && env.ORDER != 'ohne' }}
         run: echo "RAWKEY=$(cd "$SUHL_RAW" 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
       - name: Rohdaten in den Cache
-        if: always()
+        if: ${{ always() && env.ORDER != 'ohne' }}
         uses: actions/cache/save@v4
         with:
           path: ~/suhl-boden-raw
-          key: suhl-boden-raw-v1-${{ env.RAWKEY }}
-      - name: Prüfungen (Listen, Mittelpunkt, Kanten, Höhen, Größen)
+          key: ${{ env.ORDER == 'probe' && 'suhl-boden-probe-raw-v1' || 'suhl-boden-raw-v1' }}-${{ env.RAWKEY }}
+      - name: Prüfungen (Listen, Mittelpunkt, Kanten, Höhen, Größen; Schema von suhl-daten)
         id: pruef
         if: ${{ always() && steps.bau.outcome == 'success' }}
         run: |
           set -o pipefail
-          python -I -u tools/suhl/boden/pruefen.py --set "site/suhl/boden/$VERSION" --mode "$MODE" --json results/pruefen.json 2>&1 | tee logs/pruefen.log
+          if [ "$MODE" = probe-roh ]; then
+            python -I -u tools/suhl/boden/pruefen.py --set "$SET" --mode "$MODE" --terrain-only --json results/pruefen.json 2>&1 | tee logs/pruefen.log
+          else
+            python -I -u tools/suhl/boden/pruefen.py --set "$SET" --mode "$MODE" --json results/pruefen.json 2>&1 | tee logs/pruefen.log
+            if [ -f tools/suhl/lib/validate.py ]; then
+              P=""; if [ "$MODE" = probe ]; then P="--probe"; fi
+              python -I tools/suhl/lib/validate.py site $P --json results/validate.json 2>&1 | tee logs/validate.log | tail -25
+            fi
+          fi
       - name: Bildbögen
         if: ${{ always() && steps.bau.outcome == 'success' }}
         continue-on-error: true
-        run: python -I tools/suhl/boden/bogen.py --set "site/suhl/boden/$VERSION" --out sheets --name "$MODE" 2>&1 | tee logs/bogen.log
+        run: python -I tools/suhl/boden/bogen.py --set "$SET" --out sheets --name "$MODE" 2>&1 | tee logs/bogen.log
       - name: Zahlen des Laufs
-        if: always()
+        if: ${{ always() && env.ORDER != 'ohne' }}
         run: |
-          python -I tools/suhl/boden/lauf.py --set "site/suhl/boden/$VERSION" --mode "$MODE" --pruefen results/pruefen.json --raw "$SUHL_RAW" \
+          python -I tools/suhl/boden/lauf.py --set "${SET:-site/keins}" --mode "$MODE" --pruefen results/pruefen.json --raw "$SUHL_RAW" \
             --out results --summary "$GITHUB_STEP_SUMMARY" --seconds $(( $(date +%s) - START ))
-          grep -E "DGM1|Kronenhöhe|Gelände:|Probesatz|fertig in|Stufe" logs/build.log | tail -40 || true
-      - name: Ergebnisse nach suhl/boden (nur tools/suhl/out/boden/actions/ und im Modus probe der Probesatz)
-        if: always()
+          grep -E "DGM1:|Kronenhöhe|Gelände:|Straßen:|Probesatz|fertig in|Stufe" logs/build.log | tail -40 || true
+      - name: Ergebnisse nach suhl/boden (nur tools/suhl/out/boden/actions/ und im Probe-Lauf tools/suhl/out/boden/probe/)
+        if: ${{ always() && env.ORDER != 'ohne' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           mkdir -p "tools/suhl/out/boden/actions/$MODE"
           cp -f results/*.json "tools/suhl/out/boden/actions/$MODE/" 2>/dev/null || true
           git add -f tools/suhl/out/boden/actions
-          if [ "$MODE" = probe ] && [ -f "site/suhl/boden/$VERSION/meta.json" ] && [ "${{ steps.pruef.outcome }}" = success ]; then
-            IMG=$(du -sb "site/suhl/boden/$VERSION/i" | cut -f1); TER=$(du -sb "site/suhl/boden/$VERSION/t" | cut -f1)
-            echo "Probesatz: Luftbild $IMG Byte, Gelände $TER Byte"
-            if [ "$IMG" -le 8000000 ] && [ "$TER" -le 3000000 ]; then
-              rm -rf "tools/suhl/out/boden/probe/suhl/boden/$VERSION"
-              mkdir -p tools/suhl/out/boden/probe/suhl/boden
-              cp -r "site/suhl/boden/$VERSION" "tools/suhl/out/boden/probe/suhl/boden/$VERSION"
-              git add -f -A "tools/suhl/out/boden/probe/suhl/boden/$VERSION"
+          if [ "$ORDER" = probe ] && [ -f "$SET/meta.json" ] && [ "${{ steps.pruef.outcome }}" = success ]; then
+            if [ "$MODE" = probe-roh ]; then DEST="tools/suhl/out/boden/probe/roh/$VERSION"; LIMIT=3000000; else DEST="tools/suhl/out/boden/probe/suhl/boden/$VERSION"; LIMIT=8000000; fi
+            SIZE=$(find "$SET/t" "$SET/i" -type f -printf '%s\n' 2>/dev/null | awk '{s+=$1} END {print s+0}')
+            echo "$DEST: $SIZE Byte Kacheln (Grenze $LIMIT)"
+            if [ "$SIZE" -le "$LIMIT" ]; then
+              rm -rf "$DEST"; mkdir -p "$(dirname "$DEST")"; cp -r "$SET" "$DEST"
+              git add -f -A "$DEST"
             else
-              echo "::warning::Probesatz zu groß für den Zweig (Luftbild höchstens 8 MB, Gelände höchstens 3 MB) – nur als Artefakt"
+              echo "::warning::zu groß für den Zweig ($SIZE Byte, Grenze $LIMIT) – nur als Artefakt"
             fi
           fi
           if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
@@ -139,11 +222,11 @@ jobs:
             "Claude-Session: https://claude.ai/code/session_01L6YrpcuzUozgpZNSC5CdVL" > "$RUNNER_TEMP/msg.txt"
           git commit -q -F "$RUNNER_TEMP/msg.txt"
           for i in 1 2 3 4 5; do
-            if git pull -q --rebase origin suhl/boden && git push -q origin HEAD:suhl/boden; then echo "gepusht"; break; fi
+            if git pull -q --rebase origin suhl/boden && git push -q origin HEAD:suhl/boden; then echo "gepusht: $(git rev-parse --short HEAD)"; break; fi
             echo "Push abgelehnt (Versuch $i)"; sleep $((15 * i))
           done
       - name: Bildbögen auf den Wegwerf-Zweig ref/suhl-boden
-        if: always()
+        if: ${{ always() && env.ORDER != 'ohne' }}
         continue-on-error: true
         run: |
           if ls sheets/*.jpg >/dev/null 2>&1; then bash tools/suhl/boden/bilder.sh sheets "$MODE-$VERSION"; else echo "keine Bögen"; fi
@@ -155,8 +238,16 @@ jobs:
           path: site/suhl/boden/${{ env.VERSION }}
           retention-days: 14
           compression-level: 0
+      - name: Gelände vor dem Einschnitt als Artefakt (für suhl-strassen)
+        if: ${{ always() && steps.bau.outcome == 'success' && env.MODE == 'stadt' && env.ROH == 'ja' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: suhl-boden-roh-${{ env.VERSION }}
+          path: site/roh/${{ env.VERSION }}
+          retention-days: 14
+          compression-level: 0
       - name: Protokolle, Zahlen, Bögen
-        if: always()
+        if: ${{ always() && env.ORDER != 'ohne' }}
         uses: actions/upload-artifact@v4
         with:
           name: suhl-boden-pruefung
@@ -170,7 +261,7 @@ jobs:
   veroeffentlichen:
     name: Ins Daten-Repo (Aktion suhl-publish von suhl-daten)
     needs: boden
-    if: ${{ needs.boden.outputs.veroeffentlichen == 'ja' && needs.boden.outputs.mode == 'stadt' && needs.boden.outputs.gebaut == 'success' && needs.boden.result == 'success' }}
+    if: ${{ needs.boden.outputs.veroeffentlichen == 'ja' && needs.boden.outputs.order == 'stadt' && needs.boden.outputs.gebaut == 'success' && needs.boden.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     concurrency:

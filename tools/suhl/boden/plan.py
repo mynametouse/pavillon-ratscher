@@ -11,6 +11,8 @@ only when all four exist. So the lists obey three rules:
 
 mode probe (the sample set for the runtime agent): the level-10 tiles touching `zentrum`, all their children (levels 11, 12), their
   parents (levels 9..6).
+mode probe-roh (the ground BEFORE the road cut, for suhl-strassen to solve its profiles on): level 12 as in probe (all 176), levels 10
+  and 11 one ring of level-10 tiles wider - the frame of its computation is the sample tiles + 300 m.
 mode stadt (the whole city, GitHub Actions):
   level 10  the tiles touching `stadt` + the tiles touching the road corridors garden -> Suhl (the four routes of korridor.json,
             600 m to both sides) that the existing world does not have (outside test block B and the block of Kloster Vessra)
@@ -57,6 +59,14 @@ def make(mode):
         for L in (9, 8, 7, 6):
             T[L] = parents(T[L + 1])
         info['rule'] = 'level 10: tiles touching zentrum; 11, 12: all their children; 9..6: their parents'
+    elif mode == 'probe-roh':
+        z10 = touching(10, G['zentrum'])
+        T[10] = ring(z10)
+        T[11] = kids(T[10])
+        T[12] = kids(kids(z10))
+        for L in (9, 8, 7, 6):
+            T[L] = parents(T[L + 1])
+        info['rule'] = 'level 12: all children of the level-10 tiles touching zentrum; levels 10, 11: those tiles and their eight neighbours'
     elif mode == 'stadt':
         from shapely.geometry import Point
         from shapely.ops import unary_union
