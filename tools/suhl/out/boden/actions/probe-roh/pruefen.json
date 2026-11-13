@@ -1,0 +1,111 @@
+{
+ "set": "site/roh/v1",
+ "checks": {
+  "lists: every listed tile has its terrain": {
+   "ok": true,
+   "info": "331 tiles in 3 levels"
+  },
+  "lists: no file besides the lists": {
+   "ok": true,
+   "info": ""
+  },
+  "lists: rect is the frame of has": {
+   "ok": true,
+   "info": ""
+  },
+  "lists: levels 11 and 12 in complete quads": {
+   "ok": true,
+   "info": ""
+  },
+  "lists: every tile has its parent": {
+   "ok": true,
+   "info": ""
+  },
+  "lists: equal to the plan of mode probe-roh": {
+   "ok": true,
+   "info": ""
+  },
+  "centre of Suhl inside every level": {
+   "ok": true,
+   "info": "(619762.0, 5607680.0)"
+  },
+  "edges: neighbouring terrain tiles agree": {
+   "ok": true,
+   "info": "594 pairs, worst 0 cm"
+  },
+  "centre: ground height plausible": {
+   "ok": true,
+   "info": "436.5 m NHN (level 12)"
+  },
+  "heights: inside what Suhl has": {
+   "ok": true,
+   "info": "406.0 .. 675.2 m NHN"
+  },
+  "sizes: terrain bytes per tile in range": {
+   "ok": true,
+   "info": "10: 8122, 11: 6944, 12: 5788"
+  }
+ },
+ "fails": [],
+ "counts": {
+  "10": 31,
+  "11": 124,
+  "12": 176
+ },
+ "edges": {
+  "pairs": 594,
+  "worst_cm": 0,
+  "differ": 0
+ },
+ "level_to_parent": {
+  "11": {
+   "median_m": 0.04,
+   "p95_m": 0.28,
+   "max_m": 2.23
+  },
+  "12": {
+   "median_m": 0.02,
+   "p95_m": 0.15,
+   "max_m": 3.37
+  }
+ },
+ "heights_nhn": {
+  "centre": 436.5,
+  "min": 406.0,
+  "max": 675.2
+ },
+ "sizes": {
+  "10": {
+   "n": 31,
+   "terrain_bytes": 251768,
+   "image_bytes": 0,
+   "terrain_mean": 8122,
+   "image_mean": 0,
+   "image_min": 0,
+   "image_max": 0
+  },
+  "11": {
+   "n": 124,
+   "terrain_bytes": 861026,
+   "image_bytes": 0,
+   "terrain_mean": 6944,
+   "image_mean": 0,
+   "image_min": 0,
+   "image_max": 0
+  },
+  "12": {
+   "n": 176,
+   "terrain_bytes": 1018621,
+   "image_bytes": 0,
+   "terrain_mean": 5788,
+   "image_mean": 0,
+   "image_min": 0,
+   "image_max": 0
+  }
+ },
+ "total": {
+  "tiles": 331,
+  "terrain_mb": 2.13,
+  "image_mb": 0.0
+ }
+}
