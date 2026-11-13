@@ -1,22 +1,47 @@
-# Suhl-Datenhaus (Stufe 2 des Suhl-Plans, Paket S2-0, Auftrag docs/plans/auftraege/suhl-daten.md): Probe des Veröffentlichens.
-# Schreibt mit secrets.DATEN_TOKEN eine winzige Datei suhl/_probe/hallo.json (Zeit, Lauf, Commit) nach main von
-# mynametouse/pavillon-daten und prüft, ob GitHub Pages sie ausliefert. Fehlt das Geheimnis oder das Repo, sagt der Lauf das klar
-# (Protokoll und Zusammenfassung) und schlägt nicht fehl. In dieses Repo schreibt er nichts.
-# Läuft nur auf suhl/daten und nur, wenn diese Datei, die Aktion oder tools/suhl/daten/lauf.txt sich ändert
-# (lauf.txt ändern = neuen Lauf bestellen).
-name: Suhl – Datenhaus (Probe)
+# Suhl-Datenhaus (Stufe 2 des Suhl-Plans, Paket S2-0, Auftrag docs/plans/auftraege/suhl-daten.md). Zwei Proben, einzeln bestellbar:
+#   hallo        schreibt mit secrets.DATEN_TOKEN eine winzige Datei suhl/_probe/hallo.json (Zeit, Lauf, Commit) nach main von
+#                mynametouse/pavillon-daten und prüft, ob GitHub Pages sie ausliefert (Aktion .github/actions/suhl-publish).
+#   easygeodata  fragt mit secrets.EASYGEODATA_KEY die Schnittstelle von easygeodata.de: gilt der Schlüssel, was bietet sie für
+#                Suhl (DGM1, DOM1, nDOM1), eine Kachel als Beweis. Nur über die Schnittstelle, höflich, nichts wird veröffentlicht.
+# Fehlt ein Geheimnis, sagt der Lauf das klar (Protokoll und Zusammenfassung) und schlägt nicht fehl. In dieses Repo schreibt er nichts.
+# Läuft nur auf suhl/daten und nur, wenn tools/suhl/daten/lauf.txt sich ändert (lauf.txt ändern = neuen Lauf bestellen); die letzte
+# Zeile "lauf: <job> <job> …" nennt die Jobs. Der Lauf nimmt den neuesten Stand des Zweigs.
+name: Suhl – Datenhaus (Proben)
 
 on:
   push:
     branches: ['suhl/daten']
-    paths: ['.github/workflows/suhl-daten.yml', '.github/actions/suhl-publish/**', 'tools/suhl/daten/lauf.txt']
+    paths: ['tools/suhl/daten/lauf.txt']
 
 permissions:
   contents: read
 
 jobs:
+  plan:
+    name: Was ist bestellt?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      hallo: ${{ steps.p.outputs.hallo }}
+      easygeodata: ${{ steps.p.outputs.easygeodata }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: suhl/daten
+          persist-credentials: false
+      - id: p
+        run: |
+          line=$(grep -E '^lauf:' tools/suhl/daten/lauf.txt | tail -1 || true)
+          echo "bestellt: $line"
+          for j in hallo easygeodata; do
+            if echo " ${line#lauf:} " | grep -q " $j "; then echo "$j=true" >> "$GITHUB_OUTPUT"; else echo "$j=false" >> "$GITHUB_OUTPUT"; fi
+          done
+          echo "Bestellt: \`$line\`" >> "$GITHUB_STEP_SUMMARY"
+
   hallo:
     name: Probe – hallo.json ins Daten-Repo
+    needs: plan
+    if: ${{ needs.plan.outputs.hallo == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     concurrency:
@@ -25,9 +50,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: suhl/daten
           persist-credentials: false
-      - name: Bibliothek (Einheitentests ohne Netz)
-        run: python3 -I tools/suhl/lib/test_lib.py
+      - name: Bibliothek und Schema (Einheitentests ohne Netz)
+        run: |
+          python3 -I tools/suhl/lib/test_lib.py
+          python3 -I tools/suhl/lib/test_schema.py
       - name: Probe veröffentlichen
         id: pub
         uses: ./.github/actions/suhl-publish
@@ -54,11 +82,37 @@ jobs:
             echo "::warning::Pages liefert $URL nach 5 Minuten noch nicht mit dem Stand dieses Laufs (zuletzt HTTP $code)."
             echo "- ⚠️ GitHub Pages liefert die Datei nach 5 Minuten noch nicht mit dem Stand dieses Laufs (zuletzt HTTP $code): $URL" >> "$GITHUB_STEP_SUMMARY"
           fi
-      - name: Ergebnis
-        if: ${{ always() }}
+
+  easygeodata:
+    name: Probe – easygeodata (Schlüssel, Angebot für Suhl, eine Kachel)
+    needs: plan
+    if: ${{ needs.plan.outputs.easygeodata == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: suhl-daten-easygeodata
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: suhl/daten
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet numpy tifffile imagecodecs
+      - name: Probe
         env:
-          PUBLISHED: ${{ steps.pub.outputs.published }}
-          REASON: ${{ steps.pub.outputs.reason }}
+          EASYGEODATA_KEY: ${{ secrets.EASYGEODATA_KEY }}
         run: |
-          echo "published=$PUBLISHED"
-          echo "reason=$REASON"
+          phase=$(grep -E '^phase:' tools/suhl/daten/lauf.txt | tail -1 | sed 's/^phase:[[:space:]]*//' || true)
+          python3 -I tools/suhl/daten/easygeodata_probe.py --out probe-out --phase "${phase:-docs}"
+      - name: Ergebnis aufheben (ohne Schlüssel, ohne Rohdaten)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: easygeodata-probe
+          path: probe-out/easygeodata_probe.json
+          retention-days: 30
+          if-no-files-found: warn

@@ -66,15 +66,15 @@ PROBE_JSON = os.path.join(HERE, 'probe.json')
 
 # the products of plan 2.4. 'tiles': sub folder -> (levels, extension); '' = the tiles lie directly in the version folder.
 PRODUCTS = {
-    'boden': {'title': 'Gelände und Luftbild', 'owner': 'suhl-boden', 'index': 'meta.json',
+    'boden': {'title': 'Gelände und Luftbild', 'owner': 'suhl-boden', 'index': 'index.json',     # plus meta.json in the layout WELT reads
               'tiles': {'t': ((6, 12), 'bin'), 'i': ((6, 12), 'webp')}},
     'g': {'title': 'Gebäude', 'owner': 'suhl-gebaeude', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     'da': {'title': 'Dach-Atlas', 'owner': 'suhl-dach (Stufe 3)', 'index': 'index.json', 'tiles': {'': ((10, 10), 'webp')}},
     's': {'title': 'Straßenraum', 'owner': 'suhl-strassen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     'b': {'title': 'Bäume', 'owner': 'suhl-gruen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'bin')}},
-    'm': {'title': 'Möbel der Straße', 'owner': 'suhl-gruen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
+    'm': {'title': 'Möbel der Straße', 'owner': 'suhl-strassen', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     'f': {'title': 'Fernmodell', 'owner': 'suhl-fern', 'index': 'index.json', 'tiles': {'': ((8, 8), 'bin')}},
-    'd': {'title': 'Szenario-Zahlen', 'owner': 'suhl-daten', 'index': 'index.json', 'tiles': {}},
+    'd': {'title': 'Szenario-Zahlen', 'owner': 'suhl-daten', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
     '_probe': {'title': 'Probe des Veröffentlichens', 'owner': 'suhl-daten', 'index': 'index.json', 'tiles': {'': ((10, 10), 'json')}},
 }
 
@@ -761,6 +761,7 @@ def scan_tiles(folder, ext=None):
 # ------------------------------------------------------------------ polite HTTP with an on-disk cache
 SECRET_PARAMS = ('key', 'apikey', 'api_key', 'token', 'access_token', 'secret', 'password', 'auth', 'signature', 'sig')
 _last_call = {}
+last_headers = {}        # the response headers (lower-case names) of the latest real request of http_get, e.g. rate-limit headers
 
 
 def redact(url):
@@ -807,9 +808,13 @@ def http_get(url, cache=None, max_age=None, headers=None, tries=4, timeout=120, 
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 body = r.read()
                 last = (r.status, body, r.headers.get('content-type', '') or '')
+                last_headers.clear()
+                last_headers.update({k.lower(): v for k, v in r.headers.items()})
         except urllib.error.HTTPError as ex:
             last = (ex.code, ex.read()[:20000], (ex.headers.get('content-type', '') if ex.headers else '') or '')
             retry_after = ex.headers.get('retry-after') if ex.headers else None
+            last_headers.clear()
+            last_headers.update({k.lower(): v for k, v in (ex.headers.items() if ex.headers else ())})
         except Exception as ex:   # timeouts, resets, DNS
             last = (0, repr(ex).encode()[:400], '')
         _last_call[host] = time.time()
