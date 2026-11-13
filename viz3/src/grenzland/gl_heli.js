@@ -264,7 +264,7 @@ export const GLHELI = (() => {
     const W = GL.W,
       q = GLFAHNDUNG.wo(),
       K = GLLOGIK.kraefte(GLLOGIK.starsOf(W.heat), GL.era),
-      p = { x: q.x, y: q.y, veh: !!q.veh, hidden: GLFAHNDUNG.hidden, cover: GLFAHNDUNG.cover },
+      p = { x: q.x, y: q.y, veh: !!q.veh, hidden: GLFAHNDUNG.hidden, cover: GLFAHNDUNG.krone },
       dk = dark();
     const evs = H.tick(dt, p, { want: K.heli && !GLFAHNDUNG.off, last: GLFAHNDUNG.last, dark: dk, delay: 12 });
     S.on = H.on;

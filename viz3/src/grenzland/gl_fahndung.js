@@ -22,6 +22,7 @@ import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { WCOL } from '../world/worldcol.js';
 import { RATSCHER } from '../world/ratscher.js';
+import { FOREST } from '../world/forest.js';
 import { VPROPS } from '../world/village_props.js';
 import { SCHL } from '../welt/schleusingen.js';
 import { VEH } from '../vehicles/vehicle.js';
@@ -49,7 +50,8 @@ export const GLFAHNDUNG = (() => {
     seen: false,
     close: false,
     hidden: false, // indoors or in a hiding place a mission named
-    cover: false, // under the trees of a forest
+    cover: false, // in a wood (crowns overhead and all round)
+    krone: false, // under a tree's crown (the helicopter does not see one there)
     off: false, // missions may switch the police off (the flashback's first minute)
     extra: [], // further places that hide (the barn): [{ x, y, r }]
     hooks: { zeuge: null }, // a mission may add witnesses (cameras)
@@ -161,13 +163,13 @@ export const GLFAHNDUNG = (() => {
       return true;
     }
     if (!free || L < 30) return free;
-    // through a wood: more than some twenty metres of it on the way (a row of trees along a road hides nobody)
+    // through a wood: more than some twenty metres under crowns on the way (a tree or a row of them hides nobody; along a road
+    // that runs through a wood one sees as far as the road is straight)
     let wald = 0;
     for (let d = 8; d < L - 6; d += 8) {
       const x = ax + (sx * d) / L,
         y = ay + (sy * d) / L;
-      // (along a road that runs through a wood one sees as far as the road is straight)
-      if (imWald(x, y) && !aufStrasse(x, y) && ++wald >= 3) return false;
+      if (unterKrone(x, y) && !aufStrasse(x, y) && ++wald >= 3) return false;
     }
     return true;
   }
@@ -180,20 +182,50 @@ export const GLFAHNDUNG = (() => {
       return false;
     }
   };
-  // grown trunks within six metres of a point
-  function staemme(x, y) {
-    let n = 0;
-    try {
-      WCOL.each(x - 6, y - 6, x + 6, y + 6, null, (t, A) => {
-        if (A[t * 3 + 2] >= 0.19 && hyp(A[t * 3] - x, A[t * 3 + 1] - y) < 6) n++;
-      });
-    } catch (e) {}
-    return n;
+  // ---- the canopy: the measured crowns of the square (world/ratscher.js: place, height, crown radius) in a grid, and the forest at
+  //      the Klinge (world/forest.js) ----
+  let KR = null;
+  function kronen() {
+    if (KR) return KR;
+    const R = RATSCHER && RATSCHER.treeRecs;
+    if (!R || !R.length) return null;
+    KR = new Map();
+    for (const t of R) {
+      if (!(t.h > 4) || !(t.r > 0.8)) continue;
+      const k = (Math.floor(t.x / 16) + 512) * 4096 + Math.floor(t.y / 16) + 512;
+      let a = KR.get(k);
+      if (!a) KR.set(k, (a = []));
+      a.push(t.x, t.y, t.r);
+    }
+    return KR;
   }
-  // in a wood: trees standing close all round (four trunks within six metres; a row along a road or a garden has fewer)
-  const imWald = (x, y) => staemme(x, y) >= 4;
-  // under the trees of a forest (the helicopter does not see through the canopy, a patrol only from close by)
-  const unterBaeumen = (x, y) => !!WCOL && WCOL.ready && inSquare(x, y) && imWald(x, y) && !aufStrasse(x, y);
+  // under a tree's crown (what the helicopter cannot look through)
+  function unterKrone(x, y) {
+    try {
+      if (FOREST && FOREST.owns && FOREST.owns(x, y)) return true;
+    } catch (e) {}
+    const K = kronen();
+    if (!K) return false;
+    for (let i = Math.floor((x - 8) / 16); i <= Math.floor((x + 8) / 16); i++)
+      for (let j = Math.floor((y - 8) / 16); j <= Math.floor((y + 8) / 16); j++) {
+        const a = K.get((i + 512) * 4096 + j + 512);
+        if (a) for (let k = 0; k < a.length; k += 3) if (hyp(a[k] - x, a[k + 1] - y) < a[k + 2]) return true;
+      }
+    return false;
+  }
+  // in a wood: crowns overhead and all round (a patrol sees one there only from close by) – not under a single tree, not on a road
+  const WIND = [
+    [7, 0],
+    [-7, 0],
+    [0, 7],
+    [0, -7],
+  ];
+  function unterBaeumen(x, y) {
+    if (!inSquare(x, y) || !unterKrone(x, y) || aufStrasse(x, y)) return false;
+    let n = 0;
+    for (const [dx, dy] of WIND) if (unterKrone(x + dx, y + dy)) n++;
+    return n >= 3;
+  }
   // indoors, or a place a mission names (the barn)
   function drinnen(x, y, z) {
     try {
@@ -204,10 +236,6 @@ export const GLFAHNDUNG = (() => {
   // a hiding place: indoors, the forest, a place a mission names
   function versteckt(x, y, z) {
     if (drinnen(x, y, z)) return true;
-    try {
-      if (/Wald|Klinge|Forst/.test(String(KERN.place(x, y, z || 0) || '')) && !aufStrasse(x, y) && staemme(x, y) >= 2)
-        return true;
-    } catch (e) {}
     return unterBaeumen(x, y);
   }
   const sneak = () => !VEH.cur && (P.stance === 'crouch' || P.stance === 'crawl' || P.stance === 'prone');
@@ -848,13 +876,8 @@ export const GLFAHNDUNG = (() => {
     if ((S.coverT -= dt) <= 0) {
       S.coverT = 0.3;
       S.hidden = drinnen(q.x, q.y, P.feet);
-      let wald = false;
-      try {
-        wald = /Wald|Klinge|Forst/.test(String(KERN.place(q.x, q.y, 0) || ''));
-      } catch (e) {}
-      // (where the map says forest, a few trees near are enough – on foot; never on a real road)
-      S.cover =
-        !S.hidden && (unterBaeumen(q.x, q.y) || (wald && !q.veh && !aufStrasse(q.x, q.y) && staemme(q.x, q.y) >= 2));
+      S.cover = !S.hidden && unterBaeumen(q.x, q.y);
+      S.krone = !S.hidden && inSquare(q.x, q.y) && unterKrone(q.x, q.y) && !aufStrasse(q.x, q.y);
     }
     // the reports that are through
     for (const r of GLLOGIK.reif(W, dt)) {
@@ -949,6 +972,7 @@ export const GLFAHNDUNG = (() => {
     hidden: S.hidden || S.cover,
     drinnen: S.hidden,
     wald: S.cover,
+    krone: S.krone,
     fz: GL.W.fz,
     offen: GL.W.offen.map(r => ({ id: r.id, wer: r.name, t: Math.round(r.t * 10) / 10 })),
     cars: S.cars.map(u => ({
@@ -976,6 +1000,7 @@ export const GLFAHNDUNG = (() => {
     los,
     versteckt,
     unterBaeumen,
+    unterKrone,
     drinnen,
     zeugen,
     tat,
