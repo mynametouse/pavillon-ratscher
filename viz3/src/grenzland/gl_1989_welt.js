@@ -324,7 +324,7 @@ export const GL89WELT = (() => {
       }
       zweig(cx, cy, aa + (rnd() - 0.5) * 0.4, l * 0.55, w * 0.7, n - 1);
     };
-    for (let i = 0; i < 2; i++) zweig(126 + i * 4, 254, (i - 0.5) * 0.5, 112 - i * 14, 4.2, 4);
+    for (let i = 0; i < 2; i++) zweig(126 + i * 4, 254, (i - 0.5) * 0.5, 108 - i * 16, 3.4, 4);
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
@@ -340,11 +340,11 @@ export const GL89WELT = (() => {
     if (Object.prototype.hasOwnProperty.call(base, 'customProgramCacheKey'))
       m.customProgramCacheKey = base.customProgramCacheKey;
     m.map = zweigBild();
-    m.color.setRGB(0.25, 0.22, 0.19);
+    m.color.setRGB(0.2, 0.18, 0.16);
     m.alphaTest = 0.42;
     m.name = 'grenzland 1989 zweige';
-    // a quarter of the leaves' cards, a little larger: sprays of twigs, the sky between them
-    const geo = thinCards(L[1].geometry, 0.24, 1.35),
+    // a sixth of the leaves' cards, a little larger: sprays of twigs, the sky between them
+    const geo = thinCards(L[1].geometry, 0.16, 1.4),
       me = new THREE.Mesh(geo, m);
     me.name = 'grenzland 1989 linde';
     me.userData.noMerge = true;

@@ -115,8 +115,16 @@ neue Shader-Programme (gezählt zwischen den Bildern ohne und mit), „Beenden�
 
 ## Offen
 
-- Siehe Verlauf.
+- Tropfen auf einer Scheibe (an der Klinge fährt man Moped – keine Scheibe).
+- Die Rundumleuchte der Volkspolizei schlägt im Takt, dreht sich aber nicht sichtbar (ein Glühen, kein wandernder Strahl).
 
 ## Verlauf
 
-- 13.11. ~12:25: erste Fassung (alle acht Punkte des Auftrags), Test geschrieben, Prüfpaket auf Actions.
+- 13.11. ~12:25: erste Fassung (alle acht Punkte des Auftrags), Test geschrieben, Prüfpaket auf Actions (rot: Test brauchte PIL, das
+  die Runner nicht haben – jetzt misst der Test in der Seite).
+- ~12:50: nach den ersten Bildern (`out/grenzland_licht/`): die Lichtkegel ohne die senkrechte Karte (von hinten ein heller Strich),
+  Taschenlampen viel schwächer und mit eigenem Glanz (die Flecken der drei Wachleute am Wagen waren grelle weiße Flächen), die
+  Rauchspur der Leuchtkugel dünn (sie war eine rosa Säule), die Leuchtkugel auf 60 m (75 m lagen über dem Bild), Regen jedes Bild
+  nachgeführt (das Wetter von 1989 hatte sonst den Regen als „vorher“ gemerkt und nach der Rückblende wieder eingeschaltet), die
+  Zweige der Linde lichter und dunkler und im Programm der Blätter (eine Kopie des Materials hatte den Shader-Zusatz nicht – `three`
+  kopiert `onBeforeCompile` nicht mit). Gemessen: keine neuen Shader-Programme, der Farbausgleich nach „Beenden“ wieder 1,06/1,08/0,32.

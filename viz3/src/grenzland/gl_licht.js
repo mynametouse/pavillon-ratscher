@@ -35,6 +35,8 @@ import { markDirty } from '../core/assets.js';
 import { hemi, sun } from '../garden/env.js';
 import { GRADE } from '../render/render.js';
 import { DN } from '../time/daynight.js';
+import { CAM3 } from '../game/player.js';
+import { VEH } from '../vehicles/vehicle.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
 import { VPROPS } from '../world/village_props.js';
 import { WETTER } from '../wetter/wetter.js';
@@ -217,8 +219,10 @@ export const GLLICHT = (() => {
   function mats() {
     if (MAT.kegel) return MAT;
     // the beams and pools: today white, 1989 and the Simson warm (a bulb of the time)
-    MAT.kegel = karte('kegel', 0xeef3ff, 0.2);
-    MAT.kegel89 = karte('kegel 1989', 0xffcf86, 0.22);
+    MAT.kegel = karte('kegel', 0xeef3ff, 0.14);
+    MAT.kegel89 = karte('kegel 1989', 0xffcf86, 0.16);
+    MAT.pool = karte('pool', 0xeef3ff, 0.09);
+    MAT.pool89 = karte('pool 1989', 0xffcf86, 0.1);
     MAT.heck = karte('heck', 0xffffff, 0.55);
     MAT.bremse = karte('bremse', 0xffffff, 1);
     MAT.blauL = karte('blau links', 0x2f63ff, 0);
@@ -507,7 +511,7 @@ export const GLLICHT = (() => {
     }
     D.kegel = own(new THREE.Mesh(G.kegel, D.warm ? MAT.kegel89 : MAT.kegel), 'kegel');
     T.head.parent.add(D.kegel);
-    D.pool = own(new THREE.Mesh(G.pool, D.warm ? MAT.kegel89 : MAT.kegel), 'pool');
+    D.pool = own(new THREE.Mesh(G.pool, D.warm ? MAT.pool89 : MAT.pool), 'pool');
     D.pool.renderOrder = 2;
     root.add(D.pool);
     if (G.heck && T.tail) {
@@ -599,12 +603,16 @@ export const GLLICHT = (() => {
       nb = 0;
     const [pl, pr] = puls(),
       lk = S.lampK;
+    // (from the driver's seat of one's own vehicle the beams would stand in the picture as a bright streak: there only the pool and the
+    // real headlight of vehicles/vehicle.js)
+    const sitz = VEH.cur && !CAM3.want ? VEH.cur : null;
     for (const D of S.autos) {
       const vis = D.root.visible,
         on = show && vis && brennt(D),
-        br = show && vis && bremst(D);
-      if (D.kegel && D.kegel.visible !== on) {
-        D.kegel.visible = on;
+        br = show && vis && bremst(D),
+        kegel = on && !(sitz && D.a.v === sitz);
+      if (D.kegel && (D.kegel.visible !== kegel || D.pool.visible !== on)) {
+        D.kegel.visible = kegel;
         D.pool.visible = on;
         if (D.heck) D.heck.visible = on;
         markDirty();
@@ -630,8 +638,10 @@ export const GLLICHT = (() => {
     // the shared materials follow the dusk; the beacons flash
     if (MAT.kegel) {
       const k = Math.max(0, lk);
-      MAT.kegel.opacity = 0.2 * k;
-      MAT.kegel89.opacity = 0.24 * k;
+      MAT.kegel.opacity = 0.14 * k;
+      MAT.kegel89.opacity = 0.16 * k;
+      MAT.pool.opacity = 0.09 * k;
+      MAT.pool89.opacity = 0.1 * k;
       MAT.heck.opacity = 0.55 * k;
       MAT.blauL.opacity = 1.1 * pl * k;
       MAT.blauR.opacity = 1.1 * pr * k;
@@ -715,6 +725,13 @@ export const GLLICHT = (() => {
   }
   const _h = new V3(),
     _e = new THREE.Euler(0, 0, 0, 'YXZ');
+  function fackelWeg(F, L) {
+    scene.remove(L.licht, L.boden);
+    L.licht.material.dispose();
+    L.boden.material.dispose();
+    S.fackeln.delete(F);
+    markDirty();
+  }
   function fackeln(dt, show) {
     const seen = new Set();
     if (show && S.lampK > 0.05)
@@ -725,10 +742,11 @@ export const GLLICHT = (() => {
         if (!L) {
           mats();
           const G = fackelGeo();
+          // (each its own copy of the materials – the same program: a beam fades as the camera comes close to it)
           L = {
-            licht: own(new THREE.Mesh(G.licht, MAT.fackel), 'fackel'),
+            licht: own(new THREE.Mesh(G.licht, MAT.fackel.clone()), 'fackel'),
             glas: own(new THREE.Mesh(G.glas, MAT.fackelGlas), 'fackel glas'),
-            boden: own(new THREE.Mesh(G.boden, MAT.fackelBoden), 'fackel boden'),
+            boden: own(new THREE.Mesh(G.boden, MAT.fackelBoden.clone()), 'fackel boden'),
             ph: Math.random() * 7,
           };
           L.boden.renderOrder = 2;
@@ -758,17 +776,14 @@ export const GLLICHT = (() => {
         L.boden.rotation.y = -yaw;
         L.boden.scale.set(0.8 + dist * 0.12, 1, 1 + dist * 0.22);
         L.boden.visible = true;
+        // seen from close by, along the beam, the cards would add up to a white wedge: fainter near the camera
+        const nah = Math.max(0.12, Math.min(1, (_h.distanceTo(cam.position) - 1.2) / 6));
+        L.licht.material.opacity = 0.09 * S.lampK * nah;
+        L.boden.material.opacity = 0.075 * S.lampK * (0.4 + 0.6 * nah);
       }
-    for (const [F, L] of S.fackeln)
-      if (!seen.has(F)) {
-        scene.remove(L.licht, L.boden);
-        S.fackeln.delete(F);
-        markDirty();
-      }
+    for (const [F, L] of S.fackeln) if (!seen.has(F)) fackelWeg(F, L);
     if (S.fackeln.size) {
-      MAT.fackel.opacity = 0.12 * S.lampK;
       MAT.fackelGlas.opacity = 0.9 * S.lampK;
-      MAT.fackelBoden.opacity = 0.16 * S.lampK;
       markDirty();
     }
     S.n.fackeln = S.fackeln.size;
@@ -784,7 +799,7 @@ export const GLLICHT = (() => {
       dunst: schar(2, MAT.dunst),
       glut: schar(70, MAT.glut),
       kern: schar(4, MAT.kern),
-      rauch: schar(140, MAT.rauch),
+      rauch: schar(300, MAT.rauch),
     };
     FB.rauch.m.renderOrder = 4;
     FB.dunst.m.renderOrder = 5;
@@ -879,22 +894,39 @@ export const GLLICHT = (() => {
     const flick = 0.86 + 0.08 * Math.sin(t * 23.1 + f.seed) + 0.06 * Math.sin(t * 57.7) + 0.05 * (Math.random() - 0.5);
     f.k = t < end ? flareK(t) * flick : 0;
     f.rot += dt * 0.6;
-    // smoke: a trail behind it while it climbs, a thin plume over it while it burns – the puffs grow, rise a little, drift, thin out
-    f.pT -= dt;
-    if (t < end - 1 && f.pT <= 0) {
-      const climb = t < FL.steig;
-      f.pT = climb ? 0.05 : 0.3;
+    // smoke: a trail behind it while it climbs (a puff every 30 cm of the way), a thin plume over it while it burns – the puffs grow,
+    // rise a little, drift, thin out
+    const puff = (x, y, z, climb) => {
       f.puffs.push({
-        x: f.x + (Math.random() - 0.5) * 0.15,
-        y: f.y + (Math.random() - 0.5) * 0.15,
-        z: f.z + (climb ? -0.4 : 0.5),
-        s: climb ? 0.28 : 0.3,
-        g: climb ? 0.42 : 0.3,
+        x: x + (Math.random() - 0.5) * 0.12,
+        y: y + (Math.random() - 0.5) * 0.12,
+        z,
+        s: climb ? 0.26 : 0.3,
+        g: climb ? 0.4 : 0.3,
         age: 0,
         life: climb ? 8 : 6,
         rot: Math.random() * 6.3,
       });
-      if (f.puffs.length > 130) f.puffs.shift();
+      if (f.puffs.length > 290) f.puffs.shift();
+    };
+    if (t < FL.steig) {
+      if (!f.last) f.last = [f.x0, f.y0, f.z0 + 1];
+      const L0 = f.last,
+        dd = Math.hypot(f.x - L0[0], f.y - L0[1], f.z - L0[2]),
+        n = Math.min(60, Math.floor(dd / 0.3));
+      for (let i = 1; i <= n; i++) {
+        const q = (i * 0.3) / dd;
+        puff(L0[0] + (f.x - L0[0]) * q, L0[1] + (f.y - L0[1]) * q, L0[2] + (f.z - L0[2]) * q - 0.3, true);
+      }
+      if (n)
+        f.last = [
+          L0[0] + (f.x - L0[0]) * ((n * 0.3) / dd),
+          L0[1] + (f.y - L0[1]) * ((n * 0.3) / dd),
+          L0[2] + (f.z - L0[2]) * ((n * 0.3) / dd),
+        ];
+    } else if (t < end - 1 && (f.pT -= dt) <= 0) {
+      f.pT = 0.3;
+      puff(f.x, f.y, f.z + 0.5, false);
     }
     // sparks: falling, dying out
     f.sT -= dt;
@@ -1153,8 +1185,21 @@ export const GLLICHT = (() => {
   // from looking at the yard to the flight home (mission 'klinge', steps 1 … 4), at night: the weather's own rain
   function regenWill() {
     if (S.regenHand !== null) return S.regenHand;
-    const m = GL.cur === 'klinge' && GL.m && GL.m.klinge;
-    return !!(m && m.st === 'läuft' && m.i >= 1 && m.i <= 4 && S.nachtK > 0.2 && GL.era !== '1989');
+    // (the mission that really runs – grenzland/gl_mission.js, loaded after us; never in a flashback nor while one begins: the weather of
+    // 1989 keeps what it found as the weather to come back to)
+    const M = window.GLMISSION,
+      cur = M && M.cur ? M.cur() : GL.cur,
+      G89 = window.GL89,
+      m = cur === 'klinge' && GL.m && GL.m.klinge;
+    return !!(
+      m &&
+      m.st === 'läuft' &&
+      m.i >= 1 &&
+      m.i <= 4 &&
+      S.nachtK > 0.2 &&
+      GL.era !== '1989' &&
+      !(G89 && (G89.busy || G89.on))
+    );
   }
   function regen(want) {
     if (want === S.regnet) return;
@@ -1209,8 +1254,7 @@ export const GLLICHT = (() => {
   function aus() {
     for (const D of S.autos) ausziehen(D);
     S.autos.length = 0;
-    for (const [, L] of S.fackeln) scene.remove(L.licht, L.boden);
-    S.fackeln.clear();
+    for (const [F, L] of [...S.fackeln]) fackelWeg(F, L);
     if (HELI.spot) {
       scene.remove(HELI.spot, HELI.glanz);
       HELI.spot = HELI.glanz = null;
