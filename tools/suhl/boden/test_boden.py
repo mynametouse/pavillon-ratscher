@@ -1,0 +1,179 @@
+#!/usr/bin/env python3
+"""suhl-boden: quick tests without network (seconds) - the tile plan, the block terrain with and without DGM1, the image requests.
+  python3 -I tools/suhl/boden/test_boden.py"""
+import io, json, os, sys, tempfile, zipfile
+import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import blib
+from blib import kids, parents, tbounds, tsize, wlib
+import plan as planmod
+import gelaende, bild, hoehe
+import tiles as wtiles
+import fetch as wfetch
+
+fails = 0
+
+
+def ck(name, cond, info=''):
+    global fails
+    print(('PASS ' if cond else 'FAIL ') + name, info, flush=True)
+    fails += 0 if cond else 1
+
+
+# ---- the plan ----
+T, info = planmod.make('probe')
+ck('probe: 11 level-10 tiles, the bounding box of the sample', len(T[10]) == 11 and blib.bbox_of(10, T[10]) == (618700.0, 5606800.0, 620300.0, 5608400.0))
+ck('probe: children and parents', T[11] == kids(T[10]) and T[12] == kids(T[11]) and all(T[L] == parents(T[L + 1]) for L in (9, 8, 7, 6)), str(info['counts']))
+try:
+    sys.path.insert(0, os.path.join(blib.REPO, 'tools', 'suhl', 'lib'))
+    import suhllib as S
+    ck('probe: the same tiles as tools/suhl/lib (probe.json)', sorted(T[10]) == sorted(tuple(t)[-2:] for t in S.probe_tiles()))
+    ck('centre: the same as tools/suhl/lib', tuple(S.CENTRE_UTM) == blib.CENTRE)
+except ImportError:
+    print('SKIP tools/suhl/lib not merged yet')
+if os.path.exists(planmod.BEBAUT):
+    T, info = planmod.make('stadt')
+    c = info['counts']
+    ck('stadt: level 10 holds every tile touching the municipality', info['level10']['stadt'] == 1013 and c['10'] >= 1013, str(c))
+    ck('stadt: quads and parents', all(T[L] == kids(parents(T[L])) and parents(T[L]) <= T[L - 1] for L in (11, 12))
+       and all(parents(T[L]) <= T[L - 1] for L in (7, 8, 9, 10)))
+    old = blib.in_rect(10, blib.BLOCK_B) | blib.in_rect(10, blib.BLOCK_V)
+    ck('stadt: no level-10 tile inside the existing blocks (test block B, Kloster Vessra)', not (T[10] & old))
+    ck('stadt: sizes as planned (level 12 ~ 2 600-3 000, level 11 ~ 1 300-2 200)', 2600 <= len(T[12]) <= 3000 and 1300 <= len(T[11]) <= 2200, str(c))
+    ck('stadt: every route point north of block B lies in a level-10 tile', all(
+        blib.tile_of(10, x, y) in T[10] for r in blib.routes().values() for x, y in r.coords
+        if not (blib.BLOCK_B[0] <= x < blib.BLOCK_B[2] and blib.BLOCK_B[1] <= y < blib.BLOCK_B[3])))
+
+
+def _guard_fails():
+    try:
+        blib.guard({10: {(1, 1)}})
+    except SystemExit:
+        return True
+    return False
+
+
+ck('guard: stops when the centre of Suhl is not in a list', _guard_fails())
+ck('guard: the centre tile of level 10 is 497/542', blib.tile_of(10, *blib.CENTRE) == (497, 542))
+mx, my = wlib.model_from_utm(*blib.CENTRE)
+ck('model: the centre of Suhl lies ~400 m north of the outer terrain of the existing world (y = 11 864)',
+   380 < my - blib.OUTER_MODEL[3] < 410 and blib.OUTER_MODEL[0] < mx < blib.OUTER_MODEL[2], f'x = {mx:.1f}, y = {my:.1f}')
+from shapely.geometry import Point
+ck('outer terrain as a UTM polygon: the garden inside, the centre of Suhl outside',
+   blib.outer_square().contains(Point(wlib.XF['ex'], wlib.XF['ey'])) and not blib.outer_square().contains(Point(*blib.CENTRE)))
+
+
+# ---- terrain in blocks: a smooth synthetic ground, two neighbouring blocks, DGM1 on a part ----
+class FakeGround(gelaende.Ground):
+    def __init__(self):
+        self.raw, self.trees, self.canopy, self.canopy_fit = '', None, 0.0, None
+        self.dgm, self.off, self.dgm_log = {}, 0.0, {}
+        self.cop = lambda E, N: (400 + 60 * np.sin(np.asarray(E, float) / 700.0) + 45 * np.cos(np.asarray(N, float) / 500.0)).astype(np.float32)
+
+
+def dgm_zip(path, ex, ny, fn):
+    """a 1 km DGM1 tile as the state delivers it: zip with a GeoTIFF (pixel areas, tie point = upper-left corner)"""
+    import tifffile
+    E, N = np.meshgrid(ex * 1000 + np.arange(1000) + 0.5, (ny + 1) * 1000 - np.arange(1000) - 0.5)
+    b = io.BytesIO()
+    tifffile.imwrite(b, fn(E, N).astype(np.float32), extratags=[(33550, 'd', 3, (1.0, 1.0, 0.0), False),
+                                                                 (33922, 'd', 6, (0.0, 0.0, 0.0, ex * 1000.0, (ny + 1) * 1000.0, 0.0), False)])
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with zipfile.ZipFile(path, 'w') as z:
+        z.writestr(f'dgm1_32_{ex}_{ny}_1_th_2020-2025.tif', b.getvalue())
+    return path
+
+
+with tempfile.TemporaryDirectory() as td:
+    raw, out = os.path.join(td, 'raw'), os.path.join(td, 'out')
+    g = FakeGround()
+    g.raw = raw
+    gelaende.G = g
+    bx, by = gelaende.block_of(10, 497, 542)
+    core = tbounds(7, bx, by)
+    # tiles on both sides of the edge between block (bx, by) and its western neighbour, all three fine levels
+    x10 = (bx << 3)
+    lists = {10: [(x10 - 1, 541), (x10, 541), (x10 - 1, 542), (x10, 542), (x10 - 1, 543), (x10, 543)]}
+    lists[11] = sorted(kids(set(lists[10])))
+    lists[12] = sorted(kids(set(lists[11])))
+
+    def run(tag):
+        o = os.path.join(out, tag)
+        res = {}
+        for b in sorted({gelaende.block_of(L, x, y) for L, v in lists.items() for x, y in v}):
+            st, core8 = gelaende.do_block((b[0], b[1], {L: [t for t in v if gelaende.block_of(L, *t) == b] for L, v in lists.items()}, o, os.path.join(raw, 'work')))
+            res[b] = (st, core8)
+        H = {(L, x, y): np.round(wtiles.decode_heights(open(os.path.join(o, 't', str(L), str(x), f'{y}.bin'), 'rb').read()) * 100).astype(int)
+             for L, v in lists.items() for x, y in v}
+        worst = 0
+        for (L, x, y), h in H.items():
+            if (L, x + 1, y) in H:
+                worst = max(worst, int(np.abs(h[:, -1] - H[(L, x + 1, y)][:, 0]).max()))
+            if (L, x, y + 1) in H:
+                worst = max(worst, int(np.abs(h[-1, :] - H[(L, x, y + 1)][0, :]).max()))
+        return res, H, worst, o
+
+    res, H, worst, o1 = run('cop')
+    ck('blocks without DGM1: tiles of two blocks agree on every common edge', worst == 0 and len(res) == 2, f'worst {worst} cm, {len(H)} tiles')
+    e0, n0 = tbounds(12, *lists[12][0])[:2]
+    want = g.cop(e0 + np.arange(101.0)[None, :], n0 + np.arange(101.0)[:, None]) - wlib.H0
+    ck('blocks without DGM1: level 12 is the ground itself', np.abs(H[(12,) + tuple(lists[12][0])] / 100.0 - want).max() < 0.03)
+    c8 = res[(bx, by)][1]
+    ck('block: 8 m means of the core', c8.shape == (400, 400) and abs(float(c8[0, 0]) - float(g.cop(core[0] + 4, core[3] - 4))) < 0.05, str(c8.shape))
+    st2, _ = gelaende.do_block((bx, by, {L: [t for t in v if gelaende.block_of(L, *t) == (bx, by)] for L, v in lists.items()}, o1, os.path.join(raw, 'work')))
+    ck('block: a second start takes the finished block', st2.get('resumed') is True)
+
+    # DGM1: real ground 3 m below the surface model and with small detail; tiles on both sides of the block edge and one hole
+    real = lambda E, N: g.cop(E, N) - 3.0 + 0.4 * np.sin(E / 9.0) * np.cos(N / 7.0)
+    kx, ky = int(core[0] // 1000), int((tbounds(10, x10, 541)[1]) // 1000)
+    km = [(kx - 1, ky), (kx, ky), (kx - 1, ky + 1)]            # (kx, ky + 1) is missing: DGM1 fades out towards it
+    for ex, ny in km:
+        dgm_zip(wfetch.dgm1_path(raw, 'dgm', ex, ny), ex, ny, real)
+    wfetch._host_down['th'] = True                             # never ask the state's host in a test
+    log_ = g.collect_dgm(km + [(kx, ky + 1)])
+    ck('DGM1: tiles found in the raw cache, one missing', log_['have'] == 3 and log_['from_cache'] == 3 and log_['asked'] == 4, json.dumps(log_))
+    ck('DGM1: one offset Copernicus -> DGM1 for the run (30 % quantile)', 2.6 < g.off < 3.4, f'{g.off:.2f} m')
+    res, H, worst, o2 = run('dgm')
+    ck('blocks with DGM1: tiles of two blocks agree on every common edge', worst == 0, f'worst {worst} cm')
+    st = res[(bx, by)][0]
+    ck('blocks with DGM1: source and share', st['source'] == 'dgm1+cop30' and 0 < st['dgm_share'] < 1, f"{st['source']} {st['dgm_share']}")
+    # deep inside the DGM1 area the tile is the real ground; far from it Copernicus minus the offset
+    d = gelaende.BlockDem((core[0] - gelaende.MARGIN, core[1] - gelaende.MARGIN, core[2] + gelaende.MARGIN, core[3] + gelaende.MARGIN), g)
+    pe, pn = kx * 1000 + 500.5, ky * 1000 + 480.5
+    ck('DGM1: real ground where the tile is (beyond the blend)', abs(float(d.sample(np.array([pe]), np.array([pn]))[0]) - float(real(pe, pn))) < 0.02)
+    qe, qn = kx * 1000 + 600.5, (ky + 1) * 1000 + 700.5
+    ck('DGM1: Copernicus minus the offset where no tile is', abs(float(d.sample(np.array([qe]), np.array([qn]))[0]) - (float(g.cop(qe, qn)) - g.off)) < 0.02)
+    re_, rn_ = kx * 1000 + 600.5, (ky + 1) * 1000 - 150.5      # 150 m inside the DGM1 edge: a mix of both
+    v, a_, b_ = float(d.sample(np.array([re_]), np.array([rn_]))[0]), float(real(re_, rn_)), float(g.cop(re_, rn_)) - g.off
+    ck('DGM1: fades into Copernicus over 300 m', min(a_, b_) - 0.01 <= v <= max(a_, b_) + 0.01)
+    d10 = {k: v for b in res.values() for k, v in b[0]['dgm10'].items()}
+    ck('DGM1: share per level-10 tile (full, three quarters, none)', len(d10) == 6 and d10[f'{x10}/542'] == 1.0
+       and abs(d10[f'{x10 - 1}/543'] - 0.75) < 0.01 and d10[f'{x10}/543'] == 0.0, json.dumps(d10))
+
+    # the height query (hoehe.py) reads the same tiles
+    meta = {'H0': wlib.H0, 'tiling': {'levels': {str(L): {'has': [list(t) for t in v]} for L, v in lists.items()}}}
+    json.dump(meta, open(os.path.join(o2, 'meta.json'), 'w'))
+    hq = hoehe.Hoehe(o2)
+    he, hn = pe - 200.0, pn
+    z, zd = hq.nhn(he, hn), hq.nhn(he, hn, drawn=True)
+    ck('height query: NHN at a point from the finest tile', z is not None and abs(z - float(real(he, hn))) < 0.05 and hq.source(he, hn)[0] == 12, f'{z}')
+    ck('height query: the surface as the app draws it (every second sample)', zd is not None and abs(zd - z) < 0.3, f'{zd}')
+    ck('height query: None outside the set', hq.nhn(pe + 50000, pn) is None)
+
+    # coarse mosaic
+    cb = (core[0] - 3200 - 128, core[1] - 128, core[2] + 128, core[3] + 128)
+    co = gelaende.Coarse(g, cb)
+    for b, (st_, c8_) in res.items():
+        co.paste(b[0], b[1], c8_)
+    gg = co.grid(9, x10 >> 1, 541 >> 1)
+    ck('coarse: a level-9 tile from the 8 m mosaic', gg.shape == (101, 101) and np.isfinite(gg).all())
+
+# ---- image requests ----
+ts = [(1984, 2160), (1985, 2160), (1991, 2167), (1992, 2168)]
+rq = bild.requests_of(12, ts)
+ck('image requests: tiles grouped by chunk, only their bounding box', len(rq) == 2 and rq[0][1:3] == (8 * 512, 8 * 512) and rq[1][1:3] == (512, 512)
+   and rq[0][0] == tbounds(12, 1984, 2160)[:2] + tbounds(12, 1991, 2167)[2:], str([r[:3] for r in rq]))
+ck('image requests: never more than 4096 px', all(max(r[1], r[2]) <= 4096 for L in bild.CHUNK for r in bild.requests_of(L, [(x, y) for x in range(40) for y in range(40)])))
+print('test_boden:', 'ok' if not fails else f'{fails} FAILED')
+sys.exit(1 if fails else 0)

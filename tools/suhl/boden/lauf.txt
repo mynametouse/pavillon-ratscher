@@ -1,0 +1,7 @@
+# Einen Lauf des Workflows .github/workflows/suhl-boden.yml bestellen: diese Datei ändern und auf suhl/boden pushen.
+# Zeilen "name = wert"; alles hinter # ist Kommentar.
+lauf = 1              # fortlaufende Nummer (nur damit sich die Datei ändert)
+mode = stadt          # stadt = die ganze Stadt (Artefakt, später Daten-Repo) | probe = Probesatz Zentrum (wird auf den Zweig geschrieben)
+version = v1          # Versionsordner des Produkts: suhl/boden/<version>/
+veroeffentlichen = nein   # ja = die Aktion suhl-publish von suhl-daten legt das Produkt ins Daten-Repo (nur mode stadt)
+grund = erste Messung der ganzen Stadt: Kacheln und Megabyte je Stufe, Laufzeit (ohne DGM1, ohne Straßeneinschnitt)

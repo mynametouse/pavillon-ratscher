@@ -9,6 +9,8 @@ never to the work branch).
   <name>_3_gelaende.jpg    the same area as a hillshade of the terrain tiles (level 11), contour lines every 10 m
   <name>_4_fern.jpg        the coarse levels 9, 8, 7, 6 around the point, one tile each
   <name>_5_listen.png      the tile lists of all levels as a map (which tiles exist)
+  <name>_6_stufe8.jpg      every level-8 tile of the set as one picture (colour seams, holes)
+  <name>_7_gelaende8.jpg   the same as a hillshade of the terrain
 Aerial image: (c) GDI-Th, CC BY 4.0. Terrain: see ATTRIBUTION.md of the set.
 """
 import argparse, json, os, sys
@@ -147,6 +149,44 @@ def main():
     d.rectangle([0, 0, W, 15], fill=(0, 0, 0))
     d.text((4, 2), 'Kachel-Listen: ' + '  '.join(f'{L}: {len(T[L])}' for L in sorted(T)) + '   (grau 6-7, grün 8-9, blau 10, orange 11, rot 12)', fill=(255, 255, 255))
     save(im, '5_listen.png')
+    # 6, 7: the whole set from level 8 (image and hillshade), scaled to 1024 px
+    L = 8 if 8 in T else min(T)
+    r = blib.rect_of(T[L])
+    nx, ny = r[2] - r[0] + 1, r[3] - r[1] + 1
+    px = max(16, min(256, 1024 // max(nx, ny)))
+    im = Image.new('RGB', (nx * px, ny * px), (70, 70, 80))
+    n = wlib.TERR_N - 1
+    hs = max(1, n // px)                              # one height per picture pixel (about)
+    m = n // hs
+    Hh = np.full((ny * m + 1, nx * m + 1), np.nan)
+    for tx, ty in T[L]:
+        im.paste(img(a.set, L, tx, ty, px), ((tx - r[0]) * px, (r[3] - ty) * px))
+        h = heights(a.set, L, tx, ty)
+        if h is not None:
+            Hh[(ty - r[1]) * m:(ty - r[1]) * m + m + 1, (tx - r[0]) * m:(tx - r[0]) * m + m + 1] = h[::hs, ::hs]
+    d = ImageDraw.Draw(im)
+    e0, n0 = tbounds(L, r[0], r[1])[:2]
+    sc8 = px / tsize(L)
+    try:
+        G, _, _ = blib.areas()
+        for g, c in ((G['stadt'], (255, 255, 255)), (G['kernstadt'], (255, 200, 0))):
+            d.line([((qx - e0) * sc8, (n0 + ny * tsize(L) - qy) * sc8) for qx, qy in g.exterior.coords], fill=c, width=1)
+    except Exception:
+        pass
+    save(label(im, f'Stufe {L}: {len(T[L])} Kacheln, {tsize(L) / px:.0f} m je Bildpunkt; weiß Gemeinde, gelb Kernstadt'), f'6_stufe{L}.jpg')
+    Hh = Hh[::-1]
+    ok = np.isfinite(Hh)
+    if ok.any():
+        Hf = np.where(ok, Hh, np.nanmean(Hh))
+        cell = tsize(L) / n * hs
+        gy, gx = np.gradient(Hf, cell)
+        shade = np.clip(0.55 + 0.9 * (-gx + gy) / np.sqrt(2), 0.05, 1.0)
+        t = np.clip((Hf - np.nanmin(Hh)) / max(1.0, np.nanmax(Hh) - np.nanmin(Hh)), 0, 1)[..., None]
+        rgb = (np.array([150, 190, 140]) * (1 - t) + np.array([245, 235, 215]) * t) * shade[..., None]
+        rgb[~ok] = (70, 70, 80)
+        im = Image.fromarray(rgb.astype(np.uint8)).resize((nx * px, ny * px), Image.LANCZOS)
+        save(label(im, f'Gelände Stufe {L}: {np.nanmin(Hh) + meta["H0"]:.0f}..{np.nanmax(Hh) + meta["H0"]:.0f} m NHN, Quelle {meta["sources"].get("terrain_source")}'),
+             f'7_gelaende{L}.jpg')
     for p in made:
         print(p, os.path.getsize(p))
 
