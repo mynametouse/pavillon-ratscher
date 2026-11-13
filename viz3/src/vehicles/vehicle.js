@@ -675,7 +675,7 @@ export const VEH = (() => {
       const B = x.box();
       if (!B || z1 < B.z0 || z0 > B.z1) continue;
       const h = sat(A, B);
-      if (h) hits.push([h, null]);
+      if (h) hits.push([h, x.dyn ? x.dyn() : null]); // feat/verkehr-real: a traffic car (x.dyn) is a body of its own mass in the knock
     } // a trailer: fixed for the others
     if (typeof TRACTOR !== 'undefined' && TRACTOR.g) {
       const tp = TRACTOR.g.position,
@@ -747,6 +747,7 @@ export const VEH = (() => {
     for (const [h, o] of hits) {
       const dv = resolve(v, h, o);
       if (dv > big) big = dv;
+      if (o && o.knock) o.knock(v, h); // feat/verkehr-real: the traffic car takes its share (verkehr/verkehr_auto.js)
     }
     if (big > 1.4 && v === S.cur) VSND.thud(v, Math.min(1, big / 9));
     return hits.length;
@@ -1533,6 +1534,7 @@ export const VEH = (() => {
   S.save = save;
   S.toggleLights = toggleLights;
   S.boxHits = boxHits;
+  S.resolve = resolve; // feat/verkehr-real: the knock between two traffic cars (bodies { spec: { mass, Iz }, st })
   S.guideHits = guideHits;
   S.wheelBox = wheelBox;
   S.sat = sat;

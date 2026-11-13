@@ -3,7 +3,7 @@
 # road, weekday and hour (verkehr/vk_dichte.js), the flow on every road round the observer (verkehr/vk_strom.js), the top view.
 # Pictures in out/verkehr_real/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 8962 --serve verkehr_real      (or: python3 viz3/test/verkehr_real.py 8962 bau,bild)
-# Sections (second argument, comma-separated): bau,bild,nacht,lod,zug,leih,dichte,strom,regeln,ampel,oben,perf
+# Sections (second argument, comma-separated): bau,bild,nacht,lod,zug,leih,dichte,strom,regeln,ampel,unfall,oben,perf
 import sys, os, time, json, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
@@ -444,6 +444,142 @@ with lib.browser() as b:
             E(pg, "VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
         except Exception as ex:
             ck('section ran: ampel', False, repr(ex)[:400])
+
+    if want('unfall'):
+        # stage 3: harmless accidents. The player's car drives into a car standing on the village street: the knock moves it after the
+        # masses (vehicles/vehicle.js resolve with the car as a body), the hazard lights go on, the stranger complains from his car, then it
+        # drives on. A parked car is only pushed; a touch only makes the driver honk; a lorry hardly moves but stops; a person of the place
+        # gets out and back in; a car behind one after a knock waits and does not drive into it; the top view marks it
+        try:
+            E(pg, "__vr.clear(); VERKEHR.force({ peds: 0, cars: 0 }); VERKEHR.clear(); VERKEHR.autoOn(true); VKSTROM.force = { n: 0 }")
+            at_day((2026, 11, 13), 11)
+            lib.settle_light(pg)
+            UF = """window.__uf = {
+              // a car of type typ on the village line at the Anger, ds on; st: 'steht' (its driver in it) | 'parkt'; who: a person of the place
+              put(typ, ds, st, who) { const b = __vr.line(%d, %d); const c = VAUTO.spawn({ place: 'test', typ, line: b.L, s: b.s + ds, v: 0, who: who || null });
+                c.st = st || 'steht'; for (let i = 0; i < 3; i++) GAME.step(0.05); return c.id; },
+              // the player's car behind it on its line, back metres from its rear, driving at v m/s (the autopilot along the line)
+              ram(id, back, v) { const c = __vr.car(id), L = c.line, s0 = c.s + c.D.YR - back - 2.05, p = {};
+                VERKEHR.net.at(L, s0, p);
+                if (!VEH.cur || VEH.cur.id !== 'car') VEH.enter('car');
+                VEH.place('car', p.x, p.y, p.hd);
+                const pts = []; for (let s = s0; s < Math.min(L.L, s0 + 60); s += 2) { const q = {}; VERKEHR.net.at(L, s, q); pts.push([q.x, q.y]); }
+                VEH.cur.st.u = v; VEH.follow(pts, v); return s0; },
+              // step until the car is knocked (or secs), then the player gets out
+              hit(id, secs) { const c = __vr.car(id), s0 = c.s; let t = 0, sp = 0;
+                for (; t < secs; t += 0.05) { sp = VEH.cur ? Math.hypot(VEH.cur.st.u, VEH.cur.st.v) : 0; GAME.step(0.05); if (c.crash || (c.touchT > 0)) break; }
+                const after = VEH.cur ? Math.hypot(VEH.cur.st.u, VEH.cur.st.v) : 0; VEH.auto = null;
+                for (let i = 0; i < 4; i++) GAME.step(0.05);
+                const after2 = VEH.cur ? Math.hypot(VEH.cur.st.u, VEH.cur.st.v) : 0;
+                VEH.exit(); GAME.step(0.05);
+                return { t: +t.toFixed(2), before: +sp.toFixed(2), after: +after.toFixed(2), after2: +after2.toFixed(2), crash: c.crash ? { grade: c.crash.grade, fault: c.crash.fault, stood: c.crash.stood, phase: c.crash.phase } : null, touch: c.touchT > 0, st: c.st }; },
+              // the car over secs: [t, st, phase, s, lat, hdOff, v, blink, subtitle]
+              rec(id, secs, dt) { const c = __vr.car(id), sub = document.getElementById('verkehrsub'), out = [];
+                for (let t = 0; t < secs; t += dt) { GAME.step(dt); const k = c.crash;
+                  out.push([+t.toFixed(2), c.st, k ? k.phase : '-', +c.s.toFixed(2), +(c.lat || 0).toFixed(2), +(c.hdOff || 0).toFixed(3), +c.v.toFixed(2), c.blink || 0, sub && !sub.hidden ? sub.textContent : '']); }
+                return out; },
+              svg() { const L = STRAT.layer.list().find(l => l.id === 'verkehr'), c0 = VAUTO.cars.find(c => c.crash) || VAUTO.cars[0];
+                return L && c0 ? L.draw((x, y) => [600 + (x - c0.x) * 4, 360 - (y - c0.y) * 4, 0], 1200, 720) : ''; },
+              drop() { for (const c of VAUTO.cars.slice()) if (c.place === 'test') VAUTO.remove(c); },
+            };""" % ANGER
+            E(pg, UF)
+            k0 = J(pg, "({ knocks: VAUTO.knocks, honks: VAUTO.honks, said: VERKEHR.state().stats.said || 0 })")
+            # A: a stranger's car standing at the Anger, the player's car into it at 25 km/h
+            a = E(pg, "__uf.put('kompakt', 0, 'steht')")
+            E(pg, f"__vr.look({a}, 9, -150, 2.2)")
+            E(pg, f"__uf.ram({a}, 6, 7)")
+            h = J(pg, f"__uf.hit({a}, 6)")
+            print('A: knock', json.dumps(h), flush=True)
+            ck('A: the player’s car knocks the standing car (a real knock: it stood, the player ran into it)', h['crash'] and h['crash']['grade'] == 'crash' and h['crash']['fault'] == 'player' and h['crash']['stood'], json.dumps(h))
+            # (two cars of about the same mass: the one that ran into the other keeps some 40 % of its speed, the struck one takes the rest)
+            ck('A: the player’s car loses its speed in the knock (the masses)', h['before'] > 3 and h['after2'] < h['before'] * 0.6, json.dumps(h))
+            shot(pg, 'unfall_a_knock')
+            rec = J(pg, f"__uf.rec({a}, 3, 0.1)")
+            s_rest = rec[-1][3]
+            moved = s_rest - J(pg, f"__vr.car({a}).s") if False else None
+            first = rec[0]
+            print('A: after', rec[::5], flush=True)
+            ck('A: pushed on (braked at once, it stood: about a metre) and at rest with its hazard lights', rec[-1][2] == 'steht' and rec[-1][7] == 2 and rec[-1][6] == 0, str(rec[-1]))
+            subs = [r[8] for r in rec if r[8]]
+            stood = J(pg, "VKUNFALL.LINES.stood")
+            ck('A: the stranger complains from his car (the line for one that stood)', any(any(l in s for l in stood) and (s.startswith('Der ') or s.startswith('Die ')) for s in subs), str(subs[-1:]))
+            shot(pg, 'unfall_a_steht')
+            svg = J(pg, "__uf.svg()")
+            ck('A: the top view marks it (a warning triangle)', 'Unfall – Warnblinker an' in svg, str(len(svg)))
+            rec2 = J(pg, f"__uf.rec({a}, 22, 0.25)")
+            on = next((r for r in rec2 if r[1] == 'fahren'), None)
+            print('A: then', rec2[::8], flush=True)
+            ck('A: after its driver’s say it drives on (back into its lane)', on is not None and rec2[-1][3] - s_rest > 4, str(on) + ' … ' + str(rec2[-1]))
+            ck('A: the hazard lights go off when it drives on', rec2[-1][7] == 0 and rec2[-1][1] == 'fahren', str(rec2[-1]))
+            # B: a parked car: only pushed – nobody in it, no hazard lights, no word
+            E(pg, "__uf.drop()")
+            said0 = J(pg, "VERKEHR.state().stats.said || 0")
+            b = E(pg, "__uf.put('klein', 0, 'parkt')")
+            sb0 = J(pg, f"__vr.car({b}).s")
+            E(pg, f"__uf.ram({b}, 5, 4)")
+            hb = J(pg, f"__uf.hit({b}, 6)")
+            recb = J(pg, f"__uf.rec({b}, 4, 0.1)")
+            print('B: parked', json.dumps(hb), recb[-1], flush=True)
+            ck('B: a parked car is pushed (and stays parked, dark, silent)', hb['crash'] and recb[-1][1] == 'parkt' and recb[-1][7] == 0 and recb[-1][3] - sb0 > 0.2 and J(pg, "VERKEHR.state().stats.said || 0") == said0, f"{hb} {recb[-1]} from {sb0}")
+            # C: a touch: the car keeps its way, its driver honks
+            E(pg, "__uf.drop()")
+            hk = J(pg, "VAUTO.honks")
+            c = E(pg, "__uf.put('kombi', 0, 'steht')")
+            E(pg, f"__uf.ram({c}, 1.5, 0.5)")
+            hc = J(pg, f"__uf.hit({c}, 8)")
+            E(pg, "GAME.step(0.2)")
+            print('C: touch', json.dumps(hc), flush=True)
+            ck('C: a touch – no accident, the driver honks', hc['touch'] and not hc['crash'] and J(pg, "VAUTO.honks") > hk, json.dumps(hc))
+            # D: a lorry: it hardly moves, but its driver stops and complains
+            E(pg, "__uf.drop()")
+            d = E(pg, "__uf.put('lkw', 0, 'steht')")
+            sd0 = J(pg, f"__vr.car({d}).s")
+            E(pg, f"__uf.ram({d}, 6, 8)")
+            hd_ = J(pg, f"__uf.hit({d}, 6)")
+            recd = J(pg, f"__uf.rec({d}, 3, 0.1)")
+            print('D: lorry', json.dumps(hd_), recd[-1], flush=True)
+            ck('D: a lorry hit at 30 km/h – a real knock for its driver, but it hardly moves (13 t against 1.2 t)', hd_['crash'] and hd_['crash']['grade'] == 'crash' and recd[-1][3] - sd0 < 0.6 and any('Lkw-Fahrer' in r[8] for r in recd), f"{hd_} moved {recd[-1][3] - sd0:.2f}")
+            # E: a person of the place: gets out, complains towards the player, gets back in; then the car drives on
+            E(pg, "__uf.drop()")
+            e = E(pg, "__uf.put('kompakt', 0, 'steht', 'thomas')")
+            E(pg, f"__uf.ram({e}, 6, 7)")
+            he = J(pg, f"__uf.hit({e}, 6)")
+            seen = {'fig': False, 'redet': False, 'aus': False}
+            sub_e = []
+            for i in range(60):
+                r = J(pg, f"(() => {{ GAME.step(0.25); const u = VERKEHR.state().unfall, sub = document.getElementById('verkehrsub'); return {{ u, st: __vr.car({e}) ? __vr.car({e}).st : 'weg', sub: sub.hidden ? '' : sub.textContent }}; }})()")
+                if r['u'] and r['u']['fig']:
+                    seen['fig'] = True
+                    if r['u']['st'] == 'redet':
+                        seen['redet'] = True
+                        if not seen.get('shot'):
+                            seen['shot'] = True
+                            shot(pg, 'unfall_e_redet')
+                if seen['fig'] and (not r['u'] or not r['u']['fig']):
+                    seen['aus'] = True
+                if r['sub'] and r['sub'] not in sub_e:
+                    sub_e.append(r['sub'])
+                if seen['aus'] and r['st'] == 'fahren':
+                    break
+            print('E: villager', json.dumps(he), json.dumps(seen), sub_e, r['st'], flush=True)
+            ck('E: Thomas gets out, complains towards the player, gets back in and drives on', he['crash'] and seen['fig'] and seen['redet'] and seen['aus'] and r['st'] == 'fahren', f"{seen} {r['st']}")
+            ck('E: his lines by name (the complaint, then his last word as one who knows the player)', any(s.startswith('Thomas:') for s in sub_e) and any(any(l in s for l in J(pg, "VKUNFALL.LINES.endDorf")) for s in sub_e), str(sub_e))
+            # F: a car comes along behind one after a knock: it stops behind it (no knock of its own), waits, goes round when it may
+            E(pg, "__uf.drop()")
+            f1 = E(pg, "__uf.put('kombi', 0, 'steht')")
+            E(pg, f"(() => {{ const c = __vr.car({f1}), b = c.box.dyn(); b.st.u += 3; b.knock(null, {{ n: [0, 0], d: 0, p: [c.x, c.y] }}); }})()")
+            f2 = E(pg, "__uf.put('kompakt', -45, 'fahren')")
+            E(pg, f"__vr.car({f2}).v = 8")
+            recf = J(pg, f"""(() => {{ const A = __vr.car({f1}), B = __vr.car({f2}), out = []; for (let t = 0; t < 16; t += 0.1) {{ GAME.step(0.1);
+              out.push([+t.toFixed(1), A.st, +(A.s + A.D.YR - (B.s + B.D.YF)).toFixed(2), +(B.lat - A.lat).toFixed(2), +B.v.toFixed(2), B.st]); }} return out; }})()""")
+            bad = [r for r in recf if abs(r[3]) < 1.7 and r[2] < 0.2]
+            print('F: behind', recf[::10], flush=True)
+            ck('F: the car behind stops before the one after a knock (never into it)', not bad and min(r[4] for r in recf) < 0.5, str(bad[:2]))
+            k1 = J(pg, "({ knocks: VAUTO.knocks, honks: VAUTO.honks, said: VERKEHR.state().stats.said || 0, unfall: VERKEHR.state().stats.unfall })")
+            print('totals', json.dumps(k0), '→', json.dumps(k1), flush=True)
+            E(pg, "__uf.drop(); VKSTROM.force = { mult: 1 }; VERKEHR.clear()")
+        except Exception as ex:
+            ck('section ran: unfall', False, repr(ex)[:400])
 
     if want('dichte'):
         try:
