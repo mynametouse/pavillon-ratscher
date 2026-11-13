@@ -1,0 +1,24 @@
+{
+ "platzhalter": true,
+ "schema": 1,
+ "stand": "Probesatz Zentrum (viz3/extra/suhl-laufzeit/probe_holen.py)",
+ "quellen": {
+  "boden": "5fc9fec8",
+  "gebaeude": "13e3db02",
+  "gruen": "23bf81bf"
+ },
+ "produkte": {
+  "b": {
+   "v": 0,
+   "schema": 1
+  },
+  "boden": {
+   "v": 0,
+   "schema": 1
+  },
+  "g": {
+   "v": 0,
+   "schema": 1
+  }
+ }
+}

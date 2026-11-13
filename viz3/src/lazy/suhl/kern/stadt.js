@@ -1,0 +1,662 @@
+// Suhl runtime: the buildings and trees of the city, streamed in level-10 tiles (400 m) around the observer.
+// Level 1 (to 700 m, phones 500 m): every building with facades and roof, drawn by the village's own wall and roof programs
+// (world/village.js) – the geometry comes from the worker (lazy/suhl/bau/), each mesh with its tile's centre as origin.
+// Level 2 (to 3 500 m, phones 2 000 m): walls and roof faces with one colour each, one lean program for the whole city.
+// From above the level follows the height of the picture (to 600 m level 1, beyond level 2).
+// Trees (to 600 m): crossed cards from the atlas of the garden's tree models (world/ratscher.js far trees: its material and
+// geometry, no new program), instanced per tile.
+// Nothing is built in a long frame: the worker makes the buffers, the main thread takes one finished tile per frame.
+// Collisions: the wall feet of the level-1 tiles and the trunks in an 8 m hash (KERN.pushOut).
+import { tsize, hh, inRing, ROOT_E0, ROOT_N0 } from './geo.js';
+export function stadt(ctx, G, IX, worker, opt) {
+  const { THREE, scene, markDirty, RATSCHER, VILLAGE, TREES, COARSE } = ctx,
+    gp = IX.prod.g || IX.prod.gebaeude,
+    bp = IX.prod.b || IX.prod.gruen,
+    bodenPath = IX.prod.boden && IX.prod.boden.index ? IX.prod.boden.path : null,
+    R1 = COARSE ? 500 : 700,
+    R2 = COARSE ? 2000 : 3500,
+    RT = COARSE ? 420 : 600,
+    S = {
+      on: !!(gp && gp.index) || !!(bp && bp.index),
+      tiles: new Map(),
+      n: { built: 0, freed: 0, err: 0, req: 0 },
+      ms: [],
+      patch: {},
+      extra: new Map(),
+      R: [R1, R2, RT],
+      lastErr: '',
+    },
+    gSet = gp && gp.sets[10],
+    bSet = bp && bp.sets[10],
+    // the frame of the records' positions: tile-local model metres (the worker reads it from each tile: its field o)
+    gFrame = gp && gp.index && (gp.index.frame === 'utm' || gp.index.frame === 'abs') ? gp.index.frame : 'modell';
+  // ---- materials: the village's (level 1), one of our own (level 2) ----
+  const wallM = () => RATSCHER.bld && RATSCHER.bld[0] && RATSCHER.bld[0].material,
+    roofM = () => VILLAGE.meshes && VILLAGE.meshes[0] && VILLAGE.meshes[0].material;
+  let farM = null;
+  const farMat = () => {
+    if (farM) return farM;
+    farM = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0, envMapIntensity: 0.6 });
+    farM.customProgramCacheKey = () => 'suhl-fern';
+    return farM;
+  };
+  S.matsReady = () => !!(VILLAGE.ready && wallM() && roofM());
+  // compiled before the first mesh is seen (render/render.js warmUp): one triangle with the far material
+  S.warm = () => {
+    if (S.warmed) return;
+    S.warmed = true;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 1, 0, 0, 0, 1, 0], 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1, 0, 0, 1], 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute([1, 1, 1, 1, 1, 1, 1, 1, 1], 3));
+    const m = new THREE.Mesh(g, farMat());
+    m.position.set(0, -500, 0);
+    scene.add(m);
+    try {
+      ctx.warmUp(m);
+    } finally {
+      scene.remove(m);
+      g.dispose();
+    }
+  };
+  // ---- tiles ----
+  const tileOf = (x, y) => {
+    const k = x + '/' + y;
+    let t = S.tiles.get(k);
+    if (!t) {
+      const T = G.tile(10, x, y);
+      S.tiles.set(
+        k,
+        (t = {
+          k,
+          x,
+          y,
+          T,
+          lvl: 0,
+          want: 0,
+          busy: false,
+          meshes: [],
+          segs: null,
+          recs: null,
+          foot: null,
+          ids: null,
+          tr: null,
+          trBusy: false,
+          trWant: false,
+          d: 1e9,
+          gen: 0,
+        })
+      );
+    }
+    return t;
+  };
+  if (gSet) gSet.each((x, y) => (tileOf(x, y).g = true));
+  if (bSet) bSet.each((x, y) => (tileOf(x, y).b = true));
+  const urlG = t => gp.path + '10/' + t.x + '/' + t.y + '.json',
+    urlB = t => bp.path + '10/' + t.x + '/' + t.y + '.bin',
+    urlT = t => (bodenPath ? bodenPath + 't/10/' + t.x + '/' + t.y + '.bin' : null);
+  const mesh = (geo, mat, t, name) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(t.T.cx, 0, -t.T.cy);
+    m.name = 'suhl ' + name + ' ' + t.k;
+    m.userData.noMerge = true;
+    m.castShadow = m.receiveShadow = false;
+    m.updateMatrixWorld();
+    scene.add(m);
+    return m;
+  };
+  const geoOf = (A, sizes) => {
+    const g = new THREE.BufferGeometry();
+    for (const [k, a] of Object.entries(A)) {
+      if (k === 'index') g.setIndex(new THREE.BufferAttribute(a, 1));
+      else g.setAttribute(k, new THREE.BufferAttribute(a, sizes[k] || 4));
+    }
+    g.computeBoundingSphere();
+    return g;
+  };
+  const SZ = { position: 3, normal: 3, aTan: 3, uv: 2, color: 3 };
+  function dropMeshes(t) {
+    for (const m of t.meshes) {
+      scene.remove(m);
+      m.geometry.dispose();
+    }
+    t.meshes = [];
+  }
+  // a finished answer of the worker becomes the tile's meshes (the old level goes at the same moment: no hole)
+  function install(t, r, level) {
+    const t0 = performance.now();
+    dropMeshes(t);
+    if (level === 1) {
+      if (r.walls.position.length) t.meshes.push(mesh(geoOf(r.walls, SZ), wallM(), t, 'walls'));
+      if (r.roofs.position.length) t.meshes.push(mesh(geoOf(r.roofs, SZ), roofM(), t, 'roofs'));
+    } else if (r.far.position.length) t.meshes.push(mesh(geoOf(r.far, SZ), farMat(), t, 'fern'));
+    t.lvl = level;
+    t.segs = level === 1 ? r.segs : null;
+    t.foot = r.foot;
+    if (r.recs) {
+      t.recs = r.recs;
+      t.head = r.head || null;
+      t.ids = new Map(r.recs.map((b, i) => [String(b.id), i]));
+    }
+    t.frame = r.frame || gFrame;
+    t.off = r.off || 0;
+    t.nb = r.n;
+    t.bad = r.bad;
+    S.n.built++;
+    S.ms.push(Math.round((performance.now() - t0) * 10) / 10);
+    if (S.ms.length > 40) S.ms.shift();
+    gridDirty = true;
+    markDirty(true);
+    ctx.KERN.emit('suhl:tile', { key: '10/' + t.k, level, on: true });
+  }
+  function free(t) {
+    if (!t.lvl && !t.meshes.length) return;
+    dropMeshes(t);
+    const was = t.lvl;
+    t.lvl = 0;
+    t.segs = null;
+    t.gen++;
+    S.n.freed++;
+    gridDirty = true;
+    markDirty(true);
+    ctx.KERN.emit('suhl:tile', { key: '10/' + t.k, level: was, on: false });
+  }
+  const READY = []; // answers waiting for their frame
+  function ask(t, level) {
+    t.busy = true;
+    t.dirty = false;
+    const gen = t.gen;
+    S.n.req++;
+    worker
+      .ask({
+        op: 'bau',
+        url: urlG(t),
+        turl: urlT(t),
+        frame: gFrame,
+        tile: { e0: t.T.e0, n0: t.T.n0, s: t.T.s, cx: t.T.cx, cy: t.T.cy },
+        level,
+        old: opt.old,
+        patch: S.patch,
+        extra: S.extra.get(t.k) || null,
+        recs: !t.recs || t.recsDirty,
+      })
+      .then(r => {
+        t.busy = false;
+        t.recsDirty = false;
+        if (gen !== t.gen) return;
+        READY.push([t, r, level]);
+      })
+      .catch(e => {
+        t.busy = false;
+        t.err = String((e && e.message) || e);
+        if (/worker stopped/.test(t.err)) return;
+        S.lastErr = t.err;
+        S.n.err++;
+      });
+  }
+  // ---- trees: crossed cards of the tree atlas (the far trees of world/ratscher.js), one instanced mesh per tile ----
+  const TK = ['oakA', 'ash', 'oakB', 'aspen', 'pine'];
+  let atlas = null;
+  function treeKit() {
+    if (atlas !== null) return atlas;
+    const src = RATSCHER.trees && RATSCHER.trees[0];
+    if (!src || !src.geometry || !src.material || TK.some(k => !TREES[k] || !TREES[k].bg || !TREES[k].lg)) return null;
+    // the share of the atlas cell a tree fills (as treeAtlas() of world/ratscher.js measures it)
+    const info = TK.map(k => {
+      const K = TREES[k],
+        bb = new THREE.Box3();
+      for (const g of [K.bg, K.lg]) {
+        if (!g.boundingBox) g.computeBoundingBox();
+        bb.union(g.boundingBox);
+      }
+      const sz = bb.getSize(new THREE.Vector3()),
+        hw = (Math.max(sz.x, sz.z) / 2) * 1.02,
+        H = sz.y * 1.02,
+        s = Math.max(hw * 2, H);
+      return { w: (hw * 2) / s, h: H / s };
+    });
+    atlas = { geo: src.geometry, mat: src.material, info };
+    return atlas;
+  }
+  function installTrees(t, r) {
+    const K = treeKit();
+    t.trBusy = false;
+    if (!K || !r.n) {
+      t.tr = { mesh: null, n: 0, xy: null };
+      return;
+    }
+    const a = r.trees,
+      n = r.n,
+      g = K.geo.clone(),
+      kk = new Float32Array(n);
+    g.setAttribute('aKind', new THREE.InstancedBufferAttribute(kk, 1));
+    const im = new THREE.InstancedMesh(g, K.mat, n),
+      m4 = new THREE.Matrix4(),
+      q = new THREE.Quaternion(),
+      up = new THREE.Vector3(0, 1, 0),
+      sv = new THREE.Vector3(),
+      pv = new THREE.Vector3(),
+      c = new THREE.Color(),
+      xy = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const x = a[i * 7],
+        y = a[i * 7 + 1],
+        z = a[i * 7 + 2],
+        h = a[i * 7 + 3],
+        rr = a[i * 7 + 4],
+        art = a[i * 7 + 5],
+        hs = a[i * 7 + 6],
+        kind = art >= 1 && art <= 5 ? 4 : Math.floor(hs * 3.999),
+        I = K.info[kind],
+        asp = I.w / I.h,
+        sy = h / I.h,
+        wv = Math.min(Math.max(rr * 2, h * asp * 0.75), h * asp * 1.35),
+        sx = wv / I.w;
+      q.setFromAxisAngle(up, hs * 6.283);
+      m4.compose(pv.set(x, z - 0.3, -y), q, sv.set(sx, sy, sx));
+      im.setMatrixAt(i, m4);
+      kk[i] = kind;
+      im.setColorAt(
+        i,
+        c
+          .setRGB(1, 1, 1)
+          .offsetHSL((hs - 0.5) * 0.04, 0, (hs - 0.5) * 0.1)
+          .multiplyScalar(kind === 4 ? 0.82 : 1)
+      );
+      xy[i * 3] = t.T.cx + x;
+      xy[i * 3 + 1] = t.T.cy + y;
+      xy[i * 3 + 2] = art === 30 ? 0 : Math.min(0.45, 0.12 + h * 0.012); // trunk radius for the collisions (a shrub has none)
+    }
+    im.position.set(t.T.cx, 0, -t.T.cy);
+    im.name = 'suhl baeume ' + t.k;
+    im.userData.noMerge = true;
+    im.castShadow = im.receiveShadow = false;
+    im.updateMatrixWorld();
+    im.computeBoundingSphere();
+    scene.add(im);
+    t.tr = { mesh: im, n, xy };
+    gridDirty = true;
+    markDirty(true);
+  }
+  function askTrees(t) {
+    t.trBusy = true;
+    worker
+      .ask({
+        op: 'baum',
+        url: urlB(t),
+        turl: urlT(t),
+        tile: { e0: t.T.e0, n0: t.T.n0, s: t.T.s, cx: t.T.cx, cy: t.T.cy },
+      })
+      .then(r => {
+        if (!t.trWant) t.trBusy = false;
+        else READY.push([t, r, 'tr']);
+      })
+      .catch(e => {
+        t.trBusy = false;
+        t.tr = { mesh: null, n: 0, xy: null, err: String((e && e.message) || e) };
+        S.lastErr = t.tr.err;
+      });
+  }
+  function freeTrees(t) {
+    if (!t.tr) return;
+    if (t.tr.mesh) {
+      scene.remove(t.tr.mesh);
+      t.tr.mesh.geometry.dispose();
+      t.tr.mesh.dispose();
+    }
+    t.tr = null;
+    gridDirty = true;
+    markDirty(true);
+  }
+  // ---- collisions: wall feet (level 1) and trunks in an 8 m hash, rebuilt when a tile came or went ----
+  let gridDirty = false;
+  const GRID = new Map(),
+    SEG = [],
+    TRUNK = [];
+  function grid() {
+    gridDirty = false;
+    GRID.clear();
+    SEG.length = 0;
+    TRUNK.length = 0;
+    const put = (i, j, v) => {
+      const k = i + ',' + j;
+      let a = GRID.get(k);
+      if (!a) GRID.set(k, (a = []));
+      a.push(v);
+    };
+    for (const t of S.tiles.values()) {
+      if (t.segs)
+        for (let k = 0; k + 3 < t.segs.length; k += 4) {
+          const s = [t.T.cx + t.segs[k], t.T.cy + t.segs[k + 1], t.T.cx + t.segs[k + 2], t.T.cy + t.segs[k + 3]],
+            n = SEG.push(s) - 1;
+          for (let i = Math.floor(Math.min(s[0], s[2]) / 8); i <= Math.floor(Math.max(s[0], s[2]) / 8); i++)
+            for (let j = Math.floor(Math.min(s[1], s[3]) / 8); j <= Math.floor(Math.max(s[1], s[3]) / 8); j++)
+              put(i, j, n);
+        }
+      if (t.tr && t.tr.xy)
+        for (let k = 0; k + 2 < t.tr.xy.length; k += 3) {
+          if (!t.tr.xy[k + 2]) continue;
+          const n = TRUNK.push([t.tr.xy[k], t.tr.xy[k + 1], t.tr.xy[k + 2]]) - 1;
+          put(Math.floor(t.tr.xy[k] / 8), Math.floor(t.tr.xy[k + 1] / 8), -1 - n);
+        }
+    }
+  }
+  S.pushOut = (p, r) => {
+    if (gridDirty) grid();
+    if (!SEG.length && !TRUNK.length) return undefined;
+    let moved = false;
+    const ci = Math.floor(p[0] / 8),
+      cj = Math.floor(p[1] / 8);
+    for (let i = ci - 1; i <= ci + 1; i++)
+      for (let j = cj - 1; j <= cj + 1; j++) {
+        const a = GRID.get(i + ',' + j);
+        if (!a) continue;
+        for (const k of a) {
+          let qx,
+            qy,
+            rr = r;
+          if (k < 0) {
+            const tk = TRUNK[-1 - k];
+            qx = tk[0];
+            qy = tk[1];
+            rr = r + tk[2];
+          } else {
+            const s = SEG[k],
+              ex = s[2] - s[0],
+              ey = s[3] - s[1],
+              l2 = ex * ex + ey * ey || 1,
+              u = Math.max(0, Math.min(1, ((p[0] - s[0]) * ex + (p[1] - s[1]) * ey) / l2));
+            qx = s[0] + ex * u;
+            qy = s[1] + ey * u;
+          }
+          const dx = p[0] - qx,
+            dy = p[1] - qy,
+            d = Math.hypot(dx, dy);
+          if (d < rr && d > 1e-6) {
+            p[0] = qx + (dx / d) * rr;
+            p[1] = qy + (dy / d) * rr;
+            moved = true;
+          }
+        }
+      }
+    return moved ? true : undefined;
+  };
+  // ---- the loop ----
+  let acc = 1;
+  const WAIT = [];
+  S.tick = (dt, o, top) => {
+    acc += dt;
+    // one finished tile per frame (the worker made the buffers; here only the meshes are put together)
+    if (READY.length && S.matsReady()) {
+      const [t, r, level] = READY.shift();
+      if (level === 'tr') {
+        if (t.trWant) installTrees(t, r);
+        else t.trBusy = false;
+      } else if (t.want === level || (!t.lvl && t.want)) install(t, r, level);
+      return;
+    }
+    if (acc < 0.25) return;
+    acc = 0;
+    const [E, N] = G.toU(o[0], o[1]),
+      k = 1 / G.k,
+      // from above: the picture's height decides (to 600 m the houses in full, beyond that the lean ones over everything in view)
+      r1 = top ? (top <= 600 ? top * 0.9 + 250 : 0) : R1,
+      r2 = top ? Math.max(R2, top * 1.3) : R2,
+      rt = top ? (top <= 600 ? top * 0.9 + 250 : 0) : RT;
+    let jobs = worker.busy();
+    const cand = [];
+    for (const t of S.tiles.values()) {
+      const d = G.dist(10, t.x, t.y, E, N) / k;
+      t.d = d;
+      if (t.g) {
+        // hysteresis: a level stays until the observer is a quarter further away than where it came
+        const w = d < (t.lvl === 1 ? r1 * 1.25 : r1) ? 1 : d < (t.lvl ? r2 * 1.15 : r2) ? 2 : 0;
+        t.want = w;
+        if (!w) {
+          if (t.busy) t.gen++;
+          free(t);
+        } else if ((w !== t.lvl || t.dirty) && !t.busy) cand.push([d + (w === 1 ? 0 : 5000), t, w]);
+      }
+      if (t.b) {
+        const w = d < (t.tr ? rt * 1.25 : rt);
+        t.trWant = w;
+        if (!w && t.tr) freeTrees(t);
+        else if (w && !t.tr && !t.trBusy) cand.push([d + 2500, t, 'tr']);
+      }
+    }
+    cand.sort((a, b) => a[0] - b[0]);
+    for (const [, t, w] of cand) {
+      if (jobs >= 3 || READY.length > 4) break;
+      if (w === 'tr') askTrees(t);
+      else ask(t, w);
+      jobs++;
+    }
+    // waits of SUHL.whenLevel
+    for (let i = WAIT.length - 1; i >= 0; i--) {
+      const w = WAIT[i],
+        lv = S.levelAt(w.x, w.y);
+      if (lv > 0 && lv <= w.n) {
+        WAIT.splice(i, 1);
+        w.res(lv);
+      }
+    }
+  };
+  S.levelAt = (x, y) => {
+    const [tx, ty] = G.at(10, x, y),
+      t = S.tiles.get(tx + '/' + ty);
+    return t && t.lvl ? t.lvl : -1;
+  };
+  S.whenLevel = (x, y, n) =>
+    new Promise(res => {
+      const lv = S.levelAt(x, y);
+      if (lv > 0 && lv <= n) res(lv);
+      else WAIT.push({ x, y, n, res });
+    });
+  // ---- records ----
+  // the view of a record the contract promises (docs/plans/plan_suhl.md 6.1); positions in model metres
+  function view(t, i) {
+    const b = t.recs[i],
+      fr = b._abs ? 'abs' : t.frame || gFrame,
+      ox = fr === 'abs' ? 0 : t.T.cx,
+      oy = fr === 'abs' ? 0 : t.T.cy,
+      map =
+        fr === 'utm'
+          ? (x, y) => {
+              const p = G.dM(x, y);
+              return [t.T.cx + p[0], t.T.cy + p[1]];
+            }
+          : (x, y) => [ox + x, oy + y],
+      pts = [];
+    for (let k = 0; k + 1 < b.f.length; k += 2) pts.push(map(b.f[k], b.f[k + 1]));
+    const z0 = t.foot ? t.foot[i * 4 + 2] : (b.z0 ?? 0),
+      d = b.d || {};
+    return {
+      id: String(b.id),
+      osm: b.osm || null,
+      name: b.n || b.name || null,
+      adr: b.adr || null,
+      use: b.use ?? null,
+      era: b.era ?? null,
+      kind: b.k ?? null,
+      quarter: b.q || b.quarter || null,
+      pts,
+      z0,
+      eave: b.e ?? null,
+      h: b.h ?? b.hr ?? null,
+      levels: b.gs ?? b.levels ?? d.levels ?? (Number.isFinite(b.e) ? Math.max(1, Math.round(b.e / 2.9)) : null),
+      roof: (b.R || []).map(r => ({
+        pts: r.p || r.pts || null,
+        area: r.a ?? r.area ?? null,
+        az: r.az ?? null,
+        slope: r.n ?? r.slope ?? null,
+        cls: r.k ?? r.cls ?? null,
+        col: r.c ?? r.col ?? null,
+      })),
+      sides: (b.S || b.F || []).map(s =>
+        Array.isArray(s)
+          ? {
+              a: map(s[0], s[1]),
+              b: map(s[2], s[3]),
+              len: Math.hypot(s[2] - s[0], s[3] - s[1]),
+              street: null,
+              params: null,
+              party: !!(s[8] & 1),
+            }
+          : {
+              a: s.a ? map(s.a[0], s.a[1]) : null,
+              b: s.b ? map(s.b[0], s.b[1]) : null,
+              len: s.len ?? null,
+              street: s.str ?? s.street ?? null,
+              params: s.p ?? s.params ?? null,
+              party: !!s.nb,
+            }
+      ),
+      flags: b.fl || null,
+      tile: '10/' + t.k,
+      raw: b,
+    };
+  }
+  const find = id => {
+    id = String(id);
+    for (const t of S.tiles.values())
+      if (t.ids) {
+        let i = t.ids.get(id);
+        if (i === undefined && id.startsWith('way/')) i = t.recs.findIndex(b => b.osm === id);
+        if (i !== undefined && i >= 0) return [t, i];
+      }
+    return null;
+  };
+  S.building = id => {
+    const f = find(id);
+    return f ? view(f[0], f[1]) : null;
+  };
+  S.buildingAt = (x, y) => {
+    const [tx, ty] = G.at(10, x, y);
+    // a building lies in one tile, but a point of it may lie in the neighbour's square
+    for (let i = tx - 1; i <= tx + 1; i++)
+      for (let j = ty - 1; j <= ty + 1; j++) {
+        const t = S.tiles.get(i + '/' + j);
+        if (!t || !t.recs) continue;
+        for (let n = 0; n < t.recs.length; n++) {
+          const v = view(t, n),
+            f = [];
+          for (const p of v.pts) f.push(p[0], p[1]);
+          if (inRing(f, x, y)) return v;
+        }
+      }
+    return null;
+  };
+  S.buildingsIn = area => {
+    const A = typeof area === 'string' ? opt.areas()[area] : area,
+      out = [];
+    if (!A) return out;
+    const c = A.center || [A.x, A.y],
+      r = A.r || 0;
+    for (const t of S.tiles.values())
+      if (t.recs && t.foot)
+        t.recs.forEach((b, i) => {
+          const x = t.T.cx + t.foot[i * 4],
+            y = t.T.cy + t.foot[i * 4 + 1];
+          if (A.poly ? inRing(A.poly.flat(), x, y) : Math.hypot(x - c[0], y - c[1]) <= r) out.push(String(b.id));
+        });
+    return out;
+  };
+  // a scenario changes a building: the tile is made again (the old meshes stay until the new ones are in)
+  const again = id => {
+    const f = find(id);
+    if (f) f[0].dirty = true;
+    ctx.KERN.emit('suhl:changed', { id: String(id) });
+  };
+  S.override = (id, patch) => {
+    S.patch[id] = Object.assign({}, S.patch[id], patch);
+    again(id);
+  };
+  S.reset = id => {
+    const ids = id === undefined ? Object.keys(S.patch) : [id];
+    for (const k of ids) {
+      delete S.patch[k];
+      again(k);
+    }
+  };
+  // a new building of a scenario: a record in absolute model metres (f, e, h, optional F, rv, rt …), id 'neu-…'
+  S.add = rec => {
+    let cx = 0,
+      cy = 0;
+    for (let k = 0; k + 1 < rec.f.length; k += 2) {
+      cx += (rec.f[k] * 2) / rec.f.length;
+      cy += (rec.f[k + 1] * 2) / rec.f.length;
+    }
+    const [tx, ty] = G.at(10, cx, cy),
+      t = tileOf(tx, ty),
+      L = S.extra.get(t.k) || [];
+    L.push(Object.assign({}, rec, { _abs: true }));
+    S.extra.set(t.k, L);
+    t.g = true;
+    t.recsDirty = t.dirty = true;
+    ctx.KERN.emit('suhl:changed', { id: String(rec.id) });
+    return String(rec.id);
+  };
+  S.remove = id => {
+    for (const [k, L] of S.extra) {
+      const i = L.findIndex(b => String(b.id) === String(id));
+      if (i < 0) continue;
+      L.splice(i, 1);
+      const t = S.tiles.get(k);
+      t.recsDirty = t.dirty = true;
+      ctx.KERN.emit('suhl:changed', { id: String(id) });
+    }
+  };
+  S.leave = () => {
+    for (const t of S.tiles.values()) {
+      t.gen++;
+      free(t);
+      freeTrees(t);
+      t.trBusy = false;
+      t.busy = false;
+      t.recs = t.ids = t.foot = null;
+    }
+    READY.length = 0;
+    if (farM) farM.dispose();
+    farM = null;
+    S.warmed = false;
+    grid();
+  };
+  S.state = () => {
+    const L = [...S.tiles.values()],
+      lv = n => L.filter(t => t.lvl === n).length;
+    return {
+      tiles: L.length,
+      l1: lv(1),
+      l2: lv(2),
+      trees: L.filter(t => t.tr && t.tr.mesh).length,
+      nTrees: L.reduce((n, t) => n + (t.tr ? t.tr.n : 0), 0),
+      buildings: L.reduce((n, t) => n + (t.lvl ? t.nb || 0 : 0), 0),
+      bad: L.reduce((n, t) => n + (t.lvl ? t.bad || 0 : 0), 0),
+      segs: SEG.length,
+      trunks: TRUNK.length,
+      queue: READY.length + L.filter(t => t.busy || t.trBusy).length,
+      built: S.n.built,
+      freed: S.n.freed,
+      req: S.n.req,
+      err: S.n.err,
+      lastErr: S.lastErr,
+      installMs: S.ms.length ? Math.max(...S.ms) : 0,
+      atlas: !!treeKit(),
+      mats: S.matsReady(),
+      frame: gFrame,
+      R: S.R,
+    };
+  };
+  // the centre of a tile near a point, for tests
+  S.tileAt = (x, y) => {
+    const [tx, ty] = G.at(10, x, y),
+      s = tsize(10);
+    return {
+      k: tx + '/' + ty,
+      has: S.tiles.has(tx + '/' + ty),
+      c: G.toM(ROOT_E0 + (tx + 0.5) * s, ROOT_N0 + (ty + 0.5) * s),
+      hh: hh(tx + ty),
+    };
+  };
+  return S;
+}

@@ -165,11 +165,18 @@ export const SUHL = (() => {
       v.after(b);
     }
   }
-  // one may walk where Suhl's ground is; the walls and the place names come from the package
-  KERN.provide('free', (x, y) => (api && S.state === 'ready' && api.covers(x, y) ? true : undefined), 10);
-  KERN.provide('pushOut', (p, r) => (api && S.state === 'ready' ? api.pushOut(p, r) : undefined), 15);
-  KERN.provide('place', (x, y, z) => (api && S.state === 'ready' ? api.place(x, y, z) : undefined), 20);
-  KERN.provide('ground', (x, y, z) => (api && S.state === 'ready' ? api.ground(x, y, z) : undefined), 8);
+  // one may walk where Suhl's ground is; walls, place names and the ground come from the package (the near ground itself is a tile
+  // set of WELT; above it later the street surfaces, below it the far ground while the near tiles are not in yet)
+  const live = () => api && S.state === 'ready';
+  KERN.provide('free', (x, y) => (live() && api.covers(x, y) ? true : undefined), 10);
+  KERN.provide('pushOut', (p, r) => (live() ? api.pushOut(p, r) : undefined), 15);
+  KERN.provide('place', (x, y, z) => (live() ? api.place(x, y, z) : undefined), 20);
+  KERN.provide('ground', (x, y, z) => (live() ? api.surface(x, y, z) : undefined), 8);
+  KERN.provide('ground', (x, y) => (live() ? api.terrainFar(x, y) : undefined), 3);
+  KERN.provide('terrain', (x, y) => (live() ? api.terrainFar(x, y) : undefined), 3);
+  // Suhl keeps its own ground (the road cut and fill are in its terrain tiles): 0 on it, 1 from 100 m outside – welt/fahrt.js must not
+  // carve there (its ownFade for Kloster Veßra; hook F1). Before the package is there nothing of Suhl is drawn: 1.
+  S.ownFade = (x, y) => (api ? api.ownFade(x, y) : 1);
   // ---- the zone: the smallest circle around the municipality plus 1.5 km (the garden, Schleusingen and Kloster Veßra stay outside) ----
   KERN.zone({
     id: 'suhl',
