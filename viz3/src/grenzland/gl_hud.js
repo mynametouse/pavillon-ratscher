@@ -100,7 +100,9 @@ body[data-gl-era="1989"] #gldatum{display:block}
 #glhud .gdot{border:0;background:rgba(14,18,22,.42);color:#fff;border-radius:999px;width:26px;height:20px;padding:0;font:700 13px/1 system-ui;cursor:pointer}
 #glhud .gk{display:flex;gap:5px;margin-top:2px}
 #glhud .gk i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:rgba(14,18,22,.5);opacity:.38;transition:opacity .3s,background .3s}
-#glhud .gk i.an{opacity:1;background:rgba(190,40,30,.78)} #glhud .gk svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#glhud .gk i.an{opacity:1;background:rgba(190,40,30,.78)} #glhud .gk i.neu{animation:glneu .5s ease-in-out 4}
+@keyframes glneu{50%{transform:scale(1.35);background:rgba(255,80,60,.95)}}
+ #glhud .gk svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #glhud .gw{max-width:230px;text-align:right;font:500 11.5px/1.35 var(--f-body,system-ui);opacity:.95}
 #glhud .gw:empty,#glhud .gh:empty{display:none}
 #glhud .gxtra{border:0;border-radius:999px;background:#f3c64f;color:#1d1b16;font:600 12px/1 var(--f-body,system-ui);padding:7px 11px;cursor:pointer;text-shadow:none}
@@ -138,6 +140,10 @@ body[data-gl-era="1989"] #gldatum{display:block}
 #glmtitel em{display:block;margin-top:12px;font:400 clamp(12px,1.6vw,15px)/1.4 var(--f-body,system-ui);font-style:normal;opacity:.9;text-shadow:0 1px 8px rgba(0,0,0,.95)}
 @keyframes gltit{from{letter-spacing:.14em;opacity:0;filter:blur(3px)}to{letter-spacing:.01em;opacity:1;filter:blur(0)}}
 /* scenes: black bars over and under the picture, the rest of the screen out of the way */
+/* a title during a scene: small at the lower left above the bar, like a film's credit – the faces stay free */
+body[data-gl-kino="1"] #glmtitel{left:max(4vw,16px);top:auto;bottom:calc(12vh + 14px);transform:none;width:auto;max-width:62vw;text-align:left}
+body[data-gl-kino="1"] #glmtitel b{font-size:clamp(22px,3.3vw,38px)} body[data-gl-kino="1"] #glmtitel em{display:none}
+body[data-gl-kino="1"] #glmtitel::before{inset:-30px -60px -30px -40px;background:radial-gradient(ellipse at 30% 50%,rgba(0,0,0,.55),rgba(0,0,0,0) 70%)}
 #glbars{position:absolute;inset:0;z-index:9;pointer-events:none}
 #glbars i{position:absolute;left:0;right:0;height:12vh;background:#000;transition:transform .6s ease}
 #glbars i:first-child{top:0;transform:translateY(-101%)} #glbars i:last-child{bottom:0;transform:translateY(101%)}
@@ -165,7 +171,7 @@ body[data-gl="1"][data-clean="1"] :is(#glhud,#glort,#glvoll){display:none!import
    side; stacked again (found by agent welt; the shared phone of agent handy replaces this panel) */
 #glhandy .hb{display:block;gap:0;min-height:0;font:inherit;color:inherit;cursor:auto;backdrop-filter:none;-webkit-backdrop-filter:none}
 /* the game's own speech line (a villager, a thought) gives way while a subtitle of the mode shows */
-body[data-gl="1"]:has(#glsub:not([hidden])) #npcsub{visibility:hidden}
+body[data-gl="1"]:has(#glsub:not([hidden])) #npcsub,body[data-gl-kino="1"] #npcsub{visibility:hidden}
 body:has(#npcpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),body:has(#dorfpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen),
 body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:none!important}
 
@@ -575,11 +581,18 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
     S.subEl.hidden = false;
     S.subT = dur;
     S.subPrio = prio;
-    // the car radio's words step back while somebody speaks
-    if (!S.funkEl.hidden) {
+    // the car radio's words step back while somebody speaks (the police radio may stand under them – the stack keeps both apart)
+    if (prio > 0 && !S.funkEl.hidden) {
       S.funkEl.hidden = true;
       S.funkT = 0;
     }
+  }
+  // the subtitle away at once (a scene skipped); what waited goes too
+  function subAus() {
+    build();
+    S.subQ.length = 0;
+    S.subT = 0;
+    S.subEl.hidden = true;
   }
   function subNext() {
     while (S.subQ.length) {
@@ -587,12 +600,12 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
       if (l.age < 9) return zeige(l.name, l.text, l.dur, l.prio);
     }
   }
-  // what the car radio says: a line of its own above the subtitles – only while nobody speaks (GTA does not write the radio over a talk)
+  // what the car radio says: a line of its own above the subtitles – only while no person speaks (GTA does not write the radio over a talk)
   function funk(name, text, ms = 0) {
     build();
     const dur = text ? (ms || Math.max(2600, 1200 + String(text).length * 62)) / 1000 : 0;
     S.funkEl.innerHTML = '<b>♪ ' + esc(name || 'Radio') + '</b>' + esc(text || '');
-    S.funkEl.hidden = !text || S.subT > 0.05 || S.kinoOn;
+    S.funkEl.hidden = !text || (S.subT > 0.05 && S.subPrio > 0) || S.kinoOn;
     S.funkT = S.funkEl.hidden ? 0 : dur;
     return dur;
   }
@@ -670,6 +683,19 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
       refresh();
     }
   }
+  // the police learned something (agent welt: { wissen, neu?, weg? }): its sign blinks a few times
+  KERN.on('grenzland:wissen', d => {
+    if (!S.shown || !d || !d.neu) return;
+    const wk = q('glwissen');
+    if (!wk) return;
+    for (const k of [].concat(d.neu)) {
+      const i = wk.querySelector('[data-w="' + k + '"]');
+      if (!i) continue;
+      i.classList.remove('neu');
+      void i.offsetWidth;
+      i.classList.add('neu');
+    }
+  });
   KERN.on('grenzland:geld', () => {
     S.last = '';
   });
@@ -692,6 +718,7 @@ body:has(#verkehrpanel:not([hidden])) :is(#gltouch,#glmsg,#glzeilen){display:non
     ort,
     titel,
     kino,
+    subAus,
     busy,
     ruhig,
     auf,
