@@ -423,8 +423,8 @@ export const GLEREIGNIS = (() => {
           L0 = (GLDATA.ORTE.linde && GLDATA.ORTE.linde.pos) || [213.5, -112.5];
         if (hyp(p.x - a[0], p.y - a[1]) > 700) return null;
         // on the green by the Anger: room for the tree, the stall and a bench (9 m free all round), not under the Linde's crown
-        const q = freierPlatz(a[0], a[1], 9, [L0[0], L0[1], 13]) ||
-          freierPlatz(a[0], a[1], 6, [L0[0], L0[1], 11]) || [a[0] + 10, a[1] + 8];
+        const q = freierPlatz(a[0], a[1], 9, [L0[0], L0[1], 18]) ||
+          freierPlatz(a[0], a[1], 6, [L0[0], L0[1], 16]) || [a[0] + 10, a[1] + 8];
         // the stall faces where the player comes from
         return { x: q[0], y: q[1], hd: Math.atan2(p.x - q[0], p.y - q[1]) + Math.PI };
       },
@@ -436,17 +436,20 @@ export const GLEREIGNIS = (() => {
         E.meshes.push(
           mesh(
             K => {
-              K.cyl(0, 0, 0, 13.5, 0.16, 0.09, 8, L(188, 160, 120));
-              K.cyl(0, 0, 13.2, 16.4, 0.05, 0.02, 6, L(110, 90, 60));
-              for (let i = 0; i < 9; i++) {
-                const a = (i / 9) * Math.PI * 2;
-                K.box(Math.sin(a) * 0.6, Math.cos(a) * 0.6, 13.4 + (i % 3) * 0.5, 0.5, 1.4, 1.1, a, L(70, 120, 50));
-              }
-              K.cyl(0, 0, 9.6, 9.9, 0.95, 0.95, 16, L(60, 110, 50), false);
-              const C = [L(220, 40, 40), L(240, 240, 240), L(40, 90, 200), L(240, 200, 40)];
-              for (let i = 0; i < 8; i++) {
-                const a = (i / 8) * Math.PI * 2;
-                K.box(Math.sin(a) * 0.5, Math.cos(a) * 0.5, 7.4, 0.06, 0.02, 2.2, a, C[i % 4]);
+              // the trunk, peeled, and the green top of the spruce left on it (a cone of three tiers)
+              K.cyl(0, 0, 0, 14, 0.17, 0.08, 10, L(196, 168, 126));
+              for (const [z0, z1, r] of [
+                [12.6, 14.6, 1.25],
+                [14.0, 15.8, 0.9],
+                [15.3, 17.0, 0.55],
+              ])
+                K.cyl(0, 0, z0, z1, r, 0.08, 10, L(52, 96, 46), false);
+              // the wreath and its ribbons in the colours of the fair
+              K.cyl(0, 0, 10.2, 10.55, 1.05, 1.05, 18, L(66, 112, 52), false);
+              const C = [L(220, 40, 40), L(244, 244, 240), L(40, 90, 200), L(240, 200, 40)];
+              for (let i = 0; i < 12; i++) {
+                const a = (i / 12) * Math.PI * 2;
+                K.box(Math.sin(a) * 1.02, Math.cos(a) * 1.02, 7.2, 0.08, 0.02, 3.0, a, C[i % 4]);
               }
             },
             A.x,
@@ -548,16 +551,17 @@ export const GLEREIGNIS = (() => {
         if (!line) return false;
         const looks = [
           ['wartburg', { col: '#f2f0ea' }],
-          ['trabant', { col: '#e8e4d8' }],
+          ['trabant', { col: '#5d7f9e' }],
           ['kombi', { col: '#2d3a55' }],
-          ['kasten', { col: '#d9d9d6' }],
+          ['trabant_kombi', { col: '#a33a2c' }],
         ];
         E.row = [];
         looks.forEach(([t, o], i) => {
           const c = auto(E, t, o);
           if (!c) return;
           GLAUTO.onLine(c, line, 46 - i * 11, 6);
-          schleife(c);
+          // (white ribbons on dark cars, pink ones on light cars; the bride's car with a sign and tin cans behind)
+          schleife(c, /^#[def]/i.test(o.col) ? L(236, 140, 172) : L(248, 248, 246), i === 0);
           E.row.push(c);
         });
         E.hornT = 0.5;
@@ -818,12 +822,12 @@ export const GLEREIGNIS = (() => {
     K.box(0, -0.49, 0.72, 0.2, 0.04, 0.2, 0, w);
   }
   // a wedding car: white ribbons from both mirrors down to a bow on the front of the bonnet, a little bouquet in it
-  function schleife(c) {
+  function schleife(c, w, braut) {
     const T = c.T || {},
       h = T.h || 1.45,
       hw = T.hw || 0.8,
       yf = T.yf ?? 2.0,
-      w = L(248, 248, 246),
+      yr = T.yr ?? -2.0,
       K = VPROPS.kit();
     const band = (a, b, br) => {
       const dx = b[0] - a[0],
@@ -854,6 +858,36 @@ export const GLEREIGNIS = (() => {
       [0, -0.14, L(90, 150, 70)],
     ])
       K.box(x, front[1] + y, front[2] + 0.02, 0.07, 0.07, 0.07, 0.4, col);
+    if (braut) {
+      // the sign on the boot lid, and tin cans on strings behind
+      const wb = L(250, 250, 248),
+        red = L(200, 30, 50),
+        y0 = yr + 0.12,
+        z0 = h * 0.62;
+      K.box(0, y0 + 0.02, z0, 1.12, 0.02, 0.15, 0, wb);
+      GLORTE.tafelText(K, 'FRISCH VERHEIRATET', [0, y0, z0 + 0.075], Math.PI, 0.0095, red);
+      for (let i = 0; i < 5; i++) {
+        const x = -0.5 + i * 0.25,
+          y = yr - 0.9 - (i % 2) * 0.35;
+        K.cyl(x, y, 0.02, 0.15, 0.045, 0.045, 8, L(176, 180, 186), true);
+        const a = [x * 0.5, yr + 0.02, 0.32],
+          b = [x, y + 0.04, 0.12];
+        K.quad(
+          [a[0] - 0.006, a[1], a[2]],
+          [a[0] + 0.006, a[1], a[2]],
+          [b[0] + 0.006, b[1], b[2]],
+          [b[0] - 0.006, b[1], b[2]],
+          L(220, 220, 214)
+        );
+        K.quad(
+          [b[0] - 0.006, b[1], b[2]],
+          [b[0] + 0.006, b[1], b[2]],
+          [a[0] + 0.006, a[1], a[2]],
+          [a[0] - 0.006, a[1], a[2]],
+          L(220, 220, 214)
+        );
+      }
+    }
     const m = new THREE.Mesh(K.geo(), VFIG.mat());
     m.userData.noMerge = true;
     m.castShadow = false;

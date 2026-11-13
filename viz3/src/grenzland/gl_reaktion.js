@@ -179,11 +179,13 @@ export const GLREAKTION = (() => {
       zeugen = o.zeugen ?? GLFAHNDUNG.zeugen().filter(z => !z.police).length;
     if (!figs.length && !zeugen && !o.force) return false;
     S.filmT = 22;
-    const n = Math.min(figs.length, 1 + Math.floor(Math.random() * 3));
+    // (in a mission or a scene the story's people are busy: nobody raises a phone there – the post comes all the same)
+    const frei = !GL.cur && document.body.dataset.glKino !== '1',
+      n = frei ? Math.min(figs.length, 1 + Math.floor(Math.random() * 3)) : 0;
     for (let i = 0; i < n; i++) filmen(figs[i], 5 + Math.random() * 3);
     // the moment: from the nearest filmer's eyes (when the player can be seen), else his own view
     const F = figs[0],
-      von = F && sichtbar() ? [F.x, F.y, (F.z || KERN.ground(F.x, F.y)) + 1.55] : null,
+      von = F && frei && sichtbar() ? [F.x, F.y, (F.z || KERN.ground(F.x, F.y)) + 1.55] : null,
       img = knips(von ? { von, auf: [p[0], p[1], p[2] + 1.1] } : {});
     const ort = ortName(p[0], p[1]),
       stars = GLLOGIK.stars(GL.W),
@@ -262,6 +264,16 @@ export const GLREAKTION = (() => {
     return rnd(D.SAGT.blick);
   }
   function schauen(dt) {
+    // (only in free play: in a mission the scenes decide where people look – what looked at him lets go)
+    if (GL.cur || document.body.dataset.glKino === '1') {
+      for (const F of S.blick.keys())
+        try {
+          if (GLFIG.blick && !F.gone && !F.filmt) GLFIG.blick(F, null);
+        } catch (e) {}
+      S.blick.clear();
+      S.stillT = 0;
+      return;
+    }
     const p = where(),
       v = VEH.cur ? hyp(VEH.cur.st.u, VEH.cur.st.v) : P.speed || 0;
     S.stillT = v < 0.4 ? S.stillT + dt : 0;
@@ -287,17 +299,8 @@ export const GLREAKTION = (() => {
         } catch (e) {}
       }
       S.blick.set(F, t);
-      // after a while, in free play, a word (not while a talk of the story runs)
-      if (
-        t > 2.4 &&
-        !GL.cur &&
-        S.sagT <= 0 &&
-        !(S.sagVon[F.id] > 0) &&
-        named(F) &&
-        !S.wahl &&
-        document.body.dataset.glKino !== '1'
-      )
-        sag(F, zeile(F));
+      // after a while a word
+      if (t > 2.4 && S.sagT <= 0 && !(S.sagVon[F.id] > 0) && named(F) && !S.wahl) sag(F, zeile(F));
     }
     for (const F of [...S.blick.keys()]) if (!nah.includes(F)) S.blick.delete(F);
   }

@@ -53,7 +53,8 @@ oder Ort („Zuletzt gesehen in Ratscher.“ …) · „Kommen.“
 - **Was „wild“ ist:** eine Tat, die jemand gesehen hat (außer „Fahren ohne Helm“ und der Pöbelei), ein Böller, ein Zusammenstoß (das
   Fahrzeug verliert auf einmal mehr als 6,5 m/s), eine Verfolgung mit Blaulicht an Leuten vorbei (ab zwei Sternen, höchstens alle 50 s),
   Vollgas über einen Markt, eine durchbrochene Sperre, ab vier Sternen ein Großeinsatz. Höchstens alle 22 s ein Moment.
-- **Wer filmt:** ein bis drei Figuren des Modus im Umkreis von 38 m heben das Handy (`GLFIG.geste(F, 'filmen', { halten: true })` des
+- **Wer filmt:** (nur im freien Spiel – in einer Mission oder Szene bleiben die Leute der Geschichte bei ihrer Rolle, der Post kommt
+  trotzdem) ein bis drei Figuren des Modus im Umkreis von 38 m heben das Handy (`GLFIG.geste(F, 'filmen', { halten: true })` des
   Agenten `figuren`, der Kopf folgt dem Spieler: `GLFIG.blick(F, 'spieler')`), 5–8 s lang; `F.filmt` (Sekunden) ist das Merkmal für
   Tests. Gibt es keine Figur, aber Leute der Basis-Welt, die zusahen, gibt es den Post trotzdem.
 - **Das Bild:** im selben Augenblick ein echtes Bild – aus den Augen der nächsten filmenden Figur auf den Spieler (wenn er zu sehen ist:
@@ -66,10 +67,15 @@ oder Ort („Zuletzt gesehen in Ratscher.“ …) · „Kommen.“
   Ratscher los?? 😳 #Ratscher“), erfundene Absender; Großes ist ein LIVE-Post von „suedthueringen.live“. `GLREAKTION.gepostet` hält die
   letzten zwölf Posts mit Bild (für Tests). Der Polizeibericht im Radio bleibt, wie er ist.
 
+- **Fahndungsaufruf:** ab zwei Sternen postet die (erfundene) Blaulicht-Seite „blaulicht_schleusetal“ einmal je Fahndung die aktuelle
+  Beschreibung der Polizei: „🚨 Fahndung bei Ratscher: Gesucht wird eine Person, männlich, rotes Karohemd, … Hinweise bitte an die
+  Polizei. Teilen erwünscht!“ – mit dem letzten Bild, wenn eins da ist.
+
 ## 4. Blicke, Sprüche, vier Antworten (`gl_reaktion.js`, `gl_reaktion_data.js`)
 
-- Figuren des Modus in der Nähe schauen den Spieler an, wenn er bei ihnen stehen bleibt (1,2 s, 8 m) oder sie ansieht (12 m, ±12°).
-  Nach 2,4 s sagt eine benannte Person etwas (nur im freien Spiel, nie in einer Zwischensequenz, je Person höchstens alle 45 s): zur
+- Figuren des Modus in der Nähe schauen den Spieler an, wenn er bei ihnen stehen bleibt (1,2 s, 8 m) oder sie ansieht (12 m, ±12°) –
+  nur im freien Spiel (in Missionen und Szenen bestimmt `kino`, wohin jemand schaut; beim Wechsel lassen alle Blicke los).
+  Nach 2,4 s sagt eine benannte Person etwas (je Person höchstens alle 45 s): zur
   Kleidung (Karohemd, Warnjacke, Helm), zum Fahrzeug („Eine Simson! Die läuft ja noch.“), zu einer Tat eben, dass er gesucht wird.
 - **Ansprechen** (Aktionsknopf bei einer benannten Person, die steht): „Grüßen · Sprüche klopfen · Beruhigen · Provozieren“ im Auswahlfeld
   des Modus (`GLHUD.wahl`), Tasten 1–4 oder Tippen.
@@ -91,8 +97,8 @@ Punkt auf dem Radar (`GLKARTE.src`, Art `ort`) und wird weggeräumt, wenn es vor
 |---|---|---|
 | Blitzer | ein Kombi am Straßenrand, die Kamera auf dem Stativ daneben | schneller als 50 km/h: weißer Blitz, eine Minute später der Brief im Handy, 30 € |
 | Traktorstau | ein roter Traktor nach Art des Fortschritt ZT 300 mit Strohballen-Hänger (hier aus dem Bausatz gebaut, fährt auf der Linie der Straße, fest für Fahrzeug und Fußgänger), 19 km/h, zwei Autos dahinter, die hupen | überholen: der Fahrer tippt sich an die Mütze |
-| Kirmes | auf einem freien Platz am Anger (abseits der Straßen, 9 m frei von Mauern und Stämmen, nicht unter der Linde): Kirmesbaum, Bratwurststand „ROSTBRATWURST“ (zum Spieler gedreht), Bank, Wirt, Kirmesbursche und -mädchen, Polka (nicht über dem Autoradio) | Rostbratwurst für 3 € |
-| Hochzeitskorso | vier Autos mit weißen Bändern von den Spiegeln zur Schleife auf der Motorhaube (mit Sträußchen) kommen entgegen und hupen | 20 s mitfahren: 10 € vom Brautvater |
+| Kirmes | auf einem freien Platz am Anger (abseits der Straßen, 9 m frei von Mauern und Stämmen, 18 m weg von der Linde): Kirmesbaum (geschälter Stamm mit grüner Spitze, Kranz, bunte Bänder), Bratwurststand „ROSTBRATWURST“ (zum Spieler gedreht), Bank, Wirt, Kirmesbursche und -mädchen, Polka (nicht über dem Autoradio) | Rostbratwurst für 3 € |
+| Hochzeitskorso | vier Autos mit Bändern von den Spiegeln zur Schleife auf der Motorhaube (mit Sträußchen; weiß auf dunklen, rosa auf hellen Autos), am Brautauto hinten „FRISCH VERHEIRATET“ und Blechdosen an Schnüren; sie kommen entgegen und hupen | 20 s mitfahren: 10 € vom Brautvater |
 | Böller aus dem Kofferraum | ein Kombi mit offenem Kofferraum, bunte Kisten auf dem Gehweg, der Böller-Mann in Ballonseide | drei Böller für 5 € |
 | Wildwechsel | in der Dämmerung springt ein Reh über die Landstraße | gebremst oder „Rums!“ – das Reh läuft davon, niemandem passiert etwas |
 
