@@ -1,0 +1,7 @@
+Bestellung eines Laufs von suhl-strassen (Zeilen key=value; alles andere ist Text).
+bestellt 2026-11-13T01:19:48Z: ganze Stadt und Anfahrt noch einmal mit dem Stand nach den Antworten des Straßen-Chats (Fußgängerzone und
+verkehrsberuhigt als street mit Bit 64; Orte: Stadt und Dörfer; Abstand der Profile zum Boden als Zahl), auf den ungeschnittenen
+Geländekacheln von suhl-boden (Lauf 43340569202, Modus stadt, v1: Copernicus GLO-30, Kronenabzug 9,32 m). Der nächste Lauf nimmt
+das Artefakt suhl-boden-roh mit DGM1, sobald suhl-boden die Laufnummer nennt.
+boden_run=43340569202
+boden_artifact=suhl-boden-v1

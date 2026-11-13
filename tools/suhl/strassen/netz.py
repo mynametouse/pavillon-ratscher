@@ -24,11 +24,12 @@ KINDS, SURF = ST.KINDS, ST.SURF
 # flags of a way (field 4 of a way in the drive data). The app reads 1 and 2 (viz3/src/welt/fahrt.js); strecke.py writes 4; the first
 # Suhl attempt wrote 8 and 16. From 32 on: Suhl's proposal to the roads chat (docs/features/suhl-strassen.md).
 FL = {'bridge': 1, 'tunnel': 2, 'oneway': 4, 'motorway': 8, 'link': 16, 'roundabout': 32, 'level': 64, 'steps': 128,
-      'no_walk_left': 256, 'no_walk_right': 512, 'private': 1024, 'passage': 2048, 'covered': 4096, 'sidewalk': 8192, 'crossing': 16384}
+      'no_walk_left': 256, 'no_walk_right': 512, 'private': 1024, 'passage': 2048, 'covered': 4096, 'sidewalk': 8192, 'crossing': 16384,
+      'into_building': 32768}
 FL_DOC = {1: 'Brücke', 2: 'Tunnel', 4: 'Einbahnstraße in Punktrichtung', 8: 'Autobahn-Fahrbahn', 16: 'Autobahn-Rampe', 32: 'Kreisverkehr',
           64: 'niveaugleich ohne Bord (Fußgängerzone, verkehrsberuhigt)', 128: 'Treppe', 256: 'links kein Gehweg', 512: 'rechts kein Gehweg',
           1024: 'nicht öffentlich (access=private/no)', 2048: 'Hausdurchgang', 4096: 'überdacht', 8192: 'eigens kartierter Gehweg neben einer Straße',
-          16384: 'Querung (Fußweg über die Fahrbahn)'}
+          16384: 'Querung (Fußweg über die Fahrbahn)', 32768: 'führt in ein Gebäude (Einfahrt, Durchfahrt ohne Tunnel-Angabe)'}
 HW_SKIP = {'construction', 'proposed', 'platform', 'rest_area', 'services', 'elevator', 'corridor', 'raceway', 'bus_stop', 'razed',
            'abandoned', 'planned', 'escape', 'via_ferrata', 'emergency_bay', 'disused'}
 NONE_WALK = ('no', 'none', 'separate')
@@ -110,15 +111,12 @@ def record(wid, nd, t, nodes):
         f |= FL['sidewalk']
     if t.get('footway') == 'crossing' or t.get('cycleway') == 'crossing' or t.get('path') == 'crossing':
         f |= FL['crossing']
-    # what the drive data say: until the road map knows 'no kerb' (wish W1) a pedestrian street goes as 'foot' and a living street
-    # as 'service' – the shader draws neither with kerb and pavement; the OSM class stays in 'hw'
+    # what the drive data say: the class of the region (classify). A pedestrian street and a living street are 'street' with the
+    # bit 'level' (64): the road map of feat/strassen draws that as its kind 9 – no kerb, gutter, pavement, line (answer of the
+    # roads chat to wish W1, 13.11.2026 2:00); the OSM class stays in 'hw'
     kout = kind
-    if hw == 'pedestrian':
-        kout = 'foot'
-        if 'surface' not in t:
-            surf = 'paving'
-    elif hw == 'living_street':
-        kout = 'service'
+    if hw == 'pedestrian' and 'surface' not in t:
+        surf = 'paving'
     ms = _num(t.get('maxspeed', ''))
     try:
         layer = int(t.get('layer', '0'))
@@ -127,24 +125,110 @@ def record(wid, nd, t, nodes):
     return dict(id=wid, kind=kind, kout=kout, surf=surf, w=float(np.clip(wd, 1.0, 16.0)), fl=f, refs=refs, name=t.get('name', ''),
                 ref=t.get('ref', ''), layer=layer, hw=hw, lanes=lanes, ms=int(ms) if ms and ms < 200 else 0,
                 lit={'yes': 1, '24/7': 1, 'automatic': 1, 'no': 2}.get(t.get('lit'), 0), service=t.get('service', ''),
-                bname=t.get('bridge:name', '') or t.get('tunnel:name', ''))
+                bname=t.get('bridge:name', '') or t.get('tunnel:name', ''), wtag=_num(t.get('width', '')) is not None)
 
 
-def select(o, box):
-    """all ways of the street space with a node inside the UTM box"""
+RAIL = {'rail': 0, 'light_rail': 0, 'narrow_gauge': 0, 'tram': 0, 'preserved': 1, 'disused': 1}
+RAIL_SIDE = ('siding', 'yard', 'spur', 'crossover')
+
+
+def rail_record(wid, nd, t, nodes):
+    """a railway track as a way of the same network (kind 'rail'): its profile is solved with the roads, so a level crossing has one
+    height and a road bridge keeps its clearance over the track. Tracks taken up (railway=abandoned) are no tracks."""
+    rw = t.get('railway')
+    if rw not in RAIL:
+        return None
+    refs = [r for r in nd if r in nodes]
+    if len(refs) < 2:
+        return None
+    fl = (1 if t.get('bridge') not in (None, 'no') else 0) | (2 if t.get('tunnel') not in (None, 'no') else 0)
+    try:
+        layer = int(t.get('layer', '0'))
+    except ValueError:
+        layer = 0
+    ms = _num(t.get('maxspeed', ''))
+    return dict(id=wid, kind='rail', kout='rail', surf='gravel', w=3.2, fl=fl, refs=refs, name=t.get('name', ''), ref=t.get('ref', ''),
+                layer=layer, hw='railway=' + rw, lanes=0, ms=int(ms) if ms and ms < 400 else 0, lit=0, service=t.get('service', ''),
+                bname=t.get('bridge:name', '') or t.get('tunnel:name', ''), L=600.0, rtype=RAIL[rw],
+                side=1 if t.get('service') in RAIL_SIDE else 0)
+
+
+def select(o, box, rail=True, tiles=None):
+    """all ways of the street space (and the tracks) with a node inside the UTM box; tiles: a set of level-10 tile keys – then only
+    ways with a node in one of them (the municipality is no rectangle: its bounding box holds twice its roads)"""
     e0, n0, e1, n1 = box
+    s = S.ROOT / (1 << S.LEVEL)
     out = []
     for wid, (nd, t) in o.ways.items():
-        if 'highway' not in t:
+        if 'highway' in t:
+            r = record(wid, nd, t, o.nodes)
+        elif rail and 'railway' in t:
+            r = rail_record(wid, nd, t, o.nodes)
+        else:
             continue
-        r = record(wid, nd, t, o.nodes)
         if r is None:
             continue
         P = np.array([o.nodes[i] for i in r['refs']])
-        if ((P[:, 0] > e0) & (P[:, 0] < e1) & (P[:, 1] > n0) & (P[:, 1] < n1)).any():
-            out.append(r)
+        if not ((P[:, 0] > e0) & (P[:, 0] < e1) & (P[:, 1] > n0) & (P[:, 1] < n1)).any():
+            continue
+        if tiles is not None:
+            tx = np.floor((P[:, 0] - S.ROOT_E0) / s).astype(int)
+            ty = np.floor((P[:, 1] - S.ROOT_N0) / s).astype(int)
+            if not any((int(a), int(b)) in tiles for a, b in zip(tx, ty)):
+                continue
+        out.append(r)
     out.sort(key=lambda w: w['id'])
     return out
+
+
+def is_building(t):
+    """a building that stands on the ground (no roof over a filling station, no carport, nothing underground or on a bridge)"""
+    b = t.get('building')
+    if not b or b in ('no', 'roof', 'carport'):
+        return False
+    if t.get('location') == 'underground' or 'bridge' in t:
+        return False
+    try:
+        if int(t.get('layer', '0')) < 0:
+            return False
+    except ValueError:
+        pass
+    return True
+
+
+def fit_buildings(ways, o, gap=0.3, min_w=2.2):
+    """no building inside a carriageway (plan 5.3): where a house stands nearer to the axis of a road for cars than half its assumed
+    width, the road is as narrow as the house allows (the default widths of the classes are too wide for the lanes of the old town);
+    a width OSM gives is kept. A way whose axis itself enters a building (the ramp into a car park, a passage without a tunnel tag)
+    gets the flag 'into_building'. -> (narrowed, into a building, buildings looked at)"""
+    from shapely.geometry import LineString
+    from shapely.strtree import STRtree
+    B = [p for kind, i, t, p in o.areas(is_building)]
+    if not B:
+        return 0, 0, 0
+    tree = STRtree(B)
+    skip = 1 | 2 | FL['passage'] | FL['covered']
+    nn = ni = 0
+    for w in ways:
+        if w['kind'] not in ('motorway', 'main', 'county', 'street', 'lane', 'service') or w['fl'] & skip or w['hw'] == 'pedestrian':
+            continue
+        ln = LineString([o.nodes[r] for r in w['refs']])
+        hw = w['w'] / 2
+        idx = tree.query(ln.buffer(hw), predicate='intersects')
+        if not len(idx):
+            continue
+        d = min(ln.distance(B[j]) for j in idx)
+        if d <= 0.05:
+            w['fl'] |= FL['into_building']
+            ni += 1
+            near = [ln.distance(B[j]) for j in idx if ln.distance(B[j]) > 0.05]
+            if not near or w['wtag']:
+                continue
+            d = min(near)
+        if d - gap < hw and not w['wtag']:
+            w['w'] = float(max(min_w, 2 * (d - gap)))
+            nn += 1
+    return nn, ni, len(B)
 
 
 def lam_of(w, grob=1.0):
@@ -154,7 +238,7 @@ def lam_of(w, grob=1.0):
     if w['fl'] & 3:
         return 1e9
     L = w.get('L') or WR.KINDS[w['kind']][3]
-    if grob != 1.0 and WR.KINDS[w['kind']][5] <= 6:
+    if grob != 1.0 and w['kind'] in WR.KINDS and WR.KINDS[w['kind']][5] <= 6:
         L *= grob
     return (L / (2 * math.pi)) ** 4
 
@@ -274,7 +358,7 @@ def solve(pos, chains, dem, pin=None, joints=True, flat=True, twins=True, offset
         # the plane that road has there (its longitudinal grade; flat across). h_k - h_j - g t_k = 0 with g = (h_b - h_a) / |ab|.
         SQ = 40.0
         ck, cj, ca, cb, vk, vj, va, vb = [], [], [], [], [], [], [], []
-        rank = lambda ci: (WR.KINDS[chains[ci][0]['kind']][5], chains[ci][0]['w'])
+        rank = lambda ci: (WR.KINDS[chains[ci][0]['kind']][5] if chains[ci][0]['kind'] in WR.KINDS else 10, chains[ci][0]['w'])   # a track outranks every road
         stiff = lambda ci: chains[ci][0]['fl'] & (3 | FL['steps'])
         for j, oc in occ.items():
             arms = []     # (chain, index of j in it, direction)
@@ -472,6 +556,47 @@ def clearance(pos, chains, h, clear=4.5):
     worst.sort()
     return {'bridges': nb, 'crossings': ncross, 'low': nlow, 'clear_m': clear,
             'lowest': [{'gap_m': g, 'bridge_way': a, 'name': n, 'below_way': b} for g, a, n, b in worst[:12]]}
+
+
+# ---------------- places ----------------
+def built_up(o, areas_g, orte_g):
+    """the places of Suhl for the style of the road map: the Kernstadt as a town; the villages that lie in it (Goldlauter, Heidersbach,
+    Mäbendorf) and outside it (Albrechts, Dietzhausen …) as villages -> [(name, 'town' | 'village', (E, N), shapely geometry UTM)]"""
+    from shapely.geometry import Point
+    from shapely.ops import unary_union
+    kern = areas_g['kernstadt']
+    vill = [(n, pl, E, N) for n, pl, E, N in orte_g if pl == 'village']
+    lu = [p for kind, i, t, p in o.areas(lambda t: t.get('landuse') in ('residential', 'farmyard', 'commercial', 'retail', 'industrial'))]
+    out, cut_ = [], []
+    for n, pl, E, N in vill:
+        c = Point(E, N)
+        near = [p for p in lu if p.distance(c) < 1200 and not (kern.contains(p.centroid) and c.distance(p.centroid) > 800)]
+        if not near:
+            continue
+        u = unary_union([p.buffer(60) for p in near]).buffer(-45)
+        gs = [g for g in (u.geoms if hasattr(u, 'geoms') else [u]) if g.area > 2000 and g.distance(c) < 700]
+        if not gs:
+            continue
+        g = unary_union(gs)
+        out.append((n, 'village', (E, N), g))
+        cut_.append(g.buffer(15))
+    town = kern.difference(unary_union(cut_)) if cut_ else kern
+    town = town.buffer(-8).buffer(8)
+    out.insert(0, ('Suhl', 'town', S.CENTRE_UTM, town))
+    return out
+
+
+def rings_model(g, tol=6.0, dm=False):
+    """the outer rings of a UTM geometry as flat lists in model metres (or dm), small parts left out"""
+    rs = []
+    for pg in (g.geoms if hasattr(g, 'geoms') else [g]):
+        if pg.area < 2000:
+            continue
+        c = np.array(pg.simplify(tol).exterior.coords)[:-1]
+        x, y = S.u2m(c[:, 0], c[:, 1])
+        k = 10 if dm else 1
+        rs.append([int(round(float(v) * k)) for xy in zip(x, y) for v in xy])
+    return rs
 
 
 # ---------------- areas ----------------

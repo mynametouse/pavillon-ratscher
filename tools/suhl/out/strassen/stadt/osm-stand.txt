@@ -1,0 +1,3 @@
+  Bounding boxes:
+    osmosis_replication_timestamp=2026-11-11T21:22:47Z
+    timestamp=2026-11-11T21:22:47Z

@@ -47,11 +47,17 @@ def main():
             d.polygon([(X(ox + q[i] / 10), Y(oy + q[i + 1] / 10)) for i in range(0, len(q), 3)], fill=acol[ar[0]])
         for key in ('water', 'rail'):
             for r in t.get(key, []):
-                q = r[-1]
-                st = 3 if key == 'rail' else 2
+                q = r[3] if key == 'rail' else r[4]
                 pts = [(X(ox + q[i] / 10), Y(oy + q[i + 1] / 10)) for i in range(0, len(q), 3)]
                 if len(pts) >= 2:
-                    d.line(pts, fill=(40, 40, 40) if key == 'rail' else (60, 150, 230), width=2)
+                    d.line(pts, fill=((20, 20, 20) if not r[1] & 1 else (255, 0, 255)) if key == 'rail' else ((60, 150, 230) if not r[1] & 2 else (150, 200, 235)), width=3 if key == 'rail' else 2)
+        for wa in t.get('wareas', []):
+            if wa[3]:
+                q = wa[5]
+                d.polygon([(X(ox + q[i] / 10), Y(oy + q[i + 1] / 10)) for i in range(0, len(q), 2)], fill=(120, 180, 240))
+        for rp in t.get('railpts', []):
+            x, y = X(ox + rp[1] / 10), Y(oy + rp[2] / 10)
+            d.ellipse([x - 4, y - 4, x + 4, y + 4], outline=(255, 0, 0), width=2)
     for t in T:
         ox, oy = t['o']
         for w in sorted(t['ways'], key=lambda w: -w[0]):

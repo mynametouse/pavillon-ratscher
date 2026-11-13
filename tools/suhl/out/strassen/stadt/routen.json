@@ -1,0 +1,897 @@
+{
+ "made": "2026-11-13T01:16:31Z",
+ "osm": "Geofabrik extract thueringen-latest.osm.pbf, cut with osmium",
+ "osm_stamp": "2026-11-13T01:16:29Z",
+ "start_model": [
+  -6.5,
+  49.8
+ ],
+ "markt_model": [
+  -4701.4,
+  12261.8
+ ],
+ "exit": "Suhl-Zentrum",
+ "exit_nodes": 2,
+ "motorway_tunnels_closed": 10,
+ "routes": {
+  "suhl_land": {
+   "model_m": 18099,
+   "true_m": 18383,
+   "minutes": 19.9,
+   "motorway_m": 0,
+   "note": "",
+   "legs": [
+    {
+     "road": "service",
+     "hw": "service",
+     "name": "",
+     "m": 111
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "residential",
+     "name": "Ratschner Anger",
+     "m": 175
+    },
+    {
+     "road": "Geisenhöhner Weg",
+     "hw": "residential",
+     "name": "Geisenhöhner Weg",
+     "m": 97
+    },
+    {
+     "road": "An der Mühle",
+     "hw": "unclassified",
+     "name": "An der Mühle",
+     "m": 216
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "unclassified",
+     "name": "Ratschner Anger",
+     "m": 95
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 2781
+    },
+    {
+     "road": "secondary",
+     "hw": "secondary",
+     "name": "",
+     "m": 79
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Ilmenauer Straße",
+     "m": 362
+    },
+    {
+     "road": "Am Sättel",
+     "hw": "unclassified",
+     "name": "Am Sättel",
+     "m": 1262
+    },
+    {
+     "road": "Kilianstraße",
+     "hw": "unclassified",
+     "name": "Kilianstraße",
+     "m": 330
+    },
+    {
+     "road": "K 517",
+     "hw": "tertiary",
+     "name": "Breitenbacher Straße",
+     "m": 542
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "",
+     "m": 11515
+    },
+    {
+     "road": "August-Bebel-Straße",
+     "hw": "residential",
+     "name": "August-Bebel-Straße",
+     "m": 282
+    },
+    {
+     "road": "Straße der Opfer des Faschismus",
+     "hw": "residential",
+     "name": "Straße der Opfer des Faschismus",
+     "m": 152
+    },
+    {
+     "road": "Grünewaldstraße",
+     "hw": "residential",
+     "name": "Grünewaldstraße",
+     "m": 106
+    },
+    {
+     "road": "Adam-Riese-Straße",
+     "hw": "residential",
+     "name": "Adam-Riese-Straße",
+     "m": 59
+    },
+    {
+     "road": "Thomas-Müntzer-Straße",
+     "hw": "residential",
+     "name": "Thomas-Müntzer-Straße",
+     "m": 113
+    },
+    {
+     "road": "Stadelstraße",
+     "hw": "living_street",
+     "name": "Stadelstraße",
+     "m": 90
+    }
+   ],
+   "junctions": [],
+   "bridges": 10,
+   "bridges_named": [
+    "Erlauer Hauptstraße",
+    "Kilianstraße"
+   ],
+   "tunnels": []
+  },
+  "suhl_land_rueck": {
+   "model_m": 18258,
+   "true_m": 18545,
+   "minutes": 20.2,
+   "motorway_m": 0,
+   "note": "",
+   "legs": [
+    {
+     "road": "Stadelstraße",
+     "hw": "living_street",
+     "name": "Stadelstraße",
+     "m": 90
+    },
+    {
+     "road": "Thomas-Müntzer-Straße",
+     "hw": "residential",
+     "name": "Thomas-Müntzer-Straße",
+     "m": 61
+    },
+    {
+     "road": "Paul-Greifzu-Straße",
+     "hw": "residential",
+     "name": "Paul-Greifzu-Straße",
+     "m": 120
+    },
+    {
+     "road": "Adam-Riese-Straße",
+     "hw": "residential",
+     "name": "Adam-Riese-Straße",
+     "m": 146
+    },
+    {
+     "road": "Kellerstraße",
+     "hw": "residential",
+     "name": "Kellerstraße",
+     "m": 109
+    },
+    {
+     "road": "Riemenschneiderstraße",
+     "hw": "residential",
+     "name": "Riemenschneiderstraße",
+     "m": 104
+    },
+    {
+     "road": "Straße der Opfer des Faschismus",
+     "hw": "residential",
+     "name": "Straße der Opfer des Faschismus",
+     "m": 62
+    },
+    {
+     "road": "August-Bebel-Straße",
+     "hw": "residential",
+     "name": "August-Bebel-Straße",
+     "m": 282
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "",
+     "m": 3715
+    },
+    {
+     "road": "Schützenstraße",
+     "hw": "secondary_link",
+     "name": "Schützenstraße",
+     "m": 100
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Schleusinger Straße",
+     "m": 7737
+    },
+    {
+     "road": "K 517",
+     "hw": "tertiary",
+     "name": "",
+     "m": 542
+    },
+    {
+     "road": "Kilianstraße",
+     "hw": "unclassified",
+     "name": "Kilianstraße",
+     "m": 330
+    },
+    {
+     "road": "Am Sättel",
+     "hw": "unclassified",
+     "name": "Am Sättel",
+     "m": 1262
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Ilmenauer Straße",
+     "m": 362
+    },
+    {
+     "road": "secondary",
+     "hw": "secondary",
+     "name": "",
+     "m": 31
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 2781
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "unclassified",
+     "name": "Ratschner Anger",
+     "m": 95
+    },
+    {
+     "road": "An der Mühle",
+     "hw": "unclassified",
+     "name": "An der Mühle",
+     "m": 216
+    },
+    {
+     "road": "Geisenhöhner Weg",
+     "hw": "unclassified",
+     "name": "Geisenhöhner Weg",
+     "m": 97
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "residential",
+     "name": "Ratschner Anger",
+     "m": 175
+    },
+    {
+     "road": "service",
+     "hw": "service",
+     "name": "",
+     "m": 111
+    }
+   ],
+   "junctions": [],
+   "bridges": 10,
+   "bridges_named": [
+    "Erlauer Hauptstraße",
+    "Kilianstraße"
+   ],
+   "tunnels": []
+  },
+  "suhl_ab": {
+   "model_m": 19392,
+   "true_m": 19697,
+   "minutes": 15.4,
+   "motorway_m": 12343,
+   "note": "über die Anschlussstelle Suhl-Zentrum der A 73, ohne Tunnel",
+   "legs": [
+    {
+     "road": "service",
+     "hw": "service",
+     "name": "",
+     "m": 111
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "residential",
+     "name": "Ratschner Anger",
+     "m": 175
+    },
+    {
+     "road": "Geisenhöhner Weg",
+     "hw": "residential",
+     "name": "Geisenhöhner Weg",
+     "m": 97
+    },
+    {
+     "road": "An der Mühle",
+     "hw": "unclassified",
+     "name": "An der Mühle",
+     "m": 216
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "unclassified",
+     "name": "Ratschner Anger",
+     "m": 95
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 2781
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 119
+    },
+    {
+     "road": "secondary",
+     "hw": "secondary",
+     "name": "",
+     "m": 81
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 249
+    },
+    {
+     "road": "A 73",
+     "hw": "motorway",
+     "name": "",
+     "m": 11389
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 705
+    },
+    {
+     "road": "L 3140",
+     "hw": "secondary",
+     "name": "",
+     "m": 1454
+    },
+    {
+     "road": "An der Hasel",
+     "hw": "unclassified",
+     "name": "An der Hasel",
+     "m": 410
+    },
+    {
+     "road": "Am Bahndamm",
+     "hw": "unclassified",
+     "name": "Am Bahndamm",
+     "m": 374
+    },
+    {
+     "road": "Blücherstraße",
+     "hw": "unclassified",
+     "name": "Blücherstraße",
+     "m": 274
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Dr.-Theodor-Neubauer-Straße",
+     "m": 343
+    },
+    {
+     "road": "August-Bebel-Straße",
+     "hw": "residential",
+     "name": "August-Bebel-Straße",
+     "m": 282
+    },
+    {
+     "road": "Straße der Opfer des Faschismus",
+     "hw": "residential",
+     "name": "Straße der Opfer des Faschismus",
+     "m": 152
+    },
+    {
+     "road": "Grünewaldstraße",
+     "hw": "residential",
+     "name": "Grünewaldstraße",
+     "m": 106
+    },
+    {
+     "road": "Adam-Riese-Straße",
+     "hw": "residential",
+     "name": "Adam-Riese-Straße",
+     "m": 59
+    },
+    {
+     "road": "Thomas-Müntzer-Straße",
+     "hw": "residential",
+     "name": "Thomas-Müntzer-Straße",
+     "m": 113
+    },
+    {
+     "road": "Stadelstraße",
+     "hw": "living_street",
+     "name": "Stadelstraße",
+     "m": 90
+    }
+   ],
+   "junctions": [
+    {
+     "ref": "",
+     "name": "Rastplatz Adlersberg",
+     "x": -2349.7,
+     "y": 6572.7,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "ref": "3",
+     "name": "Suhl-Friedberg",
+     "x": -2780.9,
+     "y": 8546.4,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "ref": "2",
+     "name": "Suhl-Zentrum",
+     "x": -5907.6,
+     "y": 9998.8,
+     "on": [
+      "A 73"
+     ]
+    }
+   ],
+   "bridges": 18,
+   "bridges_named": [
+    "Schleusinger Straße",
+    "Talbrücke Dambachtal",
+    "Talbrücke Feuchter Grund",
+    "Talbrücke Langer Grund",
+    "Talbrücke Leuketal",
+    "Talbrücke Ochsengrund",
+    "Talbrücke Silbachtal",
+    "Talbrücke St. Kilian",
+    "Talbrücke Wallersbachtal",
+    "Talbrücke Wiesental"
+   ],
+   "tunnels": [
+    "An der Hasel"
+   ]
+  },
+  "suhl_ab_frei": {
+   "model_m": 19392,
+   "true_m": 19697,
+   "minutes": 15.4,
+   "motorway_m": 12343,
+   "note": "schnellste Route mit Autobahn, Autobahntunnel gesperrt",
+   "legs": [
+    {
+     "road": "service",
+     "hw": "service",
+     "name": "",
+     "m": 111
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "residential",
+     "name": "Ratschner Anger",
+     "m": 175
+    },
+    {
+     "road": "Geisenhöhner Weg",
+     "hw": "residential",
+     "name": "Geisenhöhner Weg",
+     "m": 97
+    },
+    {
+     "road": "An der Mühle",
+     "hw": "unclassified",
+     "name": "An der Mühle",
+     "m": 216
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "unclassified",
+     "name": "Ratschner Anger",
+     "m": 95
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 2781
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 119
+    },
+    {
+     "road": "secondary",
+     "hw": "secondary",
+     "name": "",
+     "m": 81
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 249
+    },
+    {
+     "road": "A 73",
+     "hw": "motorway",
+     "name": "",
+     "m": 11389
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 705
+    },
+    {
+     "road": "L 3140",
+     "hw": "secondary",
+     "name": "",
+     "m": 1454
+    },
+    {
+     "road": "An der Hasel",
+     "hw": "unclassified",
+     "name": "An der Hasel",
+     "m": 410
+    },
+    {
+     "road": "Am Bahndamm",
+     "hw": "unclassified",
+     "name": "Am Bahndamm",
+     "m": 374
+    },
+    {
+     "road": "Blücherstraße",
+     "hw": "unclassified",
+     "name": "Blücherstraße",
+     "m": 274
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Dr.-Theodor-Neubauer-Straße",
+     "m": 343
+    },
+    {
+     "road": "August-Bebel-Straße",
+     "hw": "residential",
+     "name": "August-Bebel-Straße",
+     "m": 282
+    },
+    {
+     "road": "Straße der Opfer des Faschismus",
+     "hw": "residential",
+     "name": "Straße der Opfer des Faschismus",
+     "m": 152
+    },
+    {
+     "road": "Grünewaldstraße",
+     "hw": "residential",
+     "name": "Grünewaldstraße",
+     "m": 106
+    },
+    {
+     "road": "Adam-Riese-Straße",
+     "hw": "residential",
+     "name": "Adam-Riese-Straße",
+     "m": 59
+    },
+    {
+     "road": "Thomas-Müntzer-Straße",
+     "hw": "residential",
+     "name": "Thomas-Müntzer-Straße",
+     "m": 113
+    },
+    {
+     "road": "Stadelstraße",
+     "hw": "living_street",
+     "name": "Stadelstraße",
+     "m": 90
+    }
+   ],
+   "junctions": [
+    {
+     "ref": "",
+     "name": "Rastplatz Adlersberg",
+     "x": -2349.7,
+     "y": 6572.7,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "ref": "3",
+     "name": "Suhl-Friedberg",
+     "x": -2780.9,
+     "y": 8546.4,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "ref": "2",
+     "name": "Suhl-Zentrum",
+     "x": -5907.6,
+     "y": 9998.8,
+     "on": [
+      "A 73"
+     ]
+    }
+   ],
+   "bridges": 18,
+   "bridges_named": [
+    "Schleusinger Straße",
+    "Talbrücke Dambachtal",
+    "Talbrücke Feuchter Grund",
+    "Talbrücke Langer Grund",
+    "Talbrücke Leuketal",
+    "Talbrücke Ochsengrund",
+    "Talbrücke Silbachtal",
+    "Talbrücke St. Kilian",
+    "Talbrücke Wallersbachtal",
+    "Talbrücke Wiesental"
+   ],
+   "tunnels": [
+    "An der Hasel"
+   ]
+  },
+  "suhl_ab_rueck": {
+   "model_m": 18168,
+   "true_m": 18454,
+   "minutes": 17.2,
+   "motorway_m": 9013,
+   "note": "zurück: schnellste Route mit Autobahn, Autobahntunnel gesperrt",
+   "legs": [
+    {
+     "road": "Stadelstraße",
+     "hw": "living_street",
+     "name": "Stadelstraße",
+     "m": 90
+    },
+    {
+     "road": "Thomas-Müntzer-Straße",
+     "hw": "residential",
+     "name": "Thomas-Müntzer-Straße",
+     "m": 61
+    },
+    {
+     "road": "Paul-Greifzu-Straße",
+     "hw": "residential",
+     "name": "Paul-Greifzu-Straße",
+     "m": 120
+    },
+    {
+     "road": "Adam-Riese-Straße",
+     "hw": "residential",
+     "name": "Adam-Riese-Straße",
+     "m": 146
+    },
+    {
+     "road": "Kellerstraße",
+     "hw": "residential",
+     "name": "Kellerstraße",
+     "m": 109
+    },
+    {
+     "road": "Riemenschneiderstraße",
+     "hw": "residential",
+     "name": "Riemenschneiderstraße",
+     "m": 104
+    },
+    {
+     "road": "Straße der Opfer des Faschismus",
+     "hw": "residential",
+     "name": "Straße der Opfer des Faschismus",
+     "m": 62
+    },
+    {
+     "road": "August-Bebel-Straße",
+     "hw": "residential",
+     "name": "August-Bebel-Straße",
+     "m": 282
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "",
+     "m": 3715
+    },
+    {
+     "road": "Schützenstraße",
+     "hw": "secondary_link",
+     "name": "Schützenstraße",
+     "m": 100
+    },
+    {
+     "road": "L 3247",
+     "hw": "secondary",
+     "name": "Schleusinger Straße",
+     "m": 1122
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 1086
+    },
+    {
+     "road": "A 73",
+     "hw": "motorway",
+     "name": "",
+     "m": 7530
+    },
+    {
+     "road": "motorway_link",
+     "hw": "motorway_link",
+     "name": "",
+     "m": 396
+    },
+    {
+     "road": "secondary",
+     "hw": "secondary",
+     "name": "",
+     "m": 54
+    },
+    {
+     "road": "L 3004",
+     "hw": "secondary",
+     "name": "",
+     "m": 2781
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "unclassified",
+     "name": "Ratschner Anger",
+     "m": 95
+    },
+    {
+     "road": "An der Mühle",
+     "hw": "unclassified",
+     "name": "An der Mühle",
+     "m": 216
+    },
+    {
+     "road": "Geisenhöhner Weg",
+     "hw": "unclassified",
+     "name": "Geisenhöhner Weg",
+     "m": 97
+    },
+    {
+     "road": "Ratschner Anger",
+     "hw": "residential",
+     "name": "Ratschner Anger",
+     "m": 175
+    },
+    {
+     "road": "service",
+     "hw": "service",
+     "name": "",
+     "m": 111
+    }
+   ],
+   "junctions": [
+    {
+     "ref": "",
+     "name": "Rastplatz Adlersberg",
+     "x": -2359.6,
+     "y": 6924.7,
+     "on": [
+      "A 73"
+     ]
+    },
+    {
+     "ref": "4",
+     "name": "Schleusingen",
+     "x": -147.8,
+     "y": 2078.2,
+     "on": [
+      "A 73"
+     ]
+    }
+   ],
+   "bridges": 15,
+   "bridges_named": [
+    "Talbrücke Dambachtal",
+    "Talbrücke Feuchter Grund",
+    "Talbrücke Leuketal",
+    "Talbrücke Ochsengrund",
+    "Talbrücke Silbachtal",
+    "Talbrücke St. Kilian",
+    "Talbrücke Wallersbachtal"
+   ],
+   "tunnels": []
+  }
+ },
+ "first_attempt_2026_10_26": {
+  "suhl_ab": {
+   "model_m": 28439,
+   "tunnels": [
+    "Tunnel Berg Bock"
+   ],
+   "junctions": [
+    [
+     "",
+     "Rastplatz Adlersberg"
+    ],
+    [
+     "3",
+     "Suhl-Friedberg"
+    ],
+    [
+     "2",
+     "Suhl-Zentrum"
+    ],
+    [
+     "1",
+     "Dreieck Suhl"
+    ],
+    [
+     "19",
+     "Suhl / Zella-Mehlis"
+    ]
+   ]
+  },
+  "suhl_land": {
+   "model_m": 18875,
+   "tunnels": [],
+   "junctions": []
+  },
+  "suhl_ab_rueck": {
+   "model_m": 28294,
+   "tunnels": [
+    "Tunnel Berg Bock"
+   ],
+   "junctions": [
+    [
+     "20",
+     "Dreieck Suhl"
+    ],
+    [
+     "2",
+     "Suhl-Zentrum"
+    ],
+    [
+     "3",
+     "Suhl-Friedberg"
+    ],
+    [
+     "",
+     "Rastplatz Adlersberg"
+    ],
+    [
+     "4",
+     "Schleusingen"
+    ]
+   ]
+  },
+  "suhl_land_rueck": {
+   "model_m": 18900,
+   "tunnels": [],
+   "junctions": []
+  }
+ },
+ "note": "model_m: Modellmeter wie das Feld m der Fahrtdaten; true_m: echte Meter (× 1,0157); Fahrzeit nach den Regelgeschwindigkeiten des ersten Versuchs"
+}
