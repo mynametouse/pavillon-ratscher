@@ -1,6 +1,6 @@
 # Suhl – Straßen: Suhls Straßen als Daten für das Straßensystem der Region (Paket S2-3)
 
-Stand: 13.11.2026, 2:30 Uhr. Hilfs-Agent `suhl-strassen`, Stufe 2 des Suhl-Plans (Auftrag `docs/plans/auftraege/suhl-strassen.md`,
+Stand: 13.11.2026, 3:00 Uhr. Hilfs-Agent `suhl-strassen`, Stufe 2 des Suhl-Plans (Auftrag `docs/plans/auftraege/suhl-strassen.md`,
 gemeinsamer Teil `suhl-gemeinsam.md`, `suhl-stufe2.md`). Zweig `suhl/strassen`. Dieses Paket ändert keine vorhandene Datei.
 
 **Grundsatz:** Suhl baut kein zweites Straßensystem. Die Straßen der Stadt kommen im Format der Fahrtdaten (`fahrt/strassen.json`).
@@ -12,9 +12,13 @@ zuerst, wie dieses System die Daten liest und was Suhl von ihm braucht (Abschnit
 |---|---|
 | 1 Format verstehen, Grenzen und Fragen | fertig (Abschnitte 1 und 2); der Straßen-Chat hat um 2:00 Uhr alle Fragen beantwortet (Abschnitt 5) |
 | 2 Probesatz Zentrum | fertig, **gerechnet auf dem 1-m-Gelände von `suhl-boden`** (Abschnitt 4.1) |
-| 3 Ganze Stadt in GitHub Actions, Wasser, Bahn, beide Routen, Anfahrt | läuft durch, auf dem Gelände von `suhl-boden` für die Stadt (heute noch 30 m; Abschnitt 4.2) |
+| 3 Ganze Stadt in GitHub Actions, Wasser, Bahn, beide Routen, Anfahrt | fertig als **Generation v1**: Lauf 43347302266, gültig nach Schema 1 Revision 1.1 (0 Fehler, 0 Warnungen), Artefakte `suhl-s-v1` und `suhl-m-v1`. Gerechnet auf dem Gelände von `suhl-boden` für die Stadt – heute noch das 30-m-Modell (Abschnitt 4.2) |
 | 4 Ausstattung | fertig über das unveränderte Werkzeug des Straßen-Chats, dazu Ampeln, Querungen, Haltestellen, Straßennamensschilder |
 | 5 Prüfungen | laufen mit; drei bestehen noch nicht (Abschnitt 4) |
+| 6 Brückendecks aus dem Oberflächenmodell DOM1 messen (Auftrag 2:48 Uhr) | **offen** – nicht begonnen |
+| 7 Achsen auf dem 1-m-Gelände auf die Fahrbahn schieben, kürzere Wellenlängen in der Stadt | **offen** – nächste Generation |
+| 8 Schilder der Anfahrt (Ortstafeln, Wegweiser, Autobahnschilder) | **offen** |
+| 9 Ganze Stadt auf 1-m-Gelände | wartet auf den Lauf von `suhl-boden` mit dem Artefakt `suhl-boden-roh` |
 
 ## 1 Das Format der Fahrtdaten – so liest es das Straßensystem
 
@@ -95,27 +99,47 @@ Kacheln (Abschnitt 3); gezeichnet wird das in Stufe 3 (Paket S3-5) oder nach den
 
 ### 3.1 Dateien
 
-**Probesatz Zentrum** – die 11 Kacheln der Stufe 10 aus `tools/suhl/lib/probe.json`, im Zweig unter `tools/suhl/out/strassen/probe/`:
+**Probesatz Zentrum** – die 11 Kacheln der Stufe 10 aus `tools/suhl/lib/probe.json`, im Zweig unter `tools/suhl/out/strassen/probe/`.
+Generation **v1**: gerechnet auf dem ungeschnittenen 1-m-Gelände von `suhl-boden` (`roh/v1`, Commit d262745d).
 
 | Datei | Inhalt |
 |---|---|
-| `suhl/s/v0/10/{x}/{y}.json`, `suhl/s/v0/index.json` | Straßenraum je Kachel: Wege, Flächen, Gleise, Bahnpunkte, Gewässer |
-| `suhl/m/v0/10/{x}/{y}.json`, `suhl/m/v0/index.json` | Möbel der Straße je Kachel |
+| `suhl/s/v1/10/{x}/{y}.json`, `suhl/s/v1/index.json` | Straßenraum je Kachel: Wege, Flächen, Gleise, Bahnpunkte, Gewässer |
+| `suhl/s/v1/orte.json` | Orte und bebaute Flächen, **einmal** für das ganze Produkt (dieselbe Datei wie `fahrt/suhl-zentrum-orte.json`) |
+| `suhl/m/v1/10/{x}/{y}.json`, `suhl/m/v1/index.json` | Möbel der Straße je Kachel |
 | `fahrt/suhl-zentrum.json` | alle Wege ungeteilt **im Format von `fahrt/strassen.json`**; zugleich die eine Quelle der Straßenhöhen |
-| `strassen/suhl-zentrum-ausstattung.json` | die Ausstattung in einer Datei im Format von `strassen/ausstattung.json` |
+| `fahrt/suhl-zentrum-orte.json` | `{ ways: [], places, orte }` – ein eigener Satz für `FAHRT.add` |
+| `strassen/suhl-zentrum-ausstattung.json` | die Ausstattung in einer Datei im Format von `strassen/ausstattung.json` (ohne `orte`) |
 | `zahlen.json`, `moebel.json`, `pruefung.json` | die Zahlen dazu |
 
-**Ganze Stadt** – 1 013 Kacheln der Gemeinde und die Kacheln an den zwei Routen vom Garten. Die Kacheln liegen als Artefakt
-`suhl-strassen-stadt` am Lauf des Workflows (14 Tage), bis es das Daten-Repo gibt. Auf den Zweig kommen nach jedem Lauf nur kleine
-Dateien unter `tools/suhl/out/strassen/stadt/`: `zahlen.json`, `moebel.json`, `routen.json`, `pruefung.json`, die zwei
-`index.json`, `fahrt/suhl.json.gz` (Stadt), `fahrt/suhl-anfahrt.json.gz` (Anfahrt), `fahrt/routen-suhl.json.gz`,
+**Ganze Stadt** – 1 013 Kacheln der Gemeinde und 116 Kacheln an den zwei Routen vom Garten. Der Workflow legt drei Artefakte an
+seinen Lauf: **`suhl-s-v1`** und **`suhl-m-v1`** (je der Produkt-Ordner mit Index, 30 Tage) und `suhl-strassen-stadt` (alles,
+14 Tage). Veröffentlicht wird nur durch die eine Tür von `suhl-daten`; dieser Lauf veröffentlicht nichts. Im Ordner `suhl-s-v1`
+liegen neben `index.json` und den Kacheln drei kleine Dateien: `orte.json`, `anfahrt.json`, `anfahrt-grund.json` (Abschnitt 3.7).
+
+Auf den Zweig kommen nach jedem Lauf nur kleine Dateien unter `tools/suhl/out/strassen/stadt/`: `zahlen.json`, `moebel.json`,
+`routen.json`, `pruefung.json`, `vertrag.json` (Ergebnis des Prüfers), die zwei `index.json`, `fahrt/suhl.json.gz` (Stadt),
+`fahrt/suhl-orte.json.gz`, `fahrt/suhl-anfahrt.json.gz` und `fahrt/suhl-anfahrt-grund.json.gz` (Anfahrt), `fahrt/routen-suhl.json.gz`,
 `strassen/suhl-ausstattung.json.gz`, `hoehen.txt` (welches Gelände), `osm-stand.txt`, `lauf.txt` (Nummer des Laufs).
 
-### 3.2 Kachel `s` (Schema 1, Version 0)
+**Generationen.** `v0` war der erste Probesatz auf einer Copernicus-Probe; er ist ersetzt. `v1` ist der Probesatz auf 1-m-Gelände
+und die ganze Stadt auf dem Boden des Laufs 43340569202. Jeder Index sagt in `based_on`, worauf gerechnet wurde: `s` →
+`{"boden": 1}`, `m` → `{"s": 1}`. Die ganze Stadt auf 1-m-Gelände wird `v2`.
+
+### 3.2 Kachel `s` (Schema 1 Revision 1.1, Generation v1)
 
 Rahmen wie in `tools/suhl/lib/suhllib.py` (`TileFrame`): `o` ist die Kachelmitte in Modellmetern. Alle Lagen sind ganze Dezimeter
 relativ zu `o`, die Achsen wie im Modell; z = NHN − `H0`. Durch das Runden liegen die Schnittpunkte zweier Nachbarkacheln bis
 5 cm auseinander, die Höhe ist gleich. Die Feldnamen stehen noch einmal in `index.json` (`fields`).
+
+Der Kopf jeder Kachel ist der des gemeinsamen Vertrags (`docs/features/suhl-daten.md`): `schema` (1), `product` (`s`), `key`
+(`10/x/y`), `o`, dazu `unit`. Der Prüfer `tools/suhl/lib/validate.py` ist der Richter: Probesatz und ganze Stadt sind gültig,
+0 Fehler, 0 Warnungen. `index.json` trägt den gemeinsamen Teil (`schema`, `product`, `version`, `made`, `area`, `has`, `n`,
+`based_on`, `sources`, `attribution`) – geschrieben von `validate.py --index` – und Suhls Teil: `fields`, `fl` (die Merker),
+`kinds`, `surf`, `atypes`, `wtypes`, `places`, `orte`, `korridor`, `korridor_grund`, `files`, `numbers`.
+
+**Für `FAHRT.add` je Kachel** rechnet die Laufzeit die Lagen um: absolute Modell-Dezimeter = `round(o × 10)` + Wert. Das
+Straßensystem will absolute Dezimeter (Antwort des Straßen-Chats, 2:50 Uhr).
 
 - `ways`: `[Art, Belag, Breite dm, Merker, Name, Nummer, [x, y, z, …], OSM-Weg, s0, Spuren, OSM-Klasse, Tempo, Stil]`. Die ersten
   sieben Stellen sind die der Fahrtdaten. Wege sind an den Kachelkanten geschnitten. `s0` sind die Dezimeter entlang des ganzen
@@ -136,12 +160,19 @@ relativ zu `o`, die Achsen wie im Modell; z = NHN − `H0`. Durch das Runden lie
 
 ### 3.3 Die Datei im Format der Fahrtdaten
 
-Die Pflichtfelder sind genau die von `fahrt/strassen.json`: `kinds`, `surf`, `names`, `ways`, `places`, `signs` (noch leer),
-`routes`, `park`. Dazu kommen Suhls Felder: `lanes`, `ids` (OSM-Weg), `hw`/`hws` (OSM-Klasse), `ms` (Tempo), `s0` – je eine
-Liste neben `ways`; `areas` (`[Belag, Merker, Name, [x, y, z, …], [Löcher]]` in dm, dahinter Typ, OSM-Kennung, q); `orte` im
-Format von `strassen/ausstattung.json` (`t` 2 Stadt, 1 Dorf; Ringe in dm); `fl_bits`; `bridges`, `tunnels`; `rail`, `railpts`,
-`water`, `wareas`; `metric`, `heights`, `junctions`. `lanes`, `areas` und `orte` liest das Straßensystem nach seiner Runde 2
-(Abschnitt 5), den Rest überliest die App.
+Die Pflichtfelder sind genau die von `fahrt/strassen.json`: `kinds`, `surf`, `names`, `ways`, `places` (leer, siehe unten),
+`signs` (noch leer), `routes`, `park`. Dazu kommen Suhls Felder: `lanes`, `ids` (OSM-Weg), `hw`/`hws` (OSM-Klasse), `ms` (Tempo),
+`s0`, `style` (0 freie Strecke, 2 Stadt, 3 Dorf) – je eine Liste neben `ways`; `areas` (`[Belag, Merker, Name, [x, y, z, …],
+[Löcher]]` in dm, dahinter Typ, OSM-Kennung, q); `fl_bits`; `bridges`, `tunnels`; `rail`, `railpts`, `water`, `wareas`; `metric`,
+`heights`, `junctions`. `lanes`, `s0` und `areas` liest das Straßensystem nach seiner Runde 2 (Abschnitt 5), den Rest überliest
+die App. Lagen sind hier absolute Modell-Dezimeter, wie in `fahrt/strassen.json`.
+
+**Orte einmal, als eigener Satz** (Wunsch des Straßen-Chats, 2:50 Uhr): `places` und `orte` stehen **nicht** mehr in den
+Fahrt-Dateien und nie in einer Kachel – sonst läge dieselbe Fläche vielfach in der Suche des Straßensystems. Sie stehen in
+`fahrt/<name>-orte.json` = `{ ways: [], places, orte }` (dieselbe Datei als `orte.json` neben dem Index von `s`) und noch einmal
+als Schlüssel `places` und `orte` im Index. Die Laufzeit nimmt **eine** der beiden Stellen: `FAHRT.add('suhl/orte', json)`.
+`places` ist wie in `fahrt/strassen.json` (Ringe in Modellmetern), `orte` wie in `strassen/ausstattung.json` (`t` 2 Stadt,
+1 Dorf; Ringe in dm). `profil.load` braucht `orte` nicht mehr: es liest den Stil je Weg aus `style`.
 
 **Orte:** Die Kernstadt ist `town` (Stil Stadt). Die Dörfer sind `village` (Stil Dorf): Goldlauter, Heidersbach und Mäbendorf –
 sie liegen in der Kernstadt und sind herausgeschnitten – und Albrechts, Dietzhausen, Wichtshausen, Vesser, Schmiedefeld am
@@ -235,7 +266,12 @@ Dazu kommt, was eine Stadt hat und das Werkzeug nicht kennt:
 
 Die Listen des Werkzeugs heißen wie dort: `pfosten`, `planken`, `schilder`, `lampen`, `masten`, `linien`. In den Kacheln trägt
 jeder Mast die Lage der nächsten Maste seiner Leitung (eine Kachel braucht keine andere). Lagen in dm relativ zu `o`, Richtungen
-in Grad im Uhrzeigersinn von Nord, keine Höhen – alles steht auf dem Boden des Augenblicks.
+in Grad im Uhrzeigersinn von Nord, keine Höhen – alles steht auf dem Boden des Augenblicks. Der Kopf ist der des Vertrags
+(`schema`, `product` = `m`, `key`, `o`, `unit`). Ein Lauf Leitplanke ist an der Kachelgrenze geschnitten (Stützpunkte höchstens
+alle 40 m), damit keine Kachel ein Ding weit außerhalb ihrer selbst hält; `moebel.json` zählt Läufe (`planken`) und Stücke
+(`planken_pieces`). Die eine Datei `strassen/<name>-ausstattung.json` trägt `orte` nicht mehr (leere Liste) – die Orte kommen
+einmal mit dem Satz der Orte. `STRDAT.add(name, json)` je Kachel nimmt die Listen des Werkzeugs; `ampeln`, `querungen`, `halte`
+und `namen` überliest das Straßensystem, die zeichnet Suhls Laufzeit.
 
 **Zu den Haltestellen:** `tools/suhl/out/bestand/oepnv.json` enthält keine Lagen, nur Zählungen und die Namen im Zentrum. Deshalb
 kommen Lage und Name aus OSM; das Feld „steht im Fahrplan“ gilt nur für die Namen, die Stufe 1 aufgehoben hat. Der Abgleich mit
@@ -264,9 +300,26 @@ Tunnel Berg Bock (A 71) wird nicht gebraucht. Zahlen in Abschnitt 4.2.
 **Die Anfahrt** sind die Fahrstraßen an beiden Routen außerhalb der Stadt-Kacheln (Kacheln im Abstand von 300 m), ohne das
 2,4-km-Quadrat am Garten und ohne das, was schon in `fahrt/strassen.json` steht. Sie werden **in einer Rechnung mit der Stadt**
 gelöst – an der Stadtgrenze gibt es keine Stufe – und an den Profilen von `fahrt/strassen.json` gehalten, wo sie diese berühren.
-Ergebnis: `fahrt/suhl-anfahrt.json` (gleiches Format, mit `routes`), dieselben Stücke stehen auch in den `s`-Kacheln des
-Korridors (`index.json` → `korridor`). Ortstafeln, Wegweiser und die blauen Autobahnschilder des ersten Versuchs sind noch nicht
-neu gerechnet (`signs` ist leer).
+
+Die Anfahrt kommt als **zwei fertige Sätze**, geteilt dort, wo der Boden den Besitzer wechselt (ein Weg ist an dieser Grenze
+geteilt):
+
+| Datei (neben dem Index von `s` und unter `fahrt/`) | Inhalt | Aufruf |
+|---|---|---|
+| `anfahrt.json` (`fahrt/suhl-anfahrt.json`) | die Wege **außerhalb** der Geländekacheln von `suhl-boden`, dazu `routes` | `FAHRT.add('suhl/anfahrt', json)` – die Fahrt schneidet den Boden wie in der Region |
+| `anfahrt-grund.json` (`fahrt/suhl-anfahrt-grund.json`) | dieselben Straßen, **wo Suhls Boden sie trägt** – dort sind sie schon in den Boden geschnitten | `FAHRT.add('suhl/anfahrt-grund', json, { carve: false })` |
+
+`routes`: `suhl_land` und `suhl_ab` tragen `n: 'Suhl'` – ihr Ende ist dann ein Ziel auf der kleinen Karte. Die Rückwege
+`suhl_land_rueck` und `suhl_ab_rueck` tragen keinen Namen. Die Vergleichsroute `suhl_ab_frei` steht nur in
+`fahrt/routen-suhl.json`.
+
+Dieselben Wege stehen auch in den `s`-Kacheln des Korridors (`index.json` → `korridor`; `korridor_grund` nennt die davon auf
+Suhls Boden). Die Laufzeit nimmt **entweder** die zwei Dateien und überspringt die `s`-Kacheln des Korridors **oder** die
+Kacheln (`carve: false` nur für Kacheln in `korridor_grund`) – nie beides, sonst liegt jede Straße der Anfahrt doppelt. Empfohlen
+sind die zwei Dateien: zusammen rund 115 kB, zu laden, wenn die Fahrt aufwacht. Die `m`-Kacheln des Korridors sind gewöhnliche
+Kacheln.
+
+Ortstafeln, Wegweiser und die blauen Autobahnschilder des ersten Versuchs sind noch nicht neu gerechnet (`signs` ist leer).
 
 ## 4 Zahlen
 
@@ -275,7 +328,7 @@ Jede Zahl hier schreibt `tools/suhl/strassen/zahlen_md.py` aus den Dateien des L
 ### 4.1 Probesatz Zentrum
 
 <!-- zahlen:probe -->
-Aus `tools/suhl/out/strassen/probe/zahlen.json` (Lauf vom 2026-11-13 01:28 UTC, OSM-Stand 2026-11-12 23:07 UTC, 11 Kacheln). Längen sind echte Meter (UTM).
+Aus `tools/suhl/out/strassen/probe/zahlen.json` (Lauf vom 2026-11-13 01:44 UTC, OSM-Stand 2026-11-12 23:07 UTC, 11 Kacheln). Längen sind echte Meter (UTM).
 
 **Gerechnet auf:** ungeschnittene Geländekacheln von suhl-boden (DGM1 Thüringen (1 m) unter 100 % der Kacheln des Laufs, sonst Copernicus GLO-30; Stand 2026-11-13T01:10:23Z, origin/suhl/boden d262745d, tools/suhl/out/boden/probe/roh/v1/t; 737194 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 96179 Stützwerte – nur am Rand außerhalb der Kacheln). Der Lauf zählt (ein Boden für alle).
 
@@ -310,9 +363,10 @@ Wasser: stream 2,64 km, verrohrt oder überdeckt 0,94 km; 12 Wasserflächen mit 
 
 Kreuzungen (Knoten mit drei und mehr Armen; größte Abweichung von einer Ebene, 3 m um den Knoten): 1 735 Knoten, Mitte 0,3 cm, 95 % unter 4,0 cm, größte 37,8 cm; **92,1 % innerhalb von 3 cm** (Kreuzungen von Fahrstraßen: 851 Knoten, 91,2 %).
 Brücken über anderen Wegen: 24 Stellen, an 8 davon weniger als 4,5 m Abstand.
-Rechnung: 90 927 Punkte; 608 Nahtstellen geglättet, 4 587 Zeilen für ebene Kreuzungen, 957 Verbindungen zwischen Richtungsfahrbahnen; Brücken bis 1,34 m angehoben; Glättung der kleinen Klassen × 1,0. Größe: Kacheln 316 kB, Datei im Format der Fahrtdaten 277 kB.
+Abstand der Profile zum Gelände, auf dem gerechnet wurde (Profil minus Gelände an der Achse; ohne Brücken, Tunnel, Treppen): Fahrstraßen: im Mittel 0,02 m, Betrag im Mittel 0,27 m, 95 % unter 0,90 m; Wege und Pfade: im Mittel -0,00 m, Betrag im Mittel 0,25 m, 95 % unter 0,87 m; Gleise: im Mittel 0,05 m, Betrag im Mittel 1,76 m, 95 % unter 6,32 m.
+Rechnung: 90 927 Punkte; 608 Nahtstellen geglättet, 4 587 Zeilen für ebene Kreuzungen, 957 Verbindungen zwischen Richtungsfahrbahnen; Brücken bis 1,34 m angehoben; Glättung der kleinen Klassen × 1,0. Größe: Kacheln 226 kB, Datei im Format der Fahrtdaten 252 kB.
 
-**Ausstattung** (`tools/suhl/out/strassen/probe/moebel.json`): 28 Verkehrszeichen, 534 Laternen, 17 Halt-, Wartelinien und Zebrastreifen, 54 Ampelknoten, 50 Querungen, 23 Bushaltestellen, 72 Straßennamensschilder. Schutzplanken 0,0 km. Zeichen nach Nummer: 274: 1, 206: 2, 205: 19, 350: 6. Ampeln: 33 für Fahrzeuge, 21 für Fußgänger, 73 Masten. Querungen: 25 ohne Markierung, 1 markiert, 3 Zebrastreifen, 21 Ampel. Haltestellen mit Namen: 23. Orte: Suhl (town). Größe: Kacheln 79 kB, eine Datei 39 kB.
+**Ausstattung** (`tools/suhl/out/strassen/probe/moebel.json`): 28 Verkehrszeichen, 534 Laternen, 17 Halt-, Wartelinien und Zebrastreifen, 54 Ampelknoten, 50 Querungen, 23 Bushaltestellen, 72 Straßennamensschilder. Schutzplanken 0,0 km. Zeichen nach Nummer: 274: 1, 206: 2, 205: 19, 350: 6. Ampeln: 33 für Fahrzeuge, 21 für Fußgänger, 73 Masten. Querungen: 25 ohne Markierung, 1 markiert, 3 Zebrastreifen, 21 Ampel. Haltestellen mit Namen: 23. Orte: Suhl (town). Größe: Kacheln 22 kB, eine Datei 24 kB.
 
 **Prüfungen** (`tools/suhl/out/strassen/probe/pruefung.json`):
 
@@ -332,7 +386,7 @@ Rechnung: 90 927 Punkte; 608 Nahtstellen geglättet, 4 587 Zeilen für ebene
 Lauf des Workflows „Suhl – Straßen (ganze Stadt)“; die Nummer steht in `tools/suhl/out/strassen/stadt/lauf.txt`.
 
 <!-- zahlen:stadt -->
-Aus `tools/suhl/out/strassen/stadt/zahlen.json` (Lauf vom 2026-11-13 01:22 UTC, OSM-Stand 2026-11-13 01:20 UTC, 1129 Kacheln). Längen sind echte Meter (UTM).
+Aus `tools/suhl/out/strassen/stadt/zahlen.json` (Lauf vom 2026-11-13 01:47 UTC, OSM-Stand 2026-11-13 01:46 UTC, 1129 Kacheln). Längen sind echte Meter (UTM).
 
 **Gerechnet auf:** ungeschnittene Geländekacheln von suhl-boden (Copernicus DEM GLO-30 (Oberflächenmodell 30 m) mit abgesenktem Wald (ESA WorldCover); DGM1 Thüringen noch nicht verfügbar; Stand 2026-11-13T01:12:29Z, suhl-boden Lauf 43340569202, Artefakt suhl-boden-v1; 9800808 Stützwerte) und eigene Abtastung von Copernicus GLO-30 (30 m, Wald um 9.3 m abgesenkt; 78270 Stützwerte – nur am Rand außerhalb der Kacheln); kleine Klassen 1.3-fach länger geglättet. Der Lauf zählt (ein Boden für alle).
 
@@ -349,9 +403,9 @@ Aus `tools/suhl/out/strassen/stadt/zahlen.json` (Lauf vom 2026-11-13 01:22 UTC, 
 | `county` | 22,41 | 130 |
 | **zusammen** | **1 773,4** | **10 103** |
 
-Davon **Anfahrt** (Fahrstraßen an den zwei Routen außerhalb der Stadt-Kacheln): 116 Kacheln, 229 Stücke, 40,9 km (`motorway` 14,9, `street` 10,8, `main` 7,5, `service` 6,1, `lane` 1,4, `county` 0,2); 3 Punkte am Profil von `fahrt/strassen.json` gehalten.
+Davon **Anfahrt** (Fahrstraßen an den zwei Routen außerhalb der Stadt-Kacheln): 116 Kacheln, 241 Stücke, 40,9 km (`motorway` 14,9, `street` 10,8, `main` 7,5, `service` 6,1, `lane` 1,4, `county` 0,2); 3 Punkte am Profil von `fahrt/strassen.json` gehalten; 27,1 km liegen auf den Geländekacheln von `suhl-boden`, 13,7 km außerhalb.
 
-Flächen: 13 Fußgängerflächen und Plätze mit 30 489 m²; 542 Parkplätze mit 464 684 m²; 8 Bahn- und Bussteige mit 2 994 m². Brückenstücke: 177, Tunnelstücke: 49. Fahrbahnen an Häusern: 474 verschmälert, 50 führen in ein Gebäude.
+Flächen: 13 Fußgängerflächen und Plätze mit 30 489 m²; 542 Parkplätze mit 464 684 m²; 8 Bahn- und Bussteige mit 2 994 m². Brückenstücke: 179, Tunnelstücke: 49. Fahrbahnen an Häusern: 474 verschmälert, 50 führen in ein Gebäude.
 
 Bahn: in Betrieb, Nebengleis 2,96 km, in Betrieb 26,63 km, auf Brücken 0,54 km, im Tunnel 0,92 km, stillgelegt, Nebengleis 1,98 km, stillgelegt 8,38 km; 4 × Bahnhof, 20 × Bahnübergang, 13 × Fußgänger-Übergang, 3 × Haltepunkt.
 Wasser: stream 168,14 km, river 17,11 km, verrohrt oder überdeckt 10,24 km, ditch 8,31 km, drain 0,32 km, canal 0,30 km; 370 Wasserflächen mit 191 595 m². Mit Namen: Nahe 12,24 km, Hasel 11,04 km, Vesser 7,52 km, Lauter 7,44 km, Wilde Gera 6,50 km, Erle 6,33 km, Freibach 5,56 km, Zahme Gera 4,43 km.
@@ -371,9 +425,10 @@ Wasser: stream 168,14 km, river 17,11 km, verrohrt oder überdeckt 10,24 km, dit
 
 Kreuzungen (Knoten mit drei und mehr Armen; größte Abweichung von einer Ebene, 3 m um den Knoten): 9 386 Knoten, Mitte 0,6 cm, 95 % unter 8,9 cm, größte 57,9 cm; **85,4 % innerhalb von 3 cm** (Kreuzungen von Fahrstraßen: 3 943 Knoten, 86,7 %).
 Brücken über anderen Wegen: 177 Stellen, an 75 davon weniger als 4,5 m Abstand.
-Rechnung: 1 146 501 Punkte; 2 679 Nahtstellen geglättet, 22 416 Zeilen für ebene Kreuzungen, 1 832 Verbindungen zwischen Richtungsfahrbahnen; Brücken bis 3,00 m angehoben; Glättung der kleinen Klassen × 1,3. Größe: Kacheln 4 685 kB, Datei im Format der Fahrtdaten 4 223 kB.
+Abstand der Profile zum Gelände, auf dem gerechnet wurde (Profil minus Gelände an der Achse; ohne Brücken, Tunnel, Treppen): Fahrstraßen: im Mittel -0,01 m, Betrag im Mittel 0,73 m, 95 % unter 2,11 m; Wege und Pfade: im Mittel -0,00 m, Betrag im Mittel 0,53 m, 95 % unter 1,65 m; Gleise: im Mittel -0,09 m, Betrag im Mittel 2,21 m, 95 % unter 6,69 m.
+Rechnung: 1 146 501 Punkte; 2 679 Nahtstellen geglättet, 22 416 Zeilen für ebene Kreuzungen, 1 832 Verbindungen zwischen Richtungsfahrbahnen; Brücken bis 3,00 m angehoben; Glättung der kleinen Klassen × 1,3. Größe: Kacheln 4 685 kB, Datei im Format der Fahrtdaten 4 181 kB.
 
-**Ausstattung** (`tools/suhl/out/strassen/stadt/moebel.json`): 3 413 Leitpfosten, 403 Schutzplanken-Stücke, 603 Verkehrszeichen, 5 237 Laternen, 151 Halt-, Wartelinien und Zebrastreifen, 358 Strommasten, 180 Ampelknoten, 191 Querungen, 249 Bushaltestellen, 416 Straßennamensschilder. Schutzplanken 77,8 km. Zeichen nach Nummer: 274: 90, 278: 33, 274.1: 1, 205: 219, 206: 8, 301: 22, 205+215: 3, 201: 8, 350: 12, km: 98, 625: 110. Ampeln: 112 für Fahrzeuge, 68 für Fußgänger, 294 Masten. Querungen: 88 ohne Markierung, 24 markiert, 7 Zebrastreifen, 72 Ampel. Haltestellen mit Namen: 249. Orte: Suhl (town), Albrechts (village), Dietzhausen (village), Gehlberg (village), Goldlauter (village), Heidersbach (village), Mäbendorf (village), Schmiedefeld am Rennsteig (village), Vesser (village), Wichtshausen (village). Größe: Kacheln 829 kB, eine Datei 816 kB.
+**Ausstattung** (`tools/suhl/out/strassen/stadt/moebel.json`): 3 411 Leitpfosten, 405 Schutzplanken-Stücke, 603 Verkehrszeichen, 5 237 Laternen, 151 Halt-, Wartelinien und Zebrastreifen, 358 Strommasten, 180 Ampelknoten, 191 Querungen, 249 Bushaltestellen, 416 Straßennamensschilder. Schutzplanken 77,8 km. Zeichen nach Nummer: 274: 90, 278: 33, 274.1: 1, 205: 219, 206: 8, 301: 22, 205+215: 3, 201: 8, 350: 12, km: 98, 625: 110. Ampeln: 112 für Fahrzeuge, 68 für Fußgänger, 294 Masten. Querungen: 88 ohne Markierung, 24 markiert, 7 Zebrastreifen, 72 Ampel. Haltestellen mit Namen: 249. Orte: Suhl (town), Albrechts (village), Dietzhausen (village), Gehlberg (village), Goldlauter (village), Heidersbach (village), Mäbendorf (village), Schmiedefeld am Rennsteig (village), Vesser (village), Wichtshausen (village). Größe: Kacheln 940 kB, eine Datei 784 kB.
 
 **Routen** (`tools/suhl/out/strassen/stadt/routen.json`, OSM-Stand 2026-11-13):
 
@@ -394,7 +449,7 @@ Erster Versuch vom 26.10.: Autobahn 28 439 Modellmeter durch den Tunnel Berg B
 | Zählung `zentrum` gegen Stufe 1 | 34,8 km hier, 34,8 km in Stufe 1 (-0,12 %) | ja |
 | Zählung `kernstadt` gegen Stufe 1 | 513,2 km hier, 513,2 km in Stufe 1 (-0,01 %) | ja |
 | Zählung `stadt` gegen Stufe 1 | 1 559,1 km hier, 1 559,1 km in Stufe 1 (-0,00 %) | ja |
-| kein Gebäude in einer Fahrbahn (Grenze 0,3 m) | 80 Treffer an 73 von 4 884 Straßenstücken, 76 von 23 809 Gebäuden (OSM); 45 Wege führen in ein Gebäude und sind so gemerkt | **nein** |
+| kein Gebäude in einer Fahrbahn (Grenze 0,3 m) | 80 Treffer an 73 von 4 894 Straßenstücken, 76 von 23 809 Gebäuden (OSM); 45 Wege führen in ein Gebäude und sind so gemerkt | **nein** |
 | Kreuzungen eben (±3 cm) | 86,7 % der Fahrstraßen-Kreuzungen, 95 % unter 7,5 cm | **nein** |
 | Profile je Klasse in den Grenzen | 7 von 7 Klassen | ja |
 | Brücken mit 4,5 m Abstand zum Weg darunter | 75 von 177 Stellen darunter | **nein** |
@@ -430,6 +485,21 @@ Antwort des Straßen-Chats vom 13.11., 2:00 Uhr (`docs/PARALLEL.md` auf `src`). 
 | W5 Werkzeug | `daten.py --fahrt <Datei> --osm <OPL-Datei> --out <Datei>` | bis dahin ruft `moebel.py` die Funktionen einzeln |
 | W6 Ausstattung zur Laufzeit | `STRDAT.add(name, json)` und `STRDAT.drop(name)`; `FAHRT.add` reicht `orte` weiter | `orte` in jeder Fahrt-Datei, die Ausstattung als eine Datei und in `m`-Kacheln |
 
+**Runde 2 ist gebaut** (Nachricht des Straßen-Chats vom 13.11., 2:50 Uhr; Stand `kern/strassen` 4d69fa03, Einzelheiten in
+`docs/features/strassen.md`, Abschnitt „Runde 2“). Was daraus für Suhls Daten folgt – alles ist umgesetzt:
+
+| Punkt des Straßen-Chats | Folge für Suhls Daten |
+|---|---|
+| ein Aufruf je Kachel ist der vorgesehene Fall (1–1,5 ms je Kachel); absolute Modell-Dezimeter | die Laufzeit rechnet `o` dazu (3.2) |
+| `s0` als Liste neben `ways` wird gelesen | steht in den Fahrt-Dateien; in den Kacheln ist es Stelle 9 der Zeile |
+| `carve: false`; `FAHRT.ground(fn)` meldet Suhls Boden an | Anfahrt in zwei Sätzen (3.7) |
+| `areas` wie geliefert; das z der Flächen liest die Karte nicht; Brückendecks aus dem gelieferten z | unverändert |
+| Routen mit Namen werden Ziele auf der kleinen Karte | `n: 'Suhl'` an `suhl_land` und `suhl_ab` (3.7) |
+| `orte` und `places` einmal als eigener Satz | `orte.json` (3.3) |
+| Merker wie gebaut: 4 mit `lanes` ≤ 1 an Arten 1 und 2 und 32 keine Mittellinie; 64 Art 9; 128 nicht in der Karte; 256 / 512 Bord und Rinne ohne Gehweg auf dieser Seite; Flächen gewinnen über Wege | passt zu Suhls Merkern (3.3) |
+| `STRDAT.add(name, json)` je Kachel; `ampeln`, `querungen`, `halte`, `namen` überliest es | Kacheln `m` (3.5) |
+| Probesatz als Karte gerastert: „sieht richtig aus“; Fenster 1 536 m: 79–104 ms Wege, 19 ms Flächen | – |
+
 **Was auch danach bei Suhl bleibt** (Stufe 3, Paket S3-5): Ampeln, die schalten; Treppen und Stützmauern; echte Bordkanten,
 Haltebuchten und Fahrstreifen im Zentrum; Tunnelröhren; mehrere Ebenen ohne Brücken-Angabe.
 
@@ -439,15 +509,16 @@ Haltebuchten und Fahrstreifen im Zentrum; Tunnelröhren; mehrere Ebenen ohne Br�
 # Probesatz (Chat-Rechner; OSM aus dem Vorrat der Stufe 1, Gelände von suhl/boden):
 git fetch --depth 30 origin suhl/boden && git archive FETCH_HEAD tools/suhl/out/boden/probe/roh/v1 | tar -x -C /tmp/boden
 python3 -I tools/suhl/strassen/lauf.py --gebiet probe --tiles /tmp/boden/tools/suhl/out/boden/probe/roh/v1/t \
-    --tiles-from "origin/suhl/boden <Commit>" --out tools/suhl/out/strassen/probe
+    --tiles-from "origin/suhl/boden <Commit>" --version 1 --based-on boden=1 --out tools/suhl/out/strassen/probe
 git show origin/feat/strassen:viz3/extra/strassen/daten.py > /tmp/daten.py     # nach: git fetch --depth 1 origin feat/strassen
 python3 -I tools/suhl/strassen/moebel.py --daten /tmp/daten.py --out tools/suhl/out/strassen/probe
 python3 -I tools/suhl/strassen/pruefen.py --out tools/suhl/out/strassen/probe
+python3 -I tools/suhl/lib/validate.py tools/suhl/out/strassen/probe --probe      # der Prüfer von suhl-daten: muss VALID sagen
 python3 -I tools/suhl/strassen/zahlen_md.py probe tools/suhl/out/strassen/probe
 
 # Ganze Stadt (GitHub Actions): in tools/suhl/strassen/lauf.txt die Zeilen
-#   boden_run=<Laufnummer von suhl-boden>   boden_artifact=suhl-boden-roh
-# eintragen und pushen. Danach: git pull, python3 -I tools/suhl/strassen/zahlen_md.py stadt tools/suhl/out/strassen/stadt
+#   version=<N>   boden_version=<N>   boden_run=<Laufnummer von suhl-boden>   boden_artifact=suhl-boden-roh
+# eintragen und pushen. Danach: git pull --rebase=merges, python3 -I tools/suhl/strassen/zahlen_md.py stadt tools/suhl/out/strassen/stadt
 ```
 
 | Skript in `tools/suhl/strassen/` | Tut |
@@ -465,8 +536,9 @@ python3 -I tools/suhl/strassen/zahlen_md.py probe tools/suhl/out/strassen/probe
 
 Der Workflow `.github/workflows/suhl-strassen.yml` läuft nur auf `suhl/strassen` und nur, wenn er selbst oder `lauf.txt` sich
 ändert. Er holt OSM aus dem Geofabrik-Auszug Thüringen (mit osmium geschnitten, im Cache höchstens eine Woche alt), das Gelände
-aus dem bestellten Lauf von `suhl-boden`, rechnet Routen, Stadt und Anfahrt, Ausstattung, Prüfungen (zusammen etwa drei Minuten)
-und legt die Kacheln als Artefakt ab. Fehlt `DATEN_TOKEN` oder die Aktion `suhl-publish`, sagt er das und veröffentlicht nichts.
+aus dem bestellten Lauf von `suhl-boden`, rechnet Routen, Stadt und Anfahrt, Ausstattung, Prüfungen (zusammen etwa drei Minuten),
+prüft das Ergebnis mit `validate.py` (`vertrag.json`) und legt die Produkt-Ordner als Artefakte `suhl-s-v<N>` und `suhl-m-v<N>`
+ab. Er veröffentlicht nichts selbst – das tut `suhl-daten` durch die eine Tür.
 
 ## Quellen und Nennung
 
@@ -480,33 +552,66 @@ und legt die Kacheln als Artefakt ab. Fehlt `DATEN_TOKEN` oder die Aktion `suhl-
 
 ## Für den Suhl-Chat
 
-**Erledigt mit dem Straßen-Chat:** F1–F4 und W1–W6 sind beantwortet (Abschnitt 5). Suhls Dateien sind danach ausgerichtet.
-Was `FAHRT.add` für Suhls Daten können sollte, steht in meiner Nachricht vom 13.11., 2:25 Uhr: viele kleine Aufrufe je Kachel;
-Stücke eines Wegs aus mehreren Kacheln (`s0`, `ids`); Lagen relativ zu `o`; Höhen wie geliefert; `orte` und `places` kommen mit
-jeder Datei wieder; `routes` der Anfahrt auf die kleine Karte.
+**Stand in einem Blick (13.11.2026, 3:00 Uhr)**
 
-**Noch offen, kleine Wünsche an den Straßen-Chat:**
+| Was | Wo |
+|---|---|
+| Probesatz, Generation v1, gültig (0 Fehler, 0 Warnungen) | Zweig `suhl/strassen`, `tools/suhl/out/strassen/probe/` – gerechnet auf `suhl-boden` `roh/v1` (1-m-Gelände, Commit d262745d): `based_on` `{"boden": 1}` |
+| Ganze Stadt, Generation v1, gültig (0 Fehler, 0 Warnungen) | Lauf **43347302266**, Artefakte **`suhl-s-v1`** (1 129 Kacheln, 15 615 Wegstücke, 692 Flächen) und **`suhl-m-v1`** (1 129 Kacheln, 11 445 Dinge) – gerechnet auf dem Boden des Laufs 43340569202 (30-m-Modell): `based_on` `{"boden": 1}` |
+| Profile für `suhl-boden` | `tools/suhl/out/strassen/stadt/fahrt/suhl.json.gz` (Stadt) und `suhl-anfahrt-grund.json.gz` (Anfahrt auf Suhls Boden) |
 
-- `s0` beim Rastern als Startwert der Strecke entlang des Wegs nehmen, damit Strichfolgen an Kachelkanten nicht springen.
-- Sagen, ob `FAHRT.add` Lagen relativ zu `o` annimmt oder ob `suhl-laufzeit` vorher umrechnet.
+**Bitte weitergeben** – ich konnte nach 2:45 Uhr keine Nachrichten mehr an andere Agenten senden:
 
-**An die anderen Suhl-Pakete**
+- **`suhl-daten`:** Probesatz = Zweig `suhl/strassen`, Pfad `tools/suhl/out/strassen/probe` (Produkte `s` und `m`, je `v1`).
+  Ganze Stadt = Lauf 43347302266, Artefakte `suhl-s-v1` und `suhl-m-v1`. Im Ordner von `s` liegen neben Index und Kacheln drei
+  kleine Dateien (`orte.json`, `anfahrt.json`, `anfahrt-grund.json`); der Prüfer übergeht sie – bitte mit veröffentlichen und in
+  den Vertrag aufnehmen. Probesatz und Stadt tragen beide `v1` und `boden: 1`, meinen aber verschiedene Böden (Probe: 1-m-Gelände;
+  Stadt: 30-m-Modell des Laufs 43340569202). Die Stadt auf 1-m-Gelände wird `v2`.
+- **`suhl-laufzeit`:** Orte: `suhl/s/v1/orte.json` **oder** die Schlüssel `places`/`orte` im Index – eine der beiden Stellen,
+  einmal (3.3). Kacheln: Lagen relativ zu `o`, für `FAHRT.add` `round(o × 10)` dazurechnen; Flächen nur mit `home` = 1 (3.2).
+  Anfahrt: zwei Dateien **oder** die Kacheln des Korridors, nie beides (3.7). Möbel: `STRDAT.add` je Kachel; `ampeln`,
+  `querungen`, `halte`, `namen` zeichnet ihr (3.5).
+- **`suhl-boden`:** Die Datei der Stadt enthält `orte` nicht mehr; `profil.load(town=True)` liest den Stil je Weg aus `style`
+  und liefert dieselben Breiten (Probesatz: 184 Wege mit 1,3 m Gehweg, 68 mit 1,7 m – wie vorher). Für die Anfahrt auf eurem
+  Boden bitte `fahrt/suhl-anfahrt-grund.json.gz` mit einschneiden; `fahrt/suhl-anfahrt.json.gz` enthält nur noch Wege außerhalb
+  eurer Kacheln. Gleise nicht in den Boden schneiden, Flächen auf 1-m-Gelände nicht einebnen. Sobald euer Lauf mit dem Artefakt
+  `suhl-boden-roh` steht: Laufnummer nennen – eine Zeile in `tools/suhl/strassen/lauf.txt` bestellt die Stadt auf 1-m-Gelände.
+- **`suhl-gebaeude`:** Bit 32768 nennt die Wege, die in ein Gebäude führen (Parkhäuser, Durchfahrten) – dort braucht das Haus
+  eine Öffnung. Die Prüfung „kein Haus in der Fahrbahn“ läuft bisher gegen OSM-Gebäude; sagt mir, wo eure Grundrisse liegen.
 
-- `suhl-boden`: Reihenfolge und Dateien stehen in 3.4. Bitte Gleise noch nicht in den Boden schneiden (ihr Abstand zum 1-m-Gelände
-  ist groß: Dämme und Brücken, die OSM-Achse liegt oft ein paar Meter daneben). Flächen auf 1-m-Gelände nicht einebnen.
-- `suhl-daten`: Die Kacheln `m` schreibt dieses Paket (Entscheidung 1:58 Uhr) – bitte den Besitzer in `suhllib.PRODUCTS` ändern.
-  Ein Prüfer für die Felder von `s` und `m` fehlt noch; die Feldnamen stehen in den `index.json`.
-- `suhl-laufzeit`: `home` in `areas` und `wareas` sagt, in welcher Kachel eine Fläche zu zeichnen ist. Für `FAHRT.add` taugt
-  jede Kachel nicht direkt (Lagen relativ zu `o`), wohl aber `fahrt/suhl-zentrum.json`.
-- `suhl-gebaeude`: Bit 32768 nennt die Wege, die in ein Gebäude führen (Parkhäuser, Durchfahrten) – dort braucht das Haus eine
-  Öffnung. Die Prüfung „kein Haus in der Fahrbahn“ läuft bisher gegen OSM-Gebäude; sagt mir, wo eure Grundrisse liegen.
+**An den Straßen-Chat – eine Frage, ein Hinweis**
 
-**Nächste Schritte dieses Pakets**
+- Frage: Der Satz der Anfahrt endet genau an der Grenze von Suhls Boden. Reicht das Zuschneiden des Bodens (Pad `fahrt:<name>`)
+  mit seinem Übergang über diese Grenze hinaus in Suhls Kacheln, oder hält es dort an, wo `FAHRT.ground(fn)` „Suhls Boden“
+  meldet? Wenn es hinüberreicht, entsteht an der Grenze eine Kante.
+- Hinweis: Suhls Brückenhöhen kommen heute aus einer Regel (Anhebung bis 3,5 m). Der Suhl-Chat lässt sie aus dem
+  Oberflächenmodell messen; die Decks ändern sich dann um Dezimeter bis Meter. Am Format ändert das nichts.
 
-1. Die ganze Stadt auf 1-m-Gelände neu rechnen, sobald `suhl-boden` den Lauf mit dem Artefakt `suhl-boden-roh` nennt (eine Zeile
-   in `lauf.txt`).
-2. Mit 1-m-Gelände die OSM-Achsen auf die Fahrbahn schieben (`roads.fit_axis`, wie in der Region) und kürzere Wellenlängen für
-   Stadtstraßen prüfen – der Abstand der Profile zum echten Boden sinkt dann weiter.
-3. Eine eigene Regel für Brücken ohne Abstand (Fußgängerstege, Eisenbahnbrücken) und für Wege auf mehreren Ebenen.
-4. Schilder der Anfahrt neu rechnen (Ortstafeln, Wegweiser, Autobahnschilder aus dem ersten Versuch).
-5. Haltestellen mit dem Fahrplan verbinden (IFOPT), zusammen mit dem Bus-Paket.
+**Was nicht fertig ist – offen und ehrlich**
+
+1. **Brückendecks aus dem DOM1 messen** (Auftrag des Suhl-Chats, 2:48 Uhr): nicht begonnen. Plan: ein Schritt im Workflow holt über
+   `tools/suhl/lib/easygeodata.py` (nur in GitHub Actions) die 1-km-Kacheln des DOM1, in denen eine Brücke liegt – zuerst die acht
+   des Zentrums; je Brücke die Höhe des Decks entlang der Achse als Median quer über die Deckbreite; das Profil wird daran
+   festgehalten und der Weg bekommt einen Merker „Deck gemessen“; liegt das „Deck“ nur 0,1–1,1 m über dem Boden, ist es eine Rampe
+   oder Treppe – dann fällt das Brücken-Bit weg, und der Bericht nennt den Weg. Bis dahin gilt: Im Probesatz bleiben 8 von 24
+   Kreuzungen unter 4,5 m Abstand, in der Stadt 75 von 177.
+2. **Achsen schieben und kürzere Wellenlängen** (`roads.fit_axis` auf 1-m-Gelände, hinter einem Schalter, mit Zahlen vorher und
+   nachher): nicht begonnen. Heute liegt das Profil der Fahrstraßen im Probesatz im Mittel 0,27 m neben dem 1-m-Gelände
+   (95 %: unter 0,90 m).
+3. **Schilder der Anfahrt** (Ortstafeln, Wegweiser, blaue Autobahnschilder): nicht neu gerechnet, `signs` ist leer.
+4. **Ganze Stadt auf 1-m-Gelände:** wartet auf `suhl-boden`. Die heutigen Stadt-Profile stehen auf dem 30-m-Oberflächenmodell.
+5. **Drei Prüfungen bestehen nicht** (Abschnitt 4): einzelne Gebäude in der Fahrbahn, Kreuzungen über 3 cm, Brücken ohne Abstand.
+6. **Haltestellen** sind nicht mit dem Fahrplan verbunden (IFOPT) – gehört zum Bus-Paket.
+
+**Zwei Dinge, die schiefgingen**
+
+- Ein `git pull --rebase` hat einen noch nicht gepushten Merge von `suhl/daten` aufgelöst und fünf Commits von `suhl-daten` als
+  Kopien auf diesen Zweig gelegt (b6b66fda, 28b7b593, bb2b3e0f, c8809782, daaea37e – Inhalt gleich). Ohne erzwungenen Push lässt
+  sich das nicht entfernen. Der echte Merge aeece9cd stellt die Abstammung wieder her; spätere Merges finden den richtigen
+  Vorfahren. Seitdem: Merges sofort pushen, Ergebnisse des Workflows mit `git pull --rebase=merges` holen.
+- Zwei Änderungen haben sich gekreuzt: Ich habe die Kacheln auf den Vertrag 1.0 umgebaut (absolute Dezimeter, Commit 2fb76ba1,
+  Lauf 43345325729), während `suhl-daten` mit Revision 1.1 meinen früheren Aufbau übernahm. Der Umbau ist zurückgenommen
+  (Commit 1624cb51). Lauf 43345325729 ist überholt – bitte nicht verwenden.
+
+**Nächste Schritte dieses Pakets** – in dieser Reihenfolge: 1 (DOM1, zuerst Probesatz), 4 (Stadt auf 1-m-Gelände, als `v2`),
+2 (Schalter, Zahlen vorher und nachher), 3 (Schilder der Anfahrt), 6 (mit dem Bus-Paket).
