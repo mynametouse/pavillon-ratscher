@@ -1,11 +1,11 @@
 {
  "was": "Der Satz der Suhl-Daten, den der Job satz (.github/workflows/suhl-daten.yml) ins Daten-Repo mynametouse/pavillon-daten bringt. Geändert wird diese Datei nur auf Ansage des Suhl-Chats. Je Produkt: run = Lauf, der das Artefakt erzeugt hat, artifact = sein Name, version = das N von suhl/<produkt>/v<N>. dry_run: true = alles außer dem Push. remove: Versionsordner, die dieser Satz löscht (z. B. \"g/v0\"). Statt run/artifact auch {\"branch\", \"commit\", \"path\"}: ein Ordner eines Zweigs dieses Repos an einem genannten Commit (so liegen die Probesätze).",
- "name": "probe-zentrum-v1-trockenlauf",
+ "name": "probe-zentrum-v1",
  "dry_run": true,
  "products": {
   "boden": {
    "branch": "suhl/boden",
-   "commit": "64a37c21b3efb864228d79d5f039c3acc8a06b5a",
+   "commit": "c7edfd67df12e4cf57e862ed2c7ae35518d47bbb",
    "path": "tools/suhl/out/boden/probe/suhl/boden/v1",
    "version": 1
   },
@@ -43,12 +43,6 @@
    "branch": "suhl/gruen",
    "commit": "8f8b77ff2a0a2cbd461c7c700560b27857a6e6e7",
    "path": "tools/suhl/out/gruen/probe/suhl/w/v1",
-   "version": 1
-  },
-  "d": {
-   "branch": "suhl/daten",
-   "commit": "e0baac9fee2ca23c0fcd035ad1606f13204395a1",
-   "path": "tools/suhl/out/daten/probe/suhl/d/v1",
    "version": 1
   }
  },
