@@ -22,6 +22,8 @@ import { ZKHANG } from './zk_zeitwelt_hang.js';
 import { ZKDINGE } from './zk_zeitwelt_dinge.js';
 import { ZKNACHT } from './zk_zeitwelt_nacht.js';
 import { ZKTON } from './zk_zeitwelt_ton.js';
+import { ZKDATA } from './zk_data.js';
+import { ZKWELT } from './zk_welt.js';
 
 export const ZKZEITWELT = (() => {
   const LAYER = { both: 0, L: 21, R: 22 };
@@ -189,6 +191,34 @@ export const ZKZEITWELT = (() => {
       : '';
   // ---------- the parts: each gets set(L, R) only when its own numbers changed; side(s) per render in the split ----------
   const r3 = v => +(+v || 0).toFixed(3);
+  // the first version's PV: whole roof planes in their order until a share is reached (as ZKWELT's roofShare counts them)
+  const KL = { on: false, curve: null, dieback0: null, pv: null };
+  function pvCounts(st) {
+    const R = ZKWELT.S.roof;
+    if (!st || !R) return { np: 0, nf: 0 };
+    const share = Math.max(0, Math.min(1, (st.energy && +st.energy.pvRoof) || 0)),
+      want = Math.round((R.mods.length + R.flats.length) * share);
+    let n = 0,
+      np = 0,
+      nf = 0;
+    for (const p of R.P) {
+      if (n >= want) break;
+      n += p.mods.length;
+      if (p.flat) nf = p.i1;
+      else np = p.i1;
+    }
+    return { np, nf };
+  }
+  function pvSide(c) {
+    const W = ZKWELT.S;
+    if (!c || !W.roofMesh) return;
+    W.roofMesh.count = c.np;
+    W.roofMesh.visible = c.np > 0;
+    if (W.flatMesh && W.flatBody) {
+      W.flatMesh.count = W.flatBody.count = c.nf;
+      W.flatMesh.visible = W.flatBody.visible = c.nf > 0;
+    }
+  }
   const PARTS = [
     {
       id: 'hang',
@@ -202,6 +232,75 @@ export const ZKZEITWELT = (() => {
       side: s => ZKHANG.side(s),
       clear: () => ZKHANG.clear(),
       stats: () => ZKHANG.stats(),
+    },
+    {
+      // the first version's world (zukunft/zk_welt.js): PV on the village roofs (energy.pvRoof) and the forest at the Klinge (the near trees
+      // of world/forest.js – the slope cards leave that lobe out). Its beetle curve (ZKDATA.DIEBACK at ZKDATA.YEARS) is set to the
+      // chronicle's for the time of the Zeitreise, so the family forest dies, is cleared and grows again in the chronicle's years; the
+      // real year goes in (quarter years: its stand is rebuilt at most four times a year of the time-lapse). PV in the split: the share of
+      // each world as instance counts per render (side). The forest itself shows the left world in the split (its trees are one set).
+      id: 'klinge',
+      sig: st =>
+        st
+          ? [
+              st.forest && st.forest.regrow,
+              Math.floor((+st.y || 2026) * 4) / 4,
+              r3(st.energy && st.energy.pvRoof),
+              Math.round(((st.water && +st.water.level) || 0) * 20),
+            ].join()
+          : '',
+      warm: () => {
+        ZKWELT.warm();
+        KL.curve = {};
+        for (const w of ['allein', 'gewappnet'])
+          KL.curve[w] = ZKDATA.YEARS.map((y, i) =>
+            i === 0
+              ? 0
+              : window.ZKCHRONIK
+                ? Math.min(0.999, Math.max(0, 1 - ZKCHRONIK.state(w, y + 0.5).forest.green))
+                : ZKDATA.DIEBACK[i]
+          );
+        // the curve must rise: never below the year before
+        for (const c of Object.values(KL.curve))
+          for (let i = 1; i < c.length; i++) c[i] = Math.max(c[i], c[i - 1] + 1e-4);
+      },
+      set: (L, R) => {
+        const st = L || R;
+        if (!st) return;
+        const mode = st.forest && st.forest.regrow === 'mischwald' ? 'umbau' : 'natur';
+        if (!KL.dieback0) KL.dieback0 = ZKDATA.DIEBACK.slice();
+        const c = KL.curve && KL.curve[mode === 'umbau' ? 'gewappnet' : 'allein'];
+        if (c) c.forEach((v, i) => (ZKDATA.DIEBACK[i] = v));
+        const y = Math.floor((+st.y || 2026) * 4) / 4;
+        // the river (the Schleuse below the dam: the first version's flood) rises with the events – Annahme: 3 × the street's level
+        const lv = (st.water && +st.water.level) || 0;
+        ZKWELT.apply(
+          {
+            pvRoof: (st.energy && +st.energy.pvRoof) || 0,
+            forest: st.forest && +st.forest.green < 0.999 ? { mode } : null,
+            flood: lv > 0.02 ? Math.round(lv * 3 * 20) / 20 : 0,
+          },
+          y
+        );
+        KL.on = true;
+        // PV counts of both worlds for the split
+        KL.pv = { L: pvCounts(L), R: R ? pvCounts(R) : null };
+        pvSide(KL.pv.L);
+      },
+      side: s => pvSide(KL.pv && (KL.pv[s] || KL.pv.L)),
+      clear: () => {
+        if (!KL.on) return;
+        ZKWELT.clear();
+        if (KL.dieback0) KL.dieback0.forEach((v, i) => (ZKDATA.DIEBACK[i] = v));
+        KL.dieback0 = null;
+        KL.on = false;
+      },
+      stats: () => ({
+        on: KL.on,
+        pv: KL.pv,
+        err: ZKWELT.S.err || null,
+        dieback: ZKDATA.DIEBACK.map(v => +v.toFixed(2)),
+      }),
     },
     {
       // the things (heating house, trench, turbine, logging, the rain night, the blackout, signs): each compares its own description

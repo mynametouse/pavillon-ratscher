@@ -213,7 +213,7 @@ def run():
               return GAME.R.info.programs.filter(p => !__p1.has(p.cacheKey) && keys.has(p.cacheKey)).map(p => p.name); })()""")
             print('programs after everything', progs(), 'new since warm', new, flush=True)
             ck('no new programs of the Zeitreise world after warm() (set, places, nights, split)', not mine, str(mine))
-            ck('warm() adds few programs (≤ 8)', P['warm'] - P['load'] <= 8, f"{P['load']} → {P['warm']}")
+            ck('warm() adds few programs (≤ 14, with the first version\'s)', P['warm'] - P['load'] <= 14, f"{P['load']} → {P['warm']}")
             E("ZKZEITWELT.clear()"); steps(0.3)
             s = J("ZKZEITWELT.stats()")
             vis = J("(() => { const o = []; GAME.scene.traverse(m => { if (m.name && m.name.startsWith('zeitreise:') && m.visible) o.push(m.name); }); return o; })()")
