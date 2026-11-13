@@ -15,7 +15,7 @@
 import { GLKAROSSE as K } from '../grenzland/gl_karosse.js';
 import { GLTYPEN } from '../grenzland/gl_typen.js';
 export const VKTYPEN = (() => {
-  const { rgb, hex, fillet } = K,
+  const { rgb } = K,
     mix = (a, b, t) => a + (b - a) * t;
   const { schild, wischer, innen } = GLTYPEN.parts;
   const C = {
@@ -1661,7 +1661,6 @@ export const VKTYPEN = (() => {
   function lkw(k, T, o) {
     const P = T.p,
       Cb = kabine(k, T, o, P.cab),
-      zf = P.cab === 'niedrig' ? 0.5 : 0.95,
       zr = T.rw + 0.42; // the frame rails' height
     if (P.aufbau === 'koffer') {
       const y1 = Cb.yR - 0.12,

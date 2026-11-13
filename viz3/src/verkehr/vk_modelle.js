@@ -393,7 +393,6 @@ if (vkL > 0.5) {
     return !!(L && L[1] && L[2]);
   };
   // ---- a vehicle ----
-  const _c = new THREE.Color();
   function paint(m, o) {
     const U = m.U;
     U.uPaint.value.set(o.col || '#8c9094');
@@ -498,10 +497,7 @@ if (vkL > 0.5) {
   }
   // ---- per frame: the shadows and pools under the vehicles shown ----
   const _m = new THREE.Matrix4(),
-    _s = new THREE.Matrix4(),
-    _v = new THREE.Vector3(),
-    _q = new THREE.Quaternion(),
-    _one = new THREE.Vector3(1, 1, 1);
+    _s = new THREE.Matrix4();
   function tick(night) {
     if (!S.playing) {
       S.playing = true;
