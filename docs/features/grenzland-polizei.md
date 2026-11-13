@@ -120,6 +120,12 @@ suchen. In der Konsole: `GLFAHNDUNG.stand()`, `GLFAHNDUNG.tat('einbruch', { forc
 - Wer vor ihren Augen in ein Haus geht, hat kein Versteck: die Suche läuft dann normal schnell ab und beginnt erst nach bis zu 45 s
   (solange sie noch davor stehen).
 - Fällt die Fahndung auf null – entkommen, umgezogen, von einer Mission beendet –, fahren alle von selbst heim (`GLLOGIK.einsatz`).
+- **Zeitwechsel beendet die Fahndung** (`grenzland:era`): eine Suche von heute läuft nicht in der Rückblende weiter und umgekehrt.
+- **Ein Fehler im Bild der Polizei hält das Spiel nicht an**: `GLFAHNDUNG.tick` und `GLHELI.tick` fangen ihn ab, merken ihn einmal
+  (`GLFAHNDUNG.err`, `GLHELI.err`, Konsole) und blasen die Fahndung ab – die Module, die danach ticken, laufen weiter. Der
+  Browser-Test prüft, dass keiner auftrat.
+- Die Autos der Polizei tragen `c.pol = true` (in `GLAUTO.cars` und über `VEH.extra` → `e.grenzland.pol`): andere Module haben auch
+  Fahrzeuge des Modus; wer „nichts von der Polizei übrig“ prüft, zählt nur diese.
 
 ## Offen
 

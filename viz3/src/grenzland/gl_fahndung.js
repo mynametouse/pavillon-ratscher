@@ -843,6 +843,10 @@ export const GLFAHNDUNG = (() => {
     if (!keepLog) GL.W.log.length = 0;
     clearWorld();
   }
+  // another time, another police: a search does not go on through a flashback (nor out of it)
+  KERN.on('grenzland:era', () => {
+    if (GL.on && (S.cars.length || S.cops.length || S.block || GLLOGIK.starsOf(GL.W.heat) > 0)) clear(true);
+  });
   // ---- what the police did: tell it ----
   function erzaehlen(ev) {
     const [n, d] = ev,
@@ -940,9 +944,13 @@ export const GLFAHNDUNG = (() => {
         }
       }
     }
-    // the officers who were shoved over lie for a while (they get up again)
+    // the officers who were shoved over lie for a while (they get up again); a figure another module took away is made again
     for (const c of S.cops)
-      if (c.F) {
+      if (c.F && c.F.gone) {
+        c.F = null;
+        c.da = false;
+        world.copMake(c);
+      } else if (c.F) {
         c.da = !(c.F.downT > 0);
         c.x = c.F.x;
         c.y = c.F.y;
