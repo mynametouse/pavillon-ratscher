@@ -188,7 +188,12 @@ def run():
             E("__offB()")
             E("ZKREGIE.prev()"); steps(0.2)
             s = st(); ck('prev right at a chapter start: the chapter before', s['chapter'] == 'wald', s['chapter'])
-            E("ZKREGIE.seek(2039)"); steps(0.2)
+            # the last chapter's epilogue (May 2060) lies after the chapter's „to“ – it still plays before the card
+            E("ZKREGIE.seek(2059.5, 'energie')"); steps(0.2)
+            E("ZKREGIE.next()"); steps(0.3)
+            s = st(); nx = (s.get('next') or s.get('ev') or {}).get('id')
+            ck('the epilogue after 2060.0 plays before the last card', s['chapter'] == 'energie' and nx == 'epilog', f"{s['chapter']} {s['mode']} {nx}")
+            E("ZKREGIE.seek(2039, 'wald')"); steps(0.2)
             E("ZKREGIE.speed(4)"); y0 = st()['y']; steps(1.0); y1 = st()['y']
             ck('speed(4): four times as fast', y1 - y0 > 1.2, f'{y1 - y0:.2f} y in 1 s'); E("ZKREGIE.speed(1)")
 
@@ -212,12 +217,12 @@ def run():
 
         # ---------------- the places per chapter: a contact sheet ----------------
         if 'orte' in want:
-            # one sheet: every place once (the time-lapse's pose; 'hang' also as a halt stands), in the forest chapter ten years on
+            # one sheet: every place once (the time-lapse's pose), in the forest chapter ten years on
             E("ZKREGIE.start({ pair: ['allein'], split: false, chapter: 'wald', play: false, instant: true })"); steps(0.4)
             E("ZKREGIE.seek(2036)"); steps(0.4)
             ids = J("ZKREGIE.places()")
             items = []
-            for pid, still in [(p, False) for p in ids] + [('hang', True)]:
+            for pid, still in [(p, False) for p in ids]:
                 E(f"ZKREGIE.view('{pid}', {{ still: {'true' if still else 'false'} }})"); steps(0.6)
                 q = J(f"ZKREGIE.pose('{pid}', {{ halt: {'true' if still else 'false'} }})")
                 items.append([pid + (' (Halt)' if still else '') + ' · ' + str([round(v) for v in q['pos']]), E(SHOT)])

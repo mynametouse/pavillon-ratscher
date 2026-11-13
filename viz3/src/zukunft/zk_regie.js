@@ -443,6 +443,8 @@ export const ZKREGIE = (() => {
     const ch = S.ch;
     S.y = y == null ? ch.from : clamp(+y, ch.from, ch.to);
     S.evs = S.tl.filter(m => m.chapter === ch.id);
+    // the chapter runs until its last event has played (the epilogue lies in May 2060, after the energy chapter's „to“)
+    S.chEnd = Math.max(ch.to, ...S.evs.map(m => m.t + 0.02));
     S.ni = S.evs.findIndex(m => (y == null ? m.t >= S.y - 1e-9 : m.t > S.y));
     if (S.ni < 0) S.ni = S.evs.length;
     S.mode = 'lapse';
@@ -475,8 +477,7 @@ export const ZKREGIE = (() => {
     emit({ type: 'event', ev: info(m), state: 'pass', skipped: !!quiet });
   }
   function lapse(dt) {
-    const ch = S.ch,
-      yps = S.spd / SPY;
+    const yps = S.spd / SPY;
     let k = S.ni;
     while (k < S.evs.length && !(S.evs[k].halt > 0)) k++;
     const nx = S.evs[k];
@@ -497,8 +498,8 @@ export const ZKREGIE = (() => {
       pass(m);
       S.ni++;
     }
-    if (y1 >= ch.to) {
-      S.y = ch.to;
+    if (y1 >= S.chEnd) {
+      S.y = S.chEnd;
       enterCard();
       return;
     }
@@ -510,7 +511,7 @@ export const ZKREGIE = (() => {
     if (s && s.t >= s.T && !ZKBILD.S.cut) {
       const places = lapsePlaces();
       if (places.length > 1) {
-        S.pi = (S.pi + 1) % places.length;
+        S.pi = nextPlace(places.length);
         cutTo(places[S.pi]);
       } else s.t = s.T;
     }
@@ -650,13 +651,16 @@ export const ZKREGIE = (() => {
     ZKBILD.set(t ? { split: false, side: 'L' } : { split: S.split, side: 'L' });
     emit({ type: 'take', take: t, world: t ? S.pair[t === 'R' ? 1 : 0] : null });
   }
+  // the time-lapse's places: [0] the wide opening (once per chapter), then the long lens over the slopes and the chapter's own places
   function lapsePlaces() {
     const ch = S.ch,
       own = (ch && ch.places) || [],
-      out = ['ueberblick'];
+      out = ['ueberblick', 'fern'];
     for (const p of own) if (!out.includes(p) && !(S.side === 'both' && TAKES.has(p))) out.push(p);
-    return out.length > 1 ? out : ['ueberblick', 'anger'];
+    return out;
   }
+  // the next place of the cycle – the opening is not shown again
+  const nextPlace = n => (S.pi + 1 >= n ? Math.min(1, n - 1) : S.pi + 1);
   function endHalt() {
     const m = S.ev;
     hush();
@@ -680,7 +684,7 @@ export const ZKREGIE = (() => {
       }
     }
     const places = lapsePlaces();
-    S.pi = (S.pi + 1) % places.length;
+    S.pi = nextPlace(places.length);
     cutTo(places[S.pi], {
       swap: () => {
         if (S.take) setTake(null);
@@ -1024,7 +1028,7 @@ export const ZKREGIE = (() => {
         S.y = S.evs[k].t;
         enterEvent(S.evs[k]);
       } else {
-        S.y = S.ch.to;
+        S.y = S.chEnd;
         enterCard();
       }
     } else if (md === 'prelude') {

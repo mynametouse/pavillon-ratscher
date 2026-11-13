@@ -15,11 +15,17 @@ export const ZKORTE = (() => {
   const FOV_SPLIT = 1.16;
   // pos / look [x, y], heights above the ground; or yaw (compass bearing of the view: 0 north, 90 east) and pitch (degrees up) instead of
   // look – the look point then lies 100 m ahead. move: 'dolly' (m forward along the view), 'truck' (m sideways), 'pan' (degrees)
+  // The slopes are filmed like a documentary films landscape change (the lead, 13.11.): long lenses (25–35°) from above or across the
+  // valley, the forest filling the frame, the camera still or in a very slow pan; one wide establishing shot only at each chapter's
+  // opening; no eye-height views across open fields.
   const P = {
-    // the establishing shot of each chapter's time-lapse: 90 m above the Anger towards the forests south and south-west, the lime below
-    ueberblick: { pos: [232, -92], h: 90, yaw: 195, pitch: -10, fov: 60, move: { truck: 10 }, label: 'Über dem Dorf' },
+    // the establishing shot at each chapter's opening: 90 m above the Anger towards the forests south and south-west, the lime below
+    ueberblick: { pos: [232, -92], h: 90, yaw: 195, pitch: -10, fov: 60, move: { truck: 8 }, label: 'Über dem Dorf' },
+    // the long lens from the same height: the forested slopes south and south-west fill the frame, the ridge with the turbine's place
+    // (230, −1290) at the left
+    fern: { pos: [232, -92], h: 90, yaw: 205, pitch: -3, fov: 30, move: { pan: -2.5 }, label: 'Die Hänge im Süden' },
     // the Anger from the game's own spot there (world/village_props.js „Dorf (Anger)“): the Dorflinde (217, −109; 21 m) to the right,
-    // past it to the south-west, where the slopes rise ~5° over the roofs
+    // past it to the south-west
     anger: {
       pos: [241.5, -101.5],
       h: EYE,
@@ -29,17 +35,16 @@ export const ZKORTE = (() => {
       move: { dolly: 3 },
       label: 'Am Anger bei der Dorflinde',
     },
-    // the overview from the slope north-east of the village over the roofs to the forests south and south-west (the Klinge lobe)
+    // from the slope north-east of the village with a long lens across the valley onto the Klinge lobe and the slopes behind it – a
+    // halt there keeps this view (from eye height on the slope the forest is a thin band over a field: zeitreise-welt's (430, 90))
     hang: {
       pos: [470, 120],
       h: 85,
-      look: [120, -330],
+      look: [-300, -800],
       lh: 20,
-      fov: 44,
-      move: { truck: 14 },
+      fov: 30,
+      move: { pan: -3 },
       label: 'Am Hang über dem Dorf',
-      // a halt there stands on the slope at eye height (zeitreise-welt's line-of-sight check: ~100 % of the conifers S/SW in view)
-      halt: { pos: [430, 90], h: EYE, yaw: 199, pitch: -2, fov: 55 },
     },
     // outside the family forest's north-east edge (world/forest.js CORE: the tip of the lobe, its edge (−518, −536)–(−423, −494)), ~20 m
     // from the first spruces, looking across the edge into the stand – the sun from the right in the afternoon
@@ -49,17 +54,17 @@ export const ZKORTE = (() => {
       look: [-464, -529],
       lh: 7,
       fov: 55,
-      move: { dolly: 3 },
+      move: { dolly: 2 },
       label: 'Am Waldrand an der Klinge',
     },
-    // a beetle clearing seen from its edge (zeitreise-welt knows the real one)
+    // a beetle clearing (zeitreise-welt knows the real one and gives its view)
     kahlflaeche: {
       pos: [470, -420],
       h: EYE,
       look: [520, -470],
       lh: 6,
-      fov: 52,
-      move: { pan: 8 },
+      fov: 45,
+      move: { pan: 4 },
       label: 'Auf der Käferfläche',
     },
     // the street in the flood area by the brook (zeitreise-welt's water lies there)
@@ -83,17 +88,18 @@ export const ZKORTE = (() => {
       move: { pan: 6 },
       label: 'An der Schleusebrücke',
     },
-    // the heating house at the edge of the village (zeitreise-welt builds it)
+    // the heating house at the edge of the village (zeitreise-welt builds it and gives its view)
     heizhaus: { pos: [292, -150], h: EYE, look: [318, -168], lh: 4, fov: 52, move: { dolly: 3 }, label: 'Am Heizhaus' },
-    // the village's south edge by the lane: open fields up to the forest, the turbine on the ridge (230, −1290) straight ahead
+    // the wind turbine on the ridge: zeitreise-welt's view from the clearing 255 m north of it; this fallback looks up the slope with
+    // a long lens from the village's south edge
     windrad: {
       pos: [330, -330],
       h: EYE,
-      yaw: 186,
-      pitch: 6,
-      fov: 58,
-      move: { dolly: 3 },
-      label: 'Am Dorfrand, Blick zum Kamm',
+      look: [230, -1290],
+      lh: 90,
+      fov: 30,
+      move: { pan: 2 },
+      label: 'Das Windrad am Kamm',
     },
     // the old school (Ratschner Anger 24) from the green before it, by the signpost – the village's emergency point in the blackout
     schule: {
