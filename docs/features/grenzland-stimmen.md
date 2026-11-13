@@ -118,7 +118,10 @@ Die Tabelle steht als `CAST` in `tools/voices/grenzland_record.py`; eine Änderu
 
 ## Stand (13.11.2026, 14:30)
 
-- **Gesammelt:** 749 Zeilen von 40 Sprechern auf dem zusammengeführten Stand (Merge 1, 250a60b3: kino, welt, licht, figuren, Paket A).
+- **Gesammelt:** 749 Zeilen von 40 Sprechern auf dem zusammengeführten Stand (Merge 1, 250a60b3, und danach `feat/grenzland` 686c7631 mit
+  welts neuesten Reaktionen f5fb5bd3; dazu die neuesten Dateien von kino, licht und figuren – dieselben 749 Zeilen, die Liste ist aktuell:
+  `node tools/voices/grenzland_linien.mjs --check`). Die sechs Ids, die dem Lauf auf `feat/grenzland` nach Merge 1 fehlten
+  (`gl_haendler|gerhard|jule_1ugwofi|1enph55`: „Ist dir kalt? Es ist September.“, „Mit der Mütze …“), sind in der Liste und aufgenommen.
 - **Aufgenommen: alle 749** – MP3 11,13 MB, der Ordner 11,40 MB, gut 50 Minuten: 92 Gesprächszeilen der Missionen, 101 Zeilen der Welt
   (Polizeifunk mit der Beschreibung in Bruchstücken, Rufe, Zufallsereignisse, Straße 1989, die Antworten des Spielers), 370 Reaktionen
   (alle zehn Kommentatoren), alle neun Radiosender (Matze mit dem Polizeibericht über die eigenen Taten und der Sushi-Geschichte, Radio
