@@ -1,0 +1,5 @@
+# feat/zukunft-welt: what the futures look like in the world (one test name per line, as for viz3/test/run.py)
+zukunft_welt
+zukunft
+strategie
+strategie_telefon
