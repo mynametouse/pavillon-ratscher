@@ -42,6 +42,8 @@ import { VKMOD } from './vk_modelle.js';
 import { VKSTROM } from './vk_strom.js';
 import { VKREGELN } from './vk_regeln.js';
 import { VKAMPEL } from './vk_ampel.js';
+// stage 3: harmless accidents – the other driver's lines (VKUNFALL)
+import { VKUNFALL } from './vk_unfall.js';
 export const VERKEHR = (() => {
   // feat/verkehr-real: each driver of the cast has a car of today of his own (by his name: the same type every time; the colour stays
   // his, VLEUTE) – the cars by their share of the stock (VKTYPEN.PKW); their models asked for at once, in the order of that share
@@ -711,7 +713,9 @@ export const VERKEHR = (() => {
       const far = Math.hypot(c.x - o[0], c.y - o[1]),
         vis = seen(c.x, c.y);
       c.unseen = vis ? 0 : (c.unseen || 0) + dt;
-      if (c.st === 'ende' || (far > 320 && c.unseen > 3) || (c.age > 400 && c.unseen > 5)) removeCar(c);
+      // (stage 3: one that stays off the road after a knock goes when nobody has seen it for a moment)
+      const lies = c.st === 'unfall' && c.crash && c.crash.phase === 'liegt' && c.unseen > 3;
+      if (c.st === 'ende' || lies || (far > 320 && c.unseen > 3) || (c.age > 400 && c.unseen > 5)) removeCar(c);
     }
   }
   // ---- the talk panel and the subtitles (the look of the villagers' panel, shell/css/verkehr.css) ----
@@ -885,6 +889,187 @@ export const VERKEHR = (() => {
   function voice(k, text) {
     if (!text || !STIMME || !STIMME.speaks || !STIMME.speaks('vk_' + k, text)) return null;
     return STIMME.say('vk_' + k, text, { at: posOf(k) });
+  }
+  // ---- feat/verkehr-real stage 3: after a knock the other driver has his say (VAUTO: ctx.onUnfall; verkehr/vk_unfall.js) ----
+  // A stranger of the flow speaks from his car (one of two voices, STIMME 'vk_fremd_m' and 'vk_fremd_f'); a person of the place, after a
+  // real knock, gets out, takes a few steps along his car towards the player's vehicle, complains, and gets back in (his figure, VFIG, as
+  // the driver of a lent car) – the car waits for him (crash.busy), then drives on.
+  for (const g of ['m', 'f'])
+    if (STIMME && STIMME.person && !STIMME.profile('vk_fremd_' + g))
+      STIMME.person('vk_fremd_' + g, { name: g === 'f' ? 'Fahrerin' : 'Fahrer', g, age: g === 'f' ? 41 : 52 });
+  const nearP = (c, r) => Math.hypot(c.x - P.x, c.y - P.y) < r;
+  // a line of the driver of car c (d: his figure, when he stands outside)
+  function crashSay(c, kind, d) {
+    const text = VKUNFALL.line(kind, rnd()),
+      ms = Math.max(3200, text.length * 70);
+    if (c.who) UI.subtitle(d ? { key: c.who, f: d.f } : { key: c.who }, text, ms);
+    else {
+      const T = c.vm && c.vm.T,
+        k = 'vk_fremd_' + (c.drvG === 'f' ? 'f' : 'm');
+      UI.subtitle(null, VKUNFALL.who(T ? T.cls : 'pkw', c.typ, c.drvG) + ': ' + text, ms);
+      if (STIMME && STIMME.speaks && STIMME.speaks(k, text)) STIMME.say(k, text, { at: [c.x, c.y] });
+    }
+    S.stats.said = (S.stats.said || 0) + 1;
+    S.lastSaid = text;
+    return text;
+  }
+  function onUnfall(c, kind, k) {
+    const U = (S.stats.unfall = S.stats.unfall || {});
+    U[kind] = (U[kind] || 0) + 1;
+    if (kind === 'touch') {
+      if (c.who && nearP(c, 40)) UI.subtitle({ key: c.who }, pick(['He!', 'Hallo?!', 'Vorsicht!']), 1800);
+      return;
+    }
+    if (kind === 'stoss') {
+      // a car waved down or talked to: that is over now
+      if (S.halted === c) S.halted = null;
+      if (UI.cur && UI.cur.c === c) UI.close();
+      return;
+    }
+    if (!k) return;
+    const Z = S.unfall && S.unfall.c === c ? S.unfall : null;
+    if (kind === 'steht') {
+      if (!nearP(c, 70)) return;
+      const what =
+        k.n > 1 ? 'again' : k.fault === 'car' ? 'rear' : k.grade === 'crash' ? (k.stood ? 'stood' : 'crash') : 'knock';
+      crashSay(c, what, Z && Z.d);
+      if (k.grade !== 'crash') return;
+      if (!Z) scene(c, k);
+      else Z.endAt = S.t + 6; // knocked again while he stood there: his last word later
+      return;
+    }
+    if (kind === 'weiter' || kind === 'liegt') {
+      if (kind === 'liegt' && nearP(c, 50)) crashSay(c, 'liegt');
+      else if (Z && !Z.endSaid && k.grade === 'crash' && nearP(c, 50)) crashSay(c, c.who ? 'endDorf' : 'end');
+      if (Z) endScene(Z);
+    }
+  }
+  // the driver's door (left; the right one when a wall is there), out of walls, on the ground
+  function doorOf(c) {
+    const T = c.vm && c.vm.T,
+      big = !!T && (T.cls === 'lkw' || T.cls === 'trak'),
+      fy = c.D.YF - (big ? 1.0 : 1.85),
+      f = [Math.sin(c.hd), Math.cos(c.hd)],
+      r = [Math.cos(c.hd), -Math.sin(c.hd)],
+      side = c.D.HW + 0.55;
+    let best = null;
+    for (const sd of [-side, side]) {
+      const p0 = [c.x + f[0] * fy + r[0] * sd, c.y + f[1] * fy + r[1] * sd],
+        p = p0.slice();
+      KERN.pushOut(p, 0.3);
+      const moved = Math.hypot(p[0] - p0[0], p[1] - p0[1]);
+      if (!best || moved < best.m - 0.05) best = { p, m: moved };
+      if (moved < 0.1) break;
+    }
+    return [best.p[0], best.p[1], KERN.ground(best.p[0], best.p[1], c.z + 1)];
+  }
+  function scene(c, k) {
+    if (S.unfall) endScene(S.unfall);
+    const Z = (S.unfall = {
+      c,
+      k,
+      who: c.who,
+      t: 0,
+      d: null,
+      st: 'laedt',
+      endAt: S.t + 6.5,
+      endSaid: false,
+      door: null,
+    });
+    if (!c.who || !VFIG.avail(c.who)) {
+      Z.st = 'aus';
+      return;
+    }
+    k.busy = true;
+    VFIG.load(c.who)
+      .then(f => {
+        if (S.unfall !== Z || Z.st !== 'laedt' || !f || c.st === 'weg') {
+          if (S.unfall === Z) k.busy = false;
+          return;
+        }
+        const p = doorOf(c);
+        Z.door = [p[0], p[1]];
+        Z.d = { f, x: p[0], y: p[1], z: p[2], hd: c.hd - Math.PI / 2 };
+        f.g.visible = true;
+        putFig(Z.d);
+        Z.st = 'raus';
+        Z.t = 0;
+        markDirty();
+      })
+      .catch(() => {
+        if (S.unfall === Z) k.busy = false;
+      });
+  }
+  function endScene(Z) {
+    if (Z.d) Z.d.f.g.visible = false;
+    Z.d = null;
+    if (Z.k) Z.k.busy = false;
+    if (S.unfall === Z) S.unfall = null;
+    markDirty();
+  }
+  // each frame: his last word, his figure – out, a few steps along his car towards the player, talking, back in
+  function sceneTick(dt) {
+    const Z = S.unfall;
+    if (!Z) return;
+    const c = Z.c;
+    Z.t += dt;
+    if (c.st === 'weg' || c.crash !== Z.k) return endScene(Z);
+    if (!Z.endSaid && S.t > Z.endAt) {
+      Z.endSaid = true;
+      if (nearP(c, 45)) crashSay(c, c.who ? 'endDorf' : 'end', Z.d);
+    }
+    if (Z.st === 'laedt' && Z.t > 4) {
+      // the figure did not come in time: he stays in his car
+      Z.st = 'aus';
+      Z.k.busy = false;
+    }
+    const D = Z.d;
+    if (!D) return;
+    const q = VEH.cur ? [VEH.cur.st.x, VEH.cur.st.y] : [P.x, P.y];
+    let goal = Z.door;
+    if (Z.st === 'raus' || Z.st === 'redet') {
+      const f = [Math.sin(c.hd), Math.cos(c.hd)],
+        a = Math.max(-3, Math.min(2.5, (q[0] - Z.door[0]) * f[0] + (q[1] - Z.door[1]) * f[1]));
+      goal = [Z.door[0] + f[0] * a, Z.door[1] + f[1] * a];
+    }
+    const dx = goal[0] - D.x,
+      dy = goal[1] - D.y,
+      dd = Math.hypot(dx, dy);
+    if (dd > 0.2 && Z.st !== 'redet') {
+      const st = Math.min(dd, 1.25 * dt),
+        p = [D.x + (dx / dd) * st, D.y + (dy / dd) * st];
+      KERN.pushOut(p, 0.3);
+      D.x = p[0];
+      D.y = p[1];
+      D.z = KERN.ground(D.x, D.y, D.z + 0.5);
+      D.hd = Math.atan2(dx, dy);
+      putFig(D);
+      D.f.anim(dt, 1.25);
+      markDirty();
+      return;
+    }
+    if (Z.st === 'rein') {
+      // in his car again
+      endFig(Z);
+      return;
+    }
+    if (Z.st === 'raus') {
+      Z.st = 'redet';
+      Z.t = 0;
+    }
+    // facing the player while he talks; back in when his last word is said (or after a while)
+    D.hd = wrap(D.hd + wrap(Math.atan2(q[0] - D.x, q[1] - D.y) - D.hd) * Math.min(1, dt * 3));
+    putFig(D);
+    D.f.anim(dt, 0);
+    markDirty();
+    if ((Z.endSaid && S.t > Z.endAt + 3.2) || Z.t > 14) Z.st = 'rein';
+  }
+  function endFig(Z) {
+    if (Z.d) Z.d.f.g.visible = false;
+    Z.d = null;
+    Z.st = 'aus';
+    Z.k.busy = false;
+    markDirty();
   }
   // ---- waving a car down, riding along, driving it ----
   const HW = VAUTO.DIM.HW;
@@ -1377,6 +1562,7 @@ export const VERKEHR = (() => {
     if (P.mode === 'walk' && !PLAY.seated() && !S.ride && !VEH.cur) W.push({ x: P.x, y: P.y, r: 0.35, kind: 'player' });
     for (const d of S.peds) W.push({ x: d.x, y: d.y, r: 0.32, kind: 'ped' });
     if (S.lent && S.lent.driver) W.push({ x: S.lent.driver.x, y: S.lent.driver.y, r: 0.32, kind: 'ped' });
+    if (S.unfall && S.unfall.d) W.push({ x: S.unfall.d.x, y: S.unfall.d.y, r: 0.32, kind: 'ped' });
     for (const k in DPEOPLE.figs) {
       const f = DPEOPLE.figs[k];
       if (f.g.visible && f.at) W.push({ x: f.at.x, y: f.at.y, r: 0.32, kind: 'ped' });
@@ -1387,7 +1573,15 @@ export const VERKEHR = (() => {
         S.stats.honk++;
         if (c.who) UI.subtitle({ key: c.who }, pick(VLEUTE.DRIVE.hupe), 2400);
       },
+      onUnfall,
     });
+    // stage 3: the driver after a knock (his last word, his figure outside)
+    try {
+      sceneTick(dt);
+    } catch (e) {
+      if (!S.errUnfall) console.warn('verkehr unfall', e);
+      S.errUnfall = String((e && e.message) || e);
+    }
     // a car coming towards the player: „Auto anhalten“ (5 times a second)
     if ((acc += dt) > 0.2) {
       acc = 0;
@@ -1455,7 +1649,10 @@ export const VERKEHR = (() => {
     for (const k of Object.keys(VFIG.figs)) {
       // feat/bus: or a passenger at a bus stop (bus/bus_leute.js marks them busy 'bus')
       const used =
-        S.peds.some(d => d.key === k) || (S.lent && S.lent.who === k && S.lent.driver) || S.busy[k] === 'bus';
+        S.peds.some(d => d.key === k) ||
+        (S.lent && S.lent.who === k && S.lent.driver) ||
+        S.busy[k] === 'bus' ||
+        (S.unfall && S.unfall.who === k && S.unfall.d);
       if (used) S.idle[k] = 0;
       else if ((S.idle[k] = (S.idle[k] || 0) + dt) > 15) {
         VFIG.drop(k);
@@ -1509,7 +1706,14 @@ export const VERKEHR = (() => {
       lat: +c.lat.toFixed(2),
       why: c.why,
       shown: c.g.visible,
+      crash: c.crash ? c.crash.phase + ':' + c.crash.grade : null,
+      blink: c.blink || 0,
     })),
+    // stage 3: the driver after a knock (his figure outside?), the last line said
+    unfall: S.unfall
+      ? { car: S.unfall.c.id, who: S.unfall.who, st: S.unfall.st, fig: !!S.unfall.d, endSaid: S.unfall.endSaid }
+      : null,
+    said: S.lastSaid || null,
     halted: S.halted ? S.halted.id : null,
     ride: S.ride ? { car: S.ride.c.id, ziel: S.ride.stop.name, s: S.ride.stop.s } : null,
     lent: S.lent ? { car: S.lent.c.id, who: S.lent.who, st: S.lent.st, driver: !!S.lent.driver } : null,
@@ -1551,6 +1755,7 @@ export const VERKEHR = (() => {
   }
   const car = id => VAUTO.cars.find(c => c.id === id) || null;
   const clear = () => {
+    if (S.unfall) endScene(S.unfall);
     for (const d of S.peds.slice()) removePed(d);
     for (const c of VAUTO.cars.slice()) if (!(S.lent && S.lent.c === c)) removeCar(c);
   };
