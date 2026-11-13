@@ -89,6 +89,21 @@ with lib.browser() as b:
                t is not None and teile and teile[0] == 'Zentrale an alle Streifen.' and teile[1] == 'Gesucht wird eine Person,' and teile[2] == 'männlich,'
                and teile[3] == 'rotes Karohemd,' and teile[4] == 'zu Fuß.' and teile[5] == 'Zuletzt gesehen in Ratscher.' and teile[-1] == 'Kommen.', str((t, teile)))
             ck('funk: every fragment is a line for the recordings', teile and all(['funk', x] in J("GLFAHNDUNG.linien()") for x in teile), str(teile))
+        # the balaclava (the man with the bangers gives one away): on while wanted – the face hidden, the clothes do not fit
+        X("GLSTATE.add('haube')")
+        lab = E("TW.act('gl-haube')")
+        ck('wissen: wanted, the balaclava can go on', lab == 'Sturmhaube aufsetzen', str(lab))
+        X("TW.run('gl-haube')")
+        steps(0.3)
+        ist = J("GLFAHNDUNG.ist()")
+        st = stand()
+        ck('wissen: with the balaclava the face is hidden and the clothes do not fit', ist['kopf'] == 'haube' and not st['wissen']['gesicht'] and not st['wissen']['kleidung'] and E("!!(GLFAHNDUNG.haubeG && GLFAHNDUNG.haubeG.g && GLFAHNDUNG.haubeG.g.parent)"), str((ist, st['wissen'])))
+        X("GAME.setView3(true)")
+        steps(0.4)
+        pic('01b_haube')
+        X("TW.run('gl-haube')")
+        steps(0.3)
+        ck('wissen: and off again', J("GLFAHNDUNG.ist()")['kopf'] == '' and E("!GLFAHNDUNG.haubeG"), str(J("GLFAHNDUNG.ist()")))
         # on the moped with the helmet: the face hidden, the clothes reset
         m = J(f"""(() => {{ GLAUTO.mopedAt({AN[0]} + 3, {AN[1]} + 2, 1.6); GLSTATE.tank = 3; return true }})()""")
         steps(0.5); E("VEH.enter('gl-moped')"); steps(1)

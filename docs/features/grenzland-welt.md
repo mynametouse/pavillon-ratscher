@@ -25,6 +25,11 @@ Wie in den Vorschauen zu GTA 6: Die Polizei kennt nur, was jemand gesehen hat, u
 - **Der Helm:** hängt im Carport am Haken („Helm vom Haken nehmen“, `GL.inv.helm`; nicht am Moped selbst – dort steigt der Knopf auf);
   wer ohne ihn losfährt, bekommt einmal den Hinweis, wo er hängt. Danach setzt der Spieler ihn auf dem Moped von selbst auf (wie in
   GTA), ein roter Jethelm aus `GLFIG.hatOn` auf dem Kopfknochen der Spielfigur. Die Tat „Fahren ohne Helm“ zählt nur noch ohne Helm.
+- **Die Sturmhaube:** der Böller-Mann gibt beim Kauf eine dazu („Für den Winter. Oder für was auch immer.“, `GL.inv.haube`). Solange
+  der Spieler gesucht wird (oder sie trägt), heißt der unterste Aktionsknopf „Sturmhaube aufsetzen / abnehmen“ – jeder andere Knopf in
+  der Nähe geht vor (Priorität −3). Sichtbar als dunkle Strickhaube bis zum Hals mit Augenschlitz (ein Netz im Kopf-Rahmen von
+  `GLFIG.headOf`, das Material des Verkehrs); verdeckt das Gesicht, ist Kleidung („mit Sturmhaube,“ im Funk), die Leute sagen etwas
+  („Ist dir kalt? Es ist September.“).
 - **Knöpfe:** „Ansprechen“ hat die kleinste Priorität (0,1) – am Verkaufswagen bleibt „Einkaufen“ vorn.
 - **Die Warnjacke:** am Bungalow „Warnjacke anziehen / ausziehen“ (vorher „Umziehen“, nur mit Sternen). Sichtbar über die eigene
   Umfärbung des Spiels (`AVATAR.wear`, wie die Forstkleidung; keine neue Textur, kein neues Shader-Programm). Mit Sternen gilt weiter die
@@ -120,8 +125,6 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
 
 ## Offen
 
-- **Sturmhaube:** es gibt kein Modell; die Wörter sind im Funk und in `linien()`, `GLFAHNDUNG.haube = true` würde reichen (Gesicht
-  verdeckt, Kleidung „mit Sturmhaube“). Ein Verkauf beim Böller-Mann wäre der natürliche Ort.
 - Leute der Basis-Welt (Dorfbewohner, Fußgänger des Verkehrs) zählen als Zeugen für einen Post, heben aber kein Handy – dafür hat nur
   `GLFIG` Gesten.
 - Die Gesten (`filmen`, `telefon`, `nicken`) und das Rennen der Beamten wirken erst mit den Figuren von Runde 2 (`feat/grenzland-figuren`);
@@ -165,7 +168,7 @@ und `GLDATA.KLEID` ergänzt (nur wenn es die Schlüssel nicht gibt); `GLEREIGNIS
 
 - `node --test viz3/test/unit/grenzland_welt.test.mjs` – die Regeln des Wissens und der Plan der Ereignisse (8 Tests).
 - `python3 viz3/test/grenzland_welt.py 9016 wissen,funk` · `film,wahl` · `ereignis` – im Spiel (je eine Zeile in
-  `viz3/extra/grenzland-welt/tests.txt`, also drei Jobs auf GitHub Actions). Bilder in `out/grenzland_welt/`: `01_warnjacke`,
+  `viz3/extra/grenzland-welt/tests.txt`, also drei Jobs auf GitHub Actions). Bilder in `out/grenzland_welt/`: `01_warnjacke`, `01b_haube`,
   `02_helm`, `03_gesehen(_hud)`, `04_filmt(_hud)`, `05_feed` (der Post im Handy; das Bild zeigt erst das neue Handy), `06_wahl(_hud)`,
   `10_blitzer` … `15_wildunfall`.
 - Stand 12:46 auf Actions (9aed1bb4): `wissen,funk` 19/19, `film,wahl` 14/14 grün; `ereignis`: der Korso fand keine Strecke (behoben:

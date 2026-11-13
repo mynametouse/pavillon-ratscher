@@ -68,7 +68,8 @@ export const GLFAHNDUNG = (() => {
     helmT: 0,
     funkT: 0,
     kleidVon: { m: '', f: '' }, // what each of the two wears over the own clothes: '' | 'warn' (the warning jacket from the bungalow)
-    haube: false, // a balaclava (nothing gives one yet: the radio has the words)
+    haube: false, // the balaclava is worn (GL.inv.haube: one has it – the man with the bangers gives one away)
+    haubeG: null, // its mesh on the player's head: { g, model, F }
     helmG: null, // the moped helmet on the player's head: { g, model }
     warnAn: false, // the warning jacket is shown on the player's figure
     wissen: { gesicht: false, kleidung: false, fahrzeug: false },
@@ -96,6 +97,10 @@ export const GLFAHNDUNG = (() => {
     warnNein: 'Wieder in den eigenen Sachen.',
     umFrei: 'Andere Jacke, andere Mütze – die Beschreibung passt nicht mehr.',
     umBekannt: 'Andere Jacke – aber sie wissen, wer du bist.',
+    haubeAuf: 'Sturmhaube aufsetzen',
+    haubeAb: 'Sturmhaube abnehmen',
+    haubeJa: 'Sturmhaube auf. Jetzt erkennt dich keiner – aber jeder schaut.',
+    haubeNein: 'Sturmhaube ab. Die Haare sind ruiniert.',
     helmNimm: 'Helm vom Haken nehmen',
     helmTipp: 'Ohne Helm? Der hängt im Carport am Haken.',
     helmOk: 'Der Helm ist dabei – auf dem Moped setzt du ihn auf.',
@@ -307,7 +312,96 @@ export const GLFAHNDUNG = (() => {
       if (g && F.helmU) F.helmU.value = 1;
       markDirty();
     }
+    // the balaclava
+    const wantH = heute && S.haube && !!model,
+      B = S.haubeG;
+    if (B && (!wantH || B.model !== model)) {
+      if (B.g && B.g.parent) B.g.parent.remove(B.g);
+      if (B.F && B.F.helmU && !S.helmG) B.F.helmU.value = B.u0;
+      S.haubeG = null;
+      markDirty();
+    }
+    if (wantH && !S.haubeG) {
+      let g = null;
+      try {
+        g = sturmhaube(model);
+      } catch (e) {}
+      S.haubeG = { g, model, F, u0: S.helmG ? S.helmG.u0 : F.helmU ? F.helmU.value : 0 };
+      if (g && F.helmU) F.helmU.value = 1;
+      markDirty();
+    }
   }
+  // a balaclava of dark knit over the head down to the neck, an eye slit – in the head's own frame (GLFIG.headOf: the crown at the
+  // origin, x right, y ahead, z up), the traffic's material
+  let haubeGeo = null;
+  function sturmhaube(model) {
+    const H = GLFIG.headOf && GLFIG.headOf(model);
+    if (!H) return null;
+    if (!haubeGeo) {
+      const K = VPROPS.kit(),
+        col = [0.018, 0.018, 0.022],
+        rx = Math.max(0.075, Math.min(0.1, H.rx)) * 1.13 + 0.006,
+        ry = Math.max(0.085, Math.min(0.115, H.rz)) * 1.12 + 0.008,
+        rz = 0.128,
+        z0 = -0.112,
+        eye = Math.max(-0.14, Math.min(-0.07, (H.nose ? H.nose[1] : -0.11) + 0.036)),
+        seg = 22,
+        rings = 16,
+        to = 2.85;
+      const Pt = (a, t) => [Math.cos(a) * Math.sin(t) * rx, Math.sin(a) * Math.sin(t) * ry, z0 + Math.cos(t) * rz];
+      for (let j = 0; j < rings; j++) {
+        const t0 = (to * j) / rings,
+          t1 = (to * (j + 1)) / rings,
+          zm = z0 + Math.cos((t0 + t1) / 2) * rz;
+        for (let i = 0; i < seg; i++) {
+          const a0 = (i / seg) * Math.PI * 2,
+            a1 = ((i + 1) / seg) * Math.PI * 2;
+          let am = (a0 + a1) / 2 - Math.PI / 2;
+          while (am > Math.PI) am -= 2 * Math.PI;
+          // (the eye slit: in front, at the eyes' height)
+          if (Math.abs(am) < 0.62 && Math.abs(zm - eye) < 0.019) continue;
+          if (j === 0) K.tri(Pt(a0, t1), Pt(a1, t1), Pt(a0, t0), col);
+          else K.quad(Pt(a0, t1), Pt(a1, t1), Pt(a1, t0), Pt(a0, t0), col);
+        }
+      }
+      haubeGeo = K.geo();
+    }
+    const m = new THREE.Mesh(haubeGeo, VFIG.mat()),
+      g = new THREE.Group();
+    m.userData.noMerge = true;
+    m.userData.shared = true;
+    m.castShadow = false;
+    m.frustumCulled = false;
+    g.add(m);
+    g.position.copy(H.pos);
+    g.quaternion.copy(H.quat);
+    g.scale.setScalar(H.k);
+    H.head.add(g);
+    return g;
+  }
+  // on or off: while wanted, or to take it off (the lowest of the action buttons: anything near comes first)
+  function haube(an) {
+    if (!GL.on || GL.era !== 'heute' || !GL.has('haube')) return false;
+    S.haube = an ?? !S.haube;
+    aussehen();
+    GLTON.fx('tick');
+    PLAY.think(S.haube ? TX.haubeJa : TX.haubeNein, 3000);
+    GL.emit('kleid', { wer: GL.wer, kopf: ist().kopf });
+    return S.haube;
+  }
+  KERN.act({
+    id: 'gl-haube',
+    prio: -3,
+    r: 3,
+    label: () =>
+      GL.on && GL.era === 'heute' && !VEH.cur && GL.has('haube') && (S.haube || GLLOGIK.stars(GL.W) > 0)
+        ? S.haube
+          ? TX.haubeAb
+          : TX.haubeAuf
+        : null,
+    pos: () => [P.x, P.y, (P.feet || 0) + 1.2],
+    run: () => haube(),
+  });
   // the helmet hangs on a hook in the carport (not at the moped: there the button mounts it)
   const HAKEN = [-1.0, 14.0];
   KERN.act({
@@ -1449,6 +1543,7 @@ export const GLFAHNDUNG = (() => {
     TX,
     ist,
     aussehen,
+    haubeAn: haube,
     funkBild,
     bildTeile,
     beschreibung,

@@ -105,6 +105,7 @@ export const GLEREIGNIS = (() => {
     boellermann: {
       hallo: 'Psst. Böller? Beste Qualität. Hast du nicht von mir.',
       kauf: 'Drei Stück, fünf Euro. Und nicht vor Silvester zünden. Haha.',
+      haube: 'Eine Sturmhaube gibt es gratis dazu. Für den Winter. Oder für was auch immer.',
       weg: 'Ich bin dann mal weg. Die Polizei mag keine Kofferraumgeschäfte.',
     },
     wirt: {
@@ -1006,6 +1007,11 @@ export const GLEREIGNIS = (() => {
         GL.add('boeller', 3);
         GLTON.fx('geld');
         sag(E.mann, SAGT.boellermann.kauf);
+        // (and a balaclava for free – on while wanted: GLFAHNDUNG.haubeAn)
+        if (!GL.has('haube')) {
+          GL.add('haube');
+          setTimeout(() => S.E === E && sag(E.mann, SAGT.boellermann.haube), 3600);
+        }
         E.verkauft = true;
         E.ende = 'gekauft';
       }

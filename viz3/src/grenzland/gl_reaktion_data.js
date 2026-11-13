@@ -25,6 +25,7 @@ export const GLRXDATA = (() => {
         'Kommt jetzt endlich jemand wegen dem Baum am Friedhof?',
       ],
       helm: ['Den Helm kannst du ruhig absetzen, hier fährt keiner schnell.'],
+      haube: ['Ist dir kalt? Es ist September.', 'Mit der Mütze siehst du aus wie ein Bankräuber. Nur so gesagt.'],
     },
     fz: {
       moped: ['Eine Simson! Die läuft ja noch.', 'So ein Moped hatte mein Vater auch. Genauso laut.'],

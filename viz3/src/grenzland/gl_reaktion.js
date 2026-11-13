@@ -259,6 +259,7 @@ export const GLREAKTION = (() => {
     if (st > 0 && (F.knows || Math.random() < 0.5)) return rnd(D.SAGT.gesucht);
     const r = Math.random();
     if (ist.fz && D.SAGT.fz[ist.fz] && r < 0.6) return rnd(D.SAGT.fz[ist.fz]);
+    if (ist.kopf === 'haube') return rnd(D.SAGT.kleid.haube);
     if (ist.kopf === 'helm' && r < 0.3) return rnd(D.SAGT.kleid.helm);
     if (D.SAGT.kleid[ist.kleid] && r < 0.65) return rnd(D.SAGT.kleid[ist.kleid]);
     return rnd(D.SAGT.blick);
