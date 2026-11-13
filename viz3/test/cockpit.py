@@ -180,8 +180,11 @@ with lib.browser() as b:
     if want('kombi'):
         # Falko's estate from outside (vehicles/kombi.js): front and rear three quarters, the side with its measures, the driver's view,
         # night with the lights and an indicator, rain; today's old body (?altkombi) from the same places to compare; draw calls, programs
-        from PIL import Image, ImageDraw
         import math
+        try:
+            from PIL import Image, ImageDraw  # the picture with the measures (not on CI's runners: the checks run without it)
+        except ImportError:
+            Image = None
         def look(pg, s0, dist, rel, h, name, fov=42):
             # the own eyes (no figure in the picture) at dist metres from the car, rel degrees from its nose, h above its ground
             a = math.radians(s0['psi'] + rel)
@@ -225,22 +228,23 @@ with lib.browser() as b:
               return [(p.x + 1) / 2 * innerWidth, (1 - p.y) / 2 * innerHeight]; };
             return { front: P(2.047, 0.05), rear: P(-2.426, 0.05), top: P(-1.0, 1.64), foot: P(-1.0, 0), ax1: P(1.25, 0.31), ax2: P(-1.655, 0.31),
               target: TGT.map(q => P(q[0], q[1])) }; })())""".replace('TGT', json.dumps(TARGET))))
-        im = Image.open(os.path.join(OUT, 'k_side.jpg')).convert('RGB'); dr = ImageDraw.Draw(im)
-        kx, ky = im.width / 1200, im.height / 700
-        T = lambda p: (p[0] * kx, p[1] * ky)
-        dr.line([T(pts['front']), T(pts['rear'])], fill=(255, 210, 60), width=3)
-        dr.text(((T(pts['front'])[0] + T(pts['rear'])[0]) / 2 - 20, T(pts['front'])[1] + 6), '4,47 m', fill=(255, 210, 60))
-        dr.line([T(pts['foot']), T(pts['top'])], fill=(255, 210, 60), width=3)
-        dr.text((T(pts['top'])[0] + 6, T(pts['top'])[1]), '1,64 m', fill=(255, 210, 60))
-        dr.line([T(pts['ax1']), T(pts['ax2'])], fill=(120, 220, 255), width=2)
-        dr.text(((T(pts['ax1'])[0] + T(pts['ax2'])[0]) / 2 - 40, T(pts['ax1'])[1] - 16), 'Radstand 2,905 m', fill=(120, 220, 255))
-        tg = [T(q) for q in pts['target']]
-        for (x0, y0), (x1, y1) in zip(tg, tg[1:]):
-            n = max(1, int(math.hypot(x1 - x0, y1 - y0) / 9))
-            for i in range(0, n, 2):
-                dr.line([(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n), (x0 + (x1 - x0) * (i + 1) / n, y0 + (y1 - y0) * (i + 1) / n)], fill=(255, 255, 255), width=2)
-        dr.text((tg[6][0] - 30, tg[6][1] - 18), 'Ziel', fill=(255, 255, 255))
-        im.save(os.path.join(OUT, 'k_side_mass.jpg'), quality=90)
+        if Image:
+            im = Image.open(os.path.join(OUT, 'k_side.jpg')).convert('RGB'); dr = ImageDraw.Draw(im)
+            kx, ky = im.width / 1200, im.height / 700
+            T = lambda p: (p[0] * kx, p[1] * ky)
+            dr.line([T(pts['front']), T(pts['rear'])], fill=(255, 210, 60), width=3)
+            dr.text(((T(pts['front'])[0] + T(pts['rear'])[0]) / 2 - 20, T(pts['front'])[1] + 6), '4,47 m', fill=(255, 210, 60))
+            dr.line([T(pts['foot']), T(pts['top'])], fill=(255, 210, 60), width=3)
+            dr.text((T(pts['top'])[0] + 6, T(pts['top'])[1]), '1,64 m', fill=(255, 210, 60))
+            dr.line([T(pts['ax1']), T(pts['ax2'])], fill=(120, 220, 255), width=2)
+            dr.text(((T(pts['ax1'])[0] + T(pts['ax2'])[0]) / 2 - 40, T(pts['ax1'])[1] - 16), 'Radstand 2,905 m', fill=(120, 220, 255))
+            tg = [T(q) for q in pts['target']]
+            for (x0, y0), (x1, y1) in zip(tg, tg[1:]):
+                n = max(1, int(math.hypot(x1 - x0, y1 - y0) / 9))
+                for i in range(0, n, 2):
+                    dr.line([(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n), (x0 + (x1 - x0) * (i + 1) / n, y0 + (y1 - y0) * (i + 1) / n)], fill=(255, 255, 255), width=2)
+            dr.text((tg[6][0] - 30, tg[6][1] - 18), 'Ziel', fill=(255, 255, 255))
+            im.save(os.path.join(OUT, 'k_side_mass.jpg'), quality=90)
         p1 = E("GAME.R.info.programs.length")
         names = E(f"GAME.R.info.programs.slice({p0}).map(p => p.name || '?').join(' | ')")
         grew = E("(() => { const out = []; for (const [m, n] of __carProg()) if (n > (__P0.get(m) || 0)) out.push(m.type + ':' + (m.name || '') + ' ' + (__P0.get(m) || 0) + '>' + n); return out; })()")
