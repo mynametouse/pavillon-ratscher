@@ -13,7 +13,8 @@
 // engine unless asked (GLRADIO.stimme). Everything hangs on its own gain under the game's music bus; nothing is built before a station
 // is tuned, „Beenden“ takes all of it away.
 // Interface (the core's, kept): GLRADIO.stations() → [{ id, name, freq, art }] · cur() → id | null · tune(id | null) · next() · prev() ·
-//   off() · era(e) · tick(dt) · stop(). More: now() → what is on · list(on) · stimme(on) · signal() · stand() (tests).
+//   off() · era(e) · tick(dt) · stop(). More: now() → what is on · list(on) · stimme(on) · signal() · stand() (tests) ·
+//   melde(text | [texts], sofort) – a mission's own announcement, told at the next break (sofort: over the music, at once).
 // Events: 'grenzland:radio' { id, name, freq }, 'grenzland:radio:sendung' { id, k, art, titel } (an item begins).
 import { BASE, stage } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -74,6 +75,7 @@ export const GLRADIO = (() => {
     voices: false,
     tuneT: 0,
     uhr: 0,
+    sonder: [],
   };
   const era = () => (GL.era === '1989' ? '1989' : 'heute');
   const list = () => D.SENDER[era()];
@@ -337,7 +339,7 @@ export const GLRADIO = (() => {
       S.item = { k: 'musik', titel: p.titel, von: p.von, left: p.dauer - off, dauer: p.dauer, key: p.key };
     else {
       // not rendered yet: noise until it is (a second or two after tuning in)
-      S.item = { k: 'lade', titel: p.titel, von: p.von, key: p.key, dauer: p.dauer, off, t: 0 };
+      S.item = { k: 'lade', titel: p.titel, von: p.von, key: p.key, dauer: p.dauer, off, t0: performance.now() };
       const id = S.id;
       want(p.key, p.song, buf => {
         if (S.id !== id || !S.item || S.item.key !== p.key || S.item.k !== 'lade') return;
@@ -440,7 +442,8 @@ export const GLRADIO = (() => {
     const st = prog(S.id),
       c = ctxOf();
     let it = null;
-    if (c.eil || (c.taten && c.taten.length)) it = D.PROG.next(st, c);
+    if (S.sonder.length) it = { k: 'wort', art: 'eil', zeilen: [].concat(S.sonder.shift()) };
+    else if (c.eil || (c.taten && c.taten.length)) it = D.PROG.next(st, c);
     else {
       it = st.vor || D.PROG.next(st, c);
       st.vor = null;
@@ -805,7 +808,6 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     // a special report over the music
     if (S.over) {
       if (S.item && S.item.k === 'musik') S.item.left -= dt;
-      else if (S.item && S.item.k === 'lade') S.item.t += dt;
       if (wortTick(S.over, dt)) {
         S.over = null;
         show();
@@ -815,9 +817,10 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     const it = S.item;
     if (!it) return advance();
     if (it.k === 'lade') {
-      it.t += dt;
-      // (no sound after all, or the render never came: go on without)
-      if (it.t > 20 || !raw())
+      // a report that cannot wait comes before the piece
+      if (S.sonder.length || S.pend.some(q => q.wit > 0)) return advance();
+      // (no sound after all, or the render never came – twenty real seconds: go on without)
+      if (performance.now() - it.t0 > 20000 || !raw())
         S.item = { k: 'musik', titel: it.titel, von: it.von, left: it.dauer - it.off, dauer: it.dauer, key: it.key };
       return;
     }
@@ -825,6 +828,10 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
       it.left -= dt;
       // a deed somebody saw: a piece that would run much longer makes room for the report
       if (it.left > 7 && S.pend.length && S.pend.some(q => q.wit > 0)) it.left = 7;
+      if (S.sonder.length && S.sonder[0].sofort && it.left > 6) {
+        const z = S.sonder.shift();
+        return startWort({ k: 'wort', art: 'eil', zeilen: [].concat(z) }, true);
+      }
       if (S.eil && (S.eil === 'eil' || S.eil === 'heli') && it.left > 6) {
         const c = ctxOf(),
           o = D.PROG.next(prog(S.id), c);
@@ -870,6 +877,7 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     S.job = null;
     S.bufs = {};
     S.pend.length = 0;
+    S.sonder.length = 0;
     S.eil = '';
     S.maxS = 0;
     S.init = false;
@@ -931,6 +939,15 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     show,
     signal,
     stand,
+    // a mission's own announcement: a line or lines, told at the next break on whatever station is on (sofort: over the music, now)
+    melde(text, sofort) {
+      const z = [].concat(text).filter(t => typeof t === 'string' && t);
+      if (!z.length || !GL.on) return false;
+      z.sofort = !!sofort;
+      S.sonder.push(z);
+      if (S.sonder.length > 4) S.sonder.shift();
+      return true;
+    },
     // spoken by the player's voices? (paid: also through an engine that costs credit)
     stimme(on, paid) {
       S.speak = !!on;

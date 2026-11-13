@@ -123,8 +123,8 @@ Zeile `GLHUD.funk` über den Untertiteln (das Radio nutzt sie; ohne sie fällt e
 Offen:
 - Das Radio schaltet sich beim ersten Einsteigen in ein Fahrzeug von selbst ein (`GLRADIO.tick`). Wenn eine Mission das nicht will
   (z. B. eine stille Szene), kann sie vorher `GLRADIO.S.touched = true` setzen oder danach `GLRADIO.off()` rufen.
-- Missionen können eigene Meldungen ins Programm geben, indem sie eine Tat melden (`GLFAHNDUNG.tat`) – eine freie Durchsage
-  („Sondermeldung“) gibt es noch nicht; bei Bedarf baue ich `GLRADIO.melde(text)`.
+- Missionen können eigene Meldungen ins Programm geben: `GLRADIO.melde(text | [texte], sofort)` – beim nächsten Wortbeitrag des
+  eingestellten Senders, mit `sofort` gleich über der laufenden Musik (wie die Eilmeldung).
 
 ## Für Falko
 

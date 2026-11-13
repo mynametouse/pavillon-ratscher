@@ -47,7 +47,7 @@ with lib.browser() as b:
     ck('R: the first station, the display with name and frequency', s['id'] == 'grenzland' and s['radio'] == 1 and s['bar']
        and 'Radio Grenzland' in E("document.getElementById('glradio').textContent") and '89,1' in E("document.getElementById('glradio').textContent"), str(s))
     if ton:
-        ok = until("GLRADIO.stand().k === 'musik' && GLRADIO.stand().src", 40)
+        ok = until("GLRADIO.stand().k === 'musik' && GLRADIO.stand().src", 120)
         s = ST()
         ck('a piece is rendered in slices and plays (in the middle, as if it had been running)', ok and s['ton'] and s['titel'] and 5 < s['left'] < 80, str({k: s[k] for k in ('k', 'titel', 'left', 'bufs', 'jobs')}))
         lv = J("(() => { const b = Object.values(GLRADIO.S.bufs)[0]; if (!b) return null; const d = b.getChannelData(0); let pk = 0, sq = 0; for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > pk) pk = a; sq += d[i] * d[i]; } return { pk, rms: Math.sqrt(sq / d.length), sr: b.sampleRate, sec: b.duration } })()")
@@ -89,7 +89,7 @@ with lib.browser() as b:
     # ---------------- the programme advances ----------------
     E("GLRADIO.tune('kirmes')"); steps(0.5)
     for _ in range(26):
-        E("if (GLRADIO.S.item && GLRADIO.S.item.k !== 'wort' ) GLRADIO.S.item.left = Math.min(GLRADIO.S.item.left || 0, 0.3); if (GLRADIO.S.item && GLRADIO.S.item.k === 'lade') GLRADIO.S.item.t = 99")
+        E("if (GLRADIO.S.item && GLRADIO.S.item.k !== 'wort' ) GLRADIO.S.item.left = Math.min(GLRADIO.S.item.left || 0, 0.3); if (GLRADIO.S.item && GLRADIO.S.item.k === 'lade') GLRADIO.S.item.t0 = -1e9")
         steps(4)
     s = ST()
     arts = [q['art'] or q['k'] for q in s['log']]
@@ -102,7 +102,7 @@ with lib.browser() as b:
     E("GAME.go('dorf')"); steps(1)
     E("GLFAHNDUNG.tat('autoklau', { force: [{ name: 'Testzeuge', knows: false }], quiet: true })")
     p0 = ST()
-    ok = until("GLRADIO.stand().log.some(q => q.art === 'polizei' && /Polizeibericht/.test(q.text))", 70)
+    ok = until("GLRADIO.stand().log.some(q => q.art === 'polizei' && /Polizeibericht/.test(q.text))", 120)
     s = ST()
     pol = [q['text'] for q in s['log'] if q['art'] == 'polizei']
     ck('a deed somebody saw: the radio tells it at once – the police report', p0['pend'] == 1 and ok and any('Fahrzeug' in t for t in pol) and s['pend'] == 0, str(pol)[:300])
@@ -113,12 +113,17 @@ with lib.browser() as b:
     ok = until("GLRADIO.stand().log.some(q => /sucht Zeugen/.test(q.text))", 40)
     ck('„Die Polizei sucht Zeugen …“ while one is wanted', ok, str([q['text'][:50] for q in ST()['log'][-4:]]))
     # three stars: a special report over the music
-    until("GLRADIO.stand().k === 'musik'", 60)
+    E("GLFAHNDUNG.clear(); GLRADIO.S.pend.length = 0; GLRADIO.S.eil = ''; GLRADIO.tune('kirmes')")
+    okm = until("GLRADIO.stand().k === 'musik'", 120)
     E("GLRADIO.S.item.left = 60; GLFAHNDUNG.tat('einbruch', { force: [{ name: 'Streife', police: true }], quiet: true }); GLFAHNDUNG.tat('einbruch', { force: [{ name: 'Streife', police: true }], quiet: true })")
     stars = E("GLLOGIK.stars(GLSTATE.W)")
     ok = until("GLRADIO.stand().log.some(q => q.art === 'eil')", 20)
     s = ST()
-    ck('three stars: the music is interrupted by a special report', stars >= 3 and ok, str(stars) + ' ' + str([q['art'] for q in s['log'][-5:]]))
+    ck('three stars: the music is interrupted by a special report (it plays on underneath)', okm and stars >= 3 and ok and s['k'] == 'musik' and s['over'] == 'eil', str(stars) + ' ' + str({k: s[k] for k in ('k', 'over', 'left')}) + ' ' + str([q['art'] for q in s['log'][-5:]]))
+    # a mission's own announcement
+    E("GLRADIO.melde('Sondermeldung: Der Test läuft.', true)")
+    ok = until("GLRADIO.stand().log.some(q => /Der Test läuft/.test(q.text))", 60)
+    ck('a mission can put an announcement on air', ok)
     E("GLFAHNDUNG.clear()")
     # ---------------- reception ----------------
     E("GLRADIO.tune('blasius'); GAME.view(4, 15, 0, 180, 0)"); steps(1)
@@ -139,7 +144,7 @@ with lib.browser() as b:
     pic('04_1989', True)
     for _ in range(40):
         if E("GLRADIO.stand().log.some(q => q.id === 'republik' && q.art === 'news' && /Reiseregelung|Volkspolizei|Zentralkomitee|Aufruf/.test(q.text))"): break
-        E("if (GLRADIO.S.item && GLRADIO.S.item.k !== 'wort') GLRADIO.S.item.left = Math.min(GLRADIO.S.item.left || 0, 0.3); if (GLRADIO.S.item && GLRADIO.S.item.k === 'lade') GLRADIO.S.item.t = 99")
+        E("if (GLRADIO.S.item && GLRADIO.S.item.k !== 'wort') GLRADIO.S.item.left = Math.min(GLRADIO.S.item.left || 0, 0.3); if (GLRADIO.S.item && GLRADIO.S.item.k === 'lade') GLRADIO.S.item.t0 = -1e9")
         steps(3)
     nw = [q['text'] for q in ST()['log'] if q['id'] == 'republik' and q['art'] == 'news']
     ck('the news of 10 November 1989', any(('Reiseregelung' in t or 'Volkspolizei' in t or 'Zentralkomitee' in t or 'Aufruf' in t) for t in nw), str(nw)[:300])
