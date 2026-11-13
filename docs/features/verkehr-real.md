@@ -124,6 +124,22 @@ Falko (13.11. 12:14): „Sie sollen sich natürlich an Ampeln und Verkehrsregeln
   Draufsicht, weiter in der Spur), ein geparktes (nur geschoben), eine Berührung (Hupe), ein Lkw (bewegt sich kaum, schimpft), Thomas
   aus dem Ort (steigt aus und wieder ein, seine Sätze), ein Auto dahinter (hält davor, fährt nie hinein).
 
+## Stufe 4a: Fußgänger fest (`verkehr/vk_fuss.js`, `VKFUSS`)
+
+- Jeder Fußgänger der Orte (`verkehr.js`, die Leute von Ratscher und Schleusingen) ist ein Kasten von `VEH.extra` (Schultern × Brust, Füße
+  bis Kopf) und im Stoß ein Körper von 75 kg (wie die Verkehrsautos von Stufe 3). Der Spieler zu Fuß geht wie bisher (`noWalk`: die
+  Leute weichen ihm aus).
+- **Stufen** nach seiner Geschwindigkeitsänderung: unter 0,35 m/s geschoben; bis 1,6 m/s (ein Auto mit ~5 km/h) stolpert er und sagt es;
+  darüber wirft ihn der Stoß um – harmlos, nicht schneller als 3,5 m/s: er rutscht auf dem Boden (Reibung ~0,6, aus Wänden heraus), liegt
+  2,2 s (der Clip `lie` über allem), kniet sich hin (`kneelIdle`, übergeblendet), steht auf, sagt etwas zum Fahrer (mit Namen und Stimme)
+  und geht weiter seinen Weg. Am Boden ist er ein niedriger, langer Kasten: das Auto bleibt an ihm hängen, fährt nicht über ihn.
+- Haken in `npc/npc_real.js` (`rbPerson`, markiert `feat/verkehr-real`): `self.over = { k, w }` oder eine Liste davon legt Clips des Satzes
+  über Gehen, Stehen und Reden; die anderen werden um so viel leiser; ohne `over` unverändert.
+- Ereignis `verkehr:unfall` mit `{ who, ped: true, … }`.
+- Test `verkehr_real:fuss`: Bettina steht auf der Dorfstraße am Anger, das Auto fährt mit ~16 km/h auf sie zu – sie fällt, das Auto
+  wird kaum langsamer, sie rutscht weniger als 1,6 m, liegt (an ihren Knochen geprüft: Hüfte und Kopf am Boden), kniet, steht auf,
+  schimpft mit Namen, geht weiter; ein langsames Anfahren wirft sie nicht um.
+
 ## Messungen (13.11.2026, SwiftShader im Chat-Rechner)
 
 | | Wert |
@@ -147,11 +163,11 @@ schreibt die blockierenden WebGL-Aufrufe des ersten Bilds ins Protokoll.
   Raten, kein Lkw am Sonntag; Stufe 2: Rollen an Kreuzungen (größere Straße, Zeichen, rechts vor links, Kreisverkehr, Haltlinie), wen man
   abwartet (Zeitfenster, von rechts, Linksabbieger, besetzte Kreuzung, vier Wartende), Kreuzungen einer Route, Blinker, Tempolimits;
   Stufe 3: Stufen des Stoßes, Massen, das Auto als Körper und zurück in den Bezug zur Straße, Rutschen und Bremsen, zurück in die Spur.
-- `viz3/test/verkehr_real.py` (Abschnitte `bau,bild,nacht,lod,zug,strom,regeln,ampel,unfall,dichte,oben,perf`): Worker, Bilder in `out/verkehr_real/`,
+- `viz3/test/verkehr_real.py` (Abschnitte `bau,bild,nacht,lod,zug,strom,regeln,ampel,unfall,fuss,dichte,oben,perf`): Worker, Bilder in `out/verkehr_real/`,
   Lampen nachts, die drei Stufen, Sattelzug in der Kurve, die Zahl je Stunde, Draufsicht, Zeichenaufrufe, keine neuen Shader-Programme.
 - Bilder ohne Browser: `node viz3/extra/verkehr-real/werkzeug/bild.mjs <typ> out/verkehr_real/<typ>.png --col '#…' [--col2 '#…'] [--zug]`.
 
-## Was als Nächstes kommt (Plan, Stufe 4)
+## Was als Nächstes kommt (Plan, Stufe 4b und danach)
 
-Busse im Stoß (Haken in `bus/`), Räder und Fußgänger im Verkehr (fest, stürzen und stehen wieder auf), eine Delle ab einer
-Geschwindigkeit, das Dorfgerede nach einem Unfall mit jemandem aus dem Ort, Überholen außerorts.
+Radfahrer im Verkehr (fest, stürzen und stehen wieder auf; Autos überholen mit Abstand), Busse im Stoß (Haken in `bus/`), eine Delle
+ab einer Geschwindigkeit, das Dorfgerede nach einem Unfall mit jemandem aus dem Ort, Überholen außerorts.

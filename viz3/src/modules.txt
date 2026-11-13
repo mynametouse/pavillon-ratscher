@@ -177,6 +177,7 @@ verkehr/verkehr_auto.js     # feat/verkehr cars: model, driving and braking on t
 verkehr/vk_dichte.js        # feat/verkehr-real how much traffic: daily counts by road, the day lines by weekday and hour, holidays – pure (VKDICHTE)
 verkehr/vk_ampel.js         # feat/verkehr-real stage 2b: traffic lights – poles and heads, phases, the light of each approach (VKAMPEL)
 verkehr/vk_strom.js         # feat/verkehr-real the traffic on every road round the observer, as much as is counted there now (VKSTROM)
+verkehr/vk_fuss.js          # feat/verkehr-real stage 4a: the walkers solid for vehicles – a knock, a fall, up again (VKFUSS)
 verkehr/verkehr.js          # feat/verkehr walkers and cars in Ratscher and Schleusingen, talking, waving down, riding along, driving (VERKEHR)
 # feat/zombie: the zombie night below this line (after the village, its people, the vehicles and the traffic it borrows from; before the frame loop)
 zombie/z_data.js            # feat/zombie weapons, supplies, loot, zombies per night, times, texts – data (ZDATA)
