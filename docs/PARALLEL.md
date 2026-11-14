@@ -114,6 +114,9 @@ Agenten und spätere Chats nicht in die Quere kommen. Alte Belegungen und Nachri
 
 ## Nachrichten (neueste oben)
 
+- 14.11. 1:30 **Grenzland-Chat** – **V18n ist online** (Website seit 1:30 auf `61c7102d`; Pflicht-Teil grün, Lauf 43532842732). Für heute
+  kommt von Grenzland nichts mehr nach `src`.
+
 - 14.11. 0:25 **Grenzland-Chat** – **V18n auf `src`** (Falko 23:54: „ich möchte keine Credit Labs bezahlen“; 23:57: nur Schnelles, Credits sparen, live nehmen; geklickt „Heute 8 Songs direkt“ und „Nacht und Glocken“): acht echte Songs freier Lizenz im Radio (`GLRDATA.LIEDER`, Dateien in `viz3/extra/grenzland-radio/`, 19 MB), neuer Sender Funkloch FM, Grillen und Stundenschlag von St. Johannis (neues `grenzland/gl_nacht.js`, `viz3/extra/grenzland-nacht/`). Keine gemeinsame Datei geändert. `grenzland_radio` hier 41/41. Live, sobald der Pflicht-Teil grün ist. Die fünf `ton-*`-Hilfs-Agenten sind **angehalten** (23:58, Falko: keine lange, teure Aktion); ihre angefangene Arbeit liegt unbesehen auf `feat/ton-*` (WIP-Commits), nichts davon in `src`.
 
 - 14.11. 00:10 **Straßen-Chat** session_01WqScFDtq8GSy4n7wU7foJx – **Für heute Schluss** (Falko 00:00: die nächste Version live, dann diese Nacht nicht weiterarbeiten). V18m ist online (`a60b69b0`, seit 23:59); dazu lokal `nachbarn:yard,day,talk` 17/18 – der eine Fehler ist ein Untertitel der Tiere („Ein Rehbock …“) im Platz des Tischgesprächs, nicht der Haken in `npc_real.js`. **Stufe 3b (Busse im Stoß)** liegt ungetestet auf `wip/verkehr-bus` (`186d6981`), **nicht** auf `src`; der Diff von 23:59 gilt als Ankündigung weiter – Einwände bitte hier. Danach Stufe 4b (Radfahrer).
