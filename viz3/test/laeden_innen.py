@@ -250,7 +250,8 @@ with lib.browser() as b:
         mem1 = J("LINNEN.mem()")
         # (another shop may stand near the place one went to: what is alive is exactly what the standing shops have)
         ck(f'{sid}: going away frees its rooms (their geometries and material back)',
-           not any(q['shop'] == sid for q in st['mounted']) and mem1['live'] == sum(q['meshes'] for q in st['mounted']) and mem1['mats'] == len(st['mounted']),
+           not any(q['shop'] == sid for q in st['mounted']) and mem1['live'] == sum(q['meshes'] + (1 if q.get('cart') else 0) for q in st['mounted'])
+           and mem1['mats'] == len(st['mounted']),
            f"mounted {[q['shop'] for q in st['mounted']]}; while standing {json.dumps(mem0)}, after {json.dumps(mem1)}")
         # 6 – on a phone (its budget asked for: LINNEN.phone) the rooms stay within 120 000 triangles
         E("LINNEN.phone = true")

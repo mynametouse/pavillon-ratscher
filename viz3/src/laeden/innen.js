@@ -1871,6 +1871,7 @@ export const LINNEN = (() => {
       shop: M.sh.id,
       state: M.state,
       meshes: M.meshes.length,
+      cart: !!(M.cart && M.cart.mesh),
       tris: Math.round(M.tris),
       segs: M.segs.length,
       ms: M.ms,

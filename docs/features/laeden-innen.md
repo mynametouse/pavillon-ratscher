@@ -99,7 +99,7 @@ Module: `laeden/innen_plan.js` (`LIPLAN`: Einheiten, Wände mit Öffnungen, Bauk
   Bodens erreichbar – Raster 0,3 m, Radius der Spielfigur –, jede Tür in einer Wand, Pläne gleich bei jedem Bau).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9019 --serve laeden_innen` (Abschnitte je Laden:
   `edeka,lidl,rewe,obi,mega,getraenke,zeile40,shell,mcd,nacht`); bei GitHub über `viz3/extra/laeden-innen/tests.txt` (mit `smoke`,
-  `laeden`). Je Laden: gebaut beim Herankommen, Hinweis „geöffnet“ und die Türen gehen auf (Dienstag 10:30), hinein, der Boden trägt,
+  `laeden`; der Test in zwei Jobs: `edeka,lidl,rewe,obi,nacht` und `mega,getraenke,zeile40,shell,mcd`, je ≈ 12 min). Je Laden: gebaut beim Herankommen, Hinweis „geöffnet“ und die Türen gehen auf (Dienstag 10:30), hinein, der Boden trägt,
   Wände halten auf (20 s geradeaus, 25 s seitwärts), die Räume zeichnen mit Programmen, die es vorher gab, Bilder innen (je Abschnitt
   der Platz mit dem weitesten Blick, `LINNEN.views`), von außen, die Tür mit dem Hinweis (ganze Seite), beim ersten Laden das
   Hineingehen in drei Bildern (zu, geht auf, drinnen), wieder hinaus, am Sonntag bleiben die Türen zu (Hinweis „geschlossen“),
