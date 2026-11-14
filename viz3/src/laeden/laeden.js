@@ -958,7 +958,10 @@ export const LAEDEN = (() => {
       p.s = fit.at(p.x, p.y);
       p.out = ground(p.x + p.ex * 3, p.y + p.ey * 3);
       p.dz = p.out - p.s;
-      p.k = blocked(p.x, p.y) ? 0 : p.dz > WALL_DROP ? 1 : p.dz < -WALL_DROP ? -1 : 0;
+      // a corner where the pad's edge turns in by more than 20°: the walls end at it (their covers would fold over each other)
+      const q = P[(i + np - 1) % np],
+        inward = p.corner && q.ex * p.ey - q.ey * p.ex < -0.34;
+      p.k = inward || blocked(p.x, p.y) ? 0 : p.dz > WALL_DROP ? 1 : p.dz < -WALL_DROP ? -1 : 0;
     });
     // runs of one kind, at least 6 m long
     const runs = [];

@@ -33,7 +33,7 @@ FEET = ("(([cx, cy, R, gid]) => { const D = LAEDEN.detail(gid), out = []; for (c
 # fill's cover the pad's level, below its wall the low ground
 WALLS = ("(gid) => { const D = LAEDEN.detail(gid), bad = []; let n = 0; for (const w of D.walls) for (const [x, y, ex, ey, s, out, nx, ny] of w.pts.slice(2, -2)) { n++; "
          "if (w.kind === 'cut') { const lo = KERN.ground(x - ex * 0.5, y - ey * 0.5); if (!(Math.abs(lo - s) <= 0.35)) bad.push(['before the wall', x, y, s, lo]); "
-         "for (const k of [1.6, 2.5, 4.0, 5.5]) { const qx = x + nx * k, qy = y + ny * k, c = KERN.ground(qx, qy), t = WELT.heightAt(qx, qy); "
+         "for (const k of Math.hypot(nx, ny) > 1.05 ? [] : [1.6, 2.5, 4.0, 5.5]) { const qx = x + nx * k, qy = y + ny * k, c = KERN.ground(qx, qy), t = WELT.heightAt(qx, qy); "
          "if (!(c >= t - 0.02) || (k === 2.5 && !(c >= s + 0.3))) bad.push(['cover', k, x, y, s, c, t]); } } "
          "else { const lid = KERN.ground(x - ex, y - ey), low = WELT.heightAt(x + ex * 4.4, y + ey * 4.4); "
          "if (!(Math.abs(lid - s) <= 0.3)) bad.push(['cover', x, y, s, lid]); if (!(low <= s - 1.0)) bad.push(['below', x, y, s, low]); } } "

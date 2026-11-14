@@ -692,11 +692,15 @@ def main():
                     for part in (q.geoms if hasattr(q, 'geoms') else [q]):
                         if part.geom_type == 'LineString' and part.length > 4:
                             near.append([r1(v) for c in part.coords for v in c])
-                # notches and needles of the outline closed and cut (a wall along the pad's edge follows it)
-                g2 = opened(g1.buffer(1.5, join_style=2).buffer(-1.5, join_style=2), 1.0)
+                # notches and needles of the outline closed and cut, its zigzags smoothed (a retaining wall along the pad's edge follows
+                # it); never onto a main road
+                g2 = opened(g1.buffer(8.0, join_style=2).buffer(-8.0, join_style=2), 1.0)
+                for Ls, wd, wid in roads:
+                    if Ls.distance(g2) < 1:
+                        g2 = g2.difference(Ls.buffer(wd + 1.0))
                 if hasattr(g2, 'geoms'):
                     g2 = max(g2.geoms, key=lambda q: q.area)
-                pads.append(dict(shops=sorted(ids), f=flat(g2.simplify(0.5)), roads=near))
+                pads.append(dict(shops=sorted(ids), f=flat(g2.simplify(1.0)), roads=near))
     # every other ETHOS building that stands in a shop's footprint, on a car park or under the drive-in lane
     allfoot = []
     for sh in shops_out:
