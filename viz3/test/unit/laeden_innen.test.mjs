@@ -193,3 +193,65 @@ test('plans are deterministic and of bounded size', () => {
     assert.ok(products < 45000, u.id + ': ' + products + ' products');
   }
 });
+
+test('every product fits its compartment: on a board or another product, not past its edge, under the next board, of a real size', () => {
+  // the width of one product (m) by kind: a bottle 6–9.5 cm across, a can 6–11 cm …
+  const SIZE = {
+    box: [0.05, 0.31],
+    bottle: [0.06, 0.095],
+    can: [0.06, 0.11],
+    jar: [0.05, 0.1],
+    pack: [0.15, 0.5],
+    bag: [0.1, 0.35],
+    crate: [0.28, 0.45],
+    loaf: [0.15, 0.4],
+    eimer: [0.16, 0.4],
+  };
+  const rect = (x, y, rot, sx, sy, z0, z1) => ({ x, y, c: Math.cos(rot), s: Math.sin(rot), sx, sy, z0, z1 });
+  const has = (r, x, y, tol) => {
+    const dx = x - r.x,
+      dy = y - r.y;
+    return Math.abs(dx * r.c + dy * r.s) <= r.sx / 2 + tol && Math.abs(-dx * r.s + dy * r.c) <= r.sy / 2 + tol;
+  };
+  const report = [];
+  for (const u of UNITS) {
+    const P = plans.get(u.id);
+    const boxes = P.boxes.map(b => rect(b.x, b.y, b.rot, b.sx, b.sy, b.z, b.z + b.sz)),
+      blocks = P.goods.map(g => rect(g.x, g.y, Math.atan2(g.ay, g.ax), g.len, g.dep, g.z, g.z + g.h));
+    const bad = [];
+    P.goods.forEach((g, gi) => {
+      const fr = g.dep / 2 - 0.005,
+        al = g.len / 2 - 0.005,
+        corners = [
+          [-al, -fr],
+          [al, -fr],
+          [al, fr],
+          [-al, fr],
+        ].map(([a, f]) => [g.x + g.ax * a + g.fx * f, g.y + g.ay * a + g.fy * f]),
+        pts = [[g.x, g.y], ...corners],
+        top = g.z + g.h;
+      // nothing (a board, a fixture) reaches into the product
+      if (boxes.some(r => r.z0 > g.z + 0.01 && r.z0 < top - 0.005 && pts.some(([x, y]) => has(r, x, y, -0.002))))
+        bad.push(
+          `${g.k} at ${g.x.toFixed(2)}, ${g.y.toFixed(2)}, ${g.z.toFixed(2)}: a board or fixture inside its height`
+        );
+      if (g.k === 'heap') return; // fruit in crates and plants in pots may overhang
+      if (g.z > 0.02) {
+        // it stands on something (a board, a deck, a pallet, a product below), not past that one's edge
+        const sup = boxes
+          .filter(r => Math.abs(r.z1 - g.z) < 0.065)
+          .concat(blocks.filter((r, ri) => ri !== gi && Math.abs(r.z1 - g.z) < 0.02));
+        if (!sup.some(r => has(r, g.x, g.y, 0.01)))
+          bad.push(`${g.k} at ${g.x.toFixed(2)}, ${g.y.toFixed(2)}, ${g.z.toFixed(2)}: floats`);
+        else if (!corners.every(([x, y]) => sup.some(r => has(r, x, y, 0.035))))
+          bad.push(`${g.k} at ${g.x.toFixed(2)}, ${g.y.toFixed(2)}, ${g.z.toFixed(2)}: past the board's edge`);
+      }
+      const w = g.len / Math.max(1, g.n),
+        lim = SIZE[g.k];
+      if (lim && (w < lim[0] - 1e-6 || w > lim[1] + 1e-6)) bad.push(`${g.k} ${(w * 100).toFixed(1)} cm wide`);
+      if (g.k === 'bottle' && g.h > 0.36) bad.push(`bottle ${(g.h * 100).toFixed(0)} cm high`);
+    });
+    if (bad.length) report.push(`${u.id}: ${bad.length} products do not fit, e.g. ${bad.slice(0, 3).join('; ')}`);
+  }
+  assert.ok(report.length === 0, report.join('\n'));
+});

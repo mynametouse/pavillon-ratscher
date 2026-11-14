@@ -160,6 +160,8 @@ export const LIMARKT = (() => {
     K.solid(u, vm, D, len + 1.2);
   }
   // goods along v, their fronts at uF facing dir (±u), d deep behind the fronts
+  // goods along v facing ±u (gondolas, high-bay racks): fronts at uF; every product its real width (m of them side by side, the block
+  // as long as they are), its height under the board above (2 cm air); cans and jars two layers high where there is room
   function goodsRunV(K, R, uF, dir, v0, v1, z, hMax, d, pal, kinds) {
     let v = v0;
     while (v < v1 - 0.08) {
@@ -167,12 +169,14 @@ export const LIMARKT = (() => {
         col = pal[Math.floor(R() * pal.length)],
         n = 2 + Math.floor(R() * 5);
       const [w, h0] = sizeOf(kind, R);
-      const h = Math.min(hMax, h0);
-      const len = Math.min(n * w, v1 - v);
-      if (len < w * 0.9) break;
-      const m = Math.max(1, Math.round(len / w));
-      const stack = (kind === 'can' || kind === 'jar') && hMax > h * 2.2 ? 2 : 1;
-      K.good(kind, uF - (dir * d) / 2, v + len / 2, z, 'v', len, d, h * stack, col, m * stack, dir);
+      const m = Math.min(n, Math.floor((v1 - v) / w));
+      if (m < 1) break;
+      const h = Math.min(hMax - 0.02, h0),
+        len = m * w;
+      if (h < 0.04) break;
+      const stack = (kind === 'can' || kind === 'jar') && hMax - 0.02 > h * 2 + 0.01 ? 2 : 1;
+      for (let q = 0; q < stack; q++)
+        K.good(kind, uF - (dir * d) / 2, v + len / 2, z + q * (h + 0.005), 'v', len, d, h, col, m, dir);
       v += len + 0.012;
     }
   }
@@ -184,22 +188,26 @@ export const LIMARKT = (() => {
         col = pal[Math.floor(R() * pal.length)],
         n = 2 + Math.floor(R() * 5);
       const [w, h0] = sizeOf(kind, R);
-      const h = Math.min(hMax, h0);
-      const len = Math.min(n * w, u1 - u);
-      if (len < w * 0.9) break;
-      const m = Math.max(1, Math.round(len / w));
-      const stack = (kind === 'can' || kind === 'jar') && hMax > h * 2.2 ? 2 : 1;
-      K.good(kind, u + len / 2, vF - (dir * d) / 2, z, 'u', len, d, h * stack, col, m * stack, dir);
+      const m = Math.min(n, Math.floor((u1 - u) / w));
+      if (m < 1) break;
+      const h = Math.min(hMax - 0.02, h0),
+        len = m * w;
+      if (h < 0.04) break;
+      const stack = (kind === 'can' || kind === 'jar') && hMax - 0.02 > h * 2 + 0.01 ? 2 : 1;
+      for (let q = 0; q < stack; q++)
+        K.good(kind, u + len / 2, vF - (dir * d) / 2, z + q * (h + 0.005), 'u', len, d, h, col, m, dir);
       u += len + 0.012;
     }
   }
+  // a product's width and height (m): a bottle 7–9 cm across and 27–33 cm high (wine, oil, cleaner), a can 6.5–8 cm, a jar …
   function sizeOf(kind, R) {
     if (kind === 'box') return [0.06 + R() * 0.14, 0.14 + R() * 0.2];
-    if (kind === 'bottle') return [0.07 + R() * 0.03, 0.24 + R() * 0.1];
-    if (kind === 'can') return [0.075 + R() * 0.02, 0.1 + R() * 0.03];
-    if (kind === 'jar') return [0.07 + R() * 0.02, 0.1 + R() * 0.06];
+    if (kind === 'bottle') return [0.072 + R() * 0.016, 0.27 + R() * 0.06];
+    if (kind === 'can') return [0.066 + R() * 0.014, 0.1 + R() * 0.03];
+    if (kind === 'jar') return [0.065 + R() * 0.02, 0.09 + R() * 0.06];
     if (kind === 'pack') return [0.24 + R() * 0.12, 0.22 + R() * 0.12];
     if (kind === 'crate') return [0.3, 0.27];
+    if (kind === 'eimer') return [0.17 + R() * 0.12, 0.18 + R() * 0.14]; // paint: tins and buckets
     return [0.12 + R() * 0.12, 0.16 + R() * 0.12];
   }
   // ---- a wall shelf along u (single-sided, its back to the wall at vB, facing dir) ----
@@ -248,7 +256,7 @@ export const LIMARKT = (() => {
       if (k) {
         K.box(um, vB + dir * (0.12 + d / 2), z - 0.03, len - 0.06, d, 0.03, C.chillIn);
         K.box(um, vB + dir * (0.12 + d - 0.01), z - 0.05, len - 0.06, 0.02, 0.04, C.rail);
-      }
+      } else K.box(um, vB + dir * (0.1 + (D - 0.12) / 2), 0.32, len - 0.06, D - 0.14, z - 0.32, C.chillIn); // the well's floor
       goodsRunU(
         K,
         R,

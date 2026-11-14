@@ -686,6 +686,23 @@ export const LIPLAN = (() => {
         const [x, y] = F.W(u, v);
         P.boxes.push({ x, y, z: z0, sx: su, sy: sv, sz, rot: F.rot + ang, col, top: top || col, sec: K.sec });
       },
+      // a part a phone leaves out (its budget): drawn on a desktop only
+      detail(u, v, z0, su, sv, sz, col, top, ang = 0) {
+        const [x, y] = F.W(u, v);
+        P.boxes.push({
+          x,
+          y,
+          z: z0,
+          sx: su,
+          sy: sv,
+          sz,
+          rot: F.rot + ang,
+          col,
+          top: top || col,
+          sec: K.sec,
+          opt: true,
+        });
+      },
       glow(u, v, z0, su, sv, sz, col, ang = 0) {
         const [x, y] = F.W(u, v);
         P.boxes.push({ x, y, z: z0, sx: su, sy: sv, sz, rot: F.rot + ang, col, top: col, sec: K.sec, glow: true });

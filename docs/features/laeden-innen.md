@@ -53,7 +53,15 @@ Läden: jeder Laden von `laeden/laeden.js` (V18o) ist begehbar, jeder in seinem 
     Vitrine, Brot an der Wand, Tische; Theke mit Salatvitrine und Drehspieß, Tafel „Döner · Dürüm · Lahmacun“; Theke, Maschinen an der
     Wand, Regal mit Wäsche, Falttisch.
   - Waren als schlichte Verpackungen: Kartons, Flaschen, Dosen, Gläser, Tüten, Packungen in gedämpften Farben mit hellem Etikettenband –
-    **keine Logos, keine Hausfarben, keine Verpackungsgestaltung, keine echten Produktmarken**.
+    **keine Logos, keine Hausfarben, keine Verpackungsgestaltung, keine echten Produktmarken**. In echter Größe: eine Flasche 7–9 cm
+    breit und 27–33 cm hoch, eine Dose 6,5–8 cm, Farbe im Baumarkt als Eimer; jede Ware steht auf einem Boden (oder auf der Lage
+    darunter), nicht über dessen Kante, und unter dem nächsten Boden bleibt Luft (Unit-Test). Vitrinen ohne Scheiben, die das
+    Dahinter verdecken: Bäckertheke, Salatvitrine, Tiefkühltruhen sind offen, vom Glas nur die Kanten.
+  - Im Baumarkt stehen an den Wänden der Verkaufsfläche Wandregale (die eine Seite eines Hochregals) mit dem Schild ihrer Abteilung
+    darüber – überall dort, wo sonst nichts steht und vor ihnen ein Gang frei bleibt.
+- **Nachts vor dem Laden**: Solange ein Laden leuchtet, liegt vor jeder verglasten Front ein weicher warmer Lichtschein auf dem
+  Vorplatz, an der Scheibe am hellsten (offen das Licht des Ladens, geschlossen das Nachtlicht) – auf dem Material der Lichtkegel der
+  Straßenlampen (`world/village_props.js`: dessen Programm und Verlauf, je Tür ein Klon für die eigene Helligkeit), kein neues Licht.
 - **Licht**: Innen wird alles **unbeleuchtet in Eckfarben** gezeichnet, das Licht ist eingebacken – Oberseiten hell, Seiten nach ihrer
   Richtung, unten dunkler, der Boden an Regalen dunkler (ein Raster dessen, was steht); die Lichtbänder an der Decke leuchten (Farben über 1).
   So sieht ein Laden bei Tag und Nacht gleich hell aus (die höhere Belichtung der Nacht wird ausgeglichen); geschlossen nur das Nachtlicht
@@ -69,7 +77,11 @@ Läden: jeder Laden von `laeden/laeden.js` (V18o) ist begehbar, jeder in seinem 
   „abstellen“): er rollt vor einem her, Regale halten ihn auf, aus dem Laden heraus bleibt er stehen.
 - **Teile**: Jede Einheit ist in Abschnitte geteilt (OBI: Halle, die zwei Südteile, Kassenzone, Warm- und Kalthaus); gezeigt wird der
   Abschnitt, in dem man steht, mit denen, die zu ihm offen sind – von draußen die mit einer Tür. Ein Abschnitt ist **ein Mesh**
-  (ein Material): EDEKA 2, OBI 6, das Mega Center 5 Draw-Calls für alles Innere.
+  (ein Material): EDEKA 2, OBI 6, das Mega Center 5 Draw-Calls für alles Innere. Wo die Umrisse zweier Teile ein paar Dezimeter
+  auseinander liegen (EDEKAs Windfang), schließen Boden, Decke und Laibungen die Fuge; die Lichtbänder bleiben in ihrem Abschnitt.
+- **Telefon** (`COARSE`): höchstens ein Laden steht, je Warenblock eine Front (statt einer je Packung), ohne Stirnseiten, ohne
+  Preisschilder und Paletten unter den Kartons im Hochregal – je Laden höchstens 120 000 Dreiecke (im Test mit `LINNEN.phone`
+  geprüft); am Rechner bleibt alles wie es ist (EDEKA ≈ 0,2 Mio., OBI ≈ 0,25 Mio. Dreiecke).
 
 ## Benutzen (Schnittstelle in `viz3/src/laeden/innen.js`)
 
@@ -88,9 +100,11 @@ Module: `laeden/innen_plan.js` (`LIPLAN`: Einheiten, Wände mit Öffnungen, Bauk
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9019 --serve laeden_innen` (Abschnitte je Laden:
   `edeka,lidl,rewe,obi,mega,getraenke,zeile40,shell,mcd,nacht`); bei GitHub über `viz3/extra/laeden-innen/tests.txt` (mit `smoke`,
   `laeden`). Je Laden: gebaut beim Herankommen, Hinweis „geöffnet“ und die Türen gehen auf (Dienstag 10:30), hinein, der Boden trägt,
-  Wände halten auf (20 s geradeaus, 25 s seitwärts), die Räume zeichnen mit Programmen, die es vorher gab, Bilder innen, wieder hinaus,
-  am Sonntag bleiben die Türen zu (Hinweis „geschlossen“), weggehen gibt alles frei; nachts REWE offen (innen, außen) und EDEKA
-  geschlossen. Bilder in `out/laeden_innen/`.
+  Wände halten auf (20 s geradeaus, 25 s seitwärts), die Räume zeichnen mit Programmen, die es vorher gab, Bilder innen (je Abschnitt
+  der Platz mit dem weitesten Blick, `LINNEN.views`), von außen, die Tür mit dem Hinweis (ganze Seite), beim ersten Laden das
+  Hineingehen in drei Bildern (zu, geht auf, drinnen), wieder hinaus, am Sonntag bleiben die Türen zu (Hinweis „geschlossen“),
+  weggehen gibt alles frei, auf dem Telefon höchstens 120 000 Dreiecke; nachts (ein Novemberabend) REWE offen (innen, außen, der
+  Lichtschein vor der Tür) und EDEKA geschlossen (nur das Nachtlicht). Bilder in `out/laeden_innen/`.
 
 ## Für den Lead
 

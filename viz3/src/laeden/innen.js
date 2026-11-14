@@ -38,6 +38,7 @@ export const LINNEN = (() => {
     frees: 0,
     busy: null,
     live: 0,
+    phone: false,
   };
   if (!LAEDEN.on || QS.has('noinnen') || !DMOD.on) return S;
   S.on = true;
@@ -45,6 +46,8 @@ export const LINNEN = (() => {
   // ---- the hooks in laeden/laeden.js (marked // feat/laeden-innen): the door leaves are ours, groups tell us when they stand or go,
   // meshes we hide, the text at a door ----
   LAEDEN.ownLeaves = true;
+  // a phone (or a test that asks for its budget: LINNEN.phone = true): fewer faces per shop
+  const phone = () => COARSE || !!S.phone;
   LAEDEN.hidden = new Set();
   // ---- opening hours: the data's, else what such a shop usually has (OSM does not know them here) ----
   const DEFAULT_OH = {
@@ -343,9 +346,10 @@ export const LINNEN = (() => {
 
   // =============================== goods: blocks of products, each a front, a top, a label band ===============================
   function goods(K, gd, R) {
-    // on a phone the products of a block in pairs (half the faces; the bottles and crates stay single)
-    const n0 = Math.max(1, gd.n | 0),
-      n = COARSE && n0 > 2 && gd.k !== 'bottle' && gd.k !== 'crate' ? Math.ceil(n0 / 2) : n0,
+    // on a phone one front for a block of the same product (its label band and top stay, its ends go); bottles and crates keep theirs
+    const ph = phone(),
+      n0 = Math.max(1, gd.n | 0),
+      n = ph && gd.k !== 'bottle' && gd.k !== 'crate' ? 1 : n0,
       w = gd.len / n,
       gap = Math.min(0.01, w * 0.08),
       fx = gd.fx,
@@ -426,8 +430,12 @@ export const LINNEN = (() => {
         const nk = (a1 - a0) * 0.3,
           am = (a0 + a1) / 2;
         face(a0, a1, fr, z0, z0 + h * 0.62, c, jit);
-        face(am - nk, am + nk, fr - (a1 - a0) * 0.3, z0 + h * 0.62, z0 + h * 0.92, c, jit * 0.95);
-        face(am - nk * 1.1, am + nk * 1.1, fr - (a1 - a0) * 0.3 + 0.001, z0 + h * 0.92, z0 + h, darker, 1);
+        if (ph)
+          face(am - nk, am + nk, fr - (a1 - a0) * 0.3, z0 + h * 0.62, z0 + h, darker, 1); // neck and cap in one
+        else {
+          face(am - nk, am + nk, fr - (a1 - a0) * 0.3, z0 + h * 0.62, z0 + h * 0.92, c, jit * 0.95);
+          face(am - nk * 1.1, am + nk * 1.1, fr - (a1 - a0) * 0.3 + 0.001, z0 + h * 0.92, z0 + h, darker, 1);
+        }
       } else if (gd.k === 'jar') {
         face(a0, a1, fr, z0, z0 + h * 0.8, c, jit);
         face(a0 + 0.004, a1 - 0.004, fr - 0.004, z0 + h * 0.8, z0 + h, darker, 1);
@@ -454,8 +462,10 @@ export const LINNEN = (() => {
       face(A + w * 0.12, B - w * 0.12, fr + 0.002, z0 + h * 0.22, z0 + h * 0.45, lighter, 1);
       top(A, B, -fr, fr, z0 + h * 0.62, c, 0.9);
     } else if (gd.k === 'can') {
-      face(A, B, fr + 0.001, z0 + h * 0.86, z0 + h * 0.93, lighter, 1);
-      face(A, B, fr + 0.001, z0 + h * 0.05, z0 + h * 0.1, darker, 1);
+      if (!ph) {
+        face(A, B, fr + 0.001, z0 + h * 0.86, z0 + h * 0.93, lighter, 1);
+        face(A, B, fr + 0.001, z0 + h * 0.05, z0 + h * 0.1, darker, 1);
+      }
       top(A, B, -fr, fr, z0 + h, L(0.7, 0.7, 0.72), 1);
     } else if (gd.k === 'jar') {
       face(A, B, fr + 0.001, z0 + h * 0.3, z0 + h * 0.55, lighter, 1);
@@ -485,8 +495,10 @@ export const LINNEN = (() => {
       );
     };
     const zt = gd.k === 'bottle' ? h * 0.62 : gd.k === 'bag' ? h * 0.86 : h;
-    sx(-gd.len / 2 + gap / 2, zt);
-    sx(gd.len / 2 - gap / 2, zt);
+    if (!ph) {
+      sx(-gd.len / 2 + gap / 2, zt);
+      sx(gd.len / 2 - gap / 2, zt);
+    }
     void R;
   }
 
@@ -764,7 +776,11 @@ export const LINNEN = (() => {
           K.faceN(E(t0, 0, 0), E(t0, g0, 0), E(t0, g0, Hs), E(t0, 0, Hs), r.ux, r.uy, 0, wallCol, false, 0.9);
           K.faceN(E(t1, 0, 0), E(t1, g1, 0), E(t1, g1, Hs), E(t1, 0, Hs), -r.ux, -r.uy, 0, wallCol, false, 0.9);
         }
-      for (const b of Pl.boxes) kOf(b.sec).box(b.x, b.y, b.z, b.sx, b.sy, b.sz, b.rot, b.col, b.top, !!b.glow);
+      // (on a phone without the smallest parts: price tags and the like)
+      const ph = phone();
+      for (const b of Pl.boxes)
+        if (!ph || (!b.opt && (b.sx * b.sy * b.sz > 2e-4 || Math.max(b.sx, b.sy, b.sz) > 0.12)))
+          kOf(b.sec).box(b.x, b.y, b.z, b.sx, b.sy, b.sz, b.rot, b.col, b.top, !!b.glow);
       const R = LIPLAN.rnd(LIPLAN.hash(U.id));
       for (const gd of Pl.goods) goods(kOf(gd.sec), gd, R);
       for (const s2 of Pl.signs) {
@@ -1300,9 +1316,74 @@ export const LINNEN = (() => {
       scene.add(me);
       GD.glass.set(id, me);
     }
+    GD.pools = poolsOf(g, doors);
     GROUPD.set(g.id, GD);
     S.doors = [...GROUPD.values()].flatMap(q => q.doors);
     markDirty(true);
+  }
+  // ---- at night the light of a lit shop on its forecourt: in front of each glazed front a soft warm pool, brightest at the glass –
+  // on the material of the street lamps' pools (world/village_props.js: its program, its gradient), one clone per door for its own
+  // brightness (open: the shop's light, closed: the night light); an instanced quad that follows the ground ----
+  function poolsOf(g, doors) {
+    const pm = window.VPROPS && VPROPS.pool ? VPROPS.pool.material : null;
+    if (!pm) return [];
+    const out = [];
+    for (const D of doors) {
+      const d = D.d,
+        tx = -d.ny,
+        ty = d.nx,
+        hw = (d.front || d.w + 2) / 2 + 1.6,
+        a0 = 0.25,
+        a1 = 6.5,
+        P0 = [],
+        UV = [];
+      // the corners: across the front (u 0 → 1), out from the glass (the gradient's middle line) to its rim
+      for (const [s2, a, uu, vv] of [
+        [-1, a0, 0, 0.5],
+        [1, a0, 1, 0.5],
+        [1, a1, 1, 1],
+        [-1, a1, 0, 1],
+      ]) {
+        const x = d.x + tx * s2 * hw + d.nx * a,
+          y = d.y + ty * s2 * hw + d.ny * a,
+          z = (KERN.ground(x, y) ?? d.z0 ?? 0) + 0.06;
+        P0.push(x, z, -y);
+        UV.push(uu, vv);
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(P0, 3));
+      geo.setAttribute('uv', new THREE.Float32BufferAttribute(UV, 2));
+      geo.setAttribute('normal', new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));
+      geo.setIndex([0, 2, 1, 0, 3, 2]);
+      geo.computeBoundingSphere();
+      const mat = pm.clone(),
+        me = new THREE.InstancedMesh(geo, mat, 1);
+      me.setMatrixAt(0, new THREE.Matrix4());
+      me.name = 'laeden-innen ' + g.id + ' licht vor ' + D.id;
+      me.userData.noMerge = true;
+      me.castShadow = false;
+      me.receiveShadow = false;
+      me.renderOrder = 2;
+      me.visible = false;
+      me.computeBoundingSphere();
+      scene.add(me);
+      out.push({ me, mat, D, k: -1 });
+    }
+    return out;
+  }
+  function poolsLight(GD) {
+    const n = window.VILLAGE && VILLAGE.night ? VILLAGE.night() : 0;
+    for (const q of GD.pools || []) {
+      const open = q.D.U ? isOpenU(q.D.U) : true,
+        k = n > 0.05 ? Math.min(1, (n - 0.05) / 0.3) * (open ? 1 : 0.22) : 0;
+      if (Math.abs(k - q.k) > 0.01) {
+        q.k = k;
+        q.mat.color.setRGB(0.42 * k, 0.3 * k, 0.16 * k);
+        markDirty();
+      }
+      const vis = k > 0.01 && !RATSCHER.map;
+      if (q.me.visible !== vis) q.me.visible = vis;
+    }
   }
   function onDrop(g) {
     const GD = GROUPD.get(g.id);
@@ -1316,6 +1397,11 @@ export const LINNEN = (() => {
       if (!me) continue;
       scene.remove(me);
       me.geometry.dispose();
+    }
+    for (const q of GD.pools || []) {
+      scene.remove(q.me);
+      q.me.geometry.dispose();
+      q.mat.dispose(); // (its gradient is the street lamps')
     }
     GROUPD.delete(g.id);
     S.doors = [...GROUPD.values()].flatMap(q => q.doors);
@@ -1723,8 +1809,9 @@ export const LINNEN = (() => {
       light(M, false);
       showSecs(M, w);
     }
-    // the door leaves go with the shops in the map view
+    // the door leaves go with the shops in the map view; the light on the forecourts
     for (const GD of GROUPD.values()) {
+      poolsLight(GD);
       if (GD.frames) GD.frames.visible = !RATSCHER.map;
       for (const [id, me] of GD.glass)
         me.visible = !RATSCHER.map && !(S.mounted.has(id) && S.mounted.get(id).state === 'ready');
@@ -1806,6 +1893,11 @@ export const LINNEN = (() => {
         }
       : null;
   };
+  // the light on the forecourts: per glazed front on or off and its strength
+  S.pools = () =>
+    [...GROUPD.values()].flatMap(GD =>
+      (GD.pools || []).map(q => ({ id: q.D.id, on: q.me.visible, k: +q.k.toFixed(2) }))
+    );
   // the rooms' geometries alive (built minus freed) and the materials of the rooms (one per standing shop)
   S.mem = () => ({ live: S.live, mats: MATS.size, mounted: S.mounted.size, texts: TEXTS.size });
   S.meshesOf = id => {

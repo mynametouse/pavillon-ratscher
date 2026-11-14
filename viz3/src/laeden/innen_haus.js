@@ -459,8 +459,9 @@ export const LIHAUS = (() => {
     } else if (kind === 'cafe') {
       K.box(um, back + dir * 0.5, 0, w - 1.0, 0.6, 1.0, H.wood, H.woodL);
       K.glow(um - w / 4, back + dir * 0.5, 1.0, 1.6, 0.5, 0.35, [1.2, 1.1, 0.9]); // the lit cake display
+      K.box(um, back + dir * 0.13, 1.27, w - 0.8, 0.26, 0.03, H.wood); // a board on the wall with the loaves
       for (let uu = um - w / 2 + 0.5; uu < um + w / 2 - 0.4; uu += 0.35)
-        K.good('loaf', uu, back + dir * 0.12, 1.3, 'u', 0.28, 0.2, 0.12, C.bread, 1, dir);
+        K.good('loaf', uu, back + dir * 0.13, 1.3, 'u', 0.28, 0.2, 0.12, C.bread, 1, dir);
       // tables in front of the café in the corridor
       for (const e of [-1, 1]) {
         table(K, uc + e * (w / 4), vw + dir * 1.6, 0.7, 0.7, H.table, 0, 2);
@@ -700,7 +701,13 @@ export const LIHAUS = (() => {
     K.solid(ku, V1 - 0.45, 1.85, 0.65);
     // drinks chillers on the door's side wall, two short shelves in the middle
     chiller(K, R, side > 0 ? U0 + 0.3 : U1 - 3.3, side > 0 ? U0 + 3.3 : U1 - 0.3, 0.05, 1, PAL.wasser, true);
-    for (const uu of [(U0 + U1) / 2 - 1.6, (U0 + U1) / 2 + 1.6])
+    // (the way in from the door stays free: the shelves stand beside it)
+    const um = (U0 + U1) / 2,
+      gu = [de[0] - 2.5, de[0] + 2.5, de[0] - 4.9, de[0] + 4.9]
+        .filter(q => q > U0 + 1.8 && q < U1 - 1.8)
+        .sort((p2, q2) => Math.abs(p2 - um) - Math.abs(q2 - um))
+        .slice(0, 2);
+    for (const uu of gu)
       gondola(K, R, uu, 2.3, Math.max(3.4, vC - 1.4), {
         h: 1.5,
         levels: [0.14, 0.55, 0.95],
@@ -803,10 +810,11 @@ export const LIHAUS = (() => {
     for (const s of [-1, 1]) {
       const us = s < 0 ? U0 + 0.05 : U1 - 0.05;
       for (const z of [0.3, 0.75, 1.2, 1.65]) {
-        K.box(us - s * 0.2, (vC - 0.5) / 2 + 0.8, z - 0.03, 0.4, vC - 2.2, 0.03, H.white);
-        goodsRunV(K, R, us - s * 0.38, -s, 1.2, vC - 1.4, z, 0.3, 0.3, PAL.apo, ['box', 'bottle']);
+        K.box(us - s * 0.2, (vC - 0.2) / 2, z - 0.03, 0.4, vC - 2.5, 0.03, H.white);
+        goodsRunV(K, R, us - s * 0.38, -s, 1.2, vC - 1.4, z, 0.4, 0.3, PAL.apo, ['box', 'bottle']);
       }
-      K.solid(us - s * 0.2, (vC - 0.5) / 2 + 0.8, 0.45, vC - 2.2);
+      K.box(us - s * 0.02, (vC - 0.2) / 2, 0, 0.04, vC - 2.5, 2.0, H.white); // its back
+      K.solid(us - s * 0.2, (vC - 0.2) / 2, 0.45, vC - 2.5);
     }
     chair(K, um + 1.5, 1.6, Math.PI);
     K.sign(['Apotheke'], um, V1 - 0.07, 2.35, 1.4, 0.32, -1, 0);

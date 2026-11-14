@@ -72,6 +72,15 @@ with lib.browser() as b:
         except Exception as e:
             print('shot failed', name, e, flush=True)
 
+    def page_pic(name):
+        # the whole page: the picture with the HUD (the label at a door)
+        try:
+            E("GAME.shot()")
+            pg.screenshot(path=os.path.join(OUT, name + '.jpg'), type='jpeg', quality=85, timeout=120000)
+            print('page shot', name, flush=True)
+        except Exception as e:
+            print('shot failed', name, e, flush=True)
+
     def settle(limit=150):
         t0 = time.time()
         st = None
@@ -127,14 +136,24 @@ with lib.browser() as b:
         di = sh['doors'].index(md)
         stand(md['x'] + md['nx'] * 2.0, md['y'] + md['ny'] * 2.0, yaw_in)
         lbl = J("GAME.step(0.3)").get('best') or ''
+        page_pic(f'{sid}_tuer')
         x7, y7 = md['x'] + md['nx'] * 7, md['y'] + md['ny'] * 7
         stand(x7, y7, yaw_in)
         J("GAME.step(0.6)")
+        seq = sid == shops[0]  # one walking-in sequence: shut, opening, inside
+        if seq:
+            page_pic(f'{sid}_hinein_1_zu')
         mx = 0
+        opening = False
         for k in range(12):
             w = J("GAME.step(0.5, 1, 0, 0, 1)")
             dd = J(f"LINNEN.door('{sid}:{di}')")
             mx = max(mx, dd['open'] if dd else 0)
+            if seq and not opening and dd and 0.2 < dd['open'] < 0.95:
+                opening = True
+                page_pic(f'{sid}_hinein_2_auf')
+        if seq:
+            page_pic(f'{sid}_hinein_3_drin')
         unit = J(f"LINNEN.unitAt({w['x']}, {w['y']})")
         ck(f'{sid}: open (a Tuesday morning) – the label says „geöffnet“, the doors open as one walks up', mx > 0.95 and 'geöffnet' in lbl, f"door opened to {mx:.2f}; label: {lbl}")
         ck(f'{sid}: one walks in', unit is not None, f"walker at {w['x']}, {w['y']} (feet {w['feet']}), unit {unit}")
@@ -212,8 +231,19 @@ with lib.browser() as b:
         steps(3)
         st = J("LINNEN.status()")
         mem1 = J("LINNEN.mem()")
-        ck(f'{sid}: going away frees its rooms (their geometries and material back)', not any(q['shop'] == sid for q in st['mounted']) and mem1['live'] == 0 and mem1['mats'] == 0,
+        # (another shop may stand near the place one went to: what is alive is exactly what the standing shops have)
+        ck(f'{sid}: going away frees its rooms (their geometries and material back)',
+           not any(q['shop'] == sid for q in st['mounted']) and mem1['live'] == sum(q['meshes'] for q in st['mounted']) and mem1['mats'] == len(st['mounted']),
            f"mounted {[q['shop'] for q in st['mounted']]}; while standing {json.dumps(mem0)}, after {json.dumps(mem1)}")
+        # 6 – on a phone (its budget asked for: LINNEN.phone) the rooms stay within 120 000 triangles
+        E("LINNEN.phone = true")
+        J(f"LINNEN.mountShop('{sid}')")
+        stp = J("LINNEN.status()")
+        mp = next((q for q in stp['mounted'] if q['shop'] == sid), None)
+        J(f"LINNEN.unmountShop('{sid}')")
+        E("LINNEN.phone = false")
+        ck(f'{sid}: on a phone its rooms stay within 120 000 triangles', mp is not None and mp['tris'] <= 120000,
+           f"phone {mp['tris'] if mp else None}, desktop {m['tris']}")
     if 'nacht' in want:
         # at night: REWE is open until 22 (inside the light of the open shop, outside its lit front), EDEKA closed after 20 (the night
         # light only, the doors shut)
@@ -230,6 +260,11 @@ with lib.browser() as b:
             st = J("LINNEN.status()")
             m = next((q for q in st['mounted'] if q['shop'] == sid), None)
             ck(f'nacht: {sid} at {hh}:{mm:02d} is {"open" if opened else "closed"} (its rooms stand, their light)', m is not None and m['open'] == opened, json.dumps(m)[:300] if m else json.dumps(st)[:300])
+            pid = sid + ':' + str(sh['doors'].index(md))
+            pl = [q for q in J("LINNEN.pools()") if q['id'] == pid]
+            what = 'the light of the open shop' if opened else 'the night light'
+            ck(f'nacht: {sid} – the light on its forecourt ({what})',
+               bool(pl) and pl[0]['on'] and (pl[0]['k'] > 0.6 if opened else 0 < pl[0]['k'] < 0.35), json.dumps(pl))
             ex, ey = md['x'] + md['nx'] * 9, md['y'] + md['ny'] * 9
             E(f"GAME.setView3(false, true); GAME.view({ex}, {ey}, KERN.ground({ex}, {ey}) + 1.7, {yaw_in}, -2, 62)")
             E("GAME.step(0.05)")

@@ -38,7 +38,7 @@ export const LIBAU = (() => {
     [
       'Farben',
       [L(0.92, 0.92, 0.9), L(0.85, 0.85, 0.82), L(0.7, 0.2, 0.2), L(0.25, 0.4, 0.7), L(0.85, 0.75, 0.3)],
-      ['can'],
+      ['eimer'],
     ],
     ['Elektro', [L(0.85, 0.85, 0.85), L(0.2, 0.2, 0.22), L(0.25, 0.45, 0.7), L(0.75, 0.6, 0.2)], ['box']],
     ['Sanitär', [L(0.95, 0.95, 0.95), L(0.75, 0.78, 0.8), L(0.3, 0.5, 0.75), L(0.6, 0.62, 0.65)], ['box', 'pack']],
@@ -63,24 +63,26 @@ export const LIBAU = (() => {
     }
     return LIPLAN.frame(best.a, [best.b[0] - best.a[0], best.b[1] - best.a[1]]);
   }
-  // ---- a high-bay rack along v (double-sided): goods within reach on four shelves, three beam levels with pallets above ----
+  // ---- a high-bay rack along v (double-sided; o.side ±1: one side only, its back at u – against a wall): goods within reach on four
+  // shelves, three beam levels with pallets above ----
   function hochregal(K, R, u, v0, v1, dept, o = {}) {
     const D = o.d || 2.1, // both sides
       H = o.h || 6.2,
       len = v1 - v0,
       vm = (v0 + v1) / 2,
-      [, pal, kinds] = dept;
+      [, pal, kinds] = dept,
+      sides = o.side ? [o.side] : [-1, 1];
     if (len < 2.8) return;
     const nb = Math.max(1, Math.round(len / 2.7)),
       bay = len / nb;
     // uprights at each bay's ends, on both outer faces and at the back-to-back line
     for (let k = 0; k <= nb; k++) {
       const v = v0 + k * bay;
-      for (const s of [-1, 0, 1]) K.box(u + (s * (D - 0.1)) / 2, v, 0, 0.09, 0.09, H, B.upright);
+      for (const s of [...sides, 0]) K.box(u + (s * (D - 0.1)) / 2, v, 0, 0.09, 0.09, H, B.upright);
     }
     // the back (a mesh between the two halves, drawn as a thin grey panel up to the goods' top)
     K.box(u, vm, 0, 0.04, len, 2.3, L(0.5, 0.52, 0.54));
-    for (const s of [-1, 1]) {
+    for (const s of sides) {
       const uf = u + (s * D) / 2;
       // the shelves within reach: decks with goods
       const lv = [0.12, 0.62, 1.14, 1.66];
@@ -93,6 +95,7 @@ export const LIBAU = (() => {
       }
       // the beam levels above with pallets of cartons (some empty places)
       for (const z of [2.6, 3.85, 5.1]) {
+        if (z + 1.1 > H) break;
         K.box(uf - s * 0.05, vm, z - 0.12, 0.08, len, 0.12, B.beam);
         K.box(u + s * 0.05, vm, z - 0.12, 0.08, len, 0.12, B.beam);
         for (let k = 0; k < nb; k++)
@@ -100,14 +103,16 @@ export const LIBAU = (() => {
             if (R() < 0.12) continue;
             const v = v0 + k * bay + (q + 0.5) * (bay / 2),
               cu = u + (s * D) / 4;
-            K.box(cu, v, z, 0.95, 1.15, 0.14, B.pallet);
+            // the carton reaches down into its pallet (a phone leaves the pallet out: the carton stands on the beams)
+            K.detail(cu, v, z, 0.95, 1.15, 0.14, B.pallet);
             const hh = 0.55 + R() * 0.55,
               col = B.carton[Math.floor(R() * B.carton.length)];
-            K.box(cu, v, z + 0.14, 0.9, 1.05, Math.min(hh, 1.1), col, col);
+            K.box(cu, v, z, 0.9, 1.05, Math.min(hh, 1.1) + 0.14, col, col);
           }
       }
     }
-    K.solid(u, vm, D + 0.1, len + 0.1);
+    if (o.side) K.solid(u + (o.side * D) / 4, vm, D / 2 + 0.1, len + 0.1);
+    else K.solid(u, vm, D + 0.1, len + 0.1);
   }
   // ---- timber on cantilever racks (arms out of a column, boards lying on them) along v ----
   function kragarm(K, R, u, v0, v1, two = true) {
@@ -158,7 +163,7 @@ export const LIBAU = (() => {
               du = -0.38 + i * 0.38,
               dv = -0.19 + j * 0.38;
             K.good(
-              'can',
+              'eimer',
               u + du * c - dv * s,
               v + du * s + dv * c,
               0.14 + l * 0.36,
@@ -448,6 +453,65 @@ export const LIBAU = (() => {
       }
       Kc.solid(bc[2] - 1.6, (bc[1] + bc[3]) / 2, 1.3, bc[3] - bc[1] - 3);
       Kc.sign(['Pflanzen · Erden'], um + 1.5, (bc[1] + bc[3]) / 2, 2.9, 2.4, 0.5, -1, 0, true);
+    }
+    // ---- along the walls of the sales floor (the hall, the other parts): wall racks where nothing else stands – a long wall with only
+    // its skirting looks unfinished – and a department's board over each ----
+    {
+      const fronts = u.doors.map(d => ({
+        id: 'd',
+        x: d.x,
+        y: d.y,
+        nx: d.nx,
+        ny: d.ny,
+        w: d.w,
+        front: d.w + 7,
+        hG: 2.6,
+        z0: 0,
+        hD: 2.35,
+      }));
+      const near = (x, y, r) =>
+        P.segs.some(g => {
+          const ex = g[2] - g[0],
+            ey = g[3] - g[1],
+            l2 = ex * ex + ey * ey || 1,
+            t = Math.max(0, Math.min(1, ((x - g[0]) * ex + (y - g[1]) * ey) / l2));
+          return Math.hypot(x - g[0] - ex * t, y - g[1] - ey * t) < r;
+        });
+      let wi = 3;
+      for (const r of LIPLAN.walls(u, fronts)) {
+        const sc = r.vol === iHall ? sHall : others.includes(r.vol) ? sOther[others.indexOf(r.vol)] : null;
+        if (!sc) continue;
+        const Hr = Math.min(6.2, sc.h - 1.2);
+        if (Hr < 3) continue;
+        const gaps = r.open.map(([a, b]) => [a - 1.6, b + 1.6]);
+        for (const h of r.holes) gaps.push([h.u0 - 1.6, h.u1 + 1.6]);
+        // the wall's frame: u into the room, v along the wall
+        const Fe = LIPLAN.frame(r.a, r.n),
+          sg = r.ux * Fe.ev[0] + r.uy * Fe.ev[1] >= 0 ? 1 : -1,
+          Ke = kit(P, Fe, sc.id);
+        for (const [t0, t1] of LIPLAN.rest(r.L, gaps)) {
+          // the free stretches: nothing within the rack's depth and an aisle of 1.3 m before it (sampled every 0.5 m)
+          const free = [];
+          let cur = null;
+          for (let t = t0 + 1.0; t <= t1 - 1.0 + 1e-6; t += 0.5) {
+            const ok = [0.5, 1.1, 1.8, 2.4].every(d => !near(...Fe.W(d, sg * t), 0.3));
+            if (ok) cur = cur ? [cur[0], t] : [t, t];
+            else {
+              if (cur) free.push(cur);
+              cur = null;
+            }
+          }
+          if (cur) free.push(cur);
+          for (const [a, b] of free) {
+            if (b - a < 3.2) continue;
+            const v0 = Math.min(sg * a, sg * b),
+              v1 = Math.max(sg * a, sg * b),
+              dept = DEPT[wi++ % DEPT.length];
+            hochregal(Ke, R, 0.06, v0, v1, dept, { side: 1, h: Hr });
+            if (sc.h - Hr > 1.1) Ke.signU([dept[0]], 0.1, (v0 + v1) / 2, Hr + 0.25, Math.min(4, v1 - v0 - 0.4), 0.7, 1);
+          }
+        }
+      }
     }
     P.frame = F;
     return P;
