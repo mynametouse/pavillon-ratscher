@@ -92,6 +92,12 @@ window.__T = {
     const trep = P.rooms.find(r => r.trep && r.fl === fl);
     return { id, lbl, best, think, room: H.roomAt(GAME.P.x, GAME.P.y, GAME.P.feet + 1), trep: trep && trep.id, feet: +GAME.P.feet.toFixed(2), z: +P.zF[fl].toFixed(2) };
   },
+  // a metre in front of a locked flat's door, looking at it (for the picture with the HUD's button)
+  lockedView(H, fl) {
+    const P = H.plan, d = (P.locked || []).find(q => q.fl === fl) || (P.locked || [])[0]; if (!d) return 0;
+    const into = d.side === 'L' ? 1 : -1, e = P.toW(d.x + into * 1.05, d.y), m = P.toW(d.x, d.y), yaw = Math.atan2(m[0] - e[0], m[1] - e[1]) * 180 / Math.PI;
+    this.stand(e[0], e[1], P.zF[d.fl], yaw); CAM3.want = false; GAME.view(e[0], e[1], P.zF[d.fl] + 1.62, yaw, -10, 70); GAME.step(0.3); return 1;
+  },
 };
 """
 
@@ -209,7 +215,7 @@ with lib.browser() as b:
     if st.get('s') != 'ready':
         ck.errors(errs); ck.done()
     S = J("SINNEN.status()")
-    print('status', json.dumps({k: S[k] for k in ('n', 'kinds', 'why', 'signs', 'shops', 'ms', 'err')}, ensure_ascii=False), flush=True)
+    print('status', json.dumps({k: S[k] for k in ('n', 'kinds', 'why', 'signs', 'shops', 'ms', 'err')}, ensure_ascii=False), 'of', E("SCHL.bld.length"), 'buildings', flush=True)
     ck('many houses of the old town can be entered: whole houses, stairwell houses, shops', S['n'] > 400 and S['kinds'].get('haus', 0) > 200 and S['kinds'].get('treppenhaus', 0) > 80 and S['kinds'].get('laden', 0) >= 2, {'n': S['n'], 'kinds': S['kinds']})
     ck('left out: the landmarks, churches, named buildings (the Rathaus with them), sheds, halls, buildings without a street door', all(S['why'].get(k, 0) > 0 for k in ('wahrzeichen', 'name', 'schuppen', 'halle', 'keine tür')), S['why'])
     ck('indexing the town takes little time (planned a few per frame)', S['ms'] < 3000, S['ms'])
@@ -391,6 +397,7 @@ with lib.browser() as b:
         if lk.get('none'): lk = J("__T.locked(HAEUSER.H, 0)")
         print('locked', json.dumps(lk, ensure_ascii=False), flush=True)
         ck('at another flat\'s door „Verschlossen“ (its words, and it stays shut)', lk.get('lbl') == 'Verschlossen' and lk.get('think', '').startswith('Die Wohnungstür ist verschlossen') and lk.get('room') == lk.get('trep') and abs(lk.get('feet', 0) - lk.get('z', -9)) < 0.1, lk)
+        E(f"__T.lockedView(HAEUSER.H, {top}); 1")
         page_shot('24_verschlossen_hud')
         opens = J("(HAEUSER.H.plan.open || []).map(d => d.fl)")
         fo = top if top in opens else (opens[0] if opens else 0)
@@ -441,6 +448,8 @@ with lib.browser() as b:
                   return { lbl, think, room: H.roomAt(GAME.P.x, GAME.P.y, GAME.P.feet + 1), r0: P.rooms[0].id }; })()""")
                 print('staff door', json.dumps(sd, ensure_ascii=False), flush=True)
                 ck(f'{typ}: the door to the back rooms „Nur für Personal“, shut', sd.get('lbl') == 'Nur für Personal' and sd.get('think', '').startswith('Nur für Personal') and sd.get('room') == sd.get('r0'), sd)
+                E("""(() => { const P = HAEUSER.H.plan, s = P.staff, nrm = s.side === 'y1' ? [0, -1] : s.side === 'x0' ? [1, 0] : [-1, 0], q = P.toW(s.x + nrm[0] * 2.2, s.y + nrm[1] * 2.2), d = P.toW(s.x, s.y);
+                  const yaw = Math.atan2(d[0] - q[0], d[1] - q[1]) * 180 / Math.PI; __T.stand(q[0], q[1], P.zG, yaw); CAM3.want = false; GAME.view(q[0], q[1], P.zG + 1.62, yaw, -6, 70); GAME.step(0.2); return 1; })()""")
                 shot(f'31_{typ}_personal')
             for k in range(min(3, BILDER + 1)):
                 E(f"__T.roomView(HAEUSER.H, HAEUSER.H.plan.rooms[0].id, {[0, 2, 1][k]}); GAME.step(0.2); 1")

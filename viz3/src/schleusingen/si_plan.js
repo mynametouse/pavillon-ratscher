@@ -557,7 +557,8 @@ export const SIPLAN = (() => {
       });
     // the flats that fit, per storey; none anywhere (small or shallow sides): no stairwell house – the whole house, as Ratscher's
     const per = [];
-    for (let k = 0; k < P.nSt; k++) per.push(sides.map(s => ({ s, F: flatOf(P, s, k, seed + k * 13) })).filter(c => c.F));
+    for (let k = 0; k < P.nSt; k++)
+      per.push(sides.map(s => ({ s, F: flatOf(P, s, k, seed + k * 13) })).filter(c => c.F));
     if (!per.some(c => c.length)) return null;
     // the storey whose flat can be entered on a phone (its budget: one flat in the house): the first upper one where a flat fits
     const phoneFl = per[1] && per[1].length ? 1 : per.findIndex(c => c.length);

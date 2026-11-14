@@ -33,7 +33,7 @@ Ratscher (V18p) die Häuser der Altstadt von Schleusingen.
   verschlossen – hier wohnt jemand anderes.“). Die offene Wohnung: Flur (Garderobe, Schuhschrank mit Spiegel, Läufer), Wohnzimmer, Küche,
   Bad, je nach Größe Schlafzimmer und Kinderzimmer – nach einem von zwei Mustern (Flur quer an der Tür mit Zimmern davor und dahinter;
   bei flachen Seiten ein Flur längs mit den Zimmern nebeneinander), jedes Zimmer erreichbar (geprüft).
-- **Der Stil 2026** je Haus fest aus seiner Nummer (`SIPLAN.lookOf`): 334 × „heute“, 96 × „heute-90“, 55 × „heute-ddr“, 16 × „alt“
+- **Der Stil 2026** je Haus fest aus seiner Nummer (`SIPLAN.lookOf`): 333 × „heute“, 96 × „heute-90“, 55 × „heute-ddr“, 16 × „alt“
   (die Läden „heute“).
 - **Läden**: von den Schildern der Altstadt (die ersten Zeilen der Liste, die die Stadt malt – Bürgerbüro zuerst) haben vier eine Art,
   die passt; dahinter statt einer Wohnung ein Laden mit dem Baukasten von `LINNEN` (`schleusingen/si_laden.js`, gezeichnet von
@@ -86,8 +86,9 @@ Ratscher (V18p) die Häuser der Altstadt von Schleusingen.
   ≈ 110–150 ms im Testrechner); ein Raster von 8 m findet die Tür nahebei (fünfmal je Sekunde).
 - **Höchstens ein Haus** steht: gebaut beim Hineingehen hinter dem Schwarz (im Mittel ≈ 130 ms, höchstens ≈ 390 ms mit SwiftShader),
   freigegeben beim Hinausgehen – Geometrien und Texturen genau zurück (alle 500 einmal gebaut und freigegeben: dieselben Zahlen wie
-  vorher). Drinnen höchstens 58 Draw-Calls (das Haus mit fünf Geschossen; sonst 27–50), höchstens ≈ 48 000 Dreiecke; mit dem Budget des
-  Telefons (`SINNEN.setPhone`, `LINNEN.phone`) weit unter **120 000** je Haus.
+  vorher). Drinnen höchstens 58 Draw-Calls (das Haus mit fünf Geschossen; sonst meist 30–50, ein Laden ≈ 6), höchstens ≈ 48 000
+  Dreiecke; mit dem Budget des Telefons (`SINNEN.setPhone`, `LINNEN.phone`: eine Wohnung je Treppenhaus, die kleinen Teile der Läden
+  weggelassen) höchstens ≈ 36 000 – weit unter **120 000** je Haus.
 - **Keine neuen Shader-Programme** für die Häuser: Möbel und Wände sind die Zwillinge des Baukastens wie in Ratscher; der Boden der
   Welt-Kacheln unter dem Haus wird ausgespart (sonst schaute das Gelände durch die Böden) – eine Kopie des Kachel-Materials, die das
   Rechteck des Hauses verwirft, **ein** Programm, beim ersten Haus hinter dem Schwarz übersetzt und gehalten; die Ladeneinrichtung
@@ -107,7 +108,8 @@ Ratscher (V18p) die Häuser der Altstadt von Schleusingen.
   Dachboden, „Hinausgehen“, Kacheln wieder ganz, Speicher zurück, kein neues Programm; Treppenhaus mit Briefkästen (Maße), jedes Geschoss
   über die Treppen, Dachboden, „Verschlossen“, in die offene Wohnung; Laden geöffnet (Verkaufsfläche, „Nur für Personal“) und sonntags
   „Geschlossen“; die Stile ohne eigene Programme; alle Häuser einmal gebaut (Plan geprüft, Draw-Calls, Dreiecke, Fehler, Speicher,
-  keine neuen Programme); das Budget des Telefons; Speichern und Neuladen.
+  keine neuen Programme); das Budget des Telefons; Speichern und Neuladen. Lokal (14.11.): `only=door+walk+night+mem+treppe+save`
+  39/39 in 20 min, `only=laden+looks+sweep+phone` 32/32 in 29 min (mit `bilder=2`).
 - Themen-Tests `viz3/extra/schleusingen-innen/tests.txt` (jede Zeile ein eigener Job, ≤ 60 min): `smoke`, `schleusingen_innen` in zwei
   Hälften, `haeuser:bilder=1`, `zombie_innen`, `laeden_innen:mcd,lidl`, `memphone`.
 
