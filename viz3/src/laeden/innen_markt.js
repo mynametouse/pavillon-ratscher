@@ -42,6 +42,14 @@ export const LIMARKT = (() => {
     lamp: [2.6, 2.55, 2.4], // a light panel's glow (unlit colours over 1)
     lampDim: [1.2, 1.18, 1.1],
   };
+  // the bands on the walls over the departments
+  const BAND = {
+    Molkerei: L(0.55, 0.68, 0.8),
+    Käse: L(0.86, 0.76, 0.48),
+    'Wurst · Fleisch': L(0.74, 0.5, 0.46),
+    Getränke: L(0.5, 0.7, 0.72),
+    Haushalt: L(0.78, 0.74, 0.62),
+  };
   // goods: muted palettes per kind of product – no brand's colours, no designs
   const PAL = {
     kaffee: [L(0.42, 0.26, 0.16), L(0.62, 0.15, 0.12), L(0.75, 0.6, 0.3), L(0.2, 0.18, 0.16), L(0.85, 0.8, 0.7)],
@@ -140,7 +148,7 @@ export const LIMARKT = (() => {
           u - D / 2 + 0.04,
           u + D / 2 - 0.04,
           ve + e * 0.27,
-          -e,
+          e,
           z + (z > 0.2 ? 0.03 : 0),
           0.38,
           0.45,
@@ -426,7 +434,8 @@ export const LIMARKT = (() => {
     let np = 0;
     for (let uu = pu0 + 1.0; uu < pu1 - 0.6; uu += 3.0)
       for (let vv = pv0 + 1.2; vv < pv1 - 0.8; vv += 3.0)
-        if (inside(uu - 1.2, vv - 1.4, uu + 1.2, vv + 1.4)) {
+        // the way in stays free (a path of 2.6 m straight from the entrance)
+        if (Math.abs(uu - ue) > 1.9 && inside(uu - 1.2, vv - 1.4, uu + 1.2, vv + 1.4)) {
           produceTable(K, R, uu, vv, 1.2, 1.9, (R() - 0.5) * 0.2);
           np++;
         }
@@ -469,6 +478,8 @@ export const LIMARKT = (() => {
             b = t0 + ((t1 - t0) * (k + 1)) / n,
             [nm, pal] = chillPal[ci++ % chillPal.length];
           chiller(Ke, R, a + 0.02, b - 0.02, 0.05, 1, pal, false);
+          // a coloured band on the wall over it (as shops mark their departments; muted, no brand's colour)
+          Ke.box((a + b) / 2, 0.03, 2.55, b - a, 0.04, 0.7, BAND[nm] || BAND.Molkerei);
           if (k === Math.floor(n / 2) || n === 1) Ke.sign([nm], (a + b) / 2, 1.9, 3.15, 1.9, 0.42, 1, 0, true);
         }
         markOcc(O, F, e, t0, t1, 0.95 + 2.3);
@@ -486,6 +497,7 @@ export const LIMARKT = (() => {
             ? { pal: 'wasser', kinds: ['bottle', 'pack'], h: disc ? 1.8 : 2.2 }
             : { pal: 'haushalt', kinds: ['bottle', 'box', 'pack'], h: disc ? 1.8 : 2.2 }
         );
+        Ke.box((t0 + t1) / 2, 0.03, 2.55, t1 - t0, 0.04, 0.7, drinks ? BAND.Getränke : BAND.Haushalt);
         // its sign hangs over the aisle beside it, facing the front like the aisles' signs
         const sl = F.L(...Fe.W((t0 + t1) / 2, 1.9));
         K.sign([drinks ? 'Getränke' : 'Haushalt'], sl[0], sl[1], 3.15, 1.8, 0.42, -1, 0, true);

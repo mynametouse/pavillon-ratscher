@@ -37,6 +37,7 @@ export const LINNEN = (() => {
     builds: 0,
     frees: 0,
     busy: null,
+    live: 0,
   };
   if (!LAEDEN.on || QS.has('noinnen') || !DMOD.on) return S;
   S.on = true;
@@ -1382,7 +1383,9 @@ export const LINNEN = (() => {
     // the glass of the shop's fronts and doors goes while the rooms stand (only the frames stay: one sees in, and out)
     const GD = GROUPD.get(g.id);
     const hide = [];
-    for (const me of g.meshes) if (me.name === 'laeden ' + g.id + ' glas ' + sh.id) hide.push(me);
+    for (const me of g.meshes)
+      if (me.name === 'laeden ' + g.id + ' glas ' + sh.id || me.name === 'laeden ' + g.id + ' glas ' + sh.id + ':licht')
+        hide.push(me);
     if (GD && GD.glass.get(sh.id)) hide.push(GD.glass.get(sh.id));
     for (const me of hide) {
       LAEDEN.hidden.add(me);
@@ -1618,7 +1621,18 @@ export const LINNEN = (() => {
       if (!inside && (M.d === undefined || M.d > FREE_R || M.g.state !== 'built')) unmount(M);
     }
     for (const M of S.mounted.values()) if (M.state === 'building') step(M);
-    if (best && S.mounted.size < (COARSE ? 2 : 3)) mount(best[0], best[1]);
+    // at most two shops stand (a phone: one); a nearer one takes the place of the farthest (unless one is inside that)
+    const LIM = COARSE ? 1 : 2;
+    if (best && S.mounted.size >= LIM) {
+      let far = null;
+      for (const M of S.mounted.values()) {
+        const ua = unitAt(w[0], w[1]);
+        if (ua && ua.M === M) continue;
+        if (!far || (M.d || 0) > (far.d || 0)) far = M;
+      }
+      if (far && (far.d || 0) > bd + 8) unmount(far);
+    }
+    if (best && S.mounted.size < LIM) mount(best[0], best[1]);
     for (const M of S.mounted.values()) {
       if (M.state !== 'ready') continue;
       light(M, false);
@@ -1712,6 +1726,111 @@ export const LINNEN = (() => {
   S.meshesOf = id => {
     const M = S.mounted.get(id);
     return M ? M.meshes : [];
+  };
+  // places for pictures: per section of each unit of a standing shop the place one can walk to from the unit's main door (the walker's
+  // radius, 0.5 m cells) with the longest free view along one of 16 directions (the fixtures' and walls' segments stop it); yaw in degrees
+  S.views = id => {
+    const M = S.mounted.get(id);
+    if (!M || M.state !== 'ready') return null;
+    const cells = (x0, y0, x1, y1, f) => {
+      for (let i = Math.floor(x0 / 4); i <= Math.floor(x1 / 4); i++)
+        for (let j = Math.floor(y0 / 4); j <= Math.floor(y1 / 4); j++) {
+          const a = M.grid.get(i + ',' + j);
+          if (a) for (const k of a) f(M.segs[k]);
+        }
+    };
+    const clear = (x, y, r) => {
+      let best = r;
+      cells(x - r, y - r, x + r, y + r, s2 => {
+        const ex = s2[2] - s2[0],
+          ey = s2[3] - s2[1],
+          l2 = ex * ex + ey * ey || 1,
+          t = Math.max(0, Math.min(1, ((x - s2[0]) * ex + (y - s2[1]) * ey) / l2));
+        best = Math.min(best, Math.hypot(x - s2[0] - ex * t, y - s2[1] - ey * t));
+      });
+      return best;
+    };
+    const ray = (x, y, dx, dy, max) => {
+      let best = max;
+      const seen = new Set();
+      for (let t = 0; t <= best + 4; t += 2) {
+        const i = Math.floor((x + dx * t) / 4),
+          j = Math.floor((y + dy * t) / 4);
+        for (let di = -1; di <= 1; di++)
+          for (let dj = -1; dj <= 1; dj++) {
+            const key = i + di + ',' + (j + dj);
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const a = M.grid.get(key);
+            if (!a) continue;
+            for (const k of a) {
+              const s2 = M.segs[k],
+                ex = s2[2] - s2[0],
+                ey = s2[3] - s2[1],
+                den = dx * ey - dy * ex;
+              if (Math.abs(den) < 1e-9) continue;
+              const qx = s2[0] - x,
+                qy = s2[1] - y,
+                tt = (qx * ey - qy * ex) / den,
+                uu = (qx * dy - qy * dx) / den;
+              if (tt > 0 && uu >= 0 && uu <= 1 && tt < best) best = tt;
+            }
+          }
+      }
+      return best;
+    };
+    const out = [];
+    for (const u of M.units) {
+      const U = u.U,
+        d = U.doors[0],
+        C = 0.5;
+      let bb = [1e9, 1e9, -1e9, -1e9];
+      for (const v of U.vols) {
+        const b = LIPLAN.bbOf(v.f);
+        bb = [Math.min(bb[0], b[0]), Math.min(bb[1], b[1]), Math.max(bb[2], b[2]), Math.max(bb[3], b[3])];
+      }
+      const nx = Math.ceil((bb[2] - bb[0]) / C) + 1,
+        ny = Math.ceil((bb[3] - bb[1]) / C) + 1,
+        seen = new Uint8Array(nx * ny),
+        volAt = (x, y) => U.vols.findIndex(v => LIPLAN.inPoly(v.f, x, y)),
+        q = [[Math.round((d.x - d.nx * 0.9 - bb[0]) / C), Math.round((d.y - d.ny * 0.9 - bb[1]) / C)]],
+        best = new Map();
+      while (q.length) {
+        const [i, j] = q.pop();
+        if (i < 0 || j < 0 || i >= nx || j >= ny || seen[j * nx + i]) continue;
+        seen[j * nx + i] = 1;
+        const x = bb[0] + i * C,
+          y = bb[1] + j * C,
+          vi = volAt(x, y);
+        if (vi < 0) continue;
+        const cl = clear(x, y, 1.4);
+        if (cl < 0.22) continue;
+        q.push([i + 1, j], [i - 1, j], [i, j + 1], [i, j - 1]);
+        if (cl < 0.7 || (i + j) % 2) continue;
+        const sec = u.secOf(vi);
+        for (let k = 0; k < 16; k++) {
+          const a = (k / 16) * Math.PI * 2,
+            L = ray(x, y, Math.sin(a), Math.cos(a), 40),
+            sc = L * Math.min(1, cl / 1.2);
+          const b = best.get(sec);
+          if (!b || sc > b.sc) best.set(sec, { sc, x, y, yaw: (k / 16) * 360, L });
+        }
+      }
+      for (const [sec, b] of best) {
+        const sc = u.secs.find(q2 => q2.id === sec);
+        out.push({
+          unit: U.id,
+          sec,
+          name: (sc && sc.name) || U.name,
+          x: +b.x.toFixed(2),
+          y: +b.y.toFixed(2),
+          z: +M.zf(b.x, b.y).toFixed(2),
+          yaw: b.yaw,
+          view: +b.L.toFixed(1),
+        });
+      }
+    }
+    return out;
   };
   void toast;
   return S;

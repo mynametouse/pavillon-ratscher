@@ -18,12 +18,14 @@ GROUP_OF = {'obi': 'nord', 'mega': 'nord', 'edeka': 'nord', 'getraenke': 'nord',
 # the views inside: (name, metres in from a door, metres sideways (+: to the right seen from outside), turn of the view from looking in
 # (degrees, + to the right), pitch[, the door's index – default the main door])
 VIEWS = {
-    'edeka': [('eingang', 6.5, 0, 0, -4), ('mitte', 18, -6, 25, -6), ('kassen', 7, 5, 70, -8), ('kuehlregal', 30, -10, 0, -8)],
-    'lidl': [('eingang', 3.0, 0, 0, -4), ('mitte', 14, -8, 20, -6), ('baecker', 3.0, 0, 0, -5, 1)],
+    # door-relative pictures (name, metres in from the door, to the side, turn, pitch[, door index]); the rest of each shop's pictures come
+    # from LINNEN.views() (per section the place with the longest free view)
+    'edeka': [('eingang', 6.5, 0, 0, -4), ('mitte', 18, -6, 25, -6), ('kassen', 7, 5, 70, -8)],
+    'lidl': [('eingang', 3.0, 0, 0, -4), ('mitte', 14, -8, 20, -6)],
     'rewe': [('eingang', 6.0, 0, 0, -4), ('mitte', 16, 4, -20, -6)],
-    'obi': [('kasse', 3.0, 0, 0, -4), ('halle', 22, 6, 10, -2), ('regal', 30, -3, 80, 4), ('garten', 4.0, 0, 0, -4, 1)],
-    'mega': [('eingang', 3.0, 0, 0, -4), ('gang_a', 38.5, 0, 90, -3), ('gang_b', 38.5, 0, -90, -3), ('aldi', 4.0, 0, 0, -5, 1),
-             ('restaurant', 4.0, 0, 0, -5, 2), ('moebel', 6.0, 0, 0, -6, 3), ('apotheke', 2.0, 0, 0, -6, 4)],
+    'obi': [('eingang', 4.0, 0, 0, -4), ('garten', 4.0, 0, 0, -4, 1)],
+    'mega': [('eingang', 3.0, 0, 0, -4), ('aldi', 4.0, 0, 0, -5, 1), ('restaurant', 4.0, 0, 0, -5, 2), ('moebel', 6.0, 0, 0, -6, 3),
+             ('apotheke', 2.0, 0, 0, -6, 4)],
     'getraenke': [('eingang', 3.0, 0, 0, -4)],
     'zeile40': [('turan', 2.0, 0, 0, -6), ('waesche', 2.0, 0, 0, -6, 1)],
     'shell': [('eingang', 2.0, 0, 0, -6)],
@@ -171,6 +173,19 @@ with lib.browser() as b:
                 E("GAME.step(0.05)")
                 E(f"GAME.view({px}, {py}, KERN.ground({px}, {py}) + 1.65, {yaw}, {pitch}, 70)")
                 pic(f'{sid}_{nm}')
+            vws = J(f"LINNEN.views('{sid}')") or []
+            print('views', sid, json.dumps(vws)[:600], flush=True)
+            for v in vws[:8]:
+                E(f"GAME.setView3(false, true); GAME.view({v['x']}, {v['y']}, {v['z']} + 1.65, {v['yaw']}, -6, 70)")
+                E("GAME.step(0.05)")
+                E(f"GAME.view({v['x']}, {v['y']}, {v['z']} + 1.65, {v['yaw']}, -6, 70)")
+                pic(f"{sid}_{v['unit']}_{v['sec']}")
+            # from outside (by day): through the front one sees in
+            ex, ey = md['x'] + md['nx'] * 9, md['y'] + md['ny'] * 9
+            E(f"GAME.setView3(false, true); GAME.view({ex}, {ey}, KERN.ground({ex}, {ey}) + 1.7, {yaw_in}, -3, 62)")
+            E("GAME.step(0.05)")
+            E(f"GAME.view({ex}, {ey}, KERN.ground({ex}, {ey}) + 1.7, {yaw_in}, -3, 62)")
+            pic(f'{sid}_aussen')
             # 3 – out again: from just inside the door, walking out
             xi, yi = md['x'] - md['nx'] * 3, md['y'] - md['ny'] * 3
             stand(xi, yi, (yaw_in + 180) % 360)
@@ -202,6 +217,7 @@ with lib.browser() as b:
     if 'nacht' in want:
         # at night: REWE is open until 22 (inside the light of the open shop, outside its lit front), EDEKA closed after 20 (the night
         # light only, the doors shut)
+        E("DN.e0 = Date.UTC(2026, 10, 2) / 864e5")  # November: dark at nine
         for sid, hh, mm, opened in (('rewe', 21, 0, True), ('edeka', 21, 30, False)):
             sh = SHOP[sid]
             md = main_door(sh)
@@ -214,7 +230,7 @@ with lib.browser() as b:
             st = J("LINNEN.status()")
             m = next((q for q in st['mounted'] if q['shop'] == sid), None)
             ck(f'nacht: {sid} at {hh}:{mm:02d} is {"open" if opened else "closed"} (its rooms stand, their light)', m is not None and m['open'] == opened, json.dumps(m)[:300] if m else json.dumps(st)[:300])
-            ex, ey = md['x'] + md['nx'] * 12, md['y'] + md['ny'] * 12
+            ex, ey = md['x'] + md['nx'] * 9, md['y'] + md['ny'] * 9
             E(f"GAME.setView3(false, true); GAME.view({ex}, {ey}, KERN.ground({ex}, {ey}) + 1.7, {yaw_in}, -2, 62)")
             E("GAME.step(0.05)")
             E(f"GAME.view({ex}, {ey}, KERN.ground({ex}, {ey}) + 1.7, {yaw_in}, -2, 62)")

@@ -317,7 +317,7 @@ export const LAEDEN = (() => {
         if (L2 < 0.05) return;
         const dx = (bx - ax) / L2,
           dy = (by - ay) / L2,
-          z0 = Math.min(za, zb), // the facade's base line: the shader measures heights (plinth, gate) from here
+          z0 = at.base !== undefined ? at.base : Math.min(za, zb), // the facade's base line: the shader measures heights (plinth, gate) from here (feat/laeden-innen: or given)
           top = zt - z0,
           n = A.position.length / 3;
         for (const [x, y, u, z] of [
@@ -1509,6 +1509,45 @@ export const LAEDEN = (() => {
     const sh = S.data && S.data.shops.find(q => q.id === shopId);
     return sh && sh.doors[i] ? doorLabel(sh, sh.doors[i]) : null;
   };
+  // feat/laeden-innen: the pieces of an edge a → b (t0, t1 along it) and in each the lowest height its wall starts at: where another volume
+  // of the shop lies right outside the edge, above that one (absolute; the highest such neighbour), where the edge holds the glazed front
+  // of an entrance, above its glass (the opening behind the glass: with LINNEN one sees in) – null where the wall stands from the ground
+  function edgePieces(sh, vols, vi, a, b, L2, zF) {
+    const ux = (b[0] - a[0]) / L2,
+      uy = (b[1] - a[1]) / L2,
+      STEP = 0.25,
+      n = Math.max(1, Math.round(L2 / STEP)),
+      dt = L2 / n,
+      holes = [];
+    for (const d of sh.doors) {
+      if (d.k === 'liefer' || !d.front || d.hG === undefined) continue;
+      const off = (d.x - a[0]) * uy - (d.y - a[1]) * ux,
+        u = (d.x - a[0]) * ux + (d.y - a[1]) * uy;
+      if (Math.abs(off) > 0.6 || d.nx * uy - d.ny * ux < 0.8) continue;
+      holes.push([u - d.front / 2, u + d.front / 2, d.z0 + d.hG]);
+    }
+    const out = [];
+    for (let k = 0; k < n; k++) {
+      const t = (k + 0.5) * dt,
+        px = a[0] + ux * t + uy * 0.45,
+        py = a[1] + uy * t - ux * 0.45;
+      let z = null;
+      vols.forEach((w, wi) => {
+        if (wi !== vi && inPoly(w.f, px, py)) z = Math.max(z === null ? -1e9 : z, zF + w.h);
+      });
+      for (const [h0, h1, top] of holes) if (t > h0 && t < h1) z = Math.max(z === null ? -1e9 : z, top);
+      const last = out[out.length - 1];
+      if (last && last[2] === z) last[1] = (k + 1) * dt;
+      else out.push([k * dt, (k + 1) * dt, z]);
+    }
+    // the openings' edges exactly where the glass ends (not on the sampling grid)
+    for (let k = 0; k + 1 < out.length; k++)
+      for (const [h0, h1] of holes)
+        for (const e of [h0, h1])
+          if (Math.abs(out[k][1] - e) < dt && e > out[k][0] + 0.02 && e < out[k + 1][1] - 0.02)
+            out[k][1] = out[k + 1][0] = e;
+    return out;
+  }
   // ---- one shop ----
   function shop(sh, g, B) {
     const { WB, RB, KB, KN, KP, signs, wallSeg, glassK, gz } = B;
@@ -1542,6 +1581,8 @@ export const LAEDEN = (() => {
       });
       if (best && !gateAt.has(best.key)) gateAt.set(best.key, { u: best.u, w: d.w, d });
     }
+    // feat/laeden-innen: with LINNEN the entrances come first (the walls get their openings behind the glazing)
+    if (S.ownLeaves) entrances();
     vols.forEach((v, vi) => {
       const r = ring(v.f),
         glassWalls = v.p.walls === 'glas',
@@ -1554,15 +1595,28 @@ export const LAEDEN = (() => {
           L2 = Math.hypot(b[0] - a[0], b[1] - a[1]);
         if (L2 < 0.05) continue;
         const gate = gateAt.get(vi + ':' + i);
-        if (glassWalls) glassFacade(KB, glassK(sh.id), a, b, Math.min(za, zb) - 0.3, zt - 0.05, GREEN_GL);
-        else
-          WB.quad(a[0], a[1], b[0], b[1], 0, L2, Math.min(za, zF), Math.min(zb, zF), zt, {
-            w: 4 * (B.bid + vi) + 1,
-            st: sh.col === 'putz' ? 0 : 10,
-            col: v.kind === 'anbau' && !v.p.portal ? WALL.dunkel : col,
-            du: gate ? gate.u : -1,
-            dw: gate ? gate.w : 0,
-          });
+        // feat/laeden-innen: with the rooms of LINNEN an edge along another volume of the shop has its wall only above that one, and
+        // behind an entrance's glazing the wall is open (one sees in; LINNEN puts the walls inside where they belong) – from outside
+        // nothing changes, the facade's pattern keeps its base line
+        const base = Math.min(za, zb, zF);
+        for (const [t0, t1, zLow] of S.ownLeaves ? edgePieces(sh, vols, vi, a, b, L2, zF) : [[0, L2, null]]) {
+          if (zLow !== null && zLow >= zt - 0.05) continue;
+          const pa = [a[0] + ((b[0] - a[0]) * t0) / L2, a[1] + ((b[1] - a[1]) * t0) / L2],
+            pb = [a[0] + ((b[0] - a[0]) * t1) / L2, a[1] + ((b[1] - a[1]) * t1) / L2],
+            fa = zLow === null ? Math.min(gz(pa[0], pa[1]), zF) : zLow + 0.4,
+            fb = zLow === null ? Math.min(gz(pb[0], pb[1]), zF) : zLow + 0.4;
+          if (glassWalls)
+            glassFacade(KB, glassK(sh.id), pa, pb, zLow === null ? Math.min(za, zb) - 0.3 : zLow, zt - 0.05, GREEN_GL);
+          else
+            WB.quad(pa[0], pa[1], pb[0], pb[1], t0, t1, fa, fb, zt, {
+              w: 4 * (B.bid + vi) + 1,
+              st: sh.col === 'putz' ? 0 : 10,
+              col: v.kind === 'anbau' && !v.p.portal ? WALL.dunkel : col,
+              du: gate ? gate.u : -1,
+              dw: gate ? gate.w : 0,
+              base: S.ownLeaves ? base : undefined,
+            });
+        }
         wallSeg(a[0], a[1], b[0], b[1]);
         if (gate) {
           // the apron of the gate: bollards at its sides, a yellow-black bumper
@@ -1584,16 +1638,19 @@ export const LAEDEN = (() => {
       // the roof: flat behind an attica, or glass (the garden centre)
       roof(RB, KB, KN, v, zF, sh, g);
     });
-    // the name bands first: an entrance's canopy under a band stays low enough not to hide it (entrance())
-    B.bands = sh.signs.map(s => {
-      const fc = faceAt(sh, s);
-      return Object.assign({}, s, { z: zF + s.z, top: zF + (fc ? fc.h : 6) });
-    });
-    // the entrances: a glazed front with sliding doors and a canopy; a vestibule's front is glazed all over
-    sh.doors.forEach(d => {
-      if (d.k === 'liefer') return;
-      entrance(sh, d, B, zF);
-    });
+    if (!S.ownLeaves) entrances(); // feat/laeden-innen: else before the walls
+    function entrances() {
+      // the name bands first: an entrance's canopy under a band stays low enough not to hide it (entrance())
+      B.bands = sh.signs.map(s => {
+        const fc = faceAt(sh, s);
+        return Object.assign({}, s, { z: zF + s.z, top: zF + (fc ? fc.h : 6) });
+      });
+      // the entrances: a glazed front with sliding doors and a canopy; a vestibule's front is glazed all over
+      sh.doors.forEach(d => {
+        if (d.k === 'liefer') return;
+        entrance(sh, d, B, zF);
+      });
+    }
     // the lettering
     for (const s of B.bands) {
       const z = s.z;
@@ -2054,7 +2111,10 @@ export const LAEDEN = (() => {
   // ---- the room behind a restaurant's windows: dark shapes just in front of the pane (counter, tables, chairs) and lights in the
   // ceiling – at night against the lit glass they read as the room inside, by day they vanish in the dark glass ----
   function interior(sh, d, B, z0, hG, front) {
-    const { KN, glassK } = B,
+    const { glassK } = B,
+      // feat/laeden-innen: with LINNEN's rooms the real room stands behind the glass – no dark shapes on the pane (only its lights,
+      // hidden with the glass while the rooms stand)
+      KN = S.ownLeaves ? { quad() {} } : B.KN,
       KL2 = glassK(sh.id + ':licht'),
       tx = -d.ny,
       ty = d.nx,
