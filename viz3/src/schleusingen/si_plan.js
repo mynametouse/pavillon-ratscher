@@ -599,30 +599,53 @@ export const SIPLAN = (() => {
       flats: { open: open.length, locked: locked.length },
     });
   }
-  // ---- the shop: the whole ground floor one room behind the house door (the flats above have their own stairs, not built) ----
+  // ---- the shop: a sales room behind the house door, as a shop of the old town has it – at most 12 m deep from the front and 60–120 m²
+  // (narrower round the door where the front is long); the rest of the ground floor is walled off: the back rooms (store, office) behind
+  // a closed door „Nur für Personal“, and the stairwell to the flats above, which have their own way in (not built) ----
+  const SALES = { maxD: 12, maxW: 12.5, maxA: 120, minA: 60, minD: 4.5 };
+  function salesRoom(P) {
+    const W = P.xi1 - P.xi0,
+      D = P.yi1 - P.yi0,
+      fx = Math.min(P.xi1 - 0.8, Math.max(P.xi0 + 0.8, P.front.x));
+    // the whole floor if it is small; else as deep as fits the area (not under 4.5 m, not over 12 m), then narrower round the door
+    if (W * D <= SALES.maxA && D <= SALES.maxD) return { x0: P.xi0, x1: P.xi1, y0: P.yi0, y1: P.yi1 };
+    let d = Math.min(D, SALES.maxD, Math.max(SALES.minD, SALES.maxA / W)),
+      w = Math.min(W, SALES.maxA / d, SALES.maxW);
+    if (w * d < SALES.minA) w = Math.min(W, SALES.minA / d);
+    // a strip left over that is too narrow for a room goes to the sales room (then a little narrower, the area kept)
+    if (D - d < 1.6 && D <= SALES.maxD + 1.6) {
+      d = D;
+      w = Math.min(w, Math.max(SALES.minA / d, SALES.maxA / d));
+    }
+    let x0 = Math.max(P.xi0, fx - w / 2),
+      x1 = Math.min(P.xi1, x0 + w);
+    x0 = Math.max(P.xi0, x1 - w);
+    if (x0 - P.xi0 < 1.6) x0 = P.xi0;
+    if (P.xi1 - x1 < 1.6) x1 = P.xi1;
+    return { x0: r3(x0), x1: r3(x1), y0: P.yi0, y1: r3(P.yi0 + d) };
+  }
   function shop(P, type) {
     if (!P) return null;
     const z0 = P.zF[0],
-      z1 = P.zC[0];
-    const rooms = [
-      {
-        kind: 'flur',
-        fl: 0,
-        x0: P.xi0,
-        x1: P.xi1,
-        y0: P.yi0,
-        y1: P.yi1,
-        z0,
-        z1,
-        shop: type,
-        name: SHOPNAME[type] || 'Laden',
-      },
-    ];
+      z1 = P.zC[0],
+      q = salesRoom(P);
+    const rooms = [Object.assign({ kind: 'flur', fl: 0, z0, z1, shop: type, name: SHOPNAME[type] || 'Laden' }, q)];
     name(rooms);
+    // the door to the back rooms: in the back wall (towards the side with more floor behind it), else in a side wall
+    let staff = null;
+    const w = 0.86;
+    if (q.y1 < P.yi1 - 1e-3) {
+      const lw = q.x1 - q.x0,
+        u = lw > 3.2 ? (P.front.x < (q.x0 + q.x1) / 2 ? q.x1 - 0.9 - w / 2 : q.x0 + 0.9 + w / 2) : (q.x0 + q.x1) / 2;
+      staff = { side: 'y1', x: r3(u), y: q.y1, w };
+    } else if (q.x0 > P.xi0 + 1e-3 || q.x1 < P.xi1 - 1e-3) {
+      const left = q.x0 > P.xi0 + 1e-3;
+      staff = { side: left ? 'x0' : 'x1', x: left ? q.x0 : q.x1, y: r3(Math.max(q.y0 + 2.0, q.y1 - 0.9 - w / 2)), w };
+    }
     return Object.assign(P, {
       rooms,
       doors: [],
-      windows: P.windows.filter(w => w.fl === 0),
+      windows: P.windows.filter(w2 => w2.fl === 0),
       stair: null,
       astair: null,
       attic: null,
@@ -633,6 +656,7 @@ export const SIPLAN = (() => {
       zC: [z1],
       kind: 'laden',
       shopType: type,
+      staff,
       locked: [],
       open: [],
     });
@@ -682,6 +706,9 @@ export const SIPLAN = (() => {
         if (seen.has(f)) seen.add(d.room);
         if (seen.has(d.room) && d.from) seen.add(d.from);
       }
+    // the cellar through the trapdoor of its room (the kit's whole house)
+    if (P.hatch && P.hatch.room && seen.has(P.hatch.room.id))
+      for (const r of P.rooms) if (r.kind === 'keller') seen.add(r.id);
     for (const r of P.rooms) if (r.kind !== 'boden' && !seen.has(r.id)) bad.push(r.id + ': not reached');
     return bad;
   }
@@ -709,6 +736,8 @@ export const SIPLAN = (() => {
     flatOf,
     flats,
     shop,
+    salesRoom,
+    SALES,
     check,
     NAMES,
     PW,

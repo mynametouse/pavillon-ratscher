@@ -258,33 +258,67 @@ test('a phone: one flat in a stairwell house, the other doors locked', () => {
   assert.deepEqual(SIPLAN.check(Q), []);
 });
 
-test('the shop: the ground floor one room behind the house door, one storey, no stairs', () => {
-  const P = kitPlan(9, 11, 4.5, 3),
-    Q = SIPLAN.shop(P, 'baecker');
-  assert.equal(Q.nSt, 1);
-  assert.equal(Q.rooms.length, 1);
-  assert.equal(Q.rooms[0].kind, 'flur');
-  assert.equal(Q.rooms[0].name, 'Bäckerei');
-  assert.equal(Q.stair, null);
-  assert.deepEqual(SIPLAN.check(Q), []);
+test('the shop: a sales room behind the house door – at most 12 m deep and 120 m² (60 m² where it can), the rest behind a staff door', () => {
+  let n = 0;
+  for (let W = 5; W <= 26; W += 1.7)
+    for (let D = 5; D <= 22; D += 1.9)
+      for (const f of [0.25, 0.5, 0.75]) {
+        const P = kitPlan(W, D, W * f, 2),
+          Win = P.xi1 - P.xi0,
+          Din = P.yi1 - P.yi0,
+          Q = SIPLAN.shop(P, 'baecker'),
+          r = Q.rooms[0],
+          A = (r.x1 - r.x0) * (r.y1 - r.y0);
+        n++;
+        assert.equal(Q.nSt, 1);
+        assert.equal(Q.rooms.length, 1);
+        assert.equal(r.kind, 'flur');
+        assert.equal(r.name, 'Bäckerei');
+        assert.equal(Q.stair, null);
+        assert.deepEqual(SIPLAN.check(Q), [], `W ${W} D ${D}`);
+        if (Win * Din <= 120 && Din <= 12) assert.ok(Math.abs(A - Win * Din) < 1e-6, 'a small floor is the shop');
+        else {
+          assert.ok(r.y1 - r.y0 <= 12 + 1.6 + 1e-6, `W ${W} D ${D}: depth ${r.y1 - r.y0}`);
+          assert.ok(r.x1 - r.x0 <= 12.5 + 3.2 + 1e-6, `W ${W} D ${D}: width ${r.x1 - r.x0}`);
+          assert.ok(A <= 120 * 1.4 + 1e-6, `W ${W} D ${D}: area ${A.toFixed(1)}`);
+          assert.ok(A >= Math.min(60, Win * Math.min(Din, 12)) - 1e-6, `W ${W} D ${D}: area ${A.toFixed(1)}`);
+          // the house door opens into it, and a door leads on to the back rooms
+          assert.ok(Q.front.x >= r.x0 + 0.4 && Q.front.x <= r.x1 - 0.4, 'the house door in the sales room');
+          // a door on to the back rooms wherever the sales room is smaller than the floor
+          const whole = Math.abs(A - Win * Din) < 1e-6;
+          assert.ok(whole || Q.staff, `W ${W} D ${D}: a staff door`);
+          if (!Q.staff) continue;
+          const s = Q.staff;
+          if (s.side === 'y1') assert.ok(Math.abs(s.y - r.y1) < 1e-6 && s.x - s.w / 2 >= r.x0 && s.x + s.w / 2 <= r.x1);
+          else assert.ok(s.y - s.w / 2 >= r.y0 && s.y + s.w / 2 <= r.y1 && Math.abs(s.x - (s.side === 'x0' ? r.x0 : r.x1)) < 1e-6);
+        }
+      }
+  assert.ok(n > 100);
 });
 
-test('the shop rooms of every kind: fixtures inside the room and under its ceiling, the way from the door free', () => {
+test('the shop rooms of every kind: fixtures inside the room and under its ceiling, the ways from the door and to the staff door free', () => {
   for (const type of Object.keys(SILADEN.LAY))
-    for (const [W, D] of [
-      [6, 8],
-      [8.2, 10.5],
-      [11, 9],
+    for (const [W, D, back] of [
+      [6, 8, true],
+      [8.2, 10.5, true],
+      [11, 9, false],
     ]) {
-      // a room turned 30° (the town's houses are), counter-clockwise, its door in the middle of the front
+      // a room turned 30° (the town's houses are), counter-clockwise, its door in the middle of the front, the staff door in the back wall
       const a = Math.PI / 6,
         c = Math.cos(a),
         s = Math.sin(a),
         T = (x, y) => [100 + x * c - y * s, 50 + x * s + y * c],
         f = LIPLAN.ccw([...T(0, 0), ...T(W, 0), ...T(W, D), ...T(0, D)]),
         dw = T(W / 2, 0),
+        sw = T(W - 1.3, D),
         hc = 2.53,
-        u = { id: 'si-test-' + type, type, vols: [{ f, h: hc + 1.0 }], doors: [{ x: dw[0], y: dw[1], nx: s, ny: -c }] },
+        u = {
+          id: 'si-test-' + type,
+          type,
+          vols: [{ f, h: hc + 1.0 }],
+          doors: [{ x: dw[0], y: dw[1], nx: s, ny: -c }],
+          staff: back ? { x: sw[0], y: sw[1], nx: s, ny: -c, w: 0.86 } : null,
+        },
         Pl = SILADEN.plan(u, hc);
       assert.ok(Pl && Pl.boxes.length > 10, type + ' fixtures');
       const inside = (x, y) => LIPLAN.inPoly(f, x, y) || LIPLAN.edgeDist(f, x, y) < 0.06;
@@ -294,12 +328,27 @@ test('the shop rooms of every kind: fixtures inside the room and under its ceili
       }
       for (const g of Pl.goods) assert.ok(inside(g.x, g.y) && g.z + g.h <= hc, type + ': goods inside');
       for (const l of Pl.lights) assert.ok(l.z <= hc, type + ': lights at the ceiling');
-      for (const sg of Pl.signs) assert.ok(sg.z + sg.h <= hc && sg.z > 1.5, type + ': signs under the ceiling');
-      // the way in: 1 m in front of the door (inside) nothing stands
+      for (const sg of Pl.signs) assert.ok(sg.z + sg.h <= hc && sg.z > 1.2, type + ': signs under the ceiling');
+      // the way in: 1 m in front of the house door nothing stands; 0.8 m in front of the staff door neither (its own leaf aside)
       const ix = dw[0] - s * 1.0,
         iy = dw[1] + c * 1.0;
       for (const b of Pl.boxes)
         if (b.z < 1.0) assert.ok(Math.hypot(b.x - ix, b.y - iy) > 0.45, `${type} ${W}×${D}: the door kept free`);
+      if (back) {
+        const sx = sw[0] + s * 0.8,
+          sy = sw[1] - c * 0.8;
+        for (const b of Pl.boxes)
+          if (b.z < 1.0 && b.sx * b.sy > 0.01)
+            assert.ok(Math.hypot(b.x - sx, b.y - sy) > 0.4, `${type} ${W}×${D}: the staff door kept free`);
+        assert.ok(Pl.signs.some(sg => sg.t.join(' ') === 'Nur für Personal'), type + ': the staff door has its plate');
+      }
+      // a counter (the place behind it) in every kind; in a bakery and a café near the door, and tables along the windows
+      assert.ok(Pl.spots.some(p => p.k === 'theke'), type + ': a counter');
+      if (type === 'baecker' || type === 'cafe') {
+        const t = Pl.spots.find(p => p.k === 'theke');
+        assert.ok(Math.hypot(t.x - dw[0], t.y - dw[1]) < Math.max(5.5, W / 2 + 2.5), type + ': the counter near the door');
+        assert.ok(Pl.tables >= 2, `${type} ${W}×${D}: tables ${Pl.tables}`);
+      }
       // no sign with a name: only what kind of shop it is
       for (const sg of Pl.signs) for (const t of sg.t) assert.ok(t.length < 40, type + ' sign ' + t);
     }

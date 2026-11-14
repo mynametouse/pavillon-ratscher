@@ -283,28 +283,42 @@ export const SINNEN = (() => {
         R.pick(MATCOL),
         1.0
       );
-      // the letter boxes on a side wall near the door: one per flat (at least two), in rows of up to four, a slot and a blank label each
+      // the letter boxes on a side wall near the door: one per flat (at least two), each a front of 32 × 38 cm and 10 cm deep, in one row
+      // (up to five) or two, their middles 1.0–1.6 m high; a slot, a small lock, a blank label – no names
       const n = Math.max(2, all.length + (P.nSt > 1 ? 0 : 1)),
-        cols = Math.min(4, n),
+        cols = n <= 5 ? n : Math.ceil(n / 2),
         rows = Math.ceil(n / cols),
-        wB = cols * 0.31 + 0.04,
+        BW = 0.32,
+        BH = 0.38,
+        BD = 0.1,
+        wB = cols * (BW + 0.01) + 0.02,
         F =
-          Pl.place('x1', wB, 0.14, 1.8, 0.05) ||
-          Pl.place('x0', wB, 0.14, 1.8, 0.95) ||
-          Pl.any(['y1'], wB, 0.14, 1.8, 0.5);
+          Pl.place('x1', wB, 0.12, 1.8, 0.05) ||
+          Pl.place('x0', wB, 0.12, 1.8, 0.95) ||
+          Pl.any(['y1'], wB, 0.12, 1.8, 0.5);
       if (F) {
-        const zt = z + 1.55,
-          body = R.pick([0x3b3e42, 0x8a8e92, 0xb8bcbe]);
+        const zb = z + (rows > 1 ? 0.92 : 1.2), // the lowest row's bottom edge
+          body = R.pick([0x3b3e42, 0x8a8e92, 0xb8bcbe, 0x6a5a4a]);
         for (let i = 0; i < n; i++) {
           const c = i % cols,
             r = Math.floor(i / cols),
-            u0 = F.u0 + 0.02 + c * 0.31,
-            za = zt - (r + 1) * 0.35;
-          F.box(C.m, C.col(body, 0.4, 0.5), u0, u0 + 0.3, 0, 0.12, za, za + 0.34);
-          F.box(C.m, C.col(0x1a1a1a, 0.5), u0 + 0.05, u0 + 0.25, 0.12, 0.126, za + 0.24, za + 0.27);
-          F.box(C.m, C.col(0xf4f2ea, 0.6), u0 + 0.08, u0 + 0.22, 0.12, 0.124, za + 0.12, za + 0.17);
+            u0 = F.u0 + 0.01 + c * (BW + 0.01),
+            za = zb + (rows - 1 - r) * (BH + 0.02);
+          F.box(C.m, C.col(body, 0.4, 0.5), u0, u0 + BW, 0, BD, za, za + BH);
+          F.box(C.m, C.col(0x1a1a1a, 0.5), u0 + 0.05, u0 + BW - 0.05, BD, BD + 0.004, za + BH - 0.09, za + BH - 0.065);
+          F.box(C.m, C.col(0xf4f2ea, 0.6), u0 + 0.08, u0 + BW - 0.08, BD, BD + 0.003, za + 0.17, za + 0.215);
+          F.box(
+            C.m,
+            C.col(0xc0c2c4, 0.3, 0.8),
+            u0 + BW / 2 - 0.012,
+            u0 + BW / 2 + 0.012,
+            BD,
+            BD + 0.008,
+            za + 0.08,
+            za + 0.11
+          );
         }
-        C.solid(F.rect(F.u0, F.u0 + wB, 0, 0.14), zt - rows * 0.35, zt);
+        C.solid(F.rect(F.u0, F.u0 + wB, 0, BD + 0.02), zb, zb + rows * (BH + 0.02));
       }
     } else if (R() < 0.6) {
       // a plant on the landing where there is room
@@ -342,6 +356,14 @@ export const SINNEN = (() => {
     else box(C, cx - hl, cx + hl, room.y0 + 0.4, room.y1 - 0.4, z + 0.002, z + 0.012, R.pick(MATCOL), 1.0);
     return true;
   }
+  // the door to the back rooms (SIPLAN.shop: on the sales room's back or side wall) in model metres, its normal into the room
+  function staffW(P) {
+    const s = P.staff;
+    if (!s) return null;
+    const n = s.side === 'y1' ? [0, -1] : s.side === 'x0' ? [1, 0] : [-1, 0],
+      p = P.toW(s.x, s.y);
+    return { x: p[0], y: p[1], nx: n[0] * P.F.c - n[1] * P.F.s, ny: n[0] * P.F.s + n[1] * P.F.c, w: s.w };
+  }
   // a shop room: the layout of its kind (schleusingen/si_laden.js) in the room's outline, what stops one as colliders of the house; the
   // fixtures are drawn when the house stands (shopMesh) – of the kit of the shops, in vertex colours with the light baked in
   function shopRoom(C, room) {
@@ -361,6 +383,7 @@ export const SINNEN = (() => {
         name: room.name,
         vols: [{ f, h: room.z1 - room.z0 + 1.0 }],
         doors: [{ x: dw[0], y: dw[1], nx: P.F.f.nx, ny: P.F.f.ny, k: 'main' }],
+        staff: staffW(P),
       };
     let L = null;
     try {
@@ -415,7 +438,7 @@ export const SINNEN = (() => {
     const open = shopOpen(H.siShop.type),
       ex = RENDERER.toneMappingExposure || 1.3,
       night = VILLAGE.night ? VILLAGE.night() : 0,
-      base = open ? 0.92 : 0.16 + 0.3 * (1 - Math.min(1, night / 0.3)),
+      base = open ? 0.8 : 0.16 + 0.3 * (1 - Math.min(1, night / 0.3)),
       k = (base * 1.3) / Math.max(0.5, ex),
       m = shopMat();
     if (now || Math.abs(m.color.r - k) > 0.004) {
@@ -555,6 +578,21 @@ export const SINNEN = (() => {
       });
       H.siActs.push(id);
     });
+    const sw = Pl.staff && staffW(Pl);
+    if (sw) {
+      const id = 'si:personal:' + H.id,
+        z = Pl.zF[0];
+      KERN.act({
+        id,
+        r: 1.3,
+        prio: 0.15,
+        pos: [sw.x + sw.nx * 0.3, sw.y + sw.ny * 0.3, z + 1.1],
+        label: () => (HAEUSER.H === H && !PLAY.seated() ? 'Nur für Personal' : null),
+        gest3: 'interact',
+        run: () => PLAY.think('Nur für Personal – dahinter sind das Lager und das Büro.', 2400),
+      });
+      H.siActs.push(id);
+    }
   }
   // ---- going in and out (ZINNEN's events, behind HAEUSER's fade) ----
   let cur = null;
@@ -762,3 +800,5 @@ export const SINNEN = (() => {
   return S;
 })();
 window.SINNEN = SINNEN;
+window.SIPLAN = SIPLAN; // the pure parts, for tests and the console
+window.SILADEN = SILADEN;
