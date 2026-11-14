@@ -169,6 +169,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `GAME` | boot/boot.js | Test- und Steuer-API: `go(spot)`, `view(x,y,z,yaw,pitch)`, `step`, `shot`, `setMode`, `setPhase`, `setVariant` … |
 | `HAEUSER`, `HHEUTE`, `HGAST` | haeuser/ | Häuser von Ratscher von innen im normalen Spiel (V18p): Tür über `KERN.act` („Hineingehen · E“), Einrichtung der Zombie-Nacht (`ZINNEN.mount(id, {look, still: true})`), Stil „heute“ (`HHEUTE`), Dorfbewohner zu Hause (`HGAST`, liest `DLIFE`), Fülllicht `haeuser:fill` (geliehen, Priorität 0); `pav-haeuser-v1`, `pav-haeuser-hinweis`; Ereignisse `haeuser:enter`, `haeuser:leave` (`docs/features/haeuser.md`) |
 | `LINNEN`, `LIPLAN`, `LIMARKT`, `LIBAU`, `LIHAUS` | laeden/innen*.js | Läden von innen (V18p): Schiebetüren nach Öffnungszeiten, Räume beim Näherkommen gebaut (unbeleuchtet, Licht eingebacken; höchstens 2 Läden, Telefon 1 und ≤ 120 000 Dreiecke), Haken in `laeden/laeden.js` nur mit `LAEDEN.ownLeaves`; `?noinnen` (`docs/features/laeden-innen.md`) |
+| `SINNEN`, `SIPLAN`, `SILADEN` | schleusingen/ | Häuser von Schleusingen von innen (V18q): `SIPLAN` (rein) macht aus einem Gebäude von `welt/schleusingen.js` einen Datensatz wie `VILLAGE.bld` (Nummern ab 900000, Regeln, Art, Stil, Treppenhaus und Wohnungen, Verkaufsraum), `SILADEN` (rein) die Läden hinter den Schildern, `SINNEN` den Index in Scheiben, die Türen als Quelle von `HAEUSER` (`HAEUSER.addSource`) und des Baukastens (`ZIPLAN.source`, `room.own`), Läden über `LINNEN.drawPlan`; Ort-Anbieter Vorrang 96; Ereignis `schleusingen-innen:ready`; Aktionen `si:zu:<id>:<i>`, `si:personal:<id>`, `si:geschlossen`; Szene `schleusingen-innen` (`docs/features/schleusingen-innen.md`) |
 
 ## 7 Assets
 
@@ -212,7 +213,8 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | `pav-tasks-v1` | Aufgaben als Daten (`core/tasks.js`): `{ v: 1, t: { id: { st: 'läuft' \| 'erledigt', i } } }` |
 | `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16d`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt (`SAVE.once`) |
 | `pav-loadlog`, `pav-texlevel` | Ladeprotokoll des letzten Versuchs; halbe Texturen nach abgebrochenem Laden am Telefon |
-| `pav-haeuser-v1`, `pav-haeuser-hinweis` | Häuser von innen (V18p): das Haus, in dem gespeichert wurde, und der Platz vor seiner Tür (nach dem Laden steht man dort); Hinweis „Ausgedacht“ schon gezeigt |
+| `pav-haeuser-v1`, `pav-haeuser-hinweis` | Häuser von innen (V18p): das Haus, in dem gespeichert wurde, und der Platz vor seiner Tür (nach dem Laden steht man dort); Hinweis „Ausgedacht“ schon gezeigt; seit V18q auch die Häuser von Schleusingen (Nummern ab 900000) |
+| `pav-schl-innen-hinweis` | Häuser von Schleusingen von innen (V18q): Hinweis „Ausgedacht“ schon gezeigt |
 
 Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), in `core/save.js` und hier eintragen.
 
