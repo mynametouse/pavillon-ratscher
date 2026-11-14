@@ -205,6 +205,23 @@ with lib.browser() as b:
             E("GAME.step(0.05)")
             E(f"GAME.view({ex}, {ey}, KERN.ground({ex}, {ey}) + 1.7, {yaw_in}, -3, 62)")
             pic(f'{sid}_aussen')
+            # the other doors with rooms behind them (the Mega Center's shops, the bakery at Lidl, the garden centre, the laundry):
+            # from outside and at the door with its label
+            for k, dv in enumerate(sh['doors']):
+                if dv is md or dv['k'] == 'liefer':
+                    continue
+                dinfo = J(f"LINNEN.door('{sid}:{k}')")
+                if not dinfo or not dinfo.get('unit'):
+                    continue
+                yv = (math.degrees(math.atan2(-dv['nx'], -dv['ny'])) + 360) % 360
+                ox, oy = dv['x'] + dv['nx'] * 9, dv['y'] + dv['ny'] * 9
+                E(f"GAME.setView3(false, true); GAME.view({ox}, {oy}, KERN.ground({ox}, {oy}) + 1.7, {yv}, -3, 62)")
+                E("GAME.step(0.05)")
+                E(f"GAME.view({ox}, {oy}, KERN.ground({ox}, {oy}) + 1.7, {yv}, -3, 62)")
+                pic(f"{sid}_aussen_{dinfo['unit']}")
+                stand(dv['x'] + dv['nx'] * 2.0, dv['y'] + dv['ny'] * 2.0, yv)
+                J("GAME.step(0.3)")
+                page_pic(f"{sid}_tuer_{dinfo['unit']}")
             # 3 – out again: from just inside the door, walking out
             xi, yi = md['x'] - md['nx'] * 3, md['y'] - md['ny'] * 3
             stand(xi, yi, (yaw_in + 180) % 360)
