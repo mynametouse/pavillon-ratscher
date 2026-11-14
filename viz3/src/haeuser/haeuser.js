@@ -28,7 +28,9 @@ import { DTEXT } from '../dorf/dorf_text.js';
 import { DLIFE } from '../dorf/dorf_life.js';
 import { DCAL } from '../dorf/dorf_cal.js';
 import { Z } from '../zombie/z_state.js';
+import { warmUp } from '../render/render.js';
 import { ZIPLAN } from '../zombie/z_innen_plan.js';
+import { ZIMOB } from '../zombie/z_innen_mob.js';
 import { ZINNEN } from '../zombie/z_innen.js';
 import { HHEUTE } from './haeuser_heute.js';
 import { HGAST } from './haeuser_gast.js';
@@ -206,6 +208,37 @@ export const HAEUSER = (() => {
     const o = ZIPLAN.OWNERS[id];
     return o && DTEXT.P[o] ? o : null;
   };
+  // the first house makes the programs every other house needs, behind the fade: a tiny mesh for each material of the kit and of the
+  // look of today, compiled in the real render state (render/render.js warmUp) – also the pavilion's oak and larch that the old rooms
+  // share (a game that began in the village has not drawn them yet); later houses compile nothing
+  let warmed = false;
+  function warmLooks() {
+    if (warmed) return;
+    warmed = true;
+    try {
+      const seen = new Set(),
+        g = new THREE.Group(),
+        geo = new THREE.BoxGeometry(0.01, 0.01, 0.01);
+      const walk = (v, d) => {
+        if (!v || d > 2 || typeof v !== 'object' || v.isTexture) return;
+        if (v.isMaterial) {
+          if (seen.has(v)) return;
+          seen.add(v);
+          const o = new THREE.Mesh(geo, v);
+          o.castShadow = o.receiveShadow = true;
+          g.add(o);
+        } else for (const x of Array.isArray(v) ? v : Object.values(v)) walk(x, d + 1);
+      };
+      walk(ZIMOB.M, 0);
+      walk(HHEUTE.mats(), 0);
+      walk(PAL.M, 0);
+      warmUp(g);
+      geo.dispose();
+      S.warmN = seen.size;
+    } catch (e) {
+      console.warn('haeuser warm', e);
+    }
+  }
   // ---- going in ----
   async function enter(h) {
     if (S.busy || S.H || !on()) return false;
@@ -225,6 +258,7 @@ export const HAEUSER = (() => {
         PLAY.think('Die Tür ist verschlossen.', 1800);
         return false;
       }
+      warmLooks();
       S.H = H;
       S.id = h.id;
       H.onUse = use;
