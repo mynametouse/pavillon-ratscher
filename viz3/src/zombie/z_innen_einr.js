@@ -493,8 +493,12 @@ export const ZIEINR = (() => {
       d = 0.48,
       h = 2.35,
       nM = Math.max(3, Math.floor(w / 0.9)),
-      mw = w / nM;
-    F.box(m, ver, u0, u0 + w, 0, d, z + 0.06, z + h);
+      mw = w / nM,
+      // feat/haeuser: a kept wall unit of today (a look with its own TV) opens its niches – the carcass without its front face (the
+      // item's front, not the house frame's +y), a dark back behind the gaps; the zombie night's stays closed as before
+      open = C.ext && C.ext.tv ? (F.n[1] > 0.5 ? 'y1' : F.n[0] < -0.5 ? 'x0' : F.n[1] < -0.5 ? 'y0' : 'x1') : null;
+    F.box(m, ver, u0, u0 + w, 0, d, z + 0.06, z + h, open ? { skip: open } : undefined);
+    if (open) F.box(m, C.col(0x2a2018, 0.8), u0, u0 + w, 0, 0.02, z + 0.06, z + h);
     F.box(m, C.col(0x2a2018, 0.8), u0 + 0.02, u0 + w - 0.02, 0, d - 0.04, z, z + 0.06);
     const cont = C.container('schrank', 'Schrankwand durchsuchen', F.P(u0 + w / 2, 0.8, z + 1.0));
     for (let i = 0; i < nM; i++) {
@@ -503,12 +507,16 @@ export const ZIEINR = (() => {
       // lower doors in every module
       L.leaf(C, F, a + 0.02, 1, mw - 0.04, d, z + 0.1, z + 0.72, ver, M.messing, cont);
       if (kind === 'tv') {
-        F.box(m, C.col(0x3a2a1c, 0.8), a + 0.02, a + mw - 0.02, 0.02, d - 0.02, z + 0.74, z + 1.5, { skip: 'y1' });
+        F.box(m, C.col(0x3a2a1c, 0.8), a + 0.02, a + mw - 0.02, 0.02, d - 0.02, z + 0.74, z + 1.5, {
+          skip: open || 'y1',
+        });
         L.tv(C, F, a + mw / 2, 0.2, z + 0.76);
         F.box(m, ver, a + 0.02, a + mw - 0.02, 0.0, d, z + 1.5, z + 1.52);
         L.leaf(C, F, a + 0.02, 1, mw - 0.04, d, z + 1.55, z + h - 0.05, ver, M.messing, null);
       } else if (kind === 'vitrine') {
-        F.box(m, C.col(0x3a2a1c, 0.8), a + 0.02, a + mw - 0.02, 0.02, d - 0.02, z + 0.74, z + 1.9, { skip: 'y1' });
+        F.box(m, C.col(0x3a2a1c, 0.8), a + 0.02, a + mw - 0.02, 0.02, d - 0.02, z + 0.74, z + 1.9, {
+          skip: open || 'y1',
+        });
         F.box(m, M.glas, a + 0.03, a + mw - 0.03, d - 0.01, d - 0.005, z + 0.75, z + 1.88);
         for (let k = 0; k < 5; k++)
           F.cyl(m, M.glas, a + 0.12 + k * ((mw - 0.24) / 4), 0.25, z + 1.32, z + 1.45, 0.03, 0.035, 8);
@@ -527,7 +535,9 @@ export const ZIEINR = (() => {
           );
         L.leaf(C, F, a + 0.02, 1, mw - 0.04, d, z + 1.92, z + h - 0.05, ver, M.messing, null);
       } else if (kind === 'books') {
-        F.box(m, C.col(0x3a2a1c, 0.8), a + 0.02, a + mw - 0.02, 0.02, d - 0.02, z + 0.74, z + h - 0.05, { skip: 'y1' });
+        F.box(m, C.col(0x3a2a1c, 0.8), a + 0.02, a + mw - 0.02, 0.02, d - 0.02, z + 0.74, z + h - 0.05, {
+          skip: open || 'y1',
+        });
         for (const zz of [0.75, 1.15, 1.55, 1.95]) L.books(C, F, a + 0.04, a + mw - 0.04, 0.06, z + zz, 0.32);
       } else {
         L.drawer(C, F, a + 0.02, a + mw - 0.02, d, z + 0.75, z + 0.95, ver, M.messing, cont);
@@ -550,6 +560,7 @@ export const ZIEINR = (() => {
   };
   // a CRT set (RFT) in a wooden case
   L.tv = (C, F, u, v, z) => {
+    if (C.ext && C.ext.tv && C.ext.tv(C, F, u, v, z)) return; // feat/haeuser: a flat set of today in the old wall unit
     const m = C.m;
     F.box(m, C.col(0x5a3a22, 0.5), u - 0.3, u + 0.3, v, v + 0.42, z, z + 0.48);
     F.box(m, C.col(0x1a2024, 0.15), u - 0.24, u + 0.12, v + 0.42, v + 0.425, z + 0.08, z + 0.42);
@@ -1378,26 +1389,30 @@ export const ZIEINR = (() => {
     const kind = room.kind;
     // the ceiling lamp of every room but the hall's own (it has one too) – the light switch is by the door
     // by the era: a glass bowl or a fabric shade (alt), the cone or the globe (DDR), a flat ceiling dish (later)
-    L.deckenlampe(
-      C,
-      cx,
-      cy,
-      zc,
-      kind === 'keller' || kind === 'vorrat' || kind === 'boden' || kind === 'waschkueche'
-        ? 'bulb'
-        : look === 'alt'
-          ? R.pick(['schale', 'pendant'])
-          : look === 'ddr'
-            ? R.pick(['kugel', 'tuete', 'pendant'])
-            : R.pick(['fluter', 'pendant'])
-    );
+    if (!(C.ext && C.ext.ceiling && C.ext.ceiling(C, room, cx, cy, zc)))
+      // (feat/haeuser: a look may hang its own lamps)
+      L.deckenlampe(
+        C,
+        cx,
+        cy,
+        zc,
+        kind === 'keller' || kind === 'vorrat' || kind === 'boden' || kind === 'waschkueche'
+          ? 'bulb'
+          : look === 'alt'
+            ? R.pick(['schale', 'pendant'])
+            : look === 'ddr'
+              ? R.pick(['kugel', 'tuete', 'pendant'])
+              : R.pick(['fluter', 'pendant'])
+      );
     C.tops = [];
     C.wallItems = [];
     const outer = ['y0', 'x1', 'y1', 'x0'].filter(s => room.outer && room.outer[s]);
     const inner = ['y0', 'x1', 'y1', 'x0'].filter(s => !(room.outer && room.outer[s]));
     const all = ['y1', 'x0', 'x1', 'y0'];
     let F;
-    if (kind === 'stube' || kind === 'wohnzimmer') {
+    if (C.ext && C.ext.furnish && C.ext.furnish(C, room, Pl, inner, outer, all)) {
+      // feat/haeuser: furnished by the look (haeuser/haeuser_heute.js)
+    } else if (kind === 'stube' || kind === 'wohnzimmer') {
       // the stove at the wall to the kitchen (it is fed from there), near the hall
       const sw = room.stoveSide || inner[0] || 'y1';
       F =
@@ -1674,7 +1689,7 @@ export const ZIEINR = (() => {
       }
     }
     if (C.owner && PERSONAL[C.owner]) PERSONAL[C.owner](C, Pl, room);
-    deko(C, Pl, room, inner, outer);
+    if (!(C.ext && C.ext.deko && C.ext.deko(C, Pl, room, inner, outer))) deko(C, Pl, room, inner, outer); // feat/haeuser
   }
   // ---- the small things (the lead's review 5.11.2026: rooms looked large and bare): all palette colours or the room's own
   // materials, merged into the room's meshes – no draw call of their own ----
@@ -2313,6 +2328,9 @@ export const ZIEINR = (() => {
     }
     C.tops = [];
   }
-  return { frame, sides, placer, furnish, L, DK, PERSONAL, ZIPLAN };
+  // feat/haeuser: more looks – look → { room, mats, ceiling, furnish, deko, curtains, tv, leaf } (haeuser/haeuser_heute.js fills it for the
+  // normal game; the zombie night's looks are not in it), and the helpers its furniture shares with the kit
+  const looks = {};
+  return { frame, sides, placer, furnish, L, DK, PERSONAL, ZIPLAN, looks, top, onWall, fillTops, deko };
 })();
 window.ZIEINR = ZIEINR;

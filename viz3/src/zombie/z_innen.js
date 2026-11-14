@@ -167,10 +167,18 @@ export const ZINNEN = (() => {
     }
     return out;
   }
+  // feat/haeuser: a look of ZIEINR.looks (the normal game's houses of 2026, haeuser/haeuser_heute.js) may give a room a look of its own
+  // (the DDR living room kept, the kitchen of the nineties) and its own materials; the zombie night's looks have none – as before
+  const lookOf = (P, r) => {
+    const X = ZIEINR.looks[P.look];
+    return (X && X.room && X.room(P, r)) || P.look;
+  };
   // ---- materials of a room after the look ----
-  function roomMats(P, r, M, R) {
-    const look = P.look,
-      k = r.kind;
+  function roomMats(P, r, M, R, look = P.look) {
+    const X = ZIEINR.looks[P.look], // feat/haeuser
+      own = X && X.mats && X.mats(P, r, M, R, look);
+    if (own) return own;
+    const k = r.kind;
     let wall = M.putz,
       floor = M.dielen,
       ceil = M.decke,
@@ -329,6 +337,7 @@ export const ZINNEN = (() => {
     const kind = C.room.kind,
       look = C.look;
     if (kind === 'keller' || kind === 'boden' || kind === 'flur') return;
+    if (C.ext && C.ext.curtains && C.ext.curtains(C, s, h, P, folds)) return; // feat/haeuser: the look's own (drapes, blinds)
     const cz1 = h.z1 + 0.12,
       cz0 = look === 'alt' && kind === 'kueche' ? h.z0 + 0.05 : h.z0 - 0.02;
     if (kind !== 'bad' || C.R() < 0.5) {
@@ -422,11 +431,14 @@ export const ZINNEN = (() => {
   }
   // ---- mounting ----
   let NEXT = 1;
-  S.mount = async id => {
+  S.mount = async (id, o) => {
     const t0 = performance.now();
     if (!VILLAGE.ready) return null;
-    const P = ZIPLAN.plan(id);
-    if (!P) return null;
+    const P0 = ZIPLAN.plan(id);
+    if (!P0) return null;
+    // feat/haeuser: the normal game (haeuser/haeuser.js) passes a look of its own – a copy of the plan in that look; the zombie night
+    // passes none and builds from the plan itself, as before
+    const P = o && o.look && o.look !== P0.look ? Object.assign({}, P0, { look: o.look }) : P0;
     S.err = null; // the last furnishing error, of this house
     const M = ZIMOB.mats(),
       R = ZIPLAN.rng(P.seed),
@@ -475,8 +487,9 @@ export const ZINNEN = (() => {
       };
     const shell = new ZIMOB.Mesher(),
       furn = new ZIMOB.Mesher(),
-      // moving parts (one draw call each): ten, fewer in big houses with many doors (each door leaf is one too)
-      PARTS_MAX = Math.max(3, Math.min(10, 17 - P.doors.length));
+      // moving parts (one draw call each): ten, fewer in big houses with many doors (each door leaf is one too); none when nothing is
+      // searched (feat/haeuser: the normal game, o.still – every leaf is part of its furniture)
+      PARTS_MAX = o && o.still ? 0 : Math.max(3, Math.min(10, 17 - P.doors.length));
     const house = { frame: (P.b.st && P.b.st.frame) || 0 };
     // the context for the furniture (zombie/z_innen_einr.js)
     const C = {
@@ -494,6 +507,7 @@ export const ZINNEN = (() => {
       mats: {},
       found: {},
     };
+    C.ext = ZIEINR.looks[P.look] || null; // feat/haeuser: the look's hooks (none in the zombie night)
     C.find = kind => C.found[kind] || null;
     C.solid = (r, z0, z1) => col(r[0], r[1], r[2], r[3], z0, z1);
     C.solidW = C.solid;
@@ -681,7 +695,8 @@ export const ZINNEN = (() => {
     for (const r of rooms) {
       C.room = r;
       C.R = ZIPLAN.rng(P.seed + r.fl * 101 + r.x0 * 7 + r.y0 * 13);
-      const mats = (C.mats = roomMats(P, r, M, C.R)),
+      C.look = lookOf(P, r); // feat/haeuser
+      const mats = (C.mats = roomMats(P, r, M, C.R, C.look)),
         attic = r.kind === 'boden';
       const sd = roomSides(P, r),
         blocks = [];
@@ -1125,7 +1140,9 @@ export const ZINNEN = (() => {
       const key = 'zinnen:' + id + ':' + d.id,
         g = new THREE.Group(),
         lm = new ZIMOB.Mesher(),
-        leafCol = P.look === 'alt' ? C.R.pick([0x7a5a3a, 0xe8e0cc, 0x5a3a22]) : P.look === 'ddr' ? 0xf0ece0 : 0x9a7a52,
+        leafCol =
+          (C.ext && C.ext.leaf) || // feat/haeuser
+          (P.look === 'alt' ? C.R.pick([0x7a5a3a, 0xe8e0cc, 0x5a3a22]) : P.look === 'ddr' ? 0xf0ece0 : 0x9a7a52),
         lc = C.col(leafCol, 0.55);
       lm.box(lc, 0.01, w - 0.01, -0.02, 0.02, 0, hgt - 0.01);
       for (const [za, zb] of [
@@ -1160,8 +1177,11 @@ export const ZINNEN = (() => {
         furn.box(fz, d.x - w / 2 - 0.05, d.x + w / 2 + 0.05, t0, t1, d.z1, d.z1 + 0.05);
       }
       // the wall above the door in the gap between both faces (closed from both sides)
-      if (vert) furn.box(M.putz, d.x - PW / 2, d.x + PW / 2, d.y - w / 2, d.y + w / 2, d.z1 + 0.05, r.z1);
-      else furn.box(M.putz, d.x - w / 2, d.x + w / 2, d.y - PW / 2, d.y + PW / 2, d.z1 + 0.05, r.z1);
+      // (feat/haeuser: in the normal game a few millimetres inside both faces – flush with them the white plaster flickered through a
+      // wallpaper above the door; the zombie night's as before)
+      const ins = o && o.still ? 0.004 : 0;
+      if (vert) furn.box(M.putz, d.x - PW / 2 + ins, d.x + PW / 2 - ins, d.y - w / 2, d.y + w / 2, d.z1 + 0.05, r.z1);
+      else furn.box(M.putz, d.x - w / 2, d.x + w / 2, d.y - PW / 2 + ins, d.y + PW / 2 - ins, d.z1 + 0.05, r.z1);
     }
     await tick0();
     // ---- furniture ----
@@ -1179,6 +1199,7 @@ export const ZINNEN = (() => {
     for (const r of rooms) {
       C.R = ZIPLAN.rng(P.seed * 3 + r.fl * 31 + Math.round(r.x0 * 10) + Math.round(r.y0 * 100));
       C.room = r;
+      C.look = lookOf(P, r); // feat/haeuser
       // keep the doorways free (a square in front of each door), the stair and the hatch
       r.keep = [];
       for (const d of P.doors)
