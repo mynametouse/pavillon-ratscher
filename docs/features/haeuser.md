@@ -37,9 +37,10 @@ Hilfs-Agent `haeuser` (Auftrag `docs/plans/auftraege/haeuser.md`), Falko 13.11.2
   bleiben an); Lichtschalter an jeder Zimmertür. Brennt die Lampe des Raums, in dem man steht, kommt ein schwaches warmes Fülllicht
   zwischen Auge und Kopf dazu (das von Wänden und Decke zurückgeworfene Lampenlicht – sonst wirkten nachts alle von der Lampe
   abgewandten Seiten blau wie im Mondlicht): eines der fünf geliehenen Punktlichter des Pavillons (`KERN.lights`, Kennung
-  `haeuser:fill`, Vorrang 0), also keine neue Lampe und kein neues Programm. **Sitzen** auf Sofa, Sesseln, Stühlen, am Schreibtisch, **liegen** auf Betten und der
-  Recamiere (nachts „Schlafen bis 7 Uhr“ wie im Garten), **Fernseher** und **Radio** an und aus, Wasserhahn, Dusche, Badewanne,
-  Herd mit einem Gedanken; die Türen zwischen den Räumen gehen auf, die Kellerluke und der Dachboden wie in der Zombie-Nacht.
+  `haeuser:fill`, Vorrang 0), also keine neue Lampe und kein neues Programm. **Sitzen** auf Sofa, Sesseln, Stühlen, am Schreibtisch,
+  **liegen** auf Betten und der Recamiere (nachts „Schlafen bis 7 Uhr“ wie im Garten), **Fernseher** und **Radio** an und aus,
+  Wasserhahn, Dusche, Badewanne, Herd mit einem Gedanken; die Türen zwischen den Räumen gehen auf, die Kellerluke und der Dachboden wie
+  in der Zombie-Nacht.
 - **Nichts aus der Zombie-Nacht**: keine Schränke zum Durchsuchen, keine Barrikaden, keine Waffen (Wolfgangs Motorsäge und Axt liegen
   da, nehmen kann man sie nicht), keine Einbrüche, keine Sirene. In der Zombie-Nacht und im Grenzland gibt es dieses Hineingehen nicht
   (die Zombie-Nacht hat ihr eigenes).
@@ -71,11 +72,12 @@ Schrankwand (`tv`) und die Farbe der Innentüren (`leaf`); `ZIEINR` gibt `looks`
 Nichts beim Laden außer zwei kleinen Modulen; die Pläne der Häuser werden nach dem Laden in Scheiben gerechnet (je Bild ≤ 3 ms, zusammen
 ≈ 140 ms), danach findet ein Raster von 8 m die Tür nahebei (fünfmal je Sekunde). Gebaut wird erst beim Hineingehen, freigegeben beim
 Hinausgehen (Geometrien und Texturen zurück); drinnen höchstens 60 Draw-Calls (alle 230 Häuser: 27–56, Bauzeit im Mittel ≈ 120 ms,
-höchstens ≈ 320 ms – im Testrechner mit SwiftShader, hinter dem Schwarz). Keine neuen Shader-Programme (Zwillinge der Materialien des
+höchstens ≈ 360 ms – im Testrechner mit SwiftShader, hinter dem Schwarz). Keine neuen Shader-Programme (Zwillinge der Materialien des
 Baukastens, Farben in der Gartenpalette, Leinwand-Texturen mit denselben Programmen): das erste Haus übersetzt hinter dem Schwarz die
 Programme aller Stile auf einmal (je Material ein winziges Netz, `render/render.js` `warmUp` – auch Eiche und Lärche des Pavillons, die
 die alten Stuben teilen und die ein Spiel, das im Dorf beginnt, noch nicht gezeigt hat) und dazu das eine des Gelände-Ausschnitts wie in
-der Zombie-Nacht; jedes weitere Haus übersetzt nichts. Das Fülllicht ist eines der geliehenen Punktlichter (ihre Zahl bleibt gleich).
+der Zombie-Nacht; jedes weitere Haus übersetzt für seine eigenen Netze nichts (was durch die Fenster vom Dorf zu sehen ist, etwa die
+Gärten hinter den Häusern, gehört zur Straße). Das Fülllicht ist eines der geliehenen Punktlichter (ihre Zahl bleibt gleich).
 
 ## Testen
 
@@ -95,7 +97,8 @@ der Zombie-Nacht; jedes weitere Haus übersetzt nichts. Das Fülllicht ist eines
 - **Baukasten (`zombie/`, nicht meine Dateien)**: (1) Die DDR-Schrankwand verdeckt in der Zombie-Nacht ihr Fernsehfach (`skip` des Kastens
   meint Seiten im Hausrahmen, nicht die Vorderseite des Möbels); in den Stilen von heute ist das Fach offen (Haken), in der Zombie-Nacht
   unverändert – eine Zeile in `L.schrankwand` könnte es auch dort öffnen. (2) In manchen Häusern zeichnet sich oberhalb der Stubentür ein
-  Streifen in Stufenform auf der Wand ab (Haus 23: die Treppe im Flur dahinter) – betrifft die Zombie-Nacht genauso. (3) Die Zombie-Nacht
+  Streifen in Stufenform auf der Wand ab (Haus 23, Wohnzimmer: die Treppe im Flur dahinter) – Geometrie des Baukastens (Treppe und
+  Wand), nicht des Stils, also vermutlich auch in der Zombie-Nacht; Ursache noch nicht gefunden. (3) Die Zombie-Nacht
   könnte den Stil „heute“ mit einer Zeile in `ZIPLAN.lookOf` mitbenutzen – nicht gemacht (die Zombie-Nacht bleibt, wie sie ist).
 - **Dorfbewohner**: nur ein Gruß, kein Gespräch über die Gesprächsführung von `dorf/`; der Platz, auf dem einer sitzt, bleibt bis zum
   nächsten Hineingehen belegt.
