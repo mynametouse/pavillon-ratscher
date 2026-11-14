@@ -494,9 +494,10 @@ export const ZIEINR = (() => {
       h = 2.35,
       nM = Math.max(3, Math.floor(w / 0.9)),
       mw = w / nM,
-      // feat/haeuser: a kept wall unit of today (a look with its own TV) opens its niches – the carcass without its front face (the
-      // item's front, not the house frame's +y), a dark back behind the gaps; the zombie night's stays closed as before
-      open = C.ext && C.ext.tv ? (F.n[1] > 0.5 ? 'y1' : F.n[0] < -0.5 ? 'x0' : F.n[1] < -0.5 ? 'y0' : 'x1') : null;
+      // its niches open: the carcass without its front face (the item's front, not the house frame's +y), a dark back behind the gaps
+      // (feat/haeuser found the closed front for the looks of today; since V18r the zombie night's wall unit shows its TV, glasses and
+      // books too)
+      open = F.n[1] > 0.5 ? 'y1' : F.n[0] < -0.5 ? 'x0' : F.n[1] < -0.5 ? 'y0' : 'x1';
     F.box(m, ver, u0, u0 + w, 0, d, z + 0.06, z + h, open ? { skip: open } : undefined);
     if (open) F.box(m, C.col(0x2a2018, 0.8), u0, u0 + w, 0, 0.02, z + 0.06, z + h);
     F.box(m, C.col(0x2a2018, 0.8), u0 + 0.02, u0 + w - 0.02, 0, d - 0.04, z, z + 0.06);

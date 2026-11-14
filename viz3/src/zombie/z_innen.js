@@ -1176,10 +1176,9 @@ export const ZINNEN = (() => {
         furn.box(fz, d.x + w / 2, d.x + w / 2 + 0.05, t0, t1, d.z0, d.z1 + 0.05);
         furn.box(fz, d.x - w / 2 - 0.05, d.x + w / 2 + 0.05, t0, t1, d.z1, d.z1 + 0.05);
       }
-      // the wall above the door in the gap between both faces (closed from both sides)
-      // (feat/haeuser: in the normal game a few millimetres inside both faces – flush with them the white plaster flickered through a
-      // wallpaper above the door; the zombie night's as before)
-      const ins = o && o.still ? 0.004 : 0;
+      // the wall above the door in the gap between both faces (closed from both sides), a few millimetres inside both faces – flush with
+      // them the white plaster flickered through a wallpaper above the door (feat/haeuser found it; since V18r in the zombie night too)
+      const ins = 0.004;
       if (vert) furn.box(M.putz, d.x - PW / 2 + ins, d.x + PW / 2 - ins, d.y - w / 2, d.y + w / 2, d.z1 + 0.05, r.z1);
       else furn.box(M.putz, d.x - w / 2, d.x + w / 2, d.y - PW / 2 + ins, d.y + PW / 2 - ins, d.z1 + 0.05, r.z1);
     }
