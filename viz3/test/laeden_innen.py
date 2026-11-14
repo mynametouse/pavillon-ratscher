@@ -15,16 +15,17 @@ DATA = json.load(open(os.path.join(lib.ROOT, 'viz3', 'extra', 'laeden', 'dist', 
 SHOP = {s['id']: s for s in DATA['shops']}
 CENTRES = {'nord': (-885, 2060), 'mitte': (-1075, 1570), 'rewe': (-1765, 915)}
 GROUP_OF = {'obi': 'nord', 'mega': 'nord', 'edeka': 'nord', 'getraenke': 'nord', 'zeile40': 'nord', 'shell': 'nord', 'mcd': 'mitte', 'lidl': 'mitte', 'rewe': 'rewe'}
-# the views inside: (name, metres in from the main door, metres sideways (+: to the right seen from outside), turn of the view from
-# looking in (degrees, + to the right), pitch)
+# the views inside: (name, metres in from a door, metres sideways (+: to the right seen from outside), turn of the view from looking in
+# (degrees, + to the right), pitch[, the door's index – default the main door])
 VIEWS = {
-    'edeka': [('eingang', 3.0, 0, 0, -4), ('mitte', 18, -6, 25, -6), ('kassen', 6, 5, 70, -8)],
-    'lidl': [('eingang', 3.0, 0, 0, -4), ('mitte', 14, -8, 20, -6)],
-    'rewe': [('eingang', 3.0, 0, 0, -4), ('mitte', 16, 4, -20, -6)],
-    'obi': [('eingang', 3.0, 0, 0, -4), ('halle', 22, 6, 10, -2)],
-    'mega': [('eingang', 3.0, 0, 0, -4), ('gang', 26, 0, 0, -3)],
+    'edeka': [('eingang', 6.5, 0, 0, -4), ('mitte', 18, -6, 25, -6), ('kassen', 7, 5, 70, -8), ('kuehlregal', 30, -10, 0, -8)],
+    'lidl': [('eingang', 3.0, 0, 0, -4), ('mitte', 14, -8, 20, -6), ('baecker', 3.0, 0, 0, -5, 1)],
+    'rewe': [('eingang', 6.0, 0, 0, -4), ('mitte', 16, 4, -20, -6)],
+    'obi': [('kasse', 3.0, 0, 0, -4), ('halle', 22, 6, 10, -2), ('regal', 30, -3, 80, 4), ('garten', 4.0, 0, 0, -4, 1)],
+    'mega': [('eingang', 3.0, 0, 0, -4), ('gang_a', 38.5, 0, 90, -3), ('gang_b', 38.5, 0, -90, -3), ('aldi', 4.0, 0, 0, -5, 1),
+             ('restaurant', 4.0, 0, 0, -5, 2), ('moebel', 6.0, 0, 0, -6, 3), ('apotheke', 2.0, 0, 0, -6, 4)],
     'getraenke': [('eingang', 3.0, 0, 0, -4)],
-    'zeile40': [('eingang', 2.0, 0, 0, -6)],
+    'zeile40': [('turan', 2.0, 0, 0, -6), ('waesche', 2.0, 0, 0, -6, 1)],
     'shell': [('eingang', 2.0, 0, 0, -6)],
     'mcd': [('eingang', 2.5, 0, 0, -5)],
 }
@@ -158,11 +159,14 @@ with lib.browser() as b:
             if sid in ('obi', 'mega'):
                 ck(f'{sid}: draw calls of its rooms within bounds (≤ 40 meshes)', m['meshes'] <= 40, f"{m['meshes']} meshes, frame {json.dumps(frame)}")
             # pictures inside
-            for (nm, dist, side, turn, pitch) in VIEWS.get(sid, []):
-                tx, ty = -md['ny'], md['nx']
-                px = md['x'] - md['nx'] * dist - tx * side
-                py = md['y'] - md['ny'] * dist - ty * side
-                yaw = (yaw_in + turn) % 360
+            for vw in VIEWS.get(sid, []):
+                nm, dist, side, turn, pitch = vw[:5]
+                dv = sh['doors'][vw[5]] if len(vw) > 5 else md
+                yi = (math.degrees(math.atan2(-dv['nx'], -dv['ny'])) + 360) % 360
+                tx, ty = -dv['ny'], dv['nx']
+                px = dv['x'] - dv['nx'] * dist - tx * side
+                py = dv['y'] - dv['ny'] * dist - ty * side
+                yaw = (yi + turn) % 360
                 E(f"GAME.setView3(false, true); GAME.view({px}, {py}, KERN.ground({px}, {py}) + 1.65, {yaw}, {pitch}, 70)")
                 E("GAME.step(0.05)")
                 E(f"GAME.view({px}, {py}, KERN.ground({px}, {py}) + 1.65, {yaw}, {pitch}, 70)")
@@ -196,7 +200,31 @@ with lib.browser() as b:
         ck(f'{sid}: going away frees its rooms (their geometries and material back)', not any(q['shop'] == sid for q in st['mounted']) and mem1['live'] == 0 and mem1['mats'] == 0,
            f"mounted {[q['shop'] for q in st['mounted']]}; while standing {json.dumps(mem0)}, after {json.dumps(mem1)}")
     if 'nacht' in want:
-        # at night: REWE open until 22, EDEKA closed after 20
-        pass
+        # at night: REWE is open until 22 (inside the light of the open shop, outside its lit front), EDEKA closed after 20 (the night
+        # light only, the doors shut)
+        for sid, hh, mm, opened in (('rewe', 21, 0, True), ('edeka', 21, 30, False)):
+            sh = SHOP[sid]
+            md = main_door(sh)
+            yaw_in = (math.degrees(math.atan2(-md['nx'], -md['ny'])) + 360) % 360
+            set_time(2, hh, mm)
+            sx, sy = md['x'] + md['nx'] * 25, md['y'] + md['ny'] * 25
+            stand(sx, sy, yaw_in)
+            settle()
+            steps(3)
+            st = J("LINNEN.status()")
+            m = next((q for q in st['mounted'] if q['shop'] == sid), None)
+            ck(f'nacht: {sid} at {hh}:{mm:02d} is {"open" if opened else "closed"} (its rooms stand, their light)', m is not None and m['open'] == opened, json.dumps(m)[:300] if m else json.dumps(st)[:300])
+            ex, ey = md['x'] + md['nx'] * 12, md['y'] + md['ny'] * 12
+            E(f"GAME.setView3(false, true); GAME.view({ex}, {ey}, KERN.ground({ex}, {ey}) + 1.7, {yaw_in}, -2, 62)")
+            E("GAME.step(0.05)")
+            E(f"GAME.view({ex}, {ey}, KERN.ground({ex}, {ey}) + 1.7, {yaw_in}, -2, 62)")
+            pic(f'{sid}_nacht_aussen')
+            if opened:
+                px, py = md['x'] - md['nx'] * 10, md['y'] - md['ny'] * 10
+                E(f"GAME.setView3(false, true); GAME.view({px}, {py}, KERN.ground({px}, {py}) + 1.65, {yaw_in}, -5, 70)")
+                E("GAME.step(0.05)")
+                E(f"GAME.view({px}, {py}, KERN.ground({px}, {py}) + 1.65, {yaw_in}, -5, 70)")
+                pic(f'{sid}_nacht_innen')
+        set_time(2, 10, 30)
     ck.errors(errs)
     ck.done()

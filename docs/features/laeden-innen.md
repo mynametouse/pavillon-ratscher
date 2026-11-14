@@ -1,0 +1,105 @@
+# Läden in Schleusingen von innen (`feat/laeden-innen`)
+
+Hilfs-Agent `laeden-innen` des Chats session_01Mmpsvp11QsXpPSQRRbZ4Jv, Nacht 14.11.2026, Branch `feat/laeden-innen` (Auftrag
+`docs/plans/auftraege/laeden-innen.md`). Falko (13.11. 23:56): „wann kann ich alle Gebäude begehen?“ – nach den Häusern von Ratscher die
+Läden: jeder Laden von `laeden/laeden.js` (V18o) ist begehbar, jeder in seinem eigenen Umriss.
+
+## Was es gibt
+
+- **Die Einheiten** (`LIPLAN.units`, aus `laeden.json`): EDEKA (Halle und Windfang, das Lager bleibt zu), REWE (Halle und
+  Eingangsstreifen), Lidl und das **Café & Backshop Drei Ähren** an seiner eigenen Tür (die Nordecke, 10 × 8,5 m), OBI mit Kassenzone im
+  Windfang, Haupthalle, den Südteilen und dem **Gartencenter** (Warmhaus unter dem Glasdach, Kalthaus mit Glaswänden – man sieht den
+  Himmel und hinaus), das **Mega Center** in fünf Einheiten (die Ladenstraße hinter dem Südportal, **Aldi** hinter dem Nordportal, das
+  **Mega-Restaurant** unter dem Turm, **Mega-Möbel** im Nordflügel, die **Spangenberg-Apotheke** an ihrer Tür zum Hof), die
+  Getränkequelle, die Ladenzeile (**Turan Kebap Haus**, **Wäscheservice**), Shell, McDonald’s – 15 Einheiten, keine überlappt.
+- **Schiebetüren**: Die beiden Flügel jeder Ladentür sind jetzt eigene Teile (Rahmen auf dem Material der parkenden Autos, Glas aus dem
+  Glas des Ladens) und gleiten auseinander, wenn man davor steht und der Laden **nach der Spieluhr geöffnet** hat; von innen gehen sie
+  immer auf (man kommt hinaus). Geschlossen bleiben sie zu, der Hinweis an der Tür sagt „geschlossen“. Wo OSM keine Öffnungszeiten kennt
+  (Getränkequelle, Shell, Mega Center, Mega-Restaurant, Mega-Möbel, Turan), gelten übliche Zeiten – **angenommen**, im Code
+  `DEFAULT_OH` in `laeden/innen.js`.
+- **Aufbau beim Herankommen**: näher als 45 m an einer Tür eines Ladens (seine Gruppe steht) baut LINNEN seine Räume (EDEKA ≈ 0,3 s im
+  Test-Browser), jenseits von 80 m (und nicht drinnen) gibt es sie wieder frei – Geometrien und Material zurück (`LINNEN.mem()`).
+  Solange sie stehen, ist das Glas der Fronten und Türen dieses Ladens weg (nur die Rahmen bleiben): man sieht hinein und von innen
+  hinaus.
+- **Die Arten**, nach Fotos solcher Läden in Deutschland, ohne die Gestaltung einer Kette:
+  - **Supermarkt/Discounter** (EDEKA, REWE, Aldi, Lidl; `laeden/innen_markt.js`): Obst und Gemüse in Kisten auf schrägen Tischen gleich
+    hinter dem Eingang, Regalreihen quer zur Front (Supermarkt 2,05 m mit fünf Böden, Discounter 1,65 m), Kopfregale, Preisschienen mit
+    Etiketten, eine Querachse in langen Reihen, Kühlregale an den Rückwänden (Molkerei, Käse, Wurst · Fleisch – mit Lichtleiste), an den
+    Seitenwänden Regale (Getränke auf der Seite der Kassen, Haushalt gegenüber), Tiefkühltruhen in den letzten Reihen, die Bäckerei
+    (Theke mit Vitrine und Brotregal; beim Discounter die Backwaren-Wand zur Selbstbedienung), der Leergutautomat, die Kassen mit Band,
+    Scanner, Kasse, Stuhl und Quengelware, Einkaufswagen. Schilder über den Gängen („Kaffee · Tee“, „Konserven“, „Nudeln · Reis“ …).
+  - **Baumarkt** (OBI; `laeden/innen_bau.js`): Hochregale in langen Reihen (Waren in Griffhöhe, darüber drei Ebenen mit Paletten und
+    Kartons), Abteilungsschilder hoch über den Gängen (Werkzeug, Farben, Elektro, Sanitär, Eisenwaren, Leuchten, Haushalt, Garten),
+    Angebotspaletten am Hauptgang, die Information, der **Holzzuschnitt** mit der Plattensäge, im hohen Südteil Baustoffe auf Paletten
+    und Holz auf Kragarmregalen, im niedrigen Bodenbeläge und Fliesen, die **Kassenzone im Windfang**, das Gartencenter mit
+    Pflanztischen im Warmhaus, Sträuchern in Töpfen und Erde auf Paletten im Kalthaus; Hallenbinder unter dem Dach.
+  - **Möbelhaus** (Mega-Möbel; `laeden/innen_haus.js`): Rauminseln auf Teppich mit hellen Wegen dazwischen – Wohnen (Sofa, Sessel,
+    Couchtisch, Teppich, Lowboard, Stehlampe), Schlafen (Doppelbett, Nachttische, Kleiderschrank), Küchen (Zeile mit Arbeitsplatte, Spüle,
+    Kochfeld, Oberschränke, Backofen-Hochschrank), Essen (Tisch mit sechs Stühlen, Sideboard), Büro, Kinder (Etagenbett) – je ein
+    Schildchen mit dem, was es ist (keine Preise: keine erfundenen Zahlen).
+  - **Ladenstraße** (Mega Center): die Eingangshalle vom Südportal mit der Tafel aller Läden, Pflanzkübeln, dann der Gang (7 m) mit den
+    Schaufenstern der Mieter und ihren Namen (JYSK, Repo-Markt, AWG-Modecenter, Müller, KiK, Deichmann, Zoofachhandel, Mäc-Geiz,
+    Ernsting’s family, Febana, Uhren Schmuck, Friseur, Café & Backshop Drei Ähren) – hinter jedem Glas ein flacher Laden seiner Art
+    (Kleiderständer, Schuhregale, Drogerieregal, Aquarien, Spiegel und Stühle, Kuchenvitrine …), Bänke, Pflanzen, Lichtfelder.
+  - **Schnellrestaurant** (McDonald’s, Mega-Restaurant): Theke mit Kassen, darüber Menütafeln in schlichter Schrift (Gerichte, keine Preise,
+    keine Marken), Küche dahinter, Bestellsäulen am Eingang (McDonald’s), Tische für zwei und vier, der Gang zu den Toiletten („WC“).
+  - **Tankstellen-Shop** (Shell): Theke mit Kasse, Zigarettenregal dahinter, Brötchen in der Vitrine, Kaffeeautomaten, Getränkekühlung,
+    zwei kurze Regale (Knabbereien, Süßwaren).
+  - **Getränkemarkt** (Getränkequelle): Paletten mit Kästen in Reihen (fünf Lagen, oben die Flaschenköpfe), Leergutautomaten, Kasse,
+    Kühlregal.
+  - **Apotheke, Bäckerei, Imbiss, Wäscheservice**: HV-Tisch mit drei Plätzen und Schubladenwand, Freiwahl an den Seiten; Theke mit
+    Vitrine, Brot an der Wand, Tische; Theke mit Salatvitrine und Drehspieß, Tafel „Döner · Dürüm · Lahmacun“; Theke, Maschinen an der
+    Wand, Regal mit Wäsche, Falttisch.
+  - Waren als schlichte Verpackungen: Kartons, Flaschen, Dosen, Gläser, Tüten, Packungen in gedämpften Farben mit hellem Etikettenband –
+    **keine Logos, keine Hausfarben, keine Verpackungsgestaltung, keine echten Produktmarken**.
+- **Licht**: Innen wird alles **unbeleuchtet in Eckfarben** gezeichnet, das Licht ist eingebacken – Oberseiten hell, Seiten nach ihrer
+  Richtung, unten dunkler, der Boden an Regalen dunkler (ein Raster dessen, was steht); die Lichtbänder an der Decke leuchten (Farben über 1).
+  So sieht ein Laden bei Tag und Nacht gleich hell aus (die höhere Belichtung der Nacht wird ausgeglichen); geschlossen nur das Nachtlicht
+  (16 %), bei Tag geschlossen gedämpft. **Keine Punktlichter, keine neuen Shader-Programme**: das Material ist das der Halle des
+  Rathauses (`welt/schleusingen.js`, `MeshBasicMaterial` mit Eckfarben), die Türflügel auf `DMOD.mat` (sein schlichtes Programm wird beim
+  Start übersetzt), ihr Glas das Glasmaterial des Ladens. Schrift ist Geometrie: jede Zeile wird in eine Canvas geschrieben und zu
+  Rechtecken in Eckfarben (kein Texturatlas, nachts lesbar wie bei Tag).
+- **Gehen**: Wände (mit Öffnungen zwischen den Teilen eines Ladens), Regale, Theken, Kassen halten auf (`KERN.pushOut`, Rang 17 – vor
+  den Wänden von `laeden.js`; in der offenen Tür und im Laden antwortet nur LINNEN, Fahrzeuge bleiben bei `laeden.js`); der Boden trägt
+  (`KERN.ground`, Rang 11): er folgt der Ebene des Parkplatzes durch die Haupttür (`WELT.setPads` von `laeden.js`, höchstens 2,5 %
+  Gefälle). Drinnen ist drinnen (`KERN.inside`: Hall, kein Regen), der Ortsname nennt die Einheit („Aldi, Schleusingen“, „OBI
+  Gartencenter, Schleusingen“). Ein **Einkaufswagen** je Laden lässt sich schieben (Aktionsknopf „Einkaufswagen schieben“ /
+  „abstellen“): er rollt vor einem her, Regale halten ihn auf, aus dem Laden heraus bleibt er stehen.
+- **Teile**: Jede Einheit ist in Abschnitte geteilt (OBI: Halle, die zwei Südteile, Kassenzone, Warm- und Kalthaus); gezeigt wird der
+  Abschnitt, in dem man steht, mit denen, die zu ihm offen sind – von draußen die mit einer Tür. Ein Abschnitt ist **ein Mesh**
+  (ein Material): EDEKA 2, OBI 6, das Mega Center 5 Draw-Calls für alles Innere.
+
+## Benutzen (Schnittstelle in `viz3/src/laeden/innen.js`)
+
+`LINNEN.status()` (Einheiten, gebaute Läden mit Meshes, Dreiecken, Bauzeit, Türen), `LINNEN.mountShop(id)` / `unmountShop(id)`,
+`LINNEN.unitAt(x, y)`, `LINNEN.door('<laden>:<i>')`, `LINNEN.unitInfo(id)`, `LINNEN.meshesOf(id)`, `LINNEN.mem()`. Ereignis
+`laeden:innen` `{ shop, state: 'gebaut' | 'frei' }`. `?noinnen` lässt alles weg (die Läden wie V18o).
+
+Module: `laeden/innen_plan.js` (`LIPLAN`: Einheiten, Wände mit Öffnungen, Baukasten eines Plans – rein), `innen_markt.js` (`LIMARKT`),
+`innen_bau.js` (`LIBAU`), `innen_haus.js` (`LIHAUS`) – die Arten, rein; `innen.js` (`LINNEN`): Türen, Aufbau, Zeichnen, Gehen.
+
+## Testen
+
+- Ohne Browser: `node --test viz3/test/unit/laeden_innen.test.mjs` (15 Einheiten, alles im Umriss, von der Tür aus ein großer Teil des
+  Bodens erreichbar – Raster 0,3 m, Radius der Spielfigur –, jede Tür in einer Wand, Pläne gleich bei jedem Bau).
+- Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9019 --serve laeden_innen` (Abschnitte je Laden:
+  `edeka,lidl,rewe,obi,mega,getraenke,zeile40,shell,mcd,nacht`); bei GitHub über `viz3/extra/laeden-innen/tests.txt` (mit `smoke`,
+  `laeden`). Je Laden: gebaut beim Herankommen, Hinweis „geöffnet“ und die Türen gehen auf (Dienstag 10:30), hinein, der Boden trägt,
+  Wände halten auf (20 s geradeaus, 25 s seitwärts), die Räume zeichnen mit Programmen, die es vorher gab, Bilder innen, wieder hinaus,
+  am Sonntag bleiben die Türen zu (Hinweis „geschlossen“), weggehen gibt alles frei; nachts REWE offen (innen, außen) und EDEKA
+  geschlossen. Bilder in `out/laeden_innen/`.
+
+## Für den Lead
+
+- `viz3/src/modules.txt`: Block `# feat/laeden-innen` direkt nach `laeden/laeden.js`.
+- Markierte Haken in `viz3/src/laeden/laeden.js` (`// feat/laeden-innen`): in `entrance()` merkt sich jede Tür ihre Verglasung
+  (`d.hG`, `d.z0`, `d.hD`), und mit `LAEDEN.ownLeaves` spart die Scheibe die Türöffnung aus und es werden keine festen Flügel gebaut; am
+  Ende von `build()` `LAEDEN.onBuild(g)`, am Anfang von `drop()` `LAEDEN.onDrop(g)`; im Takt bleibt verborgen, was in `LAEDEN.hidden`
+  steht (das Glas eines Ladens, dessen Räume stehen); `doorLabel` fragt `LAEDEN.doorOpen(sh, d)` (Zustand der Türen, mit angenommenen
+  Zeiten), `doorText` fragt `LAEDEN.doorInfo(sh, d)`.
+- Neuer `window`-Name: `LINNEN`. Keine Speicher-Schlüssel.
+
+## Offen
+
+- Kassiererinnen: die Leute-Bausätze (`dorf/`, `verkehr/`) haben nur Menschen mit Namen (die Dorfbewohner, die Leute von Schleusingen),
+  keine allgemeinen Figuren fürs Personal – daher noch niemand an den Kassen.

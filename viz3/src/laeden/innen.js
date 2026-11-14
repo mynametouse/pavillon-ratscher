@@ -10,9 +10,10 @@
 // closed, only the night light. No new point lights, no new programs: the door leaves on the parked cars' material (DMOD.mat) and the
 // shop's own glass. ?noinnen leaves it all out (the shops are as V18o).
 import * as THREE from 'three';
-import { QS, R, scene } from '../core/head.js';
+import { COARSE, QS, R, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
+import { warmUp } from '../render/render.js';
 import { toast } from '../audio/audio.js';
 import { P } from '../game/walkable.js';
 import { CLOCK } from '../time/clock.js';
@@ -341,7 +342,9 @@ export const LINNEN = (() => {
 
   // =============================== goods: blocks of products, each a front, a top, a label band ===============================
   function goods(K, gd, R) {
-    const n = Math.max(1, gd.n | 0),
+    // on a phone the products of a block in pairs (half the faces; the bottles and crates stay single)
+    const n0 = Math.max(1, gd.n | 0),
+      n = COARSE && n0 > 2 && gd.k !== 'bottle' && gd.k !== 'crate' ? Math.ceil(n0 / 2) : n0,
       w = gd.len / n,
       gap = Math.min(0.01, w * 0.08),
       fx = gd.fx,
@@ -410,6 +413,10 @@ export const LINNEN = (() => {
       }
       return;
     }
+    // per product only what tells them apart (the front, a bottle's neck and cap); what lines up over the whole block once (the
+    // label band, the top) – the same product side by side
+    const A = -gd.len / 2 + gap / 2,
+      B = gd.len / 2 - gap / 2;
     for (let i = 0; i < n; i++) {
       const a0 = -gd.len / 2 + i * w + gap / 2,
         a1 = a0 + w - gap,
@@ -418,25 +425,14 @@ export const LINNEN = (() => {
         const nk = (a1 - a0) * 0.3,
           am = (a0 + a1) / 2;
         face(a0, a1, fr, z0, z0 + h * 0.62, c, jit);
-        face(a0 + (a1 - a0) * 0.12, a1 - (a1 - a0) * 0.12, fr + 0.002, z0 + h * 0.22, z0 + h * 0.45, lighter, jit);
         face(am - nk, am + nk, fr - (a1 - a0) * 0.3, z0 + h * 0.62, z0 + h * 0.92, c, jit * 0.95);
         face(am - nk * 1.1, am + nk * 1.1, fr - (a1 - a0) * 0.3 + 0.001, z0 + h * 0.92, z0 + h, darker, 1);
-        top(a0, a1, -fr, fr, z0 + h * 0.62, c, 0.9);
-      } else if (gd.k === 'can') {
-        face(a0, a1, fr, z0, z0 + h, c, jit);
-        face(a0, a1, fr + 0.001, z0 + h * 0.86, z0 + h * 0.93, lighter, 1);
-        face(a0, a1, fr + 0.001, z0 + h * 0.05, z0 + h * 0.1, darker, 1);
-        top(a0, a1, -fr, fr, z0 + h, L(0.7, 0.7, 0.72), 1);
       } else if (gd.k === 'jar') {
         face(a0, a1, fr, z0, z0 + h * 0.8, c, jit);
         face(a0 + 0.004, a1 - 0.004, fr - 0.004, z0 + h * 0.8, z0 + h, darker, 1);
-        face(a0, a1, fr + 0.001, z0 + h * 0.3, z0 + h * 0.55, lighter, 1);
-        top(a0, a1, -fr, fr, z0 + h, darker, 1);
       } else if (gd.k === 'bag') {
         face(a0, a1, fr, z0, z0 + h * 0.86, c, jit);
         face(a0 + 0.004, a1 - 0.004, fr - 0.01, z0 + h * 0.86, z0 + h, darker, 1);
-        face(a0 + (a1 - a0) * 0.2, a1 - (a1 - a0) * 0.2, fr + 0.001, z0 + h * 0.35, z0 + h * 0.6, lighter, 1);
-        top(a0, a1, -fr * 0.6, fr, z0 + h * 0.86, c, 0.9);
       } else if (gd.k === 'loaf') {
         face(a0, a1, fr, z0, z0 + h * 0.65, c, jit);
         face(a0 + 0.02, a1 - 0.02, fr - 0.02, z0 + h * 0.65, z0 + h, c, jit * 1.05);
@@ -444,7 +440,6 @@ export const LINNEN = (() => {
       } else if (gd.k === 'crate') {
         face(a0, a1, fr, z0, z0 + h, c, jit);
         face(a0 + (a1 - a0) * 0.3, a1 - (a1 - a0) * 0.3, fr + 0.001, z0 + h * 0.72, z0 + h * 0.86, darker, 1); // the handle
-        top(a0, a1, -fr, fr, z0 + h, darker, 1);
         // the bottle caps on top in rows
         for (let q = 0; q < 3; q++)
           for (let r2 = 0; r2 < 4; r2++) {
@@ -452,12 +447,25 @@ export const LINNEN = (() => {
               cf = -fr + (2 * fr * (r2 + 0.5)) / 4;
             top(ca - 0.018, ca + 0.018, cf - 0.018, cf + 0.018, z0 + h + 0.02, L(0.75, 0.72, 0.6), 1);
           }
-      } else {
-        // box, pack: the front, a label band, the top
-        face(a0, a1, fr, z0, z0 + h, c, jit);
-        face(a0 + (a1 - a0) * 0.1, a1 - (a1 - a0) * 0.1, fr + 0.001, z0 + h * 0.4, z0 + h * 0.68, lighter, 1);
-        top(a0, a1, -fr, fr, z0 + h, c, 0.95);
-      }
+      } else face(a0, a1, fr, z0, z0 + h, c, jit); // box, pack, can
+    }
+    if (gd.k === 'bottle') {
+      face(A + w * 0.12, B - w * 0.12, fr + 0.002, z0 + h * 0.22, z0 + h * 0.45, lighter, 1);
+      top(A, B, -fr, fr, z0 + h * 0.62, c, 0.9);
+    } else if (gd.k === 'can') {
+      face(A, B, fr + 0.001, z0 + h * 0.86, z0 + h * 0.93, lighter, 1);
+      face(A, B, fr + 0.001, z0 + h * 0.05, z0 + h * 0.1, darker, 1);
+      top(A, B, -fr, fr, z0 + h, L(0.7, 0.7, 0.72), 1);
+    } else if (gd.k === 'jar') {
+      face(A, B, fr + 0.001, z0 + h * 0.3, z0 + h * 0.55, lighter, 1);
+      top(A, B, -fr, fr, z0 + h, darker, 1);
+    } else if (gd.k === 'bag') {
+      face(A, B, fr + 0.001, z0 + h * 0.35, z0 + h * 0.6, lighter, 1);
+      top(A, B, -fr * 0.6, fr, z0 + h * 0.86, c, 0.9);
+    } else if (gd.k === 'crate') top(A, B, -fr, fr, z0 + h, darker, 1);
+    else if (gd.k !== 'loaf') {
+      face(A, B, fr + 0.001, z0 + h * 0.4, z0 + h * 0.68, lighter, 1);
+      top(A, B, -fr, fr, z0 + h, c, 0.95);
     }
     // the block's two ends (seen at the end of a run)
     const sx = (a, zt) => {
@@ -633,18 +641,24 @@ export const LINNEN = (() => {
     return plane ? (x, y) => zF + (plane(x, y) - z0) : () => zF;
   }
   // build the rooms of one shop (all its units): sections → meshes; collision segments; the floor for the walker
-  function build(M) {
-    const t0 = performance.now(),
-      sh = M.sh,
-      g = M.g,
-      zf = floorFn(sh, g);
-    M.zf = zf;
+  // a shop's rooms are built one unit per round (the Mega Center has five: no long stall), then finished: the walls' hash, the cart
+  function begin(M) {
+    M.zf = floorFn(M.sh, M.g);
     M.meshes = [];
     M.segs = [];
     M.units = [];
     M.tris = 0;
-    const fronts = frontsOf(sh);
-    for (const U of S.shops.get(sh.id) || []) {
+    M.ms = 0;
+    M.fronts = frontsOf(M.sh);
+    M.todo = (S.shops.get(M.sh.id) || []).slice();
+    M.state = 'building';
+  }
+  function buildUnit(M, U) {
+    const t0 = performance.now(),
+      sh = M.sh,
+      zf = M.zf,
+      fronts = M.fronts;
+    {
       const lay = LAYOUT[U.type];
       const P0 = LIPLAN.newPlan(U);
       let Pl = null;
@@ -776,6 +790,11 @@ export const LINNEN = (() => {
         doorSecs,
       });
     }
+    M.ms += performance.now() - t0;
+  }
+  function finish(M) {
+    const t0 = performance.now(),
+      sh = M.sh;
     if (M.cart) cartMesh(M);
     // the hash of the segments (4 m cells)
     M.grid = new Map();
@@ -789,7 +808,8 @@ export const LINNEN = (() => {
         }
     });
     M.bb = bbOfShop(sh);
-    M.ms = Math.round(performance.now() - t0);
+    M.ms = Math.round(M.ms + performance.now() - t0);
+    M.state = 'ready';
     markDirty(true);
   }
   // a unit without a layout yet: floor, walls, ceiling, lights
@@ -1080,8 +1100,26 @@ export const LINNEN = (() => {
   // =============================== the doors: two sliding leaves each, moved by their vertices ===============================
   // per group of laeden.js (when it stands): one mesh of all leaf frames (DMOD.mat), per shop one mesh of the leaves' glass (its glass)
   const GROUPD = new Map(); // group id → { frames, glass: Map shopId → mesh, doors: [] }
+  // the rooms' program (the Rathaus hall's: basic with vertex colours) compiled when a group of shops comes up (900 m away), not at a
+  // door – usually the town has it already; one material keeps it (three frees a program no material uses)
+  let WARM = null;
+  function warm() {
+    if (WARM) return;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute([0, -500, 0, 0.01, -500, 0, 0, -500, 0.01], 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute([1, 1, 1, 1, 1, 1, 1, 1, 1], 3));
+    WARM = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true }));
+    WARM.frustumCulled = false;
+    WARM.name = 'laeden-innen warm';
+    try {
+      warmUp(WARM); // (compile skips what is not visible: it stays visible here, it is never in the scene)
+    } catch (e) {
+      console.warn('laeden-innen warm', e);
+    }
+  }
   function onBuild(g) {
     onDrop(g);
+    warm();
     if (!S.units) prepUnits();
     const KF = { pos: [], nrm: [], col: [], idx: [] },
       glassK = new Map(),
@@ -1313,15 +1351,34 @@ export const LINNEN = (() => {
   }
   function mount(sh, g) {
     if (S.mounted.has(sh.id)) return S.mounted.get(sh.id);
-    const M = { sh, g, meshes: [], segs: [], grid: null, mat: roomMat(), hid: [], t: performance.now() };
+    const M = { sh, g, meshes: [], segs: [], units: [], grid: null, mat: roomMat(), hid: [], t: performance.now() };
     S.mounted.set(sh.id, M);
+    begin(M);
+    step(M);
+    return M;
+  }
+  // one more unit of a shop being built (each round); the last one finishes it
+  function step(M) {
+    if (M.state !== 'building') return;
+    const U = M.todo.shift();
+    if (U)
+      try {
+        buildUnit(M, U);
+      } catch (e) {
+        console.warn('laeden-innen build', U.id, e);
+        S.err = U.id + ': ' + e;
+      }
+    if (M.todo.length) return;
     try {
-      build(M);
+      finish(M);
       S.builds++;
     } catch (e) {
-      console.warn('laeden-innen build', sh.id, e);
-      S.err = sh.id + ': ' + e;
+      console.warn('laeden-innen finish', M.sh.id, e);
+      S.err = M.sh.id + ': ' + e;
+      M.state = 'ready';
     }
+    const sh = M.sh,
+      g = M.g;
     // the glass of the shop's fronts and doors goes while the rooms stand (only the frames stay: one sees in, and out)
     const GD = GROUPD.get(g.id);
     const hide = [];
@@ -1334,7 +1391,6 @@ export const LINNEN = (() => {
     M.hid = hide;
     light(M, true);
     KERN.emit('laeden:innen', { shop: sh.id, state: 'gebaut', ms: M.ms });
-    return M;
   }
   function unmount(M) {
     free(M);
@@ -1522,7 +1578,8 @@ export const LINNEN = (() => {
           U = D.U,
           open = U ? isOpenU(U) : false,
           // from inside always (one is let out), from outside only while the shop is open – and only when its rooms stand
-          want = out !== null && S.mounted.has(D.sh.id) && (out < 0 || open) && P.mode === 'walk' ? 1 : 0;
+          ready = S.mounted.has(D.sh.id) && S.mounted.get(D.sh.id).state === 'ready',
+          want = out !== null && ready && (out < 0 || open) && P.mode === 'walk' ? 1 : 0;
         D.want = want;
         if (D.open !== want) {
           D.open = want > D.open ? Math.min(1, D.open + dt / 0.9) : Math.max(0, D.open - dt / 1.1);
@@ -1560,10 +1617,18 @@ export const LINNEN = (() => {
       const inside = !!unitAt(w[0], w[1]) && unitAt(w[0], w[1]).M === M;
       if (!inside && (M.d === undefined || M.d > FREE_R || M.g.state !== 'built')) unmount(M);
     }
-    if (best && S.mounted.size < 3) mount(best[0], best[1]);
+    for (const M of S.mounted.values()) if (M.state === 'building') step(M);
+    if (best && S.mounted.size < (COARSE ? 2 : 3)) mount(best[0], best[1]);
     for (const M of S.mounted.values()) {
+      if (M.state !== 'ready') continue;
       light(M, false);
       showSecs(M, w);
+    }
+    // the door leaves go with the shops in the map view
+    for (const GD of GROUPD.values()) {
+      if (GD.frames) GD.frames.visible = !RATSCHER.map;
+      for (const [id, me] of GD.glass)
+        me.visible = !RATSCHER.map && !(S.mounted.has(id) && S.mounted.get(id).state === 'ready');
     }
     // laeden's tick re-shows hidden meshes unless asked: keep them hidden
     for (const M of S.mounted.values()) for (const me of M.hid) if (me.visible) me.visible = false;
@@ -1580,6 +1645,7 @@ export const LINNEN = (() => {
     units: S.units ? S.units.length : 0,
     mounted: [...S.mounted.values()].map(M => ({
       shop: M.sh.id,
+      state: M.state,
       meshes: M.meshes.length,
       tris: Math.round(M.tris),
       segs: M.segs.length,
@@ -1595,7 +1661,11 @@ export const LINNEN = (() => {
     for (const g of LAEDEN.groups || []) {
       if (g.state !== 'built') continue;
       const sh = g.shops.find(q => q.id === id);
-      if (sh) return !!mount(sh, g);
+      if (sh) {
+        const M = mount(sh, g);
+        while (M.state === 'building') step(M);
+        return true;
+      }
     }
     return false;
   };
