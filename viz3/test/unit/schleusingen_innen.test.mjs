@@ -258,6 +258,23 @@ test('a phone: one flat in a stairwell house, the other doors locked', () => {
   assert.deepEqual(SIPLAN.check(Q), []);
 });
 
+test('no flat fits beside the stairwell (a shallow house, small sides): no stairwell house – the whole house instead', () => {
+  // 5 m deep (outside): too shallow for a flat on either side of the stairwell, however wide the house
+  let n = 0;
+  for (const [W, D, f] of [
+    [6.2, 5.0, 0.18],
+    [8.6, 5.0, 0.3],
+    [5.8, 5.0, 0.62],
+  ]) {
+    const P = kitPlan(W, D, W * f, 3);
+    if (!P.stair) continue;
+    n++;
+    assert.equal(SIPLAN.flats(P, { seed: 5 }), null, `W ${W} D ${D}`);
+    assert.equal(SIPLAN.flats(kitPlan(W, D, W * f, 3), { seed: 5, phone: true }), null, `phone W ${W} D ${D}`);
+  }
+  assert.ok(n >= 1, 'a case with stairs');
+});
+
 test('the shop: a sales room behind the house door – at most 12 m deep and 120 m² (60 m² where it can), the rest behind a staff door', () => {
   let n = 0;
   for (let W = 5; W <= 26; W += 1.7)

@@ -108,7 +108,8 @@ export const SINNEN = (() => {
     if (!Pl) {
       S.recs.delete(rec.id);
       ZIPLAN.forget(rec.id);
-      S.why.grundriss = (S.why.grundriss || 0) + 1;
+      const w = rec.why || 'grundriss';
+      S.why[w] = (S.why[w] || 0) + 1;
       return;
     }
     const f = Pl.F.f,
@@ -140,22 +141,30 @@ export const SINNEN = (() => {
   // what a house is after its plan (SIPLAN.kindOf): a shop room, a stairwell with flats, or the whole house (as Ratscher's)
   function post(rec, Pl) {
     const kind = SIPLAN.kindOf(Pl, rec.shop);
+    let out = null;
     if (kind === 'laden') {
       SIPLAN.shop(Pl, rec.shop);
       furnishers(Pl);
-      return Pl;
+      out = Pl;
+    } else if (Pl.nSt < 2 && rec.eave > 4.5) {
+      // taller than one storey, but the kit found no room for its stairs (a hall too narrow): not one storey under a tall facade
+      rec.why = 'schmal';
+    } else if (kind === 'treppenhaus' && SIPLAN.flats(Pl, { phone: phone(), seed: rec.id })) {
+      furnishers(Pl);
+      out = Pl;
+    } else if (Pl.nSt <= 3) {
+      // the whole house (a stairwell house too tall for one family is left out)
+      Pl.kind = 'haus';
+      Pl.locked = [];
+      Pl.open = [];
+      out = Pl;
     }
-    if (kind === 'treppenhaus') {
-      if (SIPLAN.flats(Pl, { phone: phone(), seed: rec.id })) {
-        furnishers(Pl);
-        return Pl;
-      }
-      if (Pl.nSt > 3) return null; // too tall to be one family's house
+    // every room reached, inside the walls and apart (the kit's plan of a shallow tall house may leave a room upstairs without a door)
+    if (out && SIPLAN.check(out).length) {
+      rec.why = 'grundriss';
+      out = null;
     }
-    Pl.kind = 'haus';
-    Pl.locked = [];
-    Pl.open = [];
-    return Pl;
+    return out;
   }
   // the rooms the kit leaves to us (zombie/z_innen_einr.js furnish: room.own)
   function furnishers(Pl) {
@@ -319,6 +328,19 @@ export const SINNEN = (() => {
           );
         }
         C.solid(F.rect(F.u0, F.u0 + wB, 0, BD + 0.02), zb, zb + rows * (BH + 0.02));
+        // what the tests measure: sizes, heights above the floor, the middle of the group and the way it faces (house frame)
+        room.mail = {
+          n,
+          rows,
+          cols,
+          w: BW,
+          h: BH,
+          d: BD,
+          z0: +(zb - z).toFixed(3),
+          z1: +(zb - z + rows * (BH + 0.02) - 0.02).toFixed(3),
+          at: F.P(F.u0 + wB / 2, 0, z),
+          nrm: F.n,
+        };
       }
     } else if (R() < 0.6) {
       // a plant on the landing where there is room

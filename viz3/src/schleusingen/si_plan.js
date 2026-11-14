@@ -555,10 +555,14 @@ export const SIPLAN = (() => {
         trep: true,
         name: 'Treppenhaus',
       });
-    // the storey whose flat can be entered on a phone (its budget: one flat in the house)
-    const phoneFl = P.nSt > 1 ? 1 : 0;
+    // the flats that fit, per storey; none anywhere (small or shallow sides): no stairwell house – the whole house, as Ratscher's
+    const per = [];
+    for (let k = 0; k < P.nSt; k++) per.push(sides.map(s => ({ s, F: flatOf(P, s, k, seed + k * 13) })).filter(c => c.F));
+    if (!per.some(c => c.length)) return null;
+    // the storey whose flat can be entered on a phone (its budget: one flat in the house): the first upper one where a flat fits
+    const phoneFl = per[1] && per[1].length ? 1 : per.findIndex(c => c.length);
     for (let k = 0; k < P.nSt; k++) {
-      const cand = sides.map(s => ({ s, F: flatOf(P, s, k, seed + k * 13) })).filter(c => c.F);
+      const cand = per[k];
       const lockedSides = sides.filter(s => !cand.some(c => c.s === s));
       let pick = cand.length ? cand[Math.floor(hh(seed * 0.71 + k * 5.3) * cand.length) % cand.length] : null;
       if (o.phone && k !== phoneFl) pick = null;
