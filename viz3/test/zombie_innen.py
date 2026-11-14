@@ -312,7 +312,7 @@ with lib.browser() as b:
     # and drawn – no program may come that was not there (the shared materials are given back when the last house goes)
     if want('progs'):
         E("(() => { GAME.go('dorf'); GAME.setMode('day'); for (let i = 0; i < 10; i++) GAME.step(0.05); ZINNEN.warm(); GAME.shot(); GAME.shot(); return 1; })()")
-        k0 = J("__Z.progKeys()")
+        k0 = J("(window.__KV = __Z.progKeys())")
         hid0 = houses[0]
         E(MOUNT % hid0)
         for _ in range(200):
@@ -322,7 +322,12 @@ with lib.browser() as b:
         k1 = J("__Z.progKeys()")
         new = [k for k in k1 if k not in set(k0)]
         print('programs in the village', len(k0), '→ in the house', len(k1), 'new:', [k[-120:] for k in new], flush=True)
-        ck('entering a house in the village adds no shader program (ZINNEN.warm() made the terrain cut-out ahead)', not new, [k[-160:] for k in new])
+        # only the house's own meshes (with its lamps and doors) and the terrain cut-out count: the street and the streamed tiles make
+        # programs of their own meanwhile (CI runs 43546313667 and 43553238232: one '|sv' program of something outside coming into view)
+        own = J("__Z.ownPrograms(__H, window.__KV)")
+        hole = [k[-160:] for k in new if 'zinnen-hole' in k]
+        ck('entering a house in the village: its meshes and the terrain cut-out add no shader program (ZINNEN.warm() made the cut-out ahead)',
+           not own and not hole, {'house': own, 'cut-out': hole, 'elsewhere, not counted': [k[-120:] for k in new if 'zinnen-hole' not in k]})
         E("(() => { ZINNEN.unmount(__H); window.__H = null; GAME.step(0.1); return 1; })()")
     # all enterable houses once: each mounts without error within the budget, every room on foot, the waypoints (≈ 2 min)
     if want('sweep'):

@@ -167,6 +167,8 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `VEH`, `VSND`, `MMAP` | vehicles/ | Fahrzeuge (`VEH.add(spec, model)`, `enter/exit/goTo/place/state/follow/reset`, Kameras, Licht, HUD); Fahrzeugtöne; Karte beim Fahren |
 | `SITEPLAN`, `PLANNER` | world/siteplan.js, pavilion/plan.js | Draufsicht (Gebäude verschieben, Zäune), Möbel planen, Plan veröffentlichen |
 | `GAME` | boot/boot.js | Test- und Steuer-API: `go(spot)`, `view(x,y,z,yaw,pitch)`, `step`, `shot`, `setMode`, `setPhase`, `setVariant` … |
+| `HAEUSER`, `HHEUTE`, `HGAST` | haeuser/ | Häuser von Ratscher von innen im normalen Spiel (V18p): Tür über `KERN.act` („Hineingehen · E“), Einrichtung der Zombie-Nacht (`ZINNEN.mount(id, {look, still: true})`), Stil „heute“ (`HHEUTE`), Dorfbewohner zu Hause (`HGAST`, liest `DLIFE`), Fülllicht `haeuser:fill` (geliehen, Priorität 0); `pav-haeuser-v1`, `pav-haeuser-hinweis`; Ereignisse `haeuser:enter`, `haeuser:leave` (`docs/features/haeuser.md`) |
+| `LINNEN`, `LIPLAN`, `LIMARKT`, `LIBAU`, `LIHAUS` | laeden/innen*.js | Läden von innen (V18p): Schiebetüren nach Öffnungszeiten, Räume beim Näherkommen gebaut (unbeleuchtet, Licht eingebacken; höchstens 2 Läden, Telefon 1 und ≤ 120 000 Dreiecke), Haken in `laeden/laeden.js` nur mit `LAEDEN.ownLeaves`; `?noinnen` (`docs/features/laeden-innen.md`) |
 
 ## 7 Assets
 
@@ -210,6 +212,7 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | `pav-tasks-v1` | Aufgaben als Daten (`core/tasks.js`): `{ v: 1, t: { id: { st: 'läuft' \| 'erledigt', i } } }` |
 | `pav-v14`, `pav-v15`, `pav-v15b`, `pav-v16a`, `pav-v16b`, `pav-v16c`, `pav-v16c2`, `pav-v16d`, `pav-v16e` | „Neu in …“-Hinweise schon gezeigt (`SAVE.once`) |
 | `pav-loadlog`, `pav-texlevel` | Ladeprotokoll des letzten Versuchs; halbe Texturen nach abgebrochenem Laden am Telefon |
+| `pav-haeuser-v1`, `pav-haeuser-hinweis` | Häuser von innen (V18p): das Haus, in dem gespeichert wurde, und der Platz vor seiner Tür (nach dem Laden steht man dort); Hinweis „Ausgedacht“ schon gezeigt |
 
 Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), in `core/save.js` und hier eintragen.
 

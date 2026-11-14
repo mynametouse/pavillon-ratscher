@@ -16,6 +16,7 @@ veröffentlicht.
 
 ## Stand
 
+- **14.11.2026 früh: alle Häuser in Ratscher und die Läden in Schleusingen von innen (V18p; Hilfs-Agenten `haeuser` und `laeden-innen`, `docs/features/haeuser.md`, `docs/features/laeden-innen.md`).** Häuser: `HAEUSER` nutzt die Einrichtung der Zombie-Nacht (`ZINNEN.mount(id, {look, still: true})`), Stil je Hausnummer, Stil „heute“ in `HHEUTE`, Dorfbewohner zu Hause in `HGAST` (liest `DLIFE`), Fülllicht über `KERN.lights.borrow` (`haeuser:fill`). Läden: `LINNEN` baut die Räume beim Näherkommen (höchstens 2, Telefon 1), Haken in `laeden/laeden.js` nur mit `LAEDEN.ownLeaves`. **Offen:** Raumhöhe 2,53 m (die Fassade gibt 2,75 m Geschoss vor); in der Zombie-Nacht flimmert über Innentüren noch der Putzstreifen (Haken in `z_innen.js` ohne `o.still`) und die DDR-Schrankwand verdeckt ihre Fernsehnische; mit Dorfbewohnern nur ein Gruß; keine Leute in den Läden; Läden der Ladenstraße nur hinter Glas; OBI-Kalthaus ohne eigene Tür; Öffnungszeiten ohne OSM-Angabe angenommen. **Als Nächstes:** Schleusingen von innen (Wohnhäuser), Suhl mit dem Suhl-Chat.
 - **14.11.2026 nachts: Läden in Schleusingen (V18o; Hilfs-Agent `laeden` des Chats session_01Mmpsvp11QsXpPSQRRbZ4Jv,
   `docs/features/laeden.md`, Auftrag `docs/plans/auftraege/laeden.md`).** OBI, Mega Center, EDEKA, Getränkequelle mit Ladenzeile, Shell,
   McDonald’s mit Drive-in, Lidl, REWE, Gaststätte „Am Waldrand“: Modul `laeden/laeden.js` (`LAEDEN`), Daten aus `tools/laeden/laeden.py`
