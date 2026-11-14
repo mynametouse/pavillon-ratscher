@@ -1177,8 +1177,11 @@ export const ZINNEN = (() => {
         furn.box(fz, d.x - w / 2 - 0.05, d.x + w / 2 + 0.05, t0, t1, d.z1, d.z1 + 0.05);
       }
       // the wall above the door in the gap between both faces (closed from both sides)
-      if (vert) furn.box(M.putz, d.x - PW / 2, d.x + PW / 2, d.y - w / 2, d.y + w / 2, d.z1 + 0.05, r.z1);
-      else furn.box(M.putz, d.x - w / 2, d.x + w / 2, d.y - PW / 2, d.y + PW / 2, d.z1 + 0.05, r.z1);
+      // (feat/haeuser: in the normal game a few millimetres inside both faces – flush with them the white plaster flickered through a
+      // wallpaper above the door; the zombie night's as before)
+      const ins = o && o.still ? 0.004 : 0;
+      if (vert) furn.box(M.putz, d.x - PW / 2 + ins, d.x + PW / 2 - ins, d.y - w / 2, d.y + w / 2, d.z1 + 0.05, r.z1);
+      else furn.box(M.putz, d.x - w / 2, d.x + w / 2, d.y - PW / 2 + ins, d.y + PW / 2 - ins, d.z1 + 0.05, r.z1);
     }
     await tick0();
     // ---- furniture ----

@@ -96,9 +96,11 @@ Gärten hinter den Häusern, gehört zur Straße). Das Fülllicht ist eines der 
   einer dickeren Decke im Baukasten (die Fenster müssen zur gemalten Fassade passen) – nicht geändert.
 - **Baukasten (`zombie/`, nicht meine Dateien)**: (1) Die DDR-Schrankwand verdeckt in der Zombie-Nacht ihr Fernsehfach (`skip` des Kastens
   meint Seiten im Hausrahmen, nicht die Vorderseite des Möbels); in den Stilen von heute ist das Fach offen (Haken), in der Zombie-Nacht
-  unverändert – eine Zeile in `L.schrankwand` könnte es auch dort öffnen. (2) In manchen Häusern zeichnet sich oberhalb der Stubentür ein
-  Streifen in Stufenform auf der Wand ab (Haus 23, Wohnzimmer: die Treppe im Flur dahinter) – Geometrie des Baukastens (Treppe und
-  Wand), nicht des Stils, also vermutlich auch in der Zombie-Nacht; Ursache noch nicht gefunden. (3) Die Zombie-Nacht
+  unverändert – eine Zeile in `L.schrankwand` könnte es auch dort öffnen. (2) Über jeder Innentür füllt der Baukasten die Wand
+  zwischen beiden Wandseiten mit einem weißen Putzblock, dessen Seiten genau in den Wandflächen liegen: auf einer Tapete flimmerte er als
+  heller Fleck in Treppenstufen-Form durch (Haus 23, Wohnzimmer). Im normalen Spiel sitzt er jetzt 4 mm hinter beiden Flächen (Haken in
+  `z_innen.js`, nur bei `ZINNEN.mount(id, { still: true })`); in der Zombie-Nacht flimmert er noch – dort genügt dieselbe Zeile ohne die
+  Bedingung. (3) Die Zombie-Nacht
   könnte den Stil „heute“ mit einer Zeile in `ZIPLAN.lookOf` mitbenutzen – nicht gemacht (die Zombie-Nacht bleibt, wie sie ist).
 - **Dorfbewohner**: nur ein Gruß, kein Gespräch über die Gesprächsführung von `dorf/`; der Platz, auf dem einer sitzt, bleibt bis zum
   nächsten Hineingehen belegt.
