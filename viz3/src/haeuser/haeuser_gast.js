@@ -34,8 +34,11 @@ export const HGAST = (() => {
     if (o.geometry) o.geometry.dispose();
     const ms = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
     for (const m of ms) {
-      for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap'])
-        if (m[k]) m[k].dispose();
+      // every texture of the material (the model's own: glTF materials may carry more maps than the usual few)
+      for (const k of Object.keys(m)) {
+        const v = m[k];
+        if (v && v.isTexture) v.dispose();
+      }
       m.dispose();
     }
     if (o.isSkinnedMesh && o.skeleton && o.skeleton.boneTexture) o.skeleton.dispose();

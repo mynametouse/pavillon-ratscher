@@ -70,16 +70,35 @@ Schrankwand (`tv`) und die Farbe der Innentüren (`leaf`); `ZIEINR` gibt `looks`
 
 Nichts beim Laden außer zwei kleinen Modulen; die Pläne der Häuser werden nach dem Laden in Scheiben gerechnet (je Bild ≤ 3 ms, zusammen
 ≈ 140 ms), danach findet ein Raster von 8 m die Tür nahebei (fünfmal je Sekunde). Gebaut wird erst beim Hineingehen, freigegeben beim
-Hinausgehen (Geometrien und Texturen zurück); drinnen höchstens 60 Draw-Calls; keine neuen Shader-Programme (Zwillinge der Materialien
-des Baukastens, Farben in der Gartenpalette, Leinwand-Texturen mit denselben Programmen) – außer dem einen des Gelände-Ausschnitts beim
-ersten Haus (wie in der Zombie-Nacht, hinter dem Schwarz).
+Hinausgehen (Geometrien und Texturen zurück); drinnen höchstens 60 Draw-Calls (alle 230 Häuser: 27–56, Bauzeit im Mittel ≈ 120 ms,
+höchstens ≈ 320 ms – im Testrechner mit SwiftShader, hinter dem Schwarz). Keine neuen Shader-Programme (Zwillinge der Materialien des
+Baukastens, Farben in der Gartenpalette, Leinwand-Texturen mit denselben Programmen): das erste Haus übersetzt hinter dem Schwarz die
+Programme aller Stile auf einmal (je Material ein winziges Netz, `render/render.js` `warmUp` – auch Eiche und Lärche des Pavillons, die
+die alten Stuben teilen und die ein Spiel, das im Dorf beginnt, noch nicht gezeigt hat) und dazu das eine des Gelände-Ausschnitts wie in
+der Zombie-Nacht; jedes weitere Haus übersetzt nichts. Das Fülllicht ist eines der geliehenen Punktlichter (ihre Zahl bleibt gleich).
 
 ## Testen
 
 - `?szenario=haeuser` (vor einem Haus), `&drin=1` (gleich drinnen), `&haus=<id>`.
-- `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9018 --serve haeuser` (Bilder in `out/haeuser/`), Abschnitte
-  `haeuser:only=door+walk+night+shots+sweep+save`. Themen-Tests `viz3/extra/haeuser/tests.txt`: `smoke`, `haeuser`, `zombie_innen`.
+- `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9018 --serve haeuser` (Bilder in `out/haeuser/`, ≈ 25 min), Abschnitte
+  `haeuser:only=door+walk+night+shots+looks+gast+sweep+save`: Tür mit Knopf (Bildschirmfotos mit dem Aktionsknopf „Hineingehen · E“,
+  drinnen „Hinausgehen · E“, `*_hud.png`), Laufen (Wände, Boden, Treppe, Dachboden, Kellerluke, Innentür, Sitzen, Liegen), rein und raus
+  ohne Speicherrest, nachts Licht, drei Häuser in Bildern bei Tag und Nacht, die übrigen Stile einmal gezeichnet ohne neues Programm,
+  Gerhard zu Hause, alle Häuser einmal gebaut und freigegeben, Speichern und Neuladen. Themen-Tests `viz3/extra/haeuser/tests.txt`:
+  `smoke`, `haeuser`, `zombie_innen`.
 
 ## Offen
 
-- (wird ergänzt)
+- **Maße**: Innentüren 2,0 × 0,86 m (schmale 0,72 m, wo die Treppe wenig Wand lässt), lichte Raumhöhe 2,53 m (Geschoss 2,75 m, wie die
+  Fassade es malt, Decke 0,22 m) – etwas höher als in alten Ernhäusern (2,2–2,4 m); über der Tür bleiben gut 0,5 m. Niedriger ginge nur mit
+  einer dickeren Decke im Baukasten (die Fenster müssen zur gemalten Fassade passen) – nicht geändert.
+- **Baukasten (`zombie/`, nicht meine Dateien)**: (1) Die DDR-Schrankwand verdeckt in der Zombie-Nacht ihr Fernsehfach (`skip` des Kastens
+  meint Seiten im Hausrahmen, nicht die Vorderseite des Möbels); in den Stilen von heute ist das Fach offen (Haken), in der Zombie-Nacht
+  unverändert – eine Zeile in `L.schrankwand` könnte es auch dort öffnen. (2) In manchen Häusern zeichnet sich oberhalb der Stubentür ein
+  Streifen in Stufenform auf der Wand ab (Haus 23: die Treppe im Flur dahinter) – betrifft die Zombie-Nacht genauso. (3) Die Zombie-Nacht
+  könnte den Stil „heute“ mit einer Zeile in `ZIPLAN.lookOf` mitbenutzen – nicht gemacht (die Zombie-Nacht bleibt, wie sie ist).
+- **Dorfbewohner**: nur ein Gruß, kein Gespräch über die Gesprächsführung von `dorf/`; der Platz, auf dem einer sitzt, bleibt bis zum
+  nächsten Hineingehen belegt.
+- **Nicht dabei**: Gartenhäuser, Garagen, Scheunen und Ställe ohne Haustür; die Läden (`laeden/`, Hilfs-Agent `laeden-innen`); Schleusingen.
+- **Für `docs/ARCHITECTURE.md`** (Datei des Kern-Chats): neue Fenster-Namen `HAEUSER`, `HHEUTE`, `HGAST`; Speicherschlüssel
+  `pav-haeuser-v1`, `pav-haeuser-hinweis`; Ereignisse `haeuser:enter`, `haeuser:leave`; Licht-Leihe `haeuser:fill`.

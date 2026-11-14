@@ -295,14 +295,19 @@ with lib.browser() as b:
               __T.roomView(H, r.id, 0); GAME.step(0.1); GAME.shot(); __T.roomView(H, r.id, 2); GAME.step(0.1); GAME.shot(); } return 1; })()""")
             rid = E("(() => { const r = HAEUSER.H.plan.rooms.find(q => q.kind === 'stube'); __T.roomView(HAEUSER.H, r.id, 0); GAME.step(0.1); return r.id; })()")
             shot(f"40_{lk}_{h}_{rid}")
-            st = J("(() => { const H = HAEUSER.H; return { id: H.id, look: H.plan.look, draws: H.stats.draws }; })()")
+            st = J("(() => { const H = HAEUSER.H; return { id: H.id, look: H.plan.look, draws: H.stats.draws, warmN: HAEUSER.warmN || 0 }; })()")
+            # the programs the house's own meshes use (a program that came with the view out of the windows – the gardens behind the
+            # houses, not seen from the street – is the street's business, not the house's)
+            own = J("__T.ownPrograms(HAEUSER.H, window.__K2)")
             leave()
             outside(h)
             for _ in range(2): E("GAME.step(0.5); GAME.shot(); 1")
             new = [k for k in J("__T.progKeys()") if k not in set(J("window.__K2"))]
-            print('look', lk, json.dumps(st), 'new programs', len(new), flush=True)
+            print('look', lk, json.dumps(st), 'new programs', len(new), 'of the house', len(own), flush=True)
             for k in new: print('  new program', k[:160], '…', k[-200:], flush=True)
-            ck(f'look {lk} (house {h}): drawn inside without a new shader program, ≤ 60 draw calls', not new and st['draws'] <= 60, {'st': st, 'new': [k[-120:] for k in new]})
+            for k in own: print('  the house\'s own', k, flush=True)
+            json.dump({'before': J("window.__K2"), 'new': new, 'own': own}, open(os.path.join(OUT, f'programme_{lk}.json'), 'w'))
+            ck(f'look {lk} (house {h}): its meshes drawn with programs that were there before, ≤ 60 draw calls', not own and st['draws'] <= 60, {'st': st, 'own': own, 'new': [k[-120:] for k in new]})
     # ---- all houses once: mounted with their look of today and freed, no error, time and draw calls (the street drawn first: the
     # programs counted are those mounting and freeing make; drawing the houses is the business of the sections above) ----
     if want('sweep'):
@@ -347,7 +352,21 @@ with lib.browser() as b:
         outside(247)
         for _ in range(3): E("GAME.step(0.5); GAME.shot(); 1")
         m1 = J("__T.mem()")
-        ck('coming out: the figure is gone, its geometries and textures freed', not E("!!HGAST.f") and m1['g'] <= m0['g'] + 1 and m1['t'] <= m0['t'], {'m0': m0, 'm1': m1, 'loads': E("HGAST.loads"), 'frees': E("HGAST.frees")})
+        # a cell of the street that finished meanwhile adds to the count once; a figure that is not freed adds again each time: once
+        # more in and out, and the second count must not grow
+        m2 = m1
+        if m1['g'] > m0['g'] or m1['t'] > m0['t']:
+            enter(247)
+            for _ in range(200):
+                if E("!!(window.HGAST && HGAST.f) || !HAEUSER.guest"): break
+                E("GAME.step(0.05)"); time.sleep(0.1)
+            E("GAME.step(0.2); GAME.shot(); 1")
+            leave()
+            outside(247)
+            for _ in range(3): E("GAME.step(0.5); GAME.shot(); 1")
+            m2 = J("__T.mem()")
+        lf = J("({ loads: HGAST.loads, frees: HGAST.frees, f: !!HGAST.f })")
+        ck('coming out: the figure is gone, its geometries and textures freed', not lf['f'] and lf['loads'] == lf['frees'] and ((m1['g'] <= m0['g'] and m1['t'] <= m0['t']) or (m2['g'] <= m1['g'] and m2['t'] <= m1['t'])), {'m0': m0, 'm1': m1, 'm2': m2, 'hgast': lf})
     # ---- a save from inside: after a reload one stands in front of the door ----
     if want('save'):
         r = enter(hid)
