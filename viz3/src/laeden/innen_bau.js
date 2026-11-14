@@ -397,11 +397,28 @@ export const LIBAU = (() => {
         flw = Fw.polyL(f),
         bw = LIPLAN.bbOf(flw),
         Kw = kit(P, Fw, sWarm.id);
+      // the ways in from the doors stay free: per door a corridor 3.4 m wide, 7 m deep (its box in the part's frame)
+      const ways = u.doors.map(d => {
+        const q = [
+          [-1.7, 0.3],
+          [1.7, 0.3],
+          [1.7, -7],
+          [-1.7, -7],
+        ].map(([s2, t]) => Fw.L(d.x - d.ny * s2 + d.nx * t, d.y + d.nx * s2 + d.ny * t));
+        return LIPLAN.bbOf(q.flat());
+      });
       for (let uu = bw[0] + 2.2; uu < bw[2] - 1.5; uu += 3.4)
         for (const [a, b] of LIPLAN.bandSpans(flw, uu - 0.8, uu + 0.8)) {
-          const v0 = a + 1.8,
-            v1 = b - 1.8;
-          if (v1 - v0 > 2) plantTable(Kw, R, uu, (v0 + v1) / 2, 1.3, v1 - v0);
+          let pieces = [[a + 1.8, b - 1.8]];
+          for (const w of ways)
+            if (uu + 0.7 > w[0] && uu - 0.7 < w[2])
+              pieces = pieces.flatMap(([v0, v1]) =>
+                [
+                  [v0, Math.min(v1, w[1])],
+                  [Math.max(v0, w[3]), v1],
+                ].filter(([p0, p1]) => p1 - p0 > 0)
+              );
+          for (const [v0, v1] of pieces) if (v1 - v0 > 2) plantTable(Kw, R, uu, (v0 + v1) / 2, 1.3, v1 - v0);
         }
       Kw.sign(['Gartencenter'], (bw[0] + bw[2]) / 2, (bw[1] + bw[3]) / 2, 3.4, 2.6, 0.6, -1, 0, true);
     }

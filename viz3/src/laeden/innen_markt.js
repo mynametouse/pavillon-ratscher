@@ -277,8 +277,12 @@ export const LIMARKT = (() => {
       vm = (v0 + v1) / 2;
     if (len < 2) return;
     K.box(u, vm, 0, W, len, 0.1, C.chillD);
-    K.box(u, vm, 0.1, W, len, H - 0.1, C.chill, C.chillD);
-    K.box(u, vm, H, W + 0.06, len + 0.06, 0.04, C.rail); // the bumper rim
+    // the tub: the body up to its inner floor a little below the rim, its walls round it (the lids' glass only as frames)
+    K.box(u, vm, 0.1, W, len, H - 0.3, C.chill, C.chillIn);
+    for (const s of [-1, 1]) K.box(u + s * (W / 2 - 0.03), vm, H - 0.2, 0.06, len, 0.2, C.chill);
+    for (const v of [v0 + 0.03, v1 - 0.03]) K.box(u, v, H - 0.2, W - 0.12, 0.06, 0.2, C.chill);
+    for (const s of [-1, 1]) K.box(u + s * (W / 2), vm, H, 0.08, len + 0.06, 0.04, C.rail); // the bumper rim
+    for (const v of [v0, v1]) K.box(u, v, H, W + 0.06, 0.08, 0.04, C.rail);
     for (let v = v0; v <= v1 + 0.01; v += len / Math.max(1, Math.round(len / 2.5)))
       K.box(u, Math.min(v1 - 0.03, Math.max(v0 + 0.03, v)), H, W, 0.05, 0.05, C.glassF);
     K.box(u, vm, H, 0.05, len, 0.05, C.glassF);
@@ -321,11 +325,13 @@ export const LIMARKT = (() => {
     // the cashier's seat in the gap beside the counter (side +1: towards +u)
     K.box(u + side * (W / 2 + 0.38), v0 + 2.5, 0, 0.42, 0.42, 0.55, C.seat);
     K.box(u + side * (W / 2 + 0.58), v0 + 2.5, 0.55, 0.06, 0.42, 0.45, C.seat);
-    // a small rack of sweets at the start of the queue
-    K.box(u - side * (W / 2 + 0.25), v0 + 0.6, 0, 0.4, 1.0, 1.25, C.shelfD);
-    goodsRunV(K, R, u - side * (W / 2 + 0.25) - side * 0.18, -side, v0 + 0.15, v0 + 1.05, 0.95, 0.2, 0.16, PAL.suess, [
-      'box',
-    ]);
+    // a small rack of sweets at the start of the queue: its back, three boards, the sweets on them
+    const ur = u - side * (W / 2 + 0.25);
+    K.box(ur + side * 0.14, v0 + 0.6, 0, 0.12, 1.0, 1.3, C.shelfD);
+    for (const z of [0.35, 0.7, 1.05]) {
+      K.box(ur - side * 0.02, v0 + 0.6, z - 0.02, 0.3, 1.0, 0.02, C.shelf);
+      goodsRunV(K, R, ur - side * 0.17, -side, v0 + 0.15, v0 + 1.05, z, 0.2, 0.2, PAL.suess, ['box']);
+    }
     // the number on a pole
     K.box(u + side * (W / 2 - 0.08), v0 + 0.1, 0.86, 0.05, 0.05, 1.3, C.counterD);
     K.sign(['Kasse ' + n], u + side * (W / 2 - 0.08), v0 + 0.1 - 0.04, 2.0, 0.55, 0.32, -1, 2, true);
@@ -592,25 +598,44 @@ export const LIMARKT = (() => {
     const um = (u0 + u1) / 2,
       w = u1 - u0;
     if (disc) {
-      K.box(um, vW + dir * 0.4, 0, w, 0.7, 1.9, C.counter, C.counterD);
-      for (let uu = u0 + 0.4; uu < u1 - 0.3; uu += 0.55)
-        for (const z of [0.55, 0.95, 1.35]) {
-          K.box(uu, vW + dir * 0.76, z, 0.48, 0.02, 0.34, C.glassF);
-          K.good('heap', uu, vW + dir * 0.5, z + 0.02, 'u', 0.4, 0.4, 0.16, C.bread, 1, 0);
+      // the self-service station: a cabinet of compartments, the breads in them (of the flaps' glass only the edges)
+      K.box(um, vW + dir * 0.05, 0, w, 0.1, 1.9, C.counter, C.counterD);
+      K.box(um, vW + dir * 0.4, 0, w, 0.7, 0.5, C.counter, C.counterD);
+      K.box(um, vW + dir * 0.4, 1.78, w, 0.7, 0.12, C.counter, C.counterD);
+      for (const uu of [u0 + 0.02, u1 - 0.02]) K.box(uu, vW + dir * 0.4, 0.5, 0.04, 0.7, 1.28, C.counter);
+      for (const z of [0.5, 0.92, 1.34]) {
+        K.box(um, vW + dir * 0.4, z, w, 0.7, 0.03, C.shelf);
+        for (let uu = u0 + 0.4; uu < u1 - 0.3; uu += 0.55) {
+          K.good('heap', uu, vW + dir * 0.45, z + 0.03, 'u', 0.44, 0.45, 0.14, R() < 0.5 ? C.bread : C.breadD, 1, 0);
+          K.box(uu, vW + dir * 0.76, z + 0.36, 0.5, 0.02, 0.03, C.glassF);
         }
+      }
       K.sign(['Backwaren'], um, vW + dir * 0.79, 2.2, 1.6, 0.36, dir, 0);
       K.solid(um, vW + dir * 0.4, w, 0.8);
       return;
     }
     const vc = vW + dir * 2.55;
-    K.box(um, vc, 0, w, 0.9, 0.95, C.wood, C.counter);
-    K.box(um, vc + dir * 0.25, 0.95, w - 0.1, 0.4, 0.4, L(0.75, 0.82, 0.86)); // the display's glass (light)
-    for (let uu = u0 + 0.3; uu < u1 - 0.3; uu += 0.5)
-      K.good('heap', uu, vc + dir * 0.1, 0.96, 'u', 0.4, 0.4, 0.1, C.breadD, 1, 0);
-    K.box(um, vW + dir * 0.3, 0, w, 0.5, 2.0, C.wood, C.woodD);
-    for (const z of [0.6, 1.0, 1.4])
-      for (let uu = u0 + 0.25; uu < u1 - 0.2; uu += 0.32)
-        K.good('loaf', uu, vW + dir * 0.37, z, 'u', 0.26, 0.3, 0.14, R() < 0.5 ? C.bread : C.breadD, 1, dir);
+    // the counter: its body and on it an open display – the rolls in two rows, of its glass only the edges (glass that one sees
+    // through is not drawn here: a pane would hide what lies behind it)
+    K.box(um, vc, 0, w, 0.9, 0.92, C.wood, C.counter);
+    K.box(um, vc, 0.92, w, 0.92, 0.04, C.shelf);
+    for (const sv of [-1, 1]) K.box(um, vc + dir * sv * 0.44, 0.96, w, 0.03, 0.05, C.glassF);
+    K.box(um, vc + dir * 0.44, 1.3, w, 0.025, 0.025, C.glassF);
+    for (const uu of [u0 + 0.02, u1 - 0.02]) K.box(uu, vc + dir * 0.2, 0.96, 0.03, 0.5, 0.36, C.glassF);
+    for (let uu = u0 + 0.3; uu < u1 - 0.25; uu += 0.48)
+      for (const [dv, cl] of [
+        [-0.2, R() < 0.5 ? C.bread : C.breadD],
+        [0.18, R() < 0.5 ? C.bread : C.breadD],
+      ])
+        K.good('heap', uu, vc + dir * dv, 0.96, 'u', 0.42, 0.34, 0.09, cl, 1, 0);
+    // the shelf on the wall behind: a back, boards, the loaves on them
+    K.box(um, vW + dir * 0.04, 0, w, 0.08, 2.1, C.wood, C.woodD);
+    for (const uu of [u0 + 0.02, u1 - 0.02]) K.box(uu, vW + dir * 0.28, 0, 0.04, 0.5, 2.1, C.woodD);
+    for (const z of [0.5, 0.9, 1.3, 1.7]) {
+      K.box(um, vW + dir * 0.3, z - 0.03, w, 0.46, 0.03, C.wood);
+      for (let uu = u0 + 0.22; uu < u1 - 0.18; uu += 0.3)
+        K.good('loaf', uu, vW + dir * 0.3, z, 'u', 0.24, 0.3, 0.13, R() < 0.5 ? C.bread : C.breadD, 1, dir);
+    }
     K.sign(['Bäckerei'], um, vW + dir * 0.57, 2.3, 2.0, 0.42, dir, 0);
     K.solid(um, vc, w, 0.95);
     K.solid(um, vW + dir * 0.3, w, 0.55);

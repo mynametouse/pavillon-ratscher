@@ -712,6 +712,58 @@ export const LINNEN = (() => {
         const rs = runs.filter(r => (s2.vols || []).includes(r.vol) && !(Pl.noWall || []).includes(r.vol));
         if (rs.length) wallsOf(kOf(s2.id), rs, hOf, wallCol, skirt);
       }
+      // the seams between two volumes of the unit (their outlines often stand a few decimetres apart): the floor, the ceiling and the
+      // jambs at the ends across the gap – drawn once, from the volume with the lower index
+      const fc0 = Pl.floor || LIMARKT.C,
+        ceil0 = Pl.ceilCol || LIMARKT.C.ceil;
+      for (const r of runs)
+        for (const [t0, t1] of r.open) {
+          if (t1 - t0 < 0.3) continue;
+          const gapAt = t => {
+            const bx = r.a[0] + r.ux * t,
+              by = r.a[1] + r.uy * t;
+            for (let g = 0; g <= 0.7; g += 0.02) {
+              const k = U.vols.findIndex((v, i) => i !== r.vol && LIPLAN.inPoly(v.f, bx - r.n[0] * g, by - r.n[1] * g));
+              if (k >= 0) return { g, k };
+            }
+            return null;
+          };
+          const A = gapAt(t0 + 0.05),
+            B2 = gapAt(t1 - 0.05);
+          if (!A || !B2 || A.k < r.vol) continue;
+          const g0 = A.g + 0.02,
+            g1 = B2.g + 0.02;
+          if (Math.max(g0, g1) < 0.06) continue;
+          const K = kOf((secs.find(q => (q.vols || []).includes(r.vol)) || secs[0]).id),
+            Hs = Math.min(hOf(r.vol), hOf(A.k)),
+            E = (t, g, z) => [r.a[0] + r.ux * t - r.n[0] * g, r.a[1] + r.uy * t - r.n[1] * g, z];
+          K.faceN(
+            E(t0, 0, -0.003),
+            E(t1, 0, -0.003),
+            E(t1, g1, -0.003),
+            E(t0, g0, -0.003),
+            0,
+            0,
+            1,
+            fc0.floorA,
+            false,
+            1
+          );
+          K.faceN(
+            E(t0, 0, Hs + 0.003),
+            E(t1, 0, Hs + 0.003),
+            E(t1, g1, Hs + 0.003),
+            E(t0, g0, Hs + 0.003),
+            0,
+            0,
+            -1,
+            ceil0,
+            false,
+            0.78
+          );
+          K.faceN(E(t0, 0, 0), E(t0, g0, 0), E(t0, g0, Hs), E(t0, 0, Hs), r.ux, r.uy, 0, wallCol, false, 0.9);
+          K.faceN(E(t1, 0, 0), E(t1, g1, 0), E(t1, g1, Hs), E(t1, 0, Hs), -r.ux, -r.uy, 0, wallCol, false, 0.9);
+        }
       for (const b of Pl.boxes) kOf(b.sec).box(b.x, b.y, b.z, b.sx, b.sy, b.sz, b.rot, b.col, b.top, !!b.glow);
       const R = LIPLAN.rnd(LIPLAN.hash(U.id));
       for (const gd of Pl.goods) goods(kOf(gd.sec), gd, R);
@@ -720,8 +772,41 @@ export const LINNEN = (() => {
         if (s2.two) s2.hang = Math.max(0, sc.h - (s2.z + s2.h + 0.03));
         sign(kOf(s2.sec), s2);
       }
-      for (const l of Pl.lights)
-        kOf(l.sec).box(l.x, l.y, l.z - 0.05, l.l, l.w, 0.05, l.rot + Math.PI / 2, LIMARKT.C.lamp, LIMARKT.C.lamp, true);
+      // the light strips, each kept inside its section (0.4 m from its walls: a strip over a lower neighbour would show outside)
+      for (const l of Pl.lights) {
+        const sc = secs.find(q => q.id === l.sec) || secs[0],
+          fs = (sc.vols || []).map(vi => U.vols[vi] && U.vols[vi].f).filter(Boolean),
+          dx = Math.cos(l.rot + Math.PI / 2),
+          dy = Math.sin(l.rot + Math.PI / 2),
+          ok = t => {
+            const x = l.x + dx * t,
+              y = l.y + dy * t;
+            return fs.some(f => LIPLAN.inPoly(f, x, y) && LIPLAN.edgeDist(f, x, y) > 0.4);
+          };
+        let best = null,
+          run = null;
+        for (let t = -l.l / 2; t <= l.l / 2 + 1e-6; t += Math.min(0.25, l.l / 2)) {
+          if (ok(t)) {
+            run = run ? [run[0], t] : [t, t];
+            if (!best || run[1] - run[0] > best[1] - best[0]) best = run.slice();
+          } else run = null;
+        }
+        if (!best || best[1] - best[0] < Math.min(0.5, l.l * 0.9)) continue;
+        const tm = (best[0] + best[1]) / 2,
+          ln = best[1] - best[0] || l.l;
+        kOf(l.sec).box(
+          l.x + dx * tm,
+          l.y + dy * tm,
+          l.z - 0.05,
+          ln,
+          l.w,
+          0.05,
+          l.rot + Math.PI / 2,
+          LIMARKT.C.lamp,
+          LIMARKT.C.lamp,
+          true
+        );
+      }
       // one trolley of the store stands on its own (it can be pushed): the one standing alone, else the last of a row
       const alone =
         Pl.trolleys.find((t, i) => !Pl.trolleys.some((q, j) => j !== i && Math.hypot(q.x - t.x, q.y - t.y) < 0.5)) ||
@@ -1810,8 +1895,16 @@ export const LINNEN = (() => {
         const sec = u.secOf(vi);
         for (let k = 0; k < 16; k++) {
           const a = (k / 16) * Math.PI * 2,
-            L = ray(x, y, Math.sin(a), Math.cos(a), 40),
-            sc = L * Math.min(1, cl / 1.2);
+            dx = Math.sin(a),
+            dy = Math.cos(a);
+          let L = ray(x, y, dx, dy, 40);
+          // not out through a door: the view ends where it leaves the unit
+          for (let t = 0.5; t < L; t += 0.5)
+            if (volAt(x + dx * t, y + dy * t) < 0) {
+              L = t;
+              break;
+            }
+          const sc = L * Math.min(1, cl / 1.2);
           const b = best.get(sec);
           if (!b || sc > b.sc) best.set(sec, { sc, x, y, yaw: (k / 16) * 360, L });
         }

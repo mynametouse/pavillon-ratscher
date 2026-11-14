@@ -581,7 +581,10 @@ export const LIHAUS = (() => {
     P.cell = 0.5;
     const vC = V1 - 1.6;
     K.box((U0 + U1) / 2, vC, 0, U1 - U0 - 1.4, 0.7, 1.05, H.steel, L(0.8, 0.8, 0.8));
-    K.glow((U0 + U1) / 2 - 1, vC, 1.05, 1.6, 0.55, 0.3, [1.1, 1.08, 1.0]); // the lit display with salads
+    // the lit display with salads: its lit floor, the bowls on it, of its glass only the edges
+    K.glow((U0 + U1) / 2 - 1, vC, 1.05, 1.6, 0.55, 0.02, [1.1, 1.08, 1.0]);
+    K.box((U0 + U1) / 2 - 1, vC - 0.27, 1.07, 1.6, 0.025, 0.3, H.steel);
+    for (const du of [-0.79, 0.79]) K.box((U0 + U1) / 2 - 1 + du, vC, 1.07, 0.025, 0.55, 0.3, H.steel);
     for (let uu = (U0 + U1) / 2 - 1.6; uu < (U0 + U1) / 2 - 0.3; uu += 0.32)
       K.good(
         'heap',

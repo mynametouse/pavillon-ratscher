@@ -18,9 +18,11 @@ Läden: jeder Laden von `laeden/laeden.js` (V18o) ist begehbar, jeder in seinem 
   (Getränkequelle, Shell, Mega Center, Mega-Restaurant, Mega-Möbel, Turan), gelten übliche Zeiten – **angenommen**, im Code
   `DEFAULT_OH` in `laeden/innen.js`.
 - **Aufbau beim Herankommen**: näher als 45 m an einer Tür eines Ladens (seine Gruppe steht) baut LINNEN seine Räume (EDEKA ≈ 0,3 s im
-  Test-Browser), jenseits von 80 m (und nicht drinnen) gibt es sie wieder frei – Geometrien und Material zurück (`LINNEN.mem()`).
+  Test-Browser, eine Einheit je Takt), jenseits von 80 m (und nicht drinnen) gibt es sie wieder frei – Geometrien und Material zurück
+  (`LINNEN.mem()`). Höchstens zwei Läden stehen zugleich (auf dem Telefon einer); kommt man einem dritten näher, weicht der fernste.
   Solange sie stehen, ist das Glas der Fronten und Türen dieses Ladens weg (nur die Rahmen bleiben): man sieht hinein und von innen
-  hinaus.
+  hinaus. Dafür hat die Fassade von `laeden.js` hinter jeder verglasten Front eine Öffnung (sonst stünde dahinter die Wand); solange
+  die Räume nicht stehen, deckt das dunkle Glas sie wie bisher.
 - **Die Arten**, nach Fotos solcher Läden in Deutschland, ohne die Gestaltung einer Kette:
   - **Supermarkt/Discounter** (EDEKA, REWE, Aldi, Lidl; `laeden/innen_markt.js`): Obst und Gemüse in Kisten auf schrägen Tischen gleich
     hinter dem Eingang, Regalreihen quer zur Front (Supermarkt 2,05 m mit fünf Böden, Discounter 1,65 m), Kopfregale, Preisschienen mit
@@ -72,7 +74,8 @@ Läden: jeder Laden von `laeden/laeden.js` (V18o) ist begehbar, jeder in seinem 
 ## Benutzen (Schnittstelle in `viz3/src/laeden/innen.js`)
 
 `LINNEN.status()` (Einheiten, gebaute Läden mit Meshes, Dreiecken, Bauzeit, Türen), `LINNEN.mountShop(id)` / `unmountShop(id)`,
-`LINNEN.unitAt(x, y)`, `LINNEN.door('<laden>:<i>')`, `LINNEN.unitInfo(id)`, `LINNEN.meshesOf(id)`, `LINNEN.mem()`. Ereignis
+`LINNEN.unitAt(x, y)`, `LINNEN.door('<laden>:<i>')`, `LINNEN.unitInfo(id)`, `LINNEN.meshesOf(id)`, `LINNEN.mem()`,
+`LINNEN.views(id)` (je Abschnitt der Platz mit dem weitesten freien Blick, von der Tür aus erreichbar – für Bilder). Ereignis
 `laeden:innen` `{ shop, state: 'gebaut' | 'frei' }`. `?noinnen` lässt alles weg (die Läden wie V18o).
 
 Module: `laeden/innen_plan.js` (`LIPLAN`: Einheiten, Wände mit Öffnungen, Baukasten eines Plans – rein), `innen_markt.js` (`LIMARKT`),
@@ -92,11 +95,21 @@ Module: `laeden/innen_plan.js` (`LIPLAN`: Einheiten, Wände mit Öffnungen, Bauk
 ## Für den Lead
 
 - `viz3/src/modules.txt`: Block `# feat/laeden-innen` direkt nach `laeden/laeden.js`.
-- Markierte Haken in `viz3/src/laeden/laeden.js` (`// feat/laeden-innen`): in `entrance()` merkt sich jede Tür ihre Verglasung
-  (`d.hG`, `d.z0`, `d.hD`), und mit `LAEDEN.ownLeaves` spart die Scheibe die Türöffnung aus und es werden keine festen Flügel gebaut; am
-  Ende von `build()` `LAEDEN.onBuild(g)`, am Anfang von `drop()` `LAEDEN.onDrop(g)`; im Takt bleibt verborgen, was in `LAEDEN.hidden`
-  steht (das Glas eines Ladens, dessen Räume stehen); `doorLabel` fragt `LAEDEN.doorOpen(sh, d)` (Zustand der Türen, mit angenommenen
-  Zeiten), `doorText` fragt `LAEDEN.doorInfo(sh, d)`.
+- Markierte Haken in `viz3/src/laeden/laeden.js` (`// feat/laeden-innen`, alle nur wirksam mit `LAEDEN.ownLeaves`, das LINNEN setzt –
+  ohne LINNEN bzw. mit `?noinnen` baut `laeden.js` wie V18o):
+  - `entrance()`: jede Tür merkt sich ihre Verglasung (`d.hG`, `d.z0`, `d.hD`); die Scheibe spart die Türöffnung aus, keine festen
+    Flügel (die Flügel baut und bewegt LINNEN).
+  - `shop()`: die Eingänge (Namensbänder, `entrance()`) kommen vor den Wänden (`function entrances()`), damit die Wände ihre Öffnungen
+    kennen; die Wände laufen über `edgePieces()` – an einer Kante, vor der ein anderer Teil desselben Ladens liegt, steht die Wand nur
+    über diesem (innen öffnen sich die Teile zueinander, LINNEN setzt die Innenwände), hinter der Verglasung eines Eingangs ist sie
+    offen; das Muster der Fassade behält seine Grundlinie (`wallBuf().quad(…, { base })`).
+  - `interior()` (die dunklen Formen hinter den Scheiben der Restaurants): mit LINNEN nur noch die Lichter, keine Formen (der echte Raum
+    steht dahinter); LINNEN verbirgt das Lichterglas (`glas <laden>:licht`) mit dem Glas, solange die Räume stehen.
+  - am Ende von `build()` `LAEDEN.onBuild(g)`, am Anfang von `drop()` `LAEDEN.onDrop(g)`; im Takt bleibt verborgen, was in
+    `LAEDEN.hidden` steht; `doorLabel` fragt `LAEDEN.doorOpen(sh, d)` (Zustand der Türen, mit angenommenen Zeiten), `doorText` fragt
+    `LAEDEN.doorInfo(sh, d)`.
+- `viz3/test/laeden.py` (markiert): die Prüfung „an der Haupttür hält das Glas auf“ lässt auch das Hineingehen gelten, wenn LINNEN dort
+  einen offenen Laden hat.
 - Neuer `window`-Name: `LINNEN`. Keine Speicher-Schlüssel.
 
 ## Offen
