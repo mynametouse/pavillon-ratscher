@@ -2056,6 +2056,24 @@ export const LINNEN = (() => {
     }
     return out;
   };
+  // feat/schleusingen-innen: a shop room in a town house of Schleusingen (schleusingen/si_laden.js) drawn with this kit – the floor (f: its
+  // outline), fixtures, goods, signs and light strips of a plan in one geometry of vertex colours (zf(x, y): the floor's height); the walls,
+  // windows and ceiling are the house's → { geo, tris } or null
+  S.drawPlan = (Pl, f, zf) => {
+    const K = rkit(zf),
+      fc = Pl.floor || LIMARKT.C,
+      ph = phone();
+    if (f) floorOf(K, f, fc.floorA, fc.floorB, Pl.cell || 1.2, floorShade(Pl));
+    for (const b of Pl.boxes)
+      if (!ph || (!b.opt && (b.sx * b.sy * b.sz > 2e-4 || Math.max(b.sx, b.sy, b.sz) > 0.12)))
+        K.box(b.x, b.y, b.z, b.sx, b.sy, b.sz, b.rot, b.col, b.top, !!b.glow);
+    const R2 = LIPLAN.rnd(LIPLAN.hash(String(Pl.unit)));
+    for (const gd of Pl.goods) goods(K, gd, R2);
+    for (const s2 of Pl.signs) sign(K, s2);
+    for (const l of Pl.lights)
+      K.box(l.x, l.y, l.z - 0.05, l.l, l.w, 0.05, l.rot + Math.PI / 2, LIMARKT.C.lamp, LIMARKT.C.lamp, true);
+    return K.empty() ? null : { geo: K.geo(), tris: K.tris() };
+  };
   void toast;
   return S;
 })();

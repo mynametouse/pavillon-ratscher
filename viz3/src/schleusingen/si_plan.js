@@ -418,7 +418,8 @@ export const SIPLAN = (() => {
         yD0 = Math.min(yD0, Y1 - DH);
       }
       if (yD0 <= Y0 + 1e-6 && yD1 >= Y1 - 1e-6) return null;
-      if (dy - w / 2 - 0.08 < yD0 || dy + w / 2 + 0.08 > yD1) dy = Math.min(yD1 - w / 2 - 0.1, Math.max(yD0 + w / 2 + 0.1, dy));
+      if (dy - w / 2 - 0.08 < yD0 || dy + w / 2 + 0.08 > yD1)
+        dy = Math.min(yD1 - w / 2 - 0.1, Math.max(yD0 + w / 2 + 0.1, dy));
       // in the hall's band: the hall at the stairwell's side, the bath at the outer wall (if the side is wide enough)
       const dW = bath ? Math.min(1.75, W - 2.0 - PW) : W,
         hx0 = atHall > 0 ? x1 - dW : x0,
@@ -452,7 +453,9 @@ export const SIPLAN = (() => {
       };
       const hasF = yD0 - PW - Y0 >= 2.3,
         hasB = Y1 - yD1 - PW >= 2.3;
-      F = hasF ? band(Y0, yD0 - PW, hasB ? ['wohnzimmer', 'schlafzimmer'] : ['wohnzimmer', 'kueche'], yD0 - PW / 2) : [];
+      F = hasF
+        ? band(Y0, yD0 - PW, hasB ? ['wohnzimmer', 'schlafzimmer'] : ['wohnzimmer', 'kueche'], yD0 - PW / 2)
+        : [];
       B = hasB
         ? band(
             yD1 + PW,
@@ -502,7 +505,12 @@ export const SIPLAN = (() => {
         wallR = atHall > 0 ? hx0 - PW / 2 : hx1 + PW / 2;
       dl = room('diele', hx0, hx1, Y0, Y1);
       // the living room at the street, the bath (1.8 m) in the middle, the kitchen at the back; deeper: a bedroom too
-      const kinds = D >= 9.4 ? ['wohnzimmer', 'bad', 'kueche', 'schlafzimmer'] : D >= 6.2 ? ['wohnzimmer', 'bad', 'kueche'] : ['wohnzimmer', 'kueche'],
+      const kinds =
+          D >= 9.4
+            ? ['wohnzimmer', 'bad', 'kueche', 'schlafzimmer']
+            : D >= 6.2
+              ? ['wohnzimmer', 'bad', 'kueche']
+              : ['wohnzimmer', 'kueche'],
         n = kinds.length,
         dBad = kinds.includes('bad') ? 1.8 : 0,
         rest = (D - (n - 1) * PW - dBad) / (n - (dBad ? 1 : 0));

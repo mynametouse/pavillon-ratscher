@@ -187,7 +187,8 @@ export const ZIPLAN = (() => {
   function roofOf(b) {
     const tris = [];
     const part = VILLAGE.parts && VILLAGE.parts.get(b.id);
-    if (b.roofTris) for (const t of b.roofTris) tris.push(t); // feat/schleusingen-innen: a town house's own roof faces
+    if (b.roofTris)
+      for (const t of b.roofTris) tris.push(t); // feat/schleusingen-innen: a town house's own roof faces
     else if (part && part.tris) for (const t of part.tris) tris.push(t.map(v => [v.x, v.y, v.z]));
     else if (VILLAGE.roof0 && b.tris && b.tris.length) {
       const g = VILLAGE.roof0.geometry,
@@ -737,6 +738,23 @@ export const ZIPLAN = (() => {
   // feat/schleusingen-innen: the other place's buildings (source), a plan made again after its town was built anew (forget)
   const source = src => (SRC = src);
   const forget = id => CACHE.delete(id);
-  return { plan, rng, hh, frameOf, enterable, facadeWindows, faceLook, toL, toW, ST, SLAB, PW, NAMES, OWNERS, source, forget };
+  return {
+    plan,
+    rng,
+    hh,
+    frameOf,
+    enterable,
+    facadeWindows,
+    faceLook,
+    toL,
+    toW,
+    ST,
+    SLAB,
+    PW,
+    NAMES,
+    OWNERS,
+    source,
+    forget,
+  };
 })();
 window.ZIPLAN = ZIPLAN;
