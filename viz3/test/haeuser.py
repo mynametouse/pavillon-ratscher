@@ -1,9 +1,10 @@
 # feat/haeuser (Falko, 13.11.2026): every house of Ratscher can be entered in the normal game (haeuser/haeuser.js, the look of today
 # haeuser/haeuser_heute.js on the zombie night's kit ZINNEN). In front of a house by day and by night: the door action, going in, walls stop
 # one, the floor carries, the stairs up and down, the cellar through the trapdoor, the attic, coming out, the memory back, no new program;
-# all enterable houses mounted and freed once (time per house, draw calls, errors); pictures in three houses by day and night; a save
-# from inside puts one in front of the door after a reload. Pictures into out/haeuser/.
-#   python3 viz3/test/haeuser.py PORT [only=door+walk+night+shots+gast+sweep+save,tier=hoch,haus=<id>]
+# all enterable houses mounted and freed once (time per house, draw calls, errors); pictures in three houses by day and night; the other
+# looks drawn once without a new program; a villager at home (his own figure, freed again); a save from inside puts one in front of the
+# door after a reload. Pictures into out/haeuser/.
+#   python3 viz3/test/haeuser.py PORT [only=door+walk+night+shots+looks+gast+sweep+save,tier=hoch,haus=<id>]
 import sys, os, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]
@@ -55,6 +56,21 @@ def E(js): return pg.evaluate(js)
 def J(js): return json.loads(pg.evaluate('JSON.stringify(' + js + ')'))
 def shot(name): lib.shot(pg, OUT, name)
 
+# the whole page with the action button of the HUD shown („Hineingehen · E“; on a touch screen the same button without „· E“) – slow
+# in SwiftShader: a long time limit, and never fatal
+def page_shot(name):
+    try:
+        E("document.querySelectorAll('#doorbtn,#act2').forEach(e => e.style.visibility = 'visible'); GAME.step(0.05); GAME.shot(); 1")
+        lbl = E("(document.querySelector('#doorbtn') || {}).textContent || ''")
+        pg.screenshot(path=os.path.join(OUT, name + '.png'), timeout=180000)
+        print('page shot', name, repr(lbl), flush=True)
+        return lbl
+    except Exception as e:
+        print('page shot failed', name, str(e)[:200], flush=True)
+        return None
+    finally:
+        E("document.querySelectorAll('#doorbtn,#act2').forEach(e => e.style.visibility = 'hidden'); 1")
+
 def boot(q=''):
     t0 = time.time()
     hs = opts.get('haus')
@@ -91,6 +107,10 @@ def night(on):
     E(f"GAME.setMode('{'night' if on else 'day'}'); GAME.step(0.3)")
     lib.settle_light(pg)
 
+# in front of a house's door outside, looking at it, third person
+def outside(hid):
+    E(f"(() => {{ const h = HAEUSER.list().find(q => q.id === {hid}); const x = h.door.x + h.door.nx * 1.6, y = h.door.y + h.door.ny * 1.6; __T.stand(x, y, KERN.terrain(x, y), (Math.atan2(-h.door.nx, -h.door.ny) * 180 / Math.PI + 360) % 360); CAM3.want = true; GAME.step(0.5); return 1; }})()")
+
 with lib.browser() as b:
     pg = lib.page(b, 1920, 1080, errs=errs, tier=TIER)
     boot()
@@ -108,6 +128,8 @@ with lib.browser() as b:
         print('door', json.dumps(st, ensure_ascii=False), flush=True)
         ck('at the front door the action „Hineingehen“', st['label'] == 'Hineingehen' and st['near'] == hid and st['best'] and st['best']['id'] == 'haeuser:rein', st)
         shot('00_tuer_tag')
+        lbl = page_shot('00_tuer_tag_hud')
+        ck('the HUD\'s action button says „Hineingehen · E“', lbl is None or lbl.replace(' ', '') in ('Hineingehen·E', 'Hineingehen'), lbl)
         # the world streams around the walker after the jump (near details, parked cars, the villagers' cars): let it settle first
         for _ in range(8): E("GAME.step(0.5); GAME.shot(); 1")
         base = J("__T.mem()")
@@ -185,6 +207,8 @@ with lib.browser() as b:
         r = J("(() => { const H = HAEUSER.H; __T.stand(H.entry.x, H.entry.y, H.entry.z, (H.entry.yaw + 180) % 360); GAME.step(0.3); return { best: __T.best(), label: __T.label('haeuser:raus') }; })()")
         print('exit', json.dumps(r, ensure_ascii=False), flush=True)
         ck('inside at the door „Hinausgehen“', r['label'] == 'Hinausgehen', r)
+        lbl = page_shot('04_tuer_innen_hud')
+        ck('inside the HUD\'s action button says „Hinausgehen · E“', lbl is None or lbl.replace(' ', '') in ('Hinausgehen·E', 'Hinausgehen'), lbl)
         E("__T.act('haeuser:raus'); 1")
         for _ in range(300):
             if E("!HAEUSER.H && !HAEUSER.busy"): break
@@ -216,6 +240,7 @@ with lib.browser() as b:
         r = J("({ label: __T.label('haeuser:rein'), best: __T.best() })")
         ck('at night the door action too', r['label'] == 'Hineingehen', r)
         shot('10_tuer_nacht')
+        page_shot('10_tuer_nacht_hud')
         r = enter(hid)
         r2 = J("(() => { const H = HAEUSER.H; if (!H) return null; GAME.step(0.4); return { lit: Object.keys(H.lit).filter(k => H.lit[k]), lights: KERN.lights.status() }; })()")
         print('night inside', json.dumps(r2), flush=True)
@@ -253,8 +278,35 @@ with lib.browser() as b:
                     if mode == 'night': E(f"HAEUSER.H.light('{rid}', false); 1")
             night(False)
             leave()
-    # ---- all houses once: mounted with their look of today and freed, no error, time and draw calls ----
+    # ---- the other looks drawn once (a kept one of the nineties, an old people's, one of before 1960): in front of the door the street
+    # drawn till nothing new comes, then in, the living room and the kitchen drawn, out again, the street drawn once more – a program
+    # that is new then belongs to the house (the street's are there already: they come with the place, not with the house) ----
+    if want('looks'):
+        for lk in ('heute-90', 'heute-ddr', 'alt'):
+            h = E(f"(() => {{ const P = id => ZIPLAN.plan(id); const L = HAEUSER.list().filter(q => HAEUSER.lookOf(q.id) === '{lk}' && P(q.id).rooms.some(r => r.kind === 'stube') && P(q.id).rooms.some(r => r.kind === 'kueche')); return L.length ? L[L.length >> 1].id : null; }})()")
+            if not h:
+                ck(f'a house in the look {lk}', False, ''); continue
+            outside(h)
+            for _ in range(6): E("GAME.step(0.5); GAME.shot(); 1")
+            E("window.__K2 = __T.progKeys(); 1")
+            if not (enter(h) or {}).get('ok'):
+                ck(f'house {h} ({lk}) entered', False, ''); continue
+            E("""(() => { const H = HAEUSER.H, P = H.plan; for (const k of ['stube', 'kueche']) { const r = P.rooms.find(q => q.kind === k); if (!r) continue;
+              __T.roomView(H, r.id, 0); GAME.step(0.1); GAME.shot(); __T.roomView(H, r.id, 2); GAME.step(0.1); GAME.shot(); } return 1; })()""")
+            rid = E("(() => { const r = HAEUSER.H.plan.rooms.find(q => q.kind === 'stube'); __T.roomView(HAEUSER.H, r.id, 0); GAME.step(0.1); return r.id; })()")
+            shot(f"40_{lk}_{h}_{rid}")
+            st = J("(() => { const H = HAEUSER.H; return { id: H.id, look: H.plan.look, draws: H.stats.draws }; })()")
+            leave()
+            outside(h)
+            for _ in range(2): E("GAME.step(0.5); GAME.shot(); 1")
+            new = [k for k in J("__T.progKeys()") if k not in set(J("window.__K2"))]
+            print('look', lk, json.dumps(st), 'new programs', len(new), flush=True)
+            for k in new: print('  new program', k[:160], '…', k[-200:], flush=True)
+            ck(f'look {lk} (house {h}): drawn inside without a new shader program, ≤ 60 draw calls', not new and st['draws'] <= 60, {'st': st, 'new': [k[-120:] for k in new]})
+    # ---- all houses once: mounted with their look of today and freed, no error, time and draw calls (the street drawn first: the
+    # programs counted are those mounting and freeing make; drawing the houses is the business of the sections above) ----
     if want('sweep'):
+        for _ in range(3): E("GAME.step(0.3); GAME.shot(); 1")
         E("window.__K1 = __T.progKeys(); 1")
         t1 = time.time()
         sw = json.loads(E("""(async () => { const bad = [], ids = HAEUSER.list().map(h => h.id), m0 = __T.mem(); let n = 0, ms = 0, mx = 0, dr = 0, tris = 0, own = new Set();
@@ -275,7 +327,9 @@ with lib.browser() as b:
         t = J("""(() => { const d = Math.floor(CLOCK.t / 1440); for (let m = 9 * 60; m < 21 * 60; m += 10) { const t = d * 1440 + m;
           if (!DLIFE.away('gerhard', t) && !DLIFE.routine('gerhard', t) && !DCAL.on('skat', t) && !DCAL.on('fire', t)) { CLOCK.t = t; return t; } } return null; })()""")
         print('gerhard at home at', t, flush=True)
-        E("GAME.step(0.2); GAME.shot(); 1")
+        # (in front of his door first, the street drawn till it is complete: the count before is taken where the count after is)
+        outside(247)
+        for _ in range(8): E("GAME.step(0.5); GAME.shot(); 1")
         m0 = J("__T.mem()")
         r = enter(247)
         for _ in range(200):
@@ -290,9 +344,10 @@ with lib.browser() as b:
               __T.stand(ex, ey, r.z0, Math.atan2(f.at.x - ex, f.at.y - ey) * 180 / Math.PI); CAM3.want = false; GAME.view(ex, ey, r.z0 + 1.62, Math.atan2(f.at.x - ex, f.at.y - ey) * 180 / Math.PI, -14, 78); GAME.step(0.2); return 1; })()""")
             shot('30_gerhard_zu_hause')
         leave()
-        E("GAME.step(0.3); GAME.shot(); GAME.step(0.3); GAME.shot(); 1")
+        outside(247)
+        for _ in range(3): E("GAME.step(0.5); GAME.shot(); 1")
         m1 = J("__T.mem()")
-        ck('coming out: the figure is gone, its geometries and textures freed', not E("!!HGAST.f") and m1['g'] <= m0['g'] + 1 and m1['t'] <= m0['t'], {'m0': m0, 'm1': m1})
+        ck('coming out: the figure is gone, its geometries and textures freed', not E("!!HGAST.f") and m1['g'] <= m0['g'] + 1 and m1['t'] <= m0['t'], {'m0': m0, 'm1': m1, 'loads': E("HGAST.loads"), 'frees': E("HGAST.frees")})
     # ---- a save from inside: after a reload one stands in front of the door ----
     if want('save'):
         r = enter(hid)

@@ -411,9 +411,27 @@ export const HHEUTE = (() => {
     F.pic(m, T.art, u, 0.024, z, w - 0.06, h - 0.06, cell);
     onWall(C, F, u - w / 2 - 0.04, u + w / 2 + 0.04, z - h / 2 - 0.04, z + h / 2 + 0.04);
   }
+  // the stairs a hall's walls run along (nothing is hung over the steps): the main one in every hall, the attic one in its own
+  const overlap = (a, b) => a[0] < b[1] && a[1] > b[0] && a[2] < b[3] && a[3] > b[2];
+  function stairsOf(C) {
+    const P = C.P,
+      r = C.room,
+      out = [];
+    if (!P || !r || r.kind !== 'flur') return out;
+    for (const st of [P.stair, P.astair && P.astair.fl === r.fl ? P.astair : null])
+      if (st)
+        out.push([
+          Math.min(st.x0, st.x1) - 0.15,
+          Math.max(st.x0, st.x1) + 0.15,
+          Math.min(st.y0, st.y1) - 0.3,
+          Math.max(st.y0, st.y1) + 0.3,
+        ]);
+    return out;
+  }
   // a free place on any wall for a thing hung there (pictures, a mirror, a clock): the first that fits
   function hang(C, Pl, sidesList, w, h, zc, fn) {
-    const R = C.R;
+    const R = C.R,
+      stairs = stairsOf(C);
     for (const sd of R.shuffle(sidesList.slice())) {
       const W = Pl.S[sd];
       if (!W) continue;
@@ -424,6 +442,8 @@ export const HHEUTE = (() => {
           u1 = u + w / 2 + 0.1;
         if (u0 < 0.15 || u1 > W.L - 0.15) continue;
         if (!Pl.wallFree(sd, u0, u1, zc - h / 2, zc + h / 2) || Pl.tallAt(sd, u0, u1)) continue;
+        const rs = Fw.rect(u0, u1, -0.02, 0.5);
+        if (stairs.some(s => overlap(rs, s))) continue;
         const rr = Fw.rect(u0, u1, -0.02, 0.15);
         if (
           (C.wallItems || []).some(
@@ -989,7 +1009,7 @@ export const HHEUTE = (() => {
     F.box(m, carcass, u0, u0 + w, 0, 0.58, z + 0.1, z + 0.88);
     F.box(m, worktop, u0 - 0.01, u0 + w + 0.01, 0, 0.63, z + 0.88, z + 0.92);
     // which unit is what: the sink in the second, the hob in the fourth (or the last), the dishwasher beside the sink
-    const sinkK = Math.min(1, n - 1),
+    const sinkK = n === 2 ? 0 : Math.min(1, n - 1),
       hobK = n >= 4 ? 3 : n - 1,
       dwK = n >= 3 ? 2 : -1;
     for (let k = 0; k < n; k++) {
@@ -1477,9 +1497,63 @@ export const HHEUTE = (() => {
         C.solid(F.rect(u0, u0 + 1.0, 0, 0.45), z, z + 1.6);
       }
     }
+    // a big room: a reading corner and a rug
+    if ((room.x1 - room.x0) * (room.y1 - room.y0) > 11) {
+      const F = Pl.any(R.shuffle(all.slice()), 1.25, 0.85, 1.7, R.pick([0.05, 0.95]));
+      if (F) sessel(C, F, R);
+      const rr = Pl.floorFree(1.7, 1.2);
+      if (rr)
+        C.m.box(
+          R.pick([T.teppich, col(C, R.pick([0x9a9690, 0x55647a, 0xc8bba5]), 1.0)]),
+          rr[0],
+          rr[1],
+          rr[2],
+          rr[3],
+          z + 0.002,
+          z + 0.014
+        );
+    }
     F0(C, Pl, all);
-    void T;
     return true;
+  }
+  // an armchair of today (upholstered on wooden legs) and a round side table with a book and a mug
+  function sessel(C, F, R) {
+    const m = C.m,
+      z = C.z,
+      u0 = F.u0,
+      T = mats(),
+      fab = col(C, R.pick([0xc0952f, 0x51647a, 0x8b8e91, 0x6e8b74, 0xb0563a, 0xd9cdb8]), 0.92),
+      wood = T.eiche;
+    for (const [pu, pv] of [
+      [u0 + 0.08, 0.1],
+      [u0 + 0.66, 0.1],
+      [u0 + 0.08, 0.7],
+      [u0 + 0.66, 0.7],
+    ])
+      F.box(m, wood, pu, pu + 0.04, pv, pv + 0.04, z, z + 0.18);
+    F.box(m, fab, u0 + 0.02, u0 + 0.78, 0.04, 0.8, z + 0.18, z + 0.42);
+    F.box(m, fab, u0 + 0.04, u0 + 0.76, 0.22, 0.8, z + 0.42, z + 0.48);
+    F.box(m, fab, u0 + 0.02, u0 + 0.78, 0.0, 0.22, z + 0.42, z + 0.92);
+    for (const a of [u0, u0 + 0.7]) F.box(m, fab, a, a + 0.1, 0.04, 0.8, z + 0.42, z + 0.6);
+    F.box(
+      m,
+      col(C, R.pick([0xe8e2d4, 0x3b3e42, 0xc9b38f]), 0.95),
+      u0 + 0.22,
+      u0 + 0.58,
+      0.24,
+      0.36,
+      z + 0.48,
+      z + 0.78
+    );
+    // the side table with a book and a mug
+    F.cyl(m, wood, u0 + 1.03, 0.3, z + 0.5, z + 0.53, 0.2, 0.2, 14);
+    F.cyl(m, col(C, BLACK, 0.5, 0.3), u0 + 1.03, 0.3, z, z + 0.5, 0.02, 0.02, 6);
+    F.cyl(m, col(C, BLACK, 0.5, 0.3), u0 + 1.03, 0.3, z, z + 0.015, 0.14, 0.14, 10);
+    F.box(m, col(C, R.pick([0x7a3b2e, 0x2f4561, 0x3f5a46]), 0.7), u0 + 0.95, u0 + 1.12, 0.22, 0.36, z + 0.53, z + 0.56);
+    F.cyl(m, col(C, R.pick([WHITE, 0xc83a2a, 0x6f9ccf]), 0.4), u0 + 1.12, 0.42, z + 0.53, z + 0.62, 0.04, 0.04, 10);
+    C.seat(F.P(u0 + 0.4, 0.45, z), F, 'In den Sessel setzen');
+    C.solid(F.rect(u0, u0 + 0.8, 0, 0.82), z, z + 0.92);
+    C.solid(F.rect(u0 + 0.83, u0 + 1.23, 0.1, 0.5), z, z + 0.55);
   }
   // a big plant in a free corner of a room (if one is left)
   function F0(C, Pl, all) {

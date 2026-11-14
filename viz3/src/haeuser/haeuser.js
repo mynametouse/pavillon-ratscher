@@ -11,7 +11,8 @@
 //   HAEUSER.H               the handle of the house one is in (ZINNEN's), or null;  HAEUSER.near  the door the action offers
 // Saved: 'pav-haeuser-v1' { v: 1, id, out: [x, y, z, yaw] } while one is inside – a reload puts one in front of that door outside.
 // ?szenario=haeuser (&haus=<id>, &drin=1): in front of a house near the Anger (or inside it).
-import { stage, QS } from '../core/head.js';
+import * as THREE from 'three';
+import { stage, QS, cam } from '../core/head.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
@@ -322,6 +323,39 @@ export const HAEUSER = (() => {
       if (id !== r.id && H.lit[id]) H.light(id, false);
     }
   }
+  // at night, while the lamp of the room one is in burns: a soft warm light between the eye and the head – the lamp's light thrown back
+  // by the walls and the ceiling (with the night sky's blue alone, every side turned away from the lamp looked moonlit). Even within a
+  // few metres (decay 0), so no bright spot on the wall next to one; one of the pavilion's pool lights (KERN.lights: no new lamp, no new
+  // program), asked for last (prio 0) and given back on going out
+  const FILL = 0.6;
+  const _fp = new THREE.Vector3();
+  const fillWant = () => {
+    const H = S.H;
+    if (!H || S.busy || !dark()) return false;
+    const rid = H.roomAt(P.x, P.y, P.feet + 1);
+    return !!rid && !!H.lit[rid];
+  };
+  function fillAt(l, force) {
+    if (!l) return;
+    _fp.set(P.x, P.feet + 1.5, -P.y).lerp(cam.position, 0.6);
+    if (force) {
+      l.color.setHex(0xffd9a8);
+      l.distance = 6;
+      l.decay = 0;
+      l.intensity = FILL;
+    } else if (_fp.distanceToSquared(l.position) < 0.0025) return;
+    l.position.copy(_fp);
+    markDirty();
+  }
+  KERN.lights.borrow({
+    id: 'haeuser:fill',
+    n: 1,
+    prio: 0,
+    want: fillWant,
+    on: ls => fillAt(ls[0], true),
+    tick: ls => fillAt(ls[0], false),
+    off: () => markDirty(),
+  });
   const NEWS = [
     'Im Fernsehen: eine Naturdokumentation über den Thüringer Wald.',
     'Im Fernsehen laufen die Nachrichten.',

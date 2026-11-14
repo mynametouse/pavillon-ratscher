@@ -27,9 +27,17 @@ Hilfs-Agent `haeuser` (Auftrag `docs/plans/auftraege/haeuser.md`), Falko 13.11.2
   - **„alt“** (zwei Häuser im Dorf, Fachwerk oder Schiefer): wie vor 1960 – so wie in der Zombie-Nacht.
   - Die Dorfbewohner: Gerhard (72) wohnt „heute-ddr“, Manfred und Wolfgang „heute-90“, Uwe, Katrin, Ingrid und Heike „heute“; ihre
     persönlichen Dinge (Gerhards Bücherregal und Skatkarten, Manfreds Feuerwehrhelm, Wolfgangs Geweihe …) bleiben.
+- **Wer zu Hause ist**: Ist der Bewohner eines Hauses laut `dorf/dorf_life.js` gerade daheim (nicht im Garten, nicht mit dem Auto weg,
+  kein Skatabend, kein Feuer – nur gelesen, an den Tagesläufen ändert sich nichts), sitzt er im Wohnzimmer auf dem Sofa (sonst am
+  Küchentisch): eine eigene Kopie seiner Figur (`haeuser/haeuser_gast.js`, `HGAST`, beim Hineingehen geladen, beim Hinausgehen
+  freigegeben), mit der Aktion „… grüßen“ und einem kurzen Satz. Nachts (22:30–6:30) schläft er („… schläft schon – ganz leise.“),
+  ist er weg: „Bei … – niemand zu Hause.“ Geht er laut seinem Tag hinaus, solange man drin ist, steht da „… ist hinausgegangen.“
 - **Bewohnt**: tagsüber Tageslicht durch die Fenster (das warme Eigenlicht der Räume und ein geliehenes Punktlicht am Fenster wie in der
   Zombie-Nacht); **nachts geht das Licht an** – der Flur beim Hineingehen, jeder Raum, den man betritt (die zwei zuletzt betretenen
-  bleiben an); Lichtschalter an jeder Zimmertür. **Sitzen** auf Sofa, Sesseln, Stühlen, am Schreibtisch, **liegen** auf Betten und der
+  bleiben an); Lichtschalter an jeder Zimmertür. Brennt die Lampe des Raums, in dem man steht, kommt ein schwaches warmes Fülllicht
+  zwischen Auge und Kopf dazu (das von Wänden und Decke zurückgeworfene Lampenlicht – sonst wirkten nachts alle von der Lampe
+  abgewandten Seiten blau wie im Mondlicht): eines der fünf geliehenen Punktlichter des Pavillons (`KERN.lights`, Kennung
+  `haeuser:fill`, Vorrang 0), also keine neue Lampe und kein neues Programm. **Sitzen** auf Sofa, Sesseln, Stühlen, am Schreibtisch, **liegen** auf Betten und der
   Recamiere (nachts „Schlafen bis 7 Uhr“ wie im Garten), **Fernseher** und **Radio** an und aus, Wasserhahn, Dusche, Badewanne,
   Herd mit einem Gedanken; die Türen zwischen den Räumen gehen auf, die Kellerluke und der Dachboden wie in der Zombie-Nacht.
 - **Nichts aus der Zombie-Nacht**: keine Schränke zum Durchsuchen, keine Barrikaden, keine Waffen (Wolfgangs Motorsäge und Axt liegen
@@ -46,9 +54,12 @@ Hilfs-Agent `haeuser` (Auftrag `docs/plans/auftraege/haeuser.md`), Falko 13.11.2
 ## Schnittstelle
 
 `HAEUSER` (`viz3/src/haeuser/haeuser.js`): `list()`, `lookOf(id)`, `enter(id)`, `leave()`, `H` (der Handle von `ZINNEN`), `near`
-(die Tür, die der Knopf anbietet), `KEY`, `pal()` (belegte Felder der Gartenpalette). Ereignisse `haeuser:enter` `{ id, look }`,
-`haeuser:leave` `{ id }`. `HHEUTE` (`viz3/src/haeuser/haeuser_heute.js`): der Stil „heute“ als Erweiterung des Baukastens
-(`ZIEINR.looks`), `mats()`, `roomLook(plan, raum)`.
+(die Tür, die der Knopf anbietet), `guest` (der Bewohner, der gerade zu Hause sitzt), `KEY`, `pal()` (belegte Felder der
+Gartenpalette). Ereignisse `haeuser:enter` `{ id, look }`, `haeuser:leave` `{ id }`. Aktionen `haeuser:rein`, `haeuser:raus`,
+`haeuser:tv`, `haeuser:radio`, `haeuser:gast`; geliehenes Licht `haeuser:fill`. `HHEUTE` (`viz3/src/haeuser/haeuser_heute.js`): der
+Stil „heute“ als Erweiterung des Baukastens (`ZIEINR.looks`), `mats()`, `roomLook(plan, raum)`. `HGAST`
+(`viz3/src/haeuser/haeuser_gast.js`): `show(key, at)`, `hide()`, `f`, `head()`. Speicherschlüssel `pav-haeuser-v1`,
+`pav-haeuser-hinweis` (Hinweis „Ausgedacht“ einmal gezeigt).
 
 **Haken in `zombie/`** (je mit `// feat/haeuser` markiert; ohne Stil-Erweiterung – also in der Zombie-Nacht – verhalten sie sich wie
 vorher): `ZINNEN.mount(id, { look })` baut eine Kopie des Plans in diesem Stil; je Raum ein Stil (`ZIEINR.looks[stil].room`), eigene
