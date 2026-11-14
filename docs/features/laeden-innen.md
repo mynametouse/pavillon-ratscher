@@ -105,6 +105,13 @@ Module: `laeden/innen_plan.js` (`LIPLAN`: Einheiten, Wände mit Öffnungen, Bauk
   Hineingehen in drei Bildern (zu, geht auf, drinnen), wieder hinaus, am Sonntag bleiben die Türen zu (Hinweis „geschlossen“),
   weggehen gibt alles frei, auf dem Telefon höchstens 120 000 Dreiecke; nachts (ein Novemberabend) REWE offen (innen, außen, der
   Lichtschein vor der Tür) und EDEKA geschlossen (nur das Nachtlicht). Bilder in `out/laeden_innen/`.
+- Stand 14.11. ~4:00 (Commit `d2bff7bd`): lokal `smoke` grün, `laeden` 64/64, `laeden_innen:edeka,lidl,rewe,obi,nacht` 51/51,
+  `laeden_innen:mega,getraenke,zeile40,shell,mcd` 54/55 (die eine Prüfung – Speicher nach dem Weggehen zählte den schiebbaren
+  Einkaufswagen eines anderen Ladens nicht mit – berichtigt, `laeden_innen:mcd` danach 12/12); Unit-Tests 297. Dreiecke je Laden
+  (Rechner / Telefon): EDEKA 230 k / 88 k, REWE 257 k / 99 k, Lidl 149 k / 61 k, OBI 242 k / 113 k, Mega Center 222 k / 113 k,
+  Getränkequelle 24 k / 16 k, McDonald’s 15 k / 14 k, Ladenzeile 7 k / 6 k, Shell 6 k / 4 k.
+- GitHub: Lauf **43554605159** grün (`feat/laeden-innen` `d2bff7bd`): `smoke`, `laeden` 64/64,
+  `laeden_innen:edeka,lidl,rewe,obi,nacht` 51/51, `laeden_innen:mega,getraenke,zeile40,shell,mcd` 55/55.
 
 ## Für den Lead
 
