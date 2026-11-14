@@ -1,0 +1,4 @@
+smoke
+laeden
+laeden_innen:edeka,lidl,rewe,obi,nacht
+laeden_innen:mega,getraenke,zeile40,shell,mcd

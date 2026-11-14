@@ -360,7 +360,10 @@ if GROUPS or 'nacht' in want:
                 w = J("GAME.step(6, 1, 0, 0, 1)")
                 dw = math.hypot(w['x'] - md['x'], w['y'] - md['y'])
                 ins = any(inside(p['f'], w['x'], w['y']) for p in sh['parts'] + sh['annex'])
-                ck(f"{sh['id']}: walking at the main door one reaches it and stops at the glass", dw < 1.6 and not ins, f"walker at {w['x']}, {w['y']}, {dw:.2f} m from the door, inside: {ins}")
+                # feat/laeden-innen: with the shops' rooms (LINNEN) the sliding doors of an open shop let one in – then inside counts
+                inn = J(f"!!(window.LINNEN && LINNEN.on && LINNEN.unitAt({w['x']}, {w['y']}))")
+                ck(f"{sh['id']}: walking at the main door one reaches it and stops at the glass (or, where the shop's rooms stand, goes in)",
+                   (dw < 1.6 and not ins) or inn, f"walker at {w['x']}, {w['y']}, {dw:.2f} m from the door, inside: {ins}, in its rooms: {inn}")
                 if sh['id'] in STREET:
                     x, y, yw = STREET[sh['id']]
                     eye(x, y, yw, 3)
