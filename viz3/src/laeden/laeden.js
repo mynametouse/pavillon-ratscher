@@ -1432,6 +1432,7 @@ export const LAEDEN = (() => {
     S.segs = GROUPS.reduce((n, q) => n + (q.segs ? q.segs.length : 0), 0);
     snapCars(g);
     markDirty(true);
+    if (S.onBuild) S.onBuild(g); // feat/laeden-innen: LINNEN adds the door leaves (and the rooms on approach)
   }
   function probesOf(g) {
     const pts = [];
@@ -1441,6 +1442,7 @@ export const LAEDEN = (() => {
     return pts.map(([x, y]) => [x, y, g.gz(x, y)]);
   }
   function drop(g, keepPads) {
+    if (S.onDrop) S.onDrop(g); // feat/laeden-innen: LINNEN frees its leaves and rooms of the group
     for (const m of g.meshes) {
       scene.remove(m);
       if (m.isInstancedMesh) m.dispose();
@@ -1476,7 +1478,11 @@ export const LAEDEN = (() => {
     const art = d.art || sh.art,
       who = d.who || sh.name,
       oh = d.oh || sh.oh,
-      open = isOpen(d.week);
+      // feat/laeden-innen: the doors' own state when LINNEN runs them (it assumes hours where OSM has none)
+      own = S.doorOpen ? S.doorOpen(sh, d) : undefined,
+      open = own === undefined || own === null ? isOpen(d.week) : own;
+    if (own !== undefined && own !== null)
+      return who + ' – ' + art + (oh ? ' · ' + ohShort(oh) : '') + (open ? ' · geöffnet' : ' · geschlossen');
     return (
       who +
       ' – ' +
@@ -1485,6 +1491,8 @@ export const LAEDEN = (() => {
     );
   }
   function doorText(sh, d) {
+    const t = S.doorInfo ? S.doorInfo(sh, d) : null; // feat/laeden-innen: inside there is something now – LINNEN says what
+    if (t) return t;
     const who = d.who || sh.name,
       oh = d.oh || sh.oh,
       open = isOpen(d.week);
@@ -1912,10 +1920,21 @@ export const LAEDEN = (() => {
         }
     }
     d.front = front;
+    // feat/laeden-innen: the front's glazing, the sill and the doors' height for LINNEN; with S.ownLeaves the sliding leaves and their
+    // glass are LINNEN's (it moves them) – here the pane spares the doorway and no leaves are drawn
+    Object.assign(d, { hG, z0, hD });
+    const own = !!S.ownLeaves;
     const o = 0.04, // in front of the wall
       P = (u, z, off = o) => [d.x + tx * u + d.nx * off, d.y + ty * u + d.ny * off, z];
     // the glass: one pane over the whole front (the frames go on top of it)
-    KG.quad(P(-front / 2, z0), P(front / 2, z0), P(front / 2, z0 + hG), P(-front / 2, z0 + hG), [1, 1, 1]);
+    if (own) {
+      // feat/laeden-innen: left and right of the doorway and over it
+      if (front - d.w > 0.02) {
+        KG.quad(P(-front / 2, z0), P(-d.w / 2, z0), P(-d.w / 2, z0 + hG), P(-front / 2, z0 + hG), [1, 1, 1]);
+        KG.quad(P(d.w / 2, z0), P(front / 2, z0), P(front / 2, z0 + hG), P(d.w / 2, z0 + hG), [1, 1, 1]);
+      }
+      KG.quad(P(-d.w / 2, z0 + hD), P(d.w / 2, z0 + hD), P(d.w / 2, z0 + hG), P(-d.w / 2, z0 + hG), [1, 1, 1]);
+    } else KG.quad(P(-front / 2, z0), P(front / 2, z0), P(front / 2, z0 + hG), P(-front / 2, z0 + hG), [1, 1, 1]);
     // frames: posts every ~1.5 m and at the door's edges, the sill, the transom over the doors, the head
     const posts = new Set([-front / 2, front / 2, -d.w / 2, d.w / 2]);
     const nb = Math.max(0, Math.floor((front - d.w) / 2 / 1.5));
@@ -1946,7 +1965,7 @@ export const LAEDEN = (() => {
       );
     }
     // the sliding doors: two leaves with a frame each, a little apart (the gap shows the light inside at night)
-    for (const sgn of [-1, 1]) {
+    for (const sgn of own ? [] : [-1, 1]) {
       const cu = (sgn * d.w) / 4;
       for (const [du, wz] of [
         [-d.w / 4 + 0.03, 0],
@@ -2776,7 +2795,8 @@ export const LAEDEN = (() => {
       const nearOn = d < DETAIL + 200;
       for (const m of g.near) if (m !== g.pool) m.visible = nearOn && !RATSCHER.map;
       if (g.pool) g.pool.visible = nearOn && VPROPS.pool && VPROPS.pool.visible && !RATSCHER.map;
-      for (const m of g.meshes) if (!g.near.includes(m)) m.visible = !RATSCHER.map;
+      // feat/laeden-innen: what LINNEN hides (the glass of a shop whose rooms stand) stays hidden
+      for (const m of g.meshes) if (!g.near.includes(m)) m.visible = !RATSCHER.map && !(S.hidden && S.hidden.has(m));
       // the parked cars that loaded after the group was built
       if (window.DINGE && DINGE.places && g.snapped !== DINGE.places.length && DINGE.areaState().schleusingen === 'da')
         snapCars(g);
