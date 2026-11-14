@@ -96,12 +96,11 @@ Gärten hinter den Häusern, gehört zur Straße). Das Fülllicht ist eines der 
   Fassade es malt, Decke 0,22 m) – etwas höher als in alten Ernhäusern (2,2–2,4 m); über der Tür bleiben gut 0,5 m. Niedriger ginge nur mit
   einer dickeren Decke im Baukasten (die Fenster müssen zur gemalten Fassade passen) – nicht geändert.
 - **Baukasten (`zombie/`, nicht meine Dateien)**: (1) Die DDR-Schrankwand verdeckt in der Zombie-Nacht ihr Fernsehfach (`skip` des Kastens
-  meint Seiten im Hausrahmen, nicht die Vorderseite des Möbels); in den Stilen von heute ist das Fach offen (Haken), in der Zombie-Nacht
-  unverändert – eine Zeile in `L.schrankwand` könnte es auch dort öffnen. (2) Über jeder Innentür füllt der Baukasten die Wand
+  meint Seiten im Hausrahmen, nicht die Vorderseite des Möbels); in den Stilen von heute ist das Fach offen (Haken), seit V18r auch in
+  der Zombie-Nacht (Fernseher, Gläser, Bücher). (2) Über jeder Innentür füllt der Baukasten die Wand
   zwischen beiden Wandseiten mit einem weißen Putzblock, dessen Seiten genau in den Wandflächen liegen: auf einer Tapete flimmerte er als
-  heller Fleck in Treppenstufen-Form durch (Haus 23, Wohnzimmer). Im normalen Spiel sitzt er jetzt 4 mm hinter beiden Flächen (Haken in
-  `z_innen.js`, nur bei `ZINNEN.mount(id, { still: true })`); in der Zombie-Nacht flimmert er noch – dort genügt dieselbe Zeile ohne die
-  Bedingung. (3) Die Zombie-Nacht
+  heller Fleck in Treppenstufen-Form durch (Haus 23, Wohnzimmer). Er sitzt jetzt 4 mm hinter beiden Flächen (`z_innen.js`; zuerst nur im
+  normalen Spiel, seit V18r auch in der Zombie-Nacht). (3) Die Zombie-Nacht
   könnte den Stil „heute“ mit einer Zeile in `ZIPLAN.lookOf` mitbenutzen – nicht gemacht (die Zombie-Nacht bleibt, wie sie ist).
 - **Dorfbewohner**: nur ein Gruß, kein Gespräch über die Gesprächsführung von `dorf/`; der Platz, auf dem einer sitzt, bleibt bis zum
   nächsten Hineingehen belegt.
