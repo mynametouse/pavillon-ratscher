@@ -187,7 +187,8 @@ export const ZIPLAN = (() => {
   function roofOf(b) {
     const tris = [];
     const part = VILLAGE.parts && VILLAGE.parts.get(b.id);
-    if (part && part.tris) for (const t of part.tris) tris.push(t.map(v => [v.x, v.y, v.z]));
+    if (b.roofTris) for (const t of b.roofTris) tris.push(t); // feat/schleusingen-innen: a town house's own roof faces
+    else if (part && part.tris) for (const t of part.tris) tris.push(t.map(v => [v.x, v.y, v.z]));
     else if (VILLAGE.roof0 && b.tris && b.tris.length) {
       const g = VILLAGE.roof0.geometry,
         RP = g.attributes.position.array,
@@ -270,11 +271,17 @@ export const ZIPLAN = (() => {
   };
   // ---- the plan of one house ----
   const CACHE = new Map();
+  // feat/schleusingen-innen: the buildings of another place in an id range of their own (schleusingen/si_innen.js: the town houses of
+  // Schleusingen) – SRC.has(id), SRC.get(id) → a record shaped like VILLAGE.bld's, or null while that town is not built (then nothing is
+  // cached); a record may rework its plan (b.post: the stairwell and the flats, a shop)
+  let SRC = null;
   function plan(id) {
     if (CACHE.has(id)) return CACHE.get(id);
-    const b = VILLAGE.byId && VILLAGE.byId.get(id);
-    const P = b ? make(b) : null;
-    CACHE.set(id, P);
+    const own = !!SRC && SRC.has(id), // feat/schleusingen-innen
+      b = own ? SRC.get(id) : VILLAGE.byId && VILLAGE.byId.get(id);
+    let P = b ? make(b) : null;
+    if (P && b.post) P = b.post(P) || null; // feat/schleusingen-innen
+    if (!own || b) CACHE.set(id, P);
     return P;
   }
   function enterable(b) {
@@ -298,7 +305,7 @@ export const ZIPLAN = (() => {
       old = lookOf(b, R),
       t = 0.4;
     let nSt = 1;
-    while (nSt < 3 && zG + (nSt + 1) * ST - SLAB <= eaveZ + 0.3) nSt++;
+    while (nSt < (b.maxSt || 3) && zG + (nSt + 1) * ST - SLAB <= eaveZ + 0.3) nSt++; // feat/schleusingen-innen: b.maxSt
     const roof = roofOf(b),
       xi0 = X0 + t,
       xi1 = X1 - t,
@@ -727,6 +734,9 @@ export const ZIPLAN = (() => {
       rot: { cx: F.ox, cy: F.oy, c: F.c, s: F.s },
     };
   }
-  return { plan, rng, hh, frameOf, enterable, facadeWindows, faceLook, toL, toW, ST, SLAB, PW, NAMES, OWNERS };
+  // feat/schleusingen-innen: the other place's buildings (source), a plan made again after its town was built anew (forget)
+  const source = src => (SRC = src);
+  const forget = id => CACHE.delete(id);
+  return { plan, rng, hh, frameOf, enterable, facadeWindows, faceLook, toL, toW, ST, SLAB, PW, NAMES, OWNERS, source, forget };
 })();
 window.ZIPLAN = ZIPLAN;

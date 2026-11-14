@@ -1387,6 +1387,8 @@ export const ZIEINR = (() => {
       cy = (room.y0 + room.y1) / 2,
       zc = room.z1;
     const kind = room.kind;
+    // feat/schleusingen-innen: a room its plan furnishes itself, lamp and all (a town house's stairwell, a flat's hall, a shop)
+    if (room.own && room.own(C, room, Pl)) return;
     // the ceiling lamp of every room but the hall's own (it has one too) – the light switch is by the door
     // by the era: a glass bowl or a fabric shade (alt), the cone or the globe (DDR), a flat ceiling dish (later)
     if (!(C.ext && C.ext.ceiling && C.ext.ceiling(C, room, cx, cy, zc)))

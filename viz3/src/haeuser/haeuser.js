@@ -48,6 +48,18 @@ export const HAEUSER = (() => {
     radio: false,
   };
   const hyp = Math.hypot;
+  // feat/schleusingen-innen: other places with houses to go into (schleusingen/si_innen.js: the town houses of Schleusingen) – a source
+  // { has(id), get(id), near(x, y, feet), lookOf(id), hint(h), hintKey } with ids of its own; HAEUSER.list() stays Ratscher's
+  S.sources = [];
+  S.addSource = q => S.sources.push(q);
+  const srcOf = id => S.sources.find(q => q.has(id)) || null;
+  const srcNear = (x, y, feet) => {
+    for (const q of S.sources) {
+      const h = q.near(x, y, feet);
+      if (h) return h;
+    }
+    return null;
+  };
   const KEY = SAVE.key('pav-haeuser-v1', {
     owner: 'Häuser von innen',
     kind: 'json',
@@ -159,6 +171,8 @@ export const HAEUSER = (() => {
     return (ALT = new Set(ids.slice(0, 2)));
   }
   function lookOf(id) {
+    const sq = srcOf(id); // feat/schleusingen-innen: the place's own looks
+    if (sq) return sq.lookOf(id);
     if (VILLAGERS[id]) return VILLAGERS[id];
     if (altIds().has(id)) return 'alt';
     const h = ZIPLAN.hh(id * 1.913 + 0.37),
@@ -242,7 +256,7 @@ export const HAEUSER = (() => {
   // ---- going in ----
   async function enter(h) {
     if (S.busy || S.H || !on()) return false;
-    if (typeof h === 'number') h = S.byId ? S.byId.get(h) : null;
+    if (typeof h === 'number') h = (S.byId && S.byId.get(h)) || (srcOf(h) ? srcOf(h).get(h) : null); // feat/schleusingen-innen
     if (!h) return false;
     S.busy = true;
     try {
@@ -284,7 +298,10 @@ export const HAEUSER = (() => {
           : S.asleep
             ? DTEXT.P[S.asleep].name + ' schläft schon – ganz leise.'
             : null;
-      if (SAVE.once('pav-haeuser-hinweis'))
+      const sq = srcOf(h.id); // feat/schleusingen-innen: the hint of the other place, once there
+      if (sq) {
+        if (sq.hintKey && SAVE.once(sq.hintKey)) PLAY.think(sq.hint(h), 6000);
+      } else if (SAVE.once('pav-haeuser-hinweis'))
         PLAY.think(
           'Ausgedacht: so könnte es heute in einem Haus in Ratscher aussehen – die echten Bewohner kennt das Spiel nicht.',
           6000
@@ -579,7 +596,7 @@ export const HAEUSER = (() => {
     const a = acc;
     acc = 0;
     if (!S.H) {
-      S.near = on() && P.mode === 'walk' && !S.busy ? nearDoor(P.x, P.y, P.feet) : null;
+      S.near = on() && P.mode === 'walk' && !S.busy ? nearDoor(P.x, P.y, P.feet) || srcNear(P.x, P.y, P.feet) : null; // feat/schleusingen-innen: srcNear
       return;
     }
     const H = S.H;
