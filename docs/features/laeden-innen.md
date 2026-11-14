@@ -128,5 +128,9 @@ Module: `laeden/innen_plan.js` (`LIPLAN`: Einheiten, Wände mit Öffnungen, Bauk
 
 ## Offen
 
-- Kassiererinnen: die Leute-Bausätze (`dorf/`, `verkehr/`) haben nur Menschen mit Namen (die Dorfbewohner, die Leute von Schleusingen),
-  keine allgemeinen Figuren fürs Personal – daher noch niemand an den Kassen.
+- Kassiererinnen: die Leute-Bausätze (`dorf/`, `grenzland/gl_fig.js`, `verkehr/`) haben nur Menschen mit Namen, keine allgemeinen
+  Figuren fürs Personal – die Läden bleiben leer (so gewollt, Lead 14.11.).
+- Öffnungszeiten, wo OSM keine kennt, sind angenommen (`DEFAULT_OH`).
+- Die Mieter der Ladenstraße sind flache Läden hinter ihren Scheiben (nicht begehbar); das Kalthaus des Gartencenters hat keine eigene
+  Tür (man kommt durchs Warmhaus).
+- Die Einrichtung ist schlicht (Kisten, Bänder, Schrift als Geometrie); keine Texturen, keine Spiegelungen auf dem Boden.

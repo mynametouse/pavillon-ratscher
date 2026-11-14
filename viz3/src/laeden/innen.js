@@ -218,9 +218,11 @@ export const LINNEN = (() => {
   let CV = null;
   // the letters of a few lines as rectangles in a w × h sign (metres, origin at the lower left), boldness by style
   function textRects(lines, w, h) {
-    const key = lines.join('\n') + '|' + w.toFixed(2) + '|' + h.toFixed(2);
+    const ph = phone(),
+      key = lines.join('\n') + '|' + w.toFixed(2) + '|' + h.toFixed(2) + (ph ? '|p' : '');
     if (TEXTS.has(key)) return TEXTS.get(key);
-    const PXM = Math.min(160, Math.max(48, 64 / Math.max(0.2, h / Math.max(1, lines.length)))), // pixels per metre: ~64 px per line
+    // pixels per metre: ~64 px per line (a phone: half – half the rectangles)
+    const PXM = (ph ? 0.5 : 1) * Math.min(160, Math.max(48, 64 / Math.max(0.2, h / Math.max(1, lines.length)))),
       W = Math.max(8, Math.min(1024, Math.round(w * PXM))),
       H = Math.max(8, Math.min(512, Math.round(h * PXM)));
     if (!CV) CV = document.createElement('canvas');
@@ -369,6 +371,39 @@ export const LINNEN = (() => {
       K.faceN(pt(a0, f, za), pt(a1, f, za), pt(a1, f, zb), pt(a0, f, zb), fx, fy, 0, cl, false, kk);
     const top = (a0, a1, f0, f1, z, cl, kk) =>
       K.faceN(pt(a0, f0, z), pt(a1, f0, z), pt(a1, f1, z), pt(a0, f1, z), 0, 0, 1, cl, false, kk);
+    if (gd.k === 'heap' && ph) {
+      // a phone: the heap as one frustum (its top and four slopes from the foot)
+      top(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
+      for (const s2 of [1, -1]) {
+        const f = fr * s2,
+          a = (gd.len / 2) * s2;
+        K.faceN(
+          pt(-gd.len / 2, f, z0),
+          pt(gd.len / 2, f, z0),
+          pt(gd.len * 0.32, f * 0.6, z0 + h),
+          pt(-gd.len * 0.32, f * 0.6, z0 + h),
+          fx * s2,
+          fy * s2,
+          0.6,
+          c,
+          false,
+          s2 > 0 ? 0.9 : 0.85
+        );
+        K.faceN(
+          pt(a, -fr, z0),
+          pt(a, fr, z0),
+          pt(a * 0.64, fr * 0.6, z0 + h),
+          pt(a * 0.64, -fr * 0.6, z0 + h),
+          ax * s2,
+          ay * s2,
+          0.6,
+          c,
+          false,
+          0.88
+        );
+      }
+      return;
+    }
     if (gd.k === 'heap') {
       // fruit in a crate: a heap in two layers, the colour varied
       top(-gd.len / 2, gd.len / 2, -fr, fr, z0 + h * 0.6, c, 0.95);
@@ -458,25 +493,28 @@ export const LINNEN = (() => {
           }
       } else face(a0, a1, fr, z0, z0 + h, c, jit); // box, pack, can
     }
+    // (a phone: no label bands, no tops one hardly sees – over 1.55 m)
+    const band = !ph,
+      high = ph && z0 + h > 1.55;
     if (gd.k === 'bottle') {
-      face(A + w * 0.12, B - w * 0.12, fr + 0.002, z0 + h * 0.22, z0 + h * 0.45, lighter, 1);
-      top(A, B, -fr, fr, z0 + h * 0.62, c, 0.9);
+      if (band) face(A + w * 0.12, B - w * 0.12, fr + 0.002, z0 + h * 0.22, z0 + h * 0.45, lighter, 1);
+      if (!high) top(A, B, -fr, fr, z0 + h * 0.62, c, 0.9);
     } else if (gd.k === 'can') {
       if (!ph) {
         face(A, B, fr + 0.001, z0 + h * 0.86, z0 + h * 0.93, lighter, 1);
         face(A, B, fr + 0.001, z0 + h * 0.05, z0 + h * 0.1, darker, 1);
       }
-      top(A, B, -fr, fr, z0 + h, L(0.7, 0.7, 0.72), 1);
+      if (!high) top(A, B, -fr, fr, z0 + h, L(0.7, 0.7, 0.72), 1);
     } else if (gd.k === 'jar') {
-      face(A, B, fr + 0.001, z0 + h * 0.3, z0 + h * 0.55, lighter, 1);
-      top(A, B, -fr, fr, z0 + h, darker, 1);
+      if (band) face(A, B, fr + 0.001, z0 + h * 0.3, z0 + h * 0.55, lighter, 1);
+      if (!high) top(A, B, -fr, fr, z0 + h, darker, 1);
     } else if (gd.k === 'bag') {
-      face(A, B, fr + 0.001, z0 + h * 0.35, z0 + h * 0.6, lighter, 1);
-      top(A, B, -fr * 0.6, fr, z0 + h * 0.86, c, 0.9);
+      if (band) face(A, B, fr + 0.001, z0 + h * 0.35, z0 + h * 0.6, lighter, 1);
+      if (!high) top(A, B, -fr * 0.6, fr, z0 + h * 0.86, c, 0.9);
     } else if (gd.k === 'crate') top(A, B, -fr, fr, z0 + h, darker, 1);
     else if (gd.k !== 'loaf') {
-      face(A, B, fr + 0.001, z0 + h * 0.4, z0 + h * 0.68, lighter, 1);
-      top(A, B, -fr, fr, z0 + h, c, 0.95);
+      if (band) face(A, B, fr + 0.001, z0 + h * 0.4, z0 + h * 0.68, lighter, 1);
+      if (!high) top(A, B, -fr, fr, z0 + h, c, 0.95);
     }
     // the block's two ends (seen at the end of a run)
     const sx = (a, zt) => {
