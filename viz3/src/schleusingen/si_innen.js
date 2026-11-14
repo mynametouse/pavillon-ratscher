@@ -11,7 +11,9 @@
 // stands (a copy of the tiles' material that discards the house's rectangle – one program, made behind the first fade). No new lamps.
 //   SINNEN.status()   state, how many houses (by kind), why the others are not      SINNEN.list()   the doors (id, kind, door)
 //   SINNEN.info(id)   kind, look, storeys, rooms, flats      SINNEN.pick(kind, x, y)   the nearest house of a kind
-//   SINNEN.phone      true: the budget of a phone (one flat in a stairwell house, the shops' small parts left out)
+//   SINNEN.setPhone(v)   the budget of a phone: one flat per stairwell house, the plans made anew (the shops' small parts: LINNEN.phone)
+//   event 'schleusingen-innen:ready' { n }; actions 'si:zu:<id>:<i>' („Verschlossen“), 'si:personal:<id>', 'si:geschlossen'; the hint
+//   once: save key 'pav-schl-innen-hinweis'
 // ?szenario=schleusingen-innen (&haus=<id> | &art=haus|treppenhaus|laden, &drin=1): in front of a house of the old town (or inside it).
 import * as THREE from 'three';
 import { COARSE, QS, R as RENDERER } from '../core/head.js';
