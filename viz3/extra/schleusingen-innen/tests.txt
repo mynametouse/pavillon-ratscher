@@ -1,0 +1,11 @@
+# feat/schleusingen-innen: the houses of Schleusingen from inside (docs/features/schleusingen-innen.md); one 'name[:args]' per line as for
+# viz3/test/run.py – every line runs as a job of its own in the feature CI (≤ 60 min each), so the town's test is split in two
+smoke
+schleusingen_innen:only=door+walk+night+mem+treppe+save,bilder=1
+schleusingen_innen:only=laden+looks+sweep+phone,bilder=1
+# what the feature hooks into: Ratscher's houses (HAEUSER), the zombie night's kit (ZIPLAN, ZIEINR, ZINNEN), the shops' kit (LINNEN),
+# and the phone's memory (memphone, of the Prüfpaket)
+haeuser:bilder=1
+zombie_innen
+laeden_innen:mcd,lidl
+memphone

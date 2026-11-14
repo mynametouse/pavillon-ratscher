@@ -1,0 +1,372 @@
+// Unit tests of the houses of Schleusingen from inside (schleusingen/si_plan.js, si_laden.js) without a browser: which buildings of the town
+// data, the records for the planner, the stairwell house with its flats on plans shaped like the kit's (zombie/z_innen_plan.js: the hall
+// at the door, the stacked stairs along the small side, the attic stair) over many sizes – rooms inside the house and apart, every door in
+// a partition between its two rooms, every room reached, one flat per storey open –, the shop rooms of every kind inside their room and
+// under its ceiling, the door kept free. Run: node --test "viz3/test/unit/*.test.mjs" (tools/check.sh does it)
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { SIPLAN } from '../../src/schleusingen/si_plan.js';
+import { SILADEN } from '../../src/schleusingen/si_laden.js';
+import { LIPLAN } from '../../src/laeden/innen_plan.js';
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const DATA = JSON.parse(
+  fs.readFileSync(path.join(HERE, '..', '..', 'extra', 'schleusingen', 'dist', 'schleusingen', 'stadt.json'), 'utf8')
+);
+const PW = SIPLAN.PW;
+
+// the door facade as welt/schleusingen.js picks it (towards the nearest street, not a party wall), the door in its middle bay
+function withDoor(b) {
+  let doorF = -1,
+    best = 1e9;
+  b.F.forEach((f, k) => {
+    const L = Math.hypot(f[2] - f[0], f[3] - f[1]);
+    if (f[8] & 1 || L < 3 || f[9] > 15) return;
+    const sc = f[9] - L * 0.05;
+    if (sc < best) {
+      best = sc;
+      doorF = k;
+    }
+  });
+  const out = Object.assign({}, b, { z0: 0, st: { style: 0, raised: false, sp: 2.8, frame: 0 } });
+  if (doorF >= 0) {
+    const f = b.F[doorF],
+      L = Math.hypot(f[2] - f[0], f[3] - f[1]);
+    out.doorFac = { ax: f[0], ay: f[1], dx: (f[2] - f[0]) / L, dy: (f[3] - f[1]) / L, u: L / 2, w: b.k === 0 ? 1.05 : 2.5 };
+  }
+  return out;
+}
+
+test('which buildings of the town: houses with a street door; not the landmarks, sheds, halls, named buildings', () => {
+  const why = {};
+  let n = 0;
+  for (const b0 of DATA.b) {
+    const b = withDoor(b0),
+      w = SIPLAN.rules(b);
+    if (w) why[w] = (why[w] || 0) + 1;
+    else n++;
+    if (b0.lm) assert.equal(w, 'wahrzeichen', 'landmark ' + b0.lm);
+    if (b0.k === 2) assert.equal(w, 'schuppen');
+  }
+  assert.ok(n > 400 && n < 726, 'candidates ' + n + ' ' + JSON.stringify(why));
+  assert.equal(why.wahrzeichen, 4);
+  assert.ok(why.schuppen >= 25 && why.halle >= 20 && why.name >= 20, JSON.stringify(why));
+});
+
+test('the record for the planner: an id of its own, the facades with their door and normals, a roof, the party walls without bays', () => {
+  for (const b0 of DATA.b.slice(0, 200)) {
+    const b = withDoor(b0);
+    if (SIPLAN.rules(b)) continue;
+    const r = SIPLAN.record(b);
+    assert.ok(SIPLAN.has(r.id) && r.id === 900000 + b0.i && r.id > 100000, 'id');
+    assert.equal(r.typ, 0);
+    assert.equal(r.fac.length, b0.F.length);
+    const d = r.fac.filter(f => f.door);
+    assert.equal(d.length, 1, 'one door facade');
+    assert.ok(d[0].L > 3 && !d[0].blind && Math.abs(d[0].door.u - d[0].L / 2) < 1e-6);
+    // the outward normal: a point in front of the door lies outside the footprint, one behind it inside
+    const f = d[0],
+      mx = f.ax + f.dx * f.door.u,
+      my = f.ay + f.dy * f.door.u;
+    assert.ok(!SIPLAN.inPoly(b0.f, mx + f.nx * 0.5, my + f.ny * 0.5), 'outside in front of the door ' + b0.i);
+    assert.ok(SIPLAN.inPoly(b0.f, mx - f.nx * 0.5, my - f.ny * 0.5), 'inside behind the door ' + b0.i);
+    for (const q of r.fac) if (q.blind) assert.equal(q.L, 0.5, 'a party wall has no bays');
+    assert.ok(r.roofTris.length >= 2 && r.roofTris.every(t => t.length === 3 && t.every(p => p.length === 3)));
+    assert.ok(r.area > 20);
+  }
+});
+
+test('the signs: the first rows of the town’s list (16 with the Bürgerbüro), in the order of its buildings', () => {
+  const bld = DATA.b.map(withDoor),
+    s = SIPLAN.signed(bld, true),
+    all = bld.filter(b => (b.lm === 'rathaus' || (b.s && b.s[0])) && b.doorFac);
+  assert.ok(s.size >= 10 && s.size <= 15, 'signed ' + s.size);
+  const first = all.slice(0, 15).filter(b => b.lm !== 'rathaus');
+  assert.deepEqual([...s.keys()].sort((a, b) => a - b), first.map(b => b.i).sort((a, b) => a - b));
+});
+
+test('what kind of shop a sign is: bakery, pharmacy, café, inn, shelves – or none (a doctor, a bank: a flat)', () => {
+  assert.equal(SIPLAN.shopType('Bäckerei Scheidig', 'bakery'), 'baecker');
+  assert.equal(SIPLAN.shopType('Adler Apotheke', 'pharmacy'), 'apotheke');
+  assert.equal(SIPLAN.shopType('Stadtcafé', 'cafe'), 'cafe');
+  assert.equal(SIPLAN.shopType('Ratsstube', 'restaurant'), 'gaststaette');
+  assert.equal(SIPLAN.shopType('Rockenstein Buchhandlung', 'books'), 'laden');
+  assert.equal(SIPLAN.shopType('Dr. Pils', 'doctors'), null);
+  assert.equal(SIPLAN.shopType('vr bank', 'bank'), null);
+  assert.equal(SIPLAN.shopType('Friseur', 'hairdresser'), null);
+  // every sign of the data has a place with a type, or none fits
+  const pois = DATA.poi;
+  let typed = 0;
+  for (const b of DATA.b.map(withDoor)) if (b.s && SIPLAN.shopOf(b, pois, b.s[0])) typed++;
+  assert.ok(typed >= 8, 'typed shops ' + typed);
+});
+
+test('the look of 2026 fixed per id: mostly today, some after 1990, few DDR, rarely as before 1960; a shop of today', () => {
+  const n = { heute: 0, 'heute-90': 0, 'heute-ddr': 0, alt: 0 };
+  for (let i = 0; i < 800; i++) n[SIPLAN.lookOf(SIPLAN.idOf(i), 'haus')]++;
+  assert.ok(n.heute > 450 && n['heute-90'] > 90 && n['heute-ddr'] > 40 && n.alt > 5 && n.alt < 50, JSON.stringify(n));
+  assert.equal(SIPLAN.lookOf(SIPLAN.idOf(7), 'haus'), SIPLAN.lookOf(SIPLAN.idOf(7), 'haus'));
+  for (let i = 0; i < 50; i++) assert.equal(SIPLAN.lookOf(SIPLAN.idOf(i), 'laden'), 'heute');
+});
+
+// ---- plans shaped like the kit's (zombie/z_innen_plan.js make: the hall at the door, its stairs on the small side's wall) ----
+function kitPlan(W, D, du, nSt) {
+  const ST = 2.75,
+    SLAB = 0.22,
+    t = 0.4,
+    xi0 = t,
+    xi1 = W - t,
+    yi0 = t,
+    yi1 = D - t,
+    FW = W < 7 ? 1.6 : W < 10 ? 1.9 : 2.2;
+  let fa = du - FW / 2,
+    fb = du + FW / 2;
+  if (fa - PW / 2 - xi0 < 1.9) fa = xi0 - PW / 2;
+  if (xi1 - fb - PW / 2 < 1.9) fb = xi1 + PW / 2;
+  const sides = [];
+  if (fa > xi0) sides.push({ k: 'L', w: fa - PW / 2 - xi0 });
+  if (fb < xi1) sides.push({ k: 'R', w: xi1 - fb - PW / 2 });
+  const hx0 = Math.max(xi0, fa + PW / 2),
+    hx1 = Math.min(xi1, fb - PW / 2);
+  const big = sides.slice().sort((a, b) => b.w - a.w)[0] || null,
+    small = sides.find(s => s !== big) || null;
+  const n = Math.max(12, Math.round(ST / 0.19)),
+    rise = ST / n;
+  let tread = 0.25,
+    y0 = yi0 + 1.7;
+  const fit = () => y0 + (n - 1) * tread <= yi1 - 0.15;
+  if (!fit()) {
+    tread = 0.22;
+    y0 = yi0 + 1.3;
+  }
+  if (!fit()) {
+    tread = Math.max(0.19, (yi1 - 0.15 - (yi0 + 1.15)) / (n - 1));
+    y0 = yi0 + 1.15;
+  }
+  let stair = null;
+  const sw = Math.min(0.9, (hx1 - hx0) * 0.48);
+  if (fit() && hx1 - hx0 >= 1.45) {
+    const onR = small ? small.k === 'R' : fb >= xi1;
+    stair = {
+      x0: onR ? hx1 - sw : hx0,
+      x1: onR ? hx1 : hx0 + sw,
+      y0,
+      y1: y0 + (n - 1) * tread,
+      n,
+      rise,
+      tread,
+      side: onR ? 'R' : 'L',
+      holeK: Math.max(2, Math.ceil((ST - SLAB - 1.9) / rise) - 1),
+    };
+  }
+  const zF = [],
+    zC = [];
+  for (let k = 0; k < nSt; k++) {
+    zF.push(0.35 + k * ST);
+    zC.push(0.35 + (k + 1) * ST - SLAB);
+  }
+  // the attic stair along the other wall of the top hall, at the back
+  const astair =
+    stair && nSt > 1
+      ? {
+          x0: stair.side === 'R' ? hx0 : hx1 - 0.8,
+          x1: stair.side === 'R' ? hx0 + 0.8 : hx1,
+          y0: yi1 - 0.6 - 12 * 0.21,
+          y1: yi1 - 0.6,
+          dir: 1,
+          fl: nSt - 1,
+          side: stair.side === 'R' ? 'L' : 'R',
+        }
+      : null;
+  return {
+    id: 900000 + Math.round(W * 31 + D * 7 + du),
+    xi0,
+    xi1,
+    yi0,
+    yi1,
+    X0: 0,
+    X1: W,
+    D,
+    t,
+    fa,
+    fb,
+    hx0,
+    hx1,
+    stair,
+    astair,
+    nSt,
+    zF,
+    zC,
+    zA: 0.35 + nSt * ST,
+    rooms: [{ kind: 'boden', fl: nSt, x0: xi0 + 1, x1: xi1 - 1, y0: yi0 + 1, y1: yi1 - 1, z0: 0.35 + nSt * ST, z1: 0.35 + nSt * ST + 2 }],
+    doors: [],
+    windows: [],
+    front: { x: du, w: 1.05, z0: 0.35, z1: 2.5 },
+  };
+}
+
+test('the stairwell house over many sizes: rooms inside and apart, doors in partitions, every room reached, one flat open per storey', () => {
+  let plans = 0,
+    flats = 0,
+    baths = 0,
+    kitchens = 0,
+    storeys = 0,
+    locked = 0;
+  for (let W = 6; W <= 20; W += 1.3)
+    for (let D = 6.5; D <= 18; D += 1.15)
+      for (const f of [0.22, 0.5, 0.71])
+        for (const nSt of [2, 3, 4]) {
+          const P = kitPlan(W, D, W * f, nSt);
+          if (!P.stair) continue;
+          const Q = SIPLAN.flats(P, { seed: P.id });
+          if (!Q) continue;
+          plans++;
+          const bad = SIPLAN.check(Q);
+          assert.deepEqual(bad, [], `W ${W.toFixed(1)} D ${D.toFixed(1)} door ${f} storeys ${nSt}: ${bad.join('; ')}`);
+          // per storey: the stairwell, at most one flat open; every flat's rooms on its storey
+          for (let k = 0; k < nSt; k++) {
+            assert.equal(Q.rooms.filter(r => r.trep && r.fl === k).length, 1);
+            assert.ok(Q.open.filter(d => d.fl === k).length <= 1);
+          }
+          flats += Q.open.length;
+          locked += Q.locked.length;
+          storeys += nSt;
+          for (const d of Q.open) {
+            const rs = Q.rooms.filter(r => r.flat && r.fl === d.fl);
+            if (rs.some(r => r.kind === 'bad')) baths++;
+            if (rs.some(r => r.kind === 'kueche')) kitchens++;
+            assert.ok(rs.some(r => r.kind === 'diele') && rs.some(r => r.kind === 'wohnzimmer'), 'a hall and a living room');
+          }
+          // the plan is the same each time
+          assert.deepEqual(SIPLAN.flats(kitPlan(W, D, W * f, nSt), { seed: P.id }).rooms.map(r => r.id), Q.rooms.map(r => r.id));
+        }
+  assert.ok(plans > 300, 'plans ' + plans);
+  assert.ok(flats > storeys * 0.7, `open flats ${flats} of ${storeys} storeys`);
+  assert.ok(kitchens > flats * 0.9 && baths > flats * 0.7, `kitchens ${kitchens}, baths ${baths} of ${flats}`);
+  assert.ok(locked > 50, 'locked doors ' + locked);
+});
+
+test('a phone: one flat in a stairwell house, the other doors locked', () => {
+  const P = kitPlan(12, 12, 6, 3),
+    Q = SIPLAN.flats(P, { seed: 3, phone: true });
+  assert.ok(Q);
+  assert.equal(Q.open.length, 1);
+  assert.equal(Q.open[0].fl, 1);
+  assert.deepEqual(SIPLAN.check(Q), []);
+});
+
+test('no flat fits beside the stairwell (a shallow house, small sides): no stairwell house – the whole house instead', () => {
+  // 5 m deep (outside): too shallow for a flat on either side of the stairwell, however wide the house
+  let n = 0;
+  for (const [W, D, f] of [
+    [6.2, 5.0, 0.18],
+    [8.6, 5.0, 0.3],
+    [5.8, 5.0, 0.62],
+  ]) {
+    const P = kitPlan(W, D, W * f, 3);
+    if (!P.stair) continue;
+    n++;
+    assert.equal(SIPLAN.flats(P, { seed: 5 }), null, `W ${W} D ${D}`);
+    assert.equal(SIPLAN.flats(kitPlan(W, D, W * f, 3), { seed: 5, phone: true }), null, `phone W ${W} D ${D}`);
+  }
+  assert.ok(n >= 1, 'a case with stairs');
+});
+
+test('the shop: a sales room behind the house door – at most 12 m deep and 120 m² (60 m² where it can), the rest behind a staff door', () => {
+  let n = 0;
+  for (let W = 5; W <= 26; W += 1.7)
+    for (let D = 5; D <= 22; D += 1.9)
+      for (const f of [0.25, 0.5, 0.75]) {
+        const P = kitPlan(W, D, W * f, 2),
+          Win = P.xi1 - P.xi0,
+          Din = P.yi1 - P.yi0,
+          Q = SIPLAN.shop(P, 'baecker'),
+          r = Q.rooms[0],
+          A = (r.x1 - r.x0) * (r.y1 - r.y0);
+        n++;
+        assert.equal(Q.nSt, 1);
+        assert.equal(Q.rooms.length, 1);
+        assert.equal(r.kind, 'flur');
+        assert.equal(r.name, 'Bäckerei');
+        assert.equal(Q.stair, null);
+        assert.deepEqual(SIPLAN.check(Q), [], `W ${W} D ${D}`);
+        if (Win * Din <= 120 && Din <= 12) assert.ok(Math.abs(A - Win * Din) < 1e-6, 'a small floor is the shop');
+        else {
+          assert.ok(r.y1 - r.y0 <= 12 + 1.6 + 1e-6, `W ${W} D ${D}: depth ${r.y1 - r.y0}`);
+          assert.ok(r.x1 - r.x0 <= 12.5 + 3.2 + 1e-6, `W ${W} D ${D}: width ${r.x1 - r.x0}`);
+          assert.ok(A <= 120 * 1.4 + 1e-6, `W ${W} D ${D}: area ${A.toFixed(1)}`);
+          assert.ok(A >= Math.min(60, Win * Math.min(Din, 12)) - 1e-6, `W ${W} D ${D}: area ${A.toFixed(1)}`);
+          // the house door opens into it, and a door leads on to the back rooms
+          assert.ok(Q.front.x >= r.x0 + 0.4 && Q.front.x <= r.x1 - 0.4, 'the house door in the sales room');
+          // a door on to the back rooms wherever the sales room is smaller than the floor
+          const whole = Math.abs(A - Win * Din) < 1e-6;
+          assert.ok(whole || Q.staff, `W ${W} D ${D}: a staff door`);
+          if (!Q.staff) continue;
+          const s = Q.staff;
+          if (s.side === 'y1') assert.ok(Math.abs(s.y - r.y1) < 1e-6 && s.x - s.w / 2 >= r.x0 && s.x + s.w / 2 <= r.x1);
+          else assert.ok(s.y - s.w / 2 >= r.y0 && s.y + s.w / 2 <= r.y1 && Math.abs(s.x - (s.side === 'x0' ? r.x0 : r.x1)) < 1e-6);
+        }
+      }
+  assert.ok(n > 100);
+});
+
+test('the shop rooms of every kind: fixtures inside the room and under its ceiling, the ways from the door and to the staff door free', () => {
+  for (const type of Object.keys(SILADEN.LAY))
+    for (const [W, D, back] of [
+      [6, 8, true],
+      [8.2, 10.5, true],
+      [11, 9, false],
+    ]) {
+      // a room turned 30° (the town's houses are), counter-clockwise, its door in the middle of the front, the staff door in the back wall
+      const a = Math.PI / 6,
+        c = Math.cos(a),
+        s = Math.sin(a),
+        T = (x, y) => [100 + x * c - y * s, 50 + x * s + y * c],
+        f = LIPLAN.ccw([...T(0, 0), ...T(W, 0), ...T(W, D), ...T(0, D)]),
+        dw = T(W / 2, 0),
+        sw = T(W - 1.3, D),
+        hc = 2.53,
+        u = {
+          id: 'si-test-' + type,
+          type,
+          vols: [{ f, h: hc + 1.0 }],
+          doors: [{ x: dw[0], y: dw[1], nx: s, ny: -c }],
+          staff: back ? { x: sw[0], y: sw[1], nx: s, ny: -c, w: 0.86 } : null,
+        },
+        Pl = SILADEN.plan(u, hc);
+      assert.ok(Pl && Pl.boxes.length > 10, type + ' fixtures');
+      const inside = (x, y) => LIPLAN.inPoly(f, x, y) || LIPLAN.edgeDist(f, x, y) < 0.06;
+      for (const b of Pl.boxes) {
+        assert.ok(inside(b.x, b.y), `${type} ${W}×${D}: a box inside (${b.x.toFixed(2)}, ${b.y.toFixed(2)})`);
+        assert.ok(b.z + b.sz <= hc + 1e-6, `${type}: under the ceiling`);
+      }
+      for (const g of Pl.goods) assert.ok(inside(g.x, g.y) && g.z + g.h <= hc, type + ': goods inside');
+      for (const l of Pl.lights) assert.ok(l.z <= hc, type + ': lights at the ceiling');
+      for (const sg of Pl.signs) assert.ok(sg.z + sg.h <= hc && sg.z > 1.2, type + ': signs under the ceiling');
+      // the way in: 1 m in front of the house door nothing stands; 0.8 m in front of the staff door neither (its own leaf aside)
+      const ix = dw[0] - s * 1.0,
+        iy = dw[1] + c * 1.0;
+      for (const b of Pl.boxes)
+        if (b.z < 1.0) assert.ok(Math.hypot(b.x - ix, b.y - iy) > 0.45, `${type} ${W}×${D}: the door kept free`);
+      if (back) {
+        const sx = sw[0] + s * 0.8,
+          sy = sw[1] - c * 0.8;
+        for (const b of Pl.boxes)
+          if (b.z < 1.0 && b.sx * b.sy > 0.01)
+            assert.ok(Math.hypot(b.x - sx, b.y - sy) > 0.4, `${type} ${W}×${D}: the staff door kept free`);
+        assert.ok(Pl.signs.some(sg => sg.t.join(' ') === 'Nur für Personal'), type + ': the staff door has its plate');
+      }
+      // a counter (the place behind it) in every kind; in a bakery and a café near the door, and tables along the windows
+      assert.ok(Pl.spots.some(p => p.k === 'theke'), type + ': a counter');
+      if (type === 'baecker' || type === 'cafe') {
+        const t = Pl.spots.find(p => p.k === 'theke');
+        assert.ok(Math.hypot(t.x - dw[0], t.y - dw[1]) < Math.max(5.5, W / 2 + 2.5), type + ': the counter near the door');
+        assert.ok(Pl.tables >= 2, `${type} ${W}×${D}: tables ${Pl.tables}`);
+      }
+      // no sign with a name: only what kind of shop it is
+      for (const sg of Pl.signs) for (const t of sg.t) assert.ok(t.length < 40, type + ' sign ' + t);
+    }
+});
