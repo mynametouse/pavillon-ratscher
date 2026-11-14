@@ -71,7 +71,7 @@ with lib.browser() as b:
     print('sound engine:', ton, flush=True)
     # ---------------- the radio ----------------
     st = J("({ on: GLSTATE.on, n: GLRADIO.stations().map(s => s.id), cur: GLRADIO.cur(), radio: GLSTATE.radio })")
-    ck('six stations on the dial, the radio is off at first', st['on'] and st['n'] == ['grenzland', 'kirmes', 'klassik', 'zweitakt', 'blasius', 'neon']
+    ck('seven stations on the dial, the radio is off at first', st['on'] and st['n'] == ['grenzland', 'kirmes', 'klassik', 'zweitakt', 'blasius', 'funkloch', 'neon']
        and st['cur'] is None and st['radio'] == 0, str(st))
     E("GLRADIO.next()")
     steps(0.5)
@@ -95,14 +95,30 @@ with lib.browser() as b:
         m = J("({ mode: GLRADIO.stand().mode, out: GLRADIO.S.A.out.gain.value, lp: GLRADIO.S.A.lp.frequency.value })")
         ck('on foot the radio plays from the phone', m['mode'] == 'handy' and m['lp'] < 4500, str(m))
     pic('01_sender', True)
+    # ---------------- real songs (gl_radio_data.js LIEDER, files in snd/radio/) and the night (GLNACHT) ----------------
+    E("GLRADIO.tune('zweitakt')"); steps(0.5)
+    ok = until("GLRADIO.S.item && GLRADIO.S.item.lied", 60)
+    so = J("(() => { const a = GLRADIO.S.el && GLRADIO.S.el.a, it = GLRADIO.S.item || {}; return { src: a ? a.src : '', t: a ? a.currentTime : -1, lied: !!it.lied, titel: it.titel || '', lizenz: it.lizenz || '', text: document.getElementById('glradio').textContent } })()")
+    ck('Radio Zweitakt plays a real song with its licence in the display', ok and so['lied'] and 'CC BY' in so['text'] and so['titel'] in ('Sonzis FM', 'Ate A Pizza')
+       and (not ton or '/snd/radio/z' in so['src']), str(so))
+    codes = json.loads(E("(async () => JSON.stringify(await Promise.all(['snd/radio/zt_sonzis.mp3', 'snd/radio/fl_bigcar.mp3', 'snd/radio/nf_street.mp3', 'snd/radio/km_bavaria.mp3', 'snd/nacht/grillen.mp3', 'snd/nacht/glocke_schlag.mp3'].map(u => fetch(u, { headers: { Range: 'bytes=0-15' } }).then(r => r.status, () => 0)))))()"))
+    ck('the song and night files are served', all(c in (200, 206) for c in codes) and len(codes) == 6, str(codes))
+    if ton:
+        for _ in range(4):
+            E("GLNACHT.tick(0.3)"); steps(0.3)
+        until("GLNACHT.stand().geladen.includes('glocke_schlag')", 20)
+        E("GLNACHT.schlag(2)"); steps(2.8)
+        n = J("GLNACHT.stand()")
+        ck('the bell of St. Johannis strikes (a real recording)', n['schlaege'] >= 1 and 'glocke_schlag' in n['geladen'] and n['fehl'] == 0, str(n))
+    E("GLRADIO.tune('grenzland')"); steps(0.3)
     # through the dial with R, back with Shift+R, off after the last one
     ids = []
-    for _ in range(6):
+    for _ in range(7):
         E("GLRADIO.next()"); steps(0.25); ids.append(E("GLRADIO.cur()"))
-    ck('R goes through the stations and switches off after the last', ids == ['kirmes', 'klassik', 'zweitakt', 'blasius', 'neon', None], str(ids))
+    ck('R goes through the stations and switches off after the last', ids == ['kirmes', 'klassik', 'zweitakt', 'blasius', 'funkloch', 'neon', None], str(ids))
     ck('off: the display says so, the choice is saved', E("GLSTATE.radio") == 0 and 'Radio aus' in E("document.getElementById('glradio').textContent"))
     E("GLRADIO.prev()"); steps(0.25)
-    ck('Shift+R: the one before', E("GLRADIO.cur()") == 'neon' and E("GLSTATE.radio") == 6)
+    ck('Shift+R: the one before', E("GLRADIO.cur()") == 'neon' and E("GLSTATE.radio") == 7)
     pg.keyboard.press('r'); steps(0.25)
     a = E("GLRADIO.cur()")
     pg.keyboard.press('Shift+R'); steps(0.25)
@@ -111,10 +127,11 @@ with lib.browser() as b:
     E("GLRADIO.list(true)"); steps(0.25)
     rows = E("document.querySelectorAll('#glradio .rl button').length")
     pic('02_liste')
+    E("GLRADIO.S.prog.klassik && (GLRADIO.S.prog.klassik.song = -1); 0")
     pg.click('#glradio .rl button[data-s="klassik"]')
     steps(0.5)
     s = ST()
-    ck('the list shows all stations and „aus“; a click tunes', rows == 7 and s['id'] == 'klassik' and s['liste'], str({k: s[k] for k in ('id', 'liste', 'k', 'titel')}))
+    ck('the list shows all stations and „aus“; a click tunes', rows == 8 and s['id'] == 'klassik' and s['liste'], str({k: s[k] for k in ('id', 'liste', 'k', 'titel')}))
     rec = J("({ t: GLRADIO.now().titel, el: !!GLRADIO.S.el, src: GLRADIO.S.el ? GLRADIO.S.el.a.src : '' })")
     ck('the classical station plays a public-domain recording of the record player\'s shelf', bool(rec['t']) and (not ton or ('snd/music/' in rec['src'])), str(rec))
     E("GLRADIO.list(false)")
@@ -192,7 +209,7 @@ with lib.browser() as b:
         if E("window.__e89 === 2"): break
     steps(0.5)
     s = J("({ era: GLSTATE.era, cur: GLRADIO.cur(), n: GLRADIO.stations().length, notes: GLHANDY.S.notes.map(n => n.titel) })")
-    ck('back today: one\'s own station again, and a note on what the radio of 1989 reported', s['era'] == 'heute' and s['cur'] == 'zweitakt' and s['n'] == 6
+    ck('back today: one\'s own station again, and a note on what the radio of 1989 reported', s['era'] == 'heute' and s['cur'] == 'zweitakt' and s['n'] == 7
        and any('10. November 1989' in t for t in s['notes']), str(s))
     # ---------------- the phone ----------------
     E("KERN.on('grenzland:ziel', d => { window.__ziel = d }); 0")

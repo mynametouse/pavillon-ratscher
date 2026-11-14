@@ -232,7 +232,7 @@ export const GLRADIO = (() => {
     return b;
   };
   // a public-domain recording of the record player's shelf, as the classical station's programme: the first minute and a quarter
-  function playRec(rec) {
+  function playRec(rec, off = 0) {
     const A = chain();
     if (!A) return false;
     stopSrc();
@@ -245,11 +245,26 @@ export const GLRADIO = (() => {
         node.connect(A.duck);
         S.el = { a, node, ctx: A.ctx };
         a.addEventListener('error', () => {
-          if (S.item && S.item.rec) S.item.left = Math.min(S.item.left, 0.5);
+          if (!S.item || !S.item.rec) return;
+          S.item.left = Math.min(S.item.left, 0.5);
+          // a song file that cannot be loaded (offline, missing): the station falls back to its synthesised pieces
+          if (S.item.lied) (S.ohne || (S.ohne = {}))[S.id] = 1;
         });
       } else if (S.el.ctx !== A.ctx) return false;
-      S.el.a.src = BASE + 'snd/music/' + rec.file;
-      S.el.a.currentTime = 0;
+      const a = S.el.a;
+      a.src = rec.url || BASE + 'snd/music/' + rec.file;
+      a.currentTime = 0;
+      // (tuning in mid-song: the position can be set once the length is known)
+      if (off > 0)
+        a.addEventListener(
+          'loadedmetadata',
+          () => {
+            try {
+              a.currentTime = Math.min(off, Math.max(0, (a.duration || off) - 2));
+            } catch (e) {}
+          },
+          { once: true }
+        );
       S.el.a.volume = 1;
       const p = S.el.a.play();
       if (p && p.catch) p.catch(() => {});
@@ -294,7 +309,12 @@ export const GLRADIO = (() => {
   const prog = id => S.prog[id] || (S.prog[id] = D.PROG.neu(id, M.hash(id)));
   const recs = () =>
     S.id === 'klassik' && Array.isArray(window.MUSICMAN) ? window.MUSICMAN.filter(r => r && r.file) : [];
-  const songs = id => (M.REP[id] ? M.REP[id].length : 1) + (id === 'klassik' ? recs().length : 0);
+  // the real songs of a station (gl_radio_data.js LIEDER; files in viz3/extra/grenzland-radio/dist/snd/radio/) – such a station plays
+  // only them, and no synthesised ident
+  const lieder = id =>
+    D.LIEDER && D.LIEDER[id] && D.LIEDER[id].length && !(S.ohne && S.ohne[id]) ? D.LIEDER[id] : null;
+  const songs = id =>
+    lieder(id) ? lieder(id).length : (M.REP[id] ? M.REP[id].length : 1) + (id === 'klassik' ? recs().length : 0);
   function ctxOf() {
     // (what happened more than ten minutes ago is no news)
     for (let i = S.pend.length - 1; i >= 0; i--) if (S.uhr - S.pend[i].t > 600) S.pend.splice(i, 1);
@@ -317,6 +337,18 @@ export const GLRADIO = (() => {
   };
   // which piece a music item is: on the classical station the recordings take turns with the house's own piano pieces
   function pieceOf(id, i) {
+    const L = lieder(id);
+    if (L) {
+      const l = L[((i % L.length) + L.length) % L.length];
+      return {
+        rec: { url: BASE + 'snd/radio/' + l.datei },
+        titel: l.titel,
+        von: l.von,
+        lizenz: l.lizenz,
+        dauer: Math.max(10, l.sek - 0.3),
+        lied: true,
+      };
+    }
     if (id === 'klassik') {
       const rc = recs();
       if (rc.length && i % 2 === 0) {
@@ -330,19 +362,21 @@ export const GLRADIO = (() => {
   }
   function startMusik(it, mid) {
     const p = pieceOf(S.id, it.i),
-      off = mid && !p.rec ? p.dauer * (0.25 + 0.4 * prog(S.id).rnd()) : 0;
-    S.last[S.id] = { titel: p.titel, von: p.von };
+      off = mid && (!p.rec || p.lied) ? p.dauer * ((p.lied ? 0.15 : 0.25) + 0.4 * prog(S.id).rnd()) : 0;
+    S.last[S.id] = { titel: p.titel, von: p.von, lied: !!p.lied };
     S.count.musik++;
     note('musik', '', p.titel);
     GL.emit('radio:sendung', { id: S.id, k: 'musik', art: '', titel: p.titel });
     if (p.rec) {
-      playRec(p.rec);
+      playRec(p.rec, off);
       S.item = {
         k: 'musik',
         rec: p.rec,
         titel: p.titel,
         von: p.von,
-        left: p.dauer,
+        lizenz: p.lizenz || '',
+        lied: !!p.lied,
+        left: p.dauer - off,
         dauer: p.dauer,
         i: it.i,
         stumm: !raw(),
@@ -384,7 +418,7 @@ export const GLRADIO = (() => {
       const p = pieceOf(S.id, st.vor.i);
       if (p.song) want(p.key, p.song);
     }
-    if (raw() && !S.bufs['kenn:' + S.id]) want('kenn:' + S.id, M.kennung(S.id));
+    if (raw() && !lieder(S.id) && !S.bufs['kenn:' + S.id]) want('kenn:' + S.id, M.kennung(S.id));
   }
   // what the radio says: the panel's own line for it (above the subtitles), else a subtitle
   const zeile = (name, text, ms) => (GLHUD.funk ? GLHUD.funk(name, text, ms) : GLHUD.sub(name, text, ms));
@@ -439,7 +473,7 @@ export const GLRADIO = (() => {
       stopSrc(0.5);
       S.item = W;
       // an ident before the claim, if it is rendered
-      if (it.kenn && S.bufs['kenn:' + S.id]) {
+      if (it.kenn && !lieder(S.id) && S.bufs['kenn:' + S.id]) {
         playBuf(S.bufs['kenn:' + S.id]);
         W.hold = 2.6;
       }
@@ -693,7 +727,8 @@ body[data-gl-era="1989"] #glradio .rw b,body[data-gl-era="1989"] #glradio .rl bu
     if (it && (it.k === 'musik' || it.k === 'lade')) {
       o.titel = it.titel;
       o.von = it.von;
-      o.text = it.titel + (it.von ? ' – ' + it.von : '');
+      o.lizenz = it.lizenz || '';
+      o.text = it.titel + (it.von ? ' – ' + it.von : '') + (it.lizenz ? ' · ' + it.lizenz : '');
     } else if (it) o.text = D.ART[it.art] || s.wer.name;
     return o;
   }

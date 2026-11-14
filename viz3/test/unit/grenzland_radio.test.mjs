@@ -174,8 +174,8 @@ test('rendering is deterministic and can be done in slices', () => {
   );
 });
 
-test('the dial: six stations today, three in 1989, invented names, nobody real in the texts', () => {
-  assert.equal(D.SENDER.heute.length, 6);
+test('the dial: seven stations today, three in 1989, invented names, nobody real in the texts', () => {
+  assert.equal(D.SENDER.heute.length, 7);
   assert.equal(D.SENDER[1989].length, 3);
   for (const era of ['heute', 1989]) {
     const l = D.SENDER[era];
@@ -308,4 +308,28 @@ test('the weather and the clock as sentences', () => {
   assert.ok(D.wetter({ text: 'Nebel', temp: -2, fog: true, wind: 1 }, 'heute').includes('minus 2 Grad'));
   assert.ok(D.wetter({ text: 'Bedeckt', temp: 5, wind: 14 }, '1989').includes('Stürmischer Wind.'));
   assert.ok(D.dauer('kurz') >= 2.4 && D.dauer('x'.repeat(200)) > 12);
+});
+
+test('real songs: two per music station, free licences, files named, the presenter names each with a fixed sentence', () => {
+  const L = D.LIEDER;
+  for (const id of ['zweitakt', 'funkloch', 'neon', 'kirmes']) {
+    assert.ok(D.byId[id], id + ' is a station');
+    assert.equal(L[id].length, 2, id);
+    for (const l of L[id]) {
+      assert.match(l.datei, /^[a-z]{2}_[a-z]+\.mp3$/);
+      assert.match(l.lizenz, /^CC (BY [34]\.0( US)?|0)$/);
+      assert.match(l.lurl, /^https:\/\/creativecommons\.org\//);
+      assert.match(l.quelle, /^https:\/\//);
+      assert.ok(l.titel && l.von && l.sek > 60, l.titel);
+      assert.equal(D.dasWar(l), 'Das war „' + l.titel + '“ – ' + l.von + (l.von.endsWith('!') ? '' : '.'));
+    }
+  }
+  // the presenter's moderation after a song names it with that sentence
+  const st = D.PROG.neu('funkloch', 3);
+  let w = null;
+  for (let i = 0; i < 12 && !w; i++) {
+    const it = D.PROG.next(st, { songs: 2, last: { titel: L.funkloch[0].titel, von: L.funkloch[0].von, lied: true } });
+    if (it.k === 'wort' && it.art === 'mod') w = it;
+  }
+  assert.ok(w && w.zeilen[0] === D.dasWar(L.funkloch[0]), JSON.stringify(w));
 });

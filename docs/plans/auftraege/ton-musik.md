@@ -1,5 +1,7 @@
 # Ton, Runde 1 – Auftrag `ton-musik`: freie Musik finden, prüfen, aufbereiten (13.11.2026, ~23:30)
 
+> **Stand 14.11.2026, 0:30 – angehalten.** Falko 23:54: „ich möchte keine Credit Labs bezahlen“ – ElevenLabs entfällt ganz (siehe `ton-gemeinsam.md`, „Costs: none“); wo dieser Auftrag ElevenLabs nennt, gilt das nicht mehr. 23:57: nur Schnelles – die Agenten wurden um 23:58 angehalten, ihre angefangene Arbeit liegt unbesehen auf dem Branch. Schon gebaut vom Lead (V18n): acht Songs in `GLRDATA.LIEDER`, Funkloch FM, `gl_nacht.js` (Grillen, Stundenschlag).
+
 Hilfs-Agent des Grenzland-Chats (Lead: session_01L6Yrpf75YEUJPnMQdXevjQ). Read first `docs/plans/auftraege/ton-gemeinsam.md` (Falko's words,
 hard rules, the sound repository, interfaces, ownership, ElevenLabs, timetable), then `grenzland2-gemeinsam.md` „How to work“.
 You write **no game code**: you deliver the music and the pipeline that every sound agent uses.

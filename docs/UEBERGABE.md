@@ -16,6 +16,14 @@ veröffentlicht.
 
 ## Stand
 
+- **14.11.2026 nachts: Läden in Schleusingen (V18o; Hilfs-Agent `laeden` des Chats session_01Mmpsvp11QsXpPSQRRbZ4Jv,
+  `docs/features/laeden.md`, Auftrag `docs/plans/auftraege/laeden.md`).** OBI, Mega Center, EDEKA, Getränkequelle mit Ladenzeile, Shell,
+  McDonald’s mit Drive-in, Lidl, REWE, Gaststätte „Am Waldrand“: Modul `laeden/laeden.js` (`LAEDEN`), Daten aus `tools/laeden/laeden.py`
+  (`viz3/extra/laeden/`), echte Namen nur als schlichte Schrift. Zwei markierte Haken: `gebaeude/gebaeude.js` (`GEB.skip`) und
+  `welt/schleusingen.js` `build()` (`LAEDEN.skipStadt`); ein Boden-Anbieter (Priorität 9) für die Abdeckungen hinter den Stützmauern;
+  `?nolaeden` = alter Stand. Offen: die Stützmauern sind ein Notbehelf für das 30-m-Oberflächenmodell (mit DGM1 fielen die meisten weg);
+  an der zackigen Südostkante des OBI wirken die Mauerenden von oben wie Finnen; Dächer vereinfacht, Buchten nur rechtwinklig. **Innen**
+  macht als Nächstes der Hilfs-Agent `laeden-innen` (Auftrag `docs/plans/auftraege/laeden-innen.md`).
 - **13.11.2026 nachts: Kombi neu, innen und außen (V18i; Hilfs-Agent `cockpit` des Chats session_01Mmpsvp11QsXpPSQRRbZ4Jv,
   `docs/features/cockpit.md`, Auftrag `docs/plans/auftraege/cockpit.md` mit der Erweiterung von 18:05).** Karosserie `vehicles/kombi.js`
   (gebaut mit `grenzland/gl_karosse.js`, nur lesend), Cockpit `vehicles/cockpit*.js`, Grafik beim Bewegen `cockpit_set.js` mit dem Haken
@@ -63,6 +71,11 @@ veröffentlicht.
   ~22:20: Kiste = Beweise und Westgeld, Härte wie die Zombie-Nacht, Krähwinkel wird gefasst; „Erst ändern“ – seine Änderungen stehen aus). Offen: K4
   (keine A 73 in der Rückblende 1989 – prüfen, ob sie zu sehen ist; K5 passt: keine Grenzposten im Dorf, „Grenzgebiet“ steht nur auf der
   alten Karte), Paket D (Autos knacken, Nahkampf, Coup), Kapitel 2.
+  **Ton = V18n (online 14.11. 1:30):** Falko 13.11. 23:02 „Das Radio klingt wirklich wie ein Kinderradio. Das müssen echte coole Songs sein.“
+  Konzept im Projekt `claude/pavillon-sound.md`; Falko 23:54 keine ElevenLabs-Credits, 23:57 nur Schnelles. Gebaut: acht echte Songs freier
+  Lizenz (`GLRDATA.LIEDER`, `viz3/extra/grenzland-radio/`), Funkloch FM, Grillen und Stundenschlag (`gl_nacht.js`, `viz3/extra/grenzland-nacht/`).
+  Fünf Hilfs-Agenten `ton-*` angehalten (WIP unbesehen auf `feat/ton-*`). Für mehr Songs braucht es eine Ablage (`pavillon-ton` mit Pages –
+  die Seite hat gut 860 von 1.000 MB); Stimmen ohne Kosten mit freien Modellen (Chatterbox Multilingual, MIT) auf Actions.
 - **13.11.2026 nachts: Zukünfte erproben (V17w, live seit 13.11. 8:45 nach Falkos OK; Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, `docs/features/zukunft.md`, `zukunft-welt.md`).** Falko 12.11.: Geschäftsmodell 1 „virtuelles Reallabor / Szenario-Werkstatt“ – erste Fassung für Kommune/Dorf, halber Tag vor Ort, Themen Mobilität, Energie, Klimaanpassung, Wald nach dem Käfer, „möglichst realistisch“. Daten und Rechnung rein in `zukunft/zk_data.js` (Unit-Test `viz3/test/unit/zukunft.test.mjs`), Oberfläche `zk_modus.js`, Welt `zk_welt.js` (Haken `WXBODEN.setDry`, `FOREST.canopy`); Tests `zukunft.py`, `zukunft_welt.py` (Programme: Start +4, Umschalten 0). Entscheidungen: Stimmen als Rollen („Sicht …“, erfundene Stimme), Ereignisse ohne Votum, Regler ab 2030, HQ100 = amtliches Gebiet (37 Gebäude, Schaden als Spanne), Solarpark-Platz ist Annahme. **Offen:** Mitmach-Schicht (Stimmen der Teilnehmenden am Telefon), Ablaufplan für den halben Tag, Gespräch mit Ratscher/Schleusingen über einen Piloten; zu Fuß spiegelt ein schmaler Streifen fernes Hochwasser noch den Himmel; blau-graue Bodenflecken im heutigen Wald, wo die Kronenkarte dünn ist (Abhilfe in `world/forest.js` wie im Modus).
 - **13.11.2026 nachts: Straßen realistischer (Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx, Zweig `feat/strassen`,
   `docs/features/strassen.md`).** Falko 12.11. 23:10/23:13: die Region „noch realistischer“, „starte mit Paket 1“ (die Straßen).

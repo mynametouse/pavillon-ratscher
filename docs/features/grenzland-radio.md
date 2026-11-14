@@ -150,3 +150,20 @@ Offen:
 
 - Hör bitte in jeden Sender hinein – ich konnte nur messen, nicht hören.
 - Sollen die Moderatoren auch mit ElevenLabs sprechen dürfen (kostet Guthaben)? Bisher nur auf ausdrücklichen Haken im Handy.
+
+## Echte Songs (V18n, 14.11.2026)
+
+Falko, 13.11. 23:02: „Das Radio klingt wirklich wie ein Kinderradio. Das müssen echte coole Songs sein.“ – geklickt: freie Musik von Bands
+(keine KI-Musik), 23:57 „Heute 8 Songs direkt“ (zwei je Sender, nach Downloads im Free Music Archive gewählt, ohne Probehören).
+
+- **Songs:** `GLRDATA.LIEDER` (`gl_radio_data.js`) – je Sender Datei, Titel, Band, Lizenz mit Link, Seite des Stücks, Länge. Dateien:
+  `viz3/extra/grenzland-radio/dist/snd/radio/` (−16 LUFS, MP3 96 kbit/s, Stille an den Enden entfernt, sonst unverändert); Nachweise in
+  `viz3/extra/grenzland-radio/manifest.json` (`credits_add`). Lizenzen nur CC BY 3.0/4.0, jeweils auf der Seite des Stücks gelesen
+  (14.11.2026); Texte mit faster-whisper abgehört (nichts Anstößiges gefunden; „Suck City“ von Black Math wurde deshalb nicht genommen).
+- **Sender:** Radio Zweitakt (Rock und Punk), neu **Funkloch FM 101,3** (Rap und Elektro, Moderatorin Nele, 26; Texte, Werbung, Meldungen in
+  `SENDER.heute`), Neonfunk (Synthpop und New Wave), Kirmeswelle (Polka). Ein Sender mit Songs spielt nur sie, ohne die synthetische
+  Kennung; beim Einschalten landet man mitten im Lied (15–55 %), nach dem Lied sagt der Moderator „Das war „…“ – …“ (feste Sätze, `dasWar`,
+  vom Sammler mit aufgenommen). Die Anzeige: „Titel – Band · Lizenz“. Lädt eine Datei nicht, spielt der Sender seine Synthesizer-Stücke
+  (`S.ohne`). Funkloch FM hat dafür drei eigene.
+- **Offen:** mehr Songs je Sender (Ablage `pavillon-ton`, Konzept `claude/pavillon-sound.md`), Moderation über Intro und Outro
+  (`gesang_ab`/`gesang_bis`), Empfang im Funkloch, Hörer rufen an.
