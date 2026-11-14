@@ -16,6 +16,14 @@ veröffentlicht.
 
 ## Stand
 
+- **14.11.2026 nachts: Läden in Schleusingen (V18o; Hilfs-Agent `laeden` des Chats session_01Mmpsvp11QsXpPSQRRbZ4Jv,
+  `docs/features/laeden.md`, Auftrag `docs/plans/auftraege/laeden.md`).** OBI, Mega Center, EDEKA, Getränkequelle mit Ladenzeile, Shell,
+  McDonald’s mit Drive-in, Lidl, REWE, Gaststätte „Am Waldrand“: Modul `laeden/laeden.js` (`LAEDEN`), Daten aus `tools/laeden/laeden.py`
+  (`viz3/extra/laeden/`), echte Namen nur als schlichte Schrift. Zwei markierte Haken: `gebaeude/gebaeude.js` (`GEB.skip`) und
+  `welt/schleusingen.js` `build()` (`LAEDEN.skipStadt`); ein Boden-Anbieter (Priorität 9) für die Abdeckungen hinter den Stützmauern;
+  `?nolaeden` = alter Stand. Offen: die Stützmauern sind ein Notbehelf für das 30-m-Oberflächenmodell (mit DGM1 fielen die meisten weg);
+  an der zackigen Südostkante des OBI wirken die Mauerenden von oben wie Finnen; Dächer vereinfacht, Buchten nur rechtwinklig. **Innen**
+  macht als Nächstes der Hilfs-Agent `laeden-innen` (Auftrag `docs/plans/auftraege/laeden-innen.md`).
 - **13.11.2026 nachts: Kombi neu, innen und außen (V18i; Hilfs-Agent `cockpit` des Chats session_01Mmpsvp11QsXpPSQRRbZ4Jv,
   `docs/features/cockpit.md`, Auftrag `docs/plans/auftraege/cockpit.md` mit der Erweiterung von 18:05).** Karosserie `vehicles/kombi.js`
   (gebaut mit `grenzland/gl_karosse.js`, nur lesend), Cockpit `vehicles/cockpit*.js`, Grafik beim Bewegen `cockpit_set.js` mit dem Haken
