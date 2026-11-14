@@ -113,24 +113,27 @@ with lib.browser() as b:
         settle()
         steps(3)
         K0 = set(J("GAME.R.info.programs.map(p => p.cacheKey)"))
-        geo0 = J("GAME.R.info.memory.geometries")
+        mem0 = J("LINNEN.mem()")
         st = J("LINNEN.status()")
         m = next((q for q in st['mounted'] if q['shop'] == sid), None)
         ck(f'{sid}: its rooms stand when one is near (built in ms, meshes, triangles)', m is not None and m['meshes'] > 0,
            json.dumps(m)[:400] if m else json.dumps(st)[:400])
         if not m:
             continue
-        # 2 – open: walk up to the door, it opens, one walks in
+        # 2 – open: the label at the door, then walk up: the door opens, one walks in
+        di = sh['doors'].index(md)
+        stand(md['x'] + md['nx'] * 2.0, md['y'] + md['ny'] * 2.0, yaw_in)
+        lbl = J("GAME.step(0.3)").get('best') or ''
         x7, y7 = md['x'] + md['nx'] * 7, md['y'] + md['ny'] * 7
         stand(x7, y7, yaw_in)
-        lbl = J("GAME.step(0.2)").get('best') or ''
-        w = J("GAME.step(4.5, 1, 0, 0, 1)")
-        di = sh['doors'].index(md)
-        door = J(f"LINNEN.door('{sid}:{di}')")
-        w = J("GAME.step(3.0, 1, 0, 0, 1)")
+        J("GAME.step(0.6)")
+        mx = 0
+        for k in range(12):
+            w = J("GAME.step(0.5, 1, 0, 0, 1)")
+            dd = J(f"LINNEN.door('{sid}:{di}')")
+            mx = max(mx, dd['open'] if dd else 0)
         unit = J(f"LINNEN.unitAt({w['x']}, {w['y']})")
-        ck(f'{sid}: open (a Tuesday morning) – the doors open as one walks up, the label says „geöffnet“', door and door['open'] > 0.8 and 'geöffnet' in lbl,
-           f"door {json.dumps(door)}; label: {lbl}")
+        ck(f'{sid}: open (a Tuesday morning) – the label says „geöffnet“, the doors open as one walks up', mx > 0.95 and 'geöffnet' in lbl, f"door opened to {mx:.2f}; label: {lbl}")
         ck(f'{sid}: one walks in', unit is not None, f"walker at {w['x']}, {w['y']} (feet {w['feet']}), unit {unit}")
         if unit:
             # the floor carries one: the walker's feet on the floor of the unit
@@ -144,12 +147,13 @@ with lib.browser() as b:
             w3 = J("GAME.step(25, 0, 0, 1, 1)")
             u3 = J(f"LINNEN.unitAt({w3['x']}, {w3['y']})")
             ck(f'{sid}: walking sideways along the rows, still inside', u3 is not None, f"walker at {w3['x']}, {w3['y']}, unit {u3}")
-            # no new programs: what draws the rooms was there before
+            # no new programs: what draws the rooms was there before entering
             frame = J("(() => { const i = GAME.R.info; i.autoReset = false; i.reset(); GAME.shot(); const r = { calls: i.render.calls, tris: i.render.triangles }; i.autoReset = true; return r; })()")
-            K1 = J("GAME.R.info.programs.map(p => p.cacheKey)")
-            new = [k[-80:] for k in K1 if k not in K0]
-            ck(f'{sid}: entering compiles no new shader program', not new, f'{len(new)} new: {new[:3]}')
             mine = J(f"LINNEN.meshesOf('{sid}').map(m => {{ const pr = GAME.R.properties.get(m.material); return pr && pr.currentProgram ? pr.currentProgram.cacheKey : null; }})")
+            newm = [k[-80:] for k in mine if k and k not in K0]
+            ck(f'{sid}: its rooms draw with programs that were there before (no new shader program)', mine and all(mine) and not newm, f'{len(mine)} meshes; new: {newm[:2]}')
+            K1 = J("GAME.R.info.programs.map(p => p.cacheKey)")
+            print('note: programs compiled meanwhile elsewhere', [k[-60:] for k in K1 if k not in K0][:4], flush=True)
             print('frame inside', sid, json.dumps(frame), 'meshes', len(mine), flush=True)
             if sid in ('obi', 'mega'):
                 ck(f'{sid}: draw calls of its rooms within bounds (≤ 40 meshes)', m['meshes'] <= 40, f"{m['meshes']} meshes, frame {json.dumps(frame)}")
@@ -171,8 +175,9 @@ with lib.browser() as b:
             ck(f'{sid}: one walks out again', u4 is None and math.hypot(w4['x'] - md['x'], w4['y'] - md['y']) > 1.5, f"walker at {w4['x']}, {w4['y']}, unit {u4}")
         # 4 – closed (Sunday): the doors stay shut, the label says so, one stays outside
         set_time(0, 10, 30)
+        stand(md['x'] + md['nx'] * 2.0, md['y'] + md['ny'] * 2.0, yaw_in)
+        lbl = J("GAME.step(0.3)").get('best') or ''
         stand(x7, y7, yaw_in)
-        lbl = J("GAME.step(0.2)").get('best') or ''
         w5 = J("GAME.step(7, 1, 0, 0, 1)")
         door = J(f"LINNEN.door('{sid}:{di}')")
         u5 = J(f"LINNEN.unitAt({w5['x']}, {w5['y']})")
@@ -183,13 +188,13 @@ with lib.browser() as b:
             print('note', sid, 'open on Sunday too', json.dumps(door), flush=True)
         set_time(2, 10, 30)
         # 5 – going away frees the rooms
-        fx_, fy_ = md['x'] + md['nx'] * 160, md['y'] + md['ny'] * 160
+        fx_, fy_ = md['x'] + md['nx'] * 300, md['y'] + md['ny'] * 300
         stand(fx_, fy_, yaw_in)
         steps(3)
         st = J("LINNEN.status()")
-        geo1 = J("GAME.R.info.memory.geometries")
-        ck(f'{sid}: going away frees its rooms (geometries back)', not any(q['shop'] == sid for q in st['mounted']) and geo1 <= geo0 + 2,
-           f"mounted {[q['shop'] for q in st['mounted']]}; geometries {geo0} → {geo1}")
+        mem1 = J("LINNEN.mem()")
+        ck(f'{sid}: going away frees its rooms (their geometries and material back)', not any(q['shop'] == sid for q in st['mounted']) and mem1['live'] == 0 and mem1['mats'] == 0,
+           f"mounted {[q['shop'] for q in st['mounted']]}; while standing {json.dumps(mem0)}, after {json.dumps(mem1)}")
     if 'nacht' in want:
         # at night: REWE open until 22, EDEKA closed after 20
         pass

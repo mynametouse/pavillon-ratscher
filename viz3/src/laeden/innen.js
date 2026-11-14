@@ -23,6 +23,8 @@ import { DMOD } from '../dinge/dinge_modelle.js';
 import { LAEDEN } from './laeden.js';
 import { LIPLAN } from './innen_plan.js';
 import { LIMARKT } from './innen_markt.js';
+import { LIBAU } from './innen_bau.js';
+import { LIHAUS } from './innen_haus.js';
 export const LINNEN = (() => {
   const S = {
     on: false,
@@ -142,6 +144,20 @@ export const LINNEN = (() => {
         idx[ni++] = i0;
         idx[ni++] = i2;
         idx[ni++] = i3;
+      },
+      // a quad facing (nx, ny, nz) whatever the order of its corners
+      faceN(a, b, c, d, nx, ny, nz, cl, glow, kk = 1) {
+        const ux = b[0] - a[0],
+          uy = b[1] - a[1],
+          uz = b[2] - a[2],
+          vx = d[0] - a[0],
+          vy = d[1] - a[1],
+          vz = d[2] - a[2],
+          cx = uy * vz - uz * vy,
+          cy = uz * vx - ux * vz,
+          cz = ux * vy - uy * vx;
+        if (cx * nx + cy * ny + cz * nz >= 0) K.quad(a, b, c, d, cl, glow, kk);
+        else K.quad(a, d, c, b, cl, glow, kk);
       },
       tri(a, b, c, cl, k = 1) {
         grow(3, 3);
@@ -340,24 +356,57 @@ export const LINNEN = (() => {
       darker = [c[0] * 0.55, c[1] * 0.55, c[2] * 0.55];
     // a point of the block: along a, out of the front f, up z
     const pt = (a, f, z) => [gd.x + ax * a + fx * f, gd.y + ay * a + fy * f, z];
+    // the faces oriented: a front towards f, a top up
     const face = (a0, a1, f, za, zb, cl, kk) =>
-      K.quad(pt(a0, f, za), pt(a1, f, za), pt(a1, f, zb), pt(a0, f, zb), cl, false, kk);
+      K.faceN(pt(a0, f, za), pt(a1, f, za), pt(a1, f, zb), pt(a0, f, zb), fx, fy, 0, cl, false, kk);
     const top = (a0, a1, f0, f1, z, cl, kk) =>
-      K.quad(pt(a0, f0, z), pt(a1, f0, z), pt(a1, f1, z), pt(a0, f1, z), cl, false, kk);
+      K.faceN(pt(a0, f0, z), pt(a1, f0, z), pt(a1, f1, z), pt(a0, f1, z), 0, 0, 1, cl, false, kk);
     if (gd.k === 'heap') {
       // fruit in a crate: a heap in two layers, the colour varied
       top(-gd.len / 2, gd.len / 2, -fr, fr, z0 + h * 0.6, c, 0.95);
       top(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
-      for (const [f, s2] of [
-        [fr, 1],
-        [-fr, -1],
-      ]) {
-        const A = pt(-gd.len / 2, f, z0 + h * 0.6),
-          B = pt(gd.len / 2, f, z0 + h * 0.6),
-          C2 = pt(gd.len * 0.32, f * 0.6, z0 + h),
-          D = pt(-gd.len * 0.32, f * 0.6, z0 + h);
-        if (s2 > 0) K.quad(A, B, C2, D, c, false, 0.9);
-        else K.quad(B, A, D, C2, c, false, 0.85);
+      // the heap's four slopes (and its sides down to the crate)
+      for (const s2 of [1, -1]) {
+        const f = fr * s2,
+          a = (gd.len / 2) * s2,
+          zm = z0 + h * 0.6;
+        K.faceN(
+          pt(-gd.len / 2, f, zm),
+          pt(gd.len / 2, f, zm),
+          pt(gd.len * 0.32, f * 0.6, z0 + h),
+          pt(-gd.len * 0.32, f * 0.6, z0 + h),
+          fx * s2,
+          fy * s2,
+          0.6,
+          c,
+          false,
+          s2 > 0 ? 0.9 : 0.85
+        );
+        K.faceN(
+          pt(-gd.len / 2, f, z0),
+          pt(gd.len / 2, f, z0),
+          pt(gd.len / 2, f, zm),
+          pt(-gd.len / 2, f, zm),
+          fx * s2,
+          fy * s2,
+          0,
+          c,
+          false,
+          0.82
+        );
+        K.faceN(
+          pt(a, -fr, zm),
+          pt(a, fr, zm),
+          pt(a * 0.64, fr * 0.6, z0 + h),
+          pt(a * 0.64, -fr * 0.6, z0 + h),
+          ax * s2,
+          ay * s2,
+          0.6,
+          c,
+          false,
+          0.88
+        );
+        K.faceN(pt(a, -fr, z0), pt(a, fr, z0), pt(a, fr, zm), pt(a, -fr, zm), ax * s2, ay * s2, 0, c, false, 0.8);
       }
       return;
     }
@@ -412,13 +461,19 @@ export const LINNEN = (() => {
     }
     // the block's two ends (seen at the end of a run)
     const sx = (a, zt) => {
-      const s2 = a < 0 ? -1 : 1,
-        A = pt(a, -fr, z0),
-        B = pt(a, fr, z0),
-        C2 = pt(a, fr, z0 + zt),
-        D = pt(a, -fr, z0 + zt);
-      if (s2 > 0) K.quad(A, B, C2, D, c, false, 0.85);
-      else K.quad(B, A, D, C2, c, false, 0.85);
+      const s2 = a < 0 ? -1 : 1;
+      K.faceN(
+        pt(a, -fr, z0),
+        pt(a, fr, z0),
+        pt(a, fr, z0 + zt),
+        pt(a, -fr, z0 + zt),
+        ax * s2,
+        ay * s2,
+        0,
+        c,
+        false,
+        0.85
+      );
     };
     const zt = gd.k === 'bottle' ? h * 0.62 : gd.k === 'bag' ? h * 0.86 : h;
     sx(-gd.len / 2 + gap / 2, zt);
@@ -559,6 +614,8 @@ export const LINNEN = (() => {
   const LAYOUT = {
     supermarkt: LIMARKT.markt,
     discounter: LIMARKT.markt,
+    baumarkt: LIBAU.baumarkt,
+    ...LIHAUS.LAY,
   };
   // the floor of a shop: the levelled ground's plane through its main door (the pad of laeden.js), lifted where the drawn ground is higher
   function floorFn(sh, g) {
@@ -606,7 +663,7 @@ export const LINNEN = (() => {
         return s2 ? s2.h : secs[0].h;
       };
       // the walls of the unit (with the glazed fronts of its shop as holes)
-      const runs = LIPLAN.walls(U, fronts);
+      const runs = LIPLAN.walls(U, fronts.concat(Pl.holes || []));
       for (const r of runs)
         r.hn = (a, b) => {
           // the lower ceiling of the volume on the other side of an opening
@@ -630,14 +687,14 @@ export const LINNEN = (() => {
           if (!v) continue;
           const fc = Pl.floor || LIMARKT.C;
           floorOf(K, v.f, fc.floorA, fc.floorB, Pl.cell || 1.2, occ);
-          ceilingOf(K, v.f, s2.h, Pl.ceilCol || LIMARKT.C.ceil);
+          if (!(Pl.noCeil || []).includes(vi)) ceilingOf(K, v.f, s2.h, Pl.ceilCol || LIMARKT.C.ceil);
         }
       }
       // walls go to the section of their volume
       const wallCol = Pl.wallCol || LIMARKT.C.wall,
         skirt = Pl.skirtCol || LIMARKT.C.skirt;
       for (const s2 of secs) {
-        const rs = runs.filter(r => (s2.vols || []).includes(r.vol));
+        const rs = runs.filter(r => (s2.vols || []).includes(r.vol) && !(Pl.noWall || []).includes(r.vol));
         if (rs.length) wallsOf(kOf(s2.id), rs, hOf, wallCol, skirt);
       }
       for (const b of Pl.boxes) kOf(b.sec).box(b.x, b.y, b.z, b.sx, b.sy, b.sz, b.rot, b.col, b.top, !!b.glow);
@@ -650,12 +707,46 @@ export const LINNEN = (() => {
       }
       for (const l of Pl.lights)
         kOf(l.sec).box(l.x, l.y, l.z - 0.05, l.l, l.w, 0.05, l.rot + Math.PI / 2, LIMARKT.C.lamp, LIMARKT.C.lamp, true);
-      for (const t of Pl.trolleys) trolley(kOf(t.sec), t);
+      // one trolley of the store stands on its own (it can be pushed): the one standing alone, else the last of a row
+      const alone =
+        Pl.trolleys.find((t, i) => !Pl.trolleys.some((q, j) => j !== i && Math.hypot(q.x - t.x, q.y - t.y) < 0.5)) ||
+        Pl.trolleys[Pl.trolleys.length - 1];
+      for (const t of Pl.trolleys) if (t !== alone || M.cart) trolley(kOf(t.sec), t);
+      if (alone && !M.cart) M.cart = { x: alone.x, y: alone.y, rot: alone.rot, U, push: false };
+      // the sections' neighbours: across the open pieces of the walls (two parts of one store)
+      const secOf = vi => {
+        const s3 = secs.find(q => (q.vols || []).includes(vi));
+        return s3 ? s3.id : secs[0].id;
+      };
+      const nb = new Map(secs.map(q => [q.id, new Set([q.id])]));
+      for (const r of runs)
+        for (const [a, b] of r.open) {
+          const t = (a + b) / 2,
+            mx = r.a[0] + r.ux * t - r.n[0] * 0.4,
+            my = r.a[1] + r.uy * t - r.n[1] * 0.4,
+            vj = U.vols.findIndex(v => LIPLAN.inPoly(v.f, mx, my));
+          if (vj < 0) continue;
+          const p1 = secOf(r.vol),
+            p2 = secOf(vj);
+          if (nb.has(p1) && nb.has(p2)) {
+            nb.get(p1).add(p2);
+            nb.get(p2).add(p1);
+          }
+        }
+      // the sections with a door (seen from outside)
+      const doorSecs = new Set();
+      for (const d of U.doors) {
+        const vi = U.vols.findIndex(v => LIPLAN.inPoly(v.f, d.x - d.nx * 0.8, d.y - d.ny * 0.8));
+        if (vi >= 0) doorSecs.add(secOf(vi));
+      }
       // meshes
       const mat = M.mat;
       for (const [id, K] of bySec) {
         if (K.empty()) continue;
         const me = new THREE.Mesh(K.geo(), mat);
+        me.userData.sec = id;
+        me.userData.unit = U.id;
+        S.live++;
         me.name = 'laeden-innen ' + U.id + ' ' + id;
         me.userData.noMerge = true;
         me.castShadow = false;
@@ -680,8 +771,12 @@ export const LINNEN = (() => {
           spots: Pl.spots,
         },
         secs,
+        secOf,
+        nb,
+        doorSecs,
       });
     }
+    if (M.cart) cartMesh(M);
     // the hash of the segments (4 m cells)
     M.grid = new Map();
     M.segs.forEach((s2, k) => {
@@ -709,36 +804,88 @@ export const LINNEN = (() => {
     }
     return Pp;
   }
-  // a trolley (standing): basket of wires as thin boxes, a handle, wheels
+  // a trolley (standing): a wire basket (its edges and some wires), the tray below, the chassis, four castors, the handle at the back
   function trolley(K, t) {
     const c = Math.cos(t.rot),
       s = Math.sin(t.rot),
       W = (a, b) => [t.x + a * c - b * s, t.y + a * s + b * c],
-      M2 = L(0.66, 0.67, 0.69),
-      D2 = L(0.2, 0.2, 0.22);
-    // the basket: 0.9 long (along rot), 0.55 wide, from 0.45 to 0.95
-    const [bx, by] = W(0, 0);
-    K.box(bx, by, 0.45, 0.85, 0.52, 0.02, t.rot, M2);
-    for (const b of [-0.26, 0.26]) {
-      const [x, y] = W(0, b);
-      K.box(x, y, 0.45, 0.85, 0.02, 0.5, t.rot, M2);
+      M2 = L(0.7, 0.71, 0.73),
+      D2 = L(0.16, 0.16, 0.18),
+      HD = L(0.32, 0.34, 0.37);
+    const bar = (a0, b0, z0, a1, b1, z1, w = 0.018, cl = M2) => {
+      // a thin bar between two points (local a along the trolley, b across, z up)
+      const [x0, y0] = W(a0, b0),
+        [x1, y1] = W(a1, b1),
+        L2 = Math.hypot(x1 - x0, y1 - y0);
+      if (L2 < 1e-3) K.box(x0, y0, Math.min(z0, z1), w, w, Math.abs(z1 - z0), t.rot, cl);
+      else if (Math.abs(z1 - z0) < 1e-3)
+        K.box((x0 + x1) / 2, (y0 + y1) / 2, z0 - w / 2, L2, w, w, Math.atan2(y1 - y0, x1 - x0), cl);
+      else {
+        // a slanted bar: a few short pieces
+        const n = 4;
+        for (let i = 0; i < n; i++) {
+          const k0 = i / n,
+            k1 = (i + 1) / n,
+            xa = x0 + (x1 - x0) * k0,
+            ya = y0 + (y1 - y0) * k0,
+            xb = x0 + (x1 - x0) * k1,
+            yb = y0 + (y1 - y0) * k1;
+          K.box(
+            (xa + xb) / 2,
+            (ya + yb) / 2,
+            z0 + (z1 - z0) * k0,
+            Math.max(w, Math.hypot(xb - xa, yb - ya)),
+            w,
+            Math.max(w, (z1 - z0) / n),
+            Math.atan2(yb - ya, xb - xa),
+            cl
+          );
+        }
+      }
+    };
+    // the basket: back (a = −0.4) 0.56 wide, front (a = 0.45) 0.46 wide, from 0.48 to 0.98
+    const A0 = -0.4,
+      A1 = 0.45,
+      zb = 0.48,
+      zt = 0.98;
+    for (const [z, hb0, hb1] of [
+      [zt, 0.28, 0.25],
+      [zb, 0.24, 0.21],
+    ]) {
+      bar(A0, -hb0, z, A1, -hb1, z);
+      bar(A0, hb0, z, A1, hb1, z);
+      bar(A0, -hb0, z, A0, hb0, z);
+      bar(A1, -hb1, z, A1, hb1, z);
     }
-    for (const a of [-0.42, 0.42]) {
-      const [x, y] = W(a, 0);
-      K.box(x, y, 0.45, 0.02, 0.52, 0.5, t.rot, M2);
+    for (const sg of [-1, 1]) {
+      for (let k = 0; k <= 5; k++) {
+        const a = A0 + ((A1 - A0) * k) / 5;
+        bar(a, sg * (0.24 - 0.03 * (k / 5)), zb, a, sg * (0.28 - 0.03 * (k / 5)), zt, 0.012);
+      }
+      bar(A1, sg * 0.23, zb, A1, sg * 0.25, zt, 0.012);
     }
-    const [hx, hy] = W(-0.5, 0);
-    K.box(hx, hy, 1.0, 0.04, 0.56, 0.04, t.rot, L(0.35, 0.36, 0.38)); // the handle
+    for (let k = 1; k < 4; k++) bar(A1, -0.25 + k * 0.125, zb, A1, -0.25 + k * 0.125, zt, 0.012);
+    const [bx, by] = W((A0 + A1) / 2, 0);
+    K.box(bx, by, zb - 0.01, A1 - A0, 0.42, 0.012, t.rot, M2); // its floor
+    // the tray below, the chassis, the castors
+    const [tx, ty] = W(0.05, 0);
+    K.box(tx, ty, 0.16, 0.7, 0.4, 0.012, t.rot, M2);
+    for (const sg of [-1, 1]) {
+      bar(-0.42, sg * 0.24, 0.12, 0.42, sg * 0.2, 0.12, 0.025);
+      bar(-0.42, sg * 0.24, 0.12, -0.42, sg * 0.26, zb, 0.025);
+    }
     for (const [a, b] of [
-      [-0.38, -0.22],
-      [-0.38, 0.22],
-      [0.38, -0.2],
-      [0.38, 0.2],
+      [-0.38, -0.23],
+      [-0.38, 0.23],
+      [0.38, -0.19],
+      [0.38, 0.19],
     ]) {
       const [x, y] = W(a, b);
-      K.box(x, y, 0.0, 0.1, 0.03, 0.1, t.rot, D2);
-      K.box(x, y, 0.1, 0.02, 0.02, 0.35, t.rot, M2);
+      K.box(x, y, 0.0, 0.09, 0.03, 0.1, t.rot, D2);
     }
+    // the handle
+    bar(-0.5, -0.27, 1.02, -0.5, 0.27, 1.02, 0.035, HD);
+    for (const sg of [-1, 1]) bar(-0.4, sg * 0.27, zt, -0.5, sg * 0.27, 1.02, 0.02);
   }
   // the shade of the floor: what stands on it (a raster of 0.5 m, its covered share within ~1 m)
   function floorShade(Pl) {
@@ -830,10 +977,89 @@ export const LINNEN = (() => {
     }
     return bb;
   };
+  // ---- the trolley one can push: a mesh of its own, the action button takes it by the handle, it rolls in front of one ----
+  function cartMesh(M) {
+    const C2 = M.cart,
+      K = rkit(() => 0);
+    trolley(K, { x: 0, y: 0, rot: 0 });
+    const me = new THREE.Mesh(K.geo(), M.mat);
+    me.name = 'laeden-innen ' + M.sh.id + ' wagen';
+    S.live++;
+    me.userData.noMerge = true;
+    me.castShadow = false;
+    me.receiveShadow = false;
+    scene.add(me);
+    C2.mesh = me;
+    placeCart(M);
+    C2.act = 'laeden-innen:wagen:' + M.sh.id;
+    KERN.act({
+      id: C2.act,
+      r: 1.4,
+      prio: 2,
+      pos: () => [C2.x, C2.y, M.zf(C2.x, C2.y) + 0.6],
+      label: () => (C2.push ? 'Einkaufswagen abstellen' : 'Einkaufswagen schieben'),
+      run: () => {
+        C2.push = !C2.push;
+        if (C2.push) S.cart = M;
+        else if (S.cart === M) S.cart = null;
+      },
+    });
+  }
+  function placeCart(M) {
+    const C2 = M.cart;
+    if (!C2 || !C2.mesh) return;
+    C2.mesh.position.set(C2.x, M.zf(C2.x, C2.y), -C2.y);
+    C2.mesh.rotation.y = C2.rot;
+    C2.mesh.updateMatrixWorld();
+    markDirty();
+  }
+  // while pushed: 0.85 m in front of the walker, turned with him; walls and fixtures hold it back; out of the shop it stays behind
+  KERN.tick(
+    () => {
+      const M = S.cart;
+      if (!M || !M.cart || !M.cart.push) return;
+      const C2 = M.cart;
+      if (P.mode !== 'walk' || !S.mounted.has(M.sh.id)) {
+        C2.push = false;
+        S.cart = null;
+        return;
+      }
+      const y = (P.yaw * Math.PI) / 180,
+        fx = Math.sin(y),
+        fy = Math.cos(y),
+        p = [P.x + fx * 0.85, P.y + fy * 0.85];
+      const ua = unitAt(p[0], p[1]);
+      if (!ua || ua.M !== M) {
+        C2.push = false;
+        S.cart = null;
+        return;
+      }
+      push(p, 0.32);
+      if (Math.hypot(p[0] - C2.x, p[1] - C2.y) > 1e-3 || Math.abs(C2.rot - Math.atan2(fy, fx)) > 1e-3) {
+        C2.x = p[0];
+        C2.y = p[1];
+        C2.rot = Math.atan2(fy, fx);
+        placeCart(M);
+      }
+    },
+    'laeden-innen-wagen',
+    { late: true }
+  );
   function free(M) {
+    if (M.cart) {
+      if (M.cart.act) KERN.unact(M.cart.act);
+      if (M.cart.mesh) {
+        scene.remove(M.cart.mesh);
+        M.cart.mesh.geometry.dispose();
+        S.live--;
+      }
+      if (S.cart === M) S.cart = null;
+      M.cart = null;
+    }
     for (const me of M.meshes) {
       scene.remove(me);
       me.geometry.dispose();
+      S.live--;
     }
     M.meshes = [];
     M.segs = [];
@@ -860,8 +1086,7 @@ export const LINNEN = (() => {
     const KF = { pos: [], nrm: [], col: [], idx: [] },
       glassK = new Map(),
       doors = [];
-    const ANTH = L(0.17, 0.18, 0.19),
-      GREYM = L(0.55, 0.56, 0.56);
+    const GREYM = L(0.55, 0.56, 0.56);
     for (const sh of g.shops)
       sh.doors.forEach((d, i) => {
         if (d.k === 'liefer' || !d.front) return;
@@ -1121,11 +1346,41 @@ export const LINNEN = (() => {
   function unitAt(x, y) {
     for (const M of S.mounted.values()) {
       if (!M.bb || x < M.bb[0] - 1 || x > M.bb[2] + 1 || y < M.bb[1] - 1 || y > M.bb[3] + 1) continue;
-      for (const u of M.units) for (const v of u.U.vols) if (LIPLAN.inPoly(v.f, x, y)) return { M, U: u.U, v };
+      for (const u of M.units) {
+        for (const v of u.U.vols) if (LIPLAN.inPoly(v.f, x, y)) return { M, U: u.U, v };
+        // the seam between two parts of one store (drawn a little apart): near both counts as inside
+        if (u.U.vols.length > 1) {
+          const nearV = u.U.vols.filter(v => LIPLAN.edgeDist(v.f, x, y) < 0.42);
+          if (nearV.length >= 2) return { M, U: u.U, v: nearV[0] };
+        }
+      }
     }
     return null;
   }
 
+  // =============================== which parts show: the one the observer is in and those open to it ===============================
+  function showSecs(M, w) {
+    const ua = unitAt(w[0], w[1]);
+    const vis = new Set();
+    for (const u of M.units) {
+      if (ua && ua.M === M && ua.U === u.U) {
+        const s0 = u.secOf(u.U.vols.indexOf(ua.v));
+        for (const q of u.nb.get(s0) || [s0]) vis.add(u.U.id + ':' + q);
+        // and what the doors show (one sees out and in again)
+        for (const q of u.doorSecs) vis.add(u.U.id + ':' + q);
+      } else for (const q of u.doorSecs) for (const q2 of u.nb.get(q) || [q]) vis.add(u.U.id + ':' + q2);
+    }
+    let ch = false;
+    for (const me of M.meshes) {
+      const v = vis.has(me.userData.unit + ':' + me.userData.sec) && !RATSCHER.map;
+      if (me.visible !== v) {
+        me.visible = v;
+        ch = true;
+      }
+    }
+    if (ch) markDirty();
+    M.vis = vis.size;
+  }
   // =============================== light: open, closed, the exposure of the moment ===============================
   function light(M, now) {
     const U0 = (S.shops.get(M.sh.id) || [])[0];
@@ -1227,7 +1482,10 @@ export const LINNEN = (() => {
     (x, y) => {
       if (!S.mounted.size) return undefined;
       const ua = unitAt(x, y);
-      return ua ? ua.U.name + ', Schleusingen' : undefined;
+      if (!ua) return undefined;
+      const u = ua.M.units.find(q => q.U === ua.U),
+        sc = u ? u.secs.find(q => q.id === u.secOf(ua.U.vols.indexOf(ua.v))) : null;
+      return (sc && sc.name ? sc.name : ua.U.name) + ', Schleusingen';
     },
     34
   );
@@ -1303,7 +1561,10 @@ export const LINNEN = (() => {
       if (!inside && (M.d === undefined || M.d > FREE_R || M.g.state !== 'built')) unmount(M);
     }
     if (best && S.mounted.size < 3) mount(best[0], best[1]);
-    for (const M of S.mounted.values()) light(M, false);
+    for (const M of S.mounted.values()) {
+      light(M, false);
+      showSecs(M, w);
+    }
     // laeden's tick re-shows hidden meshes unless asked: keep them hidden
     for (const M of S.mounted.values()) for (const me of M.hid) if (me.visible) me.visible = false;
     void CLOCK;
@@ -1376,6 +1637,8 @@ export const LINNEN = (() => {
         }
       : null;
   };
+  // the rooms' geometries alive (built minus freed) and the materials of the rooms (one per standing shop)
+  S.mem = () => ({ live: S.live, mats: MATS.size, mounted: S.mounted.size, texts: TEXTS.size });
   S.meshesOf = id => {
     const M = S.mounted.get(id);
     return M ? M.meshes : [];

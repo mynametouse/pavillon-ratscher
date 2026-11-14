@@ -322,14 +322,14 @@ export const LIPLAN = (() => {
       fm2 = part(Fm, main.f, [aldiU1 + 2, 30, U1 - 4, 37]);
     // the restaurant: north of the block under the tower, its door faces north (−u)
     const uR = R ? dl(R)[0] : -22.6;
-    const fr = part(Fm, main.f, [uR - 0.6, -2, 0.01, 31.75]);
+    const fr = part(Fm, main.f, [uR - 0.6, -2, -0.02, 31.75]);
     // the pharmacy: 12 × 7.5 m at its door on the court; Mega-Möbel: the rest of the north wing
     const uAp = AP ? dl(AP)[0] : -38.4,
       vAp = AP ? dl(AP)[1] : 31.7;
     const fap = part(Fm, main.f, [uAp - 6, vAp - 1, uAp + 6, vAp + 7.5]);
-    const fmb = part(Fm, main.f, [-99, vAp + 7.5, 0.01, 100]),
+    const fmb = part(Fm, main.f, [-99, vAp + 7.5, -0.02, 100]),
       fmb2 = part(Fm, main.f, [-99, vAp - 1, uAp - 6, vAp + 7.51]),
-      fmb3 = part(Fm, main.f, [uAp + 6, vAp - 1, 0.01, vAp + 7.51]);
+      fmb3 = part(Fm, main.f, [uAp + 6, vAp - 1, -0.02, vAp + 7.51]);
     const mk = (id, name, type, polys, doors, extra) =>
       units.push(
         Object.assign(
@@ -492,6 +492,26 @@ export const LIPLAN = (() => {
     return out;
   }
 
+  // the stretches of an edge (from a along (ux, uy), length L2, inward normal n) whose outside belongs to one of the polygons fs
+  function covered(a, ux, uy, L2, n, fs) {
+    const out = [],
+      st = 0.25;
+    let t0 = null;
+    for (let t = 0; t <= L2 + 1e-6; t += st) {
+      const tt = Math.min(t, L2),
+        // 0.45 m beyond the edge: two parts of one store drawn with a seam between them (OBI's garden centre: 0.28 m) still meet
+        x = a[0] + ux * tt - n[0] * 0.45,
+        y = a[1] + uy * tt - n[1] * 0.45,
+        c = fs.some(f => inPoly(f, x, y));
+      if (c && t0 === null) t0 = Math.max(0, tt - st / 2);
+      if (!c && t0 !== null) {
+        if (tt - st / 2 - t0 > 0.3) out.push([t0, tt - st / 2]);
+        t0 = null;
+      }
+    }
+    if (t0 !== null && L2 - t0 > 0.3) out.push([t0, L2]);
+    return merge(out);
+  }
   // ---- walls facing in: every edge of a unit's volumes, open where it runs along another volume of the same unit (an opening between
   // two parts of one store), with the openings of the glazed fronts (a door's front: its width and glazing height from laeden.js) ----
   // a run: { a, b, L, n (inward normal), open: [[u0, u1]] (no wall), holes: [{ u0, u1, z0, z1, door }] (glass in the wall), vol }
@@ -507,33 +527,15 @@ export const LIPLAN = (() => {
         const ux = (b[0] - a[0]) / L2,
           uy = (b[1] - a[1]) / L2,
           n = [-uy, ux]; // inward: the left side of a counter-clockwise outline
-        // collinear overlaps with the other volumes of the unit: open
-        const open = [];
-        u.vols.forEach((w, wi) => {
-          if (wi === vi) return;
-          const q = ring(w.f);
-          for (let k = 0; k < q.length; k++) {
-            const c = q[k],
-              d = q[(k + 1) % q.length];
-            const oc = (c[0] - a[0]) * uy - (c[1] - a[1]) * ux,
-              od = (d[0] - a[0]) * uy - (d[1] - a[1]) * ux;
-            if (Math.abs(oc) > 0.35 || Math.abs(od) > 0.35) continue;
-            const tc = (c[0] - a[0]) * ux + (c[1] - a[1]) * uy,
-              td = (d[0] - a[0]) * ux + (d[1] - a[1]) * uy,
-              t0 = Math.max(0, Math.min(tc, td)),
-              t1 = Math.min(L2, Math.max(tc, td));
-            if (t1 - t0 > 0.3) open.push([t0, t1]);
-          }
-        });
-        // a volume's edge that lies inside another volume of the unit (a part drawn over another): open too
-        if (!open.length) {
-          const mx = (a[0] + b[0]) / 2 + n[0] * 0.4,
-            my = (a[1] + b[1]) / 2 + n[1] * 0.4,
-            ox = (a[0] + b[0]) / 2 - n[0] * 0.4,
-            oy = (a[1] + b[1]) / 2 - n[1] * 0.4;
-          if (u.vols.some((w, wi) => wi !== vi && inPoly(w.f, ox, oy) && inPoly(v.f, mx, my) && L2 < 3))
-            open.push([0, L2]);
-        }
+        // where the space beyond the edge belongs to another volume of the unit (a part beside it, or drawn over it): open
+        const open = covered(
+          a,
+          ux,
+          uy,
+          L2,
+          n,
+          u.vols.filter((w, wi) => wi !== vi).map(w => w.f)
+        );
         // the glazed fronts on this edge
         const holes = [];
         for (const fr of fronts || []) {
@@ -609,22 +611,15 @@ export const LIPLAN = (() => {
         const tx = (b[0] - a[0]) / len,
           ty = (b[1] - a[1]) / len,
           n = [-ty, tx];
-        // shared with another polygon of the unit: its free pieces only
-        const shared = [];
-        loc.forEach(g => {
-          if (g === fl) return;
-          const q = ring(g);
-          for (let k = 0; k < q.length; k++) {
-            const c = q[k],
-              d = q[(k + 1) % q.length],
-              oc = (c[0] - a[0]) * ty - (c[1] - a[1]) * tx,
-              od = (d[0] - a[0]) * ty - (d[1] - a[1]) * tx;
-            if (Math.abs(oc) > 0.35 || Math.abs(od) > 0.35) continue;
-            const t0 = (c[0] - a[0]) * tx + (c[1] - a[1]) * ty,
-              t1 = (d[0] - a[0]) * tx + (d[1] - a[1]) * ty;
-            shared.push([Math.max(0, Math.min(t0, t1)), Math.min(len, Math.max(t0, t1))]);
-          }
-        });
+        // shared with another polygon of the unit (beside it or over it): its free pieces only
+        const shared = covered(
+          a,
+          tx,
+          ty,
+          len,
+          n,
+          loc.filter(g => g !== fl)
+        );
         for (const [t0, t1] of rest(len, shared)) {
           if (t1 - t0 < 0.3) continue;
           const A = [a[0] + tx * t0, a[1] + ty * t0],

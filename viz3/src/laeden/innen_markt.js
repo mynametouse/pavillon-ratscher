@@ -5,15 +5,15 @@
 // colours, no labels, no brands). Each layout writes into a plan of laeden/innen_plan.js (LIPLAN.newPlan / LIPLAN.kit).
 import { LIPLAN } from './innen_plan.js';
 export const LIMARKT = (() => {
-  const { L, rnd, hash, spans, bandSpans, kit } = LIPLAN;
+  const { L, rnd, hash, kit } = LIPLAN;
   // ---- colours (linear) ----
   const C = {
-    floorA: L(0.78, 0.77, 0.74), // light terrazzo tiles
-    floorB: L(0.74, 0.73, 0.7),
-    wall: L(0.9, 0.9, 0.88),
+    floorA: L(0.74, 0.72, 0.68), // light terrazzo tiles
+    floorB: L(0.69, 0.67, 0.63),
+    wall: L(0.86, 0.86, 0.84),
     skirt: L(0.35, 0.35, 0.36),
-    ceil: L(0.92, 0.92, 0.9),
-    shelf: L(0.83, 0.84, 0.84), // light grey steel
+    ceil: L(0.86, 0.86, 0.85),
+    shelf: L(0.78, 0.79, 0.8), // light grey steel
     shelfD: L(0.42, 0.43, 0.45), // the plinth, the back's dark parts
     back: L(0.72, 0.73, 0.74),
     rail: L(0.95, 0.95, 0.93), // the price rail
@@ -486,7 +486,9 @@ export const LIMARKT = (() => {
             ? { pal: 'wasser', kinds: ['bottle', 'pack'], h: disc ? 1.8 : 2.2 }
             : { pal: 'haushalt', kinds: ['bottle', 'box', 'pack'], h: disc ? 1.8 : 2.2 }
         );
-        Ke.sign([drinks ? 'Getränke' : 'Haushalt'], (t0 + t1) / 2, 1.9, 3.15, 1.8, 0.42, 1, 0, true);
+        // its sign hangs over the aisle beside it, facing the front like the aisles' signs
+        const sl = F.L(...Fe.W((t0 + t1) / 2, 1.9));
+        K.sign([drinks ? 'Getränke' : 'Haushalt'], sl[0], sl[1], 3.15, 1.8, 0.42, -1, 0, true);
         markOcc(O, F, e, t0, t1, 0.6 + 2.3);
       }
     }
@@ -617,30 +619,6 @@ export const LIMARKT = (() => {
     pfand(K, de[0] + dSide * 3.0, bv[3] - 0.05, -1);
     trolleys(K, de[0] + dSide * 4.5, (bv[1] + bv[3]) / 2, 5, 0);
   }
-  // a shelf along a side wall (running along v at u = us, its back to the wall, facing into the hall: −s)
-  function sideShelf(K, R, us, s, v0, v1, o, disc) {
-    const D = 0.6,
-      H = disc ? 1.8 : 2.2,
-      lv = disc ? [0.14, 0.55, 0.95, 1.35] : [0.14, 0.55, 0.95, 1.35, 1.75],
-      pal = PAL[o.pal],
-      len = v1 - v0,
-      vm = (v0 + v1) / 2,
-      uB = us - s * 0.05; // the back against the wall
-    K.box(uB - s * 0.03, vm, 0, 0.06, len, H, C.back, C.shelfD);
-    K.box(uB - (s * D) / 2, vm, 0, D - 0.04, len, 0.12, C.shelfD);
-    for (const z of lv.slice(1)) {
-      K.box(uB - (s * (D + 0.02)) / 2, vm, z - 0.03, D - 0.06, len - 0.04, 0.03, C.shelf);
-      K.box(uB - s * (D - 0.015), vm, z - 0.055, 0.02, len - 0.04, 0.045, C.rail);
-    }
-    for (let k = 0; k < lv.length; k++) {
-      const z = k === 0 ? 0.12 : lv[k],
-        top = k + 1 < lv.length ? lv[k + 1] - 0.06 : H - 0.08;
-      goodsRunV(K, R, uB - s * (D - 0.04), -s, v0 + 0.05, v1 - 0.05, z, top - z, D - 0.12, pal, o.kinds);
-    }
-    for (let v = v0; v <= v1 + 0.01; v += len / Math.max(1, Math.round(len / 1.25)))
-      K.box(uB - (s * D) / 2, Math.min(v1 - 0.03, Math.max(v0 + 0.03, v)), 0, D, 0.05, H - 0.02, C.shelf);
-    K.solid(uB - (s * D) / 2, vm, D + 0.1, len);
-  }
   // the frame of a hall: its edge nearest to the door (u along it, v into the hall)
   function hallFrame(hall, door) {
     const r = LIPLAN.ring(hall.f);
@@ -663,6 +641,7 @@ export const LIMARKT = (() => {
   }
 
   return {
+    bakery,
     C,
     PAL,
     AISLES,

@@ -163,6 +163,8 @@ laeden/laeden.js            # feat/laeden OBI, Mega Center, EDEKA, Shell, McDona
 # feat/laeden-innen: the shops from inside below this line (after the shops outside: their data, doors, hooks)
 laeden/innen_plan.js        # feat/laeden-innen the units (which part of which shop one walks into), walls with the fronts' openings, the kit of a plan – pure (LIPLAN)
 laeden/innen_markt.js       # feat/laeden-innen supermarket, discounter, drinks market, petrol station shop, bakery, pharmacy: the layouts – pure (LIMARKT)
+laeden/innen_bau.js         # feat/laeden-innen the DIY store: high-bay racks, departments, checkout zone, wood cutting, garden centre – pure (LIBAU)
+laeden/innen_haus.js        # feat/laeden-innen furniture store, the mall's corridor and fronts, restaurants, kebab house, laundry, petrol station, drinks market, pharmacy, bakery – pure (LIHAUS)
 laeden/innen.js             # feat/laeden-innen sliding doors by the opening hours, rooms built on approach (unlit, light baked in), walls, floor, indoors (LINNEN)
 # feat/verkehr: below this line (life on the streets: walkers, cars, waving one down – after the village, the town, the vehicles and KI)
 verkehr/verkehr_leute.js    # feat/verkehr the people on the streets: who they are, what they say, their cars – data (VLEUTE)
