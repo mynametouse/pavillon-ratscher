@@ -346,6 +346,13 @@ with lib.browser() as b:
         print('gast', json.dumps(g, ensure_ascii=False), flush=True)
         ck('Gerhard is at home: on his couch (his own figure), „Gerhard grüßen“', g['guest'] == 'gerhard' and g['fig'] and g['label'] == 'Gerhard grüßen', g)
         if g['fig']:
+            # every geometry and texture of the figure is watched: on going out each one must be disposed (the counts of the whole
+            # scene move with the street – villagers walking in and out of view, cells – so they are only printed)
+            E("""(() => { const s = { g: 0, gd: 0, t: 0, td: 0 }, G = new Set(), T = new Set(); window.__HG = s;
+              HGAST.f.g.traverse(o => { if (o.geometry && !G.has(o.geometry)) { G.add(o.geometry); s.g++; o.geometry.addEventListener('dispose', () => s.gd++); }
+                const ms = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
+                for (const m of ms) for (const k of Object.keys(m)) { const v = m[k]; if (v && v.isTexture && !T.has(v)) { T.add(v); s.t++; v.addEventListener('dispose', () => s.td++); } } });
+              return 1; })()""")
             E("""(() => { const H = HAEUSER.H, f = HGAST.f, r = H.rooms.find(q => q.id === H.roomAt(f.at.x, f.at.y, f.at.z + 0.5)), c = [0, 1].map(i => r.poly.reduce((s, p) => s + p[i], 0) / 4);
               const dx = f.at.x - c[0], dy = f.at.y - c[1], L = Math.hypot(dx, dy) || 1, ex = f.at.x - dx / L * 2.6 + 0.3, ey = f.at.y - dy / L * 2.6 + 0.3;
               __T.stand(ex, ey, r.z0, Math.atan2(f.at.x - ex, f.at.y - ey) * 180 / Math.PI); CAM3.want = false; GAME.view(ex, ey, r.z0 + 1.62, Math.atan2(f.at.x - ex, f.at.y - ey) * 180 / Math.PI, -14, 78); GAME.step(0.2); return 1; })()""")
@@ -354,21 +361,10 @@ with lib.browser() as b:
         outside(247)
         for _ in range(3): E("GAME.step(0.5); GAME.shot(); 1")
         m1 = J("__T.mem()")
-        # a cell of the street that finished meanwhile adds to the count once; a figure that is not freed adds again each time: once
-        # more in and out, and the second count must not grow
-        m2 = m1
-        if m1['g'] > m0['g'] or m1['t'] > m0['t']:
-            enter(247)
-            for _ in range(200):
-                if E("!!(window.HGAST && HGAST.f) || !HAEUSER.guest"): break
-                E("GAME.step(0.05)"); time.sleep(0.1)
-            E("GAME.step(0.2); GAME.shot(); 1")
-            leave()
-            outside(247)
-            for _ in range(3): E("GAME.step(0.5); GAME.shot(); 1")
-            m2 = J("__T.mem()")
+        hg = J("window.__HG || null")
         lf = J("({ loads: HGAST.loads, frees: HGAST.frees, f: !!HGAST.f })")
-        ck('coming out: the figure is gone, its geometries and textures freed', not lf['f'] and lf['loads'] == lf['frees'] and ((m1['g'] <= m0['g'] and m1['t'] <= m0['t']) or (m2['g'] <= m1['g'] and m2['t'] <= m1['t'])), {'m0': m0, 'm1': m1, 'm2': m2, 'hgast': lf})
+        print('gast memory', json.dumps({'m0': m0, 'm1': m1, 'figure': hg, 'hgast': lf}), flush=True)
+        ck('coming out: the figure is gone, its geometries and textures freed', not lf['f'] and lf['loads'] == lf['frees'] and bool(hg) and hg['g'] > 0 and hg['gd'] >= hg['g'] and hg['td'] >= hg['t'], {'figure': hg, 'hgast': lf, 'm0': m0, 'm1': m1})
     # ---- a save from inside: after a reload one stands in front of the door ----
     if want('save'):
         r = enter(hid)
