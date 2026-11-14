@@ -87,7 +87,8 @@ Gärten hinter den Häusern, gehört zur Straße). Das Fülllicht ist eines der 
   drinnen „Hinausgehen · E“, `*_hud.png`), Laufen (Wände, Boden, Treppe, Dachboden, Kellerluke, Innentür, Sitzen, Liegen), rein und raus
   ohne Speicherrest, nachts Licht, drei Häuser in Bildern bei Tag und Nacht, die übrigen Stile einmal gezeichnet ohne neues Programm,
   Gerhard zu Hause, alle Häuser einmal gebaut und freigegeben, Speichern und Neuladen. Themen-Tests `viz3/extra/haeuser/tests.txt`:
-  `smoke`, `haeuser`, `zombie_innen`.
+  `smoke`, `haeuser:bilder=1` (in der CI Bilder nur von einem Haus: mit dreien dauerte der Lauf 44 von höchstens 60 Minuten),
+  `zombie_innen`.
 
 ## Offen
 

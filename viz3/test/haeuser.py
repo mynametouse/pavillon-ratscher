@@ -4,7 +4,7 @@
 # all enterable houses mounted and freed once (time per house, draw calls, errors); pictures in three houses by day and night; the other
 # looks drawn once without a new program; a villager at home (his own figure, freed again); a save from inside puts one in front of the
 # door after a reload. Pictures into out/haeuser/.
-#   python3 viz3/test/haeuser.py PORT [only=door+walk+night+shots+looks+gast+sweep+save,tier=hoch,haus=<id>]
+#   python3 viz3/test/haeuser.py PORT [only=door+walk+night+shots+looks+gast+sweep+save,tier=hoch,haus=<id>,bilder=3]
 import sys, os, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]
@@ -259,6 +259,7 @@ with lib.browser() as b:
           out.push(L.find(id => lk(id) === 'heute' && ok(id) && !out.includes(id) && id % 3 === 1) || L.find(id => lk(id) === 'heute' && ok(id) && !out.includes(id)));
           return out.filter(Boolean); })()""")
         if opts.get('haus'): picks = [int(opts['haus'])] + picks[:2]
+        picks = picks[:max(1, int(opts.get('bilder', 3)))]   # bilder=1: one house only (the feature CI – the time limit is 60 min)
         print('picture houses', picks, [E(f"HAEUSER.lookOf({h})") for h in picks], flush=True)
         for hi, h in enumerate(picks):
             if not enter(h).get('ok'):
