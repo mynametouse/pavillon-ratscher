@@ -238,6 +238,7 @@ grenzland/gl_cockpit.js     # feat/grenzland the view from the driver's seat: ha
 grenzland/gl_radio_data.js  # feat/grenzland the radio's and the phone's data: stations, programmes, texts (GLRDATA)
 grenzland/gl_radio_musik.js # feat/grenzland the radio's music, synthesised per station (GLRMUSIK)
 grenzland/gl_radio.js       # feat/grenzland the radio: stations to switch between, news of the player's deeds (GLRADIO)
+grenzland/gl_nacht.js       # feat/grenzland the night: real crickets in summer, St. Johannis striking the hour (GLNACHT)
 grenzland/gl_handy.js       # feat/grenzland the phone: messages, the village chat, the regional feed, notes, the camera (GLHANDY)
 grenzland/gl_fahndung.js    # feat/grenzland the wanted level in the world: witnesses, patrol cars, officers, the road block, hiding (GLFAHNDUNG)
 grenzland/gl_heli.js        # feat/grenzland the police helicopter of four stars (GLHELI)

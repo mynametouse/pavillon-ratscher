@@ -80,6 +80,7 @@ CAST = {
     'gl_r_zweitakt': (['de-DE-KillianNeural'], '+10%', '+1Hz', 'r'),                                    # Ecki, 52, rock
     'gl_r_blasius': (['de-AT-JonasNeural', 'de-DE-ConradNeural'], '-6%', '-4Hz', 'r'),                  # Schorsch, 63, brass band
     'gl_r_neon': (['en-US-EmmaMultilingualNeural', 'de-DE-SeraphinaMultilingualNeural'], '+4%', '+2Hz', 'r'),  # Synthia, 31
+    'gl_r_funkloch': (['en-US-AvaMultilingualNeural', 'de-DE-AmalaNeural'], '+9%', '+5Hz', 'r'),     # Nele, 26, Funkloch FM (rap, electro)
     'gl_r_republik': (['de-DE-ConradNeural'], '-4%', '-4Hz', 'r'),                                      # 1989: the GDR's news reader
     'gl_r_impuls': (['de-DE-AmalaNeural'], '+8%', '+4Hz', 'r'),                                         # 1989: Kati, 24, youth radio
     'gl_r_west': (['en-US-AndrewMultilingualNeural', 'de-DE-KillianNeural'], '+6%', '+3Hz', 'r'),  # 1989: Wolfi, the West
