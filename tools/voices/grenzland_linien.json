@@ -181,6 +181,11 @@
    "g": "m",
    "age": 63
   },
+  "gl_r_funkloch": {
+   "name": "Nele",
+   "g": "f",
+   "age": 26
+  },
   "gl_r_neon": {
    "name": "Synthia",
    "g": "f",
@@ -6001,6 +6006,20 @@
   },
   {
    "who": "gl_r_kirmes",
+   "id": "gl_r_kirmes_bimkm3",
+   "text": "Das war „Meanwhile in Bavaria“ – Kevin MacLeod.",
+   "prio": 4,
+   "src": "radio.kirmes"
+  },
+  {
+   "who": "gl_r_kirmes",
+   "id": "gl_r_kirmes_1bgfsm5",
+   "text": "Das war „Ultra Polka“ – Kevin MacLeod.",
+   "prio": 4,
+   "src": "radio.kirmes"
+  },
+  {
+   "who": "gl_r_kirmes",
    "id": "gl_r_kirmes_1i3j6qa",
    "text": "Kurz gemeldet: Die Kirmesgesellschaft sucht noch einen Baum. Der letzte war zu kurz, der davor stand schief.",
    "prio": 4,
@@ -6155,8 +6174,8 @@
   },
   {
    "who": "gl_r_zweitakt",
-   "id": "gl_r_zweitakt_1edsxag",
-   "text": "Ecki hier. Das eben war handgemacht. Na gut, maschinengemacht. Aber mit Gefühl.",
+   "id": "gl_r_zweitakt_1vb1231",
+   "text": "Ecki hier. Das eben war handgemacht. Echte Band, echte Verstärker, echter Ärger mit den Nachbarn.",
    "prio": 4,
    "src": "radio.zweitakt"
   },
@@ -6169,8 +6188,8 @@
   },
   {
    "who": "gl_r_zweitakt",
-   "id": "gl_r_zweitakt_1mamzzm",
-   "text": "Gesang gibt es bei uns nicht. Den Text kennt ihr sowieso. Jeder einen anderen.",
+   "id": "gl_r_zweitakt_1ng8n25",
+   "text": "Mitsingen ist erlaubt. Den Text kennt ihr sowieso nicht. Ich auch nicht.",
    "prio": 4,
    "src": "radio.zweitakt"
   },
@@ -6185,6 +6204,20 @@
    "who": "gl_r_zweitakt",
    "id": "gl_r_zweitakt_16ov8ha",
    "text": "Nächstes Stück. Aufdrehen, Fenster runter, Dorf beschallen. Aber nach zweiundzwanzig Uhr nur noch Balladen.",
+   "prio": 4,
+   "src": "radio.zweitakt"
+  },
+  {
+   "who": "gl_r_zweitakt",
+   "id": "gl_r_zweitakt_gnl04y",
+   "text": "Das war „Sonzis FM“ – Pipe Choir.",
+   "prio": 4,
+   "src": "radio.zweitakt"
+  },
+  {
+   "who": "gl_r_zweitakt",
+   "id": "gl_r_zweitakt_ugl7a4",
+   "text": "Das war „Ate A Pizza“ – The Crypts!",
    "prio": 4,
    "src": "radio.zweitakt"
   },
@@ -6315,6 +6348,104 @@
    "src": "radio.blasius"
   },
   {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_4m5wwu",
+   "text": "Funkloch FM. Wir sind da, wo dein Netz nicht ist.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_1mwibm1",
+   "text": "Funkloch FM – Rap und Elektro aus dem Wald. Empfang nicht garantiert.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_7n6il",
+   "text": "101,3. Wenn es rauscht, bist du richtig.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_8m5n1h",
+   "text": "Nele hier. Wer uns gerade hört, steht vermutlich auf einem Hügel. Bleib da.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_1ln8qt3",
+   "text": "Grüße an alle, die am Staudamm im Auto sitzen, weil dort der Empfang am besten ist.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_nidvcl",
+   "text": "Dieser Beat wurde nicht in Berlin gebaut. Man hört es. Im guten Sinn.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_orxu6z",
+   "text": "Kurze Ansage an die Simson-Fraktion: Bitte nicht im Takt Gas geben. Die Nachbarn zählen mit.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_1kvscrj",
+   "text": "Gleich weiter mit Musik. Vorher schnell lüften. Draußen ist Wald, das hilft.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_h653ij",
+   "text": "Das war „Big Car Theft“ – Jason Shaw.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_1x762vg",
+   "text": "Das war „Self Explainitory“ – Black Ant.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_u7qyb9",
+   "text": "Kurz gemeldet: In Ratscher wurde ein Funkloch gestopft. Daneben ist ein neues aufgegangen.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_1gdyb9t",
+   "text": "Kurz gemeldet: Die Jugend des Kreises fordert einen Club. Der Gemeinderat bietet die Kegelbahn an. Mittwochs.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_1jlaqa0",
+   "text": "Werbung: Handyladen Empfangsbalken in Schleusingen. Wir verkaufen Balken. Netz müssen Sie selber finden.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_pufs7v",
+   "text": "Werbung: Dönerbude „Zum Funkmast“. Der Spieß dreht sich auch, wenn sonst nichts geht.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
    "who": "gl_r_neon",
    "id": "gl_r_neon_6xrpue",
    "text": "Neonfunk. Die Achtziger hören nicht auf.",
@@ -6337,8 +6468,8 @@
   },
   {
    "who": "gl_r_neon",
-   "id": "gl_r_neon_1s5oofx",
-   "text": "Synthia hier. Das Stück eben wurde komplett von einer Maschine gespielt. Die Maschine lässt grüßen.",
+   "id": "gl_r_neon_103rhzq",
+   "text": "Synthia hier. Bei dem Stück eben hat eine Maschine mitgespielt. Die Maschine lässt grüßen.",
    "prio": 4,
    "src": "radio.neon"
   },
@@ -6365,8 +6496,22 @@
   },
   {
    "who": "gl_r_neon",
-   "id": "gl_r_neon_zuqiet",
-   "text": "Mein Rechner hat vierundsechzig Kilobyte. Mehr braucht kein Mensch. Dieses Stück brauchte zweiundsechzig.",
+   "id": "gl_r_neon_18i1k8u",
+   "text": "Mein Rechner hat vierundsechzig Kilobyte. Mehr braucht kein Mensch. Für dieses Stück hätte er trotzdem nicht gereicht.",
+   "prio": 4,
+   "src": "radio.neon"
+  },
+  {
+   "who": "gl_r_neon",
+   "id": "gl_r_neon_wu41aq",
+   "text": "Das war „This Love's Got to Change“ – Black Math.",
+   "prio": 4,
+   "src": "radio.neon"
+  },
+  {
+   "who": "gl_r_neon",
+   "id": "gl_r_neon_4wnaqk",
+   "text": "Das war „Street Dancing“ – Timecrawler 82.",
    "prio": 4,
    "src": "radio.neon"
   },

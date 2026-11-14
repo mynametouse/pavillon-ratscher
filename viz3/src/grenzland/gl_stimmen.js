@@ -126,6 +126,8 @@ export const GLSTIMMEN = (() => {
               prio
             );
           each(s, s.mod || [], prio);
+          // after a real song the presenter names it with a fixed sentence (gl_radio_data.js LIEDER, dasWar)
+          if (RD.LIEDER && RD.LIEDER[s.id] && RD.dasWar) each(s, RD.LIEDER[s.id].map(RD.dasWar), prio);
           if (talk[s.id]) {
             // the police report and the breaking news, as the talk station says them
             const ids = Object.keys(P).filter(i => P89.includes(i) === k89);

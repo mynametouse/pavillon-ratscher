@@ -1,5 +1,7 @@
 # Ton, Runde 1 – gemeinsamer Teil der Aufträge (13.11.2026, ~23:30)
 
+> **Stand 14.11.2026, 0:30 – angehalten.** Falko 23:54: „ich möchte keine Credit Labs bezahlen“ – ElevenLabs entfällt ganz (siehe `ton-gemeinsam.md`, „Costs: none“); wo dieser Auftrag ElevenLabs nennt, gilt das nicht mehr. 23:57: nur Schnelles – die Agenten wurden um 23:58 angehalten, ihre angefangene Arbeit liegt unbesehen auf dem Branch. Schon gebaut vom Lead (V18n): acht Songs in `GLRDATA.LIEDER`, Funkloch FM, `gl_nacht.js` (Grillen, Stundenschlag).
+
 For the helper agents `ton-musik`, `ton-radio`, `ton-stimmen`, `ton-welt`, `ton-motoren` of the Grenzland chat (lead:
 session_01L6Yrpf75YEUJPnMQdXevjQ). Code comments English, the UI German. Read this first, then your own brief `ton-<thema>.md`, then
 `docs/plans/auftraege/grenzland2-gemeinsam.md`, sections „Interfaces“ (voices: fixed strings, `X.linien()`) and „How to work“ (build,
@@ -23,6 +25,9 @@ checks, tests, browser lock, CI annotations, hard rules, commit identity) – th
   - World: **all four** – places and time of day, real engines (Simson, Trabant, Wartburg as two-strokes, Martinshorn with Doppler,
     helicopter), film music at missions, room sound (reverb in bunker and church, muffled in the car, the phone's sound, direction audible
     with headphones).
+- **13.11. 23:54:** „Okay, also ich möchte keine Credit Labs bezahlen.“ – **no ElevenLabs credits, nothing that costs money.** ElevenLabs is
+  out completely (no API, no secret, no connector). Voices come from free open-source models rendered on GitHub Actions (free for this public
+  repository); effects with no free recording are synthesised.
 
 ## What you replace (why it sounds like a children's radio)
 
@@ -45,8 +50,9 @@ checks, tests, browser lock, CI annotations, hard rules, commit identity) – th
    before you propose a song. As always: Hubert and Ronald are never culprits or targets, no real firms, no logos.
 3. **Attribution:** every CC BY file carries title, author, licence (with link) and source URL – shown in the game where the sound is named
    (radio display: „Titel – Interpret · CC BY 4.0“), in the credits (`credits_add` of your extra), and in `CREDITS.md` of the sound repository.
-4. **AI sound** only for voices (ElevenLabs text to speech) and as a **gap filler** for effects and ambience where no free recording fits
-   (ElevenLabs Sound Effects, once the key is there). **No AI music.**
+4. **No paid service, no AI music.** AI only for voices – free open-source text to speech run on Actions (see „Voices“ below). Effects and
+   ambience: free recordings; where none fits, synthesise (WebAudio, or offline numpy + ffmpeg like `tools/sounds/mk_v16c_sounds.py`, own
+   work CC0) or keep what plays today.
 5. **Size:** the site has 826 of 1,000 MB (the GitHub Pages limit; the preview `/vorschau/` doubles everything). **No music and no long loops
    in this repository** – they go to the sound repository (below). Voices stay where they are (`viz3/extra/grenzland-stimmen/`).
 6. **Loudness:** music −16 LUFS integrated, true peak ≤ −1 dBTP; ambience beds −24 LUFS; point sources and effects peak −1 dBFS before the
@@ -109,15 +115,16 @@ update); if a small additive change in a shared file is unavoidable, write it as
 per new module in `viz3/src/modules.txt` inside the `# feat/grenzland` block (after the modules it imports). `tools/ton/` belongs to
 `ton-musik`; `ton-welt` and `ton-motoren` write only their own manifest and Hörprobe files there.
 
-## ElevenLabs
+## Costs: none (Falko 23:54)
 
-- Falko is asked to add the secret **`ELEVENLABS_API_KEY`** (this repository and `pavillon-ton`). Until it is there, every ElevenLabs step is
-  prepared and **skips with a notice** („ELEVENLABS_API_KEY fehlt – übersprungen“).
-- **Budgets** until the lead raises them: `ton-stimmen` ≤ 5,000 credits (casting samples only; the full re-recording waits for Falko's choice
-  of voices), `ton-welt` ≤ 3,000, `ton-motoren` ≤ 3,000 (gap fillers). Each workflow reads the subscription's `character_count` before and
-  after (`GET /v1/user/subscription`), prints what it used and stops before its budget.
-- Never print, log or commit the key. The chat's ElevenLabs connector belongs to the lead (casting with Falko); you may use it to **list or
-  search voices**, never to generate.
+- **No ElevenLabs** – no API call, no secret, no credits, no use of the chat's ElevenLabs connector. No other paid API either.
+- GitHub Actions minutes are free for this public repository – heavy work (transcribing, rendering voices) runs there; keep matrices at
+  ≤ 4 parallel jobs (the runners are shared with the other chats).
+- **Voices:** open-source models with licences that allow use in a public game – Chatterbox Multilingual (Resemble AI, MIT: German,
+  zero-shot voice cloning from a few seconds of reference, emotion exaggeration control, an inaudible watermark), KugelAudio open (MIT,
+  German-focused, pre-encoded voices), Kokoro (Apache 2.0 – check its German voices; small enough for the browser), Piper and Edge as
+  today. Reference voices for cloning only from sources explicitly free for synthesis (CC0 TTS datasets such as Thorsten-Voice, outputs of
+  permissively licensed models); never clone a recognizable real person who did not offer the voice for this.
 
 ## Timetable and report
 

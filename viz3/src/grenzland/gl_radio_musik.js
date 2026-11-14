@@ -748,6 +748,12 @@ export const GLRMUSIK = (() => {
       T('Schichtwechsel', 'Die Kettenspanner', 'rock'),
       T('Stausee im Regen', 'Stahlblau', 'ballade'),
     ],
+    // Funkloch FM plays real songs (gl_radio_data.js LIEDER); these only when its files cannot be loaded
+    funkloch: [
+      T('Kein Netz am Kamm', 'Bassmast', 'synth'),
+      T('Schleuse bei Nacht', 'Bassmast', 'synth'),
+      T('Ein Balken', 'Modem 56k', 'synth'),
+    ],
     neon: [
       T('Neon über dem Stausee', 'Kassette C90', 'synth'),
       T('Tastentelefon', 'Diskette 3½', 'synth'),

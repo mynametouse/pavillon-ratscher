@@ -38,6 +38,95 @@ export const GLRDATA = (() => {
       'https://www.bundesarchiv.de/themen-entdecken/online-entdecken/themenbeitraege/grenzuebergangsstellen-fuer-den-bezirk-suhl/',
     ],
   ];
+  // ---- real songs by real bands under free licences (Falko 13.11.2026 23:02: „Das müssen echte coole Songs sein.“; ~23:20 „Freie Musik
+  // von Bands“; 23:57 „Heute 8 Songs direkt“ – two per station, chosen by downloads on the Free Music Archive, licence read on each track's
+  // own page on 14.11.2026). Files: viz3/extra/grenzland-radio/dist/snd/radio/ – loudness −16 LUFS, MP3 96 kbit/s, otherwise unchanged.
+  // datei · titel · von (artist) · lizenz + lurl · quelle (the track's page) · sek (length after the silence at the ends was trimmed)
+  const LIEDER = {
+    zweitakt: [
+      {
+        datei: 'zt_sonzis.mp3',
+        titel: 'Sonzis FM',
+        von: 'Pipe Choir',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Pipe_Choir/Pipe_Choir/Sonzis_FM/',
+        sek: 290.1,
+      },
+      {
+        datei: 'zt_pizza.mp3',
+        titel: 'Ate A Pizza',
+        von: 'The Crypts!',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/The_Crypts_1935/Discover_Science/The_Crypts_-_07_-_Ate_A_Pizza/',
+        sek: 89.0,
+      },
+    ],
+    funkloch: [
+      {
+        datei: 'fl_bigcar.mp3',
+        titel: 'Big Car Theft',
+        von: 'Jason Shaw',
+        lizenz: 'CC BY 3.0 US',
+        lurl: 'https://creativecommons.org/licenses/by/3.0/us/',
+        quelle: 'https://freemusicarchive.org/music/Jason_Shaw/Audionautix_Tech_Urban_Dance/TU-BigCarTheft/',
+        sek: 163.7,
+      },
+      {
+        datei: 'fl_selfex.mp3',
+        titel: 'Self Explainitory',
+        von: 'Black Ant',
+        lizenz: 'CC BY 3.0',
+        lurl: 'https://creativecommons.org/licenses/by/3.0/',
+        quelle: 'https://freemusicarchive.org/music/Black_Ant/Free_Beats_Sel_3/self_serve/',
+        sek: 150.4,
+      },
+    ],
+    neon: [
+      {
+        datei: 'nf_thislove.mp3',
+        titel: "This Love's Got to Change",
+        von: 'Black Math',
+        lizenz: 'CC BY 3.0',
+        lurl: 'https://creativecommons.org/licenses/by/3.0/',
+        quelle:
+          'https://freemusicarchive.org/music/Black_Math/Counterfeit_Unrealities/03_This_Loves_Got_to_Change_1538/',
+        sek: 143.8,
+      },
+      {
+        datei: 'nf_street.mp3',
+        titel: 'Street Dancing',
+        von: 'Timecrawler 82',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Timecrawler_82/Osaka_Lights/Street_Dancing/',
+        sek: 324.0,
+      },
+    ],
+    kirmes: [
+      {
+        datei: 'km_bavaria.mp3',
+        titel: 'Meanwhile in Bavaria',
+        von: 'Kevin MacLeod',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500057',
+        sek: 213.8,
+      },
+      {
+        datei: 'km_ultra.mp3',
+        titel: 'Ultra Polka',
+        von: 'Kevin MacLeod',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500069',
+        sek: 224.6,
+      },
+    ],
+  };
+  // what the presenter says after a song (a fixed sentence per song – recorded like every other line)
+  const dasWar = l => 'Das war „' + l.titel + '“ – ' + l.von + (/[.!?]$/.test(l.von) ? '' : '.');
   // ---- the stations ----
   // uhr: the format clock – what follows what (musik, mod: the presenter, kenn: ident and claim, werb: advert, news, verkehr, feat: the
   // feature in parts, gruss: greetings); fern: reception ('sued': comes in only in the south of the map, 'west': always with noise)
@@ -151,7 +240,7 @@ export const GLRDATA = (() => {
         name: 'Radio Zweitakt',
         freq: '97,6',
         mhz: 97.6,
-        art: 'Rock, instrumental',
+        art: 'Rock und Punk',
         wer: { name: 'Ecki', g: 'm', age: 52 },
         uhr: ['kenn', 'musik', 'musik', 'mod', 'musik', 'werb', 'musik', 'news'],
         claims: [
@@ -160,9 +249,9 @@ export const GLRDATA = (() => {
           '97,6. Wer leiser dreht, ist selber schuld.',
         ],
         mod: [
-          'Ecki hier. Das eben war handgemacht. Na gut, maschinengemacht. Aber mit Gefühl.',
+          'Ecki hier. Das eben war handgemacht. Echte Band, echte Verstärker, echter Ärger mit den Nachbarn.',
           'Früher haben wir die Gitarren selbst gebaut. Aus dem, was da war. Geklungen hat es wie das, was da war.',
-          'Gesang gibt es bei uns nicht. Den Text kennt ihr sowieso. Jeder einen anderen.',
+          'Mitsingen ist erlaubt. Den Text kennt ihr sowieso nicht. Ich auch nicht.',
           'Wer bei dem Solo nicht Luftgitarre spielt, hat beide Hände am Lenker. Sehr vernünftig.',
           'Nächstes Stück. Aufdrehen, Fenster runter, Dorf beschallen. Aber nach zweiundzwanzig Uhr nur noch Balladen.',
         ],
@@ -208,11 +297,40 @@ export const GLRDATA = (() => {
         ],
       },
       {
+        id: 'funkloch',
+        name: 'Funkloch FM',
+        freq: '101,3',
+        mhz: 101.3,
+        art: 'Rap und Elektro',
+        wer: { name: 'Nele', g: 'f', age: 26 },
+        uhr: ['kenn', 'musik', 'mod', 'musik', 'werb', 'musik', 'mod', 'musik', 'news'],
+        claims: [
+          'Funkloch FM. Wir sind da, wo dein Netz nicht ist.',
+          'Funkloch FM – Rap und Elektro aus dem Wald. Empfang nicht garantiert.',
+          '101,3. Wenn es rauscht, bist du richtig.',
+        ],
+        mod: [
+          'Nele hier. Wer uns gerade hört, steht vermutlich auf einem Hügel. Bleib da.',
+          'Grüße an alle, die am Staudamm im Auto sitzen, weil dort der Empfang am besten ist.',
+          'Dieser Beat wurde nicht in Berlin gebaut. Man hört es. Im guten Sinn.',
+          'Kurze Ansage an die Simson-Fraktion: Bitte nicht im Takt Gas geben. Die Nachbarn zählen mit.',
+          'Gleich weiter mit Musik. Vorher schnell lüften. Draußen ist Wald, das hilft.',
+        ],
+        news: [
+          'Kurz gemeldet: In Ratscher wurde ein Funkloch gestopft. Daneben ist ein neues aufgegangen.',
+          'Kurz gemeldet: Die Jugend des Kreises fordert einen Club. Der Gemeinderat bietet die Kegelbahn an. Mittwochs.',
+        ],
+        werb: [
+          'Werbung: Handyladen Empfangsbalken in Schleusingen. Wir verkaufen Balken. Netz müssen Sie selber finden.',
+          'Werbung: Dönerbude „Zum Funkmast“. Der Spieß dreht sich auch, wenn sonst nichts geht.',
+        ],
+      },
+      {
         id: 'neon',
         name: 'Neonfunk',
         freq: '104,2',
         mhz: 104.2,
-        art: 'Elektronik, die Achtziger',
+        art: 'Synthpop und New Wave',
         wer: { name: 'Synthia', g: 'f', age: 31 },
         uhr: ['kenn', 'musik', 'mod', 'musik', 'musik', 'werb', 'musik', 'news'],
         claims: [
@@ -221,11 +339,11 @@ export const GLRDATA = (() => {
           '104,2. Bitte Kassette einlegen und Aufnahme drücken.',
         ],
         mod: [
-          'Synthia hier. Das Stück eben wurde komplett von einer Maschine gespielt. Die Maschine lässt grüßen.',
+          'Synthia hier. Bei dem Stück eben hat eine Maschine mitgespielt. Die Maschine lässt grüßen.',
           'Wer jetzt Schulterpolster trägt: Bitte beim Einsteigen auf den Türrahmen achten.',
           'Diese Sendung wird auf Magnetband aufgezeichnet. Wer zurückspulen will, nimmt bitte einen Bleistift.',
           'Als nächstes ein Titel, der nach Zukunft klingt. Nach der Zukunft von damals. Die war schöner.',
-          'Mein Rechner hat vierundsechzig Kilobyte. Mehr braucht kein Mensch. Dieses Stück brauchte zweiundsechzig.',
+          'Mein Rechner hat vierundsechzig Kilobyte. Mehr braucht kein Mensch. Für dieses Stück hätte er trotzdem nicht gereicht.',
         ],
         news: [
           'Technikmeldung: Im Tal wurde schnelles Internet verlegt. Es liegt jetzt dort. Angeschlossen wird später.',
@@ -378,6 +496,7 @@ export const GLRDATA = (() => {
     klassik: 'Eine Durchsage der Polizei. Wir bitten um Nachsicht; danach wieder Musik.',
     zweitakt: 'Durchsage von den Kollegen in Blau.',
     blasius: 'Aus dem Thüringischen hört man:',
+    funkloch: 'Kurze Durchsage, dann geht der Beat weiter.',
     neon: 'Systemmeldung der Polizei.',
     impuls: 'Das hier sollen wir vorlesen:',
     west: 'Und aus dem Sendegebiet drüben erreicht uns das:',
@@ -528,7 +647,11 @@ export const GLRDATA = (() => {
         case 'mod': {
           const z = [];
           if (ctx.last && ctx.last.titel)
-            z.push('Das war „' + ctx.last.titel + '“' + (ctx.last.von ? ' – ' + ctx.last.von : '') + '.');
+            z.push(
+              ctx.last.lied
+                ? dasWar(ctx.last)
+                : 'Das war „' + ctx.last.titel + '“' + (ctx.last.von ? ' – ' + ctx.last.von : '') + '.'
+            );
           z.push(PROG.zieh(st, 'mod', S.mod));
           return wort('mod', z);
         }
@@ -695,6 +818,8 @@ export const GLRDATA = (() => {
   return {
     SENDER,
     byId,
+    LIEDER,
+    dasWar,
     POLIZEI,
     VOR,
     TH,
