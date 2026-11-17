@@ -151,5 +151,32 @@
   "h": 1.6,
   "pitch": 8,
   "doy": 290
+ },
+ {
+  "id": "suhler_kreisel_insel",
+  "x": -1267.2,
+  "y": 1326.6,
+  "yaw": 48.0,
+  "h": 2.0,
+  "pitch": 4,
+  "doy": 293
+ },
+ {
+  "id": "suhler_vor_kreisel",
+  "x": -1281.5,
+  "y": 1313.0,
+  "yaw": 44.0,
+  "h": 2.0,
+  "pitch": 4,
+  "doy": 293
+ },
+ {
+  "id": "suhler_schlosspark",
+  "x": -1359.3,
+  "y": 1202.9,
+  "yaw": 15.0,
+  "h": 2.0,
+  "pitch": 4,
+  "doy": 293
  }
 ]

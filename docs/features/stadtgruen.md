@@ -117,7 +117,8 @@ welt/schleusingen.js, fassade/**, laeden/**, schleusingen/si_*, haeuser/**, zomb
   Königstraße; Ratscher: nichts um den Garten, kein Baum doppelt, alles in der Zone), im Browser (nichts beim Start; mit der Stadt die
   Bäume; keiner in einem Haus der Stadt; keine neuen Programme; Draw-Calls und Dreiecke am Markt, in der Hildburghäuser Straße und an
   der Suhler Straße; Juli grün, Oktober golden, Januar kahl; ein Stamm hält auf; freigegeben im Garten), Bilder von den Blickpunkten
-  `viz3/extra/stadtgruen/blick.json` (nur das Modell), Telefon-Budget, Ratscher (an der L 1625 gebaut, kein Baum auf der Straße oder
+  `viz3/extra/stadtgruen/blick.json` (nur das Modell; 20 Blicke, auch vom Kreisel „An der Insel“ und am Schlosspark zur Burg hin),
+  Telefon-Budget, Ratscher (an der L 1625 gebaut, kein Baum auf der Straße oder
   doppelt, Budget an drei Stellen, Bilder, im Garten wieder freigegeben).
 - `viz3/extra/stadtgruen/tests.txt`: smoke, stadtgruen (zwei Jobs), memphone, laeden (Gruppe „mitte“ an der Suhler Straße).
 
