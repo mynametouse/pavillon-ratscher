@@ -1,0 +1,6 @@
+# Straßenbäume und Grün in Schleusingen (stadtgruen/stadtgruen.js): the data, the town with its trees, budgets, seasons, the phone; the pictures from the viewpoints; the shops near the trees
+smoke
+stadtgruen:data,stadt,telefon
+stadtgruen:bilder
+memphone
+laeden:data,mitte

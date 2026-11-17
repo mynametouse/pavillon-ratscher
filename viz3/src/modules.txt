@@ -227,6 +227,8 @@ wetter/wetter.js            # feat/wetter live as the default, switchable to the
 # feat/strassen: the furniture of the roads below this line (after the parked things, the traffic and the weather; before the frame loop)
 strassen/strassen_modelle.js # feat/strassen delineators, guard rails, traffic signs, street lamps, power poles and towers as geometry – pure (STRMOD)
 strassen/strassen.js        # feat/strassen the furniture built per cell near the observer, lamps at night, wet roads (STRASSEN)
+# feat/stadtgruen: Schleusingen's street trees and green below this line (after the town, the shops, the parked cars and the roads' furniture it keeps clear of)
+stadtgruen/stadtgruen.js    # feat/stadtgruen the avenues of Hildburghäuser, Suhler and Ilmenauer Straße, trees in yards and gardens, hedges – while the town stands, by the season (STADTGRUEN)
 # feat/bus: the real buses after the timetable below this line (after the traffic and the zombie night it asks; before the frame loop)
 bus/bus_fahrplan.js         # feat/bus the real timetable (gtfs.de, DELFI e.V.): service days, departures, a trip's run through the minutes – pure (BUSPLAN)
 bus/bus_modell.js           # feat/bus the regional bus and the stop sign as models; their few materials compiled at load (BUSMOD)
