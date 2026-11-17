@@ -1,7 +1,7 @@
 {
  "v": 1,
  "stand": "2026-11-17",
- "quelle": "freie Fotos von der Straße (Mapillary an der L 3004, März 2020; Panoramax 2020/2025, beide CC BY-SA 4.0) – nur abgelesene Werte, keine Bilder; Farben sRGB, geschätzt (wand_quelle)",
+ "quelle": "freie Fotos von der Straße (Mapillary, 360°-Aufnahmen an der L 3004, 22.03.2020; Panoramax 2020/2025; beide CC BY-SA 4.0) – nur abgelesene Werte, keine Bilder; Farben sRGB, geschätzt (die Fassaden im Gegenlicht)",
  "gebaeude_von": "world/village.js (VILLAGE.bld, id; x, y: Mittel der Wandpunkte zum Prüfen); Häuser der Dorfmitte nach Falkos Video (world/dorfkern_data.js) nur mit Unterschieden",
  "gebaeude": [
   {
@@ -10,42 +10,66 @@
    "y": -267.1,
    "art": "halle",
    "material": "blech",
-   "wand": "#7e8b99",
+   "wand": "#5c7090",
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "blech",
-    "farbe": "#6f7a86",
+    "farbe": "#6a7891",
     "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
-   "besonders": "Halle aus graublauem Trapezblech, durch Büsche gesehen (im Dorf dunkelgrün)",
-   "sicher": "niedrig",
+   "besonders": "Halle (Futtermittel, Getreide, Gartencenter): oben graublaues Trapezblech mit Fensterband, unten weißer Sockel mit mintgrünem Schriftband (im Dorf dunkelgrün)",
+   "sicher": "mittel",
    "ansichten": [
-    "m004"
+    "m006",
+    "m005",
+    "m007",
+    "m004",
+    "m008"
    ]
   }
  ],
  "nicht_lesbar": [
   {
-   "id": 264,
-   "warum": "hinter Bäumen, 65–100 m"
+   "id": 200,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
   },
   {
-   "id": 263,
-   "warum": "hinter Bäumen, 65–100 m"
+   "id": 201,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
   },
   {
-   "id": 206,
-   "warum": "hinter Bäumen, 65–100 m"
+   "id": 202,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 203,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
   },
   {
    "id": 204,
-   "warum": "hinter Bäumen, 65–100 m"
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
   },
   {
    "id": 205,
-   "warum": "hinter Bäumen, 65–100 m"
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 206,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 207,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 263,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 264,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
   }
  ],
  "panoramax": "die 109 Fotos stehen alle auf Wegen außerhalb des Dorfs – das nächste rund 160 m von der nächsten Hauswand: keine Fassade lesbar"

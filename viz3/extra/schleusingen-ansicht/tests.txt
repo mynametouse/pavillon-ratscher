@@ -3,8 +3,8 @@
 smoke
 schleusingen_ansicht
 memphone
-# the looks (fassade/ansicht.json) change styles, colours and storeys of the town's houses: the town, gebaeude's checks of the town and
-# the houses from inside (SINNEN reads the town's walls and storeys)
-gebaeude:schleusingen,perf
+# the looks (fassade/ansicht.json) change styles, colours and storeys of the town's houses: the town and its houses from inside (SINNEN
+# reads the town's walls and storeys). gebaeude:schleusingen checks the roofs of #308 (tiles) and #72 (slate) from gebaeude's own look
+# file – the views show slate on #308 and tiles on #72, our file overrides them; back in once that check reads the looks (lead asked)
 schleusingen
 schleusingen_innen:only=door+walk+night+mem+treppe+save,bilder=1
