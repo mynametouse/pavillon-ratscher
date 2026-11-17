@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "quelle": "feat/gebaeude: die Funde von schleusingen-ansicht (PARALLEL 17.11. 18:37, Straßenansichten) – fassade/ansicht.json desselben Formats gilt darüber",
+  "b": {
+    "#308": { "art": "haus", "farbe": "#e9e3d3", "dach": { "material": "ziegel", "farbe": "#9c4a32" } },
+    "#349": { "art": "haus", "material": "fachwerk-og", "farbe": "#ebe2cc", "dach": { "material": "ziegel", "farbe": "#9c4a32" } },
+    "#430": { "art": "haus", "farbe": "#e6dfcf", "dach": { "material": "ziegel", "farbe": "#9c4a32" } },
+    "#579": { "art": "haus", "farbe": "#e9e3d3", "dach": { "material": "ziegel", "farbe": "#9c4a32" } },
+    "#580": { "geschosse": 1 },
+    "#717": { "geschosse": 1 },
+    "#80": { "art": "schule", "geschosse": 2, "farbe": "#f2f1ec", "dach": { "form": "flach", "material": "kies" } },
+    "#72": { "art": "kirche", "dach": { "material": "schiefer", "farbe": "#3c3f45" } }
+  }
+}
