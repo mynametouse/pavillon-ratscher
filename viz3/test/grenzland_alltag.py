@@ -308,7 +308,7 @@ with lib.browser() as b:
         ok = until("window.SCHL && SCHL.state === 'ready' && GLFESTE.debug.stand().bau === 'weihnachtsmarkt'", 300, 1.0, 0.5)
         st = J("GLFESTE.debug.stand()")
         ck('fest: the Christmas market stands round the fountain on the Markt', bool(ok) and len(st['staende']) >= 3 and not st['err'], str(st))
-        X("const f = SCHL.fountain; TA.blick(f[0], f[1], 200, 22, 2.0, -4)")
+        X("const f = SCHL.fountain; TA.blick(f[0], f[1], 200, 17, 1.7, -1)")
         warte_figuren("TA.da('fest').length >= 2", 150)
         steps(2, 0.1)
         pic('32_weihnachtsmarkt')

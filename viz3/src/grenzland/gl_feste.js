@@ -196,11 +196,36 @@ export const GLFESTE = (() => {
       K.box(0, -d / 2 + 0.05, 0, w, 0.1, 1.0, 0, HOLZ);
       K.box(0, -d / 2 - 0.12, 1.0, w + 0.1, 0.36, 0.06, 0, L(170, 128, 84));
       K.box(0, -d / 2 + 0.05, 2.0, w, 0.1, 0.28, 0, HOLZ);
+      // the gable roof: two slopes from the eaves (over the front and the back) up to the ridge across the hut, the gables in boards;
+      // snow on the slopes in winter
+      const ex = w / 2 + 0.22,
+        ey = d / 2 + 0.32,
+        z0 = 2.25,
+        zr = 3.05;
+      const quad = (a, b2, c, e, col) => {
+        K.tri(a, b2, c, col);
+        K.tri(a, c, e, col);
+        K.tri(a, c, b2, col);
+        K.tri(a, e, c, col);
+      };
+      const DACH = L(88, 56, 38),
+        SCHNEE = L(236, 238, 244);
       for (const sy of [-1, 1]) {
-        K.box(0, (sy * d) / 4, 2.25 + 0.32, w + 0.4, d / 2 + 0.35, 0.08, 0, L(96, 60, 40));
-        if (winter) K.box(0, (sy * d) / 4, 2.25 + 0.38, w + 0.36, d / 2 + 0.3, 0.06, 0, L(240, 242, 246));
+        quad([-ex, sy * ey, z0], [ex, sy * ey, z0], [ex, 0, zr], [-ex, 0, zr], DACH);
+        if (winter)
+          quad(
+            [-ex, sy * ey * 0.96, z0 + 0.05],
+            [ex, sy * ey * 0.96, z0 + 0.05],
+            [ex, 0, zr + 0.05],
+            [-ex, 0, zr + 0.05],
+            SCHNEE
+          );
       }
-      K.box(0, 0, 2.25, w + 0.2, 0.2, 0.7, 0, HOLZ);
+      for (const sx of [-1, 1]) {
+        const gx = (sx * (w - 0.1)) / 2;
+        K.tri([gx, -d / 2, z0], [gx, d / 2, z0], [gx, 0, zr - 0.05], HOLZ);
+        K.tri([gx, d / 2, z0], [gx, -d / 2, z0], [gx, 0, zr - 0.05], HOLZ);
+      }
       // the garland along the front edge, red bows
       for (let i = 0; i < 9; i++) K.ball(-w / 2 + (i + 0.5) * (w / 9), -d / 2 - 0.25, 2.18, 0.13, TANNE, 6);
       for (const sx of [-1, 1]) K.ball(sx * (w / 2 - 0.1), -d / 2 - 0.3, 2.12, 0.09, C, 6);
@@ -299,6 +324,28 @@ export const GLFESTE = (() => {
         );
       }
     }
+    // the huts of the Christmas market: a row of warm bulbs along the front edge of each roof
+    if (B.id === 'weihnachtsmarkt')
+      for (const st of B.staende) {
+        const fx = Math.sin(st.face),
+          fy = Math.cos(st.face),
+          rx = Math.cos(st.face),
+          ry = -Math.sin(st.face),
+          gz = (KERN.ground(st.x, st.y) || 0) - z0;
+        for (let k = 0; k <= 10; k++) {
+          const u = k / 10 - 0.5,
+            x = st.x + fx * (st.d / 2 + 0.34) + rx * u * st.w,
+            y = st.y + fy * (st.d / 2 + 0.34) + ry * u * st.w;
+          K.ball(
+            x - B.ref[0],
+            y - B.ref[1],
+            gz + 2.2 - Math.sin(Math.PI * (k / 10)) * 0.08,
+            0.045,
+            L(255, 230, 170),
+            5
+          );
+        }
+      }
     // the tree's own bulbs (Christmas): a spiral round it
     if (B.baum && B.id === 'weihnachtsmarkt') {
       const bz = (KERN.ground(B.baum[0], B.baum[1]) || 0) - z0;
