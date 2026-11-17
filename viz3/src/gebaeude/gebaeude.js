@@ -696,10 +696,12 @@ export const GEB = (() => {
     return J;
   }
   function runJobs() {
-    if (!JOBS.length) return;
+    rsWatch(); // feat/welt-orte: finer tiles drawn now → the built cells under them are due for a check
+    if (!JOBS.length && !rsDue()) return; // feat/welt-orte: (was: no jobs, nothing to do)
     // the ground first: while the world's tiles load (a car at the edge of the square waits for them), 2 ms of building per frame
     const t0 = performance.now(),
       budget = WELT.state && WELT.state().loading > 0 ? 2 : 8;
+    rsCheck(t0 + budget / 2); // feat/welt-orte: the due cells, nearest first, building by building – at most half the budget
     while (JOBS.length && performance.now() - t0 < budget) {
       const J = JOBS[0];
       if (!J.dead && J.i < J.list.length) {
@@ -949,6 +951,155 @@ export const GEB = (() => {
         }
       }
     return moved ? true : undefined;
+  }
+  // ---- feat/welt-orte: a cell set down again as soon as a finer tile of the world is drawn under it (17.11.2026) – a cell is often built
+  // on the coarser ground (it comes at 700 m, the finer tiles at 380 m and 150 m); in a narrow valley (Hirschbach) the finer ground lay
+  // up to 7.5 m lower and its houses hung in the air until the probe below found them (every seventh building, one cell every 2 s, and
+  // not at all for the buildings of a cell built while the tile came: its probe is taken when the cell is done). welt/welt.js draws a
+  // new set WELT.visible whenever what is drawn changes: a tile in it that was not drawn before – and not a coarser one standing in
+  // again for its children – marks the cells it overlaps (built, or being built); they are checked building by building (the ground at
+  // each wall's start and middle, as one() sets the foot), nearest to the observer first, within half of the frame's budget of
+  // runJobs; a cell with a building off by more than 0.25 m is built again, its job ahead of the cells still to come ----
+  const RS = { seen: null, due: new Map(), frame: 0, marked: 0, checked: 0, reseated: 0, worst: 0, log: [] };
+  Z.rs = RS;
+  // the rectangle of a cell's buildings (model metres)
+  const rsBox = c => {
+    if (!c.rbb) {
+      let x0 = 1e9,
+        y0 = 1e9,
+        x1 = -1e9,
+        y1 = -1e9;
+      for (const b of c.data.b)
+        for (let k = 0; k + 1 < b.f.length; k += 2) {
+          x0 = Math.min(x0, b.f[k]);
+          x1 = Math.max(x1, b.f[k]);
+          y0 = Math.min(y0, b.f[k + 1]);
+          y1 = Math.max(y1, b.f[k + 1]);
+        }
+      c.rbb = [x0, y0, x1, y1];
+    }
+    return c.rbb;
+  };
+  function rsDue() {
+    return RS.due.size;
+  }
+  // drawn below the tile (L, x, y) – its children or theirs – in the set S
+  const rsBelow = (S, L, x, y, d) =>
+    d > 0 &&
+    [0, 1, 2, 3].some(n => {
+      const a = 2 * x + (n & 1),
+        b = 2 * y + (n >> 1);
+      return S.has(`${L + 1}/${a}/${b}`) || rsBelow(S, L + 1, a, b, d - 1);
+    });
+  function rsWatch() {
+    RS.frame++;
+    const vis = WELT.visible;
+    if (!vis || vis === RS.seen) return;
+    const prev = RS.seen || new Set();
+    RS.seen = vis;
+    if (!WELT.toM) return;
+    const boxes = [];
+    for (const k of vis) {
+      if (prev.has(k)) continue;
+      const [L, x, y] = k.split('/').map(Number);
+      // a coarser tile standing in again for its children (the observer went away): the ground gets rougher, the probe sees to it
+      if (rsBelow(prev, L, x, y, 2)) continue;
+      // the tile's corners in model metres (the quadtree of welt/welt.js: ROOT_E0 420700, ROOT_N0 5390800, ROOT 409600 m)
+      const s = 409600 / (1 << L),
+        e0 = 420700 + x * s,
+        n0 = 5390800 + y * s,
+        q = [WELT.toM(e0, n0), WELT.toM(e0 + s, n0), WELT.toM(e0, n0 + s), WELT.toM(e0 + s, n0 + s)],
+        xs = q.map(p => p[0]),
+        ys = q.map(p => p[1]);
+      boxes.push([Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]);
+    }
+    if (!boxes.length) return;
+    const now = performance.now();
+    for (const c of Z.cells.values()) {
+      if (!c.data || !(c.meshes.length || c.job)) continue;
+      const bb = rsBox(c);
+      if (!boxes.some(t => t[0] <= bb[2] && t[2] >= bb[0] && t[1] <= bb[3] && t[3] >= bb[1])) continue;
+      const q = RS.due.get(c.key);
+      if (q)
+        q.i = 0; // due already: checked again from its first building, on the ground as it is now
+      else {
+        RS.due.set(c.key, { i: 0, at: RS.frame, t: now, off: 0 });
+        RS.marked++;
+      }
+    }
+  }
+  function rsCheck(until) {
+    if (!RS.due.size) return;
+    const w = KERN.where();
+    while (performance.now() < until) {
+      // the nearest due cell not being built (one being built is checked when its job is done: its first buildings may stand on the
+      // ground before the tile came)
+      let key = null,
+        bd = Infinity;
+      for (const k of RS.due.keys()) {
+        const c = Z.cells.get(k);
+        if (!c || !c.data || !(c.meshes.length || c.job)) {
+          RS.due.delete(k); // freed meanwhile
+          continue;
+        }
+        if (c.job) continue;
+        const d = w ? cellD(c.ij[0], c.ij[1], w[0], w[1]) : 0;
+        if (d < bd) {
+          bd = d;
+          key = k;
+        }
+      }
+      if (key === null) return;
+      const c = Z.cells.get(key),
+        q = RS.due.get(key),
+        L = c.data.b;
+      for (; q.i < L.length && performance.now() < until; q.i++) {
+        const b = L[q.i];
+        if (b.zmin === undefined || !b.F) continue; // not built (a shop of laeden/, a broken record)
+        let lo = b.F.length ? Infinity : zGround(b.cx, b.cy);
+        for (const f of b.F) lo = Math.min(lo, zGround(f[0], f[1]), zGround((f[0] + f[2]) / 2, (f[1] + f[3]) / 2));
+        RS.checked++;
+        if (Number.isFinite(lo) && Math.abs(lo - b.zmin) > 0.25) {
+          q.off = Math.abs(lo - b.zmin);
+          break;
+        }
+      }
+      if (!q.off) {
+        if (q.i >= L.length) RS.due.delete(key); // every building on the ground as drawn
+        continue;
+      }
+      RS.due.delete(key);
+      RS.reseated++;
+      c.reseat = (c.reseat || 0) + 1;
+      const e = {
+        seq: RS.reseated,
+        key,
+        at: q.at,
+        found: RS.frame,
+        done: 0,
+        ms: 0,
+        off: +q.off.toFixed(2),
+        n: L.length,
+      };
+      RS.log.push(e);
+      if (RS.log.length > 40) RS.log.shift();
+      zBuild(c);
+      // its job ahead of the cells still to come (not seen yet) and of the cells set down again farther away
+      const J = c.job;
+      J.rs = true;
+      J.d = bd;
+      JOBS.splice(JOBS.indexOf(J), 1);
+      let k = 0;
+      while (k < JOBS.length && JOBS[k].rs && JOBS[k].d <= bd) k++;
+      JOBS.splice(k, 0, J);
+      const done = J.done;
+      J.done = (cells, segs) => {
+        done(cells, segs);
+        e.done = RS.frame;
+        e.ms = Math.round(performance.now() - q.t);
+        RS.worst = Math.max(RS.worst, e.done - e.at);
+      };
+    }
   }
   // on by default since the cells were tested with the tiles (6.11. night); ?nogebz leaves them out (to compare)
   const ZON = !new URLSearchParams(location.search).has('nogebz');

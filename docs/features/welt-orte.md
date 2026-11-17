@@ -7,7 +7,7 @@ session_01Mmpsvp11QsXpPSQRRbZ4Jv, Abend 17.11. (Auftrag `docs/plans/auftraege/we
 
 ## Was es gibt
 
-- **Daten, dazu zwei kleine Haken (unten):** die Zellen von `gebaeude/gebaeude.js` (400 m, `gebaeude/z/<i>_<j>.json`, Index `z/index.json`; seit V17r
+- **Daten, dazu drei kleine Haken (unten):** die Zellen von `gebaeude/gebaeude.js` (400 m, `gebaeude/z/<i>_<j>.json`, Index `z/index.json`; seit V17r
   um die Straßen, die man fährt, um Schleusingen und Kloster Veßra) sind erweitert – derselbe Lader baut sie in Stücken, wenn man näher als
   700 m kommt (Telefone 500 m), und gibt sie jenseits von 900 m (680 m) frei. Jedes Gebäude wie dort: Grundriss und Höhe aus ETHOS.BUILDA
   (für Thüringen aus dem LoD2 des Landes, ODbL), Art, Dachform und -neigung geschätzt, Firstrichtung bei fast quadratischen Häusern und
@@ -38,6 +38,15 @@ session_01Mmpsvp11QsXpPSQRRbZ4Jv, Abend 17.11. (Auftrag `docs/plans/auftraege/we
   unverändert (eine ergänzte Zelle hat ihre alten Gebäude vorn, die neuen dahinter); jedes neue trägt `o: "suhl"`, `"welt"` oder `"osm"`
   (welche Stufe es baute; der Lader liest es nicht). `index.json` `order` hält die Reihenfolge der Zellen fest (Haken unten): die alten
   und die neuen Häuser behalten ihr Aussehen, wenn später Zellen dazukommen.
+- **Keine Häuser mehr in der Luft, wenn die feineren Kacheln kommen** (Haken in `gebaeude/gebaeude.js`): eine Zelle wird oft auf dem
+  gröberen Boden gebaut – sie kommt auf 700 m, die feineren Kacheln erst auf 380 und 150 m. Zeichnet `welt/welt.js` eine Kachel, die
+  vorher nicht gezeichnet war (sein `WELT.visible` ist dann ein neuer Satz) und die nicht nur eine gröbere ist, die wieder für ihre Kinder
+  steht, sind die Zellen darunter fällig (gebaute und solche im Bau): jedes ihrer Gebäude wird geprüft – der Boden an Anfang und Mitte
+  jeder Wand, wie der Lader den Fuß setzt –, die Zelle am nächsten zuerst, und eine Zelle mit einem Gebäude mehr als 0,25 m daneben wird
+  neu gebaut, ihr Auftrag vor den Zellen, die noch kommen. Alles im Budget des Laders von 8 ms je Bild (2 ms, solange Kacheln laden), die
+  Prüfung höchstens die Hälfte davon. Vorher fand das nur die Probe (jedes siebte Gebäude, eine Zelle alle 2 s) – und gar nicht für die
+  Gebäude einer Zelle, die gebaut wurde, während die Kachel kam (ihre Probe wird beim Fertigwerden genommen): bei GitHub standen in
+  Hirschbachs engem Tal 15 Häuser bis zu 7,5 m über dem Boden (Lauf 44163767746).
 - **Leben** (wie `welt-dinge`: geparkte Autos, Wohnmobile, Anhänger, Pools aus dem Luftbild, nach Wochentag und Stunde belegt): die neuen
   Gebiete stehen in `dinge/orte.json` (Haken in `dinge/dinge.js`), die Daten je Gebiet in `viz3/extra/welt-dinge/dist/dinge/<gebiet>.json`,
   geprüft wie dort (Regeln aus `decide.py`, Stichprobe von 30 und die Zweifelsfälle von Auge, `pruefung_<gebiet>.json`): **Hirschbach**
@@ -134,12 +143,20 @@ Overpass (am 17.11. abends nicht erreichbar) – die Fassaden kennen dann nur di
 `viz3/test/welt_orte.py` (`viz3/extra/welt-orte/tests.txt`, dazu `welt_gebaeude` und `memphone`):
 
 - ohne Browser (`daten`): Index und Zellen stimmen überein, kein ETHOS-Gebäude doppelt, die Zahlen der Stufen, Hirschbach hat seine Häuser,
-  keins unserer Gebäude auf einem des Suhl-Chats (seine Kacheln des Produkts `g`), keins mehr als 0,3 m in einer Straße der Anfahrt, Größe.
+  keins unserer Gebäude auf einem des Suhl-Chats (seine Kacheln des Produkts `g`), keins mehr als 0,3 m in einer Straße der Anfahrt, die
+  Gebäude aus OSM liegen auf keinem ETHOS-Gebäude (höchstens ein Fünftel), jedes Gebiet von `dinge/orte.json` hat seine Daten, Größe.
 - im Browser (`hirschbach`, `strecke`): die Kacheln der Welt und Suhls Daten kommen wie auf der Website vom eigenen Ursprung (der Test
   reicht `welt-test/…` und `suhl/…` an die Website und das Daten-Repo durch, Zwischenspeicher `out/welt_orte_netz/`), `?suhl=1`.
-  St. Kilian, Erlau, Hirschbach von der Landstraße: die Zellen kommen, die Gebäude stehen (Zahl in 350 m gegen die Daten), in Hirschbach
-  keins auf der gezeichneten Straße, die Füße auf dem gezeichneten Boden, Draw-Calls und Dreiecke der Zellen, ihr Speicher; 1,5 km weiter
-  frei, zurück wieder gebaut. Bilder in `out/welt_orte/`.
+  St. Kilian, Erlau, Waldau und Hirschbach von der Straße: die Zellen kommen, die Gebäude stehen (Zahl in 350 m gegen die Daten),
+  Draw-Calls und Dreiecke der Zellen, ihr Speicher, Bilder von der Straße und aus 60 m; in Hirschbach die geparkten Autos (Gebiet aus
+  `dinge/orte.json`), keins auf der gezeichneten Straße, die Füße auf dem gezeichneten Boden, 1,5 km weiter frei, zurück wieder gebaut,
+  Bilder mit und ohne die Zellen (`*_vorher`). Bilder in `out/welt_orte/`.
+- **Neusetzen:** nach Hirschbach zuerst 600 m von Süden (die Zellen des Südens kommen dort auf den groben Kacheln der Stufe 10), dann in
+  die Mitte – die feineren Kacheln kommen unter die gebauten Zellen: jede Zelle, die danach daneben stand, ist binnen 240 Bildern (4 s bei
+  60 Bildern je Sekunde; der Test geht 25 ms je Bild) neu gebaut (`GEB.Z.rs.log`), erst dann die strenge Prüfung der Füße (Lauf
+  44163767746 war rot: 15 Lücken bis 7,5 m). Der Test wartet nur, bis nichts mehr geholt, gebaut oder geprüft wird (`GEB.Z.rs.due`).
+- `WELT_V2_LOCAL=<Ordner>`: ein hier gerechneter Satz ohne Dächer (`kacheln.py --out <Ordner> --near "E,N;E,N"`) über dem der
+  Website – so sehen die Bilder aus, bevor der Workflow ihn veröffentlicht hat.
 
 ### Zahlen (Chat-Rechner, SwiftShader, `hoch`, 1920 × 1080; 17.11. abends)
 
@@ -156,37 +173,44 @@ Overpass (am 17.11. abends nicht erreichbar) – die Fassaden kennen dann nur di
 
 ## Offen
 
-- **Leben in den neuen Orten** (geparkte Autos, Anhänger, Holzstapel aus dem Luftbild wie `welt-dinge`): der Haken in `dinge/dinge.js`
-  liest die Gebiete aus `dinge/orte.json` (noch leer); Luftbild 0,1 m und Erkennung für Hirschbach, Erlau, Breitenbach und Waldau laufen
-  im Arbeitsordner (`tools/welt-dinge`: `detect.py`, `decide.py`, `prep.py … --wege`).
-- **Gebäude, die ETHOS fehlt:** neue Häuser nach dem LoD2-Stand des Landes oder dort vergessene – die Stufe `osm` von `orte.py` (OSM-
-  Gebäude ohne ETHOS-Grundriss, Höhe aus den Angaben oder nach Art) folgt im zweiten Push.
-- **Dachflächen im Luftbild:** der Satz ohne gedruckte Dächer (`welt-test/v2/`, `tools/welt-gebaeude/kacheln.py`) entsteht nach dem
-  Zusammenführen auf `src` von selbst neu (der Workflow `welt-gebaeude-kacheln.yml` läuft, wenn Zellen kommen) – für Waldau, Schwarzbach,
-  St. Bernhard … Suhls Kacheln (Hirschbach, Erlau-Nord) kennt `kacheln.py` nicht: dort liegen die Dächer weiter im Bild, unter den Häusern
-  (Suhls Luftbild ist ein echtes Orthofoto, die Dächer liegen auf den Grundrissen).
+- **Neusetzen nur auf neue Kacheln hin:** wird der Boden gröber (man fährt weg, die Eltern-Kachel steht wieder für ihre Kinder) oder
+  ändert er sich ohne neue Kachel (Suhls Paket bringt seinen fernen Boden `terrainFar`), bleibt es bei der Probe des Laders (jedes siebte
+  Gebäude, eine Zelle alle 2 s) – meist weit weg vom Blick.
+- **Leben in weiteren Orten:** geparkte Autos usw. gibt es jetzt in Hirschbach, Erlau, Breitenbach und Waldau; Schwarzbach, St. Bernhard,
+  Schleusingerneundorf, Silbach, Henfstädt … gehen genauso (Luftbild 0,1 m in Blöcken von 350 m, `detect.py`, `decide.py`, Stichprobe von
+  Auge, `prep.py … --wege`, Eintrag in `dinge/orte.json`) – etwa 20 min je Dorf hier.
+- **Kacheln ohne Dächer** entstehen erst mit dem Workflow nach dem Zusammenführen (bis dahin liegen die gedruckten Dächer und Autos
+  neben/unter den neuen Häusern im Bild); Suhls Korridor-Kacheln kopiert `kacheln.py` für `welt-test/v2/` – bringt der Suhl-Chat neue
+  Luftbilder, zeigen diese ~106 Kacheln das alte, bis der Workflow wieder läuft.
 - **Zella-Mehlis** (Rand von Suhls Kacheln, ~590 ETHOS-Gebäude, vom Rahmen der Kacheln geschnitten) bleibt flach – Sache des Suhl-Chats.
-- Straßen der Dörfer aus OSM (Overpass war nicht erreichbar): die Fassaden der neuen Häuser wissen nur von den Straßen der Fahrt und der
-  Anfahrt, wo die Straße ist (Tür und Fenster zur Straße) – ein zweiter Lauf mit Overpass (ohne `--no-osm`) verbessert das.
+- Im Luftbild von Hirschbach einige kleine Hütten ohne Grundriss in ETHOS und OSM – ohne Quelle für Umriss und Höhe nicht gebaut.
 - Wie in V17r: Dachformen geschätzt (LoD2-Dächer, sobald der Download des Landes geht), Carports als geschlossene Schuppen, die Schatten
-  der Häuser im Luftbild bleiben.
+  der Häuser im Luftbild bleiben; Gebäude aus OSM ohne Höhe nach Art und Größe geschätzt (die Logistikhalle mit 12 m).
 
 ## Für den Lead
 
-- **Zwei kleine Haken** (markiert `// feat/welt-orte`, angekündigt in `docs/PARALLEL.md` df1ee8f4):
+- **Drei kleine Haken** (markiert `// feat/welt-orte`; die ersten zwei angekündigt in `docs/PARALLEL.md` df1ee8f4, der dritte auf
+  Wunsch des Leads, 17.11. abends):
   - `viz3/src/gebaeude/gebaeude.js` `zIndex()`: die Reihenfolge der Zellen aus `index.json` `order` (die alten zuerst, wie sie waren, die
     neuen dahinter; ohne `order` sortiert wie bisher). Der Lader nummeriert die Gebäude einer Zelle 10000 + 400 · Platz in dieser Liste –
     der Keim ihrer zufälligen Stile (`styleOf`: Putzfarbe, Fachwerk, Tür, Läden); ohne den Haken hätten 12 333 der 13 025 alten Gebäude
     einen anderen Stil bekommen.
   - `viz3/src/dinge/dinge.js` `round()`: die Gebiete der später gebauten Orte aus `dinge/orte.json` (`{ areas: [{ id, c, r, cell }] }`,
-    in `viz3/extra/welt-orte/dist/dinge/`), einmal geholt, sobald man jenseits des Quadrats ist; noch leer (die Daten der Orte folgen).
-- Daten in `viz3/extra/welt-gebaeude/dist/gebaeude/z/` (106 neue Zellen, 21 ergänzt, `index.json` mit `orte` – den Zahlen der Stufen –
-  und `order`), das Werkzeug `tools/welt-gebaeude/orte.py`; `tools/welt-gebaeude/kacheln.py` retuschiert jetzt auch Suhls Korridor-Kacheln
+    in `viz3/extra/welt-orte/dist/dinge/`), einmal geholt, sobald man jenseits des Quadrats ist: Hirschbach, Erlau, Breitenbach, Waldau.
+  - `viz3/src/gebaeude/gebaeude.js` `runJobs()` (zwei Zeilen: `rsWatch()` vorn, `rsCheck(t0 + budget / 2)` vor der Schleife; die
+    Abbruchbedingung auch bei fälligen Zellen) und ein Block hinter `zPush()` (`RS` = `GEB.Z.rs`, `rsWatch`, `rsCheck`): das Neusetzen
+    auf neue Kacheln hin (oben, „Keine Häuser mehr in der Luft“). Die Probe des Laders bleibt, wie sie war; nichts in `welt/welt.js`.
+- Daten in `viz3/extra/welt-gebaeude/dist/gebaeude/z/` (107 neue Zellen, alte ergänzt, `index.json` mit `orte` – den Zahlen der Stufen –
+  und `order`), das Werkzeug `tools/welt-gebaeude/orte.py`; in `viz3/extra/welt-dinge/` (Ordner von `welt-dinge`) die Daten der vier
+  Gebiete (`dist/dinge/<gebiet>.json`), ihre Prüfungen (`pruefung_<gebiet>.json`) und ihre Masken (`maske_dinge*.json`, um die
+  Gebiete ergänzt, die alten unverändert); `tools/welt-gebaeude/kacheln.py` retuschiert jetzt auch Suhls Korridor-Kacheln
   unter unseren Gebäuden (Daten-Repo, nur wo unsere Zellen stehen; `--no-suhl` wie bisher); `tools/welt-dinge/prep.py --wege DATEI`
   (Fahrspuren der Anfahrt und der Dorfstraßen für die Stellplatz-Regel); der Test `viz3/test/welt_orte.py`,
   `viz3/extra/welt-orte/tests.txt`, dieses Dokument.
-- `CHANGELOG`: „Die flachen Orte der Region in 3D: 5 397 Gebäude mehr – an der Landstraße nach Suhl Erlau, Hirschbach, Breitenbach,
-  St. Kilian; abseits Waldau, Schwarzbach, Schleusingerneundorf, Silbach, Hinternah, Lichtenau, St. Bernhard, Henfstädt, Beinerstadt …“
+- `CHANGELOG`: „Die flachen Orte der Region in 3D: 5 754 Gebäude mehr – an der Landstraße nach Suhl Erlau, Hirschbach, Breitenbach,
+  St. Kilian; abseits Waldau, Schwarzbach, Schleusingerneundorf, Silbach, Hinternah, Lichtenau, St. Bernhard, Henfstädt, Beinerstadt …;
+  357 Gebäude, die das LoD2 noch nicht kennt, aus OpenStreetMap (die Logistikhalle nördlich von Schleusingen); Haustüren zur Dorfstraße;
+  geparkte Autos, Wohnmobile und Anhänger in Hirschbach, Erlau, Breitenbach und Waldau; die Häuser der alten Zellen sehen aus wie zuvor.“
 - `ARCHITECTURE` (Kachelwelt/`GEB.Z`): die Zellen decken jetzt alle Kacheln, auf denen man fährt (ohne die Stadt Suhl); Feld `o` je
   Gebäude (`suhl`/`welt`, die Stufe von `welt-orte`), `order` im Index; `DINGE` liest `dinge/orte.json`.
 - `PARALLEL`: Zeile `welt-orte`; **an den Suhl-Chat:** Hirschbach, Erlau-Nord und die Höfe an der Strecke stehen jetzt auf euren

@@ -5,9 +5,10 @@
 # Suhl chat builds its own (product g of the data repo: none of its footprints under ours), none more than 0.3 m inside a drawn road of
 # the approach to Suhl, the size of the cells.
 # In the browser (hirschbach): Hirschbach from the L 3247 – the tiles of Suhl's corridor and the approach (data repo) and the world's
-# tiles come through the page's own origin as on the site (cached under out/welt_orte_netz/); the cells around come in: buildings stand
-# (counts within 300 m against the data), none on the drawn road, the feet on the drawn ground, the cells freed behind (beyond 900 m) and
-# built again; draw calls and triangles of the cells, their memory; pictures from the road at eye height and from 60 m above, with and
+# tiles come through the page's own origin as on the site (cached under out/welt_orte_netz/); coming from 600 m south, the cells built on
+# the coarse tiles there are set down again within 240 frames when the finer tiles are drawn under them (gebaeude.js, feat/welt-orte);
+# the cells around come in: buildings stand (counts within 350 m against the data), none on the drawn road, the feet on the drawn ground,
+# the cells freed behind (beyond 900 m) and built again; draw calls and triangles of the cells, their memory; pictures from the road at eye height and from 60 m above, with and
 # without the cells. (strecke): St. Kilian and Erlau on the way – counts per village, a picture each.
 #   python3 viz3/test/welt_orte.py 9053 [sections]      sections: daten,hirschbach,strecke (default all)
 import sys, os, json, time, math, glob, re, urllib.request, urllib.error
@@ -274,36 +275,31 @@ if want & {'hirschbach', 'strecke'}:
 
         NEAR = """((cx, cy, R) => { let cells = 0, n = 0, houses = 0, barns = 0, sheds = 0; for (const c of GEB.Z.cells.values()) { if (!c.meshes.length) continue; cells++;
             for (const b of c.data.b) if (b.cx !== undefined && Math.hypot(b.cx - cx, b.cy - cy) < R) { n++; if (b.k === 0) houses++; else if (b.k === 1) barns++; else sheds++; } }
-            return { z: GEB.Z.state, err: GEB.Z.err || '', jobs: GEB.jobs(), busy: GEB.Z.busy, w: WELT.state().loading, cells, n, houses, barns, sheds,
+            return { z: GEB.Z.state, err: GEB.Z.err || '', jobs: GEB.jobs(), busy: GEB.Z.busy, due: GEB.Z.rs ? GEB.Z.rs.due.size : 0, w: WELT.state().loading, cells, n, houses, barns, sheds,
               suhl: window.SUHL ? SUHL.state : null, fahrt: !!(window.FAHRT && FAHRT.ready), sets: FAHRT && FAHRT.sets ? FAHRT.sets() : [] }; })"""
 
         def settle(cx, cy, limit=300, R=350):
+            # quiet: the index there, nothing being built or fetched, the world's tiles in, and no cell due for a check – gebaeude.js
+            # (feat/welt-orte) marks the cells under a tile drawn after they were built and sets them down again in the same frames
             t0 = time.time()
             s = {}
             calm = 0
             while time.time() - t0 < limit:
                 E("GAME.step(0.5)")
                 s = J(f"{NEAR}({cx}, {cy}, {R})")
-                quiet = s['z'] == 'ready' and not s['jobs'] and not s['busy'] and s['w'] == 0 and s['n'] > 0
+                quiet = s['z'] == 'ready' and not s['jobs'] and not s['busy'] and not s['due'] and s['w'] == 0 and s['n'] > 0
                 calm = calm + 1 if quiet else 0
                 if calm >= 6 and time.time() - t0 > 20:
                     break
                 time.sleep(0.25)
-            # a cell is set down again when the tiles under it came in after it was built (gebaeude.js: its probe – every seventh
-            # building – off by more than 0.4 m, one cell every 2 s, built again in pieces): wait until no built cell has one off and
-            # nothing is being built
-            PEND = ("[...GEB.Z.cells.values()].filter(c => c.meshes.length && c.probe && c.probe.some(([x, y, z]) => "
-                    "{ const g = KERN.terrain(x, y); return Number.isFinite(g) && Math.abs(g - z) > 0.4; })).length + GEB.jobs() + (GEB.Z.busy ? 1 : 0)")
-            t1, ok = time.time(), 0
-            while time.time() - t1 < 180 and ok < 4:
-                for _ in range(4):
-                    E("GAME.step(0.5)")
-                ok = ok + 1 if J(PEND) == 0 else 0
-                time.sleep(0.1)
-            s = J(f"{NEAR}({cx}, {cy}, {R})")
             s['secs'] = round(time.time() - t0)
             s['reseated'] = J("[...GEB.Z.cells.values()].reduce((n, c) => n + (c.reseat || 0), 0)")
             return s
+
+        # the set-down log of gebaeude.js after entry seq0: [cell, frame the tile was drawn, frame found off, frame built again (0: not
+        # yet), ms between, metres off, buildings, still built]
+        RSLOG = """((seq0) => { const R = GEB.Z.rs; return { marked: R.marked, checked: R.checked, reseated: R.reseated, worst: R.worst, due: R.due.size,
+            log: R.log.filter(e => e.seq > seq0).map(e => { const c = GEB.Z.cells.get(e.key); return [e.key, e.at, e.found, e.done, e.ms, e.off, e.n, !!(c && c.meshes.length)]; }) }; })"""
 
         DRAW = """(() => { let meshes = 0, tris = 0, bytes = 0; for (const c of GEB.Z.cells.values()) for (const m of c.meshes) { meshes++; const g = m.geometry;
                 tris += (g.index ? g.index.count : g.attributes.position.count) / 3; for (const k in g.attributes) bytes += g.attributes[k].array.byteLength; if (g.index) bytes += g.index.array.byteLength; }
@@ -338,6 +334,13 @@ if want & {'hirschbach', 'strecke'}:
         res = {}
         for key in order:
             label, c, (rx, ry, yaw) = VILLAGES[key]
+            if key == 'hirschbach':
+                # first from 600 m south (the way from Erlau): the cells of the village's south come in on the coarse tiles there (level 10
+                # – the finer ones only within 380 m and 150 m of the observer); coming closer, the finer tiles are drawn under them
+                eye(rx, ry - 600, yaw)
+                s0 = settle(c[0], c[1] - 600, 240, R=700)
+                seq0 = J("GEB.Z.rs.reseated")
+                print('hirschbach_vorher', json.dumps(s0), flush=True)
             eye(rx, ry, yaw)
             s = settle(c[0], c[1], 420 if key == 'hirschbach' else 300)
             want_n = data_near(c)
@@ -355,6 +358,13 @@ if want & {'hirschbach', 'strecke'}:
                 pic(f'{key}_oben')
                 continue
             # ---- Hirschbach: the checks ----
+            # set down again in time: every cell found off after the finer tiles came (in this approach) built again within 240 frames
+            # (4 s at 60 frames a second; the test steps 25 ms a frame) of the frame its tile was drawn
+            rs = J(f"{RSLOG}({seq0})")
+            late = [e for e in rs['log'] if (e[3] == 0 and e[7]) or (e[3] and e[3] - e[1] > 240)]
+            res['reseat'] = rs
+            ck('Hirschbach: a cell built on the coarser ground is set down again within 4 s (240 frames) after a finer tile is drawn under it',
+               len(rs['log']) >= 1 and not late and rs['due'] == 0, json.dumps({**rs, 'late': late}))
             ck('Hirschbach: Suhl\'s corridor and the approach are there (the ground of the data repo, the ways in the drive)',
                s['suhl'] == 'ready' and 'suhl/anfahrt-grund' in s['sets'], json.dumps({k: s[k] for k in ('suhl', 'sets', 'w')}))
             # the life of the aerial image (feat/welt-orte: dinge/orte.json names the new areas for dinge/dinge.js): Hirschbach's parked cars
