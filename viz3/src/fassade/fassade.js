@@ -20,7 +20,17 @@ import { GEB } from '../gebaeude/gebaeude.js';
 import { SCHL } from '../welt/schleusingen.js';
 import { FAUDIT } from './fassade_audit.js';
 export const FASSADE = (() => {
-  const S = { on: false, state: 'idle', doors: new Map(), win: new Map(), meshes: [], ms: {}, err: '', n: {} };
+  const S = {
+    on: false,
+    state: 'idle',
+    doors: new Map(),
+    win: new Map(),
+    geb: new Map(),
+    meshes: [],
+    ms: {},
+    err: '',
+    n: {},
+  };
   S.on = !new URLSearchParams(location.search).has('nofassade');
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
     linC = c => c.map(lin);
@@ -142,12 +152,18 @@ export const FASSADE = (() => {
       stOf: () => (b.st ? b.st.style : 0),
     });
     r.b = b; // its foot z0 and eave for the stable windows
+    const fx = S.geb.get(b.id);
+    if (fx)
+      for (const p of r.fac) {
+        if (fx.door && fx.door.k === p.k) [p.du, p.dw] = [fx.door.u, fx.door.w];
+        p.extra = (p.extra || 0) + (fx.win[p.k] || 0);
+      }
     return r;
   }
   function recsRatscher() {
     const V = VILLAGE.ready ? VILLAGE.bld.map(recV) : [],
       G = GEB.ready ? GEB.bld.filter(b => b.st && b.F).map(recG) : [];
-    for (const r of V.concat(G)) for (const p of r.fac) p.extra = (S.win.get(r.id) || {})[p.k] || 0;
+    for (const r of V.concat(G)) for (const p of r.fac) p.extra = ((S.win.get(r.id) || {})[p.k] || 0) + (p.extra || 0);
     return V.concat(G);
   }
   // ---- records of Schleusingen: before (the street door only, each facade one piece) and as drawn (welt/schleusingen.js b.pieces) ----
@@ -177,6 +193,11 @@ export const FASSADE = (() => {
           // before: the doors and windows as village.js and gebaeude.js drew them
           for (const r of R) {
             for (const p of r.fac) p.extra = 0;
+            if (r.b && !r.v) {
+              const d = gebDoor(r.b);
+              for (const p of r.fac) [p.du, p.dw] = d && d.k === p.k ? [d.u, d.w] : [-1, 0];
+              continue;
+            }
             if (r.ort !== 'ratscher' || !r.v) continue;
             r.v.fac.forEach((q, k) => {
               r.fac[k].du = q.door ? q.door.u : -1;
@@ -270,6 +291,52 @@ export const FASSADE = (() => {
       return { x: f[0] + dx * d.u, y: f[1] + dy * d.u, hd: az(dy, -dx) };
     }
     return null;
+  }
+  // ---- a layer of facade quads in the attribute layout of world/village.js (as welt/schleusingen.js and gebaeude/gebaeude.js write them) ----
+  function wallLayer() {
+    const A = { position: [], normal: [], aW: [], aV: [], aG: [], aD: [], aC: [], aTan: [] },
+      I = [];
+    return {
+      empty: () => !I.length,
+      // the run [a, c] of facade piece p (a → b, outward to the right) from just under the foot z0 up to its top line, 4 cm in front
+      run(p, a, c, z0, at, topOf) {
+        const n = A.position.length / 3,
+          nx = p.dy,
+          ny = -p.dx,
+          off = 0.04;
+        for (const [u, up] of [
+          [a, false],
+          [a, true],
+          [c, false],
+          [c, true],
+        ]) {
+          const top = topOf(p, u),
+            v = up ? top : -0.3,
+            x = p.ax + p.dx * u + nx * off,
+            y = p.ay + p.dy * u + ny * off;
+          A.position.push(x, z0 + v, -y);
+          A.normal.push(nx, 0, -ny);
+          A.aW.push(u, v, top, at.w);
+          A.aV.push(u - a, at.LF, at.eave, at.st);
+          A.aG.push(at.t0, at.tA, at.uA, at.t1);
+          A.aD.push(at.du, at.dw, at.sp, at.fl);
+          A.aC.push(at.col[0], at.col[1], at.col[2], at.pk);
+          A.aTan.push(p.dx, 0, -p.dy);
+        }
+        I.push(n, n + 2, n + 3, n, n + 3, n + 1);
+      },
+      geo() {
+        const g = new THREE.BufferGeometry();
+        for (const [k, a] of Object.entries(A))
+          g.setAttribute(
+            k,
+            new THREE.Float32BufferAttribute(a, k === 'position' || k === 'normal' || k === 'aTan' ? 3 : 4)
+          );
+        g.setIndex(I);
+        g.computeBoundingSphere();
+        return g;
+      },
+    };
   }
   // ---- Ratscher's fixes (once, after the village and the ETHOS buildings stand) ----
   const STALL = { sp: 3.0, w: 1.2, h: 0.8, sill: 1.75 }; // stable windows of the farms' halls (LPG halls, 1960s–80s: a row, high)
@@ -393,6 +460,83 @@ export const FASSADE = (() => {
         S.n.hallen++;
       }
     }
+    // the ETHOS buildings (gebaeude/gebaeude.js, not changed here): where one has no door, or a party wall that stands free over 3 m
+    // and more (it draws a party wall blank all along), a thin skin 4 cm in front of the wall in the facade layout of the village –
+    // the facade shader paints the door or the windows on it in the building's own style (the village's wall material: no new program)
+    const OV = wallLayer();
+    for (const r of R) {
+      if (r.v || !r.b || !r.b.st) continue;
+      const b = r.b,
+        o = b.st,
+        fx = { win: {}, door: null };
+      const at0 = (p, L) => ({
+        u0: 0,
+        w: 4 * b.id + (o.typ || 0),
+        LF: L,
+        eave: b.e,
+        st: o.style === 5 || o.style === 6 ? 0 : o.style,
+        du: -1,
+        dw: 0,
+        sp: o.sp || 3,
+        fl: (o.shutters ? 2 : 0) + (o.orn ? 4 : 0) + (o.raised ? 8 : 0),
+        col: o.col,
+        pk: (o.timber || 0) + 4 * (o.frame || 0) + 16 * (o.door || 0) + 128 * (o.shut || 0),
+      });
+      // the top line of a facade at u (gable apex or straight)
+      const topOf = (p, u) =>
+        p.gable
+          ? u < p.uA
+            ? p.t0 + ((p.tA - p.t0) * u) / Math.max(p.uA, 0.01)
+            : p.tA + ((p.t1 - p.tA) * (u - p.uA)) / Math.max(p.L - p.uA, 0.01)
+          : p.t0 + ((p.t1 - p.t0) * u) / Math.max(p.L, 0.01);
+      if (r.kind === 'haus')
+        for (const p of r.fac) {
+          if (!p.blind || p.L < 3) continue;
+          const runs = FAUDIT.openRuns(p.L, FAUDIT.cover(r, p, idx).spans).filter(([a, c]) => c - a >= 3);
+          for (const [a, c] of runs) {
+            const apex = p.gable && p.uA > a + 0.3 && p.uA < c - 0.3,
+              at = Object.assign(at0(p, c - a), {
+                t0: topOf(p, a),
+                t1: topOf(p, c),
+                tA: apex ? p.tA : (topOf(p, a) + topOf(p, c)) / 2,
+                uA: apex ? p.uA - a : (c - a) / 2,
+              });
+            at.fl += apex ? 1 : 0;
+            OV.run(p, a, c, b.z0, at, topOf);
+            const n = FAUDIT.windows(
+              Object.assign({}, p, {
+                LF: c - a,
+                L: c - a,
+                t0: at.t0,
+                t1: at.t1,
+                tA: at.tA,
+                uA: at.uA,
+                gable: apex,
+                du: -1,
+                dw: 0,
+                extra: 0,
+              })
+            ).length;
+            fx.win[p.k] = (fx.win[p.k] || 0) + n;
+            S.n.fenster += n;
+          }
+        }
+      if (r.area >= 6 && r.kind !== 'turm' && !r.fac.some(p => p.dw > 0)) {
+        const D = FAUDIT.hofTuer(r, r.fac, free);
+        if (D) {
+          const p = r.fac.find(q => q.k === D.k),
+            a = Math.max(0, D.u - D.w / 2 - 0.4),
+            c = Math.min(p.L, D.u + D.w / 2 + 0.4),
+            th = Math.min(r.kind === 'haus' ? 2.9 : 3.6, b.e - 0.1),
+            at = Object.assign(at0(p, 0.5), { t0: th, t1: th, tA: th, uA: 0.25, du: D.u - a, dw: D.w });
+          OV.run(p, a, c, b.z0, at, () => th);
+          fx.door = { k: D.k, u: D.u, w: D.w };
+          S.n.tuer++;
+        }
+      }
+      if (fx.door || Object.keys(fx.win).length) S.geb.set(b.id, fx);
+    }
+    if (!OV.empty() && RATSCHER.bld[0]) add(new THREE.Mesh(OV.geo(), RATSCHER.bld[0].material), 'haut');
     aD.needsUpdate = true;
     // the meshes: frames and dark glass in the props' paint; the glass that lights at night (a share of the windows) in a clone of it
     // with emissive (the same program)

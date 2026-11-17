@@ -352,6 +352,13 @@ export const FAUDIT = (() => {
           if (i < W - 1) step(k + 1, mark);
           if (k >= W) step(k - W, mark);
           if (k < W * (H - 1)) step(k + W, mark);
+          // the outside also diagonally: a gap that runs at a slant is a staircase of cells after rastering, still passable
+          if (mark < 0 && i > 0 && i < W - 1 && k >= W && k < W * (H - 1)) {
+            step(k - W - 1, mark);
+            step(k - W + 1, mark);
+            step(k + W - 1, mark);
+            step(k + W + 1, mark);
+          }
         }
       };
       flood(-1);
