@@ -379,8 +379,17 @@ export const MUSEUM = (() => {
     const R = fitRooms(b, st.F);
     if (!R) return ((S.err = 'no room in the wing'), false);
     const F = st.F,
-      zOut = KERN.ground(st.door[0] + st.n[0] * 1.2, st.door[1] + st.n[1] * 1.2),
-      z = (Number.isFinite(zOut) ? zOut : b.z0) + 0.15,
+      zOut = KERN.ground(st.door[0] + st.n[0] * 1.2, st.door[1] + st.n[1] * 1.2);
+    // the floor over the ground inside the wing (the castle stands on a spur: the ground rises towards the courtyard – CI picture
+    // museum_halle showed grass through the floor), a step up from the door
+    let zIn = Number.isFinite(zOut) ? zOut : b.z0;
+    for (const [u0, v0, u1, v1] of [R.hall, R.room])
+      for (let i = 0; i <= 4; i++)
+        for (let j = 0; j <= 3; j++) {
+          const g = KERN.ground(...F.W(u0 + ((u1 - u0) * i) / 4, v0 + ((v1 - v0) * j) / 3));
+          if (Number.isFinite(g) && g > zIn) zIn = g;
+        }
+    const z = zIn + 0.15,
       H = 3.7;
     S.F = F;
     S.z = z;
@@ -450,7 +459,10 @@ export const MUSEUM = (() => {
       dv = hv1 - 1.6;
     K.box(du, dv, 0, 2.2, 0.7, 1.0, C.desk, C.deskTop);
     K.box(du, dv - 0.05, 1.0, 2.3, 0.8, 0.04, C.deskTop);
-    K.box(du + 0.5, dv + 0.05, 1.04, 0.35, 0.25, 0.25, L(0.1, 0.1, 0.11));
+    // the till's screen on its foot, turned to the cashier, and a card terminal
+    K.box(du + 0.55, dv + 0.12, 1.04, 0.16, 0.12, 0.08, L(0.1, 0.1, 0.11));
+    K.box(du + 0.55, dv + 0.12, 1.12, 0.42, 0.035, 0.28, L(0.1, 0.1, 0.11), L(0.1, 0.1, 0.11), 0.12);
+    K.box(du - 0.35, dv - 0.15, 1.04, 0.09, 0.16, 0.04, L(0.16, 0.16, 0.17), L(0.3, 0.32, 0.35));
     K.solid(du, dv, 2.3, 0.8);
     K.spot('kasse', du, dv + 0.75, [0, -1]);
     K.spot('kunde', du, dv - 0.85, [0, 1]);
@@ -645,8 +657,9 @@ export const MUSEUM = (() => {
     S.exp.slice(0, 2).forEach((e, i) =>
       LLEBEN.posten({
         id: 'museum:besuch' + i,
-        x: e.at[0] + (i ? 0.4 : -0.3),
-        y: e.at[1],
+        // beside the place one looks from (not on it: CI picture museum_minerale showed a visitor's head)
+        x: e.at[0] + F.eu[0] * (i ? 0.8 : -0.8),
+        y: e.at[1] + F.eu[1] * (i ? 0.8 : -0.8),
         hd: Math.atan2(e.look[0] - e.at[0], e.look[1] - e.at[1]),
         z: () => z,
         fig: i ? 'vk_f14' : 'vk_m07',

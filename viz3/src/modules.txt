@@ -178,6 +178,7 @@ laeden/leben.js             # feat/laeden-leben cashiers, the baker, the DIY sto
 laeden/kauf.js              # feat/laeden-leben really shopping: take from the shelf, pay at the till, the bakery's counter, the receipt (LKAUF)
 einkauf/oeffentlich.js      # feat/laeden-leben the public buildings: staff at their hours, the town hall's counter, the fire station's notice (OEFFENTLICH)
 einkauf/museum.js           # feat/laeden-leben the Naturhistorisches Museum in the Bertholdsburg: the door, the ticket desk, one exhibition room with texts (MUSEUM)
+einkauf/kirche.js           # feat/laeden-leben the town church St. Johannis by day: inside through its portal, pews, choir, organ, a candle to light (KIRCHE)
 # feat/verkehr: below this line (life on the streets: walkers, cars, waving one down – after the village, the town, the vehicles and KI)
 verkehr/verkehr_leute.js    # feat/verkehr the people on the streets: who they are, what they say, their cars – data (VLEUTE)
 verkehr/verkehr_netz.js     # feat/verkehr the street network: junctions, exits, routes, lanes, the walkers' edge, speeds – pure (VNETZ)

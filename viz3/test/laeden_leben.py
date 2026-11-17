@@ -12,7 +12,7 @@
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'markt,obi,kaufen,oeffentlich').split(',') if s]
+want = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'markt,obi,kaufen,oeffentlich,kirche').split(',') if s]
 ck = lib.Checks('laeden_leben')
 OUT = lib.out('laeden_leben')
 DATA = json.load(open(os.path.join(lib.ROOT, 'viz3', 'extra', 'laeden', 'dist', 'laeden', 'laeden.json')))
@@ -388,7 +388,10 @@ with lib.browser() as b:
             ck('at the counter: „Bürgerbüro: am Schalter fragen“', 'Schalter' in lbl, lbl)
             E("OEFFENTLICH.oeffnen('rathaus')")
             steps(0.3)
-            page_pic('rathaus_schalter')
+            # (a page screenshot here timed out in CI twice – the canvas and the panel's text instead)
+            pic('rathaus_schalter')
+            txt = J("(document.querySelector('#kassepanel') || {}).innerText || ''")
+            ck('the counter offers its services (Meldebescheinigung, gelbe Säcke)', 'Meldebescheinigung' in txt and 'Säcke' in txt, txt[:160])
             E("document.querySelector('#kassepanel [data-k=saecke]') && document.querySelector('#kassepanel [data-k=saecke]').click()")
             ck('yellow bags from the counter (in the inventory)', J("INVENTAR.anzahl('gelbesaecke')") >= 1, json.dumps(J("INVENTAR.list()"))[:200])
             E("LKAUF.close()")
@@ -468,15 +471,15 @@ with lib.browser() as b:
             ck('Monday: the museum is closed (the label at the door says so)', 'geschlossen' in lbl, lbl)
         # the Stadtbibliothek: Tuesday 11:00 open – borrow a book at its door
         set_time(2, 11, 0)
-        bx, by = -738.34, 1336.38
+        d = J("OEFFENTLICH.bibTuer()")
         stood = None
-        for a in range(0, 360, 30):
-            x, y = bx + math.sin(math.radians(a)) * 7.5, by + math.cos(math.radians(a)) * 7.5
-            stand(x, y, (a + 180) % 360)
+        if d:
+            # in front of the house's door, facing it
+            x, y = d['x'] + d['nx'] * 1.0, d['y'] + d['ny'] * 1.0
+            stand(x, y, (math.degrees(math.atan2(-d['nx'], -d['ny'])) + 360) % 360)
             r = J("GAME.step(0.3)")
             if 'Stadtbibliothek' in (r.get('best') or ''):
-                stood = (x, y, r.get('best'))
-                break
+                stood = (x, y, r.get('best'), d.get('haus'))
         ck('the library: at its door „Stadtbibliothek: Buch ausleihen“', stood is not None and 'ausleihen' in stood[2], json.dumps(stood))
         if stood:
             E("OEFFENTLICH.oeffnen('bibliothek')")
@@ -487,5 +490,90 @@ with lib.browser() as b:
             E("LKAUF.close()")
         o = J("OEFFENTLICH.orte()")
         ck('the public buildings in the registry with their hours', len(o) >= 7 and all(q['zeiten'] for q in o), json.dumps(o)[:400])
+    if 'kirche' in want:
+        # St. Johannis on a Saturday morning: in through the portal, the nave, a candle, a pew, the warden; closed in the evening
+        set_time(6, 11, 0)
+        E("(() => { const b = SCHL.bld.find(q => q.lm === 'kirche'); GAME.setView3(false, true); GAME.view(b.cx, b.cy - 40, KERN.ground(b.cx, b.cy - 40) + 1.7, 0, 0); })()")
+        for i in range(20):
+            steps(0.5)
+            if J("KIRCHE.status().built"):
+                break
+        st = J("KIRCHE.status()")
+        ck('the church is built when one comes near (pews, windows, the tower’s foot), hidden while one is outside',
+           st['built'] and st['rows'] >= 20 and st['wins'] >= 8 and not st['visible'], json.dumps(st))
+        F = J("KIRCHE.F ? { o: KIRCHE.door, ev: KIRCHE.F.ev, eu: KIRCHE.F.eu } : null")
+        if st['built'] and F:
+            dx, dy = F['o']
+            ox, oy = dx - F['ev'][0] * 2.2, dy - F['ev'][1] * 2.2
+            yaw = (math.degrees(math.atan2(F['ev'][0], F['ev'][1])) + 360) % 360
+            stand(ox, oy, yaw)
+            lbl = J("GAME.step(0.3)").get('best') or ''
+            ck('at the portal: „Stadtkirche St. Johannis – hineingehen“', 'hineingehen' in lbl, lbl)
+            pic('kirche_portal')
+            E("KIRCHE.betreten()")
+            steps(0.5)
+            st = J("KIRCHE.status()")
+            place = J("(() => { const d = KIRCHE.inDoor; return KERN.place(d[0], d[1]); })()")
+            ck('inside St. Johannis (shown now; the place says so)', st['inside'] and st['visible'] and 'Johannis' in (place or ''), json.dumps([st, place]))
+            # along the middle aisle towards the altar, back towards the organ, at the choir
+            vm = J("KIRCHE.vm")
+            uE = J("KIRCHE.uE")
+            uW = J("KIRCHE.uW")
+            W = lambda u, v: J(f"KIRCHE.F.W({u}, {v})")
+            yE = (math.degrees(math.atan2(F['eu'][0], F['eu'][1])) + 360) % 360
+            for (name, u, v, yw, pt) in [('kirche_schiff', uW + 5.0, vm, yE, -4), ('kirche_orgel', uE - 6.0, vm, (yE + 180) % 360, 6),
+                                         ('kirche_chor', uE - 3.0, vm - 1.5, (yE + 8) % 360, -2), ('kirche_tuer', J("KIRCHE.du"), vm, (yaw + 180) % 360, -4)]:
+                x, y = W(u, v)
+                E(f"GAME.setView3(false, true); GAME.view({x}, {y}, KIRCHE.z + 1.65, {yw}, {pt}, 70)")
+                steps(0.4)
+                pic(name)
+            x, y = W(uW + 5.0, vm)
+            E(f"GAME.setView3(false, true); GAME.view({x}, {y}, KIRCHE.z + 1.65, {yE}, -4, 70)")
+            steps(0.3)
+            cnt = J(COUNT)
+            print('note church: draw calls, triangles, ms', json.dumps(cnt), flush=True)
+            ck('the church inside costs few draw calls (its meshes ≤ 4 of them)', J("KIRCHE.meshes.length") <= 4, json.dumps(cnt))
+            # a candle by the door (1 €), the guest book
+            ix, iy = J("KIRCHE.kerzeAt")
+            E(f"GAME.setView3(false, true); GAME.view({ix}, {iy}, KIRCHE.z + 1.65, {(yaw + 180) % 360}, -20, 70)")
+            lbl = J("GAME.step(0.3)").get('best') or ''
+            g0 = J("GELD.stand()")
+            E("KERN.acts().find(a => a.id === 'kirche:kerze').run()")
+            steps(0.3)
+            ck('a candle lit at the stand (1 € less, it burns)', J("KIRCHE.status().kerzen") == 1 and J("GELD.stand()") == g0 - 100 and 'Kerze' in lbl,
+               json.dumps([lbl, g0, J("GELD.stand()"), J("KIRCHE.status()")]))
+            pic('kirche_kerzen')
+            # a pew at the middle aisle: sit down, stand up
+            sx, sy = J("KIRCHE.seats[Math.floor(KIRCHE.seats.length / 2)]")
+            ax, ay = sx + (W(0, vm)[0] - W(0, vm - 1.1)[0]), sy + (W(0, vm)[1] - W(0, vm - 1.1)[1])
+            E(f"GAME.setView3(false, true); GAME.view({ax}, {ay}, KIRCHE.z + 1.65, {yE}, -4, 70)")
+            lbl = J("GAME.step(0.3)").get('best') or ''
+            E("KIRCHE.sitzen()")
+            steps(1.0)
+            sat = J("PLAY.seated()")
+            pic('kirche_bank')
+            E("PLAY.stand(true)")
+            steps(0.5)
+            ck('a pew at the aisle: „In die Bank setzen“, sitting, standing up', 'Bank' in lbl and sat and not J("PLAY.seated()"), json.dumps([lbl, sat]))
+            # Saturday: the warden by the door (a post of LLEBEN)
+            for i in range(30):
+                steps(0.5)
+                if J("(LLEBEN.posts.find(q => q.id === 'kirche:aufsicht') || {}).p ? true : false"):
+                    break
+                time.sleep(0.2)
+            ck('Saturday: the warden sits by the door', J("(LLEBEN.posts.find(q => q.id === 'kirche:aufsicht') || {}).p ? true : false"),
+               json.dumps(J("LLEBEN.status()"))[:200])
+            ckx, cky = J("KIRCHE.inDoor")
+            E(f"GAME.setView3(false, true); GAME.view({ckx}, {cky}, KIRCHE.z + 1.65, {(yaw + 225) % 360}, -6, 70)")
+            steps(0.4)
+            pic('kirche_aufsicht')
+            E("KIRCHE.verlassen()")
+            steps(0.5)
+            st = J("KIRCHE.status()")
+            ck('out again (in front of the portal; the inside hidden)', not st['inside'] and not st['visible'], json.dumps(st))
+            set_time(6, 19, 0)
+            stand(ox, oy, yaw)
+            lbl = J("GAME.step(0.3)").get('best') or ''
+            ck('Saturday 19:00: the church is closed (the label says so)', 'geschlossen' in lbl, lbl)
     ck.errors(errs)
     ck.done()

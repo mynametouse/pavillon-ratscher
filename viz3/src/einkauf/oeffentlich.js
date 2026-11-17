@@ -22,6 +22,7 @@ import { GELD } from './geld.js';
 import { INVENTAR } from './inventar.js';
 import { LLEBEN } from '../laeden/leben.js';
 import { LKAUF } from '../laeden/kauf.js';
+import { LIPLAN } from '../laeden/innen_plan.js';
 export const OEFFENTLICH = (() => {
   const S = { on: true, last: null, err: '' };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -175,6 +176,24 @@ export const OEFFENTLICH = (() => {
   // ---- the Stadtbibliothek (OSM: library east of the old town): at its door borrow a book (the reader's card 10 € a year) ----
   const BIB = [-738.34, 1336.38];
   let bibCard = false;
+  // its door: the house that holds the OSM point, its door towards the street (CI picture bibliothek: the point lies inside the house);
+  // { x, y } a step in front of the door, { nx, ny } outwards
+  let bibD = null,
+    bibOf = null;
+  function bibTuer() {
+    if (!SCHL || SCHL.state !== 'ready') return null;
+    if (bibD && bibOf === SCHL.bld) return bibD;
+    bibOf = SCHL.bld;
+    const b = (SCHL.bld || []).find(q => q.f && LIPLAN.inPoly(q.f, BIB[0], BIB[1])),
+      d = b && b.doorFac;
+    if (d) {
+      const x = d.ax + d.dx * d.u,
+        y = d.ay + d.dy * d.u;
+      bibD = { x: x + d.dy * 0.8, y: y - d.dx * 0.8, nx: d.dy, ny: -d.dx, haus: true };
+    } else bibD = { x: BIB[0], y: BIB[1], nx: 0, ny: -1, haus: false };
+    return bibD;
+  }
+  S.bibTuer = bibTuer;
   function bibliothek() {
     const open = OEFFNUNG.offen('bibliothek');
     if (!open) {
@@ -229,9 +248,12 @@ export const OEFFENTLICH = (() => {
   }
   KERN.act({
     id: 'oeffentlich:bibliothek',
-    r: 9,
+    r: 3,
     prio: -0.5,
-    pos: () => (SCHL && SCHL.state === 'ready' ? [BIB[0], BIB[1], KERN.ground(BIB[0], BIB[1]) + 1.2] : null),
+    pos: () => {
+      const d = bibTuer();
+      return d ? [d.x, d.y, KERN.ground(d.x, d.y) + 1.2] : null;
+    },
     label: () =>
       SCHL && SCHL.state === 'ready'
         ? OEFFNUNG.offen('bibliothek')
