@@ -13,6 +13,8 @@ core/assets.js              # loading manager, textures, PBR materials, patchSV 
 core/mats.js                # shared materials MAT
 core/geo.js                 # box/cylinder builders with collision + walk registry (COL, WALK), building registry (bldBegin/bldEnd, BUILD)
 core/detail.js              # V16b1 detail textures of the ground shaders as one texture array (DETAIL); sampler count check and fallback (GLCHECK)
+# feat/bewuchs-pflanzen: the species of the vegetation – pure data, high up so that every bewuchs module can import it
+bewuchs/bw_arten.js         # feat/bewuchs-pflanzen grasses, wildflowers, their year, the care of each kind of area, the flower atlas' cells – data (BWARTEN)
 pavilion/house_base.js      # the planned pavilion: dimensions, levels, wall/window/railing/ladder helpers
 pavilion/house_common.js    # parts both variants share (slab, EG walls S/N/W, joists, chimney, EG windows, floor, stove)
 pavilion/house_tower.js     # variant A: stair tower
