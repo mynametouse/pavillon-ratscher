@@ -461,6 +461,54 @@ def unpack(b):
     return [(xs[t] / 10, ys[t] / 10, raw[o + t] / 4, raw[o + n + t] / 10, raw[o + 2 * n + t] & 15, raw[o + 2 * n + t] & 240) for t in range(n)]
 
 
+def drop_in_buildings(margin=0.8):
+    """the trees whose trunk stands in a building of the app's cells (gebaeude/z/: ETHOS and the villages of welt-orte) or within margin of
+    its walls go – the cells as they are, nothing computed again (after new buildings came)"""
+    from shapely.geometry import Point, Polygon
+    from shapely.strtree import STRtree
+    gz = os.path.join(W.VIZ, 'extra', 'welt-gebaeude', 'dist', 'gebaeude', 'z')
+    ip = os.path.join(W.OUT, 'z', 'index.json')
+    idx = json.load(open(ip))
+    gone = 0
+    for key in sorted(idx['cells']):
+        p = os.path.join(gz, key + '.json')
+        if not os.path.exists(p):
+            continue
+        polys = []
+        for b in json.load(open(p)).get('b', []):
+            f = b.get('f') or []
+            if len(f) >= 6:
+                g = Polygon(list(zip(f[0::2], f[1::2])))
+                polys.append((g if g.is_valid else g.buffer(0)).buffer(margin))
+        if not polys:
+            continue
+        st = STRtree(polys)
+        i, j = (int(v) for v in key.split('_'))
+        fp = os.path.join(W.OUT, 'z', key + '.bin')
+        T = unpack(open(fp, 'rb').read())
+        keep = []
+        for x, y, h, r, k, fl in T:
+            X, Y = i * W.CELL + x, j * W.CELL + y
+            pt = Point(X, Y)
+            if any(polys[q].contains(pt) for q in st.query(pt)):
+                continue
+            keep.append((X, Y, h, r, k, fl, 0))
+        if len(keep) == len(T):
+            continue
+        b = pack(i, j, keep)
+        open(fp, 'wb').write(b)
+        ks = [0] * 8
+        for t in keep:
+            ks[int(t[4])] += 1
+        idx['cells'][key] = [len(keep), len(b), ks]
+        gone += len(T) - len(keep)
+        W.log(key, len(T) - len(keep), 'trees in or at buildings dropped')
+    idx['n'] = sum(v[0] for v in idx['cells'].values())
+    idx['bytes'] = sum(v[1] for v in idx['cells'].values())
+    json.dump(idx, open(ip, 'w'), separators=(',', ':'))
+    W.log('dropped', gone, 'trees; now', idx['n'])
+
+
 def corridor_cells(names, width=CORRIDOR):
     from shapely.geometry import LineString, box
     from shapely.ops import unary_union
@@ -526,7 +574,11 @@ def main():
     ap.add_argument('--debug', default='')
     ap.add_argument('--nir-con', type=float, default=150.0)
     ap.add_argument('--limit', type=int, default=0)
+    ap.add_argument('--drop-in-buildings', action='store_true', help='only: drop the trees in the buildings of gebaeude/z/ (new villages)')
     a = ap.parse_args()
+    if a.drop_in_buildings:
+        drop_in_buildings()
+        return
     from shapely.geometry import box, Polygon
     from shapely.strtree import STRtree
     cells = []
