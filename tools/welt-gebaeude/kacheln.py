@@ -115,7 +115,7 @@ def main():
     ap.add_argument('--levels', default='10,11,12')
     ap.add_argument('--only', type=int, default=0, help='at most N tiles (a quick try)')
     ap.add_argument('--debug', default=None)
-    ap.add_argument('--near', default=None, help='E,N: only tiles within 600 m of this UTM point (a quick look)')
+    ap.add_argument('--near', default=None, help='E,N[;E,N…]: only tiles within 600 m of these UTM points (a quick look)')
     ap.add_argument('--daten', default=DATEN, help="the Suhl chat's data repo (its ground product carries the corridor to Suhl)")
     ap.add_argument('--no-suhl', action='store_true', help="without Suhl's set (as before feat/welt-orte)")
     a = ap.parse_args()
@@ -173,8 +173,9 @@ def main():
             if st is not None:
                 jobs.append((L, x, y, st))
     if a.near:
-        ce, cn = (float(v) for v in a.near.split(','))
-        jobs = [j for j in jobs if math.hypot(ROOT_E0 + (j[1] + 0.5) * ROOT / (1 << j[0]) - ce, ROOT_N0 + (j[2] + 0.5) * ROOT / (1 << j[0]) - cn) < 600]
+        pts = [tuple(float(v) for v in q.split(',')) for q in a.near.split(';')]
+        jobs = [j for j in jobs if any(math.hypot(ROOT_E0 + (j[1] + 0.5) * ROOT / (1 << j[0]) - ce, ROOT_N0 + (j[2] + 0.5) * ROOT / (1 << j[0]) - cn) < 600
+                                       for ce, cn in pts)]
     if a.only:
         jobs = jobs[:a.only]
     print('tiles to retouch', len(jobs), {L: sum(1 for j in jobs if j[0] == L) for L in levels}, flush=True)

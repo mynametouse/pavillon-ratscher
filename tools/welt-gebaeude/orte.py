@@ -233,7 +233,9 @@ def osm_streets(cache, poly):
 OSMAPI = 'https://api.openstreetmap.org/api/0.6/map?bbox='
 # OSM buildings that are no closed house: left out (a carport or a roof on posts as a closed shed would be wrong, a greenhouse of glass too)
 OSM_SKIP = {'roof', 'carport', 'construction', 'ruins', 'collapsed', 'destroyed', 'demolished', 'proposed', 'no', 'greenhouse',
-            'canopy', 'bridge', 'disused', 'abandoned', 'container', 'tent', 'static_caravan'}
+            'canopy', 'bridge', 'disused', 'abandoned', 'container', 'tent', 'static_caravan', 'city_wall', 'wall'}
+# OSM buildings looked at in the 2024 photo and left out
+OSM_NOT = {'w170780442': 'without a roof in the photo of 2024 (the walls of a former cowshed, 1 900 m²)'}
 # heights where OSM has none (ground to ridge, m): by the kind of building, else by its size
 OSM_H = {'house': 8.5, 'detached': 8.5, 'semidetached_house': 8.5, 'residential': 9.0, 'terrace': 9.0, 'apartments': 12.0, 'farm': 9.0,
          'bungalow': 5.0, 'garage': 2.8, 'garages': 2.8, 'shed': 3.0, 'hut': 3.0, 'cabin': 3.5, 'allotment_house': 3.0, 'barn': 8.0,
@@ -358,7 +360,8 @@ def osm_height(tags, area):
     k = tags.get('building', 'yes')
     if k in OSM_H:
         return OSM_H[k]
-    return 3.0 if area < 30 else 5.5 if area < 70 else 8.5 if area < 350 else 8.0
+    # a large hall newer than the LoD2 (the logistics hall north of Schleusingen, 37 000 m²): as high as such halls are
+    return 3.0 if area < 30 else 5.5 if area < 70 else 8.5 if area < 350 else 8.0 if area < 5000 else 12.0
 
 
 # ---------------------------------------------------------------- the cells as they are -------------------------------------------
@@ -391,8 +394,8 @@ def region_of(stage, cache, sets, ext):
 
 def osm_candidates(a, cache):
     """the buildings OSM has and ETHOS not (newer than the state's LoD2, or missed there): every OSM building of the square kilometres
-    with buildings in the cells, inside the tiles one drives on (stage welt's area), that no ETHOS footprint covers (a quarter of it, or
-    an ETHOS middle inside it) and no building of the cells; the same keep-outs as the other stages. Height from its tags, else by kind
+    with buildings in the cells, inside the tiles one drives on (stage welt's area), that no ETHOS footprint covers (15 % of it, an
+    ETHOS middle inside it or its own inside an ETHOS one) and no building of the cells; the same keep-outs as the other stages. Height from its tags, else by kind
     and size (OSM_H)"""
     from shapely.geometry import Polygon, Point
     from shapely.strtree import STRtree
@@ -430,7 +433,7 @@ def osm_candidates(a, cache):
         if not preg.contains(c):
             continue
         st['osm'] += 1
-        if tags.get('building') in OSM_SKIP or tags.get('building:part'):
+        if tags.get('building') in OSM_SKIP or tags.get('building:part') or bid in OSM_NOT:
             st['skip_kind'] += 1
             continue
         if g.area < 6.0:
@@ -446,7 +449,8 @@ def osm_candidates(a, cache):
             st['keepout'] += 1
             continue
         hit = [E[i] for i in etree.query(g)]
-        if sum(g.intersection(e).area for e in hit) > 0.25 * g.area or any(g.contains(e.representative_point()) for e in hit):
+        if sum(g.intersection(e).area for e in hit) > 0.15 * g.area or any(g.contains(e.representative_point()) for e in hit) \
+                or any(e.contains(c) for e in hit):
             st['ethos'] += 1
             continue
         hit = [CP[i] for i in ctree.query(g)]
@@ -613,6 +617,16 @@ def build(a, stage, cache):
                'roads_near': lambda pr: [rl[k] for k in rtree.query(pr.buffer(20))]}
         bl = []
         for r, p, sid in lst:
+            # a large OSM-only footprint whose inside is green in the 2024 photo has no roof (a ruin, an overgrown base): not built
+            if sid.startswith('osm_') and p.area > 150 and photo is not None:
+                smp = PR.roof_samples(p, (0.0, 0.0), photo, step=1.0)
+                if smp is not None:
+                    C = smp[1]
+                    green = float(np.mean((C[:, 1] > C[:, 0] + 0.02) & (C[:, 1] > C[:, 2] + 0.02)))
+                    if green > 0.35:
+                        st['osm_green'] = st.get('osm_green', 0) + 1
+                        log('no roof in the photo (green %.0f %%): not built' % (100 * green), sid, round(p.area))
+                        continue
             try:
                 b = PR.make(p, r['h'], sid, ctx)
                 b['o'] = stage   # which stage of feat/welt-orte built it (the loader ignores it; tests and the list count by it)

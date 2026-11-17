@@ -23,9 +23,32 @@ session_01Mmpsvp11QsXpPSQRRbZ4Jv, Abend 17.11. (Auftrag `docs/plans/auftraege/we
   war: **3 397 Gebäude** in 89 Zellen (73 neu, 16 ergänzt). Waldau 1 018, Schwarzbach 696, Breitenbach 557, St. Bernhard 394,
   Schleusingerneundorf 277, Silbach 150, Henfstädt 106, Hinternah 74, Lichtenau 31, Beinerstadt 27, Themar 16, Oberrod 12 und
   Einzelne (Tabelle unten).
-- **Zusammen jetzt 18 422 Gebäude in 323 Zellen (13,4 MB)**, vorher 13 025 in 217 (9,5 MB). Die Datensätze der alten Zellen sind
-  unverändert (eine ergänzte Zelle hat ihre alten Gebäude vorn, die neuen dahinter); jedes neue trägt `o: "suhl"` bzw. `o: "welt"`
-  (welche Stufe es baute; der Lader liest es nicht).
+- **Stufe 3 – was ETHOS fehlt, aus OpenStreetMap** (Hinweis des Leads auf Bildern von Hirschbach): jedes OSM-Gebäude der
+  Quadratkilometer mit Gebäuden in den Zellen (117 km², OSM-API, 11 058 Gebäude), das kein ETHOS-Grundriss deckt (15 % davon, eine
+  ETHOS-Mitte darin oder seine Mitte in einem ETHOS-Gebäude) – neuer als der LoD2-Stand oder dort vergessen: **357 Gebäude** (Höhe aus `height`/`building:levels`, sonst nach Art
+  und Größe): 289 Schuppen und Garagen, 26 Scheunen und Hallen, 38 Häuser, 4 Behälter (in 98 Zellen ergänzt, eine neu) – darunter die **Logistikhalle nördlich von
+  Schleusingen** (37 000 m², im Luftbild 2024, in ETHOS nicht), dazu St. Kilian 74, Breitenbach 81, Schwarzbach 19, Erlau 13. Nicht aus OSM:
+  Carports, Dächer auf Stützen, Gewächshäuser, Ruinen, Stadtmauern (`OSM_SKIP`), ein Stall ohne Dach im Luftbild (`OSM_NOT`). Hirschbach
+  selbst ist fast vollständig: 641 ETHOS-Körper, 599 gebaut, 40 Teile unter 4 m² (Kamine, Dachteile), einer auf der Straße; OSM bringt
+  drei Schuppen; im Luftbild bleiben einige kleine Hütten ohne Grundriss in beiden Quellen (Überlagerung: Luftbild mit den Umrissen
+  unserer Zellen, der ETHOS- und der OSM-Gebäude).
+- **Türen zur Straße:** die Fassaden der neuen Gebäude kennen jetzt auch die Dorfstraßen aus OSM (3 382 Wege; vorher nur die Straßen der
+  Fahrt) – die Haustür liegt auf der Seite zur nächsten Straße (in Waldau 287 Fassaden statt keiner mit Straße in der Nähe).
+- **Zusammen jetzt 18 779 Gebäude in 324 Zellen (13,6 MB)**, vorher 13 025 in 217 (9,5 MB). Die Datensätze der alten Zellen sind
+  unverändert (eine ergänzte Zelle hat ihre alten Gebäude vorn, die neuen dahinter); jedes neue trägt `o: "suhl"`, `"welt"` oder `"osm"`
+  (welche Stufe es baute; der Lader liest es nicht). `index.json` `order` hält die Reihenfolge der Zellen fest (Haken unten): die alten
+  und die neuen Häuser behalten ihr Aussehen, wenn später Zellen dazukommen.
+- **Leben** (wie `welt-dinge`: geparkte Autos, Wohnmobile, Anhänger, Pools aus dem Luftbild, nach Wochentag und Stunde belegt): die neuen
+  Gebiete stehen in `dinge/orte.json` (Haken in `dinge/dinge.js`), die Daten je Gebiet in `viz3/extra/welt-dinge/dist/dinge/<gebiet>.json`,
+  geprüft wie dort (Regeln aus `decide.py`, Stichprobe von 30 und die Zweifelsfälle von Auge, `pruefung_<gebiet>.json`): **Hirschbach**
+  48 Autos (Stichprobe 29 von 30 Autos), **Erlau** 105 Autos, 3 Wohnmobile, 2 Pools, 1 Anhänger, 1 Lkw, **Breitenbach** 55 Autos,
+  1 Wohnmobil, 1 Wohnwagen, 2 Pools, **Waldau** 136 Autos, 1 Lkw (Hirschbach in zwei Durchgängen – 0,1 und 0,2 m je Pixel –, die anderen drei im schnellen mit 0,2 m wie die Strecken von `welt-dinge`). Fahrspuren frei wie dort, jetzt auch an der Anfahrt nach Suhl und den Dorfstraßen aus
+  OSM (`tools/welt-dinge/prep.py --wege`); was schon in einem anderen Gebiet steht (Breitenbach/St. Kilian: 3), kommt nicht doppelt.
+  Ihre Masken gehen in `maske_dinge_utm.json` – die Retusche nimmt die gedruckten Autos aus den Kacheln.
+- **Kacheln ohne gedruckte Dächer auch hier:** `tools/welt-gebaeude/kacheln.py` (der Satz `welt-test/v2/`, Workflow
+  `welt-gebaeude-kacheln.yml`) nimmt jetzt auch Suhls Korridor-Kacheln (Daten-Repo, nur wo unsere Gebäude stehen, ~106 Kacheln); der
+  Workflow läuft nach dem Zusammenführen auf `src` von selbst (neue Zellen, neues Werkzeug) – geschätzt 1 421 Kacheln statt 950. Vorab
+  hier gerechnet für Hirschbach, Erlau, St. Kilian und Waldau (109 Kacheln, 3,9 MB, 57 s) und im Test gezeigt (`WELT_V2_LOCAL`).
 - **Nichts, was andere modellieren:** Ratschers Quadrat (`gebaeude/ratscher.json`, `world/ratscher.js`), was die Zellen schon haben
   (ETHOS-Kennung), **die Stadt Suhl** – ihr ganzes Gemeindegebiet (OSM-Relation 62450, aus `origin/suhl/bestand`
   `tools/suhl/out/bestand/gebiete.geojson`): dort baut der Suhl-Chat jedes Gebäude selbst (Produkt `g` des Daten-Repos); auf Suhls Boden nur
@@ -41,54 +64,55 @@ session_01Mmpsvp11QsXpPSQRRbZ4Jv, Abend 17.11. (Auftrag `docs/plans/auftraege/we
 
 Jedes ETHOS-Gebäude in den Kacheln, auf denen man fährt (ohne die Stadt Suhl), dem nächsten OSM-Ort zugeordnet (Dorf/Stadt bis 1,2 km, mit
 Vorrang vor Weilern und Fluren): „vorher in 3D“ = in den Zellen von V17r, in Ratschers Quadrat oder von Schleusingens Altstadt bzw. Kloster
-Veßra selbst gebaut; „nicht gebaut“ = unter 4 m², frei gehalten (Burg, Kloster …) oder von einer Straße durchquert.
+Veßra selbst gebaut; „neu aus OSM“ = Gebäude, die ETHOS nicht kennt (nicht in der ETHOS-Spalte); „nicht gebaut“ = unter 4 m², frei
+gehalten (Burg, Kloster …) oder von einer Straße durchquert.
 (`python3 tools/welt-gebaeude/orte.py --ethos ETHOS.jsonl --report`)
 
-| Ort | Art | ETHOS-Gebäude | vorher in 3D | neu: Weg nach Suhl | neu: übrige Orte | nicht gebaut (klein, frei gehalten, Straße) | Mitte (x, y) |
-|---|---|---|---|---|---|---|---|
-| Erlau | Dorf | 1510 | 331 | 1122 | 0 | 57 | -919, 4725 |
-| Waldau | Dorf | 1050 | 0 | 0 | 1018 | 32 | 3644, 38 |
-| Schwarzbach | Dorf | 737 | 0 | 0 | 696 | 41 | 4159, -1958 |
-| Breitenbach | Dorf | 762 | 28 | 138 | 557 | 39 | 731, 4196 |
-| Hirschbach | Dorf | 641 | 0 | 599 | 0 | 42 | -1814, 7038 |
-| St. Bernhard | Dorf | 404 | 0 | 0 | 394 | 10 | -12331, -3605 |
-| Schleusingerneundorf | Dorf | 300 | 0 | 0 | 277 | 23 | 4079, 4228 |
-| Silbach | Dorf | 156 | 0 | 0 | 150 | 6 | 2568, 4046 |
-| einzeln (Höfe, Mühlen, Hütten an der Strecke) | – | 111 | 0 | 107 | 2 | 2 | -2901, 9200 |
-| Henfstädt | Dorf | 106 | 0 | 0 | 106 | 0 | -12297, 2399 |
-| Hinternah | Dorf | 2059 | 1924 | 0 | 74 | 61 | 1918, 2035 |
-| Lichtenau | Dorf | 31 | 0 | 0 | 31 | 0 | 4633, 338 |
-| St. Kilian | Dorf | 631 | 586 | 25 | 5 | 15 | -190, 3118 |
-| Beinerstadt | Dorf | 564 | 521 | 0 | 27 | 16 | -12198, -2299 |
-| Themar | Stadt | 2857 | 2733 | 0 | 16 | 108 | -10473, 1143 |
-| Oberrod | Dorf | 124 | 106 | 0 | 12 | 6 | 2595, -1467 |
-| Altendambach | Dorf | 8 | 0 | 8 | 0 | 0 | -2937, 7195 |
-| Wiedersbach | Dorf | 411 | 400 | 0 | 5 | 6 | 1926, -2588 |
-| Ehrenberg | Dorf | 365 | 349 | 0 | 5 | 11 | -7837, -1577 |
-| Villa Iltenburg | Flur | 33 | 28 | 0 | 5 | 0 | -10373, -305 |
-| Schleusingen | Stadt | 4154 | 3952 | 0 | 0 | 202 | -1088, 1279 |
-| Neuendambach | Weiler | 91 | 87 | 0 | 4 | 0 | -3340, -2953 |
-| Rasenmühle | Einzelhof/Mühle | 125 | 121 | 0 | 3 | 1 | -11000, 1717 |
-| Kloster Veßra | Dorf | 335 | 304 | 0 | 2 | 29 | -8754, -104 |
-| Heckengereuth | Dorf | 203 | 199 | 0 | 2 | 2 | 1689, -924 |
-| Tachbachsmühle | Einzelhof/Mühle | 36 | 33 | 0 | 2 | 1 | -10752, 2182 |
-| Poppenwind | Dorf | 2 | 0 | 0 | 2 | 0 | 3738, -4745 |
-| Gerhardtsgereuth | Dorf | 292 | 288 | 0 | 1 | 3 | -1640, -3126 |
-| Trostadt | Dorf | 46 | 44 | 0 | 1 | 1 | -9193, -3293 |
-| Schießplatz | Flur | 1 | 0 | 1 | 0 | 0 | -2458, 10388 |
-| Rappelsdorf | Dorf | 790 | 748 | 0 | 0 | 42 | -3139, 21 |
-| Gethles | Dorf | 378 | 367 | 0 | 0 | 11 | -4798, 1702 |
-| Siegritz | Dorf | 362 | 359 | 0 | 0 | 3 | -7680, -3043 |
-| Grimmelshausen | Dorf | 338 | 330 | 0 | 0 | 8 | -9338, -1570 |
-| Fischbach | Dorf | 249 | 240 | 0 | 0 | 9 | -2439, 3225 |
-| Ratscher | Dorf | 201 | 201 | 0 | 0 | 0 | 225, -143 |
-| Geisenhöhn | Dorf | 193 | 193 | 0 | 0 | 0 | -997, -501 |
-| Gottfriedsberg | Dorf | 159 | 154 | 0 | 0 | 5 | -832, -1551 |
-| Neuhof | Dorf | 142 | 138 | 0 | 0 | 4 | -6535, 1911 |
-| Reurieth | Dorf | 120 | 117 | 0 | 0 | 3 | -8407, -3982 |
-| Rindermannshof | Einzelhof/Mühle | 79 | 78 | 0 | 0 | 1 | 141, 1675 |
-| Zollbrück | Weiler | 9 | 8 | 0 | 0 | 1 | -5250, -968 |
-| **zusammen** | | **21165** | **14967** | **2000** | **3397** | **801** | |
+| Ort | Art | ETHOS-Gebäude | vorher in 3D | neu: Weg nach Suhl | neu: übrige Orte | neu aus OSM (ETHOS hat sie nicht) | nicht gebaut (klein, frei gehalten, Straße) | Mitte (x, y) |
+|---|---|---|---|---|---|---|---|---|
+| Erlau | Dorf | 1510 | 331 | 1122 | 0 | 13 | 57 | -919, 4725 |
+| Waldau | Dorf | 1050 | 0 | 0 | 1018 | 4 | 32 | 3644, 38 |
+| Breitenbach | Dorf | 762 | 28 | 138 | 557 | 81 | 39 | 731, 4196 |
+| Schwarzbach | Dorf | 737 | 0 | 0 | 696 | 19 | 41 | 4159, -1958 |
+| Hirschbach | Dorf | 641 | 0 | 599 | 0 | 3 | 42 | -1814, 7038 |
+| St. Bernhard | Dorf | 404 | 0 | 0 | 394 | 5 | 10 | -12331, -3605 |
+| Schleusingerneundorf | Dorf | 300 | 0 | 0 | 277 | 0 | 23 | 4079, 4228 |
+| Silbach | Dorf | 156 | 0 | 0 | 150 | 4 | 6 | 2568, 4046 |
+| einzeln (Höfe, Mühlen, Hütten an der Strecke) | – | 111 | 0 | 107 | 2 | 4 | 2 | -2901, 9200 |
+| Henfstädt | Dorf | 106 | 0 | 0 | 106 | 0 | 0 | -12297, 2399 |
+| St. Kilian | Dorf | 631 | 586 | 25 | 5 | 74 | 15 | -190, 3118 |
+| Hinternah | Dorf | 2059 | 1924 | 0 | 74 | 5 | 61 | 1918, 2035 |
+| Themar | Stadt | 2857 | 2733 | 0 | 16 | 31 | 108 | -10473, 1143 |
+| Beinerstadt | Dorf | 564 | 521 | 0 | 27 | 19 | 16 | -12198, -2299 |
+| Lichtenau | Dorf | 31 | 0 | 0 | 31 | 0 | 0 | 4633, 338 |
+| Gethles | Dorf | 378 | 367 | 0 | 0 | 21 | 11 | -4798, 1702 |
+| Schleusingen | Stadt | 4154 | 3952 | 0 | 0 | 9 | 202 | -1088, 1279 |
+| Rappelsdorf | Dorf | 790 | 748 | 0 | 0 | 12 | 42 | -3139, 21 |
+| Gerhardtsgereuth | Dorf | 292 | 288 | 0 | 1 | 11 | 3 | -1640, -3126 |
+| Oberrod | Dorf | 124 | 106 | 0 | 12 | 0 | 6 | 2595, -1467 |
+| Wiedersbach | Dorf | 411 | 400 | 0 | 5 | 6 | 6 | 1926, -2588 |
+| Neuhof | Dorf | 142 | 138 | 0 | 0 | 10 | 4 | -6535, 1911 |
+| Altendambach | Dorf | 8 | 0 | 8 | 0 | 2 | 0 | -2937, 7195 |
+| Heckengereuth | Dorf | 203 | 199 | 0 | 2 | 7 | 2 | 1689, -924 |
+| Neuendambach | Weiler | 91 | 87 | 0 | 4 | 5 | 0 | -3340, -2953 |
+| Ehrenberg | Dorf | 365 | 349 | 0 | 5 | 1 | 11 | -7837, -1577 |
+| Villa Iltenburg | Flur | 33 | 28 | 0 | 5 | 0 | 0 | -10373, -305 |
+| Siegritz | Dorf | 362 | 359 | 0 | 0 | 4 | 3 | -7680, -3043 |
+| Tachbachsmühle | Einzelhof/Mühle | 36 | 33 | 0 | 2 | 2 | 1 | -10752, 2182 |
+| Kloster Veßra | Dorf | 335 | 304 | 0 | 2 | 1 | 29 | -8754, -104 |
+| Rasenmühle | Einzelhof/Mühle | 125 | 121 | 0 | 3 | 0 | 1 | -11000, 1717 |
+| Trostadt | Dorf | 46 | 44 | 0 | 1 | 2 | 1 | -9193, -3293 |
+| Poppenwind | Dorf | 2 | 0 | 0 | 2 | 0 | 0 | 3738, -4745 |
+| Grimmelshausen | Dorf | 338 | 330 | 0 | 0 | 1 | 8 | -9338, -1570 |
+| Fischbach | Dorf | 249 | 240 | 0 | 0 | 1 | 9 | -2439, 3225 |
+| Schießplatz | Flur | 1 | 0 | 1 | 0 | 0 | 0 | -2458, 10388 |
+| Ratscher | Dorf | 201 | 201 | 0 | 0 | 0 | 0 | 225, -143 |
+| Geisenhöhn | Dorf | 193 | 193 | 0 | 0 | 0 | 0 | -997, -501 |
+| Gottfriedsberg | Dorf | 159 | 154 | 0 | 0 | 0 | 5 | -832, -1551 |
+| Reurieth | Dorf | 120 | 117 | 0 | 0 | 0 | 3 | -8407, -3982 |
+| Rindermannshof | Einzelhof/Mühle | 79 | 78 | 0 | 0 | 0 | 1 | 141, 1675 |
+| Zollbrück | Weiler | 9 | 8 | 0 | 0 | 0 | 1 | -5250, -968 |
+| **zusammen** | | **21165** | **14967** | **2000** | **3397** | **357** | **801** | |
 
 ## Daten neu erzeugen
 

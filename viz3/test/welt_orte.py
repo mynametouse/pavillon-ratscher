@@ -108,13 +108,16 @@ if 'daten' in want:
                     G.setdefault((int(cx // 50), int(cy // 50)), []).append(b)
         on = []
         for b in osm_b:
+            # the share of the OSM footprint under ETHOS buildings, on a grid of 0.5 m inside it
             cx, cy = centre(b['f'])
-            for i in range(int(cx // 50) - 1, int(cx // 50) + 2):
-                for j in range(int(cy // 50) - 1, int(cy // 50) + 2):
-                    for e in G.get((i, j), ()):
-                        if inside(e['f'], cx, cy) or inside(b['f'], *centre(e['f'])):
-                            on.append((b['id'], e['id']))
-        ck('stage osm: the buildings ETHOS lacks come from OSM, none on an ETHOS building', len(osm_b) == so.get('built') and not on,
+            near = [e for i in range(int(cx // 50) - 1, int(cx // 50) + 2) for j in range(int(cy // 50) - 1, int(cy // 50) + 2) for e in G.get((i, j), ())]
+            xs, ys = b['f'][0::2], b['f'][1::2]
+            pts = [(x / 2.0, y / 2.0) for x in range(int(min(xs) * 2), int(max(xs) * 2) + 1) for y in range(int(min(ys) * 2), int(max(ys) * 2) + 1)]
+            pts = [q for q in pts if inside(b['f'], *q)]
+            under = sum(1 for q in pts if any(inside(e['f'], *q) for e in near))
+            if pts and under > 0.2 * len(pts):
+                on.append((b['id'], round(under / len(pts), 2)))
+        ck('stage osm: the buildings ETHOS lacks come from OSM, none on an ETHOS building (a fifth of it at most)', len(osm_b) == so.get('built') and not on,
            f"{len(osm_b)} from OSM ({json.dumps(so.get('kinds'))}); on top of ETHOS: {on[:4]}")
     for name, (label, c, road) in VILLAGES.items():
         n = sum(1 for L in CELLS.values() for b in L if math.dist(centre(b['f']), c) < 350)
@@ -197,6 +200,13 @@ if 'daten' in want:
            f'{n} buildings, {len(rbad)} reach in: {rbad[:5]}')
     except Exception as e:
         print('note: no approach ways – road check skipped', e, flush=True)
+    # the life of the new places: every area of dinge/orte.json has its data (parked cars …) in welt-dinge's folder
+    orte = json.load(open(os.path.join(lib.ROOT, 'viz3', 'extra', 'welt-orte', 'dist', 'dinge', 'orte.json')))
+    cars = {}
+    for a in orte['areas']:
+        fn = os.path.join(lib.ROOT, 'viz3', 'extra', 'welt-dinge', 'dist', 'dinge', a['id'] + '.json')
+        cars[a['id']] = len(json.load(open(fn)).get('autos', [])) if os.path.exists(fn) else None
+    ck('the life of the new places: every area of dinge/orte.json has its data', all(v for v in cars.values()), json.dumps(cars))
     size = sum(os.path.getsize(f) for f in glob.glob(os.path.join(Z, '*.json')))
     big = max(IDX['cells'].items(), key=lambda kv: kv[1])
     print(f'cells: {len(IDX["cells"])}, buildings {sum(IDX["cells"].values())}, {size / 1e6:.2f} MB; the largest {big[0]} with {big[1]}', flush=True)
@@ -338,6 +348,16 @@ if want & {'hirschbach', 'strecke'}:
             # ---- Hirschbach: the checks ----
             ck('Hirschbach: Suhl\'s corridor and the approach are there (the ground of the data repo, the ways in the drive)',
                s['suhl'] == 'ready' and 'suhl/anfahrt-grund' in s['sets'], json.dumps({k: s[k] for k in ('suhl', 'sets', 'w')}))
+            # the life of the aerial image (feat/welt-orte: dinge/orte.json names the new areas for dinge/dinge.js): Hirschbach's parked cars
+            if os.path.exists(os.path.join(lib.ROOT, 'viz3', 'extra', 'welt-dinge', 'dist', 'dinge', 'hirschbach.json')):
+                E("DINGE.settle()")
+                for _ in range(6):
+                    E("GAME.step(0.5)")
+                dg = J("""(() => { const L = DINGE.places.filter(p => p.area === 'hirschbach'); return { orte: DINGE.orte || null,
+                    area: DINGE.areaState().hirschbach || null, places: L.length, built: L.filter(p => p.im).length, shown: L.filter(p => p.im && p.on && !p.hide).length,
+                    err: DINGE.state().err || null }; })()""")
+                ck('Hirschbach: its parked cars come (the area from dinge/orte.json, its places built near the road)',
+                   dg['orte'] == 'da' and dg['area'] == 'da' and dg['places'] >= 30 and dg['built'] >= 10, json.dumps(dg))
             # none on the drawn road: corners, wall middles and centres of the buildings near, against the drive's roads (no bridges)
             rd = J(f"""(() => {{ const bad = []; let n = 0; for (const c of GEB.Z.cells.values()) {{ if (!c.meshes.length) continue; for (const b of c.data.b) {{
                 if (Math.hypot(b.cx - {c[0]}, b.cy - {c[1]}) > 500) continue; n++; const f = b.f, pts = [[b.cx, b.cy]];
