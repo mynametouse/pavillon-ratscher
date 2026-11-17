@@ -196,7 +196,7 @@ export const BEWUCHS = (() => {
       }
       const t = window.CLOCK ? CLOCK.t : 0;
       if (mowDirty || (S.mowN && Math.abs(t - mowT) > 20)) mowUpload(t);
-      BWHALM.update(false);
+      BWHALM.update(false, dt);
     } catch (e) {
       if (!S.err) console.warn('bewuchs', e);
       S.err = String((e && e.message) || e);

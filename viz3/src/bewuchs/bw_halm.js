@@ -11,7 +11,7 @@
 // One draw call per ring, one program per ring compiled at load (MeshStandardMaterial with patchSV like the other plants: sky
 // visibility, baked light, the figures' shadows), receives the sun's shadow and casts none.
 //   BWHALM.build(spec)   (re)make the rings for a tier: { near: { r, k }, mid: { r, k } } (bewuchs.js picks it)
-//   BWHALM.update(force) list the tiles for the camera now (cheap when nothing moved)
+//   BWHALM.update(force, dt) list the tiles for the camera now (cheap when nothing moved); dt the frame's seconds (the camera's speed)
 //   BWHALM.U             the shared uniforms (class table, mowing, orthophoto, day, density)
 //   BWHALM.stats()       { rings: [{ tiles, blades, tris }], blades, tris, z }
 import * as THREE from 'three';
@@ -402,21 +402,22 @@ void bwBlade( out vec3 P, out vec3 N ) {
     R.P.g.instanceCount = cap;
     R.n = cap;
   }
-  // the camera's speed (m/s, smoothed): driving fast, the dense ring is left out (nobody sees single blades at 50 km/h)
-  const SP = { x: NaN, y: NaN, t: 0, v: 0 };
-  function update(force) {
+  // the camera's speed (m/s, smoothed over the frames' time dt): driving fast, the dense ring is left out (nobody sees single blades
+  // at 50 km/h). A jump of the camera (a new view, a teleport, the map) is no speed: it starts again from rest.
+  const SP = { x: NaN, y: NaN, v: 0 };
+  function update(force, dt) {
     if (!S.rings.length) return;
     const p = cam.position,
       cx = p.x,
-      cy = -p.z,
-      now = performance.now() / 1000;
-    if (Number.isFinite(SP.x) && now > SP.t) {
-      const v = Math.hypot(cx - SP.x, cy - SP.y) / Math.max(0.016, now - SP.t);
-      SP.v += (Math.min(v, 80) - SP.v) * Math.min(1, (now - SP.t) * 2);
+      cy = -p.z;
+    if (Number.isFinite(SP.x)) {
+      const d = Math.hypot(cx - SP.x, cy - SP.y),
+        t = Math.min(0.25, Math.max(0.008, dt || 0.016));
+      if (d > 15 || d / t > 90) SP.v = 0;
+      else SP.v += (d / t - SP.v) * Math.min(1, t * 4);
     }
     SP.x = cx;
     SP.y = cy;
-    SP.t = now;
     cam.getWorldDirection(v3);
     let fx = v3.x,
       fy = -v3.z;
@@ -439,7 +440,8 @@ void bwBlade( out vec3 P, out vec3 N ) {
         tw = R.near ? 0.05 : 0.08;
       let dy = Math.abs(yaw - R.yaw);
       if (dy > Math.PI) dy = 2 * Math.PI - dy;
-      const fast = R.tag === 'dicht' && SP.v > 9;
+      // with a little hysteresis (no flicker of the ring at the edge)
+      const fast = R.tag === 'dicht' && SP.v > (R.fast ? 7 : 9);
       if (
         !force &&
         fast === !!R.fast &&
