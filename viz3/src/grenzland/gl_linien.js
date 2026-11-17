@@ -38,7 +38,7 @@ import { GLLDATA, GLLWEG } from './gl_linien_data.js';
 export const GLLINIEN = (() => {
   const S = {
     V: {}, // per vehicle of GLLDATA.FZ: { id, def, run, c (GLAUTO car), F (figures in it), lade, ... }
-    L: {}, // per run id: { line, stopS, len, P } or null when it cannot be driven here
+    L: {}, // per run id: { legs, ws, len, L, P, kehre } (GLLWEG.fertigLinie) or null when it cannot be driven here
     err: '',
     n: { spawn: 0, drop: 0, fig: 0 },
     planT: 0,
@@ -58,6 +58,7 @@ export const GLLINIEN = (() => {
     sl_milch: { ober: [232, 232, 228], unter: [44, 70, 120], schuh: [30, 30, 30], arm: true },
     sl_forst: { ober: [64, 92, 52], unter: [52, 58, 46], schuh: [60, 46, 34], arm: true, kragen: [200, 120, 30] },
     sl_spedition: { ober: [36, 44, 62], unter: [40, 42, 48], schuh: [28, 28, 28], arm: true },
+    sl_zustell: { ober: [70, 74, 80], unter: [44, 46, 52], schuh: [30, 30, 30], arm: true, kragen: [200, 60, 40] },
   };
   const CAST = {
     sl_milchfahrer: {
@@ -85,6 +86,14 @@ export const GLLINIEN = (() => {
       kleid: 'sl_spedition',
       voice: { g: 'm', age: 35 },
     },
+    sl_zusteller: {
+      name: 'Zustellerin',
+      fig: 'vk_f02',
+      clips: 'f',
+      h: 1.67,
+      kleid: 'sl_zustell',
+      voice: { g: 'f', age: 38 },
+    },
   };
   for (const q of GLLDATA.SCHULE.leute) {
     KLEID[q.id] = { ober: q.ober, unter: q.unter, schuh: [34, 34, 36], arm: true };
@@ -98,6 +107,7 @@ export const GLLINIEN = (() => {
     milch: ['sl_milchfahrer'],
     holz: ['sl_holzfahrer'],
     kraehwinkel: ['sl_kfahrer'],
+    zustell: ['sl_zusteller'],
     streife: ['polizei1', 'polizei2'],
   };
   const on = () => GL.on && GL.era === 'heute' && !S.aus && (!GL.cur || S.inMission);
@@ -116,8 +126,28 @@ export const GLLINIEN = (() => {
   };
   // ------------------------------------------------------------------ the lines ------------------------------------------------------------------
   const LKW = new Set(['koffer', 'milchlaster', 'holzlaster']);
-  // the speeds by kind of road: motorway, main, county, street, lane, service, track (m/s) – a lorry over 7.5 t: 60 km/h outside, 50 in
-  // the village (the streets' own limit is lower there); a car as GLAUTO drives
+  // the door a van delivers to: a house of the village (world/village.js, its facade with the door) or a shop of Schleusingen's old town
+  // (welt/schleusingen.js: a building whose OSM name says the kind, its door facade) → { D (the door), n (out of the house) }
+  function tuerVon(w) {
+    try {
+      if (w.haus) {
+        const b = window.VILLAGE && VILLAGE.byId && VILLAGE.byId.get(w.haus),
+          f = b && b.fac && b.fac.find(q => q.door);
+        if (!f) return null;
+        const u = f.door.u;
+        return { D: [f.ax + f.dx * u, f.ay + f.dy * u], n: [f.nx, f.ny] };
+      }
+      if (w.laden) {
+        const re = new RegExp(w.laden, 'i'),
+          SC = window.SCHL,
+          b = SC && SC.state === 'ready' && (SC.bld || []).find(q => q.s && q.s[0] && re.test(q.s[0]) && q.doorFac);
+        if (!b) return null;
+        const d = b.doorFac;
+        return { D: [d.ax + d.dx * d.u, d.ay + d.dy * d.u], n: [d.dy, -d.dx], name: b.s[0] };
+      }
+    } catch (e) {}
+    return null;
+  }
   // a waypoint as a place: [x, y], and whether it lies on a road's edge (a stop) or is a node to pass
   function punkt(w) {
     if (w.rand) {
@@ -133,6 +163,10 @@ export const GLLINIEN = (() => {
       return b;
     }
     if (w.lager) return GLLDATA.ORT.lagerTor;
+    if (w.haus) {
+      const T = tuerVon(w);
+      return T ? [T.D[0] + T.n[0] * 3, T.D[1] + T.n[1] * 3] : null;
+    }
     if (w.hof) {
       try {
         const b = window.VILLAGE && VILLAGE.byId && VILLAGE.byId.get(w.hof);
@@ -152,7 +186,7 @@ export const GLLINIEN = (() => {
     const W = f.weg.map(w => {
       const q = punkt(w);
       if (!q) return null;
-      if (w.halt || w.hof || w.lager) {
+      if (w.halt || w.hof || w.lager || w.haus) {
         const E = nearestEdge(G, q[0], q[1]);
         if (E && E.d < 60) return { w, q: [E.x, E.y], e: E.e };
       }
@@ -160,7 +194,9 @@ export const GLLINIEN = (() => {
     });
     if (W.some(o => !o)) return null;
     const legs = beine(G, W, lkw, f.weg[f.weg.length - 1].rand ? null : 0);
-    return legs ? fertigLinie(f, legs, W, lkw) : null;
+    return legs
+      ? Object.assign(fertigLinie(f, legs, W, lkw), { tueren: f.weg.map(w => (w.zustellen ? tuerVon(w) : null)) })
+      : null;
   }
   // ---- Schleusingen: the town's roads (the region's ways beyond the square, welt/fahrt.js) as a graph round a point; the loading doors
   //      of its shops (laeden/laeden.js, laeden.json: doors with k 'liefer'; a field `anlieferung` [{ x, y, nx, ny }] of the agent
@@ -175,34 +211,62 @@ export const GLLINIEN = (() => {
         : (sh.doors || []).filter(d => d.k === 'liefer');
     const d = D[Math.min(tuer, D.length - 1)];
     if (!d || !Number.isFinite(d.x) || !Number.isFinite(d.nx)) return null;
-    // the lorry's back half a metre from the door, its front away from it
+    // the lorry's back half a metre from the door, its front away from it; its rear axle (where the line it reverses on begins: GLAUTO
+    // keeps both axles on a line)
     const T = GLAUTO.TYP.koffer,
-      off = -T.yr + 0.45;
-    return { x: d.x + d.nx * off, y: d.y + d.ny * off, hd: Math.atan2(d.nx, d.ny), tuer: [d.x, d.y] };
+      off = -T.yr + 0.45,
+      ax = off + T.b;
+    return {
+      x: d.x + d.nx * off,
+      y: d.y + d.ny * off,
+      hd: Math.atan2(d.nx, d.ny),
+      tuer: [d.x, d.y],
+      ax: d.x + d.nx * ax,
+      ay: d.y + d.ny * ax,
+    };
   }
   // a delivery: in from the cheapest end of a main or county road of the town, past the yard's lane, backwards to the door (the lorry's
   // back half a metre from it), out forward the way it came. The yard's lane: from the door straight out 14 m, to the nearest road node
   function bauStadt(f) {
-    const R0 = rampe(...f.weg[1].rampe),
-      F = FAHRT && FAHRT.data && FAHRT.data.ways;
-    if (!R0 || !F || !F.length) return null;
+    const F = FAHRT && FAHRT.data && FAHRT.data.ways;
+    if (!F || !F.length) return null;
+    if (!f.weg[1].rampe) {
+      // a shop's door in the old town: the waypoint where the street passes in front of it (the town must be built)
+      const tueren = f.weg.map(w => (w.zustellen ? tuerVon(w) : null));
+      if (f.weg.some((w, i) => w.zustellen && !tueren[i])) return null;
+      const f2 = Object.assign({}, f, {
+        weg: f.weg.map((w, i) =>
+          tueren[i]
+            ? Object.assign({}, w, { p: [tueren[i].D[0] + tueren[i].n[0] * 3, tueren[i].D[1] + tueren[i].n[1] * 3] })
+            : w
+        ),
+      });
+      const G = GLLWEG.stadtNetz(F, f.zentrum[0], f.zentrum[1]),
+        Lf = G && G.nodes.length ? GLLWEG.stadtWeg(G, f2, LKW.has(GLLDATA.FZ[f.fz].typ)) : null;
+      return Lf ? Object.assign(Lf, { tueren }) : null;
+    }
+    const R0 = rampe(...f.weg[1].rampe);
+    if (!R0) return null;
     // (a graph of its own: the way gets a node where the yard's lane meets the road)
     const G = GLLWEG.stadtNetz(F, R0.x, R0.y);
-    return G && G.nodes.length ? GLLWEG.rampenWeg(G, R0, f) : null;
+    return G && G.nodes.length ? GLLWEG.rampenWeg(G, { x: R0.ax, y: R0.ay, hd: R0.hd }, f) : null;
   }
-  function linieVon(f) {
-    // (a run in the town is tried again later when its shop's data or its roads are not there yet)
+  function linieVon(f, sofort = false) {
+    // (a run is tried again a little later when its data are not there yet: the town's roads, a shop, the village's houses. One line is
+    // built per step of the plan – a town's graph takes up to a tenth of a second)
     const q = S.L[f.id];
     if (q === undefined || (q && q.fail && performance.now() > q.fail)) {
+      if (!sofort && !(S.bau > 0)) return null;
+      S.bau--;
       try {
-        S.L[f.id] = f.stadt ? bauStadt(f) || { fail: performance.now() + 8000 } : bauLinie(f);
+        S.L[f.id] = (f.stadt ? bauStadt(f) : bauLinie(f)) || { fail: performance.now() + 8000 };
       } catch (e) {
-        S.L[f.id] = f.stadt ? { fail: performance.now() + 30000 } : null;
+        S.L[f.id] = { fail: performance.now() + 30000 };
         S.err = 'linie ' + f.id + ': ' + String((e && e.message) || e).slice(0, 160);
       }
     }
     const r = S.L[f.id];
-    return r && r.line ? r : null;
+    return r && r.legs ? r : null;
   }
   // ------------------------------------------------------------------ the vehicles ------------------------------------------------------------------
   function V(id) {
@@ -290,6 +354,7 @@ export const GLLINIEN = (() => {
     v.c = c;
     v.leer = !!L.leer;
     tandem(c);
+    warnblink(c, v.def.art === 'zustell');
     const q = amWeg(v.run.Lf, L.s);
     v.leg = q.i;
     GLAUTO.onLine(c, q.leg.line, q.q, 0);
@@ -298,6 +363,17 @@ export const GLLINIEN = (() => {
     fahrer(v);
     markDirty(true);
     return c;
+  }
+  // its own indicator lamps (only it blinks): the hazard lights of a van at the kerb
+  function warnblink(c, an) {
+    if (!an || c.mats) return;
+    c.mats = [];
+    c.g.traverse(o => {
+      if (o.isMesh && o.name === 'blink') {
+        o.material = o.material.clone();
+        c.mats.push(o.material);
+      }
+    });
   }
   // a tandem at the rear (the type says how far apart): the type's one rear axle hidden, two copies of it in its place
   function tandem(c) {
@@ -318,19 +394,21 @@ export const GLLINIEN = (() => {
     v.F = [];
     if (v.c) {
       if (v.c.tand) for (const g of v.c.tand) if (g.parent) g.parent.remove(g);
+      for (const m of v.c.mats || []) m.dispose();
       GLAUTO.remove(v.c);
       S.n.drop++;
     }
     v.c = null;
     v.lade = 0;
     v.parkt = false;
+    v.zust = null;
   }
   // ---- the people in the cab: a driver (the patrol: two officers), seated where the type says ----
   function sitzOf(c, k) {
     const T = c.T;
     if (T.sitz) return [k ? -T.sitz[0] : T.sitz[0], T.sitz[1], T.sitz[2]];
-    // an estate: the front seats some 1.25 m behind the front axle, their tops half a metre up
-    return [k ? 0.37 : -0.37, T.a - 1.25, 0.52];
+    // an estate: the front seats some 1.25 m behind the front axle, their tops half a metre up; a panel van sits higher, nearer the axle
+    return T.form === 'bus' ? [k ? 0.45 : -0.45, T.a - 0.95, 0.92] : [k ? 0.37 : -0.37, T.a - 1.25, 0.52];
   }
   function fahrer(v) {
     const ids = WHO[v.def.art] || [];
@@ -361,7 +439,7 @@ export const GLLINIEN = (() => {
     const c = v.c;
     if (!c) return;
     for (const F of v.F) {
-      if (!F || F.gone) continue;
+      if (!F || F.gone || F.zust) continue;
       const q = sitzOf(c, F.sitzK);
       _s.set(q[0], q[2], -q[1]);
       c.g.localToWorld(_s);
@@ -397,11 +475,14 @@ export const GLLINIEN = (() => {
     const l = v.run.Lf.legs[v.leg || 0];
     return l.s0 + (l.rev ? l.L - v.c.s : v.c.s);
   };
-  // backwards along its line towards s = 0, at walking pace, braking to stand at the start; the wheels turn back
+  // backwards along its line towards its start, at walking pace, braking to stand with the rear axle at the start (the car's s is its
+  // middle: the rear axle is b behind it); the wheels turn back
+  const sMin = c => -c.T.b;
   function rueck(c, dt, vmax) {
-    const vT = Math.min(vmax, c.s <= 0.12 ? 0 : Math.sqrt(2 * 1.0 * c.s));
+    const rest = c.s - sMin(c),
+      vT = Math.min(vmax, rest <= 0.12 ? 0 : Math.sqrt(2 * 1.0 * rest));
     c.v = Math.max(0, c.v + Math.max(-3 * dt, Math.min(0.5 * dt, vT - c.v)));
-    c.s = Math.max(0, c.s - c.v * dt);
+    c.s = Math.max(sMin(c), c.s - c.v * dt);
     GLAUTO.pose(c);
     c.spin -= (c.v * dt) / c.T.rw;
     if (c.parts.axF) {
@@ -418,10 +499,22 @@ export const GLLINIEN = (() => {
       W = r.f.weg,
       li = Math.min(v.leg || 0, Lf.legs.length - 1),
       leg = Lf.legs[li];
-    if (c.line !== leg.line) GLAUTO.onLine(c, leg.line, leg.rev ? leg.L : 0, 0);
+    if (c.line !== leg.line) GLAUTO.onLine(c, leg.line, leg.rev ? leg.L - c.T.a - 0.4 : 0, 0);
     if (c.tand) for (const g of c.tand) g.rotation.x = -c.spin;
     c.blau = false;
     c.horn = false;
+    // the hazard lights of a van while it stands at a door
+    if (c.mats) {
+      const an = v.hold > 0 && W[v.stopI] && W[v.stopI].zustellen && performance.now() % 680 < 340;
+      for (const m of c.mats) m.emissiveIntensity = an ? 2.6 : 0;
+    }
+    // at a door: the driver carries the box there and comes back
+    if (v.hold > 0 && W[v.stopI] && W[v.stopI].zustellen) {
+      c.v = 0;
+      GLAUTO.pose(c);
+      zustellen(v, dt);
+      return;
+    }
     // waiting at a stop
     if (v.hold > 0) {
       v.hold -= dt;
@@ -439,7 +532,7 @@ export const GLLINIEN = (() => {
       const back = VNETZ.at(leg.line, Math.max(0, c.s + c.T.yr - 2.2), {}),
         frei = hyp(p.x - back.x, p.y - back.y) > 2.8;
       rueck(c, dt, frei ? 1.5 : 0);
-      if (c.s <= 0.15 && c.v < 0.05) {
+      if (c.s <= sMin(c) + 0.15 && c.v < 0.05) {
         if (leg.stop >= 0 && W[leg.stop] && W[leg.stop].halt && !(v.halte || {})[leg.stop]) {
           v.hold = W[leg.stop].warte || 10;
           v.stopI = leg.stop;
@@ -463,8 +556,10 @@ export const GLLINIEN = (() => {
         stopI = i;
         break;
       }
-    const nach = Lf.legs[li + 1];
-    if (nach && nach.rev && stopI < 0) stopS = leg.L - 0.4;
+    // (before reversing it stops with its front axle still on the line: GLAUTO keeps both axles on it)
+    const nach = Lf.legs[li + 1],
+      vorEnde = leg.L - c.T.a - 0.4;
+    if (nach && nach.rev && stopI < 0) stopS = vorEnde;
     // outside the village a lorry may go 60, in it 50; the line's own limits and curves stay
     const inOrt =
       (v.ortT = (v.ortT || 0) - dt) > 0
@@ -475,13 +570,69 @@ export const GLLINIEN = (() => {
     if (stopI >= 0 && c.v < 0.15 && c.s > stopS - 1.6) {
       v.hold = W[stopI].warte || 10;
       v.stopI = stopI;
-    } else if (nach && nach.rev && c.v < 0.12 && c.s > leg.L - 1.4) {
-      // past the lane: now backwards (its line from its end)
+    } else if (nach && nach.rev && c.v < 0.12 && c.s > vorEnde - 1.2) {
+      // past the lane: now backwards (its line ends where this one ends)
       v.leg = li + 1;
-      GLAUTO.onLine(c, nach.line, nach.L, 0);
+      GLAUTO.onLine(c, nach.line, nach.L - (leg.L - c.s), 0);
     } else if (nach && !nach.rev && c.s >= leg.L - 0.7) {
       v.leg = li + 1;
       GLAUTO.onLine(c, nach.line, 0, c.v);
+    }
+  }
+  // a delivery at a door: out of the cab on the driver's side, to the door, in for a few seconds, back, in, on. (Without its driver – the
+  // figure not loaded – it just waits its time.) The stop ends when the driver sits again.
+  function zustellen(v, dt) {
+    const c = v.c,
+      F = v.F[0],
+      T = (v.run.Lf.tueren || [])[v.stopI],
+      fertig = () => {
+        v.hold = 0;
+        v.zust = null;
+        v.halte = Object.assign(v.halte || {}, { [v.stopI]: true });
+      };
+    if (!F || F.gone || !T) {
+      v.hold -= dt;
+      if (v.hold <= 0) fertig();
+      return;
+    }
+    // (out on the side of the door: the van's sliding door on the kerb side, or the driver's door when the house is across the road)
+    const rx = Math.cos(c.hd),
+      ry = -Math.sin(c.hd),
+      sg = (T.D[0] - c.x) * rx + (T.D[1] - c.y) * ry >= 0 ? 1 : -1,
+      Z = v.zust || (v.zust = { st: 'aus', t: 0 }),
+      seite = [c.x + rx * sg * (c.T.hw + 0.7), c.y + ry * sg * (c.T.hw + 0.7)],
+      vor = [T.D[0] + T.n[0] * 0.8, T.D[1] + T.n[1] * 0.8];
+    Z.t += dt;
+    if (Z.st === 'aus' && Z.t > 1.2) {
+      F.zust = true;
+      GLFIG.steh(F, true);
+      GLFIG.place(F, seite[0], seite[1], Math.atan2(vor[0] - seite[0], vor[1] - seite[1]));
+      F.g.visible = true;
+      Z.st = 'hin';
+      Z.t = 0;
+      GLFIG.go(F, [vor[0], vor[1]], 1.4, () => {
+        Z.st = 'drin';
+        Z.t = 0;
+        F.g.visible = false;
+      });
+    } else if (Z.st === 'hin' && Z.t > 40) {
+      // (stuck on the way: in all the same)
+      Z.st = 'drin';
+      Z.t = 0;
+      F.g.visible = false;
+    } else if (Z.st === 'drin' && Z.t > 7) {
+      GLFIG.place(F, vor[0], vor[1], Math.atan2(seite[0] - vor[0], seite[1] - vor[1]));
+      F.g.visible = true;
+      Z.st = 'zurueck';
+      Z.t = 0;
+      GLFIG.go(F, [seite[0], seite[1]], 1.4, () => {
+        Z.st = 'ein';
+      });
+    } else if ((Z.st === 'zurueck' && Z.t > 40) || Z.st === 'ein') {
+      GLFIG.sitz(F, c.x, c.y, c.hd, 0.9);
+      F.zust = false;
+      setz(v);
+      fertig();
     }
   }
   // the timber lorry's load: the model with logs in place of the empty one (the crane loaded it while it stood)
@@ -721,6 +872,7 @@ export const GLLINIEN = (() => {
     // the plan a few times a second: who is on the road, who appears, who goes
     if ((S.planT -= dt) <= 0) {
       S.planT = 0.5;
+      S.bau = 1;
       const day = tagOf(t),
         dayG = tagOf(t - 1440);
       for (const id of Object.keys(GLLDATA.FZ)) {
@@ -869,7 +1021,7 @@ export const GLLINIEN = (() => {
       // a run's line, its stops, how long it takes (numbers only)
       linie: id => {
         const f = GLLDATA.FAHRTEN.find(q => q.id === id);
-        const Lf = f && linieVon(f);
+        const Lf = f && linieVon(f, true);
         if (!Lf) return null;
         const pts = [];
         for (const l of Lf.legs)
@@ -886,7 +1038,7 @@ export const GLLINIEN = (() => {
       // el (game minutes into a run) for its vehicle to stand d metres before waypoint i
       vor: (id, i, d) => {
         const f = GLLDATA.FAHRTEN.find(q => q.id === id);
-        const Lf = f && linieVon(f);
+        const Lf = f && linieVon(f, true);
         if (!Lf) return null;
         const s = Math.max(0, Lf.ws[i] - d);
         let lo = 0,
@@ -901,7 +1053,7 @@ export const GLLINIEN = (() => {
       // where a run's waypoint lies on its line
       wp: (id, i) => {
         const f = GLLDATA.FAHRTEN.find(q => q.id === id);
-        const Lf = f && linieVon(f);
+        const Lf = f && linieVon(f, true);
         if (!Lf) return null;
         const q = amWeg(Lf, Math.max(0, Lf.ws[i] - 0.5));
         return { x: q.x, y: q.y, hd: q.hd, s: Lf.ws[i] };
@@ -919,7 +1071,7 @@ export const GLLINIEN = (() => {
       run: (id, el = 0) => {
         const f = GLLDATA.FAHRTEN.find(q => q.id === id);
         if (!f) return false;
-        const Lf = linieVon(f);
+        const Lf = linieVon(f, true);
         if (!Lf) return false;
         const v = V(f.fz);
         drop(v);
@@ -940,6 +1092,7 @@ export const GLLINIEN = (() => {
           leer: !!v.leer,
           lag: v.run ? Math.round(v.run.lag) : null,
           leg: v.leg || 0,
+          zust: v.zust ? v.zust.st : '',
           x: v.c ? Math.round(v.c.x * 10) / 10 : null,
           y: v.c ? Math.round(v.c.y * 10) / 10 : null,
           hd: v.c ? Math.round(v.c.hd * 1000) / 1000 : null,

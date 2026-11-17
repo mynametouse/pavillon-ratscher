@@ -23,10 +23,21 @@ Stunde je Minute –, so machen es auch die Busse des Spiels).
 |---|---|---|---|
 | Milchsammelwagen der (erfundenen) Molkerei Sonnenwiese | `milchlaster` | täglich 6:10 | kommt von Schleusingen, hält auf dem Hof von Uwe Bachmann am Anger (der Landwirt des Dorfs, „die Kühe warten nicht“; Haus 260 von `world/village.js`), fährt weiter Richtung Hinternah |
 | Holztransporter | `holzlaster` | Mo–Fr 9:20 und 14:05 | fährt leer zum Holzpolter am Waldweg bei der Unteren Klinge, lädt (steht 40 s), fährt beladen weiter Richtung Süden |
-| Streifenwagen | `streife` | täglich 10:30, 15:40, 20:10, 23:30 | Runde: durch Ratscher, am Anger vorbei, über die Staumauer – **nur solange niemand gesucht wird** |
+| Streifenwagen in Ratscher | `streife` | täglich 10:30, 15:40, 20:10, 23:30 | Runde: durch Ratscher, kurzer Halt am Anger, Richtung Talsperre – **nur solange niemand gesucht wird** |
+| Streifenwagen in Schleusingen | `streife` | täglich 11:15, 17:30, 21:45 | Runde: von Südwesten in die Stadt, kurzer Halt am Markt, zur Zentralhaltestelle, nach Norden hinaus |
 | Lkw der Spedition Krähwinkel (zwei) | `koffer` | Mo–Sa 6:40, 13:25, 22:35 | laden am Außenlager (Kapitel 1) und fahren weiter – auch spät in der Nacht; `GLLINIEN.folgen(id)` gibt die Tour (Kapitel 2, Mission 4) |
+| Lieferverkehr an den Laderampen in Schleusingen | `koffer` (zwei mit Kühlaggregat) | Mo–Sa: REWE 5:15 und 9:30, EDEKA 6:05 und 11:20, Mega Center 7:40 und 10:15, OBI 7:00 und 13:10 | kommt vom Stadtrand, fährt an der Hofeinfahrt vorbei und **setzt rückwärts an die Laderampe** (die Türen `k: 'liefer'` aus `laeden.json`; ein Feld `anlieferung` von `laeden-leben` hätte Vorrang), steht dort bis zum Ende der Lieferzeit, fährt vorwärts hinaus |
+| Lieferwagen an Ladentüren der Altstadt | `kasten` | Mo–Sa: Bäckerei 5:35, Apotheke 9:10 und 14:30; Mo–Fr Gasthaus 10:20 (Getränke) | hält am Bordstein vor der Tür (Geschäft nach dem OSM-Namen in `welt/schleusingen.js`), **Warnblinker an**, die Fahrerin trägt die Kiste zur Tür, ist ein paar Sekunden drin, kommt zurück, fährt weiter |
+| Paketwagen in Ratscher | `kasten` | Mo–Sa 11:05 | zwei Häuser (Gerhard, Katrin): am Bordstein halten, Warnblinker, die Zustellerin bringt das Paket zur Haustür und kommt zurück |
 | Schüler am Schulbus | Figuren | Schultage vor 7:02 und 7:40 | warten vor dem Wartehäuschen am Anger auf die **echten** Schulbusse 268 und 214 und steigen ein, wenn der Bus mit offenen Türen hält |
 
+- **Wege mit Rückwärtsfahrt** (`GLLWEG` in `gl_linien_data.js`, rein, mit Unit-Tests auf dem echten Straßennetz des Quadrats und der
+  Stadt): Ein Lauf besteht aus Abschnitten, vorwärts oder rückwärts. Ein Halt in einer Sackgasse (eine Hofeinfahrt, die eigene Zufahrt
+  einer Laderampe) wird angefahren wie im Leben – an der Einfahrt vorbei, rückwärts hinein, vorwärts hinaus; rückwärts geht es im
+  Schritttempo, und wer hinter dem Lkw steht, hält ihn auf. Kein Weg verlässt einen Knoten über die Kante, auf der er kam (kein Wenden auf
+  der Stelle); geprüft für jeden Lauf.
+- **Nie vor den Augen:** Läge der Platz eines Fahrzeugs nach seinen Zahlen im Blick und näher als 190 m, erscheint es weiter hinten auf
+  seinem Weg, wo niemand hinsieht, und kommt von dort (es ist dann etwas verspätet).
 - **Fahrer in den Kabinen:** eine Figur des Modus sitzt am Steuer (die Streife hat zwei Beamte); sie sehen, was man tut, und melden es
   wie jeder Zeuge – die Beamten der Streife zählen als Polizei, also sofort. Ab dem ersten Stern weicht die Streife: sie fährt weiter und
   verschwindet außer Sicht, die Fahndung schickt ihre eigenen Wagen (`gl_fahndung.js`).
@@ -84,14 +95,16 @@ oder zurückgelassen):
   die neuen Ereignisse im Plan. Im Unit-Test der Welt (`grenzland_welt.test.mjs`) stehen die zwei neuen Tagesereignisse in der Liste
   „beide waren eben da“.
 - `viz3/test/grenzland_strasse.py <port> <teile>`: `linien` (jede Fahrt hat eine Linie ohne Kehre), `holz`, `milch`, `kraeh`, `streife`,
-  `schule`, `begegnung`; je eine Zeile in `viz3/extra/grenzland-strasse/tests.txt`. Bilder in `out/grenzland_strasse/`.
+  `schule`, `paket`, `liefer` (Schleusingen: REWE-Rampe, Apotheke), `begegnung`; die Zeilen in `viz3/extra/grenzland-strasse/tests.txt`.
+  Bilder in `out/grenzland_strasse/`.
 - Formen ohne Browser: `node viz3/extra/grenzland-auto/werkzeug/bild.mjs koffer out/karosse/koffer.png --opt '{"text":"Spedition Krähwinkel","band":"#7a1f24"}'`.
 
 ## Offen
 
 - Die Rast an der A 73 (siehe oben).
-- Lieferverkehr an den Laderampen der Läden in Schleusingen (EDEKA, Lidl, REWE, OBI, Mega Center – die Türen `k: 'liefer'` in
-  `laeden.json`) – kommt als Nächstes.
+- Lidl hat in den Straßendaten keine Zufahrt zu seiner Rampe – dort kommt (noch) kein Lkw.
+- Die Ankunft eines Lieferwagens an einer Ladentür der Altstadt geht über die Straßendaten der Region; ob dort ein Halteverbot wäre, weiß
+  das Spiel nicht – die Wagen halten am Bordstein wie überall.
 - Der Verkehr des Spiels (`VAUTO`, `VKSTROM`) weicht den Fahrzeugen des Modus nicht aus (siehe „Für den Lead“).
 
 ## Für den Lead

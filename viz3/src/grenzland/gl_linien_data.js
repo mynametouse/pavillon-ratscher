@@ -159,6 +159,91 @@ export const GLLDATA = (() => {
       was: 'bringt am Mittag Ware ins Außenlager',
     },
   ];
+  // ---- the patrol in Schleusingen: in from the south-west, past the Markt (a short stop), the Zentralhaltestelle, out to the north ----
+  const MARKT = [-1084.7, 1241.9];
+  FZ.streife2 = {
+    art: 'streife',
+    typ: 'streife',
+    o: { col: '#c9cdd2', band: '#1f4fa8', band2: '#cfe23c', bar: 'balken' },
+    name: 'Streifenwagen in Schleusingen',
+  };
+  FAHRTEN.push({
+    id: 'streife-stadt',
+    fz: 'streife2',
+    tage: 'taeglich',
+    ab: [11 * 60 + 15, 17 * 60 + 30, 21 * 60 + 45],
+    tempo: 90,
+    streife: true,
+    stadt: true,
+    zentrum: MARKT,
+    weg: [
+      { stadtRand: [-1700, 800] },
+      { p: MARKT, halt: 'Markt', warte: 8, min: 3 },
+      { p: [-1340, 1243] },
+      { stadtRand: [-800, 2000] },
+    ],
+    von: 'Polizeiinspektion',
+    nach: 'Polizeiinspektion',
+    was: 'fährt ihre Runde durch Schleusingen: am Markt vorbei, zur Zentralhaltestelle',
+  });
+  // ---- vans that deliver at a door: they stop at the kerb in front of it with the hazard lights on, the driver carries a box to the door
+  //      and comes back. In Ratscher a parcel van (Monday to Saturday before noon: the houses of Gerhard and Katrin, 247 and 198 of
+  //      world/village.js); in Schleusingen the old town's shops by the kind their name says (welt/schleusingen.js, OSM names): the bakery
+  //      early, the pharmacy's wholesaler twice a day, drinks for an inn. Silver or white panel vans, no firm's name ----
+  const ZUSTELL = [
+    {
+      id: 'paket',
+      fz: 'paket',
+      ab: [11 * 60 + 5],
+      weg: [{ rand: [-1030, 1034] }, { haus: 247 }, { haus: 198 }, { rand: [1366, -716] }],
+    },
+    { id: 'z-baeck', fz: 'zbaeck', ab: [5 * 60 + 35], laden: 'Bäck|Backhaus|Bäcker', name: 'Bäckerei' },
+    { id: 'z-apo', fz: 'zapo', ab: [9 * 60 + 10, 14 * 60 + 30], laden: 'Apotheke', name: 'Apotheke' },
+    {
+      id: 'z-getr',
+      fz: 'zgetr',
+      ab: [10 * 60 + 20],
+      laden: 'Gaststätte|Gasthaus|Wirtshaus|Kneipe|Bierstube|Brauhaus',
+      name: 'Gasthaus',
+      tage: 'mo-fr',
+    },
+  ];
+  for (const z of ZUSTELL) {
+    FZ[z.fz] = {
+      art: 'zustell',
+      typ: 'kasten',
+      o: { col: z.fz === 'paket' ? '#b9bdc1' : '#ececea' },
+      name: z.fz === 'paket' ? 'Paketwagen' : 'Lieferwagen',
+    };
+    const halt = { halt: z.laden ? z.name : 'Haustür', warte: 30, min: 5, zustellen: true };
+    FAHRTEN.push(
+      z.laden
+        ? {
+            id: z.id,
+            fz: z.fz,
+            tage: z.tage || 'werktag',
+            ab: z.ab,
+            tempo: 70,
+            stadt: true,
+            zentrum: MARKT,
+            weg: [{ stadtRand: [-1700, 800] }, Object.assign({ laden: z.laden }, halt), { stadtRand: [-800, 2000] }],
+            von: 'Großhandel',
+            nach: 'Großhandel',
+            was: 'liefert an die ' + z.name + ' in der Altstadt',
+          }
+        : {
+            id: z.id,
+            fz: z.fz,
+            tage: 'werktag',
+            ab: z.ab,
+            tempo: 75,
+            weg: z.weg.map(w => (w.haus ? Object.assign({}, w, halt) : w)),
+            von: 'Paketzentrum',
+            nach: 'Paketzentrum',
+            was: 'bringt Pakete in Ratscher',
+          }
+    );
+  }
   // ---- deliveries in Schleusingen: a lorry at a shop's loading door (laeden.json, doors with k 'liefer'; the agent laeden-leben may
   //      add a field `anlieferung` to a shop), Monday to Saturday (lorries do not drive on Sundays in Germany), before the shop opens and
   //      in the morning. It comes in from the town's edge, drives past the yard's lane and reverses to the door, stands there from
@@ -353,6 +438,7 @@ export const GLLDATA = (() => {
     FAHRTEN,
     PARKEN,
     LIEFER,
+    ZUSTELL,
     SCHULE,
     tag,
     faehrt,
@@ -714,6 +800,59 @@ export const GLLWEG = (() => {
     const legs = beine(G, W, true, null);
     return legs ? Object.assign(fertigLinie(f, legs, W, true), { stadt: true, J, ex }) : null;
   }
-  return { VMAX, VLKW, cost, nearestEdge, teil, beine, wegpunkte, kehren, fertigLinie, amWeg, stadtNetz, rampenWeg };
+  // a run in the town over its waypoints: { stadtRand: [x, y] } the end of a main or county road (else any road end) nearest to that
+  // point, { p } a place to pass, with { halt } a stop on the road there
+  function stadtWeg(G, f, lkw = false) {
+    const ends = G.nodes.map((n, i) => i).filter(i => G.nodes[i].exit),
+      big = ends.filter(i => G.nodes[i].edges.some(e => e.kind <= 2)),
+      nah = (L, q) =>
+        L.reduce(
+          (b, i) =>
+            b < 0 || hyp(G.nodes[i].x - q[0], G.nodes[i].y - q[1]) < hyp(G.nodes[b].x - q[0], G.nodes[b].y - q[1])
+              ? i
+              : b,
+          -1
+        );
+    const W = [];
+    for (const w of f.weg) {
+      if (w.stadtRand) {
+        const n = nah(big.length ? big : ends, w.stadtRand);
+        if (n < 0) return null;
+        W.push({ q: [G.nodes[n].x, G.nodes[n].y], n });
+        continue;
+      }
+      if (w.halt) {
+        const E = nearestEdge(G, w.p[0], w.p[1]);
+        if (E && E.d < 60) {
+          W.push({ q: [E.x, E.y], e: E.e });
+          continue;
+        }
+      }
+      W.push({
+        q: w.p,
+        n: nah(
+          G.nodes.map((n, i) => i),
+          w.p
+        ),
+      });
+    }
+    const legs = beine(G, W, lkw, null);
+    return legs ? Object.assign(fertigLinie(f, legs, W, lkw), { stadt: true }) : null;
+  }
+  return {
+    VMAX,
+    VLKW,
+    cost,
+    nearestEdge,
+    teil,
+    beine,
+    wegpunkte,
+    kehren,
+    fertigLinie,
+    amWeg,
+    stadtNetz,
+    rampenWeg,
+    stadtWeg,
+  };
 })();
 if (typeof window !== 'undefined') window.GLLDATA = GLLDATA;

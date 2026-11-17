@@ -7,7 +7,9 @@
 #   streife     the patrol with two officers on its round past the Anger; a star – it steps aside
 #   schule      on a school day before 7:02 three pupils wait at the shelter by the Anger (they get on the real bus when it stands there)
 #   liefer      Schleusingen: the refrigerated lorry comes to REWE's loading door before six – past the yard's lane, backwards to the door,
-#               stands there with its back to it, and leaves forward
+#               stands there with its back to it, and leaves forward; the pharmacy's van at the kerb of the old town, hazard lights on,
+#               the driver carries the box to the door and back
+#   paket       Ratscher: the parcel van stops at a house, hazard lights on, the courier walks to the door and back, it drives on
 #   (every traffic section ends with „Beenden“: no vehicle, driver or pile left)
 #   begegnung   the new encounters on the way: a hitchhiker (taken along on the moped to his place, five euros), a breakdown (hazard
 #               lights, bonnet up, the triangle behind; help that fits – the car drives off), the hunter on his high seat at dusk; each
@@ -47,24 +49,55 @@ with lib.browser() as b:
       info(id) { const v = GLLINIEN.debug.info().find(q => q.id === id); return v || null },
       calls() { const R = GAME.R, I = [0, 0], rbd = R.renderBufferDirect; R.renderBufferDirect = function (camera, scene, geometry, material, object, group) { if (scene) I[0]++; return rbd.call(this, camera, scene, geometry, material, object, group) }; try { GAME.film(0, true) } finally { R.renderBufferDirect = rbd } return I[0] },
     }; 0""")
+    def zustellung(rid, fz, name, az_off):
+        """a van's delivery at a door: it comes, stops at the kerb with its hazard lights on, the courier walks to the door and back"""
+        wp = J(f"GLLINIEN.debug.wp('{rid}', 1)")
+        if not wp:
+            ck(f'{name}: a way to the door', False, str(J(f"GLLINIEN.debug.linie('{rid}')")))
+            return
+        X(f"TS.look({wp['x']}, {wp['y']}, {wp['hd'] * 57.3 + az_off}, 18, 1.8, -6)")
+        steps(0.5)
+        el = E(f"GLLINIEN.debug.vor('{rid}', 1, 170)")
+        X(f"GLLINIEN.debug.run('{rid}', {el})")
+        t = 0
+        while t < 90:
+            steps(1); t += 1
+            i1 = J(f"TS.info('{fz}')")
+            if i1 and i1['zust'] in ('hin', 'drin'): break
+        i1 = J(f"TS.info('{fz}')")
+        bl = J(f"(() => {{ const c = TS.car('{fz}'); return c && c.mats ? c.mats.map(m => m.emissiveIntensity) : [] }})()")
+        ck(f'{name}: stops at the kerb in front of the door, the courier walks over', i1 and i1['hold'] > 0 and i1['zust'] in ('hin', 'drin'), f'{t} s: {i1}')
+        steps(0.5)
+        X(f"const c = TS.car('{fz}'); if (c) TS.look(c.x, c.y, c.hd * 57.3 + 130, 13, 1.8, -7)")
+        for _ in range(4): steps(0.3); time.sleep(0.3)
+        pic('08_' + rid)
+        t, blink = 0, False
+        while t < 60:
+            steps(0.5); t += 0.5
+            b2 = J(f"(() => {{ const c = TS.car('{fz}'); return c && c.mats ? Math.max(0, ...c.mats.map(m => m.emissiveIntensity)) : 0 }})()")
+            if b2 > 1: blink = True
+            i2 = J(f"TS.info('{fz}')")
+            if i2 and i2['hold'] <= 0 and i2['v'] > 0.5: break
+        i2 = J(f"TS.info('{fz}')")
+        ck(f'{name}: hazard lights while it stands; the courier back in, it drives on', blink and i2 and i2['v'] > 0.5 and i2['figs'] == 1, f'{t} s: {i2}')
     # ------------------------------------------------------------------ linien ------------------------------------------------------------------
-    VERKEHR = [k for k in ('linien', 'holz', 'milch', 'kraeh', 'streife', 'schule', 'liefer') if want(k)]
+    VERKEHR = [k for k in ('linien', 'holz', 'milch', 'kraeh', 'streife', 'schule', 'liefer', 'paket') if want(k)]
     if VERKEHR:
         X("GLLINIEN.aus = false; GLFAHNDUNG.clear()")
         steps(0.5)
     if want('linien'):
         L = {}
-        for rid in ['milch', 'holz', 'streife', 'k1-frueh', 'k1-nacht', 'k2-tag']:
+        for rid in ['milch', 'holz', 'streife', 'k1-frueh', 'k1-nacht', 'k2-tag', 'paket']:
             L[rid] = J(f"GLLINIEN.debug.linie('{rid}')")
             li = L[rid]
-            ck(f'linie {rid}: a way on the roads', li is not None and li['L'] > 300, str(li and {k: li[k] for k in ('L', 'ws', 'dauer', 'kehre')}))
+            ck(f'linie {rid}: a way on the roads', li is not None and li['L'] > 300, str(li and {k: li[k] for k in ('L', 'ws', 'dauer', 'kehre', 'legs')}) + ' ' + str(E("GLLINIEN.err")))
             if li: ck(f'linie {rid}: never turns back on itself', li['kehre'] == 0, str(li['kehre']))
         open(os.path.join(OUT, 'linien.json'), 'w').write(json.dumps(L))
     if want('holz'):
         # ---- the timber lorry: Friday 14:05 run, 230 m before the pile, the player by the pile ----
         X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 14 * 60 + 30; if (DN && DN.active) DN.update(true)")
         wp = J("GLLINIEN.debug.wp('holz', 1)")
-        print('pile waypoint', wp, flush=True)
+        ck('holz: a way to the pile', wp is not None, str(J("GLLINIEN.debug.linie('holz')")) + ' ' + str(E("GLLINIEN.err")))
         if wp:
             X(f"TS.look({wp['x']}, {wp['y']}, {wp['hd'] * 57.3 + 160}, 26, 2.2, -5)")
             steps(1)
@@ -106,7 +139,7 @@ with lib.browser() as b:
         # ---- the milk lorry at Uwe's farm, Friday 6:10 ----
         X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 6 * 60 + 20; if (DN && DN.active) DN.update(true)")
         wp = J("GLLINIEN.debug.wp('milch', 1)")
-        print('farm waypoint', wp, flush=True)
+        ck('milch: a way to the farm', wp is not None, str(J("GLLINIEN.debug.linie('milch')")) + ' ' + str(E("GLLINIEN.err")))
         if wp:
             X(f"TS.look({wp['x']}, {wp['y']}, {wp['hd'] * 57.3 - 120}, 24, 1.8, -5)")
             steps(1)
@@ -127,7 +160,7 @@ with lib.browser() as b:
         # ---- the haulier's lorry at the yard, Friday 13:25 ----
         X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 13 * 60 + 40; if (DN && DN.active) DN.update(true)")
         wp = J("GLLINIEN.debug.wp('k2-tag', 1)")
-        print('yard waypoint', wp, flush=True)
+        ck('k2: a way to the yard', wp is not None, str(J("GLLINIEN.debug.linie('k2-tag')")) + ' ' + str(E("GLLINIEN.err")))
         if wp:
             X(f"TS.look({wp['x']}, {wp['y']}, {wp['hd'] * 57.3 + 150}, 30, 2.0, -5)")
             steps(1)
@@ -151,6 +184,7 @@ with lib.browser() as b:
         # ---- the patrol at the Anger, Friday 15:40: two officers; a deed – it steps aside ----
         X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 15 * 60 + 45; if (DN && DN.active) DN.update(true)")
         wp = J("GLLINIEN.debug.wp('streife', 1)")
+        ck('streife: a way past the Anger', wp is not None, str(J("GLLINIEN.debug.linie('streife')")) + ' ' + str(E("GLLINIEN.err")))
         if wp:
             X(f"TS.look({wp['x']}, {wp['y']}, {wp['hd'] * 57.3 - 140}, 22, 1.7, -4)")
             steps(1)
@@ -232,6 +266,15 @@ with lib.browser() as b:
                 if i2 and i2['c'] and i2['leg'] == 2 and i2['v'] > 1: break
             i2 = J("TS.info('l-rewe-1')")
             ck('liefer: then it drives off forward', i2 and i2['leg'] == 2 and i2['v'] > 1, f'{t} s: {i2}')
+        # ---- the pharmacy's van in the old town, Friday 9:15 ----
+        X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 9 * 60 + 15; if (DN && DN.active) DN.update(true); GAME.go('schleusingen')")
+        steps(1)
+        zustellung('z-apo', 'zapo', 'apotheke', 120)
+    if want('paket'):
+        # ---- the parcel van in Ratscher, Friday 11:10 ----
+        X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 11 * 60 + 10; if (DN && DN.active) DN.update(true)")
+        steps(1)
+        zustellung('paket', 'paket', 'paket', 120)
     if VERKEHR:
         # ---- „Beenden“ ----
         X("GRENZLAND.stop()")
