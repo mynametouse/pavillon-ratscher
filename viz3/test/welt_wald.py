@@ -365,7 +365,10 @@ if BROWSER:
                 nums[name + '_oben'] = cv
                 ck(f'{name}, valley view from above: ≤ 10 draw calls and ≤ 150 000 triangles', cv['calls'] <= 10 and cv['tris'] <= 150000,
                    f"{cv['calls']} calls, {cv['tris']} triangles")
-            # a trunk stops the walker: a trunk of the near trees (WWALD.trunkList), a point just inside it is pushed out
+            # a trunk stops the walker: a trunk of the near trees (WWALD.trunkList), a point just inside it is pushed out (back at the first
+            # place its cells come again – they were freed on the way)
+            eye(*SPOTS['places'][next(iter(SPOTS['places']))])
+            settle(220)
             eye(*SPOTS['places'][next(iter(SPOTS['places']))])
             t = J("""(() => { const L = WWALD.trunkList(50); for (const [x, y, r] of L) { const p = [x + r * 0.5, y], m = KERN.pushOut(p, 0.3);
                 return { n: L.length, x, y, r, m: !!m, p, d: Math.hypot(p[0] - x, p[1] - y) }; } return { n: 0 }; })()""")
