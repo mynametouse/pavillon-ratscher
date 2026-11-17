@@ -177,7 +177,21 @@ export const FASSADE = (() => {
         const idx = FAUDIT.index(R);
         for (const r of R)
           r.keepDoor = r.kind === 'haus' ? 'Haustür, durch die man ins Haus geht (Häuser von innen)' : undefined;
-        out = FAUDIT.audit(R, { idx, ort });
+        // the yards: Ratscher's farmyards open to the street (the gate is a gap, not a passage) – any enclosed space counts
+        if (!S.yardsR) S.yardsR = FAUDIT.hoefe(R, { cell: 0.5, close: 1, min: 12 });
+        const yards = S.yardsR.map(y => ({
+          cx: y.cx,
+          cy: y.cy,
+          area: y.area,
+          reach: false,
+          rest:
+            y.area < 25
+              ? 'Zwickel zwischen den Gebäuden – kein Zugang nötig'
+              : y.area < 80
+                ? 'kleiner Hof – nur durch die Gebäude daneben'
+                : undefined,
+        }));
+        out = FAUDIT.audit(R, { idx, ort, yards });
         S.nRec = R.length;
       } else if (ort === 'schleusingen') {
         const F = SCHL.fassade,

@@ -722,10 +722,11 @@ export const FAUDIT = (() => {
   }
   // ---- the audit: what is still implausible ----
   // ctx: { idx (index over all footprints of the place), yards (hoefe() + reach), passes ([{ x, y, open, text }]), minRun (m) }
+  // (a hall or a barn with an eave under 2.6 m is a shelter for machines or a shed: open or blank, no windows needed)
   const NEEDS_WIN = r =>
     r.kind === 'haus' ||
-    (r.kind === 'halle' && r.area >= 150) ||
-    (r.kind === 'scheune' && r.area >= 250) ||
+    (r.kind === 'halle' && r.area >= 150 && !(r.eave < 2.6)) ||
+    (r.kind === 'scheune' && r.area >= 250 && !(r.eave < 2.6)) ||
     r.kind === 'schule';
   function audit(recs, ctx = {}) {
     const idx = ctx.idx || index(recs),
