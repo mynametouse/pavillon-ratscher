@@ -245,6 +245,7 @@ export const BEWUCHS = (() => {
     doy: +(+S.doy).toFixed(2),
     mown: S.mowN,
     err: S.err,
+    arten: S.arten || 0,
     karte: BWKARTE.state(),
     halm: BWHALM.stats(),
     blumen: BWBLUME.stats(),
