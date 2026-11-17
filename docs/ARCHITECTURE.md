@@ -255,7 +255,8 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `time/` – Uhr, Sterndaten, Tag und Nacht
 - `bewuchs/` – Bewuchs in 3D (feat/bewuchs, `docs/features/bewuchs.md`): Halme in drei Ringen um die Kamera (`bw_halm`, `BWHALM`), Wildblumen auf
   denselben Kacheln (`bw_blume`, `BWBLUME`), das Jahr je Flächenart (`bw_phaeno`, `BWPHAENO`, rein), was wo wächst (`bw_karte`, `BWKARTE`),
-  die Arten des Hilfs-Agenten `bewuchs-pflanzen` (`bw_arten`, `BWARTEN`, rein), Stufe, Tag und Mähen (`bewuchs`, `BEWUCHS`)
+  die Arten des Hilfs-Agenten `bewuchs-pflanzen` (`bw_arten`, `BWARTEN`, rein), blühende Wiesen in der Ferne im Bodenshader (`bw_ferne`,
+  `BWFERNE`, Haken `bwFar` in `world/roads.js`), Stufe, Tag und Mähen (`bewuchs`, `BEWUCHS`)
 - `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster; Holz vom Stamm zum Brett (`holz`, `holz_saw`, `holz_dry`, V16d);
   Rückewinde und Kran (`winde`, `kran`)
 - `boot/` – Start
