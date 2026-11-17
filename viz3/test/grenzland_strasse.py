@@ -6,6 +6,8 @@
 #   kraeh       the haulier's lorry at the yard's gate; GLLINIEN.folgen gives its tour
 #   streife     the patrol with two officers on its round past the Anger; a star – it steps aside
 #   schule      on a school day before 7:02 three pupils wait at the shelter by the Anger (they get on the real bus when it stands there)
+#   liefer      Schleusingen: the refrigerated lorry comes to REWE's loading door before six – past the yard's lane, backwards to the door,
+#               stands there with its back to it, and leaves forward
 #   (every traffic section ends with „Beenden“: no vehicle, driver or pile left)
 #   begegnung   the new encounters on the way: a hitchhiker (taken along on the moped to his place, five euros), a breakdown (hazard
 #               lights, bonnet up, the triangle behind; help that fits – the car drives off), the hunter on his high seat at dusk; each
@@ -46,7 +48,7 @@ with lib.browser() as b:
       calls() { const R = GAME.R, I = [0, 0], rbd = R.renderBufferDirect; R.renderBufferDirect = function (camera, scene, geometry, material, object, group) { if (scene) I[0]++; return rbd.call(this, camera, scene, geometry, material, object, group) }; try { GAME.film(0, true) } finally { R.renderBufferDirect = rbd } return I[0] },
     }; 0""")
     # ------------------------------------------------------------------ linien ------------------------------------------------------------------
-    VERKEHR = [k for k in ('linien', 'holz', 'milch', 'kraeh', 'streife', 'schule') if want(k)]
+    VERKEHR = [k for k in ('linien', 'holz', 'milch', 'kraeh', 'streife', 'schule', 'liefer') if want(k)]
     if VERKEHR:
         X("GLLINIEN.aus = false; GLFAHNDUNG.clear()")
         steps(0.5)
@@ -84,8 +86,10 @@ with lib.browser() as b:
             X(f"const c = TS.car('holz'); if (c) TS.look(c.x, c.y, c.hd * 57.3 + 130, 16, 2.0, -6)")
             for _ in range(5): steps(0.3); time.sleep(0.3)
             pic('01_holz_am_polter')
-            # its draw calls
+            # its draw calls: the same picture with the lorry and its driver hidden
             n1 = E("TS.calls()")
+            n0 = E("(() => { const c = TS.car('holz'), F = GLLINIEN.debug.S.V.holz.F; c.g.visible = false; for (const f of F) f.g.visible = false; const n = TS.calls(); c.g.visible = true; for (const f of F) f.g.visible = true; return n })()")
+            ck('holz: draw calls of the lorry with its driver within budget', n1 - n0 <= 40, f'{n1} with, {n0} without')
             for _ in range(60):
                 steps(1)
                 i2 = J("TS.info('holz')")
@@ -96,11 +100,6 @@ with lib.browser() as b:
             X(f"const c = TS.car('holz'); if (c) TS.look(c.x, c.y, c.hd * 57.3 + 200, 18, 2.2, -6)")
             for _ in range(5): steps(0.3); time.sleep(0.3)
             pic('02_holz_beladen')
-            X("GLLINIEN.aus = true")
-            steps(0.6)
-            n0 = E("TS.calls()")
-            X("GLLINIEN.aus = false")
-            ck('holz: draw calls of a lorry with its driver and the pile within budget', n1 - n0 <= 45, f'{n1} with, {n0} without')
             X("GLLINIEN.debug.S.V.holz && (GLLINIEN.debug.S.V.holz.run = null)")
             steps(0.6)
     if want('milch'):
@@ -190,6 +189,49 @@ with lib.browser() as b:
         X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 9 * 60; GAME.view(0, 0, KERN.ground(0, 0) + 1.7, 0, -4)")
         steps(1.5)
         ck('schule: after the departure they are gone', len(J("GLLINIEN.debug.kinder()")) == 0, str(J("GLLINIEN.debug.kinder()")))
+    if want('liefer'):
+        # ---- Schleusingen, Friday 5:02: REWE's yard; the town and its shops load first ----
+        X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 5 * 60 + 2; if (DN && DN.active) DN.update(true); GAME.go('schleusingen')")
+        okz = None
+        for i in range(240):
+            steps(0.2)
+            if E("SCHL.state === 'ready' && !!(window.LAEDEN && LAEDEN.data) && !!(window.FAHRT && FAHRT.data && FAHRT.data.ways.length)"): okz = i; break
+            time.sleep(1)
+        X("GAME.view(-1700, 950, KERN.ground(-1700, 950) + 1.7, 225, -5)")
+        for i in range(120):
+            steps(0.2)
+            if E("!!GLLINIEN.debug.rampe('rewe', 0) && !!GLLINIEN.debug.linie('l-rewe-1')"): break
+            time.sleep(1)
+        R = J("GLLINIEN.debug.rampe('rewe', 0)")
+        li = J("GLLINIEN.debug.linie('l-rewe-1')")
+        ck('liefer: the town, REWE\'s loading door and the lorry\'s way (in, backwards, out)', okz is not None and R and li and [l[0] for l in li['legs']] == ['V', 'R', 'V'] and li['kehre'] == 0, str((okz, R, li and {k: li[k] for k in ('L', 'ws', 'legs', 'kehre')})))
+        if R and li:
+            # the player at the yard's edge looking at the door; the lorry 180 m before the door on its way in
+            X(f"TS.look({R['x']}, {R['y']}, {R['hd'] * 57.3 + 215}, 30, 1.8, -6)")
+            steps(0.5)
+            el = E("GLLINIEN.debug.vor('l-rewe-1', 1, 180)")
+            X(f"GLLINIEN.debug.run('l-rewe-1', {el})")
+            t, seen_rev = 0, False
+            while t < 150:
+                steps(1); t += 1
+                i1 = J("TS.info('l-rewe-1')")
+                if i1 and i1['c'] and i1['leg'] == 1: seen_rev = True
+                if i1 and i1['hold'] > 0: break
+            i1 = J("TS.info('l-rewe-1')")
+            off = ((i1['x'] - R['x']) ** 2 + (i1['y'] - R['y']) ** 2) ** 0.5 if i1 and i1['x'] is not None else 99
+            ck('liefer: it reverses into the yard and stands at the door, its back to it', i1 and i1['hold'] > 0 and seen_rev and off < 1.6, f'{t} s: {i1}, {off:.1f} m off')
+            X(f"TS.look({R['x']}, {R['y']}, {R['hd'] * 57.3 + 200}, 17, 2.0, -8)")
+            for _ in range(5): steps(0.3); time.sleep(0.3)
+            pic('07_liefer_rewe')
+            # unloaded: it leaves forward
+            X("GLLINIEN.debug.S.V['l-rewe-1'].hold = 0.05")
+            t = 0
+            while t < 30:
+                steps(1); t += 1
+                i2 = J("TS.info('l-rewe-1')")
+                if i2 and i2['c'] and i2['leg'] == 2 and i2['v'] > 1: break
+            i2 = J("TS.info('l-rewe-1')")
+            ck('liefer: then it drives off forward', i2 and i2['leg'] == 2 and i2['v'] > 1, f'{t} s: {i2}')
     if VERKEHR:
         # ---- „Beenden“ ----
         X("GRENZLAND.stop()")
@@ -210,7 +252,8 @@ with lib.browser() as b:
         X("if (window.GLFESTE && GLFESTE._test) delete window.GLFESTE; GLEREIGNIS.stop(); GLEREIGNIS.plan = GLLOGIK.planNeu()")
         # on the long straight road east of the Anger, the moped under the player
         X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 15 * 60; if (DN && DN.active) DN.update(true)")
-        X("GAME.view(300, -150, KERN.ground(300, -150) + 1.62, 120, -4); GLAUTO.mopedAt(300, -150, 120 * Math.PI / 180); GLSTATE.tank = 4")
+        # (the other of the two waits at home: one seat behind the rider for the hitchhiker)
+        X("GRENZLAND.folgen(false); GAME.view(300, -150, KERN.ground(300, -150) + 1.62, 120, -4); GLAUTO.mopedAt(300, -150, 120 * Math.PI / 180); GLSTATE.tank = 4")
         steps(0.5)
         E("VEH.enter('gl-moped')")
         steps(0.5)
@@ -221,9 +264,14 @@ with lib.browser() as b:
         bl = J("(GLKARTE.blips ? GLKARTE.blips() : []).filter(b => b.k === 'ereignis').map(b => b.name)")
         ck('anhalter: stands at the roadside with his sign, a point on the radar', ok and info and info['name'] == 'anhalter' and info['figs'] == 1 and info['meshes'] >= 1 and 'Anhalter' in bl, str((ok, info, bl, E("GLEREIGNIS.err"))))
         if ok and info and info['figs'] == 1:
-            X("const E = GLEREIGNIS.E, F = E.F; TS.look(F.x, F.y, Math.atan2(F.x - KERN.where()[0], F.y - KERN.where()[1]) * 57.3, 9, 1.8, -6)")
-            steps(0.3)
+            # (the picture from the free view – on the moped the camera is the rider's)
+            X("const E = GLEREIGNIS.E, F = E.F; VEH.cur && VEH.exit(); TS.look(F.x, F.y, E.hd * 57.3 + 200, 8, 1.7, -6)")
+            for _ in range(3): steps(0.3); time.sleep(0.3)
             pic('10_anhalter')
+            X("const E = GLEREIGNIS.E, F = E.F; GLAUTO.mopedAt(F.x - Math.sin(E.hd) * 12, F.y - Math.cos(E.hd) * 12, E.hd); GAME.view(F.x - Math.sin(E.hd) * 12, F.y - Math.cos(E.hd) * 12, KERN.ground(F.x, F.y) + 1.62, E.hd * 57.3, -4)")
+            steps(0.4)
+            E("VEH.enter('gl-moped')")
+            steps(0.4)
             # ride up beside him, stop: the action to take him along
             X("const F = GLEREIGNIS.E.F, v = VEH.cur; v.st.x = F.x - Math.sin(GLEREIGNIS.E.hd) * 4; v.st.y = F.y - Math.cos(GLEREIGNIS.E.hd) * 4; v.st.u = 0; v.st.v = 0")
             steps(0.6)
@@ -231,13 +279,13 @@ with lib.browser() as b:
             ck('anhalter: stopped beside him on the moped – „… mitnehmen“', bool(lab) and 'mitnehmen' in lab, str(lab))
             X("const a = KERN.acts().find(a => a.id === 'gl-ereignis-mit'); if (a) a.run()")
             steps(0.5)
-            st = J("({ st: GLEREIGNIS.E && GLEREIGNIS.E.mit.st, ziel: GLEREIGNIS.E && GLEREIGNIS.E.mit.ziel.pos(), wp: (GLKARTE.blips ? GLKARTE.blips() : []).filter(b => b.k === 'punkt').length })")
+            st = J("({ st: (GLEREIGNIS.E && GLEREIGNIS.E.mit.st) || '', wp: (GLKARTE.blips ? GLKARTE.blips() : []).filter(b => b.k === 'punkt').length })")
             ck('anhalter: he gets on, his place is a waypoint on the radar', st['st'] == 'faehrt' and st['wp'] >= 1, str(st))
             # at his place (the moped set down there, slow)
             g0 = E("GLSTATE.geld")
             X("const z = GLEREIGNIS.E.mit.ziel.pos(), v = VEH.cur; v.st.x = z[0] + 6; v.st.y = z[1] + 6; v.st.u = 0; v.st.v = 0")
             steps(1)
-            st = J("({ ende: GLEREIGNIS.E && GLEREIGNIS.E.ende, geld: GLSTATE.geld })")
+            st = J("({ ende: (GLEREIGNIS.E && GLEREIGNIS.E.ende) || '', geld: GLSTATE.geld })")
             ck('anhalter: at his place he gets off, thanks and pays five euros', st['ende'] == 'mitgenommen' and st['geld'] == g0 + 5, str((g0, st)))
             steps(16)
             ck('anhalter: then it is over', not E("GLEREIGNIS.aktiv()"), str(J("GLEREIGNIS.debug.info()")))
@@ -267,7 +315,7 @@ with lib.browser() as b:
             steps(0.3)
             X("GLHUD.pick(GLEREIGNIS.E.grund === 'tank' ? 0 : 1)")
             steps(1); time.sleep(3.2); steps(1)
-            st = J("({ ende: GLEREIGNIS.E && GLEREIGNIS.E.ende, weg: GLEREIGNIS.E && GLEREIGNIS.E.weg, geld: GLSTATE.geld })")
+            st = J("({ ende: (GLEREIGNIS.E && GLEREIGNIS.E.ende) || '', weg: !!(GLEREIGNIS.E && GLEREIGNIS.E.weg), geld: GLSTATE.geld })")
             ck('panne: the help that fits – paid, the car starts', st['ende'] in ('benzin', 'geschoben') and st['weg'] and st['geld'] > g0, str((g0, st)))
             steps(8)
             ck('panne: it drives off', not E("GLEREIGNIS.aktiv()") or E("GLEREIGNIS.E.car.v > 1"), str(J("GLEREIGNIS.debug.info()")))
@@ -287,7 +335,7 @@ with lib.browser() as b:
             pic('12_jaeger_hochsitz')
             X("const E = GLEREIGNIS.E; GAME.view(E.x - Math.sin(E.hd) * 4, E.y - Math.cos(E.hd) * 4, KERN.ground(E.x - Math.sin(E.hd) * 4, E.y - Math.cos(E.hd) * 4) + 1.62, E.hd * 57.3, -4)")
             steps(14)
-            st = J("({ unten: GLEREIGNIS.E && GLEREIGNIS.E.unten, mit: GLEREIGNIS.E && GLEREIGNIS.E.mit && GLEREIGNIS.E.mit.st })")
+            st = J("({ unten: !!(GLEREIGNIS.E && GLEREIGNIS.E.unten), mit: (GLEREIGNIS.E && GLEREIGNIS.E.mit && GLEREIGNIS.E.mit.st) || '' })")
             ck('jaeger: at the foot of the seat he climbs down and would like a lift', st['unten'] and st['mit'] == 'wartet', str(st))
         X("GLEREIGNIS.stop('test')")
         steps(0.5)

@@ -21,6 +21,7 @@ import { CLOCK } from '../time/clock.js';
 import { DN } from '../time/daynight.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { VNETZ } from '../verkehr/verkehr_netz.js';
+import { FAHRT } from '../welt/fahrt.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
 import { VFIG } from '../verkehr/verkehr_fig.js';
 import { VPROPS } from '../world/village_props.js';
@@ -33,7 +34,7 @@ import { GLFIG } from './gl_fig.js';
 import { GLAUTO } from './gl_auto.js';
 import { GLKARTE } from './gl_karte.js';
 import { GLORTE } from './gl_orte.js';
-import { GLLDATA } from './gl_linien_data.js';
+import { GLLDATA, GLLWEG } from './gl_linien_data.js';
 export const GLLINIEN = (() => {
   const S = {
     V: {}, // per vehicle of GLLDATA.FZ: { id, def, run, c (GLAUTO car), F (figures in it), lade, ... }
@@ -117,24 +118,6 @@ export const GLLINIEN = (() => {
   const LKW = new Set(['koffer', 'milchlaster', 'holzlaster']);
   // the speeds by kind of road: motorway, main, county, street, lane, service, track (m/s) – a lorry over 7.5 t: 60 km/h outside, 50 in
   // the village (the streets' own limit is lower there); a car as GLAUTO drives
-  const VLKW = [22, 16.7, 16.7, 11, 7, 5, 4.6];
-  function nearestEdge(G, x, y) {
-    let best = null;
-    for (const e of G.edges) {
-      const p = e.pts;
-      for (let i = 0; i + 1 < p.length; i++) {
-        const ax = p[i][0],
-          ay = p[i][1],
-          dx = p[i + 1][0] - ax,
-          dy = p[i + 1][1] - ay,
-          l2 = dx * dx + dy * dy || 1e-9,
-          u = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2)),
-          d = hyp(x - ax - dx * u, y - ay - dy * u);
-        if (!best || d < best.d) best = { e, d, x: ax + dx * u, y: ay + dy * u };
-      }
-    }
-    return best;
-  }
   // a waypoint as a place: [x, y], and whether it lies on a road's edge (a stop) or is a node to pass
   function punkt(w) {
     if (w.rand) {
@@ -159,9 +142,9 @@ export const GLLINIEN = (() => {
     }
     return w.p || null;
   }
-  const cost = e => e.len / (GLAUTO.VMAX[e.kind] || 5);
-  // a run's line: from waypoint to waypoint over the shortest ways; a stop is reached along the road it lies on (both ends of that
-  // road's piece in the cheaper order); a turn back on itself is avoided where the other order allows
+  const { nearestEdge, beine, fertigLinie: fertig, amWeg } = GLLWEG;
+  const fertigLinie = (f, legs, W, lkw) => fertig(f, legs, W, lkw);
+  // a run in the square: waypoints from its data, legs over GLAUTO's graph
   function bauLinie(f) {
     const G = GLAUTO.netz();
     if (!G || !G.nodes.length) return null;
@@ -176,88 +159,50 @@ export const GLLINIEN = (() => {
       return { w, q, n: GLAUTO.nodeNear(q[0], q[1]) };
     });
     if (W.some(o => !o)) return null;
-    // the node sequence
-    const seq = [];
-    const push = (n, e) => {
-      if (seq.length && seq[seq.length - 1].n === n && !e) return;
-      seq.push({ n, e });
-    };
-    for (let i = 0; i < W.length; i++) {
-      const o = W[i];
-      if (o.e) {
-        const prev = seq.length ? seq[seq.length - 1].n : null,
-          next = i + 1 < W.length ? (W[i + 1].n ?? W[i + 1].e.a) : null;
-        const c = (u, v) => {
-          if (u === null || v === null || u === v) return 0;
-          const p = VNETZ.route(G, u, v, cost);
-          return p ? p.reduce((a, s) => a + cost(s.e), 0) : 1e9;
-        };
-        const ab = c(prev, o.e.a) + c(o.e.b, next),
-          ba = c(prev, o.e.b) + c(o.e.a, next);
-        const [n0, n1] = ab <= ba ? [o.e.a, o.e.b] : [o.e.b, o.e.a];
-        push(n0);
-        seq.push({ n: n1, e: o.e });
-      } else push(o.n);
-    }
-    // the path: routes between the nodes, the stops' own pieces directly
-    const path = [];
-    for (let i = 1; i < seq.length; i++) {
-      const a = seq[i - 1].n,
-        b = seq[i].n;
-      if (a === b) continue;
-      if (seq[i].e) path.push({ e: seq[i].e, fwd: seq[i].e.a === a });
-      else {
-        const p = VNETZ.route(G, a, b, cost);
-        if (!p) return null;
-        path.push(...p);
-      }
-    }
-    if (!path.length) return null;
-    const VM = lkw ? VLKW : GLAUTO.VMAX;
-    const line = VNETZ.line(path, {
-      off: e => (e.kind > 3 ? 0 : Math.max(1.1, (e.w || 5) / 4)),
-      vmax: e => VM[e.kind] || 5,
-      cut: lkw ? 7 : 5,
-      aLat: lkw ? 1.5 : 2.4,
-      aBrk: lkw ? 1.4 : 2.6,
-      vMin: 2.2,
-      vEnd: f.weg[f.weg.length - 1].rand ? null : 0,
-    });
-    if (!line) return null;
-    // where along it each waypoint lies (in order)
-    const ws = [];
-    let s0 = 0;
-    for (const o of W) {
-      const pr = VNETZ.project(line, o.q[0], o.q[1], s0, Infinity);
-      const s = pr ? pr.s : s0;
-      ws.push(s);
-      s0 = s;
-    }
-    ws[0] = 0;
-    ws[ws.length - 1] = line.L;
-    const len = [];
-    for (let i = 1; i < ws.length; i++) len.push(Math.max(1, ws[i] - ws[i - 1]));
-    // a turn back on itself (a dead end) is reported (the line is kept: tests see it)
-    let kehre = 0;
-    for (let i = 8; i + 8 < line.n; i += 4) {
-      const h1 = Math.atan2(line.X[i] - line.X[i - 8], line.Y[i] - line.Y[i - 8]),
-        h2 = Math.atan2(line.X[i + 8] - line.X[i], line.Y[i + 8] - line.Y[i]);
-      let d = Math.abs(h2 - h1);
-      if (d > Math.PI) d = 2 * Math.PI - d;
-      if (d > 2.6) kehre++;
-    }
-    return { line, ws, len, P: GLLDATA.plan(len, f), kehre, lkw };
+    const legs = beine(G, W, lkw, f.weg[f.weg.length - 1].rand ? null : 0);
+    return legs ? fertigLinie(f, legs, W, lkw) : null;
+  }
+  // ---- Schleusingen: the town's roads (the region's ways beyond the square, welt/fahrt.js) as a graph round a point; the loading doors
+  //      of its shops (laeden/laeden.js, laeden.json: doors with k 'liefer'; a field `anlieferung` [{ x, y, nx, ny }] of the agent
+  //      laeden-leben goes first) ----
+  function rampe(shop, tuer) {
+    const L = window.LAEDEN,
+      sh = L && L.data && L.data.shops && L.data.shops.find(q => q.id === shop);
+    if (!sh) return null;
+    const D =
+      Array.isArray(sh.anlieferung) && sh.anlieferung.length
+        ? sh.anlieferung
+        : (sh.doors || []).filter(d => d.k === 'liefer');
+    const d = D[Math.min(tuer, D.length - 1)];
+    if (!d || !Number.isFinite(d.x) || !Number.isFinite(d.nx)) return null;
+    // the lorry's back half a metre from the door, its front away from it
+    const T = GLAUTO.TYP.koffer,
+      off = -T.yr + 0.45;
+    return { x: d.x + d.nx * off, y: d.y + d.ny * off, hd: Math.atan2(d.nx, d.ny), tuer: [d.x, d.y] };
+  }
+  // a delivery: in from the cheapest end of a main or county road of the town, past the yard's lane, backwards to the door (the lorry's
+  // back half a metre from it), out forward the way it came. The yard's lane: from the door straight out 14 m, to the nearest road node
+  function bauStadt(f) {
+    const R0 = rampe(...f.weg[1].rampe),
+      F = FAHRT && FAHRT.data && FAHRT.data.ways;
+    if (!R0 || !F || !F.length) return null;
+    // (a graph of its own: the way gets a node where the yard's lane meets the road)
+    const G = GLLWEG.stadtNetz(F, R0.x, R0.y);
+    return G && G.nodes.length ? GLLWEG.rampenWeg(G, R0, f) : null;
   }
   function linieVon(f) {
-    if (!(f.id in S.L)) {
+    // (a run in the town is tried again later when its shop's data or its roads are not there yet)
+    const q = S.L[f.id];
+    if (q === undefined || (q && q.fail && performance.now() > q.fail)) {
       try {
-        S.L[f.id] = bauLinie(f);
+        S.L[f.id] = f.stadt ? bauStadt(f) || { fail: performance.now() + 8000 } : bauLinie(f);
       } catch (e) {
-        S.L[f.id] = null;
+        S.L[f.id] = f.stadt ? { fail: performance.now() + 30000 } : null;
         S.err = 'linie ' + f.id + ': ' + String((e && e.message) || e).slice(0, 160);
       }
     }
-    return S.L[f.id];
+    const r = S.L[f.id];
+    return r && r.line ? r : null;
   }
   // ------------------------------------------------------------------ the vehicles ------------------------------------------------------------------
   function V(id) {
@@ -302,12 +247,23 @@ export const GLLINIEN = (() => {
     }
     return null;
   }
+  // the game minutes into a run at which its numbers put it s metres along its way
+  function elVon(run, sQ) {
+    let lo = 0,
+      hi = run.P.dauer;
+    for (let k = 0; k < 30; k++) {
+      const m = (lo + hi) / 2;
+      if (GLLDATA.stand(run.P, m).s < sQ) lo = m;
+      else hi = m;
+    }
+    return hi;
+  }
   // where a vehicle is now by its numbers: { x, y, hd, s, i, halt }
   function lage(v, t) {
     const r = v.run;
     if (!r) return null;
     const st = GLLDATA.stand(r.P, t - r.t0 - r.lag),
-      q = VNETZ.at(r.Lf.line, st.s, {});
+      q = amWeg(r.Lf, st.s);
     return { x: q.x, y: q.y, hd: q.hd, s: st.s, i: st.i, halt: st.halt, fertig: st.fertig };
   }
   // the camera looks there (within its field and not far)?
@@ -334,8 +290,10 @@ export const GLLINIEN = (() => {
     v.c = c;
     v.leer = !!L.leer;
     tandem(c);
-    GLAUTO.onLine(c, v.run.Lf.line, L.s, L.halt ? 0 : Math.min(8, v.run.Lf.line.S[Math.round(L.s)] || 6));
-    c.v = L.halt ? 0 : Math.min(c.v, 8);
+    const q = amWeg(v.run.Lf, L.s);
+    v.leg = q.i;
+    GLAUTO.onLine(c, q.leg.line, q.q, 0);
+    c.v = L.halt || q.leg.rev ? 0 : Math.min(8, (q.leg.line.S && q.leg.line.S[Math.round(q.q)]) || 6);
     S.n.spawn++;
     fahrer(v);
     markDirty(true);
@@ -365,6 +323,7 @@ export const GLLINIEN = (() => {
     }
     v.c = null;
     v.lade = 0;
+    v.parkt = false;
   }
   // ---- the people in the cab: a driver (the patrol: two officers), seated where the type says ----
   function sitzOf(c, k) {
@@ -433,25 +392,41 @@ export const GLLINIEN = (() => {
     return H;
   }
   // ---- one vehicle per frame ----
+  // where it is on its run (global metres over all legs)
+  const globS = v => {
+    const l = v.run.Lf.legs[v.leg || 0];
+    return l.s0 + (l.rev ? l.L - v.c.s : v.c.s);
+  };
+  // backwards along its line towards s = 0, at walking pace, braking to stand at the start; the wheels turn back
+  function rueck(c, dt, vmax) {
+    const vT = Math.min(vmax, c.s <= 0.12 ? 0 : Math.sqrt(2 * 1.0 * c.s));
+    c.v = Math.max(0, c.v + Math.max(-3 * dt, Math.min(0.5 * dt, vT - c.v)));
+    c.s = Math.max(0, c.s - c.v * dt);
+    GLAUTO.pose(c);
+    c.spin -= (c.v * dt) / c.T.rw;
+    if (c.parts.axF) {
+      c.parts.axF.rotation.x = -c.spin;
+      c.parts.axR.rotation.x = -c.spin;
+    }
+    c.bremst = c.v < 0.3;
+  }
   function fahr(v, dt, p) {
     const c = v.c,
       r = v.run,
       Lf = r.Lf,
-      lkw = Lf.lkw;
-    // the next stop ahead (a waypoint with a halt) and whether the vehicle waits at it now
-    const W = r.f.weg;
-    let stopS = Infinity,
-      stopI = -1;
-    for (let i = 1; i < W.length; i++)
-      if (W[i].halt && !v.halte?.[i] && Lf.ws[i] > c.s - 2) {
-        stopS = Lf.ws[i] - (lkw ? 1.0 : 0.5);
-        stopI = i;
-        break;
-      }
+      lkw = Lf.lkw,
+      W = r.f.weg,
+      li = Math.min(v.leg || 0, Lf.legs.length - 1),
+      leg = Lf.legs[li];
+    if (c.line !== leg.line) GLAUTO.onLine(c, leg.line, leg.rev ? leg.L : 0, 0);
+    if (c.tand) for (const g of c.tand) g.rotation.x = -c.spin;
+    c.blau = false;
+    c.horn = false;
+    // waiting at a stop
     if (v.hold > 0) {
       v.hold -= dt;
       c.v = 0;
-      GLAUTO.drive(c, 0, { stopS: c.s });
+      GLAUTO.pose(c);
       if (v.hold <= 0) {
         v.halte = Object.assign(v.halte || {}, { [v.stopI]: true });
         // the timber lorry leaves the pile loaded: its load is on now (the model of a loaded lorry in its place)
@@ -459,6 +434,37 @@ export const GLLINIEN = (() => {
       }
       return;
     }
+    if (leg.rev) {
+      // backwards into the lane or to the door – stopping while somebody stands behind it
+      const back = VNETZ.at(leg.line, Math.max(0, c.s + c.T.yr - 2.2), {}),
+        frei = hyp(p.x - back.x, p.y - back.y) > 2.8;
+      rueck(c, dt, frei ? 1.5 : 0);
+      if (c.s <= 0.15 && c.v < 0.05) {
+        if (leg.stop >= 0 && W[leg.stop] && W[leg.stop].halt && !(v.halte || {})[leg.stop]) {
+          v.hold = W[leg.stop].warte || 10;
+          v.stopI = leg.stop;
+          return;
+        }
+        if (Lf.legs[li + 1]) {
+          v.leg = li + 1;
+          GLAUTO.onLine(c, Lf.legs[li + 1].line, 0, 0);
+        }
+      }
+      return;
+    }
+    // forward: the next stop on this leg (not one reached backwards), else the leg's end when it reverses next
+    const gs = leg.s0 + c.s,
+      revStop = i => Lf.legs.some(l => l.rev && l.stop === i);
+    let stopS = Infinity,
+      stopI = -1;
+    for (let i = 1; i < W.length; i++)
+      if (W[i].halt && !(v.halte || {})[i] && !revStop(i) && Lf.ws[i] > gs - 2 && Lf.ws[i] <= leg.s0 + leg.L + 0.5) {
+        stopS = Lf.ws[i] - leg.s0 - (lkw ? 1.0 : 0.5);
+        stopI = i;
+        break;
+      }
+    const nach = Lf.legs[li + 1];
+    if (nach && nach.rev && stopI < 0) stopS = leg.L - 0.4;
     // outside the village a lorry may go 60, in it 50; the line's own limits and curves stay
     const inOrt =
       (v.ortT = (v.ortT || 0) - dt) > 0
@@ -469,11 +475,14 @@ export const GLLINIEN = (() => {
     if (stopI >= 0 && c.v < 0.15 && c.s > stopS - 1.6) {
       v.hold = W[stopI].warte || 10;
       v.stopI = stopI;
+    } else if (nach && nach.rev && c.v < 0.12 && c.s > leg.L - 1.4) {
+      // past the lane: now backwards (its line from its end)
+      v.leg = li + 1;
+      GLAUTO.onLine(c, nach.line, nach.L, 0);
+    } else if (nach && !nach.rev && c.s >= leg.L - 0.7) {
+      v.leg = li + 1;
+      GLAUTO.onLine(c, nach.line, 0, c.v);
     }
-    if (c.tand) for (const g of c.tand) g.rotation.x = -c.spin;
-    // the wanted level's sound and light are not the patrol's: it drives quietly
-    c.blau = false;
-    c.horn = false;
   }
   // the timber lorry's load: the model with logs in place of the empty one (the crane loaded it while it stood)
   function neuLaden(v) {
@@ -493,6 +502,34 @@ export const GLLINIEN = (() => {
     v.c = n;
     v.leer = false;
     setz(v);
+  }
+  // ---- a vehicle that stands somewhere between its runs (a delivery at its loading door): there while one is near, appeared where
+  //      nobody looked; it sets off from there when its run begins ----
+  function parkOf(v, t, day, dayG) {
+    return GLLDATA.parkt(t, day, dayG).find(q => q.fz === v.id) || null;
+  }
+  function parkTick(v, pk, p) {
+    const R0 = pk.wo === 'rampe' ? rampe(...pk.rampe) : null;
+    if (!R0) {
+      if (v.c) drop(v);
+      return;
+    }
+    const d = hyp(R0.x - p.x, R0.y - p.y);
+    if (v.c) {
+      if (d > R_OUT) drop(v);
+      return;
+    }
+    if (d > R_IN || (d < R_SEE && imBlick(R0.x, R0.y))) return;
+    const c = GLAUTO.spawn(v.def.typ, Object.assign({}, v.def.o));
+    if (!c) return;
+    c.linie = v.id;
+    c.strasse = true;
+    GLAUTO.park(c, R0.x, R0.y, R0.hd);
+    tandem(c);
+    v.c = c;
+    v.parkt = true;
+    S.n.spawn++;
+    markDirty(true);
   }
   // ------------------------------------------------------------------ the timber pile ------------------------------------------------------------------
   // A pile of spruce logs („Polter“) beside the forest track near the Untere Klinge where the timber lorry loads: 5 m logs in a stack
@@ -690,43 +727,64 @@ export const GLLINIEN = (() => {
         const v = V(id),
           run = laufend(v, t, day, dayG);
         if (!run) {
-          if (v.c) drop(v);
+          const pk = parkOf(v, t, day, dayG);
+          if (pk) parkTick(v, pk, p);
+          else if (v.c) drop(v);
           continue;
+        }
+        // it stood there (at a loading door): it sets off on its run from where it stands, the driver back in the cab
+        if (v.c && v.parkt) {
+          v.parkt = false;
+          v.leg = 0;
+          GLAUTO.onLine(v.c, run.Lf.legs[0].line, 0, 0);
+          v.c.v = 0;
+          if (!v.F.length) fahrer(v);
         }
         if (run.i < 0) {
           run.i = 0;
           v.halte = {};
           v.hold = 0;
+          v.leg = 0;
           v.leer = v.def.art === 'holz';
         }
         if (v.c) {
           const d = hyp(v.c.x - p.x, v.c.y - p.y);
           // far: a number again (with the delay it made); the patrol while somebody is wanted: as soon as it is out of sight
           const weg = d > R_OUT || (v.def.art === 'streife' && sterne > 0 && (d > 120 || !imBlick(v.c.x, v.c.y)));
-          if (weg || v.c.ende) {
-            const el = (q => {
-              let lo = 0,
-                hi = run.P.dauer;
-              for (let k = 0; k < 30; k++) {
-                const m = (lo + hi) / 2;
-                if (GLLDATA.stand(run.P, m).s < q) lo = m;
-                else hi = m;
-              }
-              return hi;
-            })(v.c.s);
+          const amEnde = v.c.ende && (v.leg || 0) >= run.Lf.legs.length - 1;
+          if (weg || amEnde) {
+            const el = elVon(run, globS(v));
             run.lag = Math.max(0, t - run.t0 - el);
-            if (v.c.ende) run.lag = -1e6;
+            if (amEnde) run.lag = -1e6;
             drop(v);
           }
           continue;
         }
         if (v.def.art === 'streife' && !GLLDATA.streife(sterne)) continue;
-        const L = lage(v, t);
+        let L = lage(v, t);
         if (!L || L.fertig) continue;
         const d = hyp(L.x - p.x, L.y - p.y);
         if (d > R_IN) continue;
-        // not under the player's eyes: far enough to come out of the haze, or where the camera does not look
-        if (d < R_SEE && imBlick(L.x, L.y)) continue;
+        // not under the player's eyes: far enough to come out of the haze, or where the camera does not look – else further back on its
+        // way, where nobody looks (it is a little late then)
+        if (d < R_SEE && imBlick(L.x, L.y)) {
+          let s2 = L.s,
+            ok = false;
+          for (let k = 0; k < 24 && s2 > 0; k++) {
+            s2 = Math.max(0, s2 - 15);
+            const q = amWeg(run.Lf, s2),
+              dq = hyp(q.x - p.x, q.y - p.y);
+            if (dq > R_IN) break;
+            if (dq >= R_SEE || !imBlick(q.x, q.y)) {
+              ok = true;
+              break;
+            }
+          }
+          if (!ok) continue;
+          run.lag = Math.max(0, t - run.t0 - elVon(run, s2));
+          L = lage(v, t);
+          if (!L || L.fertig) continue;
+        }
         // a stop already passed on the numbers counts as done
         for (let i = 1; i < run.f.weg.length; i++) if (run.Lf.ws[i] < L.s - 1) v.halte[i] = true;
         if (L.halt) {
@@ -773,7 +831,7 @@ export const GLLINIEN = (() => {
     if (!v || !v.run) return null;
     const t = CLOCK.t,
       r = v.run,
-      q = v.c ? { x: v.c.x, y: v.c.y, s: v.c.s } : lage(v, t);
+      q = v.c ? { x: v.c.x, y: v.c.y, s: globS(v) } : lage(v, t);
     if (!q) return null;
     const W = r.f.weg;
     let naechster = r.f.nach || '';
@@ -814,12 +872,14 @@ export const GLLINIEN = (() => {
         const Lf = f && linieVon(f);
         if (!Lf) return null;
         const pts = [];
-        for (let i = 0; i < Lf.line.n; i += 10) pts.push([Math.round(Lf.line.X[i]), Math.round(Lf.line.Y[i])]);
+        for (const l of Lf.legs)
+          for (let i = 0; i < l.line.n; i += 10) pts.push([Math.round(l.line.X[i]), Math.round(l.line.Y[i])]);
         return {
-          L: Math.round(Lf.line.L),
+          L: Math.round(Lf.L),
           ws: Lf.ws.map(Math.round),
           dauer: Math.round(Lf.P.dauer),
           kehre: Lf.kehre,
+          legs: Lf.legs.map(l => (l.rev ? 'R' : 'V') + Math.round(l.L)),
           pts,
         };
       },
@@ -843,10 +903,11 @@ export const GLLINIEN = (() => {
         const f = GLLDATA.FAHRTEN.find(q => q.id === id);
         const Lf = f && linieVon(f);
         if (!Lf) return null;
-        const q = VNETZ.at(Lf.line, Lf.ws[i], {});
+        const q = amWeg(Lf, Math.max(0, Lf.ws[i] - 0.5));
         return { x: q.x, y: q.y, hd: q.hd, s: Lf.ws[i] };
       },
       polter: () => (S.polter ? { x: S.polterAt[0], y: S.polterAt[1] } : null),
+      rampe: (shop, tuer = 0) => rampe(shop, tuer),
       kinder: () =>
         (S.kinder || []).map(F => ({
           id: F.id,
@@ -878,6 +939,10 @@ export const GLLINIEN = (() => {
           figs: v.F.length,
           leer: !!v.leer,
           lag: v.run ? Math.round(v.run.lag) : null,
+          leg: v.leg || 0,
+          x: v.c ? Math.round(v.c.x * 10) / 10 : null,
+          y: v.c ? Math.round(v.c.y * 10) / 10 : null,
+          hd: v.c ? Math.round(v.c.hd * 1000) / 1000 : null,
         })),
       S,
     },
