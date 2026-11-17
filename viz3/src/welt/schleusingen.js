@@ -95,6 +95,14 @@ export const SCHL = (() => {
     CREAM = linC([0.95, 0.87, 0.66], 0.82), // the Rathaus front
     SAND_B = linC([0.74, 0.67, 0.56], 0.82), // rough sandstone under the castle and the church
     BASE_C = linC([0.6, 0.58, 0.54], 0.82); // the stone base of a house on a slope
+  const areaOf = f => {
+    let A = 0;
+    for (let k = 0; k < f.length; k += 2) {
+      const j = (k + 2) % f.length;
+      A += f[k] * f[j + 1] - f[j] * f[k + 1];
+    }
+    return Math.abs(A) / 2;
+  };
   function styleOf(b, i) {
     const k = hh(i * 3.7 + 1),
       k2 = hh(i + 11.3),
@@ -116,6 +124,26 @@ export const SCHL = (() => {
     if (b.lm === 'kirche' || b.lm === 'burg' || b.lm === 'turm')
       return Object.assign(o, { col: SAND, frame: 0, door: 1, sp: 3.0, typ: 0 });
     if (b.k === 2) return Object.assign(o, { style: ST.SHED, col: linC(BOARDS[Math.floor(k * 3)], 0.8), sp: 3.2 });
+    // feat/gebaeude: a school of our time (named in OSM, not an old building – the Teutsche Schule, the Wiesenbauschule keep their look):
+    // smooth light plaster, wide bays, white frames, a wider light door with glass, no shutters
+    if (b.k === 0 && !b.old && /schule|gymnasium/i.test(b.n || '') && !/wiesenbau|teutsch/i.test(b.n))
+      return Object.assign(o, {
+        style: ST.MODERN,
+        col: PAL[[5, 4, 6][Math.floor(k * 3)]],
+        sp: 3.6,
+        frame: 0,
+        door: 4,
+        doorW: 1.3,
+      });
+    // feat/gebaeude: the blocks of flats beyond the old town (not old, 250 m² and more, no shops or name; Hildburghäuser Straße and the
+    // like – white or light in the street views, without shutters): the modern style in white, cream or light grey
+    if (b.k === 0 && !b.old && !b.n && !b.s && !b.lm && dM > 200 && areaOf(b.f) >= 250)
+      return Object.assign(o, {
+        style: ST.MODERN,
+        col: PAL[[5, 4, 6][Math.floor(k2 * 3)]],
+        sp: 3.1 + hh(i + 4) * 0.3,
+        frame: 0,
+      });
     if (b.k === 1) {
       if (b.s || b.n)
         return Object.assign(o, { style: ST.MODERN, col: PAL[[4, 5, 6][Math.floor(k * 3)]], sp: 3.4, frame: 0 });
@@ -261,7 +289,8 @@ export const SCHL = (() => {
       dw = b.doorW || 1.1;
     } else if (o.typ === 0) {
       du = ((nb >= 3 ? (hh(b.i + 23) < 0.5 ? 1 : nb - 2) : 0) + 0.5) * bw;
-      dw = 1.05;
+      // feat/gebaeude: o.doorW from a look (a school's wider door) – at most 1.3 m (a wider one is a gateway to SIPLAN: not walkable)
+      dw = Math.min(o.doorW || 1.05, 1.3, bw - 0.3, L * 0.6);
     } else if (st === ST.HALL) {
       du = L / 2;
       dw = Math.min(5, L * 0.4);
@@ -745,6 +774,9 @@ export const SCHL = (() => {
       } catch (e) {
         S.osmF = null;
       }
+      // feat/gebaeude: the looks of single houses from street views (FASSADE.ansicht, fassade/ansicht.json) before the houses are styled
+      if (window.FASSADE && FASSADE.ansichtReady)
+        await Promise.race([FASSADE.ansichtReady, new Promise(res => setTimeout(res, 3000))]);
       // the ground from the world tiles; without them (no welt-test/ on this host) the town stands on the terrain of world/ratscher.js
       try {
         gz = await WELT.sampler(ZONE[0], ZONE[1], ZONE[2], ZONE[3]);
@@ -1476,6 +1508,13 @@ export const SCHL = (() => {
       b.zmin = zmin;
       b.z0 = z70 - zmin < 1.0 ? zmin - 0.1 : z70 - 0.4;
       b.st = styleOf(b, i);
+      // feat/gebaeude: a look given from outside for this house (FASSADE.ansicht: colour, material, shutters, frames, door, roof colour)
+      const look = !b.lm && window.FASSADE && FASSADE.ansichtOf ? FASSADE.ansichtOf(b) : null;
+      if (look) {
+        b.st = FASSADE.ansichtStil(b.st, look);
+        b.rc = FASSADE.ansichtDach(look) || b.rc;
+        b.look = look;
+      }
       LM_PREP[b.lm] && LM_PREP[b.lm](b);
       S.bld.push(b);
     });

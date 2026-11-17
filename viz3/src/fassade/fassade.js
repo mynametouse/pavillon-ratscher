@@ -10,7 +10,7 @@
 // which paints a hall's ribbon only above 3.2 m – get a row of stable windows (one mesh of quads in the village props' own material: no new
 // shader program), some lit at night with the village's windows (the same share by the hour, emissive – no lights). ?nofassade: as before.
 import * as THREE from 'three';
-import { scene } from '../core/head.js';
+import { BASE, scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { RATSCHER } from '../world/ratscher.js';
@@ -44,11 +44,148 @@ export const FASSADE = (() => {
     'DEG_DETHL57P0000LyYz',
   ]);
   if (S.on && GEB.on) {
+    // gebaeude.js gives b.id a number as it builds b: the ETHOS id is kept in b.eid, so that a cell built again (its ground changed) asks
+    // with it too – also for the hook before this one (laeden's list is of ETHOS ids)
     const prev = GEB.skip;
-    GEB.skip = b => !!(prev && prev(b)) || (!!b && typeof b.id === 'string' && TEILE.has(b.id));
+    GEB.skip = b => {
+      if (!b) return false;
+      if (typeof b.id === 'string') b.eid = b.id;
+      const e = b.eid || b.id;
+      if (prev && prev(e === b.id ? b : Object.assign(Object.create(b), { id: e }))) return true;
+      return typeof e === 'string' && TEILE.has(e);
+    };
   }
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
     linC = c => c.map(lin);
+  // ---- per-building looks from outside (feat/schleusingen-ansicht feeds them in from street views): key → look, from the data file
+  // fassade/ansicht.json (an extra's dist/fassade/ansicht.json: { "v": 1, "quelle": "…", "b": { key: look } }) and FASSADE.ansicht(key,
+  // look). Keys: '#<i>' (a building of Schleusingen's town data, SCHL.bld[].i), an address ('Markt 12': the houses with it), an ETHOS id
+  // ('DEG_…', gebaeude/gebaeude.js), '@x,y' (model metres: the building standing there). Applied as the buildings are built: the town
+  // (welt/schleusingen.js, its styles before its walls and roofs), the ETHOS cells and Ratscher's square (their walls repainted as they
+  // stand: colour, material, shutters, frames, door – not the roof). A look given later counts from the next build. ----
+  const LOOK = { key: new Map(), at: [], file: 0, used: 0, err: '', done: !S.on };
+  const MAT = {
+    putz: 0,
+    glatt: 1,
+    modern: 1,
+    schiefer: 2,
+    'schiefer-og': 3,
+    'schiefer-giebel': 4,
+    fachwerk: 5,
+    'fachwerk-og': 6,
+    scheune: 7,
+    holz: 8,
+    klinker: 9,
+    halle: 10,
+    schuppen: 11,
+    'schule-alt': 12,
+  };
+  const RAHMEN = { weiss: 0, weiß: 0, braun: 1, gruen: 2, grün: 2, grau: 3 },
+    LAEDEN = { gruen: 0, grün: 0, braun: 1, grau: 2 };
+  // '#rrggbb' or [r, g, b] (sRGB 0–1) → the linear colour the towns' palettes hold (× 0.82)
+  const colOf = (c, k = 0.82) => {
+    let a = null;
+    if (typeof c === 'string' && /^#?[0-9a-f]{6}$/i.test(c.trim())) {
+      const h = c.trim().replace('#', '');
+      a = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
+    } else if (Array.isArray(c) && c.length >= 3) a = c.slice(0, 3).map(Number);
+    return a && a.every(Number.isFinite) ? a.map(v => lin(Math.min(1, Math.max(0, v))) * k) : null;
+  };
+  S.ansicht = (key, look) => {
+    if (key === undefined || key === null || !look || typeof look !== 'object') return false;
+    const k = String(key).trim();
+    if (k[0] === '@') {
+      const [x, y] = k.slice(1).split(',').map(Number);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+      LOOK.at.push({ x, y, look });
+      return true;
+    }
+    LOOK.key.set(k, look);
+    return true;
+  };
+  S.ansichtReady = S.on
+    ? fetch(BASE + 'fassade/ansicht.json')
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          if (j && j.b && typeof j.b === 'object') for (const k in j.b) if (S.ansicht(k, j.b[k])) LOOK.file++;
+        })
+        .catch(e => {
+          LOOK.err = String(e);
+        })
+        .finally(() => {
+          LOOK.done = true;
+        })
+    : Promise.resolve();
+  // the look of a building: one of the town ({ i, a, k, f }) or of ETHOS ({ eid, f })
+  S.ansichtOf = b => {
+    if (!b || (!LOOK.key.size && !LOOK.at.length)) return null;
+    let L = null;
+    if (b.eid && LOOK.key.has(b.eid)) L = LOOK.key.get(b.eid);
+    else if (b.i !== undefined && LOOK.key.has('#' + b.i)) L = LOOK.key.get('#' + b.i);
+    else if (b.a && b.k === 0 && LOOK.key.has(b.a)) L = LOOK.key.get(b.a);
+    if (!L && b.f)
+      for (const q of LOOK.at)
+        if (FAUDIT.inRing(b.f, q.x, q.y)) {
+          L = q.look;
+          break;
+        }
+    if (L) LOOK.used++;
+    return L;
+  };
+  // a look onto the style fields of world/village.js (b.st of welt/schleusingen.js and gebaeude/gebaeude.js) → a new style object
+  S.ansichtStil = (o, L) => {
+    const n = Object.assign({}, o);
+    // a school of our time: smooth plaster, wide bays, white frames, a wider light door with glass (1.3 m in the town: a wider one is a
+    // gateway to SIPLAN), no shutters, light unless a colour is given (the facade shader's style 12 is Ratscher's school of 1828:
+    // 'schule-alt')
+    if (L.art === 'schule')
+      Object.assign(n, {
+        style: 1,
+        sp: 3.6,
+        frame: 0,
+        shutters: false,
+        door: 4,
+        doorW: 1.3,
+        col: colOf([0.93, 0.92, 0.89]),
+      });
+    if (typeof L.material === 'string' && MAT[L.material] !== undefined) n.style = MAT[L.material];
+    if (L.fachwerk === true || Number.isFinite(L.fachwerk)) {
+      if (n.style !== 5 && n.style !== 6) n.style = 6;
+      if (Number.isFinite(L.fachwerk)) n.timber = Math.max(0, Math.min(2, Math.round(L.fachwerk)));
+    } else if (L.fachwerk === false && (n.style === 5 || n.style === 6)) n.style = 0;
+    const c = colOf(L.farbe);
+    if (c) n.col = c;
+    if (typeof L.laeden === 'boolean') n.shutters = L.laeden;
+    else if (typeof L.laeden === 'string' && LAEDEN[L.laeden] !== undefined) {
+      n.shutters = true;
+      n.shut = LAEDEN[L.laeden];
+    }
+    if (typeof L.rahmen === 'string' && RAHMEN[L.rahmen] !== undefined) n.frame = RAHMEN[L.rahmen];
+    const t = L.tuer;
+    if (Number.isFinite(t)) n.door = Math.max(0, Math.min(7, Math.round(t)));
+    else if (t && typeof t === 'object') {
+      if (Number.isFinite(t.art)) n.door = Math.max(0, Math.min(7, Math.round(t.art)));
+      if (Number.isFinite(t.breite)) n.doorW = Math.max(0.8, Math.min(4, t.breite));
+    }
+    if (Number.isFinite(L.achse)) n.sp = Math.max(2, Math.min(6, L.achse));
+    if (typeof L.sockel === 'boolean') n.raised = L.sockel;
+    return n;
+  };
+  // the roof colour of a look ('dach': '#rrggbb' or { farbe }) as the town data holds it (sRGB 0–1), or null
+  S.ansichtDach = L => {
+    const d = L && L.dach,
+      c = typeof d === 'string' || Array.isArray(d) ? d : d && d.farbe;
+    const a = colOf(c, 1);
+    return a ? a.map(v => (v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)) : null;
+  };
+  S.ansichtStand = () => ({
+    keys: LOOK.key.size,
+    at: LOOK.at.length,
+    file: LOOK.file,
+    used: LOOK.used,
+    err: LOOK.err,
+    done: LOOK.done,
+  });
   // ---- records of Ratscher: the village's buildings as the facade shader gets them, the ETHOS ones as gebaeude.js draws them ----
   const KINDV = b =>
     b.st && b.st.style === 12
@@ -618,6 +755,14 @@ export const FASSADE = (() => {
     return items;
   }
   function fixRatscher() {
+    // the looks of the square's ETHOS buildings first (their records and skins follow them)
+    const nLook =
+      GEB.ready && RATSCHER.bld[0]
+        ? gebLooks(
+            GEB.bld.filter(b => b.st && b.F),
+            GEB.meshes.filter(m => m.material === RATSCHER.bld[0].material)
+          )
+        : 0;
     const t0 = performance.now(),
       g = RATSCHER.bld[0] && RATSCHER.bld[0].geometry,
       aD = g && g.attributes.aD;
@@ -632,7 +777,7 @@ export const FASSADE = (() => {
             aD.array[(q.q * 4 + v) * 4 + 1] = w;
           }
       };
-    S.n = { tuer: 0, tuerVerlegt: 0, hallen: 0, fenster: 0 };
+    S.n = { tuer: 0, tuerVerlegt: 0, hallen: 0, fenster: 0, ansicht: nLook };
     KW = VPROPS.kit ? VPROPS.kit() : null;
     KG = VPROPS.kit ? VPROPS.kit() : null;
     for (const r of R) {
@@ -720,6 +865,46 @@ export const FASSADE = (() => {
     S.ms.ratscher = Math.round(performance.now() - t0);
     markDirty(true);
   }
+  // ---- the looks of ETHOS buildings (S.ansicht) onto b.st (the skins painted after follow it) and onto their walls as gebaeude.js drew
+  // them in the meshes walls: colour, material, shutters, frames, door type – where a wall has the building's own colour and style (a base
+  // on a slope keeps its own, a party wall of a half-timbered house stays plastered); the bays and the door's place stay. → how many ----
+  function gebLooks(bs, walls) {
+    const by = new Map();
+    for (const b of bs) {
+      const L = b.st && S.ansichtOf(b);
+      if (!L) continue;
+      const o0 = b.st,
+        o = S.ansichtStil(o0, L);
+      b.st = o;
+      by.set(4 * b.id + (o0.typ || 0), { o0, o });
+    }
+    if (!by.size) return 0;
+    const near = (a, i, c) => Math.abs(a[i] - c[0]) + Math.abs(a[i + 1] - c[1]) + Math.abs(a[i + 2] - c[2]) < 2e-3;
+    for (const m of walls) {
+      const g = m.geometry,
+        W = g.attributes.aW,
+        V = g.attributes.aV,
+        D = g.attributes.aD,
+        C = g.attributes.aC;
+      if (!W || !V || !D || !C) continue;
+      let hit = false;
+      for (let v = 0; v < W.count; v++) {
+        const q = by.get(Math.round(W.array[v * 4 + 3]));
+        if (!q || !q.o0.col || !near(C.array, v * 4, q.o0.col)) continue;
+        const { o0, o } = q,
+          fw = o.style === 5 || o.style === 6;
+        hit = true;
+        if (V.array[v * 4 + 3] === o0.style) V.array[v * 4 + 3] = fw && V.array[v * 4 + 1] <= 0.51 ? 0 : o.style;
+        C.array[v * 4] = o.col[0];
+        C.array[v * 4 + 1] = o.col[1];
+        C.array[v * 4 + 2] = o.col[2];
+        C.array[v * 4 + 3] = (o.timber || 0) + 4 * (o.frame || 0) + 16 * (o.door || 0) + 128 * (o.shut || 0);
+        D.array[v * 4 + 3] = (Math.round(D.array[v * 4 + 3]) & ~2) | (o.shutters ? 2 : 0);
+      }
+      if (hit) V.needsUpdate = C.needsUpdate = D.needsUpdate = true;
+    }
+    return by.size;
+  }
   // ---- the ETHOS cells beyond Ratscher's square and round Schleusingen's old town (gebaeude/gebaeude.js GEB.Z, built and dropped as one
   // walks): the same fixes per cell once it stands – the skins merged into the cell's wall mesh (no draw call more), the stable windows
   // of its halls (the glass dark: no light at night) and the door steps in one mesh for all cells (the props' paint) ----
@@ -781,6 +966,7 @@ export const FASSADE = (() => {
       S.win.delete(b.id);
     }
     const bs = c.data.b.filter(b => b.st && b.F && b.id !== undefined),
+      looks = gebLooks(bs, walls),
       R = bs.map(b => recG(b)),
       near = [];
     for (const [k, z] of ZONE.cells)
@@ -814,7 +1000,7 @@ export const FASSADE = (() => {
       wall: walls[0] || null,
       geo: K.empty() ? null : K.geo(),
       items,
-      n,
+      n: Object.assign(n, { ansicht: looks }),
       merged,
       ms: Math.round(performance.now() - t0),
     });
@@ -896,10 +1082,19 @@ export const FASSADE = (() => {
     }
   }
   S.zonen = () => {
-    const n = { zellen: ZONE.cells.size, gebaeude: 0, tuer: 0, fenster: 0, hallen: 0, stufen: 0, ungemischt: 0 };
+    const n = {
+      zellen: ZONE.cells.size,
+      gebaeude: 0,
+      tuer: 0,
+      fenster: 0,
+      hallen: 0,
+      stufen: 0,
+      ansicht: 0,
+      ungemischt: 0,
+    };
     for (const z of ZONE.cells.values()) {
       n.gebaeude += z.bs.length;
-      for (const k of ['tuer', 'fenster', 'hallen', 'stufen']) n[k] += z.n[k];
+      for (const k of ['tuer', 'fenster', 'hallen', 'stufen', 'ansicht']) n[k] += z.n[k] || 0;
       if (!z.merged) n.ungemischt++;
     }
     return Object.assign(n, { ms: ZONE.ms, err: ZONE.err, mesh: !!ZONE.mesh });
@@ -956,6 +1151,8 @@ export const FASSADE = (() => {
         // the ETHOS buildings come over some frames after the village; if they never come (no data on this host), go on without them
         if (!seen) seen = performance.now();
         if (GEB.on && !GEB.ready && performance.now() - seen < 30000) return;
+        // and the looks given from outside (a small file, there long before; at most 10 s)
+        if (!LOOK.done && performance.now() - seen < 10000) return;
         off();
         try {
           fixRatscher();

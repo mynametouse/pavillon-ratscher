@@ -215,6 +215,10 @@ with lib.browser() as b:
                     return True
                 time.sleep(0.2)
             return False
+        # looks from outside (FASSADE.ansicht, as feat/schleusingen-ansicht will give them): one town house by its index, one ETHOS
+        # building by a point – before the town and the cells are built
+        E("""FASSADE.ansicht('#56', { farbe: '#3a62b0', laeden: 'braun', rahmen: 'weiss' });
+            FASSADE.ansicht('@-1161.5,1217.9', { farbe: '#b03a3a', material: 'klinker' })""")
         s = go_schl()
         print('schleusingen', json.dumps(s), flush=True)
         ck('Schleusingen stands', s['state'] == 'ready', s.get('err', ''))
@@ -315,6 +319,31 @@ with lib.browser() as b:
                     settle()
                     E(f"GAME.view({q['x']}, {q['y']}, KERN.ground({q['x']}, {q['y']}) + 1.65, {q['yaw']}, 4, 62); GAME.step(0.3)")
                     lib.shot(pg, OUT, 'schleusingen_zone_fenster')
+            # the looks given before the build: the town house in blue with brown shutters, the ETHOS shed in red brick
+            lk = json.loads(E("""JSON.stringify((() => { const b = SCHL.bld.find(q => q.i === 56), z = FASSADE.zonen ? FASSADE.zonen() : {};
+                return { st: b && b.st.style, col: b && b.st.col.map(v => +v.toFixed(3)), shutters: b && b.st.shutters, shut: b && b.st.shut, look: !!(b && b.look),
+                  zonen: z.ansicht, stand: FASSADE.ansichtStand() }; })())"""))
+            print('looks', json.dumps(lk), flush=True)
+            ck('looks given from outside (FASSADE.ansicht) on a town house and on an ETHOS building', lk['look'] and lk['shutters'] and lk['shut'] == 1 and lk['col'][2] > lk['col'][0] and (lk['zonen'] or 0) >= 1,
+               json.dumps(lk))
+            # the three findings of schleusingen-ansicht: the Markt from its south-east corner looking west (a grey block stood there), the
+            # blocks of flats on Hildburghäuser Straße (white, no shutters), the school (a school's look, not a house's)
+            E("""(() => { const P = SCHL.data.marktplatz; let bx = 0, by = 0, best = -1e9; for (let k = 0; k < P.length; k += 2) if (P[k] - P[k + 1] > best) { best = P[k] - P[k + 1]; bx = P[k]; by = P[k + 1]; }
+                const x = bx - 4, y = by + 4; GAME.view(x, y, KERN.ground(x, y) + 1.65, 285, 2, 62); GAME.step(0.3); })()""")
+            settle()
+            lib.shot(pg, OUT, 'schleusingen_markt_suedost')
+            fd = json.loads(E("""JSON.stringify([236, 314].map(i => { const b = SCHL.bld.find(q => q.i === i); if (!b) return null; let k = 0;
+                b.F.forEach((f, j) => { if (f[9] < b.F[k][9] && !(f[8] & 1)) k = j; }); const f = b.F[k], L = Math.hypot(f[2] - f[0], f[3] - f[1]), nx = (f[3] - f[1]) / L, ny = -(f[2] - f[0]) / L, d = Math.min(30, 8 + L * 0.7);
+                return { i, a: b.a || '', n: b.n || '', style: b.st.style, shutters: b.st.shutters, col: b.st.col.map(v => +v.toFixed(3)), x: (f[0] + f[2]) / 2 + nx * d, y: (f[1] + f[3]) / 2 + ny * d, yaw: Math.atan2(-nx, -ny) * 180 / Math.PI }; }))"""))
+            print('findings', json.dumps(fd, ensure_ascii=False), flush=True)
+            for q, name in zip(fd, ('schleusingen_wohnblock', 'schleusingen_schule')):
+                if q:
+                    E(f"GAME.view({q['x']}, {q['y']}, KERN.ground({q['x']}, {q['y']}) + 1.65, {q['yaw']}, 4, 62)")
+                    settle()
+                    E(f"GAME.view({q['x']}, {q['y']}, KERN.ground({q['x']}, {q['y']}) + 1.65, {q['yaw']}, 4, 62); GAME.step(0.3)")
+                    lib.shot(pg, OUT, name)
+            ck('the blocks of flats light without shutters, the school in the look of a school of our time',
+               all(q and q['style'] == 1 and not q['shutters'] and min(q['col']) > 0.45 for q in fd), json.dumps(fd, ensure_ascii=False))
             ok, rep = lib.check_gl(pg)
             ck('every shader program within 16 textures, none broken', ok, json.dumps({k: rep[k] for k in ('programs', 'maxFrag', 'maxVert')}))
         if want('perf'):

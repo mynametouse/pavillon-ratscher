@@ -109,16 +109,21 @@ seit 5 die Stufen vor den Türen.
 
 ## Schnittstelle
 
-- `FASSADE` (`viz3/src/fassade/fassade.js`): `audit(ort, { vorher })`, `count(liste)` → `{ tuer, fenster, durchgang, hof, rest, n }`,
-  `eingang(id)`, `status()` (Zustand, Zahlen der Korrekturen, Zeiten, Höfe und Durchgänge von Schleusingen), `doors` (Ratscher: neue Türen je
-  Gebäude), `win` (Ratscher: Stallfenster je Gebäude und Fassade), `meshes`, `glass`.
+- `FASSADE` (`viz3/src/fassade/fassade.js`): `audit(ort, { vorher })` mit `ort` 'ratscher' | 'schleusingen' | 'zonen' (die gerade gebauten
+  ETHOS-Zellen), `count(liste)` → `{ tuer, fenster, durchgang, hof, rest, n }`, `eingang(id)` (Dorf, Schleusingen ab 900000, ETHOS-Häuser
+  des Platzes und der Zellen), `fenster(id)` (die gemalten Fenster eines Schleusinger Hauses je Wand – für die Räume dahinter), `status()`
+  (Zustand, Zahlen der Korrekturen, Zeiten, Höfe und Durchgänge von Schleusingen), `zonen()` (Zellen, Gebäude, neue Türen, Fenster, Hallen,
+  Stufen, ms), `zonenBild()` (Test), `steps()`, `stepAt(x, y)`, `doors` (Ratscher: neue Türen je Gebäude), `win` (Stallfenster je Gebäude
+  und Fassade), `geb` (ETHOS: Haut-Tür und -Fenster je Gebäude), `meshes`, `glass`.
 - `FAUDIT` (`viz3/src/fassade/fassade_audit.js`, rein): `windows(stück)`, `cover(gebäude, wand, index)`, `openRuns`, `hoefe(gebäude)`,
-  `tor(hof, …)`, `passLine(gebäude, linie)`, `hofTuer(gebäude, wände, frei)`, `fromF(gebäude der Stadtdaten)`, `index`, `audit`, `count`.
+  `tor(hof, …)`, `passLine(gebäude, linie)`, `hofTuer(gebäude, wände, frei)` (zur Not eine schmale Tür auf einem freien Stück ab 1,4 m),
+  `stufen(zTür, zBoden)`, `fromF(gebäude der Stadtdaten)`, `index`, `audit`, `count`.
 - `SCHL.fassade` (`welt/schleusingen.js`): `yards` (mit `reach`, `rest`, `z`, `at(x, y)`), `passes` (je Durchgang `A`, `B`, `d`, `w`, `h`,
   `depth`, `src` 'osm' | 'hof', `b`), `mapped` (die OSM-Durchgänge mit `open`), `n`, `ms`; je Gebäude `b.doorV` (die Tür vorher), `b.doorUse`,
   `b.doorYard`, `b.holes`, `b.open`, `b.passDoor`, `b.pieces` (die gezeichneten Fassadenstücke). `SCHL.streetDoor(b)`, `SCHL.FASS`.
-- Daten: `viz3/extra/gebaeude/dist/gebaeude/osm.json` (2,7 KB: Durchgänge und Eingänge aus OSM in Modellmetern), gebaut mit
-  `python3 -I viz3/extra/gebaeude/quellen/osm_fassade.py` (OSM-API in Stücken – Overpass brach am 17.11. ab).
+- Daten: `viz3/extra/gebaeude/dist/gebaeude/osm.json` (2,7 KB: Durchgänge, Eingänge und Treppen aus OSM in Modellmetern), gebaut mit
+  `python3 -I viz3/extra/gebaeude/quellen/osm_fassade.py` (OSM-API in Stücken – Overpass brach am 17.11. ab); die Liste der weggelassenen
+  ETHOS-Turmteile mit `python3 -I viz3/extra/gebaeude/quellen/teile.py` (nach einem Bau).
 
 ## Leistung
 
@@ -137,8 +142,12 @@ seit 5 die Stufen vor den Türen.
 ## Testen
 
 - Unit-Tests: `node --test viz3/test/unit/fassade.test.mjs` (11; in `tools/check.sh`).
-- Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9044 --serve gebaeude:ratscher,schleusingen` (Bilder in
-  `out/gebaeude/`), Abschnitt `perf` lädt zum Vergleich `?nofassade`. Themen-Tests `viz3/extra/gebaeude/tests.txt`.
+- Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9044 --serve gebaeude:ratscher,schleusingen,perf` (~13 min; Bilder
+  in `out/gebaeude/`). `ratscher`: Prüfung vorher/nachher, Stallfenster (Bild vorher/nachher/nachts, Draw-Calls mit und ohne), eine neue Tür,
+  Stufen (auf einer gehen, Bild), Anger bei Tag und Nacht. `schleusingen`: Prüfung, durch jeden Durchgang in den Hof gehen (Bilder von der
+  Straße und vom Hof), die Burgtreppe hinab, Markt bei Tag und Nacht, eine Hoftür, eine Brandwand mit Fenstern, die Stufen, die ETHOS-Zellen
+  um die Altstadt (Prüfung `zonen`, Bild). `perf`: dasselbe Bild am Markt in zwei frischen Ladungen mit und ohne `?nofassade` (ohne Figuren,
+  Verkehr, Tiere gezählt). Themen-Tests in `viz3/extra/gebaeude/tests.txt` (die Orts-Tests der berührten Dateien laufen mit).
 
 ## Für den Lead
 
@@ -152,6 +161,32 @@ seit 5 die Stufen vor den Türen.
   und Autos, siehe „Leistung“ – der Test misst seither anders); Lauf 5 (Stufen, schmale Tür, Test-Umbau) siehe Bericht an den Lead. Die
   Themen-Tests (`viz3/extra/gebaeude/tests.txt`): `gebaeude` (Ratscher; Schleusingen mit `perf`), `schleusingen`, `schleusingen_innen`
   (zwei Teile), `haeuser` (Bilder), `laeden`.
+- **Ansicht je Gebäude (für `schleusingen-ansicht`)**: Werte aus Straßenansichten gehen über `FASSADE` in die Häuser, angewandt beim Bau:
+  - **Datei** `fassade/ansicht.json` – ein Extra legt sie unter `viz3/extra/<extra>/dist/fassade/ansicht.json` ab (nur eines!); die App lädt
+    sie beim Start (fehlt sie, gilt nichts). Format: `{ "v": 1, "quelle": "…", "b": { "<Schlüssel>": { …Ansicht… } } }`.
+  - **Schlüssel**: `"#236"` (ein Gebäude der Altstadtdaten, Index wie `SCHL.bld[].i`, für `SINNEN` 900000 + i), eine Adresse
+    (`"Markt 12"` – die Häuser mit dieser Adresse), eine ETHOS-Nummer (`"DEG_…"`, die Gebäude von `gebaeude/gebaeude.js` am Stadtrand und an
+    den Strecken), `"@x,y"` (Modellmeter: das Gebäude, das dort steht – am einfachsten für Punkte aus einer Straßenansicht).
+  - **Ansicht** (alles freiwillig): `farbe` (`"#rrggbb"` oder `[r, g, b]` 0–1, sRGB), `material` (`putz`, `glatt` = Putz von heute mit großen
+    Fenstern, `schiefer`, `schiefer-og`, `schiefer-giebel`, `fachwerk`, `fachwerk-og`, `klinker`, `scheune`, `holz` (Bretter), `halle`,
+    `schuppen`, `schule-alt` = Ratschers Schule von 1828 – die Stile des Fassaden-Shaders), `fachwerk` (`true`/`false` oder Muster 0–2), `laeden` (`true`/`false` oder
+    Farbe `gruen`/`braun`/`grau`), `rahmen` (`weiss`/`braun`/`gruen`/`grau`), `tuer` (Art 0–7: dunkelbraun, braun, grün, blau, hellgrau mit
+    Glas, rot, hellblau, Eiche – oder `{ "art": 4, "breite": 1.3 }`, in der Altstadt höchstens 1,3 m: breiter ist für `SIPLAN` eine
+    Durchfahrt), `dach` (`"#rrggbb"`: Farbe der Dachdeckung, nur Altstadt), `achse` (Fensterachse in m, nur Altstadt), `sockel`
+    (Hochparterre), `art: "schule"` (Schule von heute: glatt, hell, weite Achsen, helle Glastür, keine Läden).
+  - **Im Spiel** (Test, Werkzeug): `FASSADE.ansicht(schlüssel, ansicht)` vor dem Bau; `FASSADE.ansichtOf(b)`, `FASSADE.ansichtStand()`.
+  - Die Altstadt nimmt die Ansicht vor dem Bau in ihren Stil (`welt/schleusingen.js` `styleOf` danach), die ETHOS-Gebäude bekommen sie auf
+    ihre Wände gemalt, sobald ihre Zelle steht (Farbe, Material, Läden, Rahmen, Tür – Dach, Achsen und Türbreite bleiben, wie
+    `gebaeude.js` sie baut). Dachform und Höhe kommen weiter aus den Daten.
+- **Die drei Funde von `schleusingen-ansicht`**: (1) der graue Block ohne Fassade am Markt (von der Südost-Ecke nach Westen) war ein
+  ETHOS-„Turm“ – weg (siehe oben, Bild `schleusingen_markt_suedost.jpg`); (2) die Wohnblöcke an der Hildburghäuser Straße (Nr. 13/15:
+  Altstadtdaten `#236`; Nr. 17–28 sind ETHOS-Gebäude außerhalb der Altstadtdaten): eine Regel für die Wohnblöcke außerhalb der Altstadt
+  (nicht alt, ab 250 m², ohne Läden und Namen, über 200 m vom Markt – 26 Häuser) – glatter Putz in Weiß, Creme oder Hellgrau, keine Läden
+  (Bild `schleusingen_wohnblock.jpg`); die ETHOS-Blöcke dahinter brauchen ihre Werte über die Datei (`"@x,y"` oder `"DEG_…"`); (3) die Schule:
+  in den Altstadtdaten heißen die Schulen von heute „Staatliche Grundschule“ und „Staatliche Regelschule“ (Helmut-Kohl-Straße 5 und 7) –
+  beide jetzt im Aussehen einer Schule von heute (Bild `schleusingen_schule.jpg`); an der Ilmenauer Straße kennen die Altstadtdaten keine
+  Schule (dort stehen Wohnhäuser, das Rehazentrum, die Wiesenbauschule – heute Stadtbibliothek); liegt die gemeinte außerhalb, ist sie ein
+  ETHOS-Gebäude: `{ "@x,y": { "art": "schule" } }`.
 - **An `innen-real`**: (1) An den freien Strecken von Brandwänden malt die Stadt jetzt Fenster (`b.open[k]`, `b.pieces`), `SIPLAN.facades`
   behandelt die ganze Wand noch als blind – drinnen fehlt dort das Fenster. Ein Zusatz in `si_plan.js`: die Stücke aus `b.pieces` statt
   `b.F` (Fenster je Stück wie `ZIPLAN.facadeWindows`). (2) Häuser mit Tordurchfahrt haben `doorFac.w` = Breite der Durchfahrt (> 1,3 m) →
@@ -185,4 +220,11 @@ in OSM aber oft gemappt; (4) zeichnen wie `welt/schleusingen.js` `building()`/`p
 - **Weitere OSM-Treppen** (24 in der Altstadt) sind nicht als Treppen gebaut – nur die vor dem Burgtor; das Werkzeug dafür liegt in
   `welt/schleusingen.js` (`stairFrom`, `addStair`, `stairGeo`).
 - **ETHOS-Zellen**: geprüft und korrigiert werden Türen und Fenster; Höfe und Durchgänge nicht (Stadtrand, Gewerbe, Dörfer – Höfe zur
-  Straße offen); der Test prüft die Zellen um Schleusingens Markt.
+  Straße offen); der Test prüft die Zellen um Schleusingens Markt. Eine Zelle, die vor dem Laden der Altstadt korrigiert wurde, kennt deren
+  Häuser nicht als Nachbarn (Zellen am Rand der Altstadt warten, solange die Stadt gebaut wird; davor gebaute bleiben so). Eine Tür, die
+  `gebaeude.js` vor die Wand eines Nachbarn malt, bleibt (in den Zellen um den Markt keine gefunden). Die Stallfenster der Zellen leuchten
+  nachts nicht (eigenes Material wäre ein Draw-Call mehr).
+- **Stufen**: nur vor Haustüren (Wohnhaus-Stile), aus Steinblöcken; Tore von Scheunen und Hallen stehen auf dem Boden (Rampe nicht
+  gebaut). Die Stufen kosten Dreiecke (Schleusingen +4,9 % der Stadt), keine Draw-Calls.
+- **Höhere Teile von Altstadthäusern**: die sechs ETHOS-„Türme“ in Lücken der Altstadt sind weggelassen – wo ein Altstadthaus in Wirklichkeit
+  einen höheren Teil hat, fehlt er jetzt (die Stadtdaten kennen ihn nicht).
