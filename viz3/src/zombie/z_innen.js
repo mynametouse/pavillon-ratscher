@@ -323,6 +323,23 @@ export const ZINNEN = (() => {
       P(h.u0, h.z1, k + 0.035),
       [s.n[0], s.n[1], 0]
     );
+    // feat/innen-real (normal game): the window seen from inside by day is bright – a pale veil on the glass whose strength follows the
+    // daylight (zombie/z_innen_mob.js M.glare: the shade's program, its colour white), as a photo of a room shows its windows
+    if (C.shade && M.glare)
+      C.shade.quad(
+        M.glare,
+        P(h.u0, h.z0, k + 0.031),
+        P(h.u1, h.z0, k + 0.031),
+        P(h.u1, h.z1, k + 0.031),
+        P(h.u0, h.z1, k + 0.031),
+        [s.n[0], s.n[1], 0],
+        [
+          [0.5, 0.5],
+          [0.5, 0.5],
+          [0.5, 0.5],
+          [0.5, 0.5],
+        ]
+      );
     const p = P(h.u0 - 0.05, 0, -0.14),
       q = P(h.u1 + 0.05, 0, 0.05);
     C.furn.box(
@@ -690,6 +707,7 @@ export const ZINNEN = (() => {
     // furniture's colliders) and the rims of every room – in a mesher of its own, one mesh
     const shade = o && o.still && M.schatten ? new ZIMOB.Mesher() : null,
       foots = [];
+    C.shade = shade;
     // a rectangle in the plane through c (axes ea, eb, normal n), its soft rim e wide inside the texture's falloff: nine quads – the
     // corners and edges keep their width however big the rectangle; t ∈ (0, 1] how dark its middle is (the texture at 0.25·t, where
     // its falloff is f(t)² – the middle part stays there, the rim runs out to the texture's edge)
@@ -2104,6 +2122,17 @@ export const ZINNEN = (() => {
       DOORS[k].group.traverse(o => {
         if (o.isMesh) H.stats.draws++;
       });
+    // feat/innen-real: the laid-on light and shade cost a draw call each – a house at the edge of the budget (60) goes without the
+    // window's veil first, then without the shade
+    for (const name of ['innen-fensterlicht', 'innen-schatten']) {
+      if (H.stats.draws <= 60) break;
+      const me = shadeMeshes.find(q => q.material && q.material.name === name);
+      if (me) {
+        G.remove(me);
+        me.geometry.dispose();
+        H.stats.draws--;
+      }
+    }
     S.built.push(H);
     terrainHole(H);
     wire();
@@ -2242,20 +2271,23 @@ export const ZINNEN = (() => {
     const mid = [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2];
     for (const w of P.windows) {
       if (w.fl !== r.fl) continue;
+      // (feat/innen-real: 1.3 m in and at the window's head – a metre in at its middle the lamp's own highlight sat on the glass of a
+      // shower or a cabinet near the window like a bulb)
       const c = (w.a + w.b) / 2,
+        IN = 1.3,
         p =
           w.edge === 'front'
-            ? [c, P.yi0 + 1.0]
+            ? [c, P.yi0 + IN]
             : w.edge === 'back'
-              ? [c, P.yi1 - 1.0]
+              ? [c, P.yi1 - IN]
               : w.edge === 'left'
-                ? [P.xi0 + 1.0, c]
-                : [P.xi1 - 1.0, c];
+                ? [P.xi0 + IN, c]
+                : [P.xi1 - IN, c];
       if (p[0] < r.x0 || p[0] > r.x1 || p[1] < r.y0 || p[1] > r.y1) continue;
       const d = Math.hypot(p[0] - mid[0], p[1] - mid[1]);
       if (d < bd) {
         bd = d;
-        best = P.toW(p[0], p[1]).concat((w.z0 + w.z1) / 2);
+        best = P.toW(p[0], p[1]).concat(Math.min(w.z1, r.z1 - 0.25));
       }
     }
     return best || P.toW(mid[0], mid[1]).concat(r.z1 - 0.4);

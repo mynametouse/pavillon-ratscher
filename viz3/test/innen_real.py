@@ -5,6 +5,7 @@
 # house, a kitchen with a sink and a stove, a bathroom with a toilet and a basin, a bed in the bedroom, the front door into the hall, windows
 # inside where the facade has them, a lamp in every room, a resident at a plausible place by the hour, no two living rooms alike.
 #   python3 viz3/test/innen_real.py PORT [ratscher|schleusingen|ratscher+schleusingen][,tag=nachher,n=6,tier=hoch,w=1280,h=720,nacht=1]
+#     (a quick look at a few houses: nur=klein+alt,gast=0 – only these, without the villager's day)
 # Pictures and numbers: out/innen_real/<tag>/ (metrics_<sections>.json); side by side: viz3/test/innen_real_vergleich.py.
 import sys, os, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -17,6 +18,8 @@ TAG = opts.get('tag', 'nachher')
 TIER = opts.get('tier', 'mittel')
 NH = int(opts.get('n', 6))
 NIGHT = opts.get('nacht', '1') != '0'
+ONLY = set(opts['nur'].split('+')) if opts.get('nur') else None  # only these houses (labels), e.g. nur=klein+alt – a quick look
+GAST = opts.get('gast', '1') != '0'
 OUT = lib.out(os.path.join('innen_real', TAG))
 ck = lib.Checks('innen_real')
 errs = []
@@ -148,6 +151,13 @@ def house(place, hid, label, night=False, both=('stube', 'kueche')):
         return None
     sv = J("__T.survey()")
     print('house', place, label, json.dumps(sv, ensure_ascii=False)[:1600], flush=True)
+    if sv and sv.get('real') and sv['real'].get('miss'):
+        # what the rooms that miss something asked of the placer, and where the doors are (to see why)
+        print('why', place, label, json.dumps(J("""(() => { const H = HAEUSER.H, P = H.plan, miss = H.survey().miss.map(t => t.split(':')[0]);
+          return { box: [P.xi0, P.xi1, P.yi0, P.yi1].map(v => +v.toFixed(2)), stair: P.stair ? ['x0', 'x1', 'y0', 'y1', 'side'].map(k => P.stair[k]) : null,
+            rooms: P.rooms.map(r => [r.id, r.side, r.part || 0, ...[r.x0, r.x1, r.y0, r.y1].map(v => +v.toFixed(2))]),
+            doors: (P.doors || []).map(d => [d.id, d.from || '', +d.x.toFixed(2), +d.y.toFixed(2), d.axis, d.w]),
+            got: P.rooms.filter(r => miss.includes(r.id)).map(r => [r.id, (r.got || []).map(q => [q.w, q.d, q.h, q.ok ? 1 : 0, q.side || ''].join(' '))]) }; })()"""), ensure_ascii=False)[:3000], flush=True)
     E("GAME.step(0.3)")
     shot(f'{place}_{label}_eingang', {'house': hid})
     for rid in rooms_of():
@@ -211,7 +221,7 @@ with lib.browser() as b:
           add('klein', heute[heute.length - 1]);
           add('mittel', heute[heute.length >> 1]);
           return out; })()""")
-        picks = picks[:NH]
+        picks = [p for p in picks if p[0] in ONLY] if ONLY else picks[:NH]
         print('Ratscher houses', picks, flush=True)
         svs = []
         for i, (lbl, hid) in enumerate(picks):
@@ -219,7 +229,7 @@ with lib.browser() as b:
         # the villager at home by the hour (haeuser/haeuser.js doing): Gerhard in the afternoon on his couch, at noon at the stove, late in
         # the evening with the TV on, at night asleep in his bed – each time the first minute of the hour's span when dorf's day has him in
         for label, h0, h1, want, md in (('nachmittag', 14, 17, ('sofa', 'tisch'), 'day'), ('mittag', 11.6, 12.4, ('herd',), 'day'),
-                                         ('abend', 19.5, 22.3, ('tv',), 'night'), ('nacht', 23, 23.9, ('bett',), 'night')):
+                                         ('abend', 19.5, 22.3, ('tv',), 'night'), ('nacht', 23, 23.9, ('bett',), 'night')) if GAST else ():
             t = J(f"""(() => {{ const d = Math.floor(CLOCK.t / 1440) + 1; for (let m = Math.round({h0} * 60); m < Math.round({h1} * 60); m += 5) {{ const t = d * 1440 + m;
               if (!DLIFE.away('gerhard', t) && !DLIFE.routine('gerhard', t) && !DCAL.on('skat', t) && !DCAL.on('fire', t)) {{ CLOCK.t = t; return t; }} }} return null; }})()""")
             if t is None:
@@ -260,7 +270,7 @@ with lib.browser() as b:
               add('heute90', (hs.find(h => HAEUSER.lookOf(h.id) === 'heute-90') || {}).id);
               add('haus2', (hs.find(h => HAEUSER.lookOf(h.id) === 'heute' && h.id !== SINNEN.scen) || {}).id);
               return out; })()""")
-            picks = picks[:max(2, NH - 1)]
+            picks = [p for p in picks if p[0] in ONLY] if ONLY else picks[:max(2, NH - 1)]
             print('Schleusingen houses', picks, flush=True)
             svs = []
             for i, (lbl, hid) in enumerate(picks):

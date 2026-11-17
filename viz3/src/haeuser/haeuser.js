@@ -263,6 +263,12 @@ export const HAEUSER = (() => {
       const M = ZIMOB.mats(),
         T = HHEUTE.mats();
       if (M.parkett) T.laminat = M.parkett[TONES[Math.floor(ZIPLAN.hh(id * 2.31 + 0.7) * TONES.length) % TONES.length]];
+      // the painted walls of today over woodchip paper too (the kit's M.raufaser in the colour each had)
+      if (M.raufaser && T.wand && !T.wand.rf)
+        for (const k of Object.keys(T.wand)) {
+          const m = T.wand[k];
+          if (m && m.isMaterial && m.name !== 'innen-raufaser') T.wand[k] = M.raufaser(m.color.getHex());
+        }
     } catch (e) {
       console.warn('haeuser floors', e);
     }

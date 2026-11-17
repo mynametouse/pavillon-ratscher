@@ -552,11 +552,30 @@ export const ZIPLAN = (() => {
     // behind the Stube, where the room is deep enough for both parts
     const splitBack = (host, kind, back) => {
       if (!host || host.y1 - host.y0 < back + 2.4 || host.x1 - host.x0 < 1.6) return false;
-      const cut = host.y1 - back;
-      add(Object.assign({}, host, { kind, y0: cut + PW / 2, kitchenOfStube: false }));
+      // (the partition clear of the side facade's windows, as in deepen)
+      const wins = host.side ? sideWins(0, host.side) : [];
+      let cut = null;
+      for (const dy of [0, -0.2, 0.2, -0.4, 0.4, -0.6])
+        if (
+          !wins.some(([a, e]) => host.y1 - back + dy + PW / 2 + 0.06 > a && host.y1 - back + dy - PW / 2 - 0.06 < e)
+        ) {
+          cut = host.y1 - back + dy;
+          break;
+        }
+      if (cut === null || cut - host.y0 < 2.4 || host.y1 - cut < 1.9) return false;
+      add(Object.assign({}, host, { kind, y0: cut + PW / 2, kitchenOfStube: false, back: true }));
       host.y1 = cut - PW / 2;
       return true;
     };
+    // (the bathroom behind the Stube – the kitchen keeps its long walls for the sink and the stove – else behind the kitchen; a house
+    // this small has no bedroom of its own: a room of 2.1 × 2.7 m left no place for a bed beside the way in, and one sleeps on the
+    // sofa bed of the living room – haeuser/haeuser_heute.js: „Aufs Sofa legen“)
+    if (!hasBad)
+      hasBad = splitBack(
+        rooms.find(r => r.fl === 0 && r.kind === 'stube'),
+        'bad',
+        2.2
+      );
     if (!hasBad)
       hasBad = splitBack(
         rooms.find(r => r.fl === 0 && r.kind === 'kueche'),
@@ -566,12 +585,6 @@ export const ZIPLAN = (() => {
     if (!rooms.some(r => r.kind === 'schlafzimmer')) {
       const k = rooms.find(r => r.kind === 'kammer');
       if (k) k.kind = 'schlafzimmer';
-      else
-        splitBack(
-          rooms.find(r => r.fl === 0 && r.kind === 'stube'),
-          'schlafzimmer',
-          2.6
-        );
     }
     // the cellar under the kitchen (or the Stube), reached by a trapdoor with a steep stair
     let cellar = null,
@@ -637,7 +650,9 @@ export const ZIPLAN = (() => {
       const wx = r.side === 'L' ? r.x1 + PW / 2 : r.x0 - PW / 2;
       let lo = r.y0 + 0.2,
         hi = r.y1 - 0.2;
-      const st = stair && stair.side === r.side && !r.part ? stair : null,
+      // (feat/innen-real: a house of one storey has no stair – the one planned is never built: a room split off at the back of the
+      // small side gets its door from the hall, not through the kitchen)
+      const st = stair && stair.side === r.side && !r.part && !(nSt === 1 && r.back) ? stair : null,
         free = [];
       if (st) {
         // the wall beside the stair stays closed; on the top storey only beside its opening (no flight goes on up there)

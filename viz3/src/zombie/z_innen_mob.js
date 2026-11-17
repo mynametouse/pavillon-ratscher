@@ -790,7 +790,27 @@ export const ZIMOB = (() => {
     const room = (t, rough = 0.85) => dimIndoor(plain({ map: t, roughness: rough }), 0.75, 0.4);
     // walls, ceilings and floors as copies of the garden buildings' ones (same programs): a little light of their own by day stands in
     // for the light the room's floor and walls throw back (a ceiling only sees the dark ground half of the sky light otherwise)
-    M.putz = twin(KM.wall); // warm white lime plaster
+    // feat/innen-real: the walls painted over woodchip paper (Raufaser – the wall of most German rooms): the photo of the pavilion's
+    // plaster with a faint relief, tinted to the paint's colour (its own grey divided out), in the program of the garden buildings'
+    // floors (the same maps, the same indoor dimming: no new program); a plain wall had looked like card
+    const plasIn = indoor(MAT.wall, 0.8, 0.25),
+      PLAS = [0.41, 0.367, 0.346];
+    M.raufaser = hex => {
+      const key = 'rf' + hex;
+      if (M[key]) return M[key];
+      const m = twin(plasIn),
+        c = new THREE.Color(hex);
+      m.color.setRGB(c.r / PLAS[0], c.g / PLAS[1], c.b / PLAS[2]);
+      m.normalScale.set(0.3, 0.3);
+      m.userData.look = c; // (its colour for the light thrown back – daylight())
+      m.name = 'innen-raufaser';
+      if (M.bounce) {
+        M.bounce.push([m, 0.1]);
+        dayK = -1; // (its own light at the next look at the day)
+      }
+      return (M[key] = m);
+    };
+    M.putz = M.raufaser(0xf3eee4); // warm white
     // feat/innen-real: the ceiling a plain white (it is painted white in nearly every house); lit by the light the floor and the walls
     // throw up, it had come out a dull brown
     M.decke = twin(KM.wall, { color: 0xf4f3ef });
@@ -814,6 +834,7 @@ export const ZIMOB = (() => {
         const m = twin(oakIn),
           c = new THREE.Color(hex);
         m.color.setRGB(c.r / OAK[0], c.g / OAK[1], c.b / OAK[2]);
+        m.userData.look = c;
         m.name = 'innen-parkett';
         return m;
       };
@@ -856,6 +877,11 @@ export const ZIMOB = (() => {
       polygonOffsetUnits: -2,
     });
     M.schatten.name = 'innen-schatten';
+    // the veil of daylight on a window's glass (its strength set by daylight())
+    M.glare = M.schatten.clone();
+    M.glare.color.set(0xfffaf0);
+    M.glare.opacity = 0.4;
+    M.glare.name = 'innen-fensterlicht';
     // feat/innen-real: the palette indoors (the normal game's houses): the same material and program, with the sky's light of its own
     // strength – a room sees the sky through its windows only (full, every glossy top and white front looked blue-grey)
     M.palIn = twin(PAL.M.front);
@@ -905,9 +931,10 @@ export const ZIMOB = (() => {
   function daylight(k) {
     if (!M.bounce || Math.abs(k - dayK) < 0.02) return false;
     dayK = k;
+    if (M.glare) M.glare.opacity = 0.42 * k * k; // feat/innen-real
     for (const [m, f, tint] of M.bounce)
       m.emissive
-        .copy(m.color)
+        .copy(m.userData.look || m.color)
         .multiply(tint || WARM)
         .multiplyScalar(f * k);
     return true;

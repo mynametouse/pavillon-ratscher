@@ -1035,8 +1035,13 @@ export const ZIEINR = (() => {
       z = C.z,
       u = F.u0 + 0.25;
     F.box(m, C.col(0x2a2826, 0.5, 0.4), u - 0.22, u + 0.22, 0.04, 0.44, z, z + 0.55);
-    F.cyl(m, C.col(0xb8703a, 0.3, 0.8), u, 0.24, z + 0.55, z + 1.85, 0.19, 0.19, 12);
-    F.cyl(m, C.col(0xb8703a, 0.3, 0.8), u, 0.24, z + 1.85, z + 1.95, 0.19, 0.08, 12);
+    // (feat/innen-real: copper as copper – darker, with its seams and the rim of its lid; a smooth cylinder of 12 sides had looked
+    // like an orange pencil)
+    const cu = C.col(0x93552e, 0.38, 0.8),
+      seam = C.col(0x6e3d22, 0.45, 0.6);
+    F.cyl(m, cu, u, 0.24, z + 0.55, z + 1.85, 0.19, 0.19, 18);
+    F.cyl(m, cu, u, 0.24, z + 1.85, z + 1.95, 0.19, 0.08, 18);
+    for (const zz of [0.6, 1.1, 1.6, 1.84]) F.cyl(m, seam, u, 0.24, z + zz, z + zz + 0.025, 0.196, 0.196, 18);
     F.cyl(m, C.col(0x2a2826, 0.5, 0.4), u, 0.24, z + 1.95, z + 2.4, 0.05, 0.05, 8);
     F.rod(m, C.M.messing, [u + 0.12, 0.42, z + 1.0], [u + 0.12, 0.6, z + 1.0], 0.015, 6);
     C.spot('ofen', F.P(u, 0.85, z), F, 'Badeofen anheizen');
