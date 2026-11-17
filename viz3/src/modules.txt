@@ -346,6 +346,8 @@ vehicles/cockpit_mirror.js  # feat/cockpit real mirrors: interior and door mirro
 vehicles/cockpit.js         # feat/cockpit the driver's view: cluster, wheel and hands, mirrors, wipers, indicators, navi (COCKPIT)
 # feat/jetpack: the jetpack (Falko 17.11.2026) – after the vehicles and the figure, before the frame loop
 jetpack/jetpack.js          # feat/jetpack put on a jetpack, fly high and far, the overview with the places' names, fly to a place by itself (JET)
+# feat/navi: the autopilot in the car (Falko 17.11.2026) – after the traffic (VNETZ, VAUTO) and the drive (FAHRT)
+navi/navi.js                # feat/navi a destination in the vehicle panel, the autopilot drives there – route over the village's and the drive's roads (NAVI)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
