@@ -1,2 +1,6 @@
 grenzland_ruf:ruf
 grenzland_ruf:jobs
+# (feat/grenzland-ruf) the tests of the files taken over (gl_reaktion.js, gl_handy.js) – once on this branch, taken out again before the merge
+grenzland_welt:film,wahl
+handy
+grenzland_radio
