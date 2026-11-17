@@ -20,6 +20,7 @@ import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
 import { VPROPS } from '../world/village_props.js';
 import { WELT } from './welt.js';
+import { FAUDIT } from '../fassade/fassade_audit.js';
 export const SCHL = (() => {
   const S = { on: false, state: 'idle', meshes: [], bld: [], segs: [], lamps: [], ms: 0, err: '' };
   if (!WELT.on) return S;
@@ -158,7 +159,7 @@ export const SCHL = (() => {
           A.position.push(x, z0 + v, -y);
           A.normal.push(nx, 0, -ny);
           A.aW.push(u + at.u0, v, top, at.w);
-          A.aV.push(u, at.LF, at.eave, at.st);
+          A.aV.push(u - (at.us || 0), at.LF, at.eave, at.st); // feat/gebaeude: a run of a wall drawn as a facade of its own (us = its start)
           A.aG.push(at.t0, at.tA, at.uA, at.t1);
           A.aD.push(at.du, at.dw, at.sp, at.fl);
           A.aC.push(at.col[0], at.col[1], at.col[2], at.pk);
@@ -232,12 +233,9 @@ export const SCHL = (() => {
       },
     };
   }
-  // ---- one building: facades (with the door), roof (faces, soffit, fascia, gutters, ridge tiles, chimney), collision segments ----
-  function building(b, i, z0, WB, RB) {
-    const o = b.st,
-      pk = o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut,
-      eave = b.e;
-    // the door: on the facade towards the nearest street (not a party wall), in a bay like world/village.js
+  // ---- the street door: on the facade towards the nearest street (not a party wall), in a bay like world/village.js → { k, u, w } ----
+  function streetDoor(b) {
+    const o = b.st;
     let doorF = -1,
       best = 1e9;
     b.F.forEach((f, k) => {
@@ -250,6 +248,38 @@ export const SCHL = (() => {
       }
     });
     if (b.door != null) doorF = b.door;
+    if (doorF < 0) return null;
+    const f = b.F[doorF],
+      L = Math.hypot(f[2] - f[0], f[3] - f[1]),
+      st = f[8] & 1 && (o.style === ST.FW || o.style === ST.FW_UP) ? ST.PLASTER : o.style,
+      nb = Math.max(1, Math.floor((L - 0.6) / o.sp)),
+      bw = L / nb;
+    let du = -1,
+      dw = 0;
+    if (b.doorU != null) {
+      du = b.doorU;
+      dw = b.doorW || 1.1;
+    } else if (o.typ === 0) {
+      du = ((nb >= 3 ? (hh(b.i + 23) < 0.5 ? 1 : nb - 2) : 0) + 0.5) * bw;
+      dw = 1.05;
+    } else if (st === ST.HALL) {
+      du = L / 2;
+      dw = Math.min(5, L * 0.4);
+    } else if (L > 3) {
+      du = L / 2;
+      dw = Math.min(2.5, L * 0.6);
+    }
+    return du >= 0 ? { k: doorF, u: du, w: dw, street: true } : null;
+  }
+  // ---- one building: facades (with the door), roof (faces, soffit, fascia, gutters, ridge tiles, chimney), collision segments ----
+  // feat/gebaeude: the door comes from fassPlan (b.doorUse: the street door, else a door to the yard or the garden), real openings
+  // (b.holes: the Rathaus door, the passages into the yards) and the open runs of party walls with windows (b.open[k]); what is drawn
+  // is kept as pieces for the audit (b.pieces, fassade/fassade.js)
+  function building(b, i, z0, WB, RB) {
+    const o = b.st,
+      pk = o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut,
+      eave = b.e,
+      D = b.doorUse !== undefined ? b.doorUse : streetDoor(b);
     // the Rathaus: a blue-grey stone ground floor under the cream plaster (photos 2025) – its facade quads are split at the floor line
     const gf = b.gf,
       wq = (F, ax, ay, bx, by, ua, ub, ta, tb, zz, zLow, at) => {
@@ -259,6 +289,7 @@ export const SCHL = (() => {
           WB.quad(F, ax, ay, bx, by, ua, ub, ta, tb, zz, zs, at);
         } else WB.quad(F, ax, ay, bx, by, ua, ub, ta, tb, zz, zLow, at);
       };
+    b.pieces = [];
     let u0 = 0;
     b.F.forEach((f, k) => {
       const [ax, ay, bx, by, t0, uA0, tA0, t1, fl] = f,
@@ -269,26 +300,20 @@ export const SCHL = (() => {
         blind = fl & 1,
         st = blind && (o.style === ST.FW || o.style === ST.FW_UP) ? ST.PLASTER : o.style,
         sp = o.sp,
-        nb = Math.max(1, Math.floor((L - 0.6) / sp)),
-        bw = L / nb;
+        holes = (b.holes || []).filter(h => h.k === k).sort((p, q) => p.u - q.u);
       let du = -1,
         dw = 0;
-      if (k === doorF) {
-        if (b.doorU != null) {
-          du = b.doorU;
-          dw = b.doorW || 1.1;
-        } else if (o.typ === 0) {
-          du = ((nb >= 3 ? (hh(i + 23) < 0.5 ? 1 : nb - 2) : 0) + 0.5) * bw;
-          dw = 1.05;
-        } else if (st === ST.HALL) {
-          du = L / 2;
-          dw = Math.min(5, L * 0.4);
-        } else if (L > 3) {
-          du = L / 2;
-          dw = Math.min(2.5, L * 0.6);
-        }
+      if (D && D.k === k) {
+        du = D.u;
+        dw = D.w;
+      } else if (holes.length) {
+        // an opening (a passage): the shader keeps the ground-floor bays beside it free, as beside a door
+        du = holes[0].u;
+        dw = holes[0].w;
       }
-      if (du >= 0) b.doorFac = { ax, ay, dx: F.dx, dy: F.dy, u: du, w: dw };
+      if (du >= 0 && D && D.k === k && D.street) b.doorFac = { ax, ay, dx: F.dx, dy: F.dy, u: du, w: dw };
+      if (b.passDoor && b.passDoor.k === k)
+        b.doorFac = { ax, ay, dx: F.dx, dy: F.dy, u: b.passDoor.u, w: b.passDoor.w };
       const at = {
         u0,
         w: 4 * i + o.typ,
@@ -309,21 +334,9 @@ export const SCHL = (() => {
       let low = Math.min(z0 - 2.0, (b.zmin !== undefined ? b.zmin : z0) - 1.0);
       if (b.zmin !== undefined && z0 - b.zmin > 1.2) {
         // an exposed foot on a slope: a stone base of its own without windows (the shader's plaster plinth below the ground floor
-        // would be a dark slab metres high; the castle and the church stand on rough sandstone, photos 2025)
-        const hb = z0 - low;
-        WB.quad(
-          F,
-          ax,
-          ay,
-          bx,
-          by,
-          0,
-          L,
-          hb,
-          hb,
-          low,
-          low,
-          Object.assign({}, at, {
+        // would be a dark slab metres high; the castle and the church stand on rough sandstone, photos 2025) – open under a passage
+        const hb = z0 - low,
+          atB = Object.assign({}, at, {
             LF: 0.5,
             eave: hb,
             st: ST.PLASTER,
@@ -335,68 +348,139 @@ export const SCHL = (() => {
             dw: 0,
             fl: 0,
             col: b.lm ? SAND_B : BASE_C,
-          })
-        );
+          });
+        let u = 0;
+        for (const h of holes.concat([{ u: L + 1e3, w: 0 }])) {
+          const e = Math.min(L, h.u - h.w / 2);
+          if (e - u > 0.01)
+            WB.quad(F, ax + F.dx * u, ay + F.dy * u, ax + F.dx * e, ay + F.dy * e, u, e, hb, hb, low, low, atB);
+          u = Math.max(u, h.u + h.w / 2);
+        }
         low = z0;
       }
-      if (b.hole && b.hole.k === k) {
-        // a real opening (the Rathaus door): left part, right part, lintel
-        const h0 = b.hole.u - b.hole.w / 2,
-          h1 = b.hole.u + b.hole.w / 2,
-          top = b.hole.h,
-          P_ = u => [ax + F.dx * u, ay + F.dy * u],
-          tAt = u =>
-            gable
-              ? u < uA0
-                ? t0 + ((tA0 - t0) * u) / uA0
-                : tA0 + ((t1 - tA0) * (u - uA0)) / (L - uA0)
-              : t0 + ((t1 - t0) * u) / L;
-        const seg = (ua, ub, zb, tt) => {
-          const [x0, y0] = P_(ua),
-            [x1, y1] = P_(ub);
-          wq(F, x0, y0, x1, y1, ua, ub, tt ? top : tAt(ua), tt ? top : tAt(ub), z0, zb, at);
-        };
-        const cuts = [0, h0, h1, L].concat(gable ? [uA0] : []).sort((p, q) => p - q);
+      const P_ = u => [ax + F.dx * u, ay + F.dy * u],
+        tAt = u =>
+          gable
+            ? u < uA0
+              ? t0 + ((tA0 - t0) * u) / uA0
+              : tA0 + ((t1 - tA0) * (u - uA0)) / (L - uA0)
+            : t0 + ((t1 - t0) * u) / L;
+      // one run [ua, ub] of the wall from zFrom (absolute) up to its top line, split at the apex; the castle in two bands (stone below, a
+      // half-timbered top storey with its own foot, photos 2025)
+      const run = (ua, ub, zFrom, A) => {
+        const cuts = [ua, ub];
+        if (gable && uA0 > ua + 0.01 && uA0 < ub - 0.01) cuts.splice(1, 0, uA0);
         for (let c = 0; c + 1 < cuts.length; c++) {
-          const ua = cuts[c],
-            ub = cuts[c + 1];
-          if (ub - ua < 0.01) continue;
-          if (ua >= h0 - 1e-6 && ub <= h1 + 1e-6) {
-            // above the opening: from the lintel up
-            const [x0, y0] = P_(ua),
-              [x1, y1] = P_(ub);
-            wq(F, x0, y0, x1, y1, ua, ub, tAt(ua), tAt(ub), z0, z0 + top, at);
-          } else seg(ua, ub, low, false);
-        }
-        S.segs.push([ax, ay, ax + F.dx * h0, ay + F.dy * h0], [ax + F.dx * h1, ay + F.dy * h1, bx, by]);
-      } else {
-        if (b.band && !blind) {
-          // two bands (the castle): stone below, a half-timbered top storey with its own foot (photos 2025)
-          const zb = eave - b.band,
-            atU = Object.assign({}, at, {
+          const p = cuts[c],
+            q = cuts[c + 1],
+            [x0, y0] = P_(p),
+            [x1, y1] = P_(q);
+          if (b.band && !blind) {
+            const zb = eave - b.band;
+            if (zFrom < z0 + zb - 0.01)
+              WB.quad(F, x0, y0, x1, y1, p, q, zb, zb, z0, zFrom, Object.assign({}, A, { st: ST.PLASTER }));
+            const atU = Object.assign({}, A, {
               st: ST.FW,
               eave: b.band,
-              t0: t0 - zb,
-              tA: at.tA - zb,
-              t1: t1 - zb,
+              t0: A.t0 - zb,
+              tA: A.tA - zb,
+              t1: A.t1 - zb,
               du: -1,
               dw: 0,
-            }),
-            atL = Object.assign({}, at, { st: ST.PLASTER });
-          WB.quad(F, ax, ay, bx, by, 0, L, zb, zb, z0, low, atL);
-          if (gable) {
-            const mx = ax + F.dx * uA0,
-              my = ay + F.dy * uA0;
-            WB.quad(F, ax, ay, mx, my, 0, uA0, t0 - zb, tA0 - zb, z0 + zb, z0 + zb, atU);
-            WB.quad(F, mx, my, bx, by, uA0, L, tA0 - zb, t1 - zb, z0 + zb, z0 + zb, atU);
-          } else WB.quad(F, ax, ay, bx, by, 0, L, t0 - zb, t1 - zb, z0 + zb, z0 + zb, atU);
-        } else if (gable) {
-          const mx = ax + F.dx * uA0,
-            my = ay + F.dy * uA0;
-          wq(F, ax, ay, mx, my, 0, uA0, t0, tA0, z0, low, at);
-          wq(F, mx, my, bx, by, uA0, L, tA0, t1, z0, low, at);
-        } else wq(F, ax, ay, bx, by, 0, L, t0, t1, z0, low, at);
-        S.segs.push([ax, ay, bx, by]);
+            });
+            WB.quad(F, x0, y0, x1, y1, p, q, tAt(p) - zb, tAt(q) - zb, z0 + zb, Math.max(z0 + zb, zFrom), atU);
+          } else wq(F, x0, y0, x1, y1, p, q, tAt(p), tAt(q), z0, zFrom, A);
+        }
+      };
+      // the open runs of a party wall (no neighbour in front, ≥ 3 m): drawn as facades of their own, with windows (fassPlan)
+      const open = blind && b.open && b.open[k] ? b.open[k] : [],
+        runAt = (ua, ub) => {
+          const apex = gable && uA0 > ua + 0.3 && uA0 < ub - 0.3;
+          return Object.assign({}, at, {
+            us: ua,
+            LF: ub - ua,
+            t0: tAt(ua),
+            t1: tAt(ub),
+            tA: apex ? tA0 : (tAt(ua) + tAt(ub)) / 2,
+            uA: apex ? uA0 - ua : (ub - ua) / 2,
+            fl: (apex ? 1 : 0) + (o.shutters ? 2 : 0) + (o.orn ? 4 : 0) + (o.raised ? 8 : 0),
+            du: -1,
+            dw: 0,
+          });
+        };
+      // the cuts: openings (holes) and runs; each span drawn from the foot or, over an opening, from its lintel up
+      const cuts = new Set([0, L]);
+      for (const h of holes) {
+        cuts.add(Math.max(0, h.u - h.w / 2));
+        cuts.add(Math.min(L, h.u + h.w / 2));
+      }
+      for (const [a, c] of open) {
+        cuts.add(a);
+        cuts.add(c);
+      }
+      const cs = [...cuts].sort((p, q) => p - q),
+        segFrom = [0];
+      for (let c = 0; c + 1 < cs.length; c++) {
+        const ua = cs[c],
+          ub = cs[c + 1];
+        if (ub - ua < 0.01) continue;
+        const m = (ua + ub) / 2,
+          hole = holes.find(h => m > h.u - h.w / 2 && m < h.u + h.w / 2),
+          rn = open.find(([a, e]) => m > a && m < e);
+        run(ua, ub, hole ? z0 + hole.h : low, rn ? runAt(rn[0], rn[1]) : at);
+        if (hole) {
+          const [x0, y0] = P_(segFrom[segFrom.length - 1]),
+            [x1, y1] = P_(ua);
+          if (ua - segFrom[segFrom.length - 1] > 0.01) S.segs.push([x0, y0, x1, y1]);
+          segFrom.push(ub);
+        }
+      }
+      {
+        const s0 = segFrom[segFrom.length - 1],
+          [x0, y0] = P_(s0);
+        if (L - s0 > 0.01) S.segs.push([x0, y0, bx, by]);
+      }
+      // the pieces as drawn (fassade/fassade.js counts doors and windows on them like the shader)
+      const piece = (ua, ub, A) => {
+        const [x0, y0] = P_(ua),
+          [x1, y1] = P_(ub);
+        b.pieces.push({
+          k,
+          ax: x0,
+          ay: y0,
+          bx: x1,
+          by: y1,
+          L: ub - ua,
+          dx: F.dx,
+          dy: F.dy,
+          nx: F.dy,
+          ny: -F.dx,
+          LF: A.LF,
+          t0: A.us !== undefined ? A.t0 : tAt(ua),
+          tA: A.tA,
+          uA: A.uA,
+          t1: A.us !== undefined ? A.t1 : tAt(ub),
+          gable: !!(A.fl & 1),
+          du: A.du,
+          dw: A.dw,
+          st: A.st,
+          sp: A.sp,
+          raised: !!(A.fl & 8),
+          eave: A.eave,
+          bid: i,
+          blind: !!blind,
+          hole: holes.length > 0,
+        });
+      };
+      if (!open.length) piece(0, L, at);
+      else {
+        let u = 0;
+        for (const [a, c] of open) {
+          if (a - u > 0.05) piece(u, a, at);
+          piece(a, c, runAt(a, c));
+          u = c;
+        }
+        if (L - u > 0.05) piece(u, L, at);
       }
       u0 += L;
     });
@@ -649,6 +733,13 @@ export const SCHL = (() => {
       if (!r.ok) throw new Error('stadt.json ' + r.status);
       data = await r.json();
       S.data = data;
+      // feat/gebaeude: what OpenStreetMap maps of passages and entrances (viz3/extra/gebaeude, small) – without it no mapped passages
+      try {
+        const g = await fetch(BASE + 'gebaeude/osm.json');
+        S.osmF = g.ok ? (await g.json()).schleusingen || null : null;
+      } catch (e) {
+        S.osmF = null;
+      }
       // the ground from the world tiles; without them (no welt-test/ on this host) the town stands on the terrain of world/ratscher.js
       try {
         gz = await WELT.sampler(ZONE[0], ZONE[1], ZONE[2], ZONE[3]);
@@ -742,6 +833,276 @@ export const SCHL = (() => {
     return z !== undefined && z !== null ? marktAdj(x, y, z) : RATSCHER.hAt ? RATSCHER.hAt(x, y) : 0;
   };
   S.gz = ground;
+  // ---- feat/gebaeude: doors, windows, passages and yards decided before the town is drawn (fassade/fassade_audit.js, the audit in
+  // fassade/fassade.js, docs/features/gebaeude.md). Every building gets an entrance: the street door as before; one without a street door
+  // a door on the side with room in front – the yard, the garden (a shed or a hall a gate). Party walls stay blank where a neighbour stands
+  // against them; their free runs (≥ 3 m) get windows like the rest of the house. Passages: where OpenStreetMap maps one (the
+  // Bertholdsburg's gates) and into every yard enclosed by houses (≥ 60 m²) through the house between it and a street, the shortest way
+  // (a Tordurchfahrt as old towns have them – which house is assumed); the yards behind become level and walkable. ?nofassade: as before.
+  const FASS = { on: !new URLSearchParams(location.search).has('nofassade'), YARD: 60, SMALL: 25 };
+  S.FASS = FASS;
+  S.streetDoor = b => streetDoor(b);
+  function fassPlan(town) {
+    const t0 = performance.now(),
+      F = (S.fassade = { yards: [], passes: [], pads: [], paint: [], ms: 0, n: { tuerHof: 0, tor: 0, fenster: 0 } });
+    for (const b of town) b.door0 = b.doorV = streetDoor(b); // doorV: as the town drew it before (the audit's „vorher“)
+    const recs = town.map(b =>
+      FAUDIT.fromF(b, {
+        id: 900000 + b.i,
+        ort: 'schleusingen',
+        door: b.door0,
+        ext: !!b.lm,
+        stOf: (f, k) => (b.stF ? b.stF(f, k) : b.st.style),
+      })
+    );
+    town.forEach((b, j) => {
+      b.rec = recs[j];
+      recs[j].b = b;
+    });
+    const idx = FAUDIT.index(recs),
+      free = (x, y) => !idx.at(x, y);
+    // the yards: enclosed open space
+    const Y = FAUDIT.hoefe(recs, { cell: 0.5, close: 1, min: 12 });
+    F.yards = Y;
+    const inYard = (x, y) =>
+        Y.find(q => x > q.bb[0] - 1 && x < q.bb[2] + 1 && y > q.bb[1] - 1 && y < q.bb[3] + 1 && q.at(x, y)),
+      outside = (x, y) => free(x, y) && !inYard(x, y),
+      named = data.st.filter(q => q.n && q.k <= 5),
+      street = (x, y) => {
+        let bd = 99;
+        for (const q of named) {
+          const P = q.p;
+          for (let k = 0; k + 3 < P.length; k += 2) {
+            const ax = P[k],
+              ay = P[k + 1],
+              ex = P[k + 2] - ax,
+              ey = P[k + 3] - ay,
+              l2 = ex * ex + ey * ey || 1,
+              t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / l2));
+            bd = Math.min(bd, Math.hypot(x - ax - ex * t, y - ay - ey * t));
+          }
+        }
+        return bd;
+      };
+    // the facade of b along a ring wall w at point p: index and u
+    const facAt = (b, w, p) => {
+      for (let k = 0; k < b.F.length; k++) {
+        const f = b.F[k],
+          L = Math.hypot(f[2] - f[0], f[3] - f[1]);
+        if (L < 0.05) continue;
+        const dx = (f[2] - f[0]) / L,
+          dy = (f[3] - f[1]) / L;
+        if (Math.abs(dx * w.dx + dy * w.dy) < 0.99) continue;
+        const u = (p[0] - f[0]) * dx + (p[1] - f[1]) * dy,
+          off = Math.abs(-(p[0] - f[0]) * dy + (p[1] - f[1]) * dx);
+        if (off < 0.1 && u > -0.05 && u < L + 0.05) return { k, u, L, dx, dy, ax: f[0], ay: f[1] };
+      }
+      return null;
+    };
+    // a passage on the walls of its building: the side lines' crossings with both walls (holes), the ramp, the pads
+    const addPass = (P, src, name) => {
+      const b = P.r.b,
+        fa = facAt(b, P.wA, P.A),
+        fb = facAt(b, P.wB, P.B);
+      if (!fa || !fb) return null;
+      const [dx, dy] = P.d,
+        ex = -dy,
+        ey = dx,
+        w = P.w,
+        cross = (fc, s) => {
+          // the side line A + e·s·w/2 + t·d meets the wall line of fc: its u on that wall
+          const x = P.A[0] + ex * s * w * 0.5,
+            y = P.A[1] + ey * s * w * 0.5,
+            nx = fc.dy,
+            ny = -fc.dx,
+            den = dx * nx + dy * ny,
+            t = Math.abs(den) > 1e-6 ? ((fc.ax - x) * nx + (fc.ay - y) * ny) / den : 0;
+          return { u: (x + dx * t - fc.ax) * fc.dx + (y + dy * t - fc.ay) * fc.dy, p: [x + dx * t, y + dy * t] };
+        },
+        a0 = cross(fa, -1),
+        a1 = cross(fa, 1),
+        b0 = cross(fb, -1),
+        b1 = cross(fb, 1);
+      const h = Math.min(P.h || 3.4, b.e - 0.6);
+      if (h < 2.6) return null;
+      const hole = (fc, c0, c1) => {
+        const lo = Math.max(0.05, Math.min(c0.u, c1.u)),
+          hi = Math.min(fc.L - 0.05, Math.max(c0.u, c1.u));
+        (b.holes = b.holes || []).push({ k: fc.k, u: (lo + hi) / 2, w: hi - lo, h, pass: true });
+        return { k: fc.k, u: (lo + hi) / 2, w: hi - lo };
+      };
+      const hA = hole(fa, a0, a1),
+        hB = hole(fb, b0, b1);
+      // the floor: from the ground in front of the outer wall to the yard's level behind
+      const zA = ground(P.A[0] - dx * 1.2, P.A[1] - dy * 1.2),
+        yd = inYard(P.B[0] + dx * 1.2, P.B[1] + dy * 1.2),
+        zB = b.lm === 'burg' ? b.z0 + 0.05 : yd ? yd.z : ground(P.B[0] + dx * 1.2, P.B[1] + dy * 1.2);
+      const Q = {
+        b,
+        src,
+        name,
+        A: P.A,
+        B: P.B,
+        d: P.d,
+        w,
+        h,
+        depth: P.depth,
+        zA,
+        zB,
+        cA: [a0.p, a1.p],
+        cB: [b0.p, b1.p],
+        hA,
+        hB,
+        yard: yd,
+      };
+      // the ramp: level 1 m before the wall, then straight to the yard's level 1 m behind the far wall
+      const L = P.depth,
+        mg = w / 2 + 1.5,
+        e1 = 1.0,
+        poly = [
+          [P.A[0] - dx * e1 - ex * mg, P.A[1] - dy * e1 - ey * mg],
+          [P.B[0] + dx * e1 - ex * mg, P.B[1] + dy * e1 - ey * mg],
+          [P.B[0] + dx * e1 + ex * mg, P.B[1] + dy * e1 + ey * mg],
+          [P.A[0] - dx * e1 + ex * mg, P.A[1] - dy * e1 + ey * mg],
+        ].flat();
+      F.pads.push({
+        poly,
+        z: (x, y) => {
+          const t = Math.max(0, Math.min(L, (x - P.A[0]) * dx + (y - P.A[1]) * dy));
+          return zA + ((zB - zA) * t) / Math.max(L, 0.1);
+        },
+      });
+      F.paint.push({ poly: [a0.p, a1.p, b1.p, b0.p].flat(), surf: src === 'osm' ? 200 : 120 });
+      F.passes.push(Q);
+      if (yd) yd.reach = true;
+      return Q;
+    };
+    // the yards' level: the feet of the houses round them
+    for (const y of Y) {
+      const zs = y.around.map(r => r.b.z0).sort((p, q) => p - q);
+      y.z = zs.length ? zs[Math.floor(zs.length / 2)] + 0.05 : ground(y.cx, y.cy);
+    }
+    // the mapped passages (OSM): through whatever building they cross
+    for (const m of (S.osmF && S.osmF.pass) || []) {
+      const p = m.p,
+        n = p.length,
+        x0 = p[0],
+        y0 = p[1],
+        x1 = p[n - 2],
+        y1 = p[n - 1],
+        L = Math.hypot(x1 - x0, y1 - y0) || 1,
+        line = [x0 - ((x1 - x0) / L) * 3, y0 - ((y1 - y0) / L) * 3, x1 + ((x1 - x0) / L) * 3, y1 + ((y1 - y0) / L) * 3];
+      let done = null;
+      for (const r of idx.near((x0 + x1) / 2, (y0 + y1) / 2, 30)) {
+        const P = FAUDIT.passLine(r, line, 3.0);
+        if (P && (done = addPass(Object.assign(P, { h: 3.4 }), 'osm', m.osm))) break;
+      }
+      F.passes.osm = (F.passes.osm || 0) + (done ? 1 : 0);
+      (F.mapped = F.mapped || []).push({
+        id: 'osm:' + m.osm,
+        x: (x0 + x1) / 2,
+        y: (y0 + y1) / 2,
+        open: !!done,
+        text: 'Durchgang laut OSM (' + m.tags + ')',
+      });
+    }
+    // the yards: a gateway into the big ones, the small ones explained
+    for (const y of Y) {
+      if (y.reach) continue;
+      if (y.area < FASS.SMALL) {
+        y.rest = 'Zwickel zwischen den Häusern – kein Zugang nötig';
+        continue;
+      }
+      if (y.area < FASS.YARD) {
+        y.rest = 'kleiner Hof – nur durch die Häuser daneben';
+        continue;
+      }
+      const G = FAUDIT.tor(y, { outside, street, w: 2.8, h: 3.4 });
+      const Q = G && addPass(G, 'hof', 'Tordurchfahrt');
+      if (!Q) continue;
+      // the house of the gateway: its opening is the door (a gate – nobody walks into this house, SIPLAN.rules: 'tor'); its own door,
+      // if it was on that wall, is inside the gateway now
+      const b = Q.b;
+      b.passDoor = Q.hA;
+      if (b.door0 && b.door0.k === Q.hA.k) {
+        b.door0 = null;
+        Q.door = true;
+      }
+      F.n.tor++;
+    }
+    for (const y of Y) if (y.reach) F.pads.push({ poly: y.hull, z: y.z });
+    // doors where a building has none to a street, and the free runs of party walls
+    for (const b of town) {
+      const r = b.rec;
+      b.doorUse = b.door0;
+      if (!b.door0 && !b.lm && !b.passDoor) {
+        const yardOf = p => inYard(p.ax + p.dx * p.L * 0.5 + p.nx * 1.2, p.ay + p.dy * p.L * 0.5 + p.ny * 1.2),
+          D = FAUDIT.hofTuer(r, r.fac, free, { yard: p => !!yardOf(p) });
+        if (D) {
+          b.doorUse = { k: D.k, u: D.u, w: D.w, street: false };
+          b.doorYard = b.doorUse;
+          F.n.tuerHof++;
+        }
+      }
+      if (b.k !== 0 || b.lm) continue;
+      for (const p of r.fac) {
+        if (!p.blind || p.L < 3) continue;
+        const cv = FAUDIT.cover(r, p, idx),
+          runs = FAUDIT.openRuns(cv.L, cv.spans).filter(([a, c]) => c - a >= 3);
+        if (!runs.length) continue;
+        (b.open = b.open || {})[p.k] = runs;
+        F.n.fenster += runs.length;
+      }
+    }
+    F.ms = Math.round(performance.now() - t0);
+  }
+  // ---- feat/gebaeude: a passage through a building – its two side walls (plaster, a house door in a Tordurchfahrt), the ceiling, the
+  // collisions; the floor is the ramp pad of the ground (WELT) with sett painted on it (streetMap) ----
+  function passage(Q, WB, RB) {
+    const b = Q.b,
+      z0 = b.z0,
+      top = z0 + Q.h,
+      zLow = Math.min(Q.zA, Q.zB, z0) - 0.8,
+      PLAS = linC([0.86, 0.84, 0.79], 0.82);
+    const side = (a, c, door) => {
+      const L = Math.hypot(c[0] - a[0], c[1] - a[1]);
+      if (L < 0.2) return;
+      const F = { dx: (c[0] - a[0]) / L, dy: (c[1] - a[1]) / L },
+        at = {
+          u0: 0,
+          w: 4 * b.i,
+          LF: 0.5,
+          eave: Q.h,
+          st: ST.PLASTER,
+          t0: Q.h,
+          tA: Q.h,
+          uA: L / 2,
+          t1: Q.h,
+          du: door ? L / 2 : -1,
+          dw: door ? 1.05 : 0,
+          sp: 3,
+          fl: 0,
+          col: b.st.style === ST.PLASTER || b.st.style === ST.MODERN ? b.st.col : PLAS,
+          pk: b.st.timber + 4 * b.st.frame + 16 * b.st.door + 128 * b.st.shut,
+        };
+      WB.quad(F, a[0], a[1], c[0], c[1], 0, L, Q.h, Q.h, z0, zLow, at);
+      S.segs.push([a[0], a[1], c[0], c[1]]);
+    };
+    // the +e side from the street to the yard, the −e side back: both face into the passage
+    side(Q.cA[1], Q.cB[1], false);
+    side(Q.cB[0], Q.cA[0], !!Q.door);
+    const cc = [Q.cA[0], Q.cA[1], Q.cB[1], Q.cB[0]].map(p => [p[0], p[1], top]);
+    RB.quad(
+      cc[0],
+      cc[1],
+      cc[2],
+      cc[3],
+      [0, 0, -1],
+      [16, 0, 0, 0],
+      [Q.d[0], Q.d[1]],
+      cc.map(p => [p[0] * -Q.d[1] + p[1] * Q.d[0], p[0] * Q.d[0] + p[1] * Q.d[1]])
+    );
+  }
   function build() {
     const t0 = performance.now();
     S.segs = [];
@@ -771,13 +1132,27 @@ export const SCHL = (() => {
       b.z0 = z70 - zmin < 1.0 ? zmin - 0.1 : z70 - 0.4;
       b.st = styleOf(b, i);
       LM_PREP[b.lm] && LM_PREP[b.lm](b);
-      try {
-        building(b, i, b.z0, WB, RB);
-      } catch (e) {
-        console.warn('schleusingen building', i, e);
-      }
       S.bld.push(b);
     });
+    // feat/gebaeude: doors, windows, passages and yards decided on the whole town first (fassPlan), then each building drawn
+    try {
+      if (FASS.on) fassPlan(S.bld);
+    } catch (e) {
+      console.warn('schleusingen fassade', e);
+      S.fassErr = String(e);
+    }
+    for (const b of S.bld)
+      try {
+        building(b, b.i, b.z0, WB, RB);
+      } catch (e) {
+        console.warn('schleusingen building', b.i, e);
+      }
+    for (const P of (S.fassade && S.fassade.passes) || [])
+      try {
+        passage(P, WB, RB);
+      } catch (e) {
+        console.warn('schleusingen passage', e);
+      }
     const wm =
         (VILLAGE.ready && RATSCHER.bld && RATSCHER.bld[0] && RATSCHER.bld[0].material) ||
         new THREE.MeshStandardMaterial({ color: 0xd8d0c0 }),
@@ -795,8 +1170,10 @@ export const SCHL = (() => {
     }
     // level ground where one walks inside: the hall of the Rathaus (under its floor), the courtyard of the castle
     const pads = [];
+    for (const b of S.bld) if (b.lm === 'rathaus') pads.push({ poly: b.f, z: b.z0 + 0.1 });
+    // feat/gebaeude: the floor of each passage (a ramp from the street to the yard) and each yard reached through one (level)
+    if (S.fassade) pads.push(...S.fassade.pads);
     for (const b of S.bld) {
-      if (b.lm === 'rathaus') pads.push({ poly: b.f, z: b.z0 + 0.1 });
       if (b.lm === 'burg' && b.h) for (const h of b.h) pads.push({ poly: h, z: b.z0 + 0.05 });
     }
     if (mk) {
@@ -877,6 +1254,7 @@ export const SCHL = (() => {
       b.doorU = uD;
       b.doorW = 1.5;
       b.hole = { k: fm, u: uD, w: 1.5, h: 2.6 };
+      b.holes = [b.hole]; // feat/gebaeude: the real openings of a building (building())
       b.front = { k: fm, f, L };
       b.gf = { h: 3.3, col: linC([0.6, 0.64, 0.66], 0.82) }; // the blue-grey stone ground floor
       b.stF = (ff, k) => (k === fm ? ST.PLASTER : ff[6] > ff[4] + 1 ? ST.SLATE_UP : ST.PLASTER);
@@ -2342,6 +2720,14 @@ export const SCHL = (() => {
       g.closePath();
       g.fill();
     }
+    // feat/gebaeude: sett or paving in the passages (fassPlan)
+    for (const q of (S.fassade && S.fassade.paint) || []) {
+      g.fillStyle = `rgb(255,${q.surf},0)`;
+      g.beginPath();
+      for (let k = 0; k < q.poly.length; k += 2) (k ? g.lineTo : g.moveTo).call(g, X(q.poly[k]), Y(q.poly[k + 1]));
+      g.closePath();
+      g.fill();
+    }
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.NoColorSpace;
     tex.anisotropy = 4;
@@ -2435,6 +2821,21 @@ export const SCHL = (() => {
       if ((b.lm || b.n) && Math.abs(b.cx - x) < 40 && Math.abs(b.cy - y) < 40 && inPoly(b.f, x, y))
         return (b.lm ? LMN[b.lm] : b.n) + ', Schleusingen';
     if (data.marktplatz && inPoly(data.marktplatz, x, y)) return 'Markt, Schleusingen';
+    // feat/gebaeude: a yard behind a gateway, the gateway itself
+    if (S.fassade) {
+      for (const q of S.fassade.passes)
+        if (q.src === 'hof') {
+          const t = (x - q.A[0]) * q.d[0] + (y - q.A[1]) * q.d[1],
+            o = Math.abs(-(x - q.A[0]) * q.d[1] + (y - q.A[1]) * q.d[0]);
+          if (t > -0.3 && t < q.depth + 0.3 && o < q.w / 2 + 0.3)
+            return 'Tordurchfahrt' + (q.b.a ? ', ' + q.b.a : '') + ', Schleusingen';
+        }
+      for (const q of S.fassade.yards)
+        if (q.reach && x > q.bb[0] && x < q.bb[2] && y > q.bb[1] && y < q.bb[3] && q.at(x, y)) {
+          const g = S.fassade.passes.find(p => p.yard === q && p.b.a);
+          return 'Hof' + (g ? ' hinter ' + g.b.a : '') + ', Schleusingen';
+        }
+    }
     let best = null,
       bd = 9;
     for (const s of data.st) {

@@ -1,0 +1,12 @@
+# feat/gebaeude: every building of Ratscher and Schleusingen plausible from outside (docs/features/gebaeude.md); one 'name[:args]' per line
+# as for viz3/test/run.py – every line runs as a job of its own in the feature CI (≤ 60 min each)
+smoke
+gebaeude:ratscher
+gebaeude:schleusingen,perf
+# the tests of the places the fixes touch: the town (its streets, walls, the Rathaus door), its houses from inside (SINNEN reads the town's
+# doors and party walls), Ratscher's houses from inside (HAEUSER: the village's doors), the shops (they replace town houses)
+schleusingen
+schleusingen_innen:only=door+walk+night+mem+treppe+save,bilder=1
+schleusingen_innen:only=laden+looks+sweep+phone,bilder=1
+haeuser:bilder=1
+laeden

@@ -87,6 +87,7 @@ world/village_near.js       # V16e near the walker: fences, hedges, flower boxes
 world/dorfkern.js           # feat/dorfkern the well, benches, limes, hedges, roundabout, poles and lines, fences, Easter eggs – as in Falko's video (DORFKERN)
 # feat/schleusingen: the tiled world and Schleusingen below this line
 welt/welt.js                # the tiled world (tools/welt) streamed around the camera where a zone needs it; terrain for KERN (WELT)
+fassade/fassade_audit.js    # feat/gebaeude is every building plausible from outside: windows as the shader paints them, party walls, yards, gateways, doors – pure (FAUDIT)
 welt/schleusingen.js        # Schleusingen after photos: the old town walkable, Rathaus to enter, landmarks, lamps, street names (SCHL)
 # feat/vessra: Kloster Veßra below this line (the monastery, the village, the tree nursery)
 welt/vessra.js              # Kloster Veßra: the monastery ruin and its grounds, the village, the tree nursery Baumschule Kammbach – walkable (VESSRA)
@@ -216,6 +217,7 @@ haeuser/haeuser.js          # feat/haeuser going in and out at every front door,
 schleusingen/si_plan.js     # feat/schleusingen-innen the town houses as plans of the kit: rules, records, kinds, looks, the stairwell and its flats, the shop – pure (SIPLAN)
 schleusingen/si_laden.js    # feat/schleusingen-innen the shop rooms behind the old town's signs: bakery, pharmacy, café, inn, shelves – pure layouts on the shops' kit (SILADEN)
 schleusingen/si_innen.js    # feat/schleusingen-innen going into the town houses: the index, stairwell, flats, shops, the ground left out under the house (SINNEN)
+fassade/fassade.js          # feat/gebaeude the audit of the outsides in the game (FASSADE.audit, eingang), Ratscher's missing doors and the stable windows of its halls (FASSADE)
 # feat/wetter: the weather of the real place below this line (Open-Meteo; after the day's light, the vehicles, the sound and the zombie night)
 wetter/wx_data.js           # feat/wetter the weather as data: Open-Meteo requests and records, the game's hour, the codes in German, presets – pure (WXDATA)
 wetter/wx_sky.js            # feat/wetter clouds in the sky's own program, the light through them, haze from the visibility, cloud shadows (WXSKY)
