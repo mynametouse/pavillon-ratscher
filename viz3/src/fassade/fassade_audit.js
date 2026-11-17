@@ -768,8 +768,9 @@ export const FAUDIT = (() => {
         seen += p.extra || 0;
         if (r.kind !== 'haus' && r.kind !== 'halle' && r.kind !== 'schule') continue;
         const need = r.kind === 'halle' ? 25 : minRun;
+        const doorIn = (a, b) => p.dw > 0 && p.du + p.dw / 2 > a && p.du - p.dw / 2 < b;
         for (const [a, b] of runs)
-          if (b - a >= need && !inRun(a, b) && !(p.extra > 0)) {
+          if (b - a >= need && !inRun(a, b) && !(p.extra > 0) && !doorIn(a, b)) {
             const um = (a + b) / 2,
               dx = (p.bx - p.ax) / (p.L || 1),
               dy = (p.by - p.ay) / (p.L || 1);

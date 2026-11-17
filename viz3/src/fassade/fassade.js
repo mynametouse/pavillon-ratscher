@@ -280,7 +280,7 @@ export const FASSADE = (() => {
             : K.quad(at(du0, z0, o), at(du1, z0, o), at(du1, z1, o), at(du0, z1, o), col, du1 - du0, z1 - z0);
       // a concrete frame, the glass in it, a muntin cross (steel stable windows with small panes)
       rect(KW, -hw - 0.08, hw + 0.08, sill - 0.08, top + 0.08, 0.025, FR);
-      rect(KG[Math.floor(FAUDIT.hh(seed * 7.3 + bi * 1.9) * 3)], -hw, hw, sill, top, 0.035, GL);
+      rect(FAUDIT.hh(seed * 7.3 + bi * 1.9) < 0.38 ? KG : KW, -hw, hw, sill, top, 0.035, GL);
       rect(KW, -0.03, 0.03, sill, top, 0.045, FR);
       rect(KW, -hw, hw, sill + STALL.h / 2 - 0.03, sill + STALL.h / 2 + 0.03, 0.045, FR);
       n++;
@@ -305,7 +305,7 @@ export const FASSADE = (() => {
       };
     S.n = { tuer: 0, tuerVerlegt: 0, hallen: 0, fenster: 0 };
     KW = VPROPS.kit ? VPROPS.kit() : null;
-    KG = [0, 1, 2].map(() => (VPROPS.kit ? VPROPS.kit() : null));
+    KG = VPROPS.kit ? VPROPS.kit() : null;
     for (const r of R) {
       const b = r.v;
       if (!b) continue;
@@ -333,12 +333,11 @@ export const FASSADE = (() => {
       }
       // halls the shader leaves without a window (its ribbon starts at 3.2 m): stable windows along the long walls
       if (r.kind === 'halle' && KW) {
-        const seen = r.fac.reduce((s, p) => s + FAUDIT.windows(p).length, 0);
-        if (seen > 0) continue;
+        // every long wall the shader leaves bare (a hall may have its ribbon in a high gable and none on its long walls)
         const Lmax = Math.max(...r.fac.map(p => p.L)),
           per = {};
         b.fac.forEach((q, k) => {
-          if (q.L < Math.max(8, Lmax * 0.5)) return;
+          if (q.L < Math.max(8, Lmax * 0.5) || FAUDIT.windows(r.fac[k]).length) return;
           // the foot of the quad under a window (the walls follow the ground)
           const footAt = u => {
             let foot = b.foot,
@@ -360,13 +359,11 @@ export const FASSADE = (() => {
     }
     // the ETHOS halls (gebaeude/gebaeude.js) likewise – their walls stand at the building's foot z0
     for (const r of R) {
-      if (r.v || r.kind !== 'halle' || !KW || !r.b) continue;
-      const seen = r.fac.reduce((s, p) => s + FAUDIT.windows(p).length, 0);
-      if (seen > 0 || r.area < 150) continue;
+      if (r.v || r.kind !== 'halle' || !KW || !r.b || r.area < 150) continue;
       const Lmax = Math.max(...r.fac.map(p => p.L)),
         per = {};
       for (const p of r.fac) {
-        if (p.L < Math.max(8, Lmax * 0.5) || p.blind) continue;
+        if (p.L < Math.max(8, Lmax * 0.5) || p.blind || FAUDIT.windows(p).length) continue;
         const n = stallRow(p, p, () => r.b.z0, r.b.e, FAUDIT.cover(r, p, idx).spans, r.id);
         if (n) per[p.k] = n;
       }
@@ -376,22 +373,21 @@ export const FASSADE = (() => {
       }
     }
     aD.needsUpdate = true;
-    // the meshes: frames in the props' paint, the glass in three groups lit at night by the village's share (clones of that material:
-    // the same program; emissive per group)
+    // the meshes: frames and dark glass in the props' paint; the glass that lights at night (a share of the windows) in a clone of it
+    // with emissive (the same program)
     const paint = VPROPS.mat && VPROPS.mat.paint;
     if (KW && paint && !KW.empty()) {
-      add(new THREE.Mesh(KW.geo(), paint), 'stallfenster rahmen');
+      add(new THREE.Mesh(KW.geo(), paint), 'stallfenster');
       S.glass = [];
-      KG.forEach((K, i) => {
-        if (K.empty()) return;
+      if (!KG.empty()) {
         const m = paint.clone();
         m.roughness = 0.25;
         m.emissive = new THREE.Color(1.0, 0.7, 0.42);
         m.emissiveIntensity = 0;
-        const me = add(new THREE.Mesh(K.geo(), m), 'stallfenster glas ' + i);
+        const me = add(new THREE.Mesh(KG.geo(), m), 'stallfenster licht');
         me.userData.own = true;
-        S.glass.push({ m, thr: [0.15, 0.35, 0.6][i] });
-      });
+        S.glass.push({ m, thr: 0.2 });
+      }
     }
     S.ms.ratscher = Math.round(performance.now() - t0);
     markDirty(true);
@@ -419,7 +415,7 @@ export const FASSADE = (() => {
       key = Math.round(n * 100) * 1000 + Math.round(p * 100);
     if (key === last) return;
     last = key;
-    for (const g of S.glass) g.m.emissiveIntensity = p > g.thr ? n * 0.12 : 0;
+    for (const g of S.glass) g.m.emissiveIntensity = p > g.thr ? n * 0.3 : 0;
     markDirty();
   }
   if (S.on && RATSCHER.on)
@@ -440,6 +436,21 @@ export const FASSADE = (() => {
     });
   S.audit = audit;
   S.eingang = eingang;
+  // the windows of a town house as they are painted (welt/schleusingen.js b.pieces through the shader's rules): [{ k (its wall in b.F),
+  // u0, u1 (metres along that wall from its start), z0, z1 (above the building's foot z0), fi (storey) }] – for the rooms behind them
+  // (schleusingen/si_plan.js reads b.F, where a party wall is blank all along; its free runs have windows now)
+  S.fenster = id => {
+    const b = SCHL.state === 'ready' && SCHL.bld.find(q => q.i === id - 900000);
+    if (!b || !b.pieces) return [];
+    const out = [];
+    for (const p of b.pieces) {
+      const f = b.F[p.k],
+        us = Math.hypot(p.ax - f[0], p.ay - f[1]);
+      for (const w of FAUDIT.windows(p))
+        out.push({ k: p.k, u0: us + w.u0, u1: us + w.u1, z0: w.z0, z1: w.z1, fi: w.fi });
+    }
+    return out;
+  };
   S.count = list => FAUDIT.count(list);
   S.status = () => ({
     state: S.state,

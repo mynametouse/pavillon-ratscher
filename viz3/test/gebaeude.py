@@ -81,12 +81,16 @@ def counts(E, ort):
     print(f'audit {ort} vorher', json.dumps(r['vorher']), json.dumps(r['byV'], ensure_ascii=False), flush=True)
     print(f'audit {ort} nachher', json.dumps(r['nachher']), json.dumps(r['byN'], ensure_ascii=False), flush=True)
     print(f'audit {ort} still open (first 12)', json.dumps(r['rest'], ensure_ascii=False), flush=True)
+    det = json.loads(E(f"""JSON.stringify(FASSADE.audit('{ort}').filter(q => !q.rest).slice(0, 40).map(q => {{ const b = window.VILLAGE && VILLAGE.byId && VILLAGE.byId.get(q.id);
+        return [q.art, q.text, q.id, Math.round(q.x), Math.round(q.y), b ? [b.typ, b.st && b.st.style, +b.eave.toFixed(2), +b.area.toFixed(0), b.fac.map(f => [+f.L.toFixed(1), f.kind, +f.t0.toFixed(1), +f.t1.toFixed(1), f.door ? 'T' : ''])] : null]; }}))"""))
+    for d in det:
+        print('  open', json.dumps(d, ensure_ascii=False), flush=True)
     ck(f'{ort}: the audit covers the buildings of the place', r['nRec'] > (300 if ort == 'ratscher' else 700) and not r['err'], f"{r['nRec']} buildings {r['err']}")
     return r
 
 
 def night(E, pg, on):
-    E(f"if (!DN.active) GAME.setMode('auto'); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + {21.5 if on else 11.0} * 60; DN.update(true)")
+    E(f"if (!DN.active) GAME.setMode('auto'); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + {22.75 if on else 11.0} * 60; DN.update(true)")
     lib.settle_light(pg)
     E("GAME.step(0.5)")
 
@@ -116,11 +120,11 @@ with lib.browser() as b:
         ck('Ratscher: the audit runs fast enough', max(r['ms'].get('audit ratscher', 0), 1) < 3000, json.dumps(r['ms']))
         # the hall with the most new windows: from 24 m in front of its longest new row, by day, without and with them, and at night
         h = json.loads(E("""JSON.stringify((() => { let best = null; for (const [id, per] of FASSADE.win) for (const k in per) if (!best || per[k] > best.n) best = { id, k: +k, n: per[k] };
-            if (!best) return null; const b = VILLAGE.byId.get(best.id), f = b.fac[best.k], u = f.L / 2, x = f.ax + f.dx * u + f.nx * 24, y = f.ay + f.dy * u + f.ny * 24;
+            if (!best) return null; const b = VILLAGE.byId.get(best.id), f = b.fac[best.k], u = f.L / 2, x = f.ax + f.dx * u + f.nx * 38, y = f.ay + f.dy * u + f.ny * 38;
             return { id: best.id, n: best.n, L: f.L, x, y, z: KERN.ground(x, y) + 1.7, yaw: Math.atan2(-f.nx, -f.ny) * 180 / Math.PI }; })())"""))
         ck('a hall got a row of stable windows', bool(h) and h['n'] >= 5, json.dumps(h))
         if h:
-            E(f"GAME.view({h['x']}, {h['y']}, {h['z']}, {h['yaw']}, -2, 60); GAME.step(0.5)")
+            E(f"GAME.view({h['x']}, {h['y']}, {h['z']}, {h['yaw']}, 3, 60); GAME.step(0.5)")
             m1 = json.loads(E(COUNT))
             E("FASSADE.meshes.forEach(m => m.visible = false); GAME.step(0.1)")
             m0 = json.loads(E(COUNT))
@@ -169,6 +173,15 @@ with lib.browser() as b:
                 time.sleep(0.3)
             E("GAME.step(1)")
             return json.loads(E("JSON.stringify(SCHL.status())"))
+        def settle(limit=25):
+            """after a jump: the tiles round the new place loaded and drawn with the pads (the finest level, 2 m)"""
+            t0 = time.time()
+            while time.time() - t0 < limit:
+                E("GAME.step(0.25)")
+                if E("WELT.state().loading === 0 && WELT.padQueue() === 0"):
+                    break
+                time.sleep(0.25)
+            E("GAME.step(0.3)")
         s = go_schl()
         print('schleusingen', json.dumps(s), flush=True)
         ck('Schleusingen stands', s['state'] == 'ready', s.get('err', ''))
@@ -186,6 +199,8 @@ with lib.browser() as b:
             # through each passage: from 3 m in front of its street side straight on; at the end in the yard (or the courtyard), the feet on the ground
             P = json.loads(E("""JSON.stringify(SCHL.fassade.passes.map(q => ({ src: q.src, A: q.A, B: q.B, d: q.d, depth: q.depth, w: q.w, h: q.h, zA: q.zA, zB: q.zB, a: q.b.a || q.b.n || '' })))"""))
             for i, q in enumerate(P):
+                E(f"(() => {{ const q = SCHL.fassade.passes[{i}], x = q.A[0] - q.d[0] * 3, y = q.A[1] - q.d[1] * 3; GAME.view(x, y, KERN.ground(x, y) + 1.62, Math.atan2(q.d[0], q.d[1]) * 180 / Math.PI, 0, 62); }})()")
+                settle()
                 r2 = json.loads(E(f"""JSON.stringify((() => {{ const q = SCHL.fassade.passes[{i}], x = q.A[0] - q.d[0] * 3, y = q.A[1] - q.d[1] * 3, yaw = Math.atan2(q.d[0], q.d[1]) * 180 / Math.PI;
                     GAME.view(x, y, KERN.ground(x, y) + 1.62, yaw, 0, 62); GAME.step(0.5); GAME.step(Math.ceil((q.depth + 6) / 1.4) , 1);
                     const t = (GAME.P.x - q.A[0]) * q.d[0] + (GAME.P.y - q.A[1]) * q.d[1], Y = q.yard;
@@ -195,7 +210,11 @@ with lib.browser() as b:
                    json.dumps(r2, ensure_ascii=False))
                 # pictures: from the street into the passage, and from the yard back
                 E(f"""(() => {{ const q = SCHL.fassade.passes[{i}], x = q.A[0] - q.d[0] * 9, y = q.A[1] - q.d[1] * 9; GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(q.d[0], q.d[1]) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()""")
+                settle()
+                E(f"""(() => {{ const q = SCHL.fassade.passes[{i}], x = q.A[0] - q.d[0] * 9, y = q.A[1] - q.d[1] * 9; GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(q.d[0], q.d[1]) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()""")
                 lib.shot(pg, OUT, f"schleusingen_durchgang{i + 1}_strasse")
+                E(f"""(() => {{ const q = SCHL.fassade.passes[{i}], x = q.B[0] + q.d[0] * 7, y = q.B[1] + q.d[1] * 7; GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(-q.d[0], -q.d[1]) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()""")
+                settle()
                 E(f"""(() => {{ const q = SCHL.fassade.passes[{i}], x = q.B[0] + q.d[0] * 7, y = q.B[1] + q.d[1] * 7; GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(-q.d[0], -q.d[1]) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()""")
                 lib.shot(pg, OUT, f"schleusingen_durchgang{i + 1}_hof")
             # a street (the Markt) by day and by night
@@ -221,9 +240,12 @@ with lib.browser() as b:
             ok, rep = lib.check_gl(pg)
             ck('every shader program within 16 textures, none broken', ok, json.dumps({k: rep[k] for k in ('programs', 'maxFrag', 'maxVert')}))
         if want('perf'):
+            TOWN = "JSON.stringify({ n: SCHL.meshes.length, tris: SCHL.meshes.reduce((s, m) => s + Math.round((m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3) * (m.isInstancedMesh ? m.count : 1), 0) })"
             E(VIEW_M)
+            settle()
             m1 = json.loads(E(COUNT))
-            print('perf schleusingen (with the fixes)', json.dumps(m1), flush=True)
+            s1 = json.loads(E(TOWN))
+            print('perf schleusingen (with the fixes)', json.dumps(m1), json.dumps(s1), flush=True)
             pg.close()
             pg2 = lib.page(b, 1100, 680, errs, tier='mittel')
             lib.boot(pg2, port, '?nofassade')
@@ -234,9 +256,13 @@ with lib.browser() as b:
             pg = pg2
             go_schl()
             E(VIEW_M)
+            settle()
             m0 = json.loads(E(COUNT))
-            print('perf schleusingen (?nofassade)', json.dumps(m0), flush=True)
-            ck('Schleusingen: draw calls the same, triangles within a few per cent', m1['calls'] <= m0['calls'] + 2 and m1['tris'] <= m0['tris'] * 1.05,
+            s0 = json.loads(E(TOWN))
+            print('perf schleusingen (?nofassade)', json.dumps(m0), json.dumps(s0), flush=True)
+            ck('Schleusingen: the town draws with as many meshes as before, its triangles within a few per cent', s1['n'] <= s0['n'] and s1['tris'] <= s0['tris'] * 1.03,
+               f"{s0['n']} → {s1['n']} meshes, {s0['tris']} → {s1['tris']} triangles of the town")
+            ck('Schleusingen: the whole frame at the Markt about the same (traffic and people vary between two loads)', m1['calls'] <= m0['calls'] * 1.1 + 4,
                f"{m0['calls']} → {m1['calls']} calls, {m0['tris']} → {m1['tris']} triangles, {m0['ms']} → {m1['ms']} ms per frame (SwiftShader)")
     ck.errors(errs)
 ck.done()
