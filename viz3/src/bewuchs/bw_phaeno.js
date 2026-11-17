@@ -302,11 +302,38 @@ export const BWPHAENO = (() => {
   // the shader's table: TW texels per class, texel (k, class) RGBA –
   //   k 0: h0, the uncut height now, the growth now (m/day), 0
   //   k 1: every (days, mown regularly now) – or 0 and the cuts: cut 1, cut 2 (day of year), spread (± days per field); regular mowing:
-  //        every, from, to, 0; after the season: 0, to, 0, 0 (a last cut); before it: 0, 1, 0, 0
+  //        every, from, to, 0; after the season: 0, to, 0, 2 (a last cut, ± 2 days); before it: 0, 1, 0, 0 (day 1: no cut this year)
   //   k 2: colour (linear), density
   //   k 3: width (m), bend, flowers per m², seed heads (0–1)
   //   k 4: cut 3, the shares of the fields cut on 1, 2, 3
-  const TW = 5;
+  //   k 5: the vigour's factors (bits 5–7 of the map: 0 poor … 7 rich): density at 0 and at 7, height at 0 and at 7
+  //   k 6: flowers at vigour 0 and 7; bare spots: the threshold of the shaders' value noise for their share, their size (m)
+  const TW = 7;
+  const KRAFT = { d: [0.4, 1], h: [1, 1], f: [1, 1] };
+  // the share of the area bare → the threshold of the value noise (hash on a lattice, smoothstep between) under which it is that share
+  const NQ = [
+    [0, 0],
+    [0.01, 0.067],
+    [0.02, 0.095],
+    [0.05, 0.149],
+    [0.1, 0.211],
+    [0.15, 0.259],
+    [0.2, 0.3],
+    [0.3, 0.372],
+    [0.4, 0.437],
+    [0.5, 0.5],
+  ];
+  function kahlT(p) {
+    if (!(p > 0)) return 0;
+    if (p > 0.5) return 1 - kahlT(1 - Math.min(1, p)); // the noise is symmetric about 0.5
+    for (let i = 1; i < NQ.length; i++)
+      if (p <= NQ[i][0]) {
+        const [a, ta] = NQ[i - 1],
+          [b, tb] = NQ[i];
+        return ta + ((p - a) / (b - a)) * (tb - ta);
+      }
+    return 0.5;
+  }
   function table(doy, out) {
     const T = out || new Float32Array(TW * NC * 4);
     T.fill(0);
@@ -338,6 +365,9 @@ export const BWPHAENO = (() => {
       T[o + 13] = k.bend;
       T[o + 14] = k.flowers;
       T[o + 15] = seedK(k, doy);
+      const kr = k.kraft || KRAFT;
+      T.set([kr.d[0], kr.d[1], kr.h[0], kr.h[1]], o + 20);
+      T.set([kr.f[0], kr.f[1], kahlT(k.kahl || 0), k.fleck || 0.5], o + 24);
     }
     return T;
   }
@@ -449,6 +479,20 @@ export const BWPHAENO = (() => {
         k.col = Object.assign({}, k.col, out);
       }
       k.flowers = Object.values(e.blumen || {}).reduce((a, v) => a + (+v || 0), 0);
+      // the vigour of the place (the map's bits 5–7): a thin, poor sward or a rich one – a rich meadow has fewer flowers
+      const pair = (v, d) => (Array.isArray(v) && v.length === 2 && v.every(Number.isFinite) ? v.slice() : d);
+      if (e.kraft)
+        k.kraft = {
+          d: pair(e.kraft.dichte, KRAFT.d),
+          h: pair(e.kraft.hoehe, KRAFT.h),
+          f: pair(e.kraft.blumen, KRAFT.f),
+        };
+      // bare spots of their share and size
+      if (e.kahl && Number.isFinite(e.kahl.anteil)) {
+        k.kahl = Math.max(0, Math.min(0.9, e.kahl.anteil));
+        const fm = e.kahl.flecken_m;
+        k.fleck = Array.isArray(fm) && fm.length === 2 ? Math.max(0.15, (fm[0] + fm[1]) / 2) : 0.5;
+      }
       K[c] = k;
       n++;
     }
@@ -481,6 +525,8 @@ export const BWPHAENO = (() => {
     cumK,
     shapeAt,
     seedK,
+    kahlT,
+    everyNow,
     table,
     merge,
     fromArten,

@@ -33,7 +33,14 @@ with lib.browser() as b:
         return st()
 
     s0 = ready()
+    # the helper's species and atlas (bw_arten.js, dist/bewuchs/blumen.png) replace the stand-ins once the picture is loaded
+    for i in range(60):
+        if J("BEWUCHS.state().blumen.arten"):
+            break
+        E("GAME.step(0.1)")
+        time.sleep(0.25)
     print('state', json.dumps(s0)[:900], flush=True)
+    ck('the species table and the flower atlas are loaded', J("BEWUCHS.state().blumen.arten") and not J("BEWUCHS.state().blumen.standin") and J("BEWUCHS.state().arten") >= 18, J("{ a: BEWUCHS.state().arten, s: BEWUCHS.state().blumen.standin, e: BWBLUME.err }"))
     ck('the template runs (rings built, site texture made)', s0['on'] and len(s0['halm']['rings']) == 3 and s0['karte']['site'] >= 1, json.dumps(s0)[:400])
     top = J("""(() => { const R = GAME.R, gl = R.getContext(), ST = new Set([gl.SAMPLER_2D, gl.SAMPLER_CUBE, gl.SAMPLER_3D, gl.SAMPLER_2D_ARRAY, gl.SAMPLER_2D_SHADOW, gl.SAMPLER_CUBE_SHADOW, gl.SAMPLER_2D_ARRAY_SHADOW]), out = [];
       for (const p of R.info.programs || []) { const prog = p.program; if (!prog) continue; let n = 0;
@@ -55,6 +62,9 @@ with lib.browser() as b:
             R = {r['tag']: r for r in s['halm']['rings']}
             ck('in the garden the dense and the near ring have tiles and blades', R['dicht']['tiles'] > 15 and R['nah']['tiles'] > 60 and s['halm']['blades'] > 20000, json.dumps(R))
             ck('the budget of this tier holds (≤ 600 000 triangles)', s['halm']['tris'] <= 600000, s['halm']['tris'])
+            bl = J("BEWUCHS.state().blumen")
+            # daisies flower in May in all four groups of plants (earlier … later), dandelions too or are seed heads
+            ck('the lawn flowers in May (daisies, dandelions)', sum(1 for c, sh in bl['species']['gaensebluemchen'] if c >= 0 and sh > 0.5) >= 3 and sum(1 for c, sh in bl['species']['loewenzahn'] if c >= 0) >= 3, json.dumps({k: bl['species'][k] for k in ('gaensebluemchen', 'loewenzahn', 'weissklee')}))
             lib.shot(pg, OUT, 'garten_mai')
             view(14, 16, math.degrees(math.atan2(2 - 14, 2 - 16)), -38, h=1.65, fov=45)
             lib.shot(pg, OUT, 'garten_mai_nah')
@@ -72,7 +82,8 @@ with lib.browser() as b:
             lib.shot(pg, OUT, 'wiese_juni')
             bl = J("BEWUCHS.state().blumen")
             print('flowers', json.dumps(bl), flush=True)
-            ck('flowers out in June (margerites, buttercups …)', bl['species']['margerite'] > 0.3 and bl['species']['hahnenfuss'] > 0.3 and bl['rings'][0]['slots'] > 500, json.dumps(bl)[:300])
+            bloom = lambda sp: sum(1 for c, sh in bl['species'][sp] if c >= 0 and sh > 0.5)
+            ck('flowers out in June (margerites, buttercups …)', bloom('margerite') >= 3 and bloom('hahnenfuss') >= 3 and bl['rings'][0]['slots'] > 500, json.dumps({k: bl['species'][k] for k in ('margerite', 'hahnenfuss', 'rotklee')}))
             view(112, -22, 150, -30, fov=45)
             lib.shot(pg, OUT, 'wiese_juni_nah')
         if 'ferne' in WANT:

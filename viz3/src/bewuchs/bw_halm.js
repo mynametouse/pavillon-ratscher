@@ -175,7 +175,11 @@ void bwBlade( out vec3 P, out vec3 N ) {
   int cls = int( mod( code, 32.0 ) );
   float vig = floor( code / 32.0 ) / 7.0;
   vec4 k2 = texelFetch( tBwK, ivec2( 2, cls ), 0 ), k3 = texelFetch( tBwK, ivec2( 3, cls ), 0 );
-  float dens = k2.w * mix( 0.4, 1.0, vig ) * uBwP.y;
+  vec4 k5 = texelFetch( tBwK, ivec2( 5, cls ), 0 ), k6 = texelFetch( tBwK, ivec2( 6, cls ), 0 );
+  // the vigour of the place: a poor sward thinner (and lower), a rich one full
+  float dens = k2.w * mix( k5.x, k5.y, vig ) * uBwP.y;
+  // bare spots of the kind of area (their share of it, their size): no blades, a soft edge
+  if ( k6.z > 0.0 ) dens *= smoothstep( k6.z - 0.025, k6.z + 0.025, bwNoise( q / max( k6.w, 0.15 ) + vec2( 23.7, 7.1 ) ) );
   vec3 col = k2.rgb;
   // the orthophoto at the foot (outside the modelled site): no blades where it is not green, the colour a little towards it
   if ( uBwF.w > 0.5 && site < 0.5 ) {
@@ -192,7 +196,7 @@ void bwBlade( out vec3 P, out vec3 N ) {
   // a ring comes and goes by thinning (blades drop out evenly), the outermost also by shrinking into the ground
   float fade = smoothstep( uBwR.x, uBwR.y, d ) * ( 1.0 - smoothstep( uBwR.z, uBwR.w, d ) );
   dens *= fade;
-  float h = bwHeight( cls, q ) * mix( 0.55, 1.35, rH ) * mix( 0.72, 1.22, bwNoise( q * 0.37 + 5.3 ) );
+  float h = bwHeight( cls, q ) * mix( 0.55, 1.35, rH ) * mix( 0.72, 1.22, bwNoise( q * 0.37 + 5.3 ) ) * mix( k5.z, k5.w, vig );
   if ( uBwQ.x > 0.5 ) h *= smoothstep( 0.0, 0.5, fade );
   // snow lying (wetter/wetter.js): the short grass under it, the tall sticks out of it, bowed
   h = max( 0.0, h - 0.07 * uBwP.z ) * ( 1.0 - 0.3 * uBwP.z );
@@ -288,7 +292,36 @@ void bwBlade( out vec3 P, out vec3 N ) {
     if (near) ringU.uBwR.value.set(-2, -1, r * 0.72, r);
     else ringU.uBwR.value.set(rIn * 0.72, rIn, r * 0.78, r);
     scene.add(mesh);
-    return { tag, near, K, r, rIn, size, P, mesh, mat, ringU, n: 0, cx: NaN, cy: NaN, yaw: NaN, minH: near ? 0 : 0.1 };
+    const R = {
+      tag,
+      near,
+      K,
+      r,
+      rIn,
+      size,
+      P,
+      mesh,
+      mat,
+      ringU,
+      n: 0,
+      cx: NaN,
+      cy: NaN,
+      yaw: NaN,
+      minH: near ? 0 : 0.1,
+    };
+    // the tiles' distances (nearest first): how many lie within d (the flowers on the same tiles stop sooner)
+    R.dist = new Float32Array(P.cap);
+    R.within = d => {
+      let lo = 0,
+        hi = R.n;
+      while (lo < hi) {
+        const m = (lo + hi) >> 1;
+        if (R.dist[m] <= d) lo = m + 1;
+        else hi = m;
+      }
+      return lo;
+    };
+    return R;
   }
   function build(spec) {
     for (const R of S.rings) {
@@ -333,7 +366,10 @@ void bwBlade( out vec3 P, out vec3 N ) {
       }
       const hs = BWPHAENO.seasonH(k, doy);
       // a regularly mown sward is about its mown height (plus a cycle's growth); cut meadows may be either – the uncut height
-      hNow[c] = k.mow && k.mow.every ? Math.min(hs, k.h0 + k.g * BWPHAENO.shapeAt(doy) * k.mow.every) : hs;
+      // (every: a number, or 12 by month – BWPHAENO.everyNow)
+      const ev = k.mow && k.mow.every ? BWPHAENO.everyNow(k.mow, doy) : 0;
+      hNow[c] =
+        (ev ? Math.min(hs, k.h0 + BWPHAENO.rate(k, doy) * ev) : hs) * Math.max(1, ...((k.kraft && k.kraft.h) || [1]));
     }
   }
   // does anything that the ring draws grow in the tile at (x0, y0) of size s? (corners and middle)
@@ -388,6 +424,7 @@ void bwBlade( out vec3 P, out vec3 N ) {
         i = list[q + 1],
         j = list[q + 2],
         o = k * 4;
+      R.dist[k] = list[q];
       T[o] = i * s;
       T[o + 1] = j * s;
       T[o + 2] = zAt(i, j, s);

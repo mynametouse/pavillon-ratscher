@@ -132,3 +132,49 @@ test('merge: entries of the species table replace the estimates field by field',
   assert.equal(K[2].g, k0.g);
   K[2] = k0;
 });
+
+test('bare spots: the share of the area → the threshold of the value noise (symmetric, rising)', () => {
+  assert.equal(P.kahlT(0), 0);
+  assert.ok(near(P.kahlT(0.5), 0.5, 1e-9));
+  assert.ok(near(P.kahlT(0.05), 0.149, 1e-3));
+  assert.ok(near(P.kahlT(0.6), 1 - P.kahlT(0.4), 1e-9));
+  let last = -1;
+  for (let p = 0; p <= 0.9; p += 0.01) {
+    const t = P.kahlT(p);
+    assert.ok(t > last - 1e-12 && t >= 0 && t <= 1, 'p ' + p);
+    last = t;
+  }
+});
+
+// last: it replaces the class table with the helper's (the tests above use the lead's estimates)
+test('the helper’s species table (bw_arten.js) as the class table: heights, care, vigour, bare spots', async () => {
+  const { BWARTEN } = await import('../../src/bewuchs/bw_arten.js');
+  assert.ok(P.fromArten(BWARTEN) >= 18);
+  // a lawn in May between its mown height and a week's growth; a hay meadow knee high before its first cut, short after it
+  for (const off of [0, 2.5, 5]) {
+    const h = P.heightAt(K[1], 140, off);
+    assert.ok(h >= 0.035 && h < 0.11, 'lawn ' + h);
+  }
+  assert.ok(P.heightAt(K[4], 150, 0) > 0.5);
+  assert.ok(P.heightAt(K[4], 175, 0) < 0.25);
+  // regular mowing by month (a number or twelve) – the table gives the days for each month
+  const T = P.table(140),
+    W = P.TW * 4;
+  assert.equal(P.TW, 7);
+  assert.ok(T[1 * W + 4] >= 5 && T[1 * W + 4] <= 10, 'lawn mown every ' + T[1 * W + 4] + ' days in May');
+  // vigour and bare spots from the table of the areas
+  const f4 = BWARTEN.flaechen[4];
+  assert.deepEqual([...T.slice(4 * W + 20, 4 * W + 24)], [...f4.kraft.dichte, ...f4.kraft.hoehe].map(v => Math.fround(v)));
+  assert.equal(T[4 * W + 24], Math.fround(f4.kraft.blumen[0]));
+  assert.ok(near(T[4 * W + 26], P.kahlT(f4.kahl.anteil), 1e-6));
+  assert.ok(T[11 * W + 26] > T[4 * W + 26], 'the forest floor is barer than a meadow');
+  // the garden's own lawn: nobody but the player mows it
+  assert.ok(!K[18].mow);
+  for (let c = 0; c < 19; c++) {
+    const k = K[c];
+    for (const d of [20, 140, 200, 300]) {
+      const h = P.heightAt(k, d, 0);
+      assert.ok(Number.isFinite(h) && h >= 0 && h <= (k.hMax || 0) + 1e-9, 'class ' + c + ' day ' + d + ': ' + h);
+    }
+  }
+});

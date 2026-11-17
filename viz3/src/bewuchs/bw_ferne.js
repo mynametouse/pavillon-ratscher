@@ -94,21 +94,19 @@ export const BWFERNE = (() => {
     S.job = null; // refill
     S.x0 = NaN;
   }
-  // a species on doy: the colour seen from afar (the bloom; the seed head where it is light, like a dandelion clock) and how many show it
+  // a species on doy: the colour seen from afar (the bloom; the seed head where it is light, like a dandelion clock) and how many show it –
+  // the mean of its four groups of plants (earlier … later by its spread, as bw_blume.js draws them near)
   function bloomOf(s, doy) {
-    if (s.jahr) {
-      for (const [fr, a, b, share] of s.jahr) {
-        if (doy < a || doy > b + 0.999) continue;
-        if (fr === 'bluete') return { amount: Number.isFinite(share) ? share : 1, col: hexLin(s.col) };
-        if (fr === 'samen' && s.colSeed)
-          return { amount: (Number.isFinite(share) ? share : 1) * 0.7, col: hexLin(s.colSeed) };
-        return { amount: 0 };
-      }
-      return { amount: 0 };
+    let bl = 0,
+      sd = 0;
+    for (let k = 0; k < 4; k++) {
+      const p = BWBLUME.phaseAt(s, doy, k);
+      if (!p) continue;
+      if (p[0] === 'bluete') bl += p[1] / 4;
+      else if (p[0] === 'samen' && s.colSeed) sd += (p[1] * 0.7) / 4;
     }
-    // the lead's stand-in species: bloom windows
-    for (const [a, b] of s.bluete || []) if (doy >= a && doy <= b) return { amount: 1, col: hexLin(s.col) };
-    return { amount: 0 };
+    if (bl <= 0 && sd <= 0) return { amount: 0 };
+    return bl >= sd ? { amount: bl, col: hexLin(s.col) } : { amount: sd, col: hexLin(s.colSeed) };
   }
   const hash = (x, y) => {
     const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;

@@ -15,7 +15,7 @@
 //   BEWUCHS.set(o)    { mode } 'voll' | 'einfach' | 'aus' (the menu's switch, saved as pav-bewuchs-v1), { dens } density scale 0–1,
 //                     { tier } force a tier, { doy } force a day (tests)
 import * as THREE from 'three';
-import { $, cam, COARSE, QS } from '../core/head.js';
+import { $, cam, COARSE, QS, BASE } from '../core/head.js';
 import { SAVE } from '../core/save.js';
 import { KERN } from '../core/kern.js';
 import { markDirty } from '../core/assets.js';
@@ -28,6 +28,7 @@ import { BWPHAENO } from './bw_phaeno.js';
 import { BWHALM } from './bw_halm.js';
 import { BWBLUME } from './bw_blume.js';
 import { BWFERNE } from './bw_ferne.js';
+import { BWARTEN } from './bw_arten.js';
 import { ROADS } from '../world/roads.js';
 export const BEWUCHS = (() => {
   const S = {
@@ -178,8 +179,10 @@ export const BEWUCHS = (() => {
       BWFERNE.want(cam.position.x, -cam.position.z);
       BWKARTE.tick();
       const d = doyNow();
-      if (!(Math.abs(d - S.doy) < 0.05)) {
+      // a new day – or the helper's species and atlas just arrived (bw_blume.js fromArten)
+      if (!(Math.abs(d - S.doy) < 0.05) || BWBLUME.ver !== S.blVer) {
         S.doy = d;
+        S.blVer = BWBLUME.ver;
         BWHALM.day(d);
         BWBLUME.day(d);
         BWFERNE.day(d);
@@ -207,6 +210,14 @@ export const BEWUCHS = (() => {
   if (ROADS) ROADS.bwFar = BWFERNE.shader;
   // the garden's buildings moved or a worn patch changed (garden/grass.js footHideApply): the site texture again
   if (GRASS) GRASS.onFoot = () => BWKARTE.siteDirty();
+  // the helper's species table (bewuchs/bw_arten.js): the kinds of area (heights, care, grasses, vigour, bare spots) and the wildflowers
+  // with their atlas (loaded: dist/bewuchs/blumen.png, blumen.json – until then the stand-ins of bw_blume.js)
+  try {
+    S.arten = BWPHAENO.fromArten(BWARTEN);
+    BWBLUME.fromArten(BWARTEN, BASE);
+  } catch (e) {
+    S.err = 'arten: ' + String((e && e.message) || e);
+  }
   // built at load: the programs compile with the others before the first picture
   retier();
   BWKARTE.siteDirty();
