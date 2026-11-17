@@ -170,8 +170,8 @@ export const OEFFNUNG = (() => {
     name: 'Stadtkirche St. Johannis',
     art: 'kirche',
     ort: 'Schleusingen',
-    oh: 'Mo-Sa 10:00-17:00; Su 11:30-17:00',
-    quelle: 'angenommen (offene Kirche am Tag, sonntags nach dem Gottesdienst)',
+    oh: 'Mo-Sa 10:00-17:00; Su 10:00-17:00',
+    quelle: 'angenommen (offene Kirche am Tag, sonntags ab dem Gottesdienst um 10 Uhr)',
   });
   add('bibliothek', {
     name: 'Stadtbibliothek Schleusingen',

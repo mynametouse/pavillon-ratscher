@@ -59,7 +59,7 @@ export const KIRCHE = (() => {
     pipe: L(0.8, 0.82, 0.84),
     iron: L(0.18, 0.18, 0.19),
     candle: L(0.96, 0.94, 0.86),
-    flame: [2.6, 2.0, 1.1],
+    flame: [2.3, 1.35, 0.5],
     bulb: [2.3, 2.1, 1.7],
     slab: L(0.58, 0.56, 0.52),
   };
@@ -320,6 +320,8 @@ export const KIRCHE = (() => {
           : null;
     const inTower = (u, v, m = 0) => tw && u > tw[0] - m && v > tw[1] - m;
     Object.assign(S, { F, z, du, vS, vN, uW, uE, uMax, cv0, cv1, vm, H, Q, Qf, door: F.W(du, 0), tw });
+    // the ground before the portal (the door's button stands there; the floor inside may be a step higher)
+    S.zOut = Number.isFinite(zDoor) ? zDoor : b.z0;
     const Pl = LIPLAN.newPlan({ id: 'kirche', type: 'kirche' });
     Pl.floor = { floorA: C.stone, floorB: C.stone };
     Pl.cell = 1.0;
@@ -393,7 +395,7 @@ export const KIRCHE = (() => {
     const gz = 3.8,
       uG = uW + 3.4,
       vG = vN - 3.0,
-      gE = tw ? tw[0] - 0.3 : uE;
+      gE = tw ? tw[0] - 0.22 : uE;
     K.box((uW + uG) / 2, (vS + vNx) / 2, gz, uG - uW, vNx - vS + 0.3, 0.22, C.wood, C.woodL);
     K.box(uG, (vS + vG) / 2, gz + 0.22, 0.12, vG - vS, 1.0, C.cream, C.cream);
     K.box(uG + 0.04, (vS + vG) / 2, gz + 1.18, 0.1, vG - vS, 0.06, C.gold);
@@ -771,8 +773,9 @@ export const KIRCHE = (() => {
     S.rows = rows.length;
     S.wins = wins.length;
     S.hdU = Math.atan2(F.eu[0], F.eu[1]);
-    // ---- people: the warden by the door at weekends; someone sitting quietly now and then ----
+    // ---- people: the warden by the door at weekends; someone sitting quietly now and then; Sundays 10–11 the service ----
     const nearDoor = () => S.inside || Math.hypot(P.x - S.door[0], P.y - S.door[1]) < 14;
+    const gd = gottesdienst;
     const [wx, wy] = F.W(chU + 0.02, tV + 0.05);
     LLEBEN.posten({
       id: 'kirche:aufsicht',
@@ -784,7 +787,7 @@ export const KIRCHE = (() => {
       fig: 'vk_f14',
       near: 40,
       kleid: null,
-      offen: () => S.built && nearDoor() && OEFFNUNG.offen('johannis') === true && [0, 6].includes(DCAL.wd()),
+      offen: () => S.built && nearDoor() && OEFFNUNG.offen('johannis') === true && [0, 6].includes(DCAL.wd()) && !gd(),
     });
     const sr = rows.filter(r => r[3] === 'sued');
     const r0 = sr[Math.floor(sr.length * 0.6)] || rows[Math.floor(rows.length / 2)];
@@ -800,9 +803,53 @@ export const KIRCHE = (() => {
         fig: 'vk_m02',
         near: 40,
         kleid: null,
-        offen: () => S.built && nearDoor() && OEFFNUNG.offen('johannis') === true && DCAL.min() % 120 < 75,
+        offen: () => S.built && nearDoor() && OEFFNUNG.offen('johannis') === true && DCAL.min() % 120 < 75 && !gd(),
       });
     }
+    // the service: the pastor at the altar in black, facing the pews; people in the front rows (each figure once)
+    const mS = rows.filter(r => r[3] === 'mitte' && r[1] < vm),
+      mN = rows.filter(r => r[3] === 'mitte' && r[1] > vm),
+      sS = rows.filter(r => r[3] === 'sued'),
+      at = (R2, back, side, off) => {
+        const r = R2[R2.length - 1 - Math.min(back, R2.length - 1)];
+        return r ? F.W(r[0] - 0.02, side > 0 ? r[1] + off : r[2] - off) : null;
+      };
+    const GD = [
+      ['vk_f14', at(mS, 1, -1, 0.45)],
+      ['vk_m02', at(mS, 1, -1, 1.05)],
+      ['vk_f02', at(mN, 2, 1, 0.5)],
+      ['vk_m07', at(mN, 4, 1, 1.2)],
+      ['vk_f12', at(mS, 5, 1, 0.6)],
+      ['vk_m16', at(sS, 3, 1, 1.6)],
+    ];
+    GD.forEach(([fig, p], i) => {
+      if (!p) return;
+      LLEBEN.posten({
+        id: 'kirche:gd' + i,
+        x: p[0],
+        y: p[1],
+        hd: S.hdU,
+        z: () => z,
+        sit: 0.46,
+        fig,
+        near: 40,
+        kleid: null,
+        offen: () => S.built && nearDoor() && gd(),
+      });
+    });
+    const [px, py] = F.W(aU - 0.8, vm);
+    LLEBEN.posten({
+      id: 'kirche:pfarrerin',
+      x: px,
+      y: py,
+      hd: Math.atan2(-F.eu[0], -F.eu[1]),
+      z: () => z + az,
+      fig: 'vk_f07',
+      near: 40,
+      kleid: { ober: [26, 26, 30], unter: [26, 26, 30], schuh: [22, 22, 22], arm: true },
+      redet: true,
+      offen: () => S.built && nearDoor() && gd(),
+    });
     S.built = true;
     markDirty(true);
     KERN.emit('kirche', { was: 'gebaut' });
@@ -835,6 +882,10 @@ export const KIRCHE = (() => {
     if (S.kerzeMesh) S.kerzeMesh.visible = v;
     markDirty(true);
   };
+  // Sundays 10–11 (the welcome board says so)
+  function gottesdienst() {
+    return DCAL.wd() === 0 && DCAL.min() >= 600 && DCAL.min() < 660;
+  }
   // ---- a candle lit: one more flame in the tray (they burn on while the church stands) ----
   function kerze() {
     if (!S.built || !S.inside) return false;
@@ -984,7 +1035,7 @@ export const KIRCHE = (() => {
     put(S.inDoor[0], S.inDoor[1], S.z, deg(S.F.ev[0], S.F.ev[1]));
     await fade(false);
     S.busy = false;
-    KERN.emit('kirche', { was: 'betreten' });
+    KERN.emit('kirche', { was: gottesdienst() ? 'gottesdienst' : 'betreten' });
     return true;
   }
   async function verlassen() {
@@ -1011,13 +1062,15 @@ export const KIRCHE = (() => {
     pos: () => {
       if (!S.built || S.inside) return null;
       const [x, y] = S.F.W(S.du, -0.7);
-      return [x, y, zAt()];
+      return [x, y, S.zOut + 1.1];
     },
     label: () =>
       !S.built || S.inside
         ? null
         : OEFFNUNG.offen('johannis')
-          ? 'Stadtkirche St. Johannis – hineingehen'
+          ? gottesdienst()
+            ? 'St. Johannis – Gottesdienst, leise hineingehen'
+            : 'Stadtkirche St. Johannis – hineingehen'
           : 'St. Johannis – geschlossen (' + OEFFNUNG.zeiten('johannis') + ')',
     run: () => betreten(),
   });
@@ -1104,9 +1157,10 @@ export const KIRCHE = (() => {
     wins: S.wins || 0,
     seats: S.seats ? S.seats.length : 0,
     tower: !!S.tw,
+    gottesdienst: gottesdienst(),
     door: S.door ? S.door.map(v => +v.toFixed(2)) : null,
   });
-  Object.assign(S, { betreten, verlassen, kerze, sitzen, where, build, drop });
+  Object.assign(S, { betreten, verlassen, kerze, sitzen, where, build, drop, gottesdienst });
   return S;
 })();
 window.KIRCHE = KIRCHE;

@@ -544,7 +544,8 @@ with lib.browser() as b:
                json.dumps([lbl, g0, J("GELD.stand()"), J("KIRCHE.status()")]))
             pic('kirche_kerzen')
             # a pew at the middle aisle: sit down, stand up
-            sx, sy = J("KIRCHE.seats[Math.floor(KIRCHE.seats.length / 2)]")
+            # a seat of the southern block at the middle aisle (the aisle lies 1.1 m on towards the north)
+            sx, sy = J("KIRCHE.seats[Math.floor(KIRCHE.seats.length / 4)]")
             ax, ay = sx + (W(0, vm)[0] - W(0, vm - 1.1)[0]), sy + (W(0, vm)[1] - W(0, vm - 1.1)[1])
             E(f"GAME.setView3(false, true); GAME.view({ax}, {ay}, KIRCHE.z + 1.65, {yE}, -4, 70)")
             lbl = J("GAME.step(0.3)").get('best') or ''
@@ -567,6 +568,23 @@ with lib.browser() as b:
             E(f"GAME.setView3(false, true); GAME.view({ckx}, {cky}, KIRCHE.z + 1.65, {(yaw + 225) % 360}, -6, 70)")
             steps(0.4)
             pic('kirche_aufsicht')
+            # Sunday 10:15: the service – the pastor at the altar, people in the front pews
+            set_time(0, 10, 15)
+            ids = "['kirche:pfarrerin', 'kirche:gd0', 'kirche:gd1', 'kirche:gd2', 'kirche:gd3', 'kirche:gd4', 'kirche:gd5']"
+            n = 0
+            for i in range(50):
+                steps(0.5)
+                n = J(f"{ids}.filter(id => (LLEBEN.posts.find(q => q.id === id) || {{}}).p).length")
+                if n >= 7:
+                    break
+                time.sleep(0.2)
+            x, y = W(uE - 9.0, vm)
+            E(f"GAME.setView3(false, true); GAME.view({x}, {y}, KIRCHE.z + 1.65, {yE}, -3, 70)")
+            steps(0.4)
+            pic('kirche_gottesdienst')
+            ck('Sunday 10:15: the service (the pastor and people in the pews)', n >= 5 and J("KIRCHE.status().gottesdienst"),
+               json.dumps([n, J("LLEBEN.status()")])[:240])
+            set_time(6, 11, 30)
             E("KIRCHE.verlassen()")
             steps(0.5)
             st = J("KIRCHE.status()")

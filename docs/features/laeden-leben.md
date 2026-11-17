@@ -6,7 +6,7 @@ zum Beispiel auch belebt sein. Man soll dort wirklich einkaufen können. … nat
 rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es geht, zugänglich sein und dann eben auch entsprechende auch
 Öffnungszeiten haben …“
 
-## Was es gibt (Stand 1, 17.11. nachmittags)
+## Was es gibt (Stand 4, 17.11. 15:40)
 
 - **Leute im Laden** (`laeden/leben.js`, `LLEBEN`): Solange ein Laden geöffnet hat und man drin ist oder auf ihn zugeht (seine Räume
   stehen, `LINNEN`), hat er seine Leute:
@@ -60,8 +60,10 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
     (11/2026, ohne Gewähr);
   - **Naturhistorisches Museum Schloss Bertholdsburg**: Di–Fr 9–17, Sa, So 10–18 (museum-schleusingen.de, 11/2026; Eintritt 6 €,
     ermäßigt 4 €, Familienkarte 14 €, Turm 2 €);
-  - Stadtkirche St. Johannis (tagsüber offen), Stadtbibliothek, Postfiliale, Feuerwehr Ratscher (Dienstabend, Samstagsdienst) –
-    **angenommen**; Alte Schule Ratscher: der Skatabend freitags (aus `dorf/dorf_cal.js`).
+  - Stadtkirche St. Johannis (Mo–Sa 10–17, So 10–17 – um 10 der Gottesdienst), Stadtbibliothek, Postfiliale, Feuerwehr Ratscher
+    (Dienstabend, Samstagsdienst) – **angenommen**; Alte Schule Ratscher: der Skatabend freitags (aus `dorf/dorf_cal.js`).
+  - Die Läden stehen von Anfang an im Verzeichnis (die Zeiten aus OSM, sonst angenommen – auch die kleinen Läden der Altstadt hinter ihren
+    Schildern), damit Nebenaufgaben fragen können, bevor die Daten der Läden geladen sind.
 - **Die Kassen wie in echt** (`laeden/innen_markt.js`): bis zum 17.11. lagen Band und Süßwarenregal am Ausgang und das Packfach im Laden;
   jetzt beginnt die Schlange auf der Seite des Ladens (Süßwaren, Band), dann Scanner und Kassiererin, das Packfach zum Ausgang hin. Jede
   Kasse kennt ihren eigenen Bezahlplatz (gegenüber der Kassiererin, 1,6–1,9 m über das Band) und den Anfang ihrer Schlange.
@@ -72,6 +74,9 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
   Name klein, gelber Rand) – der Preis, den die Kasse nimmt. Alles in einem Canvas-Atlas (Rechner 2048², Telefon 1024², ~0,1 s), gemalt,
   wenn die erste Gruppe Läden in 900 m Nähe kommt; gezeichnet je Abschnitt in einem Mesh auf einem Basic-Material mit dem Atlas (ein
   Programm für alle Läden, mit dem Programm der Räume vorab übersetzt). Die dunklen leeren Schildchen an den Schienen sind weg.
+  **Lose Ware von oben**: auf den Kisten, Steigen und Pflanztischen liegen Äpfel, Orangen, Bananen, Birnen, Trauben, Pflaumen, Salat,
+  Möhren, Tomaten, Kartoffeln, Zwiebeln, Gurken, Brötchen, Brote, Kräuter und blühende Töpfe als gemalte Draufsicht – jede Kiste das
+  Produkt ihrer Farbe (das, was die Kasse nimmt).
 - **Arbeitskleidung**: das Personal trägt schlichte Arbeitskleidung, nach Körperzonen in die eigenen Texturen der Figur gemalt
   (`GLFIG.dress` des Grenzland-Moduls, wenn es da ist): an der Kasse ein dunkelblaues Polo, an der Bäckertheke weißes Oberteil mit
   Schürze, im Baumarkt eine dunkelgrüne Arbeitsjacke – keine Farbe einer Kette. Die Leute an öffentlichen Schaltern tragen ihre eigene
@@ -91,8 +96,22 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
     der Burg, an jedem eine Texttafel; „Ansehen …“ zeigt den Text. Ohne Karte schickt einen die Aufsicht zurück zur Kasse. Am Wochenende
     stehen Besucher an den Vitrinen. Gezeichnet mit dem Baukasten der Läden (`LINNEN.drawPlan`) und einer Bilder-Canvas auf dem Programm
     der bedruckten Waren – nichts Neues zu übersetzen; gebaut näher als 90 m an der Burg, frei ab 150 m. Montags geschlossen.
-  - **Stadtbibliothek** (der OSM-Ort östlich der Altstadt): „Stadtbibliothek: Buch ausleihen“ – Leseausweis 10 € im Jahr, ein Buch ins
-    Inventar, zurückgeben.
+  - **Stadtkirche St. Johannis** (`einkauf/kirche.js`, `KIRCHE`): am Portal in der Mitte der Südwand (wo `welt/schleusingen.js` es
+    zeichnet) „Stadtkirche St. Johannis – hineingehen“; drinnen, in den eigenen Mauern der Kirche (ihr Umriss 1 m nach innen für die
+    Wände), eine **dreischiffige Halle**: Pfeiler im Takt der Fenster, **Bänke** in Blöcken mit Mittelgang und dem Quergang vom Portal,
+    roter Läufer, **Emporen** an der West- und Nordwand mit der **Orgel**, der um eine Stufe erhöhte **Chor** mit **Altar** (Tuch,
+    Leuchter, Bibel), Altaraufsatz mit dem Kreuz und **Abendmahlsschranke**, die **Kanzel** am Fuß des Turms mit Treppe und
+    Schalldeckel, der **Taufstein**, die Liedtafel, Epitaphe, Messingkronleuchter, die hohen **Fenster** aus hellem Bleiglas genau dort,
+    wo die Kirche sie außen hat (im Chor zwei farbige). Der Fuß des Turms steht als verputzter Block mit der Tür zur Sakristei in der
+    Ecke. Am Eingang ein **Kerzenständer** („Eine Kerze anzünden · 1,00 €“ – sie brennt weiter), die Begrüßungstafel und das
+    **Gästebuch**; am Mittelgang „In die Bank setzen – einen Moment Ruhe“. Am Wochenende sitzt eine **Aufsicht** am Tisch neben der Tür,
+    tagsüber sitzt oft jemand still in einer Bank; **sonntags 10–11 der Gottesdienst**: die Pfarrerin in Schwarz am Altar, sechs Leute
+    in den vorderen Bänken (an der Tür „Gottesdienst, leise hineingehen“). Eine allgemeine evangelische Stadtkirche in Thüringen – kein
+    Anspruch auf das echte Innere. Gezeichnet wie das Museum (`LINNEN.drawPlan` und eine Bilder-Canvas, drei Meshes, nur sichtbar, solange man drin ist),
+    gebaut näher als 90 m, frei ab 150 m. Ereignisse `kirche` `{ was: 'betreten' | 'gottesdienst' | 'kerze' | 'sitzen' | 'gaestebuch' |
+    'verlassen' }` (Orgel und Glocken gehören dem Klang des Leads – `gottesdienst` ist sein Stichwort).
+  - **Stadtbibliothek** (der OSM-Ort östlich der Altstadt, er liegt in einem Haus): an dessen Tür „Stadtbibliothek: Buch ausleihen“ –
+    Leseausweis 10 € im Jahr, ein Buch ins Inventar, zurückgeben.
   - **Feuerwehr Ratscher** (die alte Schule ist das Feuerwehrhaus, `dorf/dorf_school.js` nur gelesen): am Aushangkasten „Aushang der
     Feuerwehr lesen“ – Dienstzeiten, Mitmachen ab 16, „Zum nächsten Dienst vormerken“ (Ereignis für Nebenaufgaben). Der Skatabend
     freitags bleibt, wie er ist.
@@ -122,27 +141,39 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
 
 - Ohne Browser: `node --test viz3/test/unit/laeden_leben.test.mjs` (Öffnungszeiten, Waren – jeder Warenblock von EDEKA, REWE, Lidl,
   Aldi, OBI und der Bäckerei ist ein Produkt –, Andrang und Besetzung, Wege durch EDEKA, Geldbörse frei und im Grenzland-Modus).
-- Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9045 --serve laeden_leben` (Abschnitte `markt,kaufen`, Bilder in
-  `out/laeden_leben/`); bei GitHub über `viz3/extra/laeden-leben/tests.txt` (dazu `smoke`, `laeden_innen`, `laeden`).
+- Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9045 --serve laeden_leben` (Abschnitte
+  `markt,obi,kaufen,oeffentlich,kirche`, einzeln z. B. `laeden_leben:kirche`; Bilder in `out/laeden_leben/`); bei GitHub über
+  `viz3/extra/laeden-leben/tests.txt` (dazu `smoke`, `laeden_innen`, `laeden`). Bilder der Läufe: `markt_samstag_*`, `markt_kasse`,
+  `markt_dienstag`, `markt_sonntag_tuer`, `obi_*`, `kaufen_*`, `baecker_theke`, `rathaus_*`, `museum_*`, `bibliothek`, `kirche_*`.
 
 ## Offen
 
-- **St. Johannis** hat nur ihre Zeiten im Verzeichnis (tagsüber offen) – ein Innenraum der Kirche ist nicht gebaut; die **Post** ebenso
-  (OSM kennt in Schleusingen keine Filiale).
+- Die **Post** hat nur ihre Zeiten im Verzeichnis (OSM kennt in Schleusingen keine Filiale).
+- **St. Johannis**: das Innere ist allgemein (nicht nach Fotos); die zwei farbigen Chorfenster gibt es nur innen (außen zeichnet
+  `welt/schleusingen.js` nur an Wänden über 8 m Fenster); die Lage des Turms liest `KIRCHE` als Zahl aus den Requisiten von
+  `welt/schleusingen.js` (−1246,0 / 1213,2, 6,6 m) – zieht der Turm um, muss die Zahl mit. Im Gottesdienst wird nicht gesungen und
+  nicht gepredigt (die Pfarrerin steht und redet mit den Händen).
 - Ware aus dem Baumarkt taucht noch nicht in der Werkstatt oder im Garten auf (nur im Inventar); Brecheisen und Taschenlampe sind im
   Grenzland-Modus Dinge des Modus (`GL.inv`), die Missionen fragen sie noch nicht ab.
-- Obst, Gemüse, Brot und Kästen bleiben Formen in Eckfarben (keine Aufdrucke); Tiefkühlware ist von oben nur farbig.
+- Getränkekästen und Tiefkühlware von oben bleiben farbig (keine Aufdrucke); die Paletten im Baumarkt zeigen von der Seite nur die
+  Stirnflächen ihrer Blöcke (wie im Bausatz von `feat/laeden`).
 - Die Kunden gehen auf dem Raster und warten voreinander; sie weichen einander nicht aus (nach 3 s Warten gehen sie weiter).
 
 ## Für den Lead
 
 - `viz3/src/modules.txt`: Block `# feat/laeden-leben` vor `# feat/laeden` (vier Module `einkauf/*`), `laeden/waren_bild.js` vor
   `laeden/innen.js`, und ein Block nach `laeden/innen.js` (`laeden/leben_plan.js`, `laeden/leben.js`, `laeden/kauf.js`,
-  `einkauf/oeffentlich.js`, `einkauf/museum.js` – die beiden letzten brauchen `LLEBEN` und `LKAUF`, deshalb dort).
-- `KERN.provide`: `pushOut` 18, `ground` 12, `inside` 12, `place` 36 – nur im Museum (`MUSEUM`, solange man drin ist).
-- Neue `window`-Namen: `OEFFNUNG`, `WAREN`, `GELD`, `INVENTAR`, `LLPLAN`, `LLEBEN`, `LKAUF`, `WBILD`, `OEFFENTLICH`, `MUSEUM`. Neue Speicher-Schlüssel (in den Modulen selbst
+  `einkauf/oeffentlich.js`, `einkauf/museum.js`, `einkauf/kirche.js` – die drei letzten brauchen `LLEBEN` und `LKAUF`, deshalb dort).
+- `KERN.provide`: `pushOut` 18, `ground` 12, `inside` 12, `place` 36 – nur im Museum (`MUSEUM`) und in der Kirche (`KIRCHE`), solange
+  man drin ist.
+- Neue `window`-Namen: `OEFFNUNG`, `WAREN`, `GELD`, `INVENTAR`, `LLPLAN`, `LLEBEN`, `LKAUF`, `WBILD`, `OEFFENTLICH`, `MUSEUM`, `KIRCHE`. Neue Speicher-Schlüssel (in den Modulen selbst
   über `SAVE.key` eingetragen, `core/save.js` unverändert): `pav-geld-v1`, `pav-inventar-v1` – für `docs/ARCHITECTURE.md` Abschnitt 8.
 - Geliehenes Licht: `KERN.lights.borrow({ id: 'laeden:leben', n: 1, prio: 1 })` nur drinnen in einem Laden mit Leuten.
 - Zur Laufzeit eingehängt (keine fremde Datei geändert): der Knopf `#einkaufbtn` in `#hudtr` vor `#menubtn`, ein Teil `.einkauf-inv` im
   Inventarfenster `#invwin` (MutationObserver), die Fenster `#einkaufpanel`, `#kassepanel`, der Hinweis `#korbchip` (Stil vom Modul selbst).
 - Grenzland: `GELD`/`INVENTAR` lesen `window.GLSTATE` (nur wenn `on`) – keine Änderung an `grenzland/*`.
+- Laufzeiten bei GitHub (SwiftShader): `laeden_leben:markt,obi,kaufen` ~7 min, `laeden_leben:oeffentlich,kirche` ~9 min; die
+  bestehenden `laeden` (13–24 min) und `laeden_innen` (15–22 min) sind mit den bedruckten Waren und den Leuten langsamer als vorher
+  (bis 766 s bzw. 645 s) – innerhalb der Grenze von 60 min, aber im Prüfpaket spürbar.
+- Für den Suhl-Chat (Nachricht 15:35): die Bausätze sind `LLEBEN.posten` (eine Figur an einem Schalter), `OEFFNUNG.add`, `LKAUF.zeige`
+  (ein Fenster mit Knöpfen), `GELD`/`INVENTAR` und `LINNEN.drawPlan` mit `LIPLAN.kit` (Innenräume wie Museum und Kirche).

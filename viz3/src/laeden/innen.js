@@ -595,6 +595,20 @@ export const LINNEN = (() => {
           }
       } else if (uv) printed(a0, a1, z0, z0 + h, jit);
       else face(a0, a1, fr, z0, z0 + h, c, jit); // box, pack, can
+      // feat/laeden-leben: buckets stand free on their pallets – their backs too (CI picture obi_1: from behind only thin ends)
+      if (gd.k === 'eimer')
+        K.faceN(
+          pt(a0, -fr, z0),
+          pt(a1, -fr, z0),
+          pt(a1, -fr, z0 + h),
+          pt(a0, -fr, z0 + h),
+          -fx,
+          -fy,
+          0,
+          c,
+          false,
+          0.82
+        );
     }
     // (a phone: no label bands, no tops one hardly sees – over 1.55 m; a printed front has its own label)
     const band = !ph && !uv,
