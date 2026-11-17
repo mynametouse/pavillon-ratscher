@@ -15,6 +15,7 @@
 //   walker pays at a till – its cashier scans) · LLEBEN.FIGS · ?noleben leaves it all out
 import * as THREE from 'three';
 import { clone as skelClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BASE, COARSE, QS, V, cam, scene } from '../core/head.js';
 import { markDirty } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
@@ -74,11 +75,66 @@ export const LLEBEN = (() => {
   // ---- the models: each file once (its scene is the template of the clones), the clip sets once ----
   const BASES = new Map(),
     CLIPS = {};
+  // the figure's parts by material in one skinned mesh each: a Rocketbox file has 8 parts on 3 materials (body, head, hair and lashes) –
+  // 8 draw calls and 8 skeletons to update a person, now 3 (the clones inherit it). Parts with other attributes or transforms stay apart.
+  function mergeParts(root) {
+    root.updateMatrixWorld(true);
+    const G = new Map();
+    root.traverse(o => {
+      if (!o.isSkinnedMesh || Array.isArray(o.material) || !o.parent || !o.skeleton) return;
+      const k = o.parent.uuid + ':' + o.material.uuid + ':' + o.skeleton.uuid;
+      if (!G.has(k)) G.set(k, []);
+      G.get(k).push(o);
+    });
+    const sig = g =>
+      Object.keys(g.attributes).sort().join() + '|' + !!g.index + '|' + Object.keys(g.morphAttributes || {}).length;
+    let n = 0;
+    for (const L of G.values()) {
+      if (L.length < 2) continue;
+      const a = L[0];
+      if (
+        L.some(
+          m => sig(m.geometry) !== sig(a.geometry) || !m.matrix.equals(a.matrix) || !m.bindMatrix.equals(a.bindMatrix)
+        )
+      )
+        continue;
+      const geo = mergeGeometries(
+        L.map(m => m.geometry),
+        false
+      );
+      if (!geo) continue;
+      const sm = new THREE.SkinnedMesh(geo, a.material);
+      sm.name = a.name;
+      sm.position.copy(a.position);
+      sm.quaternion.copy(a.quaternion);
+      sm.scale.copy(a.scale);
+      sm.castShadow = a.castShadow;
+      sm.receiveShadow = a.receiveShadow;
+      sm.frustumCulled = a.frustumCulled;
+      sm.renderOrder = a.renderOrder;
+      Object.assign(sm.userData, a.userData);
+      a.parent.add(sm);
+      sm.bind(a.skeleton, a.bindMatrix);
+      for (const m of L) {
+        m.parent.remove(m);
+        m.geometry.dispose();
+      }
+      n += L.length - 1;
+    }
+    return n;
+  }
   function base(file) {
     let b = BASES.get(file);
     if (!b) {
       b = { file, gl: null, p: null, users: 0 };
       b.p = CHL.loadAsync(U(CH[file])).then(gl => {
+        // (S.teile false: the parts as they come – for the before/after numbers of the test)
+        if (S.teile !== false)
+          try {
+            b.merged = mergeParts(gl.scene);
+          } catch (e) {
+            S.err = 'merge: ' + String((e && e.message) || e).slice(0, 80);
+          }
         b.gl = gl;
         S.loads++;
         return b;
@@ -236,6 +292,7 @@ export const LLEBEN = (() => {
   }
   const propMesh = geo => {
     const m = new THREE.Mesh(geo, mat());
+    m.name = 'laeden-leben ding';
     m.userData.noMerge = true;
     m.castShadow = false;
     m.receiveShadow = true;
@@ -984,6 +1041,95 @@ export const LLEBEN = (() => {
       }
     }
   }
+  // ---- the people the eye cannot see: behind the tall shelves (gondolas, racks with back panels, the empties' counter) while the eye is
+  // below their tops – not drawn, posed less often. From inside a supermarket most of them are in other aisles. Three lines of sight
+  // (to the middle and 0.3 m either side): hidden only when all three cross something tall. ----
+  const TALL = { M: null, list: [] };
+  function tallOf(M) {
+    if (TALL.M === M) return TALL.list;
+    TALL.M = M;
+    TALL.list = [];
+    for (const u of M.units || [])
+      for (const B of u.tall || [])
+        TALL.list.push({ x: B[0], y: B[1], c: Math.cos(B[4]), s: Math.sin(B[4]), hx: B[2] / 2, hy: B[3] / 2 });
+    return TALL.list;
+  }
+  // the segment a→b through the box (in the box's frame, the slab test)
+  function cuts(B, ax, ay, bx, by) {
+    const x0 = (ax - B.x) * B.c + (ay - B.y) * B.s,
+      y0 = -(ax - B.x) * B.s + (ay - B.y) * B.c,
+      dx = (bx - B.x) * B.c + (by - B.y) * B.s - x0,
+      dy = -(bx - B.x) * B.s + (by - B.y) * B.c - y0;
+    let t0 = 0,
+      t1 = 1;
+    if (Math.abs(dx) < 1e-9) {
+      if (x0 < -B.hx || x0 > B.hx) return false;
+    } else {
+      let a = (-B.hx - x0) / dx,
+        b = (B.hx - x0) / dx;
+      if (a > b) [a, b] = [b, a];
+      t0 = Math.max(t0, a);
+      t1 = Math.min(t1, b);
+      if (t0 > t1) return false;
+    }
+    if (Math.abs(dy) < 1e-9) return y0 >= -B.hy && y0 <= B.hy;
+    let a = (-B.hy - y0) / dy,
+      b = (B.hy - y0) / dy;
+    if (a > b) [a, b] = [b, a];
+    return Math.max(t0, a) <= Math.min(t1, b);
+  }
+  const holds = (B, x, y) => {
+    const lx = (x - B.x) * B.c + (y - B.y) * B.s,
+      ly = -(x - B.x) * B.s + (y - B.y) * B.c;
+    return Math.abs(lx) <= B.hx + 0.05 && Math.abs(ly) <= B.hy + 0.05;
+  };
+  function behind(T, ex, ey, px, py) {
+    const dx = px - ex,
+      dy = py - ey,
+      L = Math.hypot(dx, dy) || 1,
+      nx = (-dy / L) * 0.3,
+      ny = (dx / L) * 0.3;
+    for (let k = -1; k <= 1; k++) {
+      const qx = px + nx * k,
+        qy = py + ny * k;
+      let blocked = false;
+      for (const B of T)
+        if (cuts(B, ex, ey, qx, qy)) {
+          blocked = true;
+          break;
+        }
+      if (!blocked) return false;
+    }
+    return true;
+  }
+  let cullT = 0;
+  function cullPeople(dt) {
+    cullT -= dt;
+    if (cullT > 0) return;
+    cullT = 0.12;
+    const M = S.M,
+      ex = cam.position.x,
+      ey = -cam.position.z;
+    let T = S.cull === false || !M ? null : tallOf(M);
+    if (T && T.length) {
+      const zf = M.zf ? M.zf(ex, ey) : P.feet;
+      T = Number.isFinite(zf) && cam.position.y - zf < 1.75 ? T.filter(B => !holds(B, ex, ey)) : null;
+    }
+    let ch = false,
+      hid = 0;
+    for (const p of S.people) {
+      const vis = !T || !T.length || !behind(T, ex, ey, p.x, p.y);
+      if (!vis) hid++;
+      if (p.f.g.visible !== vis) {
+        p.f.g.visible = vis;
+        if (p.wagen) p.wagen.visible = vis;
+        if (p.cage) p.cage.visible = vis;
+        ch = true;
+      }
+    }
+    S.hid = hid;
+    if (ch) markDirty();
+  }
   // ---- the round ----
   let acc = 0,
     arriveT = 4,
@@ -1037,6 +1183,11 @@ export const LLEBEN = (() => {
         }
       }
     }
+    try {
+      cullPeople(dt);
+    } catch (e) {
+      S.err = 'cull: ' + String((e && e.message) || e).slice(0, 120);
+    }
     let moving = false;
     for (const p of S.people.slice()) {
       try {
@@ -1056,7 +1207,7 @@ export const LLEBEN = (() => {
           p.f.g.getWorldPosition(_v);
           const d2 = _v.distanceToSquared(cam.position);
           p.acc = (p.acc || 0) + dt;
-          if (d2 < 22 * 22 || p.acc > 0.2) {
+          if ((d2 < 22 * 22 && p.f.g.visible) || p.acc > 0.25) {
             // the arms' own turns of the last pose back first (then the clips, rbPerson's poses, ours again)
             if (p.sv2) {
               for (const [b, q] of p.sv2) b.quaternion.copy(q);
@@ -1215,6 +1366,9 @@ export const LLEBEN = (() => {
     prepMs: S.prepMs,
     dressed: S.dressed || 0,
     dressMs: S.dressMs || 0,
+    // people not drawn behind tall shelves now; parts merged per figure file (8 → 3)
+    hid: S.hid || 0,
+    merged: [...BASES.values()].reduce((a, b) => a + (b.merged || 0), 0),
   });
   S.dropAll = dropAll;
   return S;

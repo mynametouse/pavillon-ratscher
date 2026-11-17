@@ -1,5 +1,5 @@
 smoke
-laeden_leben:markt,obi,kaufen
+laeden_leben:markt,obi,kaufen,perf
 laeden_leben:oeffentlich,kirche
 laeden_innen:edeka,lidl,rewe,obi,nacht
 laeden

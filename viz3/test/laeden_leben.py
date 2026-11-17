@@ -12,21 +12,28 @@
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'markt,obi,kaufen,oeffentlich,kirche').split(',') if s]
+want = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'markt,obi,kaufen,oeffentlich,kirche').split(',') if s]  # also: perf
 ck = lib.Checks('laeden_leben')
 OUT = lib.out('laeden_leben')
 DATA = json.load(open(os.path.join(lib.ROOT, 'viz3', 'extra', 'laeden', 'dist', 'laeden', 'laeden.json')))
 SHOP = {s['id']: s for s in DATA['shops']}
 CENTRES = {'nord': (-885, 2060), 'mitte': (-1075, 1570), 'rewe': (-1765, 915)}
-COUNT = r"""(() => { const R = GAME.R, I = [0, 0], rbd = R.renderBufferDirect;
+COUNT = r"""(() => { const R = GAME.R, I = [0, 0], rbd = R.renderBufferDirect, C = { laden: [0, 0], leute: [0, 0], welt: [0, 0] };
+  // what a draw call belongs to: the shop's rooms (laeden-innen …), its people and their things (laeden-leben …), the rest of the world
+  const kind = o => { for (let q = o, i = 0; q && i < 14; q = q.parent, i++) { const n = q.name || '';
+    if (n.startsWith('laeden-leben')) return 'leute'; if (n.startsWith('laeden-innen')) return 'laden'; } return 'welt'; };
   R.renderBufferDirect = function (camera, scene, geometry, material, object, group) {
     const n = geometry.index ? geometry.index.count : geometry.attributes.position ? geometry.attributes.position.count : 0;
-    if (scene) { I[0]++; I[1] += Math.round((group ? group.count : n) / 3) * (object.isInstancedMesh ? object.count : 1); }
+    if (scene) { const t = Math.round((group ? group.count : n) / 3) * (object.isInstancedMesh ? object.count : 1), k = kind(object);
+      I[0]++; I[1] += t; C[k][0]++; C[k][1] += t; }
     return rbd.call(this, camera, scene, geometry, material, object, group); };
   let ms = 0;
   try { GAME.shot(); const t0 = performance.now(); for (let i = 0; i < 3; i++) GAME.shot(); ms = (performance.now() - t0) / 3; }
   finally { R.renderBufferDirect = rbd; }
-  return { calls: Math.round(I[0] / 4), tris: Math.round(I[1] / 4), ms: Math.round(ms) }; })()"""
+  const o = { calls: Math.round(I[0] / 4), tris: Math.round(I[1] / 4), ms: Math.round(ms), programs: R.info.programs ? R.info.programs.length : -1,
+    people: (LLEBEN.people || []).length };
+  for (const k in C) o[k] = { calls: Math.round(C[k][0] / 4), tris: Math.round(C[k][1] / 4) };
+  return o; })()"""
 
 
 def fetch_tiles(centres):
@@ -125,6 +132,66 @@ with lib.browser() as b:
     sh = SHOP['edeka']
     md = main_door(sh)
     yi = yaw_in(md)
+    if 'perf' in want:
+        # the cost inside EDEKA on a Saturday morning (8 m in, at eye height, looking in): draw calls, triangles, programs and the frame's
+        # time – of the rooms (laden), the people with their things (leute) and the rest of the world (welt). Before: the figures' parts
+        # as they come (8 a person), no culling behind the shelves; after: 3 parts a person, people behind tall shelves not drawn
+        stand(md['x'] + md['nx'] * 25, md['y'] + md['ny'] * 25, yi)
+        settle()
+        steps(3)
+        ix, iy = md['x'] - md['nx'] * 8, md['y'] - md['ny'] * 8
+
+        def people_at(teile, cull):
+            E(f"LLEBEN.on = false; LLEBEN.dropAll(); LLEBEN.teile = {teile}; LLEBEN.cull = {cull}; LLEBEN.on = true")
+            stand(md['x'] + md['nx'] * 4, md['y'] + md['ny'] * 4, yi)
+            wait_people(8)
+            for i in range(20):
+                if J("LLEBEN.status().dressed") >= 2:
+                    break
+                steps(0.5)
+                time.sleep(0.3)
+            look(ix, iy, yi, -8, 70)
+            steps(2)
+            r = J(COUNT)
+            r['hid'] = J("LLEBEN.status().hid")
+            return r
+        E("LLEBEN.on = false; LLEBEN.dropAll()")
+        look(ix, iy, yi, -8, 70)
+        steps(1)
+        p0 = J(COUNT)
+        p1 = people_at('false', 'false')
+        pic('perf_vorher')
+        # the same with the parts merged, still everybody drawn (the merge alone), then with the culling behind the shelves
+        E("LLEBEN.cull = false")
+        p2 = people_at('true', 'false')
+        E("LLEBEN.cull = true")
+        steps(1)
+        p3 = J(COUNT)
+        p3['hid'] = J("LLEBEN.status().hid")
+        pic('perf_nachher')
+        print('perf EDEKA without people', json.dumps(p0), flush=True)
+        print('perf EDEKA before (parts as they come, no culling)', json.dumps(p1), flush=True)
+        print('perf EDEKA parts merged, no culling', json.dumps(p2), flush=True)
+        print('perf EDEKA after (parts merged, culled behind shelves)', json.dumps(p3), flush=True)
+        per = lambda r: r['leute']['calls'] / max(1, r['people'])
+        ck('perf: a person costs fewer draw calls than before (parts merged by material)', per(p2) < per(p1) * 0.7,
+           f"before {per(p1):.1f}, merged {per(p2):.1f} a person; {json.dumps([p1['leute'], p2['leute']])}")
+        ck('perf: people behind the tall shelves are not drawn (from inside the shop: fewer calls again)',
+           p3['hid'] >= 1 and p3['leute']['calls'] <= p2['leute']['calls'], json.dumps([p2['leute'], p3['leute'], p3['hid']]))
+        # the merged figures look as before: at the tills (people in view), drawn
+        ks = J("LLEBEN.kassen().filter(k => k.open && k.seat)")
+        if ks:
+            k = ks[0]
+            sx, sy = k['seat']
+            zx, zy = k['z']
+            vx, vy = zx + (zx - sx) * 1.2, zy + (zy - sy) * 1.2
+            yaw = (math.degrees(math.atan2(sx - vx, sy - vy)) + 360) % 360
+            look(vx, vy, yaw, -10, 70)
+            steps(1)
+            pk = J(COUNT)
+            pic('perf_kasse')
+            print('perf EDEKA at a till', json.dumps(pk), flush=True)
+            ck('perf: at the till the (merged) cashier is drawn', pk['leute']['calls'] >= 3, json.dumps(pk['leute']))
     if 'markt' in want or 'kaufen' in want:
         # in front of EDEKA: its rooms stand; just inside, its people come
         stand(md['x'] + md['nx'] * 25, md['y'] + md['ny'] * 25, yi)

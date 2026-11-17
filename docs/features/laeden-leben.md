@@ -6,7 +6,7 @@ zum Beispiel auch belebt sein. Man soll dort wirklich einkaufen können. … nat
 rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es geht, zugänglich sein und dann eben auch entsprechende auch
 Öffnungszeiten haben …“
 
-## Was es gibt (Stand 4, 17.11. 15:40)
+## Was es gibt (Stand 6, 17.11. abends)
 
 - **Leute im Laden** (`laeden/leben.js`, `LLEBEN`): Solange ein Laden geöffnet hat und man drin ist oder auf ihn zugeht (seine Räume
   stehen, `LINNEN`), hat er seine Leute:
@@ -117,6 +117,35 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
     freitags bleibt, wie er ist.
   - Alle Optionen sind Ereignisse `oeffentlich` `{ id, was }` bzw. `museum` `{ was, id }` für die Nebenaufgaben von `ruf`.
 
+## Leistung (17.11. abends, Wunsch des Leads: flüssig auch am iPhone)
+
+- **Gemessen** im Test `laeden_leben:perf`: EDEKA am Samstagvormittag, 8 m hinter der Tür in Augenhöhe, Blick in den Laden;
+  Zeichenaufrufe, Dreiecke, Programme und Bildzeit (SwiftShader im Chat-Rechner), getrennt nach den Räumen des Ladens (`laden`), den
+  Leuten mit Korb und Wagen (`leute`) und dem Rest der Welt (`welt`):
+
+  | | Aufrufe gesamt | Räume | Leute | Welt | Dreiecke | Programme | Bild |
+  |---|---|---|---|---|---|---|---|
+  | ohne Leute | 706 | 9 | 0 | 697 | 2,00 Mio. | 181 | 25 ms |
+  | vorher: 10 Leute, 8 Teile je Figur | 778 | 9 | 72 | 697 | 2,04 Mio. | 181 | 27 ms |
+  | Teile zusammengefasst (3 je Figur) | 721 | 9 | 18 | 694 | 2,03 Mio. | 181 | 24 ms |
+  | nachher: dazu hinter hohen Regalen nicht gezeichnet (5 von 10) | 708 | 9 | 4 | 695 | 2,01 Mio. | 181 | 21 ms |
+
+  Die Leute kosten von dort 4 statt 72 Aufrufe (je anwesende Person 7,2 → 1,8 → 0,4); ein erster Lauf ergab dasselbe Bild (55 → 0
+  Aufrufe, Bild 24 → 17 ms, ohne Leute 14 ms – die Bildzeit in SwiftShader schwankt). Die Bilder vorher und nachher sind gleich (von
+  dort sieht man niemanden: die Leute in den Gängen stehen hinter den Gondeln; `perf_vorher.jpg`, `perf_nachher.jpg`); an der Kasse
+  (`perf_kasse.jpg`) ist die Kassiererin mit ihren 3 Teilen da (8 Aufrufe für alle Leute im Blick).
+- **Was sich geändert hat:** (1) Die Figuren: eine Rocketbox-Datei hat 8 Teile auf 3 Materialien (Körper, Kopf, Haare und Wimpern) –
+  jetzt je Material ein Teil, einmal beim Laden der Datei (die Klone erben es): 3 Zeichenaufrufe und 3 Skelette je Person statt 8.
+  (2) Leute hinter Hohem (was vom Boden über 1,7 m steht: Rückwände der Gondeln, Regale, die Leergut-Theke) werden nicht gezeichnet,
+  solange das Auge darunter ist (drei Sichtlinien je Person, zur Mitte und 0,3 m daneben, alle 0,12 s) und seltener bewegt; von oben
+  (Ansicht von hinten, höher als 1,75 m über dem Boden) wird nichts weggelassen. (3) Regale und Waren waren schon je Abschnitt zu einem
+  Mesh zusammengefasst (Wände, Regale, ungedruckte Waren in einem, die bedruckten Waren und Preisschilder in einem zweiten auf dem
+  Atlas); gezeichnet wird nur der Abschnitt, in dem man ist, seine offenen Nachbarn und die mit Türen – 9 Aufrufe für den ganzen Laden.
+- **Nicht gemacht, mit Grund:** beide Meshes eines Abschnitts in eines auf dem Atlas (die großen ungedruckten Flächen bekämen aus den
+  kleinen Stufen des Atlas in der Ferne einen grauen Schleier); Waren je Gang getrennt (mehr Meshes, mehr Aufrufe – am iPhone zählen die
+  Aufrufe mehr als die Dreiecke). Der große Rest ist die **Welt hinter den Wänden**: drinnen bei EDEKA sind rund 695 der 708 Aufrufe die
+  Stadt draußen – das wäre ein Eingriff in den Kern (siehe „Für den Lead“).
+
 ## Schnittstellen
 
 - `OEFFNUNG.offen(id, t?)` → `true | false | null` · `OEFFNUNG.zeiten(id)` → „Mo–Fr 8:30–19, Sa 8:30–18“ · `OEFFNUNG.text(id, t?)` →
@@ -142,7 +171,8 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
 - Ohne Browser: `node --test viz3/test/unit/laeden_leben.test.mjs` (Öffnungszeiten, Waren – jeder Warenblock von EDEKA, REWE, Lidl,
   Aldi, OBI und der Bäckerei ist ein Produkt –, Andrang und Besetzung, Wege durch EDEKA, Geldbörse frei und im Grenzland-Modus).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9045 --serve laeden_leben` (Abschnitte
-  `markt,obi,kaufen,oeffentlich,kirche`, einzeln z. B. `laeden_leben:kirche`; Bilder in `out/laeden_leben/`); bei GitHub über
+  `markt,obi,kaufen,oeffentlich,kirche`, dazu `perf` für die Zahlen der Leistung, einzeln z. B. `laeden_leben:kirche`; Bilder in
+  `out/laeden_leben/`); bei GitHub über
   `viz3/extra/laeden-leben/tests.txt` (dazu `smoke`, `laeden_innen`, `laeden`); `amt` und `schleusingen_innen` (deren Dinge diese
   Arbeit berührt: das Rathaus, `LINNEN.drawPlan`) laufen im Prüfpaket unter ihren eigenen Themen – nicht doppelt in dieser Liste.
   Bilder der Läufe: `markt_samstag_*`, `markt_kasse`,
@@ -155,8 +185,10 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
   `welt/schleusingen.js` nur an Wänden über 8 m Fenster); die Lage des Turms liest `KIRCHE` als Zahl aus den Requisiten von
   `welt/schleusingen.js` (−1246,0 / 1213,2, 6,6 m) – zieht der Turm um, muss die Zahl mit. Im Gottesdienst wird nicht gesungen und
   nicht gepredigt (die Pfarrerin steht und redet mit den Händen).
-- Ware aus dem Baumarkt taucht noch nicht in der Werkstatt oder im Garten auf (nur im Inventar); Brecheisen und Taschenlampe sind im
-  Grenzland-Modus Dinge des Modus (`GL.inv`), die Missionen fragen sie noch nicht ab.
+- Ware aus dem Baumarkt taucht noch nicht in der Werkstatt oder im Garten auf (nur im Inventar) – kein Haken von wenigen Zeilen: die
+  Werkstatt (`werk/werk.js`) verarbeitet nur Leimholz **Eiche 40 × 400 × 1000 mm** aus ihrem Regal, OBI hat Buche 18 mm; Schrauben und
+  Farbe kennt sie nicht (siehe „Für den Lead“). Brecheisen und Taschenlampe sind im Grenzland-Modus Dinge des Modus (`GL.inv`), die
+  Missionen fragen sie noch nicht ab.
 - Getränkekästen und Tiefkühlware von oben bleiben farbig (keine Aufdrucke); die Paletten im Baumarkt zeigen von der Seite nur die
   Stirnflächen ihrer Blöcke (wie im Bausatz von `feat/laeden`).
 - Die Kunden gehen auf dem Raster und warten voreinander; sie weichen einander nicht aus (nach 3 s Warten gehen sie weiter).
@@ -178,5 +210,13 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
   (23/23), `laeden_leben:oeffentlich,kirche` 752 s (29/29), `laeden_innen` 674 s (51/51), `laeden` 1540 s (64/64), `smoke` 69 s. `laeden`
   war vor dieser Arbeit 766 s – die Leute in jedem Laden, den der Test besucht, und die bedruckten Waren kosten in SwiftShader Zeit
   (innerhalb der Grenze von 60 min, aber im Prüfpaket der längste dieser Jobs; mit `?noleben` ließen sich die Leute dort weglassen).
+- **Die Welt hinter den Wänden** (Leistung): drinnen bei EDEKA zeichnet der Rechner rund 695 Aufrufe der Stadt draußen, obwohl die Wände
+  sie verdecken. Am meisten brächte ein Kern-Schalter wie `CULL` (`core/assets.js`, Ebenen): solange das Auge in einem geschlossenen Raum
+  ist (Laden, Museum, Kirche, Häuser – `KERN.inside`) und keine Tür und kein Fenster des Raums im Blick ist, die Welt auf eine Ebene, die
+  keine Kamera zeichnet. Die Läden könnten ihre Öffnungen dafür liefern (`LINNEN`: Türen, Glasfronten je Einheit).
+- **OBI-Ware in der Werkstatt** (nicht gemacht, kein Fünfzeiler): ein Haken `WERK.addBought(n)` in `werk/werk.js` (wie die Lieferung
+  von `orderPanels`, die Platten sofort ins Regal) und in `WAREN` eine Leimholzplatte **Eiche 40 × 400 × 1000 mm** (≈ 90 €) statt der
+  Buche – dann legt der Kauf bei OBI die Platten ins Regal (`einkauf`-Ereignis, `INVENTAR.take`). Schrauben, Nägel und Farbe brauchen
+  in Werkstatt und Garten erst einen Gebrauch.
 - Für den Suhl-Chat (Nachricht 15:35): die Bausätze sind `LLEBEN.posten` (eine Figur an einem Schalter), `OEFFNUNG.add`, `LKAUF.zeige`
   (ein Fenster mit Knöpfen), `GELD`/`INVENTAR` und `LINNEN.drawPlan` mit `LIPLAN.kit` (Innenräume wie Museum und Kirche).

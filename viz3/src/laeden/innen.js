@@ -1074,6 +1074,9 @@ export const LINNEN = (() => {
       M.segs.push(...segs, ...Pl.segs);
       M.units.push({
         U,
+        // feat/laeden-leben: what stands tall from the floor (gondolas' back panels, racks, counters over 1.7 m) – the people behind it are
+        // not drawn while the eye is below its top (laeden/leben.js)
+        tall: Pl.boxes.filter(b => b.z <= 0.3 && b.z + b.sz >= 1.7 && !b.glow).map(b => [b.x, b.y, b.sx, b.sy, b.rot]),
         plan: {
           boxes: Pl.boxes.length,
           goods: Pl.goods.length,
