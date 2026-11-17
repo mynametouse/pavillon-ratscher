@@ -602,8 +602,9 @@ export const FASSADE = (() => {
       if (fx.door || Object.keys(fx.win).length) S.geb.set(b.id, fx);
     }
     if (!OV.empty() && RATSCHER.bld[0]) add(new THREE.Mesh(OV.geo(), RATSCHER.bld[0].material), 'haut');
-    // steps in front of the house doors (the door stands on the plinth: 35 cm, 60 cm in a raised ground floor)
-    const KS = VPROPS.kit ? VPROPS.kit() : null,
+    // steps in front of the house doors (the door stands on the plinth: 35 cm, 60 cm in a raised ground floor) – in the kit of the
+    // stable windows' frames (the same material: no draw call more)
+    const KS = KW || (VPROPS.kit ? VPROPS.kit() : null),
       items = [],
       HOUSE = st => st < 6.5 || st === 12 || st > 12.5;
     if (KS) {
@@ -632,7 +633,7 @@ export const FASSADE = (() => {
       stepsAdd('ratscher', items);
       S.n.stufen = items.length;
       const paint = VPROPS.mat && VPROPS.mat.paint;
-      if (paint && !KS.empty()) add(new THREE.Mesh(KS.geo(), paint), 'stufen');
+      if (KS !== KW && paint && !KS.empty()) add(new THREE.Mesh(KS.geo(), paint), 'stufen');
     }
     aD.needsUpdate = true;
     // the meshes: frames and dark glass in the props' paint; the glass that lights at night (a share of the windows) in a clone of it

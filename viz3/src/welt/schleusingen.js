@@ -1288,7 +1288,33 @@ export const SCHL = (() => {
     }
     FASSADE.stepsAdd('schleusingen', items);
     S.steps = items.length;
-    if (!K.empty()) add(new THREE.Mesh(K.geo(), S.propMat), 'stufen');
+    if (K.empty()) return;
+    // into the props' mesh (same kit layout, same material): no draw call more
+    const pm = S.meshes.find(m => m.material === S.propMat),
+      g2 = K.geo();
+    if (!pm) {
+      add(new THREE.Mesh(g2, S.propMat), 'stufen');
+      return;
+    }
+    const g1 = pm.geometry,
+      g = new THREE.BufferGeometry(),
+      n1 = g1.attributes.position.count,
+      n2 = g2.attributes.position.count;
+    for (const a of ['position', 'normal', 'uv', 'color', 'aK']) {
+      const A = g1.attributes[a],
+        B = g2.attributes[a];
+      if (!A && !B) continue;
+      const sz = (A || B).itemSize,
+        arr = new Float32Array((n1 + n2) * sz);
+      if (A) arr.set(A.array);
+      if (B) arr.set(B.array, n1 * sz);
+      g.setAttribute(a, new THREE.BufferAttribute(arr, sz));
+    }
+    g.computeBoundingBox();
+    g.computeBoundingSphere();
+    pm.geometry = g;
+    g1.dispose();
+    g2.dispose();
   }
   // ---- feat/gebaeude: the frame of a gateway (old-town Tordurchfahrten, photos of Thuringian small towns: a sandstone surround, a
   // segmental arch, a wooden gate standing open in the day) – props geometry, at both ends of the passage ----
