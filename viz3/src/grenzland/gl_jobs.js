@@ -284,11 +284,11 @@ export const GLJOBS = (() => {
   };
   const mat = () => GLORTE.mat().paint;
   // a thing built at (x, y) turned by hd, as one mesh in the scene
-  function bau(name, x, y, hd, fn, z) {
+  function bau(name, x, y, hd, fn, z, material) {
     const K = GLORTE.kit(),
       F = GLORTE.frame(K, x, y, hd || 0, z != null ? z : gnd(x, y));
     fn(F, K);
-    const m = GLORTE.mesh(K, mat(), 'gl job ' + name);
+    const m = GLORTE.mesh(K, material || mat(), 'gl job ' + name, !material);
     if (m) {
       S.welt.push(m);
       markDirty();
@@ -365,7 +365,7 @@ export const GLJOBS = (() => {
   // ---------------- the vehicles ----------------
   const auto = () => (VEH.by && VEH.by.car) || null;
   const moped = () => (GLAUTO.moped && GLAUTO.moped.g ? GLAUTO.moped : null);
-  const steht = v => !!v && hyp(v.st.u, v.st.v) < 0.6;
+  const steht = v => !!v && hyp(v.st.u, v.st.v) < 1.0;
   const heck = v => {
     const C0 = v.model && v.model.cargo;
     return VEH.toW(v, 0, (C0 ? C0.y0 : -2.3) - 0.75);
@@ -680,7 +680,7 @@ export const GLJOBS = (() => {
       const A = S.akt;
       if (!A || A.id !== 'holz') return null;
       if (!A.geladen && holzBereit(A, 12)) return T.holz.laden;
-      if (A.geladen && holzBereit(A, 26)) return T.holz.abladen;
+      if (A.geladen && holzBereit(A, 36)) return T.holz.abladen;
       return null;
     },
     pos: () => {
@@ -815,6 +815,8 @@ export const GLJOBS = (() => {
       b = A.W.ziel,
       z0 = gnd(a[0], a[1]) + 1.15,
       z1 = gnd(b[0], b[1]) + 0.9;
+    // a solid stream from the nozzle, wider as it goes, breaking into spray at the target – see-through water (one basic material,
+    // made once; no light of its own)
     A.strahlM = bau(
       'strahl',
       0,
@@ -822,16 +824,36 @@ export const GLJOBS = (() => {
       0,
       F => {
         let q = null;
-        for (let i = 0; i <= 12; i++) {
-          const k = i / 12,
+        for (let i = 0; i <= 14; i++) {
+          const k = i / 14,
             p = [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, z0 + (z1 - z0) * k + Math.sin(k * Math.PI) * 1.1];
-          if (q) F.rolle(q, p, 0.03 + k * 0.05, GLORTE.L(214, 232, 246), 6);
+          if (q) F.rolle(q, p, 0.022 + k * k * 0.07, GLORTE.L(214, 232, 246), 6);
           q = p;
         }
+        const R = GLORTE.rnd(5);
+        for (let i = 0; i < 18; i++) {
+          const r = 0.15 + R() * 0.55,
+            w = R() * Math.PI * 2;
+          F.box(
+            b[0] + Math.sin(w) * r,
+            b[1] + Math.cos(w) * r,
+            z1 - 0.3 + R() * 0.8,
+            0.05,
+            0.05,
+            0.05,
+            GLORTE.L(214, 232, 246),
+            false
+          );
+        }
       },
-      0
+      0,
+      wasser()
     );
   }
+  let wasserMat = null;
+  const wasser = () =>
+    wasserMat ||
+    (wasserMat = new THREE.MeshBasicMaterial({ color: 0xd8ecf8, transparent: true, opacity: 0.5, depthWrite: false }));
   JOB.feuerwehr = {
     an(A) {
       A.F = {};

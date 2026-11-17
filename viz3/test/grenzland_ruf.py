@@ -283,9 +283,10 @@ with lib.browser() as b:
             X("const v = VEH.by.car, C = v.model.cargo, p = VEH.toW(v, 0, C.y0 - 1.1); GAME.view(p[0], p[1], KERN.ground(p[0], p[1]) + 1.62, 0, -10)")
             steps(0.3)
             lab = E("TR.act('gl-job-holz')")
+            diag = J(f"(() => {{ const v = VEH.by.car, h = GLJOBS.debug.haus('{kd}'), C = v.model.cargo, p = VEH.toW(v, 0, C.y0 - 0.75), w = KERN.where(); return {{ dAuto: +Math.hypot(v.st.x - h.step[0], v.st.y - h.step[1]).toFixed(1), v: +Math.hypot(v.st.u, v.st.v).toFixed(2), dHeck: +Math.hypot(w[0] - p[0], w[1] - p[1]).toFixed(2) }} }})()")
             X("TR.run('gl-job-holz')")
             steps(0.3)
-            ck(f'holz: at {kd}\'s house: „Holz abladen“ – a stack by the door', lab == 'Holz abladen' and E(f"GAME.scene.getObjectsByProperty('name', 'gl job holz {kd}').length") == 1, str((lab, J("GLJOBS.debug.info()"))))
+            ck(f'holz: at {kd}\'s house: „Holz abladen“ – a stack by the door', lab == 'Holz abladen' and E(f"GAME.scene.getObjectsByProperty('name', 'gl job holz {kd}').length") == 1, str((lab, diag, J("GLJOBS.debug.info()"))))
             if kd == 'gerhard':
                 X(f"const h = GLJOBS.debug.haus('gerhard'), sx = h.door[0] + h.d[0] * 2.2 + h.n[0] * 0.55, sy = h.door[1] + h.d[1] * 2.2 + h.n[1] * 0.55, x = sx + h.n[0] * 4.5 + h.d[0] * 1.2, y = sy + h.n[1] * 4.5 + h.d[1] * 1.2; GAME.view(x, y, KERN.ground(x, y) + 1.6, Math.atan2(sx - x, sy - y) * 180 / Math.PI, -12); GAME.setView3(false)")
                 steps(0.4)
