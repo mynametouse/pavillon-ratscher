@@ -37,6 +37,7 @@ import { GLHUD } from './gl_hud.js';
 import { GLKARTE } from './gl_karte.js';
 import { GLRADIO } from './gl_radio.js';
 import { GLNACHT } from './gl_nacht.js';
+import { GLUMGEBUNG } from './gl_umgebung.js';
 import { GLHANDY } from './gl_handy.js';
 import { GLFAHNDUNG } from './gl_fahndung.js';
 import { GLHELI } from './gl_heli.js';
@@ -382,6 +383,7 @@ export const GRENZLAND = (() => {
     GLHELI.stop();
     GLRADIO.stop();
     GLNACHT.stop();
+    GLUMGEBUNG.stop();
     GLHANDY.stop();
     GLCOCKPIT.stop();
     GLLAGER.drop();
@@ -466,6 +468,7 @@ export const GRENZLAND = (() => {
     GLMISSION.tick(dt);
     GLRADIO.tick(dt);
     GLNACHT.tick(dt);
+    GLUMGEBUNG.tick(dt);
     GLHANDY.tick(dt);
     GLCOCKPIT.tick(dt);
     GLHUD.tick(dt);

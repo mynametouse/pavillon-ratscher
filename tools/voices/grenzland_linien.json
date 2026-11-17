@@ -6020,6 +6020,48 @@
   },
   {
    "who": "gl_r_kirmes",
+   "id": "gl_r_kirmes_1x19dyn",
+   "text": "Das war „Four Beers' Polka“ – Kevin MacLeod.",
+   "prio": 4,
+   "src": "radio.kirmes"
+  },
+  {
+   "who": "gl_r_kirmes",
+   "id": "gl_r_kirmes_jrj7qc",
+   "text": "Das war „Glee Club Polka“ – Kevin MacLeod.",
+   "prio": 4,
+   "src": "radio.kirmes"
+  },
+  {
+   "who": "gl_r_kirmes",
+   "id": "gl_r_kirmes_1l14lsq",
+   "text": "Das war „Dvorak Polka“ – Kevin MacLeod.",
+   "prio": 4,
+   "src": "radio.kirmes"
+  },
+  {
+   "who": "gl_r_kirmes",
+   "id": "gl_r_kirmes_yvbzru",
+   "text": "Das war „Bushwick Tarantella“ – Kevin MacLeod.",
+   "prio": 4,
+   "src": "radio.kirmes"
+  },
+  {
+   "who": "gl_r_kirmes",
+   "id": "gl_r_kirmes_1ro25dx",
+   "text": "Das war „Hyperfun“ – Kevin MacLeod.",
+   "prio": 4,
+   "src": "radio.kirmes"
+  },
+  {
+   "who": "gl_r_kirmes",
+   "id": "gl_r_kirmes_183h9xy",
+   "text": "Das war „Waunobe March“ – Kevin MacLeod.",
+   "prio": 4,
+   "src": "radio.kirmes"
+  },
+  {
+   "who": "gl_r_kirmes",
    "id": "gl_r_kirmes_1i3j6qa",
    "text": "Kurz gemeldet: Die Kirmesgesellschaft sucht noch einen Baum. Der letzte war zu kurz, der davor stand schief.",
    "prio": 4,
@@ -6223,6 +6265,48 @@
   },
   {
    "who": "gl_r_zweitakt",
+   "id": "gl_r_zweitakt_uqtb6v",
+   "text": "Das war „Boreal“ – Salmo.",
+   "prio": 4,
+   "src": "radio.zweitakt"
+  },
+  {
+   "who": "gl_r_zweitakt",
+   "id": "gl_r_zweitakt_1i4duoe",
+   "text": "Das war „Radio Song“ – Mild Wild.",
+   "prio": 4,
+   "src": "radio.zweitakt"
+  },
+  {
+   "who": "gl_r_zweitakt",
+   "id": "gl_r_zweitakt_1b905us",
+   "text": "Das war „Get It Right / Get It Tight“ – voyageurs.",
+   "prio": 4,
+   "src": "radio.zweitakt"
+  },
+  {
+   "who": "gl_r_zweitakt",
+   "id": "gl_r_zweitakt_1usfqw1",
+   "text": "Das war „Versailles“ – Pierce Murphy.",
+   "prio": 4,
+   "src": "radio.zweitakt"
+  },
+  {
+   "who": "gl_r_zweitakt",
+   "id": "gl_r_zweitakt_hgj6p9",
+   "text": "Das war „Savior“ – Pipe Choir.",
+   "prio": 4,
+   "src": "radio.zweitakt"
+  },
+  {
+   "who": "gl_r_zweitakt",
+   "id": "gl_r_zweitakt_uiybd0",
+   "text": "Das war „Dark Spots“ – A Crooked Pulse.",
+   "prio": 4,
+   "src": "radio.zweitakt"
+  },
+  {
+   "who": "gl_r_zweitakt",
    "id": "gl_r_zweitakt_1es9xjj",
    "text": "Meldung für Schrauber: Der Teilemarkt an der Feldscheune findet statt. Gesucht wird wie immer derselbe Vergaser.",
    "prio": 4,
@@ -6419,6 +6503,48 @@
   },
   {
    "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_1mppo9r",
+   "text": "Das war „Roy“ – JBlanked.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_tyyep",
+   "text": "Das war „Lemon Meringue Pie“ – Aitua.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_o0cz89",
+   "text": "Das war „In Tune, der Remix“ – Kellee Maize & J. Glaze Prod.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_1ruqwnc",
+   "text": "Das war „Michael Vendette“ – Black Ant.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_setioh",
+   "text": "Das war „Forever Believe“ – Jason Shaw.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
+   "id": "gl_r_funkloch_pkk28g",
+   "text": "Das war „Night Rave“ – Jason Shaw.",
+   "prio": 4,
+   "src": "radio.funkloch"
+  },
+  {
+   "who": "gl_r_funkloch",
    "id": "gl_r_funkloch_u7qyb9",
    "text": "Kurz gemeldet: In Ratscher wurde ein Funkloch gestopft. Daneben ist ein neues aufgegangen.",
    "prio": 4,
@@ -6512,6 +6638,48 @@
    "who": "gl_r_neon",
    "id": "gl_r_neon_4wnaqk",
    "text": "Das war „Street Dancing“ – Timecrawler 82.",
+   "prio": 4,
+   "src": "radio.neon"
+  },
+  {
+   "who": "gl_r_neon",
+   "id": "gl_r_neon_1ot3pu4",
+   "text": "Das war „The Perfect Planet“ – Monroeville Music Center.",
+   "prio": 4,
+   "src": "radio.neon"
+  },
+  {
+   "who": "gl_r_neon",
+   "id": "gl_r_neon_etat85",
+   "text": "Das war „Urlaub“ – Phillip Gross.",
+   "prio": 4,
+   "src": "radio.neon"
+  },
+  {
+   "who": "gl_r_neon",
+   "id": "gl_r_neon_z98cnc",
+   "text": "Das war „New Touch“ – Airglow.",
+   "prio": 4,
+   "src": "radio.neon"
+  },
+  {
+   "who": "gl_r_neon",
+   "id": "gl_r_neon_1lx42ct",
+   "text": "Das war „Corner of the Room“ – Timecrawler 82.",
+   "prio": 4,
+   "src": "radio.neon"
+  },
+  {
+   "who": "gl_r_neon",
+   "id": "gl_r_neon_3cb4cn",
+   "text": "Das war „Love Love What Can You Say Love“ – Origami Repetika.",
+   "prio": 4,
+   "src": "radio.neon"
+  },
+  {
+   "who": "gl_r_neon",
+   "id": "gl_r_neon_na0mpg",
+   "text": "Das war „Usual Flight“ – Andrew R Codeman.",
    "prio": 4,
    "src": "radio.neon"
   },

@@ -1,6 +1,11 @@
 // ===================== feat/grenzland-kino: the score – music by situation under the missions, stings (GLSCORE) =====================
-// Falko (13.11.2026 1:25): own compositions or public domain only – so everything here is composed in code and synthesised live in
-// WebAudio, in D minor, on the game's music bus (the „Musik“ volume and „Ton aus“ hold). Layers, crossfaded over about two seconds:
+// Falko (13.11.2026 1:25): own compositions or public domain only – so everything here was composed in code and synthesised live in
+// WebAudio, in D minor, on the game's music bus (the „Musik“ volume and „Ton aus“ hold). Since 17.11.2026 (Falko: „Filmmusik bei
+// Missionen“, free music only) real pieces play instead when the sound repository answers – Kevin MacLeod (incompetech.com, CC BY 4.0):
+// spannung „Crypto“, flucht „Hot Pursuit“ (from three stars „Ready Aim Fire“), 1989 „SCP-x6x (Hopes)“, szene „Almost New“, the stings from
+// „Danse Macabre – Big Hit 1“, „Loping Sting“ and „Der Kleber Sting“ (files: pavillon-ton/score/, credits in the radio extra). Two media
+// elements take turns (a layer change or a piece near its end crossfades); a file that cannot be loaded brings the synthesis back.
+// The synthesised layers, crossfaded over about two seconds:
 //   spannung  a mission's objective, sneaking: a low pulse in eighths, a dark pad (i – VI – iv – V), a clock-like ping
 //   flucht    wanted (one star and more) or a race: bass ostinato and drums – kick and hats, a snare from two stars, stabs from three,
 //             sixteenths and a riser from four
@@ -15,6 +20,7 @@ import { STIMME } from '../audio/stimme.js';
 import { GL } from './gl_state.js';
 import { GLLOGIK } from './gl_logik.js';
 import { GLRADIO } from './gl_radio.js';
+import { GLRDATA } from './gl_radio_data.js';
 export const GLSCORE = (() => {
   const S = {
     lage: '', // the mission's wish (a step's lage)
@@ -32,6 +38,9 @@ export const GLSCORE = (() => {
     spricht: false,
     lvl: -1, // the master's level set last
     lvlA: null,
+    D: null, // the two decks of the real pieces
+    ohneDatei: false, // a piece could not be loaded: synthesis from now on
+    sb: {}, // decoded stings
   };
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
   const raw = () => {
@@ -71,6 +80,8 @@ export const GLSCORE = (() => {
     A.noise = nb;
     S.A = A;
     S.L = {};
+    S.D = null;
+    S.sb = {};
     return A;
   }
   // ---------------- instruments (one-shot nodes, freed by the browser when they end) ----------------
@@ -329,10 +340,89 @@ export const GLSCORE = (() => {
     if (!idle) S.probe = true;
     return !idle;
   }
+  // ---------------- the real pieces: two decks that take turns ----------------
+  const DECK_G = 0.6;
+  const STDATEI = { start: 'st_start', bestanden: 'st_bestanden', gescheitert: 'st_gescheitert' };
+  const url = name => GLRDATA.ton() + 'score/' + name + '.mp3';
+  function deck(A) {
+    const el = new Audio();
+    el.crossOrigin = 'anonymous';
+    el.preload = 'auto';
+    const src = A.ctx.createMediaElementSource(el),
+      g = A.ctx.createGain();
+    g.gain.value = 0.0001;
+    src.connect(g);
+    g.connect(A.master);
+    const d = { el, src, g, name: '', bis: 0 };
+    el.addEventListener('error', () => {
+      if (d.name) S.ohneDatei = true;
+    });
+    return d;
+  }
+  function dateiTick(A, now) {
+    const want = S.ziel ? (S.ziel === 'flucht' && S.stufe >= 3 ? 'flucht2' : S.ziel) : '';
+    if (!S.D && !want) return;
+    const D = S.D || (S.D = { a: deck(A), b: deck(A), cur: null });
+    const cur = D.cur,
+      el = cur && cur.el,
+      ende = !!(el && el.duration && el.currentTime > el.duration - 2.4);
+    if (want !== (cur ? cur.name : '') || ende) {
+      if (cur) {
+        cur.g.gain.cancelScheduledValues(now);
+        cur.g.gain.setTargetAtTime(0.0001, now, ende ? 0.7 : 0.55);
+        cur.bis = now + 3.2;
+      }
+      D.cur = null;
+      if (want) {
+        const nx = cur === D.a ? D.b : D.a;
+        nx.name = want;
+        nx.bis = 0;
+        nx.el.src = url(want);
+        nx.el.currentTime = 0;
+        const p = nx.el.play();
+        if (p && p.catch) p.catch(() => {});
+        nx.g.gain.cancelScheduledValues(now);
+        nx.g.gain.setTargetAtTime(DECK_G, now, ende ? 0.7 : 0.6);
+        D.cur = nx;
+      }
+    }
+    for (const d of [D.a, D.b])
+      if (d !== D.cur && d.bis && now > d.bis) {
+        try {
+          d.el.pause();
+        } catch (e) {}
+        d.bis = 0;
+        d.name = '';
+      }
+  }
+  function deckStop() {
+    const D = S.D;
+    S.D = null;
+    if (!D) return;
+    for (const d of [D.a, D.b])
+      try {
+        d.el.pause();
+        d.el.removeAttribute('src');
+        d.src.disconnect();
+        d.g.disconnect();
+      } catch (e) {}
+  }
+  // the stings as decoded buffers (small), loaded with the first chain
+  function stichLaden(A) {
+    for (const [k, f] of Object.entries(STDATEI)) {
+      if (S.sb[k] !== undefined) continue;
+      S.sb[k] = null;
+      fetch(url(f))
+        .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('HTTP ' + r.status))))
+        .then(ab => new Promise((res, rej) => A.ctx.decodeAudioData(ab, res, rej)))
+        .then(b => (S.sb[k] = b))
+        .catch(() => {});
+    }
+  }
   // ---------------- per frame: crossfades and the 16ths a quarter of a second ahead ----------------
   function tick(dt) {
     S.ziel = wunsch();
-    const want = !!S.ziel || Object.values(S.L).some(l => l.on);
+    const want = !!S.ziel || Object.values(S.L).some(l => l.on) || !!(S.D && (S.D.cur || S.D.a.bis || S.D.b.bis));
     if (!want) return;
     const A = kette();
     if (!A) return;
@@ -348,9 +438,16 @@ export const GLSCORE = (() => {
       A.master.gain.setTargetAtTime(lvl, now, 0.12);
     }
     S.spricht = duck;
+    // the real pieces while they can be had; the synthesised layers then fade out (and come back if a file fails)
+    const datei = !S.ohneDatei;
+    if (datei && c.state === 'running') {
+      stichLaden(A);
+      dateiTick(A, now);
+    }
+    if (!datei && S.D) deckStop();
     for (const name of Object.keys(LAYER)) {
       const D = LAYER[name],
-        on = S.ziel === name;
+        on = !datei && S.ziel === name;
       let l = S.L[name];
       if (on && !l) {
         l = S.L[name] = { g: c.createGain(), on: true, next: now + 0.08, n: 0, nodes: null, off: 0 };
@@ -468,7 +565,13 @@ export const GLSCORE = (() => {
       A.master.gain.setTargetAtTime(S.lvl, t, 0.05);
     }
     try {
-      STICH[name](A, A.stich, t);
+      const b = !S.ohneDatei && S.sb[name];
+      if (b) {
+        const q = A.ctx.createBufferSource();
+        q.buffer = b;
+        q.connect(A.stich);
+        q.start(t);
+      } else STICH[name](A, A.stich, t);
     } catch (e) {}
     return true;
   }
@@ -483,6 +586,18 @@ export const GLSCORE = (() => {
     S.lvl = -1;
     if (!A) return;
     S.A = null;
+    const D = S.D;
+    S.D = null;
+    if (D)
+      setTimeout(() => {
+        for (const d of [D.a, D.b])
+          try {
+            d.el.pause();
+            d.el.removeAttribute('src');
+            d.src.disconnect();
+            d.g.disconnect();
+          } catch (e) {}
+      }, 900);
     const L = S.L;
     S.L = {};
     try {
@@ -559,7 +674,10 @@ export const GLSCORE = (() => {
       stufe: S.stufe,
       radio: radioAn(),
       duck: S.spricht,
-      layers: Object.keys(S.L),
+      layers: S.D && S.D.cur ? [S.D.cur.name === 'flucht2' ? 'flucht' : S.D.cur.name] : Object.keys(S.L),
+      datei: S.D && S.D.cur ? S.D.cur.name : '',
+      dateiT: S.D && S.D.cur ? S.D.cur.el.currentTime : 0,
+      ohneDatei: S.ohneDatei,
       stiche: S.stiche,
       letzter: S.letzter,
       ctx: S.A ? S.A.ctx.state : '',

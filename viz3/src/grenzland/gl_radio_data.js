@@ -41,7 +41,11 @@ export const GLRDATA = (() => {
   // ---- real songs by real bands under free licences (Falko 13.11.2026 23:02: „Das müssen echte coole Songs sein.“; ~23:20 „Freie Musik
   // von Bands“; 23:57 „Heute 8 Songs direkt“ – two per station, chosen by downloads on the Free Music Archive, licence read on each track's
   // own page on 14.11.2026). Files: viz3/extra/grenzland-radio/dist/snd/radio/ – loudness −16 LUFS, MP3 96 kbit/s, otherwise unchanged.
+  // Six more per station since 17.11.2026 (Falko 14.11. 1:45 „Mehr Songs“, 17.11. 11:26 „Alle drei mit Repo“; licences read on each
+  // track's page on 16./17.11., lyrics listened through with a speech model): their files lie in the sound repository pavillon-ton
+  // (ton: true – TON below; the site itself has no room left), songs longer than 4:40 cut to 4:30 with a fade.
   // datei · titel · von (artist) · lizenz + lurl · quelle (the track's page) · sek (length after the silence at the ends was trimmed)
+  // · ton (file in pavillon-ton/radio/) · sprich (the title as the presenter says it, where the written one reads badly aloud)
   const LIEDER = {
     zweitakt: [
       {
@@ -62,6 +66,67 @@ export const GLRDATA = (() => {
         quelle: 'https://freemusicarchive.org/music/The_Crypts_1935/Discover_Science/The_Crypts_-_07_-_Ate_A_Pizza/',
         sek: 89.0,
       },
+      {
+        datei: 'zt_boreal.mp3',
+        titel: 'Boreal',
+        von: 'Salmo',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Salmo/Kaos_O_Labo_Piece_of_Wood/04_Boreal/',
+        sek: 270.4,
+        ton: true,
+      },
+      {
+        datei: 'zt_radiosong.mp3',
+        titel: 'Radio Song',
+        von: 'Mild Wild',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Mild_Wild/a_Ghost_Notes_b_Radio_Song/Radio_Song_MP3/',
+        sek: 142.8,
+        ton: true,
+      },
+      {
+        datei: 'zt_getitright.mp3',
+        titel: 'Get It Right / Get It Tight',
+        von: 'voyageurs',
+        lizenz: 'CC BY 3.0',
+        lurl: 'https://creativecommons.org/licenses/by/3.0/',
+        quelle:
+          'https://freemusicarchive.org/music/voyageurs/TRIGRAMS/VOYAGEURS_-_TRIGRAMS_-_06_GET_IT_RIGHT_-_GET_IT_TIGHT/',
+        sek: 270.0,
+        ton: true,
+      },
+      {
+        datei: 'zt_versailles.mp3',
+        titel: 'Versailles',
+        von: 'Pierce Murphy',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Pierce_Murphy/Nighthawks_EP/Versailles/',
+        sek: 250.7,
+        ton: true,
+      },
+      {
+        datei: 'zt_savior.mp3',
+        titel: 'Savior',
+        von: 'Pipe Choir',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Pipe_Choir/Pipe_Choir/Savior/',
+        sek: 268.9,
+        ton: true,
+      },
+      {
+        datei: 'zt_darkspots.mp3',
+        titel: 'Dark Spots',
+        von: 'A Crooked Pulse',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/A_Crooked_Pulse/A_Crooked_Pulse/Dark_Spots_1708/',
+        sek: 192.3,
+        ton: true,
+      },
     ],
     funkloch: [
       {
@@ -81,6 +146,68 @@ export const GLRDATA = (() => {
         lurl: 'https://creativecommons.org/licenses/by/3.0/',
         quelle: 'https://freemusicarchive.org/music/Black_Ant/Free_Beats_Sel_3/self_serve/',
         sek: 150.4,
+      },
+      {
+        datei: 'fl_roy.mp3',
+        titel: 'Roy',
+        von: 'JBlanked',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/J_Blanked_On_This_Beat/Horizon_1091/JBlanked_-_03_-_Roy/',
+        sek: 250.2,
+        ton: true,
+      },
+      {
+        datei: 'fl_lemon.mp3',
+        titel: 'Lemon Meringue Pie',
+        von: 'Aitua',
+        lizenz: 'CC0 1.0',
+        lurl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+        quelle: 'https://freemusicarchive.org/music/Aitua/Audio_Cookbook/Lemon_Meringue_Pie/',
+        sek: 69.3,
+        ton: true,
+      },
+      {
+        datei: 'fl_intune.mp3',
+        titel: 'In Tune (J. Glaze Remix)',
+        sprich: 'In Tune, der Remix',
+        von: 'Kellee Maize & J. Glaze Prod',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle:
+          'https://freemusicarchive.org/music/Kellee_Maize__J_Glaze_Productions/The_Remixes/In_Tune_J_Glaze_Remix/',
+        sek: 270.0,
+        ton: true,
+      },
+      {
+        datei: 'fl_vendette.mp3',
+        titel: 'Michael Vendette',
+        von: 'Black Ant',
+        lizenz: 'CC BY 3.0',
+        lurl: 'https://creativecommons.org/licenses/by/3.0/',
+        quelle: 'https://freemusicarchive.org/music/Black_Ant/Free_Beats_Sel_3/Michael_Vendette/',
+        sek: 143.5,
+        ton: true,
+      },
+      {
+        datei: 'fl_believe.mp3',
+        titel: 'Forever Believe',
+        von: 'Jason Shaw',
+        lizenz: 'CC BY 3.0 US',
+        lurl: 'https://creativecommons.org/licenses/by/3.0/us/',
+        quelle: 'https://freemusicarchive.org/music/Jason_Shaw/Audionautix_Tech_Urban_Dance/TU-ForeverBelieve/',
+        sek: 162.0,
+        ton: true,
+      },
+      {
+        datei: 'fl_rave.mp3',
+        titel: 'Night Rave',
+        von: 'Jason Shaw',
+        lizenz: 'CC BY 3.0 US',
+        lurl: 'https://creativecommons.org/licenses/by/3.0/us/',
+        quelle: 'https://freemusicarchive.org/music/Jason_Shaw/Audionautix_Tech_Urban_Dance/TU-NightRave/',
+        sek: 89.9,
+        ton: true,
       },
     ],
     neon: [
@@ -103,6 +230,70 @@ export const GLRDATA = (() => {
         quelle: 'https://freemusicarchive.org/music/Timecrawler_82/Osaka_Lights/Street_Dancing/',
         sek: 324.0,
       },
+      {
+        datei: 'nf_planet.mp3',
+        titel: 'The Perfect Planet',
+        von: 'Monroeville Music Center',
+        lizenz: 'CC BY 3.0',
+        lurl: 'https://creativecommons.org/licenses/by/3.0/',
+        quelle:
+          'https://freemusicarchive.org/music/Monroeville_Music_Center/Choose_Your_Own_Adventure/The_Perfect_Planet/',
+        sek: 83.5,
+        ton: true,
+      },
+      {
+        datei: 'nf_urlaub.mp3',
+        titel: 'uRLauB',
+        sprich: 'Urlaub',
+        von: 'Phillip Gross',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Phillip_Gross/HoLiDaYS/2_phillip_gross_holidays_-_02_-_urlaub/',
+        sek: 136.5,
+        ton: true,
+      },
+      {
+        datei: 'nf_newtouch.mp3',
+        titel: 'New Touch',
+        von: 'Airglow',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Airglow/Memory_Bank/AIRGLOW_-_Memory_Bank_-_07_New_Touch/',
+        sek: 266.5,
+        ton: true,
+      },
+      {
+        datei: 'nf_corner.mp3',
+        titel: 'Corner of the room (feat. Silvia)',
+        sprich: 'Corner of the Room',
+        von: 'Timecrawler 82',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Timecrawler_82/Osaka_Lights/Corner_of_the_room_feat_Silvia/',
+        sek: 270.0,
+        ton: true,
+      },
+      {
+        datei: 'nf_lovelove.mp3',
+        titel: 'Love Love What Can You Say Love',
+        von: 'Origami Repetika',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle:
+          'https://freemusicarchive.org/music/Origami_Repetika/the-happy-puppy-collection/love-love-what-can-you-say-love/',
+        sek: 150.0,
+        ton: true,
+      },
+      {
+        datei: 'nf_usual.mp3',
+        titel: 'Usual Flight',
+        von: 'Andrew R Codeman',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://freemusicarchive.org/music/Andrew_Codeman/Neon_Wind/usual-flight/',
+        sek: 270.0,
+        ton: true,
+      },
     ],
     kirmes: [
       {
@@ -123,10 +314,74 @@ export const GLRDATA = (() => {
         quelle: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500069',
         sek: 224.6,
       },
+      {
+        datei: 'km_fourbeers.mp3',
+        titel: "Four Beers' Polka",
+        von: 'Kevin MacLeod',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100225',
+        sek: 141.9,
+        ton: true,
+      },
+      {
+        datei: 'km_glee.mp3',
+        titel: 'Glee Club Polka',
+        von: 'Kevin MacLeod',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100218',
+        sek: 202.3,
+        ton: true,
+      },
+      {
+        datei: 'km_dvorak.mp3',
+        titel: 'Dvorak Polka',
+        von: 'Kevin MacLeod',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100249',
+        sek: 102.8,
+        ton: true,
+      },
+      {
+        datei: 'km_bushwick.mp3',
+        titel: 'Bushwick Tarantella',
+        von: 'Kevin MacLeod',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300002',
+        sek: 196.9,
+        ton: true,
+      },
+      {
+        datei: 'km_hyperfun.mp3',
+        titel: 'Hyperfun',
+        von: 'Kevin MacLeod',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400038',
+        sek: 232.2,
+        ton: true,
+      },
+      {
+        datei: 'km_waunobe.mp3',
+        titel: 'Waunobe March',
+        von: 'Kevin MacLeod',
+        lizenz: 'CC BY 4.0',
+        lurl: 'https://creativecommons.org/licenses/by/4.0/',
+        quelle: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100016',
+        sek: 92.3,
+        ton: true,
+      },
     ],
   };
   // what the presenter says after a song (a fixed sentence per song – recorded like every other line)
-  const dasWar = l => 'Das war „' + l.titel + '“ – ' + l.von + (/[.!?]$/.test(l.von) ? '' : '.');
+  const dasWar = l => 'Das war „' + (l.sprich || l.titel) + '“ – ' + l.von + (/[.!?]$/.test(l.von) ? '' : '.');
+  // the sound repository mynametouse/pavillon-ton (17.11.2026): its own GitHub Pages site on the same host as the game, so the
+  // songs, the mission music and the places' recordings need no room on the game's site (1 GB at most). window.GLTON_BASE replaces it.
+  const TON = 'https://mynametouse.github.io/pavillon-ton/';
+  const ton = () => (typeof window !== 'undefined' && window.GLTON_BASE) || TON;
   // ---- the stations ----
   // uhr: the format clock – what follows what (musik, mod: the presenter, kenn: ident and claim, werb: advert, news, verkehr, feat: the
   // feature in parts, gruss: greetings); fern: reception ('sued': comes in only in the south of the map, 'west': always with noise)
@@ -820,6 +1075,7 @@ export const GLRDATA = (() => {
     byId,
     LIEDER,
     dasWar,
+    ton,
     POLIZEI,
     VOR,
     TH,

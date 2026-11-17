@@ -247,8 +247,12 @@ export const GLRADIO = (() => {
         a.addEventListener('error', () => {
           if (!S.item || !S.item.rec) return;
           S.item.left = Math.min(S.item.left, 0.5);
-          // a song file that cannot be loaded (offline, missing): the station falls back to its synthesised pieces
-          if (S.item.lied) (S.ohne || (S.ohne = {}))[S.id] = 1;
+          // a song file that cannot be loaded: one of the sound repository's (offline, not reachable) – its songs are left out from
+          // now on; one of the site's own – the station falls back to its synthesised pieces
+          if (S.item.lied) {
+            if (S.item.ton) S.ohneTon = true;
+            else (S.ohne || (S.ohne = {}))[S.id] = 1;
+          }
         });
       } else if (S.el.ctx !== A.ctx) return false;
       const a = S.el.a;
@@ -309,10 +313,14 @@ export const GLRADIO = (() => {
   const prog = id => S.prog[id] || (S.prog[id] = D.PROG.neu(id, M.hash(id)));
   const recs = () =>
     S.id === 'klassik' && Array.isArray(window.MUSICMAN) ? window.MUSICMAN.filter(r => r && r.file) : [];
-  // the real songs of a station (gl_radio_data.js LIEDER; files in viz3/extra/grenzland-radio/dist/snd/radio/) – such a station plays
+  // the real songs of a station (gl_radio_data.js LIEDER; files in viz3/extra/grenzland-radio/dist/snd/radio/, the newer ones in the
+  // sound repository pavillon-ton/radio/) – such a station plays
   // only them, and no synthesised ident
-  const lieder = id =>
-    D.LIEDER && D.LIEDER[id] && D.LIEDER[id].length && !(S.ohne && S.ohne[id]) ? D.LIEDER[id] : null;
+  const lieder = id => {
+    const L = D.LIEDER && D.LIEDER[id] && !(S.ohne && S.ohne[id]) ? D.LIEDER[id] : null;
+    const M2 = L && S.ohneTon ? L.filter(l => !l.ton) : L;
+    return M2 && M2.length ? M2 : null;
+  };
   const songs = id =>
     lieder(id) ? lieder(id).length : (M.REP[id] ? M.REP[id].length : 1) + (id === 'klassik' ? recs().length : 0);
   function ctxOf() {
@@ -341,12 +349,14 @@ export const GLRADIO = (() => {
     if (L) {
       const l = L[((i % L.length) + L.length) % L.length];
       return {
-        rec: { url: BASE + 'snd/radio/' + l.datei },
+        rec: { url: (l.ton ? D.ton() + 'radio/' : BASE + 'snd/radio/') + l.datei },
         titel: l.titel,
+        sprich: l.sprich || '',
         von: l.von,
         lizenz: l.lizenz,
         dauer: Math.max(10, l.sek - 0.3),
         lied: true,
+        ton: !!l.ton,
       };
     }
     if (id === 'klassik') {
@@ -363,7 +373,7 @@ export const GLRADIO = (() => {
   function startMusik(it, mid) {
     const p = pieceOf(S.id, it.i),
       off = mid && (!p.rec || p.lied) ? p.dauer * ((p.lied ? 0.15 : 0.25) + 0.4 * prog(S.id).rnd()) : 0;
-    S.last[S.id] = { titel: p.titel, von: p.von, lied: !!p.lied };
+    S.last[S.id] = { titel: p.titel, sprich: p.sprich || '', von: p.von, lied: !!p.lied };
     S.count.musik++;
     note('musik', '', p.titel);
     GL.emit('radio:sendung', { id: S.id, k: 'musik', art: '', titel: p.titel });
@@ -376,6 +386,7 @@ export const GLRADIO = (() => {
         von: p.von,
         lizenz: p.lizenz || '',
         lied: !!p.lied,
+        ton: !!p.ton,
         left: p.dauer - off,
         dauer: p.dauer,
         i: it.i,

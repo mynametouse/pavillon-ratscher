@@ -99,8 +99,20 @@ with lib.browser() as b:
     E("GLRADIO.tune('zweitakt')"); steps(0.5)
     ok = until("GLRADIO.S.item && GLRADIO.S.item.lied", 60)
     so = J("(() => { const a = GLRADIO.S.el && GLRADIO.S.el.a, it = GLRADIO.S.item || {}; return { src: a ? a.src : '', t: a ? a.currentTime : -1, lied: !!it.lied, titel: it.titel || '', lizenz: it.lizenz || '', text: document.getElementById('glradio').textContent } })()")
-    ck('Radio Zweitakt plays a real song with its licence in the display', ok and so['lied'] and 'CC BY' in so['text'] and so['titel'] in ('Sonzis FM', 'Ate A Pizza')
-       and (not ton or '/snd/radio/z' in so['src']), str(so))
+    zt = J("GLRDATA.LIEDER.zweitakt.map(l => l.titel)")
+    ck('Radio Zweitakt plays a real song with its licence in the display', ok and so['lied'] and 'CC ' in so['text'] and so['titel'] in zt
+       and (not ton or '/snd/radio/z' in so['src'] or '/pavillon-ton/radio/z' in so['src']), str(so))
+    # the sound repository pavillon-ton (17.11.2026): the newer songs, the mission music, the places – on GitHub Actions a must, here only
+    # if it can be reached at all
+    netz = json.loads(E("(async () => JSON.stringify(await Promise.all(['radio/zt_boreal.mp3', 'radio/km_hyperfun.mp3', 'score/spannung.mp3', 'score/st_start.mp3', 'orte/wald.mp3', 'index.json'].map(u => fetch(GLRDATA.ton() + u, { method: 'HEAD' }).then(r => r.status, () => 0)))))()"))
+    pflicht = bool(os.environ.get('GITHUB_ACTIONS'))
+    ck('the sound repository serves songs, mission music and places' + ('' if pflicht else ' (if reachable from here)'),
+       all(c == 200 for c in netz) or (not pflicht and all(c == 0 for c in netz)), str(netz))
+    netz = all(c == 200 for c in netz)
+    print('sound repository reachable:', netz, flush=True)
+    n_ton = J("Object.values(GLRDATA.LIEDER).reduce((n, L) => n + L.filter(l => l.ton).length, 0)")
+    n_all = J("Object.values(GLRDATA.LIEDER).reduce((n, L) => n + L.length, 0)")
+    ck('eight songs per station on the four music stations, 24 of them from the sound repository', n_all == 32 and n_ton == 24, f'{n_all} / {n_ton}')
     codes = json.loads(E("(async () => JSON.stringify(await Promise.all(['snd/radio/zt_sonzis.mp3', 'snd/radio/fl_bigcar.mp3', 'snd/radio/nf_street.mp3', 'snd/radio/km_bavaria.mp3', 'snd/nacht/grillen.mp3', 'snd/nacht/glocke_schlag.mp3'].map(u => fetch(u, { headers: { Range: 'bytes=0-15' } }).then(r => r.status, () => 0)))))()"))
     ck('the song and night files are served', all(c in (200, 206) for c in codes) and len(codes) == 6, str(codes))
     if ton:
@@ -110,6 +122,22 @@ with lib.browser() as b:
         E("GLNACHT.schlag(2)"); steps(2.8)
         n = J("GLNACHT.stand()")
         ck('the bell of St. Johannis strikes (a real recording)', n['schlaege'] >= 1 and 'glocke_schlag' in n['geladen'] and n['fehl'] == 0, str(n))
+    # ---------------- the mission music from real pieces (GLSCORE, pavillon-ton/score/) and the places (GLUMGEBUNG) ----------------
+    zs = J("[[4, 15], [853, -817], [-548, -566], [-1246, 1213]].map(([x, y]) => GLUMGEBUNG.zone(x, y))")
+    ck('the places by their name: the garden is the village, the dam the reservoir, the Klinge, Schleusingen the town', zs == ['dorf', 'talsperre', 'klinge', 'stadt'], str(zs))
+    if ton and netz:
+        E("GLRADIO.off(); GLSCORE.mission('test'); GLSCORE.lage('spannung')"); steps(0.5)
+        until("GLSCORE.stand().dateiT > 0.5", 25)
+        sc = J("GLSCORE.stand()")
+        ck('a mission: the score plays the real piece (Kevin MacLeod, „Crypto“)', sc['datei'] == 'spannung' and sc['dateiT'] > 0.5 and not sc['ohneDatei'], str(sc))
+        E("GLSCORE.lage(''); GLSCORE.mission('')"); steps(4)
+        sc = J("GLSCORE.stand()")
+        ck('the mission over: the piece fades out', sc['ziel'] == '' and sc['datei'] == '', str(sc))
+        E("GLUMGEBUNG.fest('wald')"); steps(0.5)
+        until("GLUMGEBUNG.stand().spielt.includes('wald')", 25)
+        u = J("GLUMGEBUNG.stand()")
+        ck('the forest sounds (a real recording from the sound repository)', u['art'] == 'wald' and 'wald' in u['spielt'] and u['fehl'] == 0, str(u))
+        E("GLUMGEBUNG.fest(null)"); steps(0.3)
     E("GLRADIO.tune('grenzland')"); steps(0.3)
     # through the dial with R, back with Shift+R, off after the last one
     ids = []

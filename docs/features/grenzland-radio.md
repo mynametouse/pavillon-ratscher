@@ -163,7 +163,37 @@ Falko, 13.11. 23:02: „Das Radio klingt wirklich wie ein Kinderradio. Das müss
 - **Sender:** Radio Zweitakt (Rock und Punk), neu **Funkloch FM 101,3** (Rap und Elektro, Moderatorin Nele, 26; Texte, Werbung, Meldungen in
   `SENDER.heute`), Neonfunk (Synthpop und New Wave), Kirmeswelle (Polka). Ein Sender mit Songs spielt nur sie, ohne die synthetische
   Kennung; beim Einschalten landet man mitten im Lied (15–55 %), nach dem Lied sagt der Moderator „Das war „…“ – …“ (feste Sätze, `dasWar`,
-  vom Sammler mit aufgenommen). Die Anzeige: „Titel – Band · Lizenz“. Lädt eine Datei nicht, spielt der Sender seine Synthesizer-Stücke
+  vom Sammler erfasst; die Musiksender liegen mit Priorität 4 über dem Budget der Aufnahmen von 12 MB und sprechen mit der Stimme des
+  Geräts). Die Anzeige: „Titel – Band · Lizenz“. Lädt eine Datei nicht, spielt der Sender seine Synthesizer-Stücke
   (`S.ohne`). Funkloch FM hat dafür drei eigene.
-- **Offen:** mehr Songs je Sender (Ablage `pavillon-ton`, Konzept `claude/pavillon-sound.md`), Moderation über Intro und Outro
-  (`gesang_ab`/`gesang_bis`), Empfang im Funkloch, Hörer rufen an.
+- **Offen:** Moderation über Intro und Outro (`gesang_ab`/`gesang_bis`), Empfang im Funkloch, Hörer rufen an.
+
+## Mehr Songs, Filmmusik, der Klang der Orte (V18r, 17.11.2026)
+
+Falko, 14.11. 1:45 (nichts, was Credits kostet): „Filmmusik bei Missionen“, „Orte klingen“, „Mehr Songs“ – 17.11. 11:26 „Alle drei mit Repo“.
+
+- **Klang-Archiv `mynametouse/pavillon-ton`** (eigene GitHub-Pages-Seite, derselbe Host wie das Spiel; GitHub Pages schickt
+  `Access-Control-Allow-Origin: *`): `radio/` (24 Songs, 57 MB), `score/` (8 Stücke, 12 MB), `orte/` (5 Schleifen, 1,4 MB), `index.json`,
+  `CREDITS.md`, `index.html` zum Probehören. Grund: die Seite des Spiels hat 891 MB von 1 GB, die Vorschau `/vorschau/` verdoppelt jede
+  Datei. Adresse: `GLRDATA.ton()` (`window.GLTON_BASE` ersetzt sie). Nachweise im Abspann: `viz3/extra/grenzland-ton/manifest.json`.
+- **Radio:** je Musiksender sechs Songs mehr (`ton: true` in `LIEDER`, jetzt acht je Sender): Zweitakt – Salmo, Mild Wild, voyageurs, Pipe
+  Choir, A Crooked Pulse, Pierce Murphy; Funkloch FM – JBlanked, Aitua (CC0), Kellee Maize & J. Glaze, Black Ant, zweimal Jason Shaw;
+  Neonfunk – Monroeville Music Center, Phillip Gross, Airglow, Timecrawler 82, Origami Repetika, Andrew R Codeman; Kirmeswelle – sechs
+  Polkas und Märsche von Kevin MacLeod. Nach Downloads im Free Music Archive gewählt, Lizenz auf jeder Seite gelesen (CC0, CC BY 3.0/4.0),
+  Texte mit faster-whisper abgehört: „Luck That's Dumb/Happy Birthday Dave“ (The Crypts!, Live-Mitschnitt mit Flüchen) flog raus, bei
+  „Get It Right / Get It Tight“ ist die gesprochene Einleitung (5 s) weggeschnitten. Songs über 4:40 auf 4:30 gekürzt (Ausblendung 6 s),
+  −16 LUFS. `sprich`: der Titel, wie der Moderator ihn sagt („uRLauB“ → „Urlaub“). Lädt ein Song aus dem Archiv nicht, lässt der Sender
+  nur diese weg (`S.ohneTon`), die beiden eigenen bleiben.
+- **Filmmusik:** siehe `docs/features/grenzland-kino.md` (GLSCORE, „Musik nach Lage“).
+- **Orte** (`viz3/src/grenzland/gl_umgebung.js`, GLUMGEBUNG): gemeinfreie Aufnahmen aus radio aporee (archive.org, Public Domain Mark) als
+  nahtlose Schleifen von 24 s, −26 LUFS – `dorf` (Stare, Leipe im Spreewald, Peter Cusack), `talsperre` (Ufer, Enten, Essen-Heisingen, Frank
+  Schulte), `wald` (Sommerwald, Bayerischer Wald, dschulz), `klinge` (Bach unter Fichten, Höllegrundsbach, blackhole-factory), `stadt`
+  (Marktplatz Leipzig, oriolus). Welche: nach dem Ortsnamen (`KERN.place`, wie `gl_reaktion.js`; „… bei Ratscher“ ist offenes Land), dem
+  Ufer der Talsperre (Polygon der Kartendaten, 150 m) und dem Abstand zur Mitte von Ratscher und Schleusingen. Überblendung 3 s, nachts
+  leiser, im Fahrzeug ×0,35, drinnen ×0,2; nur heute und nur im Modus. Test-Haken `fest(art)`.
+- **Tests:** `viz3/test/grenzland_radio.py` – das Archiv liefert Songs, Filmmusik und Orte (auf GitHub Actions Pflicht, hier nur, wenn
+  erreichbar), 32 Songs davon 24 im Archiv, die Orte nach Namen (Garten = Dorf, Staudamm = Talsperre, Klinge, Schleusingen = Stadt), mit Ton
+  und Netz: „Crypto“ spielt unter einer Mission und blendet aus, der Wald klingt. Unit: acht Songs je Sender, Lizenzen, Dateinamen, `dasWar`
+  mit `sprich`.
+- **Offen:** die Stimmen der Musiksender aufnehmen (Edge, kostenlos) – sie passen nicht ins Budget von 12 MB auf der Seite des Spiels; mit
+  dem Klang-Archiv ginge es. Mehr Orte (Feldflur, Bahnstrecke, Gasthaus), die Orte in 1989.

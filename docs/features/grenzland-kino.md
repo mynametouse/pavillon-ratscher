@@ -31,8 +31,13 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   solange es fehlt die große Zeile `GLHUD.say`) mit Ort und Zeit darunter („Schleusingen · Freitagabend“, „Untere Klinge · nachts“ …), sobald
   der Bildschirm ruhig ist (nach der Blende, nicht über „Mission bestanden“), dazu der Stich `start`. Das alte „Neue Mission“-Banner des
   Grundspiels ist weg.
-- **Musik nach Lage** (`viz3/src/grenzland/gl_score.js`, GLSCORE) – selbst komponiert, live in WebAudio erzeugt, d-Moll, über den
-  Musik-Bus des Spiels:
+- **Musik nach Lage** (`viz3/src/grenzland/gl_score.js`, GLSCORE) – seit V18r (17.11.2026, Falko: „Filmmusik bei Missionen“) spielen
+  **echte Stücke von Kevin MacLeod** (incompetech.com, CC BY 4.0) aus dem Klang-Archiv `pavillon-ton/score/`: `spannung` „Crypto“,
+  `flucht` „Hot Pursuit“, ab drei Sternen „Ready Aim Fire“, `1989` „SCP-x6x (Hopes)“, `szene` „Almost New“; Stiche „Danse Macabre – Big
+  Hit 1“, „Loping Sting“, „Der Kleber Sting“ (−18 bzw. −15 LUFS). Zwei Media-Elemente wechseln sich ab (Schichtwechsel und Stückende blenden
+  in rund zwei Sekunden über), Lautstärke und Ducken über den Master wie bisher; lädt eine Datei nicht (`ohneDatei`), kommt die Synthese
+  zurück. `stand()` nennt `datei` und `dateiT`. Die Synthese – selbst komponiert, live in WebAudio erzeugt, d-Moll, über den Musik-Bus des
+  Spiels:
   - `spannung` (Rennen-Start, Klinge, Coup): tiefer Puls in Achteln, dunkle Fläche (i – VI – iv – V), ein leises Ticken.
   - `flucht` (ab einem Stern, und das Rennen): Bass-Ostinato und Schlagzeug; ab zwei Sternen Snare, ab drei Stöße und mehr Kick, ab vier
     Sechzehntel-Hi-Hats und ein Anstieg.

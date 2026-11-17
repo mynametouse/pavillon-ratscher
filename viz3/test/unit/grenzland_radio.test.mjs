@@ -310,20 +310,27 @@ test('the weather and the clock as sentences', () => {
   assert.ok(D.dauer('kurz') >= 2.4 && D.dauer('x'.repeat(200)) > 12);
 });
 
-test('real songs: two per music station, free licences, files named, the presenter names each with a fixed sentence', () => {
-  const L = D.LIEDER;
+test('real songs: eight per music station (six from the sound repository), free licences, files named, a fixed sentence for each', () => {
+  const L = D.LIEDER,
+    seen = new Set();
   for (const id of ['zweitakt', 'funkloch', 'neon', 'kirmes']) {
     assert.ok(D.byId[id], id + ' is a station');
-    assert.equal(L[id].length, 2, id);
+    assert.equal(L[id].length, 8, id);
+    assert.equal(L[id].filter(l => l.ton).length, 6, id + ': six in pavillon-ton');
     for (const l of L[id]) {
       assert.match(l.datei, /^[a-z]{2}_[a-z]+\.mp3$/);
-      assert.match(l.lizenz, /^CC (BY [34]\.0( US)?|0)$/);
-      assert.match(l.lurl, /^https:\/\/creativecommons\.org\//);
+      assert.ok(!seen.has(l.datei), 'once: ' + l.datei);
+      seen.add(l.datei);
+      assert.equal(l.datei.slice(0, 2), { zweitakt: 'zt', funkloch: 'fl', neon: 'nf', kirmes: 'km' }[id], l.datei);
+      assert.match(l.lizenz, /^(CC BY [34]\.0( US)?|CC0 1\.0)$/);
+      assert.match(l.lurl, /^https:\/\/creativecommons\.org\/(licenses\/by\/[34]\.0\/(us\/)?|publicdomain\/zero\/1\.0\/)$/);
       assert.match(l.quelle, /^https:\/\//);
-      assert.ok(l.titel && l.von && l.sek > 60, l.titel);
-      assert.equal(D.dasWar(l), 'Das war „' + l.titel + '“ – ' + l.von + (l.von.endsWith('!') ? '' : '.'));
+      assert.ok(l.titel && l.von && l.sek > 60 && l.sek < (l.ton ? 291 : 330), l.titel); // (the newer ones cut to 4:30)
+      assert.ok(!/ecstasy|cocaine|weed|sex/i.test(l.titel), l.titel);
+      assert.equal(D.dasWar(l), 'Das war „' + (l.sprich || l.titel) + '“ – ' + l.von + (l.von.endsWith('!') ? '' : '.'));
     }
   }
+  assert.equal(D.ton(), 'https://mynametouse.github.io/pavillon-ton/');
   // the presenter's moderation after a song names it with that sentence
   const st = D.PROG.neu('funkloch', 3);
   let w = null;
