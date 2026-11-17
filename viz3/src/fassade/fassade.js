@@ -116,15 +116,20 @@ export const FASSADE = (() => {
     LOOK.key.set(k, look);
     return true;
   };
+  // two files: our own small set (gebaeude/ansicht.json, the findings of schleusingen-ansicht of 17.11.) first, then the street-view values
+  // (fassade/ansicht.json) over it, key by key
+  const lookFile = url =>
+    fetch(BASE + url)
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        if (j && j.b && typeof j.b === 'object') for (const k in j.b) if (S.ansicht(k, j.b[k])) LOOK.file++;
+      })
+      .catch(e => {
+        LOOK.err = String(e);
+      });
   S.ansichtReady = S.on
-    ? fetch(BASE + 'fassade/ansicht.json')
-        .then(r => (r.ok ? r.json() : null))
-        .then(j => {
-          if (j && j.b && typeof j.b === 'object') for (const k in j.b) if (S.ansicht(k, j.b[k])) LOOK.file++;
-        })
-        .catch(e => {
-          LOOK.err = String(e);
-        })
+    ? lookFile('gebaeude/ansicht.json')
+        .then(() => lookFile('fassade/ansicht.json'))
         .finally(() => {
           LOOK.done = true;
         })

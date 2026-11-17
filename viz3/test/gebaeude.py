@@ -336,6 +336,17 @@ with lib.browser() as b:
             ck('looks given from outside (FASSADE.ansicht) on town houses (colour, shutters; a school with two storeys and a flat roof) and on an ETHOS building',
                lk['look'] and lk['shutters'] and lk['shut'] == 1 and lk['col'][2] > lk['col'][0] and (lk['zonen'] or 0) >= 1
                and sc.get('style') == 1 and sc.get('fl') == 1 and sc.get('rk') == 4 and abs(sc.get('e', 0) - 5.9) < 0.01 and abs(sc.get('top', 0) - 5.9) < 0.01, json.dumps(lk))
+            # the findings of schleusingen-ansicht in our own look file (gebaeude/ansicht.json): halls that are houses, garages of one storey,
+            # the Kreuzkirche (Gottesackerkirche) in sandstone
+            ff = json.loads(E("""JSON.stringify([308, 349, 430, 579, 580, 717, 72].map(i => { const b = SCHL.bld.find(q => q.i === i);
+                return b ? { i, typ: b.st.typ, style: b.st.style, rk: b.rk, e: +b.e.toFixed(2), look: !!b.look } : { i, gone: true }; }))"""))
+            print('look file', json.dumps(ff), E("JSON.stringify(FASSADE.ansichtStand())"), flush=True)
+            byi = {q['i']: q for q in ff}
+            ck('the findings from our look file: four halls are houses, two garages of one storey, the church in sandstone',
+               sum(1 for q in ff if q.get('gone')) <= 1
+               and all(byi[i].get('gone') or (byi[i].get('look') and byi[i]['typ'] == 0 and byi[i]['style'] != 10 and byi[i]['rk'] == 0) for i in (308, 349, 430, 579))
+               and all(byi[i].get('gone') or abs(byi[i].get('e', 0) - 3.15) < 0.01 for i in (580, 717)) and (byi[72].get('gone') or (byi[72].get('look') and byi[72]['rk'] == 3)),
+               json.dumps(ff))
             # the three findings of schleusingen-ansicht: the Markt from its south-east corner looking west (a grey block stood there), the
             # blocks of flats on Hildburghäuser Straße (white, no shutters), the school (a school's look, not a house's)
             E("""(() => { const P = SCHL.data.marktplatz; let bx = 0, by = 0, best = -1e9; for (let k = 0; k < P.length; k += 2) if (P[k] - P[k + 1] > best) { best = P[k] - P[k + 1]; bx = P[k]; by = P[k + 1]; }

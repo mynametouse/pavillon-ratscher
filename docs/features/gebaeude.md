@@ -172,7 +172,10 @@ ganz ohne Fenster (alle Wände gedeckt) und eine Wand von 8,8 m.
   (zwei Teile), `haeuser` (Bilder), `laeden`, `smoke`.
 - **Ansicht je Gebäude (für `schleusingen-ansicht`)**: Werte aus Straßenansichten gehen über `FASSADE` in die Häuser, angewandt beim Bau:
   - **Datei** `fassade/ansicht.json` – ein Extra legt sie unter `viz3/extra/<extra>/dist/fassade/ansicht.json` ab (nur eines!); die App lädt
-    sie beim Start (fehlt sie, gilt nichts). Format: `{ "v": 1, "quelle": "…", "b": { "<Schlüssel>": { …Ansicht… } } }`.
+    sie beim Start (fehlt sie, gilt nichts). Format: `{ "v": 1, "quelle": "…", "b": { "<Schlüssel>": { …Ansicht… } } }`. Davor lädt sie
+    unsere kleine `gebaeude/ansicht.json` (`viz3/extra/gebaeude/dist/gebaeude/`: die Funde vom 17.11. – vier Hallen sind Häuser: #308,
+    #349, #430, #579; Garagen eingeschossig: #580, #717; die Schule #80 zweigeschossig mit Flachdach, weiß; die Kreuzkirche #72 in
+    Sandstein mit Schieferdach); `fassade/ansicht.json` gilt Schlüssel für Schlüssel darüber.
   - **Schlüssel**: `"#236"` (ein Gebäude der Altstadtdaten, Index wie `SCHL.bld[].i`, für `SINNEN` 900000 + i), eine Adresse
     (`"Markt 12"` – die Häuser mit dieser Adresse), eine ETHOS-Nummer (`"DEG_…"`, die Gebäude von `gebaeude/gebaeude.js` am Stadtrand und an
     den Strecken), `"ratscher:<id>"` (ein Haus des Dorfs, Nummer wie `VILLAGE.byId` und `FASSADE.eingang`), `"@x,y"` (Modellmeter: das
@@ -215,6 +218,10 @@ ganz ohne Fenster (alle Wände gedeckt) und eine Wand von 8,8 m.
   beide jetzt im Aussehen einer Schule von heute (Bild `schleusingen_schule.jpg`); an der Ilmenauer Straße kennen die Altstadtdaten keine
   Schule (dort stehen Wohnhäuser, das Rehazentrum, die Wiesenbauschule – heute Stadtbibliothek); liegt die gemeinte außerhalb, ist sie ein
   ETHOS-Gebäude: `{ "@x,y": { "art": "schule" } }`.
+- **Offen von den Funden (nicht in diesem Stand)**: die dunkelgrauen senkrechten Bänder der Schule #80 und die Rundbogenfenster der
+  Kreuzkirche #72 (der Fassaden-Shader kennt weder Bänder noch Rundbögen – bräuchte einen Stil in `world/village.js`); die übrigen 11
+  Flachdächer, die als Satteldach stehen (Garagen, Hallen, Autohäuser – ihre Nummern stehen in den Daten von `schleusingen-ansicht`:
+  `"dach": { "form": "flach" }` je Gebäude genügt); umgekehrt Satteldach aus Flachdach (nicht gebaut); Höhen der ETHOS-Gebäude.
 - **An `innen-real`**: (1) An den freien Strecken von Brandwänden malt die Stadt jetzt Fenster (`b.open[k]`, `b.pieces`), `SIPLAN.facades`
   behandelt die ganze Wand noch als blind – drinnen fehlt dort das Fenster. Ein Zusatz in `si_plan.js`: die Stücke aus `b.pieces` statt
   `b.F` (Fenster je Stück wie `ZIPLAN.facadeWindows`). (2) Häuser mit Tordurchfahrt haben `doorFac.w` = Breite der Durchfahrt (> 1,3 m) →
