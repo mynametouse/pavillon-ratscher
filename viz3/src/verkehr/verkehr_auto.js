@@ -531,6 +531,9 @@ export const VAUTO = (() => {
   // ---- obstacles: what stands or moves near a car's way ----
   // walkers: [{ x, y, r, kind: 'player' | 'ped', ref }] from verkehr/verkehr.js; vehicles and the villagers' cars from their modules
   const OB = [];
+  // grenzland-strasse: more obstacles from other modules – VAUTO.hindernisse.push(fn); fn(OB) adds { x, y, r, kind: 'veh', moving }
+  // (the cars and lorries of the Grenzland mode, grenzland/gl_linien.js)
+  const EXTRA = [];
   function obstacles(walkers, skipVeh) {
     OB.length = 0;
     for (const w of walkers) OB.push(w);
@@ -567,6 +570,11 @@ export const VAUTO = (() => {
       }
     // feat/welt-dinge: the parked cars of the aerial photo in the cells near the observer (dinge/dinge.js)
     if (DINGE && DINGE.obstacles) DINGE.obstacles(OB);
+    // grenzland-strasse
+    for (const fn of EXTRA)
+      try {
+        fn(OB);
+      } catch (e) {}
     return OB;
   }
   const OWN = [];
@@ -1422,6 +1430,8 @@ export const VAUTO = (() => {
     HIDE,
     knocked,
     crashTick,
+    // grenzland-strasse
+    hindernisse: EXTRA,
   });
   return S;
 })();
