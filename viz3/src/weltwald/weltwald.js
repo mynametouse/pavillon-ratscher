@@ -217,7 +217,10 @@ export const WWALD = (() => {
           crown: lev ? LG[2] : LG[1],
           bm: K.bark,
           cm: K.leaf,
-          depth: K.depth,
+          // the shadow of every broadleaf crown through the garden oak's depth material (three.js takes map and alpha test from the leaf
+          // material each draw): its program is there since the garden's first shadows – the depth material of a kind the garden casts no
+          // shadow with (apple, aspen, bush) would be compiled only here, with the lights of that moment, as a new program
+          depth: (TREES.oakA && TREES.oakA.depth) || K.depth,
           H: K.H,
           W: K.R,
           f: false,
