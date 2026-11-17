@@ -443,6 +443,7 @@ export const VOEGEL = (() => {
           b.z = ground(b.x, b.y);
         }
         b.pick = Math.max(0, b.pick - dt);
+        if (!b.v) b.z = ground(b.x, b.y);
         b.ph += dt * (b.v ? 9 : 2.4);
         // the nod of a walking pigeon, the head down to peck
         const pitch = b.pick > 0 ? -0.55 + Math.sin(b.ph * 2) * 0.12 : b.v ? Math.sin(b.ph) * 0.12 : 0.05;

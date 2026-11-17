@@ -885,6 +885,16 @@ export const GLALLTAG = (() => {
         }
       }
     } else o.fortD = null;
+    // the ground under one standing or sitting: the tiles of the town and the land come in finer after a while – stand on them
+    if ((o.bodenT = (o.bodenT || 0) - dt) <= 0) {
+      o.bodenT = 0.8;
+      const g = KERN.ground(F.x, F.y);
+      if (Number.isFinite(g) && !F.path) {
+        if (F.sitzt && o.sitz) {
+          if (Math.abs(g - (F.boden ?? g)) > 0.15) GLFIG.sitz(F, o.sitz.x, o.sitz.y, o.sitz.hd, o.sitz.z);
+        } else if (!F.sitzt && Math.abs(g - F.z) > 0.12) GLFIG.place(F, F.x, F.y, F.hd);
+      }
+    }
     const d = hyp(F.x - px, F.y - py);
     if (o.st === 'weg' && d > R_OUT * 0.8 && !imBlick(F.x, F.y, 80)) return weg(o);
     // the player passes: a greeting, a nod, a look away (standing or walking)

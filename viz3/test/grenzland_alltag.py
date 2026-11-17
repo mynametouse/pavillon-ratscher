@@ -199,9 +199,14 @@ with lib.browser() as b:
         ck('stadt: at 11:01 they come out and stand about', ok, json.dumps(J("TA.st()"))[:300])
         pic('08_kirche_nach')
         # a Monday morning: Bärbel goes to the café's (or a bakery’s) door and in
-        X("GLALLTAG.debug.zeit(9 * 60 + 6, 1)")
-        w = J("GLALLTAG.debug.wo('baerbel')")
-        ck('stadt: Monday 9:06 – Bärbel heads for a shop’s door', bool(w and w.get('tuer')), str(w)[:300])
+        # (her slot moves a few minutes from day to day: the first minute she is on her way)
+        w = None
+        for mi in (8, 12, 16, 20):
+            X(f"GLALLTAG.debug.zeit(9 * 60 + {mi}, 1)")
+            steps(1, 0.1)
+            w = J("GLALLTAG.debug.wo('baerbel')")
+            if w and w.get('tuer') and w.get('platz') == 'baecker': break
+        ck('stadt: Monday morning – Bärbel heads for the door of the bakery or the café', bool(w and w.get('tuer') and w.get('platz') == 'baecker'), str(w)[:300])
         if w and w.get('tuer'):
             X(f"TA.blick({w['tuer']['x']}, {w['tuer']['y']}, 200, 16, 1.65, -4)")
             n0 = J("TA.st().n.tuer")
