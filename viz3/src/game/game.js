@@ -214,6 +214,15 @@ export function physics(dt, f, turn, side, run) {
       KERN.emit('place', { name: pl, prev: lastPlace });
       setLastPlace(pl);
     }
+  } else if (window.JET && JET.flying) {
+    // feat/jetpack (J1): the figure flies – the jetpack moves it (jetpack/jetpack.js); the place names as walking
+    JET.physics(dt, f, turn, side, run);
+    const pl = placeName();
+    if (pl !== lastPlace) {
+      lbl.textContent = pl;
+      KERN.emit('place', { name: pl, prev: lastPlace });
+      setLastPlace(pl);
+    }
   } else {
     if (turn) {
       P.yaw += turn * 95 * dt;
