@@ -96,7 +96,10 @@ def row(v, fpx, ang):
 
 def compare(v, ref, mod, stadt):
     A = np.asarray(Image.open(ref).convert('RGB').resize((W, H))).astype(np.float32) / 255
-    B = np.asarray(Image.open(mod).convert('RGB').resize((W, H))).astype(np.float32) / 255
+    im = Image.open(mod).convert('RGB')
+    if im.size != (W, H):   # pictures of an older test: another frame, another field – the buildings would not sit where the boxes say
+        print(f"  {v['name']}: the model picture is {im.size[0]} × {im.size[1]}, not {W} × {H} – take it again (test section bilder)")
+    B = np.asarray(im.resize((W, H))).astype(np.float32) / 255
     ok = np.ones((H, W), bool)
     for x0, y0, x1, y1 in MASKS:
         ok[y0:y1, x0:x1] = False

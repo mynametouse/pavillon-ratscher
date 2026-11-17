@@ -216,9 +216,17 @@ if BROWSER:
                     E(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + {h}, {yaw}, {pitch}, 62)")
                 lib.shot(pg, OUT, nm)
         if 'bilder' in want:
+            # the views are 1366 × 559 with a vertical field of 90°: the stage canvas gets that size (the page's bars take room from the
+            # window) and the walking camera that field (GAME.shot sets the camera from FOVX, not from GAME.view's fov)
+            cs = J("[document.querySelector('#stage canvas').width, document.querySelector('#stage canvas').height]")
+            if cs[1] != 559:
+                pg.set_viewport_size({'width': 1366 + 1366 - cs[0], 'height': 559 + 559 - cs[1]})
+                E("window.dispatchEvent(new Event('resize')); GAME.step(0.1)")
+                cs = J("[document.querySelector('#stage canvas').width, document.querySelector('#stage canvas').height]")
             done = 0
             for v in views:
                 x, y = v['x'], v['y']
+                E(f"window.FOVX = {v['vfov']}")
                 E(f"GAME.setView3(false, true); GAME.view({x}, {y}, KERN.ground({x}, {y}) + {v['eye']}, {v['yaw']}, {v['pitch']}, {v['vfov']})")
                 settle(60)
                 E(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + {v['eye']}, {v['yaw']}, {v['pitch']}, {v['vfov']})")
@@ -228,6 +236,8 @@ if BROWSER:
                 json.dump({**v, **cam}, open(os.path.join(OUT, v['name'] + '.json'), 'w'))
                 done += 1
                 print('view', v['name'], flush=True)
-            ck('model pictures from every viewpoint', done == len(views), f'{done} of {len(views)}')
+            E("delete window.FOVX")
+            ck('model pictures from every viewpoint, in the frame of the views (1366 × 559, the same field)', done == len(views) and cs == [1366, 559],
+               f'{done} of {len(views)}, canvas {cs}')
         ck.errors(errs)
 ck.done()
