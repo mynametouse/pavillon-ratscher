@@ -172,6 +172,74 @@ export const OEFFENTLICH = (() => {
     label: () => (notice() ? 'Aushang der Feuerwehr lesen' : null),
     run: () => feuerwehr(),
   });
+  // ---- the Stadtbibliothek (OSM: library east of the old town): at its door borrow a book (the reader's card 10 € a year) ----
+  const BIB = [-738.34, 1336.38];
+  let bibCard = false;
+  function bibliothek() {
+    const open = OEFFNUNG.offen('bibliothek');
+    if (!open) {
+      LKAUF.zeige(
+        '<h3>Stadtbibliothek Schleusingen<button type="button" aria-label="Schließen">×</button></h3><div class="say">Geschlossen – ' +
+          esc(OEFFNUNG.text('bibliothek')) +
+          '.\nÖffnungszeiten: ' +
+          esc(OEFFNUNG.zeiten('bibliothek')) +
+          '</div>'
+      );
+      return;
+    }
+    const books = [
+      'Ein Krimi aus dem Thüringer Wald',
+      'Ein Gartenbuch: Obstbäume schneiden',
+      'Holzbearbeitung für Einsteiger',
+      'Eine Chronik des Hennebergischen Landes',
+    ];
+    LKAUF.zeige(
+      '<h3>Stadtbibliothek Schleusingen<button type="button" aria-label="Schließen">×</button></h3><div class="say">' +
+        (bibCard || INVENTAR.has('buch')
+          ? '„Schön, Sie wieder zu sehen. Was möchten Sie mitnehmen?“'
+          : '„Guten Tag! Für die Ausleihe brauchen Sie einen Leseausweis – 10 Euro im Jahr.“') +
+        '</div><div class="btns">' +
+        books.map((t, i) => '<button type="button" class="b" data-b="' + i + '">' + esc(t) + '</button>').join('') +
+        (INVENTAR.has('buch') ? '<button type="button" class="b" data-k="zurueck">Ein Buch zurückgeben</button>' : '') +
+        '<button type="button" class="b" data-k="weg">Danke</button></div>',
+      p => {
+        for (const b of p.querySelectorAll('button[data-b]'))
+          b.onclick = () => {
+            if (!bibCard) {
+              if (!GELD.zahlen(1000, 'Leseausweis Stadtbibliothek'))
+                return toast('Für den Leseausweis reicht das Geld nicht.', 3000);
+              bibCard = true;
+            }
+            INVENTAR.add('buch', 1);
+            emit('bibliothek', 'ausleihen', { titel: books[+b.dataset.b] });
+            toast('Ausgeliehen: „' + books[+b.dataset.b] + '“ – Rückgabe in vier Wochen.', 4200);
+            LKAUF.close();
+          };
+        const z = p.querySelector('[data-k=zurueck]');
+        if (z)
+          z.onclick = () => {
+            INVENTAR.take('buch', 1);
+            emit('bibliothek', 'zurueck');
+            toast('Das Buch ist zurück. Danke!', 2600);
+            LKAUF.close();
+          };
+        p.querySelector('[data-k=weg]').onclick = () => LKAUF.close();
+      }
+    );
+  }
+  KERN.act({
+    id: 'oeffentlich:bibliothek',
+    r: 9,
+    prio: -0.5,
+    pos: () => (SCHL && SCHL.state === 'ready' ? [BIB[0], BIB[1], KERN.ground(BIB[0], BIB[1]) + 1.2] : null),
+    label: () =>
+      SCHL && SCHL.state === 'ready'
+        ? OEFFNUNG.offen('bibliothek')
+          ? 'Stadtbibliothek: Buch ausleihen'
+          : 'Stadtbibliothek – geschlossen (' + OEFFNUNG.zeiten('bibliothek') + ')'
+        : null,
+    run: () => bibliothek(),
+  });
   // the town hall's clerk once the town stands
   KERN.tick(() => {
     try {
@@ -185,7 +253,8 @@ export const OEFFENTLICH = (() => {
       .map(id => OEFFNUNG.info(id))
       .filter(i => i && i.art !== 'laden')
       .map(i => ({ id: i.id, name: i.name, offen: OEFFNUNG.offen(i.id), zeiten: i.zeiten }));
-  S.oeffnen = id => (id === 'rathaus' ? rathaus() : id === 'feuerwehr' ? feuerwehr() : null);
+  S.oeffnen = id =>
+    id === 'rathaus' ? rathaus() : id === 'feuerwehr' ? feuerwehr() : id === 'bibliothek' ? bibliothek() : null;
   S.status = () => ({ hall: !!hall(), post: hallPost ? !!hallPost.p : null, notice: !!notice(), err: S.err });
   void WAREN;
   return S;

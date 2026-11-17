@@ -57,14 +57,19 @@ export const WBILD = (() => {
       qty = q[1].trim();
       n = n.slice(0, q.index).trim();
     }
-    const parts = n.split(/,\s*/);
+    const parts = n.split(/,\s+/);
     let main = parts[0],
       sub = parts.slice(1).join(', ');
-    // a long main word: its last word large, the rest small ("Deutsche Markenbutter" → Markenbutter)
+    // a long name: its noun large, the rest small – the first capitalised word that is not an adjective or a qualifier ("Deutsche
+    // Markenbutter" → Markenbutter, "Rotwein trocken" → Rotwein, "Weizenmehl Type 405" → Weizenmehl)
     const ws = main.split(' ');
     if (ws.length > 1 && main.length > 11) {
-      sub = ws.slice(0, -1).join(' ') + (sub ? ', ' + sub : '');
-      main = ws[ws.length - 1];
+      const NOT = /^(Frische|Deutsche|Weiße|Thüringer|Art|Mittelscharfer|Löslicher|Gelbe|Kasten)$/;
+      let k = ws.findIndex(w2 => /^[A-ZÄÖÜ]/.test(w2) && !NOT.test(w2));
+      if (k < 0) k = ws.length - 1;
+      const rest = ws.filter((w2, i) => i !== k).join(' ');
+      main = ws[k];
+      sub = rest + (sub ? ', ' + sub : '');
     }
     return { main, sub: sub.replace(/,\s*$/, ''), qty: qty.replace(/,$/, '') };
   }

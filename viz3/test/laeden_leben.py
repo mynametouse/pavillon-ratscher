@@ -5,14 +5,14 @@
 #           before and after the people; Tuesday afternoon fewer; Sunday nobody (closed); going away frees the figures
 #   kaufen  taking things from the shelves (the action button names the product and its price), paying at an open till (the cashier
 #           scans, the receipt, the wallet goes down, the things are in the inventory), the inventory panel; the bakery's counter
-#   obi     OBI: the tills, the information desk, the wood cutting, customers; timber and tools to buy
+#   obi     OBI on a Saturday morning: the tills, the information desk, the wood cutting, customers; timber, paint, screws to take
 #   oeffentlich  the town hall's Bürgerbüro: the clerk at its hours, the options at the counter, closed on Wednesday; the registry
 # Pictures in out/laeden_leben/. The world tiles come from the published site (as viz3/test/laeden.py).
 #   python3 viz3/test/laeden_leben.py 9045 [sections]   (default markt,kaufen)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'markt,kaufen,oeffentlich').split(',') if s]
+want = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'markt,obi,kaufen,oeffentlich').split(',') if s]
 ck = lib.Checks('laeden_leben')
 OUT = lib.out('laeden_leben')
 DATA = json.load(open(os.path.join(lib.ROOT, 'viz3', 'extra', 'laeden', 'dist', 'laeden', 'laeden.json')))
@@ -148,6 +148,13 @@ with lib.browser() as b:
         ck('EDEKA on Saturday morning: cashiers at the open tills (sitting), customers between the shelves',
            len(kassen) >= 2 and all(p['sitzt'] for p in kassen) and len(kunden) >= 5,
            f"{len(kassen)} cashiers, {len(kunden)} customers, all: {json.dumps(L)[:500]}")
+        for i in range(20):
+            if J("LLEBEN.status().dressed") >= 2:
+                break
+            steps(0.5)
+            time.sleep(0.3)
+        dst = J("LLEBEN.status()")
+        ck('the staff wear plain work clothes (painted by body zone, no brand)', dst['dressed'] >= 2, f"{dst['dressed']} dressed, last {dst['dressMs']} ms")
         ck('customers carry baskets or push trolleys', sum(1 for p in kunden if p['korb']) >= max(1, len(kunden) - 1), json.dumps([p['korb'] for p in kunden]))
         # they move: after 15 s of game the customers stand elsewhere, and on free ground
         pos0 = {(p['wer']): (p['x'], p['y']) for p in kunden}
@@ -219,7 +226,50 @@ with lib.browser() as b:
                json.dumps(q3)[:300])
             page_pic('markt_sonntag_tuer')
             set_time(6, 10, 0)
+    if 'obi' in want:
+        # OBI on a Saturday morning: the tills in the vestibule, the information desk, the wood cutting, customers; timber to take
+        set_time(6, 10, 0)
+        osh = SHOP['obi']
+        od = main_door(osh)
+        oy = yaw_in(od)
+        stand(od['x'] + od['nx'] * 25, od['y'] + od['ny'] * 25, oy)
+        settle()
+        steps(3)
+        stand(od['x'] + od['nx'] * 3, od['y'] + od['ny'] * 3, oy)
+        ost = wait_people(8, 120)
+        L = J("LLEBEN.leute()")
+        arts = {a: sum(1 for p in L if p['art'] == a) for a in ('kasse', 'info', 'zuschnitt', 'kunde')}
+        ck('OBI on Saturday: tills, the information desk, the wood cutting, customers', ost['shop'] == 'obi' and arts['kasse'] >= 1 and arts['info'] == 1 and arts['zuschnitt'] == 1 and arts['kunde'] >= 4,
+           f"{json.dumps(arts)} {json.dumps(ost)[:300]}")
+        wood = J("(() => { const M = LINNEN.shopM('obi'); if (!M) return []; const out = []; for (const u of M.units) for (const g of u.goods || []) "
+                 "if (g.front && (g.ware === 'latte' || g.ware === 'brett' || g.ware === 'lasur' || g.ware === 'schrauben')) out.push([g.ware, g.x + g.fx * (g.dep / 2 + 0.7), g.y + g.fy * (g.dep / 2 + 0.7), g.fx, g.fy]); return out.slice(0, 40); })()")
+        got = []
+        for (w, x, y, fx, fy) in wood:
+            if J(f"!LINNEN.unitAt({x}, {y})"):
+                continue
+            yaw = (math.degrees(math.atan2(-fx, -fy)) + 360) % 360
+            E(f"GAME.setView3(false, true); GAME.view({x}, {y}, KERN.ground({x}, {y}) + 1.65, {yaw}, -12, 70)")
+            r = J("GAME.step(0.3)")
+            lbl = r.get('best') or ''
+            if lbl.startswith('Nehmen:') and w not in [g[0] for g in got]:
+                got.append((w, lbl))
+                if len(got) == 1:
+                    page_pic('obi_regal')
+            if len(got) >= 2:
+                break
+        ck('OBI: timber, paint or screws to take from the shelf (the button names them)', len(got) >= 1, json.dumps(got))
+        vws = J("LINNEN.views('obi')") or []
+        for k, v in enumerate(vws[:2]):
+            E(f"GAME.setView3(false, true); GAME.view({v['x']}, {v['y']}, {v['z']} + 1.65, {v['yaw']}, -6, 70)")
+            steps(0.5)
+            pic(f"obi_{k}")
+        E("LKAUF.zurueck(true)")
+        stand(od['x'] + od['nx'] * 200, od['y'] + od['ny'] * 200, oy)
+        steps(4)
     if 'kaufen' in want:
+        set_time(6, 10, 0)
+        stand(md['x'] + md['nx'] * 25, md['y'] + md['ny'] * 25, yi)
+        settle(60)
         stand(md['x'] + md['nx'] * 4, md['y'] + md['ny'] * 4, yi)
         wait_people(6, 90)
         g0 = J("GELD.stand()")
@@ -349,6 +399,92 @@ with lib.browser() as b:
             lbl = J("GAME.step(0.3)").get('best') or ''
             st = J("OEFFENTLICH.status()")
             ck('Wednesday: the Bürgerbüro is closed (the label says so, nobody at the counter)', 'geschlossen' in lbl and not st['post'], f"{lbl} {json.dumps(st)}")
+        # the museum in the Bertholdsburg: Saturday 11:00 open – the door, inside the ticket desk with its cashier, the exhibition room
+        set_time(6, 11, 0)
+        b = J("(() => { const b = (SCHL.bld || []).find(q => q.lm === 'burg'); return b ? [b.cx, b.cy] : null; })()")
+        if b:
+            stand(b[0] + 45, b[1] + 5, 270)
+            for i in range(30):
+                steps(1)
+                if J("MUSEUM.status().built"):
+                    break
+                time.sleep(0.2)
+        ms = J("MUSEUM.status()")
+        ck('the museum is built near the castle (rooms in the east wing)', ms['built'] and ms['meshes'] >= 2, json.dumps(ms))
+        if ms['built']:
+            dx, dy = ms['door']
+            n = J("MUSEUM.n")
+            ox, oy = dx + n[0] * 1.8, dy + n[1] * 1.8
+            stand(ox, oy, (math.degrees(math.atan2(-n[0], -n[1])) + 360) % 360)
+            lbl = J("GAME.step(0.3)").get('best') or ''
+            page_pic('museum_tuer')
+            ck('at the castle door: „Naturhistorisches Museum – hineingehen“', 'Museum' in lbl and 'hineingehen' in lbl, lbl)
+            E("MUSEUM.betreten()")
+            steps(2)
+            for i in range(30):
+                steps(0.5)
+                if J("(LLEBEN.posts || []).some(q => q.id === 'museum' && q.p)"):
+                    break
+                time.sleep(0.2)
+            inside = J("({ s: MUSEUM.status(), post: (LLEBEN.posts || []).filter(q => q.id.startsWith('museum') && q.p).length })")
+            ck('inside the museum: the entrance hall, the cashier at the desk', inside['s']['inside'] and inside['post'] >= 1, json.dumps(inside)[:300])
+            kk = J("(() => { const k = MUSEUM.spots && MUSEUM.spots.find(q => q.k === 'kunde'), c = MUSEUM.spots && MUSEUM.spots.find(q => q.k === 'kasse'); return k && c ? [k.x, k.y, c.x, c.y] : null; })()")
+            if kk:
+                yaw = (math.degrees(math.atan2(kk[2] - kk[0], kk[3] - kk[1])) + 360) % 360
+                E(f"GAME.setView3(false, true); GAME.view({kk[0]}, {kk[1]}, MUSEUM.z + 1.65, {yaw}, -8, 70)")
+                steps(0.5)
+                lbl = J("GAME.step(0.3)").get('best') or ''
+                ck('at the desk: „Museumskasse: Eintrittskarte“', 'Museumskasse' in lbl, lbl)
+                E("MUSEUM.kasse()")
+                steps(0.3)
+                page_pic('museum_kasse')
+                E("document.querySelector('#kassepanel [data-k=erwachsen]') && document.querySelector('#kassepanel [data-k=erwachsen]').click()")
+                ck('a ticket bought (6 €, in the inventory)', J("INVENTAR.has('museumskarte')"), json.dumps(J("MUSEUM.status()")))
+                # back a few steps for a view of the hall
+                E(f"GAME.setView3(false, true); GAME.view({kk[0] - (kk[2] - kk[0]) * 1.5}, {kk[1] - (kk[3] - kk[1]) * 1.5}, MUSEUM.z + 1.65, {yaw}, -6, 70)")
+                steps(0.5)
+                pic('museum_halle')
+            ex = J("MUSEUM.exp ? MUSEUM.exp.map(e => [e.id, e.at[0], e.at[1], e.look[0], e.look[1]]) : []")
+            looked = 0
+            for (eid, ax, ay, lx, ly) in ex:
+                yaw = (math.degrees(math.atan2(lx - ax, ly - ay)) + 360) % 360
+                E(f"GAME.setView3(false, true); GAME.view({ax}, {ay}, MUSEUM.z + 1.65, {yaw}, -6, 70)")
+                steps(0.3)
+                lbl = J("GAME.step(0.3)").get('best') or ''
+                if lbl.startswith('Ansehen'):
+                    looked += 1
+                if eid in ('landschaft', 'minerale'):
+                    pic('museum_' + eid)
+            ck('in the exhibition room every exhibit offers „Ansehen …“ with its text', looked == len(ex) and len(ex) >= 5, f"{looked} of {len(ex)}")
+            E("MUSEUM.ansehen('kugeln')")
+            page_pic('museum_text')
+            E("LKAUF.close()")
+            E("MUSEUM.verlassen()")
+            steps(1)
+            ck('out of the museum again (outside the castle)', not J("MUSEUM.status().inside"), json.dumps(J("MUSEUM.status()")))
+            set_time(1, 11, 0)
+            stand(ox, oy, (math.degrees(math.atan2(-n[0], -n[1])) + 360) % 360)
+            lbl = J("GAME.step(0.3)").get('best') or ''
+            ck('Monday: the museum is closed (the label at the door says so)', 'geschlossen' in lbl, lbl)
+        # the Stadtbibliothek: Tuesday 11:00 open – borrow a book at its door
+        set_time(2, 11, 0)
+        bx, by = -738.34, 1336.38
+        stood = None
+        for a in range(0, 360, 30):
+            x, y = bx + math.sin(math.radians(a)) * 7.5, by + math.cos(math.radians(a)) * 7.5
+            stand(x, y, (a + 180) % 360)
+            r = J("GAME.step(0.3)")
+            if 'Stadtbibliothek' in (r.get('best') or ''):
+                stood = (x, y, r.get('best'))
+                break
+        ck('the library: at its door „Stadtbibliothek: Buch ausleihen“', stood is not None and 'ausleihen' in stood[2], json.dumps(stood))
+        if stood:
+            E("OEFFENTLICH.oeffnen('bibliothek')")
+            steps(0.3)
+            page_pic('bibliothek')
+            E("document.querySelector('#kassepanel [data-b]') && document.querySelector('#kassepanel [data-b]').click()")
+            ck('a book borrowed (the reader’s card paid, the book in the inventory)', J("INVENTAR.has('buch')"), json.dumps(J("INVENTAR.list()"))[:200])
+            E("LKAUF.close()")
         o = J("OEFFENTLICH.orte()")
         ck('the public buildings in the registry with their hours', len(o) >= 7 and all(q['zeiten'] for q in o), json.dumps(o)[:400])
     ck.errors(errs)

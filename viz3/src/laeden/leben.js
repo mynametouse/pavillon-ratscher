@@ -100,6 +100,8 @@ export const LLEBEN = (() => {
   }
   function freeBase(b) {
     if (!b.gl) return;
+    // the textures the dressing replaced (grenzland/gl_fig.js keeps them in the restore list)
+    for (const [, t] of b.restore || []) if (t && t.isTexture) t.dispose();
     b.gl.scene.traverse(o => {
       if (o.geometry) o.geometry.dispose();
       for (const m of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) {
@@ -109,6 +111,49 @@ export const LLEBEN = (() => {
     });
     BASES.delete(b.file);
     S.frees++;
+  }
+  // ---- work clothes: painted into the figure's own textures by body zone (grenzland/gl_fig.js GLFIG.dress, when the mode's module is
+  // there – else they keep their own clothes): plain colours of no chain – a navy polo at the tills, a white top and an apron at the
+  // bakery's counter, a dark green work jacket in the DIY store, a grey cardigan at a public counter ----
+  const KLEID = {
+    kasse: { ober: [38, 52, 82], unter: [34, 34, 38], schuh: [26, 26, 28], arm: false },
+    auff: { ober: [38, 52, 82], unter: [44, 46, 52], schuh: [30, 30, 32], arm: true },
+    theke: { ober: [236, 232, 222], unter: [48, 46, 44], schuh: [36, 36, 36], rock: 0.42, arm: false },
+    baumarkt: { ober: [52, 72, 58], unter: [44, 48, 56], schuh: [52, 40, 30], arm: true },
+    amt: { ober: [92, 96, 104], unter: [40, 40, 46], schuh: [30, 28, 26], arm: true },
+  };
+  const kleidOf = (art, typ) =>
+    art === 'kunde'
+      ? null
+      : typ === 'baumarkt'
+        ? KLEID.baumarkt
+        : art === 'posten'
+          ? KLEID.amt
+          : KLEID[art] || KLEID.kasse;
+  async function dress(p, K) {
+    const G = window.GLFIG;
+    if (!K || !G || typeof G.dress !== 'function' || typeof G.pixels !== 'function') return false;
+    try {
+      // one frame's breath before the painting (it takes a moment): the figure stands meanwhile in its own clothes
+      await new Promise(r => setTimeout(r, 30));
+      if (!p.f || !p.f.model.parent) return false;
+      const b = p.bd.b;
+      b.restore = b.restore || [];
+      if (b.dressed) return true;
+      await G.pixels(p.f.model, CH[FIGS[p.fi].f]);
+      if (!p.f.model.parent) return false;
+      const t0 = performance.now();
+      G.dress(p.f.model, K, b.restore);
+      if (typeof G.forget === 'function') G.forget(p.f.model);
+      b.dressed = true;
+      S.dressMs = Math.round(performance.now() - t0);
+      S.dressed = (S.dressed || 0) + 1;
+      markDirty();
+      return true;
+    } catch (e) {
+      S.err = 'dress: ' + String((e && e.message) || e).slice(0, 100);
+      return false;
+    }
   }
   // ---- the things they carry and push: vertex colours in the traffic's material (verkehr/verkehr_fig.js: same parameters, one program) ----
   let MAT = null;
@@ -305,7 +350,25 @@ export const LLEBEN = (() => {
           .sort((a, b) => Math.hypot(a.x - s.x, a.y - s.y) - Math.hypot(b.x - s.x, b.y - s.y))[0];
         return { s, k: k && Math.hypot(k.x - s.x, k.y - s.y) < 4 ? k : null, staff: null, queue: [], payer: null };
       });
-    const shelves = LLPLAN.regalPlaetze(G, goods, phone() ? 24 : 60, (Uu.id.length * 977) | 1);
+    // behind a counter only the staff: the cells near a counter's staff place are no way for customers, nor its goods a place to stand
+    for (const T of theken) {
+      const i0 = Math.floor((T.s.x - 1.6 - G.x0) / G.C),
+        i1 = Math.floor((T.s.x + 1.6 - G.x0) / G.C),
+        j0 = Math.floor((T.s.y - 1.6 - G.y0) / G.C),
+        j1 = Math.floor((T.s.y + 1.6 - G.y0) / G.C);
+      for (let j = Math.max(0, j0); j <= Math.min(G.ny - 1, j1); j++)
+        for (let i = Math.max(0, i0); i <= Math.min(G.nx - 1, i1); i++) {
+          const x = G.x0 + (i + 0.5) * G.C,
+            y = G.y0 + (j + 0.5) * G.C;
+          // the staff's side of the counter: closer to the staff place than the customer's place is
+          const dS = Math.hypot(x - T.s.x, y - T.s.y),
+            dK = T.k ? Math.hypot(x - T.k.x, y - T.k.y) : 9;
+          if (dS < 1.6 && dS < dK) G.free[j * G.nx + i] = 0;
+        }
+    }
+    const shelves = LLPLAN.regalPlaetze(G, goods, phone() ? 24 : 60, (Uu.id.length * 977) | 1).filter(
+      sp => !theken.some(T => Math.hypot(sp.x - T.s.x, sp.y - T.s.y) < 2.4)
+    );
     const R = {
       u,
       U: Uu,
@@ -446,6 +509,7 @@ export const LLEBEN = (() => {
     scene.add(p.f.g);
     p.f.anim(0.01, 0);
     S.people.push(p);
+    if (art !== 'kunde') dress(p, kleidOf(art, R.typ));
     markDirty();
     return p;
   }
@@ -498,7 +562,8 @@ export const LLEBEN = (() => {
   function freeFig(staff) {
     const used = new Set(S.people.map(p => p.fi).concat(S.pending));
     const order = FIGS.map((F, i) => i).filter(i => !staff || FIGS[i].staff);
-    const free = order.filter(i => !used.has(i));
+    // a customer never in a figure that wears work clothes (a dressed file is shared by its clones)
+    const free = order.filter(i => !used.has(i) && (staff || !(BASES.get(FIGS[i].f) || {}).dressed));
     if (free.length) return free[Math.floor(Math.random() * free.length)];
     return null;
   }
@@ -689,7 +754,8 @@ export const LLEBEN = (() => {
   }
   function browse(p) {
     const R = p.unit;
-    if (!R.shelves.length || p.todo <= 0) return toTill(p);
+    // at a counter shop (the bakery) one goes to the counter
+    if (!R.shelves.length || p.todo <= 0 || (R.theken.length && !R.kassen.length)) return toTill(p);
     const sp = R.shelves[Math.floor(Math.random() * R.shelves.length)];
     p.ziel = sp;
     p.st = 'geht';
@@ -881,6 +947,7 @@ export const LLEBEN = (() => {
       p.f.anim(0.01, 0);
       q.p = p;
       markDirty();
+      if (q.kleid) dress(p, q.kleid === true ? KLEID.amt : q.kleid);
     } catch (e) {
       q.loading = false;
       S.err = 'post ' + q.id + ': ' + String((e && e.message) || e).slice(0, 100);
@@ -1146,6 +1213,8 @@ export const LLEBEN = (() => {
     lamp: lampWant,
     err: S.err,
     prepMs: S.prepMs,
+    dressed: S.dressed || 0,
+    dressMs: S.dressMs || 0,
   });
   S.dropAll = dropAll;
   return S;

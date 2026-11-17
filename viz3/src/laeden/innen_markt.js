@@ -123,8 +123,9 @@ export const LIMARKT = (() => {
         // a shelf board and its price rail with tags
         K.box(u + (s * (D / 2 - 0.02)) / 2, vm, z - 0.03, D / 2 - 0.04, len - 0.04, 0.03, C.shelf);
         K.box(uf - s * 0.015, vm, z - 0.055, 0.02, len - 0.04, 0.045, C.rail);
-        for (let v = v0 + 0.25; v < v1 - 0.2; v += 0.55 + R() * 0.35)
-          K.box(uf - s * 0.004, v, z - 0.05, 0.004, 0.06, 0.03, C.tagD);
+        // (the price tags: laeden/innen.js prints one at each block of goods – feat/laeden-leben; the dark blanks are gone, the same
+        // numbers drawn from R as before so the goods stay where they were)
+        for (let v = v0 + 0.25; v < v1 - 0.2; v += 0.55 + R() * 0.35) void 0;
       }
       // goods on each level (and on the plinth), their fronts 3 cm behind the rail
       for (let k = 0; k < lv.length; k++) {
