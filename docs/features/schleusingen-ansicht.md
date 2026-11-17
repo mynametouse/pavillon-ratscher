@@ -114,7 +114,10 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   Klosterstraße 14 bestätigt es); `m004`–`m008` (Klosterstraße) sind gelesen, `m000`–`m003` (Markt, dort schon aus den Markt-Ansichten
   gelesen) und `m009`–`m012` (Ostende, nach Norden) ließen sich nicht eindeutig verorten; `m013`–`m022` zeigen die Burg und ihren Hang,
   `m023`–`m033` (Suhler Straße, 2019) stehen noch aus.
-- Ratscher (Daten in eigener Datei, Häuser der Dorfmitte nach Falkos Video nur mit Unterschieden): die 109 freien Panoramax-Fotos
+- Ratscher (`viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/ratscher.json`, Schlüssel `id` von `VILLAGE`, Häuser der Dorfmitte nach
+  Falkos Video nur mit Unterschieden): die 109 freien Panoramax-Fotos
   (2020/2025) stehen alle auf Wegen außerhalb des Dorfs – das nächste rund 160 m von der nächsten Hauswand –, keine Fassade
-  lesbar; Mapillary an der L 3004 (Ostrand) steht noch aus.
+  lesbar; Mapillary an der L 3004 (vier 360°-Aufnahmen, März 2020): fast nur Bäume und Büsche – gelesen nur die Halle #196 (graublaues
+  Trapezblech, im Dorf dunkelgrün), fünf Häuser hinter Bäumen als nicht lesbar. Noch nicht in `fassade/ansicht.json` (Schlüssel
+  `ratscher:196` ginge über denselben Weg).
 - Nachts bekommt das Pflasterstück kein Laternenlicht auf den Boden (die Kacheln auch nicht).

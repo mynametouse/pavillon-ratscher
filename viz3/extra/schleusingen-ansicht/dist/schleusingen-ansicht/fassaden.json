@@ -1605,6 +1605,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "weiss",
+   "geschosse": 3,
    "besonders": "roter Backstein, dreigeschossig, hohe weiße Fenster, zum Teil mit Rundbogen (hinter Bäumen, von der Straße zurückgesetzt)",
    "sicher": "mittel",
    "ansichten": [

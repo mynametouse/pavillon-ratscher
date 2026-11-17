@@ -135,6 +135,19 @@ def main(argv):
     both = seen & nl_ids
     if both:
         errs.append(f'read and unreadable at once: {sorted(both)}')
+    # Ratscher's houses (ratscher.json, VILLAGE ids – the village is built at run time: schema only)
+    rp = os.path.join(EXTRA, 'dist', 'schleusingen-ansicht', 'ratscher.json')
+    if os.path.exists(rp):
+        rd = json.load(open(rp))
+        for r in rd.get('gebaeude', []):
+            t = f"ratscher {r.get('id')}"
+            if not isinstance(r.get('id'), int) or r.get('art') not in ART or r.get('material') not in MATERIAL or not HEX.match(str(r.get('wand', ''))):
+                errs.append(f'{t}: id, art, material or wand')
+            if (r.get('dach') or {}).get('material') not in DACH or r.get('sicher') not in SICHER or not r.get('besonders'):
+                errs.append(f'{t}: dach, sicher or besonders')
+        for q in rd.get('nicht_lesbar', []):
+            if not isinstance(q.get('id'), int) or not q.get('warum'):
+                errs.append(f'ratscher nicht_lesbar: {q}')
     # the looks for FASSADE (tools/schleusingen-ansicht/ansicht.py), if written: made from this very data
     ap = os.path.join(EXTRA, 'dist', 'fassade', 'ansicht.json')
     if os.path.exists(ap):

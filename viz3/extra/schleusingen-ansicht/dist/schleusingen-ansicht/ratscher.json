@@ -1,0 +1,52 @@
+{
+ "v": 1,
+ "stand": "2026-11-17",
+ "quelle": "freie Fotos von der Straße (Mapillary an der L 3004, März 2020; Panoramax 2020/2025, beide CC BY-SA 4.0) – nur abgelesene Werte, keine Bilder; Farben sRGB, geschätzt (wand_quelle)",
+ "gebaeude_von": "world/village.js (VILLAGE.bld, id; x, y: Mittel der Wandpunkte zum Prüfen); Häuser der Dorfmitte nach Falkos Video (world/dorfkern_data.js) nur mit Unterschieden",
+ "gebaeude": [
+  {
+   "id": 196,
+   "x": 426.3,
+   "y": -267.1,
+   "art": "halle",
+   "material": "blech",
+   "wand": "#7e8b99",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "blech",
+    "farbe": "#6f7a86",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Halle aus graublauem Trapezblech, durch Büsche gesehen (im Dorf dunkelgrün)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "m004"
+   ]
+  }
+ ],
+ "nicht_lesbar": [
+  {
+   "id": 264,
+   "warum": "hinter Bäumen, 65–100 m"
+  },
+  {
+   "id": 263,
+   "warum": "hinter Bäumen, 65–100 m"
+  },
+  {
+   "id": 206,
+   "warum": "hinter Bäumen, 65–100 m"
+  },
+  {
+   "id": 204,
+   "warum": "hinter Bäumen, 65–100 m"
+  },
+  {
+   "id": 205,
+   "warum": "hinter Bäumen, 65–100 m"
+  }
+ ],
+ "panoramax": "die 109 Fotos stehen alle auf Wegen außerhalb des Dorfs – das nächste rund 160 m von der nächsten Hauswand: keine Fassade lesbar"
+}
