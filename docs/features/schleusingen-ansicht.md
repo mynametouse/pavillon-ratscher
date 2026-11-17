@@ -22,10 +22,10 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
     Altstadtdaten (z. B. #331 und #48 eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei Geschosse mit
     Gauben).
   - `nicht_lesbar`: Gebäude, die eine Ansicht zeigt, aber nicht lesbar (Bäume, Hecke, unscharf) – mit Grund.
-  - Stand: Runde 1 (Hildburghäuser, Suhler, Ilmenauer Straße, Markt; 71 Ansichten), Königstraße (16) und Bertholdstraße (zwei
-    360°-Ansichten, je 6 Richtungen) und Klosterstraße (5 Bilder aus dem Auto): 157 Gebäude gelesen (65 hoch, 62 mittel, 30 niedrig sicher),
-    30 als nicht lesbar benannt;
-    Wahrzeichen (Rathaus, Kirche, Burg, Türme) zeichnet die Stadt selbst – sie stehen nicht in den Daten.
+  - Stand: Runde 1 (Hildburghäuser, Suhler, Ilmenauer Straße, Markt; 71 Ansichten), Königstraße (16), Bertholdstraße (zwei
+    360°-Ansichten, je 6 Richtungen) und Klosterstraße (5 Bilder aus dem Auto): 157 Gebäude gelesen (65 hoch, 62 mittel, 30 niedrig
+    sicher), 30 als nicht lesbar benannt; Wahrzeichen (Rathaus, Kirche, Burg, Türme) zeichnet die Stadt selbst – sie stehen nicht in den
+    Daten.
   - `dach.farbe_quelle`: `Ansicht` (von der Straße gesehen) oder `Luftbild 2024` (nur von oben, DOP 2024 © GDI-Th, dl-de/by-2-0 –
     Dachart von oben, Farbe die Klasse der Tabelle, nicht der blasse Farbwert des Luftbilds).
 - **Blickpunkte** `viz3/extra/schleusingen-ansicht/views.json` (Modellachsen, Blickrichtung `yaw` von Modell-Nord, die wahre Nordrichtung –
@@ -114,8 +114,8 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   Klosterstraße 14 bestätigt es); `m004`–`m008` (Klosterstraße) sind gelesen, `m000`–`m003` (Markt, dort schon aus den Markt-Ansichten
   gelesen) und `m009`–`m012` (Ostende, nach Norden) ließen sich nicht eindeutig verorten; `m013`–`m022` zeigen die Burg und ihren Hang,
   `m023`–`m033` (Suhler Straße, 2019) stehen noch aus.
-- Ratscher (`viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/ratscher.json`, Schlüssel `id` von `VILLAGE`, Häuser der Dorfmitte nach
-  Falkos Video nur mit Unterschieden): die 109 freien Panoramax-Fotos
+- Ratscher (`viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/ratscher.json`, Schlüssel `id` von `VILLAGE`, Häuser der
+  Dorfmitte nach Falkos Video nur mit Unterschieden): die 109 freien Panoramax-Fotos
   (2020/2025) stehen alle auf Wegen außerhalb des Dorfs – das nächste rund 160 m von der nächsten Hauswand –, keine Fassade
   lesbar; Mapillary an der L 3004 (vier 360°-Aufnahmen, März 2020): fast nur Bäume und Büsche – gelesen nur die Halle #196 (graublaues
   Trapezblech, im Dorf dunkelgrün), fünf Häuser hinter Bäumen als nicht lesbar. Noch nicht in `fassade/ansicht.json` (Schlüssel
