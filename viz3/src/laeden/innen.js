@@ -26,6 +26,9 @@ import { LIPLAN } from './innen_plan.js';
 import { LIMARKT } from './innen_markt.js';
 import { LIBAU } from './innen_bau.js';
 import { LIHAUS } from './innen_haus.js';
+import { OEFFNUNG } from '../einkauf/oeffnung.js';
+import { WAREN } from '../einkauf/waren.js';
+import { WBILD } from './waren_bild.js';
 export const LINNEN = (() => {
   const S = {
     on: false,
@@ -64,7 +67,10 @@ export const LINNEN = (() => {
     waesche: 'Mo-Fr 09:00-18:00',
     baumarkt: 'Mo-Sa 08:00-20:00',
   };
+  // feat/laeden-leben: the hours live in the registry OEFFNUNG (einkauf/oeffnung.js) – every unit is registered there (prepUnits)
   const isOpenU = U => {
+    const o = OEFFNUNG.offen(U.id);
+    if (o !== null) return o;
     if (!U.week) U.week = LAEDEN.parseOH(U.oh || DEFAULT_OH[U.type] || 'Mo-Sa 08:00-20:00');
     return !!LAEDEN.isOpen(U.week);
   };
@@ -75,6 +81,10 @@ export const LINNEN = (() => {
     MATS.add(m);
     return m;
   };
+  // feat/laeden-leben: the printed goods' material (basic, vertex colours, the atlas) – one per standing shop for its light, one program
+  const goodsMat = M =>
+    M.gmat ||
+    (M.gmat = new THREE.MeshBasicMaterial({ vertexColors: true, map: WBILD.tex(), color: M.mat.color.clone() }));
   // the frames of the door leaves: the parked cars' material (its plain program, warmed at the start)
   const leafMat = () => DMOD.mat;
 
@@ -211,6 +221,84 @@ export const LINNEN = (() => {
   }
   // darker near the floor (the light comes from the ceiling)
   const ao = z => (z >= 1.2 ? 1 : 0.74 + 0.26 * (z / 1.2) * (2 - z / 1.2));
+  // feat/laeden-leben: the printed fronts and price tags – quads with a place in the atlas of laeden/waren_bild.js (WBILD), drawn with
+  // the atlas in a basic material per standing shop (one program for all); the colour carries the baked light as in the kit above
+  function tkit(zf) {
+    const P = [],
+      C = [],
+      UV = [],
+      I = [];
+    let nv = 0;
+    const K = {
+      // a quad facing (nx, ny) with its picture upright: a0 → a1 runs to the viewer's right, z0 → z1 up; uv: [u0, v0, u1, v1]
+      front(ax, ay, bx, by, z0, z1, nx, ny, uv, k) {
+        // the viewer looks along −n: his right is (−ny, nx); the picture's u runs that way
+        const r = (bx - ax) * -ny + (by - ay) * nx >= 0,
+          [u0, v0, u1, v1] = uv,
+          ua = r ? u0 : u1,
+          ub = r ? u1 : u0;
+        const kk = k * (0.8 + 0.07 * nx + 0.04 * ny);
+        const pts = [
+          [ax, ay, z0, ua, v0],
+          [bx, by, z0, ub, v0],
+          [bx, by, z1, ub, v1],
+          [ax, ay, z1, ua, v1],
+        ];
+        for (const [x, y, z, u, v] of pts) {
+          P.push(x, zf(x, y) + z, -y);
+          const c = kk * ao(z);
+          C.push(c, c, c);
+          UV.push(u, v);
+        }
+        // counter-clockwise seen from the front (n): a b c d when a → b runs to the right
+        if (r) I.push(nv, nv + 1, nv + 2, nv, nv + 2, nv + 3);
+        else I.push(nv, nv + 2, nv + 1, nv, nv + 3, nv + 2);
+        nv += 4;
+      },
+      // a face from four corners [x, y, z] (in order round it) with its picture's corners u0 v0 → u1 v0 → u1 v1 → u0 v1; up: facing up
+      quad4(c, uv, k) {
+        const [u0, v0, u1, v1] = uv,
+          T = [
+            [u0, v0],
+            [u1, v0],
+            [u1, v1],
+            [u0, v1],
+          ];
+        const ux = c[1][0] - c[0][0],
+          uy = c[1][1] - c[0][1],
+          vx = c[3][0] - c[0][0],
+          vy = c[3][1] - c[0][1],
+          up = ux * vy - uy * vx >= 0;
+        c.forEach((p, i) => {
+          P.push(p[0], zf(p[0], p[1]) + p[2], -p[1]);
+          const cc = k * ao(p[2]);
+          C.push(cc, cc, cc);
+          UV.push(T[i][0], T[i][1]);
+        });
+        if (up) I.push(nv, nv + 1, nv + 2, nv, nv + 2, nv + 3);
+        else I.push(nv, nv + 2, nv + 1, nv, nv + 3, nv + 2);
+        nv += 4;
+      },
+      empty: () => !I.length,
+      tris: () => I.length / 3,
+      geo() {
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+        g.setAttribute('color', new THREE.Float32BufferAttribute(C, 3));
+        g.setAttribute('uv', new THREE.Float32BufferAttribute(UV, 2));
+        g.setIndex(nv > 65535 ? I : new THREE.Uint16BufferAttribute(I, 1));
+        g.computeBoundingSphere();
+        return g;
+      },
+    };
+    return K;
+  }
+  // the department of a block of goods by the colour its layout painted it with (the same array objects), its product
+  const CATMAP = WAREN.farbenKarte(LIMARKT, LIBAU);
+  const HEAPMAP = WAREN.heapKarte(LIMARKT, LIBAU);
+  const wareOf = (gd, i) =>
+    (gd.k === 'heap' && HEAPMAP.get(gd.col)) ||
+    WAREN.fuer(CATMAP.get(gd.col) || null, gd.k, i * 7 + Math.round(gd.x * 3));
 
   // =============================== text as vertex-coloured rectangles (read by night as by day, no texture) ===============================
   const FONT = '"Helvetica Neue", Helvetica, Arial, "Liberation Sans", "DejaVu Sans", sans-serif';
@@ -347,7 +435,7 @@ export const LINNEN = (() => {
   }
 
   // =============================== goods: blocks of products, each a front, a top, a label band ===============================
-  function goods(K, gd, R) {
+  function goods(K, gd, R, T) {
     // on a phone one front for a block of the same product (its label band and top stay, its ends go); bottles and crates keep theirs
     const ph = phone(),
       n0 = Math.max(1, gd.n | 0),
@@ -364,6 +452,11 @@ export const LINNEN = (() => {
       c = gd.col;
     const lighter = [Math.min(1, c[0] * 0.5 + 0.45), Math.min(1, c[1] * 0.5 + 0.45), Math.min(1, c[2] * 0.5 + 0.45)],
       darker = [c[0] * 0.55, c[1] * 0.55, c[2] * 0.55];
+    // feat/laeden-leben: the printed front of the product (bottles, jars, bags: their body), else the plain colour
+    const uv =
+      T && gd.ware && gd.front && gd.k !== 'crate' && gd.k !== 'heap' && gd.k !== 'loaf' ? WBILD.front(gd.ware) : null;
+    const printed = (a0, a1, za, zb, kk) =>
+      T.front(...pt(a0, fr + 0.0008, za).slice(0, 2), ...pt(a1, fr + 0.0008, za).slice(0, 2), za, zb, fx, fy, uv, kk);
     // a point of the block: along a, out of the front f, up z
     const pt = (a, f, z) => [gd.x + ax * a + fx * f, gd.y + ay * a + fy * f, z];
     // the faces oriented: a front towards f, a top up
@@ -371,9 +464,15 @@ export const LINNEN = (() => {
       K.faceN(pt(a0, f, za), pt(a1, f, za), pt(a1, f, zb), pt(a0, f, zb), fx, fy, 0, cl, false, kk);
     const top = (a0, a1, f0, f1, z, cl, kk) =>
       K.faceN(pt(a0, f0, z), pt(a1, f0, z), pt(a1, f1, z), pt(a0, f1, z), 0, 0, 1, cl, false, kk);
+    // feat/laeden-leben: loose goods seen from above – apples, tomatoes, rolls, plants – on the heap's tops
+    const uvH = T && gd.k === 'heap' && gd.ware ? WBILD.lose(gd.ware) : null;
+    const topP = (a0, a1, f0, f1, z, cl, kk) =>
+      uvH
+        ? T.quad4([pt(a0, f0, z), pt(a1, f0, z), pt(a1, f1, z), pt(a0, f1, z)], uvH, kk)
+        : top(a0, a1, f0, f1, z, cl, kk);
     if (gd.k === 'heap' && ph) {
       // a phone: the heap as one frustum (its top and four slopes from the foot)
-      top(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
+      topP(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
       for (const s2 of [1, -1]) {
         const f = fr * s2,
           a = (gd.len / 2) * s2;
@@ -406,8 +505,8 @@ export const LINNEN = (() => {
     }
     if (gd.k === 'heap') {
       // fruit in a crate: a heap in two layers, the colour varied
-      top(-gd.len / 2, gd.len / 2, -fr, fr, z0 + h * 0.6, c, 0.95);
-      top(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
+      topP(-gd.len / 2, gd.len / 2, -fr, fr, z0 + h * 0.6, c, 0.95);
+      topP(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
       // the heap's four slopes (and its sides down to the crate)
       for (const s2 of [1, -1]) {
         const f = fr * s2,
@@ -464,7 +563,8 @@ export const LINNEN = (() => {
       if (gd.k === 'bottle') {
         const nk = (a1 - a0) * 0.3,
           am = (a0 + a1) / 2;
-        face(a0, a1, fr, z0, z0 + h * 0.62, c, jit);
+        if (uv) printed(a0, a1, z0, z0 + h * 0.62, jit);
+        else face(a0, a1, fr, z0, z0 + h * 0.62, c, jit);
         if (ph)
           face(am - nk, am + nk, fr - (a1 - a0) * 0.3, z0 + h * 0.62, z0 + h, darker, 1); // neck and cap in one
         else {
@@ -472,10 +572,12 @@ export const LINNEN = (() => {
           face(am - nk * 1.1, am + nk * 1.1, fr - (a1 - a0) * 0.3 + 0.001, z0 + h * 0.92, z0 + h, darker, 1);
         }
       } else if (gd.k === 'jar') {
-        face(a0, a1, fr, z0, z0 + h * 0.8, c, jit);
+        if (uv) printed(a0, a1, z0, z0 + h * 0.8, jit);
+        else face(a0, a1, fr, z0, z0 + h * 0.8, c, jit);
         face(a0 + 0.004, a1 - 0.004, fr - 0.004, z0 + h * 0.8, z0 + h, darker, 1);
       } else if (gd.k === 'bag') {
-        face(a0, a1, fr, z0, z0 + h * 0.86, c, jit);
+        if (uv) printed(a0, a1, z0, z0 + h * 0.86, jit);
+        else face(a0, a1, fr, z0, z0 + h * 0.86, c, jit);
         face(a0 + 0.004, a1 - 0.004, fr - 0.01, z0 + h * 0.86, z0 + h, darker, 1);
       } else if (gd.k === 'loaf') {
         face(a0, a1, fr, z0, z0 + h * 0.65, c, jit);
@@ -491,16 +593,31 @@ export const LINNEN = (() => {
               cf = -fr + (2 * fr * (r2 + 0.5)) / 4;
             top(ca - 0.018, ca + 0.018, cf - 0.018, cf + 0.018, z0 + h + 0.02, L(0.75, 0.72, 0.6), 1);
           }
-      } else face(a0, a1, fr, z0, z0 + h, c, jit); // box, pack, can
+      } else if (uv) printed(a0, a1, z0, z0 + h, jit);
+      else face(a0, a1, fr, z0, z0 + h, c, jit); // box, pack, can
+      // feat/laeden-leben: buckets stand free on their pallets – their backs too (CI picture obi_1: from behind only thin ends)
+      if (gd.k === 'eimer')
+        K.faceN(
+          pt(a0, -fr, z0),
+          pt(a1, -fr, z0),
+          pt(a1, -fr, z0 + h),
+          pt(a0, -fr, z0 + h),
+          -fx,
+          -fy,
+          0,
+          c,
+          false,
+          0.82
+        );
     }
-    // (a phone: no label bands, no tops one hardly sees – over 1.55 m)
-    const band = !ph,
+    // (a phone: no label bands, no tops one hardly sees – over 1.55 m; a printed front has its own label)
+    const band = !ph && !uv,
       high = ph && z0 + h > 1.55;
     if (gd.k === 'bottle') {
       if (band) face(A + w * 0.12, B - w * 0.12, fr + 0.002, z0 + h * 0.22, z0 + h * 0.45, lighter, 1);
       if (!high) top(A, B, -fr, fr, z0 + h * 0.62, c, 0.9);
     } else if (gd.k === 'can') {
-      if (!ph) {
+      if (!ph && !uv) {
         face(A, B, fr + 0.001, z0 + h * 0.86, z0 + h * 0.93, lighter, 1);
         face(A, B, fr + 0.001, z0 + h * 0.05, z0 + h * 0.1, darker, 1);
       }
@@ -738,10 +855,16 @@ export const LINNEN = (() => {
           return vi >= 0 ? hOf(vi) : hOf(r.vol);
         };
       // fixtures by section
-      const bySec = new Map();
+      const bySec = new Map(),
+        texSec = new Map();
       const kOf = id => {
         if (!bySec.has(id)) bySec.set(id, rkit(zf));
         return bySec.get(id);
+      };
+      // feat/laeden-leben: the printed fronts and the price tags of a section
+      const tOf = id => {
+        if (!texSec.has(id)) texSec.set(id, tkit(zf));
+        return texSec.get(id);
       };
       // fixtures standing on the floor: a raster for the floor's shade
       const occ = floorShade(Pl);
@@ -820,7 +943,25 @@ export const LINNEN = (() => {
         if (!ph || (!b.opt && (b.sx * b.sy * b.sz > 2e-4 || Math.max(b.sx, b.sy, b.sz) > 0.12)))
           kOf(b.sec).box(b.x, b.y, b.z, b.sx, b.sy, b.sz, b.rot, b.col, b.top, !!b.glow);
       const R = LIPLAN.rnd(LIPLAN.hash(U.id));
-      for (const gd of Pl.goods) goods(kOf(gd.sec), gd, R);
+      // feat/laeden-leben: each block of goods is a product (the same one laeden/kauf.js sells), printed; its price on the shelf's edge
+      Pl.goods.forEach((gd, i) => (gd.ware = wareOf(gd, i)));
+      for (const gd of Pl.goods) goods(kOf(gd.sec), gd, R, tOf(gd.sec));
+      if (!ph)
+        for (const gd of Pl.goods) {
+          if (!gd.front || !gd.ware || gd.z < 0.25 || gd.z > 1.95 || gd.k === 'heap') continue;
+          const uvT = WBILD.tag(gd.ware);
+          if (!uvT) continue;
+          // at the block's left end seen from the front, on the price rail 3.5 cm before the fronts, below the board
+          const fr = gd.dep / 2 + 0.04,
+            rx = -gd.fy,
+            ry = gd.fx,
+            s0 = gd.ax * rx + gd.ay * ry >= 0 ? -1 : 1,
+            a0 = (s0 * gd.len) / 2 + -s0 * 0.012,
+            a1 = a0 + -s0 * 0.07,
+            P0 = [gd.x + gd.ax * a0 + gd.fx * fr, gd.y + gd.ay * a0 + gd.fy * fr],
+            P1 = [gd.x + gd.ax * a1 + gd.fx * fr, gd.y + gd.ay * a1 + gd.fy * fr];
+          tOf(gd.sec).front(P0[0], P0[1], P1[0], P1[1], gd.z - 0.05, gd.z - 0.014, gd.fx, gd.fy, uvT, 1.05);
+        }
       for (const s2 of Pl.signs) {
         const sc = secs.find(q => q.id === s2.sec) || secs[0];
         if (s2.two) s2.hang = Math.max(0, sc.h - (s2.z + s2.h + 0.03));
@@ -895,6 +1036,23 @@ export const LINNEN = (() => {
       }
       // meshes
       const mat = M.mat;
+      // feat/laeden-leben: the printed goods and the tags – a mesh per section on the atlas's material of this shop
+      for (const [id, T] of texSec) {
+        if (T.empty()) continue;
+        const me = new THREE.Mesh(T.geo(), goodsMat(M));
+        me.userData.sec = id;
+        me.userData.unit = U.id;
+        S.live++;
+        me.name = 'laeden-innen ' + U.id + ' ' + id + ' waren';
+        me.userData.noMerge = true;
+        me.castShadow = false;
+        me.receiveShadow = false;
+        me.matrixAutoUpdate = false;
+        me.updateMatrix();
+        scene.add(me);
+        M.meshes.push(me);
+        M.tris += T.tris();
+      }
       for (const [id, K] of bySec) {
         if (K.empty()) continue;
         const me = new THREE.Mesh(K.geo(), mat);
@@ -916,6 +1074,9 @@ export const LINNEN = (() => {
       M.segs.push(...segs, ...Pl.segs);
       M.units.push({
         U,
+        // feat/laeden-leben: what stands tall from the floor (gondolas' back panels, racks, counters over 1.7 m) – the people behind it are
+        // not drawn while the eye is below its top (laeden/leben.js)
+        tall: Pl.boxes.filter(b => b.z <= 0.3 && b.z + b.sz >= 1.7 && !b.glow).map(b => [b.x, b.y, b.sx, b.sy, b.rot]),
         plan: {
           boxes: Pl.boxes.length,
           goods: Pl.goods.length,
@@ -928,6 +1089,10 @@ export const LINNEN = (() => {
         secOf,
         nb,
         doorSecs,
+        // feat/laeden-leben: what the people and the shopping need – the blocks of goods (where, which kind, coloured from which
+        // department) and the places of the staff and the customers
+        goods: Pl.goods,
+        spots: Pl.spots,
       });
     }
     M.ms += performance.now() - t0;
@@ -1229,6 +1394,9 @@ export const LINNEN = (() => {
       MATS.delete(M.mat);
     }
     M.mat = null;
+    // feat/laeden-leben: the printed goods' material (the atlas stays for the next shop)
+    if (M.gmat) M.gmat.dispose();
+    M.gmat = null;
     for (const m of M.hid || []) {
       LAEDEN.hidden.delete(m);
       m.visible = !RATSCHER.map;
@@ -1242,7 +1410,8 @@ export const LINNEN = (() => {
   const GROUPD = new Map(); // group id → { frames, glass: Map shopId → mesh, doors: [] }
   // the rooms' program (the Rathaus hall's: basic with vertex colours) compiled when a group of shops comes up (900 m away), not at a
   // door – usually the town has it already; one material keeps it (three frees a program no material uses)
-  let WARM = null;
+  let WARM = null,
+    WARM2 = null;
   function warm() {
     if (WARM) return;
     const g = new THREE.BufferGeometry();
@@ -1255,6 +1424,16 @@ export const LINNEN = (() => {
       warmUp(WARM); // (compile skips what is not visible: it stays visible here, it is never in the scene)
     } catch (e) {
       console.warn('laeden-innen warm', e);
+    }
+    // feat/laeden-leben: the printed goods' program too (the atlas is drawn now, ~0.1 s, 900 m before the shops)
+    try {
+      const g2 = g.clone();
+      g2.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1], 2));
+      WARM2 = new THREE.Mesh(g2, new THREE.MeshBasicMaterial({ vertexColors: true, map: WBILD.tex() }));
+      WARM2.frustumCulled = false;
+      warmUp(WARM2);
+    } catch (e) {
+      console.warn('laeden-leben warm', e);
     }
   }
   function onBuild(g) {
@@ -1557,6 +1736,18 @@ export const LINNEN = (() => {
       U.doors = U.doors.map(d => sh.doors.find(q => Math.hypot(q.x - d.x, q.y - d.y) < 0.01) || d);
       if (!S.shops.has(U.shop)) S.shops.set(U.shop, []);
       S.shops.get(U.shop).push(U);
+      // feat/laeden-leben: the unit's hours in the shared registry (OSM's, else the usual ones of its kind – assumed)
+      const d0 = U.doors[0];
+      OEFFNUNG.add(U.id, {
+        name: U.name,
+        oh: U.oh || DEFAULT_OH[U.type] || 'Mo-Sa 08:00-20:00',
+        art: 'laden',
+        typ: U.type,
+        ort: 'Schleusingen',
+        quelle: U.oh ? 'OpenStreetMap' : 'angenommen (übliche Zeiten: ' + U.type + ')',
+        x: d0 ? d0.x : 0,
+        y: d0 ? d0.y : 0,
+      });
     }
   }
   function mount(sh, g) {
@@ -1661,6 +1852,7 @@ export const LINNEN = (() => {
     if (!M.mat) return;
     if (now || Math.abs(M.mat.color.r - k) > 0.004) {
       M.mat.color.setScalar(k);
+      if (M.gmat) M.gmat.color.setScalar(k);
       markDirty();
     }
     M.open = open;
@@ -1691,6 +1883,8 @@ export const LINNEN = (() => {
     }
     if (!M || !M.grid) return undefined;
     let moved = false;
+    // feat/laeden-leben: the people inside push back first (laeden/leben.js), the walls after them
+    if (S.pushFigs && S.pushFigs(p, r)) moved = true;
     const segsTest = (s2, rr) => {
       const ex = s2[2] - s2[0],
         ey = s2[3] - s2[1],
@@ -1791,7 +1985,9 @@ export const LINNEN = (() => {
           open = U ? isOpenU(U) : false,
           // from inside always (one is let out), from outside only while the shop is open – and only when its rooms stand
           ready = S.mounted.has(D.sh.id) && S.mounted.get(D.sh.id).state === 'ready',
-          want = out !== null && ready && (out < 0 || open) && P.mode === 'walk' ? 1 : 0;
+          // feat/laeden-leben: the doors open for the shop's people too (laeden/leben.js: someone comes or goes)
+          figs = ready && open && S.doorWant ? !!S.doorWant(D) : false,
+          want = (out !== null && ready && (out < 0 || open) && P.mode === 'walk') || figs ? 1 : 0;
         D.want = want;
         if (D.open !== want) {
           D.open = want > D.open ? Math.min(1, D.open + dt / 0.9) : Math.max(0, D.open - dt / 1.1);
@@ -1903,6 +2099,10 @@ export const LINNEN = (() => {
     const ua = unitAt(x, y);
     return ua ? ua.U.id : null;
   };
+  // feat/laeden-leben: the mounted shop (its rooms, segments, units with goods and spots), the raw lookup, the hours of a unit
+  S.shopM = id => S.mounted.get(id) || null;
+  S.where = (x, y) => unitAt(x, y);
+  S.openU = U => isOpenU(U);
   S.door = id => {
     const D = S.doors.find(q => q.id === id);
     return D
