@@ -158,18 +158,27 @@ Overpass (am 17.11. abends nicht erreichbar) – die Fassaden kennen dann nur di
 - `WELT_V2_LOCAL=<Ordner>`: ein hier gerechneter Satz ohne Dächer (`kacheln.py --out <Ordner> --near "E,N;E,N"`) über dem der
   Website – so sehen die Bilder aus, bevor der Workflow ihn veröffentlicht hat.
 
-### Zahlen (Chat-Rechner, SwiftShader, `hoch`, 1920 × 1080; 17.11. abends)
+### Zahlen (Chat-Rechner, SwiftShader, `hoch`, 1920 × 1080; 17.11. 21:33, `welt_orte` 26/26 in 692 s)
 
-- **Daten:** 323 Zellen, 18 422 Gebäude, 13,4 MB (+106 Zellen, +5 397 Gebäude, +3,9 MB); die größte neue Zelle `-3_11` (Erlau) 390
-  Gebäude in 280 KB; jede Datei < 0,3 MB, geholt nur in der Nähe.
-- **Hirschbach** (von der L 3247): 13 Zellen gebaut, 403 von 403 Gebäuden in 350 m um die Mitte, keins auf der gezeichneten Straße
-  (511 geprüft); ihre Meshes: 28 (Wände und Dächer je Zelle, zwei Zellen mit je einem Gebäude über der Kante), 26 600 Dreiecke, 5,3 MB
-  Geometrie; im Bild 152 Draw-Calls gegen 140 ohne die Zellen (+12, Kegel-Ausschnitt), 448 000 gegen 430 000 Dreiecke; JS-Speicher 212 MB.
-  Gebaut in Stücken von höchstens 8 ms je Bild (2 ms, solange Kacheln laden) wie alle Zellen; vom Holen bis fertig je Zelle 1–2 s
-  Wanduhr im Test (Schritte mit Pausen), die ersten in 40–70 ms. 1,5 km weiter alle 13 frei (Meshes und Daten), zurück wieder gebaut.
-- **Füße:** der Lader setzt die Wände bis 0,8 m unter den tiefsten Punkt (`zmin`) und den Boden neu, wenn er sich unter jedem siebten
-  Gebäude um mehr als 0,4 m ändert; bei 11 von 449 Gebäuden in Hirschbach lag `zmin` 0,35–0,75 m über den Kacheln (die feinere Stufe kam
-  nach dem Bauen) – innerhalb dieser 0,8 m, keine Lücke. Der Test prüft deshalb die Unterkante der Wände gegen die Kacheln.
+- **Daten:** 324 Zellen, 18 779 Gebäude, 13,6 MB (gegen V17r +107 Zellen, +5 754 Gebäude, +4,1 MB); die größte neue Zelle `9_0` mit
+  351 Gebäuden in 241 KB, die größte ergänzte `-3_11` (Erlau) 391 in 281 KB; jede Datei < 0,5 MB, geholt nur in der Nähe.
+- **Im Bild** (von der Straße, die Zellen in 700 m gebaut; JS-Speicher 254 MB an jedem Ort):
+
+  | Ort | Zellen | Gebäude in 350 m | Meshes | Dreiecke der Zellen | Geometrie | Draw-Calls (ohne Zellen) | Dreiecke im Bild (ohne) |
+  |---|---|---|---|---|---|---|---|
+  | St. Kilian | 13 | 370 | 28 | 34 144 | 6,7 MB | 123 (109) | 341 000 (314 000) |
+  | **Erlau** (am dichtesten) | 12 | 705 | 30 | 71 888 | 14,2 MB | 153 (139) | 462 000 (411 000) |
+  | Waldau | 11 | 572 | 28 | 52 684 | 10,4 MB | 85 (75) | 252 000 (222 000) |
+  | Hirschbach | 13 | 406 | 28 | 26 660 | 5,3 MB | 193 (181) | 450 000 (432 000) |
+
+  Zwei Meshes je Zelle (Wände, Dächer; vier, wo ein Gebäude über die Kante reicht); gebaut in Stücken von höchstens 8 ms je Bild (2 ms,
+  solange Kacheln laden); vom Holen bis fertig je Zelle höchstens 1 s Wanduhr im Test (Schritte mit Pausen). In Hirschbach keins auf der
+  gezeichneten Straße (514 geprüft), 1,5 km weiter alle Zellen frei (Meshes und Daten), zurück wieder gebaut.
+- **Neusetzen** (Hirschbach, von 600 m Süd in die Mitte): 6-mal eine Zelle neu gesetzt (`-5_17`, `-5_18`, `-4_17`; die feineren
+  Stufen kommen nacheinander), je 1–33 Bilder nach ihrer Kachel (0,02–0,55 s bei 60 Bildern je Sekunde), 0,29–0,71 m daneben; im ganzen
+  Lauf 87 Zellen markiert, 7 646 Gebäude geprüft, 36-mal neu gesetzt, längstens nach 50 Bildern (0,8 s).
+- **Füße:** 452 Gebäude in 400 m um Hirschbachs Mitte, keine Lücke; `zmin` höchstens 0,22 m über und 0,19 m unter den Kacheln (vorher
+  bis 0,75 m hier, bei GitHub bis 7,5 m).
 
 ## Offen
 
@@ -182,6 +191,9 @@ Overpass (am 17.11. abends nicht erreichbar) – die Fassaden kennen dann nur di
 - **Kacheln ohne Dächer** entstehen erst mit dem Workflow nach dem Zusammenführen (bis dahin liegen die gedruckten Dächer und Autos
   neben/unter den neuen Häusern im Bild); Suhls Korridor-Kacheln kopiert `kacheln.py` für `welt-test/v2/` – bringt der Suhl-Chat neue
   Luftbilder, zeigen diese ~106 Kacheln das alte, bis der Workflow wieder läuft.
+- **Grüne Streifen auf Suhls Korridor-Kacheln** in Hirschbach (von oben ein Kreuz entlang der Kachelkanten, auch ohne unsere Zellen
+  und schon im Lauf vor diesen Änderungen, `hirschbach_oben_vorher.jpg`) – der ferne Boden unter den Kacheln scheint an den Kanten durch;
+  Sache von `welt/welt.js`/Suhl, hier nicht angefasst.
 - **Zella-Mehlis** (Rand von Suhls Kacheln, ~590 ETHOS-Gebäude, vom Rahmen der Kacheln geschnitten) bleibt flach – Sache des Suhl-Chats.
 - Im Luftbild von Hirschbach einige kleine Hütten ohne Grundriss in ETHOS und OSM – ohne Quelle für Umriss und Höhe nicht gebaut.
 - Wie in V17r: Dachformen geschätzt (LoD2-Dächer, sobald der Download des Landes geht), Carports als geschlossene Schuppen, die Schatten
@@ -210,9 +222,11 @@ Overpass (am 17.11. abends nicht erreichbar) – die Fassaden kennen dann nur di
 - `CHANGELOG`: „Die flachen Orte der Region in 3D: 5 754 Gebäude mehr – an der Landstraße nach Suhl Erlau, Hirschbach, Breitenbach,
   St. Kilian; abseits Waldau, Schwarzbach, Schleusingerneundorf, Silbach, Hinternah, Lichtenau, St. Bernhard, Henfstädt, Beinerstadt …;
   357 Gebäude, die das LoD2 noch nicht kennt, aus OpenStreetMap (die Logistikhalle nördlich von Schleusingen); Haustüren zur Dorfstraße;
-  geparkte Autos, Wohnmobile und Anhänger in Hirschbach, Erlau, Breitenbach und Waldau; die Häuser der alten Zellen sehen aus wie zuvor.“
+  geparkte Autos, Wohnmobile und Anhänger in Hirschbach, Erlau, Breitenbach und Waldau; die Häuser der alten Zellen sehen aus wie zuvor;
+  kommt der feinere Boden, setzen sich die Häuser sofort neu darauf (keine schwebenden Häuser mehr in engen Tälern wie Hirschbach).“
 - `ARCHITECTURE` (Kachelwelt/`GEB.Z`): die Zellen decken jetzt alle Kacheln, auf denen man fährt (ohne die Stadt Suhl); Feld `o` je
-  Gebäude (`suhl`/`welt`, die Stufe von `welt-orte`), `order` im Index; `DINGE` liest `dinge/orte.json`.
+  Gebäude (`suhl`/`welt`/`osm`, die Stufe von `welt-orte`), `order` im Index; `DINGE` liest `dinge/orte.json`; der Lader setzt eine
+  Zelle neu, sobald `WELT.visible` eine feinere Kachel darunter zeigt (`GEB.Z.rs`: fällige Zellen `due`, Zähler, `log` der letzten 40).
 - `PARALLEL`: Zeile `welt-orte`; **an den Suhl-Chat:** Hirschbach, Erlau-Nord und die Höfe an der Strecke stehen jetzt auf euren
   Korridor-Kacheln (ETHOS-Zellen, keine in eurem Gemeindegebiet); `kacheln.py` legt für diese Kacheln Fassungen ohne Dächer in
   `welt-test/v2/` (nur dort, wo unsere Gebäude stehen); Zella-Mehlis am Rand eurer Kacheln bleibt euch.
