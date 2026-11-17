@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""feat/schleusingen-ansicht: the facade records → the looks per building that FASSADE (viz3/src/fassade/fassade.js, feat/gebaeude) applies
-as the town is built – the data file fassade/ansicht.json of an extra: { "v": 1, "quelle": "…", "b": { "#<i>": look } } (key '#i': a
-building of Schleusingen's town data, SCHL.bld[].i).
+"""feat/schleusingen-ansicht: the facade records → the looks per building that FASSADE (viz3/src/fassade/fassade.js, feat/gebaeude)
+applies as the town is built – the data file fassade/ansicht.json of this extra: { "v": 1, "quelle": "…", "b": { "#<i>": look } } (key
+'#i': a building of Schleusingen's town data, SCHL.bld[].i; format in docs/features/gebaeude.md, "Ansicht je Gebäude").
 
-The look holds what FASSADE reads (farbe, material, fachwerk = timber colour 0–2, laeden, rahmen, achse, dach.farbe, art 'schule') and
-two fields it does not read yet: 'schieferton' (hell, mittel, dunkel – the slate's tone; the town draws all slate blue-black) and
-'dach.material' (the roof's kind; the town keeps its own). The materials follow SALOOK (viz3/src/schleusingen-ansicht/sa_look.js):
-  klinker → plaster in the brick's colour (style 9 falls into the facade shader's barn branch and would be drawn as boards),
-  verkleidung (light or coloured shingles) → plaster in their colour (slate is drawn blue-black),
-  *_og → the ground floor's colour (the upper floors are slate or half-timbering), fachwerk_giebel and stein → plaster.
+FASSADE loads gebaeude's own small look file (gebaeude/ansicht.json) first and this one over it key by key – a key here replaces that
+look as a whole, so its fields (storeys, a flat roof …) are taken over here first and the street-view values laid over them.
+
+The materials as FASSADE names them, with three choices of ours:
+  klinker → 'putz' in the brick's colour (style 9 falls into the facade shader's barn branch and would be drawn as boards),
+  verkleidung (light or coloured shingles) and schiefer → slate in the colour read off the view (schieferTon 3),
+  *_og → the ground floor's colour (the upper floors are slate in its tone or half-timbering in its timber's tone).
+art: the town's door and steps follow it (haus: a house's door and windows also where the town drew a hall); dach.form 'flach' where the
+roof was read flat.
 
   python3 tools/schleusingen-ansicht/ansicht.py [--out PATH]   (default: viz3/extra/schleusingen-ansicht/dist/fassade/ansicht.json)
 """
@@ -17,66 +20,95 @@ import json, os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SRC = os.path.join(ROOT, 'viz3', 'extra', 'schleusingen-ansicht', 'dist', 'schleusingen-ansicht', 'fassaden.json')
 OUT = os.path.join(ROOT, 'viz3', 'extra', 'schleusingen-ansicht', 'dist', 'fassade', 'ansicht.json')
-TIMBER = {'braun': 0, 'rot': 1, 'schwarz': 2}
+BASE = os.path.join(ROOT, 'viz3', 'extra', 'gebaeude', 'dist', 'gebaeude', 'ansicht.json')   # gebaeude's own looks (may be missing)
+HOLZ = {'braun': 0, 'rot': 1, 'schwarz': 2}            # fachwerkTon: dark brown, red-brown, black
+TON = {'dunkel': 0, 'hell': 1, 'mittel': 2}            # schieferTon: blue-black, silver-grey, mid grey (3: the house's colour)
 RAHMEN = {'weiss': 'weiss', 'braun': 'braun', 'gruen': 'gruen', 'grau': 'grau', 'blau': 'weiss'}
+ART = {'haus': 'haus', 'block': 'haus', 'villa': 'haus', 'geschaeft': 'haus', 'gasthaus': 'haus', 'pavillon': 'haus',
+       'halle': 'halle', 'autohaus': 'halle', 'garage': 'halle', 'schuppen': 'schuppen', 'scheune': 'scheune',
+       'kirche': 'kirche', 'schule': 'schule'}
 
 
 def look(r):
     """one record of fassaden.json → FASSADE's look"""
     m, art = r['material'], r['art']
-    L = {}
+    L = {'art': ART[art]}
     col = r['wand']
-    if m in ('putz', 'stein', 'fachwerk_giebel', 'klinker', 'verkleidung'):
+    if m in ('putz', 'klinker'):
         L['material'] = 'putz'
+    elif m == 'stein':
+        L['material'] = 'stein'
     elif m in ('putz_modern', 'glas'):
-        L['material'] = 'glatt'
+        L['material'] = 'glatt' if m == 'putz_modern' else 'glas'
         L['achse'] = 3.3
-    elif m == 'schiefer':
+    elif m in ('schiefer', 'verkleidung'):
         L['material'] = 'schiefer'
+        L['schieferTon'] = 3
     elif m == 'schiefer_og':
         L['material'] = 'schiefer-og'
+        L['schieferTon'] = TON.get(r.get('schiefer'), 0)
         col = r['eg']['farbe']
     elif m == 'schiefer_giebel':
         L['material'] = 'schiefer-giebel'
+        L['schieferTon'] = TON.get(r.get('schiefer'), 0)
     elif m == 'fachwerk':
         L['material'] = 'fachwerk'
     elif m == 'fachwerk_og':
         L['material'] = 'fachwerk-og'
         col = r['eg']['farbe']
+    elif m == 'fachwerk_giebel':
+        L['material'] = 'fachwerk-giebel'
     elif m == 'bretter':
-        L['material'] = 'holz' if art == 'scheune' else 'schuppen'
-        L['achse'] = 3.2 if art != 'scheune' else 3.0
+        L['material'] = 'schuppen' if art == 'schuppen' else 'bretter'
+        L['achse'] = 3.2
     elif m == 'blech':
-        L['material'] = 'halle'
+        L['material'] = 'blech'
         L['achse'] = 4.5
     else:
         raise ValueError(f"building {r['i']}: material {m}")
     L['farbe'] = col
-    if m in ('fachwerk', 'fachwerk_og') and r.get('fachwerk') in TIMBER:
-        L['fachwerk'] = TIMBER[r['fachwerk']]
-    if m.startswith('schiefer') and r.get('schiefer'):
-        L['schieferton'] = r['schiefer']
+    if m.startswith('fachwerk') and r.get('fachwerk') in HOLZ:
+        L['fachwerkTon'] = HOLZ[r['fachwerk']]
     fr = RAHMEN.get(r.get('rahmen'))
     if fr:
         L['rahmen'] = fr
-    if r.get('laeden'):
-        L['laeden'] = r.get('rahmen') if r.get('rahmen') in ('gruen', 'braun', 'grau') else True
-    else:
-        L['laeden'] = False
+    L['laeden'] = (r.get('rahmen') if r.get('rahmen') in ('gruen', 'braun', 'grau') else True) if r.get('laeden') else False
     d = r.get('dach') or {}
-    if d.get('farbe'):
-        L['dach'] = {'farbe': d['farbe'], 'material': d.get('material')}
+    if d.get('material'):
+        L['dach'] = {'material': d['material'], 'farbe': d['farbe']}
+        if d['material'] == 'flach':
+            L['dach']['form'] = 'flach'
     if art == 'schule':
-        L['art'] = 'schule'   # FASSADE: a school of our time (smooth, wide bays 3.6 m, light glass door, no shutters)
-        L.pop('achse', None)
+        L.pop('achse', None)   # FASSADE: a school of our time (smooth, wide bays 3.6 m, light glass door, no shutters)
     return L
 
 
-def build(doc):
+def build(doc, base=None):
+    """all looks; base: gebaeude's own looks ({key: look}) – their fields stay where ours say nothing"""
+    out = {}
+    for r in doc['gebaeude']:
+        k = f"#{r['i']}"
+        L = look(r)
+        b = dict((base or {}).get(k) or {})
+        if b:
+            d = dict(b.get('dach') or {}) if isinstance(b.get('dach'), dict) else {}
+            d.update(L.get('dach') or {})
+            b.update(L)
+            if d:
+                b['dach'] = d
+            L = b
+        out[k] = L
     return {'v': 1,
             'quelle': 'feat/schleusingen-ansicht: aus viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/fassaden.json '
                       '(private Ansichten von der Straße, von Hand gelesen) – tools/schleusingen-ansicht/ansicht.py',
-            'b': {f"#{r['i']}": look(r) for r in doc['gebaeude']}}
+            'b': out}
+
+
+def base_looks():
+    try:
+        return json.load(open(BASE)).get('b') or {}
+    except (OSError, ValueError):
+        return {}
 
 
 if __name__ == '__main__':
@@ -84,7 +116,7 @@ if __name__ == '__main__':
     if '--out' in sys.argv:
         out = sys.argv[sys.argv.index('--out') + 1]
     doc = json.load(open(SRC))
-    a = build(doc)
+    a = build(doc, base_looks())
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, 'w') as f:
         json.dump(a, f, ensure_ascii=False, indent=0)

@@ -19,7 +19,7 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
     `rahmen`, `besonders` (was man sieht, deutsch), `sicher` (hoch, mittel, niedrig), `ansichten` (Blickpunkte).
   - `nicht_lesbar`: Gebäude, die eine Ansicht zeigt, aber nicht lesbar (Bäume, Hecke, unscharf) – mit Grund.
   - Stand: Runde 1 (Hildburghäuser, Suhler, Ilmenauer Straße, Markt; 71 Ansichten), Königstraße (16) und Bertholdstraße (zwei
-    360°-Ansichten, je 6 Richtungen): 141 Gebäude gelesen (63 hoch, 56 mittel, 22 niedrig sicher), 30 als nicht lesbar benannt;
+    360°-Ansichten, je 6 Richtungen): 143 Gebäude gelesen (65 hoch, 55 mittel, 23 niedrig sicher), 29 als nicht lesbar benannt;
     Wahrzeichen (Rathaus, Kirche, Burg, Türme) zeichnet die Stadt selbst – sie stehen nicht in den Daten.
   - `dach.farbe_quelle`: `Ansicht` (von der Straße gesehen) oder `Luftbild 2024` (nur von oben, DOP 2024 © GDI-Th, dl-de/by-2-0 –
     Dachart von oben, Farbe die Klasse der Tabelle, nicht der blasse Farbwert des Luftbilds).
@@ -27,8 +27,8 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   hier etwa +3,0° – eingerechnet aus `manifests.json` `geoman.xf`; Bildwinkel senkrecht 90°, 1366 × 559) – für die Modellbilder des
   Tests und die Abdeckungsprüfung. Bei 360°-Ansichten (`p5_*`, `p6_*`, Augenhöhe 1,6 m) stimmen weder der angegebene Standort noch die
   eigene Nordrichtung des Fotos: Standort und Drehung sind an die Gebäude der Stadt angepasst (Ecken, Dachlinien, Straßenfluchten; bei
-  `p6` dazu der Sonnenstand und die Lage des Ladens laut OSM) – `p5` 4 m östlich und 2 m südlich, Drehung +26,5°; `p6` 28 m nordöstlich
-  am Eckeingang von Bertholdstraße 19, Drehung −63°.
+  `p6` dazu der Sonnenstand und die Lage des Ladens laut OSM) – `p5` 4 m östlich und 4 m südlich am Schaufenster, Drehung +21°;
+  `p6` 28 m nordöstlich am Eckeingang von Bertholdstraße 19, Drehung −63°.
 - **Prüfwerkzeug** `tools/schleusingen-ansicht/check.py`: Schema, jedes Gebäude existiert und liegt, wo die Daten sagen, und **Abdeckung**:
   von jedem Blickpunkt ein Strahl je Spalte – jedes Gebäude, das über ≥ 40 px innerhalb 45 m das vorderste ist, steht in `gebaeude` oder
   `nicht_lesbar`. `--list` zeigt je Blickpunkt, welche Gebäude er zeigt.

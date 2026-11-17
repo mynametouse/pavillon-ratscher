@@ -1120,9 +1120,10 @@
    "sicher": "hoch",
    "ansichten": [
     "v070",
-    "v071",
+    "p5_300",
     "p5_180",
-    "p5_300"
+    "v071",
+    "p5_240"
    ]
   },
   {
@@ -1571,9 +1572,7 @@
    "ansichten": [
     "p6_240",
     "p6_300",
-    "p5_120",
-    "p5_0",
-    "p5_60"
+    "p5_120"
    ]
   },
   {
@@ -1741,9 +1740,9 @@
     "p6_300",
     "p6_0",
     "p6_60",
+    "p5_0",
     "p5_60",
-    "w001",
-    "p5_0"
+    "w001"
    ]
   },
   {
@@ -2076,8 +2075,6 @@
    "ansichten": [
     "p6_0",
     "p6_240",
-    "p5_0",
-    "p5_120",
     "p6_300"
    ]
   },
@@ -2342,12 +2339,12 @@
    "laeden": false,
    "laden": true,
    "rahmen": "weiss",
-   "besonders": "Bertholdstraße: rosa, dreigeschossig, Laden mit dunkler Holzfront (Fleischerei); im Modell ein Grundriss für drei Häuser – westlich weiß mit Hoftor und pfirsichfarben",
-   "sicher": "mittel",
+   "besonders": "Bertholdstraße 5: rosa, dreigeschossig, Laden mit dunkler Holzfront (Fleischerei)",
+   "sicher": "hoch",
    "ansichten": [
+    "p5_240",
     "p5_300",
-    "p5_180",
-    "p5_240"
+    "p5_0"
    ]
   },
   {
@@ -2444,11 +2441,11 @@
    "besonders": "Bertholdstraße: creme-beige, dreigeschossig, braune Fensterrahmen und Holztür, Blumenkonsolen",
    "sicher": "mittel",
    "ansichten": [
-    "p5_120",
     "p5_0",
-    "p5_60",
+    "p5_120",
     "p6_240",
-    "p6_0"
+    "p6_0",
+    "p5_60"
    ]
   },
   {
@@ -2475,8 +2472,8 @@
     "p5_180",
     "p5_60",
     "p5_240",
-    "p6_240",
-    "p6_0"
+    "p5_0",
+    "p6_240"
    ]
   },
   {
@@ -2499,8 +2496,8 @@
    "besonders": "Bertholdstraße: pfirsich- bis lachsfarben, im EG das Ende der braunen Holz-Ladenfront des Nachbarn",
    "sicher": "mittel",
    "ansichten": [
-    "p5_240",
     "p5_180",
+    "p5_240",
     "p6_240",
     "p6_0"
    ]
@@ -2512,8 +2509,56 @@
    "adresse": "Bertholdstraße 3",
    "art": "haus",
    "material": "putz",
-   "wand": "#d9a596",
-   "wand_quelle": "geschätzt",
+   "wand": "#f6e3d2",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße 3: pfirsichfarben, dreigeschossig, weiße Fenster",
+   "sicher": "mittel",
+   "ansichten": [
+    "p5_300",
+    "p5_180",
+    "p5_240"
+   ]
+  },
+  {
+   "i": 512,
+   "x": -1006.8,
+   "y": 1263.1,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#f9f5e8",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße: weiß, zweigeschossig, großes Holztor zum Hof",
+   "sicher": "mittel",
+   "ansichten": [
+    "p5_300",
+    "p5_180",
+    "p5_240"
+   ]
+  },
+  {
+   "i": 513,
+   "x": -1015.1,
+   "y": 1259.3,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e2c7c3",
+   "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
     "farbe": "#7c3127",
@@ -2553,6 +2598,7 @@
     "p6_120",
     "p6_240",
     "p6_180",
+    "p5_120",
     "p5_0",
     "p5_60"
    ]
@@ -2652,9 +2698,9 @@
     "p6_300",
     "p6_180",
     "p6_240",
+    "p5_120",
     "p5_0",
-    "p5_60",
-    "p5_120"
+    "p5_60"
    ]
   },
   {
@@ -3547,10 +3593,6 @@
   {
    "i": 439,
    "warum": "Bäume"
-  },
-  {
-   "i": 512,
-   "warum": "nur klein in der Ferne"
   },
   {
    "i": 613,

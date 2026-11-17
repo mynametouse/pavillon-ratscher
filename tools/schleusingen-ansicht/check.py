@@ -131,7 +131,7 @@ def main(argv):
     if os.path.exists(ap):
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         import ansicht
-        if json.load(open(ap)) != json.loads(json.dumps(ansicht.build(doc), ensure_ascii=False)):
+        if json.load(open(ap)) != json.loads(json.dumps(ansicht.build(doc, ansicht.base_looks()), ensure_ascii=False)):
             errs.append('dist/fassade/ansicht.json is not made from this fassaden.json – run tools/schleusingen-ansicht/ansicht.py')
     sh = shown(stadt, views)
     need = {}
