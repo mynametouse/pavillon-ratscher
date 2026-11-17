@@ -174,7 +174,8 @@ ganz ohne Fenster (alle Wände gedeckt) und eine Wand von 8,8 m.
     sie beim Start (fehlt sie, gilt nichts). Format: `{ "v": 1, "quelle": "…", "b": { "<Schlüssel>": { …Ansicht… } } }`.
   - **Schlüssel**: `"#236"` (ein Gebäude der Altstadtdaten, Index wie `SCHL.bld[].i`, für `SINNEN` 900000 + i), eine Adresse
     (`"Markt 12"` – die Häuser mit dieser Adresse), eine ETHOS-Nummer (`"DEG_…"`, die Gebäude von `gebaeude/gebaeude.js` am Stadtrand und an
-    den Strecken), `"@x,y"` (Modellmeter: das Gebäude, das dort steht – am einfachsten für Punkte aus einer Straßenansicht).
+    den Strecken), `"ratscher:<id>"` (ein Haus des Dorfs, Nummer wie `VILLAGE.byId` und `FASSADE.eingang`), `"@x,y"` (Modellmeter: das
+    Gebäude, das dort steht – am einfachsten für Punkte aus einer Straßenansicht).
   - **Ansicht** (alles freiwillig):
     - `art`: `haus` (Haus statt Halle/Schuppen: Fenster und Tür eines Hauses), `halle`, `scheune`, `schuppen`, `kirche` (Bruchstein aus
       Sandstein, schlichte Rahmen, Eichentür – Rundbogenfenster kann der Shader nicht), `schule` (Schule von heute: glatt, hell, weite
@@ -196,11 +197,12 @@ ganz ohne Fenster (alle Wände gedeckt) und eine Wand von 8,8 m.
   - **An den Chat von `schleusingen-ansicht`** (PARALLEL 18:37, „sagt, was euch lieber ist“): lieber über `FASSADE`, ohne Zeile in
     `welt/schleusingen.js` – entweder eure Werte in diesem Format als `viz3/extra/schleusingen-ansicht/dist/fassade/ansicht.json`
     (Schlüssel `"#<i>"`), oder euer Modul `SAFASS` ruft beim Laden je Gebäude `FASSADE.ansicht('#' + i, SAFASS.look(…))` (vor dem Bau der
-    Stadt; das Modul in `modules.txt` nach `fassade/fassade.js`). Für Ratschers Häuser (`VILLAGE`) gibt es den Weg noch nicht – die
-    Dorf-Häuser baut `world/village.js` (gemeinsam); dafür bräuchte es einen Haken dort oder ein Umfärben der Wände wie bei ETHOS.
-  - Die Altstadt nimmt die Ansicht vor dem Bau in ihren Stil (`welt/schleusingen.js` `styleOf` danach), die ETHOS-Gebäude bekommen sie auf
-    ihre Wände gemalt, sobald ihre Zelle steht (Farbe, Material, Läden, Rahmen, Tür – Dach, Achsen und Türbreite bleiben, wie
-    `gebaeude.js` sie baut). Dachform und Höhe kommen weiter aus den Daten.
+    Stadt; das Modul in `modules.txt` nach `fassade/fassade.js`). Ratschers Häuser (`VILLAGE`, `"ratscher:<id>"` oder `"@x,y"`) bekommen die
+    Ansicht wie die ETHOS-Gebäude auf ihre Wände gemalt (Farbe, Material, Läden, Rahmen, Tür, Töne), wenn `FASSADE` das Dorf korrigiert
+    (die Datei ist dann geladen) – im Browser noch nicht mit echten Werten geprüft (es gibt noch keine).
+  - Die Altstadt nimmt die Ansicht vor dem Bau in ihren Stil (`welt/schleusingen.js` `styleOf` danach, Geschosse und Flachdach in ihre
+    Geometrie), die ETHOS-Gebäude und Ratschers Häuser bekommen sie auf ihre Wände gemalt, sobald sie stehen (Farbe, Material, Läden,
+    Rahmen, Tür, Töne – Dach, Achsen, Türbreite und Höhe bleiben, wie `gebaeude.js` und `world/village.js` sie bauen).
 - **Die drei Funde von `schleusingen-ansicht`**: (1) der graue Block ohne Fassade am Markt (von der Südost-Ecke nach Westen) war ein
   ETHOS-„Turm“ – weg (siehe oben, Bild `schleusingen_markt_suedost.jpg`). (2) Die Wohnblöcke an der Hildburghäuser Straße (Nr. 13/15:
   Altstadtdaten `#236`; Nr. 17–28 sind ETHOS-Gebäude außerhalb der Altstadtdaten): eine Regel für die Wohnblöcke außerhalb der Altstadt

@@ -134,6 +134,7 @@ export const FASSADE = (() => {
     if (!b || (!LOOK.key.size && !LOOK.at.length)) return null;
     let L = null;
     if (b.eid && LOOK.key.has(b.eid)) L = LOOK.key.get(b.eid);
+    else if (b.vid !== undefined && LOOK.key.has('ratscher:' + b.vid)) L = LOOK.key.get('ratscher:' + b.vid);
     else if (b.i !== undefined && LOOK.key.has('#' + b.i)) L = LOOK.key.get('#' + b.i);
     else if (b.a && b.k === 0 && LOOK.key.has(b.a)) L = LOOK.key.get(b.a);
     if (!L && b.f)
@@ -796,6 +797,23 @@ export const FASSADE = (() => {
             GEB.meshes.filter(m => m.material === RATSCHER.bld[0].material)
           )
         : 0;
+    // and of the village's houses ('ratscher:<id>' as VILLAGE.byId, or '@x,y'), onto the village's walls
+    let nLookV = 0;
+    if ((LOOK.key.size || LOOK.at.length) && RATSCHER.bld[0]) {
+      const sh = VILLAGE.bld
+        .filter(b => b.st && b.fac && b.fac.length)
+        .map(b => ({
+          b,
+          id: b.id,
+          vid: b.id,
+          typ: b.typ,
+          st: b.st,
+          k: 0,
+          f: [].concat(...b.fac.map(q => [q.ax, q.ay])),
+        }));
+      nLookV = gebLooks(sh, [RATSCHER.bld[0]]);
+      for (const q of sh) q.b.st = q.st;
+    }
     const t0 = performance.now(),
       g = RATSCHER.bld[0] && RATSCHER.bld[0].geometry,
       aD = g && g.attributes.aD;
@@ -810,7 +828,7 @@ export const FASSADE = (() => {
             aD.array[(q.q * 4 + v) * 4 + 1] = w;
           }
       };
-    S.n = { tuer: 0, tuerVerlegt: 0, hallen: 0, fenster: 0, ansicht: nLook };
+    S.n = { tuer: 0, tuerVerlegt: 0, hallen: 0, fenster: 0, ansicht: nLook + nLookV };
     KW = VPROPS.kit ? VPROPS.kit() : null;
     KG = VPROPS.kit ? VPROPS.kit() : null;
     for (const r of R) {
@@ -909,7 +927,7 @@ export const FASSADE = (() => {
       const o0 = b.st,
         o = S.ansichtStil(o0, L);
       b.st = o;
-      by.set(4 * b.id + (o0.typ || 0), { o0, o });
+      by.set(4 * b.id + (b.typ !== undefined ? b.typ : o0.typ || 0), { o0, o });
     }
     if (!by.size) return 0;
     const near = (a, i, c) => Math.abs(a[i] - c[0]) + Math.abs(a[i + 1] - c[1]) + Math.abs(a[i + 2] - c[2]) < 2e-3;
