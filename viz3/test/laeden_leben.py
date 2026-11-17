@@ -6,13 +6,13 @@
 #   kaufen  taking things from the shelves (the action button names the product and its price), paying at an open till (the cashier
 #           scans, the receipt, the wallet goes down, the things are in the inventory), the inventory panel; the bakery's counter
 #   obi     OBI: the tills, the information desk, the wood cutting, customers; timber and tools to buy
-#   oeffentlich  the registry OEFFNUNG: the public buildings with their hours (the town hall, the museum, the church …)
+#   oeffentlich  the town hall's Bürgerbüro: the clerk at its hours, the options at the counter, closed on Wednesday; the registry
 # Pictures in out/laeden_leben/. The world tiles come from the published site (as viz3/test/laeden.py).
 #   python3 viz3/test/laeden_leben.py 9045 [sections]   (default markt,kaufen)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'markt,kaufen').split(',') if s]
+want = [s for s in (sys.argv[2] if len(sys.argv) > 2 else 'markt,kaufen,oeffentlich').split(',') if s]
 ck = lib.Checks('laeden_leben')
 OUT = lib.out('laeden_leben')
 DATA = json.load(open(os.path.join(lib.ROOT, 'viz3', 'extra', 'laeden', 'dist', 'laeden', 'laeden.json')))
@@ -171,17 +171,22 @@ with lib.browser() as b:
             pic(f"markt_samstag_{k}")
         KS = J("LLEBEN.kassen()")
         ko = [q for q in KS if q['open']]
+        ck('each open till: its pay place across the counter from the cashier (1.6–1.9 m)', ko and all(1.6 < math.hypot(q['z'][0] - q['seat'][0], q['z'][1] - q['seat'][1]) < 1.9 for q in KS),
+           json.dumps(KS)[:300])
         if ko:
             q = ko[0]
             sx, sy = q['seat']
             zx, zy = q['z']
-            # from the store's side towards the till: behind the queue, looking at the cashier
+            # from the customers' aisle, a step back from the pay place, looking across the counter at the cashier
             vx, vy = zx - sx, zy - sy
             L0 = math.hypot(vx, vy) or 1
-            px, py = zx + vx / L0 * 2.2, zy + vy / L0 * 2.2
+            px, py = zx + vx / L0 * 0.9, zy + vy / L0 * 0.9
             yaw = (math.degrees(math.atan2(sx - px, sy - py)) + 360) % 360
-            look(px, py, yaw, -12, 70)
+            look(px, py, yaw, -14, 70)
             pic('markt_kasse')
+        # the printed goods: the atlas made, every section has its printed fronts
+        at = J("({ w: WBILD.status(), m: LINNEN.meshesOf('edeka').filter(m => /waren$/.test(m.name)).length })")
+        ck('the goods are printed packages (one atlas, a printed mesh per section)', at['w']['made'] and at['m'] >= 1, json.dumps(at))
         tst = J("({ l: LLEBEN.status(), q: LLEBEN.kassen() })")
         print('tills', json.dumps(tst)[:800], flush=True)
         if 'markt' in want:
@@ -277,5 +282,74 @@ with lib.browser() as b:
             stand(md['x'] + md['nx'] * 8, md['y'] + md['ny'] * 8, yi)
             steps(1)
             ck('going out with an unpaid basket: the things stay in the shop', J("LKAUF.status().korb") == 0, json.dumps(J("LKAUF.status()"))[:200])
+    if 'kaufen' in want:
+        # the bakery at Lidl (Café & Backshop Drei Ähren): the baker behind the counter, ordering rolls
+        bsh = SHOP['lidl']
+        bd = next(d for d in bsh['doors'] if 'Drei' in (d.get('who') or ''))
+        set_time(2, 9, 0)
+        stand(bd['x'] + bd['nx'] * 25, bd['y'] + bd['ny'] * 25, yaw_in(bd))
+        settle()
+        steps(3)
+        stand(bd['x'] - bd['nx'] * 1.5, bd['y'] - bd['ny'] * 1.5, yaw_in(bd))
+        wait_people(2, 90)
+        L = J("LLEBEN.leute()")
+        ck('the bakery (Tuesday 9:00): someone behind the counter', any(p['art'] == 'theke' for p in L), json.dumps(L)[:300])
+        T = J("LLEBEN.leute().find(p => p.art === 'theke') || null")
+        spot = J("(() => { const L = LLEBEN.leute().find(p => p.art === 'theke'); if (!L) return null; for (let r = 0.6; r < 4; r += 0.2) for (let a = 0; a < 6.28; a += 0.3) { const x = L.x + Math.sin(a) * r, y = L.y + Math.cos(a) * r, at = LLEBEN.kasseAt(x, y, 0.4); if (at && at.theke) return [at.K.k.x, at.K.k.y, L.x, L.y]; } return null; })()")
+        if spot:
+            kx, ky, sx, sy = spot
+            yaw = (math.degrees(math.atan2(sx - kx, sy - ky)) + 360) % 360
+            E(f"GAME.setView3(false, true); GAME.view({kx}, {ky}, KERN.ground({kx}, {ky}) + 1.65, {yaw}, -12, 70)")
+            r = J("GAME.step(0.3)")
+            lbl = r.get('best') or ''
+            ck('at the counter the button offers to order', 'Theke' in lbl, lbl)
+            E("KERN.acts().find(a => a.id === 'laeden:theke').run()")
+            steps(0.3)
+            E("document.querySelector('#kassepanel [data-add=broetchen]') && document.querySelector('#kassepanel [data-add=broetchen]').click()")
+            E("document.querySelector('#kassepanel [data-add=broetchen]') && document.querySelector('#kassepanel [data-add=broetchen]').click()")
+            E("document.querySelector('#kassepanel [data-add=pfannkuchen]') && document.querySelector('#kassepanel [data-add=pfannkuchen]').click()")
+            page_pic('baecker_theke')
+            n0 = J("INVENTAR.anzahl('broetchen')")
+            E("document.querySelector('#kassepanel [data-k=pay]') && document.querySelector('#kassepanel [data-k=pay]').click()")
+            steps(0.3)
+            ck('ordering at the bakery: two rolls and a doughnut paid, in the inventory', J("INVENTAR.anzahl('broetchen')") == n0 + 2 and J("INVENTAR.anzahl('pfannkuchen')") >= 1,
+               json.dumps(J("INVENTAR.list()"))[:300])
+            E("LKAUF.close()")
+        else:
+            ck('the bakery counter found', False, json.dumps(T)[:200])
+    if 'oeffentlich' in want:
+        # the town hall's Bürgerbüro: the clerk at the counter on a Tuesday morning, the options; closed on Wednesday
+        set_time(2, 10, 0)
+        R = J("(() => { const R = SCHL.rathaus; return R && R.counter ? { c: R.counter, k: R.clerk, z: R.floor } : null; })()")
+        ck('the town hall stands (its counter)', R is not None, json.dumps(R))
+        if R:
+            cx, cy = R['c']
+            kx, ky = R['k']
+            yaw = (math.degrees(math.atan2(kx - cx, ky - cy)) + 360) % 360
+            E(f"GAME.setView3(false, true); GAME.view({cx}, {cy}, {R['z']} + 1.65, {yaw}, -8, 70)")
+            for i in range(40):
+                steps(0.5)
+                if J("OEFFENTLICH.status().post"):
+                    break
+                time.sleep(0.2)
+            st = J("OEFFENTLICH.status()")
+            ck('Tuesday 10:00: the clerk is at the counter', st['post'] is True, json.dumps(st))
+            lbl = J("GAME.step(0.3)").get('best') or ''
+            ck('at the counter: „Bürgerbüro: am Schalter fragen“', 'Schalter' in lbl, lbl)
+            E("OEFFENTLICH.oeffnen('rathaus')")
+            steps(0.3)
+            page_pic('rathaus_schalter')
+            E("document.querySelector('#kassepanel [data-k=saecke]') && document.querySelector('#kassepanel [data-k=saecke]').click()")
+            ck('yellow bags from the counter (in the inventory)', J("INVENTAR.anzahl('gelbesaecke')") >= 1, json.dumps(J("INVENTAR.list()"))[:200])
+            E("LKAUF.close()")
+            look(cx, cy, yaw, -8, 70)
+            pic('rathaus_buergerbuero')
+            set_time(3, 10, 0)
+            steps(2)
+            lbl = J("GAME.step(0.3)").get('best') or ''
+            st = J("OEFFENTLICH.status()")
+            ck('Wednesday: the Bürgerbüro is closed (the label says so, nobody at the counter)', 'geschlossen' in lbl and not st['post'], f"{lbl} {json.dumps(st)}")
+        o = J("OEFFENTLICH.orte()")
+        ck('the public buildings in the registry with their hours', len(o) >= 7 and all(q['zeiten'] for q in o), json.dumps(o)[:400])
     ck.errors(errs)
     ck.done()

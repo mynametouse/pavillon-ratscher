@@ -128,6 +128,7 @@ export const INVENTAR = (() => {
     fliesen: '#cfc8bb',
     baustoffe: '#bdbab3',
     holz: '#d2b07a',
+    papier: '#e8e2d0',
   };
   const PICS = new Map();
   function bild(id) {

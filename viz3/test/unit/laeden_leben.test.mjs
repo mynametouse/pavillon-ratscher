@@ -87,12 +87,23 @@ test('goods: every block on the shelves of the supermarkets, the discounters, th
     assert.ok(seen.size >= (id === 'lidlbaecker' ? 2 : 12), id + ': ' + seen.size + ' different products');
   }
   for (const w of WAREN.list()) {
-    assert.ok(Number.isInteger(w.preis) && w.preis > 0 && w.preis < 100000, w.id + ' price');
+    assert.ok(Number.isInteger(w.preis) && w.preis >= (w.kinds.length ? 1 : 0) && w.preis < 100000, w.id + ' price');
     assert.ok(w.kg > 0 && w.kg < 40, w.id + ' weight');
     assert.ok(WAREN.CAT[w.cat], w.id + ' department');
   }
   // useful things are there: timber, screws, paint and tools for the workshop and the garden, a torch and a crowbar for the mode
-  for (const id of ['latte', 'brett', 'schrauben', 'lasur', 'hammer', 'blumenerde', 'lampe', 'brecheisen', 'broetchen', 'milch'])
+  for (const id of [
+    'latte',
+    'brett',
+    'schrauben',
+    'lasur',
+    'hammer',
+    'blumenerde',
+    'lampe',
+    'brecheisen',
+    'broetchen',
+    'milch',
+  ])
     assert.ok(WAREN.get(id), id);
   assert.equal(WAREN.euro(119), '1,19 €');
   assert.equal(WAREN.euro(5), '0,05 €');
@@ -139,7 +150,8 @@ test('ways through EDEKA: from the door to the shelves, to every till, to the ba
     const p = LLPLAN.pfad(G, ix, iy, s.x, s.y);
     if (p) {
       reached++;
-      for (let k = 1; k < p.length; k++) assert.ok(LLPLAN.sicht(G, p[k - 1][0], p[k - 1][1], p[k][0], p[k][1]) || k === 1);
+      for (let k = 1; k < p.length; k++)
+        assert.ok(LLPLAN.sicht(G, p[k - 1][0], p[k - 1][1], p[k][0], p[k][1]) || k === 1);
     }
   }
   assert.ok(reached / shelves.length > 0.9, 'shelves reached ' + reached + ' of ' + shelves.length);
@@ -152,6 +164,14 @@ test('ways through EDEKA: from the door to the shelves, to every till, to the ba
     assert.ok(LLPLAN.frei(G, z.x, z.y) || LLPLAN.nahFrei(G, z.x, z.y, 0.45), 'pay place free');
     assert.ok(LLPLAN.pfad(G, ix, iy, z.x, z.y), 'a way to the pay place');
   }
+  // each till's pay place is across its own counter (1.6–1.9 m from the cashier's seat), written right after it
+  Pl.spots.forEach((sp, j) => {
+    if (sp.k !== 'kasse') return;
+    const z = Pl.spots[j + 1];
+    assert.equal(z.k, 'zahlen');
+    const d = Math.hypot(z.x - sp.x, z.y - sp.y);
+    assert.ok(d > 1.6 && d < 1.9, 'pay place across the counter: ' + d.toFixed(2));
+  });
   // the queue starts on the store's side: farther from the door than the pay place
   for (let i = 0; i < an.length; i++) {
     const z = zahlen[i],
@@ -163,7 +183,11 @@ test('ways through EDEKA: from the door to the shelves, to every till, to the ba
 test('the wallet: free play keeps its own cents; the Grenzland mode pays in whole euros and keeps the change', async () => {
   const m = new Map();
   globalThis.window = {
-    localStorage: { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) },
+    localStorage: {
+      getItem: k => (m.has(k) ? m.get(k) : null),
+      setItem: (k, v) => m.set(k, String(v)),
+      removeItem: k => m.delete(k),
+    },
   };
   const { GELD } = await import('../../src/einkauf/geld.js?t=' + Date.now());
   assert.equal(GELD.stand(), 15000);

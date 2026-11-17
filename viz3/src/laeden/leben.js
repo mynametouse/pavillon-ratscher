@@ -278,25 +278,25 @@ export const LLEBEN = (() => {
     );
     const spots = u.spots || [],
       goods = u.goods || [];
-    const kassen = spots
-      .filter(s => s.k === 'kasse')
-      .map((s, i) => {
-        // the pay place across the counter: the nearest 'zahlen' spot, the queue's start: 'anstellen' or the farther 'ende'
-        const z = spots
-          .filter(q => q.k === 'zahlen')
-          .sort((a, b) => Math.hypot(a.x - s.x, a.y - s.y) - Math.hypot(b.x - s.x, b.y - s.y))[0];
-        let an = spots
-          .filter(q => q.k === 'anstellen')
-          .sort((a, b) => Math.hypot(a.x - s.x, a.y - s.y) - Math.hypot(b.x - s.x, b.y - s.y))[0];
-        if ((!an || Math.hypot(an.x - s.x, an.y - s.y) > 5) && z) {
-          const ends = spots.filter(q => q.k === 'ende' && Math.hypot(q.x - z.x, q.y - z.y) < 3.5),
-            d0 = doors[0];
-          if (ends.length && d0)
-            an = ends.sort((a, b) => Math.hypot(b.x - d0.x, b.y - d0.y) - Math.hypot(a.x - d0.x, a.y - d0.y))[0];
-        }
-        return { i: i + 1, s, z, an, staff: null, queue: [], payer: null, open: false };
-      })
-      .filter(k => k.z);
+    // the tills: a 'kasse' spot and the 'zahlen', 'anstellen' or two 'ende' spots its layout wrote right after it (pairing by nearness
+    // would take the neighbour's pay place: the checkouts stand 2.7 m apart, a counter is 1.8 m across)
+    const kassen = [];
+    spots.forEach((s, j) => {
+      if (s.k !== 'kasse') return;
+      let z = null,
+        an = null;
+      const ends = [];
+      for (let k = j + 1; k < spots.length && spots[k].k !== 'kasse'; k++) {
+        const q = spots[k];
+        if (q.k === 'zahlen' && !z) z = q;
+        else if (q.k === 'anstellen' && !an) an = q;
+        else if (q.k === 'ende') ends.push(q);
+      }
+      const d0 = doors[0];
+      if (!an && ends.length && d0)
+        an = ends.sort((a, b) => Math.hypot(b.x - d0.x, b.y - d0.y) - Math.hypot(a.x - d0.x, a.y - d0.y))[0];
+      if (z) kassen.push({ i: kassen.length + 1, s, z, an, staff: null, queue: [], payer: null, open: false });
+    });
     const theken = spots
       .filter(s => s.k === 'theke')
       .map(s => {
@@ -325,6 +325,7 @@ export const LLEBEN = (() => {
   const WAGEN_D = 0.95;
   // the arms forward and down to the handle (over the walk: as npc/npc_real.js lays its work poses over the clips)
   function pushArms(p) {
+    if (!p.hands) return;
     const B = p.f.bones || {};
     p.f.model.getWorldQuaternion(_q).invert();
     for (const sd of ['Left', 'Right']) {
@@ -332,6 +333,22 @@ export const LLEBEN = (() => {
       boneTurn(p.sv2, _q, B[sd + 'Arm'], 0, 1, 0, (sd === 'Left' ? -1 : 1) * 0.28);
       boneTurn(p.sv2, _q, B[sd + 'ForeArm'], 1, 0, 0, -0.72);
     }
+  }
+  // the trolley: pushed in front while its customer walks, left in the aisle while one looks at a shelf or pays
+  const PUSH = new Set(['rein', 'geht', 'raus', 'zurKasse', 'wartet']);
+  function cart(p, dt) {
+    const walking = PUSH.has(p.st) && (p.v > 0.05 || p.st === 'wartet');
+    if (walking) {
+      const tx = p.x + Math.sin(p.hd) * WAGEN_D,
+        ty = p.y + Math.cos(p.hd) * WAGEN_D,
+        d = Math.hypot(tx - p.wx, ty - p.wy),
+        k = d > 1.2 ? 1 : Math.min(1, dt * 7);
+      p.wx += (tx - p.wx) * k;
+      p.wy += (ty - p.wy) * k;
+      p.whd += angD(p.whd, p.hd) * k;
+    }
+    p.hands =
+      walking && Math.hypot(p.x + Math.sin(p.hd) * WAGEN_D - p.wx, p.y + Math.cos(p.hd) * WAGEN_D - p.wy) < 0.35;
   }
   // ---- placing a person ----
   function place(p) {
@@ -351,10 +368,8 @@ export const LLEBEN = (() => {
     f.g.position.copy(V(x, y, z));
     f.g.rotation.y = -p.hd;
     if (p.wagen) {
-      const wx = p.x + Math.sin(p.hd) * WAGEN_D,
-        wy = p.y + Math.cos(p.hd) * WAGEN_D;
-      p.wagen.position.copy(V(wx, wy, zf(wx, wy) + 0.005));
-      p.wagen.rotation.y = -p.hd;
+      p.wagen.position.copy(V(p.wx, p.wy, zf(p.wx, p.wy) + 0.005));
+      p.wagen.rotation.y = -p.whd;
     }
     if (p.cage) {
       const cx = p.x + Math.sin(p.hd + 1.9) * 0.75,
@@ -409,6 +424,15 @@ export const LLEBEN = (() => {
           scene.add(p.wagen);
           p.sv2 = new Map();
           p.f.after = () => pushArms(p);
+          p.whd = p.hd;
+          p.wx = p.x + Math.sin(p.hd) * WAGEN_D;
+          p.wy = p.y + Math.cos(p.hd) * WAGEN_D;
+          // standing at a shelf from the start: the trolley beside, in the aisle
+          if (p.st === 'schaut') {
+            p.whd = p.hd + Math.PI / 2;
+            p.wx = p.x - Math.sin(p.hd) * 0.55 + Math.sin(p.whd) * 0.3;
+            p.wy = p.y - Math.cos(p.hd) * 0.55 + Math.cos(p.whd) * 0.3;
+          }
         }
       }
       p.speed = 0.82 + Math.random() * 0.25 - (FIGS[fi].age > 60 ? 0.18 : 0);
@@ -514,8 +538,9 @@ export const LLEBEN = (() => {
           { x: R.zuschnitt.x, y: R.zuschnitt.y, hd: Math.atan2(R.zuschnitt.dir[0], R.zuschnitt.dir[1]) },
         ]);
     }
-    // half an hour before opening and in the quiet hours someone fills the shelves
-    if ((B.auff || (soon(R) && (R.typ === 'supermarkt' || R.typ === 'discounter'))) && R.shelves.length) {
+    // half an hour before opening and in the quiet hours someone fills the shelves (not on a closed day)
+    const markt = R.typ === 'supermarkt' || R.typ === 'discounter';
+    if (((open && B.auff) || (!open && soon(R) && markt)) && R.shelves.length) {
       const sp = R.shelves[Math.floor(Math.random() * R.shelves.length)];
       jobs.push(['auff', { x: sp.x, y: sp.y, hd: sp.hd, st: 'fuellt', t: 3 }]);
     }
@@ -804,6 +829,94 @@ export const LLEBEN = (() => {
       }
     }
   }
+  // ---- posts: one person at a public building's counter or desk while it is open and the walker is near (einkauf/oeffentlich.js) ----
+  //   LLEBEN.posten({ id, x, y, hd (rad, compass), z: () => floor, sit: seat's top | 0, offen: () => bool, fig: 'vk_f02', near: 25,
+  //   innen: true (the borrowed lamp lights it), arbeit: 'interactLoop' | null })
+  const POSTS = [];
+  S.posts = POSTS;
+  S.posten = def => {
+    const q = Object.assign({ near: 25, sit: 0, innen: true, fig: 'vk_f02', arbeit: null }, def, {
+      p: null,
+      loading: false,
+      t: 0,
+    });
+    const i = POSTS.findIndex(o => o.id === q.id);
+    if (i >= 0) {
+      dropPost(POSTS[i]);
+      POSTS.splice(i, 1, q);
+    } else POSTS.push(q);
+    return q;
+  };
+  function dropPost(q) {
+    if (!q.p) return;
+    scene.remove(q.p.f.g);
+    dropBody(q.p.bd);
+    q.p = null;
+    for (const b of [...BASES.values()]) if (b.users <= 0 && b.gl && !S.M) freeBase(b);
+    markDirty();
+  }
+  async function makePost(q) {
+    q.loading = true;
+    const fi = Math.max(
+      0,
+      FIGS.findIndex(F => F.f === q.fig)
+    );
+    try {
+      const bd = await body(fi);
+      q.loading = false;
+      const zf = typeof q.z === 'function' ? q.z() : q.z || 0;
+      const p = { f: bd.f, bd, fi, x: q.x, y: q.y, hd: q.hd || 0, sit: q.sit, v: 0, acc: 0, art: 'posten' };
+      if (q.sit) p.f.mode = 'sit';
+      let x = p.x,
+        y = p.y,
+        z = zf;
+      if (p.sit) {
+        z += p.sit - (p.f.hipH || 0.9) + 0.1;
+        x -= Math.sin(p.hd) * 0.06;
+        y -= Math.cos(p.hd) * 0.06;
+      }
+      p.f.g.position.copy(V(x, y, z));
+      p.f.g.rotation.y = -p.hd;
+      scene.add(p.f.g);
+      p.f.anim(0.01, 0);
+      q.p = p;
+      markDirty();
+    } catch (e) {
+      q.loading = false;
+      S.err = 'post ' + q.id + ': ' + String((e && e.message) || e).slice(0, 100);
+    }
+  }
+  function postTick(dt) {
+    for (const q of POSTS) {
+      let want = false;
+      try {
+        want = Math.hypot(P.x - q.x, P.y - q.y) < q.near && !!q.offen();
+      } catch (e) {
+        want = false;
+      }
+      if (want && !q.p && !q.loading) makePost(q);
+      else if (!want && q.p && Math.hypot(P.x - q.x, P.y - q.y) > q.near + 8) dropPost(q);
+      else if (!want && q.p && !q.offen()) dropPost(q);
+      const p = q.p;
+      if (!p) continue;
+      // at work now and then (typing, sorting, the till)
+      q.t -= dt;
+      if (q.t <= 0) {
+        p.f.over = p.f.over || !q.arbeit ? null : { k: q.arbeit, w: 1 };
+        q.t = 3 + Math.random() * 5;
+      }
+      p.f.walker.talking = !!q.redet;
+      p.f.speak = !!q.redet && !!p.sit;
+      p.acc += dt;
+      p.f.g.getWorldPosition(_v);
+      const d2 = _v.distanceToSquared(cam.position);
+      if (d2 < 22 * 22 || p.acc > 0.25) {
+        p.f.anim(p.acc, 0);
+        p.acc = 0;
+        if (d2 < 30 * 30) markDirty();
+      }
+    }
+  }
   // ---- the round ----
   let acc = 0,
     arriveT = 4,
@@ -812,6 +925,12 @@ export const LLEBEN = (() => {
   const BUSY = { arrive: false };
   function tick(dt) {
     if (!S.on) return;
+    if (POSTS.length)
+      try {
+        postTick(dt);
+      } catch (e) {
+        S.err = 'posts: ' + String((e && e.message) || e).slice(0, 120);
+      }
     acc += dt;
     if (acc >= 0.5) {
       acc = 0;
@@ -825,7 +944,7 @@ export const LLEBEN = (() => {
         }
       } else lostT = 0;
     }
-    if (!S.M) return lightAsk(false);
+    if (!S.M) return lightAsk(POSTS.some(q => q.p && q.innen && Math.hypot(P.x - q.x, P.y - q.y) < 14));
     // a unit that opens while the walker is there gets its staff
     staffT -= dt;
     if (staffT <= 0) {
@@ -864,6 +983,7 @@ export const LLEBEN = (() => {
           }
         }
         if (S.people.includes(p)) {
+          if (p.wagen) cart(p, dt);
           place(p);
           // the pose: every frame near the camera, a few times a second further away
           p.f.g.getWorldPosition(_v);
@@ -927,8 +1047,8 @@ export const LLEBEN = (() => {
         moved = true;
       }
       if (p.wagen) {
-        const wx = p.x + Math.sin(p.hd) * WAGEN_D,
-          wy = p.y + Math.cos(p.hd) * WAGEN_D,
+        const wx = p.wx,
+          wy = p.wy,
           ex = pt[0] - wx,
           ey = pt[1] - wy,
           e = Math.hypot(ex, ey);
@@ -945,11 +1065,11 @@ export const LLEBEN = (() => {
   let lampWant = false;
   const _lp = new THREE.Vector3();
   function lightAsk(v) {
-    lampWant = v && !!S.M && !!LINNEN.where(P.x, P.y) && P.mode === 'walk';
+    lampWant = v && P.mode === 'walk' && (S.M ? !!LINNEN.where(P.x, P.y) : true);
   }
   function lampAt(l, force) {
-    if (!l || !S.M) return;
-    const zf = S.M.zf(P.x, P.y);
+    if (!l) return;
+    const zf = S.M ? S.M.zf(P.x, P.y) : P.feet;
     _lp.set(P.x, zf + 2.6, -P.y).lerp(cam.position, 0.35);
     if (force) {
       l.color.setHex(0xfff1df);

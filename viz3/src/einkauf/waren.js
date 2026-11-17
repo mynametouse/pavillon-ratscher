@@ -116,6 +116,13 @@ export const WAREN = (() => {
     ['kantholz', 'Kantholz 60 × 60 mm, 2,5 m', 649, 4.5, 'pack', 'holz', [], 'werkstatt'],
     ['leimholz', 'Leimholzplatte Buche 18 mm, 80 × 40 cm', 1999, 3.6, 'pack', 'holz', [], 'werkstatt'],
     ['strauch', 'Strauch im Topf (Forsythie)', 1299, 6, 'heap', 'pflanzen', [], 'garten'],
+    // ---- papers and tickets of the public buildings (einkauf/oeffentlich.js) – never on a shelf ----
+    ['meldebescheinigung', 'Meldebescheinigung der Stadt Schleusingen', 1000, 0.01, 'pack', 'papier', [], 'papier'],
+    ['gelbesaecke', 'Gelbe Säcke, eine Rolle', 0, 0.3, 'pack', 'papier', [], 'haus'],
+    ['museumskarte', 'Eintrittskarte Naturhistorisches Museum', 600, 0.01, 'pack', 'papier', [], 'papier'],
+    ['turmkarte', 'Eintrittskarte Turm der Bertholdsburg', 200, 0.01, 'pack', 'papier', [], 'papier'],
+    ['buch', 'Buch aus der Stadtbibliothek', 0, 0.5, 'box', 'papier', [], 'papier'],
+    ['briefmarke', 'Briefmarke Standardbrief 0,95 €', 95, 0.01, 'pack', 'papier', [], 'papier'],
   ];
   const CAT = {
     kaffee: 'Kaffee · Tee',
@@ -151,6 +158,7 @@ export const WAREN = (() => {
     fliesen: 'Fliesen',
     baustoffe: 'Baustoffe',
     holz: 'Holz',
+    papier: 'Papiere · Karten',
   };
   // the departments of the DIY store by their boards (LIBAU.DEPT names)
   const DEPTCAT = {

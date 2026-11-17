@@ -33,8 +33,8 @@ export const LKAUF = (() => {
     const H = new Map();
     (u.goods || []).forEach((g, i) => {
       if (!g.front && g.k !== 'heap') return;
-      const cat = CAT.get(g.col) || null,
-        id = WAREN.fuer(cat, g.k, i * 7 + Math.round(g.x * 3));
+      // the product laeden/innen.js printed on this block (the same choice when it did not)
+      const id = g.ware || WAREN.fuer(CAT.get(g.col) || null, g.k, i * 7 + Math.round(g.x * 3));
       if (!id) return;
       const e = {
         id,
@@ -142,7 +142,7 @@ export const LKAUF = (() => {
       '#kassepanel[hidden]{display:none}' +
       '#kassepanel h3{display:flex;justify-content:space-between;align-items:center;margin:0;padding:12px 14px 6px;font:700 16px/1.2 var(--f-display,sans-serif)}' +
       '#kassepanel h3 button{border:0;background:transparent;color:var(--muted,#777);font:400 22px/1 var(--f-body,sans-serif);cursor:pointer}' +
-      '#kassepanel .say{padding:4px 14px 8px;font-style:italic}' +
+      '#kassepanel .say{padding:4px 14px 8px;font-style:italic;white-space:pre-wrap}' +
       '#kassepanel .bon{margin:0 14px 8px;padding:8px 10px;font:400 12px/1.4 ui-monospace,Menlo,Consolas,monospace;background:#fffdf7;border:1px dashed #c9b896;border-radius:4px;white-space:pre}' +
       '#kassepanel .wahl{display:flex;flex-direction:column;gap:4px;padding:0 14px 8px}' +
       '#kassepanel .wahl div{display:flex;align-items:center;gap:8px}' +
@@ -466,6 +466,7 @@ export const LKAUF = (() => {
     theke,
     close,
     find,
+    zeige: show,
     status: () => ({
       on: S.on,
       unit: S.unit,
