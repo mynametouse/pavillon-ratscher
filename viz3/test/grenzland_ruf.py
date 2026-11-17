@@ -166,7 +166,7 @@ with lib.browser() as b:
         # the offers: an SMS from whoever asks; then they stand in the list with when and where
         X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 17 * 60 + 25")
         n0 = E("GLSTATE.sms.length")
-        t = until("GLSTATE.sms.slice(%d).some(q => q.von === 'Manfred' || q.von === 'Backstube Schleusetal')" % n0, 90, 1.0)
+        t = until("GLSTATE.sms.slice(%d).some(q => q.von === 'Manfred' || q.von === 'Backstube Schleusetal')" % n0, 120, 1.0)
         ck('jobs: in free play the first offer comes by SMS (Friday evening: the exercise, the rolls)', t is not None, str(J("GLSTATE.sms.slice(-3)")))
         X("GLJOBS.debug.angebot('broetchen'); GLJOBS.debug.angebot('feuerwehr'); GLJOBS.debug.angebot('holz')")
         a = J("GLJOBS.angebote().map(a => a.id + ' · ' + a.wann)")

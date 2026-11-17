@@ -1496,7 +1496,8 @@ export const GLJOBS = (() => {
   const VORLAUF = { broetchen: 13 * 60, feuerwehr: 16 * 60, holz: 60 };
   const QREIHE = ['tonne', 'hund', 'paket', 'einkauf', 'chronik'];
   function anbieten() {
-    if (!frei() || kino() || S.freiT < 20 || S.angebotT > 0) return;
+    // (not while the phone is in the hand – an offer waits until it is put away – and not in the first minute of free play)
+    if (!frei() || kino() || S.freiT < 45 || S.angebotT > 0 || (GLHANDY.isOpen && GLHANDY.isOpen())) return;
     const t = CLOCK.t,
       e = eday();
     for (const id of ['feuerwehr', 'broetchen', 'holz']) {
