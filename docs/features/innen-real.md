@@ -181,12 +181,21 @@ Mehr Dreiecke vor allem durch die gerundeten Polster, Pflanzen und Stühle – i
 - Geänderte Dateien: nur meine (`haeuser/haeuser.js`, `haeuser_gast.js`, `schleusingen/si_innen.js`, `zombie/z_innen*.js`), dazu Test
   (`viz3/test/innen_real.py`, `innen_real_vergleich.py`), Extra (`viz3/extra/innen-real/tests.txt`), diese Doku. Kein neues Modul, keine
   Zeile in `modules.txt`, kein neuer Speicherschlüssel, keine neue Datei in `dist/`.
-- **Die Zombie-Nacht** baut mit demselben Baukasten: sie bekommt die gerundeten Polster, die neuen Sessel, Heizkörper (nur „nachwende“ –
-  „alt“ und „ddr“ heizen mit Öfen), Schalter, Steckdosen, Griffe, die geschlossene Treppe, die geteilten tiefen Räume, Bad in jedem Haus,
-  Spülen, Fliesenspiegel, Alltagsdinge, die Raufaser. Nicht: Innen-Palette, Zimmer-Umgebung, Schatten-Saum (nur mit `ZINNEN.mount(id, {
-  still: true })`, also im normalen Spiel) – ihre Programme und Tests bleiben, wie sie waren (`zombie_innen` in jedem Prüflauf grün).
+- **Die Zombie-Nacht** baut mit demselben Baukasten: sie bekommt die gerundeten Polster, die neuen Sessel, Stühle, Pflanzen, Bilder,
+  Heizkörper (nur „nachwende“ – „alt“ und „ddr“ heizen mit Öfen), Schalter, Steckdosen, Griffe, die geschlossene Treppe, die geteilten
+  tiefen Räume, Bad in jedem Haus, Spülen, Fliesenspiegel, Alltagsdinge, die Raufaser. Nicht: Innen-Palette, Zimmer-Umgebung,
+  Schatten-Saum, Fensterschleier und Lichtfleck (nur mit `ZINNEN.mount(id, { still: true })`, also im normalen Spiel) – ihre Programme
+  und Tests bleiben, wie sie waren (`zombie_innen` in jedem Prüflauf grün).
+- **Übernommen von `wip/zombie-kit`** (3af4303a, Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, auf Wunsch des Leads von Hand): der Putz über
+  Innentüren 4 mm zurückgesetzt auch in der Zombie-Nacht (kein Flimmern), die Schrankwand mit offenen Fächern auch dort (Fernseher,
+  Gläser, Bücher). Die Notiz dazu in `docs/features/haeuser.md` (91e216cb) habe ich nicht übernommen – nicht meine Datei; sie kann mit
+  diesem Merge mitkommen oder entfallen. `wip/zombie-kit` ist damit erledigt.
 - **Merge**: keine Konflikte erwartet, außer `gebaeude` ändert doch `haeuser_heute.js` (dann bleiben meine Haken gültig: sie lesen nur
   `HHEUTE.mats()` und die Namen `laminat`, `wand`). Nach dem Merge reichen `haeuser:bilder=1`, `zombie_innen`, `innen_real:ratscher`.
 - **Für `docs/ARCHITECTURE.md`** (Zeile `HAEUSER`): Bewohner nach der Uhr (`HAEUSER.doing`, `HGAST.show` mit `mode: 'lie'`, `clip`,
-  `duvet`); `ZIMOB` neu `M.palIn`, `M.schatten`, `M.parkett`, `M.raufaser(hex)`, `indoorEnv(scene, k)`, `isSoft`, `Mesher.rbox`; `ZINNEN`
-  `H.survey()`, `H.fitted`.
+  `duvet`, `seatTop` aus einem Strahl auf das Polster, `front` – die Vorderkante der Couch, die Knie darüber); `ZIMOB` neu `M.palIn`,
+  `M.schatten`, `M.glare`, `M.parkett`, `M.raufaser(hex)` (gezeichnete Raufaser), `indoorEnv(scene, k)`, `isSoft`, `Mesher.rbox`;
+  `ZIEINR.L.ueberwurf`; `ZINNEN` `H.survey()`, `H.fitted`; `ZIPLAN` teilt Bad und Schlafzimmer im eingeschossigen Haus ab (`splitBack`),
+  ein so abgeteilter Raum hat seine Tür vom Flur.
+- **Zusammenführen um 20:30**: der Stand dieses Zweigs nach Prüflauf 6 (Stufe 2). Stufe 1 (`83754066`, Prüflauf 5 ganz grün) ist darin
+  enthalten; wer nur Stufe 1 will, nimmt `83754066`.
