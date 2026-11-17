@@ -44,3 +44,8 @@ normal game, with the season of the game's date (autumn colours in October, bare
    report with the CI run id, test counts, screenshots and open points.
 7. Code comments English, UI German; no keys, no parcel or private raw data in the repo. Commit messages end with
    `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and `Claude-Session: https://claude.ai/code/session_01Mmpsvp11QsXpPSQRRbZ4Jv`.
+
+## Erweiterung 17.11. 18:20 (Falko: „um die Vollständigkeit Schleusingens zu garantieren … und auch für Ratscher“)
+
+The whole town zone, not only the three roads: Königstraße has street-level coverage too, and a second round of private views (user 360° photos in the old town, old-town street photos with an open licence) comes into the same folder. Then Ratscher: private views in `/home/claude/ref-ansichten/ratscher/` (open-licence street photos 2020/2025 along the L 3004 and through the village; the usual big street-view service has nothing there). Same rules as above.
+For Ratscher: it already has about 21 000 trees at their measured positions (canopy height model) – add only what is really missing (street trees, hedges, green strips), never a duplicate near an existing tree, and leave Falko's garden and the neighbours' plots as they are.
