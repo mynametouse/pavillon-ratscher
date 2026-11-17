@@ -1,0 +1,6 @@
+# Straßenbäume und Grün in Schleusingen und an der Straße südlich von Ratscher (stadtgruen/stadtgruen.js): the data, the town with its trees, budgets, seasons, the phone; the pictures from the viewpoints and Ratscher's road; the shops near the trees
+smoke
+stadtgruen:data,stadt,telefon
+stadtgruen:bilder,ratscher
+memphone
+laeden:data,mitte
