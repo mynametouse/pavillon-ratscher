@@ -303,9 +303,14 @@ export const SCHL = (() => {
         holes = (b.holes || []).filter(h => h.k === k).sort((p, q) => p.u - q.u);
       let du = -1,
         dw = 0;
+      const ed = b.extraDoors && b.extraDoors.find(e => e.k === k);
       if (D && D.k === k) {
         du = D.u;
         dw = D.w;
+      } else if (ed && !holes.length) {
+        // an entrance OpenStreetMap maps on another wall (a second door: the school, the offices, a corner house)
+        du = ed.u;
+        dw = ed.w;
       } else if (holes.length) {
         // an opening (a passage): the shader keeps the ground-floor bays beside it free, as beside a door
         du = holes[0].u;
@@ -839,7 +844,13 @@ export const SCHL = (() => {
   // against them; their free runs (≥ 3 m) get windows like the rest of the house. Passages: where OpenStreetMap maps one (the
   // Bertholdsburg's gates) and into every yard enclosed by houses (≥ 60 m²) through the house between it and a street, the shortest way
   // (a Tordurchfahrt as old towns have them – which house is assumed); the yards behind become level and walkable. ?nofassade: as before.
-  const FASS = { on: !new URLSearchParams(location.search).has('nofassade'), YARD: 60, SMALL: 25 };
+  const FASS = {
+    on: !new URLSearchParams(location.search).has('nofassade'),
+    YARD: 80,
+    SMALL: 25,
+    SLOPE: 0.12,
+    LAND: 4,
+  };
   S.FASS = FASS;
   S.streetDoor = b => streetDoor(b);
   function fassPlan(town) {
@@ -900,7 +911,21 @@ export const SCHL = (() => {
       return null;
     };
     // a passage on the walls of its building: the side lines' crossings with both walls (holes), the ramp, the pads
-    const addPass = (P, src, name) => {
+    const addPass = (P0, src, name) => {
+      // A on the side of the street, B on the side of the yard (a mapped line may run either way)
+      let P = P0;
+      const yB = inYard(P.B[0] + P.d[0] * 1.2, P.B[1] + P.d[1] * 1.2),
+        yA = inYard(P.A[0] - P.d[0] * 1.2, P.A[1] - P.d[1] * 1.2);
+      if (!yB && yA)
+        P = Object.assign({}, P0, {
+          A: P0.B,
+          B: P0.A,
+          wA: P0.wB,
+          wB: P0.wA,
+          uA: P0.uB,
+          uB: P0.uA,
+          d: [-P0.d[0], -P0.d[1]],
+        });
       const b = P.r.b,
         fa = facAt(b, P.wA, P.A),
         fb = facAt(b, P.wB, P.B);
@@ -925,6 +950,21 @@ export const SCHL = (() => {
         b1 = cross(fb, 1);
       const h = Math.min(P.h || 3.4, b.e - 0.6);
       if (h < 2.6) return null;
+      // the floor: the yard's level behind (the castle: its courtyard), in front the street's – the passage itself at most 12 %
+      // steep (the ground next to big buildings comes from a surface model with the buildings in it: a landing of 4 m outside blends
+      // the passage's floor into whatever the terrain is)
+      const L = P.depth,
+        yd = inYard(P.B[0] + dx * 1.2, P.B[1] + dy * 1.2),
+        zB =
+          yd && yd.zf
+            ? yd.zf(P.B[0] + dx * 1.2, P.B[1] + dy * 1.2)
+            : b.lm === 'burg'
+              ? b.z0 + 0.05
+              : ground(P.B[0] + dx * 1.2, P.B[1] + dy * 1.2),
+        zOut = ground(P.A[0] - dx * 1.2, P.A[1] - dy * 1.2),
+        dz = Math.max(-FASS.SLOPE * L, Math.min(FASS.SLOPE * L, zOut - zB)),
+        zA = zB + dz;
+      if (src === 'hof' && Math.abs(zOut - zB) > FASS.SLOPE * L + 0.6) return null; // a gateway would be a ramp: not plausible
       const hole = (fc, c0, c1) => {
         const lo = Math.max(0.05, Math.min(c0.u, c1.u)),
           hi = Math.min(fc.L - 0.05, Math.max(c0.u, c1.u));
@@ -933,10 +973,6 @@ export const SCHL = (() => {
       };
       const hA = hole(fa, a0, a1),
         hB = hole(fb, b0, b1);
-      // the floor: from the ground in front of the outer wall to the yard's level behind
-      const zA = ground(P.A[0] - dx * 1.2, P.A[1] - dy * 1.2),
-        yd = inYard(P.B[0] + dx * 1.2, P.B[1] + dy * 1.2),
-        zB = b.lm === 'burg' ? b.z0 + 0.05 : yd ? yd.z : ground(P.B[0] + dx * 1.2, P.B[1] + dy * 1.2);
       const Q = {
         b,
         src,
@@ -946,30 +982,30 @@ export const SCHL = (() => {
         d: P.d,
         w,
         h,
-        depth: P.depth,
+        depth: L,
         zA,
         zB,
+        zOut,
         cA: [a0.p, a1.p],
         cB: [b0.p, b1.p],
         hA,
         hB,
         yard: yd,
       };
-      // the ramp: level 1 m before the wall, then straight to the yard's level 1 m behind the far wall
-      const L = P.depth,
-        mg = w / 2 + 1.5,
-        e1 = 1.0,
+      const mg = w / 2 + 1.5,
+        land = FASS.LAND,
         poly = [
-          [P.A[0] - dx * e1 - ex * mg, P.A[1] - dy * e1 - ey * mg],
-          [P.B[0] + dx * e1 - ex * mg, P.B[1] + dy * e1 - ey * mg],
-          [P.B[0] + dx * e1 + ex * mg, P.B[1] + dy * e1 + ey * mg],
-          [P.A[0] - dx * e1 + ex * mg, P.A[1] - dy * e1 + ey * mg],
+          [P.A[0] - dx * land - ex * mg, P.A[1] - dy * land - ey * mg],
+          [P.B[0] + dx * 1.0 - ex * mg, P.B[1] + dy * 1.0 - ey * mg],
+          [P.B[0] + dx * 1.0 + ex * mg, P.B[1] + dy * 1.0 + ey * mg],
+          [P.A[0] - dx * land + ex * mg, P.A[1] - dy * land + ey * mg],
         ].flat();
       F.pads.push({
         poly,
-        z: (x, y) => {
-          const t = Math.max(0, Math.min(L, (x - P.A[0]) * dx + (y - P.A[1]) * dy));
-          return zA + ((zB - zA) * t) / Math.max(L, 0.1);
+        z: (x, y, raw) => {
+          const t = (x - P.A[0]) * dx + (y - P.A[1]) * dy;
+          if (t >= 0) return zA + ((zB - zA) * Math.min(L, t)) / Math.max(L, 0.1);
+          return zA + (raw - zA) * Math.min(1, -t / land);
         },
       });
       F.paint.push({ poly: [a0.p, a1.p, b1.p, b0.p].flat(), surf: src === 'osm' ? 200 : 120 });
@@ -977,10 +1013,28 @@ export const SCHL = (() => {
       if (yd) yd.reach = true;
       return Q;
     };
-    // the yards' level: the feet of the houses round them
+    // the yards' ground: from the feet of the walls round each yard (inverse distance weighted – on a slope the yard follows the
+    // houses: each wall meets it at its ground floor), a pad grown 2.5 m under the walls (the 2 m grid of the tiles meets them level)
     for (const y of Y) {
-      const zs = y.around.map(r => r.b.z0).sort((p, q) => p - q);
-      y.z = zs.length ? zs[Math.floor(zs.length / 2)] + 0.05 : ground(y.cx, y.cy);
+      const pts = [];
+      for (const r of y.around)
+        for (const p of r.fac) {
+          const mx = p.ax + p.dx * p.L * 0.5,
+            my = p.ay + p.dy * p.L * 0.5;
+          if (y.at(mx + p.nx * 1.0, my + p.ny * 1.0)) pts.push([mx, my, r.b.z0 + 0.05]);
+        }
+      if (!pts.length) for (const r of y.around) pts.push([r.cx, r.cy, r.b.z0 + 0.05]);
+      y.zf = (x, yy) => {
+        let sw = 0,
+          sz = 0;
+        for (const [px, py, pz] of pts) {
+          const w = 1 / ((px - x) ** 2 + (py - yy) ** 2 + 1);
+          sw += w;
+          sz += w * pz;
+        }
+        return sz / sw;
+      };
+      y.z = y.zf(y.cx, y.cy);
     }
     // the mapped passages (OSM): through whatever building they cross
     for (const m of (S.osmF && S.osmF.pass) || []) {
@@ -1017,9 +1071,23 @@ export const SCHL = (() => {
         y.rest = 'kleiner Hof – nur durch die Häuser daneben';
         continue;
       }
-      const G = FAUDIT.tor(y, { outside, street, w: 2.8, h: 3.4 });
-      const Q = G && addPass(G, 'hof', 'Tordurchfahrt');
-      if (!Q) continue;
+      // the best gateway whose floor is plausible (not a ramp), else the next house round the yard
+      let Q = null;
+      const tried = [];
+      for (let k = 0; k < 4 && !Q; k++) {
+        const G = FAUDIT.tor(y, { outside, street, w: 2.8, h: 3.4, maxStreet: 12 });
+        if (!G) break;
+        Q = addPass(G, 'hof', 'Tordurchfahrt');
+        if (!Q) {
+          G.r.noPass = true;
+          tried.push(G.r);
+        }
+      }
+      for (const r of tried) r.noPass = false;
+      if (!Q) {
+        y.rest = 'großer Hof ohne ebenen Weg von der Straße (Gelände) – nur durch die Häuser';
+        continue;
+      }
       // the house of the gateway: its opening is the door (a gate – nobody walks into this house, SIPLAN.rules: 'tor'); its own door,
       // if it was on that wall, is inside the gateway now
       const b = Q.b;
@@ -1030,12 +1098,33 @@ export const SCHL = (() => {
       }
       F.n.tor++;
     }
-    for (const y of Y) if (y.reach) F.pads.push({ poly: y.hull, z: y.z });
+    for (const y of Y) if (y.reach) F.pads.push({ poly: FAUDIT.hull(y.cells, 2.75), z: (x, yy) => y.zf(x, yy) });
+    // the entrances OpenStreetMap maps: the door there – the street door moves to it along its wall; one on another wall is a second
+    // door (one per wall, as the facade shader draws them; the street door stays the one SINNEN goes in by)
+    for (const e of (S.osmF && S.osmF.ent) || []) {
+      let hit = null;
+      for (const r of idx.near(e.x, e.y, 3))
+        for (const p of r.fac) {
+          const u = (e.x - p.ax) * p.dx + (e.y - p.ay) * p.dy,
+            o = Math.abs((e.x - p.ax) * p.nx + (e.y - p.ay) * p.ny);
+          if (u > 0.5 && u < p.L - 0.5 && o < 0.6 && !p.blind && (!hit || o < hit.o)) hit = { r, p, u, o };
+        }
+      if (!hit || hit.r.b.lm) continue;
+      const b = hit.r.b,
+        k = hit.p.k,
+        w = b.k === 0 && e.e !== 'main' ? 1.05 : Math.min(1.9, hit.p.L * 0.5);
+      if (b.door0 && b.door0.k === k) {
+        if (!b.osmMoved) b.door0 = b.doorUse = Object.assign({}, b.door0, { u: hit.u, w: Math.max(b.door0.w, w) });
+        b.osmMoved = true;
+      } else if (!(b.extraDoors || []).some(q => q.k === k))
+        (b.extraDoors = b.extraDoors || []).push({ k, u: hit.u, w });
+      F.n.osmTuer = (F.n.osmTuer || 0) + 1;
+    }
     // doors where a building has none to a street, and the free runs of party walls
     for (const b of town) {
       const r = b.rec;
       b.doorUse = b.door0;
-      if (!b.door0 && !b.lm && !b.passDoor) {
+      if (!b.door0 && !b.lm && !b.passDoor && !b.extraDoors) {
         const yardOf = p => inYard(p.ax + p.dx * p.L * 0.5 + p.nx * 1.2, p.ay + p.dy * p.L * 0.5 + p.ny * 1.2),
           D = FAUDIT.hofTuer(r, r.fac, free, { yard: p => !!yardOf(p) });
         if (D) {
@@ -1055,6 +1144,91 @@ export const SCHL = (() => {
       }
     }
     F.ms = Math.round(performance.now() - t0);
+  }
+  // ---- feat/gebaeude: the frame of a gateway (old-town Tordurchfahrten, photos of Thuringian small towns: a sandstone surround, a
+  // segmental arch, a wooden gate standing open in the day) – props geometry, at both ends of the passage ----
+  function gateway(K, q) {
+    const b = q.b,
+      top = b.z0 + q.h,
+      [dx, dy] = q.d,
+      STONE = SAND,
+      WOODG = linC([0.3, 0.19, 0.11], 0.8),
+      BATT = linC([0.24, 0.15, 0.09], 0.8);
+    // a quad wound so that its normal points along n (the kit's faces are seen from their front)
+    const face = (a, c, d, e, n) => {
+      const ux = c[0] - a[0],
+        uy = c[1] - a[1],
+        uz = c[2] - a[2],
+        vx = d[0] - a[0],
+        vy = d[1] - a[1],
+        vz = d[2] - a[2],
+        cx = uy * vz - uz * vy,
+        cy = uz * vx - ux * vz,
+        cz = ux * vy - uy * vx;
+      if (cx * n[0] + cy * n[1] + cz * n[2] >= 0) K.quad(a, c, d, e, STONE);
+      else K.quad(a, e, d, c, STONE);
+    };
+    for (const [cs, out, zf0] of [
+      [q.cA, -1, q.zA],
+      [q.cB, 1, q.zB],
+    ]) {
+      const p0 = cs[0],
+        p1 = cs[1],
+        W = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+      if (W < 1) continue;
+      const tx = (p1[0] - p0[0]) / W,
+        ty = (p1[1] - p0[1]) / W,
+        ox = dx * out,
+        oy = dy * out,
+        zf = zf0 - 0.05,
+        J = 0.3,
+        D = 0.1,
+        T = 0.3,
+        rise = Math.min(0.55, W * 0.2),
+        P3 = (sv, z, o) => [p0[0] + tx * sv + ox * o, p0[1] + ty * sv + oy * o, z],
+        zc = sv => top - rise * Math.pow((2 * sv) / W - 1, 2),
+        rot = Math.atan2(ty, tx);
+      // the jambs, proud of the wall
+      for (const sc of [-J / 2, W + J / 2]) {
+        const [x, y] = P3(sc, 0, (D - 0.02) / 2);
+        K.box(x, y, zf, J, D + 0.02, top - rise - zf, rot, STONE);
+      }
+      // the arch: its face and the band over it to the stone lintel, the intrados into the passage, the back over the passage
+      const N = 8,
+        nO = [ox, oy, 0];
+      for (let i = 0; i < N; i++) {
+        const s0 = (W * i) / N,
+          s1 = (W * (i + 1)) / N;
+        face(P3(s0, zc(s0), D), P3(s1, zc(s1), D), P3(s1, top + T, D), P3(s0, top + T, D), nO);
+        face(P3(s0, zc(s0), -0.45), P3(s1, zc(s1), -0.45), P3(s1, top, -0.45), P3(s0, top, -0.45), [-ox, -oy, 0]);
+        face(P3(s0, zc(s0), D), P3(s1, zc(s1), D), P3(s1, zc(s1), -0.45), P3(s0, zc(s0), -0.45), [0, 0, -1]);
+      }
+      // the lintel ends over the jambs and its top
+      face(P3(-J, top - rise, D), P3(0, top - rise, D), P3(0, top + T, D), P3(-J, top + T, D), nO);
+      face(P3(W, top - rise, D), P3(W + J, top - rise, D), P3(W + J, top + T, D), P3(W, top + T, D), nO);
+      face(P3(-J, top + T, D), P3(W + J, top + T, D), P3(W + J, top + T, -0.02), P3(-J, top + T, -0.02), [0, 0, 1]);
+      for (const [se, sg] of [
+        [-J, -1],
+        [W + J, 1],
+      ])
+        face(P3(se, zf, D), P3(se, top + T, D), P3(se, top + T, -0.02), P3(se, zf, -0.02), [tx * sg, ty * sg, 0]);
+      // the gate (street side only): two leaves open against the walls of the passage, boards with two battens
+      if (out < 0) {
+        const hl = top - rise - 0.12 - zf,
+          lw = W / 2 - 0.05;
+        for (const [sv, sg] of [
+          [0.09, 1],
+          [W - 0.09, -1],
+        ]) {
+          const [x, y] = P3(sv, 0, -(lw / 2 + 0.08));
+          K.box(x, y, zf + 0.06, 0.06, lw, hl, rot, WOODG);
+          for (const zb of [0.35, hl - 0.5]) {
+            const [x2, y2] = P3(sv + sg * 0.04, 0, -(lw / 2 + 0.08));
+            K.box(x2, y2, zf + 0.06 + zb, 0.03, lw - 0.1, 0.14, rot, BATT);
+          }
+        }
+      }
+    }
   }
   // ---- feat/gebaeude: a passage through a building – its two side walls (plaster, a house door in a Tordurchfahrt), the ceiling, the
   // collisions; the floor is the ramp pad of the ground (WELT) with sett painted on it (streetMap) ----
@@ -1715,6 +1889,13 @@ export const SCHL = (() => {
         K.box(px - c * 0.3, py - s * 0.3, z, 0.05, 0.05, 0.86, rot, IRON);
       }
     }
+    // feat/gebaeude: the gateways – a sandstone surround with a segmental arch at both ends, the leaves of the wooden gate open
+    for (const q of (S.fassade && S.fassade.passes) || [])
+      try {
+        gateway(K, q);
+      } catch (e) {
+        console.warn('schleusingen gateway', e);
+      }
     const mp = new THREE.MeshStandardMaterial({
       vertexColors: true,
       roughness: 0.8,

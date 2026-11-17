@@ -28,7 +28,7 @@ COUNT = r"""
   };
   let t = 0;
   try { GAME.shot(); const t0 = performance.now(); for (let k = 0; k < 3; k++) GAME.shot(); t = (performance.now() - t0) / 3; } finally { R.renderBufferDirect = rbd; }
-  return { calls: Math.round(I[0] / 4), tris: Math.round(I[1] / 4), ms: Math.round(t) };
+  return JSON.stringify({ calls: Math.round(I[0] / 4), tris: Math.round(I[1] / 4), ms: Math.round(t) });
 })()
 """
 
@@ -77,15 +77,16 @@ def fetch_tiles():
 def counts(E, ort):
     r = json.loads(E(f"""JSON.stringify((() => {{ const v = FASSADE.audit('{ort}', {{ vorher: true }}), n = FASSADE.audit('{ort}');
         const by = L => {{ const o = {{}}; for (const q of L) {{ const k = q.art + (q.rest ? ' (erklärt)' : '') + ': ' + q.text.replace(/[0-9.]+ m Wand/, 'N m Wand').replace(/[0-9]+ m²/, 'N m²'); o[k] = (o[k] || 0) + 1; }} return o; }};
-        return {{ vorher: FASSADE.count(v), nachher: FASSADE.count(n), byV: by(v), byN: by(n), rest: n.filter(q => !q.rest).slice(0, 12), ms: FASSADE.status().ms }}; }})())"""))
+        return {{ vorher: FASSADE.count(v), nachher: FASSADE.count(n), byV: by(v), byN: by(n), rest: n.filter(q => !q.rest).slice(0, 12), ms: FASSADE.status().ms, nRec: FASSADE.status().nRec, err: FASSADE.status().err }}; }})())"""))
     print(f'audit {ort} vorher', json.dumps(r['vorher']), json.dumps(r['byV'], ensure_ascii=False), flush=True)
     print(f'audit {ort} nachher', json.dumps(r['nachher']), json.dumps(r['byN'], ensure_ascii=False), flush=True)
     print(f'audit {ort} still open (first 12)', json.dumps(r['rest'], ensure_ascii=False), flush=True)
+    ck(f'{ort}: the audit covers the buildings of the place', r['nRec'] > (300 if ort == 'ratscher' else 700) and not r['err'], f"{r['nRec']} buildings {r['err']}")
     return r
 
 
 def night(E, pg, on):
-    E(f"CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + {21.5 if on else 11.0} * 60; DN.update(true)")
+    E(f"if (!DN.active) GAME.setMode('auto'); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + {21.5 if on else 11.0} * 60; DN.update(true)")
     lib.settle_light(pg)
     E("GAME.step(0.5)")
 
@@ -223,6 +224,7 @@ with lib.browser() as b:
             E(VIEW_M)
             m1 = json.loads(E(COUNT))
             print('perf schleusingen (with the fixes)', json.dumps(m1), flush=True)
+            pg.close()
             pg2 = lib.page(b, 1100, 680, errs, tier='mittel')
             lib.boot(pg2, port, '?nofassade')
             E2 = pg2.evaluate

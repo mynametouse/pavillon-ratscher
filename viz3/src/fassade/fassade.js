@@ -175,6 +175,7 @@ export const FASSADE = (() => {
         for (const r of R)
           r.keepDoor = r.kind === 'haus' ? 'Haustür, durch die man ins Haus geht (Häuser von innen)' : undefined;
         out = FAUDIT.audit(R, { idx, ort });
+        S.nRec = R.length;
       } else if (ort === 'schleusingen') {
         const F = SCHL.fassade,
           vor = !!o.vorher || !F;
@@ -194,6 +195,7 @@ export const FASSADE = (() => {
           for (const y of yards)
             if (y.area < SCHL.FASS.SMALL) y.rest = 'Zwickel zwischen den Häusern – kein Zugang nötig';
         out = FAUDIT.audit(R, { idx, yards, passes, ort });
+        S.nRec = R.length;
       }
     } catch (e) {
       S.err = String(e);
@@ -209,9 +211,8 @@ export const FASSADE = (() => {
       const b = SCHL.bld.find(q => q.i === id - 900000);
       const d = b && (b.doorFac || b.doorYard);
       if (!d) return null;
-      const f = b.F.find(q => Math.abs(q[0] - d.ax) < 1e-6 && Math.abs(q[1] - d.ay) < 1e-6),
-        dd = d.dx !== undefined ? d : null;
-      if (dd) return { x: d.ax + d.dx * d.u, y: d.ay + d.dy * d.u, hd: az(d.dy, -d.dx) };
+      if (d.dx !== undefined) return { x: d.ax + d.dx * d.u, y: d.ay + d.dy * d.u, hd: az(d.dy, -d.dx) };
+      const f = b.F[d.k];
       if (f) {
         const L = Math.hypot(f[2] - f[0], f[3] - f[1]),
           dx = (f[2] - f[0]) / L,
@@ -306,9 +307,13 @@ export const FASSADE = (() => {
               if (u >= uu && u <= uu + qq.len) foot = qq.foot;
               uu += qq.len;
             }
-            const at = (du, z, o) => [q.ax + q.dx * (u + du) + q.nx * o, q.ay + q.dy * (u + du) + q.ny * o, foot + z],
+            // the kit's quads are seen from the side they wind counter-clockwise: the walls run either way round
+            const flip = q.dx * q.ny - q.dy * q.nx > 0,
+              at = (du, z, o) => [q.ax + q.dx * (u + du) + q.nx * o, q.ay + q.dy * (u + du) + q.ny * o, foot + z],
               rect = (K, du0, du1, z0, z1, o, col) =>
-                K.quad(at(du0, z0, o), at(du1, z0, o), at(du1, z1, o), at(du0, z1, o), col, du1 - du0, z1 - z0),
+                flip
+                  ? K.quad(at(du0, z0, o), at(du0, z1, o), at(du1, z1, o), at(du1, z0, o), col, z1 - z0, du1 - du0)
+                  : K.quad(at(du0, z0, o), at(du1, z0, o), at(du1, z1, o), at(du0, z1, o), col, du1 - du0, z1 - z0),
               hw = STALL.w / 2;
             // a concrete frame, the glass in it, a muntin cross (steel stable windows with small panes)
             rect(KW, -hw - 0.08, hw + 0.08, sill - 0.08, top + 0.08, 0.025, FR);
@@ -396,6 +401,7 @@ export const FASSADE = (() => {
   S.status = () => ({
     state: S.state,
     on: S.on,
+    nRec: S.nRec || 0,
     doors: S.n,
     meshes: S.meshes.length,
     ms: S.ms,

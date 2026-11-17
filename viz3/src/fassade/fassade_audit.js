@@ -555,6 +555,7 @@ export const FAUDIT = (() => {
           my = (wA.ay + wA.by) / 2;
         if (!outside(mx + wA.nx * 1.2, my + wA.ny * 1.2) || !outside(mx + wA.nx * 3, my + wA.ny * 3)) continue;
         const sd = street(mx + wA.nx * 2, my + wA.ny * 2);
+        if (sd > (opts.maxStreet || 99)) continue;
         for (let q = 0; q < 9; q++) {
           const uA = w / 2 + 0.6 + ((wA.L - w - 1.2) * q) / 8,
             c = corridor(r, ws, wA, uA, w);
@@ -710,7 +711,7 @@ export const FAUDIT = (() => {
       ort: o.ort || '',
       kind: o.kind || KIND_F(b),
       f: b.f,
-      h: b.h,
+      h: Array.isArray(b.h) && Array.isArray(b.h[0]) ? b.h : undefined, // inner rings (another format's h may be a height)
       eave: b.e,
       sp: st.sp || 2.8,
       bid: o.bid !== undefined ? o.bid : b.i,
