@@ -133,6 +133,25 @@ test('hofTuer: a back house gets its door on the side with room in front, not on
   assert.ok(d.w > 0.9 && d.w < 1.2 && d.u > 0 && d.u < p.L);
 });
 
+test('hofTuer: a shed built in all round but for a short free stretch (1.5 m) gets a narrow door there', () => {
+  // 5 × 5 m, the east side split: 1.5 m free, the rest and the other sides party walls
+  const f = [0, 0, 5, 0, 5, 1.5, 5, 5, 0, 5],
+    e = 4,
+    F = [];
+  for (let k = 0; k < 5; k++) {
+    const a = k * 2,
+      b = ((k + 1) % 5) * 2;
+    F.push([f[a], f[a + 1], f[b], f[b + 1], e, 0, e, e, k === 1 ? 0 : 1, 99]);
+  }
+  const A = FAUDIT.fromF({ i: 0, k: 2, f, e, F, st: { style: 0, sp: 2.8 } }),
+    idx = FAUDIT.index([A]),
+    d = FAUDIT.hofTuer(A, A.fac, (x, y) => !idx.at(x, y));
+  assert.ok(d, 'a door');
+  const p = A.fac.find(q => q.k === d.k);
+  assert.ok(Math.abs(p.L - 1.5) < 0.01 && p.nx > 0.9, JSON.stringify(p));
+  assert.ok(d.w >= 0.9 && d.w <= 1.0 && Math.abs(d.u - 0.75) < 0.01, JSON.stringify(d));
+});
+
 test('audit: a house without a door and a blank free wall are reported, the yard too; with a gateway it is reached', () => {
   const recs = block(0).map(b => FAUDIT.fromF(b));
   // the west house: no door, its east wall (to the yard) a party wall in the data – but free

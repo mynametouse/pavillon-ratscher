@@ -630,21 +630,28 @@ export const FAUDIT = (() => {
   // ---- a door for a building without one towards a street: the wall with room in front (a yard, a garden), not a party wall ----
   // pieces: the record's walls with { blind, L, nx, ny, ax, ay, dx, dy }; free(x, y): nobody's footprint there. → { k, u, w } or null
   function hofTuer(r, pieces, free, opts = {}) {
-    const minL = r.kind === 'haus' ? 2.4 : 1.8;
     let best = null;
-    pieces.forEach((p, k) => {
-      if (p.blind || p.L < minL) return;
-      // room in front along the middle third (a door needs about 1.5 m clear)
-      let ok = 0;
-      for (const s of [0.35, 0.5, 0.65])
-        for (const d of [0.8, 1.6]) {
-          const u = p.L * s;
-          if (free(p.ax + p.dx * u + p.nx * d, p.ay + p.dy * u + p.ny * d)) ok++;
-        }
-      if (ok < 5) return;
-      const sc = ok + Math.min(p.L, 12) * 0.25 + (p.gable ? -0.8 : 0) + (opts.yard && opts.yard(p) ? 1.5 : 0);
-      if (!best || sc > best.sc) best = { k, sc, p };
-    });
+    const scan = minL =>
+      pieces.forEach((p, k) => {
+        if (p.blind || p.L < minL) return;
+        // room in front along the middle third (a door needs about 1.5 m clear)
+        let ok = 0;
+        for (const s of [0.35, 0.5, 0.65])
+          for (const d of [0.8, 1.6]) {
+            const u = p.L * s;
+            if (free(p.ax + p.dx * u + p.nx * d, p.ay + p.dy * u + p.ny * d)) ok++;
+          }
+        if (ok < 5) return;
+        const sc = ok + Math.min(p.L, 12) * 0.25 + (p.gable ? -0.8 : 0) + (opts.yard && opts.yard(p) ? 1.5 : 0);
+        if (!best || sc > best.sc) best = { k, sc, p };
+      });
+    scan(r.kind === 'haus' ? 2.4 : 1.8);
+    // built in all round but for a short free stretch (1.4 m and more): a narrow door there
+    let narrow = false;
+    if (!best) {
+      scan(1.4);
+      narrow = !!best;
+    }
     if (!best) return null;
     const p = best.p,
       clear = u =>
@@ -667,7 +674,7 @@ export const FAUDIT = (() => {
     best.k = best.p.k !== undefined ? best.p.k : best.k;
     if (r.kind === 'halle') return { k: best.k, u: p.L / 2, w: Math.min(5, p.L * 0.4), kind: 'tor' };
     if (p.L > 3.2) return { k: best.k, u: p.L / 2, w: Math.min(2.5, p.L * 0.6), kind: 'tor' };
-    return { k: best.k, u: p.L / 2, w: Math.min(0.95, p.L * 0.5), kind: 'tuer' };
+    return { k: best.k, u: p.L / 2, w: Math.min(0.95, narrow ? p.L - 0.5 : p.L * 0.5), kind: 'tuer' };
   }
   // ---- a record from the town data's format (welt/schleusingen.js, gebaeude/gebaeude.js: footprint f, rings h, facades F as [ax, ay, bx,
   // by, t0, uA, tA, t1, flags (1 = party wall), metres to a street]) – each facade one piece as the town draws it before any fix ----

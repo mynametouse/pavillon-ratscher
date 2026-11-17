@@ -20,15 +20,21 @@ XF = json.load(open(os.path.join(lib.ROOT, 'viz3', 'manifests.json')))['geoman']
 MARKT = (-1084.7, 1241.9)
 COUNT = r"""
 (() => {
-  const R = GAME.R, I = [0, 0], rbd = R.renderBufferDirect;
+  // draw calls and triangles of one frame (main passes only); 'static' leaves out what moves and comes and goes between two loads:
+  // people (skinned figures and what hangs on their bones), traffic, buses, animals
+  const R = GAME.R, I = [0, 0, 0, 0], K = {}, rbd = R.renderBufferDirect, DYN = /verkehr|bus|tiere|fahrt|autos|vogel|strategie|zombie/i;
+  const dyn = o => { if (o.isSkinnedMesh) return true; for (let p = o; p; p = p.parent) if (p.isBone || (p.name && DYN.test(p.name))) return true; return false; };
+  const key = o => { for (let p = o; p; p = p.parent) if (p.name) return p.name; return o.type; };
   R.renderBufferDirect = function (camera, scene, geometry, material, object, group) {
     const n = geometry.index ? geometry.index.count : geometry.attributes.position ? geometry.attributes.position.count : 0;
-    if (scene) { I[0]++; I[1] += Math.round((group ? group.count : n) / 3) * (object.isInstancedMesh ? object.count : 1); }
+    if (scene) { const t = Math.round((group ? group.count : n) / 3) * (object.isInstancedMesh ? object.count : 1); I[0]++; I[1] += t;
+      if (!dyn(object)) { I[2]++; I[3] += t; const k = key(object); K[k] = (K[k] || 0) + 1; } }
     return rbd.call(this, camera, scene, geometry, material, object, group);
   };
   let t = 0;
   try { GAME.shot(); const t0 = performance.now(); for (let k = 0; k < 3; k++) GAME.shot(); t = (performance.now() - t0) / 3; } finally { R.renderBufferDirect = rbd; }
-  return JSON.stringify({ calls: Math.round(I[0] / 4), tris: Math.round(I[1] / 4), ms: Math.round(t) });
+  for (const k in K) K[k] = Math.round(K[k] / 4);
+  return JSON.stringify({ calls: Math.round(I[0] / 4), tris: Math.round(I[1] / 4), sCalls: Math.round(I[2] / 4), sTris: Math.round(I[3] / 4), ms: Math.round(t), keys: K });
 })()
 """
 
@@ -131,6 +137,8 @@ with lib.browser() as b:
             lib.shot(pg, OUT, 'ratscher_halle_vorher')
             E("FASSADE.meshes.forEach(m => m.visible = !RATSCHER.map); GAME.step(0.1)")
             lib.shot(pg, OUT, 'ratscher_halle_nachher')
+            m0.pop('keys', None)
+            m1.pop('keys', None)
             print('perf ratscher hall', json.dumps({'without': m0, 'with': m1}), flush=True)
             ck('Ratscher: draw calls with the new windows within a few', m1['calls'] - m0['calls'] <= 4, f"{m0['calls']} → {m1['calls']} calls, {m0['tris']} → {m1['tris']} triangles, {m0['ms']} → {m1['ms']} ms per frame (SwiftShader)")
             night(E, pg, True)
@@ -221,9 +229,11 @@ with lib.browser() as b:
                 ck(f"through the passage {i + 1} ({q['src']}, {q['a']}) into the yard behind", r2['t'] > q['depth'] + 0.8 and abs(r2['feet'] - r2['g']) < 0.1,
                    json.dumps(r2, ensure_ascii=False))
                 # pictures: from the street into the passage, and from the yard back
-                E(f"""(() => {{ const q = SCHL.fassade.passes[{i}], x = q.A[0] - q.d[0] * 9, y = q.A[1] - q.d[1] * 9; GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(q.d[0], q.d[1]) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()""")
+                OUTV = f"""(() => {{ const q = SCHL.fassade.passes[{i}], t = q.stair, x = t ? t.top[0] + (t.top[0] - q.A[0]) * 0.2 : q.A[0] - q.d[0] * 9, y = t ? t.top[1] + (t.top[1] - q.A[1]) * 0.2 : q.A[1] - q.d[1] * 9;
+                    GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(q.A[0] - x, q.A[1] - y) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()"""
+                E(OUTV)
                 settle()
-                E(f"""(() => {{ const q = SCHL.fassade.passes[{i}], x = q.A[0] - q.d[0] * 9, y = q.A[1] - q.d[1] * 9; GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(q.d[0], q.d[1]) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()""")
+                E(OUTV)
                 lib.shot(pg, OUT, f"schleusingen_durchgang{i + 1}_strasse")
                 E(f"""(() => {{ const q = SCHL.fassade.passes[{i}], x = q.B[0] + q.d[0] * 7, y = q.B[1] + q.d[1] * 7; GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(-q.d[0], -q.d[1]) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()""")
                 settle()
@@ -249,6 +259,11 @@ with lib.browser() as b:
             # a street (the Markt) by day and by night
             E(VIEW_M)
             lib.shot(pg, OUT, 'schleusingen_markt_tag')
+            # what stands at the left of that view (a tall blank wall there: whose?)
+            hit = json.loads(E("""JSON.stringify((() => { const out = []; for (const [sx, sy] of [[-0.85, 0.1], [-0.7, 0.3], [-0.6, 0.05]]) {
+                const rc = new THREE.Raycaster(); rc.setFromCamera(new THREE.Vector2(sx, sy), GAME.cam); const h = rc.intersectObjects(GAME.scene.children, true).find(q => q.object.visible);
+                if (h) out.push({ s: [sx, sy], name: h.object.name, x: +h.point.x.toFixed(1), y: +(-h.point.z).toFixed(1), z: +h.point.y.toFixed(1), d: +h.distance.toFixed(1) }); } return out; })())"""))
+            print('left of the Markt view', json.dumps(hit, ensure_ascii=False), flush=True)
             night(E, pg, True)
             E(VIEW_M)
             lib.shot(pg, OUT, 'schleusingen_markt_nacht')
@@ -271,29 +286,34 @@ with lib.browser() as b:
             ok, rep = lib.check_gl(pg)
             ck('every shader program within 16 textures, none broken', ok, json.dumps({k: rep[k] for k in ('programs', 'maxFrag', 'maxVert')}))
         if want('perf'):
+            # the same view in two fresh loads, with the fixes and with ?nofassade (the page above has walked through the town: people
+            # and cars gather, interiors stay loaded – not the fixes' doing)
             TOWN = "JSON.stringify({ n: SCHL.meshes.length, tris: SCHL.meshes.reduce((s, m) => s + Math.round((m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3) * (m.isInstancedMesh ? m.count : 1), 0) })"
-            E(VIEW_M)
-            settle()
-            m1 = json.loads(E(COUNT))
-            s1 = json.loads(E(TOWN))
-            print('perf schleusingen (with the fixes)', json.dumps(m1), json.dumps(s1), flush=True)
-            pg.close()
-            pg2 = lib.page(b, 1100, 680, errs, tier='mittel')
-            lib.boot(pg2, port, '?nofassade')
-            E2 = pg2.evaluate
-            E2("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden'); GAME.setView3(false)")
-            night(E2, pg2, False)
-            E = E2
-            pg = pg2
-            go_schl()
-            E(VIEW_M)
-            settle()
-            m0 = json.loads(E(COUNT))
-            s0 = json.loads(E(TOWN))
-            print('perf schleusingen (?nofassade)', json.dumps(m0), json.dumps(s0), flush=True)
+            M = {}
+            for tag, q in (('with', ''), ('without', '?nofassade')):
+                pg.close()
+                pg = lib.page(b, 1100, 680, errs, tier='mittel')
+                lib.boot(pg, port, q)
+                E = pg.evaluate
+                E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden'); GAME.setView3(false)")
+                night(E, pg, False)
+                go_schl()
+                E(VIEW_M)
+                settle()
+                E(VIEW_M)
+                m = json.loads(E(COUNT))
+                m['town'] = json.loads(E(TOWN))
+                M[tag] = m
+                print(f'perf schleusingen ({tag} the fixes)', json.dumps({k: m[k] for k in m if k != 'keys'}), flush=True)
+            m1, m0 = M['with'], M['without']
+            s1, s0 = m1['town'], m0['town']
+            diff = {k: [m0['keys'].get(k, 0), m1['keys'].get(k, 0)] for k in set(m0['keys']) | set(m1['keys']) if m0['keys'].get(k, 0) != m1['keys'].get(k, 0)}
+            print('perf schleusingen: static draw calls that differ (without → with)', json.dumps(diff, ensure_ascii=False), flush=True)
             ck('Schleusingen: the town draws with as many meshes as before, its triangles within a few per cent', s1['n'] <= s0['n'] and s1['tris'] <= s0['tris'] * 1.03,
                f"{s0['n']} → {s1['n']} meshes, {s0['tris']} → {s1['tris']} triangles of the town")
-            ck('Schleusingen: the whole frame at the Markt about the same (traffic and people vary between two loads)', m1['calls'] <= m0['calls'] * 1.1 + 4,
-               f"{m0['calls']} → {m1['calls']} calls, {m0['tris']} → {m1['tris']} triangles, {m0['ms']} → {m1['ms']} ms per frame (SwiftShader)")
+            ck('Schleusingen: the frame at the Markt about the same (without people, traffic and animals, which vary between two loads)',
+               m1['sCalls'] <= m0['sCalls'] + 4 and m1['sTris'] <= m0['sTris'] * 1.03 + 2000,
+               f"static {m0['sCalls']} → {m1['sCalls']} calls, {m0['sTris']} → {m1['sTris']} triangles; whole frame {m0['calls']} → {m1['calls']} calls, "
+               f"{m0['tris']} → {m1['tris']} triangles, {m0['ms']} → {m1['ms']} ms per frame (SwiftShader)")
     ck.errors(errs)
 ck.done()
