@@ -12,7 +12,8 @@ For every viewpoint of viz3/extra/schleusingen-ansicht/views.json that has a ref
     viewer dropped) → difference ΔE (CIELAB 1976, lightness at half weight: the model's light is not the photo's),
   - the skyline: per column the first row below the sky that touches the top edge, in both pictures → mean difference in degrees over
     the columns that show a building and no tree in the reference (foliage or a busy pattern of branches just below its sky line),
-  - score = mean ΔE of the buildings (weighted by their columns) + 2 × skyline difference in degrees.
+  - score = mean ΔE of the buildings (weighted by their columns; a building with a tree over half its columns or more in the reference
+    is listed with 'baum' but left out – its band shows leaves, not the facade) + 2 × skyline difference in degrees.
 Written: <out>/abgleich.json (ranked, worst first; numbers only) and <out>/<name>.jpg (reference above, model below, each building's
 band outlined with its index and ΔE). Each round of reading starts with the worst spots."""
 import argparse, json, math, os, sys
@@ -23,6 +24,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 EXTRA = os.path.join(ROOT, 'viz3', 'extra', 'schleusingen-ansicht')
 STADT = os.path.join(ROOT, 'viz3', 'extra', 'schleusingen', 'dist', 'schleusingen', 'stadt.json')
 W, H, MAX_D, MIN_COLS = 1366, 559, 60.0, 24
+BAUM = 0.5    # a building with a tree over at least this share of its columns (in the reference) is not counted in the spot's ΔE
 # the street viewer's overlays in the reference pictures (search box, info card, mini map, buttons, the footer line)
 MASKS = [(0, 0, 400, 200), (0, 380, 175, 559), (1180, 0, 1366, 70), (1290, 380, 1366, 559), (660, 535, 1366, 559)]
 
@@ -112,6 +114,19 @@ def compare(v, ref, mod, stadt):
             bands.setdefault(i, []).append((u, y0, y1, t))
     LA, LB = lab(A), lab(B)
     sa, sb = skyline(A), skyline(B)   # the sky is what reaches the top edge – a white wall below the roofs is no sky
+
+    def leafy(u):
+        # the reference's first pixels below its sky line look like foliage (green, or a busy brown–grey of bare branches): a tree, not
+        # the roof line – the model has no tree there, so this column says nothing about the buildings
+        y = int(sa[u])
+        q = A[y:min(H, y + 8), max(0, u - 3):u + 4].reshape(-1, 3)
+        if len(q) < 8:
+            return True
+        r, g, b = q[:, 0], q[:, 1], q[:, 2]
+        green = ((g > r + 0.02) & (g > b)).mean() > 0.4
+        busy = q.std(0).mean() > 0.12
+        return green or busy
+    LF = [bool(c) and 0 < sa[u] < H and leafy(u) for u, c in enumerate(cols)]
     res = []
     for i, cs in bands.items():
         if len(cs) < MIN_COLS:
@@ -127,26 +142,20 @@ def compare(v, ref, mod, stadt):
             continue
         a, b = np.median(qa[keep], 0), np.median(qb[keep], 0)
         dE = float(math.sqrt((0.5 * (a[0] - b[0])) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2))
-        res.append({'i': i, 'cols': len(cs), 'dE': round(dE, 1), 'd': round(min(c[3] for c in cs), 1),
+        # a tree over most of its columns in the reference: the colour band shows leaves, not the facade (the model has no tree
+        # there) – listed, but left out of the spot's mean
+        baum = sum(LF[c[0]] for c in cs) / len(cs)
+        res.append({'i': i, 'cols': len(cs), 'dE': round(dE, 1), 'baum': round(baum, 2), 'd': round(min(c[3] for c in cs), 1),
                     'u0': min(c[0] for c in cs), 'u1': max(c[0] for c in cs), 'y0': min(c[1] for c in cs), 'y1': max(c[2] for c in cs)})
-    def leafy(u):
-        # the reference's first pixels below its sky line look like foliage (green, or a busy brown–grey of bare branches): a tree, not
-        # the roof line – the model has no tree there, so this column says nothing about the buildings
-        y = int(sa[u])
-        q = A[y:min(H, y + 8), max(0, u - 3):u + 4].reshape(-1, 3)
-        if len(q) < 8:
-            return True
-        r, g, b = q[:, 0], q[:, 1], q[:, 2]
-        green = ((g > r + 0.02) & (g > b)).mean() > 0.4
-        busy = q.std(0).mean() > 0.12
-        return green or busy
-    us = [u for u, c in enumerate(cols) if c and ok[max(0, min(H - 1, sa[u])), u] and 0 < sa[u] < H and 0 < sb[u] < H and not leafy(u)]
+    us = [u for u, c in enumerate(cols) if c and ok[max(0, min(H - 1, sa[u])), u] and 0 < sa[u] < H and 0 < sb[u] < H and not LF[u]]
     sky = float(np.mean([abs(math.degrees(math.atan((H / 2 - sa[u]) / fpx)) - math.degrees(math.atan((H / 2 - sb[u]) / fpx))) for u in us])) if len(us) > 40 else None
-    n = sum(r['cols'] for r in res)
-    mdE = sum(r['dE'] * r['cols'] for r in res) / n if n else None
+    seen = [r for r in res if r['baum'] < BAUM]
+    n = sum(r['cols'] for r in seen)
+    mdE = sum(r['dE'] * r['cols'] for r in seen) / n if n else None
     score = (mdE or 0) + 2 * (sky or 0)
     return {'name': v['name'], 'score': round(score, 1), 'dE': round(mdE, 1) if mdE is not None else None,
-            'sky': round(sky, 1) if sky is not None else None, 'buildings': sorted(res, key=lambda r: -r['dE'])}, A, B
+            'sky': round(sky, 1) if sky is not None else None,
+            'buildings': sorted(res, key=lambda r: (r['baum'] >= BAUM, -r['dE']))}, A, B
 
 
 def sheet(r, A, B, dst):
@@ -158,10 +167,11 @@ def sheet(r, A, B, dst):
     except OSError:
         F = ImageFont.load_default()
     for q in r['buildings']:
-        col = (255, 60, 60) if q['dE'] > 25 else (255, 200, 0) if q['dE'] > 12 else (80, 255, 80)
+        tree = q['baum'] >= BAUM
+        col = (150, 150, 150) if tree else (255, 60, 60) if q['dE'] > 25 else (255, 200, 0) if q['dE'] > 12 else (80, 255, 80)
         for oy in (0, H + 6):
             d.rectangle([q['u0'], q['y0'] + oy, q['u1'], q['y1'] + oy], outline=col, width=2)
-            d.text((q['u0'] + 3, q['y0'] + oy + 2), f"{q['i']} ΔE {q['dE']:.0f}", font=F, fill=col)
+            d.text((q['u0'] + 3, q['y0'] + oy + 2), f"{q['i']} ΔE {q['dE']:.0f}" + (' Baum' if tree else ''), font=F, fill=col)
     t = f"{r['name']}  Wertung {r['score']}  ΔE {r['dE']}  Dachlinie {r['sky']}°  (oben Ansicht, unten Modell)"
     d.rectangle([0, 2 * H + 6 - 24, d.textlength(t, font=F) + 12, 2 * H + 6], fill=(0, 0, 0))
     d.text((6, 2 * H + 6 - 21), t, font=F, fill=(255, 255, 255))
@@ -196,7 +206,9 @@ def main(argv):
     json.dump({'views': rows}, open(os.path.join(a.out, 'abgleich.json'), 'w'), ensure_ascii=False, indent=1)
     print(f'{len(rows)} spots compared; worst first:')
     for r in rows[:a.top]:
-        w = ', '.join(f"{q['i']} ({q['dE']:.0f})" for q in r['buildings'][:3])
+        w = ', '.join(f"{q['i']} ({q['dE']:.0f})" for q in r['buildings'][:3] if q['baum'] < BAUM)
+        t = [q['i'] for q in r['buildings'] if q['baum'] >= BAUM]
+        w += f"; behind trees: {t}" if t else ''
         print(f"  {r['name']:8s} score {r['score']:5.1f}  ΔE {r['dE']}  skyline {r['sky']}°  worst: {w}")
     return 0
 

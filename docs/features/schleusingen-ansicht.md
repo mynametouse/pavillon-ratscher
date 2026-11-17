@@ -99,8 +99,9 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
 - **Abgleich** `tools/schleusingen-ansicht/abgleich.py --ref DIR --out DIR` (nur auf dem Chat-Rechner, der die Ansichten hat; `--ref` und
   `--out` müssen außerhalb des Repos liegen): je Blickpunkt Ansicht und Modellbild (Abschnitt `bilder` des Tests, dieselbe Kamera)
   nebeneinander, je Gebäude der Farbunterschied ΔE im Band zwischen Fuß und Traufe (CIELAB, Helligkeit halb gewichtet), dazu der
-  Unterschied der Dachlinie in Grad; Wertung = mittleres ΔE + 2 × Dachlinie, Liste `abgleich.json` (nur Zahlen) mit den schlechtesten
-  Blickpunkten zuerst. Jede Runde fängt bei ihnen an.
+  Unterschied der Dachlinie in Grad (ohne Spalten, in denen die Ansicht dort einen Baum zeigt; ein Gebäude, über dessen Spalten zur Hälfte
+  oder mehr ein Baum steht, zählt nicht zum ΔE – „Baum“); Wertung = mittleres ΔE + 2 × Dachlinie, Liste `abgleich.json` (nur Zahlen) mit
+  den schlechtesten Blickpunkten zuerst. Jede Runde fängt bei ihnen an.
 - **Runde 3** – je Gebäude, was die Ansichten zeigen, als Daten für den Weg von `gebaeude` in `FASSADE` (die Geometrie baut
   `gebaeude`): Geschosse, Dachform (Sattel, Walm, Krüppelwalm, Mansarde, flach) und Firstrichtung (trauf- oder giebelständig), Gauben,
   Fensterreihen und -größen, Türen und Tore, Ladenfronten mit ihrer Aufschrift (schlichte Schrift), Balkone, zur Straße Zaun, Mauer
