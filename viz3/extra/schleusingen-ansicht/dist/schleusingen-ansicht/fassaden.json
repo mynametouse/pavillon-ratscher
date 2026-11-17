@@ -1589,6 +1589,57 @@
    ]
   },
   {
+   "i": 252,
+   "x": -932.5,
+   "y": 1184.5,
+   "name": "Cafeteria",
+   "art": "haus",
+   "material": "klinker",
+   "wand": "#8e4a3c",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "roter Backstein, dreigeschossig, hohe weiße Fenster, zum Teil mit Rundbogen (hinter Bäumen, von der Straße zurückgesetzt)",
+   "sicher": "mittel",
+   "ansichten": [
+    "m004",
+    "m005"
+   ]
+  },
+  {
+   "i": 253,
+   "x": -935.1,
+   "y": 1200.7,
+   "name": "Verwaltung",
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#5d6066",
+   "wand_quelle": "geschätzt",
+   "schiefer": "dunkel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Verwaltung (Klosterstraße): ganz Schiefer dunkelgrau, weiße Fenster",
+   "sicher": "mittel",
+   "ansichten": [
+    "m006",
+    "m005",
+    "m004",
+    "m007"
+   ]
+  },
+  {
    "i": 308,
    "x": -1502.6,
    "y": 1026.6,
@@ -1925,6 +1976,162 @@
    ]
   },
   {
+   "i": 359,
+   "x": -872.9,
+   "y": 1223.5,
+   "adresse": "Klosterstraße 16",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#d1d9d8",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 16: weiß (weit)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "m008",
+    "m007",
+    "m005"
+   ]
+  },
+  {
+   "i": 360,
+   "x": -884.6,
+   "y": 1216.9,
+   "adresse": "Klosterstraße 14",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#a9c4af",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 14: blass mintgrün, Laden (Apotheke)",
+   "sicher": "mittel",
+   "ansichten": [
+    "m008",
+    "m007",
+    "m005",
+    "m006"
+   ]
+  },
+  {
+   "i": 361,
+   "x": -897.5,
+   "y": 1215.9,
+   "adresse": "Klosterstraße 12",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ece8dc",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 12: cremeweiß, Sandsteinsockel",
+   "sicher": "mittel",
+   "ansichten": [
+    "m008",
+    "m007",
+    "m006",
+    "m005",
+    "m004"
+   ]
+  },
+  {
+   "i": 362,
+   "x": -907.2,
+   "y": 1212.0,
+   "adresse": "Klosterstraße 10",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#d6dbd6",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 10: weiß",
+   "sicher": "niedrig",
+   "ansichten": [
+    "m007",
+    "m006",
+    "m005",
+    "m004"
+   ]
+  },
+  {
+   "i": 363,
+   "x": -913.6,
+   "y": 1205.9,
+   "adresse": "Klosterstraße 8",
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#5a5d63",
+   "wand_quelle": "geschätzt",
+   "schiefer": "dunkel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 8: ganz Schiefer dunkelgrau",
+   "sicher": "niedrig",
+   "ansichten": [
+    "m007",
+    "m006",
+    "m005"
+   ]
+  },
+  {
+   "i": 368,
+   "x": -923.7,
+   "y": 1204.0,
+   "adresse": "Klosterstraße 6",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e8dcb0",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 6: hell cremegelb, Laden im EG, Erker",
+   "sicher": "niedrig",
+   "ansichten": [
+    "m007",
+    "m006",
+    "m005",
+    "m004"
+   ]
+  },
+  {
    "i": 374,
    "x": -1575.0,
    "y": 931.3,
@@ -2158,6 +2365,55 @@
     "p6_0",
     "p6_240",
     "p6_300"
+   ]
+  },
+  {
+   "i": 418,
+   "x": -920.4,
+   "y": 1232.3,
+   "adresse": "Georg-Ernst-Straße 6",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ebebe6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Georg-Ernst-Straße 6 (Ecke Klosterstraße): weiß, Aufsteller vor der Tür",
+   "sicher": "mittel",
+   "ansichten": [
+    "m007",
+    "m006"
+   ]
+  },
+  {
+   "i": 419,
+   "x": -896.1,
+   "y": 1241.8,
+   "adresse": "Klosterstraße 25",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#ebe9e3",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 25: weiß, Rundbogenfenster, Laden",
+   "sicher": "niedrig",
+   "ansichten": [
+    "m008",
+    "m007",
+    "m006"
    ]
   },
   {
@@ -2410,6 +2666,77 @@
     "v017",
     "v050",
     "v028"
+   ]
+  },
+  {
+   "i": 492,
+   "x": -974.2,
+   "y": 1219.3,
+   "adresse": "Klosterstraße 15",
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#5d6066",
+   "wand_quelle": "geschätzt",
+   "schiefer": "dunkel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 15: ganz Schiefer dunkelgrau, weiße Fenster",
+   "sicher": "mittel",
+   "ansichten": [
+    "m004"
+   ]
+  },
+  {
+   "i": 494,
+   "x": -959.9,
+   "y": 1219.7,
+   "adresse": "Klosterstraße 19",
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#5d6066",
+   "wand_quelle": "geschätzt",
+   "schiefer": "dunkel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 19: ganz Schiefer dunkelgrau, weiße Fenster",
+   "sicher": "mittel",
+   "ansichten": [
+    "m005"
+   ]
+  },
+  {
+   "i": 495,
+   "x": -952.8,
+   "y": 1222.4,
+   "adresse": "Klosterstraße 21",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ebebe6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 21: weiß",
+   "sicher": "niedrig",
+   "ansichten": [
+    "m005"
    ]
   },
   {
@@ -2671,6 +2998,31 @@
     "p5_300",
     "p5_180",
     "p5_240"
+   ]
+  },
+  {
+   "i": 532,
+   "x": -877.3,
+   "y": 1244.2,
+   "adresse": "Klosterstraße 27",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e7ebec",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Klosterstraße 27: weiß (weit)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "m008",
+    "m006",
+    "m007"
    ]
   },
   {
@@ -3650,6 +4002,10 @@
   }
  ],
  "nicht_lesbar": [
+  {
+   "i": 0,
+   "warum": "nur der Rand im Bild (hinter Bäumen)"
+  },
   {
    "i": 25,
    "warum": "Hecke"

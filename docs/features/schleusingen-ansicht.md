@@ -19,10 +19,12 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
     `rahmen`, `besonders` (was man sieht, deutsch), `sicher` (hoch, mittel, niedrig), `ansichten` (Blickpunkte).
   - Runde 3 (begonnen): `geschosse` (Vollgeschosse bis zur Traufe), `dachform` (sattel, walm, krueppelwalm, mansard, flach, pult, zelt),
     `first` (`giebel`: der Giebel zur Straße, sonst `trauf`) – bisher für 117 Gebäude die Geschosse, 65 davon anders als in den
-    Altstadtdaten (z. B. #331 und #48 eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei Geschosse mit Gauben).
+    Altstadtdaten (z. B. #331 und #48 eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei Geschosse mit
+    Gauben).
   - `nicht_lesbar`: Gebäude, die eine Ansicht zeigt, aber nicht lesbar (Bäume, Hecke, unscharf) – mit Grund.
   - Stand: Runde 1 (Hildburghäuser, Suhler, Ilmenauer Straße, Markt; 71 Ansichten), Königstraße (16) und Bertholdstraße (zwei
-    360°-Ansichten, je 6 Richtungen): 143 Gebäude gelesen (65 hoch, 55 mittel, 23 niedrig sicher), 29 als nicht lesbar benannt;
+    360°-Ansichten, je 6 Richtungen) und Klosterstraße (5 Bilder aus dem Auto): 157 Gebäude gelesen (65 hoch, 62 mittel, 30 niedrig sicher),
+    30 als nicht lesbar benannt;
     Wahrzeichen (Rathaus, Kirche, Burg, Türme) zeichnet die Stadt selbst – sie stehen nicht in den Daten.
   - `dach.farbe_quelle`: `Ansicht` (von der Straße gesehen) oder `Luftbild 2024` (nur von oben, DOP 2024 © GDI-Th, dl-de/by-2-0 –
     Dachart von oben, Farbe die Klasse der Tabelle, nicht der blasse Farbwert des Luftbilds).
@@ -107,9 +109,11 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
 
 - Runde 2: die 360°-Ansichten im Schlosshof (`p0`–`p4`) zeigen nur das Wahrzeichen; `p7` (Spielplatz an der
   Johann-Sebastian-Bach-Straße, am Südrand der Stadtdaten) ließ sich nicht verorten – die Häuser südlich davon fehlen in den Daten –,
-  nicht gelesen. Mapillary in der Altstadt (18 Ansichten, Nov. 2016, aus dem Auto): die Standorte liegen bis zu Dutzende Meter daneben,
-  eine Blickrichtung fehlt – `ansicht-aufnahme` liefert Blickrichtung und Straßenseite nach; was sich dann nicht verorten lässt, bleibt
-  hier offen. `m013`–`m017` zeigen nur die Burg.
+  nicht gelesen. Mapillary in der Altstadt (Nov. 2016, aus dem Auto, Objektiv ~70°): mit Blickrichtung und Straßenseite von
+  `ansicht-aufnahme` und je Bild an die Stadt angepasst – die Kamera fuhr ~40 m weiter, als ihr GPS-Punkt sagt (die Apotheke
+  Klosterstraße 14 bestätigt es); `m004`–`m008` (Klosterstraße) sind gelesen, `m000`–`m003` (Markt, dort schon aus den Markt-Ansichten
+  gelesen) und `m009`–`m012` (Ostende, nach Norden) ließen sich nicht eindeutig verorten; `m013`–`m022` zeigen die Burg und ihren Hang,
+  `m023`–`m033` (Suhler Straße, 2019) stehen noch aus.
 - Ratscher (Daten in eigener Datei, Häuser der Dorfmitte nach Falkos Video nur mit Unterschieden): die 109 freien Panoramax-Fotos
   (2020/2025) stehen alle auf Wegen außerhalb des Dorfs – das nächste rund 160 m von der nächsten Hauswand –, keine Fassade
   lesbar; Mapillary an der L 3004 (Ostrand) steht noch aus.

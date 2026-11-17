@@ -1285,5 +1285,70 @@
 "h": 559,
 "street": "Bertholdstraße 19, Ostecke (360°-Foto)",
 "side": "rund"
+},
+{
+"name": "m004",
+"x": -987.38,
+"y": 1211.88,
+"yaw": 96.0,
+"pitch": 0.0,
+"vfov": 31.98,
+"eye": 1.4,
+"w": 1366,
+"h": 559,
+"street": "Klosterstraße (Fahrbahn, Blick nach Osten)",
+"side": "fahrbahn"
+},
+{
+"name": "m005",
+"x": -963.66,
+"y": 1212.22,
+"yaw": 94.0,
+"pitch": 0.0,
+"vfov": 31.98,
+"eye": 1.4,
+"w": 1366,
+"h": 559,
+"street": "Klosterstraße (Fahrbahn, Blick nach Osten)",
+"side": "fahrbahn"
+},
+{
+"name": "m006",
+"x": -949.4,
+"y": 1210.26,
+"yaw": 96.0,
+"pitch": 0.0,
+"vfov": 31.98,
+"eye": 1.4,
+"w": 1366,
+"h": 559,
+"street": "Klosterstraße (Fahrbahn, Blick nach Osten)",
+"side": "fahrbahn"
+},
+{
+"name": "m007",
+"x": -939.0,
+"y": 1214.0,
+"yaw": 88.0,
+"pitch": 0.0,
+"vfov": 31.98,
+"eye": 1.4,
+"w": 1366,
+"h": 559,
+"street": "Klosterstraße (Fahrbahn, Blick nach Osten)",
+"side": "fahrbahn"
+},
+{
+"name": "m008",
+"x": -904.86,
+"y": 1222.09,
+"yaw": 79.0,
+"pitch": 0.0,
+"vfov": 31.98,
+"eye": 1.4,
+"w": 1366,
+"h": 559,
+"street": "Klosterstraße (Fahrbahn, Blick nach Osten)",
+"side": "fahrbahn"
 }
 ]
