@@ -921,8 +921,15 @@ def f_spitzwegerich_bluete(p):
 
 
 def f_breitwegerich_bluete(p):
-    rosette(p, p.ri(7, 9), 0.26, 0.4, 0.2, hx('#4c7c34'), spread=1.35,
-            fn=lambda p, b, a, L, c, f: plantain_leaf(p, b, a, L, c, f, broad=True))
+    # the broad leaves lie in a flat rosette: from the side they rise at a low angle to both sides, the front ones short
+    leaves = [(a + p.r(-0.12, 0.12), p.r(0.2, 0.3), p.r(0.55, 1.0)) for a in (-1.25, -0.95, -0.6, -0.25, 0.25, 0.6, 0.95, 1.25)]
+    p.rng.shuffle(leaves)
+    for a, L, fore in leaves:
+        c = p.jit(hx('#4c7c34'), 0.07)
+        rib = p.leaf((p.r(-0.01, 0.01), 0.0), a, L, L * 0.55, c, shape='oval', bend=-0.08 * (1 if a > 0 else -1), foreshort=fore)
+        for off in (-0.5, 0.5):  # the arching parallel veins
+            pts = [(q[0] + off * L * 0.1 * math.cos(a), q[1] - off * L * 0.1 * math.sin(a)) for q in rib[3:-5]]
+            p.stroke(pts, L * 0.012, L * 0.006, mix(c, (0.9, 0.95, 0.7), 0.3), hl=0)
     for k in range(p.ri(3, 4)):
         u = p.r(-0.25, 0.25)
         top = p.r(0.75, 0.98)

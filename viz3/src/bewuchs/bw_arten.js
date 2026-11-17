@@ -15,9 +15,12 @@
 //                         speckles far away; farbe_samen where the seed stage shows from afar), the atlas frames bilder { knospe |
 //                         bluete | frucht | samen | blatt: { zelle: [column, row], hoehe: share of hoehe_m } }, its year jahr: one
 //                         plant's phases [frame, from, to(, share)] – days of year 1–366, in order, not overlapping; share (0–1,
-//                         default 1) = how many plants show this phase, the others show the phase before (or nothing); days not
-//                         covered: nothing above the grass –, streuung_tage (± days one plant is earlier or later than the table),
-//                         wuchs (12 monthly shares 0–1 of the height: perennials grow up in spring), nach_schnitt_tage (days after a cut
+//                         default 1) = how many plants show this phase, the others show their leaves (blatt, if the species has that
+//                         frame; nothing if the phase is blatt itself); days not covered: nothing above the grass –, streuung_tage
+//                         (± days one plant is earlier or later than the table), wuchs (12 monthly shares 0–1 of the height of the
+//                         living frames blatt, knospe, bluete: perennials grow up in spring; samen and frucht are last season's stalks
+//                         at full height), the drawn plant reaches 'oben' of its cell (blumen.json): quad height = height / oben,
+//                         nach_schnitt_tage (days after a cut
 //                         until it flowers again inside its season; null: not that year), nachbluete_bis (day of year: no re-bloom
 //                         after it), blatt_tage (days after a cut until its leaves show again), optional offen_h [from, to] (hours the
 //                         flowers are open), verfaerbung { von, bis, farbe } (leaves turning), beeren { von, bis, farbe }.
@@ -25,9 +28,11 @@
 //                         index), gras { id: share } (sums to 1), blumen { id: plants per m² at the species' peak }, dichte (0–1:
 //                         share of the blade tile drawn), hoehe { gemaeht_m (m after a cut / grazed), max_m (m: the sward's bulk at
 //                         most; seed heads stand above it), wachstum_cm_tag (12 monthly growth rates, cm per day), winter (share of
-//                         the height left standing in winter) }, pflege (care: 'rasen' mown every alle_tage[month] days from von to
-//                         bis; 'schnitt' cut days { doy, streuung_tage (± per field), anteil (share of the fields cut) }; 'weide'
-//                         grazing; 'keine'), farbe { duerre, schatten: { ziel (#rrggbb), staerke (0–1 mix at full drought / shade) } },
+//                         the height left standing in winter) }, pflege (care: 'rasen' mown every alle_tage[month] days (12 monthly
+//                         values, 0 = not mown) from day of year von to bis, each plot ± streuung_tage; 'schnitt' cut days { doy,
+//                         streuung_tage (± per field), anteil (share of the fields cut) }, rand (the strip next to the carriageway:
+//                         breite_m, its extra cuts), heu_tage (days the hay lies); 'weide' grazing from day von to bis, hoehe_m kept
+//                         between, geil (tufts left standing: share, height m), tritt (share trodden); 'keine'), farbe { duerre, schatten: { ziel (#rrggbb), staerke (0–1 mix at full drought / shade) } },
 //                         kahl (bare spots: anteil 0–1 of the area, flecken_m [min, max] m, boden #rrggbb, moos 0–1 in shade),
 //                         kraft { dichte, hoehe, blumen: [factor at vigour 0, factor at vigour 7] } (vigour = bits 5–7 of the map),
 //                         quellen.
@@ -719,8 +724,8 @@ export const BWARTEN = (() => {
         ['bluete', 111, 134],
         ['samen', 135, 148],
         ['blatt', 149, 235],
-        ['bluete', 236, 280, 0.25],
-        ['blatt', 281, 330],
+        ['bluete', 236, 290, 0.25],
+        ['blatt', 291, 330],
         ['blatt', 331, 366, 0.6],
       ],
       streuung_tage: 10,
@@ -916,7 +921,8 @@ export const BWARTEN = (() => {
       jahr: [
         ['blatt', 100, 168],
         ['bluete', 169, 255],
-        ['blatt', 256, 300],
+        ['bluete', 256, 285, 0.25],
+        ['blatt', 286, 300],
       ],
       streuung_tage: 10,
       wuchs: STAUDE,
@@ -1162,7 +1168,7 @@ export const BWARTEN = (() => {
       bilder: { blatt: B([1, 5]), bluete: B([0, 5], 0.6) },
       jahr: [
         ['blatt', 95, 172],
-        ['bluete', 238, 285],
+        ['bluete', 238, 292],
       ],
       streuung_tage: 8,
       wuchs: VOLL,
