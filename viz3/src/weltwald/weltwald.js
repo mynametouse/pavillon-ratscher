@@ -101,16 +101,16 @@ export const WWALD = (() => {
     gold: +SEASON.gold.toFixed(2),
     fresh: +SEASON.fresh.toFixed(2),
   });
-  // autumn colour of a broadleaf kind (multiplied into the green of its leaves): beech copper, oak brown, birch yellow, fruit mixed
+  // autumn colour of a broadleaf kind (multiplied into the colour of its leaves): beech copper, oak brown, birch yellow, fruit mixed
   const AUTUMN = {
     3: [2.3, 1.15, 0.3],
     4: [1.8, 1.15, 0.45],
-    5: [2.6, 1.95, 0.35],
+    5: [1.2, 1.12, 0.8],
     6: [2.4, 1.0, 0.4],
     7: [2.1, 1.1, 0.4],
   };
-  // the green of summer (the birch: the garden's aspen leaves are yellow-green)
-  const SUMMER = { 3: [1, 1, 1], 4: [1, 1, 1], 5: [0.8, 1, 0.7], 6: [1, 1, 1], 7: [1, 1, 1] };
+  // the green of summer (the birch: the garden's aspen leaves are golden – its own colour is its autumn)
+  const SUMMER = { 3: [1, 1, 1], 4: [1, 1, 1], 5: [0.56, 0.98, 1.35], 6: [1, 1, 1], 7: [1, 1, 1] };
   const tmpC = new THREE.Color();
   function leafColour(k, g, a, out) {
     const A = AUTUMN[k] || AUTUMN[3],

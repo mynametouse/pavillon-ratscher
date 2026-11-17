@@ -2,10 +2,11 @@
 # Without a browser (data): the index and the cells agree, no tree in a keep-out area (Ratscher's square, Schleusingen's town zone, Suhl's
 # tiles), none on the roads the app draws (welt/fahrt.js), none in a building of the cells of gebaeude/z/, none at the known open fields
 # along the roads; kinds and sizes plausible.
-# In the browser (the world tiles from the published site, as viz3/test/laeden.py): nothing at the start; at a forest by the road to
-# Kloster Veßra and in the valley at Rappelsdorf the cells come, trees stand near (3D), in the middle and as cards, their feet on the drawn
-# ground, no trunk on a road, the trunks stop the walker; draw calls and triangles in a forest, at a forest edge from the road and in a
-# valley view (≤ 150 000 triangles, ≤ 10 draw calls; with the phone flag ≤ 60 000 and ≤ 8); no new shader programs; streaming on a drive
+# In the browser (the world tiles from the published site, as viz3/test/laeden.py): nothing at the start; along the road from Schleusingen
+# to Suhl (Hirschbach, the road north of Schleusingen, a forest edge, the forest before Suhl) the cells come, trees stand near (3D), in the
+# middle and as cards, their feet on the drawn ground, no trunk on a road, the trunks stop the walker; draw calls and triangles in a forest,
+# at a forest edge from the road and in a valley view from above (≤ 150 000 triangles, ≤ 10 draw calls; with the phone flag ≤ 60 000 and
+# ≤ 8); no new shader programs; streaming on a drive
 # at 100 km/h (the cells ahead are there before one reaches them, no tree pops up in front); summer, autumn, winter; pictures from the
 # road at eye height and from 60 m above. Pictures in out/welt_wald/.
 #   python3 viz3/test/welt_wald.py 9054 [sections]     sections: data,road,perf,drive,season,phone (default all)

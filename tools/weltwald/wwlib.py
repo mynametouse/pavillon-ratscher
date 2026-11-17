@@ -17,7 +17,7 @@ S2 = A * A + B * B
 H0 = float(GEOMAN['H0'])
 CELL = 400.0
 # where the generated data go (the app's extras) and where raw downloads are cached (outside the repo)
-OUT = os.path.join(VIZ, 'extra', 'welt-wald', 'dist', 'weltwald')
+OUT = os.environ.get('WW_OUT', os.path.join(VIZ, 'extra', 'welt-wald', 'dist', 'weltwald'))  # WW_OUT: elsewhere (a long run)
 RAW = os.environ.get('WW_RAW', os.path.join(os.path.expanduser('~'), 'ww-raw'))
 UA = 'weltwald-geodata/0.1 (open geodata processing)'
 # Suhl's published data (the city's own trees stand in the tiles of its product b): the data repo beside the site

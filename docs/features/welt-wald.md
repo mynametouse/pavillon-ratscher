@@ -10,11 +10,12 @@ Stück diese flachen Satellitenbilder mit realem Leben und realen 3D-Darstellung
   jeder Baum der Wälder, Gehölze, Baumreihen und Felder: Lage, Höhe, Kronenradius, Art, Merker (Waldrand, Höhe gemessen, im Wald, jung)
   und ein Rang (welche Bäume bleiben, wenn eine Stufe ausdünnt). `weltwald/z/<i>_<j>.bin` (8 Byte je Baum, gepackt), Verzeichnis
   `weltwald/z/index.json` (Bäume, Bytes und Arten je Zelle).
-- **Wo:** zuerst die Straßen, die man fährt – nach Schleusingen (`markt`), nach Kloster Veßra (`baumschule`, `welt/fahrt.js`) und die
-  Landstraße nach Suhl über St. Kilian und Hirschbach (`suhl_land`, Suhls Anfahrt) –, 400 m beiderseits. **Nicht**, wo andere pflanzen:
-  Ratschers Quadrat (seine gemessenen Bäume, der Wald an der Klinge), Schleusingens Stadtzone (`stadt.json` `zone`, Hilfs-Agent
-  `stadtgruen`), Suhls Kacheln (die 416 Kacheln der Stufe 10 seines Produkts `b`, Suhl-Chat) und was Kloster Veßra selbst modelliert
-  (`wglib.keepout('zonen')`).
+- **Wo:** zuerst die Straße, die man nach Suhl fährt – von Schleusingen über St. Kilian und Hirschbach (`suhl_land`, Suhls Anfahrt),
+  400 m beiderseits: 86 Zellen, 310 726 Bäume, 1,0 MB. Die Korridore nach Schleusingen (`markt`) und nach Kloster Veßra (`baumschule`,
+  `welt/fahrt.js`) sind erzeugt, aber noch nicht dabei (Stand auf `wip/welt-wald`); die übrigen Kacheln der Welt folgen. **Nicht**, wo
+  andere pflanzen: Ratschers Quadrat (seine gemessenen Bäume, der Wald an der Klinge), Schleusingens Stadtzone (`stadt.json` `zone`,
+  Hilfs-Agent `stadtgruen`), Suhls Kacheln (die 416 Kacheln der Stufe 10 seines Produkts `b`, Suhl-Chat) und was Kloster Veßra selbst
+  modelliert (`wglib.keepout('zonen')`).
 - **Woher (alle offen, ohne Anmeldung):**
   - **Luftbild DOP 20 cm, RGB und Infrarot** (WMS `th_dop`, `th_dop20cir`; © GDI-Th, Datenlizenz Deutschland – Namensnennung 2.0,
     `dl-de/by-2-0`): was jetzt steht (Bildflüge 7.4.2024, 15.5.2024, 12.5.2025) – grün im Infrarot (NDVI), keine helle Fläche (Schlag,

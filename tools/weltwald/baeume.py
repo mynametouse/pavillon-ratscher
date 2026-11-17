@@ -94,6 +94,10 @@ def chm_grid(G):
     p = os.path.join(W.RAW, 'chm', f'{G.i}_{G.j}_{G.res}.npy')
     if os.path.exists(p):
         return np.load(p)
+    # compact cache (decimetres, compressed: ~0.3 MB a cell instead of 3 MB – the whole region is ~1 900 cells)
+    pz = p[:-4] + '.npz'
+    if os.path.exists(pz):
+        return np.load(pz)['dm'].astype(np.float32) / 10
     import rasterio
     from rasterio.windows import from_bounds
     from pyproj import Transformer
@@ -126,8 +130,9 @@ def chm_grid(G):
             W.log('CHM retry', G.i, G.j, e)
             _CHM.pop(q, None)
     os.makedirs(os.path.dirname(p), exist_ok=True)
-    np.save(p, out.astype(np.float32))
-    return out
+    dm = np.clip(np.round(out * 10), 0, 65535).astype(np.uint16)
+    np.savez_compressed(pz, dm=dm)
+    return dm.astype(np.float32) / 10
 
 
 def quadkey(lat, lon, z):
