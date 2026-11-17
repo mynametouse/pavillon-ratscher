@@ -232,6 +232,7 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   (`player`: Blickpunkte, Ortsname, `go`, Springen, Haltungen), Kamera (`camera`: alle Ansichten, Schulterkamera ohne Wanddurchblick,
   `resize`), Eingabe (`input`), Schleife (`game`: `frame`, Physik des Gehens) – bis Phase 1 eine Datei `game.js` –; Aktionen/Inventar,
   Haus (Schalter, Ofen, Sitzen), Aufgaben, HUD, Spielfigur
+- `jetpack/` – der Jetpack (`JET`, V18s, `docs/features/jetpack.md`): anlegen, fliegen über Haken J1 in `game/game.js` `physics()`, Überblick mit Ortsnamen, Zielflug zu den Orten
 - `audio/` – Ton-Engine (Aufnahmen, Synthese, Atmosphäre, Stimmen), Musik (Klavier, Platten, Ukulele)
 - `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus, Tagesablauf (`life`)
 - `dorf/` – Dorfleben (Kalender, Texte, Dorfbewohner, Schule, Feuer)
