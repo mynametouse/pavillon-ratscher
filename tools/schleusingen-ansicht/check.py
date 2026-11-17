@@ -103,7 +103,7 @@ def main(argv):
             errs.append(f'{tag}: half-timbering without the colour of its timber (fachwerk: {sorted(HOLZ)})')
         if 'fachwerk' in r and r['fachwerk'] not in HOLZ:
             errs.append(f'{tag}: fachwerk {r["fachwerk"]!r}')
-        if r.get('material') == 'schiefer' and r.get('schiefer') not in ('hell', 'mittel', 'dunkel'):
+        if str(r.get('material')).startswith('schiefer') and r.get('schiefer') not in ('hell', 'mittel', 'dunkel'):
             errs.append(f'{tag}: slate without its tone (schiefer: hell, mittel, dunkel)')
         if 'rahmen' in r and r['rahmen'] not in RAHMEN:
             errs.append(f'{tag}: rahmen {r["rahmen"]!r}')
@@ -126,6 +126,13 @@ def main(argv):
     both = seen & nl_ids
     if both:
         errs.append(f'read and unreadable at once: {sorted(both)}')
+    # the looks for FASSADE (tools/schleusingen-ansicht/ansicht.py), if written: made from this very data
+    ap = os.path.join(EXTRA, 'dist', 'fassade', 'ansicht.json')
+    if os.path.exists(ap):
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import ansicht
+        if json.load(open(ap)) != json.loads(json.dumps(ansicht.build(doc), ensure_ascii=False)):
+            errs.append('dist/fassade/ansicht.json is not made from this fassaden.json – run tools/schleusingen-ansicht/ansicht.py')
     sh = shown(stadt, views)
     need = {}
     for name, cnt in sh.items():
