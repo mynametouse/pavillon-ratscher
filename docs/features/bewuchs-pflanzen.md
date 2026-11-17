@@ -197,6 +197,11 @@ in `LAYOUT` und in `bw_arten.js` (die Unit-Tests prüfen, dass beide zusammenpas
   Ähren-Zellen in fester Farbe zeichnen.
 - **Mipmaps und Alpha-Test:** feine Stängel und Rispen werden in kleinen Mipmap-Stufen durchsichtiger und verschwinden beim Alpha-Test;
   helfen würden Alpha-to-Coverage oder eine Alpha-Skalierung je Stufe (die Mipmaps beim Laden selbst rechnen).
+- **Im Spiel gesehen (Test, 17.11.):** mit `side: DoubleSide` dreht three die Normale der Rückseite nach unten – die halbe Wiese wird
+  dunkel (gelb → braun); der Test zeichnet jede Karte deshalb zweimal mit Vorderseite und Normale nach oben. Aus der Nähe (< ~2 m) sind
+  die 128-px-Zellen vergrößert und wirken grob; eine Fassung mit 256-px-Zellen (2048², ~3,5 MB) kann der Zeichner ohne Änderung der Daten
+  rechnen, falls die Vorlage Blumen so nah zeigt. Die Blattbilder wirken im Test etwas dunkler als der helle Gartenrasen – tönt die
+  Vorlage sie nicht mit dem Boden, hebe ich die Grüntöne um ~20 % an.
 - **Herbstzeitlose:** giftig; auf Weiden gemieden, in Heuwiesen problematisch – nur geringe Dichte eingetragen.
 - **Tageszeit:** `offen_h` (Löwenzahn, Gänseblümchen, Pippau, Wegwarte schließen sich abends bzw. Wegwarte mittags) – nur wenn die
   Vorlage es mag.
