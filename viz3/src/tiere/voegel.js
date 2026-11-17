@@ -75,9 +75,10 @@ export const VOEGEL = (() => {
       head: L(120, 46, 36),
       flap: 8,
     },
+    // (a starling is 21 cm long, 38 cm across; the flock is only seen far off, as dots – drawn 1.6 times their size)
     star: {
-      len: 0.21,
-      span: 0.38,
+      len: 0.34,
+      span: 0.6,
       body: L(34, 34, 40),
       wing: L(30, 30, 36),
       tip: L(20, 20, 24),
@@ -573,7 +574,7 @@ export const VOEGEL = (() => {
           hy = ay + (by - ay) * u,
           A2 = amHecke(Hp, hx, hy),
           side = i % 2 ? 1 : -1,
-          off = rnd(0.5, 1.6);
+          off = rnd(1.0, 2.0);
         const x = hx + A2.nx * side * off,
           y = hy + A2.ny * side * off;
         K.b.push({
@@ -623,10 +624,12 @@ export const VOEGEL = (() => {
           b.y += Math.cos(b.hd) * s;
           // (stay near the hedge: back towards it when too far)
           const h = amHecke(Hp, b.x, b.y);
-          if (h.d > 2.2) b.hd = Math.atan2(h.x - b.x, h.y - b.y);
-          if (h.d < 0.35) {
-            b.x += h.nx * b.side * 0.05;
-            b.y += h.ny * b.side * 0.05;
+          // (in front of the hedge, not in its trimmed body of about a metre)
+          if (h.d > 2.6) b.hd = Math.atan2(h.x - b.x, h.y - b.y);
+          if (h.d < 0.85) {
+            b.x += h.nx * b.side * 0.08;
+            b.y += h.ny * b.side * 0.08;
+            b.hd = Math.atan2(h.nx * b.side, h.ny * b.side);
           }
         }
         b.pick = Math.max(0, (b.pick || 0) - dt);
@@ -658,7 +661,7 @@ export const VOEGEL = (() => {
         if (b.t <= 0 && d > 6.5 && !(p.fz && d < 12)) {
           b.st = 'raus';
           const h = amHecke(Hp, b.x, b.y),
-            off = rnd(0.6, 1.5);
+            off = rnd(1.0, 1.9);
           b.ziel = [h.x + h.nx * b.side * off, h.y + h.ny * b.side * off];
           b.z = ground(b.x, b.y) + 0.8;
         }
@@ -786,9 +789,9 @@ export const VOEGEL = (() => {
   }
   // ---- starlings in autumn at dusk: a murmuration over the fields ----
   function neuStare(K, p) {
-    const n = COARSE ? 70 : 140;
+    const n = COARSE ? 90 : 200;
     const a0 = Math.atan2(p.x - 222, p.y + 108) + rnd(-1, 1);
-    K.c = [p.x + Math.sin(a0) * rnd(170, 240), p.y + Math.cos(a0) * rnd(170, 240)];
+    K.c = [p.x + Math.sin(a0) * rnd(110, 160), p.y + Math.cos(a0) * rnd(110, 160)];
     K.b = [];
     for (let i = 0; i < n; i++) {
       // a point in a unit ball (more towards the middle)
@@ -808,9 +811,9 @@ export const VOEGEL = (() => {
     const cx = K.c[0] + Math.sin(t * 0.05) * 60,
       cy = K.c[1] + Math.cos(t * 0.037) * 45,
       cz = ground(K.c[0], K.c[1]) + 45 + Math.sin(t * 0.09) * 12;
-    const rx = 28 + Math.sin(t * 0.21) * 14,
-      ry = 12 + Math.sin(t * 0.17 + 1) * 7,
-      rz = 8 + Math.sin(t * 0.13 + 2) * 5,
+    const rx = 36 + Math.sin(t * 0.21) * 16,
+      ry = 15 + Math.sin(t * 0.17 + 1) * 8,
+      rz = 10 + Math.sin(t * 0.13 + 2) * 6,
       yaw = t * 0.08,
       cyw = Math.cos(yaw),
       syw = Math.sin(yaw);
@@ -922,7 +925,7 @@ export const VOEGEL = (() => {
         any = true;
       } else aus('schwalbe');
       if (A.star) {
-        const K = kind('star', COARSE ? 70 : 140);
+        const K = kind('star', COARSE ? 90 : 200);
         if (!K.on) {
           K.on = true;
           neuStare(K, p);
