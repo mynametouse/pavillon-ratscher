@@ -567,24 +567,24 @@ export const ZIPLAN = (() => {
       host.y1 = cut - PW / 2;
       return true;
     };
-    // (the bathroom behind the Stube – the kitchen keeps its long walls for the sink and the stove – else behind the kitchen; a house
-    // this small has no bedroom of its own: a room of 2.1 × 2.7 m left no place for a bed beside the way in, and one sleeps on the
-    // sofa bed of the living room – haeuser/haeuser_heute.js: „Aufs Sofa legen“)
-    if (!hasBad)
-      hasBad = splitBack(
-        rooms.find(r => r.fl === 0 && r.kind === 'stube'),
-        'bad',
-        2.2
-      );
-    if (!hasBad)
-      hasBad = splitBack(
-        rooms.find(r => r.fl === 0 && r.kind === 'kueche'),
-        'bad',
-        2.2
-      );
+    // (the bathroom behind the Stube – the kitchen keeps its long walls for the sink and the stove – else behind the kitchen; the
+    // bedroom behind the Stube, else the kitchen, where the room is wide enough for a bed beside the way in from the door (2.6 m) and
+    // deep enough for both parts; a house narrower than that has no bedroom of its own – one sleeps on the sofa bed of the living room,
+    // haeuser/haeuser_heute.js „Aufs Sofa legen“: a room of 2.1 × 2.5 m had had no place for a bed)
+    const stube0 = rooms.find(r => r.fl === 0 && r.kind === 'stube'),
+      kueche0 = rooms.find(r => r.fl === 0 && r.kind === 'kueche');
+    if (!hasBad) hasBad = splitBack(stube0, 'bad', 2.2) || splitBack(kueche0, 'bad', 2.2);
     if (!rooms.some(r => r.kind === 'schlafzimmer')) {
       const k = rooms.find(r => r.kind === 'kammer');
       if (k) k.kind = 'schlafzimmer';
+      else
+        for (const host of [stube0, kueche0])
+          if (
+            host &&
+            host.x1 - host.x0 >= 2.6 &&
+            splitBack(host, 'schlafzimmer', Math.min(3.4, Math.max(2.6, (host.y1 - host.y0) * 0.42)))
+          )
+            break;
     }
     // the cellar under the kitchen (or the Stube), reached by a trapdoor with a steep stair
     let cellar = null,

@@ -66,10 +66,12 @@ dieselben Räume „nachher“: `out/innen_real/nachher/`. Was ein Fremder sofor
   Hauswirtschaftsraum). Jedes Zimmer hat seine Tür vom Flur.
 - **Jedes Haus hat ein Bad** (vorher hatte ein eingeschossiges Haus mit Waschküche hinten keins): die Waschküche, die Vorratskammer oder
   eine Kammer wird es; im ganz kleinen Haus (Flur, Stube, Küche, 6 × 6 m) wird hinter der Stube ein Bad von 2,2 m abgeteilt (Tür vom Flur;
-  die Küche behält ihre langen Wände für Spüle und Herd). Ein eigenes Schlafzimmer hat so ein Haus nicht – eins von 2,1 × 2,7 m ließ neben
-  dem Weg von der Tür keinen Platz für ein Bett; man schläft auf dem Schlafsofa der Stube („Aufs Sofa legen“). Ein abgeteilter Raum
-  hinten bekommt seine Tür vom Flur: die Treppe, die der Plan auch im eingeschossigen Haus vorsah, wird dort nie gebaut und versperrte
-  die Wand (Prüflauf 3: das Bad nur durch die Küche, die Küche darum ohne Platz für die Zeile). **Jedes Bad hat WC und Waschbecken**: fand der Stil keinen Platz (kleine Bäder), kommen kompakte hinzu
+  die Küche behält ihre langen Wände für Spüle und Herd). **Ein Schlafzimmer** bekommt ein eingeschossiges Haus ohne eins hinter der Stube
+  (sonst der Küche), wenn der Raum mindestens 2,6 m breit ist – Tiefe 42 % des Raums, 2,6–3,4 m (Gerhards Haus: 3,9 × 2,9 m); schmaler
+  nicht: eins von 2,1 × 2,5 m ließ neben dem Weg von der Tür keinen Platz für ein Bett, dort schläft man auf dem Schlafsofa der Stube
+  („Aufs Sofa legen“). Ein abgeteilter Raum hinten bekommt seine Tür vom Flur: die Treppe, die der Plan auch im eingeschossigen Haus
+  vorsah, wird dort nie gebaut und versperrte die Wand (Prüflauf 3: das Bad nur durch die Küche, die Küche darum ohne Platz für die
+  Zeile). **Jedes Bad hat WC und Waschbecken**: fand der Stil keinen Platz (kleine Bäder), kommen kompakte hinzu
   (`ZIEINR.furnish`). **Jede Küche hat Spüle und Herd**: fand die Küchenzeile keine Wand, stehen ein Spülenschrank (60 cm, eingelassenes
   Becken) und ein Herd, wo sie passen (Prüflauf 1 fand eine Küche in Schleusingen ohne beides).
 - **Spülen mit Becken**: in der Küchenzeile des Baukastens ein eingelassenes Becken (16 cm tief, Rand, Ablauf, die Arbeitsplatte darum
@@ -133,7 +135,8 @@ vorhandener Programme. Keine neuen Lichter. Am Telefon keine Zimmer-Umgebung (6 
 - Themen-Tests `viz3/extra/innen-real/tests.txt`: `smoke`, `innen_real:ratscher`, `innen_real:schleusingen`, `haeuser:bilder=1`,
   `schleusingen_innen` (zwei Hälften), `zombie_innen`, `memphone`. Prüfläufe: 1 (9d78fe66) alles grün außer `innen_real:schleusingen`
   (eine Küche ohne Spüle – behoben), 2 (826e8109) grün außer `innen_real` (ein kleines Haus ohne Bad, ein Treppenhaus mit falsch
-  gezählten Fenstern – beides behoben), 3 (957b859c) siehe Bericht.
+  gezählten Fenstern – beides behoben), 3 (957b859c) grün außer dem kleinen Haus 281 (Küche ohne Zeile, Schlafzimmer ohne Bett – behoben),
+  4 (1af25e80) grün außer Gerhard nachts (sein Haus hatte kein Schlafzimmer mehr: die Teilung war zu streng – behoben), 5 siehe Bericht.
 
 ## 6 Für den Lead
 
