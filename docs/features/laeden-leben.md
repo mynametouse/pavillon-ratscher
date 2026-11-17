@@ -134,10 +134,14 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
   Aufrufe, Bild 24 → 17 ms, ohne Leute 14 ms – die Bildzeit in SwiftShader schwankt). Die Bilder vorher und nachher sind gleich (von
   dort sieht man niemanden: die Leute in den Gängen stehen hinter den Gondeln; `perf_vorher.jpg`, `perf_nachher.jpg`); an der Kasse
   (`perf_kasse.jpg`) ist die Kassiererin mit ihren 3 Teilen da (8 Aufrufe für alle Leute im Blick).
+- **Bei GitHub** (Lauf 44139019399 auf `5580d75e5`, alles grün): an derselben Stelle wie im Test `markt` kosten die 10 Leute jetzt 2
+  Aufrufe (704 → 706; im Lauf 44105844111 vorher 705 → 774); der Job `laeden` brauchte 877 s (in den Läufen davor 1435 und 1540 s, vor
+  den Leuten 766 s – die Läufer bei GitHub schwanken stark).
 - **Was sich geändert hat:** (1) Die Figuren: eine Rocketbox-Datei hat 8 Teile auf 3 Materialien (Körper, Kopf, Haare und Wimpern) –
   jetzt je Material ein Teil, einmal beim Laden der Datei (die Klone erben es): 3 Zeichenaufrufe und 3 Skelette je Person statt 8.
   (2) Leute hinter Hohem (was vom Boden über 1,7 m steht: Rückwände der Gondeln, Regale, die Leergut-Theke) werden nicht gezeichnet,
-  solange das Auge darunter ist (drei Sichtlinien je Person, zur Mitte und 0,3 m daneben, alle 0,12 s) und seltener bewegt; von oben
+  solange das Auge darunter ist (drei Sichtlinien je Person, zur Mitte und 0,45 m daneben; zwölfmal in der Sekunde und sofort, wenn
+  sich das Auge mehr als 0,25 m bewegt hat – nach einem Schnitt ist niemand mehr vom Bild davor verdeckt) und seltener bewegt; von oben
   (Ansicht von hinten, höher als 1,75 m über dem Boden) wird nichts weggelassen. (3) Regale und Waren waren schon je Abschnitt zu einem
   Mesh zusammengefasst (Wände, Regale, ungedruckte Waren in einem, die bedruckten Waren und Preisschilder in einem zweiten auf dem
   Atlas); gezeichnet wird nur der Abschnitt, in dem man ist, seine offenen Nachbarn und die mit Türen – 9 Aufrufe für den ganzen Laden.
@@ -206,10 +210,10 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
 - Zur Laufzeit eingehängt (keine fremde Datei geändert): der Knopf `#einkaufbtn` in `#hudtr` vor `#menubtn`, ein Teil `.einkauf-inv` im
   Inventarfenster `#invwin` (MutationObserver), die Fenster `#einkaufpanel`, `#kassepanel`, der Hinweis `#korbchip` (Stil vom Modul selbst).
 - Grenzland: `GELD`/`INVENTAR` lesen `window.GLSTATE` (nur wenn `on`) – keine Änderung an `grenzland/*`.
-- Laufzeiten bei GitHub (SwiftShader, letzter Lauf 44112204940 auf `e4a5bb2cc`, alles grün): `laeden_leben:markt,obi,kaufen` 755 s
-  (23/23), `laeden_leben:oeffentlich,kirche` 752 s (29/29), `laeden_innen` 674 s (51/51), `laeden` 1540 s (64/64), `smoke` 69 s. `laeden`
-  war vor dieser Arbeit 766 s – die Leute in jedem Laden, den der Test besucht, und die bedruckten Waren kosten in SwiftShader Zeit
-  (innerhalb der Grenze von 60 min, aber im Prüfpaket der längste dieser Jobs; mit `?noleben` ließen sich die Leute dort weglassen).
+- Laufzeiten bei GitHub (SwiftShader, Lauf 44139019399 auf `5580d75e5`, alles grün): `laeden_leben:markt,obi,kaufen,perf` 774 s
+  (26/26), `laeden_leben:oeffentlich,kirche` 702 s (29/29), `laeden_innen` 1030 s (51/51), `laeden` 877 s (64/64), `smoke` 80 s.
+  `laeden` war vor dieser Arbeit 766 s, mit den Leuten zwischendurch bis 1540 s; die Läufer schwanken stark (dieselbe Fassung lief
+  einmal 825, einmal 1540 s).
 - **Die Welt hinter den Wänden** (Leistung): drinnen bei EDEKA zeichnet der Rechner rund 695 Aufrufe der Stadt draußen, obwohl die Wände
   sie verdecken. Am meisten brächte ein Kern-Schalter wie `CULL` (`core/assets.js`, Ebenen): solange das Auge in einem geschlossenen Raum
   ist (Laden, Museum, Kirche, Häuser – `KERN.inside`) und keine Tür und kein Fenster des Raums im Blick ist, die Welt auf eine Ebene, die

@@ -186,10 +186,13 @@ with lib.browser() as b:
             zx, zy = k['z']
             vx, vy = zx + (zx - sx) * 1.2, zy + (zy - sy) * 1.2
             yaw = (math.degrees(math.atan2(sx - vx, sy - vy)) + 360) % 360
-            look(vx, vy, yaw, -10, 70)
+            look(ix, iy, yi, -8, 70)
             steps(1)
+            look(vx, vy, yaw, -10, 70)
             pk = J(COUNT)
             pic('perf_kasse')
+            cz = J(f"LLEBEN.leute().filter(p => p.art === 'kasse' && Math.hypot(p.x - {sx}, p.y - {sy}) < 1.2)")
+            ck('perf: after a cut to the till its cashier is drawn at once', cz and not any(p['verdeckt'] for p in cz), json.dumps(cz)[:300])
             print('perf EDEKA at a till', json.dumps(pk), flush=True)
             ck('perf: at the till the (merged) cashier is drawn', pk['leute']['calls'] >= 3, json.dumps(pk['leute']))
     if 'markt' in want or 'kaufen' in want:
@@ -258,6 +261,10 @@ with lib.browser() as b:
             yaw = (math.degrees(math.atan2(sx - px, sy - py)) + 360) % 360
             look(px, py, yaw, -14, 70)
             pic('markt_kasse')
+            # the view came in a cut: the cashier at this till is drawn at once (not left hidden from the view before)
+            cz = J(f"LLEBEN.leute().filter(p => p.art === 'kasse' && Math.hypot(p.x - {sx}, p.y - {sy}) < 1.2)")
+            ck('after a cut to the till its cashier is drawn at once (the culling behind shelves follows the eye)',
+               cz and not any(p['verdeckt'] for p in cz), json.dumps(cz)[:300])
         # the printed goods: the atlas made, every section has its printed fronts
         at = J("({ w: WBILD.status(), m: LINNEN.meshesOf('edeka').filter(m => /waren$/.test(m.name)).length })")
         ck('the goods are printed packages (one atlas, a printed mesh per section)', at['w']['made'] and at['m'] >= 1, json.dumps(at))

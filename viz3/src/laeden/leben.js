@@ -1087,8 +1087,8 @@ export const LLEBEN = (() => {
     const dx = px - ex,
       dy = py - ey,
       L = Math.hypot(dx, dy) || 1,
-      nx = (-dy / L) * 0.3,
-      ny = (dx / L) * 0.3;
+      nx = (-dy / L) * 0.45,
+      ny = (dx / L) * 0.45;
     for (let k = -1; k <= 1; k++) {
       const qx = px + nx * k,
         qy = py + ny * k;
@@ -1102,14 +1102,20 @@ export const LLEBEN = (() => {
     }
     return true;
   }
-  let cullT = 0;
+  let cullT = 0,
+    cullX = 1e9,
+    cullY = 1e9;
   function cullPeople(dt) {
-    cullT -= dt;
-    if (cullT > 0) return;
-    cullT = 0.12;
-    const M = S.M,
-      ex = cam.position.x,
+    const ex = cam.position.x,
       ey = -cam.position.z;
+    // at once when the eye has moved (a cut, a door, a fade – CI picture markt_kasse showed the cashiers still hidden from the view
+    // before), else a dozen times a second for the people walking out from behind a shelf
+    cullT -= dt;
+    if (cullT > 0 && Math.hypot(ex - cullX, ey - cullY) < 0.25) return;
+    cullT = 0.08;
+    cullX = ex;
+    cullY = ey;
+    const M = S.M;
     let T = S.cull === false || !M ? null : tallOf(M);
     if (T && T.length) {
       const zf = M.zf ? M.zf(ex, ey) : P.feet;
@@ -1322,6 +1328,7 @@ export const LLEBEN = (() => {
         sitzt: !!p.sit,
         kasse: p.art === 'kasse' && p.post ? p.post.i : undefined,
         korb: p.korbG ? 'korb' : p.wagen ? 'wagen' : '',
+        verdeckt: !p.f.g.visible,
       }));
   S.kassen = () =>
     S.units.flatMap(R =>
