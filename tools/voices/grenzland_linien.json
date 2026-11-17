@@ -111,6 +111,41 @@
    "g": "f",
    "age": 20
   },
+  "gl_fw_steffen": {
+   "name": "Steffen",
+   "g": "m",
+   "age": 44
+  },
+  "gl_fw_anja": {
+   "name": "Anja",
+   "g": "f",
+   "age": 31
+  },
+  "gl_sl_student": {
+   "name": "Anhalter",
+   "g": "m",
+   "age": 21
+  },
+  "gl_sl_wanderer": {
+   "name": "Wanderin",
+   "g": "f",
+   "age": 34
+  },
+  "gl_sl_sonderling": {
+   "name": "Anhalter",
+   "g": "m",
+   "age": 63
+  },
+  "gl_sl_panne": {
+   "name": "Autofahrerin",
+   "g": "f",
+   "age": 45
+  },
+  "gl_sl_jaeger": {
+   "name": "Jäger",
+   "g": "m",
+   "age": 61
+  },
   "gl_erna": {
    "name": "Erna",
    "g": "f",
@@ -1537,6 +1572,4087 @@
    "text": "Stehenbleiben!",
    "prio": 2,
    "src": "GLFAHNDUNG.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_61ram8",
+   "text": "Da hat einer",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_y9mc4t",
+   "text": "an der Linde",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_azld04",
+   "text": "am Anger",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1tr7253",
+   "text": "an der Klinge",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_17pzz7v",
+   "text": "beim Garten",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1qbknsg",
+   "text": "im Dorf",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_17v8b73",
+   "text": "Na, so was.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_haendler",
+   "id": "gl_haendler_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_61ram8",
+   "text": "Da hat einer",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_y9mc4t",
+   "text": "an der Linde",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_azld04",
+   "text": "am Anger",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1tr7253",
+   "text": "an der Klinge",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_17pzz7v",
+   "text": "beim Garten",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1qbknsg",
+   "text": "im Dorf",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_17v8b73",
+   "text": "Na, so was.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_61ram8",
+   "text": "Da hat einer",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_y9mc4t",
+   "text": "an der Linde",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_azld04",
+   "text": "am Anger",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1tr7253",
+   "text": "an der Klinge",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_17pzz7v",
+   "text": "beim Garten",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1qbknsg",
+   "text": "im Dorf",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_17v8b73",
+   "text": "Na, so was.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_61ram8",
+   "text": "Da hat einer",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_y9mc4t",
+   "text": "an der Linde",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_azld04",
+   "text": "am Anger",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1tr7253",
+   "text": "an der Klinge",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_17pzz7v",
+   "text": "beim Garten",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1qbknsg",
+   "text": "im Dorf",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_17v8b73",
+   "text": "Na, so was.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_61ram8",
+   "text": "Da hat einer",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_y9mc4t",
+   "text": "an der Linde",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_azld04",
+   "text": "am Anger",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1tr7253",
+   "text": "an der Klinge",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_17pzz7v",
+   "text": "beim Garten",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1qbknsg",
+   "text": "im Dorf",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_17v8b73",
+   "text": "Na, so was.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 2.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_61ram8",
+   "text": "Da hat einer",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_y9mc4t",
+   "text": "an der Linde",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_azld04",
+   "text": "am Anger",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1tr7253",
+   "text": "an der Klinge",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_17pzz7v",
+   "text": "beim Garten",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1qbknsg",
+   "text": "im Dorf",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_17v8b73",
+   "text": "Na, so was.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_yuki",
+   "id": "gl_yuki_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_61ram8",
+   "text": "Da hat einer",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_y9mc4t",
+   "text": "an der Linde",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_azld04",
+   "text": "am Anger",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1tr7253",
+   "text": "an der Klinge",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_17pzz7v",
+   "text": "beim Garten",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1qbknsg",
+   "text": "im Dorf",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_17v8b73",
+   "text": "Na, so was.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_boellermann",
+   "id": "gl_boellermann_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_61ram8",
+   "text": "Da hat einer",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_y9mc4t",
+   "text": "an der Linde",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_azld04",
+   "text": "am Anger",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1tr7253",
+   "text": "an der Klinge",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_17pzz7v",
+   "text": "beim Garten",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1qbknsg",
+   "text": "im Dorf",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_17v8b73",
+   "text": "Na, so was.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_wirt",
+   "id": "gl_wirt_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_61ram8",
+   "text": "Da hat einer",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_y9mc4t",
+   "text": "an der Linde",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_azld04",
+   "text": "am Anger",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1tr7253",
+   "text": "an der Klinge",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_17pzz7v",
+   "text": "beim Garten",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1qbknsg",
+   "text": "im Dorf",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_17v8b73",
+   "text": "Na, so was.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_bursche",
+   "id": "gl_bursche_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_14r3zq1",
+   "text": "Hast du schon gehört?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1hfuiqz",
+   "text": "Weißt du das Neueste?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1ql0mpa",
+   "text": "Unter uns gesagt:",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1kjoxt0",
+   "text": "Der Falko hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_rws8pj",
+   "text": "Die Sarah hat",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_61ram8",
+   "text": "Da hat einer",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_y9mc4t",
+   "text": "an der Linde",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_azld04",
+   "text": "am Anger",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1lxoprx",
+   "text": "an der alten Schule",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1km9nfb",
+   "text": "an der Feldscheune",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_12zj3kl",
+   "text": "an der Talsperre",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1tr7253",
+   "text": "an der Klinge",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_17pzz7v",
+   "text": "beim Garten",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1fsjqtu",
+   "text": "auf dem Markt",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1uxrr4",
+   "text": "an der Bertholdsburg",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1w3xoze",
+   "text": "in Schleusingen",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1qbknsg",
+   "text": "im Dorf",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_5asvmy",
+   "text": "einen umgeschubst.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_6oe63v",
+   "text": "sich mit einem geprügelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_epc6jr",
+   "text": "ein Auto mitgehen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1w7kk0e",
+   "text": "Gas gegeben wie verrückt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_tfs1e2",
+   "text": "Böller geworfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1aegfyd",
+   "text": "in fremden Gärten herumgeschnüffelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1f0be3o",
+   "text": "eine Tür aufgebrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1k7pvh8",
+   "text": "die Polizei abgehängt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1gkt4s8",
+   "text": "eine Polizeisperre durchbrochen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_q3khfa",
+   "text": "sich mit der Polizei angelegt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_up14j1",
+   "text": "ohne Karte geangelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_kzygnz",
+   "text": "Leute angepöbelt.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_eec3t0",
+   "text": "sich von der Polizei erwischen lassen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1oe04pp",
+   "text": "die Brötchen ausgefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_15h9dud",
+   "text": "Brennholz gefahren.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_q227rs",
+   "text": "bei der Feuerwehr mitgemacht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_cl7les",
+   "text": "jemandem geholfen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_3p7ng7",
+   "text": "beim Fest mitgefeiert.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_18357zg",
+   "text": "Ich sag ja nichts.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_ek1q4z",
+   "text": "Das gibt es doch nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_17v8b73",
+   "text": "Na, so was.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_v0tcpt",
+   "text": "Ordentliche Leute.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1eykcmn",
+   "text": "So was hört man gern.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_wvt8xy",
+   "text": "Das muss auch mal gesagt werden.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1iv0s3",
+   "text": "Ach, du bist ja einer von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1dtlswx",
+   "text": "Ach, du bist ja eine von denen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_g9c0vl",
+   "text": "Na, ihr zwei! Schön, euch zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_79s0z4",
+   "text": "Grüß dich! Danke noch mal für neulich.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_vx9n30",
+   "text": "Wenn ihr mal was braucht: Ich hab immer Kaffee da.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1drbpsr",
+   "text": "Das ist doch der vom Garten. Pass auf deine Tasche auf.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_18ree5y",
+   "text": "Guck nicht hin. Der guckt schon wieder.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1njz85s",
+   "text": "Man hört ja so einiges über euch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1uv665k",
+   "text": "Mit dir rede ich nicht.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1jifqoq",
+   "text": "Geh weiter. Hier gibt es nichts zu sehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_15tqzh7",
+   "text": "Ich hab die Polizei schon im Handy.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_pkzz47",
+   "text": "Na klar! Für euch immer. Komm, erzähl, was gibt es Neues?",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_rtj537",
+   "text": "Hm. Ja. Guten Tag auch.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1pxl6g8",
+   "text": "Spar dir das.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1xmqlvd",
+   "text": "Ich ruf jetzt die Polizei. Die sollen sich das mal ansehen.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_maedchen",
+   "id": "gl_maedchen_1dny3ic",
+   "text": "Lächeln! Das kommt ins Netz.",
+   "prio": 3.5,
+   "src": "GLRUF.linien"
+  },
+  {
+   "who": "gl_fw_steffen",
+   "id": "gl_fw_steffen_18os767",
+   "text": "Da bist du ja. Manfred hat gesagt, du kommst. Ich bin Steffen, ich leite heute.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_anja",
+   "id": "gl_fw_anja_1ymwx4o",
+   "text": "Ich bin Anja, Maschinistin. Die Pumpe ist meine, die Kuchen sind von allen.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_steffen",
+   "id": "gl_fw_steffen_xn267g",
+   "text": "Übung Löschangriff: Saugschlauch an die Pumpe, Pumpe an, Schlauch zum Ziel, Wasser marsch. Die Uhr läuft ab jetzt.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_anja",
+   "id": "gl_fw_anja_w78dz1",
+   "text": "Gut gekuppelt. Fest anziehen, sonst zieht sie Luft.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_anja",
+   "id": "gl_fw_anja_uv9njb",
+   "text": "Pumpe läuft! Jetzt den Schlauch raus.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_steffen",
+   "id": "gl_fw_steffen_snb2i9",
+   "text": "Schlauch liegt. Strahlrohr auf!",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_steffen",
+   "id": "gl_fw_steffen_1yhi97y",
+   "text": "Wasser marsch! Und Ziel getroffen.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_steffen",
+   "id": "gl_fw_steffen_gcnmf8",
+   "text": "Das war schnell. Damit fahren wir zum Kreisausscheid.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_steffen",
+   "id": "gl_fw_steffen_5senyr",
+   "text": "Ordentlich. Manfred wird zufrieden sein.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_steffen",
+   "id": "gl_fw_steffen_aq6rlc",
+   "text": "Wasser ist Wasser. Beim nächsten Mal etwas flotter.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_anja",
+   "id": "gl_fw_anja_1ji2cgq",
+   "text": "Und jetzt Kaffee und Kuchen. Der Streuselkuchen ist von Heike, der Bienenstich von Uwe.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_steffen",
+   "id": "gl_fw_steffen_1nuap3d",
+   "text": "Uwe backt nicht. Uwe kauft. Aber das sagen wir ihm nicht.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
+  },
+  {
+   "who": "gl_fw_anja",
+   "id": "gl_fw_anja_10sgkw2",
+   "text": "Hier, für dich. Und zehn Euro aus der Kameradschaftskasse – für den Sprit.",
+   "prio": 3.5,
+   "src": "GLJOBSDATA.linien"
   },
   {
    "who": "gl_haendler",
@@ -4237,6 +8353,244 @@
    "who": "gl_maedchen",
    "id": "gl_maedchen_12mita5",
    "text": "Hast du den Kirmesbaum gesehen? Den haben wir die ganze Nacht bewacht.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_student",
+   "id": "gl_sl_student_fkw7d0",
+   "text": "Nimmst du mich ein Stück mit?",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_student",
+   "id": "gl_sl_student_1jmtv6e",
+   "text": "Bis zum Anger in Ratscher reicht mir.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_student",
+   "id": "gl_sl_student_1om613v",
+   "text": "Ich will zur Staumauer, zum Stausee.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_student",
+   "id": "gl_sl_student_1hx4a67",
+   "text": "Ich muss nach Schleusingen, zum Bus.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_student",
+   "id": "gl_sl_student_18zwv3b",
+   "text": "In der Bertholdsburg in Schleusingen ist das Naturhistorische Museum. Lohnt sich, wirklich.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_student",
+   "id": "gl_sl_student_1cwax8s",
+   "text": "Danke fürs Mitnehmen! Hier, fünf Euro für den Sprit.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_student",
+   "id": "gl_sl_student_1hj6sod",
+   "text": "Ach, ihr seid schon zu zweit. Dann warte ich auf den Nächsten.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_wanderer",
+   "id": "gl_sl_wanderer_1wzb0gw",
+   "text": "Hallo! Nimmst du mich mit? Meine Füße streiken.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_wanderer",
+   "id": "gl_sl_wanderer_1jmtv6e",
+   "text": "Bis zum Anger in Ratscher reicht mir.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_wanderer",
+   "id": "gl_sl_wanderer_1om613v",
+   "text": "Ich will zur Staumauer, zum Stausee.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_wanderer",
+   "id": "gl_sl_wanderer_1hx4a67",
+   "text": "Ich muss nach Schleusingen, zum Bus.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_wanderer",
+   "id": "gl_sl_wanderer_106kwzs",
+   "text": "Der Rennsteig ist gar nicht weit. Mit dem Moped eine knappe halbe Stunde, zu Fuß zwei Tage.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_wanderer",
+   "id": "gl_sl_wanderer_1ayj9b8",
+   "text": "Danke! Du hast meine Füße gerettet. Hier, für den Sprit.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_wanderer",
+   "id": "gl_sl_wanderer_1hj6sod",
+   "text": "Ach, ihr seid schon zu zweit. Dann warte ich auf den Nächsten.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_sonderling",
+   "id": "gl_sl_sonderling_1gdft3e",
+   "text": "Fahren Sie zufällig in meine Richtung? Ich habe nur eine Richtung.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_sonderling",
+   "id": "gl_sl_sonderling_1jmtv6e",
+   "text": "Bis zum Anger in Ratscher reicht mir.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_sonderling",
+   "id": "gl_sl_sonderling_1om613v",
+   "text": "Ich will zur Staumauer, zum Stausee.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_sonderling",
+   "id": "gl_sl_sonderling_1hx4a67",
+   "text": "Ich muss nach Schleusingen, zum Bus.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_sonderling",
+   "id": "gl_sl_sonderling_el4fdt",
+   "text": "Ich suche den perfekten Bratwurststand. Seit drei Jahren. Bitte nicht so schnell, ich habe Kuchen im Rucksack.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_sonderling",
+   "id": "gl_sl_sonderling_1yi53ib",
+   "text": "Danke. Und wenn jemand fragt: Sie haben mich nie gesehen.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_sonderling",
+   "id": "gl_sl_sonderling_1aqi8hk",
+   "text": "Zu zweit auf einem Moped. Mutig. Ich warte lieber.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_panne",
+   "id": "gl_sl_panne_1w3mmrm",
+   "text": "Hallo! Können Sie kurz helfen? Mein Auto ist einfach ausgegangen.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_panne",
+   "id": "gl_sl_panne_gp9azd",
+   "text": "Ich glaube, der Tank ist leer. Die Anzeige spinnt schon länger.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_panne",
+   "id": "gl_sl_panne_gff9t8",
+   "text": "Die Batterie ist leer. Ich habe heute früh das Licht angelassen.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_panne",
+   "id": "gl_sl_panne_17tjnsh",
+   "text": "Das bringt leider nichts.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_panne",
+   "id": "gl_sl_panne_1q46ajy",
+   "text": "Sie sind ein Engel. Hier, nehmen Sie das, ich bestehe darauf.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_panne",
+   "id": "gl_sl_panne_43d3k0",
+   "text": "Danke, dann warte ich auf den Abschleppdienst.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_jaeger",
+   "id": "gl_sl_jaeger_86todr",
+   "text": "He! Runter von der Wiese, hier wird gejagt!",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_jaeger",
+   "id": "gl_sl_jaeger_qiqm1z",
+   "text": "Pst. Am Waldrand steht ein Reh. Einfach nur zuschauen.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_jaeger",
+   "id": "gl_sl_jaeger_3ef6j2",
+   "text": "Heute kommt nichts mehr. Nimmst du mich mit bis Ratscher? Der Rucksack ist schwer.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_jaeger",
+   "id": "gl_sl_jaeger_753aq7",
+   "text": "Bis zum Anger reicht mir.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_jaeger",
+   "id": "gl_sl_jaeger_key8ru",
+   "text": "Die Wildschweine haben drüben den Mais umgegraben. Deshalb sitze ich jeden Abend da oben.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_jaeger",
+   "id": "gl_sl_jaeger_5b8jb2",
+   "text": "Danke. Waidmannsheil – so sagen wir Jäger.",
+   "prio": 2,
+   "src": "GLEREIGNIS.linien"
+  },
+  {
+   "who": "gl_sl_jaeger",
+   "id": "gl_sl_jaeger_45o3w9",
+   "text": "Zu dritt auf dem Moped? Lass mal, ich laufe.",
    "prio": 2,
    "src": "GLEREIGNIS.linien"
   },
