@@ -354,7 +354,7 @@ export const GLALLTAG = (() => {
         const a = (196 * Math.PI) / 180,
           along = [Math.cos(a), -Math.sin(a)],
           k = i - (n - 1) / 2;
-        if (j.tun === 'abhaengen') o = kreis(pos[0], pos[1], 0.8);
+        if (j.tun === 'abhaengen') o = kreis(pos[0] + 0.2, pos[1] + 0.65, 0.7);
         else o = { x: pos[0] + along[0] * k * 0.95, y: pos[1] + along[1] * k * 0.95, hd: a + (k % 2 ? 0.25 : -0.2) };
         break;
       }
