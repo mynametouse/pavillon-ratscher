@@ -600,6 +600,7 @@ export const HAEUSER = (() => {
     if (!key || !atHome(key, H)) return;
     const what = doing(key, minute()),
       pl = placeFor(H, what) || (what !== 'bett' ? placeFor(H, 'sofa') : null);
+    S.want = what; // (the hour's wish: a place that stood in for it does not make it move again and again)
     if (!awake()) S.asleep = key;
     if (!pl) return;
     S.guest = key;
@@ -693,7 +694,7 @@ export const HAEUSER = (() => {
       if (!atHome(S.guest, H)) {
         PLAY.think(DTEXT.P[S.guest].name + ' ist hinausgegangen.', 2200);
         guestAway();
-      } else if (doing(S.guest, minute()) !== S.doing) {
+      } else if (doing(S.guest, minute()) !== S.want) {
         // feat/innen-real: the hour has moved on – to the stove, to the table, to the sofa, to bed
         const was = S.doing;
         guestAway();

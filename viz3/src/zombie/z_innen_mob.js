@@ -145,11 +145,11 @@ export const ZIMOB = (() => {
         c = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2],
         mn = Math.min(h[0], h[1], h[2]),
         r = Math.min(o.r ?? Math.min(0.055, mn * 0.75), mn * 0.95),
-        s = o.s || (Math.max(h[0], h[1], h[2]) > 0.2 && mn > 0.03 ? 2 : 1),
+        s = o.s || (Math.max(h[0], h[1], h[2]) > 0.35 && mn > 0.05 ? 2 : 1),
         a = o.a || 0,
         ca = Math.cos(a),
         sa = Math.sin(a),
-        sk = o.skip || '',
+        sk = (o.skip || '') + (o.bottom ? '' : 'b'), // (a soft thing's underside is not seen: left out)
         mid = h[0] + h[1] + h[2] - mn - Math.max(h[0], h[1], h[2]),
         puff = o.puff ?? (mn <= 0.1 && mid >= 0.12 ? mn * 0.28 : 0);
       // the grid along one axis: the rounding at both ends in s steps, one flat span between
@@ -747,6 +747,20 @@ export const ZIMOB = (() => {
         q.fill();
       }
     },
+    // feat/innen-real: a blurred square for the laid-on shade: full in the middle half, falling off smoothly over the outer quarters
+    schatten(q, w, h) {
+      const img = q.createImageData(w, h),
+        f = t => (t >= 1 ? 1 : t * t * (3 - 2 * t));
+      for (let y = 0; y < h; y++)
+        for (let x = 0; x < w; x++) {
+          const a = f(Math.min(x + 0.5, w - x - 0.5) / (w / 4)) * f(Math.min(y + 0.5, h - y - 0.5) / (h / 4)),
+            i = (y * w + x) * 4,
+            g = Math.round(255 * a);
+          img.data[i] = img.data[i + 1] = img.data[i + 2] = g;
+          img.data[i + 3] = 255;
+        }
+      q.putImageData(img, 0, 0);
+    },
     // the veneer of a Schrankwand / Eiche rustikal: wood grain, light and dark lines (coloured by the material)
     furnier(q, w, h) {
       q.fillStyle = '#d8d8d8';
@@ -829,6 +843,19 @@ export const ZIMOB = (() => {
     M.gingham = KM.curtainRed;
     M.duvet = KM.duvet;
     for (const m of [M.velours, M.karo, M.duvet]) SOFTM.add(m); // feat/innen-real
+    // feat/innen-real: the shade of the normal game's rooms – contact shadows under the furniture, the darker rims where floor, walls
+    // and ceiling meet (an ambient occlusion laid on): black, its alpha a blurred square (the green of a canvas) laid out in nine parts
+    M.schatten = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.5,
+      alphaMap: ctex(64, 64, DRAW.schatten, false),
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    });
+    M.schatten.name = 'innen-schatten';
     // feat/innen-real: the palette indoors (the normal game's houses): the same material and program, with the sky's light of its own
     // strength – a room sees the sky through its windows only (full, every glossy top and white front looked blue-grey)
     M.palIn = twin(PAL.M.front);

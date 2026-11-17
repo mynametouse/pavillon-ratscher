@@ -538,11 +538,40 @@ export const ZIPLAN = (() => {
     if (!hasBad) {
       const cand = rooms
         .filter(r => ['waschkueche', 'vorrat', 'kammer'].includes(r.kind) && r.x1 - r.x0 >= 1.6 && r.y1 - r.y0 >= 1.8)
-        .sort((a, b) => (a.x1 - a.x0) * (a.y1 - a.y0) - (b.x1 - b.x0) * (b.y1 - b.y0));
+        .sort(
+          (a, b) =>
+            (a.kind === 'kammer') - (b.kind === 'kammer') ||
+            (a.x1 - a.x0) * (a.y1 - a.y0) - (b.x1 - b.x0) * (b.y1 - b.y0)
+        ); // (a Kammer last: it is the bedroom of a house of one storey)
       if (cand.length) {
         cand[0].kind = 'bad';
         hasBad = true;
       }
+    }
+    // a small house of one storey and two rooms (hall, Stube, kitchen) – its back split off: a bathroom behind the kitchen, a bedroom
+    // behind the Stube, where the room is deep enough for both parts
+    const splitBack = (host, kind, back) => {
+      if (!host || host.y1 - host.y0 < back + 2.4 || host.x1 - host.x0 < 1.6) return false;
+      const cut = host.y1 - back;
+      add(Object.assign({}, host, { kind, y0: cut + PW / 2, kitchenOfStube: false }));
+      host.y1 = cut - PW / 2;
+      return true;
+    };
+    if (!hasBad)
+      hasBad = splitBack(
+        rooms.find(r => r.fl === 0 && r.kind === 'kueche'),
+        'bad',
+        2.2
+      );
+    if (!rooms.some(r => r.kind === 'schlafzimmer')) {
+      const k = rooms.find(r => r.kind === 'kammer');
+      if (k) k.kind = 'schlafzimmer';
+      else
+        splitBack(
+          rooms.find(r => r.fl === 0 && r.kind === 'stube'),
+          'schlafzimmer',
+          2.6
+        );
     }
     // the cellar under the kitchen (or the Stube), reached by a trapdoor with a steep stair
     let cellar = null,

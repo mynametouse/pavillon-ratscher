@@ -469,6 +469,18 @@ export const ZIEINR = (() => {
       L.drawer(C, F, a + 0.02, a + 0.58, 0.56, z + 0.68, z + 0.84, front, M.stahl, i === 0 ? drawer : null);
       L.leaf(C, F, a + 0.02, 1, 0.56, 0.56, z + 0.1, z + 0.66, front, M.stahl, i === 2 ? under : null);
     }
+    // feat/innen-real: the tiled splashback between the worktop and the wall units (Fliesenspiegel) – blue and white in the DDR, beige
+    // later; the wall behind a kitchen row is never bare plaster
+    F.box(
+      m,
+      ddr ? M.fliesen : C.col(C.R.pick([0xe8dcc4, 0xd8d4cc, 0xeee8dc]), 0.3),
+      u0,
+      u0 + w,
+      0,
+      0.008,
+      z + 0.9,
+      z + 1.45
+    );
     // wall units
     F.box(m, C.col(0xdedad0, 0.6), u0, u0 + w, 0, 0.33, z + 1.45, z + 2.15);
     for (let i = 0; i < n; i++)

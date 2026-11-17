@@ -133,9 +133,10 @@ export const HGAST = (() => {
           d = at.duvet,
           L = d.len || 1.55,
           W = d.w || 0.85,
-          zz = at.z - 0.02;
+          zz = at.z + 0.01;
         duvet = new THREE.Group();
-        m.box(ZIMOB.col(d.hex || 0xf2f0ea, 0.95), -W / 2, W / 2, 0, L, zz, zz + 0.2, { puff: 0.05 });
+        // (thick enough to lie over the body: its top a good 30 cm over the mattress, higher in the middle)
+        m.box(ZIMOB.col(d.hex || 0xf2f0ea, 0.95), -W / 2, W / 2, 0, L, zz, zz + 0.3, { puff: 0.06 });
         m.finish(duvet, false);
         const sh = V(d.x, d.y, 0);
         duvet.position.set(sh.x, 0, sh.z);

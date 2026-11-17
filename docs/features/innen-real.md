@@ -34,15 +34,24 @@ dieselben Räume „nachher“: `out/innen_real/nachher/`. Was ein Fremder sofor
   Draw-Call, kein neues Programm (die Palette).
 - **Sessel der Sitzgruppe** (DDR, Nachwende) neu: kurze Holzbeine, Polsterunterbau, Sitzkissen zwischen zwei Armlehnen, Rückenlehne mit
   Kissen; Leder wird auch gerundet.
-- **Licht drinnen**: die Palette der Häuser im normalen Spiel ist ein Zwilling mit eigener Himmelsstärke (`M.palIn`, 60 % des Himmels,
-  folgt dem Tag – `ZIMOB.indoorEnv`), Metall ist halbmatt (höchstens 0,5 metallisch), nichts spiegelt glatter als Rauheit 0,22: Spüle und
-  Kochfeld grau statt himmelblau. Decken weiß (`0xf4f3ef`) und heller vom zurückgeworfenen Tageslicht, nicht mehr braun.
+- **Licht drinnen**: die Möbel sehen um sich herum ein **Zimmer statt des Himmels** – ihre Palette im normalen Spiel ist ein Zwilling
+  (`M.palIn`, dasselbe Programm) mit eigener Umgebung: ein einmal vorgefiltertes Zimmer (weiße Decke, helle Wände, Holzboden, ein helles
+  Fenster an einer Seite; PMREM im Format der Umgebung der Szene, also kein neues Programm; ≈ 6 MB Grafikspeicher, solange ein Haus steht,
+  frei mit dem Baukasten), Stärke folgt Tag und Nacht (`ZIMOB.indoorEnv`); am Telefon der Himmel mit 60 % (kein Speicher dafür). Dazu
+  Metall halbmatt (höchstens 0,5 metallisch), nichts glatter als Rauheit 0,22. Decken weiß (`0xf4f3ef`), heller vom zurückgeworfenen
+  Tageslicht, nicht mehr braun; nachts sitzt das geliehene Licht unter einer Deckenleuchte einen halben Meter tiefer (die Decke um sie
+  herum bekommt Licht, kein heißer Fleck darüber).
+- **Dunklere Ecken und Kontaktschatten** (normales Spiel): wo Boden, Wände und Decke aneinanderstoßen ein weicher dunkler Saum, unter
+  allem, was auf dem Boden steht (Sofa, Bett, Schrank, Tisch – ihre Kollisionsflächen), ein weicher Schatten mit gleich breitem Rand
+  (neun Teile je Fläche) – ein Netz, ein Material (`M.schatten`, schwarz mit Alpha aus einer Canvas), das erste Haus übersetzt es hinter
+  dem Schwarz; ohne das standen die Möbel wie auf den Boden gestellt (Möbel werfen keinen Sonnenschatten).
 - **Was jedes Zimmer hat** (`zombie/z_innen.js` `fittings`): Sockelleisten (heute weiß, sonst Holz), unter jedem Fenster einer Außenwand ein
   **Flachheizkörper** mit Profil, Abdeckung, Thermostatventil und Rohren in den Boden (nicht in den Kohleofen-Häusern „alt“ und „ddr“ der
   Zombie-Nacht, nicht im Bad von heute – dort hängt der Handtuchheizkörper), **Lichtschalter** auf der Klinkenseite jeder Tür in 1,05 m,
   **Steckdosen** in 0,3 m. Alles Palette im Möbel-Netz: keine Draw-Call.
 - **Türen**: von heute glatt (Weißlack), ältere mit Füllungen; **Drückergarnitur** auf Rosette in 1,05 m, Schlüsselrosette darunter,
-  Edelstahl (alt: Messing).
+  Edelstahl (alt: Messing). Die **Haustür** von innen: in den Häusern von heute weiß oder anthrazit mit Milchglasstreifen, sonst die
+  Holztür mit Füllungen; Langschild mit Drücker und Schließzylinder.
 - **Treppe** im Erdgeschoss unten geschlossen: verputzte Untersicht und das Dreieck unter der offenen Seite (mit Sockelleiste).
 - **Böden aus echter Eiche**: Laminat/Parkett aus dem Foto der Eiche des Pavillons (mit Relief), im Programm der Böden der Gartenhäuser;
   vier Töne (hell, natur, grau, dunkel) – je Haus einer aus seiner Nummer (`haeuser/haeuser.js` `floors`: tauscht vor jedem Haus den Boden
@@ -50,7 +59,19 @@ dieselben Räume „nachher“: `out/innen_real/nachher/`. Was ein Fremder sofor
 - **Räume so groß wie echte** (`zombie/z_innen_plan.js` `deepen`): ein Band tiefer als ein Raum seiner Art wäre, wird geteilt – das Bad
   vorn 3,0 m, dahinter ein Hauswirtschaftsraum; Schlafzimmer, Kinderzimmer, Kammern, Küchen ebenso (hinten Kammer, Vorratskammer,
   Hauswirtschaftsraum). Jedes Zimmer hat seine Tür vom Flur.
-- **Jedes Bad hat WC und Waschbecken**: fand der Stil keinen Platz (kleine Bäder), kommen kompakte hinzu (`ZIEINR.furnish`).
+- **Jedes Haus hat ein Bad** (vorher hatte ein eingeschossiges Haus mit Waschküche hinten keins): die Waschküche, die Vorratskammer oder
+  eine Kammer wird es. **Jedes Bad hat WC und Waschbecken**: fand der Stil keinen Platz (kleine Bäder), kommen kompakte hinzu
+  (`ZIEINR.furnish`). **Jede Küche hat Spüle und Herd**: fand die Küchenzeile keine Wand, stehen ein Spülenschrank (60 cm, eingelassenes
+  Becken) und ein Herd, wo sie passen (Prüflauf 1 fand eine Küche in Schleusingen ohne beides).
+- **Spülen mit Becken**: in der Küchenzeile des Baukastens ein eingelassenes Becken (16 cm tief, Rand, Ablauf, die Arbeitsplatte darum
+  herum); die Spüle von heute (eine Platte in `haeuser_heute.js`) bekommt Rand, dunkleres Inneres und Ablauf darauf gezeichnet.
+- **Trennwände nicht durch Fenster**: Wände zwischen den Zimmern rücken bis 0,6 m (neue bis 1 m), wenn sie ein Fenster der Seitenfassade
+  zerschneiden würden – sonst fehlte das Fenster drinnen, das draußen zu sehen ist (die Prüfung zählt verlorene Fenster).
+- **Treppenhäuser der Altstadt** (`schleusingen/si_innen.js`): Steinplatten statt Laminat, Ölsockel bis 1,45 m mit dunkler Linie, ringsum
+  zwischen den Türen und unter den Fenstern.
+- **Alltag nach Haushalt** (`ZIEINR.L.alltag`, aus dem Zufall des Hauses): Schuhe neben der Haustür (Kinderschuhe in Familien), ein
+  Getränkekasten in der Küche, der Wäschekorb im Schlaf- oder Badezimmer, Bauklötze und ein Ball im Kinderzimmer (manchmal im
+  Wohnzimmer).
 - **Lampenschirme rund** (22 Segmente statt 12).
 - **Die Bewohner nach der Uhr** (`haeuser/haeuser.js` `doing`, `haeuser/haeuser_gast.js`): 6:30–8 Frühstück am Küchentisch, vormittags
   Sofa oder Tisch mit der Zeitung, 11:30–12:30 **am Herd** (stehend, die Hände bei der Arbeit), Mittag am Tisch, nachmittags Sofa, 17:30–18:30

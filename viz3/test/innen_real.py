@@ -5,7 +5,7 @@
 # house, a kitchen with a sink and a stove, a bathroom with a toilet and a basin, a bed in the bedroom, the front door into the hall, windows
 # inside where the facade has them, a lamp in every room, a resident at a plausible place by the hour, no two living rooms alike.
 #   python3 viz3/test/innen_real.py PORT [ratscher|schleusingen|ratscher+schleusingen][,tag=nachher,n=6,tier=hoch,w=1280,h=720,nacht=1]
-# Pictures and numbers: out/innen_real/<tag>/ (metrics.json).
+# Pictures and numbers: out/innen_real/<tag>/ (metrics_<sections>.json); side by side: viz3/test/innen_real_vergleich.py.
 import sys, os, time, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1]
@@ -216,24 +216,30 @@ with lib.browser() as b:
         svs = []
         for i, (lbl, hid) in enumerate(picks):
             svs.append(house('r', hid, lbl, night=NIGHT and i < 2))
-        # the villager at home: Gerhard in the afternoon on his couch
-        t = J("""(() => { const d = Math.floor(CLOCK.t / 1440); for (let m = 14 * 60; m < 21 * 60; m += 10) { const t = d * 1440 + m;
-          if (!DLIFE.away('gerhard', t) && !DLIFE.routine('gerhard', t) && !DCAL.on('skat', t) && !DCAL.on('fire', t)) { CLOCK.t = t; return t; } } return null; })()""")
-        if t is not None:
-            mode('day')
+        # the villager at home by the hour (haeuser/haeuser.js doing): Gerhard in the afternoon on his couch, at noon at the stove, late in
+        # the evening with the TV on, at night asleep in his bed – each time the first minute of the hour's span when dorf's day has him in
+        for label, h0, h1, want, md in (('nachmittag', 14, 17, ('sofa', 'tisch'), 'day'), ('mittag', 11.6, 12.4, ('herd',), 'day'),
+                                         ('abend', 19.5, 22.3, ('tv',), 'night'), ('nacht', 23, 23.9, ('bett',), 'night')):
+            t = J(f"""(() => {{ const d = Math.floor(CLOCK.t / 1440) + 1; for (let m = Math.round({h0} * 60); m < Math.round({h1} * 60); m += 5) {{ const t = d * 1440 + m;
+              if (!DLIFE.away('gerhard', t) && !DLIFE.routine('gerhard', t) && !DCAL.on('skat', t) && !DCAL.on('fire', t)) {{ CLOCK.t = t; return t; }} }} return null; }})()""")
+            if t is None:
+                print('gerhard not at home', label, flush=True); continue
+            mode(md)
             r = enter(247)
             for _ in range(200):
                 if E("!!(window.HGAST && HGAST.f) || !HAEUSER.guest"): break
                 E("GAME.step(0.05)"); time.sleep(0.1)
-            g = J("({ guest: HAEUSER.guest, fig: !!(window.HGAST && HGAST.f), at: window.HGAST && HGAST.f ? HGAST.f.at : null, where: window.HGAST && HGAST.where ? HGAST.where : null })")
-            print('gast', json.dumps(g, ensure_ascii=False), flush=True)
+            g = J("({ t: CLOCK.t % 1440, guest: HAEUSER.guest, doing: HAEUSER.doing, asleep: HAEUSER.asleep, tv: HAEUSER.tv, fig: !!(window.HGAST && HGAST.f), at: window.HGAST && HGAST.f ? HGAST.f.at : null, err: window.HGAST ? HGAST.err : null })")
+            print('gast', label, json.dumps(g, ensure_ascii=False), flush=True)
             if g['fig']:
-                E("""(() => { const H = HAEUSER.H, f = HGAST.f, rid = H.roomAt(f.at.x, f.at.y, f.at.z + 0.5), r = H.rooms.find(q => q.id === rid), c = [0, 1].map(i => r.poly.reduce((s, p) => s + p[i], 0) / 4);
-                  const dx = f.at.x - c[0], dy = f.at.y - c[1], L = Math.hypot(dx, dy) || 1, ex = f.at.x - dx / L * 2.4 + 0.2, ey = f.at.y - dy / L * 2.4 + 0.2;
-                  __T.stand(ex, ey, r.z0, Math.atan2(f.at.x - ex, f.at.y - ey) * 180 / Math.PI); CAM3.want = false; GAME.view(ex, ey, r.z0 + 1.6, Math.atan2(f.at.x - ex, f.at.y - ey) * 180 / Math.PI, -14, 78); GAME.step(0.3); return 1; })()""")
-                shot('r_gerhard_zu_hause', {'house': 247})
-            ck('Gerhard at home in the afternoon: his own figure in the house', g['fig'], g)
+                E("""(() => { const H = HAEUSER.H, f = HGAST.f, p = f.at.head || [f.at.x, f.at.y], rid = H.roomAt(p[0], p[1], f.at.z + 0.5), r = H.rooms.find(q => q.id === rid) || H.rooms[0], c = [0, 1].map(i => r.poly.reduce((s, q) => s + q[i], 0) / 4);
+                  const dx = p[0] - c[0], dy = p[1] - c[1], L = Math.hypot(dx, dy) || 1, ex = p[0] - dx / L * 2.3 + 0.2, ey = p[1] - dy / L * 2.3 + 0.2;
+                  if (HAEUSER.H && f.at.mode !== 'lie') { const rr = H.rooms.find(q => q.id === rid); if (rr) H.light(rid, true); }
+                  __T.stand(ex, ey, r.z0, Math.atan2(p[0] - ex, p[1] - ey) * 180 / Math.PI); CAM3.want = false; GAME.view(ex, ey, r.z0 + 1.6, Math.atan2(p[0] - ex, p[1] - ey) * 180 / Math.PI, -18, 78); GAME.step(0.3); return 1; })()""")
+                shot(f'r_gerhard_{label}', {'house': 247, 'doing': g.get('doing')})
+            ck(f'Gerhard at home ({label}): his figure where one is at that hour ({"/".join(want)})', g['fig'] and g.get('doing') in want, g)
             leave()
+            mode('day')
         checks('Ratscher', svs)
     # ---------------- Schleusingen ----------------
     if 'schleusingen' in SECT:
@@ -277,7 +283,7 @@ with lib.browser() as b:
                     continue
                 svs.append(house('s', hid, lbl, night=NIGHT and i == 0))
             checks('Schleusingen', svs)
-    json.dump(METRICS, open(os.path.join(OUT, 'metrics.json'), 'w'), indent=1, ensure_ascii=False)
+    json.dump(METRICS, open(os.path.join(OUT, 'metrics_' + '+'.join(sorted(SECT)) + '.json'), 'w'), indent=1, ensure_ascii=False)
     ok, gl = lib.check_gl(pg, 16)
     ck('shader programs within 16 textures, none broken', ok, {k: gl[k] for k in ('programs', 'maxFrag', 'maxVert', 'bad', 'broken')})
     ck.errors(errs)
