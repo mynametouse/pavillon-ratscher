@@ -86,11 +86,15 @@ export const VOEGEL = (() => {
       flap: 11,
     },
   };
-  const TRI = 18, // triangles per bird
-    VB = TRI * 3; // vertices per bird
+  // the triangles a kind is drawn with (numbers into TRIS below): all 18 near, the far ones (crows, starlings – seen from below) the
+  // belly, the tail and the wings only
+  const ALLE = [...Array(18).keys()],
+    FERN = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
   // ---- the mesh of a kind: room for n birds, written each frame ----
   function mesh(kind, n) {
-    const g = new THREE.BufferGeometry(),
+    const tl = kind === 'star' || kind === 'kraehe' ? FERN : ALLE,
+      VB = tl.length * 3,
+      g = new THREE.BufferGeometry(),
       pos = new Float32Array(n * VB * 3),
       nor = new Float32Array(n * VB * 3),
       col = new Float32Array(n * VB * 3);
@@ -115,7 +119,7 @@ export const VOEGEL = (() => {
     ];
     C.push(A.head, A.head, A.head, A.head);
     for (let b = 0; b < n; b++)
-      for (let t = 0; t < TRI; t++) for (let v = 0; v < 3; v++) col.set(C[t], (b * VB + t * 3 + v) * 3);
+      for (let t = 0; t < tl.length; t++) for (let v = 0; v < 3; v++) col.set(C[tl[t]], (b * VB + t * 3 + v) * 3);
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('normal', new THREE.BufferAttribute(nor, 3).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -128,7 +132,7 @@ export const VOEGEL = (() => {
     m.name = 'voegel ' + kind;
     m.visible = false;
     scene.add(m);
-    return { m, g, pos, nor, n };
+    return { m, g, pos, nor, n, tl, VB };
   }
   // ---- one bird into the arrays: at (x, y, z) in site metres, heading hd (radians from north, clockwise), pitch, roll (bank), wings:
   //      flap angle (radians, + up) and fold (0 spread … 1 folded along the body) ----
@@ -226,11 +230,13 @@ export const VOEGEL = (() => {
       _p[k * 3 + 1] = y + ry * a + fy * b + uy * c;
       _p[k * 3 + 2] = z + rz * a + fz * b + uz * c;
     }
-    let o = i * VB * 3;
+    let o = i * M.VB * 3;
     const pos = M.pos,
-      nor = M.nor;
-    for (let t = 0; t < TRI; t++) {
-      const a = TRIS[t * 3] * 3,
+      nor = M.nor,
+      tl = M.tl;
+    for (let q = 0; q < tl.length; q++) {
+      const t = tl[q],
+        a = TRIS[t * 3] * 3,
         b = TRIS[t * 3 + 1] * 3,
         c = TRIS[t * 3 + 2] * 3;
       const e1x = _p[b] - _p[a],
@@ -260,7 +266,7 @@ export const VOEGEL = (() => {
     }
   }
   function zeigen(M, n) {
-    M.g.setDrawRange(0, n * VB);
+    M.g.setDrawRange(0, n * M.VB);
     M.g.attributes.position.needsUpdate = true;
     M.g.attributes.normal.needsUpdate = true;
     M.m.visible = n > 0;
