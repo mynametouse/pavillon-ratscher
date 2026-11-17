@@ -11,7 +11,7 @@ For every viewpoint of viz3/extra/schleusingen-ansicht/views.json that has a ref
   - per building the median colour of that band in both pictures (sky-like, very dark and very bright pixels and the overlays of the
     viewer dropped) → difference ΔE (CIELAB 1976, lightness at half weight: the model's light is not the photo's),
   - the skyline: per column the first row below the sky that touches the top edge, in both pictures → mean difference in degrees over
-    the columns that show a building,
+    the columns that show a building and no tree in the reference (foliage or a busy pattern of branches just below its sky line),
   - score = mean ΔE of the buildings (weighted by their columns) + 2 × skyline difference in degrees.
 Written: <out>/abgleich.json (ranked, worst first; numbers only) and <out>/<name>.jpg (reference above, model below, each building's
 band outlined with its index and ΔE). Each round of reading starts with the worst spots."""
@@ -129,7 +129,18 @@ def compare(v, ref, mod, stadt):
         dE = float(math.sqrt((0.5 * (a[0] - b[0])) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2))
         res.append({'i': i, 'cols': len(cs), 'dE': round(dE, 1), 'd': round(min(c[3] for c in cs), 1),
                     'u0': min(c[0] for c in cs), 'u1': max(c[0] for c in cs), 'y0': min(c[1] for c in cs), 'y1': max(c[2] for c in cs)})
-    us = [u for u, c in enumerate(cols) if c and ok[max(0, min(H - 1, sa[u])), u] and 0 < sa[u] < H and 0 < sb[u] < H]
+    def leafy(u):
+        # the reference's first pixels below its sky line look like foliage (green, or a busy brown–grey of bare branches): a tree, not
+        # the roof line – the model has no tree there, so this column says nothing about the buildings
+        y = int(sa[u])
+        q = A[y:min(H, y + 8), max(0, u - 3):u + 4].reshape(-1, 3)
+        if len(q) < 8:
+            return True
+        r, g, b = q[:, 0], q[:, 1], q[:, 2]
+        green = ((g > r + 0.02) & (g > b)).mean() > 0.4
+        busy = q.std(0).mean() > 0.12
+        return green or busy
+    us = [u for u, c in enumerate(cols) if c and ok[max(0, min(H - 1, sa[u])), u] and 0 < sa[u] < H and 0 < sb[u] < H and not leafy(u)]
     sky = float(np.mean([abs(math.degrees(math.atan((H / 2 - sa[u]) / fpx)) - math.degrees(math.atan((H / 2 - sb[u]) / fpx))) for u in us])) if len(us) > 40 else None
     n = sum(r['cols'] for r in res)
     mdE = sum(r['dE'] * r['cols'] for r in res) / n if n else None
