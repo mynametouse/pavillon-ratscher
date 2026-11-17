@@ -8,29 +8,37 @@ import * as THREE from 'three';
 import { V } from '../core/head.js';
 import { ANISO, dimIndoor, plain } from '../core/assets.js';
 import { MAT } from '../core/mats.js';
-import { KM, PAL, twin } from '../garden/garten_kit.js';
+import { KM, PAL, twin, indoor } from '../garden/garten_kit.js';
 export const ZIMOB = (() => {
   // ---- the mesher: arrays per material, written in the house frame (site-like x, y, z) and stored as three (x, z, −y) ----
   class Mesher {
-    constructor(origin) {
+    constructor(origin, o = {}) {
       this.B = new Map();
       this.o = origin || [0, 0, 0];
       this.tris = 0;
+      // feat/innen-real: a furniture mesher rounds the boxes of soft things (cushions, mattresses, upholstery – see col()); o.pal: the
+      // palette's material for indoors (the normal game's houses: M.palIn, less of the sky in it)
+      this.soft = !!o.soft;
+      this.pal = o.pal || null;
     }
     buf(m) {
-      const key = m.isPal ? m.m : m;
+      const key = m.isPal ? this.pal || m.m : m;
       let b = this.B.get(key);
       if (!b) this.B.set(key, (b = { p: [], n: [], u: [] }));
       return b;
     }
     // one triangle (a, b, c in house coordinates), normal n, uvs (metres) – palette colours take their swatch instead
     tri(m, a, b, c, n, ua, ub, uc) {
+      this.triN(m, a, b, c, n, n, n, ua, ub, uc);
+    }
+    // feat/innen-real: a triangle with a normal per corner (the rounded soft boxes are shaded smoothly)
+    triN(m, a, b, c, na, nb, nc, ua, ub, uc) {
       const B = this.buf(m),
         o = this.o;
-      for (const [p, u] of [
-        [a, ua],
-        [b, ub],
-        [c, uc],
+      for (const [p, n, u] of [
+        [a, na, ua],
+        [b, nb, ub],
+        [c, nc, uc],
       ]) {
         B.p.push(p[0] - o[0], p[2] - o[2], -(p[1] - o[1]));
         B.n.push(n[0], n[2], -n[1]);
@@ -57,6 +65,16 @@ export const ZIMOB = (() => {
     // o.skip: faces left out ('b' bottom, 't' top, 'x0', 'x1', 'y0', 'y1')
     box(m, x0, x1, y0, y1, z0, z1, o = {}) {
       if (x1 - x0 < 1e-4 || y1 - y0 < 1e-4 || z1 - z0 < 1e-4) return;
+      // feat/innen-real: soft things are not boxes – a cushion, a mattress, a duvet, the seat and back of a sofa get rounded edges;
+      // thin ones (a rug, a cloth, a paper) and those cut open (skip) stay as they were
+      if (
+        this.soft &&
+        isSoft(m) &&
+        !o.hard &&
+        Math.min(x1 - x0, y1 - y0, z1 - z0) >= 0.035 &&
+        !(o.skip || '').replace('b', '')
+      )
+        return this.rbox(m, x0, x1, y0, y1, z0, z1, o);
       const cx = (x0 + x1) / 2,
         cy = (y0 + y1) / 2,
         a = o.a || 0,
@@ -117,6 +135,98 @@ export const ZIMOB = (() => {
       if (!sk.includes('y1')) side(C, D, N(0, 1), w);
       if (!sk.includes('x0')) side(D, A, N(-1, 0), d);
       void h;
+    }
+    // feat/innen-real: a box with rounded edges and corners – radius o.r (else from its size), s steps over each rounding, smooth
+    // normals; o.a turns it as box(); o.skip 'b' leaves the bottom out; a thin soft thing (a cushion, a pillow, a mattress, a duvet)
+    // swells a little in the middle of its faces (o.puff, else from its size)
+    rbox(m, x0, x1, y0, y1, z0, z1, o = {}) {
+      const h = [(x1 - x0) / 2, (y1 - y0) / 2, (z1 - z0) / 2],
+        c = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2],
+        mn = Math.min(h[0], h[1], h[2]),
+        r = Math.min(o.r ?? Math.min(0.055, mn * 0.75), mn * 0.95),
+        s = o.s || (Math.max(h[0], h[1], h[2]) > 0.2 && mn > 0.03 ? 2 : 1),
+        a = o.a || 0,
+        ca = Math.cos(a),
+        sa = Math.sin(a),
+        sk = o.skip || '',
+        mid = h[0] + h[1] + h[2] - mn - Math.max(h[0], h[1], h[2]),
+        puff = o.puff ?? (mn <= 0.1 && mid >= 0.12 ? mn * 0.28 : 0);
+      // the grid along one axis: the rounding at both ends in s steps, one flat span between
+      const axis = k => {
+        const out = [];
+        for (let i = 0; i <= s; i++) out.push(-h[k] + (r * i) / s);
+        for (let i = s; i >= 0; i--) out.push(h[k] - (r * i) / s);
+        return out.filter((v, i, A) => i === 0 || v - A[i - 1] > 1e-5);
+      };
+      const G = [axis(0), axis(1), axis(2)],
+        inner = h.map(v => Math.max(0, v - r));
+      // a point of the box's surface (centred frame) → the rounded point and its normal in the house frame; the swell is greatest in
+      // the middle of a face and nothing at its edges (so the faces still meet)
+      const put = (q, i, j, k) => {
+        const iq = [0, 1, 2].map(e => Math.max(-inner[e], Math.min(inner[e], q[e]))),
+          d = [q[0] - iq[0], q[1] - iq[1], q[2] - iq[2]],
+          L = Math.hypot(d[0], d[1], d[2]) || 1,
+          n = [d[0] / L, d[1] / L, d[2] / L],
+          p = [iq[0] + n[0] * r, iq[1] + n[1] * r, iq[2] + n[2] * r];
+        if (puff) {
+          const fi = q[i] / h[i],
+            fj = q[j] / h[j],
+            f = (1 - fi * fi) * (1 - fj * fj),
+            sg = Math.sign(q[k]);
+          p[k] += sg * puff * f;
+          // the normal tilts with the swell's slope
+          n[i] -= (sg * puff * (-2 * fi * (1 - fj * fj))) / h[i];
+          n[j] -= (sg * puff * (-2 * fj * (1 - fi * fi))) / h[j];
+          const l = Math.hypot(n[0], n[1], n[2]) || 1;
+          n[0] /= l;
+          n[1] /= l;
+          n[2] /= l;
+        }
+        return [
+          [c[0] + p[0] * ca - p[1] * sa, c[1] + p[0] * sa + p[1] * ca, c[2] + p[2]],
+          [n[0] * ca - n[1] * sa, n[0] * sa + n[1] * ca, n[2]],
+        ];
+      };
+      for (const [k, sg, name] of [
+        [2, 1, 't'],
+        [2, -1, 'b'],
+        [0, 1, 'x1'],
+        [0, -1, 'x0'],
+        [1, 1, 'y1'],
+        [1, -1, 'y0'],
+      ]) {
+        if (sk.includes(name)) continue;
+        const i = k === 0 ? 1 : 0,
+          j = k === 2 ? 1 : 2,
+          A = G[i],
+          Bv = G[j],
+          // (i, j, k) an even permutation: the corners in order turn counter-clockwise about +k
+          ccw = (k === 1 ? -1 : 1) * sg > 0;
+        for (let ia = 0; ia < A.length - 1; ia++)
+          for (let ib = 0; ib < Bv.length - 1; ib++) {
+            const Q = [
+                [ia, ib],
+                [ia + 1, ib],
+                [ia + 1, ib + 1],
+                [ia, ib + 1],
+              ].map(([u, v]) => {
+                const q = [0, 0, 0];
+                q[k] = sg * h[k];
+                q[i] = A[u];
+                q[j] = Bv[v];
+                return q;
+              }),
+              P = Q.map(q => put(q, i, j, k)),
+              U = Q.map(q => (k === 2 ? [q[0] + h[0], q[1] + h[1]] : [q[i] + h[i], q[2] + c[2]]));
+            if (ccw) {
+              this.triN(m, P[0][0], P[1][0], P[2][0], P[0][1], P[1][1], P[2][1], U[0], U[1], U[2]);
+              this.triN(m, P[0][0], P[2][0], P[3][0], P[0][1], P[2][1], P[3][1], U[0], U[2], U[3]);
+            } else {
+              this.triN(m, P[0][0], P[2][0], P[1][0], P[0][1], P[2][1], P[1][1], U[0], U[2], U[1]);
+              this.triN(m, P[0][0], P[3][0], P[2][0], P[0][1], P[3][1], P[2][1], U[0], U[3], U[2]);
+            }
+          }
+      }
     }
     // a vertical body of revolution: profile [[r, z] …] around (x, y); seg segments; caps where r > 0 at the ends
     lathe(m, x, y, prof, seg = 12, o = {}) {
@@ -236,13 +346,29 @@ export const ZIMOB = (() => {
     }
   }
   // ---- plain colours: palette swatches (one material for all of them), a plain material where the palette is full ----
-  const COLS = new Map();
-  function col(hex, rough = 0.7, metal = 0) {
-    const key = hex + '|' + rough + '|' + metal;
+  const COLS = new Map(),
+    SOFTM = new WeakSet();
+  // feat/innen-real: what is soft (a fabric: cushions, mattresses, duvets, upholstery – rounded by a furniture mesher): a matt colour
+  // (rough ≥ 0.9, no metal) unless col() is told otherwise, and the kit's textured fabrics (velour, check, the duvet)
+  const isSoft = m => !!m && (m.soft === true || SOFTM.has(m));
+  function col(hex, rough = 0.7, metal = 0, soft) {
+    // feat/innen-real: metal indoors shows the room around it, not the sky outside – fully metallic, every sink, tap and hood looked blue
+    // (the sky's light in the reflections); brushed steel, chrome and brass are given a matter, half-metallic finish
+    if (metal > 0.5) {
+      metal = 0.5;
+      rough = Math.max(rough, 0.34);
+    }
+    // (and a glossy surface – black glass, enamel, porcelain – no sharp mirror of the sky either)
+    if (rough < 0.22) rough = 0.22;
+    const key = hex + '|' + rough + '|' + metal + (soft === false ? '|h' : '');
     let c = COLS.get(key);
     if (!c) {
       const uv = PAL.uv({ color: new THREE.Color(hex), roughness: rough, metalness: metal });
       c = uv ? { isPal: true, uv, m: PAL.M.front } : plain({ color: hex, roughness: rough, metalness: metal });
+      if (soft ?? (rough >= 0.9 && metal === 0)) {
+        if (c.isPal) c.soft = true;
+        else SOFTM.add(c);
+      }
       COLS.set(key, c);
     }
     return c;
@@ -650,7 +776,9 @@ export const ZIMOB = (() => {
     // walls, ceilings and floors as copies of the garden buildings' ones (same programs): a little light of their own by day stands in
     // for the light the room's floor and walls throw back (a ceiling only sees the dark ground half of the sky light otherwise)
     M.putz = twin(KM.wall); // warm white lime plaster
-    M.decke = twin(KM.wall);
+    // feat/innen-real: the ceiling a plain white (it is painted white in nearly every house); lit by the light the floor and the walls
+    // throw up, it had come out a dull brown
+    M.decke = twin(KM.wall, { color: 0xf4f3ef });
     M.holzdecke = twin(KM.ceil);
     M.dielen = twin(KM.floor);
     M.fliesenWand = twin(KM.tiles);
@@ -662,6 +790,19 @@ export const ZIMOB = (() => {
     };
     M.linoleum = room(T('linoleum', 256, 256, 1.6, 1.6), 0.55);
     M.laminat = room(T('laminat', 256, 256, 2.0, 1.6), 0.5);
+    // feat/innen-real: wooden floors (laminate, parquet) of real oak – the photo of the pavilion's oak with its relief, in the
+    // program of the garden buildings' floors (KM.floor: the same maps, the same indoor dimming); four tones, from light to dark,
+    // the photo's own dark brown divided out
+    const oakIn = indoor(MAT.oak, 0.8, 0.25),
+      OAK = [0.216, 0.117, 0.054],
+      tone = hex => {
+        const m = twin(oakIn),
+          c = new THREE.Color(hex);
+        m.color.setRGB(c.r / OAK[0], c.g / OAK[1], c.b / OAK[2]);
+        m.name = 'innen-parkett';
+        return m;
+      };
+    M.parkett = { hell: tone(0xcfae84), natur: tone(0xb48a5c), grau: tone(0xb0a493), dunkel: tone(0x765638) };
     M.platten = room(T('platten', 256, 256, 1.5, 1.5), 0.95);
     M.fliesen = room(T('fliesen', 128, 128, 0.6, 0.6), 0.25);
     M.stein = MAT.stone; // cellar: flagstones, rubble walls (shared photo material)
@@ -686,6 +827,11 @@ export const ZIMOB = (() => {
     M.rag = KM.rag;
     M.gingham = KM.curtainRed;
     M.duvet = KM.duvet;
+    for (const m of [M.velours, M.karo, M.duvet]) SOFTM.add(m); // feat/innen-real
+    // feat/innen-real: the palette indoors (the normal game's houses): the same material and program, with the sky's light of its own
+    // strength – a room sees the sky through its windows only (full, every glossy top and white front looked blue-grey)
+    M.palIn = twin(PAL.M.front);
+    M.palIn.name = 'innen-palette';
     M.stores = KM.curtainLinen;
     M.glas = MAT.glass;
     M.holz = MAT.oak; // furniture wood (oak photo)
@@ -699,7 +845,7 @@ export const ZIMOB = (() => {
     M.emaille = col(0xf4f2ec, 0.2, 0.05);
     // the house's own materials that throw back the daylight (shared garden materials and the palette stay as they are)
     M.bounce = [
-      [M.decke, 0.2],
+      [M.decke, 0.32, NEUTRAL],
       [M.holzdecke, 0.15],
       [M.putz, 0.1],
       [M.fliesenWand, 0.07],
@@ -707,6 +853,7 @@ export const ZIMOB = (() => {
       ...Object.values(M.tapete).map(m => [m, 0.1]),
       [M.linoleum, 0.06],
       [M.laminat, 0.06],
+      ...Object.values(M.parkett).map(m => [m, 0.05]),
       [M.platten, 0.05],
       [M.fliesen, 0.06],
       [M.furnier, 0.05],
@@ -725,21 +872,30 @@ export const ZIMOB = (() => {
   // the light thrown back inside by day (k = 1 day, 0 night): emissive = colour · factor · k – a uniform, no new program
   // warm (the sun through the curtains on light walls and wood: the sky's cool grey alone made the rooms look flat by day)
   let dayK = -1;
-  const WARM = new THREE.Color(1.0, 0.8, 0.58);
+  const WARM = new THREE.Color(1.0, 0.8, 0.58),
+    NEUTRAL = new THREE.Color(1.0, 0.93, 0.84); // feat/innen-real: the ceiling's (warm, but not brown)
   function daylight(k) {
     if (!M.bounce || Math.abs(k - dayK) < 0.02) return false;
     dayK = k;
-    for (const [m, f] of M.bounce)
+    for (const [m, f, tint] of M.bounce)
       m.emissive
         .copy(m.color)
-        .multiply(WARM)
+        .multiply(tint || WARM)
         .multiplyScalar(f * k);
     return true;
+  }
+  // feat/innen-real: the indoor palette's share of the sky's light (k of the scene's; its environment map set on it, so that its own
+  // strength counts – three takes the scene's strength for materials without one)
+  function indoorEnv(sc, k = 0.6) {
+    const m = M.palIn;
+    if (!m || !sc) return;
+    if (m.envMap !== sc.environment) m.envMap = sc.environment;
+    m.envMapIntensity = (sc.environmentIntensity ?? 1) * k;
   }
   // GPU copies of the shared textures: freed when the last house goes (three uploads them again on use)
   function release() {
     for (const t of TEX) t.dispose();
   }
-  return { Mesher, col, mats, M, glowMat, release, daylight, TEX, V };
+  return { Mesher, col, isSoft, mats, M, glowMat, release, daylight, indoorEnv, TEX, V };
 })();
 window.ZIMOB = ZIMOB;

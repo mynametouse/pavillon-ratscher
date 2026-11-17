@@ -443,8 +443,41 @@ export const ZIPLAN = (() => {
     }
     const zA = zG + nSt * ST; // the attic floor
     let hasBad = false;
+    // feat/innen-real: rooms as deep as real ones – a band deeper than a room of its kind would be (the long farmhouses run up to 22 m
+    // deep: a bathroom of 22 m², a bedroom 8 m long) is split, the back part a utility room, a store room or a Kammer
+    const MAXD = {
+        bad: 3.6,
+        kueche: 6.4,
+        schlafzimmer: 5.8,
+        kinderzimmer: 5.9,
+        kammer: 5.4,
+        vorrat: 4.6,
+        waschkueche: 4.6,
+      },
+      deepen = (list, k) => {
+        const out = [];
+        for (const q of list) {
+          const mx = MAXD[q.kind],
+            d = q.y1 - q.y0,
+            front = q.kind === 'bad' ? 3.0 : Math.min(mx || 0, d * 0.55);
+          if (!mx || d <= mx || d - front < 2.4) {
+            out.push(q);
+            continue;
+          }
+          const cut = q.y0 + front;
+          out.push(Object.assign({}, q, { y1: cut - PW / 2 }));
+          out.push(
+            Object.assign({}, q, {
+              y0: cut + PW / 2,
+              kind: k === 0 ? (q.kind === 'kueche' ? 'vorrat' : 'waschkueche') : 'kammer',
+              kitchenOfStube: false,
+            })
+          );
+        }
+        return out;
+      };
     for (let k = 0; k < nSt; k++) {
-      const list = k === 0 ? kindsGF() : kindsUp(hasBad);
+      const list = deepen(k === 0 ? kindsGF() : kindsUp(hasBad), k);
       for (const q of list) if (q.kind === 'bad') hasBad = true;
       add({ kind: 'flur', fl: k, x0: hx0, x1: hx1, y0: yi0, y1: yi1, z0: zF[k], z1: zC[k] });
       for (const q of list)

@@ -12,7 +12,7 @@
 // Saved: 'pav-haeuser-v1' { v: 1, id, out: [x, y, z, yaw] } while one is inside – a reload puts one in front of that door outside.
 // ?szenario=haeuser (&haus=<id>, &drin=1): in front of a house near the Anger (or inside it).
 import * as THREE from 'three';
-import { stage, QS, cam } from '../core/head.js';
+import { stage, QS, cam, scene } from '../core/head.js';
 import { markDirty, whenLoaded } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
@@ -253,6 +253,20 @@ export const HAEUSER = (() => {
       console.warn('haeuser warm', e);
     }
   }
+  // feat/innen-real: the wooden floors of today's houses of real oak (zombie/z_innen_mob.js M.parkett) instead of the drawn laminate
+  // of haeuser/haeuser_heute.js – its material table is swapped from here before each house is built (one of four tones, from the
+  // house's number: light oak most often, natural, grey-washed, dark)
+  const TONES = ['hell', 'hell', 'natur', 'natur', 'grau', 'dunkel'],
+    INENV = 0.6; // the furniture's share of the sky's light indoors (zombie/z_innen_mob.js indoorEnv)
+  function floors(id) {
+    try {
+      const M = ZIMOB.mats(),
+        T = HHEUTE.mats();
+      if (M.parkett) T.laminat = M.parkett[TONES[Math.floor(ZIPLAN.hh(id * 2.31 + 0.7) * TONES.length) % TONES.length]];
+    } catch (e) {
+      console.warn('haeuser floors', e);
+    }
+  }
   // ---- going in ----
   async function enter(h) {
     if (S.busy || S.H || !on()) return false;
@@ -266,6 +280,9 @@ export const HAEUSER = (() => {
         void e;
       }
       await fade(true);
+      floors(h.id);
+      ZIMOB.mats();
+      ZIMOB.indoorEnv(scene, INENV);
       const H = await ZINNEN.mount(h.id, { look: lookOf(h.id), still: true });
       if (!H) {
         await fade(false);
@@ -293,10 +310,10 @@ export const HAEUSER = (() => {
       KERN.emit('haeuser:enter', { id: h.id, look: H.plan.look });
       await fade(false);
       const o = whose(h.id),
-        home = S.guest
-          ? DTEXT.P[S.guest].name + ' ist zu Hause.'
-          : S.asleep
-            ? DTEXT.P[S.asleep].name + ' schläft schon – ganz leise.'
+        home = S.asleep
+          ? DTEXT.P[S.asleep].name + ' schläft schon – ganz leise.'
+          : S.guest
+            ? DTEXT.P[S.guest].name + ' ist zu Hause.'
             : null;
       const sq = srcOf(h.id); // feat/schleusingen-innen: the hint of the other place, once there
       if (sq) {
@@ -509,37 +526,95 @@ export const HAEUSER = (() => {
     const m = ((CLOCK.t % 1440) + 1440) % 1440;
     return m >= 6.5 * 60 && m < 22.5 * 60;
   };
+  // feat/innen-real: where a villager at home is by the hour (minutes of the day) – breakfast, lunch and supper at the table, at the
+  // stove before lunch and supper, the morning and the afternoon on the sofa (or at the table with the paper, by the household), the
+  // evening on the sofa with the TV on, the night in bed
+  function doing(key, m) {
+    if (m < 6.5 * 60 || m >= 22.5 * 60) return 'bett';
+    if (m < 8 * 60) return 'tisch';
+    if (m < 11.5 * 60) return ZIPLAN.hh(key.length * 7.3 + Math.floor(CLOCK.t / 1440)) < 0.5 ? 'tisch' : 'sofa';
+    if (m < 12.5 * 60) return 'herd';
+    if (m < 13.25 * 60) return 'tisch';
+    if (m < 17.5 * 60) return 'sofa';
+    if (m < 18.5 * 60) return 'herd';
+    if (m < 19.25 * 60) return 'tisch';
+    return 'tv';
+  }
+  const roomKind = (H, sp) => (H.rooms.find(r => r.id === sp.room) || {}).kind;
+  // the place for it: a spot of the house (kit: zombie/z_innen*.js) and how one is there
+  function placeFor(H, what) {
+    const sp = H.spots,
+      liv = H.rooms.find(r => r.kind === 'stube' && r.floor === 0),
+      sofa = () =>
+        (liv && sp.find(q => q.kind === 'sitz' && q.room === liv.id)) ||
+        sp.find(q => q.kind === 'sitz' && roomKind(H, q) === 'stube') ||
+        sp.find(q => q.kind === 'sitz'),
+      table = () =>
+        sp.find(q => q.kind === 'tisch' && roomKind(H, q) === 'kueche') ||
+        sp.find(q => q.kind === 'tisch') ||
+        sp.find(q => q.kind === 'sitz' && roomKind(H, q) === 'kueche');
+    let s = null,
+      at = null;
+    if (what === 'bett') {
+      s =
+        sp.find(q => q.kind === 'bett' && roomKind(H, q) === 'schlafzimmer' && q.head) ||
+        sp.find(q => q.kind === 'bett' && q.head && roomKind(H, q) !== 'stube');
+      if (s) {
+        // from the pillow towards the foot of the bed; the mattress under the pillow; the duvet from the shoulders down
+        const feet = (s.yaw + 180) % 360,
+          f = [Math.sin((feet * Math.PI) / 180), Math.cos((feet * Math.PI) / 180)],
+          top = s.head[2] - 0.12;
+        at = {
+          x: s.head[0],
+          y: s.head[1],
+          z: top,
+          hd: feet,
+          mode: 'lie',
+          head: [s.head[0] - f[0] * 0.05, s.head[1] - f[1] * 0.05],
+          duvet: { x: s.head[0] + f[0] * 0.3, y: s.head[1] + f[1] * 0.3, hd: feet, len: 1.5, w: 0.8, hex: 0xf1efe8 },
+        };
+      }
+    } else if (what === 'herd') {
+      s = sp.find(q => q.kind === 'herd');
+      if (s) at = { x: s.pos[0], y: s.pos[1], z: s.pos[2], hd: s.yaw, mode: 'stand', clip: 'interactLoop' };
+    } else {
+      s = what === 'tisch' ? table() || sofa() : sofa() || table();
+      if (s)
+        at = {
+          x: s.pos[0],
+          y: s.pos[1],
+          z: s.pos[2],
+          hd: s.kind === 'tisch' ? s.yaw : (s.yaw + 180) % 360,
+          mode: 'sit',
+          seatTop: s.kind === 'tisch' ? 0.48 : 0.47,
+        };
+    }
+    return s && at ? { sp: s, at, what } : null;
+  }
+  const minute = () => ((CLOCK.t % 1440) + 1440) % 1440;
   function villager(H) {
     S.guest = null;
     S.asleep = null;
+    S.doing = null;
     const key = whose(H.id);
     if (!key || !atHome(key, H)) return;
-    if (!awake()) {
-      S.asleep = key;
-      return;
-    }
-    // in the living room on the sofa (or a chair there), else at the kitchen table
-    const liv = H.rooms.find(r => r.kind === 'stube' && r.floor === 0),
-      sp =
-        (liv && H.spots.find(q => q.kind === 'sitz' && q.room === liv.id)) ||
-        H.spots.find(q => q.kind === 'tisch') ||
-        H.spots.find(q => q.kind === 'sitz');
-    if (!sp) return;
+    const what = doing(key, minute()),
+      pl = placeFor(H, what) || (what !== 'bett' ? placeFor(H, 'sofa') : null);
+    if (!awake()) S.asleep = key;
+    if (!pl) return;
     S.guest = key;
-    S.guestSpot = sp;
-    KERN.unact('zinnen:' + H.id + ':s:' + sp.id); // the place is taken
-    HGAST.show(key, {
-      x: sp.pos[0],
-      y: sp.pos[1],
-      z: sp.pos[2],
-      hd: sp.kind === 'tisch' ? sp.yaw : (sp.yaw + 180) % 360,
-      mode: 'sit',
-      seatTop: sp.kind === 'tisch' ? 0.48 : 0.47,
-    });
+    S.guestSpot = pl.sp;
+    S.doing = pl.what;
+    KERN.unact('zinnen:' + H.id + ':s:' + pl.sp.id); // the place is taken
+    HGAST.show(key, pl.at);
+    // in the evening the TV is on; at night the room one is in has its light on (as somebody at home would have it)
+    if (pl.what === 'tv' && S.tvSpot) tvSet(true);
+    if (dark() && pl.what !== 'bett') light(H.rooms.find(r => r.id === pl.sp.room));
   }
   function guestAway() {
     S.guest = null;
     S.guestSpot = null;
+    S.doing = null;
     HGAST.hide();
   }
   const HELLO = [
@@ -554,7 +629,7 @@ export const HAEUSER = (() => {
     r: 2.4,
     prio: 0.05,
     pos: () => (S.H && S.guest && HGAST.f ? HGAST.head() : null),
-    label: () => (S.H && S.guest && HGAST.f ? DTEXT.P[S.guest].name + ' grüßen' : null),
+    label: () => (S.H && S.guest && HGAST.f && S.doing !== 'bett' ? DTEXT.P[S.guest].name + ' grüßen' : null),
     gest3: 'greet',
     run: () => {
       S.hello = ((S.hello || 0) + 1) % HELLO.length;
@@ -601,6 +676,7 @@ export const HAEUSER = (() => {
     }
     const H = S.H;
     if (S.busy) return;
+    ZIMOB.indoorEnv(scene, INENV); // feat/innen-real: the sky's strength follows the day
     // left without the door (a jump in the menu, a ride): the interior goes
     if (!H.inside(P.x, P.y, P.feet) && hyp(P.x - H.entry.x, P.y - H.entry.y) > 25) {
       tvOff();
@@ -614,9 +690,15 @@ export const HAEUSER = (() => {
     if (!on()) return out(true);
     if (S.guest && (S.guestT = (S.guestT || 0) + a) > 5) {
       S.guestT = 0;
-      if (!atHome(S.guest, H) || !awake()) {
+      if (!atHome(S.guest, H)) {
         PLAY.think(DTEXT.P[S.guest].name + ' ist hinausgegangen.', 2200);
         guestAway();
+      } else if (doing(S.guest, minute()) !== S.doing) {
+        // feat/innen-real: the hour has moved on – to the stove, to the table, to the sofa, to bed
+        const was = S.doing;
+        guestAway();
+        if (was === 'tv') tvOff();
+        villager(H);
       }
     }
     const rid = H.roomAt(P.x, P.y, P.feet + 1);

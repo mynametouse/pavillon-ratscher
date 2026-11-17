@@ -232,7 +232,7 @@ export const ZIEINR = (() => {
       w = 0.95,
       d = 0.75,
       glaze = C.R.pick([M.kachel.gruen, M.kachel.braun, M.kachel.creme, M.kachel.gruen]);
-    F.box(m, C.col(0x4a4038, 0.9), u0 + 0.06, u0 + w - 0.06, 0.04, d - 0.06, z, z + 0.25); // plinth
+    F.box(m, C.col(0x4a4038, 0.9, 0, false), u0 + 0.06, u0 + w - 0.06, 0.04, d - 0.06, z, z + 0.25); // plinth
     F.box(m, glaze, u0, u0 + w, 0, d, z + 0.25, z + 1.05); // fire box
     F.box(m, C.col(0x3a3430, 0.6), u0 - 0.03, u0 + w + 0.03, -0.03, d + 0.03, z + 1.05, z + 1.12); // ledge
     F.box(m, glaze, u0 + 0.08, u0 + w - 0.08, 0, d - 0.12, z + 1.12, z + 1.8); // top part
@@ -576,9 +576,10 @@ export const ZIEINR = (() => {
       z = C.z,
       u0 = F.u0 + (arms === 2 ? 0.95 : 0),
       leather = C.look === 'nachwende',
+      // (feat/innen-real: leather and the plain velours are soft too – rounded like the rest of the upholstery)
       fab = leather
-        ? C.col(0x5a3a26, 0.45)
-        : C.R.pick([M.velours, C.col(0x3f5a3a, 0.9), C.col(0xa8361e, 0.85), C.col(0xb8a07a, 0.9)]),
+        ? C.col(0x5a3a26, 0.45, 0, true)
+        : C.R.pick([M.velours, C.col(0x3f5a3a, 0.9), C.col(0xa8361e, 0.85, 0, true), C.col(0xb8a07a, 0.9)]),
       w = 2.0;
     // couch with its back to the wall
     F.box(m, fab, u0, u0 + w, 0.0, 0.88, z + 0.12, z + 0.42);
@@ -619,15 +620,30 @@ export const ZIEINR = (() => {
     if (C.look === 'ddr')
       for (const k of [0.3, 0.7]) L.deckchen(C, ...F.P(u0 + w * k, 0.12, 0).slice(0, 2), z + 0.822, 0.15);
     // two armchairs facing the couch's ends
+    // (feat/innen-real: an armchair as it is built – short wooden legs, an upholstered base, a seat cushion between the two arms, the
+    // back with its cushion; before, a block with a slab at its back)
+    const legW = leather ? C.col(0x2a1c12, 0.5) : C.col(0x5a3a22, 0.55);
     for (const [cu, a] of [
       [u0 - 0.55, 0],
       [u0 + w + 0.55, Math.PI],
     ].slice(arms === 2 ? 0 : 1, arms ? 2 : 0)) {
-      const p = F.P(cu, 1.55, 0),
-        ang = Math.atan2(F.a[1], F.a[0]) + a;
-      m.box(fab, p[0] - 0.42, p[0] + 0.42, p[1] - 0.42, p[1] + 0.42, z + 0.12, z + 0.44, { a: ang });
-      const bp = F.P(cu + (a ? 0.32 : -0.32), 1.55, 0);
-      m.box(fab, bp[0] - 0.1, bp[0] + 0.1, bp[1] - 0.42, bp[1] + 0.42, z + 0.44, z + 0.95, { a: ang });
+      const dir = a ? -1 : 1,
+        cv = 1.55,
+        U = (p, q) => [Math.min(cu + dir * p, cu + dir * q), Math.max(cu + dir * p, cu + dir * q)],
+        part = (mat, p, q, v0, v1, za, zb, o) => F.box(m, mat, ...U(p, q), cv + v0, cv + v1, z + za, z + zb, o);
+      for (const [pu, pv] of [
+        [-0.34, -0.34],
+        [0.3, -0.34],
+        [-0.34, 0.3],
+        [0.3, 0.3],
+      ])
+        part(legW, pu, pu + 0.045, pv, pv + 0.045, 0, 0.13);
+      part(fab, -0.4, 0.4, -0.4, 0.4, 0.12, 0.36);
+      part(fab, -0.2, 0.4, -0.27, 0.27, 0.36, 0.48);
+      for (const s of [-1, 1]) part(fab, -0.4, 0.4, s > 0 ? 0.27 : -0.4, s > 0 ? 0.4 : -0.27, 0.36, 0.62);
+      part(fab, -0.4, -0.22, -0.4, 0.4, 0.36, 0.9);
+      part(fab, -0.23, -0.1, -0.26, 0.26, 0.48, 0.84);
+      const p = F.P(cu, cv, 0);
       C.solidW([p[0] - 0.42, p[0] + 0.42, p[1] - 0.42, p[1] + 0.42], z, z + 0.6);
     }
     C.seat(F.P(u0 + w / 2, 0.45, z), F, 'Auf die Couch setzen');
@@ -893,7 +909,7 @@ export const ZIEINR = (() => {
     const m = C.m,
       z = C.z,
       u = F.u0 + 0.4;
-    F.box(m, C.col(0x8a5a40, 0.9), u - 0.38, u + 0.38, 0.02, 0.72, z, z + 0.75);
+    F.box(m, C.col(0x8a5a40, 0.9, 0, false), u - 0.38, u + 0.38, 0.02, 0.72, z, z + 0.75);
     F.cyl(m, C.col(0x9aa1a4, 0.4, 0.6), u, 0.37, z + 0.75, z + 0.8, 0.32, 0.32, 12);
     F.cyl(m, C.col(0x9a7a50, 0.8), u + 0.9, 0.4, z, z + 0.6, 0.32, 0.38, 12);
     C.spot('ofen', F.P(u, 1.0, z), F, 'Waschkessel anheizen');
@@ -941,7 +957,7 @@ export const ZIEINR = (() => {
       w = 0.9,
       d = 0.75,
       h = 1.85,
-      wall = C.col(0xb8b0a0, 0.9);
+      wall = C.col(0xb8b0a0, 0.9, 0, false);
     F.box(m, wall, 0, w, 0, 0.05, z, z + h);
     F.box(m, wall, 0, 0.05, 0.05, d, z, z + h);
     F.box(m, wall, w - 0.05, w, 0.05, d, z, z + h);
@@ -1381,6 +1397,21 @@ export const ZIEINR = (() => {
       look = C.look,
       R = C.R,
       M = C.M;
+    // feat/innen-real: what was asked of the placer and what found a place (footprint w × d, height h) – a bath whose toilet found no
+    // place gets a compact one after all (below), and the realism survey (ZINNEN H.survey) reads it
+    const got = (room.got = []),
+      any0 = Pl.any,
+      place0 = Pl.place;
+    Pl.any = (list, w, d, h, pref) => {
+      const F = any0(list, w, d, h, pref);
+      got.push({ w, d, h, ok: !!F });
+      return F;
+    };
+    Pl.place = (side, w, d, h, pref) => {
+      const F = place0(side, w, d, h, pref);
+      got.push({ w, d, h, ok: !!F, side });
+      return F;
+    };
     C.room = room;
     C.z = room.z0;
     const cx = (room.x0 + room.x1) / 2,
@@ -1516,8 +1547,8 @@ export const ZIEINR = (() => {
         F = Pl.any(outer.concat(inner), 1.0, 0.55, 0.85, 0.5);
         if (F) {
           // the sink stone with a bucket
-          F.box(C.m, C.col(0x8a8478, 0.9), F.u0, F.u0 + 1.0, 0, 0.55, C.z + 0.75, C.z + 0.85);
-          F.box(C.m, C.col(0x6a6458, 0.9), F.u0 + 0.05, F.u0 + 0.95, 0.05, 0.5, C.z, C.z + 0.75);
+          F.box(C.m, C.col(0x8a8478, 0.9, 0, false), F.u0, F.u0 + 1.0, 0, 0.55, C.z + 0.75, C.z + 0.85);
+          F.box(C.m, C.col(0x6a6458, 0.9, 0, false), F.u0 + 0.05, F.u0 + 0.95, 0.05, 0.5, C.z, C.z + 0.75);
           F.cyl(C.m, M.zink, F.u0 + 0.5, 0.3, C.z, C.z + 0.3, 0.14, 0.16, 10);
           C.spot('spuele', F.P(F.u0 + 0.5, 0.95, C.z), F, null);
           C.solid(F.rect(F.u0, F.u0 + 1.0, 0, 0.55), C.z, C.z + 0.85);
@@ -1688,6 +1719,26 @@ export const ZIEINR = (() => {
           cloth = C.R.pick([M.karo, C.col(0xf4f2ec, 0.95), C.col(0x8aa0c8, 0.95), M.duvet]);
         C.m.panel(cloth, [p[0], p[1], zl - h / 2], d, lx ? [0, 1, 0] : [1, 0, 0], w, h);
         C.m.panel(cloth, [p[0], p[1], zl - h / 2], d, lx ? [0, -1, 0] : [-1, 0, 0], w, h);
+      }
+    }
+    // feat/innen-real: a bathroom has a toilet and a basin – where the look's found no place (a small bath), a compact one goes in
+    if (kind === 'bad') {
+      const asked = (w, d) => got.some(q => q.ok && Math.abs(q.w - w) < 1e-6 && Math.abs(q.d - d) < 1e-6);
+      room.wc = asked(0.72, 0.7) || asked(0.5, 0.62);
+      if (!room.wc) {
+        const Fw = any0(all, 0.46, 0.56, 0.45, 0.5);
+        if (Fw) {
+          L.wc(C, Fw);
+          room.wc = true;
+        }
+      }
+      room.basin = asked(0.8, 0.5) || asked(0.6, 0.45);
+      if (!room.basin) {
+        const Fb = any0(all, 0.6, 0.45, 1.6, 0.6);
+        if (Fb) {
+          L.waschbecken(C, Fb);
+          room.basin = true;
+        }
       }
     }
     if (C.owner && PERSONAL[C.owner]) PERSONAL[C.owner](C, Pl, room);
