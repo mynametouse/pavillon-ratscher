@@ -1,0 +1,4 @@
+# feat/grenzland-strasse: browser tests on GitHub Actions (one job per line; sections of viz3/test/grenzland_strasse.py)
+grenzland_strasse:linien,holz,milch
+grenzland_strasse:kraeh,streife,schule
+grenzland_strasse:begegnung

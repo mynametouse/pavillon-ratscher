@@ -11,6 +11,14 @@
 //                bride's father
 //   boeller      a man sells bangers out of season from the boot of his car (5 € for three) – „Knallkörper im September“
 //   wildunfall   at dusk a deer crosses the country road ahead: brake, or it bumps the vehicle and runs off into the wood (no harm)
+//   (feat/grenzland-strasse, 17.11.2026)
+//   anhalter     somebody hitchhikes at the roadside, a cardboard sign with the place: stop beside him on the moped and take him along
+//                (the waypoint shows where; a word on the way; five euros and a good name) – now and then an odd one
+//   panne        a car with its hazard lights on the verge, the bonnet up, the warning triangle behind: help with petrol from the canister
+//                or a push (whichever helps), or call the breakdown service; money and a good name
+//   jaeger       at dusk a hunter on his high seat at the forest edge: a shot far off, he waves one off the meadow, at last he would like a
+//                lift to Ratscher
+//   The old random fair is planned no more when the festival calendar of grenzland-alltag (GLFESTE) is there.
 // The people are figures of grenzland/gl_fig.js (their cast and clothes are added to GLDATA at load – nothing of the lead's data
 // changes), the cars of grenzland/gl_auto.js, the props merged meshes in the traffic's material (no new shader program, no lamp).
 //   GLEREIGNIS.start(name) · stop() · aktiv() → name | '' · linien() → [[who, text], …] · debug.start(name) (tests: at the player)
@@ -27,6 +35,9 @@ import { VFIG } from '../verkehr/verkehr_fig.js';
 import { VAUTO } from '../verkehr/verkehr_auto.js';
 import { VNETZ } from '../verkehr/verkehr_netz.js';
 import { WCOL } from '../world/worldcol.js';
+import { FOREST } from '../world/forest.js';
+import { CLOCK } from '../time/clock.js';
+import { DN } from '../time/daynight.js';
 import { STIMME } from '../audio/stimme.js';
 import { GLLOGIK } from './gl_logik.js';
 import { GLDATA } from './gl_data.js';
@@ -97,10 +108,67 @@ export const GLEREIGNIS = (() => {
       voice: { g: 'f', age: 20 },
     },
   };
+  // feat/grenzland-strasse: the people of the new encounters – a student and a hiker who hitchhike, now and then an odd one, a driver
+  // with a breakdown, the hunter on his high seat
+  const SLKLEID = {
+    sl_student: { ober: [70, 96, 140], unter: [44, 52, 74], schuh: [220, 220, 216], arm: true },
+    sl_wanderer: { ober: [196, 80, 40], unter: [70, 72, 66], schuh: [96, 70, 46], arm: true },
+    sl_sonderling: { ober: [150, 120, 60], oberM: 'karo', unter: [90, 60, 40], schuh: [40, 30, 26], arm: true },
+    sl_panne: { ober: [128, 34, 46], unter: [36, 40, 60], schuh: [30, 30, 30], arm: true },
+    sl_jaeger: { ober: [70, 84, 56], unter: [62, 66, 50], schuh: [70, 52, 36], arm: true, kragen: [60, 70, 48] },
+  };
+  // (not among the people of grenzland/gl_reaktion.js who answer the four replies – they have their own few lines here)
+  const SLCAST = {
+    sl_student: {
+      name: 'Anhalter',
+      fig: 'vk_m02',
+      clips: 'm',
+      h: 1.81,
+      kleid: 'sl_student',
+      voice: { g: 'm', age: 21 },
+    },
+    sl_wanderer: {
+      name: 'Wanderin',
+      fig: 'vk_f07',
+      clips: 'f',
+      h: 1.69,
+      kleid: 'sl_wanderer',
+      hut: 'strick',
+      voice: { g: 'f', age: 34 },
+    },
+    sl_sonderling: {
+      name: 'Anhalter',
+      fig: 'vk_m11',
+      clips: 'm',
+      h: 1.76,
+      kleid: 'sl_sonderling',
+      hut: 'hut',
+      voice: { g: 'm', age: 63 },
+    },
+    sl_panne: {
+      name: 'Autofahrerin',
+      fig: 'vk_f07',
+      clips: 'f',
+      h: 1.66,
+      kleid: 'sl_panne',
+      voice: { g: 'f', age: 45 },
+    },
+    sl_jaeger: {
+      name: 'Jäger',
+      fig: 'vk_m16',
+      clips: 'm',
+      h: 1.79,
+      kleid: 'sl_jaeger',
+      hut: 'hut',
+      voice: { g: 'm', age: 61 },
+    },
+  };
   for (const [k, v] of Object.entries(KLEID)) if (GLDATA.KLEID && !GLDATA.KLEID[k]) GLDATA.KLEID[k] = v;
   for (const [k, v] of Object.entries(CAST)) if (!GLDATA.CAST[k]) GLDATA.CAST[k] = v;
   // (they notice the player and can be answered like the mode's own people: grenzland/gl_reaktion.js)
   if (GLREAKTION.REDNER) for (const k of Object.keys(CAST)) GLREAKTION.REDNER.add(k);
+  for (const [k, v] of Object.entries(SLKLEID)) if (GLDATA.KLEID && !GLDATA.KLEID[k]) GLDATA.KLEID[k] = v;
+  for (const [k, v] of Object.entries(SLCAST)) if (!GLDATA.CAST[k]) GLDATA.CAST[k] = v;
   // what they say (fixed lines: `stimmen` records them – linien())
   const SAGT = {
     boellermann: {
@@ -115,6 +183,53 @@ export const GLEREIGNIS = (() => {
     },
     bursche: { hallo: 'Kirmes ist nur einmal im Jahr! Komm, tanz mit!' },
     maedchen: { hallo: 'Hast du den Kirmesbaum gesehen? Den haben wir die ganze Nacht bewacht.' },
+    // feat/grenzland-strasse: who hitchhikes (where to: one fixed sentence per place), what they say on the way (true things about the
+    // region or harmless odd ones), thanks; the driver with the breakdown; the hunter (calm – nothing about killing)
+    sl_student: {
+      frage: 'Nimmst du mich ein Stück mit?',
+      anger: 'Bis zum Anger in Ratscher reicht mir.',
+      damm: 'Ich will zur Staumauer, zum Stausee.',
+      zh: 'Ich muss nach Schleusingen, zum Bus.',
+      unterwegs: 'In der Bertholdsburg in Schleusingen ist das Naturhistorische Museum. Lohnt sich, wirklich.',
+      danke: 'Danke fürs Mitnehmen! Hier, fünf Euro für den Sprit.',
+      zuzweit: 'Ach, ihr seid schon zu zweit. Dann warte ich auf den Nächsten.',
+    },
+    sl_wanderer: {
+      frage: 'Hallo! Nimmst du mich mit? Meine Füße streiken.',
+      anger: 'Bis zum Anger in Ratscher reicht mir.',
+      damm: 'Ich will zur Staumauer, zum Stausee.',
+      zh: 'Ich muss nach Schleusingen, zum Bus.',
+      unterwegs: 'Der Rennsteig ist gar nicht weit. Mit dem Moped eine knappe halbe Stunde, zu Fuß zwei Tage.',
+      danke: 'Danke! Du hast meine Füße gerettet. Hier, für den Sprit.',
+      zuzweit: 'Ach, ihr seid schon zu zweit. Dann warte ich auf den Nächsten.',
+    },
+    sl_sonderling: {
+      frage: 'Fahren Sie zufällig in meine Richtung? Ich habe nur eine Richtung.',
+      anger: 'Bis zum Anger in Ratscher reicht mir.',
+      damm: 'Ich will zur Staumauer, zum Stausee.',
+      zh: 'Ich muss nach Schleusingen, zum Bus.',
+      unterwegs:
+        'Ich suche den perfekten Bratwurststand. Seit drei Jahren. Bitte nicht so schnell, ich habe Kuchen im Rucksack.',
+      danke: 'Danke. Und wenn jemand fragt: Sie haben mich nie gesehen.',
+      zuzweit: 'Zu zweit auf einem Moped. Mutig. Ich warte lieber.',
+    },
+    sl_panne: {
+      hallo: 'Hallo! Können Sie kurz helfen? Mein Auto ist einfach ausgegangen.',
+      tank: 'Ich glaube, der Tank ist leer. Die Anzeige spinnt schon länger.',
+      batterie: 'Die Batterie ist leer. Ich habe heute früh das Licht angelassen.',
+      falsch: 'Das bringt leider nichts.',
+      danke: 'Sie sind ein Engel. Hier, nehmen Sie das, ich bestehe darauf.',
+      abschlepp: 'Danke, dann warte ich auf den Abschleppdienst.',
+    },
+    sl_jaeger: {
+      weg: 'He! Runter von der Wiese, hier wird gejagt!',
+      ruhig: 'Pst. Am Waldrand steht ein Reh. Einfach nur zuschauen.',
+      frage: 'Heute kommt nichts mehr. Nimmst du mich mit bis Ratscher? Der Rucksack ist schwer.',
+      anger: 'Bis zum Anger reicht mir.',
+      unterwegs: 'Die Wildschweine haben drüben den Mais umgegraben. Deshalb sitze ich jeden Abend da oben.',
+      danke: 'Danke. Waidmannsheil – so sagen wir Jäger.',
+      zuzweit: 'Zu dritt auf dem Moped? Lass mal, ich laufe.',
+    },
   };
   const TX = {
     blitzer: 'Blitzer',
@@ -145,6 +260,24 @@ export const GLEREIGNIS = (() => {
     gebremst: 'Gerade noch gebremst. Das Reh schaut beleidigt und trabt in den Wald.',
     rums: 'Rums! Das Reh rappelt sich auf und springt davon. Glück gehabt – ihr beide.',
     kein: 'Dafür reicht das Geld nicht.',
+    // feat/grenzland-strasse
+    anhalter: 'Anhalter',
+    anhalterSub: 'Jemand hält den Daumen raus',
+    mitnehmen: name => name + ' mitnehmen',
+    panne: 'Panne',
+    panneSub: 'Ein Auto mit Warnblinker am Straßenrand',
+    helfen: 'Helfen',
+    hilfeTitel: 'Panne',
+    hilfeKanister: 'Benzin aus deinem Kanister geben',
+    hilfeKanisterNein: 'Du hast keinen Kanister dabei',
+    hilfeSchieben: 'Anschieben',
+    hilfeAbschlepp: 'Den Abschleppdienst anrufen',
+    hilfeWeiter: 'Weiterfahren',
+    angesprungen: 'Der Motor springt an. Sie winkt noch einmal und fährt los.',
+    abschleppSms: 'Abschleppdienst: Der Wagen ist unterwegs, in etwa vierzig Minuten da.',
+    abschleppVon: 'Pannenhilfe',
+    jaeger: 'Ansitz am Waldrand',
+    jaegerSub: 'Ein Jäger auf dem Hochsitz',
   };
   const heute = () => GL.on && GL.era === 'heute';
   const where = () => {
@@ -772,7 +905,414 @@ export const GLEREIGNIS = (() => {
         return mitte > 30 || E.t > 60;
       },
     },
+    // ---- feat/grenzland-strasse: somebody hitchhiking at the roadside – stop beside him on the moped and take him along ----
+    anhalter: {
+      titel: TX.anhalter,
+      sub: TX.anhalterSub,
+      radar: 'Anhalter',
+      wo: () => vorn(130, 280),
+      start(E, A) {
+        const [x, y] = rechts(A, 3.3);
+        E.x = x;
+        E.y = y;
+        E.hd = A.hd;
+        // who: a student or a hiker, now and then an odd one
+        const r = Math.random();
+        E.wer = r < 0.25 ? 'sl_sonderling' : r < 0.62 ? 'sl_student' : 'sl_wanderer';
+        E.ziel = zielWahl(x, y);
+        // his rucksack on the verge, a cardboard sign with the place against it
+        E.meshes.push(
+          mesh(
+            K => {
+              const st = L(70, 82, 110),
+                pap = L(196, 170, 122);
+              K.box(0.45, 0.12, 0, 0.36, 0.24, 0.52, 0.2, st);
+              K.box(0.45, 0.12, 0.52, 0.3, 0.2, 0.08, 0.2, L(40, 46, 60));
+              K.box(0.45, -0.04, 0.06, 0.66, 0.02, 0.42, 0, pap);
+              GLORTE.tafelText(K, E.ziel.schild, [0.45, -0.055, 0.27], Math.PI, 0.0075, L(30, 30, 34));
+            },
+            x,
+            y,
+            A.hd
+          )
+        );
+        figur(E, E.wer, x, y, A.hd + Math.PI, F => {
+          E.F = F;
+          E.mit = { F, st: 'wartet', ziel: E.ziel, t: 0 };
+        });
+      },
+      tick(E, dt, p) {
+        const F = E.F;
+        if (!F) return E.t > 30;
+        const d = hyp(p.x - F.x, p.y - F.y);
+        if (E.mit.st === 'wartet') {
+          // the thumb out (a raised arm) while somebody comes; he asks when one stops near
+          if (d < 90 && d > 9 && !E.winkt && VEH.cur) {
+            E.winkt = true;
+            try {
+              GLFIG.geste(F, 'winken', { sec: 2.4 });
+            } catch (e) {}
+          }
+          if (d < 9 && !E.fragte && VEH.cur && p.v < 2) {
+            E.fragte = true;
+            sag(F, SAGT[E.wer].frage);
+            setTimeout(() => S.E === E && sag(F, SAGT[E.wer][E.ziel.id]), 2400);
+          }
+          if (d < 9 && !E.zuzweit && VEH.cur && p.v < 2 && partnerFaehrt()) {
+            E.zuzweit = true;
+            setTimeout(() => S.E === E && sag(F, SAGT[E.wer].zuzweit), 5200);
+          }
+        }
+        return mitTick(E, dt, p) || (E.mit.st === 'wartet' && E.t > 300);
+      },
+    },
+    // ---- feat/grenzland-strasse: a breakdown – a car with its hazard lights on the verge, the bonnet up, the warning triangle behind ----
+    panne: {
+      titel: TX.panne,
+      sub: TX.panneSub,
+      radar: 'Panne',
+      wo: () => vorn(150, 300),
+      start(E, A) {
+        const [x, y] = rechts(A, 3.1);
+        const look = rnd([
+          ['kombi', '#6f7f8c'],
+          ['kombi', '#8a2f2a'],
+          ['kombi', '#d9d6cf'],
+        ]);
+        const c = auto(E, look[0], { col: look[1] });
+        if (!c) return false;
+        GLAUTO.park(c, x, y, A.hd);
+        E.car = c;
+        E.A = A;
+        E.x = x;
+        E.y = y;
+        E.grund = Math.random() < 0.5 ? 'tank' : 'batterie';
+        // the hazard lights: the car's own copy of the indicator lamps (only it blinks)
+        E.mats = [];
+        c.g.traverse(o => {
+          if (o.isMesh && o.name === 'blink') {
+            o.material = o.material.clone();
+            E.mats.push(o.material);
+          }
+        });
+        // the bonnet up, the engine bay under it
+        const T = c.T,
+          y0 = T.a - 0.35,
+          y1 = T.yf - 0.08,
+          z0 = 0.92,
+          hw = T.hw - 0.06,
+          paint = hexL(look[1]);
+        E.meshes.push(
+          mesh(
+            K => {
+              K.box(0, (y0 + y1) / 2 + 0.05, z0 - 0.08, 2 * hw - 0.1, y1 - y0, 0.06, 0, L(36, 36, 38));
+              const up = 1.05,
+                ly = (y1 - y0) * Math.cos(up),
+                lz = (y1 - y0) * Math.sin(up),
+                a = [-hw, y0, z0],
+                b = [hw, y0, z0],
+                cc = [hw, y0 + ly, z0 + lz],
+                dd = [-hw, y0 + ly, z0 + lz];
+              K.quad(a, b, cc, dd, paint);
+              K.quad(dd, cc, b, a, L(60, 60, 62));
+              K.box(0.25, y0 + ly * 0.8, z0 + lz * 0.8 - 0.4, 0.02, 0.02, 0.8, 0, L(30, 30, 30));
+            },
+            x,
+            y,
+            A.hd,
+            c.z
+          )
+        );
+        // the warning triangle some 60 m behind it, at the edge, facing the traffic that comes
+        const [tx, ty] = rechts({ x: A.x - A.dx * 60, y: A.y - A.dy * 60, dx: A.dx, dy: A.dy }, 2.6);
+        E.meshes.push(
+          mesh(
+            K => {
+              const red = L(210, 30, 24);
+              K.tri([-0.24, 0, 0.06], [0.24, 0, 0.06], [0, 0, 0.47], red);
+              K.tri([0.24, 0, 0.06], [-0.24, 0, 0.06], [0, 0, 0.47], red);
+              K.box(0, 0.08, 0.02, 0.36, 0.2, 0.03, 0, L(40, 40, 40));
+            },
+            tx,
+            ty,
+            A.hd + Math.PI
+          )
+        );
+        // the driver beside her car, on the verge side, on the phone
+        const fx = x + A.dy * 1.4 + A.dx * 1.6,
+          fy = y - A.dx * 1.4 + A.dy * 1.6;
+        figur(E, 'sl_panne', fx, fy, A.hd - Math.PI / 2, F => {
+          E.F = F;
+          try {
+            GLFIG.geste(F, 'telefon', { halten: true });
+          } catch (e) {}
+        });
+        E.hilfe = [fx, fy];
+      },
+      tick(E, dt, p) {
+        const F = E.F;
+        // the hazard lights: some 90 flashes a minute
+        const an = !E.weg && E.t % 0.68 < 0.34;
+        for (const m of E.mats) m.emissiveIntensity = an ? 2.6 : 0;
+        markDirty();
+        if (F && !E.gruss && hyp(p.x - F.x, p.y - F.y) < 26) {
+          E.gruss = true;
+          try {
+            GLFIG.geste(F, null);
+            GLFIG.geste(F, 'winken', { sec: 2.4 });
+          } catch (e) {}
+          sag(F, SAGT.sl_panne.hallo);
+          setTimeout(() => S.E === E && sag(F, SAGT.sl_panne[E.grund]), 3200);
+        }
+        // fixed: she gets in and drives off
+        if (E.weg) {
+          if (!E.line) {
+            E.line = linie(Object.assign({}, E.A, { x: E.car.x, y: E.car.y, hd: E.car.hd }), 500);
+            if (E.line) GLAUTO.onLine(E.car, E.line, 0, 0);
+            if (F && !F.gone) F.g.visible = false;
+            E.wegT = 0;
+          }
+          E.wegT += dt;
+          if (E.line) GLAUTO.drive(E.car, dt, { vmax: E.wegT < 3 && E.ende === 'geschoben' ? 2 : 13, acc: 1.6 });
+          return E.wegT > 40 || (E.car.line && E.car.ende) || hyp(p.x - E.car.x, p.y - E.car.y) > 260;
+        }
+        return E.t > 360 || (E.ende === 'abschlepp' && hyp(p.x - E.x, p.y - E.y) > 200);
+      },
+    },
+    // ---- feat/grenzland-strasse: at dusk a hunter on his high seat at the forest edge – a shot far off, he waves one off the meadow,
+    //      at last he climbs down and would like a lift ----
+    jaeger: {
+      titel: TX.jaeger,
+      sub: TX.jaegerSub,
+      radar: 'Jäger',
+      wo: () => {
+        // dusk: about an hour round sunset or sunrise
+        try {
+          const m = ((CLOCK.t % 1440) + 1440) % 1440,
+            rs = DN.riseSet(CLOCK.t, 'sun');
+          const nah = q => q != null && Math.abs(m - q) < 75;
+          if (!(nah(rs.down) || nah(rs.up))) return null;
+        } catch (e) {
+          return null;
+        }
+        return waldrand(where());
+      },
+      start(E, A) {
+        E.x = A.x;
+        E.y = A.y;
+        E.hd = A.hd;
+        E.meshes.push(mesh(hochsitz, A.x, A.y, A.hd));
+        E.schussT = 20 + Math.random() * 40;
+        figur(E, 'sl_jaeger', A.x, A.y, A.hd, F => {
+          E.F = F;
+          GLFIG.sitz(F, A.x, A.y - 0.0, A.hd, 3.62 + 0.45);
+          F.sees = false;
+        });
+      },
+      tick(E, dt, p) {
+        const F = E.F;
+        if (!F) return E.t > 30;
+        const d = hyp(p.x - E.x, p.y - E.y),
+          vor = (p.x - E.x) * Math.sin(E.hd) + (p.y - E.y) * Math.cos(E.hd);
+        // a shot far off (another hunter, over the hill)
+        if (!E.schuss && E.t > E.schussT) {
+          E.schuss = true;
+          try {
+            GLTON.fx('boeller', 520, 900);
+          } catch (e) {}
+        }
+        if (!E.unten) {
+          // on the meadow in front of him: off with you
+          if (!E.weggewunken && vor > 8 && d < 75 && !strasse(p.x, p.y, 5)) {
+            E.weggewunken = true;
+            try {
+              GLFIG.geste(F, 'abwinken');
+            } catch (e) {}
+            sag(F, SAGT.sl_jaeger.weg);
+          } else if (!E.ruhig && d < 45 && E.t > 8) {
+            E.ruhig = true;
+            sag(F, SAGT.sl_jaeger.ruhig);
+          }
+          // he comes down when one is at the foot of the seat, or late
+          if ((d < 14 && E.t > 12) || E.t > 150) {
+            E.unten = true;
+            GLFIG.steh(F, true);
+            const bx = E.x - Math.sin(E.hd) * 2.4,
+              by = E.y - Math.cos(E.hd) * 2.4;
+            GLFIG.place(F, bx, by, E.hd + Math.PI);
+            F.sees = true;
+            E.ziel = ZIELE.find(z => z.id === 'anger');
+            E.wer = 'sl_jaeger';
+            E.mit = { F, st: 'wartet', ziel: E.ziel, t: 0 };
+            setTimeout(() => S.E === E && sag(F, SAGT.sl_jaeger.frage), 1200);
+          }
+          return E.t > 420;
+        }
+        return mitTick(E, dt, p) || (E.mit.st === 'wartet' && E.t > 420);
+      },
+    },
   };
+  // ---- feat/grenzland-strasse: helpers of the new encounters ----
+  const hexL = h => {
+    const n = parseInt(String(h).slice(1), 16);
+    return L((n >> 16) & 255, (n >> 8) & 255, n & 255);
+  };
+  // where a hitchhiker wants to go: a place 400 m to 2.5 km away (the Anger, the dam, the bus in Schleusingen)
+  const ZIELE = [
+    { id: 'anger', name: 'Ratscher, Anger', schild: 'RATSCHER', pos: () => GLDATA.ORTE.anger.pos },
+    { id: 'damm', name: 'Staumauer', schild: 'STAUSEE', pos: () => GLDATA.ORTE.damm.pos },
+    { id: 'zh', name: 'Schleusingen, Zentralhaltestelle', schild: 'SCHLEUSINGEN', pos: () => GLDATA.ORTE.zh.pos },
+  ];
+  function zielWahl(x, y) {
+    const ok = ZIELE.filter(z => {
+      const d = hyp(z.pos()[0] - x, z.pos()[1] - y);
+      return d > 400 && d < 2600;
+    });
+    return ok.length ? rnd(ok) : ZIELE[0];
+  }
+  // the other of the two rides along on the moped (then there is no seat left)
+  const partnerFaehrt = () => {
+    try {
+      const F = window.GRENZLAND && GRENZLAND.partnerOf && GRENZLAND.partnerOf();
+      return !!(F && F.rides && GL.folgt);
+    } catch (e) {
+      return false;
+    }
+  };
+  // a good deed: the village's (or the town's) opinion of the two (grenzland-ruf: GLRUF, when it is there)
+  function ruf(n, grund, x, y) {
+    try {
+      const R = window.GLRUF;
+      if (R && R.add) R.add(hyp(x + 1340, y - 1243) < 1200 ? 'schleusingen' : 'ratscher', n, grund);
+    } catch (e) {}
+  }
+  // a lift on the moped: he gets on (hidden behind the rider), the destination is a waypoint on the radar, he talks a little on the
+  // way; near the destination and slow (or off the moped) he gets off, thanks and pays, and walks off. Returns true when it is over.
+  function mitTick(E, dt, p) {
+    const M = E.mit;
+    if (!M) return false;
+    const F = M.F;
+    if (!F || F.gone) return true;
+    if (M.st === 'faehrt') {
+      M.t += dt;
+      F.g.visible = false;
+      F.x = p.x;
+      F.y = p.y;
+      E.x = p.x;
+      E.y = p.y;
+      if (!M.sagte && M.t > 7) {
+        M.sagte = true;
+        sag(F, SAGT[E.wer].unterwegs);
+      }
+      const z = M.ziel.pos();
+      if ((hyp(p.x - z[0], p.y - z[1]) < 35 && p.v < 2.5) || !VEH.cur) {
+        // off: beside the moped on its right
+        const a = (p.hd || 0) + Math.PI / 2;
+        GLFIG.place(F, p.x + Math.sin(a) * 1.3, p.y + Math.cos(a) * 1.3, p.hd || 0);
+        F.g.visible = true;
+        M.st = 'ab';
+        M.t = 0;
+        KERN.emit('grenzland:ziel', { pos: null });
+        const da = hyp(p.x - z[0], p.y - z[1]) < 60;
+        if (da) {
+          sag(F, SAGT[E.wer].danke);
+          GL.earn(E.wer === 'sl_jaeger' ? 0 : 5, 'Anhalter mitgenommen');
+          ruf(2, 'Anhalter mitgenommen', p.x, p.y);
+          E.ende = 'mitgenommen';
+        } else E.ende = 'abgesetzt';
+      }
+      return false;
+    }
+    if (M.st === 'ab') {
+      M.t += dt;
+      if (M.t > 3 && !M.geht) {
+        M.geht = true;
+        const a = (F.hd || 0) + 0.4;
+        GLFIG.go(F, [F.x + Math.sin(a) * 30, F.y + Math.cos(a) * 30], 1.3);
+      }
+      return M.t > 14;
+    }
+    return false;
+  }
+  // get on: the action at the one who waits (on the moped, slow, close)
+  function aufsteigen() {
+    const E = S.E,
+      M = E && E.mit;
+    if (!M || M.st !== 'wartet') return;
+    if (partnerFaehrt()) return sag(M.F, SAGT[E.wer].zuzweit);
+    M.st = 'faehrt';
+    M.t = 0;
+    try {
+      GLFIG.geste(M.F, null);
+    } catch (e) {}
+    M.F.g.visible = false;
+    const z = M.ziel.pos();
+    KERN.emit('grenzland:ziel', { pos: [z[0], z[1]], name: M.ziel.name });
+    GLTON.fx('tick');
+    markDirty(true);
+  }
+  // a place at a forest edge near the player (60–240 m): out of the wood, the wood 14 m behind it; the high seat faces the open land
+  function waldrand(p) {
+    if (!FOREST || !FOREST.owns) return null;
+    for (const d of [90, 140, 190, 240, 60])
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2 + d,
+          x = p.x + Math.sin(a) * d,
+          y = p.y + Math.cos(a) * d;
+        if (FOREST.owns(x, y) || strasse(x, y, 12)) continue;
+        for (let k = 0; k < 8; k++) {
+          const b = (k / 8) * Math.PI * 2;
+          if (!FOREST.owns(x + Math.sin(b) * 14, y + Math.cos(b) * 14)) continue;
+          if (FOREST.owns(x - Math.sin(b) * 25, y - Math.cos(b) * 25)) continue;
+          if (!frei(x, y, 3)) continue;
+          // facing away from the wood
+          return { x, y, hd: b + Math.PI };
+        }
+      }
+    return null;
+  }
+  // a closed high seat („Kanzel“): four posts spreading to the ground, a ladder at the back, a cabin at 3.6 m with a window slot to the
+  // front and the sides, a roof sloping back; spruce wood, weathered. Kit frame: x right, y the way it looks, z up
+  function hochsitz(K) {
+    const holz = L(122, 98, 72),
+      dunkel = L(84, 66, 48),
+      dach = L(52, 50, 48),
+      h = 3.6,
+      R = GLORTE.rolle;
+    for (const sx of [-1, 1])
+      for (const sy of [-1, 1]) R(K, [sx * 1.05, sy * 1.05, 0], [sx * 0.68, sy * 0.68, h], 0.07, holz, 6);
+    for (const z of [1.2, 2.4])
+      for (const [a, b] of [
+        [
+          [-0.9, -0.9],
+          [0.9, -0.9],
+        ],
+        [
+          [-0.9, 0.9],
+          [0.9, 0.9],
+        ],
+      ])
+        R(K, [a[0], a[1], z], [b[0], b[1], z], 0.04, holz, 5);
+    // the ladder at the back
+    for (const sx of [-0.25, 0.25]) R(K, [sx, -1.9, 0], [sx, -0.8, h], 0.04, holz, 5);
+    for (let i = 1; i < 11; i++) {
+      const t = i / 11;
+      R(K, [-0.25, -1.9 + 1.1 * t, h * t], [0.25, -1.9 + 1.1 * t, h * t], 0.025, holz, 4);
+    }
+    // the cabin: floor, walls with the window slot, the roof
+    K.box(0, 0, h, 1.6, 1.6, 0.08, 0, dunkel);
+    K.box(0, 0.78, h + 0.375, 1.6, 0.05, 0.75, 0, holz);
+    K.box(0, -0.78, h + 0.8, 1.6, 0.05, 1.6, 0, holz);
+    for (const sx of [-1, 1]) K.box(sx * 0.78, 0, h + 0.375, 0.05, 1.6, 0.75, 0, holz);
+    K.box(0, 0.78, h + 1.42, 1.6, 0.05, 0.36, 0, holz);
+    for (const sx of [-1, 1]) K.box(sx * 0.78, 0, h + 1.42, 0.05, 1.6, 0.36, 0, holz);
+    for (const sx of [-0.78, 0.78]) K.box(sx, 0.78, h + 1.0, 0.06, 0.05, 0.5, 0, dunkel);
+    for (const sy of [-0.78, 0.78]) {
+      K.box(-0.78, sy, h + 1.0, 0.05, 0.06, 0.5, 0, dunkel);
+      K.box(0.78, sy, h + 1.0, 0.05, 0.06, 0.5, 0, dunkel);
+    }
+    K.box(0, 0.06, h + 1.62, 1.9, 1.95, 0.06, 0.0, dach);
+  }
   // the tractor and its trailer on the line: the tractor's rear axle at E.s, the trailer's drawbar eye just behind it, the trailer
   // turned along the road behind
   const _p = {},
@@ -1018,6 +1558,8 @@ export const GLEREIGNIS = (() => {
       if (m.parent) m.parent.remove(m);
       if (m.geometry) m.geometry.dispose();
     }
+    for (const m of E.mats || []) m.dispose();
+    if (E.mit && E.mit.st === 'faehrt') KERN.emit('grenzland:ziel', { pos: null });
     E.cars.length = E.figs.length = E.meshes.length = 0;
     S.ende[E.name] = E.ende || warum || 'aus';
     GL.emit('ereignis', { name: E.name, ende: S.ende[E.name] });
@@ -1060,6 +1602,72 @@ export const GLEREIGNIS = (() => {
         E.verkauft = true;
         E.ende = 'gekauft';
       }
+    },
+  });
+  // feat/grenzland-strasse: taking somebody along (on the moped, slow, close), helping with the breakdown (on foot, at the driver)
+  KERN.act({
+    id: 'gl-ereignis-mit',
+    prio: 6,
+    r: 6,
+    label: () => {
+      const E = S.E,
+        M = E && E.mit;
+      if (!M || M.st !== 'wartet' || !heute() || !VEH.cur || VEH.cur.id !== 'gl-moped' || !M.F || M.F.gone) return null;
+      const v = VEH.cur;
+      if (hyp(v.st.u, v.st.v) > 1.6 || partnerFaehrt()) return null;
+      return TX.mitnehmen(M.F.name);
+    },
+    pos: () => {
+      const E = S.E,
+        M = E && E.mit;
+      return M && M.F ? [M.F.x, M.F.y, M.F.z + 1] : [0, 0, -999];
+    },
+    run: () => aufsteigen(),
+  });
+  KERN.act({
+    id: 'gl-ereignis-hilfe',
+    prio: 6,
+    r: 3.2,
+    label: () => {
+      const E = S.E;
+      if (!E || E.name !== 'panne' || E.weg || E.ende === 'abschlepp' || !heute() || VEH.cur || !E.F) return null;
+      return TX.helfen;
+    },
+    pos: () => {
+      const E = S.E;
+      return E && E.F ? [E.F.x, E.F.y, E.F.z + 1] : [0, 0, -999];
+    },
+    run: async () => {
+      const E = S.E;
+      if (!E || E.name !== 'panne' || E.weg) return;
+      const kan = GL.has('kanister');
+      const i = await GLHUD.wahl(TX.hilfeTitel, SAGT.sl_panne[E.grund], [
+        { t: TX.hilfeKanister, s: kan ? '' : TX.hilfeKanisterNein, off: !kan },
+        { t: TX.hilfeSchieben },
+        { t: TX.hilfeAbschlepp },
+        { t: TX.hilfeWeiter },
+      ]);
+      if (S.E !== E || i < 0 || i === 3) return;
+      const p = where();
+      if (i === 2) {
+        E.ende = 'abschlepp';
+        sag(E.F, SAGT.sl_panne.abschlepp);
+        GLHANDY.sms(TX.abschleppVon, TX.abschleppSms);
+        ruf(1, 'Pannenhilfe gerufen', p.x, p.y);
+        return;
+      }
+      const passt = (i === 0 && E.grund === 'tank') || (i === 1 && E.grund === 'batterie');
+      if (!passt) return sag(E.F, SAGT.sl_panne.falsch);
+      if (i === 0) GL.use('kanister');
+      E.ende = i === 0 ? 'benzin' : 'geschoben';
+      sag(E.F, SAGT.sl_panne.danke);
+      GL.earn(i === 0 ? 15 : 10, 'Pannenhilfe');
+      ruf(3, 'bei einer Panne geholfen', p.x, p.y);
+      setTimeout(() => {
+        if (S.E !== E) return;
+        E.weg = true;
+        PLAY.think(TX.angesprungen, 3000);
+      }, 2600);
     },
   });
   // the radar: where it is (a letter on the map)
@@ -1110,6 +1718,8 @@ export const GLEREIGNIS = (() => {
     }
     // the plan: a few times a second
     if ((S.planT -= dt) > 0) return;
+    // feat/grenzland-strasse: the festival calendar (grenzland-alltag, GLFESTE) brings the fair – the old random fair is planned no more
+    if (window.GLFESTE) S.plan.zuletzt.kirmes = S.uhr + 1e9;
     const dtp = 0.5 - S.planT;
     S.planT = 0.5;
     S.uhr += dtp;

@@ -153,6 +153,61 @@ export const GLTYPEN = (() => {
       form: 'bus',
       name: 'Kastenwagen',
     },
+    // feat/grenzland-strasse (17.11.2026): lorries of today, cab-over, no maker (grenzland/gl_linien.js drives them). Tyres 315/80 R 22.5,
+    // the rear twin tyres; tandem: the distance of a second rear axle (b is the middle of the pair – gl_linien.js sets the two axles).
+    // A box lorry of 18 t (4 × 2: 9.9 × 2.55 × 3.95 m, wheelbase 5.2) – the haulier's and the supermarkets' (o.kasten 'kuehl': the
+    // refrigeration unit on the box's front wall)
+    koffer: {
+      yf: 4.0,
+      yr: -5.9,
+      hw: 1.275,
+      a: 2.6,
+      b: -2.6,
+      rw: 0.538,
+      tw: 0.315,
+      track: 2.06,
+      trackR: 2.24,
+      h: 3.95,
+      form: 'lkw',
+      aufbau: 'koffer',
+      name: 'Lkw',
+    },
+    // a milk collection lorry, 26 t (6 × 2: 9.6 × 2.55 × 3.5 m, 4.6 m to the middle of the tandem): an oval stainless tank of some
+    // 12 000 l, a walkway and two domes on top, the pump's cabinet behind
+    milchlaster: {
+      yf: 3.75,
+      yr: -5.85,
+      hw: 1.275,
+      a: 2.35,
+      b: -2.25,
+      rw: 0.538,
+      tw: 0.315,
+      track: 2.06,
+      trackR: 2.24,
+      h: 3.45,
+      tandem: 1.36,
+      form: 'lkw',
+      aufbau: 'tank',
+      name: 'Milchsammelwagen',
+    },
+    // a timber lorry, 26 t (6 × 4: 9.0 × 2.55 m, 4.4 m to the middle of the tandem): the loading crane folded behind the cab, a headboard,
+    // three bunks with stakes, logs of 5 m (o.kasten 'leer': empty)
+    holzlaster: {
+      yf: 3.6,
+      yr: -5.4,
+      hw: 1.275,
+      a: 2.2,
+      b: -2.2,
+      rw: 0.538,
+      tw: 0.315,
+      track: 2.06,
+      trackR: 2.24,
+      h: 3.6,
+      tandem: 1.36,
+      form: 'lkw',
+      aufbau: 'holz',
+      name: 'Holztransporter',
+    },
   };
   for (const T of Object.values(TYP)) {
     T.hl = (T.yf - T.yr) / 2;
@@ -1973,6 +2028,378 @@ export const GLTYPEN = (() => {
       }
     }
   }
+  // ======================= feat/grenzland-strasse: a lorry of today – a cab-over cab, the frame, a body (T.aufbau) =======================
+  // The cab is built of its parts around real openings (windscreen, door windows) with a dark inside, a dashboard, two seats and a wheel:
+  // through the glass one sees into it (and the driver grenzland/gl_linien.js seats there: T.sitz). Paint slots: lack0 the cab, lack1 the
+  // body (o.col2), lack2 a band or the crane (o.band). Lettering (o.text) on the body's sides as on the van.
+  function lkwKabine(k, T, o) {
+    const hw = 1.24,
+      cf = T.yf - 0.03,
+      cb = cf - 2.05,
+      zb = 1.06,
+      zw = 2.0,
+      zt = 2.96,
+      zr = 3.22,
+      cm = (cf + cb) / 2,
+      yS = cb + 0.95,
+      G = K.COL.GLASS,
+      inner = rgb(58, 60, 64);
+    // the shell: lower part, roof, pillars, the rear wall between the windows
+    k.pad('lack0', [0, cm, (zb + zw) / 2], [2 * hw, cf - cb, zw - zb], 0.08, [1, 1, 1]);
+    k.pad('lack0', [0, cm - 0.02, (zt + zr) / 2], [2 * hw - 0.02, cf - cb - 0.04, zr - zt], 0.1, [1, 1, 1]);
+    for (const s of [-1, 1]) {
+      k.box('lack0', [s * (hw - 0.07), cf - 0.08, (zw + zt) / 2], [0.14, 0.16, zt - zw], [1, 1, 1]);
+      k.box('lack0', [s * (hw - 0.04), (cb + yS) / 2, (zw + zt) / 2], [0.08, yS - cb, zt - zw], [1, 1, 1]);
+      // the door: its rear seam, the handle, the steps under it behind the wheel, a dark recess
+      k.box('matt', [s * (hw + 0.002), yS - 0.02, (zb + zt) / 2], [0.008, 0.014, zt - zb - 0.1], C.black);
+      k.box('matt', [s * (hw + 0.012), yS + 0.18, zw - 0.18], [0.02, 0.2, 0.045], C.dark);
+      for (const z of [0.5, 0.82]) k.box('matt', [s * (hw - 0.14), T.a - 0.78, z], [0.3, 0.36, 0.045], C.dark);
+      k.box('matt', [s * (hw - 0.3), T.a - 0.78, 0.7], [0.02, 0.38, 0.62], C.black);
+      // the mirrors: an arm from the A-pillar, the main mirror and the wide-angle one under it
+      k.tube(
+        'matt',
+        [
+          [s * (hw - 0.02), cf - 0.2, 2.62],
+          [s * (hw + 0.2), cf - 0.16, 2.66],
+          [s * (hw + 0.24), cf - 0.16, 2.6],
+        ],
+        0.02,
+        5,
+        C.dark
+      );
+      k.pad('matt', [s * (hw + 0.27), cf - 0.16, 2.42], [0.07, 0.19, 0.5], 0.03, C.black);
+      k.box('chrom', [s * (hw + 0.27), cf - 0.257, 2.42], [0.05, 0.004, 0.44], C.alu);
+      k.pad('matt', [s * (hw + 0.25), cf - 0.16, 2.06], [0.07, 0.17, 0.2], 0.03, C.black);
+      // the door window
+      k.box('glas', [s * (hw - 0.03), (yS + cf - 0.16) / 2, (zw + zt) / 2], [0.01, cf - 0.16 - yS, zt - zw], G);
+      // head lamps in the bumper's corners, indicators beside them
+      k.pad('head', [s * 0.86, cf + 0.07, 0.95], [0.4, 0.04, 0.15], 0.03, C.lens);
+      k.box('blink', [s * 1.14, cf + 0.065, 0.95], [0.12, 0.03, 0.13], C.amber);
+      // the front mudguard over the wheel (the cab's bottom covers its top)
+      k.box('matt', [s * 1.03, T.a - 0.1, zb - 0.02], [0.36, 1.25, 0.05], C.black);
+    }
+    k.box('lack0', [0, cb + 0.04, (zw + zt) / 2], [2 * hw - 0.1, 0.08, zt - zw], [1, 1, 1]);
+    // the windscreen, the sun visor over it, the grille under it, the bumper
+    k.box('glas', [0, cf - 0.06, (zw + zt) / 2], [2 * hw - 0.26, 0.012, zt - zw], G);
+    k.box('matt', [0, cf + 0.07, zt + 0.06], [2 * hw + 0.04, 0.2, 0.05], C.dark);
+    k.box('matt', [0, cf + 0.004, 1.58], [1.7, 0.012, 0.66], C.dark);
+    for (let i = 0; i < 6; i++) k.box('matt', [0, cf + 0.014, 1.31 + i * 0.105], [1.62, 0.012, 0.028], C.black);
+    k.pad('matt', [0, cf - 0.04, 0.8], [2 * hw + 0.02, 0.24, 0.46], 0.05, rgb(70, 72, 76));
+    k.box('matt', [0, cf + 0.085, 0.66], [1.0, 0.02, 0.14], C.black);
+    schild(k, 0, cf + 0.095, 0.66, 1, 0.52, 0.11);
+    // inside: the walls dark (faces turned inwards), the floor, dashboard, wheel on the left, two seats
+    const ix = hw - 0.1,
+      iy0 = cb + 0.1,
+      iy1 = cf - 0.12,
+      iz0 = zw - 0.52,
+      iz1 = zr - 0.08;
+    k.quad('matt', [-ix, iy0, iz0], [-ix, iy1, iz0], [-ix, iy1, iz1], [-ix, iy0, iz1], inner);
+    k.quad('matt', [ix, iy1, iz0], [ix, iy0, iz0], [ix, iy0, iz1], [ix, iy1, iz1], inner);
+    k.quad('matt', [ix, iy0, iz0], [-ix, iy0, iz0], [-ix, iy0, iz1], [ix, iy0, iz1], inner);
+    k.quad('matt', [-ix, iy1, iz1], [ix, iy1, iz1], [ix, iy0, iz1], [-ix, iy0, iz1], rgb(120, 118, 112));
+    k.quad('matt', [-ix, iy0, iz0], [ix, iy0, iz0], [ix, iy1, iz0], [-ix, iy1, iz0], rgb(40, 40, 42));
+    k.box('matt', [0, cf - 0.36, zw + 0.05], [2 * ix, 0.48, 0.34], C.vinylBlack);
+    const wheel = [];
+    for (let i = 0; i <= 16; i++) {
+      const a = (i / 16) * Math.PI * 2;
+      wheel.push([
+        -0.62 + Math.cos(a) * 0.23,
+        cf - 0.72 + Math.sin(a) * 0.23 * 0.5,
+        zw + 0.3 + Math.sin(a) * 0.23 * 0.85,
+      ]);
+    }
+    k.tube('matt', wheel, 0.018, 5, C.vinylBlack);
+    for (const s of [-1, 1]) {
+      k.pad('matt', [s * 0.62, cb + 0.72, iz0 + 0.42], [0.52, 0.5, 0.14], 0.05, C.cloth);
+      k.pad('matt', [s * 0.62, cb + 0.42, iz0 + 0.86], [0.5, 0.14, 0.78], 0.05, C.cloth);
+    }
+    // where the driver sits (the figure's hips over the seat; read by grenzland/gl_linien.js): x, y, the seat's top over the ground
+    T.sitz = [-0.62, cb + 0.68, iz0 + 0.49];
+    return { cf, cb };
+  }
+  // the frame under the body: two rails, the tank on the right, the battery box, side guards, mud flaps, the rear with lamps and plate
+  function lkwRahmen(k, T, y0) {
+    const { yr, a, b } = T,
+      zf = 0.98;
+    for (const s of [-1, 1]) {
+      k.box('matt', [s * 0.44, (y0 + yr + 0.1) / 2, zf], [0.09, y0 - yr - 0.1, 0.27], C.frame);
+      // side guards between the wheels (where no tank is)
+      const g0 = (T.tandem ? b + T.tandem / 2 : b) + 0.75,
+        g1 = a - 0.75 - 0.4;
+      if (s < 0)
+        for (const z of [0.55, 0.85]) k.box('matt', [s * 1.2, (g0 + g1) / 2, z], [0.04, g1 - g0, 0.1], C.silver);
+      // the mud flaps behind the rear wheels and the rear mudguards
+      const yb = (T.tandem ? b - T.tandem / 2 : b) - 0.7;
+      k.box('matt', [s * 1.06, yb, 0.62], [0.42, 0.02, 0.62], C.black);
+      k.box('matt', [s * 1.06, T.tandem ? b : b, 1.16], [0.44, T.tandem ? 2.6 : 1.3, 0.04], C.black);
+      // rear lamps on the frame's end, indicators outside, the plate in the middle
+      k.pad('tail', [s * 0.86, yr + 0.08, 0.78], [0.42, 0.05, 0.13], 0.02, C.red);
+      k.box('blink', [s * 1.14, yr + 0.08, 0.78], [0.13, 0.04, 0.13], C.amber);
+      // amber side markers (not lit by day)
+      for (const y of [a - 1.2, (a + b) / 2, b + 0.2, yr + 0.5])
+        k.box('matt', [s * 1.278, y, 1.0], [0.012, 0.08, 0.04], C.amber);
+    }
+    // the tank (right), AdBlue, the battery box (left)
+    k.pad('matt', [0.95, a - 1.75, 0.82], [0.56, 1.25, 0.6], 0.12, C.alu);
+    k.pad('matt', [0.95, a - 2.6, 0.82], [0.5, 0.35, 0.5], 0.06, rgb(40, 60, 120));
+    k.box('matt', [-0.92, a - 2.15, 0.78], [0.62, 0.7, 0.5], C.dark);
+    // the underrun bar and the plate
+    k.box('matt', [0, yr + 0.22, 0.52], [2.3, 0.1, 0.12], C.dark);
+    k.box('matt', [0, yr + 0.06, 0.78], [0.62, 0.04, 0.2], C.dark);
+    schild(k, 0, yr + 0.035, 0.78, -1, 0.52, 0.11);
+  }
+  // flat lettering on a side of the body (x = s · xs), from y0 to y1, z0 to z1 (grenzland/gl_modelle.js draws the word)
+  function schriftFlach(k, s, xs, y0, y1, z0, z1) {
+    const a = s < 0 ? y1 : y0,
+      b = s < 0 ? y0 : y1,
+      n = 4;
+    for (let i = 0; i < n; i++) {
+      const u0 = i / n,
+        u1 = (i + 1) / n,
+        ya = mix(a, b, u0),
+        yb = mix(a, b, u1);
+      k.quad('schrift', [s * xs, ya, z0], [s * xs, yb, z0], [s * xs, yb, z1], [s * xs, ya, z1], C.white, [
+        [u0, 0],
+        [u1, 0],
+        [u1, 1],
+        [u0, 1],
+      ]);
+    }
+  }
+  // a log of r along y from y0 to y1 at (x, z): bark around, the cut wood at both ends
+  function stamm(k, x, z, r, y0, y1, bark, wood) {
+    k.tube(
+      'matt',
+      [
+        [x, y0, z],
+        [x, y1, z],
+      ],
+      r,
+      7,
+      bark
+    );
+    for (const [y, out] of [
+      [y0 - 0.004, -1],
+      [y1 + 0.004, 1],
+    ]) {
+      const pts = [];
+      for (let i = 0; i < 7; i++) {
+        const t = (i / 7) * Math.PI * 2;
+        pts.push([x + Math.cos(t) * r * 0.97, y, z + Math.sin(t) * r * 0.97]);
+      }
+      k.fan('matt', pts, wood, out < 0);
+    }
+  }
+  function lkw(k, T, o) {
+    const { yr } = T,
+      { cb } = lkwKabine(k, T, o),
+      art = T.aufbau,
+      body = o.col2 ? 'lack1' : 'lack0';
+    let schrift = null;
+    if (art === 'koffer') {
+      // the box: floor at 1.22, up to the full height; corner profiles, the bottom rail, the rear doors
+      const y0 = cb - 0.12,
+        y1 = yr + 0.04,
+        z0 = 1.22,
+        z1 = T.h,
+        bw = 1.275,
+        ym = (y0 + y1) / 2,
+        L = y0 - y1;
+      lkwRahmen(k, T, y0);
+      k.box('matt', [0, ym, 1.15], [2.36, L, 0.16], C.dark);
+      k.box(body, [0, ym, (z0 + z1) / 2], [2 * bw - 0.02, L, z1 - z0], [1, 1, 1]);
+      for (const sx of [-1, 1]) {
+        for (const yy of [y0, y1]) k.box('matt', [sx * (bw - 0.02), yy, (z0 + z1) / 2], [0.07, 0.07, z1 - z0], C.alu);
+        k.box('matt', [sx * (bw - 0.02), ym, z1 - 0.02], [0.07, L, 0.07], C.alu);
+        k.box('matt', [sx * (bw - 0.02), ym, z0 + 0.03], [0.07, L, 0.07], C.alu);
+        if (o.band) k.box('lack2', [sx * (bw - 0.004), ym, z0 + 0.32], [0.012, L - 0.14, 0.32], [1, 1, 1]);
+        if (o.text) schriftFlach(k, sx, bw + 0.002, ym - 1.65, ym + 1.65, z1 - 1.0, z1 - 0.38);
+      }
+      // the rear doors: the seam, hinges, four locking bars with their handles
+      k.box('matt', [0, y1 - 0.004, (z0 + z1) / 2], [0.014, 0.01, z1 - z0 - 0.1], C.black);
+      for (const xx of [-0.98, -0.34, 0.34, 0.98]) {
+        k.tube(
+          'matt',
+          [
+            [xx, y1 - 0.03, z0 + 0.12],
+            [xx, y1 - 0.03, z1 - 0.12],
+          ],
+          0.018,
+          5,
+          C.silver
+        );
+        k.box('matt', [xx + (xx > 0 ? -0.06 : 0.06), y1 - 0.05, z0 + 1.05], [0.14, 0.03, 0.04], C.dark);
+      }
+      for (const sx of [-1, 1])
+        for (const zz of [z0 + 0.3, z0 + 1.3, z1 - 0.4])
+          k.box('matt', [sx * 1.2, y1 - 0.02, zz], [0.12, 0.04, 0.1], C.dark);
+      // the folded tail lift under the floor
+      k.box('matt', [0, y1 + 0.1, 0.98], [2.2, 0.2, 0.22], rgb(150, 152, 155));
+      if (o.kasten === 'kuehl') {
+        // the refrigeration unit on the front wall over the cab's roof: a light grey housing, its grille
+        k.pad('matt', [0, y0 + 0.2, z1 - 0.45], [1.75, 0.38, 0.8], 0.06, rgb(214, 216, 214));
+        k.box('matt', [0, y0 + 0.395, z1 - 0.48], [1.3, 0.012, 0.5], C.dark);
+        for (let i = 0; i < 6; i++)
+          k.box('matt', [0, y0 + 0.402, z1 - 0.7 + i * 0.09], [1.26, 0.01, 0.02], rgb(120, 122, 124));
+      }
+      if (o.text)
+        schrift = { text: String(o.text).toUpperCase(), fg: o.textCol || '#1d2a44', bg: o.col2 || o.col || DEF.koffer };
+    } else if (art === 'tank') {
+      // the oval tank of stainless steel (paint slot lack1), domed ends; its cradles on the frame
+      const t0 = yr + 1.0,
+        t1 = cb - 0.18,
+        Lt = t1 - t0,
+        zc0 = 1.32,
+        zc1 = 3.3,
+        sec = (y, f) => ({
+          y,
+          w: 1.2 * f,
+          z0: zc0 + (zc1 - zc0) * (1 - f) * 0.5,
+          z1: zc1 - (zc1 - zc0) * (1 - f) * 0.5,
+          e: 2.3,
+        });
+      lkwRahmen(k, T, cb - 0.1);
+      k.blob(
+        'lack1',
+        [
+          sec(t0, 0.55),
+          sec(t0 + 0.07, 0.86),
+          sec(t0 + 0.22, 1),
+          sec(t1 - 0.22, 1),
+          sec(t1 - 0.07, 0.86),
+          sec(t1, 0.55),
+        ],
+        [1, 1, 1],
+        20
+      );
+      for (const y of [t0 + 0.6, (t0 + t1) / 2, t1 - 0.6]) k.box('matt', [0, y, 1.2], [1.6, 0.22, 0.2], C.frame);
+      // on top: the walkway, two domes
+      k.box('matt', [0, (t0 + t1) / 2, zc1 + 0.03], [0.46, Lt - 0.8, 0.04], C.alu);
+      for (const y of [t0 + Lt * 0.3, t0 + Lt * 0.7])
+        k.lathe(
+          'matt',
+          [0, y, zc1 - 0.02],
+          [0, 0, 1],
+          [
+            [0.0005, 0],
+            [0.27, 0],
+            [0.27, 0.12],
+            [0.2, 0.16],
+            [0.0005, 0.16],
+          ],
+          14,
+          C.alu
+        );
+      // the cabinet of the pump behind the tank, its roller shutter, the hose drum; a ladder up the back
+      k.pad('lack1', [0, yr + 0.52, 1.95], [2.44, 0.9, 1.5], 0.05, [1, 1, 1]);
+      for (const s of [-1, 1]) {
+        k.box('matt', [s * 1.226, yr + 0.52, 1.95], [0.01, 0.74, 1.24], rgb(186, 188, 190));
+        for (let i = 0; i < 12; i++)
+          k.box('matt', [s * 1.232, yr + 0.52, 1.38 + i * 0.1], [0.008, 0.74, 0.012], rgb(150, 152, 154));
+      }
+      // its two rear doors (seam, handles)
+      k.box('matt', [0, yr + 0.065, 1.95], [0.012, 0.01, 1.36], C.black);
+      for (const s of [-1, 1]) k.box('matt', [s * 0.12, yr + 0.06, 1.95], [0.04, 0.02, 0.18], C.dark);
+      for (const sx of [-0.22, 0.22])
+        k.tube(
+          'matt',
+          [
+            [sx + 0.9, yr + 0.02, 0.9],
+            [sx + 0.9, yr + 0.02, 2.75],
+            [sx + 0.9, yr + 0.6, 3.3],
+          ],
+          0.018,
+          5,
+          C.silver
+        );
+      for (let i = 0; i < 6; i++)
+        k.tube(
+          'matt',
+          [
+            [0.68, yr + 0.02, 1.0 + i * 0.3],
+            [1.12, yr + 0.02, 1.0 + i * 0.3],
+          ],
+          0.014,
+          5,
+          C.silver
+        );
+      if (o.text)
+        for (const sx of [-1, 1]) schriftFlach(k, sx, 1.206, (t0 + t1) / 2 - 1.0, (t0 + t1) / 2 + 1.0, 2.12, 2.5);
+      if (o.text) schrift = { text: String(o.text).toUpperCase(), fg: o.textCol || '#2f5f8f', bg: o.col2 || '#c9ced3' };
+    } else if (art === 'holz') {
+      // the headboard, the crane folded behind the cab, three bunks with stakes, the logs (o.kasten 'leer': none)
+      const yH = cb - 1.1,
+        z0 = 1.3,
+        bark = rgb(96, 82, 66),
+        wood = rgb(214, 186, 138);
+      lkwRahmen(k, T, cb - 0.05);
+      k.box('matt', [0, (yH + yr) / 2, 1.18], [2.3, yH - yr, 0.14], C.frame);
+      for (const s of [-1, 1])
+        k.tube(
+          'matt',
+          [
+            [s * 1.18, yH, z0],
+            [s * 1.18, yH, 3.35],
+          ],
+          0.05,
+          6,
+          C.frame
+        );
+      for (let i = 0; i < 6; i++) k.box('matt', [0, yH, z0 + 0.2 + i * 0.36], [2.36, 0.06, 0.07], C.frame);
+      // the crane: a base, the column, the main boom laid back over the load, the outer boom folded under it, the grapple
+      const yc = cb - 0.55;
+      k.box('matt', [0, yc, 1.42], [1.9, 0.6, 0.3], C.dark);
+      k.lathe(
+        'lack2',
+        [0, yc, 1.55],
+        [0, 0, 1],
+        [
+          [0.0005, 0],
+          [0.2, 0],
+          [0.17, 0.4],
+          [0.15, 1.55],
+          [0.0005, 1.6],
+        ],
+        12,
+        [1, 1, 1]
+      );
+      k.at({ p: [0, yc, 3.05], rx: -0.08 }, () => {
+        k.box('lack2', [0, -1.7, 0.1], [0.26, 3.6, 0.3], [1, 1, 1]);
+        k.box('lack2', [0, -1.4, -0.2], [0.2, 3.0, 0.22], [1, 1, 1]);
+        k.box('matt', [0, -3.4, -0.32], [0.3, 0.4, 0.5], C.dark);
+      });
+      k.box('matt', [0, yc - 3.4, 2.85], [0.12, 0.12, 0.5], C.dark);
+      // the bunks and their stakes
+      const bunks = [yH - 0.55, (yH + yr) / 2 - 0.2, yr + 0.5];
+      for (const y of bunks) {
+        k.box('matt', [0, y, z0 + 0.08], [2.5, 0.16, 0.16], C.frame);
+        for (const s of [-1, 1]) k.box('matt', [s * 1.18, y, z0 + 1.05], [0.12, 0.12, 1.95], C.frame);
+      }
+      if (o.kasten !== 'leer') {
+        // the logs: 5 m, a pile of spruce, three rows (a fixed pattern of girths)
+        const L0 = yH - 0.35,
+          L1 = L0 - 5.0,
+          R = [0.19, 0.21, 0.17, 0.2, 0.18, 0.22, 0.16, 0.2, 0.19, 0.18, 0.21, 0.17, 0.2, 0.19, 0.18];
+        let n = 0,
+          zr = z0 + 0.16;
+        for (const [cnt, w] of [
+          [6, 2.2],
+          [5, 1.9],
+          [4, 1.55],
+        ]) {
+          let rm = 0;
+          for (let i = 0; i < cnt; i++) {
+            const r = R[n++ % R.length],
+              x = -w / 2 + (w * (i + 0.5)) / cnt;
+            stamm(k, x, zr + r, r, L1 + (i % 2) * 0.08, L0 - ((i + 1) % 2) * 0.06, bark, wood);
+            rm = Math.max(rm, r);
+          }
+          zr += rm * 1.62;
+        }
+      }
+    }
+    return { schrift };
+  }
   // ---- the paint of a vehicle's slots ----
   const DEF = {
     trabant: '#d9d3bd',
@@ -1983,6 +2410,9 @@ export const GLTYPEN = (() => {
     streife: '#c9cdd2',
     kombi: '#7d8791',
     kasten: '#f1f1ee',
+    koffer: '#e8e9e6',
+    milchlaster: '#e9ebe6',
+    holzlaster: '#2c5a3a',
   };
   const BUILD = {
     trabant: (k, T, o) => trabant(k, T, o, false),
@@ -1993,6 +2423,9 @@ export const GLTYPEN = (() => {
     kasten: transporter,
     barkas,
     w50,
+    koffer: lkw,
+    milchlaster: lkw,
+    holzlaster: lkw,
   };
   const RAD = {
     trabant: { rim: 0.178, col: C.silver, cap: 'chrom', capR: 0.062, dish: 0.03 },
@@ -2005,9 +2438,17 @@ export const GLTYPEN = (() => {
   RAD.barkas = { rim: 0.2, col: C.silver, cap: 'chrom', capR: 0.085, dish: 0.03 };
   RAD.w50 = { rim: 0.29, col: rgb(120, 60, 50), cap: C.dark, capR: 0.12, dish: 0.06, seg: 24 };
   RAD['w50:h'] = { twin: true, dish: -0.02 };
+  // feat/grenzland-strasse: the lorries' steel wheels (22.5 inch), twin at the rear
+  for (const t of ['koffer', 'milchlaster', 'holzlaster']) {
+    RAD[t] = { rim: 0.29, col: C.silver, cap: C.dark, capR: 0.13, dish: 0.07, seg: 24 };
+    RAD[t + ':h'] = { twin: true, dish: -0.02 };
+  }
   // paint: how metallic (the plain paints of 1989: 0)
   TYP.streife.metal = 0.55;
   TYP.kombi.metal = 0.55;
+  TYP.koffer.metal = 0.25;
+  TYP.milchlaster.metal = 0.6;
+  TYP.holzlaster.metal = 0.3;
   const ALIAS = { limo89: 'wartburg', klein89: 'trabant', lkw89: 'w50', lada: 'wartburg' };
   const cache = new Map();
   function bau(typ0, o = {}) {

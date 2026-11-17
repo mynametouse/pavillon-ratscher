@@ -278,6 +278,8 @@ grenzland/gl_modus.js       # feat/grenzland the mode: start, Falko and Sarah to
 grenzland/gl_reaktion_data.js # feat/grenzland-welt what people say when they notice the player, the feed's captions – data (GLRXDATA)
 grenzland/gl_reaktion.js    # feat/grenzland-welt the world notices the player: witnesses film, the feed posts, looks, comments, four answers (GLREAKTION)
 grenzland/gl_ereignis.js    # feat/grenzland-welt things on the way: speed camera, harvest lorry, fair, wedding convoy, bangers, a deer (GLEREIGNIS)
+grenzland/gl_linien_data.js # feat/grenzland-strasse traffic with a purpose: vehicles, runs, timetables – pure (GLLDATA)
+grenzland/gl_linien.js      # feat/grenzland-strasse the traffic with a purpose near the player: milk, timber, the patrol, the haulier's lorries (GLLINIEN)
 grenzland/gl_stimmen.js     # feat/grenzland-stimmen real voices: the lines to record, fetched ahead, the music steps back while one speaks (GLSTIMMEN)
 grenzland/gl_partner_data.js # feat/grenzland-partner talking with the other of the two: the fixed lines by mission step, the AI's sheets, the <lage> lines – data (GLPDATA)
 grenzland/gl_partner.js     # feat/grenzland-partner talking with the other of the two anywhere today: the prompt, the panel, topics, the AI person with quest context (GLPARTNER)
