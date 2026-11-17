@@ -2195,7 +2195,7 @@ def draw_cell(fn, seed):
     rgb, a = arr[..., :3], arr[..., 3]
     # it stands in the grass: darker towards the foot; and a fine noise against the flat look
     v = 1 - (np.arange(N) + 0.5) / N
-    ao = 0.62 + 0.38 * np.clip(v / 0.32, 0, 1) ** 0.8
+    ao = 0.76 + 0.24 * np.clip(v / 0.3, 0, 1) ** 0.8  # mild: the template darkens the roots too
     rgb = rgb * ao[:, None, None]
     rng = np.random.default_rng(seed + 991)
     noise = rng.normal(0, 1, (N // 2, N // 2)).astype(np.float32)

@@ -15,7 +15,7 @@ Teil 2 (Büsche und Beetpflanzen) folgt auf Zuruf.
 | `tools/bewuchs/pflanzen/atlas.py` | der Zeichner des Atlas (Python, Pillow, numpy, scipy) |
 | `viz3/extra/bewuchs-pflanzen/manifest.json`, `tests.txt` | eine Zeile in „Quellen und Lizenzen“; kein Browsertest in der CI (die Daten prüft der Unit-Test) |
 | `viz3/test/unit/bewuchs_arten.test.mjs` | Prüfung ohne Browser (in `tools/check.sh`): Felder und Bereiche, Kalender als geordnete Tagesfenster 1–366, jede Zelle da und von der richtigen Art, jede Klasse 0–17, Grasanteile = 1, Quellen, PNG 1024² RGBA < 3 MB, ein plausibles Jahr |
-| `viz3/test/bewuchs_pflanzen.py` | nur zum Ansehen (von Hand, nicht in der CI): die Pflanzen als gekreuzte Bildkarten auf vier Flecken im Garten bei (12, 11) – Zierrasen, Mähwiese, Bankett, Saum – an Tagen im April, Juni, August, Oktober; Bilder nach `out/bewuchs_pflanzen/` |
+| `viz3/test/bewuchs_pflanzen.py` | nur zum Ansehen (von Hand, nicht in der CI): die Pflanzen als gekreuzte Bildkarten auf vier Flecken zu 4 × 4 m – Zierrasen, Mähwiese, Bankett, Saum – auf dem freiesten 8 × 8 m des Gartenrasens, das der Test selbst aus den Rasenbüscheln (`GRASS.meshes`) sucht (17.11.: x −4…4, y −10…−2, südlich des Pavillons), an Tagen im April, Juni, August, Oktober; Bilder nach `out/bewuchs_pflanzen/` |
 
 **Umfang:** 23 Gräser und Grasartige, 34 Wildblumen, Kräuter und Bodenpflanzen, 18 Flächenarten, 64 Atlaszellen (56 Blumenbilder, davon
 6 von mehreren Arten geteilte Blatt- und Trockenbilder, und 8 Grasähren), 70 Quellen (13 Werke und Stellen, 57 Artikel).
@@ -155,7 +155,7 @@ Zeichnung wird nach dem ersten Zeichnen um den Fuß skaliert, bis ihre Spitze di
 `oben` in `blumen.json`). Gezeichnet mit 4-facher Auflösung (512 px) im Malerverfahren: Stängel als verjüngte Striche mit Lichtkante,
 Blätter mit Mittelrippe und zwei Tönen (die Hälfte zum Licht heller), gesägte, gelappte, gefiederte und schrotsägeförmige Blätter, Blüten
 als Kränze aus Blütenblättern im Raum (hinten dunkler, gewölbt, nach vorn zur Kamera), Dolden aus Strahlen und Döldchen, Köpfchen aus
-Röhrenblüten auf einer Kugel, Glocken, Trauben, Pusteblumen und Samenwolle durchscheinend; dann zum Fuß hin dunkler (sie steht im Gras),
+Röhrenblüten auf einer Kugel, Glocken, Trauben, Pusteblumen und Samenwolle durchscheinend; dann zum Fuß hin etwas dunkler (sie steht im Gras; mild, weil die Vorlage die Wurzel selbst abdunkelt),
 ein feines Rauschen gegen den glatten Rechnerlook, und im linearen Licht auf 128 px verkleinert (16 Abtastungen je Bildpunkt). Durchsichtige
 Bildpunkte tragen die Farbe des nächsten Pflanzenteils, weiter weg die mittlere Farbe der Pflanze – so mischen Mipmaps nur Pflanzenfarben
 (kein dunkler oder weißer Rand). Blüten sind etwa 1,3–1,5-mal größer als in echt, damit sie bei 5–60 px auf dem Bildschirm noch als
