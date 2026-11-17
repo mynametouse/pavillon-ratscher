@@ -1,3 +1,10 @@
+# feat/schleusingen-ansicht: Schleusingen after private views from the street (docs/features/schleusingen-ansicht.md); one 'name[:args]'
+# per line as for viz3/test/run.py – every line a job of its own in the feature CI (≤ 60 min each)
 smoke
 schleusingen_ansicht
 memphone
+# the looks (fassade/ansicht.json) change styles, colours and storeys of the town's houses: the town, gebaeude's checks of the town and
+# the houses from inside (SINNEN reads the town's walls and storeys)
+gebaeude:schleusingen,perf
+schleusingen
+schleusingen_innen:only=door+walk+night+mem+treppe+save,bilder=1

@@ -37,14 +37,6 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
 - **Prüfwerkzeug** `tools/schleusingen-ansicht/check.py`: Schema, jedes Gebäude existiert und liegt, wo die Daten sagen, und **Abdeckung**:
   von jedem Blickpunkt ein Strahl je Spalte – jedes Gebäude, das über ≥ 40 px innerhalb 45 m das vorderste ist, steht in `gebaeude` oder
   `nicht_lesbar`. `--list` zeigt je Blickpunkt, welche Gebäude er zeigt.
-- **SALOOK** (`viz3/src/schleusingen-ansicht/sa_look.js`, rein, Unit-Tests): ein Datensatz → das Aussehen der Stadt
-  (`welt/schleusingen.js` `styleOf`: Stilcodes des Fassaden-Shaders aus `world/village.js`, Farbe linear × 0,82 wie die Palette der Stadt,
-  Fachwerkfarbe, Rahmen, Läden, Schiefer-Ton – 3 = Schindeln in der gelesenen Farbe –, `typ` Haus/Halle/Schuppen, Dachart und -farbe).
-  Klinker wird Putz in der Klinkerfarbe: Stil 9 (`BRICK`) fällt im Fassaden-Shader in den Zweig der Scheunen (6,5 < st < 9,5) und würde
-  als Bretter gezeichnet (wie bei Suhl, `docs/PARALLEL.md` 13.11.).
-- **SAFASS** (`sa_fassaden.js`): lädt die Daten, wenn die Stadt näher kommt (Zone 1100 m, die Stadt baut ab 950 m), und bietet den Haken
-  `SAFASS.apply(b)` – **noch nicht eingehängt**: `welt/schleusingen.js` gehört bis zum Merge von `feat/gebaeude` dem Grenzland-Chat.
-  `?nosafass` schaltet ab.
 - **Der Markt** (`sa_markt.js`, `SAMARKT`), geprüft an den Ansichten (360°-Foto Mai 2016) und am Luftbild DOP 2024 (20 cm, auf 3 cm genau
   eingemessen):
   - **Pflaster bis in die Ferne**: Die Kacheln zeichnen Kopfstein nur aus der Nähe – ab ~8 m war der Markt flach grau. Jetzt ein eigenes
@@ -60,29 +52,33 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   - **Ein Abfalleimer**.
   - Alles in zwei Meshes (Pflaster; Ausstattung im Material der Requisiten der Stadt), Kollisionen über `KERN.pushOut` (Priorität 11, gibt
     weiter). Gebaut, wenn die Stadt steht, weg mit ihr. `?nosamarkt` schaltet ab.
-- **Test** `viz3/test/schleusingen_ansicht.py` (Abschnitte `data,fassaden,markt,bilder` im Prüfpaket; von Hand dazu `vorschau` und
-  `ratscher`): die Daten gültig; die Datensätze passen zu den Gebäuden der Stadt und geben das Aussehen von SALOOK (nach dem Haken: die
-  Stadt zeichnet sie so); der Markt steht, ≤ 4 Draw-Calls mehr, kein neues Shader-Programm, das Pflaster 2–5 cm über dem Boden, Kübel und
-  Figur halten auf; Modellbilder von allen Blickpunkten (nur das Modell) nach `out/schleusingen_ansicht/` (`SA_VIEWS=v000,p5_0` nur
-  diese, `SA_VIEWS_FILE` andere Blickpunkte). `vorschau` setzt die Daten nur in der Testseite auf die Meshes der Stadt (Bilder
-  `*_vorschau.jpg`, wie es mit dem Haken aussähe); `ratscher` schreibt die Häuser des Dorfs nach `ratscher_dump.json` und
-  zeichnet Modellbilder von den Blickpunkten in `views_ratscher.json` (die Standorte der freien Panoramax-Fotos). Unit-Tests
-  `viz3/test/unit/schleusingen_ansicht.test.mjs`.
+- **Test** `viz3/test/schleusingen_ansicht.py` (Abschnitte `data,fassaden,markt,bilder` im Prüfpaket; von Hand dazu `ratscher`): die
+  Daten gültig und `fassade/ansicht.json` aus ihnen gemacht (`check.py`); `FASSADE` hat die Ansichten geladen und die Stadt zeichnet jedes
+  gelesene Gebäude so (Stil, Wandfarbe, Rahmen, Läden, Schiefer- und Fachwerkton, Art, Dachfarbe – die Ansicht noch einmal über den Stil
+  gelegt ändert nichts); der Markt steht, ≤ 4 Draw-Calls mehr, kein neues Shader-Programm, das Pflaster 2–5 cm über dem Boden, Kübel
+  und Figur halten auf; Modellbilder von allen Blickpunkten (nur das Modell) nach `out/schleusingen_ansicht/` (`SA_VIEWS=v000,p5_0` nur
+  diese, `SA_VIEWS_FILE` andere Blickpunkte). `ratscher` schreibt die Häuser des Dorfs nach `ratscher_dump.json` und zeichnet
+  Modellbilder von den Blickpunkten in `views_ratscher.json` (die Standorte der freien Panoramax-Fotos). Unit-Tests
+  `viz3/test/unit/schleusingen_ansicht.test.mjs` (jede Ansicht in den Wörtern, die `FASSADE` kennt – aus `fassade.js` gelesen –, die
+  Entscheidungen des Umwandlers, die Felder von `gebaeude` bleiben, jeder Datensatz passt zu seinem Gebäude).
 
-## Ins Spiel über `FASSADE` (sobald `feat/gebaeude` in `src` ist; abgesprochen mit dem Grenzland-Chat, ohne Zeile in `welt/schleusingen.js`)
+## Ins Spiel über `FASSADE` (seit `feat/gebaeude` in `src` ist, 9da2c4cf; ohne Zeile in `welt/schleusingen.js`)
 
 - `tools/schleusingen-ansicht/ansicht.py` schreibt aus `fassaden.json` die Datei `viz3/extra/schleusingen-ansicht/dist/fassade/ansicht.json`
   im Format von `FASSADE` (`docs/features/gebaeude.md`, „Ansicht je Gebäude“): Schlüssel `#i`, `art` (haus, halle, schuppen, scheune,
   kirche, schule – Tür und Stufen eines Hauses auch dort, wo die Stadt eine Halle zeichnete), `material`, `farbe`, `schieferTon`,
-  `fachwerkTon`, `laeden`, `rahmen`, `achse`, `dach` (`material`, `farbe`, bei Flachdächern `form: "flach"`). `check.py` prüft, dass die
+  `fachwerkTon`, `laeden`, `rahmen`, `achse`, `dach` (`material`, `farbe`, `form`: `flach` baut `FASSADE`, die anderen Formen sind
+  Daten für später), `geschosse` (die Stadt hebt oder senkt Traufe und Dach), `first` (Daten für später). `check.py` prüft, dass die
   Datei aus den Daten gemacht ist.
 - `FASSADE` lädt erst die kleine `gebaeude/ansicht.json` von `gebaeude` und dann diese Datei darüber, Schlüssel für Schlüssel – deshalb
   übernimmt `ansicht.py` deren Felder (Geschosse von #80, #580, #717, das Flachdach der Schule) und legt die gelesenen darüber.
-- Eigene Entscheidungen: Klinker als Putz in der Klinkerfarbe (Stil 9 würde als Bretter gezeichnet, s. u.); Schiefer und helle oder
+- Eigene Entscheidungen: Klinker als Putz in der Klinkerfarbe (Stil 9 `BRICK` fällt im Fassaden-Shader in den Zweig der Scheunen und
+  würde als Bretter gezeichnet, s. u.); Schiefer und helle oder
   farbige Schindeln als Schiefer in der gelesenen Farbe (`schieferTon` 3); bei Schiefer oder Fachwerk über dem Erdgeschoss die Farbe des
   Erdgeschosses. **#72** (die Kirche an der Ilmenauer Straße): unser Dach gilt über dem Schieferdach von `gebaeude` – die Ansicht von der
   Straße (Oktober 2022) zeigt rotbraune Ziegel.
-- SAFASS und SALOOK (das Aussehen in diesem Zweig, bevor es den Weg gab) gehen dann aus dem Spiel: ihre Aufgabe übernimmt `FASSADE`.
+- Die eigenen Module für das Aussehen (SAFASS, SALOOK – bis der Weg da war) sind dafür aus dem Spiel genommen; im Spiel bleibt von
+  diesem Zweig nur der Markt (SAMARKT).
 
 ## Offen für `gebaeude` und den Kern
 

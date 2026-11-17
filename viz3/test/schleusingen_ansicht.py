@@ -2,7 +2,8 @@
 # Without a browser (section data): viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/fassaden.json is valid
 # (tools/schleusingen-ansicht/check.py) and covers the buildings the viewpoints of viz3/extra/schleusingen-ansicht/views.json show.
 # In the browser: Orte → Schleusingen, wait for the town and what loads round it; then
-#   fassaden – the game uses the data for the right buildings (style, wall and roof colour of SCHL.bld as in the data)
+#   fassaden – FASSADE has the looks (fassade/ansicht.json from tools/schleusingen-ansicht/ansicht.py) and the town drew its buildings
+#              with them: style, wall colour, frames, shutters, slate and timber tones, type, roof colour of SCHL.bld as the look says
 #   markt    – the Markt's props of MARKT are there (statue, seated figure, benches, planters, bollards …), at most +4 draw calls at
 #              the Markt and no new shader programs
 #   bilder   – model pictures from the viewpoints (the model only; the private views stay on the chat machine) → out/schleusingen_ansicht/
@@ -18,46 +19,11 @@ OUT = lib.out('schleusingen_ansicht')
 EXTRA = os.path.join(lib.ROOT, 'viz3', 'extra', 'schleusingen-ansicht')
 VIEWS = json.load(open(os.environ.get('SA_VIEWS_FILE') or os.path.join(EXTRA, 'views.json')))  # SA_VIEWS_FILE: other viewpoints (model only)
 FASS_P = os.path.join(EXTRA, 'dist', 'schleusingen-ansicht', 'fassaden.json')
+ANSICHT_P = os.path.join(EXTRA, 'dist', 'fassade', 'ansicht.json')
 SITE = os.environ.get('WELT_SITE', 'https://mynametouse.github.io/pavillon-ratscher/welt-test/')
 DIST = os.path.join(lib.ROOT, 'viz3', 'dist', 'welt-test')
 XF = json.load(open(os.path.join(lib.ROOT, 'viz3', 'manifests.json')))['geoman']['xf']
 MARKT = (-1084.7, 1241.9)
-# section vorschau: the data applied in the page to the town's wall and roof meshes (attributes only: style, colour, pack, flags, bays; roof kind
-# and colour by footprint) – what the hook in welt/schleusingen.js will show, for pictures before it exists (test only, nothing shipped)
-VORSCHAU_JS = """(() => {
-  const W = SCHL.meshes.find(m => m.name === 'schleusingen walls'), R = SCHL.meshes.find(m => m.name === 'schleusingen roofs');
-  const byI = new Map(SCHL.bld.map(b => [b.i, b])), looks = new Map();
-  for (const [i, b] of byI) { const r = SAFASS.record(i); if (r && SALOOK.matches(r, b.cx, b.cy)) looks.set(i, { o: SALOOK.look(r, b.st), rf: SALOOK.roof(r, !!b.fl), b }); }
-  const g = W.geometry, aW = g.attributes.aW, aV = g.attributes.aV, aC = g.attributes.aC, aD = g.attributes.aD;
-  let nv = 0;
-  for (let v = 0; v < aW.count; v++) {
-    const L = looks.get(Math.floor(Math.round(aW.getW(v)) / 4)); if (!L) continue; const o = L.o;
-    const blind = Math.abs(aV.getY(v) - 0.5) < 1e-3; // a party wall: half-timbering there is plaster (as building() does)
-    aV.setW(v, blind && (o.style === 5 || o.style === 6) ? 0 : o.style);
-    aC.setXYZW(v, o.col[0], o.col[1], o.col[2], o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut + 512 * (o.slate || 0));
-    const fl = Math.round(aD.getW(v)); aD.setW(v, (fl & 1) + (o.shutters ? 2 : 0) + (o.orn ? 4 : 0) + (fl & 8));
-    if (aD.getY(v) > 0 || aV.getY(v) > 0.5) aD.setZ(v, o.sp);
-    nv++;
-  }
-  aV.needsUpdate = aC.needsUpdate = aD.needsUpdate = true;
-  const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-  const inP = (f, x, y) => { let c = false; for (let p = 0, q = f.length - 2; p < f.length; q = p, p += 2) { const xi = f[p], yi = f[p + 1], xj = f[q], yj = f[q + 1]; if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; };
-  const rg = R.geometry, P = rg.attributes.position, aR = rg.attributes.aR; let nr = 0;
-  const grid = new Map(); for (const [i, L] of looks) { const f = L.b.f; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (let k = 0; k < f.length; k += 2) { x0 = Math.min(x0, f[k]); x1 = Math.max(x1, f[k]); y0 = Math.min(y0, f[k + 1]); y1 = Math.max(y1, f[k + 1]); }
-    for (let gx = Math.floor((x0 - 1) / 8); gx <= Math.floor((x1 + 1) / 8); gx++) for (let gy = Math.floor((y0 - 1) / 8); gy <= Math.floor((y1 + 1) / 8); gy++) { const key = gx + ',' + gy; if (!grid.has(key)) grid.set(key, []); grid.get(key).push(L); } }
-  for (let v = 0; v < P.count; v += 3) {
-    const x = (P.getX(v) + P.getX(v + 1) + P.getX(v + 2)) / 3, y = -(P.getZ(v) + P.getZ(v + 1) + P.getZ(v + 2)) / 3;
-    const cand = grid.get(Math.floor(x / 8) + ',' + Math.floor(y / 8)); if (!cand) continue;
-    const L = cand.find(c => inP(c.b.f, x, y)) || cand.find(c => { const f = c.b.f; for (let k = 0; k < f.length; k += 2) if (Math.hypot(f[k] - x, f[k + 1] - y) < 1.2) return true; return false; });
-    if (!L || !L.rf) continue;
-    for (let w = v; w < v + 3; w++) { const k = Math.round(aR.getX(w)); if (k > 13 && k < 17) continue; aR.setXYZW(w, k <= 4 ? L.rf.rk : k, lin(L.rf.rc[0]), lin(L.rf.rc[1]), lin(L.rf.rc[2])); }
-    nr++;
-  }
-  aR.needsUpdate = true; if (window.markDirty) markDirty(true);
-  return { looks: looks.size, wallVerts: nv, roofTris: nr };
-})()"""
-
-
 def utm(x, y):
     return XF['a'] * x - XF['b'] * y + XF['ex'], XF['b'] * x + XF['a'] * y + XF['ey']
 
@@ -118,7 +84,7 @@ if 'data' in want:
     ck('fassaden.json is valid (tools/schleusingen-ansicht/check.py)', r.returncode == 0, (r.stdout + r.stderr).strip()[-400:])
 
 # ---------------------------------------------------------------- in the browser -----------------------------------------------------
-BROWSER = [s for s in ('fassaden', 'markt', 'bilder', 'vorschau') if s in want]
+BROWSER = [s for s in ('fassaden', 'markt', 'bilder') if s in want]
 if 'ratscher' in want:
     # Ratscher's houses (world/village.js) with their walls and looks, and model pictures from the viewpoints of
     # viz3/extra/schleusingen-ansicht/views_ratscher.json (the village loads at the start)
@@ -194,24 +160,24 @@ if BROWSER:
             json.dump({'bld': dump, 'ground': gz}, open(os.path.join(OUT, 'stadt_dump.json'), 'w'))
             print('dump', len(dump), flush=True)
         if 'fassaden' in want:
-            fs = J("SAFASS.status()")
-            ck('the facade data is loaded with the town', fs['state'] == 'ready' and fs['n'] >= 100, json.dumps(fs))
-            # the hook's path on copies of the town's buildings (SAFASS.apply on a copy: the town itself stays as drawn)
-            res = J("""(() => { const out = { ok: 0, off: [], miss: [], kinds: {} }; const D = SAFASS.data.gebaeude;
-                for (const r of D) { const b = SCHL.bld.find(q => q.i === r.i); if (!b) { out.miss.push(r.i); continue; }
-                  const c = { i: b.i, cx: b.cx, cy: b.cy, st: Object.assign({}, b.st), F: b.F.map(f => f.slice()), fl: b.fl, rk: b.rk, rc: b.rc };
-                  if (!SAFASS.apply(c)) { out.off.push(r.i); continue; }
-                  const want = SALOOK.look(r, b.st); if (c.st.style !== want.style || c.st.col.join() !== want.col.join()) { out.off.push(r.i); continue; }
-                  out.ok++; out.kinds[r.material] = (out.kinds[r.material] || 0) + 1; }
-                return out; })()""")
-            ck('every record fits its building of the town (centroid within 1 m) and gives the look of SALOOK', res['ok'] >= len(json.load(open(FASS_P))['gebaeude']) - len(res['miss']) and not res['off'],
-               f"{res['ok']} fit; off: {res['off'][:10]}; not in the town (shops build themselves): {res['miss']}")
-            hooked = J("SCHL.bld.filter(b => b.fass !== undefined).length")
-            if hooked:
-                bad = J("SCHL.bld.filter(b => b.fass !== undefined).filter(b => { const r = SAFASS.record(b.i); return SALOOK.look(r, b.st).style !== b.st.style; }).map(b => b.i)")
-                ck('the town draws the buildings of the data as read (the hook in welt/schleusingen.js)', hooked >= 100 and not bad, f'{hooked} buildings; off: {bad[:10]}')
-            else:
-                print('note: the hook in welt/schleusingen.js is not there yet – the town draws its own looks', flush=True)
+            AN = json.load(open(ANSICHT_P))['b']
+            fs = J("FASSADE.ansichtStand()")
+            ck('FASSADE has the looks of the street views (fassade/ansicht.json over gebaeude/ansicht.json)',
+               fs['done'] and not fs['err'] and fs['keys'] >= len(AN), json.dumps(fs))
+            # each look laid over the town's style once more changes nothing: the town drew the building with it
+            res = J("""(() => { const out = { ok: 0, off: [], miss: [], roof: [], kinds: {} }, A = %s;
+                const close = (p, q) => !!p && !!q && p.every((v, j) => Math.abs(v - q[j]) < 2e-3);
+                for (const k in A) { const i = +k.slice(1), b = SCHL.bld.find(q => q.i === i);
+                  if (!b) { out.miss.push(i); continue; }
+                  const L = FASSADE.ansichtOf(b), n = L ? FASSADE.ansichtStil(b.st, L) : null;
+                  if (!n || n.style !== b.st.style || !close(n.col, b.st.col) || n.frame !== b.st.frame || !!n.shutters !== !!b.st.shutters ||
+                      (n.slate || 0) !== (b.st.slate || 0) || n.timber !== b.st.timber || (n.typ || 0) !== (b.st.typ || 0)) { out.off.push(i); continue; }
+                  const rc = FASSADE.ansichtDach(L); if (rc && !close(rc, b.rc)) out.roof.push(i);
+                  out.ok++; out.kinds[L.material] = (out.kinds[L.material] || 0) + 1; }
+                return out; })()""" % json.dumps(AN))
+            ck('the town draws the buildings as read: style, wall colour, frames, shutters, slate and timber tones, type, roof colour',
+               res['ok'] >= len(AN) - len(res['miss']) and not res['off'] and not res['roof'] and len(res['miss']) <= 3,
+               f"{res['ok']} as read; off: {res['off'][:10]}; roof off: {res['roof'][:10]}; not in the town (shops build themselves): {res['miss']}; {res['kinds']}")
         if 'markt' in want:
             t0 = time.time()
             while time.time() - t0 < 120 and J("SAMARKT.status().state") != 'ready':
@@ -239,10 +205,7 @@ if BROWSER:
                     E(f"GAME.setView3(false, true); GAME.view({x}, {y}, KERN.ground({x}, {y}) + {h}, {yaw}, {pitch}, 62)"); E("GAME.step(0.05)")
                     E(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + {h}, {yaw}, {pitch}, 62)")
                 lib.shot(pg, OUT, nm)
-        if 'vorschau' in want:
-            pv = J(VORSCHAU_JS)
-            ck('the preview applies the data to the town\'s meshes', pv['looks'] >= 100 and pv['wallVerts'] > 1000 and pv['roofTris'] > 500, json.dumps(pv))
-        if 'bilder' in want or 'vorschau' in want:
+        if 'bilder' in want:
             done = 0
             for v in views:
                 x, y = v['x'], v['y']
@@ -250,7 +213,7 @@ if BROWSER:
                 settle(60)
                 E(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + {v['eye']}, {v['yaw']}, {v['pitch']}, {v['vfov']})")
                 d = E("(() => { GAME.shot(); return document.querySelector('#stage canvas').toDataURL('image/jpeg', 0.88); })()")
-                open(os.path.join(OUT, v['name'] + ('_vorschau' if 'vorschau' in want else '') + '.jpg'), 'wb').write(base64.b64decode(d.split(',')[1]))
+                open(os.path.join(OUT, v['name'] + '.jpg'), 'wb').write(base64.b64decode(d.split(',')[1]))
                 cam = J(f"({{ z: KERN.ground({x}, {y}) }})")
                 json.dump({**v, **cam}, open(os.path.join(OUT, v['name'] + '.json'), 'w'))
                 done += 1
