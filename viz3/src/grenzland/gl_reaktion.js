@@ -12,6 +12,10 @@
 //   answers   by a named person: „Ansprechen“ – Grüßen · Sprüche klopfen · Beruhigen · Provozieren (keys 1–4 or taps): a friendly answer;
 //             a comeback (the person remembers it); a pending call to the police cut short and the search nearby eased; anger and a
 //             call to the police (a report: one star in a few seconds, unless he talks the person out of it)
+// feat/grenzland-ruf (17.11.2026, „Das Dorf redet über euch“): what people do follows the village's opinion of the two (GLRUF.stufe of the
+// place, grenzland/gl_ruf.js): beliebt – they wave and greet warmly; misstrauisch – they whisper and point; verhasst – they turn away,
+// film him or call the police (a report 'verdacht': one star, unless he talks them round). People at the shop on wheels, the barn or
+// the inn tell what the village talks about (GLRUF.gerede) in fixed fragments – who, where, what – one after another.
 // Nothing runs before the scene starts (KERN.tick checks GL.on), all of it gone with „Beenden“ (grenzland:stop).
 //   GLREAKTION.wild(kind, o) · knips(o) → data URL · ansprechen(F) · linien() → [[who, text], …] · S.filmer · S.posts · debug
 import { R, cam } from '../core/head.js';
@@ -33,10 +37,15 @@ import { GLHUD } from './gl_hud.js';
 import { GLHANDY } from './gl_handy.js';
 import { GLFAHNDUNG } from './gl_fahndung.js';
 import { GLRXDATA } from './gl_reaktion_data.js';
+import { GLRUFDATA } from './gl_ruf_data.js';
+import { GLRUF } from './gl_ruf.js';
 export const GLREAKTION = (() => {
   const D = GLRXDATA;
   // a deed of its own: a provoked person calls the police (small: one star, and one can talk the person round)
   if (!GLLOGIK.CRIMES.poebeln) GLLOGIK.CRIMES.poebeln = { h: 0.5, name: 'Pöbelei' };
+  // (feat/grenzland-ruf) somebody who cannot stand the two calls the police when he sees one of them – as small, and as easily talked down
+  if (!GLLOGIK.CRIMES.verdacht) GLLOGIK.CRIMES.verdacht = { h: 0.5, name: 'Verdächtige Person' };
+  const RD = GLRUFDATA;
   const S = {
     filmT: 0, // until the next wild moment may be filmed
     filmer: [], // [{ F, t }] the figures filming now
@@ -55,8 +64,10 @@ export const GLREAKTION = (() => {
     jagdT: 0,
     marktT: 0,
     acc: 0,
+    rufT: 0, // until somebody who cannot stand him may call the police again
+    winkT: {}, // figure id → seconds until it waves again
     err: null,
-    n: { film: 0, post: 0, sag: 0, wahl: 0 },
+    n: { film: 0, post: 0, sag: 0, wahl: 0, gerede: 0, ruf: 0, leise: 0 },
   };
   const hyp = Math.hypot;
   const rnd = a => a[Math.floor(Math.random() * a.length)];
@@ -244,32 +255,108 @@ export const GLREAKTION = (() => {
     GL.emit('post', { kind: q.kind, live: q.live, img: !!q.img });
   }
   // ------------------------------------------------------------------ looking, commenting ------------------------------------------------------------------
-  function sag(F, text, sek) {
-    GLHUD.sub(F.name, text, Math.max(2200, text.length * 62));
+  // the step of the village where the figure stands (GLRUF of grenzland/gl_ruf.js; neutral without it)
+  const stufeBei = F => {
+    try {
+      return (GLRUF.stufe && GLRUF.stufe(RD.ortVon(F.x, F.y))) || 'neutral';
+    } catch (e) {
+      return 'neutral';
+    }
+  };
+  // a line: a text, or { text | teile (fixed fragments spoken one after another), leise (a whisper), art }
+  function sag(F, z, sek) {
+    const o = typeof z === 'string' ? { text: z } : z || {},
+      teile = o.teile || [o.text],
+      text = o.teile ? RD.satz(o.teile) : o.text;
+    if (!text) return;
+    GLHUD.sub(F.name + (o.leise ? ' ' + RD.LEISE : ''), text, Math.max(2200, text.length * 62));
     try {
       GLFIG.talking(F, true);
       setTimeout(() => GLFIG.talking(F, false), Math.max(1800, text.length * 60));
     } catch (e) {}
-    try {
-      STIMME.say('gl_' + F.id, text, { at: [F.x, F.y] });
-    } catch (e) {}
+    // (piece by piece: each piece has its own recording)
+    (async () => {
+      for (const t of teile) {
+        if (!GL.on) return;
+        try {
+          await STIMME.say('gl_' + F.id, t, { at: [F.x, F.y] });
+        } catch (e) {}
+      }
+    })();
     S.sagT = sek || 9;
     S.sagVon[F.id] = 45;
     S.n.sag++;
-    GL.emit('reaktion', { wer: F.id, text });
+    GL.emit('reaktion', { wer: F.id, text, art: o.art || '' });
   }
-  // what a person says to the player now (a fixed line)
+  // what a person says to the player now: { text | teile, art, leise }
   function zeile(F) {
     const st = GLLOGIK.stars(GL.W),
       ist = GLFAHNDUNG.ist ? GLFAHNDUNG.ist() : { kleid: '', kopf: '', fz: '' };
-    if (S.tatT < 30) return rnd(D.SAGT.tat);
-    if (st > 0 && (F.knows || Math.random() < 0.5)) return rnd(D.SAGT.gesucht);
-    const r = Math.random();
-    if (ist.fz && D.SAGT.fz[ist.fz] && r < 0.6) return rnd(D.SAGT.fz[ist.fz]);
-    if (ist.kopf === 'haube') return rnd(D.SAGT.kleid.haube);
-    if (ist.kopf === 'helm' && r < 0.3) return rnd(D.SAGT.kleid.helm);
-    if (D.SAGT.kleid[ist.kleid] && r < 0.65) return rnd(D.SAGT.kleid[ist.kleid]);
-    return rnd(D.SAGT.blick);
+    if (S.tatT < 30) return { text: rnd(D.SAGT.tat), art: 'tat' };
+    if (st > 0 && (F.knows || Math.random() < 0.5)) return { text: rnd(D.SAGT.gesucht), art: 'gesucht' };
+    // (feat/grenzland-ruf) at the shop on wheels, the barn, the inn: what the village talks about
+    try {
+      const q = GLRUF.platz && GLRUF.platz(F.x, F.y) ? GLRUF.gerede(F.id) : null,
+        teile = q && RD.spruch(q.g, q.wer, q.wo, { ich: GL.wer });
+      if (teile) {
+        GLRUF.erzaehlt(F.id, q);
+        S.n.gerede++;
+        return { teile, art: 'gerede', gut: !!q.gut };
+      }
+    } catch (e) {}
+    // the village's opinion of the two
+    const rs = stufeBei(F);
+    if (rs !== 'neutral' && RD.SAGT[rs] && Math.random() < 0.7)
+      return { text: rnd(RD.SAGT[rs]), art: rs, leise: rs === 'misstrauisch' };
+    const r = Math.random(),
+      t = x => ({ text: x });
+    if (ist.fz && D.SAGT.fz[ist.fz] && r < 0.6) return t(rnd(D.SAGT.fz[ist.fz]));
+    if (ist.kopf === 'haube') return t(rnd(D.SAGT.kleid.haube));
+    if (ist.kopf === 'helm' && r < 0.3) return t(rnd(D.SAGT.kleid.helm));
+    if (D.SAGT.kleid[ist.kleid] && r < 0.65) return t(rnd(D.SAGT.kleid[ist.kleid]));
+    return t(rnd(D.SAGT.blick));
+  }
+  // (feat/grenzland-ruf) somebody who cannot stand the two calls the police: a report in a few seconds, unless he talks him round
+  function ruft(F) {
+    const p = where(),
+      q = GLLOGIK.melden(GL.W, 'verdacht', { seen: 1, knows: true, key: 'fig:' + F.id, t: CLOCK.t });
+    if (!q) return false;
+    q.name = F.name;
+    q.ref = { k: 'fig', F };
+    q.x = p[0];
+    q.y = p[1];
+    q.ist = GLFAHNDUNG.ist ? GLFAHNDUNG.ist() : undefined;
+    q.d = hyp(F.x - p[0], F.y - p[1]);
+    try {
+      if (GLFIG.geste) GLFIG.geste(F, 'telefon', { sec: q.t });
+    } catch (e) {}
+    S.rufT = 150;
+    S.n.ruf++;
+    GL.emit('zeuge', { id: 'verdacht', wer: F.name, sek: Math.round(q.t * 10) / 10, beredbar: true });
+    return true;
+  }
+  // a word, and what the body says with it (by the village's opinion)
+  function reagiere(F) {
+    const z = zeile(F);
+    try {
+      if (z.art === 'beliebt' && GLFIG.geste) GLFIG.geste(F, 'nicken');
+      else if (z.art === 'misstrauisch' && GLFIG.geste) GLFIG.geste(F, 'zeigen', { ziel: 'spieler' });
+      else if (z.art === 'gerede' && GLFIG.geste) GLFIG.geste(F, z.gut ? 'nicken' : 'kopf');
+      else if (z.art === 'verhasst') {
+        if (S.rufT <= 0 && !S.gemerkt[F.id] && Math.random() < 0.5 && ruft(F)) z.text = RD.SAGT.ruft;
+        else if (S.filmT <= 0 && Math.random() < 0.4) {
+          z.text = RD.SAGT.filmt;
+          wild('ruf', { force: true, zeugen: 1 });
+        } else if (GLFIG.geste) {
+          GLFIG.geste(F, 'abwinken');
+          // and turns away
+          const p = where();
+          if (F.st !== 'geht' && !F.filmt) GLFIG.face(F, 2 * F.x - p[0], 2 * F.y - p[1]);
+          if (GLFIG.blick) GLFIG.blick(F, null);
+        }
+      }
+    } catch (e) {}
+    sag(F, z);
   }
   function schauen(dt) {
     // (only in free play: in a mission the scenes decide where people look – what looked at him lets go)
@@ -299,6 +386,11 @@ export const GLREAKTION = (() => {
         try {
           if (GLFIG.blick) GLFIG.blick(F, 'spieler');
           else if (F.st !== 'geht' && !F.filmt) GLFIG.face(F, p[0], p[1]);
+          // (feat/grenzland-ruf) liked: a wave when they see him
+          if (GLFIG.geste && !(S.winkT[F.id] > 0) && !F.filmt && stufeBei(F) === 'beliebt') {
+            GLFIG.geste(F, 'winken');
+            S.winkT[F.id] = 60;
+          }
         } catch (e) {}
       }
       if (!t && S.blick.get(F)) {
@@ -308,7 +400,7 @@ export const GLREAKTION = (() => {
       }
       S.blick.set(F, t);
       // after a while a word
-      if (t > 2.4 && S.sagT <= 0 && !(S.sagVon[F.id] > 0) && named(F) && !S.wahl) sag(F, zeile(F));
+      if (t > 2.4 && S.sagT <= 0 && !(S.sagVon[F.id] > 0) && named(F) && !S.wahl) reagiere(F);
     }
     for (const F of [...S.blick.keys()]) if (!nah.includes(F)) S.blick.delete(F);
   }
@@ -363,6 +455,9 @@ export const GLREAKTION = (() => {
     await warte(2.4);
     if (!GL.on) return i;
     let antwort = rnd(A.er);
+    // (feat/grenzland-ruf) a greeting is answered by what the village thinks of the two
+    const rs = stufeBei(F);
+    if (art === 'gruessen' && !mem && RD.SAGT.gruss[rs]) antwort = RD.SAGT.gruss[rs];
     if (mem === 'provoziert') antwort = W.provozieren.ruhig;
     else if (art === 'gruessen' && mem === 'sprueche') {
       antwort = W.gruessen.sauer;
@@ -462,6 +557,8 @@ export const GLREAKTION = (() => {
     S.sagVon = {};
     S.wahl = null;
     S.filmT = S.sagT = 0;
+    S.rufT = 0;
+    S.winkT = {};
   });
   // ------------------------------------------------------------------ per frame ------------------------------------------------------------------
   function tick(dt) {
@@ -479,6 +576,8 @@ export const GLREAKTION = (() => {
     if (S.sagT > 0) S.sagT -= dt;
     S.tatT += dt;
     for (const k in S.sagVon) if ((S.sagVon[k] -= dt) <= 0) delete S.sagVon[k];
+    for (const k in S.winkT) if ((S.winkT[k] -= dt) <= 0) delete S.winkT[k];
+    if (S.rufT > 0) S.rufT -= dt;
     // the phones go down again
     for (let i = S.filmer.length - 1; i >= 0; i--) {
       const q = S.filmer[i];
@@ -544,6 +643,8 @@ export const GLREAKTION = (() => {
     knips,
     ansprechen,
     gegenueber,
+    stufeBei,
+    ruft,
     linien,
     tick,
     debug: {
