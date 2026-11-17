@@ -92,11 +92,17 @@ with lib.browser() as b:
             li = L[rid]
             ck(f'linie {rid}: a way on the roads', li is not None and li['L'] > 300, str(li and {k: li[k] for k in ('L', 'ws', 'dauer', 'kehre', 'legs')}) + ' ' + str(E("GLLINIEN.err")))
             if li: ck(f'linie {rid}: never turns back on itself', li['kehre'] == 0, str(li['kehre']))
-        # beyond the square's road ends on along the region's roads (no vehicle appears or vanishes at the square's edge)
+        # beyond the square's road ends on along the region's roads (no vehicle appears or vanishes at the square's edge): the region's
+        # roads load when one comes to the square's edge – there, by the road to Schleusingen, the runs are built again with them
         B = J("GEOMAN.roads.box")
         aus = lambda q: max(B[0] - q[0], q[0] - B[2], B[1] - q[1], q[1] - B[3])
+        X("TS.look(-1045, 1040, 135, 1, 1.7, -4)")
+        for i in range(90):
+            steps(0.3)
+            if E("!!(window.FAHRT && FAHRT.data && FAHRT.data.ways && FAHRT.data.ways.length)"): break
+            time.sleep(1)
         for rid in ['milch', 'k2-tag']:
-            li = L.get(rid)
+            li = L[rid] = J(f"GLLINIEN.debug.linie('{rid}')")
             ok = li and li['pts'] and aus(li['pts'][0]) > 300 and aus(li['pts'][-1]) > 50
             ck(f'linie {rid}: starts and ends beyond the square, on the region\'s roads', ok, str(li and (li['pts'][0], li['pts'][-1], B)))
         open(os.path.join(OUT, 'linien.json'), 'w').write(json.dumps(L))

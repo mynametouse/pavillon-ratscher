@@ -215,6 +215,7 @@ export const GLLINIEN = (() => {
     return Object.assign(fertigLinie(f, legs, W, lkw), {
       tueren: f.weg.map(w => (w.zustellen ? tuerVon(w) : null)),
       vorMin: vorL / f.tempo,
+      ohneRegion: !regionDa() && !!(f.weg[0].rand || f.weg[z].rand),
     });
   }
   const laenge = P => P.reduce((a, p, i) => (i ? a + hyp(p[0] - P[i - 1][0], p[1] - P[i - 1][1]) : 0), 0);
@@ -284,17 +285,22 @@ export const GLLINIEN = (() => {
     const G = GLLWEG.stadtNetz(F, R0.x, R0.y);
     return G && G.nodes.length ? GLLWEG.rampenWeg(G, { x: R0.ax, y: R0.ay, hd: R0.hd }, f) : null;
   }
+  // the region's roads (welt/fahrt.js loads them when one comes near the square's edge)
+  const regionDa = () => !!(FAHRT && FAHRT.data && FAHRT.data.ways && FAHRT.data.ways.length);
   function linieVon(f, sofort = false) {
-    // (a run is tried again a little later when its data are not there yet: the town's roads, a shop, the village's houses. One line is
+    // (a run is tried again a little later when its data are not there yet: the town's roads, a shop, the village's houses; a run of
+    // the square that was built before the region's roads came is built once more with its way beyond the square's edge. One line is
     // built per step of the plan – a town's graph takes up to a tenth of a second)
-    const q = S.L[f.id];
-    if (q === undefined || (q && q.fail && performance.now() > q.fail)) {
-      if (!sofort && !(S.bau > 0)) return null;
+    const q = S.L[f.id],
+      alt = q && q.legs ? q : null;
+    if (q === undefined || (q && q.fail && performance.now() > q.fail) || (alt && alt.ohneRegion && regionDa())) {
+      if (!sofort && !(S.bau > 0)) return alt;
       S.bau--;
+      if (alt) alt.ohneRegion = false;
       try {
-        S.L[f.id] = (f.stadt ? bauStadt(f) : bauLinie(f)) || { fail: performance.now() + 8000 };
+        S.L[f.id] = (f.stadt ? bauStadt(f) : bauLinie(f)) || alt || { fail: performance.now() + 8000 };
       } catch (e) {
-        S.L[f.id] = { fail: performance.now() + 30000 };
+        S.L[f.id] = alt || { fail: performance.now() + 30000 };
         S.err = 'linie ' + f.id + ': ' + String((e && e.message) || e).slice(0, 160);
       }
     }
@@ -335,7 +341,7 @@ export const GLLINIEN = (() => {
           [d0 - 1440, dayG || day],
         ]) {
           const t0 = d + ab - (Lf.vorMin || 0),
-            key = f.id + '@' + t0;
+            key = f.id + '@' + (d + ab);
           if (t < t0 || t - t0 >= Lf.P.dauer || v.done.has(key) || !GLLDATA.faehrt(f, dd)) continue;
           v.run = { key, f, t0, lag: 0, P: Lf.P, Lf, i: -1 };
           if (v.done.size > 40) v.done.clear();

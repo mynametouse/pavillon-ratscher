@@ -45,7 +45,9 @@ Stunde je Minute –, so machen es auch die Busse des Spiels).
   Rand, am liebsten eine Bundes- oder Kreisstraße, so weit weg vom Quadrat wie möglich, nie zurück hinein (`GLLWEG.verlaengerung`).
   Milchlaster, Streife und Krähwinkels Lkw kommen so durch Schleusingen und fahren durch die Stadt wieder hinaus; nach Westen, Norden
   und Süden geht es über 1 km weiter, nach Südosten hat die Region nur noch gut 100 m Straße. Die Abfahrtszeit gilt am Rand des
-  Quadrats (der Weg davor beginnt entsprechend früher).
+  Quadrats (der Weg davor beginnt entsprechend früher). Die Straßen der Region lädt `welt/fahrt.js` erst, wenn man an den Rand des
+  Quadrats kommt – dann werden die Läufe des Quadrats einmal neu gebaut, mit ihrem Weg darüber hinaus (ein Lauf, der gerade fährt,
+  behält seinen).
 - **Fahrer in den Kabinen:** eine Figur des Modus sitzt am Steuer (die Streife hat zwei Beamte); sie sehen, was man tut, und melden es
   wie jeder Zeuge – die Beamten der Streife zählen als Polizei, also sofort. Ab dem ersten Stern weicht die Streife: sie fährt weiter und
   verschwindet außer Sicht, die Fahndung schickt ihre eigenen Wagen (`gl_fahndung.js`).
