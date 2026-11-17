@@ -789,7 +789,7 @@ export const VOEGEL = (() => {
   }
   // ---- starlings in autumn at dusk: a murmuration over the fields ----
   function neuStare(K, p) {
-    const n = COARSE ? 90 : 200;
+    const n = COARSE ? 80 : 150;
     const a0 = Math.atan2(p.x - 222, p.y + 108) + rnd(-1, 1);
     K.c = [p.x + Math.sin(a0) * rnd(110, 160), p.y + Math.cos(a0) * rnd(110, 160)];
     K.b = [];
@@ -925,7 +925,7 @@ export const VOEGEL = (() => {
         any = true;
       } else aus('schwalbe');
       if (A.star) {
-        const K = kind('star', COARSE ? 90 : 200);
+        const K = kind('star', COARSE ? 80 : 150);
         if (!K.on) {
           K.on = true;
           neuStare(K, p);

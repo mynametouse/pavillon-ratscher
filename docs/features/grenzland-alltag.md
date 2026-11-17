@@ -63,8 +63,9 @@ Vielleicht fliegen auch mal Vögel rum …“
   nach einer Weile wieder heraus; ab und zu ein Tschilpen.
 - **Krähen** über dem Land: ein paar in weiten, langsamen Kreisen (tags, nicht in der Stadt).
 - **Schwalben** im Sommer (Mai–August, tags) schnell und tief über dem Anger und der Wiese am Garten.
-- **Stare** im Herbst (September–November) in der Dämmerung: ein Schwarm über den Feldern, der sich faltet und streckt.
-- **Billig:** je Art ein Netz mit 14 Dreiecken pro Vogel, die Ecken jedes Bild auf der CPU (Flügelschlag, angelegte Flügel am Boden), im
+- **Stare** im Herbst (September–November) in der Dämmerung: ein Schwarm (150, am Telefon 80) 110–160 m entfernt über den Feldern,
+  der sich faltet und streckt.
+- **Billig:** je Art ein Netz mit 18 Dreiecken pro Vogel (Kopf, Körper, Flügel, Schwanz; ferne Arten 10), die Ecken jedes Bild auf der CPU (Flügelschlag, angelegte Flügel am Boden), im
   Material der Verkehrsfiguren (`VFIG.mat`) – kein neues Shader-Programm, keine Textur, keine Lampe; nur was nah und dran ist, wird
   gerechnet. `?novoegel` lässt sie weg. `VOEGEL.scheuchen(x, y, r)` scheucht alles in der Nähe auf (ein Böller des Modus tut es schon).
 
@@ -99,6 +100,11 @@ Vielleicht fliegen auch mal Vögel rum …“
   Feste, Kalender, Tombola, Sätze).
 - Im Browser: `viz3/test/grenzland_alltag.py` mit den Abschnitten `tag` (Ratscher), `stadt` (Schleusingen), `voegel`, `fest`, `blick`
   (Draufsichten zum Platzieren); Bilder in `out/grenzland_alltag/`. Liste für Actions: `viz3/extra/grenzland-alltag/tests.txt`.
+- **Weltkacheln:** für die Abschnitte in Schleusingen holt der Test die Kacheln um Markt und Kirche von der veröffentlichten Seite nach
+  `viz3/dist/welt-test/` (wie `welt_dinge_stadt.py`, `laeden.py`). Ohne sie steht die Stadt auf dem groben Gelände von `world/ratscher.js`,
+  und das ist auf dem Markt **0,9–1,7 m über `KERN.ground`** gezeichnet (gemessen 17.11.2026 mit einem Strahl von oben): Leute, Spieler und
+  Tauben sähen eingesunken aus. Mit den Kacheln liegt `KERN.ground` auf dem gezeichneten Markt; der Abschnitt `voegel` prüft das an den
+  Tauben. `diag` (nur auf Zuruf) schreibt die Messung aus.
 
 ## Für den Lead
 
@@ -119,4 +125,7 @@ Vielleicht fliegen auch mal Vögel rum …“
 - **Musik für den Weihnachtsmarkt:** ein freies Weihnachtsstück (CC BY / gemeinfrei) im Klang-Repository wäre gut – Eintrag in
   `GLFDATA.FESTE.weihnachtsmarkt.musik.lieder` (eine Datei aus `pavillon-ton/radio/` – oder ein Eintrag in `GLRDATA.LIEDER`); bis dahin spielt
   eine Spieluhr aus dem Synthesizer.
+- **Beobachtung im Grundspiel (nicht von mir geändert):** auf einem Host ohne `welt-test/` (lokale Tests, Actions ohne Kacheln) liefert
+  `KERN.ground` außerhalb des 10-m-Geländes die bilineare Höhe des 120-m-Rasters (`RATSCHER.hAt`), gezeichnet sind aber dessen Dreiecke –
+  in Schleusingen bis 1,7 m Unterschied. Im Spiel mit den Kacheln tritt das nicht auf; Bilder aus Tests ohne Kacheln täuschen dort.
 - **Die alte Zufalls-Kirmes** (`gl_ereignis.js`, Agent `strasse`) soll aus sein, sobald `window.GLFESTE` da ist (so im gemeinsamen Auftrag).

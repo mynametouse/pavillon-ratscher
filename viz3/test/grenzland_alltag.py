@@ -5,13 +5,60 @@
 #           stop, Sunday at St. Johannis, the clique at the fountain on the Markt, shoppers into the bakery's door; greetings, E, the API
 #   fest    the festivals by the calendar (GLFESTE.debug.zu): Kirmes at night, Christmas market, Feuerwehrfest
 # Pictures in out/grenzland_alltag/.   python3 viz3/test/grenzland_alltag.py 9041 [sections, comma separated]
-import sys, os, json, time
+import sys, os, json, time, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib, grenzland_ci
 port = sys.argv[1] if len(sys.argv) > 1 else '9041'
 ONLY = set(sys.argv[2].split(',')) if len(sys.argv) > 2 else None
-want = lambda s: ONLY is None or s in ONLY
+want = lambda s: (ONLY is None and s != 'diag') or (ONLY is not None and s in ONLY)  # diag only when named
 ck = grenzland_ci.wrap(lib.Checks('grenzland_alltag'), 'grenzland_alltag')
 OUT = lib.out('grenzland_alltag')
+# the world tiles round the Markt and St. Johannis from the published site (as viz3/test/welt_dinge_stadt.py, laeden.py): without them the
+# town stands on the coarse terrain of world/ratscher.js, drawn up to 1.7 m above KERN.ground there – people and pigeons would look sunk
+SITE = os.environ.get('WELT_SITE', 'https://mynametouse.github.io/pavillon-ratscher/welt-test/')
+DIST = os.path.join(lib.ROOT, 'viz3', 'dist', 'welt-test')
+XF = json.load(open(os.path.join(lib.ROOT, 'viz3', 'manifests.json')))['geoman']['xf']
+def utm(x, y):
+    return XF['a'] * x - XF['b'] * y + XF['ex'], XF['b'] * x + XF['a'] * y + XF['ey']
+def fetch_tiles(centres, half=300):
+    os.makedirs(DIST, exist_ok=True)
+    def get(rel):
+        p = os.path.join(DIST, rel)
+        if os.path.exists(p) and os.path.getsize(p) > 0:
+            return 0
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        try:
+            with urllib.request.urlopen(SITE + rel, timeout=60) as r:
+                b = r.read()
+        except Exception:
+            return 0
+        open(p, 'wb').write(b)
+        return len(b)
+    get('meta.json')
+    try:
+        meta = json.load(open(os.path.join(DIST, 'meta.json')))
+    except Exception as e:
+        print('note: no world tiles', e, flush=True)
+        return
+    lv = meta['tiling']['levels']
+    jobs = set()
+    for cx, cy in centres:
+        cs = [utm(cx + sx * half, cy + sy * half) for sx in (-1, 1) for sy in (-1, 1)]
+        for L, pad in ((10, 900), (11, 450), (12, 150)):
+            s = 409600 / (1 << L)
+            r = lv[str(L)]['rect']
+            E0, E1 = min(c[0] for c in cs) - pad, max(c[0] for c in cs) + pad
+            N0, N1 = min(c[1] for c in cs) - pad, max(c[1] for c in cs) + pad
+            for x in range(int((E0 - 420700) // s), int((E1 - 420700) // s) + 1):
+                for y in range(int((N0 - 5390800) // s), int((N1 - 5390800) // s) + 1):
+                    if r[0] <= x <= r[2] and r[1] <= y <= r[3]:
+                        jobs.add(f't/{L}/{x}/{y}.bin')
+                        jobs.add(f'i/{L}/{x}/{y}.webp')
+    t0 = time.time()
+    with concurrent.futures.ThreadPoolExecutor(8) as ex:
+        n = sum(ex.map(get, sorted(jobs)))
+    print(f'welt tiles: {len(jobs)} files, {n / 1e6:.1f} MB new in {time.time() - t0:.0f} s', flush=True)
+if any(want(k) for k in ('blick', 'stadt', 'voegel', 'fest', 'diag')):
+    fetch_tiles([(-1084.7, 1241.9), (-1250.0, 1188.0)])
 with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs, tier='hoch' if want('blick') else 'schnell')
@@ -69,6 +116,13 @@ with lib.browser() as b:
         X("GAME.view(-1250, 1176, KERN.ground(-1250, 1176) + 6, 0, -10, 60)")
         steps(1); pic('00_kirche')
     # ------------------------------------------------------------------ helpers for the people ------------------------------------------------------------------
+    # what is drawn under (x, y): a ray from above onto the visible meshes (birds and the mode's own things left out), the tiles marked
+    X("""window.TD = (x, y) => { const T = THREE, rc = new T.Raycaster(new T.Vector3(x, 400, -y), new T.Vector3(0, -1, 0), 0, 800); rc.camera = GAME.cam;
+      const L = []; GAME.scene.traverse(o => { if (o.isMesh && !o.isSkinnedMesh && o.visible && !/voegel|grenzland/.test(o.name || '')) L.push(o) });
+      const hits = rc.intersectObjects(L, false);
+      const tiles = new Set([...WELT.tiles.values()].map(t => t.mesh).filter(Boolean)), h0 = hits[0];
+      return { ground: KERN.ground(x, y), hit: h0 ? h0.point.y : null, what: h0 ? (h0.object.name || h0.object.type) + (tiles.has(h0.object) ? ' [tile]' : '') + (h0.object.parent && h0.object.parent.name ? ' in ' + h0.object.parent.name : '') : null,
+        tile: (hits.find(h => tiles.has(h.object)) || {}).point?.y ?? null } }; 0""")
     X("""window.TA = {
       // a view of (x, y) from d metres, h above the ground: the first direction (from az round) with a clear line and not indoors
       blick(x, y, az, d, h, pitch) { for (const dd of [d, d * 0.7, d * 1.3]) for (let i = 0; i < 12; i++) { const a = (az + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 30) * Math.PI / 180, cx = x - Math.sin(a) * dd, cy = y - Math.cos(a) * dd;
@@ -221,7 +275,7 @@ with lib.browser() as b:
         X("GLALLTAG.debug.zeit(10 * 60, 2); GAME.view(236, -104.6, KERN.ground(236, -104.6) + 1.2, 180, -18)")
         ok = until("(VOEGEL.stand().aktiv.spatz || 0) > 0", 20, 0.5)
         ck('voegel: sparrows at the hedges of the Anger by day', bool(ok), str(J("VOEGEL.stand()")))
-        X("const b = VOEGEL.debug.voegel('spatz')[0]; GAME.view(b.x - 2.2, b.y - 1.2, KERN.ground(b.x - 2.2, b.y - 1.2) + 0.9, Math.atan2(2.2, 1.2) * 180 / Math.PI, -14)")
+        X("const b = VOEGEL.debug.voegel('spatz').find(q => q.st === 'boden') || VOEGEL.debug.voegel('spatz')[0]; GAME.view(b.x - 4.4, b.y - 3.3, KERN.ground(b.x - 4.4, b.y - 3.3) + 0.8, Math.atan2(4.4, 3.3) * 180 / Math.PI, -6)")
         steps(0.6, 0.05)
         pic('20_spatzen')
         prog0 = E("GAME.R.info.programs.length")
@@ -256,6 +310,13 @@ with lib.browser() as b:
         ok = until("window.SCHL && SCHL.state === 'ready'", 300, 1.0, 0.5)
         ok = until("(VOEGEL.stand().aktiv.taube || 0) > 0", 20, 0.5)
         ck('voegel: pigeons on the Markt by day', bool(ok), str(J("VOEGEL.stand()")))
+        steps(2, 0.1)
+        gd = J("VOEGEL.debug.voegel('taube').filter(q => q.st === 'boden').slice(0, 6).map(b => { const t = TD(b.x, b.y); return [t.tile === null ? null : +(b.z - t.tile).toFixed(2), t.what] })")
+        dz = [d[0] for d in gd if d[0] is not None]
+        if dz:
+            ck('voegel: the pigeons stand on the Markt as it is drawn (a ray from above meets the tiles within 0.25 m of their feet)', all(abs(v) <= 0.25 for v in dz), str(gd))
+        else:
+            print('note: no world tiles drawn under the pigeons – their ground check skipped', str(gd), flush=True)
         X("const b = VOEGEL.debug.voegel('taube'); const c = b[0]; GAME.view(c.x - 5, c.y - 4, KERN.ground(c.x - 5, c.y - 4) + 1.3, Math.atan2(5, 4) * 180 / Math.PI, -12)")
         steps(0.5, 0.05)
         pic('24_tauben')
@@ -271,6 +332,30 @@ with lib.browser() as b:
         mats = J("[...new Set(GAME.scene.children.filter(o => /^voegel /.test(o.name)).map(o => o.material.uuid))].length")
         ck('voegel: cheap (< 0.6 ms per frame here), one shared material for all kinds, no new shader program for crows, swallows, starlings',
            st['ms'] < 0.6 and prog1 - prog0 <= 1 and mats == 1 and not st['err'], f"{st['ms']} ms, programs {prog0} → {prog1}, materials {mats}, err {st['err']}")
+    # ------------------------------------------------------------------ diag: the ground under birds and people vs. what is drawn ------------------------------------------------------------------
+    if want('diag'):
+        X("GLALLTAG.debug.zeit(11 * 60, 2); GAME.view(236, -112, KERN.ground(236, -112) + 1.7, 0, -5)")
+        until("(VOEGEL.stand().aktiv.spatz || 0) > 0", 20, 0.5)
+        sp = J("VOEGEL.debug.voegel('spatz').slice(0, 4).map(b => Object.assign({ bz: b.z }, TD(b.x, b.y)))")
+        print('DIAG spatzen', json.dumps(sp), flush=True)
+        X("const b = VOEGEL.debug.voegel('spatz').find(q => q.st === 'boden'); if (b) GAME.view(b.x - 4.4, b.y - 3.3, KERN.ground(b.x - 4.4, b.y - 3.3) + 0.7, Math.atan2(4.4, 3.3) * 180 / Math.PI, -6)")
+        steps(0.3, 0.05)
+        pic('40_spatz_nah')
+        X("GAME.view(-1084.7, 1225, 400, 0, -30)")
+        until("window.SCHL && SCHL.state === 'ready'", 300, 1.0, 0.5)
+        until("(VOEGEL.stand().aktiv.taube || 0) > 0", 20, 0.5)
+        steps(3, 0.1)
+        tb = J("VOEGEL.debug.voegel('taube').slice(0, 5).map(b => Object.assign({ bz: b.z, st: b.st }, TD(b.x, b.y)))")
+        print('DIAG tauben', json.dumps(tb), flush=True)
+        X("const b = VOEGEL.debug.voegel('taube').find(q => q.st === 'boden'); if (b) GAME.view(b.x - 3.6, b.y - 2.7, KERN.ground(b.x - 3.6, b.y - 2.7) + 0.9, Math.atan2(3.6, 2.7) * 180 / Math.PI, -8)")
+        steps(0.3, 0.05)
+        pic('41_taube_nah')
+        mk = J("[[-1079.5, 1241.1], [-1091.7, 1238.6], [-1100.3, 1249.5], [-1070, 1230], [-1060, 1250], [-1250, 1188], [-1040, 1245]].map(q => Object.assign({ x: q[0], y: q[1], pad: WELT.padAt ? WELT.padAt(q[0], q[1], KERN.ground(q[0], q[1])) : null, floor: GAME.floorAt(q[0], q[1], KERN.ground(q[0], q[1]) + 3) }, TD(q[0], q[1])))")
+        print('DIAG markt', json.dumps(mk), flush=True)
+        # where the player stands when put there
+        X("GAME.view(-1079.5, 1236, KERN.ground(-1079.5, 1236) + 3.5, 0, 0)")
+        steps(3, 0.1)
+        print('DIAG spieler', json.dumps(J("({ feet: GAME.P.feet, ground: KERN.ground(GAME.P.x, GAME.P.y), hit: TD(GAME.P.x, GAME.P.y).hit })")), flush=True)
     # ------------------------------------------------------------------ fest: the festivals by the calendar ------------------------------------------------------------------
     if want('fest'):
         X("window.TF = []; KERN.on('grenzland:fest', d => TF.push(d)); GAME.setSound && GAME.setSound(true)")
