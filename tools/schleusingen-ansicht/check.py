@@ -112,6 +112,8 @@ def main(argv):
             errs.append(f'{tag}: dachform {r["dachform"]!r} not in {sorted(DACHFORM)}')
         if 'tuer' in r and r['tuer'] not in range(0, 8):
             errs.append(f'{tag}: tuer {r["tuer"]!r} (0–7, the door types of FASSADE)')
+        if 'gauben' in r and not isinstance(r['gauben'], bool):
+            errs.append(f'{tag}: gauben must be true or false (dormers on the side towards the street)')
         if 'first' in r and r['first'] not in ('trauf', 'giebel'):
             errs.append(f'{tag}: first {r["first"]!r} (trauf or giebel towards the street)')
         if r.get('dachform') == 'flach' and (r.get('dach') or {}).get('material') not in ('flach', 'blech'):

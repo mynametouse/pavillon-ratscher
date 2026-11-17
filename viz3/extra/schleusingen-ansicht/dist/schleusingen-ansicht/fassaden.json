@@ -992,6 +992,8 @@
    "laeden": false,
    "laden": true,
    "geschosse": 3,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt SW: oliv/graugrün, dreigeschossig, Giebel hellgrauer Schiefer, Läden",
    "sicher": "hoch",
    "ansichten": [
@@ -1016,6 +1018,8 @@
    },
    "laeden": false,
    "laden": false,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt W: weiß, roter Giebel",
    "sicher": "mittel",
    "ansichten": [
@@ -1040,6 +1044,8 @@
    "laeden": false,
    "laden": false,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt S: graubeige (Modell: Schiefer-OG)",
    "sicher": "mittel",
    "ansichten": [
@@ -1064,6 +1070,8 @@
    "laeden": false,
    "laden": true,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt S: ocker/gelb",
    "sicher": "mittel",
    "ansichten": [
@@ -1088,6 +1096,8 @@
    "laeden": false,
    "laden": false,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt S: weißgrau",
    "sicher": "mittel",
    "ansichten": [
@@ -1113,6 +1123,8 @@
    "laeden": false,
    "laden": true,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt S: ocker/orangegelb, Läden",
    "sicher": "mittel",
    "ansichten": [
@@ -1138,6 +1150,8 @@
    "laeden": false,
    "laden": false,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt S: terrakotta/lachs, Gauben",
    "sicher": "hoch",
    "ansichten": [
@@ -1189,6 +1203,7 @@
    "laeden": false,
    "laden": false,
    "geschosse": 2,
+   "first": "trauf",
    "besonders": "Markt SO: hellgrau-beige",
    "sicher": "mittel",
    "ansichten": [
@@ -1212,6 +1227,7 @@
    "laeden": false,
    "laden": false,
    "geschosse": 2,
+   "first": "trauf",
    "besonders": "Markt SO: lang, zweigeschossig, hellgrau-beige (Modell: Schiefer-OG)",
    "sicher": "hoch",
    "ansichten": [
@@ -1358,6 +1374,8 @@
    "laeden": false,
    "laden": false,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt O: graugrün",
    "sicher": "mittel",
    "ansichten": [
@@ -1382,6 +1400,8 @@
    "laeden": false,
    "laden": true,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt NO: weiß, lang, zweigeschossig, Gauben, Markisen",
    "sicher": "hoch",
    "ansichten": [
@@ -1407,6 +1427,8 @@
    "laeden": false,
    "laden": true,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt O: salbeigrün/graugrün, Läden mit Markisen",
    "sicher": "hoch",
    "ansichten": [
@@ -1432,6 +1454,7 @@
    "laeden": false,
    "laden": true,
    "geschosse": 2,
+   "first": "trauf",
    "besonders": "Markt N: cremegelb, lang, Gauben, gelbe Markise",
    "sicher": "hoch",
    "ansichten": [
@@ -1457,6 +1480,8 @@
    "laeden": false,
    "laden": true,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt N: creme/blassgelb, Läden (Modell: Schiefer-OG)",
    "sicher": "hoch",
    "ansichten": [
@@ -1482,6 +1507,8 @@
    "laeden": false,
    "laden": true,
    "geschosse": 2,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt N: rosa, Gauben",
    "sicher": "hoch",
    "ansichten": [
@@ -1507,6 +1534,7 @@
    "laeden": false,
    "laden": false,
    "geschosse": 2,
+   "first": "giebel",
    "besonders": "Markt N: Fachwerk rot/weiß",
    "sicher": "mittel",
    "ansichten": [
@@ -1531,6 +1559,8 @@
    "laeden": false,
    "laden": false,
    "geschosse": 3,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt NW: gelb",
    "sicher": "mittel",
    "ansichten": [
@@ -1555,6 +1585,8 @@
    "laeden": false,
    "laden": true,
    "geschosse": 3,
+   "first": "trauf",
+   "gauben": true,
    "besonders": "Markt NW: lachs/apricot, dreigeschossig, Ladenbögen",
    "sicher": "hoch",
    "ansichten": [
@@ -1580,6 +1612,7 @@
    "laeden": false,
    "laden": true,
    "geschosse": 3,
+   "first": "trauf",
    "besonders": "Markt NW: weiß mit grauen Faschen, dreigeschossig, Gauben",
    "sicher": "hoch",
    "ansichten": [

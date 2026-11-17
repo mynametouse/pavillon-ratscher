@@ -446,7 +446,9 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 3
+"geschosse": 3,
+"first": "trauf",
+"gauben": true
 },
 "#212": {
 "art": "haus",
@@ -456,7 +458,9 @@
 "dach": {
 "material": "ziegel",
 "farbe": "#b5553a"
-}
+},
+"first": "trauf",
+"gauben": true
 },
 "#217": {
 "art": "haus",
@@ -467,7 +471,9 @@
 "material": "ziegel",
 "farbe": "#7c3127"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#218": {
 "art": "haus",
@@ -478,7 +484,9 @@
 "material": "ziegel",
 "farbe": "#8e4632"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#219": {
 "art": "haus",
@@ -489,7 +497,9 @@
 "material": "ziegel",
 "farbe": "#8e4632"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#220": {
 "art": "haus",
@@ -500,7 +510,9 @@
 "material": "ziegel",
 "farbe": "#8e4632"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#221": {
 "art": "haus",
@@ -511,7 +523,9 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#226": {
 "art": "haus",
@@ -533,7 +547,8 @@
 "material": "ziegel",
 "farbe": "#7c3127"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf"
 },
 "#228": {
 "art": "haus",
@@ -544,7 +559,8 @@
 "material": "ziegel",
 "farbe": "#7c3127"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf"
 },
 "#232": {
 "art": "haus",
@@ -611,7 +627,9 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#241": {
 "art": "haus",
@@ -622,7 +640,9 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#242": {
 "art": "haus",
@@ -633,7 +653,9 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#243": {
 "art": "haus",
@@ -644,7 +666,8 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf"
 },
 "#244": {
 "art": "haus",
@@ -655,7 +678,9 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#245": {
 "art": "haus",
@@ -666,7 +691,9 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
 },
 "#246": {
 "art": "haus",
@@ -678,7 +705,8 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 2
+"geschosse": 2,
+"first": "giebel"
 },
 "#247": {
 "art": "haus",
@@ -689,7 +717,9 @@
 "material": "ziegel",
 "farbe": "#8e4632"
 },
-"geschosse": 3
+"geschosse": 3,
+"first": "trauf",
+"gauben": true
 },
 "#250": {
 "art": "haus",
@@ -700,7 +730,9 @@
 "material": "ziegel",
 "farbe": "#8e4632"
 },
-"geschosse": 3
+"geschosse": 3,
+"first": "trauf",
+"gauben": true
 },
 "#251": {
 "art": "haus",
@@ -711,7 +743,8 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 3
+"geschosse": 3,
+"first": "trauf"
 },
 "#252": {
 "art": "haus",

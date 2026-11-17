@@ -87,6 +87,8 @@ def look(r):
         L['tuer'] = r['tuer']         # the door's type as seen
     if r.get('first'):
         L['first'] = r['first']        # gable ('giebel') or eave ('trauf') towards the street – data for later
+    if 'gauben' in r:
+        L['gauben'] = r['gauben']      # dormers towards the street – data for later
     if art == 'schule':
         L.pop('achse', None)   # FASSADE: a school of our time (smooth, wide bays 3.6 m, light glass door, no shutters)
     return L
