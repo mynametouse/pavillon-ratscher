@@ -258,6 +258,30 @@ export const SINNEN = (() => {
       R = C.R,
       leafHex = (C.ext && C.ext.leaf) || 0x9a7a52;
     lamp(C, room, 'kugel');
+    // feat/innen-real: the oil-painted dado of the old stairwells (Ölsockel) to 1.45 m with its dark line on top, round the walls
+    // between the doors and under the windows
+    {
+      const dado = C.col(R.pick([0xc9b68e, 0x9cab98, 0x93a3ae, 0xdcd2ba, 0xb8a58a]), 0.42),
+        line = C.col(R.pick([0x6a4a32, 0x3f4a3c, 0x5a3a2a]), 0.5),
+        S = ZIEINR.sides(room),
+        zt = z + 1.45;
+      for (const k of Object.keys(S)) {
+        const s = S[k],
+          F = ZIEINR.frame(s.O, s.a, s.n),
+          bl = (room.blocks || []).filter(b => b.side === k).sort((a, b) => a.u0 - b.u0);
+        let u = 0;
+        for (const b of bl.concat([{ u0: s.L, u1: s.L, z0: z }])) {
+          const top = b.door ? zt : Math.min(zt, b.z0 - 0.02);
+          if (b.u0 - u > 0.05) {
+            F.box(C.m, dado, u, b.u0, 0, 0.004, z + 0.06, zt);
+            F.box(C.m, line, u, b.u0, 0, 0.006, zt, zt + 0.025);
+          }
+          if (!b.door && top > z + 0.3 && b.u1 - b.u0 > 0.05)
+            F.box(C.m, dado, Math.max(u, b.u0), b.u1, 0, 0.004, z + 0.06, top);
+          u = Math.max(u, b.u1);
+        }
+      }
+    }
     const all = (P.open || []).map(d => Object.assign({ open: true }, d)).concat(P.locked || []);
     for (const d of all) {
       if (d.fl !== fl) continue;

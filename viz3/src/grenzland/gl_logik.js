@@ -316,6 +316,9 @@ export const GLLOGIK = (() => {
   // Every few minutes of driving (2½–5), one at a time, in free play today only; each where it fits (a speed camera on a road, the
   // harvest lorry outside the villages, the fair in a village, the wedding convoy in the town, the man with the bangers in a village or
   // the town, the deer at dusk on a country road), none of them twice within a quarter of an hour.
+  // feat/grenzland-strasse (17.11.2026): a hitchhiker at the roadside (by day or at dusk), a breakdown with its hazard lights (any time),
+  // a hunter on his high seat at the forest edge (dusk; grenzland/gl_ereignis.js keeps him to the hours round sunset and sunrise) – all
+  // on the land. The fair stays in the table; grenzland/gl_ereignis.js plans it no more when the festival calendar (GLFESTE) is there.
   const EREIGNISSE = {
     blitzer: { wo: ['land', 'dorf'], fahrt: true },
     traktorstau: { wo: ['land'], fahrt: true },
@@ -323,6 +326,9 @@ export const GLLOGIK = (() => {
     korso: { wo: ['stadt'] },
     boeller: { wo: ['dorf', 'stadt'] },
     wildunfall: { wo: ['land'], fahrt: true, dunkel: true },
+    anhalter: { wo: ['land'], fahrt: true },
+    panne: { wo: ['land'], fahrt: true },
+    jaeger: { wo: ['land'], dunkel: true },
   };
   const planNeu = () => ({ fahrt: 0, next: 150, zuletzt: {} });
   // P: planNeu() kept by the caller; ctx: { t: game seconds, dt, frei: free play and today, fahrt: driving now, ort: 'dorf' | 'stadt' |

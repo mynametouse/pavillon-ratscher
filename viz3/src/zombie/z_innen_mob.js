@@ -5,32 +5,41 @@
 // model already has (shared programs: KM.*, MAT.*) or copies of them with the same shader settings and a canvas texture of our own – drawn once,
 // shared by every house, its GPU copy freed when no house is mounted (it is uploaded again by itself when the next house needs it).
 import * as THREE from 'three';
-import { V } from '../core/head.js';
+import { V, COARSE } from '../core/head.js';
 import { ANISO, dimIndoor, plain } from '../core/assets.js';
+import { pmrem } from '../garden/env.js';
 import { MAT } from '../core/mats.js';
-import { KM, PAL, twin } from '../garden/garten_kit.js';
+import { KM, PAL, twin, indoor } from '../garden/garten_kit.js';
 export const ZIMOB = (() => {
   // ---- the mesher: arrays per material, written in the house frame (site-like x, y, z) and stored as three (x, z, −y) ----
   class Mesher {
-    constructor(origin) {
+    constructor(origin, o = {}) {
       this.B = new Map();
       this.o = origin || [0, 0, 0];
       this.tris = 0;
+      // feat/innen-real: a furniture mesher rounds the boxes of soft things (cushions, mattresses, upholstery – see col()); o.pal: the
+      // palette's material for indoors (the normal game's houses: M.palIn, less of the sky in it)
+      this.soft = !!o.soft;
+      this.pal = o.pal || null;
     }
     buf(m) {
-      const key = m.isPal ? m.m : m;
+      const key = m.isPal ? this.pal || m.m : m;
       let b = this.B.get(key);
       if (!b) this.B.set(key, (b = { p: [], n: [], u: [] }));
       return b;
     }
     // one triangle (a, b, c in house coordinates), normal n, uvs (metres) – palette colours take their swatch instead
     tri(m, a, b, c, n, ua, ub, uc) {
+      this.triN(m, a, b, c, n, n, n, ua, ub, uc);
+    }
+    // feat/innen-real: a triangle with a normal per corner (the rounded soft boxes are shaded smoothly)
+    triN(m, a, b, c, na, nb, nc, ua, ub, uc) {
       const B = this.buf(m),
         o = this.o;
-      for (const [p, u] of [
-        [a, ua],
-        [b, ub],
-        [c, uc],
+      for (const [p, n, u] of [
+        [a, na, ua],
+        [b, nb, ub],
+        [c, nc, uc],
       ]) {
         B.p.push(p[0] - o[0], p[2] - o[2], -(p[1] - o[1]));
         B.n.push(n[0], n[2], -n[1]);
@@ -57,6 +66,16 @@ export const ZIMOB = (() => {
     // o.skip: faces left out ('b' bottom, 't' top, 'x0', 'x1', 'y0', 'y1')
     box(m, x0, x1, y0, y1, z0, z1, o = {}) {
       if (x1 - x0 < 1e-4 || y1 - y0 < 1e-4 || z1 - z0 < 1e-4) return;
+      // feat/innen-real: soft things are not boxes – a cushion, a mattress, a duvet, the seat and back of a sofa get rounded edges;
+      // thin ones (a rug, a cloth, a paper) and those cut open (skip) stay as they were
+      if (
+        this.soft &&
+        isSoft(m) &&
+        !o.hard &&
+        Math.min(x1 - x0, y1 - y0, z1 - z0) >= 0.035 &&
+        !(o.skip || '').replace('b', '')
+      )
+        return this.rbox(m, x0, x1, y0, y1, z0, z1, o);
       const cx = (x0 + x1) / 2,
         cy = (y0 + y1) / 2,
         a = o.a || 0,
@@ -117,6 +136,98 @@ export const ZIMOB = (() => {
       if (!sk.includes('y1')) side(C, D, N(0, 1), w);
       if (!sk.includes('x0')) side(D, A, N(-1, 0), d);
       void h;
+    }
+    // feat/innen-real: a box with rounded edges and corners – radius o.r (else from its size), s steps over each rounding, smooth
+    // normals; o.a turns it as box(); o.skip 'b' leaves the bottom out; a thin soft thing (a cushion, a pillow, a mattress, a duvet)
+    // swells a little in the middle of its faces (o.puff, else from its size)
+    rbox(m, x0, x1, y0, y1, z0, z1, o = {}) {
+      const h = [(x1 - x0) / 2, (y1 - y0) / 2, (z1 - z0) / 2],
+        c = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2],
+        mn = Math.min(h[0], h[1], h[2]),
+        r = Math.min(o.r ?? Math.min(0.055, mn * 0.75), mn * 0.95),
+        s = o.s || (Math.max(h[0], h[1], h[2]) > 0.35 && mn > 0.05 ? 2 : 1),
+        a = o.a || 0,
+        ca = Math.cos(a),
+        sa = Math.sin(a),
+        sk = (o.skip || '') + (o.bottom ? '' : 'b'), // (a soft thing's underside is not seen: left out)
+        mid = h[0] + h[1] + h[2] - mn - Math.max(h[0], h[1], h[2]),
+        puff = o.puff ?? (mn <= 0.1 && mid >= 0.12 ? mn * 0.28 : 0);
+      // the grid along one axis: the rounding at both ends in s steps, one flat span between
+      const axis = k => {
+        const out = [];
+        for (let i = 0; i <= s; i++) out.push(-h[k] + (r * i) / s);
+        for (let i = s; i >= 0; i--) out.push(h[k] - (r * i) / s);
+        return out.filter((v, i, A) => i === 0 || v - A[i - 1] > 1e-5);
+      };
+      const G = [axis(0), axis(1), axis(2)],
+        inner = h.map(v => Math.max(0, v - r));
+      // a point of the box's surface (centred frame) → the rounded point and its normal in the house frame; the swell is greatest in
+      // the middle of a face and nothing at its edges (so the faces still meet)
+      const put = (q, i, j, k) => {
+        const iq = [0, 1, 2].map(e => Math.max(-inner[e], Math.min(inner[e], q[e]))),
+          d = [q[0] - iq[0], q[1] - iq[1], q[2] - iq[2]],
+          L = Math.hypot(d[0], d[1], d[2]) || 1,
+          n = [d[0] / L, d[1] / L, d[2] / L],
+          p = [iq[0] + n[0] * r, iq[1] + n[1] * r, iq[2] + n[2] * r];
+        if (puff) {
+          const fi = q[i] / h[i],
+            fj = q[j] / h[j],
+            f = (1 - fi * fi) * (1 - fj * fj),
+            sg = Math.sign(q[k]);
+          p[k] += sg * puff * f;
+          // the normal tilts with the swell's slope
+          n[i] -= (sg * puff * (-2 * fi * (1 - fj * fj))) / h[i];
+          n[j] -= (sg * puff * (-2 * fj * (1 - fi * fi))) / h[j];
+          const l = Math.hypot(n[0], n[1], n[2]) || 1;
+          n[0] /= l;
+          n[1] /= l;
+          n[2] /= l;
+        }
+        return [
+          [c[0] + p[0] * ca - p[1] * sa, c[1] + p[0] * sa + p[1] * ca, c[2] + p[2]],
+          [n[0] * ca - n[1] * sa, n[0] * sa + n[1] * ca, n[2]],
+        ];
+      };
+      for (const [k, sg, name] of [
+        [2, 1, 't'],
+        [2, -1, 'b'],
+        [0, 1, 'x1'],
+        [0, -1, 'x0'],
+        [1, 1, 'y1'],
+        [1, -1, 'y0'],
+      ]) {
+        if (sk.includes(name)) continue;
+        const i = k === 0 ? 1 : 0,
+          j = k === 2 ? 1 : 2,
+          A = G[i],
+          Bv = G[j],
+          // (i, j, k) an even permutation: the corners in order turn counter-clockwise about +k
+          ccw = (k === 1 ? -1 : 1) * sg > 0;
+        for (let ia = 0; ia < A.length - 1; ia++)
+          for (let ib = 0; ib < Bv.length - 1; ib++) {
+            const Q = [
+                [ia, ib],
+                [ia + 1, ib],
+                [ia + 1, ib + 1],
+                [ia, ib + 1],
+              ].map(([u, v]) => {
+                const q = [0, 0, 0];
+                q[k] = sg * h[k];
+                q[i] = A[u];
+                q[j] = Bv[v];
+                return q;
+              }),
+              P = Q.map(q => put(q, i, j, k)),
+              U = Q.map(q => (k === 2 ? [q[0] + h[0], q[1] + h[1]] : [q[i] + h[i], q[2] + c[2]]));
+            if (ccw) {
+              this.triN(m, P[0][0], P[1][0], P[2][0], P[0][1], P[1][1], P[2][1], U[0], U[1], U[2]);
+              this.triN(m, P[0][0], P[2][0], P[3][0], P[0][1], P[2][1], P[3][1], U[0], U[2], U[3]);
+            } else {
+              this.triN(m, P[0][0], P[2][0], P[1][0], P[0][1], P[2][1], P[1][1], U[0], U[2], U[1]);
+              this.triN(m, P[0][0], P[3][0], P[2][0], P[0][1], P[3][1], P[2][1], U[0], U[3], U[2]);
+            }
+          }
+      }
     }
     // a vertical body of revolution: profile [[r, z] …] around (x, y); seg segments; caps where r > 0 at the ends
     lathe(m, x, y, prof, seg = 12, o = {}) {
@@ -236,13 +347,29 @@ export const ZIMOB = (() => {
     }
   }
   // ---- plain colours: palette swatches (one material for all of them), a plain material where the palette is full ----
-  const COLS = new Map();
-  function col(hex, rough = 0.7, metal = 0) {
-    const key = hex + '|' + rough + '|' + metal;
+  const COLS = new Map(),
+    SOFTM = new WeakSet();
+  // feat/innen-real: what is soft (a fabric: cushions, mattresses, duvets, upholstery – rounded by a furniture mesher): a matt colour
+  // (rough ≥ 0.9, no metal) unless col() is told otherwise, and the kit's textured fabrics (velour, check, the duvet)
+  const isSoft = m => !!m && (m.soft === true || SOFTM.has(m));
+  function col(hex, rough = 0.7, metal = 0, soft) {
+    // feat/innen-real: metal indoors shows the room around it, not the sky outside – fully metallic, every sink, tap and hood looked blue
+    // (the sky's light in the reflections); brushed steel, chrome and brass are given a matter, half-metallic finish
+    if (metal > 0.5) {
+      metal = 0.5;
+      rough = Math.max(rough, 0.34);
+    }
+    // (and a glossy surface – black glass, enamel, porcelain – no sharp mirror of the sky either)
+    if (rough < 0.22) rough = 0.22;
+    const key = hex + '|' + rough + '|' + metal + (soft === false ? '|h' : '');
     let c = COLS.get(key);
     if (!c) {
       const uv = PAL.uv({ color: new THREE.Color(hex), roughness: rough, metalness: metal });
       c = uv ? { isPal: true, uv, m: PAL.M.front } : plain({ color: hex, roughness: rough, metalness: metal });
+      if (soft ?? (rough >= 0.9 && metal === 0)) {
+        if (c.isPal) c.soft = true;
+        else SOFTM.add(c);
+      }
       COLS.set(key, c);
     }
     return c;
@@ -511,50 +638,177 @@ export const ZIMOB = (() => {
     // kitchen (stube-13), a Thuringian Forest landscape
     bilder(q, w) {
       const S = w / 2;
+      // feat/innen-real: the two paintings painted, not drawn – layers far to near (paler and bluer with distance), soft clouds and mist,
+      // then a few thousand short strokes of the colour under them (the brushwork of an oil print); before, flat shapes like a comic
+      // a ridge from x0 to x1: its line at y = base + two waves, filled down to yb
+      const ridge = (x0, x1, base, amp, f, ph, col, yb) => {
+          q.fillStyle = col;
+          q.beginPath();
+          q.moveTo(x0, yb);
+          for (let x = x0; x <= x1 + 0.1; x += 3)
+            q.lineTo(x, base + Math.sin(x * f + ph) * amp + Math.sin(x * f * 2.7 + ph * 1.9) * amp * 0.35);
+          q.lineTo(x1, yb);
+          q.fill();
+          return x => base + Math.sin(x * f + ph) * amp + Math.sin(x * f * 2.7 + ph * 1.9) * amp * 0.35;
+        },
+        // spruces along a line: narrow dark triangles of varied height
+        spruces = (x0, x1, line, h0, h1, col, step) => {
+          for (let x = x0 - 4; x < x1 + 4; x += step * (0.6 + R0() * 0.8)) {
+            const y = line(x) + 2,
+              h = h0 + R0() * (h1 - h0),
+              b = h * 0.22;
+            q.fillStyle = col;
+            q.beginPath();
+            q.moveTo(x, y - h);
+            q.lineTo(x - b, y);
+            q.lineTo(x + b, y);
+            q.fill();
+          }
+        },
+        soft = (px, draw) => {
+          q.save();
+          q.filter = 'blur(' + px + 'px)';
+          draw();
+          q.restore();
+        },
+        // the brushwork: short strokes in the colour found under them, a little lighter or darker, mostly across
+        brush = (x0, y0, n, len, wid, steep) => {
+          const d = q.getImageData(x0, y0, S, S).data;
+          q.save();
+          q.beginPath();
+          q.rect(x0, y0, S, S);
+          q.clip();
+          q.lineCap = 'round';
+          for (let i = 0; i < n; i++) {
+            const x = R0() * S,
+              y = R0() * S,
+              k = ((y | 0) * S + (x | 0)) * 4,
+              j = (R0() - 0.5) * 22,
+              a = (steep && steep(x, y) ? Math.PI / 2 : 0) + (R0() - 0.5) * 0.7,
+              l = len * (0.5 + R0());
+            q.strokeStyle = `rgba(${Math.max(0, Math.min(255, d[k] + j)) | 0},${Math.max(0, Math.min(255, d[k + 1] + j)) | 0},${
+              Math.max(0, Math.min(255, d[k + 2] + j)) | 0
+            },0.55)`;
+            q.lineWidth = wid * (0.6 + R0() * 0.8);
+            q.beginPath();
+            q.moveTo(x0 + x - (Math.cos(a) * l) / 2, y0 + y - (Math.sin(a) * l) / 2);
+            q.lineTo(x0 + x + (Math.cos(a) * l) / 2, y0 + y + (Math.sin(a) * l) / 2);
+            q.stroke();
+          }
+          q.restore();
+        };
       {
-        const g = q.createLinearGradient(0, 0, 0, S);
-        g.addColorStop(0, '#e9a85a');
-        g.addColorStop(0.5, '#c86a3a');
-        g.addColorStop(1, '#3a3020');
+        // the roaring stag at sundown (Röhrender Hirsch, the print over many a couch): the sky, the sun behind the far hills, a lake, the
+        // forest, the stag on the meadow in front
+        const hz = S * 0.6;
+        const g = q.createLinearGradient(0, 0, 0, hz);
+        g.addColorStop(0, '#3b3a5c');
+        g.addColorStop(0.42, '#a8605c');
+        g.addColorStop(0.78, '#eea85e');
+        g.addColorStop(1, '#f6d58e');
         q.fillStyle = g;
         q.fillRect(0, 0, S, S);
-        q.fillStyle = '#20281a';
-        for (let i = 0; i < 12; i++) {
-          const x = i * 24 - 10,
-            y = 150 + (i % 3) * 8;
+        const sg = q.createRadialGradient(S * 0.64, hz - 6, 2, S * 0.64, hz - 6, S * 0.5);
+        sg.addColorStop(0, 'rgba(255,244,200,1)');
+        sg.addColorStop(0.12, 'rgba(255,220,150,0.7)');
+        sg.addColorStop(1, 'rgba(255,200,120,0)');
+        q.fillStyle = sg;
+        q.fillRect(0, 0, S, hz + 10);
+        soft(4, () => {
+          for (const [cx, cy, rx, ry, c] of [
+            [50, 46, 80, 9, 'rgba(110,70,96,0.6)'],
+            [190, 70, 90, 8, 'rgba(140,76,84,0.55)'],
+            [96, 104, 100, 7, 'rgba(236,150,104,0.55)'],
+            [210, 122, 60, 5, 'rgba(250,196,130,0.6)'],
+          ]) {
+            q.fillStyle = c;
+            q.beginPath();
+            q.ellipse(cx, cy, rx, ry, 0, 0, 6.3);
+            q.fill();
+          }
+        });
+        ridge(0, S, hz - 18, 9, 0.025, 1.3, '#8a6a86', hz + 2);
+        const mid = ridge(0, S, hz - 4, 6, 0.04, 0.2, '#4a4a5a', hz + 2);
+        spruces(0, S, mid, 8, 16, '#3c4048', 4);
+        // the lake: the sky upside down, darker, with ripples of light
+        const lg = q.createLinearGradient(0, hz, 0, S * 0.8);
+        lg.addColorStop(0, '#e8b070');
+        lg.addColorStop(1, '#6a4a5a');
+        q.fillStyle = lg;
+        q.fillRect(0, hz, S, S * 0.8 - hz);
+        for (let i = 0; i < 40; i++) {
+          const y = hz + 2 + R0() * (S * 0.8 - hz - 4),
+            x = S * 0.64 + (R0() - 0.5) * (30 + (y - hz) * 1.6);
+          q.fillStyle = `rgba(255,236,190,${0.25 + R0() * 0.4})`;
+          q.fillRect(x, y, 6 + R0() * 18, 1.4);
+        }
+        // the near forest down to the water on the left, mist over the shore
+        const near = ridge(0, S * 0.45, hz + 8, 10, 0.05, 2.2, '#1f2a22', S * 0.8);
+        spruces(0, S * 0.42, near, 30, 62, '#18221b', 7);
+        soft(5, () => {
+          q.fillStyle = 'rgba(250,226,190,0.45)';
+          q.fillRect(0, S * 0.76, S, 8);
+        });
+        // the meadow in front
+        const mg = q.createLinearGradient(0, S * 0.78, 0, S);
+        mg.addColorStop(0, '#5a4a2a');
+        mg.addColorStop(1, '#2a2416');
+        q.fillStyle = mg;
+        q.beginPath();
+        q.moveTo(0, S);
+        for (let x = 0; x <= S; x += 4) q.lineTo(x, S * 0.8 + Math.sin(x * 0.03) * 3);
+        q.lineTo(S, S);
+        q.fill();
+        // the stag: dark against the light water, head up, roaring
+        q.fillStyle = '#2a1a10';
+        q.beginPath();
+        q.ellipse(150, 196, 30, 13, -0.05, 0, 6.3);
+        q.fill();
+        for (const [x, d] of [
+          [128, 0],
+          [136, 4],
+          [162, 2],
+          [170, 5],
+        ]) {
           q.beginPath();
-          q.moveTo(x, y - 70);
-          q.lineTo(x - 16, y + 20);
-          q.lineTo(x + 16, y + 20);
+          q.moveTo(x - 3, 200);
+          q.lineTo(x + 3, 200);
+          q.lineTo(x + 2 + d * 0.3, 232);
+          q.lineTo(x - 1 + d * 0.3, 232);
           q.fill();
         }
-        q.fillStyle = '#4a3220';
-        q.fillRect(0, 200, S, 56);
-        q.fillStyle = '#5a3a22';
         q.beginPath();
-        q.ellipse(130, 175, 42, 20, 0, 0, 6.3);
+        q.moveTo(170, 192);
+        q.lineTo(184, 160);
+        q.lineTo(194, 150);
+        q.lineTo(204, 146);
+        q.lineTo(203, 154);
+        q.lineTo(194, 164);
+        q.lineTo(182, 200);
         q.fill();
-        q.fillRect(98, 180, 8, 40);
-        q.fillRect(150, 180, 8, 40);
-        q.fillRect(112, 185, 7, 38);
-        q.fillRect(140, 185, 7, 38);
-        q.beginPath();
-        q.moveTo(162, 168);
-        q.lineTo(188, 130);
-        q.lineTo(198, 138);
-        q.lineTo(176, 178);
-        q.fill();
-        q.strokeStyle = '#d8c8a0';
-        q.lineWidth = 3;
-        for (const sx of [-1, 1]) {
+        q.strokeStyle = '#3a2618';
+        q.lineCap = 'round';
+        q.lineWidth = 2.2;
+        for (const s of [-1, 1]) {
           q.beginPath();
-          q.moveTo(190, 128);
-          q.lineTo(190 + sx * 18, 100);
-          q.lineTo(190 + sx * 30, 92);
-          q.moveTo(190 + sx * 10, 112);
-          q.lineTo(190 + sx * 24, 112);
+          q.moveTo(193, 150);
+          q.quadraticCurveTo(186 + s * 6, 132, 176 + s * 16, 112);
+          q.moveTo(188 + s * 2, 136);
+          q.lineTo(196 + s * 10, 128);
+          q.moveTo(182 + s * 8, 124);
+          q.lineTo(190 + s * 18, 116);
+          q.moveTo(178 + s * 12, 116);
+          q.lineTo(170 + s * 18, 104);
           q.stroke();
         }
+        // its breath in the cold evening
+        soft(2, () => {
+          q.fillStyle = 'rgba(255,240,220,0.5)';
+          q.beginPath();
+          q.ellipse(212, 140, 8, 4, -0.6, 0, 6.3);
+          q.fill();
+        });
+        brush(0, 0, 5200, 7, 2.6, (x, y) => y > S * 0.62 && x < S * 0.42 && y < S * 0.78);
       }
       {
         q.fillStyle = '#efe6d0';
@@ -592,33 +846,102 @@ export const ZIMOB = (() => {
         }
       }
       {
-        const g = q.createLinearGradient(0, S, 0, 2 * S);
-        g.addColorStop(0, '#a8c8e0');
-        g.addColorStop(0.55, '#d8e4dc');
-        g.addColorStop(1, '#6a8a4a');
+        // a landscape of the Thuringian Forest: summer sky with clouds, blue ridges far off, the forest, a village with its church on the
+        // slope, fields and a path in front
+        const X = S,
+          Y = S,
+          g = q.createLinearGradient(0, Y, 0, Y + S * 0.55);
+        g.addColorStop(0, '#7fa6cf');
+        g.addColorStop(1, '#dfe8e6');
         q.fillStyle = g;
-        q.fillRect(S, S, S, S);
-        for (const [y, c] of [
-          [S + 120, '#5a7a5a'],
-          [S + 150, '#3f5f3f'],
-          [S + 185, '#2f4a2f'],
-        ]) {
-          q.fillStyle = c;
+        q.fillRect(X, Y, S, S);
+        soft(3, () => {
+          for (let i = 0; i < 7; i++) {
+            const cx = X + 20 + R0() * (S - 40),
+              cy = Y + 24 + R0() * 50;
+            for (let k = 0; k < 5; k++) {
+              q.fillStyle = `rgba(255,255,255,${0.5 + R0() * 0.35})`;
+              q.beginPath();
+              q.ellipse(cx + (k - 2) * 9, cy - (k % 2) * 5, 14 + R0() * 8, 7 + R0() * 4, 0, 0, 6.3);
+              q.fill();
+            }
+          }
+        });
+        ridge(X, X + S, Y + S * 0.48, 7, 0.03, 0.4, '#9aaec4', Y + S);
+        const r2 = ridge(X, X + S, Y + S * 0.55, 10, 0.026, 2.0, '#6f8a86', Y + S);
+        spruces(X, X + S, r2, 5, 10, '#55716a', 3);
+        const r3 = ridge(X, X + S, Y + S * 0.64, 12, 0.02, 4.1, '#3f5f3a', Y + S);
+        spruces(X, X + S * 0.55, r3, 10, 20, '#2f4a2c', 4);
+        // meadows and fields on the near slope
+        ridge(X, X + S, Y + S * 0.72, 8, 0.022, 1.0, '#8fae54', Y + S);
+        for (let i = 0; i < 9; i++) {
+          q.save();
+          q.translate(X + 20 + R0() * (S - 40), Y + S * 0.76 + R0() * S * 0.16);
+          q.rotate((R0() - 0.5) * 0.3);
+          q.fillStyle = R0() > 0.5 ? 'rgba(214,196,96,0.85)' : 'rgba(120,150,70,0.8)';
+          q.fillRect(-22, -5, 44 + R0() * 20, 10 + R0() * 6);
+          q.restore();
+        }
+        // the village: white walls, red roofs, the church tower with its slate spire
+        const vx = X + S * 0.62,
+          vy = Y + S * 0.7;
+        for (let i = 0; i < 7; i++) {
+          const x = vx + (i - 3) * 11 + R0() * 4,
+            y = vy + (i % 3) * 4;
+          q.fillStyle = '#efe8da';
+          q.fillRect(x, y, 9, 6);
+          q.fillStyle = '#a8442e';
           q.beginPath();
-          q.moveTo(S, 2 * S);
-          for (let x = 0; x <= S; x += 8) q.lineTo(S + x, y + Math.sin(x * 0.03 + y) * 14);
-          q.lineTo(2 * S, 2 * S);
+          q.moveTo(x - 1.5, y);
+          q.lineTo(x + 4.5, y - 5);
+          q.lineTo(x + 10.5, y);
           q.fill();
         }
-        q.fillStyle = '#e8e0d0';
-        q.fillRect(S + 150, S + 160, 26, 18);
-        q.fillStyle = '#9a3a2a';
+        q.fillStyle = '#f2ecdf';
+        q.fillRect(vx + 2, vy - 16, 6, 18);
+        q.fillStyle = '#4a4e58';
         q.beginPath();
-        q.moveTo(S + 146, S + 160);
-        q.lineTo(S + 163, S + 146);
-        q.lineTo(S + 180, S + 160);
+        q.moveTo(vx + 1, vy - 16);
+        q.lineTo(vx + 5, vy - 30);
+        q.lineTo(vx + 9, vy - 16);
         q.fill();
+        // round trees by the path, the path itself
+        q.strokeStyle = '#d8c69a';
+        q.lineWidth = 5;
+        q.beginPath();
+        q.moveTo(X + S * 0.3, Y + S);
+        q.quadraticCurveTo(X + S * 0.42, Y + S * 0.86, X + S * 0.58, Y + S * 0.76);
+        q.stroke();
+        for (const [tx, ty, r] of [
+          [X + 30, Y + S * 0.84, 16],
+          [X + 52, Y + S * 0.88, 12],
+          [X + S - 40, Y + S * 0.9, 20],
+        ]) {
+          q.fillStyle = '#4a3a2a';
+          q.fillRect(tx - 1.5, ty, 3, r * 0.9);
+          for (let k = 0; k < 6; k++) {
+            q.fillStyle = k % 2 ? '#3f6a32' : '#57843e';
+            q.beginPath();
+            q.arc(tx + (R0() - 0.5) * r, ty - (R0() * r) / 2, r * (0.5 + R0() * 0.3), 0, 6.3);
+            q.fill();
+          }
+        }
+        brush(X, Y, 5200, 6, 2.4, null);
       }
+    },
+    // feat/innen-real: a blurred square for the laid-on shade: full in the middle half, falling off smoothly over the outer quarters
+    schatten(q, w, h) {
+      const img = q.createImageData(w, h),
+        f = t => (t >= 1 ? 1 : t * t * (3 - 2 * t));
+      for (let y = 0; y < h; y++)
+        for (let x = 0; x < w; x++) {
+          const a = f(Math.min(x + 0.5, w - x - 0.5) / (w / 4)) * f(Math.min(y + 0.5, h - y - 0.5) / (h / 4)),
+            i = (y * w + x) * 4,
+            g = Math.round(255 * a);
+          img.data[i] = img.data[i + 1] = img.data[i + 2] = g;
+          img.data[i + 3] = 255;
+        }
+      q.putImageData(img, 0, 0);
     },
     // the veneer of a Schrankwand / Eiche rustikal: wood grain, light and dark lines (coloured by the material)
     furnier(q, w, h) {
@@ -642,6 +965,91 @@ export const ZIMOB = (() => {
   };
   // ---- materials (made at the first mount; the same shader settings as materials the model has already: no new programs) ----
   const M = { ready: false };
+  // feat/innen-real: woodchip paper (Raufaser), drawn once: chips of 1–4 mm scattered over a tile of half a metre (seamless), their
+  // shoulders softened; the colour a faint shading of the chips, the relief a normal map made from their heights (512² each, ≈ 3 MB
+  // with mipmaps; on a phone 256² over a quarter of a metre, < 1 MB; freed with the kit's other drawn textures)
+  let RFT = null;
+  function woodchip() {
+    if (RFT) return RFT;
+    const small = COARSE || (window.TEXHALF && window.TEXHALF.level > 0),
+      W = small ? 256 : 512,
+      cv = document.createElement('canvas');
+    cv.width = cv.height = W;
+    const q = cv.getContext('2d');
+    q.fillStyle = '#000';
+    q.fillRect(0, 0, W, W);
+    for (let i = 0, n = (22000 * W * W) / (512 * 512); i < n; i++) {
+      const x = R0() * W,
+        y = R0() * W,
+        rx = 0.6 + R0() * 1.7,
+        ry = rx * (0.35 + R0() * 0.65),
+        a = R0() * Math.PI,
+        v = (90 + R0() * 165) | 0;
+      q.fillStyle = `rgb(${v},${v},${v})`;
+      for (const ox of [-W, 0, W])
+        for (const oy of [-W, 0, W]) {
+          const px = x + ox,
+            py = y + oy;
+          if (px < -4 || px > W + 4 || py < -4 || py > W + 4) continue;
+          q.beginPath();
+          q.ellipse(px, py, rx, ry, a, 0, 6.3);
+          q.fill();
+        }
+    }
+    const d = q.getImageData(0, 0, W, W).data,
+      raw = new Float32Array(W * W),
+      h = new Float32Array(W * W),
+      at = (x, y) => ((y + W) % W) * W + ((x + W) % W);
+    for (let i = 0; i < W * W; i++) raw[i] = d[i * 4] / 255;
+    for (let y = 0; y < W; y++)
+      for (let x = 0; x < W; x++) {
+        let s = 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) s += raw[at(x + dx, y + dy)];
+        h[y * W + x] = s / 9;
+      }
+    const image = fill => {
+        const c = document.createElement('canvas');
+        c.width = c.height = W;
+        const g = c.getContext('2d'),
+          img = g.createImageData(W, W);
+        fill(img.data);
+        g.putImageData(img, 0, 0);
+        return c;
+      },
+      tex = (c, srgb) => {
+        const t = new THREE.CanvasTexture(c);
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+        t.anisotropy = ANISO;
+        t.repeat.set(1024 / W, 1024 / W); // (half a metre per tile – a quarter on a phone: a pixel a millimetre)
+        TEX.push(t);
+        return t;
+      };
+    let lin = 0;
+    const col = image(o => {
+        for (let i = 0; i < W * W; i++) {
+          const v = Math.round(232 + h[i] * 16);
+          o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = v;
+          o[i * 4 + 3] = 255;
+          lin += Math.pow((v / 255 + 0.055) / 1.055, 2.4);
+        }
+      }),
+      K = 2.2,
+      nrm = image(o => {
+        for (let y = 0; y < W; y++)
+          for (let x = 0; x < W; x++) {
+            const i = y * W + x,
+              gx = (h[at(x + 1, y)] - h[at(x - 1, y)]) * K,
+              gy = (h[at(x, y + 1)] - h[at(x, y - 1)]) * K,
+              l = Math.hypot(gx, gy, 1);
+            o[i * 4] = Math.round((-gx / l) * 127.5 + 127.5);
+            o[i * 4 + 1] = Math.round((gy / l) * 127.5 + 127.5);
+            o[i * 4 + 2] = Math.round((1 / l) * 127.5 + 127.5);
+            o[i * 4 + 3] = 255;
+          }
+      });
+    return (RFT = { map: tex(col, true), nrm: tex(nrm, false), mean: lin / (W * W) });
+  }
   function mats() {
     if (M.ready) return M;
     const T = (name, w, h, mx, my, srgb) => scaled(ctex(w, h, DRAW[name], srgb), mx, my);
@@ -649,8 +1057,37 @@ export const ZIMOB = (() => {
     const room = (t, rough = 0.85) => dimIndoor(plain({ map: t, roughness: rough }), 0.75, 0.4);
     // walls, ceilings and floors as copies of the garden buildings' ones (same programs): a little light of their own by day stands in
     // for the light the room's floor and walls throw back (a ceiling only sees the dark ground half of the sky light otherwise)
-    M.putz = twin(KM.wall); // warm white lime plaster
-    M.decke = twin(KM.wall);
+    // feat/innen-real: the walls painted over woodchip paper (Raufaser – the wall of most German rooms): the photo of the pavilion's
+    // plaster with a faint relief, tinted to the paint's colour (its own grey divided out), in the program of the garden buildings'
+    // floors (the same maps, the same indoor dimming: no new program); a plain wall had looked like card
+    const plasIn = indoor(MAT.wall, 0.8, 0.25),
+      PLAS = [0.41, 0.367, 0.346];
+    M.raufaser = hex => {
+      const key = 'rf' + hex;
+      if (M[key]) return M[key];
+      const m = twin(plasIn),
+        c = new THREE.Color(hex),
+        T = m.map && m.normalMap ? woodchip() : null;
+      // (the paper's own chips in the slots of the plaster's photo – same program; the photo's weather streaks had shown on every wall)
+      if (T) {
+        m.map = T.map;
+        m.normalMap = T.nrm;
+      }
+      const A = T ? [T.mean, T.mean, T.mean] : PLAS;
+      m.color.setRGB(c.r / A[0], c.g / A[1], c.b / A[2]);
+      m.normalScale.set(0.5, 0.5);
+      m.userData.look = c; // (its colour for the light thrown back – daylight())
+      m.name = 'innen-raufaser';
+      if (M.bounce) {
+        M.bounce.push([m, 0.1]);
+        dayK = -1; // (its own light at the next look at the day)
+      }
+      return (M[key] = m);
+    };
+    M.putz = M.raufaser(0xf3eee4); // warm white
+    // feat/innen-real: the ceiling a plain white (it is painted white in nearly every house); lit by the light the floor and the walls
+    // throw up, it had come out a dull brown
+    M.decke = twin(KM.wall, { color: 0xf4f3ef });
     M.holzdecke = twin(KM.ceil);
     M.dielen = twin(KM.floor);
     M.fliesenWand = twin(KM.tiles);
@@ -662,6 +1099,20 @@ export const ZIMOB = (() => {
     };
     M.linoleum = room(T('linoleum', 256, 256, 1.6, 1.6), 0.55);
     M.laminat = room(T('laminat', 256, 256, 2.0, 1.6), 0.5);
+    // feat/innen-real: wooden floors (laminate, parquet) of real oak – the photo of the pavilion's oak with its relief, in the
+    // program of the garden buildings' floors (KM.floor: the same maps, the same indoor dimming); four tones, from light to dark,
+    // the photo's own dark brown divided out
+    const oakIn = indoor(MAT.oak, 0.8, 0.25),
+      OAK = [0.216, 0.117, 0.054],
+      tone = hex => {
+        const m = twin(oakIn),
+          c = new THREE.Color(hex);
+        m.color.setRGB(c.r / OAK[0], c.g / OAK[1], c.b / OAK[2]);
+        m.userData.look = c;
+        m.name = 'innen-parkett';
+        return m;
+      };
+    M.parkett = { hell: tone(0xcfae84), natur: tone(0xb48a5c), grau: tone(0xb0a493), dunkel: tone(0x765638) };
     M.platten = room(T('platten', 256, 256, 1.5, 1.5), 0.95);
     M.fliesen = room(T('fliesen', 128, 128, 0.6, 0.6), 0.25);
     M.stein = MAT.stone; // cellar: flagstones, rubble walls (shared photo material)
@@ -686,6 +1137,29 @@ export const ZIMOB = (() => {
     M.rag = KM.rag;
     M.gingham = KM.curtainRed;
     M.duvet = KM.duvet;
+    for (const m of [M.velours, M.karo, M.duvet]) SOFTM.add(m); // feat/innen-real
+    // feat/innen-real: the shade of the normal game's rooms – contact shadows under the furniture, the darker rims where floor, walls
+    // and ceiling meet (an ambient occlusion laid on): black, its alpha a blurred square (the green of a canvas) laid out in nine parts
+    M.schatten = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.5,
+      alphaMap: ctex(64, 64, DRAW.schatten, false),
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    });
+    M.schatten.name = 'innen-schatten';
+    // the veil of daylight on a window's glass (its strength set by daylight())
+    M.glare = M.schatten.clone();
+    M.glare.color.set(0xfffaf0);
+    M.glare.opacity = 0.4;
+    M.glare.name = 'innen-fensterlicht';
+    // feat/innen-real: the palette indoors (the normal game's houses): the same material and program, with the sky's light of its own
+    // strength – a room sees the sky through its windows only (full, every glossy top and white front looked blue-grey)
+    M.palIn = twin(PAL.M.front);
+    M.palIn.name = 'innen-palette';
     M.stores = KM.curtainLinen;
     M.glas = MAT.glass;
     M.holz = MAT.oak; // furniture wood (oak photo)
@@ -699,7 +1173,7 @@ export const ZIMOB = (() => {
     M.emaille = col(0xf4f2ec, 0.2, 0.05);
     // the house's own materials that throw back the daylight (shared garden materials and the palette stay as they are)
     M.bounce = [
-      [M.decke, 0.2],
+      [M.decke, 0.32, NEUTRAL],
       [M.holzdecke, 0.15],
       [M.putz, 0.1],
       [M.fliesenWand, 0.07],
@@ -707,6 +1181,7 @@ export const ZIMOB = (() => {
       ...Object.values(M.tapete).map(m => [m, 0.1]),
       [M.linoleum, 0.06],
       [M.laminat, 0.06],
+      ...Object.values(M.parkett).map(m => [m, 0.05]),
       [M.platten, 0.05],
       [M.fliesen, 0.06],
       [M.furnier, 0.05],
@@ -725,21 +1200,82 @@ export const ZIMOB = (() => {
   // the light thrown back inside by day (k = 1 day, 0 night): emissive = colour · factor · k – a uniform, no new program
   // warm (the sun through the curtains on light walls and wood: the sky's cool grey alone made the rooms look flat by day)
   let dayK = -1;
-  const WARM = new THREE.Color(1.0, 0.8, 0.58);
+  const WARM = new THREE.Color(1.0, 0.8, 0.58),
+    NEUTRAL = new THREE.Color(1.0, 0.93, 0.84); // feat/innen-real: the ceiling's (warm, but not brown)
   function daylight(k) {
     if (!M.bounce || Math.abs(k - dayK) < 0.02) return false;
     dayK = k;
-    for (const [m, f] of M.bounce)
+    if (M.glare) M.glare.opacity = 0.42 * k * k; // feat/innen-real
+    for (const [m, f, tint] of M.bounce)
       m.emissive
-        .copy(m.color)
-        .multiply(WARM)
+        .copy(m.userData.look || m.color)
+        .multiply(tint || WARM)
         .multiplyScalar(f * k);
     return true;
+  }
+  // feat/innen-real: the light the furniture of a room sees around it – not the sky outside (its blue was in every glossy top and front)
+  // but a room: a white ceiling, light walls, a wooden floor, a bright window on one side. Prefiltered once (PMREM in the layout of the
+  // scene's own map, 256: the same shader program), held while a house stands (≈ 6 MB of the GPU), freed with the kit's textures. On
+  // phones (little memory) the sky's own map at a share of its strength instead.
+  let RENV = null;
+  function roomEnv(sceneEnv) {
+    if (RENV) return RENV.texture;
+    if (!sceneEnv || sceneEnv.mapping !== THREE.CubeUVReflectionMapping || sceneEnv.image.height !== 1024) return null;
+    if (COARSE || (window.TEXHALF && window.TEXHALF.level > 0)) return null;
+    try {
+      const sc = new THREE.Scene(),
+        mk = (r, g, b) => new THREE.MeshBasicMaterial({ color: new THREE.Color(r, g, b), side: THREE.BackSide }),
+        wall = mk(0.55, 0.5, 0.44),
+        // +x (the window's wall), −x, +y ceiling, −y floor, +z, −z
+        box = new THREE.Mesh(new THREE.BoxGeometry(8, 2.8, 8), [
+          wall,
+          wall,
+          mk(0.86, 0.84, 0.8),
+          mk(0.28, 0.19, 0.12),
+          wall,
+          wall,
+        ]),
+        win = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.6, 1.3),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(3.4, 3.4, 3.6) })
+        );
+      win.position.set(3.99, 0.3, 0);
+      win.rotation.y = -Math.PI / 2;
+      sc.add(box, win);
+      RENV = pmrem.fromScene(sc, 0.03, 0.1, 50);
+      for (const o of [box, win]) {
+        o.geometry.dispose();
+        for (const m of [].concat(o.material)) m.dispose();
+      }
+      if (RENV.texture.image.height !== 1024) {
+        RENV.dispose();
+        RENV = null;
+      }
+    } catch (e) {
+      console.warn('innen roomEnv', e);
+      RENV = null;
+    }
+    return RENV ? RENV.texture : null;
+  }
+  // the indoor palette's light from around it: the room's (k of the scene's strength – it follows day and night), else the sky's at a
+  // share (its map set on the material, so that its own strength counts – three takes the scene's for materials without one)
+  function indoorEnv(sc, k = 0.6, kRoom = 1.5) {
+    const m = M.palIn;
+    if (!m || !sc) return;
+    const rt = roomEnv(sc.environment),
+      env = rt || sc.environment;
+    if (m.envMap !== env) m.envMap = env;
+    m.envMapIntensity = (sc.environmentIntensity ?? 1) * (rt ? kRoom : k);
   }
   // GPU copies of the shared textures: freed when the last house goes (three uploads them again on use)
   function release() {
     for (const t of TEX) t.dispose();
+    if (RENV) {
+      RENV.dispose();
+      RENV = null;
+      if (M.palIn) M.palIn.envMap = null;
+    }
   }
-  return { Mesher, col, mats, M, glowMat, release, daylight, TEX, V };
+  return { Mesher, col, isSoft, mats, M, glowMat, release, daylight, indoorEnv, TEX, V };
 })();
 window.ZIMOB = ZIMOB;

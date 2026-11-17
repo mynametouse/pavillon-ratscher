@@ -158,6 +158,10 @@ with lib.browser() as b:
     def sect_kamera():
         # ---------------- the camera ----------------
         if not E("HANDY.S.open"): E("GLHANDY.open(); 0"); steps(0.8)
+        # the call screen of the section before („Anruf beendet“) stays 1.1 s of game time – let it go before the camera's icon is clicked
+        for _ in range(20):
+            if not E("!!HANDY.S.anruf"): break
+            steps(0.2)
         E("HANDY.home(); 0"); steps(0.2); time.sleep(0.3)
         pg.click('#glhandy .hy-ic[data-app="kamera"]'); steps(0.3)
         c0 = J("({ su: !document.getElementById('glcam').hidden, open: HANDY.S.open, iso: GLHANDY.isOpen() })")
