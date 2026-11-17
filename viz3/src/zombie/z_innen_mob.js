@@ -5,8 +5,9 @@
 // model already has (shared programs: KM.*, MAT.*) or copies of them with the same shader settings and a canvas texture of our own – drawn once,
 // shared by every house, its GPU copy freed when no house is mounted (it is uploaded again by itself when the next house needs it).
 import * as THREE from 'three';
-import { V } from '../core/head.js';
+import { V, COARSE } from '../core/head.js';
 import { ANISO, dimIndoor, plain } from '../core/assets.js';
+import { pmrem } from '../garden/env.js';
 import { MAT } from '../core/mats.js';
 import { KM, PAL, twin, indoor } from '../garden/garten_kit.js';
 export const ZIMOB = (() => {
@@ -884,17 +885,68 @@ export const ZIMOB = (() => {
         .multiplyScalar(f * k);
     return true;
   }
-  // feat/innen-real: the indoor palette's share of the sky's light (k of the scene's; its environment map set on it, so that its own
-  // strength counts – three takes the scene's strength for materials without one)
-  function indoorEnv(sc, k = 0.6) {
+  // feat/innen-real: the light the furniture of a room sees around it – not the sky outside (its blue was in every glossy top and front)
+  // but a room: a white ceiling, light walls, a wooden floor, a bright window on one side. Prefiltered once (PMREM in the layout of the
+  // scene's own map, 256: the same shader program), held while a house stands (≈ 6 MB of the GPU), freed with the kit's textures. On
+  // phones (little memory) the sky's own map at a share of its strength instead.
+  let RENV = null;
+  function roomEnv(sceneEnv) {
+    if (RENV) return RENV.texture;
+    if (!sceneEnv || sceneEnv.mapping !== THREE.CubeUVReflectionMapping || sceneEnv.image.height !== 1024) return null;
+    if (COARSE || (window.TEXHALF && window.TEXHALF.level > 0)) return null;
+    try {
+      const sc = new THREE.Scene(),
+        mk = (r, g, b) => new THREE.MeshBasicMaterial({ color: new THREE.Color(r, g, b), side: THREE.BackSide }),
+        wall = mk(0.55, 0.5, 0.44),
+        // +x (the window's wall), −x, +y ceiling, −y floor, +z, −z
+        box = new THREE.Mesh(new THREE.BoxGeometry(8, 2.8, 8), [
+          wall,
+          wall,
+          mk(0.86, 0.84, 0.8),
+          mk(0.28, 0.19, 0.12),
+          wall,
+          wall,
+        ]),
+        win = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.6, 1.3),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(3.4, 3.4, 3.6) })
+        );
+      win.position.set(3.99, 0.3, 0);
+      win.rotation.y = -Math.PI / 2;
+      sc.add(box, win);
+      RENV = pmrem.fromScene(sc, 0.03, 0.1, 50);
+      for (const o of [box, win]) {
+        o.geometry.dispose();
+        for (const m of [].concat(o.material)) m.dispose();
+      }
+      if (RENV.texture.image.height !== 1024) {
+        RENV.dispose();
+        RENV = null;
+      }
+    } catch (e) {
+      console.warn('innen roomEnv', e);
+      RENV = null;
+    }
+    return RENV ? RENV.texture : null;
+  }
+  // the indoor palette's light from around it: the room's (k of the scene's strength – it follows day and night), else the sky's at a
+  // share (its map set on the material, so that its own strength counts – three takes the scene's for materials without one)
+  function indoorEnv(sc, k = 0.6, kRoom = 1.5) {
     const m = M.palIn;
     if (!m || !sc) return;
-    if (m.envMap !== sc.environment) m.envMap = sc.environment;
-    m.envMapIntensity = (sc.environmentIntensity ?? 1) * k;
+    const rt = roomEnv(sc.environment),
+      env = rt || sc.environment;
+    if (m.envMap !== env) m.envMap = env;
+    m.envMapIntensity = (sc.environmentIntensity ?? 1) * (rt ? kRoom : k);
   }
   // GPU copies of the shared textures: freed when the last house goes (three uploads them again on use)
   function release() {
     for (const t of TEX) t.dispose();
+    if (RENV) {
+      RENV.dispose();
+      RENV = null;
+      if (M.palIn) M.palIn.envMap = null;
+    }
   }
   return { Mesher, col, isSoft, mats, M, glowMat, release, daylight, indoorEnv, TEX, V };
 })();

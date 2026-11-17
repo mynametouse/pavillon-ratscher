@@ -393,22 +393,29 @@ export const ZIPLAN = (() => {
       add = r => (rooms.push(r), r);
     // the depth bands of a side: one (shallow houses), front and back, or – deep houses (≥ 11.5 m inside) – a third room at the back
     const deep = depth >= 11.5,
-      bands = (two, a, b) => {
+      bands = (two, a, b, sk, k) => {
         if (!split) return [[yi0, yi1]];
-        const cut = deep ? [yi0 + depth * a, yi0 + depth * b] : [yi0 + depth * two];
+        // (feat/innen-real: each partition shifted a little where it would cut through a window of the side's facade)
+        const wins = sk ? sideWins(k, sk) : [],
+          clear = c => {
+            for (const dy of [0, 0.2, -0.2, 0.4, -0.4, 0.6, -0.6])
+              if (!wins.some(([p, e]) => c + dy + PW / 2 + 0.06 > p && c + dy - PW / 2 - 0.06 < e)) return c + dy;
+            return c;
+          },
+          cut = (deep ? [yi0 + depth * a, yi0 + depth * b] : [yi0 + depth * two]).map(clear);
         const ys = [yi0].concat(cut, [yi1]);
         return ys.slice(0, -1).map((y, i) => [i ? y + PW / 2 : y, i < ys.length - 2 ? ys[i + 1] - PW / 2 : ys[i + 1]]);
       };
     const kindsGF = () => {
       const out = [];
       if (big) {
-        const B = bands(0.56, 0.42, 0.72);
+        const B = bands(0.56, 0.42, 0.72, big.k, 0);
         out.push({ side: big, kind: 'stube', y0: B[0][0], y1: B[0][1] });
         if (B[1]) out.push({ side: big, kind: 'kueche', y0: B[1][0], y1: B[1][1], kitchenOfStube: true });
         if (B[2]) out.push({ side: big, kind: R.pick(['vorrat', 'kammer', 'waschkueche']), y0: B[2][0], y1: B[2][1] });
       }
       if (small) {
-        const B = bands(0.5, 0.38, 0.7);
+        const B = bands(0.5, 0.38, 0.7, small.k, 0);
         const back = old === 'alt' ? R.pick(['vorrat', 'bad', 'waschkueche']) : 'bad';
         if (!split && big) out.push({ side: small, kind: 'kueche', y0: yi0, y1: yi1 });
         else {
@@ -419,16 +426,16 @@ export const ZIPLAN = (() => {
       }
       return out;
     };
-    const kindsUp = hasBad => {
+    const kindsUp = (hasBad, k) => {
       const out = [];
       if (big) {
-        const B = bands(0.56, 0.42, 0.72);
+        const B = bands(0.56, 0.42, 0.72, big.k, k);
         out.push({ side: big, kind: 'schlafzimmer', y0: B[0][0], y1: B[0][1] });
         if (B[1]) out.push({ side: big, kind: R.chance(0.6) ? 'kinderzimmer' : 'kammer', y0: B[1][0], y1: B[1][1] });
         if (B[2]) out.push({ side: big, kind: 'kammer', y0: B[2][0], y1: B[2][1] });
       }
       if (small) {
-        const B = bands(0.5, 0.38, 0.7);
+        const B = bands(0.5, 0.38, 0.7, small.k, k);
         out.push({ side: small, kind: split ? 'kammer' : hasBad ? 'kammer' : 'bad', y0: B[0][0], y1: B[0][1] });
         if (B[1]) out.push({ side: small, kind: hasBad ? 'kinderzimmer' : 'bad', y0: B[1][0], y1: B[1][1] });
         if (B[2]) out.push({ side: small, kind: 'kinderzimmer', y0: B[2][0], y1: B[2][1] });
@@ -445,6 +452,27 @@ export const ZIPLAN = (() => {
     let hasBad = false;
     // feat/innen-real: rooms as deep as real ones – a band deeper than a room of its kind would be (the long farmhouses run up to 22 m
     // deep: a bathroom of 22 m², a bedroom 8 m long) is split, the back part a utility room, a store room or a Kammer
+    // the windows of the side facades on storey k (along y): a partition across the house must not cut through one
+    const SW = {},
+      sideWins = (k, sk) => {
+        const key = k + sk;
+        if (SW[key]) return SW[key];
+        const out = [],
+          edgeX = sk === 'L' ? X0 : X1;
+        for (const f of b.fac) {
+          const A = toL(F, f.ax, f.ay),
+            B = toL(F, f.bx, f.by);
+          if (Math.abs(A[0] - edgeX) > 0.25 || Math.abs(B[0] - edgeX) > 0.25) continue;
+          for (const w of facadeWindows(b, f)) {
+            const z0 = foot + w.z0;
+            if (z0 < zG + k * ST - 0.1 || z0 >= zG + k * ST + ST - 0.3) continue;
+            const p0 = A[1] + ((B[1] - A[1]) * w.u0) / f.L,
+              p1 = A[1] + ((B[1] - A[1]) * w.u1) / f.L;
+            out.push([Math.min(p0, p1), Math.max(p0, p1)]);
+          }
+        }
+        return (SW[key] = out);
+      };
     const MAXD = {
         bad: 3.6,
         kueche: 6.4,
@@ -464,7 +492,17 @@ export const ZIPLAN = (() => {
             out.push(q);
             continue;
           }
-          const cut = q.y0 + front;
+          // the partition not through a window of the side's facade (the window would be lost inside: it spans two rooms)
+          const wins = sideWins(k, q.side.k);
+          let cut = q.y0 + front;
+          for (const dy of [0, 0.25, -0.25, 0.5, -0.5, 0.75, -0.75, 1.0, -1.0]) {
+            const c = q.y0 + front + dy;
+            if (c - q.y0 < 2.2 || q.y1 - c < 2.4) continue;
+            if (!wins.some(([a, e]) => c + PW / 2 + 0.06 > a && c - PW / 2 - 0.06 < e)) {
+              cut = c;
+              break;
+            }
+          }
           out.push(Object.assign({}, q, { y1: cut - PW / 2 }));
           out.push(
             Object.assign({}, q, {
@@ -477,7 +515,7 @@ export const ZIPLAN = (() => {
         return out;
       };
     for (let k = 0; k < nSt; k++) {
-      const list = deepen(k === 0 ? kindsGF() : kindsUp(hasBad), k);
+      const list = deepen(k === 0 ? kindsGF() : kindsUp(hasBad, k), k);
       for (const q of list) if (q.kind === 'bad') hasBad = true;
       add({ kind: 'flur', fl: k, x0: hx0, x1: hx1, y0: yi0, y1: yi1, z0: zF[k], z1: zC[k] });
       for (const q of list)
@@ -494,6 +532,17 @@ export const ZIPLAN = (() => {
             side: q.side.k,
             part: pt.i,
           });
+    }
+    // feat/innen-real: every house has a bathroom (a house of 2026 has one; before, a one-storey house with a wash house at the back had
+    // none): the wash house, the pantry or a Kammer becomes it – the smallest of them that is big enough
+    if (!hasBad) {
+      const cand = rooms
+        .filter(r => ['waschkueche', 'vorrat', 'kammer'].includes(r.kind) && r.x1 - r.x0 >= 1.6 && r.y1 - r.y0 >= 1.8)
+        .sort((a, b) => (a.x1 - a.x0) * (a.y1 - a.y0) - (b.x1 - b.x0) * (b.y1 - b.y0));
+      if (cand.length) {
+        cand[0].kind = 'bad';
+        hasBad = true;
+      }
     }
     // the cellar under the kitchen (or the Stube), reached by a trapdoor with a steep stair
     let cellar = null,

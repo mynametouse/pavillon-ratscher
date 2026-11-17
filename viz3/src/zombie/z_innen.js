@@ -175,6 +175,9 @@ export const ZINNEN = (() => {
   };
   // ---- materials of a room after the look ----
   function roomMats(P, r, M, R, look = P.look) {
+    // feat/innen-real: a town house's stairwell (schleusingen/si_plan.js r.trep) has stone flags on its floor, as the old ones do –
+    // not the laminate of a flat
+    if (r.trep) return { wall: M.putz, floor: M.platten, ceil: M.decke };
     const X = ZIEINR.looks[P.look], // feat/haeuser
       own = X && X.mats && X.mats(P, r, M, R, look);
     if (own) return own;
@@ -678,7 +681,7 @@ export const ZINNEN = (() => {
     // the latch side of each door, sockets near the floor. All palette colours in the furniture's meshes: no draw call, no program ----
     const heated = P.look !== 'alt' && P.look !== 'ddr',
       today = /^heute/.test(P.look),
-      fitted = (H.fitted = { skirting: 0, radiators: 0, switches: 0, sockets: 0 });
+      fitted = (H.fitted = { skirting: 0, radiators: 0, switches: 0, sockets: 0, windows: 0 });
     function fittings(r, s, k) {
       if (r.kind === 'keller' || r.kind === 'boden') return;
       const R = C.R,
@@ -859,6 +862,7 @@ export const ZINNEN = (() => {
             s.holes
           );
         if (!attic) fittings(r, s, k); // feat/innen-real
+        fitted.windows += s.holes.filter(h => h.kind === 'window').length;
         for (const h of s.holes) {
           if (s.outer && (h.kind === 'window' || h.kind === 'front')) opening(C, s, h, P.t, house);
           blocks.push({ side: k, u0: h.u0 - 0.1, u1: h.u1 + 0.1, z0: h.z0, door: h.kind !== 'window' });
@@ -1901,6 +1905,8 @@ export const ZINNEN = (() => {
       const miss = [],
         spotIn = (r, k) => H.spots.some(q => q.room === r.id && q.kind === k),
         lived = r => !['keller', 'boden', 'vorrat'].includes(r.kind) && !r.trep;
+      if (!rooms.some(r => r.kind === 'bad') && !P.shop) miss.push('kein Bad');
+      if (!rooms.some(r => r.kind === 'kueche') && !P.shop) miss.push('keine Küche');
       for (const r of rooms) {
         if (r.kind === 'kueche' && !(spotIn(r, 'spuele') && spotIn(r, 'herd'))) miss.push(r.id + ': Spüle/Herd');
         if (r.kind === 'bad' && !(r.wc && r.basin)) miss.push(r.id + ': ' + (r.wc ? 'Waschbecken' : 'WC'));
@@ -1921,13 +1927,15 @@ export const ZINNEN = (() => {
           : null;
       if (!doorHall) miss.push('Haustür nicht in den Flur');
       return {
-        kitchenOk: !miss.some(t => /Spüle|Herd/.test(t)),
-        bathOk: !miss.some(t => /WC|Waschbecken/.test(t)),
+        kitchenOk: !miss.some(t => /Spüle|Herd|Küche/.test(t)),
+        bathOk: !miss.some(t => /WC|Waschbecken|Bad/.test(t)),
         bedOk: !miss.some(t => /Bett/.test(t)),
         lampsOk: !miss.some(t => /Lampe/.test(t)),
         doorHall,
-        winOk: wins > 0,
+        // every window the facade shows is a window inside too (none lost in a partition)
+        winOk: wins > 0 && H.fitted.windows >= wins,
         windows: wins,
+        lost: wins - H.fitted.windows,
         fitted: H.fitted,
         sig,
         miss,

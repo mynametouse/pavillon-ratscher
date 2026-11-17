@@ -444,12 +444,19 @@ export const ZIEINR = (() => {
       front = ddr ? C.col(0xece6b8, 0.4) : M.birke,
       edge = ddr ? C.col(0xd86a28, 0.4) : C.col(0xd8d0c0, 0.5),
       w = n * 0.6;
-    F.box(m, C.col(0xdedad0, 0.6), u0, u0 + w, 0, 0.56, z + 0.08, z + 0.86);
+    F.box(m, C.col(0xdedad0, 0.6), u0, u0 + w, 0, 0.56, z + 0.08, z + 0.86, { skip: 't' });
     F.box(m, C.col(0x5a5650, 0.8), u0 + 0.02, u0 + w - 0.02, 0.0, 0.5, z, z + 0.08);
-    F.box(m, ddr ? C.col(0xe8e4dc, 0.35) : C.col(0x8a8378, 0.35), u0 - 0.01, u0 + w + 0.01, 0, 0.6, z + 0.86, z + 0.9);
+    // the worktop round the sink's opening (feat/innen-real: a real basin let into it, 16 cm deep – a steel plate on top before)
+    const wt = ddr ? C.col(0xe8e4dc, 0.35) : C.col(0x8a8378, 0.35),
+      sa = u0 + 0.66,
+      sb = u0 + 1.14;
+    F.box(m, wt, u0 - 0.01, sa, 0, 0.6, z + 0.86, z + 0.9);
+    F.box(m, wt, sb, u0 + w + 0.01, 0, 0.6, z + 0.86, z + 0.9);
+    F.box(m, wt, sa, sb, 0, 0.08, z + 0.86, z + 0.9);
+    F.box(m, wt, sa, sb, 0.5, 0.6, z + 0.86, z + 0.9);
     F.box(m, edge, u0 - 0.01, u0 + w + 0.01, 0.6, 0.62, z + 0.86, z + 0.9);
     // the sink in the second unit
-    F.box(m, M.stahl, u0 + 0.66, u0 + 1.14, 0.08, 0.5, z + 0.9, z + 0.905);
+    L.becken(C, F, sa, sb, 0.08, 0.5, z + 0.9, 0.16, M.stahl);
     F.cyl(m, M.stahl, u0 + 0.9, 0.06, z + 0.9, z + 1.15, 0.015, 0.015, 6);
     F.rod(m, M.stahl, [u0 + 0.9, 0.06, z + 1.15], [u0 + 0.9, 0.25, z + 1.15], 0.013, 6);
     C.spot('spuele', F.P(u0 + 0.9, 0.9, z), F, null);
@@ -470,6 +477,159 @@ export const ZIEINR = (() => {
     // the worktop beside the sink (under the wall units: low things only)
     top(C, F, u0 + 0.05, u0 + 0.6, 0.3, z + 0.9, 'arbeit');
     if (n > 2) top(C, F, u0 + 1.25, u0 + w - 0.05, 0.3, z + 0.9, 'arbeit');
+  };
+  // ---- feat/innen-real: the everyday things of a household on the floor (no two houses alike: what lies about follows the house's own
+  // seed – shoes at the front door, a crate of bottles in the kitchen, slippers at the foot of the bed, the laundry basket, the
+  // children's toys where there are children); palette colours, the soft ones rounded – no draw call of their own ----
+  L.schuhe = (C, F, u, v, a, hex, kid) => {
+    const m = C.m,
+      z = C.z,
+      L0 = kid ? 0.19 : 0.28,
+      W = kid ? 0.07 : 0.1;
+    for (const s of [-1, 1]) {
+      const uu = u + s * (W / 2 + 0.02),
+        p = F.P(uu, v, 0),
+        ang = Math.atan2(F.n[1], F.n[0]) + a + s * 0.06;
+      m.box(C.col(0x2a2826, 0.7), p[0] - L0 / 2, p[0] + L0 / 2, p[1] - W / 2, p[1] + W / 2, z, z + 0.025, { a: ang });
+      m.box(
+        C.col(hex, 0.55, 0, true),
+        p[0] - L0 / 2 + 0.01,
+        p[0] + L0 / 2 - 0.05,
+        p[1] - W / 2 + 0.005,
+        p[1] + W / 2 - 0.005,
+        z + 0.02,
+        z + (kid ? 0.07 : 0.095),
+        { a: ang }
+      );
+    }
+  };
+  L.alltag = (C, room, Pl, all, family) => {
+    const R = C.R,
+      m = C.m,
+      z = C.z,
+      kind = room.kind;
+    if (kind === 'flur' && room.fl === 0) {
+      // shoes by the wall near the front door: two or three pairs (a child's among them in a family)
+      const F = Pl.any(['x0', 'x1'], 0.95, 0.34, 0.15, 0.04) || Pl.any(['x0', 'x1', 'y1'], 0.95, 0.34, 0.15, 0.2);
+      if (F) {
+        const n = 2 + (R() < 0.5),
+          cols = [0x2a2422, 0x5a3a26, 0xe8e6e0, 0x3a4a5a, 0x8a2a2a];
+        for (let i = 0; i < n; i++)
+          L.schuhe(
+            C,
+            F,
+            F.u0 + 0.16 + i * 0.32,
+            0.17,
+            R.r(-0.15, 0.15),
+            family && i === n - 1 ? R.pick([0xd04a3a, 0x3a7ad0, 0xe0b030]) : R.pick(cols),
+            family && i === n - 1
+          );
+      }
+    } else if (kind === 'kueche' && R() < 0.75) {
+      // a crate of bottles in a corner (water or beer – the returnable crate of every German kitchen)
+      const F = Pl.any(all, 0.42, 0.32, 0.36, R.pick([0.02, 0.98]));
+      if (F) {
+        const u = F.u0,
+          crate = C.col(R.pick([0x2a5aa0, 0xb02a24, 0x2a7a3a, 0xd8a020]), 0.55),
+          glass = C.col(R.pick([0x6a4a20, 0x2a5a3a, 0xd8e4e0]), 0.25);
+        F.box(m, crate, u, u + 0.4, 0.01, 0.31, z, z + 0.3);
+        for (let i = 0; i < 4; i++)
+          for (let j = 0; j < 3; j++) {
+            const uu = u + 0.06 + i * 0.093,
+              vv = 0.07 + j * 0.085;
+            F.cyl(m, glass, uu, vv, z + 0.3, z + 0.34, 0.028, 0.012, 6);
+            F.cyl(m, C.col(0xc8c8c0, 0.4, 0.5), uu, vv, z + 0.34, z + 0.355, 0.014, 0.014, 6);
+          }
+        C.solid(F.rect(u, u + 0.4, 0, 0.32), z, z + 0.36);
+      }
+    } else if ((kind === 'schlafzimmer' || kind === 'bad') && R() < (kind === 'bad' ? 0.5 : 0.6)) {
+      // the laundry basket in a corner, the washing heaped in it
+      const F = Pl.any(all, 0.5, 0.38, 0.5, R.pick([0.02, 0.98]));
+      if (F) {
+        const u = F.u0;
+        m.rbox(C.col(R.pick([0xe8e4d8, 0xb8a888, 0x8a9aa8]), 0.7), ...F.rect(u, u + 0.48, 0.02, 0.36), z, z + 0.4, {
+          r: 0.03,
+          s: 1,
+        });
+        m.rbox(
+          C.col(R.pick([0x5a6a8a, 0xe8e2d4, 0x8a3a3a, 0x3a5a4a]), 0.95),
+          ...F.rect(u + 0.05, u + 0.43, 0.06, 0.32),
+          z + 0.32,
+          z + 0.46,
+          { r: 0.05 }
+        );
+        C.solid(F.rect(u, u + 0.48, 0, 0.38), z, z + 0.46);
+      }
+    }
+    if ((kind === 'kinderzimmer' || (kind === 'stube' && family && R() < 0.5)) && Pl.floorFree) {
+      // toys on the floor: a few blocks and a ball
+      const r = Pl.floorFree(1.0, 0.8);
+      if (r) {
+        const toyCols = [0xd83a2a, 0x2a6ad8, 0xe8c020, 0x3aa04a, 0xf08a20];
+        for (let i = 0; i < 5; i++) {
+          const x = r[0] + R.r(0.1, 0.9) * (r[1] - r[0]),
+            y = r[2] + R.r(0.1, 0.9) * (r[3] - r[2]),
+            s = R.r(0.04, 0.06);
+          m.box(C.col(R.pick(toyCols), 0.6), x - s, x + s, y - s, y + s, z + 0.012, z + 0.012 + 2 * s, {
+            a: R.r(0, 1.5),
+          });
+        }
+        const bx = r[0] + 0.25,
+          by = r[3] - 0.2,
+          prof = [];
+        for (let k = 0; k <= 8; k++) {
+          const t = (k / 8) * Math.PI;
+          prof.push([Math.sin(t) * 0.09, z + 0.012 + 0.09 - Math.cos(t) * 0.09]);
+        }
+        m.lathe(C.col(R.pick(toyCols), 0.45), bx, by, prof, 12, { caps: false });
+      }
+    }
+  };
+  // feat/innen-real: a sink unit of 60 cm on its own (a small kitchen): the base cabinet, the worktop round the basin, the tap
+  L.spuelschrank = (C, F) => {
+    const m = C.m,
+      M = C.M,
+      z = C.z,
+      u0 = F.u0,
+      front = C.look === 'ddr' ? C.col(0xece6b8, 0.4) : M.birke,
+      wt = C.col(C.look === 'ddr' ? 0xe8e4dc : 0x8a8378, 0.35);
+    F.box(m, C.col(0xdedad0, 0.6), u0, u0 + 0.6, 0, 0.56, z + 0.08, z + 0.86, { skip: 't' });
+    F.box(m, C.col(0x5a5650, 0.8), u0 + 0.02, u0 + 0.58, 0, 0.5, z, z + 0.08);
+    F.box(m, front, u0 + 0.01, u0 + 0.59, 0.56, 0.58, z + 0.1, z + 0.84);
+    F.box(m, M.stahl, u0 + 0.5, u0 + 0.52, 0.58, 0.6, z + 0.5, z + 0.75);
+    F.box(m, wt, u0 - 0.01, u0 + 0.07, 0, 0.6, z + 0.86, z + 0.9);
+    F.box(m, wt, u0 + 0.53, u0 + 0.61, 0, 0.6, z + 0.86, z + 0.9);
+    F.box(m, wt, u0 + 0.07, u0 + 0.53, 0, 0.08, z + 0.86, z + 0.9);
+    F.box(m, wt, u0 + 0.07, u0 + 0.53, 0.5, 0.6, z + 0.86, z + 0.9);
+    L.becken(C, F, u0 + 0.07, u0 + 0.53, 0.08, 0.5, z + 0.9, 0.16, M.stahl);
+    F.cyl(m, M.stahl, u0 + 0.3, 0.05, z + 0.9, z + 1.15, 0.015, 0.015, 6);
+    F.rod(m, M.stahl, [u0 + 0.3, 0.05, z + 1.15], [u0 + 0.3, 0.24, z + 1.15], 0.013, 6);
+    C.spot('spuele', F.P(u0 + 0.3, 0.9, z), F, null);
+    C.solid(F.rect(u0, u0 + 0.6, 0, 0.6), z, z + 0.9);
+  };
+  // feat/innen-real: a basin let into a top: its rim, four walls inwards, the bottom with the drain (u0..u1 × v0..v1 at the top's height zt)
+  L.becken = (C, F, u0, u1, v0, v1, zt, depth, mat) => {
+    const m = C.m,
+      zb = zt - depth,
+      Q = (a, b, c, d, n) =>
+        m.quad(mat, F.P(...a), F.P(...b), F.P(...c), F.P(...d), [
+          F.a[0] * n[0] + F.n[0] * n[1],
+          F.a[1] * n[0] + F.n[1] * n[1],
+          n[2],
+        ]);
+    Q([u0, v0, zb], [u1, v0, zb], [u1, v1, zb], [u0, v1, zb], [0, 0, 1]);
+    Q([u0, v0, zb], [u0, v1, zb], [u0, v1, zt], [u0, v0, zt], [1, 0, 0]);
+    Q([u1, v0, zb], [u1, v0, zt], [u1, v1, zt], [u1, v1, zb], [-1, 0, 0]);
+    Q([u0, v0, zb], [u0, v0, zt], [u1, v0, zt], [u1, v0, zb], [0, 1, 0]);
+    Q([u0, v1, zb], [u1, v1, zb], [u1, v1, zt], [u0, v1, zt], [0, -1, 0]);
+    for (const [a, b, c, d] of [
+      [u0 - 0.02, u1 + 0.02, v0 - 0.02, v0],
+      [u0 - 0.02, u1 + 0.02, v1, v1 + 0.02],
+      [u0 - 0.02, u0, v0, v1],
+      [u1, u1 + 0.02, v0, v1],
+    ])
+      F.box(m, mat, a, b, c, d, zt, zt + 0.004);
+    F.cyl(m, C.col(0x3a3c3e, 0.4), (u0 + u1) / 2, (v0 + v1) / 2, zb, zb + 0.003, 0.03, 0.03, 12);
   };
   // the fridge (DDR „Kristall“ type, small, white; later a tall one)
   L.kuehlschrank = (C, F) => {
@@ -1392,7 +1552,16 @@ export const ZIEINR = (() => {
     },
   };
   // ---- a room: what stands where, after its kind and the house's look ----
+  // (feat/innen-real: the spots of a room are watched while it is furnished – C.spot given back whichever way the room ends)
   function furnish(C, room) {
+    const spot0 = C.spot;
+    try {
+      return furnishRoom(C, room);
+    } finally {
+      C.spot = spot0;
+    }
+  }
+  function furnishRoom(C, room) {
     const Pl = placer(room, room.blocks),
       look = C.look,
       R = C.R,
@@ -1401,7 +1570,11 @@ export const ZIEINR = (() => {
     // place gets a compact one after all (below), and the realism survey (ZINNEN H.survey) reads it
     const got = (room.got = []),
       any0 = Pl.any,
-      place0 = Pl.place;
+      place0 = Pl.place,
+      spot0 = C.spot,
+      spots = [];
+    // (and the spots made here with their frames: today's sink is drawn over as a basin below)
+    C.spot = (kind, pos, F, label, o) => (spots.push({ kind, pos, F }), spot0(kind, pos, F, label, o));
     Pl.any = (list, w, d, h, pref) => {
       const F = any0(list, w, d, h, pref);
       got.push({ w, d, h, ok: !!F });
@@ -1721,6 +1894,31 @@ export const ZIEINR = (() => {
         C.m.panel(cloth, [p[0], p[1], zl - h / 2], d, lx ? [0, -1, 0] : [-1, 0, 0], w, h);
       }
     }
+    // feat/innen-real: the sink of today's fitted kitchen (haeuser/haeuser_heute.js: a plate on the worktop) gets its bowl drawn on –
+    // a rim, the darker inside, the drain – so that it reads as a basin let into the top
+    if (kind === 'kueche' && C.ext && look === 'heute')
+      for (const sp of spots) {
+        if (sp.kind !== 'spuele' || !sp.F || !sp.F.a) continue;
+        const F = sp.F,
+          su = (sp.pos[0] - F.O[0]) * F.a[0] + (sp.pos[1] - F.O[1]) * F.a[1],
+          zt = C.z + 0.9232;
+        F.box(C.m, C.col(0x6e7276, 0.4, 0.3), su - 0.205, su + 0.205, 0.13, 0.47, zt, zt + 0.0006);
+        F.box(C.m, C.col(0x595d61, 0.45, 0.3), su - 0.205, su + 0.205, 0.13, 0.16, zt + 0.0006, zt + 0.0009);
+        F.cyl(C.m, C.col(0x2c2e30, 0.4), su, 0.3, zt + 0.0006, zt + 0.0012, 0.028, 0.028, 12);
+      }
+    // feat/innen-real: a kitchen has a sink and a stove – where the kitchen row found no wall long enough, a sink unit and a cooker
+    // of 60 cm stand where they fit
+    if (kind === 'kueche' && look !== 'alt') {
+      const has = k => spots.some(q => q.kind === k);
+      if (!has('spuele')) {
+        const Fs = any0(all, 0.62, 0.62, 0.95, 0.5) || any0(all, 0.62, 0.62, 0.95, 0.1);
+        if (Fs) L.spuelschrank(C, Fs);
+      }
+      if (!has('herd')) {
+        const Fh = any0(all, 0.62, 0.62, 0.9, 0.9) || any0(all, 0.62, 0.62, 0.9, 0.3);
+        if (Fh) L.herd(C, Fh);
+      }
+    }
     // feat/innen-real: a bathroom has a toilet and a basin – where the look's found no place (a small bath), a compact one goes in
     if (kind === 'bad') {
       const asked = (w, d) => got.some(q => q.ok && Math.abs(q.w - w) < 1e-6 && Math.abs(q.d - d) < 1e-6);
@@ -1740,6 +1938,17 @@ export const ZIEINR = (() => {
           room.basin = true;
         }
       }
+    }
+    try {
+      L.alltag(
+        C,
+        room,
+        Pl,
+        all,
+        C.P.rooms.some(q => q.kind === 'kinderzimmer')
+      ); // feat/innen-real
+    } catch (e) {
+      console.warn('zinnen alltag', e);
     }
     if (C.owner && PERSONAL[C.owner]) PERSONAL[C.owner](C, Pl, room);
     if (!(C.ext && C.ext.deko && C.ext.deko(C, Pl, room, inner, outer))) deko(C, Pl, room, inner, outer); // feat/haeuser
