@@ -51,13 +51,45 @@ Je nach Stufe des Ortes, an dem die Person steht:
 - Große Taten (ab 8 Punkten) und eine Festnahme bringen dazu einen Post im Feed; ein Stufenwechsel einen Satz im Chat („Ich schließe jetzt
   immer ab. Seit die zwei vom Garten da sind.“), gute Taten einen Dank.
 
-## 4 Schnittstelle
+## 4 Nebenjobs und Nebenaufgaben (`GLJOBS`, `GLJOBSDATA`)
+
+Angebote kommen als SMS von dem, der fragt, zu einer passenden Stunde, eins nach dem anderen (frühestens 20 s nach Beginn des freien
+Spiels, nie während einer Mission oder einer Szene); jedes steht danach im Tagebuch (J) mit „wann“ und „wo“ und – sobald der erste Job
+läuft – im Handy unter **„Aufträge“** (dort mit dem Ruf beider Orte, Wegpunkt per Tipp, „Bis zum Beginn warten“ als Zeitraffer,
+„Auftrag abbrechen“). Ein Job beginnt an seinem Ort mit dem Aktionsknopf; ein Job zur Zeit; eine beginnende Mission bricht ihn ab;
+1989 gibt es keine. Lohn über `GL.earn` (der Auftrag nannte `GL.pay`, das zieht Geld ab – Lohn ist `earn`), Ruf über `GLRUF.add`,
+dazu ein Thema fürs Gerede (`GLRUF.merke`). Jeder Job und jede Aufgabe hat ein Feld `hinweis` für Kapitel 2 (noch leer).
+
+| Job | wann, wo | wie | Lohn, Ruf |
+|---|---|---|---|
+| **Brötchen ausliefern** (Backstube Schleusetal, erfunden) | Mo–Sa, Kiste ab 5:30 am Verkaufswagen, alles hängt bis 7:30 | Kiste nehmen (sie fährt auf dem Gepäckträger der Simson mit), sechs Tüten an sechs Türen der Dorfbewohner (die Häuser aus `dorf/dorf_life.js`; Uwe fährt sonst, er muss aufs Feld); die Uhr läuft dabei in Echtzeit; ein harter Stoß zerdrückt eine Tüte | 12 € + bis 8 € Trinkgeld (voll bis 5 min, nichts ab 12 min), −2 € je zerdrückte Tüte und eine Beschwerde per SMS; Ruf +5 (+1 schnell und heil) |
+| **Brennholz fahren** (Wolfgang, Waldarbeiter) | Mo–Sa 8–17 Uhr, Stapel gespaltener Buche am Waldweg zur Klinge | mit dem Kombi (Laderaum von `vehicles/car.js`): heranfahren, „Holz einladen“ (gehalten, die Scheite liegen im Kofferraum), zu Gerhard, „Holz abladen“ (ein Stapel neben der Tür), noch einmal für Katrin | 20 € je Fuhre, Ruf +3 je Fuhre |
+| **Übung der Feuerwehr** (Manfred ist beim Kreisfeuerwehrtag, Löschmeister Steffen und Maschinistin Anja – erfunden – leiten) | Samstag 8:40–9:30 an der alten Schule (dem Feuerwehrhaus) | Faltbehälter, Tragkraftspritze, Ziel mit Fallklappe, Bierzeltgarnitur; Saugschlauch kuppeln, Pumpe anwerfen, mit dem Schlauch zur Markierung laufen (die Leitung rollt sich hinter einem ab), „Wasser marsch!“ – auf Zeit; danach Kaffee und Kuchen am Tisch | 10 € aus der Kameradschaftskasse („für den Sprit“), Ruf +8; Steffen sagt etwas zur Zeit |
+
+Nebenaufgaben (laufen ab der SMS, höchstens eine neue alle 5 Minuten):
+
+- **Die gelbe Tonne** (Ingrid, Ortsteilbürgermeisterin, bis morgen in Erfurt): ihre Tonne vom Haus an die Straße stellen – Griff und Deckel
+  zur Straße. Ruf +2.
+- **Das Paket beim Nachbarn** (Katrin): der Paketbote hat es wieder bei Gerhard abgegeben – abholen, ihr vor die Tür legen. Ruf +2.
+- **Milchreis für Gerhard**: ein Päckchen am Verkaufswagen kaufen (dessen Öffnungszeiten), Gerhard bringen – das Geld zurück und 1888 die
+  Linde als Geschichte obendrauf. +4 €, Ruf +3.
+- **Fotos für das Stadtarchiv** (Gerhard): die Mappe abholen und im Rathaus Schleusingen abgeben – nur zu den Öffnungszeiten (aus
+  `OEFFNUNG` des Agenten `laeden-leben`, sonst Mo–Fr 9–12, Di 13–18, Do 13–16 Uhr); am Schalter in der Halle, sobald die Stadt steht.
+  Ruf Schleusingen +3, Ratscher +1.
+
+## 5 Schnittstelle
 
 `GLRUF.wert(ort)` → −100 … +100 · `GLRUF.stufe(ort)` → `'beliebt' | 'neutral' | 'misstrauisch' | 'verhasst'` (ohne `ort`: wo der
 Spieler ist) · `GLRUF.add(ort, n, grund)` → die Änderung · `GLRUF.ortVon(x, y)` · `GLRUF.merke(gruppe, ort, o)` (ein Thema fürs Gerede) ·
 `GLRUF.gerede(id)` / `erzaehlt(id, thema)` · `GLRUF.platz(x, y)` · `GLRUF.tick(dt)` · `GLRUF.stop()` · `GLRUF.dazu({ tick, stop })` ·
 `GLRUF.linien()` · `GLRUF.debug` (`set`, `flush`, `info`, `gespeichert`). Ereignis `grenzland:ruf { ort, wert, stufe, alt, n, grund }`.
 `GLREAKTION.stufeBei(F)`, `GLREAKTION.ruft(F)` (neu).
+
+`GLJOBS.angebote()` → `[{ id, titel, art: 'job' | 'aufgabe', von, text, wann, ort, st, jetzt, ziel }]` · `GLJOBS.start(id)` ·
+`GLJOBS.warten(id)` · `GLJOBS.abbrechen()` · `GLJOBS.aktiv()` · `GLJOBS.tick(dt)` / `stop()` (über `GLRUF.dazu`) · `GLJOBS.linien()` ·
+`GLJOBS.debug` (`angebot`, `go`, `info`, `strahl`, `haus`, `strasse`, …). Ereignis `grenzland:job { id, st: 'angeboten' | 'läuft' |
+'erledigt' | 'abgebrochen', lohn, ruf }`. Gespeichert unter `pav-gl-jobs-v1`: was angeboten und erledigt ist, die Nebenaufgaben; ein
+laufender Job nicht (nach dem Neuladen wird er wieder angeboten).
 
 ## Tests
 

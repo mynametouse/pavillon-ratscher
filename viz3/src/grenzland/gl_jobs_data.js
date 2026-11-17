@@ -136,6 +136,24 @@ export const GLJOBSDATA = (() => {
       kurz: 'Ein Päckchen Milchreis vom Verkaufswagen zu Gerhard bringen.',
       hinweis: '',
     },
+    hund: {
+      id: 'hund',
+      art: 'aufgabe',
+      titel: 'Krümel ist weg',
+      von: 'Heike',
+      tage: [0, 1, 2, 3, 4, 5, 6],
+      ab: 8 * 60,
+      bis: 19 * 60,
+      ort: 'Feldflur Richtung Feldscheune',
+      lohn: 5,
+      ruf: 3,
+      angebot:
+        'Krümel ist beim Knall heute früh abgehauen und nicht wiedergekommen. Klein, braun-weiß, hört auf Leberwurst. Zuletzt gesehen Richtung Feldscheune. Bitte nicht hinterherrennen, dann rennt er nur weiter. Finderlohn gibt es! – Heike',
+      danke: 'Krümel ist wieder da und liegt unterm Sofa. Diesmal freiwillig. Danke! – Heike',
+      chat: ['Heike', 'Krümel ist wieder da! Danke an alle, die gesucht haben. Also an einen.'],
+      kurz: 'Heikes Hund Krümel in der Feldflur finden, anleinen und heimbringen – nicht rennen.',
+      hinweis: '',
+    },
     chronik: {
       id: 'chronik',
       art: 'aufgabe',
@@ -269,6 +287,13 @@ export const GLJOBSDATA = (() => {
       fertig: 'Übung der Feuerwehr',
     },
     tonne: { schieben: 'Gelbe Tonne an die Straße stellen', zum: 'Zu Ingrids Haus: Die gelbe Tonne steht am Haus.' },
+    hund: {
+      such: 'Krümel suchen – zuletzt gesehen Richtung Feldscheune. Langsam gehen, nicht rennen.',
+      anleinen: 'Krümel anleinen',
+      heim: 'Krümel zu Heike bringen.',
+      abgeben: 'Krümel bei Heike abgeben',
+      flieht: 'Krümel rennt weg. Langsam!',
+    },
     paket: {
       holen: 'Katrins Paket abholen',
       ablegen: 'Paket vor die Tür legen',

@@ -23,6 +23,7 @@
 //   linien() · debug
 // Events: 'grenzland:job' { id, st: 'angeboten' | 'läuft' | 'erledigt' | 'abgebrochen', lohn, ruf }.
 import * as THREE from 'three';
+import { scene } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { SAVE } from '../core/save.js';
 import { markDirty } from '../core/assets.js';
@@ -70,6 +71,9 @@ export const GLJOBS = (() => {
     akt: null, // the job that runs: { id, i, sek, … }
     welt: [], // meshes of the jobs and quests in the world (removed when they are no longer needed)
     figs: [], // figures of the exercise
+    tueten: [], // the paper bags on the doors (until the next round)
+    stapelM: null, // Wolfgang's stack (stays while the mode runs)
+    raeumen: null, // a job done whose things go once the player is away: { A, t }
     acc: 0,
     freiT: 0, // seconds of free play (offers wait a little)
     angebotT: 0, // until the next offer may come
@@ -133,7 +137,9 @@ export const GLJOBS = (() => {
     return [h.door[0] + h.n[0] * 3, h.door[1] + h.n[1] * 3, 3];
   }
   // the shop on wheels: the crate stands on the ground beside the customers' spot
+  let kisteP = null;
   function kistenPlatz() {
+    if (kisteP) return kisteP;
     const W = GLORTE.WG;
     if (!W || !W.kunde) return GLDATA.ORTE.wagen.pos.slice();
     const o = W.o || W.kunde,
@@ -144,7 +150,7 @@ export const GLJOBS = (() => {
     try {
       KERN.pushOut(p, 0.35);
     } catch (e) {}
-    return p;
+    return (kisteP = p);
   }
   // Wolfgang's stack: beside the forest track to the Klinge, three quarters of the way, a few metres off the track
   let stapelP = null;
@@ -367,6 +373,7 @@ export const GLJOBS = (() => {
   // ---- Brötchen ausliefern ----
   JOB.broetchen = {
     an(A) {
+      for (const m of S.tueten.splice(0)) weg(m);
       A.kiste = kistenPlatz();
       A.kunden = KUNDEN.filter(k => k !== 'uwe' && haus(k)).slice(0, D.JOBS.broetchen.n);
       A.done = {};
@@ -398,6 +405,12 @@ export const GLJOBS = (() => {
     ziele(A) {
       return A.i === 0 ? [] : A.kunden.filter(k => !A.done[k]).map(k => haus(k).step);
     },
+    wo(A) {
+      if (A.i === 0) return D.JOBS.broetchen.ort;
+      const z = JOB.broetchen.ziel(A),
+        k = z && A.kunden.find(q => haus(q) && haus(q).step === z);
+      return k ? 'Tür von ' + NAME(k) : 'Ratscher';
+    },
     // take the crate: on the moped's carrier when the moped is there
     nehmen(A) {
       weg(A.kisteM);
@@ -414,7 +427,7 @@ export const GLJOBS = (() => {
       if (!h || A.done[k]) return;
       A.done[k] = true;
       const p = [h.door[0] + h.d[0] * 0.42 + h.n[0] * 0.08, h.door[1] + h.d[1] * 0.42 + h.n[1] * 0.08];
-      bau('tuete', p[0], p[1], Math.atan2(h.n[0], h.n[1]), tuete, gnd(h.step[0], h.step[1]) + 0.82);
+      S.tueten.push(bau('tuete', p[0], p[1], Math.atan2(h.n[0], h.n[1]), tuete, gnd(h.step[0], h.step[1]) + 0.82));
       GLTON.fx('tick');
       if (A.korb) {
         weg(A.korb);
@@ -514,11 +527,13 @@ export const GLJOBS = (() => {
       A.fuhre = 0; // loads delivered
       A.geladen = false;
       A.i = 0;
-      A.stapelM = bau('stapel', SP.p[0], SP.p[1], SP.hd + Math.PI / 2, (F, K) => {
-        const R = GLORTE.rnd(7);
-        for (const s of [-1, 1]) F.box(s * 1.05, 0, 0, 0.08, 0.08, 1.25, GLORTE.shade(C.holz, 0.7), true);
-        scheite(F, 2.0, 1.0, 0.95, R);
-      });
+      // (the stack stays where it is – two loads do not take a stack of two metres away)
+      if (!S.stapelM || !S.stapelM.parent)
+        S.stapelM = bau('stapel', SP.p[0], SP.p[1], SP.hd + Math.PI / 2, (F, K) => {
+          const R = GLORTE.rnd(7);
+          for (const s of [-1, 1]) F.box(s * 1.05, 0, 0, 0.08, 0.08, 1.25, GLORTE.shade(C.holz, 0.7), true);
+          scheite(F, 2.0, 1.0, 0.95, R);
+        });
     },
     text(A) {
       if (!auto()) return T.holz.auto;
@@ -529,6 +544,9 @@ export const GLJOBS = (() => {
       if (!A.geladen) return A.stapel;
       const h = haus(A.ziele[A.fuhre]);
       return h ? h.step : null;
+    },
+    wo(A) {
+      return A.geladen ? 'Haus von ' + NAME(A.ziele[A.fuhre]) : 'Holzstapel am Waldweg';
     },
     laden(A) {
       const v = auto();
@@ -585,8 +603,7 @@ export const GLJOBS = (() => {
     },
     aus(A) {
       weg(A.ladung);
-      weg(A.stapelM);
-      A.ladung = A.stapelM = null;
+      A.ladung = null;
     },
   };
   const holzBereit = (A, nah) => {
@@ -772,6 +789,8 @@ export const GLJOBS = (() => {
       const W = A.W || fwPlatz();
       return A.i === 0 ? W.leute[0] : A.i <= 2 ? W.pumpe : A.i <= 4 ? W.marke : W.tisch;
     },
+    wo: A =>
+      A.i === 0 ? 'Alte Schule' : A.i <= 2 ? 'Tragkraftspritze' : A.i <= 4 ? 'Markierung vor dem Ziel' : 'Kaffeetafel',
     async melden(A) {
       if (A.i !== 0 || A.busy) return;
       A.busy = true;
@@ -990,11 +1009,13 @@ export const GLJOBS = (() => {
     GLTON.fx('geld');
     emit(A.id, 'erledigt', r);
     // what the job left in the world stays a while (the bags on the doors, the stacks of wood); the exercise is cleared when one goes
-    later(A.id === 'feuerwehr' ? 45 : 2, () => {
-      try {
-        JOB[A.id].aus(A);
-      } catch (e) {}
-    });
+    if (A.id === 'feuerwehr') S.raeumen = { A, t: 900 };
+    else
+      later(2, () => {
+        try {
+          JOB[A.id].aus(A);
+        } catch (e) {}
+      });
     S.zuletztA = A;
   }
   // the clock runs to a job's beginning (a time lapse, as the game's own waiting does) – not in a mission, not more than 16 hours ahead
@@ -1060,6 +1081,26 @@ export const GLJOBS = (() => {
       text: () => (GL.has(AUF.einkauf.ware) ? T.einkauf.bringen : T.einkauf.kaufen),
       ziel: (q, W) => (GL.has(AUF.einkauf.ware) ? haus('gerhard') && haus('gerhard').step : W.p),
     },
+    hund: {
+      an(q, W) {
+        const h = hundHeim();
+        W.home = h;
+        W.x = h[0];
+        W.y = h[1];
+        W.az = 0;
+        W.v = 0;
+        W.t = 0;
+        W.mode = 'frei';
+        W.A = hundBauen();
+        if (q.i > 0) {
+          const p = KERN.where() || [P.x, P.y];
+          W.x = p[0] - 1.5;
+          W.y = p[1] - 1.5;
+        }
+      },
+      text: q => (q.i === 0 ? T.hund.such : T.hund.heim),
+      ziel: (q, W) => (q.i === 0 ? W.home : haus('heike') && haus('heike').step),
+    },
     chronik: {
       an(q, W) {
         W.p = q.i === 0 ? haus('gerhard') && haus('gerhard').step : rathaus();
@@ -1095,6 +1136,119 @@ export const GLJOBS = (() => {
     } catch (e) {}
     return D.zeitenText(AUF.chronik.zeiten);
   };
+  // ---- Heike's dog Krümel: a small brown-and-white dog (the animals' own bodies, tiere/tiere_koerper.js, with a coat of its own) ----
+  const hundHeim = () => {
+    const a = GLDATA.ORTE.anger.pos,
+      b = GLDATA.ORTE.treff.pos,
+      p = [a[0] + (b[0] - a[0]) * 0.62, a[1] + (b[1] - a[1]) * 0.62];
+    try {
+      KERN.pushOut(p, 1.5);
+    } catch (e) {}
+    return p;
+  };
+  function hundBauen() {
+    const TK = window.TKOERPER;
+    if (!TK || !TK.PLANS || !TK.PLANS.hund || !TK.make) return null;
+    if (!TK.PLANS.gl_kruemel) {
+      const c3 = h => {
+          const c = new THREE.Color(h);
+          return [c.r, c.g, c.b];
+        },
+        braun = c3(0x8a5a30),
+        dunkel = c3(0x4a2e18),
+        weiss = c3(0xe6e0d2);
+      TK.PLANS.gl_kruemel = Object.assign({}, TK.PLANS.hund, {
+        coat(q) {
+          const c = Math.cos(q.th || 0);
+          if (q.part === 'hleg' || q.part === 'fleg') return weiss;
+          if (q.part === 'ear') return dunkel;
+          if (q.part === 'tail') return (q.u || 0) > 0.6 ? weiss : braun;
+          if (q.part === 'neck') return q.z > 0.6 && c < 0.8 ? weiss : braun;
+          return c > 0.35 ? braun : weiss;
+        },
+      });
+    }
+    try {
+      const A = TK.make('gl_kruemel', {});
+      A.g.scale.setScalar(0.68);
+      A.g.name = 'gl job hund';
+      scene.add(A.g);
+      return A;
+    } catch (e) {
+      S.err = 'hund: ' + String((e && e.message) || e).slice(0, 160);
+      return null;
+    }
+  }
+  // he sniffs about near his spot; whoever runs (or rides) at him scares him off; on the lead he trots behind the player
+  function hundTick(q, W, dt) {
+    if (!W.A) return;
+    const p = KERN.where() || [P.x, P.y],
+      d = hyp(p[0] - W.x, p[1] - W.y),
+      sp = VEH.cur ? hyp(VEH.cur.st.u, VEH.cur.st.v) : P.speed || 0,
+      o = {};
+    let tx = W.x,
+      ty = W.y,
+      v = 0;
+    if (W.warn > 0) W.warn -= dt;
+    if (q.i === 0) {
+      if (d < 10 && sp > 2.4) {
+        W.mode = 'flieht';
+        W.t = 3;
+        if (!(W.warn > 0)) {
+          PLAY.think(T.hund.flieht, 2200);
+          W.warn = 8;
+        }
+      }
+      if (W.mode === 'flieht' && (W.t -= dt) > 0) {
+        const l = d || 1;
+        tx = W.x + ((W.x - p[0]) / l) * 5;
+        ty = W.y + ((W.y - p[1]) / l) * 5;
+        v = 4.2;
+        o.flee = 1;
+      } else {
+        W.mode = 'frei';
+        if (d < 7) o.alert = 0.6;
+        else {
+          if (!W.ziel || hyp(W.ziel[0] - W.x, W.ziel[1] - W.y) < 0.5) {
+            const a = Math.random() * Math.PI * 2,
+              r = 3 + Math.random() * 8;
+            W.ziel = [W.home[0] + Math.sin(a) * r, W.home[1] + Math.cos(a) * r];
+          }
+          tx = W.ziel[0];
+          ty = W.ziel[1];
+          v = 0.8;
+          o.graze = 0.4;
+        }
+      }
+    } else {
+      const r = ((P.yaw || 0) * Math.PI) / 180,
+        sx = p[0] - Math.sin(r) * 1.7 + Math.cos(r) * 0.6,
+        sy = p[1] - Math.cos(r) * 1.7 - Math.sin(r) * 0.6,
+        l = hyp(sx - W.x, sy - W.y);
+      tx = sx;
+      ty = sy;
+      v = l < 0.4 ? 0 : Math.min(6, 0.6 + l * 1.6);
+    }
+    const dx = tx - W.x,
+      dy = ty - W.y,
+      l = hyp(dx, dy);
+    if (l > 0.05 && v > 0) {
+      const st = Math.min(l, v * dt);
+      W.x += (dx / l) * st;
+      W.y += (dy / l) * st;
+      W.az = Math.atan2(dx, dy);
+      W.v = v;
+    } else W.v = 0;
+    const pp = [W.x, W.y];
+    try {
+      KERN.pushOut(pp, 0.3);
+    } catch (e) {}
+    W.x = pp[0];
+    W.y = pp[1];
+    W.A.g.position.set(W.x, KERN.ground(W.x, W.y), -W.y);
+    W.A.g.rotation.y = Math.PI - W.az;
+    W.A.anim(dt, W.v, o);
+  }
   function qAn(id) {
     const q = auf(id);
     if (!q || q.st !== 'läuft' || !heute()) return;
@@ -1109,6 +1263,10 @@ export const GLJOBS = (() => {
   function qAus(id) {
     const W = QA[id];
     if (W && W.m) weg(W.m);
+    if (W && W.A)
+      try {
+        W.A.dispose();
+      } catch (e) {}
     delete QA[id];
   }
   function qAnbieten(id) {
@@ -1217,6 +1375,38 @@ export const GLJOBS = (() => {
     },
   });
   KERN.act({
+    id: 'gl-auf-hund',
+    r: 2.6,
+    prio: 0.55,
+    hold: 0.8,
+    label: () => {
+      const q = auf('hund'),
+        W = QA.hund;
+      if (!heute() || !zuFuss() || !q || q.st !== 'läuft' || !W) return null;
+      if (q.i === 0) return zu([W.x, W.y]) < 2.6 ? T.hund.anleinen : null;
+      const h = haus('heike');
+      return h && zu(h.step) < 5 && hyp(W.x - h.step[0], W.y - h.step[1]) < 7 ? T.hund.abgeben : null;
+    },
+    pos: () => {
+      const q = auf('hund'),
+        W = QA.hund,
+        h = haus('heike');
+      if (!q || !W) return [0, 0, -999];
+      const p = q.i === 0 ? [W.x, W.y] : h ? h.step : [W.x, W.y];
+      return [p[0], p[1], gnd(p[0], p[1]) + 0.6];
+    },
+    run: () => {
+      const q = auf('hund');
+      if (!q || q.st !== 'läuft') return;
+      if (q.i === 0) {
+        q.i = 1;
+        save();
+        GLTON.fx('tick');
+        PLAY.think('Krümel ist an der Leine. Er riecht nach Feld.', 2600);
+      } else qFertig('hund');
+    },
+  });
+  KERN.act({
     id: 'gl-auf-chronik',
     r: 2.4,
     prio: 0.5,
@@ -1244,7 +1434,7 @@ export const GLJOBS = (() => {
   // ================================================================ offers ================================================================
   // a job's offer comes some hours before its first window (the evening before, the morning of); the side quests one after another
   const VORLAUF = { broetchen: 13 * 60, feuerwehr: 16 * 60, holz: 60 };
-  const QREIHE = ['tonne', 'paket', 'einkauf', 'chronik'];
+  const QREIHE = ['tonne', 'hund', 'paket', 'einkauf', 'chronik'];
   function anbieten() {
     if (!frei() || kino() || S.freiT < 20 || S.angebotT > 0) return;
     const t = CLOCK.t,
@@ -1290,7 +1480,7 @@ export const GLJOBS = (() => {
         von: J.von,
         text: lauf ? JOB[id].text(S.akt) : J.kurz,
         wann: lauf ? 'läuft' : D.wann(J, t, e),
-        ort: J.ort,
+        ort: lauf && JOB[id].wo ? JOB[id].wo(S.akt) : J.ort,
         st: lauf ? 'läuft' : 'offen',
         jetzt: !lauf && D.bis(J, t, e) === 0,
         erledigt: S.sv.erledigt[id] || 0,
@@ -1372,6 +1562,11 @@ export const GLJOBS = (() => {
     }
   });
   // ---------------- what happens ----------------
+  KERN.on('grenzland:boeller', () => {
+    if (!frei() || auf('hund') || QREIHE.some(id => auf(id) && auf(id).st === 'läuft')) return;
+    if (!D.offenAm(AUF.hund, wd(), minute())) return;
+    later(60, () => frei() && !auf('hund') && qAnbieten('hund'));
+  });
   KERN.on('grenzland:mission', d => {
     if (d && d.st === 'läuft' && S.akt) abbrechen();
   });
@@ -1390,7 +1585,7 @@ export const GLJOBS = (() => {
     S.angebotT = 0;
     S.questT = 120;
     Q.length = 0;
-    stapelP = fwP = null;
+    stapelP = fwP = kisteP = null;
     // the side quests that run come back into the world once the village is there
     later(3, () => {
       for (const id of QREIHE) qAn(id);
@@ -1421,6 +1616,18 @@ export const GLJOBS = (() => {
       if (!heute() || mission()) abbrechen();
       else if (JOB[A.id].tick) JOB[A.id].tick(A, dt);
     }
+    if (S.raeumen) {
+      const R = S.raeumen,
+        W = R.A.W;
+      if ((R.t -= dt) <= 0 || !W || zu(W.tisch) > 70) {
+        S.raeumen = null;
+        try {
+          JOB[R.A.id].aus(R.A);
+        } catch (e) {}
+      }
+    }
+    const qh = auf('hund');
+    if (qh && qh.st === 'läuft' && QA.hund) hundTick(qh, QA.hund, dt);
     if ((S.acc += dt) < 2) return;
     S.acc = 0;
     anbieten();
@@ -1445,6 +1652,13 @@ export const GLJOBS = (() => {
         GLFIG.drop(F);
       } catch (e) {}
     S.figs.length = 0;
+    S.tueten.length = 0;
+    S.stapelM = null;
+    if (S.raeumen)
+      try {
+        JOB[S.raeumen.A.id].aus(S.raeumen.A);
+      } catch (e) {}
+    S.raeumen = null;
     Q.length = 0;
     CLOCK.unfocus('gl-jobs');
     untrack();
@@ -1465,6 +1679,7 @@ export const GLJOBS = (() => {
     linien,
     rathaus,
     rathausOffen,
+    QA,
     debug: {
       // offer a job or a side quest now
       angebot(id) {
