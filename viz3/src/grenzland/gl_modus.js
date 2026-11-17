@@ -384,6 +384,7 @@ export const GRENZLAND = (() => {
     GLRADIO.stop();
     GLNACHT.stop();
     GLUMGEBUNG.stop();
+    if (window.GLRUF) window.GLRUF.stop(); // grenzland-ruf
     GLHANDY.stop();
     GLCOCKPIT.stop();
     GLLAGER.drop();
@@ -469,6 +470,7 @@ export const GRENZLAND = (() => {
     GLRADIO.tick(dt);
     GLNACHT.tick(dt);
     GLUMGEBUNG.tick(dt);
+    if (window.GLRUF) window.GLRUF.tick(dt); // grenzland-ruf
     GLHANDY.tick(dt);
     GLCOCKPIT.tick(dt);
     GLHUD.tick(dt);

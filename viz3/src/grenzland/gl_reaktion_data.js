@@ -97,6 +97,11 @@ export const GLRXDATA = (() => {
     markt: ['Mit Vollgas über den Markt in {ort}. Die Tauben sind jetzt in Suhl. #{tag}'],
     raserei: ['Tempo 30 ist in {ort} eher so eine Empfehlung, oder? #{tag}'],
     sperre: ['Einer ist durch die Polizeisperre bei {ort}! Ich steh hier mit Rostbratwurst und Handy. #{tag}'],
+    // (feat/grenzland-ruf) somebody who cannot stand the two films them – and warns the others
+    ruf: [
+      'Achtung, {ort}: Die zwei vom Garten sind wieder unterwegs. Nur damit ihr Bescheid wisst. #{tag}',
+      'Wer hat die zwei vom Garten wieder nach {ort} gelassen? #{tag}',
+    ],
     live: [
       'LIVE: Großeinsatz bei {ort}! Hubschrauber, Blaulicht, alles. Bleibt dran! #{tag}',
       'LIVE: Die Polizei sucht in {ort} jemanden. Wir suchen mit. Von der Couch aus. #{tag}',
