@@ -175,6 +175,7 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `LLPLAN`, `LLEBEN`, `LKAUF`, `WBILD`, `MUSEUM`, `KIRCHE` | laeden/ | Läden belebt (V18v): Kassierer, Theken, Kunden nach Stunde und Wochentag, nur im Laden, den man betritt; Kassieren; Packungen als Atlas; das Museum in der Bertholdsburg, St. Johannis von innen |
 | `FASSADE`, `FAUDIT` | fassade/ | Gebäude von außen plausibel (V18v): Prüfung `FASSADE.audit(ort)` (Türen, Fenster, Durchgänge, Höfe), Türen, Fenster an freien Brandwänden, Durchgänge in Höfe, Stufen; Aussehen je Gebäude über `fassade/ansicht.json` oder `FASSADE.ansicht(key, look)` (`docs/features/gebaeude.md`); `?nofassade` zeigt den alten Stand |
 | `VOEGEL` | tiere/voegel.js | Vögel (V18v): Tauben am Markt, Spatzen, Krähen, Schwalben im Sommer, Starenschwärme im Herbst – überall, nah am Spieler |
+| `NETZ`, `NETZLOGIK`, `NETZRAUM`, `NAVATAR`, `NVERSTECK`, `NETZUI` | netz/ | Zusammen spielen über das Internet (Stufe 1, Mehrspieler-Chat 17.11.2026): Raum mit Code und Link `?zusammen=CODE` (Trystero über Nostr wie die Zombie-Nacht, `?lokal=1` über einen BroadcastChannel für die Tests), die anderen als Avatar mit Namen in ihrer Farbe (`GLFIG`-Figuren unter Einträgen `netz_<pid>` in `GLDATA.CAST`/`KLEID`, jedes Bild gestellt), das Fahrzeug, das einer fährt, die Uhr des Gastgebers, Zeigen (G, mittlere Maustaste), Gesten, „Hin“ zum Mitspieler, Verstecken im Dorf; das eigene Avatar auf `AVATAR` (die Leute der Straßen als eigene Figur, Kleidung von `GLFIG.dress`). Reiner Teil `NETZLOGIK` (Unit-Test `test/unit/netz.test.mjs`), Browser-Test `test/mehrspieler.py`; `docs/features/mehrspieler.md` |
 | `GLRUF`, `GLRUFDATA`, `GLJOBS`, `GLJOBSDATA`, `GLLINIEN`, `GLLDATA`, `GLRAST`, `GLALLTAG`, `GLALDATA`, `GLFESTE`, `GLFDATA` | grenzland/ | Grenzland, Kapitel 2 Etappe 1 (V18v): Ruf je Ort und Gerede, Nebenjobs und Nebenquests; Verkehr mit Ziel und Begegnungen; die Leute nach Uhrzeit und die Feste (`docs/features/grenzland-ruf.md`, `-strasse.md`, `-alltag.md`) |
 
 ## 7 Assets
@@ -223,6 +224,7 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | `pav-schl-innen-hinweis` | Häuser von Schleusingen von innen (V18q): Hinweis „Ausgedacht“ schon gezeigt |
 | `pav-geld-v1`, `pav-inventar-v1` | Geldbörse und Inventar des Einkaufs (V18v, `einkauf/`) |
 | `pav-gl-ruf-v1`, `pav-gl-jobs-v1` | Grenzland: der Ruf je Ort und die erledigten Nebenjobs und -quests (V18v) |
+| `pav-netz-v1`, `pav-netz-raum` | Zusammen spielen (netz/): `{ v: 1, pid, name, av }` – die Kennung dieses Browsers, der Name für die anderen und der Plan des Avatars (`NETZLOGIK.avClean`); `{ v: 1, code, role, t, uhr }` – der offene Raum, solange man drin ist (Neu laden innerhalb von 15 Minuten geht zurück hinein; `uhr` die eigene Uhr eines Gastes für danach) |
 
 Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), in `core/save.js` und hier eintragen.
 
