@@ -123,7 +123,7 @@ oder zurückgelassen):
   `schule`, `paket`, `liefer` (Schleusingen: REWE-Rampe, Apotheke), `begegnung`; die Zeilen in `viz3/extra/grenzland-strasse/tests.txt`.
   Bilder in `out/grenzland_strasse/` (auf GitHub Actions im Artefakt `out`: `01_holz_am_polter`, `02_holz_beladen`, `03_milch_am_hof`,
   `04_kraehwinkel_am_lager`, `05_streife_am_anger`, `06_schueler_am_anger`, `07_liefer_rewe`, `08_paket`, `08_z-apo`, `10_anhalter`,
-  `11_panne`, `12_jaeger_hochsitz`). Grün: Lauf 44105726443 (`42121fcf7`).
+  `11_panne`, `12_jaeger_hochsitz`). Grün: Lauf 44111228557 (`e9b4854df`, alle fünf Jobs).
 - Formen ohne Browser: `node viz3/extra/grenzland-auto/werkzeug/bild.mjs koffer out/karosse/koffer.png --opt '{"text":"Spedition Krähwinkel","band":"#7a1f24"}'`.
 
 ## Offen
