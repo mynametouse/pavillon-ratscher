@@ -310,6 +310,40 @@ export const GLEREIGNIS = (() => {
   }
   // beside the road, on the right (as one drives): off metres
   const rechts = (A, off) => [A.x + A.dy * off, A.y - A.dx * off];
+  // feat/grenzland-strasse: a point d metres back from spot A that lies on a road of the square (the middle of the nearest road within
+  // 4 m, GLAUTO's graph) – the first of the distances that does; else the last straight back
+  function aufStrasse(A, D) {
+    let G = null;
+    try {
+      G = GLAUTO.netz();
+    } catch (e) {}
+    for (const d of D) {
+      const x = A.x - A.dx * d,
+        y = A.y - A.dy * d;
+      let best = null,
+        bd = 4;
+      for (const e of (G && G.edges) || []) {
+        const p = e.pts;
+        for (let i = 0; i + 1 < p.length; i++) {
+          const ax = p[i][0],
+            ay = p[i][1],
+            ex = p[i + 1][0] - ax,
+            ey = p[i + 1][1] - ay,
+            u = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / (ex * ex + ey * ey || 1e-9))),
+            qx = ax + ex * u,
+            qy = ay + ey * u,
+            dd = Math.hypot(x - qx, y - qy);
+          if (dd < bd) {
+            bd = dd;
+            best = { x: qx, y: qy, dx: A.dx, dy: A.dy };
+          }
+        }
+      }
+      if (best) return best;
+    }
+    const d = D[D.length - 1];
+    return { x: A.x - A.dx * d, y: A.y - A.dy * d, dx: A.dx, dy: A.dy };
+  }
   // ---- a free place: off the roads (2.5 m from their edge), not indoors, no wall or trunk within r metres (world/worldcol.js) ----
   function frei(x, y, r) {
     try {
@@ -1023,8 +1057,9 @@ export const GLEREIGNIS = (() => {
             c.z
           )
         );
-        // the warning triangle some 60 m behind it, at the edge, facing the traffic that comes
-        const [tx, ty] = rechts({ x: A.x - A.dx * 60, y: A.y - A.dy * 60, dx: A.dx, dy: A.dy }, 2.6);
+        // the warning triangle 100 m behind it as on a country road (80 or 60 m where the road bends away from the straight line back),
+        // on the road at its edge, facing the traffic that comes
+        const [tx, ty] = rechts(aufStrasse(A, [100, 80, 60]), 2.6);
         E.meshes.push(
           mesh(
             K => {

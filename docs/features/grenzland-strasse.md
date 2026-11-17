@@ -12,7 +12,8 @@ Rest steht.
 ### Verkehr mit Ziel (`grenzland/gl_linien.js` GLLINIEN, Fahrplan `gl_linien_data.js` GLLDATA)
 
 Wenige Fahrzeuge, jedes mit Grund und Fahrplan. Nur in der Nähe des Spielers stehen sie wirklich auf der Straße: Ein Lauf ist eine Linie
-über die Straßen des Quadrats (der Straßengraph von `GLAUTO`); solange niemand hinsieht, ist er eine Zahl auf seinem Fahrplan. Kommt
+über die Straßen des Quadrats (der Straßengraph von `GLAUTO`) oder Schleusingens (die Straßen der Region aus `welt/fahrt.js`, ein Graph
+von 900 m um den Ort des Laufs); solange niemand hinsieht, ist er eine Zahl auf seinem Fahrplan. Kommt
 der Spieler auf 300 m heran, steht das Fahrzeug dort, wo der Fahrplan es hinsetzt – nie vor den Augen (nur außer Blick oder jenseits
 von 190 m im Dunst) – und fährt von da in Echtzeit: Lkw innerorts 50, außerorts 60 km/h, langsamer auf Wegen und in Kurven, sanft
 anfahrend; es hält für den Spieler, für den Verkehr vor ihm (`VAUTO`, die Busse, die anderen Fahrzeuge des Modus) und an seinen
@@ -27,7 +28,7 @@ Stunde je Minute –, so machen es auch die Busse des Spiels).
 | Streifenwagen in Schleusingen | `streife` | täglich 11:15, 17:30, 21:45 | Runde: von Südwesten in die Stadt, kurzer Halt am Markt, zur Zentralhaltestelle, nach Norden hinaus |
 | Lkw der Spedition Krähwinkel (zwei) | `koffer` | Mo–Sa 6:40, 13:25, 22:35 | laden am Außenlager (Kapitel 1) und fahren weiter – auch spät in der Nacht; `GLLINIEN.folgen(id)` gibt die Tour (Kapitel 2, Mission 4) |
 | Lieferverkehr an den Laderampen in Schleusingen | `koffer` (zwei mit Kühlaggregat) | Mo–Sa: REWE 5:15 und 9:30, EDEKA 6:05 und 11:20, Mega Center 7:40 und 10:15, OBI 7:00 und 13:10 | kommt vom Stadtrand, fährt an der Hofeinfahrt vorbei und **setzt rückwärts an die Laderampe** (die Türen `k: 'liefer'` aus `laeden.json`; ein Feld `anlieferung` von `laeden-leben` hätte Vorrang), steht dort bis zum Ende der Lieferzeit, fährt vorwärts hinaus |
-| Lieferwagen an Ladentüren der Altstadt | `kasten` | Mo–Sa: Bäckerei 5:35, Apotheke 9:10 und 14:30; Mo–Fr Gasthaus 10:20 (Getränke) | hält am Bordstein vor der Tür (Geschäft nach dem OSM-Namen in `welt/schleusingen.js`), **Warnblinker an**, die Fahrerin trägt die Kiste zur Tür, ist ein paar Sekunden drin, kommt zurück, fährt weiter |
+| Lieferwagen an Ladentüren der Altstadt | `kasten` | Mo–Sa: Bäckerei 5:35, Apotheke 9:10 und 14:30; Mo–Fr Gasthaus 10:20 (Getränke) | hält am Bordstein vor der Tür (Geschäft nach dem OSM-Namen in `welt/schleusingen.js`), **Warnblinker an**, die Fahrerin steigt auf der Seite der Tür aus (Schiebetür am Bordstein, sonst Fahrertür), trägt die Kiste zur Tür, ist ein paar Sekunden drin, kommt zurück, fährt weiter |
 | Paketwagen in Ratscher | `kasten` | Mo–Sa 11:05 | zwei Häuser (Gerhard, Katrin): am Bordstein halten, Warnblinker, die Zustellerin bringt das Paket zur Haustür und kommt zurück |
 | Schüler am Schulbus | Figuren | Schultage vor 7:02 und 7:40 | warten vor dem Wartehäuschen am Anger auf die **echten** Schulbusse 268 und 214 und steigen ein, wenn der Bus mit offenen Türen hält |
 
@@ -61,7 +62,7 @@ oder zurückgelassen):
 | Ereignis | wann | was | Folge |
 |---|---|---|---|
 | Anhalter | Tag oder Dämmerung, unterwegs | ein Student oder eine Wanderin (ab und zu ein Sonderling) am Straßenrand, Rucksack und Pappschild mit dem Ziel („RATSCHER“, „STAUSEE“, „SCHLEUSINGEN“); winkt, fragt, wenn man neben ihm hält | auf dem Moped mitnehmen (nicht, wenn die oder der andere schon hinten sitzt), das Ziel als Wegpunkt; unterwegs ein Satz über die Gegend (wahr: Naturhistorisches Museum in der Bertholdsburg, der Rennsteig ist nah) oder etwas Harmlos-Schräges; am Ziel 5 € und guter Ruf |
-| Panne | jederzeit, unterwegs | ein Kombi mit Warnblinker am Rand, Motorhaube offen, Warndreieck 60 m dahinter, die Fahrerin telefoniert, winkt | „Helfen“: Benzin aus dem Kanister (wenn der Tank leer ist), Anschieben (wenn die Batterie leer ist), Abschleppdienst anrufen; das Passende bringt 15 € bzw. 10 € und guten Ruf, der Wagen fährt los |
+| Panne | jederzeit, unterwegs | ein Kombi mit Warnblinker am Rand, Motorhaube offen, Warndreieck 100 m dahinter am Fahrbahnrand (wie auf der Landstraße; 80 oder 60 m, wo die Straße wegbiegt), die Fahrerin telefoniert, winkt | „Helfen“: Benzin aus dem Kanister (wenn der Tank leer ist), Anschieben (wenn die Batterie leer ist), Abschleppdienst anrufen; das Passende bringt 15 € bzw. 10 € und guten Ruf, der Wagen fährt los |
 | Jäger | Dämmerung (gut eine Stunde um Sonnenauf- und -untergang), am Waldrand | geschlossene Kanzel auf vier Beinen mit Leiter, der Jäger darin; ein Schuss in der Ferne; wer vorn über die Wiese läuft, wird weggewunken | steigt herunter, wenn man am Hochsitz ist (oder nach einer Weile), und möchte mit bis zum Anger |
 
 - Guter Ruf geht über `GLRUF.add(ort, n, grund)` des Agenten `ruf`, wenn es ihn gibt (Ort nach der Lage: Schleusingen oder Ratscher).
@@ -82,7 +83,18 @@ oder zurückgelassen):
   echt aus. Nach dem Realismus-Auftrag (zuletzt, und nur, wenn der Rest steht) zurückgestellt; der eine flache Abschnitt (um (775, 750),
   Gelände ±2 m) wäre der Ort, wenn sie kommt. Krähwinkels Lkw parken deshalb nicht an der Rast, sondern laden am Außenlager und fahren
   zur Anschlussstelle Schleusingen (jenseits der Karte).
-- **Krähwinkels Lkw** sind Koffer-Lkw (eine regionale Spedition); ein Sattelzug bräuchte einen Auflieger, der der Linie nachläuft.
+- **Krähwinkels Lkw** sind Koffer-Lkw (eine regionale Spedition); ein Sattelzug bräuchte einen Auflieger, der der Linie nachläuft. Das
+  Außenlager liegt an einem Feldweg (900 m zwischen zwei Straßen); die Lkw fahren ihn durch, am Tor halten sie – wie auf den
+  Plattenwegen der LPG-Zeit, die es in Thüringen überall gibt. Ins Lager hinein fahren sie nicht (der Hof des Lagers wird erst beim
+  Bauen vermessen, Container stehen darin).
+- **Wege nur, wo Fahrzeuge fahren:** Straßenarten 0–5 (in der Stadt) bzw. 0–6 (im Quadrat: Feld- und Waldwege für den Holzlaster und
+  das Außenlager); Fuß- und Radwege nie. Die Zeitkosten (Lkw auf Wegen 16 km/h) halten Lkw sonst auf den Straßen – gerechnet für
+  jeden Lauf: Milch und Streife fahren keine 10 m Weg, der Holzlaster 1 km Waldweg zum Polter und weiter, Krähwinkel den Feldweg am
+  Lager.
+- **Rückwärts an die Rampe:** `GLAUTO` führt beide Achsen eines Wagens auf seiner Linie; die Linie, auf der ein Lkw rückwärts an eine
+  Laderampe stößt, beginnt deshalb dort, wo seine Hinterachse am Ende steht – das Heck dann einen halben Meter vor der Tür.
+- **Eine Linie je Planschritt:** Der Graph der Stadt für eine Lieferung braucht bis zu 0,1 s; gebaut wird je Planschritt (0,5 s) eine
+  Linie, damit der Start des Modus nicht ruckelt.
 - **Kein Hupen:** `c.horn` der Fahrzeuge des Modus spielt das Martinshorn (`GLTON.siren`) – die Lkw hupen deshalb nicht.
 - **Panne:** ein Kombi von heute; Ursache zufällig Tank oder Batterie – Anschieben hilft nur bei der Batterie, Benzin nur beim Tank.
 - **Tests anderer Teile:** In automatischen Browser-Tests (`navigator.webdriver`) ist der Verkehr dieses Moduls aus, außer ein Test
@@ -92,7 +104,10 @@ oder zurückgelassen):
 
 - `node --test viz3/test/unit/grenzland_strasse.test.mjs` – Tagesarten (Schultag, Ferien, Samstag, Sonn- und Feiertag), ein Lauf als
   Zahlen (fährt, hält, fertig), wer wann unterwegs ist, die Touren, Schüler und Busse, die Streife nur ohne Sterne, nichts Echtes;
-  die neuen Ereignisse im Plan. Im Unit-Test der Welt (`grenzland_welt.test.mjs`) stehen die zwei neuen Tagesereignisse in der Liste
+  die neuen Ereignisse im Plan; **jeder Lauf des Quadrats auf dem echten Straßengraphen** (Fixture der Polizei: kein Wenden auf der
+  Stelle, Halte in der richtigen Reihenfolge und an ihrem Ort, rückwärts nur kurz und nur zu einem Halt) und **jede Lieferung auf den
+  echten Straßen Schleusingens an die echten Rampen** (`viz3/extra/fahrt`, `viz3/extra/laeden`: hinein, rückwärts, hinaus; das Heck an
+  der Tür) sowie die Streife der Stadt (hält am Markt). Im Unit-Test der Welt (`grenzland_welt.test.mjs`) stehen die zwei neuen Tagesereignisse in der Liste
   „beide waren eben da“.
 - `viz3/test/grenzland_strasse.py <port> <teile>`: `linien` (jede Fahrt hat eine Linie ohne Kehre), `holz`, `milch`, `kraeh`, `streife`,
   `schule`, `paket`, `liefer` (Schleusingen: REWE-Rampe, Apotheke), `begegnung`; die Zeilen in `viz3/extra/grenzland-strasse/tests.txt`.

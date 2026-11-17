@@ -59,6 +59,7 @@ export const GLLINIEN = (() => {
     sl_forst: { ober: [64, 92, 52], unter: [52, 58, 46], schuh: [60, 46, 34], arm: true, kragen: [200, 120, 30] },
     sl_spedition: { ober: [36, 44, 62], unter: [40, 42, 48], schuh: [28, 28, 28], arm: true },
     sl_zustell: { ober: [70, 74, 80], unter: [44, 46, 52], schuh: [30, 30, 30], arm: true, kragen: [200, 60, 40] },
+    sl_liefer: { ober: [58, 66, 82], unter: [46, 48, 54], schuh: [30, 30, 30], arm: true },
   };
   const CAST = {
     sl_milchfahrer: {
@@ -86,6 +87,14 @@ export const GLLINIEN = (() => {
       kleid: 'sl_spedition',
       voice: { g: 'm', age: 35 },
     },
+    sl_lfahrer: {
+      name: 'Lkw-Fahrer',
+      fig: 'vk_m11',
+      clips: 'm',
+      h: 1.77,
+      kleid: 'sl_liefer',
+      voice: { g: 'm', age: 47 },
+    },
     sl_zusteller: {
       name: 'Zustellerin',
       fig: 'vk_f02',
@@ -108,6 +117,7 @@ export const GLLINIEN = (() => {
     holz: ['sl_holzfahrer'],
     kraehwinkel: ['sl_kfahrer'],
     zustell: ['sl_zusteller'],
+    liefer: ['sl_lfahrer'],
     streife: ['polizei1', 'polizei2'],
   };
   const on = () => GL.on && GL.era === 'heute' && !S.aus && (!GL.cur || S.inMission);

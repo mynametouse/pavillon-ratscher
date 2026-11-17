@@ -254,6 +254,7 @@ with lib.browser() as b:
             i1 = J("TS.info('l-rewe-1')")
             off = ((i1['x'] - R['x']) ** 2 + (i1['y'] - R['y']) ** 2) ** 0.5 if i1 and i1['x'] is not None else 99
             ck('liefer: it reverses into the yard and stands at the door, its back to it', i1 and i1['hold'] > 0 and seen_rev and off < 1.6, f'{t} s: {i1}, {off:.1f} m off')
+            ck('liefer: a driver in the cab', i1 and i1['figs'] == 1, str(i1))
             X(f"TS.look({R['x']}, {R['y']}, {R['hd'] * 57.3 + 200}, 17, 2.0, -8)")
             for _ in range(5): steps(0.3); time.sleep(0.3)
             pic('07_liefer_rewe')
