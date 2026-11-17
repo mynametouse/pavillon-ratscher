@@ -55,6 +55,13 @@ with lib.browser() as b:
         cast = JA("(() => { const p = NETZ.list().find(q => q.name === 'Tom'); const c = p && GLDATA.CAST['netz_' + p.pid]; return c ? { fig: c.fig, kleid: !!GLDATA.KLEID[c.kleid], hut: c.hut, brille: c.brille } : null; })()")
         ck('the host builds the guest\'s figure from the plan (person, clothes, cap in his colour, glasses)', cast and cast['fig'] == 'vk_m11' and cast['kleid'] and str(cast['hut']).startswith('netz_cap_') and cast['brille'] == 'gross', str(cast))
         ck('the host\'s own figure stays Falko', JA("AVATAR.kind") == 'm', JA("AVATAR.kind"))
+        # the window „Zusammen spielen“ (menu entry on the start page, the bar's button while in a room)
+        A.evaluate("NETZUI.show(true)"); stepA(1.2)
+        ui = JA("(() => { const w = document.getElementById('netzwin'); return w ? { vis: !w.hidden, txt: w.textContent, figs: w.querySelectorAll('[data-av=\"b\"]').length, hin: w.querySelectorAll('[data-n=\"hin\"]').length, link: (w.querySelector('.nzlink') || {}).value || '', menu: !!document.getElementById('netzbtn') } : null; })()")
+        ck('the window: code and link, Tom with „Hin“, the 13 figures; the menu entry', ui and ui['vis'] and 'TEST01' in ui['txt'] and 'zusammen=TEST01' in ui['link'] and 'Tom' in ui['txt'] and ui['hin'] == 1 and ui['figs'] == 13 and ui['menu'], str(ui and {k: v for k, v in ui.items() if k != 'txt'}))
+        hb = JA("(() => { const b = document.getElementById('netzhb'); return b ? [!b.hidden && getComputedStyle(b).display !== 'none', b.textContent] : null; })()")
+        ck('the bar shows „Zusammen“ with the number of players', hb and hb[0] and '2' in hb[1], str(hb))
+        A.evaluate("NETZUI.show(false)")
     if want('welt'):
         # the host's clock: the guest follows (and keeps his own for later)
         own = JB("CLOCK.t")

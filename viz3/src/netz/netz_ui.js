@@ -47,10 +47,10 @@ export const NETZUI = (() => {
   #netzwin input.nzcode{text-transform:uppercase;max-width:110px;font-family:var(--f-mono,monospace);letter-spacing:.08em}
   #netzwin .nzlink{font-size:11.5px;flex:1 1 100%}
   #netzwin .nzlist{display:flex;flex-direction:column;gap:4px}
-  #netzwin .nzp{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;background:#f0f1f3}
+  #netzwin .nzpl{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;background:#f0f1f3}
   #netzwin .nzdot{width:12px;height:12px;border-radius:50%;flex:0 0 12px;background:var(--nzc)}
-  #netzwin .nzp span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #netzwin .nzp small{color:#5b6570}
+  #netzwin .nzpl span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #netzwin .nzpl small{color:#5b6570}
   #netzwin .nzchips{display:flex;flex-wrap:wrap;gap:5px}
   #netzwin .nzc{font:600 12px/1 var(--f-body,system-ui);padding:6px 8px;border-radius:999px;border:1px solid #c9ced4;background:#fff;cursor:pointer;color:#1d232a}
   #netzwin .nzc[aria-pressed=true]{background:#1d232a;border-color:#1d232a;color:#fff}
@@ -154,7 +154,7 @@ export const NETZUI = (() => {
     const rows = L2.map(p => {
       const where = p.place ? esc(p.place) : '';
       const d = p.d != null ? (p.d < 1000 ? p.d + ' m' : (p.d / 1000).toFixed(1) + ' km') : '';
-      return `<div class="nzp" style="--nzc:${esc(p.color)}"><i class="nzdot"></i><span>${esc(p.name)}${p.role === 'host' ? ' <small>(Gastgeber)</small>' : ''}<br><small>${where}${where && d ? ' · ' : ''}${d}</small></span>
+      return `<div class="nzpl" style="--nzc:${esc(p.color)}"><i class="nzdot"></i><span>${esc(p.name)}${p.role === 'host' ? ' <small>(Gastgeber)</small>' : ''}<br><small>${where}${where && d ? ' · ' : ''}${d}</small></span>
         <button type="button" class="nzb" data-n="hin" data-pid="${esc(p.pid)}"${p.st ? '' : ' disabled'}>Hin</button></div>`;
     }).join('');
     return `<h3>Mitspieler</h3><div class="nzlist">${rows || '<p class="nzst">Noch niemand da – schick den Link.</p>'}</div>`;
@@ -187,12 +187,16 @@ export const NETZUI = (() => {
     if (!S.win || S.win.hidden) return;
     const focus = document.activeElement,
       fid = focus && S.win.contains(focus) ? focus.id || focus.className : null,
-      code = S.win.querySelector('.nzcode');
-    const codeVal = code ? code.value : '';
+      code = S.win.querySelector('.nzcode'),
+      seek = S.win.querySelector('.nzseek');
+    const codeVal = code ? code.value : '',
+      seekVal = seek ? seek.value : '';
     S.win.innerHTML = `<h2>Zusammen spielen <button type="button" class="nzx" data-n="close" aria-label="Schließen">×</button></h2>
       ${roomHtml()}${peopleHtml()}${gamesHtml()}${gestHtml()}${avatarHtml()}`;
-    const c2 = S.win.querySelector('.nzcode');
+    const c2 = S.win.querySelector('.nzcode'),
+      s2 = S.win.querySelector('.nzseek');
     if (c2) c2.value = codeVal;
+    if (s2 && seekVal && [...s2.options].some(o => o.value === seekVal)) s2.value = seekVal; // (who seeks: kept over the refresh)
     if (fid === 'nzname') {
       const i = $('nzname');
       if (i) {
