@@ -439,7 +439,7 @@ export const GLSCORE = (() => {
     }
     S.spricht = duck;
     // the real pieces while they can be had; the synthesised layers then fade out (and come back if a file fails)
-    const datei = !S.ohneDatei;
+    const datei = !S.ohneDatei && !!GLRDATA.ton();
     if (datei && c.state === 'running') {
       stichLaden(A);
       dateiTick(A, now);

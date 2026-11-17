@@ -94,7 +94,7 @@ export const GLUMGEBUNG = (() => {
   function buf(k) {
     if (k in S.buf) return S.buf[k];
     const R = raw();
-    if (!R || S.lade[k]) return null;
+    if (!R || S.lade[k] || !GLRDATA.ton()) return null;
     S.lade[k] = fetch(GLRDATA.ton() + 'orte/' + k + '.mp3')
       .then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('HTTP ' + r.status))))
       .then(ab => new Promise((res, rej) => R.ctx.decodeAudioData(ab, res, rej)))

@@ -102,12 +102,25 @@ with lib.browser() as b:
     zt = J("GLRDATA.LIEDER.zweitakt.map(l => l.titel)")
     ck('Radio Zweitakt plays a real song with its licence in the display', ok and so['lied'] and 'CC ' in so['text'] and so['titel'] in zt
        and (not ton or '/snd/radio/z' in so['src'] or '/pavillon-ton/radio/z' in so['src']), str(so))
-    # the sound repository pavillon-ton (17.11.2026): the newer songs, the mission music, the places – on GitHub Actions a must, here only
-    # if it can be reached at all
+    # the sound repository pavillon-ton (17.11.2026): the newer songs, the mission music, the places. On GitHub Pages the game takes them
+    # from its own origin; a host with a strict content policy (this test server: connect-src 'self') would block another origin – there
+    # the game must not even ask (GLRDATA.ton() == ''). The test server passes /pavillon-ton/ through (tools/csp/cspserve.py), so the
+    # test plays the real files from its own origin, as Pages does. On GitHub Actions the repository must answer; here only if reachable.
+    ck('on a host with a strict content policy the game asks no other origin for the sound repository', E("GLRDATA.ton()") == '', E("GLRDATA.ton()"))
+    E("window.GLTON_BASE = location.origin + '/pavillon-ton/'")
     netz = json.loads(E("(async () => JSON.stringify(await Promise.all(['radio/zt_boreal.mp3', 'radio/km_hyperfun.mp3', 'score/spannung.mp3', 'score/st_start.mp3', 'orte/wald.mp3', 'index.json'].map(u => fetch(GLRDATA.ton() + u, { method: 'HEAD' }).then(r => r.status, () => 0)))))()"))
     pflicht = bool(os.environ.get('GITHUB_ACTIONS'))
     ck('the sound repository serves songs, mission music and places' + ('' if pflicht else ' (if reachable from here)'),
-       all(c == 200 for c in netz) or (not pflicht and all(c == 0 for c in netz)), str(netz))
+       all(c == 200 for c in netz) or (not pflicht and all(c in (0, 502) for c in netz)), str(netz))
+    def kopf(u):
+        import urllib.request
+        try:
+            r = urllib.request.urlopen(urllib.request.Request(u, method='HEAD'), timeout=20)
+            return [r.status, r.headers.get('Access-Control-Allow-Origin')]
+        except Exception:
+            return [0, None]
+    hs = [kopf('https://mynametouse.github.io/pavillon-ton/' + u) for u in ('radio/fl_roy.mp3', 'score/flucht.mp3', 'orte/dorf.mp3')]
+    ck('and at its own address, open to other origins (CORS)', all(h == [200, '*'] for h in hs) or (not pflicht and all(h[0] == 0 for h in hs)), str(hs))
     netz = all(c == 200 for c in netz)
     print('sound repository reachable:', netz, flush=True)
     n_ton = J("Object.values(GLRDATA.LIEDER).reduce((n, L) => n + L.filter(l => l.ton).length, 0)")

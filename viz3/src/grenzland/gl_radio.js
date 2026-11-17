@@ -318,7 +318,7 @@ export const GLRADIO = (() => {
   // only them, and no synthesised ident
   const lieder = id => {
     const L = D.LIEDER && D.LIEDER[id] && !(S.ohne && S.ohne[id]) ? D.LIEDER[id] : null;
-    const M2 = L && S.ohneTon ? L.filter(l => !l.ton) : L;
+    const M2 = L && (S.ohneTon || !D.ton()) ? L.filter(l => !l.ton) : L;
     return M2 && M2.length ? M2 : null;
   };
   const songs = id =>
