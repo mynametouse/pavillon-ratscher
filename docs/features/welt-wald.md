@@ -63,13 +63,38 @@ python3 tools/weltwald/baeume.py --cells=-4_15 --debug DIR       # eine Zelle mi
 
 ## Testen
 
-`python3 viz3/test/welt_wald.py 9054 [data,road,perf,drive,season,phone]` (Thema-Test, `viz3/extra/welt-wald/tests.txt`). Orte in
-`viz3/test/welt_wald_spots.json`.
+`python3 viz3/test/welt_wald.py 9054 [data,road,drive,season,phone]` (Thema-Test, `viz3/extra/welt-wald/tests.txt`: `smoke`,
+`welt_wald:data,road,drive,season`, `welt_wald:phone`, `memphone`). Orte in `viz3/test/welt_wald_spots.json`: Hirschbach, die Straße
+nördlich von Schleusingen, ein Waldrand an der Straße, der Wald vor Suhl; jeweils von der Straße (Augenhöhe) und von oben (160 m, Blick
+ins Tal).
+
+**Zahlen** (CI 44174816484, Bildschirm 1920 × 1080, Stufe „hoch“; Bäume im Blick, Hauptdurchgang):
+
+| Ort | Aufrufe | Dreiecke | 3D nah / Mitte / Karten |
+| --- | ---: | ---: | --- |
+| Hirschbach, an der Straße | 9 | 102 510 | 14 / 31 / 7 955 |
+| Hirschbach von oben (Tal) | 7 | 122 522 | |
+| Straße nördlich von Schleusingen | 9 | 111 594 | 36 / 18 / 1 571 |
+| … von oben | 3 | 14 436 | |
+| Waldrand, von der Straße | 3 | 32 694 | 0 / 11 / 5 042 |
+| … von oben | 7 | 47 046 | |
+| im Wald vor Suhl | 9 | 141 890 | 10 / 332 / 6 451 |
+| … von oben | 9 | 143 434 | |
+| Telefon (844 × 390, Hirschbach) | 1 | 17 988 | nur Karten |
+
+Keine neuen Shader-Programme (0 der 12 Programme der Bäume neu); Fahrt mit 100 km/h über 1,9 km: jede Zelle bis 150 m voraus schon da,
+Auswahl höchstens 3,5 ms; Sommer, Oktober (Herbstfarben), Januar (kahl, Atlas ohne Laub), Mai.
 
 ## Offen
 
-- Kiefer und Lärche aus dem Luftbild unterscheiden (heute gilt jeder Nadelbaum als Fichte).
-- Die übrigen Kacheln der Welt (jenseits der Straßen-Korridore).
+- Die Korridore nach Schleusingen (`markt`) und nach Kloster Veßra (`baumschule`): erzeugt, auf `wip/welt-wald` (85822f9d,
+  `viz3/extra/welt-wald/dist/weltwald/z/`), noch nicht dabei. Die übrigen Kacheln der Welt: 1 692 Zellen, etwa 18 MB, einige Stunden
+  Abrufe (DOP, Kronenhöhen) – `baeume.py --tiles --skip-done` (mit `WW_OUT` außerhalb des Repos).
+- OSM (Waldwege, Gleise, Waldflächen): der Abruf in Stücken über Overpass war zu langsam; der erste Stand kommt ohne (keine Baum auf den
+  App-Straßen, die Luftbilder zeigen breite Wege als Lücken).
+- Kiefer aus dem Luftbild unterscheiden (heute ist jeder Nadelbaum außer der Lärche eine Fichte).
+- Die waagrechte Ebene der Karten sieht man von der Straße als dünne Linie im Bestand; sie könnte nur von oben gezeichnet werden.
+- Ratschers eigene Laubbäume mit Jahreszeit (über `SGREGELN` von `stadtgruen`, wenn es in `src` ist).
 
 ## Für den Lead
 
