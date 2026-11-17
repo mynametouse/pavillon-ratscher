@@ -75,7 +75,9 @@ oder zurückgelassen):
 | Panne | jederzeit, unterwegs | ein Kombi mit Warnblinker am Rand, Motorhaube offen, Warndreieck 100 m dahinter am Fahrbahnrand (wie auf der Landstraße; 80 oder 60 m, wo die Straße wegbiegt), die Fahrerin telefoniert, winkt | „Helfen“: Benzin aus dem Kanister (wenn der Tank leer ist), Anschieben (wenn die Batterie leer ist), Abschleppdienst anrufen; das Passende bringt 15 € bzw. 10 € und guten Ruf, der Wagen fährt los |
 | Jäger | Dämmerung (gut eine Stunde um Sonnenauf- und -untergang), am Waldrand | geschlossene Kanzel auf vier Beinen mit Leiter, der Jäger darin; ein Schuss in der Ferne; wer vorn über die Wiese läuft, wird weggewunken | steigt herunter, wenn man am Hochsitz ist (oder nach einer Weile), und möchte mit bis zum Anger |
 
-- Guter Ruf geht über `GLRUF.add(ort, n, grund)` des Agenten `ruf`, wenn es ihn gibt (Ort nach der Lage: Schleusingen oder Ratscher).
+- Guter Ruf über den Haken des Agenten `ruf` (wenn es `GLRUF` gibt): eine gute Tat unterwegs – den Anhalter ans Ziel gebracht, bei einer
+  Panne geholfen (Benzin, Anschieben oder den Abschleppdienst gerufen) – ruft `GLRUF.add(GLRUF.ortVon(x, y), 4, 'hilfe')` und
+  `GLRUF.merke('hilfe', ort)`, einmal je Begegnung (der Test prüft es mit einem Stellvertreter, wo `GLRUF` fehlt).
 - **Die alte Zufalls-Kirmes** wird nicht mehr geplant, sobald `window.GLFESTE` (Agent `alltag`, Feste im Kalender) da ist;
   `GLEREIGNIS.debug.start('kirmes')` geht weiter (Tests).
 - Gesprochene Sätze: feste Texte in `GLEREIGNIS.SAGT`, `GLEREIGNIS.linien()` gibt sie (Sprecher `sl_*`); die neuen Leute sind nicht
@@ -125,7 +127,8 @@ oder zurückgelassen):
   `viz3/extra/grenzland-strasse/tests.txt`.
   Bilder in `out/grenzland_strasse/` (auf GitHub Actions im Artefakt `out`: `01_holz_am_polter`, `02_holz_beladen`, `03_milch_am_hof`,
   `04_kraehwinkel_am_lager`, `05_streife_am_anger`, `06_schueler_am_anger`, `07_liefer_rewe`, `08_paket`, `08_z-apo`, `10_anhalter`,
-  `11_panne`, `12_jaeger_hochsitz`). Grün: Lauf 44111228557 (`e9b4854df`, alle fünf Jobs).
+  `11_panne`, `12_jaeger_hochsitz`, `13_verkehr_hinter_lkw`). Grün: Lauf 44117164124 (`18953fffa`, alle Jobs samt `verkehr` und
+  `verkehr_real`); danach nur noch der Haken für `ruf` – lokal `grenzland_strasse:begegnung` 19/19 (Port 9043).
 - Formen ohne Browser: `node viz3/extra/grenzland-auto/werkzeug/bild.mjs koffer out/karosse/koffer.png --opt '{"text":"Spedition Krähwinkel","band":"#7a1f24"}'`.
 
 ## Offen
@@ -145,16 +148,17 @@ oder zurückgelassen):
   `VAUTO.hindernisse` – eine Liste von Funktionen, die `obstacles()` jedes Bild fragt (`fn(OB)` legt `{ x, y, r, kind: 'veh', moving }`
   dazu; ein Fehler darin bleibt dort). `GLLINIEN` trägt beim ersten Bild des Modus eine ein: Kreise längs jedes sichtbaren Wagens von
   `GLAUTO` (Lkw, Lieferwagen, Streifen, die Wagen der Fahndung und der Ereignisse). Der Verkehr des Spiels hält jetzt hinter ihnen und
-  fährt um einen stehenden herum, wo Platz ist, statt hindurch (Test `grenzland_strasse:verkehr`, Bild `13_verkehr_hinter_lkw`). Busse
+  fährt um einen stehenden herum, wo Platz ist, statt hindurch (Test `grenzland_strasse:verkehr`, Bild `13_verkehr_hinter_lkw`; mit dem
+  Haken liefen `verkehr` und `verkehr_real` grün, Lauf 44117164124). Busse
   (`BUS.obstacles`) und die Fahrzeuge des Spielers (`VEH`) hatte er schon. Nicht in automatischen Tests anderer Teile
   (`GLLINIEN.aus`), damit deren Abläufe gleich bleiben.
-- **Wunsch an `gl_fahndung.js`:** eine Übergabe `GLFAHNDUNG.uebernimm(c)` – ein Wagen eines anderen Moduls (die Streife von
+- **Wunsch an `gl_fahndung.js` (vorerst zurückgestellt, Lead 17.11.):** eine Übergabe `GLFAHNDUNG.uebernimm(c)` – ein Wagen eines anderen Moduls (die Streife von
   `GLLINIEN`, die gerade sieht, wie etwas passiert) wird die erste Einheit der Fahndung, statt vom Straßenende zu kommen. Bis dahin
   meldet sie sofort (Beamte als Zeugen) und fährt weiter.
 - **Für `alltag`:** die Schüler am Schulbus macht `GLLINIEN` (Figuren `sl_schueler1–3`); wer eigene Kinder hat, kann sie zur
   Haltestelle schicken: `GLLDATA.SCHULE.abfahrten` (7:02, 7:40), `GLLDATA.schulbus(minute, tag)`, `GLLDATA.ORT.wartehaus`.
-- **Für `ruf`:** gute Taten unterwegs rufen `GLRUF.add('ratscher' | 'schleusingen', n, grund)` (Anhalter mitgenommen 2, Panne 3,
-  Abschleppdienst gerufen 1).
+- **Für `ruf`:** gute Taten unterwegs rufen euren Haken wie verabredet: `GLRUF.add(GLRUF.ortVon(x, y), 4, 'hilfe')`, dann
+  `GLRUF.merke('hilfe', ort)` (Anhalter am Ziel; Panne: Benzin, Anschieben oder Abschleppdienst – einmal je Begegnung).
 - **Für Kapitel 2:** `GLLINIEN.fahrzeuge()`, `GLLINIEN.folgen('k1' | 'k2')` (Tour mit Zeiten, Herkunft, Ziel, Zweck und der jetzige
   Ort), `GLLINIEN.markiere(id)` (ein Wegpunkt auf dem Radar für den verfolgten Lkw), `GLLINIEN.inMission = true` (der Verkehr fährt auch
   während einer Mission; Kapitel 1 fährt ohne ihn).

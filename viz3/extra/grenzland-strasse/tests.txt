@@ -4,6 +4,3 @@ grenzland_strasse:kraeh,streife,schule,paket
 grenzland_strasse:liefer
 grenzland_strasse:begegnung
 grenzland_strasse:verkehr
-# (for this push: the game's traffic with the hook VAUTO.hindernisse in verkehr/verkehr_auto.js – its own tests)
-verkehr
-verkehr_real

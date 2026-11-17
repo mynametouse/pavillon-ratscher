@@ -1214,11 +1214,16 @@ export const GLEREIGNIS = (() => {
       return false;
     }
   };
-  // a good deed: the village's (or the town's) opinion of the two (grenzland-ruf: GLRUF, when it is there)
-  function ruf(n, grund, x, y) {
+  // a good deed on the road (help at a breakdown, a hitchhiker taken where he wants): the opinion of the place there, remembered as
+  // help (grenzland-ruf: GLRUF, when it is there – as the agent ruf asks for it)
+  function ruf(x, y) {
     try {
       const R = window.GLRUF;
-      if (R && R.add) R.add(hyp(x + 1340, y - 1243) < 1200 ? 'schleusingen' : 'ratscher', n, grund);
+      if (R) {
+        const o = R.ortVon(x, y);
+        R.add(o, 4, 'hilfe');
+        if (R.merke) R.merke('hilfe', o);
+      }
     } catch (e) {}
   }
   // a lift on the moped: he gets on (hidden behind the rider), the destination is a waypoint on the radar, he talks a little on the
@@ -1252,7 +1257,7 @@ export const GLEREIGNIS = (() => {
         if (da) {
           sag(F, SAGT[E.wer].danke);
           GL.earn(E.wer === 'sl_jaeger' ? 0 : 5, 'Anhalter mitgenommen');
-          ruf(2, 'Anhalter mitgenommen', p.x, p.y);
+          ruf(p.x, p.y);
           E.ende = 'mitgenommen';
         } else E.ende = 'abgesetzt';
       }
@@ -1688,7 +1693,7 @@ export const GLEREIGNIS = (() => {
         E.ende = 'abschlepp';
         sag(E.F, SAGT.sl_panne.abschlepp);
         GLHANDY.sms(TX.abschleppVon, TX.abschleppSms);
-        ruf(1, 'Pannenhilfe gerufen', p.x, p.y);
+        ruf(p.x, p.y);
         return;
       }
       const passt = (i === 0 && E.grund === 'tank') || (i === 1 && E.grund === 'batterie');
@@ -1697,7 +1702,7 @@ export const GLEREIGNIS = (() => {
       E.ende = i === 0 ? 'benzin' : 'geschoben';
       sag(E.F, SAGT.sl_panne.danke);
       GL.earn(i === 0 ? 15 : 10, 'Pannenhilfe');
-      ruf(3, 'bei einer Panne geholfen', p.x, p.y);
+      ruf(p.x, p.y);
       setTimeout(() => {
         if (S.E !== E) return;
         E.weg = true;

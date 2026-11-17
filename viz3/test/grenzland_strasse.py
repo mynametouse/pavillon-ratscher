@@ -359,6 +359,11 @@ with lib.browser() as b:
         kz = J("GLEREIGNIS.plan.zuletzt.kirmes || 0")
         ck('begegnung: with a festival calendar the random fair is planned no more', kz > 1e8, str(kz))
         X("if (window.GLFESTE && GLFESTE._test) delete window.GLFESTE; GLEREIGNIS.stop(); GLEREIGNIS.plan = GLLOGIK.planNeu()")
+        # the reputation of the agent ruf (GLRUF; a stand-in where it is not there): its calls recorded
+        X("""window.__ruf = { log: [] }; const R = window.GLRUF || (window.GLRUF = { _test: true, ortVon: () => 'ratscher', add: () => 0 });
+          __ruf.add0 = R.add; __ruf.merke0 = R.merke;
+          R.add = function (...a) { __ruf.log.push(['add', ...a]); return __ruf.add0.apply(this, a) };
+          R.merke = function (...a) { __ruf.log.push(['merke', ...a]); return __ruf.merke0 ? __ruf.merke0.apply(this, a) : 0 }""")
         # on the long straight road east of the Anger, the moped under the player
         X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 15 * 60; if (DN && DN.active) DN.update(true)")
         # (the other of the two waits at home: one seat behind the rider for the hitchhiker)
@@ -428,6 +433,11 @@ with lib.browser() as b:
             ck('panne: the help that fits – paid, the car starts', st['ende'] in ('benzin', 'geschoben') and st['weg'] and st['geld'] > g0, str((g0, st)))
             steps(8)
             ck('panne: it drives off', not E("GLEREIGNIS.aktiv()") or E("GLEREIGNIS.E.car.v > 1"), str(J("GLEREIGNIS.debug.info()")))
+        # good deeds on the road count for the place there: GLRUF.add(ort, 4, 'hilfe') and GLRUF.merke('hilfe', ort) – twice (the lift, the help)
+        rl = J("__ruf.log")
+        ck('begegnung: the lift and the help count for the place (GLRUF: 4 for help, remembered)',
+           sum(1 for q in rl if q[0] == 'add' and q[2] == 4 and q[3] == 'hilfe') >= 2 and sum(1 for q in rl if q[0] == 'merke' and q[1] == 'hilfe') >= 2, str(rl))
+        X("const R = window.GLRUF; if (R && R._test) delete window.GLRUF; else if (R) { R.add = __ruf.add0; R.merke = __ruf.merke0 }")
         X("GLEREIGNIS.stop()")
         steps(0.5)
         # ---- the hunter at dusk by a forest edge (the wood near the Klinge) ----
