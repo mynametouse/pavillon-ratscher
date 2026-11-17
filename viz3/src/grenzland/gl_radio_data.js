@@ -379,9 +379,19 @@ export const GLRDATA = (() => {
   // what the presenter says after a song (a fixed sentence per song – recorded like every other line)
   const dasWar = l => 'Das war „' + (l.sprich || l.titel) + '“ – ' + l.von + (/[.!?]$/.test(l.von) ? '' : '.');
   // the sound repository mynametouse/pavillon-ton (17.11.2026): its own GitHub Pages site on the same host as the game, so the
-  // songs, the mission music and the places' recordings need no room on the game's site (1 GB at most). window.GLTON_BASE replaces it.
+  // songs, the mission music and the places' recordings need no room on the game's site (1 GB at most). Only from the same origin as
+  // the game: another host may forbid other origins (a strict content policy like the test server's, connect-src 'self') – there the
+  // address is '' and the mode plays without those files. window.GLTON_BASE replaces it (the tests: the test server's own copy).
   const TON = 'https://mynametouse.github.io/pavillon-ton/';
-  const ton = () => (typeof window !== 'undefined' && window.GLTON_BASE) || TON;
+  const ton = () => {
+    if (typeof window === 'undefined') return TON;
+    if (typeof window.GLTON_BASE === 'string') return window.GLTON_BASE;
+    try {
+      return new URL(TON).origin === window.location.origin ? TON : '';
+    } catch (e) {
+      return '';
+    }
+  };
   // ---- the stations ----
   // uhr: the format clock – what follows what (musik, mod: the presenter, kenn: ident and claim, werb: advert, news, verkehr, feat: the
   // feature in parts, gruss: greetings); fern: reception ('sued': comes in only in the south of the map, 'west': always with noise)
