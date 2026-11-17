@@ -135,4 +135,15 @@ in OSM aber oft gemappt; (4) zeichnen wie `welt/schleusingen.js` `building()`/`p
 
 ## Offen
 
-- (wird ergänzt)
+- **Innen passend zu außen** (`innen-real`): die neuen Fenster an freien Brandwand-Strecken fehlen drinnen (siehe „Für den Lead“,
+  `FASSADE.fenster(id)` gibt sie); Hoftüren führen nicht hinein.
+- **Ratscher**: 16 Haustüren mit einem Nachbargebäude 0,7 m davor bleiben (erklärt: der Grundriss der Häuser von innen hängt an ihnen; eine
+  verlegte Tür bräuchte `world/village.js` und `HAEUSER`). Hoftore in den Lücken zwischen den Gebäuden der Bauernhöfe sind nicht gebaut
+  (die Höfe sind offen begehbar – realistisch wäre ein Tor, das man öffnet).
+- **Burg**: das Osttor ist in OSM ein Tunnel (`layer=-1`) – hier ebenerdig mit Rampe; die Treppe vor dem Westtor folgt der OSM-Linie
+  (gerade, 25,7 m), die Höhen kommen vom Gelände der Kacheln (Copernicus-Oberflächenmodell: um die Burg ungenau).
+- **Gelände**: neben großen Gebäuden hat das Oberflächenmodell der Kacheln Buckel (die Gebäude stecken darin); die Höfe und Durchgänge sind
+  geebnet, die Straßen ringsum nicht (`welt/welt.js`, DGM1 Thüringen würde es lösen).
+- **Weitere OSM-Treppen** (24 in der Altstadt) sind nicht als Treppen gebaut – nur die vor dem Burgtor; das Werkzeug dafür liegt in
+  `welt/schleusingen.js` (`stairFrom`, `addStair`, `stairGeo`).
+- Die Schleusinger Stadtteile außerhalb der Altstadt (ETHOS-Zellen von `gebaeude/gebaeude.js`) sind nicht geprüft.
