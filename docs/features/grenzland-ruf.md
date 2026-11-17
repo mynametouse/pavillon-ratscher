@@ -109,7 +109,8 @@ laufender Job nicht (nach dem Neuladen wird er wieder angeboten).
   grün 17.11. ~14:55, hier grün 15:05). Bilder `out/grenzland_ruf/10_broetchen_moped`, `11_broetchen_tuer`, `12_broetchen_fertig`,
   `13_feuerwehr_aufbau`, `14_feuerwehr_wasser`, `15_feuerwehr_kaffee`, `16_holz_laden`, `17_holz_gerhard`, `18_tonne_strasse`,
   `19_handy_auftraege`, `20_hund_scheune`, `21_hund_leine`.
-- Auf Actions zusätzlich die Tests der übernommenen Dateien: `grenzland_welt:film,wahl` (15 ok), `grenzland_radio` (49 ok), `handy`.
+- Auf Actions zusätzlich (einmal) die Tests der übernommenen Dateien: `grenzland_welt:film,wahl` 15/15, `grenzland_radio` 49/49;
+  `handy` scheitert im Abschnitt `kamera` wie auf `src` (siehe „Für den Lead“).
 
 ## Entscheidungen
 
@@ -146,8 +147,10 @@ laufender Job nicht (nach dem Neuladen wird er wieder angeboten).
   (`CLOCK.focus('gl-jobs')`); „Bis zum Beginn warten“ ist der Zeitraffer der Uhr (`CLOCK.wait`).
 - **Tagebuch:** Quelle `grenzland-jobs` (Ordnung 6); ein laufender Job wird verfolgt (`QUESTS.track = 'grenzland-jobs:<id>'`) und beim
   Ende zurückgestellt – `GRENZLAND.stop` stellt nur `grenzland:`-Einträge zurück, darum macht `GLJOBS.stop` das selbst.
-- **`tests.txt`:** enthält vorübergehend `grenzland_welt:film,wahl`, `handy`, `grenzland_radio` (die Tests der übernommenen Dateien,
-  einmal auf meinem Zweig auf Actions) – vor dem Zusammenführen wieder heraus; wenn sie beim Zusammenführen noch drin sind: streichen
-  (sie stehen schon in ihren eigenen `tests.txt`).
+- **Tests der übernommenen Dateien** (einmal auf meinem Zweig auf Actions, danach wieder aus meiner `tests.txt` genommen):
+  `grenzland_welt:film,wahl` 15/15 und `grenzland_radio` 49/49 grün; **`handy` scheitert im Abschnitt `kamera`** – genauso auf `src`
+  2e33dec02 (Prüfpaket 44092915006, also nicht durch diesen Zweig): der Anruf aus dem Abschnitt `wo` ist beim Klick auf das Kamera-Symbol
+  noch als Anrufbildschirm da (`HANDY.auflegen` lässt „Anruf beendet“ 1,1 s Spielzeit stehen, der Test geht nur 0,5 s weiter). Abhilfe in
+  `viz3/test/handy.py` (nicht meine Datei), `sect_kamera` vor dem ersten Klick: `until("!HANDY.S.anruf", 3)`.
 - **Lohn:** der Auftrag nennt `GL.pay`; das zieht Geld ab – Lohn geht über `GL.earn(n, wer)` (Bank-Buchung im Handy mit Absender).
 - `src` 2e33dec02 (Klang-Archiv nur vom eigenen Ursprung) ist in meinen Zweig gemergt (kein Rebase, damit kein Force-Push nötig ist).
