@@ -6,7 +6,7 @@ applies as the town is built – the data file fassade/ansicht.json of this extr
 FASSADE loads gebaeude's own small look file (gebaeude/ansicht.json) first and this one over it key by key – a key here replaces that
 look as a whole, so its fields (storeys, a flat roof …) are taken over here first and the street-view values laid over them.
 
-The materials as FASSADE names them, with three choices of ours:
+The materials as FASSADE names them, with four choices of ours (a block of flats in plaster: smooth render, 'glatt'):
   klinker → 'putz' in the brick's colour (style 9 falls into the facade shader's barn branch and would be drawn as boards),
   verkleidung (light or coloured shingles) and schiefer → slate in the colour read off the view (schieferTon 3),
   *_og → the ground floor's colour (the upper floors are slate in its tone or half-timbering in its timber's tone).
@@ -36,12 +36,13 @@ def look(r):
     m, art = r['material'], r['art']
     L = {'art': ART[art]}
     col = r['wand']
-    if m in ('putz', 'klinker'):
+    if m in ('putz', 'klinker') and not (art == 'block' and m == 'putz'):
         L['material'] = 'putz'
     elif m == 'stein':
         L['material'] = 'stein'
-    elif m in ('putz_modern', 'glas'):
-        L['material'] = 'glatt' if m == 'putz_modern' else 'glas'
+    elif m in ('putz_modern', 'glas') or (art == 'block' and m == 'putz'):
+        # a block of flats is smooth render of its time with wide bays (style 1 – gebaeude's finding for the blocks on Hildburghäuser Straße)
+        L['material'] = 'glas' if m == 'glas' else 'glatt'
         L['achse'] = 3.3
     elif m in ('schiefer', 'verkleidung'):
         L['material'] = 'schiefer'

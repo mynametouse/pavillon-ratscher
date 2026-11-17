@@ -77,6 +77,8 @@ test('the choices of the converter', () => {
       tag = `#${r.i} (${r.material})`;
     if (r.material === 'klinker')
       assert.deepEqual([L.material, L.farbe], ['putz', r.wand], `${tag}: brick as plaster (style 9 is boards)`);
+    if (r.art === 'block' && r.material === 'putz')
+      assert.equal(L.material, 'glatt', `${tag}: a block of flats in smooth render (style 1)`);
     if (r.material.endsWith('_og')) assert.equal(L.farbe, r.eg.farbe, `${tag}: the ground floor's colour`);
     if (r.material === 'schiefer' || r.material === 'verkleidung')
       assert.deepEqual(

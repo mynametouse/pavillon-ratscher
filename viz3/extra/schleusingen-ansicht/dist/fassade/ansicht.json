@@ -256,7 +256,8 @@
 },
 "#92": {
 "art": "haus",
-"material": "putz",
+"material": "glatt",
+"achse": 3.3,
 "farbe": "#d5cca8",
 "laeden": false,
 "dach": {
@@ -267,7 +268,8 @@
 },
 "#93": {
 "art": "haus",
-"material": "putz",
+"material": "glatt",
+"achse": 3.3,
 "farbe": "#e8e1ca",
 "laeden": false,
 "dach": {
@@ -564,7 +566,8 @@
 },
 "#232": {
 "art": "haus",
-"material": "putz",
+"material": "glatt",
+"achse": 3.3,
 "farbe": "#a9b3c6",
 "laeden": false,
 "dach": {
@@ -575,7 +578,8 @@
 },
 "#233": {
 "art": "haus",
-"material": "putz",
+"material": "glatt",
+"achse": 3.3,
 "farbe": "#d5d6b6",
 "laeden": false,
 "dach": {
@@ -586,7 +590,8 @@
 },
 "#234": {
 "art": "haus",
-"material": "putz",
+"material": "glatt",
+"achse": 3.3,
 "farbe": "#e2dbb2",
 "laeden": false,
 "dach": {
@@ -609,7 +614,8 @@
 },
 "#236": {
 "art": "haus",
-"material": "putz",
+"material": "glatt",
+"achse": 3.3,
 "farbe": "#dcd6c4",
 "laeden": false,
 "dach": {

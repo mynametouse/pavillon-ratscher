@@ -79,7 +79,8 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   gemacht ist.
 - `FASSADE` lädt erst die kleine `gebaeude/ansicht.json` von `gebaeude` und dann diese Datei darüber, Schlüssel für Schlüssel – deshalb
   übernimmt `ansicht.py` deren Felder (Geschosse von #80, #580, #717, das Flachdach der Schule) und legt die gelesenen darüber.
-- Eigene Entscheidungen: Klinker als Putz in der Klinkerfarbe (Stil 9 `BRICK` fällt im Fassaden-Shader in den Zweig der Scheunen und
+- Eigene Entscheidungen: Wohnblöcke in Putz als glatter Putz (`glatt`, Stil 1 – wie der Befund von `gebaeude` für die Blöcke an der
+  Hildburghäuser Straße); Klinker als Putz in der Klinkerfarbe (Stil 9 `BRICK` fällt im Fassaden-Shader in den Zweig der Scheunen und
   würde als Bretter gezeichnet, s. u.); Schiefer und helle oder
   farbige Schindeln als Schiefer in der gelesenen Farbe (`schieferTon` 3); bei Schiefer oder Fachwerk über dem Erdgeschoss die Farbe des
   Erdgeschosses. **#72** (die Kirche an der Ilmenauer Straße): unser Dach gilt über dem Schieferdach von `gebaeude` – die Ansicht von der
