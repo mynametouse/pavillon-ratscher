@@ -120,7 +120,9 @@ oder zurückgelassen):
   der Tür) sowie die Streife der Stadt (hält am Markt). Im Unit-Test der Welt (`grenzland_welt.test.mjs`) stehen die zwei neuen Tagesereignisse in der Liste
   „beide waren eben da“.
 - `viz3/test/grenzland_strasse.py <port> <teile>`: `linien` (jede Fahrt hat eine Linie ohne Kehre), `holz`, `milch`, `kraeh`, `streife`,
-  `schule`, `paket`, `liefer` (Schleusingen: REWE-Rampe, Apotheke), `begegnung`; die Zeilen in `viz3/extra/grenzland-strasse/tests.txt`.
+  `schule`, `paket`, `liefer` (Schleusingen: REWE-Rampe, Apotheke), `begegnung`, `verkehr` (ein Auto des Dorfs kommt an einen Lkw des
+  Modus, der in seiner Spur steht: es wartet dahinter oder fährt herum, nie hindurch); die Zeilen in
+  `viz3/extra/grenzland-strasse/tests.txt`.
   Bilder in `out/grenzland_strasse/` (auf GitHub Actions im Artefakt `out`: `01_holz_am_polter`, `02_holz_beladen`, `03_milch_am_hof`,
   `04_kraehwinkel_am_lager`, `05_streife_am_anger`, `06_schueler_am_anger`, `07_liefer_rewe`, `08_paket`, `08_z-apo`, `10_anhalter`,
   `11_panne`, `12_jaeger_hochsitz`). Grün: Lauf 44111228557 (`e9b4854df`, alle fünf Jobs).
@@ -132,16 +134,20 @@ oder zurückgelassen):
 - Lidl hat in den Straßendaten keine Zufahrt zu seiner Rampe – dort kommt (noch) kein Lkw.
 - Die Ankunft eines Lieferwagens an einer Ladentür der Altstadt geht über die Straßendaten der Region; ob dort ein Halteverbot wäre, weiß
   das Spiel nicht – die Wagen halten am Bordstein wie überall.
-- Der Verkehr des Spiels (`VAUTO`, `VKSTROM`) weicht den Fahrzeugen des Modus nicht aus (siehe „Für den Lead“).
+- Fußgänger des Spiels (`verkehr/verkehr.js`) gehen noch durch die Fahrzeuge des Modus; der Haken gilt nur für die Autos.
 
 ## Für den Lead
 
 - **`gl_modus.js`** (schon eingetragen, je eine Zeile, markiert `// grenzland-strasse`): in `tick(dt)` nach `GLUMGEBUNG.tick(dt)`
   `for (const m of [window.GLLINIEN, window.GLRAST]) if (m && m.tick) m.tick(dt);`, in `stop()` nach `GLUMGEBUNG.stop()` dasselbe mit
   `stop()`. **`modules.txt`**: `gl_linien_data.js`, `gl_linien.js` nach `gl_ereignis.js`.
-- **Wunsch an `verkehr/verkehr_auto.js` `obstacles()`** (nicht meine Datei): die Fahrzeuge des Modus als Hindernisse, wie die Busse –
-  `if (window.GLAUTO) for (const c of GLAUTO.cars) if (c.g.visible) for (const t of [-1, 0, 1]) OB.push({ x: c.x + Math.sin(c.hd) * (c.T.cy + t * Math.max(0, c.T.hl - c.T.hw)), y: c.y + Math.cos(c.hd) * (c.T.cy + t * Math.max(0, c.T.hl - c.T.hw)), r: c.T.hw, kind: 'veh', moving: c.v > 0.5 });`
-  Sonst fahren Autos des Verkehrs durch Lkw und Streifen hindurch (bei der Polizei schon heute so).
+- **Haken in `verkehr/verkehr_auto.js`** (auf Wunsch des Leads, 17.11. nachmittags; markiert `// grenzland-strasse`, drei Stellen):
+  `VAUTO.hindernisse` – eine Liste von Funktionen, die `obstacles()` jedes Bild fragt (`fn(OB)` legt `{ x, y, r, kind: 'veh', moving }`
+  dazu; ein Fehler darin bleibt dort). `GLLINIEN` trägt beim ersten Bild des Modus eine ein: Kreise längs jedes sichtbaren Wagens von
+  `GLAUTO` (Lkw, Lieferwagen, Streifen, die Wagen der Fahndung und der Ereignisse). Der Verkehr des Spiels hält jetzt hinter ihnen und
+  fährt um einen stehenden herum, wo Platz ist, statt hindurch (Test `grenzland_strasse:verkehr`, Bild `13_verkehr_hinter_lkw`). Busse
+  (`BUS.obstacles`) und die Fahrzeuge des Spielers (`VEH`) hatte er schon. Nicht in automatischen Tests anderer Teile
+  (`GLLINIEN.aus`), damit deren Abläufe gleich bleiben.
 - **Wunsch an `gl_fahndung.js`:** eine Übergabe `GLFAHNDUNG.uebernimm(c)` – ein Wagen eines anderen Moduls (die Streife von
   `GLLINIEN`, die gerade sieht, wie etwas passiert) wird die erste Einheit der Fahndung, statt vom Straßenende zu kommen. Bis dahin
   meldet sie sofort (Beamte als Zeugen) und fährt weiter.

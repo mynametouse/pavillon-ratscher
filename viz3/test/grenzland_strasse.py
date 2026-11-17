@@ -14,6 +14,8 @@
 #   begegnung   the new encounters on the way: a hitchhiker (taken along on the moped to his place, five euros), a breakdown (hazard
 #               lights, bonnet up, the triangle behind; help that fits – the car drives off), the hunter on his high seat at dusk; each
 #               with its point on the radar, each gone cleanly; the old fair is not planned when a festival calendar is there
+#   verkehr     the game's traffic (verkehr/verkehr_auto.js) and the mode's vehicles: a car of the village comes up behind a lorry of the
+#               mode standing in its lane – it stops behind it or goes round it, never through it (the hook VAUTO.hindernisse)
 #   probe       measures the ground by the A 73 and near the Klinge, pictures from above (only for choosing places; not in tests.txt)
 # Pictures in out/grenzland_strasse/.   python3 viz3/test/grenzland_strasse.py 9043 [sections]
 import sys, os, json, time
@@ -296,6 +298,56 @@ with lib.browser() as b:
         left = J("({ cars: GLAUTO.cars.filter(c => c.strasse).length, figs: GLFIG.figs.filter(F => F.linie).length, polter: !!GLLINIEN.debug.polter(), list: GLLINIEN.fahrzeuge().length })")
         ck('linien: „Beenden“ takes every vehicle, driver and the pile away', left['cars'] == 0 and left['figs'] == 0 and not left['polter'] and left['list'] == 0, str(left))
         ck('linien: no error', not E("GLLINIEN.err"), str(E("GLLINIEN.err")))
+    # ------------------------------------------------------------------ verkehr ------------------------------------------------------------------
+    if want('verkehr'):
+        # Friday 11:00 by the Anger: the village's traffic built there (verkehr/verkehr.js, place 'dorf'), its own cars cleared
+        X("GLLINIEN.aus = false; GLFAHNDUNG.clear(); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 11 * 60; if (DN && DN.active) DN.update(true)")
+        X("TS.look(222, -108, 0, 25, 1.7, -5)")
+        for _ in range(30):
+            steps(0.5); time.sleep(0.3)
+            if E("!!(window.VERKEHR && VERKEHR.places.dorf && VERKEHR.places.dorf.on)"): break
+        X("VERKEHR.autoOn(false); VERKEHR.clear()")
+        steps(0.5)
+        hook = J("({ n: (VAUTO.hindernisse || []).length })")
+        # a car's way through the Anger (as viz3/test/verkehr.py finds it): exits a, b and the arc length by the Anger
+        thr = J("""(() => { const Pl = VERKEHR.places.dorf, N = VERKEHR.net; let best = null;
+          for (const a of Pl.exits) for (const b of Pl.exits) { if (a === b) continue; const L = VERKEHR.line('dorf', a, b); if (!L) continue;
+            const pr = N.project(L, 222, -108, 0, L.L); if (pr && pr.s > 150 && (!best || pr.d < best.d)) best = { a, b, s: pr.s, d: pr.d, L: L.L }; }
+          return best })()""")
+        ck('verkehr: the hook is filled, a way of the village\'s cars by the Anger', hook['n'] >= 1 and thr is not None, str((hook, thr)))
+        if thr:
+            # a box lorry of the mode stands in that car's lane by the Anger; the car starts 90 m before it
+            X(f"""window.__sl = (() => {{ const L = VERKEHR.line('dorf', {thr['a']}, {thr['b']}), p = VERKEHR.net.at(L, {thr['s']});
+              const c = GLAUTO.spawn('koffer', {{ col: '#e4e5e2', col2: '#f2f2ef' }}); if (!c) return null; c.strasse = true; GLAUTO.park(c, p.x, p.y, p.hd); return c }})(); 0""")
+            # (the player 30 m to the side of the road, out of the car's way)
+            X("(() => { const l = window.__sl; if (l) TS.look(l.x, l.y, l.hd * 57.3 + 90, 30, 1.7, -5) })()")
+            steps(0.3)
+            cid = E(f"VERKEHR.addCar({{ from: {thr['a']}, to: {thr['b']}, s: {max(0, thr['s'] - 90)}, v: 8 }})")
+            ck('verkehr: a lorry of the mode stands in the lane, a car of the village comes', E("!!window.__sl") and cid is not None, str(cid))
+            # the least room between the two bodies (car: three points along it; lorry: its axis from back to front) – below zero would
+            # be the car inside the lorry
+            ROOM = """(() => { const c = VERKEHR.car(%s), l = window.__sl; if (!c || !l) return null; const T = l.T, D = c.D;
+              const ax = l.x + Math.sin(l.hd) * T.yr, ay = l.y + Math.cos(l.hd) * T.yr, bx = l.x + Math.sin(l.hd) * T.yf, by = l.y + Math.cos(l.hd) * T.yf;
+              const seg = (x, y) => { const dx = bx - ax, dy = by - ay, u = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy))); return Math.hypot(x - ax - dx * u, y - ay - dy * u) };
+              let m = 1e9; for (const k of [-1, 0, 1]) { const o = D.CY + k * Math.max(0, D.HL - D.HW); m = Math.min(m, seg(c.x + Math.sin(c.hd) * o, c.y + Math.cos(c.hd) * o) - D.HW - T.hw) }
+              return { room: m, v: c.v, s: c.s, d: Math.hypot(c.x - l.x, c.y - l.y) } })()""" % cid
+            least, near, stood, past, t = 1e9, 1e9, False, False, 0
+            for i in range(90):
+                steps(0.5); t += 0.5
+                r = J(ROOM)
+                if not r: break
+                least, near = min(least, r['room']), min(near, r['d'])
+                if r['v'] < 0.1 and r['d'] < 20: stood = True
+                if r['s'] > thr['s'] + 15: past = True; break
+                if i == 14:
+                    X(f"(() => {{ const l = window.__sl; TS.look(l.x, l.y, l.hd * 57.3 + 150, 16, 1.8, -6) }})()")
+                    for _ in range(3): steps(0.2); time.sleep(0.3)
+                    pic('13_verkehr_hinter_lkw')
+                    t += 0.6
+            ck('verkehr: the car comes up to the lorry and never drives through it (it waits behind it or goes round it)', near < 20 and least > -0.3,
+               f'least room {least:.2f} m, nearest {near:.1f} m, stood {stood}, past {past}, {t:.0f} s')
+            X("VERKEHR.clear(); VERKEHR.autoOn(true); if (window.__sl) GLAUTO.remove(window.__sl); window.__sl = null")
+            steps(0.5)
     # ------------------------------------------------------------------ begegnung ------------------------------------------------------------------
     if want('begegnung'):
         X("GLFAHNDUNG.clear(); GLEREIGNIS.stop()")

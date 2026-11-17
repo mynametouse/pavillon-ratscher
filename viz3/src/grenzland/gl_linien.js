@@ -890,8 +890,33 @@ export const GLLINIEN = (() => {
     S.kinderLaden = false;
   }
   // ------------------------------------------------------------------ per frame ------------------------------------------------------------------
+  // ---- the game's traffic (verkehr/verkehr_auto.js) stops for the mode's cars and lorries and goes round them where they stand: circles
+  //      along each body, as it has them for the player's vehicles (the hook VAUTO.hindernisse; not while automated tests of other parts
+  //      run without this module's traffic, GLLINIEN.aus) ----
+  function fuerVerkehr(OB) {
+    if (!GL.on || S.aus) return;
+    for (const c of GLAUTO.cars) {
+      const T = c && c.T;
+      if (!T || c.gone || !c.g || !c.g.visible) continue;
+      const hl = T.hl ?? (T.yf - T.yr) / 2,
+        cy = T.cy ?? (T.yf + T.yr) / 2,
+        half = Math.max(0, hl - T.hw),
+        n = Math.max(3, Math.ceil((2 * half) / (1.5 * T.hw)) + 1),
+        sx = Math.sin(c.hd),
+        sy = Math.cos(c.hd),
+        moving = Math.abs(c.v || 0) > 0.5;
+      for (let i = 0; i < n; i++) {
+        const o = cy - half + (2 * half * i) / (n - 1);
+        OB.push({ x: c.x + sx * o, y: c.y + sy * o, r: T.hw, kind: 'veh', moving });
+      }
+    }
+  }
   function tick(dt) {
     if (!GL.on) return;
+    if (!S.hook && VAUTO && Array.isArray(VAUTO.hindernisse)) {
+      VAUTO.hindernisse.push(fuerVerkehr);
+      S.hook = true;
+    }
     try {
       lauf(Math.min(dt, 0.25));
     } catch (e) {
