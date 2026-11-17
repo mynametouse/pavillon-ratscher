@@ -8,12 +8,15 @@
 #              the Markt and no new shader programs
 #   bilder   – model pictures from the viewpoints (the model only; the private views stay on the chat machine) → out/schleusingen_ansicht/
 # The world tiles come from the published site (as viz3/test/laeden.py).
-#   python3 viz3/test/schleusingen_ansicht.py PORT [sections]      sections: data,fassaden,markt,bilder (default all)
+#   python3 viz3/test/schleusingen_ansicht.py PORT [sections]      sections: data,fassaden,markt,bilder (default all);
+#   bilder=N: only N viewpoints spread evenly over the list (the CI – each picture waits up to a minute for the world round it)
 #   environment: SA_VIEWS=v000,v010 (only these pictures), SA_DUMP=1 (the town's buildings with their feet → out/…/stadt_dump.json)
 import sys, os, json, time, math, urllib.request, concurrent.futures, base64, subprocess
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else 'data,fassaden,markt,bilder').split(','))
+ARGS = (sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else 'data,fassaden,markt,bilder').split(',')
+want = set(a.split('=')[0] for a in ARGS)
+NB = next((int(a.split('=')[1]) for a in ARGS if a.startswith('bilder=')), 0)  # 0: every viewpoint
 ck = lib.Checks('schleusingen_ansicht')
 OUT = lib.out('schleusingen_ansicht')
 EXTRA = os.path.join(lib.ROOT, 'viz3', 'extra', 'schleusingen-ansicht')
@@ -120,6 +123,8 @@ if 'ratscher' in want:
 if BROWSER:
     only = set(filter(None, os.environ.get('SA_VIEWS', '').split(',')))
     views = [v for v in VIEWS if not only or v['name'] in only]
+    if NB and len(views) > NB:
+        views = [views[round(k * (len(views) - 1) / max(1, NB - 1))] for k in range(NB)]
     fetch_tiles([MARKT, (-1480, 1040), (-1110, 1620), (-650, 1430)])
     with lib.browser() as b:
         errs = []

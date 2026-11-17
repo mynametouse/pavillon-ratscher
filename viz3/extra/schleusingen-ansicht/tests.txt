@@ -1,7 +1,8 @@
 # feat/schleusingen-ansicht: Schleusingen after private views from the street (docs/features/schleusingen-ansicht.md); one 'name[:args]'
 # per line as for viz3/test/run.py – every line a job of its own in the feature CI (≤ 60 min each)
 smoke
-schleusingen_ansicht
+# the model pictures from 12 of the 104 viewpoints (each waits up to a minute for the world round it; all of them on the chat machine)
+schleusingen_ansicht:data,fassaden,markt,bilder=12
 memphone
 # the looks (fassade/ansicht.json) change styles, colours and storeys of the town's houses: the town and its houses from inside (SINNEN
 # reads the town's walls and storeys). gebaeude:schleusingen checks the roofs of #308 (tiles) and #72 (slate) from gebaeude's own look

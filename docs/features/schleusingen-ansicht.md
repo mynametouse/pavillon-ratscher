@@ -56,15 +56,15 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   - **Ein Abfalleimer**.
   - Alles in zwei Meshes (Pflaster; Ausstattung im Material der Requisiten der Stadt), Kollisionen über `KERN.pushOut` (Priorität 11, gibt
     weiter). Gebaut, wenn die Stadt steht, weg mit ihr. `?nosamarkt` schaltet ab.
-- **Test** `viz3/test/schleusingen_ansicht.py` (Abschnitte `data,fassaden,markt,bilder` im Prüfpaket; von Hand dazu `ratscher`): die
-  Daten gültig und `fassade/ansicht.json` aus ihnen gemacht (`check.py`); `FASSADE` hat die Ansichten geladen und die Stadt zeichnet jedes
-  gelesene Gebäude so (Stil, Wandfarbe, Rahmen, Läden, Schiefer- und Fachwerkton, Art, Dachfarbe – die Ansicht noch einmal über den Stil
-  gelegt ändert nichts); der Markt steht, ≤ 4 Draw-Calls mehr, kein neues Shader-Programm, das Pflaster 2–5 cm über dem Boden, Kübel
-  und Figur halten auf; Modellbilder von allen Blickpunkten (nur das Modell) nach `out/schleusingen_ansicht/` (`SA_VIEWS=v000,p5_0` nur
-  diese, `SA_VIEWS_FILE` andere Blickpunkte). `ratscher` schreibt die Häuser des Dorfs nach `ratscher_dump.json` und zeichnet
-  Modellbilder von den Blickpunkten in `views_ratscher.json` (die Standorte der freien Panoramax-Fotos). Unit-Tests
-  `viz3/test/unit/schleusingen_ansicht.test.mjs` (jede Ansicht in den Wörtern, die `FASSADE` kennt – aus `fassade.js` gelesen –, die
-  Entscheidungen des Umwandlers, die Felder von `gebaeude` bleiben, jeder Datensatz passt zu seinem Gebäude).
+- **Test** `viz3/test/schleusingen_ansicht.py` (Abschnitte `data,fassaden,markt,bilder`; im Prüfpaket `bilder=12`: zwölf Blickpunkte über
+  die Liste verteilt; von Hand dazu `ratscher`): die Daten gültig und `fassade/ansicht.json` aus ihnen gemacht (`check.py`); `FASSADE` hat
+  die Ansichten geladen und die Stadt zeichnet jedes gelesene Gebäude so (Stil, Wandfarbe, Rahmen, Läden, Schiefer- und Fachwerkton, Art,
+  Dachfarbe – die Ansicht noch einmal über den Stil gelegt ändert nichts); der Markt steht, ≤ 4 Draw-Calls mehr, kein neues
+  Shader-Programm, das Pflaster 2–5 cm über dem Boden, Kübel und Figur halten auf; Modellbilder von allen Blickpunkten (nur das Modell)
+  nach `out/schleusingen_ansicht/` (`SA_VIEWS=v000,p5_0` nur diese, `SA_VIEWS_FILE` andere Blickpunkte). `ratscher` schreibt die Häuser
+  des Dorfs nach `ratscher_dump.json` und zeichnet Modellbilder von den Blickpunkten in `views_ratscher.json` (die Standorte der freien
+  Panoramax-Fotos). Unit-Tests `viz3/test/unit/schleusingen_ansicht.test.mjs` (jede Ansicht in den Wörtern, die `FASSADE` kennt – aus
+  `fassade.js` gelesen –, die Entscheidungen des Umwandlers, die Felder von `gebaeude` bleiben, jeder Datensatz passt zu seinem Gebäude).
 
 ## Ins Spiel über `FASSADE` (seit `feat/gebaeude` in `src` ist, 9da2c4cf; ohne Zeile in `welt/schleusingen.js`)
 
