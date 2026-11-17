@@ -319,32 +319,39 @@ export const LIMARKT = (() => {
     }
     K.solid(u, vm, W + 0.1, len + 0.1);
   }
-  // ---- a checkout: the counter along v (from v0, length 4.4 m), the belt, the scanner, the till, the cashier's seat, a small rack ----
+  // ---- a checkout: the counter along v (from v0 at the front, length 4.4 m), the belt, the scanner, the till, the cashier's seat, a small
+  // rack. feat/laeden-leben: as in a real shop the queue starts on the store's side (high v): there the sweets rack and the belt, then
+  // the scanner by the cashier, the packing shelf towards the exit (low v) – until 17.11. it was the other way round ----
   function checkout(K, R, u, v0, n, side = 1) {
     const W = 0.95,
       Lc = 4.4,
-      vm = v0 + Lc / 2;
+      vm = v0 + Lc / 2,
+      m = v => v0 + Lc - (v - v0);
     K.box(u, vm, 0, W, Lc, 0.86, C.counter, C.counterD);
-    K.box(u, v0 + 1.35, 0.86, W - 0.12, 2.5, 0.02, C.belt); // the belt (the first part)
-    K.box(u, v0 + 2.75, 0.865, W - 0.2, 0.36, 0.01, L(0.2, 0.25, 0.3)); // the scanner's glass
-    K.box(u, v0 + 3.6, 0.86, W, 1.6, 0.02, C.counter); // where the goods are packed
-    K.box(u + side * 0.25, v0 + 2.6, 0.88, 0.3, 0.28, 0.18, C.counterD); // the till
-    K.glow(u + side * 0.25, v0 + 2.6 - 0.15, 1.06, 0.26, 0.02, 0.18, C.screen, 0); // its screen
+    K.box(u, m(v0 + 1.35), 0.86, W - 0.12, 2.5, 0.02, C.belt); // the belt (the first part)
+    K.box(u, m(v0 + 2.75), 0.865, W - 0.2, 0.36, 0.01, L(0.2, 0.25, 0.3)); // the scanner's glass
+    K.box(u, m(v0 + 3.6), 0.86, W, 1.6, 0.02, C.counter); // where the goods are packed
+    K.box(u + side * 0.25, m(v0 + 2.6), 0.88, 0.3, 0.28, 0.18, C.counterD); // the till
+    K.glow(u + side * 0.25, m(v0 + 2.6 - 0.15), 1.06, 0.26, 0.02, 0.18, C.screen, 0); // its screen
     // the cashier's seat in the gap beside the counter (side +1: towards +u)
-    K.box(u + side * (W / 2 + 0.38), v0 + 2.5, 0, 0.42, 0.42, 0.55, C.seat);
-    K.box(u + side * (W / 2 + 0.58), v0 + 2.5, 0.55, 0.06, 0.42, 0.45, C.seat);
+    K.box(u + side * (W / 2 + 0.38), m(v0 + 2.5), 0, 0.42, 0.42, 0.55, C.seat);
+    K.box(u + side * (W / 2 + 0.58), m(v0 + 2.5), 0.55, 0.06, 0.42, 0.45, C.seat);
     // a small rack of sweets at the start of the queue: its back, three boards, the sweets on them
     const ur = u - side * (W / 2 + 0.25);
-    K.box(ur + side * 0.14, v0 + 0.6, 0, 0.12, 1.0, 1.3, C.shelfD);
+    K.box(ur + side * 0.14, m(v0 + 0.6), 0, 0.12, 1.0, 1.3, C.shelfD);
     for (const z of [0.35, 0.7, 1.05]) {
-      K.box(ur - side * 0.02, v0 + 0.6, z - 0.02, 0.3, 1.0, 0.02, C.shelf);
-      goodsRunV(K, R, ur - side * 0.17, -side, v0 + 0.15, v0 + 1.05, z, 0.2, 0.2, PAL.suess, ['box']);
+      K.box(ur - side * 0.02, m(v0 + 0.6), z - 0.02, 0.3, 1.0, 0.02, C.shelf);
+      goodsRunV(K, R, ur - side * 0.17, -side, m(v0 + 1.05), m(v0 + 0.15), z, 0.2, 0.2, PAL.suess, ['box']);
     }
-    // the number on a pole
-    K.box(u + side * (W / 2 - 0.08), v0 + 0.1, 0.86, 0.05, 0.05, 1.3, C.counterD);
-    K.sign(['Kasse ' + n], u + side * (W / 2 - 0.08), v0 + 0.1 - 0.04, 2.0, 0.55, 0.32, -1, 2, true);
+    // the number on a pole (where the queue begins)
+    K.box(u + side * (W / 2 - 0.08), m(v0 + 0.1), 0.86, 0.05, 0.05, 1.3, C.counterD);
+    K.sign(['Kasse ' + n], u + side * (W / 2 - 0.08), m(v0 + 0.1) + 0.04, 2.0, 0.55, 0.32, 1, 2, true);
     K.solid(u, vm, W + 0.1, Lc);
-    K.spot('kasse', u + side * (W / 2 + 0.38), v0 + 2.5, [-side, 0]);
+    K.spot('kasse', u + side * (W / 2 + 0.38), m(v0 + 2.5), [-side, 0]);
+    // feat/laeden-leben: where a customer pays (across the counter from the cashier, by the scanner) and where the queue begins
+    // (beyond the counter's end on the store's side); the queue runs on along +v
+    K.spot('zahlen', u - side * (W / 2 + 0.42), m(v0 + 2.6), [side, 0]);
+    K.spot('anstellen', u - side * (W / 2 + 0.42), v0 + Lc + 0.55, [0, -1]);
   }
   // ---- produce: angled display tables with crates of fruit and vegetables (spheres as small boxes in heaps), a wall rack ----
   function produceTable(K, R, u, v, w, l, ang = 0) {
@@ -648,6 +655,8 @@ export const LIMARKT = (() => {
     K.solid(um, vc, w, 0.95);
     K.solid(um, vW + dir * 0.3, w, 0.55);
     K.spot('theke', um, vW + dir * 1.25, [0, dir]);
+    // feat/laeden-leben: where a customer stands at the counter (and two more behind)
+    K.spot('kunde', um, vc + dir * 1.05, [0, -dir]);
   }
   // the bakery and the bottle return in a big vestibule (REWE's entrance strip): along its back wall (the store's front)
   function bakeryIn(P, u, G, q, R, disc) {

@@ -1,0 +1,4 @@
+smoke
+laeden_leben:markt,kaufen
+laeden_innen:edeka,lidl,rewe,obi,nacht
+laeden

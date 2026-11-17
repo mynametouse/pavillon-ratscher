@@ -26,6 +26,7 @@ import { LIPLAN } from './innen_plan.js';
 import { LIMARKT } from './innen_markt.js';
 import { LIBAU } from './innen_bau.js';
 import { LIHAUS } from './innen_haus.js';
+import { OEFFNUNG } from '../einkauf/oeffnung.js';
 export const LINNEN = (() => {
   const S = {
     on: false,
@@ -64,7 +65,10 @@ export const LINNEN = (() => {
     waesche: 'Mo-Fr 09:00-18:00',
     baumarkt: 'Mo-Sa 08:00-20:00',
   };
+  // feat/laeden-leben: the hours live in the registry OEFFNUNG (einkauf/oeffnung.js) – every unit is registered there (prepUnits)
   const isOpenU = U => {
+    const o = OEFFNUNG.offen(U.id);
+    if (o !== null) return o;
     if (!U.week) U.week = LAEDEN.parseOH(U.oh || DEFAULT_OH[U.type] || 'Mo-Sa 08:00-20:00');
     return !!LAEDEN.isOpen(U.week);
   };
@@ -928,6 +932,10 @@ export const LINNEN = (() => {
         secOf,
         nb,
         doorSecs,
+        // feat/laeden-leben: what the people and the shopping need – the blocks of goods (where, which kind, coloured from which
+        // department) and the places of the staff and the customers
+        goods: Pl.goods,
+        spots: Pl.spots,
       });
     }
     M.ms += performance.now() - t0;
@@ -1557,6 +1565,18 @@ export const LINNEN = (() => {
       U.doors = U.doors.map(d => sh.doors.find(q => Math.hypot(q.x - d.x, q.y - d.y) < 0.01) || d);
       if (!S.shops.has(U.shop)) S.shops.set(U.shop, []);
       S.shops.get(U.shop).push(U);
+      // feat/laeden-leben: the unit's hours in the shared registry (OSM's, else the usual ones of its kind – assumed)
+      const d0 = U.doors[0];
+      OEFFNUNG.add(U.id, {
+        name: U.name,
+        oh: U.oh || DEFAULT_OH[U.type] || 'Mo-Sa 08:00-20:00',
+        art: 'laden',
+        typ: U.type,
+        ort: 'Schleusingen',
+        quelle: U.oh ? 'OpenStreetMap' : 'angenommen (übliche Zeiten: ' + U.type + ')',
+        x: d0 ? d0.x : 0,
+        y: d0 ? d0.y : 0,
+      });
     }
   }
   function mount(sh, g) {
@@ -1691,6 +1711,8 @@ export const LINNEN = (() => {
     }
     if (!M || !M.grid) return undefined;
     let moved = false;
+    // feat/laeden-leben: the people inside push back first (laeden/leben.js), the walls after them
+    if (S.pushFigs && S.pushFigs(p, r)) moved = true;
     const segsTest = (s2, rr) => {
       const ex = s2[2] - s2[0],
         ey = s2[3] - s2[1],
@@ -1791,7 +1813,9 @@ export const LINNEN = (() => {
           open = U ? isOpenU(U) : false,
           // from inside always (one is let out), from outside only while the shop is open – and only when its rooms stand
           ready = S.mounted.has(D.sh.id) && S.mounted.get(D.sh.id).state === 'ready',
-          want = out !== null && ready && (out < 0 || open) && P.mode === 'walk' ? 1 : 0;
+          // feat/laeden-leben: the doors open for the shop's people too (laeden/leben.js: someone comes or goes)
+          figs = ready && open && S.doorWant ? !!S.doorWant(D) : false,
+          want = (out !== null && ready && (out < 0 || open) && P.mode === 'walk') || figs ? 1 : 0;
         D.want = want;
         if (D.open !== want) {
           D.open = want > D.open ? Math.min(1, D.open + dt / 0.9) : Math.max(0, D.open - dt / 1.1);
@@ -1903,6 +1927,10 @@ export const LINNEN = (() => {
     const ua = unitAt(x, y);
     return ua ? ua.U.id : null;
   };
+  // feat/laeden-leben: the mounted shop (its rooms, segments, units with goods and spots), the raw lookup, the hours of a unit
+  S.shopM = id => S.mounted.get(id) || null;
+  S.where = (x, y) => unitAt(x, y);
+  S.openU = U => isOpenU(U);
   S.door = id => {
     const D = S.doors.find(q => q.id === id);
     return D
