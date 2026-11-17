@@ -144,14 +144,14 @@ export const GLJOBSDATA = (() => {
       tage: [0, 1, 2, 3, 4, 5, 6],
       ab: 8 * 60,
       bis: 19 * 60,
-      ort: 'Feldflur Richtung Feldscheune',
+      ort: 'Feldscheune',
       lohn: 5,
       ruf: 3,
       angebot:
         'Krümel ist beim Knall heute früh abgehauen und nicht wiedergekommen. Klein, braun-weiß, hört auf Leberwurst. Zuletzt gesehen Richtung Feldscheune. Bitte nicht hinterherrennen, dann rennt er nur weiter. Finderlohn gibt es! – Heike',
       danke: 'Krümel ist wieder da und liegt unterm Sofa. Diesmal freiwillig. Danke! – Heike',
       chat: ['Heike', 'Krümel ist wieder da! Danke an alle, die gesucht haben. Also an einen.'],
-      kurz: 'Heikes Hund Krümel in der Feldflur finden, anleinen und heimbringen – nicht rennen.',
+      kurz: 'Heikes Hund Krümel finden (Richtung Feldscheune), anleinen und heimbringen – nicht rennen.',
       hinweis: '',
     },
     chronik: {

@@ -123,18 +123,45 @@ export const GLJOBS = (() => {
     h.door[1] + h.d[1] * along * side + h.n[1] * out,
   ];
   // the road beside a house: out of the door until just beside the road's edge (ROADS.edge > −1.2 is on or at the road)
+  // free ground: off the road (ROADS.edgeAt: metres to the road's edge, negative outside), not in a wall, a fence or a house, not under
+  // a tree's crown or the lime tree of the Anger
+  function freiGrund(p, r = 0.8, rand = 1.5) {
+    const x = p[0],
+      y = p[1];
+    try {
+      if (ROADS && ROADS.edgeAt && ROADS.edgeAt(x, y) > -rand) return false;
+      if (window.WCOL && WCOL.pushCircle && WCOL.pushCircle([x, y], r)) return false;
+      if (KERN.inside && KERN.inside(x, y, gnd(x, y) + 1)) return false;
+      const L = GLDATA.ORTE.linde && GLDATA.ORTE.linde.pos;
+      if (L && hyp(x - L[0], y - L[1]) < 11) return false;
+      const T = window.RATSCHER && RATSCHER.treeRecs;
+      if (T)
+        for (const t of T)
+          if (Math.abs(t.x - x) < 9 && Math.abs(t.y - y) < 9 && hyp(t.x - x, t.y - y) < (t.r || 2.5) + 0.6)
+            return false;
+    } catch (e) {}
+    return true;
+  }
+  // the kerb nearest a house's door (any direction – through the gate): the spot a step short of the road's edge, and the way to the road
   function strasse(h) {
-    for (let w = 1.2; w < 26; w += 0.4) {
-      const x = h.door[0] + h.n[0] * w,
-        y = h.door[1] + h.n[1] * w;
-      try {
-        if (ROADS && ROADS.edge && ROADS.edge(x, y) > -1.6)
-          return [h.door[0] + h.n[0] * (w - 0.5), h.door[1] + h.n[1] * (w - 0.5), w];
-      } catch (e) {
-        break;
+    let best = null;
+    try {
+      for (let a = 0; a < 360; a += 10) {
+        const r = (a * Math.PI) / 180,
+          dx = Math.sin(r),
+          dy = Math.cos(r);
+        for (let w = 1; w < 32; w += 0.25) {
+          const x = h.door[0] + dx * w,
+            y = h.door[1] + dy * w;
+          if (ROADS.edgeAt(x, y) > -0.9) {
+            const q = [x - dx * 0.45, y - dy * 0.45];
+            if ((!best || w < best[2]) && freiGrund(q, 0.35, 0.5)) best = [q[0], q[1], w, a];
+            break;
+          }
+        }
       }
-    }
-    return [h.door[0] + h.n[0] * 3, h.door[1] + h.n[1] * 3, 3];
+    } catch (e) {}
+    return best || [h.door[0] + h.n[0] * 3, h.door[1] + h.n[1] * 3, 3, (Math.atan2(h.n[0], h.n[1]) * 180) / Math.PI];
   }
   // the shop on wheels: the crate stands on the ground beside the customers' spot
   let kisteP = null;
@@ -182,25 +209,57 @@ export const GLJOBS = (() => {
   let fwP = null;
   function fwPlatz() {
     if (fwP) return fwP;
-    const sc = GLDATA.ORTE.schule.pos,
-      an = GLDATA.ORTE.anger.pos,
-      dx = an[0] - sc[0],
-      dy = an[1] - sc[1],
-      l = hyp(dx, dy) || 1,
-      ux = dx / l,
-      uy = dy / l,
-      px = -uy,
-      py = ux;
-    const at = (a, b) => [sc[0] + ux * a + px * b, sc[1] + uy * a + py * b];
-    return (fwP = {
-      becken: at(7, -4),
-      pumpe: at(7, -1.6),
-      marke: at(19, 1.2),
-      ziel: at(25, 1.2),
-      tisch: at(5, 5),
-      leute: [at(8.2, -0.6), at(6, -2.6)],
-      hd: Math.atan2(ux, uy),
-    });
+    // the yard behind the fire brigade's house (the old school) first, then round the house, then the Anger's green: the first layout
+    // whose every spot is free ground (the best one else)
+    const O = GLDATA.ORTE,
+      sc = O.schule.pos,
+      mitten = [
+        O.schulhof ? O.schulhof.pos : sc,
+        [sc[0] - 14, sc[1] + 10],
+        [sc[0] + 14, sc[1] + 12],
+        [sc[0], sc[1] + 18],
+        O.anger.pos,
+      ];
+    let best = null;
+    for (const c of mitten) {
+      for (let a = 0; a < 360; a += 30) {
+        const r = (a * Math.PI) / 180,
+          ux = Math.sin(r),
+          uy = Math.cos(r),
+          px = Math.cos(r),
+          py = -Math.sin(r),
+          at = (u, v) => [c[0] + ux * u + px * v, c[1] + uy * u + py * v];
+        const L = {
+          becken: at(-2, -3.2),
+          pumpe: at(-2, -0.8),
+          marke: at(12, 0),
+          ziel: at(18, 0),
+          tisch: at(-4.5, 5),
+          leute: [at(-0.5, -0.6), at(-3.6, -2)],
+          hd: r,
+        };
+        const pts = [
+          L.becken,
+          L.pumpe,
+          L.marke,
+          L.ziel,
+          L.tisch,
+          L.leute[0],
+          L.leute[1],
+          at(2, -0.4),
+          at(6, -0.2),
+          at(9, 0),
+          at(15, 0),
+          at(-4.5, 6.2),
+          at(-4.5, 3.8),
+        ];
+        let n = 0;
+        for (const p of pts) if (freiGrund(p, p === L.becken ? 1.4 : 0.6)) n++;
+        if (!best || n > best.n) best = { n, L };
+        if (n === pts.length) return (fwP = L);
+      }
+    }
+    return (fwP = best.L);
   }
   // ---------------- things in the world (merged meshes of vertex colours in the village props' material) ----------------
   const C = {
@@ -1050,8 +1109,10 @@ export const GLJOBS = (() => {
       an(q, W) {
         const h = haus('ingrid');
         if (!h) return;
-        const p = q.i === 0 ? neben(h, -1, 0.55, 2.2) : strasse(h);
-        W.m = bau('tonne', p[0], p[1], Math.atan2(-h.n[0], -h.n[1]), tonne);
+        // at the house its back to the wall; at the kerb its handle (and the lid's hinge) to the road – „Deckel zur Straße“
+        const p = q.i === 0 ? neben(h, -1, 0.55, 2.2) : strasse(h),
+          hd = q.i === 0 ? Math.atan2(-h.n[0], -h.n[1]) : (p[3] * Math.PI) / 180 + Math.PI;
+        W.m = bau('tonne', p[0], p[1], hd, tonne);
         W.p = p;
       },
       text: () => T.tonne.zum,
@@ -1137,12 +1198,11 @@ export const GLJOBS = (() => {
     return D.zeitenText(AUF.chronik.zeiten);
   };
   // ---- Heike's dog Krümel: a small brown-and-white dog (the animals' own bodies, tiere/tiere_koerper.js, with a coat of its own) ----
+  // (after the bang he crept into the field barn by the track – dogs hide where it is dim and smells of straw)
   const hundHeim = () => {
-    const a = GLDATA.ORTE.anger.pos,
-      b = GLDATA.ORTE.treff.pos,
-      p = [a[0] + (b[0] - a[0]) * 0.62, a[1] + (b[1] - a[1]) * 0.62];
+    const p = GLORTE.P && GLORTE.P.scheune ? GLORTE.P.scheune.slice() : GLDATA.ORTE.treff.pos.slice();
     try {
-      KERN.pushOut(p, 1.5);
+      KERN.pushOut(p, 0.6);
     } catch (e) {}
     return p;
   };
@@ -1211,7 +1271,7 @@ export const GLJOBS = (() => {
         else {
           if (!W.ziel || hyp(W.ziel[0] - W.x, W.ziel[1] - W.y) < 0.5) {
             const a = Math.random() * Math.PI * 2,
-              r = 3 + Math.random() * 8;
+              r = 1 + Math.random() * 3;
             W.ziel = [W.home[0] + Math.sin(a) * r, W.home[1] + Math.cos(a) * r];
           }
           tx = W.ziel[0];

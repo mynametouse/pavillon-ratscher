@@ -101,6 +101,13 @@ laufender Job nicht (nach dem Neuladen wird er wieder angeboten).
   Entscheidungen; nach „Beenden“ ändert sich nichts mehr. Bilder `out/grenzland_ruf/01_chat_nach_tat`, `02_gerede_am_wagen`,
   `03_stufe_hud`, `04_tuscheln_anger`, `05_beliebt_winken`, `06_verhasst_polizei`.
 
+- `python3 viz3/test/grenzland_ruf.py 9042 jobs`: Angebote per SMS (Freitagabend: Feuerwehr, Brötchen), Liste mit „wann“, Tagebuch;
+  Brötchen am Samstag 5:45 (Kiste am Wagen, auf dem Gepäckträger, eine zerdrückte Tüte, sechs Türen, Lohn mit Trinkgeld und Abzug,
+  Beschwerde-SMS); Feuerwehr am Samstag 8:55 (zwei Freiwillige, Becken, Pumpe, Ziel, Tisch; Saugschlauch, Pumpe, Schlauchleitung bis zur
+  Markierung, Wasser marsch, Kaffee und Kuchen, 10 €); Brennholz (Stapel, Kombi, zwei Fuhren, 40 €); Nebenaufgaben (Tonne, Krümel,
+  Paket, Milchreis, Fotomappe mit Öffnungszeiten); „Aufträge“ im Handy; nach „Beenden“ bleibt nichts liegen. Bilder
+  `out/grenzland_ruf/10_broetchen_moped` … `21_hund_leine`.
+
 ## Entscheidungen
 
 - Der Ruf hängt am Ort der Tat, nicht an der Person (Falko und Sarah zählen gemeinsam – das Dorf redet über „die zwei vom Garten“).
@@ -120,4 +127,19 @@ laufender Job nicht (nach dem Neuladen wird er wieder angeboten).
   `GLRUF.add(ort, 2, 'fest')`.
 - **`strasse`:** eine gute Tat bei einer Begegnung: `window.GLRUF && GLRUF.add(GLRUF.ortVon(x, y), 4, 'hilfe')`; fürs Gerede dazu
   `GLRUF.merke('hilfe', ort)`.
-- **Stimmen:** `GLRUF.linien()` (Gerede und Stufensätze für jeden Sprecher in `GLREAKTION.REDNER`) und `GLJOBS.linien()` (die Feuerwehr).
+- **Stimmen:** `GLRUF.linien()` (Gerede und Stufensätze für jeden Sprecher in `GLREAKTION.REDNER`) und `GLJOBS.linien()` (die Feuerwehr:
+  Sprecher `fw_steffen`, `fw_anja` – ihre Gerätestimmen meldet `gl_jobs.js` selbst an).
+- **Zur Laufzeit ergänzt** (wie es `welt` mit den Leuten der Ereignisse macht): `GLDATA.CAST.fw_steffen`, `GLDATA.CAST.fw_anja`,
+  `GLDATA.KLEID.fw_einsatz` (dunkelblaue Einsatzkleidung mit gelb-silbernen Streifen), `GLLOGIK.CRIMES.verdacht` (0,5, beredbar),
+  `TKOERPER.PLANS.gl_kruemel` (Heikes Hund: der Hund des Tier-Baukastens mit eigenem braun-weißem Fell, 0,68-fach). Gern fest übernehmen.
+- **Handy „Aufträge“:** bleibt gesperrt („Kommt mit Kapitel 2.“), bis der erste Job beginnt – so bleibt der Test `handy` (er prüft die
+  Sperre) grün; danach listet die App Jobs und Nebenaufgaben mit dem Ruf beider Orte.
+- **Uhr:** solange ein Job mit Zeitdruck läuft (Brötchen ab der Kiste, Feuerwehr ab der Begrüßung), läuft die Spieluhr in Echtzeit
+  (`CLOCK.focus('gl-jobs')`); „Bis zum Beginn warten“ ist der Zeitraffer der Uhr (`CLOCK.wait`).
+- **Tagebuch:** Quelle `grenzland-jobs` (Ordnung 6); ein laufender Job wird verfolgt (`QUESTS.track = 'grenzland-jobs:<id>'`) und beim
+  Ende zurückgestellt – `GRENZLAND.stop` stellt nur `grenzland:`-Einträge zurück, darum macht `GLJOBS.stop` das selbst.
+- **`tests.txt`:** enthält vorübergehend `grenzland_welt:film,wahl`, `handy`, `grenzland_radio` (die Tests der übernommenen Dateien,
+  einmal auf meinem Zweig auf Actions) – vor dem Zusammenführen wieder heraus; wenn sie beim Zusammenführen noch drin sind: streichen
+  (sie stehen schon in ihren eigenen `tests.txt`).
+- **Lohn:** der Auftrag nennt `GL.pay`; das zieht Geld ab – Lohn geht über `GL.earn(n, wer)` (Bank-Buchung im Handy mit Absender).
+- `src` 2e33dec02 (Klang-Archiv nur vom eigenen Ursprung) ist in meinen Zweig gemergt (kein Rebase, damit kein Force-Push nötig ist).
