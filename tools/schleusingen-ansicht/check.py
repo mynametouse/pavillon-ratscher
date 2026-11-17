@@ -114,6 +114,13 @@ def main(argv):
             errs.append(f'{tag}: tuer {r["tuer"]!r} (0–7, the door types of FASSADE)')
         if 'gauben' in r and not isinstance(r['gauben'], bool):
             errs.append(f'{tag}: gauben must be true or false (dormers on the side towards the street)')
+        if 'laden_schrift' in r:   # the plain lettering of a shop front: generic words (no names), only on a shop
+            ls = r['laden_schrift']
+            if not r.get('laden') or not isinstance(ls, list) or not 1 <= len(ls) <= 4 or \
+                    not all(isinstance(w, str) and 2 <= len(w) <= 30 and not any(ch.isdigit() for ch in w) for w in ls):
+                errs.append(f'{tag}: laden_schrift {ls!r} (1–4 words of 2–30 letters, only where laden)')
+        if 'laden_front' in r and (not r.get('laden') or not HEX.match(str(r['laden_front']))):
+            errs.append(f'{tag}: laden_front {r["laden_front"]!r} (sRGB, only where laden)')
         if 'first' in r and r['first'] not in ('trauf', 'giebel'):
             errs.append(f'{tag}: first {r["first"]!r} (trauf or giebel towards the street)')
         if r.get('dachform') == 'flach' and (r.get('dach') or {}).get('material') not in ('flach', 'blech'):

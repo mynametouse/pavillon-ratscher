@@ -11,8 +11,8 @@ The materials as FASSADE names them, with three choices of ours:
   verkleidung (light or coloured shingles) and schiefer → slate in the colour read off the view (schieferTon 3),
   *_og → the ground floor's colour (the upper floors are slate in its tone or half-timbering in its timber's tone).
 art: the town's door and steps follow it (haus: a house's door and windows also where the town drew a hall); geschosse (storeys up to the
-eave) and dach.form as read (FASSADE builds the storeys and 'flach'; walm and the side the ridge turns to the street, 'first', are data for
-later).
+eave) and dach.form as read (FASSADE builds the storeys and 'flach'; walm, the side the ridge turns to the street ('first'), dormers
+('gauben') and the shop front ('ladenfront': its colour and its plain lettering, generic words only) are data for later).
 
   python3 tools/schleusingen-ansicht/ansicht.py [--out PATH]   (default: viz3/extra/schleusingen-ansicht/dist/fassade/ansicht.json)
 """
@@ -89,6 +89,9 @@ def look(r):
         L['first'] = r['first']        # gable ('giebel') or eave ('trauf') towards the street – data for later
     if 'gauben' in r:
         L['gauben'] = r['gauben']      # dormers towards the street – data for later
+    if r.get('laden_schrift') or r.get('laden_front'):
+        # the shop front: its colour and its plain lettering (generic words) – data for later
+        L['ladenfront'] = {k: v for k, v in (('farbe', r.get('laden_front')), ('schrift', r.get('laden_schrift'))) if v}
     if art == 'schule':
         L.pop('achse', None)   # FASSADE: a school of our time (smooth, wide bays 3.6 m, light glass door, no shutters)
     return L

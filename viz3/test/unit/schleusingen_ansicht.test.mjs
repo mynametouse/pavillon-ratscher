@@ -90,6 +90,10 @@ test('the choices of the converter', () => {
       assert.equal(L.dach.form, 'flach', `${tag}: a flat roof is built flat`);
     if (r.geschosse) assert.equal(L.geschosse, r.geschosse, `${tag}: the storeys read`);
     if (r.tuer !== undefined) assert.equal(L.tuer, r.tuer, `${tag}: the door read`);
+    if (r.first) assert.equal(L.first, r.first, `${tag}: the side the ridge turns to the street`);
+    if (r.gauben !== undefined) assert.equal(L.gauben, r.gauben, `${tag}: dormers`);
+    if (r.laden_schrift) assert.deepEqual(L.ladenfront.schrift, r.laden_schrift, `${tag}: the shop's plain lettering`);
+    if (r.laden_front) assert.equal(L.ladenfront.farbe, r.laden_front, `${tag}: the shop front's colour`);
     assert.equal(L.dach.farbe, r.dach.farbe, tag);
   }
   assert.equal(LOOKS['#308'].art, 'haus', 'Hildburghäuser Straße 5: a house, not a hall');

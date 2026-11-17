@@ -19,9 +19,12 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
     `rahmen`, `besonders` (was man sieht, deutsch), `sicher` (hoch, mittel, niedrig), `ansichten` (Blickpunkte).
   - Runde 3 (begonnen): `geschosse` (Vollgeschosse bis zur Traufe), `dachform` (sattel, walm, krueppelwalm, mansard, flach, pult, zelt),
     `first` (`giebel`: der Giebel zur Straße, sonst `trauf`), `tuer` (Art der Haustür wie in `FASSADE`, 0–7, wo die Ansicht nah ist),
-    `gauben` (Gauben zur Straße) – bisher für 118 Gebäude die Geschosse, 65 davon anders als in den Altstadtdaten (z. B. #331 und #48
-    eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei Geschosse mit Gauben), 27 Firstrichtungen, 14 Mal
-    Gauben, 7 Dachformen (flach, Walm), 8 Haustüren.
+    `gauben` (Gauben zur Straße), `laden_schrift` (die Aufschrift einer Ladenfront in schlichten Gattungswörtern – „Fleischerei“,
+    „Konditorei“, „Apotheke“ –, keine Namen) und `laden_front` (ihre Farbe) – bisher für 118 Gebäude die Geschosse, 65 davon anders
+    als in den Altstadtdaten (z. B. #331 und #48 eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei
+    Geschosse mit Gauben), 27 Firstrichtungen, 14 Mal Gauben, 7 Dachformen (flach, Walm), 8 Haustüren, 6 Ladenaufschriften
+    (Bertholdstraße, Klosterstraße; am Markt steht die Ansicht zu weit weg). In `fassade/ansicht.json` als `first`, `gauben`,
+    `ladenfront` (`farbe`, `schrift`) – Daten für später.
   - `nicht_lesbar`: Gebäude, die eine Ansicht zeigt, aber nicht lesbar (Bäume, Hecke, unscharf) – mit Grund.
   - Stand: Runde 1 (Hildburghäuser, Suhler, Ilmenauer Straße, Markt; 71 Ansichten), Königstraße (16), Bertholdstraße (zwei
     360°-Ansichten, je 6 Richtungen) und Klosterstraße (5 Bilder aus dem Auto): 157 Gebäude gelesen (65 hoch, 62 mittel, 30 niedrig

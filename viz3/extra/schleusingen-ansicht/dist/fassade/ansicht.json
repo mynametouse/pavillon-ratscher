@@ -865,7 +865,12 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"tuer": 4
+"tuer": 4,
+"ladenfront": {
+"schrift": [
+"Optik"
+]
+}
 },
 "#349": {
 "art": "haus",
@@ -935,7 +940,12 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"tuer": 4
+"tuer": 4,
+"ladenfront": {
+"schrift": [
+"Apotheke"
+]
+}
 },
 "#361": {
 "art": "haus",
@@ -1266,7 +1276,13 @@
 "farbe": "#b5553a"
 },
 "geschosse": 3,
-"tuer": 0
+"tuer": 0,
+"ladenfront": {
+"farbe": "#5e4a43",
+"schrift": [
+"Fleischerei"
+]
+}
 },
 "#504": {
 "art": "haus",
@@ -1279,7 +1295,13 @@
 "farbe": "#8e4632"
 },
 "geschosse": 3,
-"tuer": 0
+"tuer": 0,
+"ladenfront": {
+"farbe": "#5a4136",
+"schrift": [
+"Fleischerei"
+]
+}
 },
 "#505": {
 "art": "haus",
@@ -1292,7 +1314,14 @@
 "farbe": "#8e4632"
 },
 "geschosse": 3,
-"tuer": 6
+"tuer": 6,
+"ladenfront": {
+"farbe": "#a3cfda",
+"schrift": [
+"Konditorei",
+"Confiserie"
+]
+}
 },
 "#506": {
 "art": "haus",
@@ -1329,7 +1358,15 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"tuer": 1
+"tuer": 1,
+"ladenfront": {
+"farbe": "#9a6248",
+"schrift": [
+"Haushaltwaren",
+"Geschenke",
+"Schlüsseldienst"
+]
+}
 },
 "#510": {
 "art": "haus",

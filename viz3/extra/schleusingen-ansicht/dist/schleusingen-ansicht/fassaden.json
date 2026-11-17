@@ -1890,6 +1890,9 @@
    "laden": true,
    "rahmen": "weiss",
    "tuer": 4,
+   "laden_schrift": [
+    "Optik"
+   ],
    "besonders": "Bertholdstraße 19 (Ecke Walchstraße): elfenbeinfarben, Eckeingang unter einem Bogen auf zwei Sandsteinsäulen, Laden (Optiker)",
    "sicher": "hoch",
    "ansichten": [
@@ -2053,6 +2056,9 @@
    "laden": true,
    "rahmen": "weiss",
    "tuer": 4,
+   "laden_schrift": [
+    "Apotheke"
+   ],
    "besonders": "Klosterstraße 14: blass mintgrün, Laden (Apotheke)",
    "sicher": "mittel",
    "ansichten": [
@@ -2794,6 +2800,10 @@
    "rahmen": "weiss",
    "geschosse": 3,
    "tuer": 0,
+   "laden_schrift": [
+    "Fleischerei"
+   ],
+   "laden_front": "#5e4a43",
    "besonders": "Bertholdstraße 5: rosa, dreigeschossig, Laden mit dunkler Holzfront (Fleischerei)",
    "sicher": "hoch",
    "ansichten": [
@@ -2821,6 +2831,10 @@
    "rahmen": "gruen",
    "geschosse": 3,
    "tuer": 0,
+   "laden_schrift": [
+    "Fleischerei"
+   ],
+   "laden_front": "#5a4136",
    "besonders": "Bertholdstraße: blassgelb, dreigeschossig, grüne Fensterrahmen, Sandsteinsockel, Laden mit dunkler Holzfront (Fleischerei)",
    "sicher": "hoch",
    "ansichten": [
@@ -2848,6 +2862,11 @@
    "rahmen": "weiss",
    "geschosse": 3,
    "tuer": 6,
+   "laden_schrift": [
+    "Konditorei",
+    "Confiserie"
+   ],
+   "laden_front": "#a3cfda",
    "besonders": "Bertholdstraße: hellblau, Fensterfaschen rosa, schmiedeeiserne Blumenkonsolen, Laden mit hellblauer Front (Konditorei)",
    "sicher": "hoch",
    "ansichten": [
@@ -2928,6 +2947,12 @@
    "laden": true,
    "rahmen": "braun",
    "tuer": 1,
+   "laden_schrift": [
+    "Haushaltwaren",
+    "Geschenke",
+    "Schlüsseldienst"
+   ],
+   "laden_front": "#9a6248",
    "besonders": "Bertholdstraße: großer Laden mit dunkelbrauner Holzfront (Eisenwaren, Hausrat, Spielwaren), darüber creme",
    "sicher": "mittel",
    "ansichten": [
