@@ -2,7 +2,7 @@
 // Falko, 17.11.2026 12:26 („Tagesablauf der Leute“) and 13:27 („… realistischer … Verkehr und das, was sich so tut auf den Straßen, vielleicht
 // hier und da auch mal eine Clique …“): the people of grenzland/gl_alltag_data.js live their day by the game clock and the calendar – all of
 // them as numbers (where, what), the nearest few as figures (grenzland/gl_fig.js: Rocketbox, the seven of the village in their own figures):
-//   - within ~150 m of the player, at most eight at once (five on a phone); loaded one after the other, freed beyond ~190 m
+//   - within ~150 m of the player, at most eight at once (four on a phone: each figure holds ~9 MB of textures); loaded one after the other, freed beyond ~190 m
 //   - they stand in twos and threes and talk (gestures, looks), queue at the shop on wheels, wait at the school bus stop, sit on the
 //     benches of the Linde, the well and the Markt, work in front of their houses (a milk can, a bucket, under a bonnet, carrying wood),
 //     hang about as a clique (the bus stop and the Feldscheune in Ratscher, the fountain on the Markt in Schleusingen), go to church
@@ -42,7 +42,7 @@ import { GLORTE } from './gl_orte.js';
 import { GLALDATA } from './gl_alltag_data.js';
 export const GLALLTAG = (() => {
   const D = GLALDATA;
-  const MAX = COARSE ? 5 : 8,
+  const MAX = COARSE ? 4 : 8,
     R_IN = 150,
     R_OUT = 190;
   const S = {

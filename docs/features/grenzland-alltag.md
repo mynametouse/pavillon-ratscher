@@ -30,9 +30,12 @@ Vielleicht fliegen auch mal Vögel rum …“
   **nachts** niemand.
 - **Das Grundspiel zuerst:** wen das Dorf des Grundspiels gerade zeigt (Freitagabend in der alten Schule, Feuer am Acker, Vorgarten, mit dem
   Auto weg – `dorf/dorf_cal.js`, `dorf/dorf_life.js`), den zeigt der Modus nicht noch einmal. Ihre Häuser sind die des Grundspiels.
-- **Figuren nur in der Nähe:** innerhalb ~150 m, höchstens 8 zugleich (Handy 5), nacheinander geladen, über ~190 m freigegeben; der Rest
-  sind Zahlen. Wer neu ankommt oder in Sicht wäre, kommt von der Straße her (nicht aus dem Nichts); wer geht, geht – nach Hause durch die
-  Haustür, in den Laden durch die Ladentür (die Türen der Läden der Altstadt aus `schleusingen/si_innen.js`, nur wenn der Laden offen ist;
+- **Figuren nur in der Nähe:** innerhalb ~150 m, höchstens 8 zugleich (Handy 4), nacheinander geladen, über ~190 m freigegeben; der Rest
+  sind Zahlen. **Speicher:** eine Figur bringt ~8,5 MB Texturen (entpackt, RGBA: ein 1024² und vier 512², gemessen an den Dateien
+  `chars/dorf_*.json`, `vk_*.json`), umgefärbte Straßenfiguren etwas mehr – also höchstens ~70 MB am Rechner und ~35 MB am Handy, wenn alle
+  Plätze voll sind (meist sind es 2–4 Figuren). Rechenzeit: 0,004 ms je Takt für die Zahlen aller 17 (gemessen im Test); kein neues
+  Shader-Programm. Wer neu ankommt oder in Sicht wäre, kommt von der Straße her (nicht aus dem Nichts); wer geht, geht – nach Hause durch die
+  Haustür, in den Bus (hält ein Bus des Grundspiels an der Haltestelle, steigen die wartenden Schüler vorn ein), in den Laden durch die Ladentür (die Türen der Läden der Altstadt aus `schleusingen/si_innen.js`, nur wenn der Laden offen ist;
   `FASSADE.eingang` des Agenten `gebaeude` ist vorgesehen), sonst die Straße hinunter, aus der Sicht. Aus dem Laden kommen sie nach ein paar
   Minuten mit einer Tüte wieder heraus.
 - **Wie sie da sind:** Gruppen stehen im Kreis und reden (Gesten, Blicke, einer spricht), Schlange am Wagen, Reihe an der Haltestelle,
