@@ -105,8 +105,8 @@ laufender Job nicht (nach dem Neuladen wird er wieder angeboten).
   Brötchen am Samstag 5:45 (Kiste am Wagen, auf dem Gepäckträger, eine zerdrückte Tüte, sechs Türen, Lohn mit Trinkgeld und Abzug,
   Beschwerde-SMS); Feuerwehr am Samstag 8:55 (zwei Freiwillige, Becken, Pumpe, Ziel, Tisch; Saugschlauch, Pumpe, Schlauchleitung bis zur
   Markierung, Wasser marsch, Kaffee und Kuchen, 10 €); Brennholz (Stapel, Kombi, zwei Fuhren, 40 €); Nebenaufgaben (Tonne, Krümel,
-  Paket, Milchreis, Fotomappe mit Öffnungszeiten); „Aufträge“ im Handy; nach „Beenden“ bleibt nichts liegen (37 Prüfungen, auf Actions
-  grün 17.11. ~14:55, hier grün 15:05). Bilder `out/grenzland_ruf/10_broetchen_moped`, `11_broetchen_tuer`, `12_broetchen_fertig`,
+  Paket, Milchreis, Fotomappe mit Öffnungszeiten); „Aufträge“ im Handy; nach „Beenden“ bleibt nichts liegen (37 Prüfungen; zuletzt
+  337c59c59 auf Actions grün, `ruf` 21/21 und `jobs` 37/37, Lauf 44114674054, und hier grün 17.11. 16:44). Bilder `out/grenzland_ruf/10_broetchen_moped`, `11_broetchen_tuer`, `12_broetchen_fertig`,
   `13_feuerwehr_aufbau`, `14_feuerwehr_wasser`, `15_feuerwehr_kaffee`, `16_holz_laden`, `17_holz_gerhard`, `18_tonne_strasse`,
   `19_handy_auftraege`, `20_hund_scheune`, `21_hund_leine`.
 - Auf Actions zusätzlich (einmal) die Tests der übernommenen Dateien: `grenzland_welt:film,wahl` 15/15, `grenzland_radio` 49/49;
@@ -121,6 +121,12 @@ laufender Job nicht (nach dem Neuladen wird er wieder angeboten).
   Griff zur Straße; Krümel hat sich nach dem Knall in der Feldscheune verkrochen; die Brötchentüten hängen an der Türklinke; das Holz wird
   ordentlich an der Hauswand geschichtet, Stirnseiten nach außen; Wolfgangs Stapel bleibt stehen (zwei Fuhren machen keinen Stapel leer).
 - Angebote kommen nie, solange das Handy in der Hand ist, und erst nach einer Minute freien Spiels.
+- Der Wasserstrahl ist durchscheinend (ein einfaches Material, einmal angelegt, kein Licht), dünn am Strahlrohr, breiter am Ziel, mit
+  Sprühwasser am Brett; der Schlauch liegt weiß auf dem Boden, wie B-Schläuche aussehen.
+- Brötchen: die Kiste steht am Verkaufswagen in Ratscher statt an der Bäckerei in Schleusingen (der Auftrag ließ beides zu) – so bleibt der
+  Job im Dorf, in einem Bereich (Speicher am iPhone), und die Fahrt geht von Tür zu Tür statt zwei Kilometer über die Landstraße.
+- Einkauf für Gerhard über den Verkaufswagen (`GL.has('milchreis')`); `INVENTAR`/`GELD` von `laeden-leben` gab es beim Bau noch nicht –
+  sobald es sie gibt, kann eine Aufgabe in einen Laden in Schleusingen schicken (die Fotomappe nutzt schon `OEFFNUNG` des Rathauses).
 - 1989 gibt es keinen Ruf (eine andere Zeit, ein anderes Dorf); nichts davon läuft vor dem Start des Modus.
 
 ## Für den Lead
