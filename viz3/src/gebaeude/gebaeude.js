@@ -837,7 +837,12 @@ export const GEB = (() => {
       .then(r => (r.ok ? r.json() : Promise.reject(new Error('index.json ' + r.status))))
       .then(j => {
         Z.index = j;
-        Z.keys = Object.keys(j.cells || {}).sort();
+        // feat/welt-orte: the order the cells came in (index.json 'order': the old ones first) – a cell's buildings are numbered from its
+        // place in this list (the seed of their styles), so cells added later between them do not change how the old ones look
+        const ks = Object.keys(j.cells || {}).sort(),
+          ord = Array.isArray(j.order) && j.cells ? j.order.filter(k => j.cells[k]) : [],
+          seen = new Set(ord);
+        Z.keys = ord.concat(ks.filter(k => !seen.has(k)));
         Z.state = 'ready';
       })
       .catch(e => {

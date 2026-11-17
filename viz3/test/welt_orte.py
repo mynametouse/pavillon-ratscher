@@ -26,6 +26,8 @@ VILLAGES = {
     'hirschbach': ('Hirschbach', (-1813.0, 7041.0), (-1819.4, 7035.4, 3)),
     'erlau': ('Erlau', (-938.0, 4866.0), (-915.9, 4865.0, 7)),
     'stkilian': ('St. Kilian', (-238.0, 3045.0), (-254.4, 3063.3, 18)),
+    # stage welt: the densest village (no road of the drive there – the street of its OSM place)
+    'waldau': ('Waldau', (3644.0, 38.0), (3647.0, 40.0, 90)),
 }
 
 
@@ -94,6 +96,26 @@ if 'daten' in want:
     st = ORTE.get('suhl') or {}
     ck('stage suhl: the way to Suhl has its buildings (St. Kilian, Erlau, Hirschbach …)', st.get('built', 0) >= 1500 and st.get('cells_new', 0) >= 20,
        json.dumps(st, ensure_ascii=False))
+    so = ORTE.get('osm') or {}
+    osm_b = [b for L in CELLS.values() for b in L if b.get('o') == 'osm']
+    if so:
+        # a building OSM has and ETHOS not: none of them on an ETHOS building of the cells (centre in the other's footprint)
+        G = {}
+        for L in CELLS.values():
+            for b in L:
+                if b.get('o') != 'osm':
+                    cx, cy = centre(b['f'])
+                    G.setdefault((int(cx // 50), int(cy // 50)), []).append(b)
+        on = []
+        for b in osm_b:
+            cx, cy = centre(b['f'])
+            for i in range(int(cx // 50) - 1, int(cx // 50) + 2):
+                for j in range(int(cy // 50) - 1, int(cy // 50) + 2):
+                    for e in G.get((i, j), ()):
+                        if inside(e['f'], cx, cy) or inside(b['f'], *centre(e['f'])):
+                            on.append((b['id'], e['id']))
+        ck('stage osm: the buildings ETHOS lacks come from OSM, none on an ETHOS building', len(osm_b) == so.get('built') and not on,
+           f"{len(osm_b)} from OSM ({json.dumps(so.get('kinds'))}); on top of ETHOS: {on[:4]}")
     for name, (label, c, road) in VILLAGES.items():
         n = sum(1 for L in CELLS.values() for b in L if math.dist(centre(b['f']), c) < 350)
         print(f'village {label}: {n} buildings within 350 m of its middle', flush=True)
@@ -186,12 +208,25 @@ TYPES = {'.json': 'application/json', '.webp': 'image/webp', '.bin': 'applicatio
 NETN = {'hit': 0, 'got': 0, 'miss': 0, 'bytes': 0}
 
 
+# a set of retouched tiles made here (tools/welt-gebaeude/kacheln.py --out DIR) shown before it is published: its tiles over the site's
+V2 = os.environ.get('WELT_V2_LOCAL')
+
+
 def through(base, sub):
     """a route of the page's own origin to the published files (welt-test/ of the site, suhl/ of the data repo) – as on the site, where
     both lie beside the page – cached on disk"""
     def handler(route):
         url = route.request.url
         rel = url.split('/' + sub + '/', 1)[1].split('?')[0]
+        if V2 and sub == 'welt-test' and rel.startswith('v2/'):
+            mine = os.path.join(V2, rel[3:])
+            if rel == 'v2/index.json':
+                site = get(base + rel, os.path.join(NET, sub, rel))
+                keys = set(json.loads(site)['tiles']) if isinstance(site, bytes) else set()
+                keys |= set(json.load(open(mine))['tiles'])
+                return route.fulfill(status=200, body=json.dumps({'v': 1, 'tiles': sorted(keys)}), headers={'content-type': 'application/json'})
+            if os.path.exists(mine):
+                return route.fulfill(status=200, body=open(mine, 'rb').read(), headers={'content-type': 'image/webp'})
         p = os.path.join(NET, sub, rel)
         had = os.path.exists(p)
         b = get(base + rel, p)
@@ -251,6 +286,25 @@ if want & {'hirschbach', 'strecke'}:
             s['secs'] = round(time.time() - t0)
             return s
 
+        DRAW = """(() => { let meshes = 0, tris = 0, bytes = 0; for (const c of GEB.Z.cells.values()) for (const m of c.meshes) { meshes++; const g = m.geometry;
+                tris += (g.index ? g.index.count : g.attributes.position.count) / 3; for (const k in g.attributes) bytes += g.attributes[k].array.byteLength; if (g.index) bytes += g.index.array.byteLength; }
+                const i = GAME.R.info; i.autoReset = false; i.reset(); GAME.shot(); const a = { calls: i.render.calls, tris: i.render.triangles };
+                for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = false; i.reset(); GAME.shot(); const b = { calls: i.render.calls, tris: i.render.triangles };
+                for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = !RATSCHER.map; i.autoReset = true;
+                const built = [...GEB.Z.cells.values()].filter(c => c.meshes.length);
+                return { meshes, tris: Math.round(tris), mb: +(bytes / 1e6).toFixed(1), cells: built.length, ms: built.map(c => [c.key, c.data.b.length, c.ms]),
+                  frame: a, without: b, heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null }; })()"""
+
+        def draw(label):
+            dc = J(DRAW)
+            print('draw', label, json.dumps(dc), flush=True)
+            # two meshes per cell (walls, roofs); four where a building's middle lies over the cell's edge (it is drawn with its own cell)
+            ck(f'{label}: few draw calls for the cells (walls and roofs per cell, ≤ 40 more in the frame)',
+               dc['meshes'] <= 4 * dc['cells'] and dc['frame']['calls'] - dc['without']['calls'] <= 40,
+               f"{dc['cells']} cells built, {dc['meshes']} meshes, {dc['tris']} triangles, {dc['mb']} MB of geometry; frame {dc['frame']} "
+               f"without the cells {dc['without']}; heap {dc['heap']} MB; build ms per cell {sorted(m for _, _, m in dc['ms'])[-3:]}")
+            return dc
+
         # the data's count near each village middle (what should stand there)
         def data_near(c, R=350):
             return sum(1 for L in CELLS.values() for b_ in L if math.dist(centre(b_['f']), c) < R)
@@ -261,7 +315,7 @@ if want & {'hirschbach', 'strecke'}:
         lib.settle_light(pg)
         st0 = J("({ z: GEB.Z.state, n: GEB.Z.n })")
         ck('at the garden none of the cells is fetched', st0['z'] == 'idle', json.dumps(st0))
-        order = [k for k in ('stkilian', 'erlau') if 'strecke' in want] + (['hirschbach'] if 'hirschbach' in want else [])
+        order = [k for k in ('stkilian', 'erlau', 'waldau') if 'strecke' in want] + (['hirschbach'] if 'hirschbach' in want else [])
         res = {}
         for key in order:
             label, c, (rx, ry, yaw) = VILLAGES[key]
@@ -273,10 +327,13 @@ if want & {'hirschbach', 'strecke'}:
             ck(f'{label}: the cells around come in and its buildings stand ({s["n"]} of {want_n} within 350 m of the middle)',
                s['z'] == 'ready' and s['n'] >= 0.95 * want_n and want_n > 0, json.dumps(s))
             if key != 'hirschbach':
+                res[key + '_draw'] = draw(label)
                 eye(rx, ry, yaw)
                 for _ in range(6):
                     E("GAME.step(0.25)")
                 pic(f'{key}_strasse')
+                above(c[0], c[1], az=200, el=48, r=80)
+                pic(f'{key}_oben')
                 continue
             # ---- Hirschbach: the checks ----
             ck('Hirschbach: Suhl\'s corridor and the approach are there (the ground of the data repo, the ways in the drive)',
@@ -288,41 +345,38 @@ if want & {'hirschbach', 'strecke'}:
                 let worst = 0; for (const [x, y] of pts) {{ const r = FAHRT.roadAt(x, y, 0, true); if (r && !(r.w.fl & 3) && r.w.kind <= 4) worst = Math.max(worst, r.e); }}
                 if (worst > 0.3) bad.push([b.id, +worst.toFixed(2), +b.cx.toFixed(1), +b.cy.toFixed(1)]); }} }} return {{ n, bad: bad.slice(0, 6), nb: bad.length }}; }})()""")
             ck('Hirschbach: no building on a drawn road (no corner or wall middle more than 0.3 m inside)', rd['n'] > 200 and rd['nb'] <= 2, json.dumps(rd))
-            # the feet on the ground as drawn: the lowest wall foot against the tiles' height there
-            ft = J(f"""(() => {{ const off = []; let n = 0, worst = 0; for (const c of GEB.Z.cells.values()) {{ if (!c.meshes.length) continue; for (const b of c.data.b) {{
-                if (Math.hypot(b.cx - {c[0]}, b.cy - {c[1]}) > 400 || b.zmin === undefined) continue; const f = b.f; let lo = 1e9;
-                for (let k = 0; k < f.length; k += 2) {{ const h = WELT.heightAt(f[k], f[k + 1]); if (h !== undefined && h !== null) lo = Math.min(lo, h); }}
-                if (lo > 1e8) continue; n++; const d = Math.abs(b.zmin - lo); worst = Math.max(worst, d); if (d > 0.35) off.push([b.id, +d.toFixed(2)]); }} }}
-                return {{ n, worst: +worst.toFixed(2), off: off.length, some: off.slice(0, 5) }}; }})()""")
-            ck('Hirschbach: the feet on the drawn ground (lowest wall foot within 0.35 m of the tiles)', ft['n'] > 200 and ft['off'] <= max(3, ft['n'] // 100), json.dumps(ft))
+            # the feet on the ground as drawn: at the points the loader samples (each wall's start and middle) the lowest of the tiles'
+            # triangles against the wall foot – above it is a gap under the wall (floating), below it the wall reaches into the ground
+            ft = J(f"""(() => {{ const fl = []; let n = 0, worst = 0, sunk = 0, same = 0, pts = 0; for (const c of GEB.Z.cells.values()) {{ if (!c.meshes.length) continue; for (const b of c.data.b) {{
+                if (Math.hypot(b.cx - {c[0]}, b.cy - {c[1]}) > 400 || b.zmin === undefined) continue; let lo = 1e9, lk = 1e9;
+                for (const f of b.F) for (const [x, y] of [[f[0], f[1]], [(f[0] + f[2]) / 2, (f[1] + f[3]) / 2]]) {{ const h = WELT.heightAt(x, y), k = KERN.terrain(x, y);
+                  if (h === undefined || h === null) continue; pts++; if (Math.abs(h - k) < 0.01) same++; lo = Math.min(lo, h); lk = Math.min(lk, k); }}
+                if (lo > 1e8) continue; n++; const d = b.zmin - lo, bottom = Math.min(b.z0 - 1.5, b.zmin - 0.8); worst = Math.max(worst, d); sunk = Math.max(sunk, -d);
+                // gebaeude.js lets every wall reach down to min(z0 − 1.5, zmin − 0.8): a gap only where the tiles lie lower still
+                if (lo < bottom - 0.05) fl.push([b.id, c.key, +d.toFixed(2), +b.zmin.toFixed(2), +lo.toFixed(2), +lk.toFixed(2), c.reseat || 0]); }} }}
+                return {{ n, gaps: fl.length, worst: +worst.toFixed(2), deepest: +sunk.toFixed(2), terrainIsTiles: +(same / Math.max(pts, 1)).toFixed(3), some: fl.slice(0, 6) }}; }})()""")
+            ck('Hirschbach: the feet on the drawn ground (no gap under a wall: the tiles nowhere below its lowest edge)',
+               ft['n'] > 200 and ft['gaps'] <= max(1, ft['n'] // 200), json.dumps(ft))
             # draw calls and triangles: the cells' meshes (walls and roofs, one pair per cell), a frame with and without them
-            dc = J("""(() => { let meshes = 0, tris = 0, bytes = 0; for (const c of GEB.Z.cells.values()) for (const m of c.meshes) { meshes++; const g = m.geometry;
-                tris += (g.index ? g.index.count : g.attributes.position.count) / 3; for (const k in g.attributes) bytes += g.attributes[k].array.byteLength; if (g.index) bytes += g.index.array.byteLength; }
-                const i = GAME.R.info; i.autoReset = false; i.reset(); GAME.shot(); const a = { calls: i.render.calls, tris: i.render.triangles };
-                for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = false; i.reset(); GAME.shot(); const b = { calls: i.render.calls, tris: i.render.triangles };
-                for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = !RATSCHER.map; i.autoReset = true;
-                const built = [...GEB.Z.cells.values()].filter(c => c.meshes.length);
-                return { meshes, tris: Math.round(tris), mb: +(bytes / 1e6).toFixed(1), cells: built.length, ms: built.map(c => [c.key, c.data.b.length, c.ms]),
-                  frame: a, without: b, heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null }; })()""")
-            print('draw', json.dumps(dc), flush=True)
-            ck('Hirschbach: few draw calls for the cells (two meshes per cell, ≤ 40 more in the frame)', dc['meshes'] <= 2 * dc['cells'] and dc['frame']['calls'] - dc['without']['calls'] <= 40,
-               f"{dc['cells']} cells built, {dc['meshes']} meshes, {dc['tris']} triangles, {dc['mb']} MB of geometry; frame {dc['frame']} without the cells {dc['without']}; heap {dc['heap']} MB")
+            dc = draw('Hirschbach')
             res['draw'] = dc
             # pictures: from the road at eye height, from 60 m above – with the cells and (before) without them
+            # the cells' meshes and the facades' extras of the cells (door steps, hall windows: one mesh 'fassade zonen' for all cells)
+            VIS = "((v) => { for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = v; const z = GAME.scene.getObjectByName('fassade zonen'); if (z) z.visible = v; })"
             for tag, vis in (('', True), ('_vorher', False)):
-                E(f"for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = {'true' if vis else 'false'}")
+                E(f"{VIS}({'true' if vis else 'false'})")
                 eye(rx, ry, yaw)
                 for _ in range(4):
                     E("GAME.step(0.25)")
-                E(f"for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = {'true' if vis else 'false'}")
+                E(f"{VIS}({'true' if vis else 'false'})")
                 pic('hirschbach_strasse' + tag)
                 eye(rx - 6, ry + 40, yaw + 165)
-                E(f"for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = {'true' if vis else 'false'}")
+                E(f"{VIS}({'true' if vis else 'false'})")
                 pic('hirschbach_strasse2' + tag)
-                above(c[0], c[1], az=200, el=50, r=110)
-                E(f"for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = {'true' if vis else 'false'}")
+                above(c[0], c[1], az=200, el=48, r=80)
+                E(f"{VIS}({'true' if vis else 'false'})")
                 pic('hirschbach_oben' + tag)
-            E("for (const c of GEB.Z.cells.values()) for (const m of c.meshes) m.visible = !RATSCHER.map")
+            E(f"{VIS}(!RATSCHER.map)")
             # free behind and build again: 1.5 km south on the road (beyond FAR = 900 m), then back
             near_keys = J(f"[...GEB.Z.cells.values()].filter(c => c.meshes.length && Math.hypot((c.ij[0] + 0.5) * 400 - {c[0]}, (c.ij[1] + 0.5) * 400 - {c[1]}) < 300).map(c => c.key)")
             f0 = J("GEB.Z.freed")

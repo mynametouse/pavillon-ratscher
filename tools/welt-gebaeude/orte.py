@@ -230,6 +230,137 @@ def osm_streets(cache, poly):
     return out
 
 
+OSMAPI = 'https://api.openstreetmap.org/api/0.6/map?bbox='
+# OSM buildings that are no closed house: left out (a carport or a roof on posts as a closed shed would be wrong, a greenhouse of glass too)
+OSM_SKIP = {'roof', 'carport', 'construction', 'ruins', 'collapsed', 'destroyed', 'demolished', 'proposed', 'no', 'greenhouse',
+            'canopy', 'bridge', 'disused', 'abandoned', 'container', 'tent', 'static_caravan'}
+# heights where OSM has none (ground to ridge, m): by the kind of building, else by its size
+OSM_H = {'house': 8.5, 'detached': 8.5, 'semidetached_house': 8.5, 'residential': 9.0, 'terrace': 9.0, 'apartments': 12.0, 'farm': 9.0,
+         'bungalow': 5.0, 'garage': 2.8, 'garages': 2.8, 'shed': 3.0, 'hut': 3.0, 'cabin': 3.5, 'allotment_house': 3.0, 'barn': 8.0,
+         'farm_auxiliary': 7.0, 'stable': 7.0, 'cowshed': 7.0, 'agricultural': 8.0, 'industrial': 9.0, 'warehouse': 9.0, 'commercial': 9.0,
+         'retail': 7.0, 'church': 14.0, 'chapel': 8.0, 'school': 11.0, 'public': 10.0, 'service': 3.0, 'transformer_tower': 9.0,
+         'kindergarten': 6.0, 'hotel': 11.0, 'office': 10.0, 'sports_hall': 9.0, 'fire_station': 8.0}
+
+
+def osm_square(cache, i, j, pad=30.0):
+    """OpenStreetMap of one square kilometre of the model (i, j: 1000 m cells) from the API (map call; split in four when the API says
+    the box holds too much), cached: {'b': [[id, tags, ring (model m)]], 'h': [[kind, line (model m)]]}"""
+    import xml.etree.ElementTree as ET
+    from pyproj import Transformer
+    fn = os.path.join(cache, 'osm_api', '%d_%d.json' % (i, j))
+    if os.path.exists(fn):
+        return json.load(open(fn))
+    toLL = Transformer.from_crs(25832, 4326, always_xy=True)
+    toU = Transformer.from_crs(4326, 25832, always_xy=True)
+    cs = [toLL.transform(*W.to_utm(x, y)) for x in (i * 1000 - pad, (i + 1) * 1000 + pad) for y in (j * 1000 - pad, (j + 1) * 1000 + pad)]
+    box = (min(c[0] for c in cs), min(c[1] for c in cs), max(c[0] for c in cs), max(c[1] for c in cs))
+    nodes, ways, rels = {}, {}, {}
+
+    def chunk(w, s_, e, n, depth=0):
+        url = OSMAPI + '%.6f,%.6f,%.6f,%.6f' % (w, s_, e, n)
+        rq = urllib.request.Request(url, headers={'User-Agent': 'pavillon-ratscher-tools/1.0'})
+        try:
+            with urllib.request.urlopen(rq, timeout=180) as r:
+                b = r.read()
+        except urllib.error.HTTPError as ex:
+            if ex.code == 400 and depth < 3:
+                xm, ym = (w + e) / 2, (s_ + n) / 2
+                for q in ((w, s_, xm, ym), (xm, s_, e, ym), (w, ym, xm, n), (xm, ym, e, n)):
+                    chunk(*q, depth=depth + 1)
+                return
+            raise
+        root = ET.fromstring(b)
+        for el in root.iter('node'):
+            nodes[el.get('id')] = (float(el.get('lon')), float(el.get('lat')))
+        for el in root.iter('way'):
+            ways[el.get('id')] = ([nd.get('ref') for nd in el.findall('nd')], {t.get('k'): t.get('v') for t in el.findall('tag')})
+        for el in root.iter('relation'):
+            rels[el.get('id')] = ([(m.get('type'), m.get('ref'), m.get('role')) for m in el.findall('member')],
+                                  {t.get('k'): t.get('v') for t in el.findall('tag')})
+        time.sleep(1.0)
+    import urllib.error
+    chunk(*box)
+
+    def ring_of(refs):
+        pts = [nodes[r] for r in refs if r in nodes]
+        if len(pts) < len(refs) or len(pts) < 4:
+            return None
+        return [list(map(lambda v: round(v, 2), W.to_model(*toU.transform(lo, la)))) for lo, la in pts]
+    out = {'b': [], 'h': []}
+    for wid, (refs, tags) in ways.items():
+        if tags.get('building') and refs and refs[0] == refs[-1]:
+            r = ring_of(refs)
+            if r:
+                out['b'].append(['w' + wid, tags, r])
+        hw = tags.get('highway')
+        if hw in STREET_HW and len(refs) >= 2:
+            pts = [nodes[r] for r in refs if r in nodes]
+            if len(pts) >= 2:
+                out['h'].append([hw, [list(map(lambda v: round(v, 2), W.to_model(*toU.transform(lo, la)))) for lo, la in pts]])
+    for rid, (mem, tags) in rels.items():
+        if tags.get('type') == 'multipolygon' and tags.get('building'):
+            for typ, ref, role in mem:
+                if typ == 'way' and role == 'outer' and ref in ways and ways[ref][0] and ways[ref][0][0] == ways[ref][0][-1]:
+                    r = ring_of(ways[ref][0])
+                    if r:
+                        out['b'].append(['r' + rid + '_' + ref, tags, r])
+    os.makedirs(os.path.dirname(fn), exist_ok=True)
+    json.dump(out, open(fn, 'w'), separators=(',', ':'), ensure_ascii=False)
+    log('OSM square', i, j, len(out['b']), 'buildings', len(out['h']), 'streets')
+    return out
+
+
+def osm_squares(cache, squares):
+    """OSM of several squares: buildings deduplicated by id, the streets as (LineString, half width)"""
+    from shapely.geometry import LineString
+    bs, hs, seen = [], [], set()
+    for (i, j) in sorted(squares):
+        try:
+            d = osm_square(cache, i, j)
+        except Exception as e:
+            log('no OSM for square', i, j, e)
+            continue
+        for bid, tags, ring in d['b']:
+            if bid not in seen:
+                seen.add(bid)
+                bs.append((bid, tags, ring))
+        for hw, line in d['h']:
+            hs.append((LineString(line), STREET_HW.get(hw, 2.5)))
+    return bs, hs
+
+
+def squares_of(polys, cells):
+    """the square kilometres with buildings: the new ones and those of the cells"""
+    sq = set()
+    for p in polys:
+        c = p.representative_point()
+        sq.add((math.floor(c.x / 1000), math.floor(c.y / 1000)))
+    for L in cells.values():
+        for b in L:
+            f = b['f']
+            sq.add((math.floor(sum(f[0::2]) / (len(f) / 2) / 1000), math.floor(sum(f[1::2]) / (len(f) / 2) / 1000)))
+    return sq
+
+
+def osm_height(tags, area):
+    """ground to the highest point from the OSM tags (height, building:levels, roof:levels), else by kind and size"""
+    def num(v):
+        try:
+            return float(str(v).replace(',', '.').split()[0].rstrip('m'))
+        except Exception:
+            return None
+    h = num(tags.get('height')) if tags.get('height') else None
+    if h and 2.0 <= h <= 60.0:
+        return h
+    lv = num(tags.get('building:levels')) if tags.get('building:levels') else None
+    if lv and 0 < lv < 20:
+        return lv * 2.9 + (num(tags.get('roof:levels')) or 0) * 2.5 + (2.5 if tags.get('roof:shape', 'gabled') != 'flat' else 0.3)
+    k = tags.get('building', 'yes')
+    if k in OSM_H:
+        return OSM_H[k]
+    return 3.0 if area < 30 else 5.5 if area < 70 else 8.5 if area < 350 else 8.0
+
+
 # ---------------------------------------------------------------- the cells as they are -------------------------------------------
 def base_id(sid):
     return re.sub(r'_\d+$', '', sid)
@@ -258,11 +389,82 @@ def region_of(stage, cache, sets, ext):
     return unary_union([extent({k: v for k, v in sets.items() if k != 'suhl'}), region_of('suhl', cache, sets, ext)])
 
 
+def osm_candidates(a, cache):
+    """the buildings OSM has and ETHOS not (newer than the state's LoD2, or missed there): every OSM building of the square kilometres
+    with buildings in the cells, inside the tiles one drives on (stage welt's area), that no ETHOS footprint covers (a quarter of it, or
+    an ETHOS middle inside it) and no building of the cells; the same keep-outs as the other stages. Height from its tags, else by kind
+    and size (OSM_H)"""
+    from shapely.geometry import Polygon, Point
+    from shapely.strtree import STRtree
+    from shapely.prepared import prep
+    sets = tile_sets(cache)
+    ext = extent(sets)
+    reg = region_of('welt', cache, sets, ext)
+    town, how = suhl_town(cache)
+    cells = cells_now()
+    bs, hs = osm_squares(cache, squares_of([], cells))
+    log('stage osm: OSM buildings', len(bs), 'in the square kilometres of the cells')
+    x0, y0, x1, y1 = reg.bounds
+    E = []
+    for r in W.load_ethos(a.ethos):
+        pts = [W.to_model(e, n) for e, n in r['poly'][0][0]]
+        if not (x0 - 50 < pts[0][0] < x1 + 50 and y0 - 50 < pts[0][1] < y1 + 50):
+            continue
+        g = Polygon(pts).buffer(0)
+        if not g.is_empty:
+            E.append(g)
+    etree = STRtree(E)
+    CP = [Polygon(np.array(b['f']).reshape(-1, 2)).buffer(0) for L in cells.values() for b in L]
+    ctree = STRtree(CP)
+    preg, ptown = prep(reg), prep(town.buffer(5.0))
+    ko = W.keepout('zonen')
+    kot = STRtree([g for g, _ in ko])
+    BOX = PR.BOX
+    st = {'osm': 0, 'skip_kind': 0, 'small': 0, 'square': 0, 'suhl': 0, 'keepout': 0, 'ethos': 0, 'cells': 0}
+    out = []
+    for bid, tags, ring in bs:
+        g = Polygon(ring).buffer(0)
+        if g.is_empty:
+            continue
+        c = g.representative_point()
+        if not preg.contains(c):
+            continue
+        st['osm'] += 1
+        if tags.get('building') in OSM_SKIP or tags.get('building:part'):
+            st['skip_kind'] += 1
+            continue
+        if g.area < 6.0:
+            st['small'] += 1
+            continue
+        if BOX[0] + 2 < c.x < BOX[2] - 2 and BOX[1] + 2 < c.y < BOX[3] - 2:
+            st['square'] += 1
+            continue
+        if ptown.contains(c):
+            st['suhl'] += 1
+            continue
+        if W.kept_out(g, ko, kot):
+            st['keepout'] += 1
+            continue
+        hit = [E[i] for i in etree.query(g)]
+        if sum(g.intersection(e).area for e in hit) > 0.25 * g.area or any(g.contains(e.representative_point()) for e in hit):
+            st['ethos'] += 1
+            continue
+        hit = [CP[i] for i in ctree.query(g)]
+        if sum(g.intersection(e).area for e in hit) > 0.25 * g.area:
+            st['cells'] += 1
+            continue
+        out.append(({'id': 'osm_' + bid, 'h': osm_height(tags, g.area), 'tags': tags}, g))
+    log('OSM only', len(out), json.dumps(st))
+    return out, st, cells, reg, ext
+
+
 def candidates(a, stage, cache):
     """the ETHOS buildings of the stage not built yet, after the keep-outs: [(record, polygon)], the stats"""
     from shapely.geometry import Polygon, Point
     from shapely.strtree import STRtree
     from shapely.prepared import prep
+    if stage == 'osm':
+        return osm_candidates(a, cache)
     sets = tile_sets(cache)
     ext = extent(sets)
     reg = region_of(stage, cache, sets, ext)
@@ -379,7 +581,7 @@ def build(a, stage, cache):
     rl = [(ls, hw) for ls, hw, k in PR.roads_fahrt() if k <= 5] + [(ls, max(hw, 2.5)) for ls, hw, k, fl in ways if k <= 5]
     if not a.no_osm:
         try:
-            rl += osm_streets(cache, unary_union([p for _, p, _ in polys]).envelope)
+            rl += osm_squares(cache, squares_of([p for _, p, _ in polys], {}))[1]
         except Exception as e:
             log('no OSM streets (the facades know only the roads one drives)', e)
     rtree = STRtree([ls for ls, _ in rl])
@@ -445,6 +647,10 @@ def write(made, cells, stage, st, kinds):
     o[stage] = dict(st, built=sum(len(b) for b in made.values()), kinds=kinds,
                     cells_new=sum(1 for k, b in made.items() if b and k not in cells),
                     cells_added_to=sum(1 for k, b in made.items() if b and k in cells), made=time.strftime('%Y-%m-%d'))
+    # the order of the cells as they came: the loader numbers a cell's buildings from its place in the list of keys (10000 + 400 k, the
+    # seed of their random style) – sorted keys would move every old cell when new ones come between them; 'order' keeps the old first
+    order = idx.get('order') or sorted(k for k in idx['cells'] if k not in made or k in cells)
+    idx['order'] = order + sorted(k for k in idx['cells'] if k not in order)
     idx['cells'] = dict(sorted(idx['cells'].items()))
     if 'feat/welt-orte' not in idx.get('src', ''):
         idx['src'] += '; feat/welt-orte: the flat places of the region (tools/welt-gebaeude/orte.py)'
@@ -544,17 +750,29 @@ def report(a, cache):
         w[0] += cx
         w[1] += cy
         w[2] += 1
-    rows = sorted(T.items(), key=lambda kv: -(kv[1]['suhl'] + kv[1]['welt'] + 0.001 * kv[1]['alle']))
-    print('| Ort | Art | ETHOS-Gebäude | vorher in 3D | neu: Weg nach Suhl | neu: übrige Orte | nicht gebaut (klein, frei gehalten, Straße) | Mitte (x, y) |')
-    print('|---|---|---|---|---|---|---|---|')
+    # the buildings OSM has and ETHOS not (stage osm): counted apart
+    for L in cells_now().values():
+        for b in L:
+            if b.get('o') == 'osm':
+                f = b['f']
+                x, y = sum(f[0::2]) / (len(f) / 2), sum(f[1::2]) / (len(f) / 2)
+                k = nearest_place(pl, x, y)
+                T[k]['osm'] += 1
+                w = where[k]
+                if not w[2]:
+                    w[0], w[1], w[2] = x, y, 1
+    rows = sorted(T.items(), key=lambda kv: -(kv[1]['suhl'] + kv[1]['welt'] + kv[1]['osm'] + 0.001 * kv[1]['alle']))
+    print('| Ort | Art | ETHOS-Gebäude | vorher in 3D | neu: Weg nach Suhl | neu: übrige Orte | neu aus OSM (ETHOS hat sie nicht) | '
+          'nicht gebaut (klein, frei gehalten, Straße) | Mitte (x, y) |')
+    print('|---|---|---|---|---|---|---|---|---|')
     tot = collections.Counter()
     for (name, kind), c in rows:
         w = where[(name, kind)]
         tot.update(c)
-        print(f"| {name} | {kind or '–'} | {c['alle']} | {c['zuvor'] + c['quadrat'] + c['zone']} | {c['suhl']} | {c['welt']} | {c['aus'] + c['klein']} | "
+        print(f"| {name} | {kind or '–'} | {c['alle']} | {c['zuvor'] + c['quadrat'] + c['zone']} | {c['suhl']} | {c['welt']} | {c['osm']} | {c['aus'] + c['klein']} | "
               f"{round(w[0] / w[2])}, {round(w[1] / w[2])} |")
     print(f"| **zusammen** | | **{tot['alle']}** | **{tot['zuvor'] + tot['quadrat'] + tot['zone']}** | **{tot['suhl']}** | **{tot['welt']}** | "
-          f"**{tot['aus'] + tot['klein']}** | |")
+          f"**{tot['osm']}** | **{tot['aus'] + tot['klein']}** | |")
     print('vorher: in den Zellen %d, im Quadrat %d, von den Orten selbst %d; nicht gebaut: unter 4 m² %d, sonst %d' %
           (tot['zuvor'], tot['quadrat'], tot['zone'], tot['klein'], tot['aus']), file=sys.stderr)
 
@@ -567,7 +785,7 @@ def build_dry(a, stage, cache):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--ethos', required=True)
-    ap.add_argument('--stage', choices=['suhl', 'welt'], default='suhl')
+    ap.add_argument('--stage', choices=['suhl', 'welt', 'osm'], default='suhl')
     ap.add_argument('--cache', default='/tmp/welt-orte')
     ap.add_argument('--dry', action='store_true', help='count only, write nothing')
     ap.add_argument('--list', action='store_true', help='the places of the stage and their buildings (json on stdout)')
