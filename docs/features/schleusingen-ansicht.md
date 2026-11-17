@@ -19,9 +19,9 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
     `rahmen`, `besonders` (was man sieht, deutsch), `sicher` (hoch, mittel, niedrig), `ansichten` (Blickpunkte).
   - Runde 3 (begonnen): `geschosse` (Vollgeschosse bis zur Traufe), `dachform` (sattel, walm, krueppelwalm, mansard, flach, pult, zelt),
     `first` (`giebel`: der Giebel zur Straße, sonst `trauf`), `tuer` (Art der Haustür wie in `FASSADE`, 0–7, wo die Ansicht nah ist),
-    `gauben` (Gauben zur Straße) – bisher für 117 Gebäude die Geschosse, 65 davon anders als in den
-    Altstadtdaten (z. B. #331 und #48 eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei Geschosse mit
-    Gauben).
+    `gauben` (Gauben zur Straße) – bisher für 118 Gebäude die Geschosse, 65 davon anders als in den Altstadtdaten (z. B. #331 und #48
+    eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei Geschosse mit Gauben), 27 Firstrichtungen, 14 Mal
+    Gauben, 7 Dachformen (flach, Walm), 8 Haustüren.
   - `nicht_lesbar`: Gebäude, die eine Ansicht zeigt, aber nicht lesbar (Bäume, Hecke, unscharf) – mit Grund.
   - Stand: Runde 1 (Hildburghäuser, Suhler, Ilmenauer Straße, Markt; 71 Ansichten), Königstraße (16), Bertholdstraße (zwei
     360°-Ansichten, je 6 Richtungen) und Klosterstraße (5 Bilder aus dem Auto): 157 Gebäude gelesen (65 hoch, 62 mittel, 30 niedrig
@@ -91,7 +91,7 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
 4. Für den Kern (`world/village.js`, nicht Teil dieses Zweigs): der Zweig `st == 9.0` (Klinker) im Fassaden-Shader wird nie erreicht –
    `barn` (6,5 < st < 9,5) fängt Stil 9 vorher ab.
 
-## Abgleich und Runde 3 (geplant, Falko 19:39: Schritt für Schritt zur besten Übereinstimmung)
+## Abgleich und Runde 3 (begonnen, Falko 19:39: Schritt für Schritt zur besten Übereinstimmung)
 
 - **Abgleich** `tools/schleusingen-ansicht/abgleich.py --ref DIR --out DIR` (nur auf dem Chat-Rechner, der die Ansichten hat; `--ref` und
   `--out` müssen außerhalb des Repos liegen): je Blickpunkt Ansicht und Modellbild (Abschnitt `bilder` des Tests, dieselbe Kamera)
@@ -111,11 +111,12 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   `ansicht-aufnahme` und je Bild an die Stadt angepasst – die Kamera fuhr ~40 m weiter, als ihr GPS-Punkt sagt (die Apotheke
   Klosterstraße 14 bestätigt es); `m004`–`m008` (Klosterstraße) sind gelesen, `m000`–`m003` (Markt, dort schon aus den Markt-Ansichten
   gelesen) und `m009`–`m012` (Ostende, nach Norden) ließen sich nicht eindeutig verorten; `m013`–`m022` zeigen die Burg und ihren Hang,
-  `m023`–`m033` (Suhler Straße, 2019) stehen noch aus.
+  `m023`–`m033` (Suhler Straße, 2019) nur schon gelesene Häuser.
 - Ratscher (`viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/ratscher.json`, Schlüssel `id` von `VILLAGE`, Häuser der
   Dorfmitte nach Falkos Video nur mit Unterschieden): die 109 freien Panoramax-Fotos
   (2020/2025) stehen alle auf Wegen außerhalb des Dorfs – das nächste rund 160 m von der nächsten Hauswand –, keine Fassade
-  lesbar; Mapillary an der L 3004 (vier 360°-Aufnahmen, März 2020): fast nur Bäume und Büsche – gelesen nur die Halle #196 (graublaues
-  Trapezblech, im Dorf dunkelgrün), fünf Häuser hinter Bäumen als nicht lesbar. Noch nicht in `fassade/ansicht.json` (Schlüssel
-  `ratscher:196` ginge über denselben Weg).
+  lesbar; Mapillary an der L 3004 (elf 360°-Aufnahmen, März 2020, rund 22 m auseinander): fast nur Bäume und Büsche – gelesen nur die
+  Halle #196 (graublaues Trapezblech, im Dorf dunkelgrün; in `fassade/ansicht.json` als `ratscher:196`, die Höhen des Dorfs bleiben),
+  zwölf Häuser als nicht lesbar benannt (zehn hinter Bäumen, zwei an der Anger-Kreuzung zu weit – #187 wohl schieferverkleidet statt
+  der Scheune im Dorf).
 - Nachts bekommt das Pflasterstück kein Laternenlicht auf den Boden (die Kacheln auch nicht).
