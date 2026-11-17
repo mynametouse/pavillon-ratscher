@@ -828,6 +828,22 @@ export const GLALLTAG = (() => {
       }
     gehe(o, wegNach([F.x, F.y], q), 'weg');
   }
+  // a bus standing at the stop near (x, y): the point by its front door, or null
+  function busAmHalt(x, y) {
+    try {
+      const B = window.BUS;
+      for (const I of (B && B.S && B.S.inst) || [])
+        if (I.st === 'halt' && hyp(I.x - x, I.y - y) < 16 && Number.isFinite(I.hd)) {
+          // (hd in radians; the front door on the right, near the front)
+          const h = I.hd;
+          return [I.x + Math.sin(h) * 4.8 + Math.cos(h) * 1.7, I.y + Math.cos(h) * 4.8 - Math.sin(h) * 1.7];
+        }
+      const G = window.GLLINIEN;
+      for (const v of (G && G.fahrzeuge ? G.fahrzeuge() : []) || [])
+        if (/bus/i.test(v.art || '') && hyp(v.x - x, v.y - y) < 14) return [v.x, v.y];
+    } catch (e) {}
+    return null;
+  }
   // ---- per figure, every frame ----
   const GESTEN = ['arme', 'achsel', 'nicken', 'kopf', 'arme', 'nicken'];
   function verhalten(o, dt, px, py) {
@@ -839,6 +855,12 @@ export const GLALLTAG = (() => {
     if (o.ende) return weg(o, o.ende === 'weg' ? null : o.ende);
     // the slot moved on
     if (w && o.key !== w.key && o.st !== 'tuer' && o.st !== 'weg' && o.st !== 'heim') return umziehen(o, w);
+    // the school bus: a bus that stops at the stop (the base game's lines, bus/bus.js, or the school bus of the agent `strasse`) takes
+    // whoever waits for it – they walk to its front door and get in
+    if (w && o.st === 'da' && w.platz === 'haltestelle' && S.jetzt[p.id] && S.jetzt[p.id].tun === 'warten') {
+      const b = busAmHalt(w.x, w.y);
+      if (b) return gehe(o, [[b[0], b[1]]], 'tuer');
+    }
     // shops: inside now – who stands at the door goes in
     if (w && w.ph === 'drin' && o.st === 'da' && w.tuer) {
       return gehe(o, [[w.tuer.x, w.tuer.y]], 'tuer');

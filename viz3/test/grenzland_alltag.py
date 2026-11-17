@@ -133,6 +133,11 @@ with lib.browser() as b:
         print('cost per tick', round(ms, 3), 'ms; memory before', st0, 'with figures', mem, flush=True)
         ck('tag: cheap per frame (< 1.5 ms per tick here, SwiftShader)', ms < 1.5, f'{ms:.3f} ms')
         ck('tag: no new shader program for the people', mem['prog'] - st0['prog'] <= 2, f"{st0['prog']} → {mem['prog']}")
+        # the textures of the drawn village people (decoded, RGBA, without mipmaps): the share of this module on a phone's memory
+        tm = J("""(() => { const seen = new Set(); let mb = 0, n = 0; for (const F of GLFIG.figs.filter(f => f.alltag)) { n++; F.g.traverse(o => { for (const m of o.material ? [].concat(o.material) : []) for (const k in m) { const t = m[k];
+          if (t && t.isTexture && t.source && !seen.has(t.source)) { seen.add(t.source); const im = t.source.data; if (im && im.width) mb += im.width * im.height * 4 / 1e6 } } }) } return { n, mb: Math.round(mb) } })()""")
+        print('textures of the village people', tm, flush=True)
+        ck('tag: the figures cost < 20 MB of textures each', tm['n'] == 0 or tm['mb'] / tm['n'] < 20, str(tm))
         # the evening at the Feldscheune: skittles on a Wednesday in September
         X("GLALLTAG.debug.zeit(19 * 60 + 25, 3); const T = GLORTE.P.kegel; TA.blick(T[0] + 2, T[1] + 1.5, 200, 14, 1.65, -5)")
         ok = warte_figuren("TA.an('treff').length >= 2", 120)
@@ -261,7 +266,7 @@ with lib.browser() as b:
         ck('voegel: cheap (< 0.6 ms per frame here) and no new shader program', st['ms'] < 0.6 and prog1 - prog0 <= 1 and not st['err'], f"{st['ms']} ms, programs {prog0} → {prog1}, err {st['err']}")
     # ------------------------------------------------------------------ fest: the festivals by the calendar ------------------------------------------------------------------
     if want('fest'):
-        X("window.TF = []; KERN.on('grenzland:fest', d => TF.push(d))")
+        X("window.TF = []; KERN.on('grenzland:fest', d => TF.push(d)); GAME.setSound && GAME.setSound(true)")
         k = J("GLFESTE.kalender()")
         ck('fest: the calendar – Kirmes on Saturday 10 October first, then Sunday, then the Christmas market', [q['id'] for q in k[:3]] == ['kirmes', 'kirmes', 'weihnachtsmarkt'] and 'Sa. 10. Oktober' in k[0]['text'], str(k[:3]))
         # the Kirmes on Saturday evening round the Dorflinde
