@@ -2354,13 +2354,72 @@ export const ZIEINR = (() => {
     onWall(C, F, u - w / 2, u + w / 2, z - h / 2, z + h / 2);
   };
   // a calendar in the kitchen: a picture above, the month below
+  // (feat/innen-real: a calendar as one hangs in a kitchen – the month's picture a landscape (sky, blue hills, a green slope with a
+  // field), the red month bar, a grid of the days with the Sundays red, the wire binding at the top; before, a coloured block over grey
+  // lines like an icon)
   DK.kalender = (C, F, u, z) => {
-    const m = C.m;
+    const m = C.m,
+      R = C.R,
+      N = [F.n[0], F.n[1], 0],
+      v = 0.0095,
+      q = (mat, u0, u1, z0, z1, z2 = z1, z3 = z0) =>
+        m.quad(mat, F.P(u0, v, z0), F.P(u1, v, z3), F.P(u1, v, z2), F.P(u0, v, z1), N);
     F.box(m, C.col(0xf4f2ec, 0.9), u - 0.15, u + 0.15, 0, 0.008, z - 0.25, z + 0.2);
-    F.box(m, C.col(C.R.pick([0x5a8aa8, 0x6a8a4a, 0xb89a6a]), 0.8), u - 0.13, u + 0.13, 0.008, 0.01, z + 0.0, z + 0.18);
+    // the picture: sky, a far ridge, the near slope with a field, in three bands with wavy edges
+    const zp = z + 0.005,
+      W = 0.13,
+      sky = C.col(R.pick([0x9ec3e0, 0xb7cfe2, 0xe8c9a0]), 0.8),
+      far = C.col(R.pick([0x7d93a6, 0x8a96a8]), 0.8),
+      near = C.col(R.pick([0x5f8a45, 0x6f9a4a, 0x7a8a3a]), 0.8),
+      field = C.col(R.pick([0xd8c060, 0xc8a84a]), 0.8);
+    q(sky, u - W, u + W, zp + 0.06, zp + 0.175, zp + 0.175, zp + 0.06);
+    for (let i = 0; i < 6; i++) {
+      const a = u - W + (i * 2 * W) / 6,
+        b = a + (2 * W) / 6,
+        h0 = 0.075 + Math.sin(i * 1.3 + 0.4) * 0.018,
+        h1 = 0.075 + Math.sin((i + 1) * 1.3 + 0.4) * 0.018,
+        g0 = 0.045 + Math.sin(i * 0.9 + 2.1) * 0.014,
+        g1 = 0.045 + Math.sin((i + 1) * 0.9 + 2.1) * 0.014;
+      m.quad(
+        far,
+        F.P(a, v + 0.001, zp + 0.03),
+        F.P(b, v + 0.001, zp + 0.03),
+        F.P(b, v + 0.001, zp + h1),
+        F.P(a, v + 0.001, zp + h0),
+        N
+      );
+      m.quad(
+        near,
+        F.P(a, v + 0.002, zp),
+        F.P(b, v + 0.002, zp),
+        F.P(b, v + 0.002, zp + g1),
+        F.P(a, v + 0.002, zp + g0),
+        N
+      );
+    }
+    m.quad(
+      field,
+      F.P(u + 0.01, v + 0.003, zp + 0.008),
+      F.P(u + 0.09, v + 0.003, zp + 0.014),
+      F.P(u + 0.08, v + 0.003, zp + 0.03),
+      F.P(u + 0.02, v + 0.003, zp + 0.024),
+      N
+    );
+    // the month bar and the days (seven columns, five rows; Sundays red)
     F.box(m, C.col(0xb8302a, 0.8), u - 0.13, u + 0.13, 0.008, 0.01, z - 0.04, z - 0.01);
-    for (let k = 0; k < 4; k++)
-      F.box(m, C.col(0x8a8a8a, 0.9), u - 0.12, u + 0.12, 0.008, 0.01, z - 0.22 + k * 0.045, z - 0.21 + k * 0.045);
+    const day = C.col(0x6a6a6a, 0.9),
+      sun = C.col(0xc8302a, 0.85);
+    for (let r = 0; r < 5; r++)
+      for (let c = 0; c < 7; c++) {
+        const uu = u - 0.12 + c * 0.04,
+          zz = z - 0.075 - r * 0.035;
+        q(c === 6 ? sun : day, uu, uu + 0.018, zz, zz + 0.011);
+      }
+    // the wire binding along the top
+    for (let k = 0; k < 9; k++) {
+      const uu = u - 0.12 + k * 0.03;
+      F.box(m, C.col(0x3a3a3a, 0.5, 0.5), uu, uu + 0.006, 0.006, 0.014, z + 0.19, z + 0.21);
+    }
     onWall(C, F, u - 0.16, u + 0.16, z - 0.26, z + 0.21);
   };
   // kitchen things on the worktop: storage tins (Vorratsdosen), a kettle, a bread bin, a coffee grinder in the old houses

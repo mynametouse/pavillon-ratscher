@@ -90,7 +90,9 @@ dieselben Räume „nachher“: `out/innen_real/nachher/`. Was ein Fremder sofor
 - **Gemalte Bilder** (`ZIMOB` `DRAW.bilder`): der Röhrende Hirsch und die Thüringer-Wald-Landschaft in Schichten von fern (blasser,
   bläulicher) nach nah, mit weichen Wolken und Dunst, Wald aus Fichten, See mit Lichtreflexen, Dorf mit Kirche, und darüber ein paar
   tausend kurze Pinselstriche in der Farbe darunter – wie ein Öldruck; vorher flache Formen. (Die Drucke von heute in `haeuser_heute.js` –
-  abstrakte Formen, Strichzeichnungen – sind, was 2026 an solchen Wänden hängt.)
+  abstrakte Formen, Strichzeichnungen – sind, was 2026 an solchen Wänden hängt.) Der **Wandkalender** der Küchen (`DK.kalender`) mit
+  Monatsbild (Himmel, blaue Hügel, grüner Hang mit Feld), rotem Monatsbalken, den Tagen in sieben Spalten (Sonntage rot) und der
+  Drahtbindung oben – vorher ein farbiger Block über grauen Strichen wie ein Symbol.
 - **Topfpflanzen** (`ZIEINR.DK.pflanze`, auf den Fensterbrettern aller Häuser): die Geranie ein Busch aus zwölf runden, nach außen
   gekippten Blättern mit drei Dolden auf Stielen, die Grünlilie überhängende Blattbänder grün und hell, Erde im Topf; vorher ein grüner
   Kegel mit roter Kappe.
