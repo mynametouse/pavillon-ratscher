@@ -29,12 +29,14 @@ import { DN } from '../time/daynight.js';
 import { DCAL } from '../dorf/dorf_cal.js';
 import { DPEOPLE } from '../dorf/dorf_people.js';
 import { DLIFE } from '../dorf/dorf_life.js';
+import { DCARS } from '../dorf/dorf_cars.js';
 import { VILLAGE } from '../world/village.js';
 import { SCHL } from '../welt/schleusingen.js';
 import { GLDATA } from './gl_data.js';
 import { GL } from './gl_state.js';
 import { GLFIG } from './gl_fig.js';
 import { GLAUTO } from './gl_auto.js';
+import { GLFAHNDUNG } from './gl_fahndung.js';
 import { GLHUD } from './gl_hud.js';
 import { GLORTE } from './gl_orte.js';
 import { GLALDATA } from './gl_alltag_data.js';
@@ -376,6 +378,18 @@ export const GLALLTAG = (() => {
       case 'hof': {
         const h = heim(p);
         if (!h) return null;
+        if (j.pose === 'bonnet') {
+          // under the bonnet of the own car where it is parked at the kerb (dorf/dorf_cars.js) – no car there, no bonnet
+          const c = DCARS.cars && p.dorf ? DCARS.cars[p.dorf] : null;
+          if (c && c.at && c.st === 'parked') {
+            const ch = -c.g.rotation.y,
+              x = c.at[0] + Math.sin(ch) * 2.75,
+              y = c.at[1] + Math.cos(ch) * 2.75;
+            o = { x, y, hd: ch + Math.PI, tuer: { x: h.step[0], y: h.step[1], heim: true } };
+            break;
+          }
+          j.pose = null;
+        }
         o = {
           x: h.spot[0],
           y: h.spot[1],
@@ -457,9 +471,16 @@ export const GLALLTAG = (() => {
       m = minOf(t),
       f = fest();
     const fd = f ? Object.assign({}, f) : null;
+    // rain or snow now (feat/wetter): leisure outside stays in
+    let regen = false;
+    try {
+      const W = window.WETTER && WETTER.state ? WETTER.state().cur : null;
+      regen = !!W && (W.rain > 0.3 || W.snow > 0.3);
+    } catch (e) {}
+    S.regen = regen;
     // first what everybody does (mit() reads it), then where
     for (const p of D.LEUTE) {
-      const j = D.jetzt(p, { eday: e, min: m, fest: fd, basis: basis(p, t) });
+      const j = D.jetzt(p, { eday: e, min: m, regen, fest: fd, basis: basis(p, t) });
       const was = S.jetzt[p.id];
       j.key = j.platz + '|' + j.tun + '|' + j.von;
       j.neu = !was || was.key !== j.key;
@@ -578,16 +599,21 @@ export const GLALLTAG = (() => {
         if (!best) best = v;
       }
     if (best) return best;
-    // no streets (the town): along the facade of the door, or from a side
+    // no streets (the town): a start with a free straight way to the spot (no wall between – the police's line of sight,
+    // grenzland/gl_fahndung.js, knows the town's walls), along the facade of a door first, else from any side
     const T = w.tuer && !w.tuer.heim ? w.tuer : null,
-      base = T ? [T.ny, -T.nx] : [Math.sin(p.i * 2.3), Math.cos(p.i * 2.3)];
-    for (const sg of [1, -1])
-      for (const dd of [30, 24, 36]) {
-        const c = [ziel[0] + base[0] * dd * sg + (T ? T.nx * 2 : 0), ziel[1] + base[1] * dd * sg + (T ? T.ny * 2 : 0)];
-        const q = frei(c[0], c[1]) ? c : freiNah(c[0], c[1], 4);
-        if (!q) continue;
-        const v = { start: q, rest: [ziel] };
-        if (!imBlick(q[0], q[1], 90)) return v;
+      vor = T ? [T.x + T.nx * 1.4, T.y + T.ny * 1.4] : ziel,
+      dirs = [];
+    if (T) dirs.push([T.ny, -T.nx], [-T.ny, T.nx]);
+    for (let k = 0; k < 12; k++)
+      dirs.push([Math.sin((k / 12) * Math.PI * 2 + p.i), Math.cos((k / 12) * Math.PI * 2 + p.i)]);
+    for (const dd of [26, 20, 30, 14])
+      for (const d of dirs) {
+        const c = [vor[0] + d[0] * dd, vor[1] + d[1] * dd];
+        if (!frei(c[0], c[1], 0.3)) continue;
+        if (!GLFAHNDUNG.los(c[0], c[1], vor[0], vor[1])) continue;
+        const v = { start: c, rest: T ? [vor, ziel] : [ziel] };
+        if (!imBlick(c[0], c[1], 90)) return v;
         if (!best) best = v;
       }
     return best;
@@ -789,7 +815,17 @@ export const GLALLTAG = (() => {
     const l = hyp(dx, dy) || 1;
     dx /= l;
     dy /= l;
-    const q = freiNah(F.x + dx * 35, F.y + dy * 35, 6) || [F.x + dx * 20, F.y + dy * 20];
+    let q = freiNah(F.x + dx * 35, F.y + dy * 35, 6) || [F.x + dx * 20, F.y + dy * 20];
+    // (in the town, where there is no road graph: a direction with a free straight way)
+    if (!imQuadrat(F.x, F.y) && !GLFAHNDUNG.los(F.x, F.y, q[0], q[1]))
+      for (let k = 1; k < 12; k++) {
+        const a = Math.atan2(dx, dy) + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.5,
+          c = [F.x + Math.sin(a) * 28, F.y + Math.cos(a) * 28];
+        if (frei(c[0], c[1]) && GLFAHNDUNG.los(F.x, F.y, c[0], c[1])) {
+          q = c;
+          break;
+        }
+      }
     gehe(o, wegNach([F.x, F.y], q), 'weg');
   }
   // ---- per figure, every frame ----

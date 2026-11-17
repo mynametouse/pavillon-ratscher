@@ -438,7 +438,8 @@ export const GLALDATA = (() => {
   }
   const woche = eday => Math.floor((eday + 3) / 7) % 2 === 0; // even weeks, counted as dorf/dorf_cal.js counts the fire's
   // one entry of a plan on a day: [from, to] in minutes, or null when it does not happen that day
-  function slot(p, k, eday) {
+  // (regen: rain or snow now – leisure outside does not happen)
+  function slot(p, k, eday, regen) {
     const e = p.plan[k],
       o = e[5] || {},
       q = ymd(eday);
@@ -446,6 +447,7 @@ export const GLALDATA = (() => {
     if (o.schule && !schultag(eday)) return null;
     if (o.sommer && !sommerM(q.m)) return null;
     if (o.woche && (o.woche === 'g') !== woche(eday)) return null;
+    if (o.draussen && regen) return null;
     let p0 = o.p == null ? 1 : o.p;
     const win = winterM(q.m);
     if (o.draussen && win) p0 *= 0.45;
@@ -474,7 +476,7 @@ export const GLALDATA = (() => {
     return [a, a + stay];
   }
   // ---- where somebody is now: { platz, tun, von, bis, basis, innen, k } ----
-  // c: { eday, min, fest: { id, ort, von, bis } | null (a festival open now), basis: { skat, feuer, weg, garten } | null (the base game's
+  // c: { eday, min, regen, fest: { id, ort, von, bis } | null (a festival open now), basis: { skat, feuer, weg, garten } | null (the base game's
   // village shows this person now – dorf/dorf_cal.js, dorf/dorf_life.js); weg: { tun } may name what one does while away }
   function jetzt(pp, c) {
     const p = typeof pp === 'string' ? BY[pp] : pp;
@@ -500,7 +502,7 @@ export const GLALDATA = (() => {
     let best = -1,
       bz = null;
     for (let k = 0; k < p.plan.length; k++) {
-      const z = slot(p, k, eday);
+      const z = slot(p, k, eday, c.regen);
       if (z && m >= z[0] && m < z[1] && (best < 0 || p.plan[k][0].length < p.plan[best][0].length)) {
         best = k;
         bz = z;

@@ -42,6 +42,7 @@ export const VOEGEL = (() => {
       wing: L(112, 118, 132),
       tip: L(44, 44, 50),
       belly: L(140, 144, 156),
+      head: L(84, 92, 100),
       flap: 6,
     },
     spatz: {
@@ -51,6 +52,7 @@ export const VOEGEL = (() => {
       wing: L(104, 78, 52),
       tip: L(58, 44, 34),
       belly: L(170, 160, 146),
+      head: L(110, 106, 102),
       flap: 15,
     },
     kraehe: {
@@ -60,6 +62,7 @@ export const VOEGEL = (() => {
       wing: L(22, 22, 26),
       tip: L(14, 14, 16),
       belly: L(30, 30, 34),
+      head: L(20, 20, 24),
       flap: 3.2,
     },
     schwalbe: {
@@ -69,6 +72,7 @@ export const VOEGEL = (() => {
       wing: L(26, 30, 52),
       tip: L(18, 20, 30),
       belly: L(228, 214, 196),
+      head: L(120, 46, 36),
       flap: 8,
     },
     star: {
@@ -78,10 +82,11 @@ export const VOEGEL = (() => {
       wing: L(30, 30, 36),
       tip: L(20, 20, 24),
       belly: L(40, 40, 46),
+      head: L(30, 30, 36),
       flap: 11,
     },
   };
-  const TRI = 14, // triangles per bird
+  const TRI = 18, // triangles per bird
     VB = TRI * 3; // vertices per bird
   // ---- the mesh of a kind: room for n birds, written each frame ----
   function mesh(kind, n) {
@@ -90,23 +95,25 @@ export const VOEGEL = (() => {
       nor = new Float32Array(n * VB * 3),
       col = new Float32Array(n * VB * 3);
     const A = ART[kind];
-    // the colour of each triangle, in the order bird() writes them: body 8 (back 4 in body colour, belly 4), tail 2, wings 4
+    // the colour of each triangle, in the order bird() writes them: the back 4, the belly 4, the tail 2, the wings 4 (both faces),
+    // the head 4
     const C = [
       A.body,
       A.body,
-      A.belly,
-      A.belly,
       A.body,
       A.body,
       A.belly,
       A.belly,
+      A.belly,
+      A.belly,
       A.wing,
       A.wing,
       A.wing,
-      A.tip,
       A.wing,
-      A.tip,
+      A.wing,
+      A.wing,
     ];
+    C.push(A.head, A.head, A.head, A.head);
     for (let b = 0; b < n; b++)
       for (let t = 0; t < TRI; t++) for (let v = 0; v < 3; v++) col.set(C[t], (b * VB + t * 3 + v) * 3);
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
@@ -125,12 +132,12 @@ export const VOEGEL = (() => {
   }
   // ---- one bird into the arrays: at (x, y, z) in site metres, heading hd (radians from north, clockwise), pitch, roll (bank), wings:
   //      flap angle (radians, + up) and fold (0 spread … 1 folded along the body) ----
-  const _p = new Float32Array(3 * 14),
-    _q = new Float32Array(14 * 3);
+  const _p = new Float32Array(3 * 18),
+    _q = new Float32Array(18 * 3);
   // triangles (counter-clockwise seen from outside): back 4, belly 4, tail both sides, left wing both sides, right wing both sides
   const TRIS = [
-    0, 4, 2, 0, 3, 4, 1, 2, 4, 1, 4, 3, 0, 2, 5, 0, 5, 3, 1, 5, 2, 1, 3, 5, 1, 6, 7, 1, 7, 6, 8, 9, 10, 8, 10, 9, 12,
-    11, 13, 12, 13, 11,
+    0, 2, 4, 0, 4, 3, 1, 4, 2, 1, 3, 4, 0, 5, 2, 0, 3, 5, 1, 2, 5, 1, 5, 3, 1, 6, 7, 1, 7, 6, 8, 9, 10, 8, 10, 9, 12,
+    11, 13, 12, 13, 11, 17, 14, 16, 17, 16, 15, 17, 15, 14, 14, 15, 16,
   ];
   function bird(M, i, A, x, y, z, hd, pitch, roll, flap, fold) {
     const Lb = A.len,
@@ -193,7 +200,25 @@ export const VOEGEL = (() => {
     q.set([0, 0.04 * Lb, -h / 2, -0.09 * Lb, -0.52 * Lb, 0.02 * Lb, 0.09 * Lb, -0.52 * Lb, 0.02 * Lb], 15);
     q.set([-wr, 0.14 * Lb, wz, -wr, -0.12 * Lb, wz, -wr - cf, tipY, wz + sf, wr + cf, tipY, wz + sf], 24);
     q.set([wr, 0.14 * Lb, wz, wr, -0.12 * Lb, wz], 36);
-    for (let k = 0; k < 14; k++) {
+    // the head on its short neck: two cheeks, the crown, the beak
+    q.set(
+      [
+        -0.055 * Lb,
+        0.4 * Lb,
+        0.11 * Lb,
+        0.055 * Lb,
+        0.4 * Lb,
+        0.11 * Lb,
+        0,
+        0.4 * Lb,
+        0.2 * Lb,
+        0,
+        0.58 * Lb,
+        0.12 * Lb,
+      ],
+      42
+    );
+    for (let k = 0; k < 18; k++) {
       const a = q[k * 3],
         b = q[k * 3 + 1],
         c = q[k * 3 + 2];

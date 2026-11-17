@@ -129,6 +129,21 @@ test('winter: indoors earlier and fewer outside (November–February)', () => {
     }
 });
 
+test('rain: leisure outside stays in, the shopping and the school bus do not', () => {
+  const nass = (id, h, mi) => A.jetzt(id, { eday: DI, min: h * 60 + mi, regen: true });
+  assert.equal(nass('lea', 7, 0).platz, 'haltestelle');
+  assert.equal(nass('ingrid', 8, 20).platz, 'wagen');
+  for (let d = 0; d < 14; d++)
+    for (const p of A.LEUTE) {
+      const r = A.jetzt(p, { eday: DI + d, min: 16 * 60 + 20, regen: true });
+      assert.ok(
+        !['plaudern', 'bank', 'handy', 'kegeln', 'angeln', 'moped', 'abendrunde'].includes(r.tun) ||
+          r.tun === 'abendrunde',
+        p.id + ' ' + r.tun
+      );
+    }
+});
+
 test('the base game first: out with the car, the Friday evening, the fire, the garden – never shown twice', () => {
   const r = at('katrin', DI, 16, 50, { basis: { weg: true } });
   assert.ok(r.basis && r.innen && r.platz === 'stadt');
