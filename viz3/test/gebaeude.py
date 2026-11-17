@@ -91,7 +91,7 @@ def counts(E, ort):
         return [q.art, q.text, q.id, q.k, q.run, q.nWin, Math.round(q.x), Math.round(q.y), b ? [b.typ, b.st && b.st.style, +b.eave.toFixed(2), +b.area.toFixed(0), b.fac.map(f => [+f.L.toFixed(1), f.kind, +f.t0.toFixed(1), +f.t1.toFixed(1), f.door ? 'T' : ''])] : null]; }}))"""))
     for d in det:
         print('  open', json.dumps(d, ensure_ascii=False), flush=True)
-    ck(f'{ort}: the audit covers the buildings of the place', r['nRec'] > (300 if ort == 'ratscher' else 700) and not r['err'], f"{r['nRec']} buildings {r['err']}")
+    ck(f'{ort}: the audit covers the buildings of the place', r['nRec'] > {'ratscher': 300, 'zonen': 100}.get(ort, 700) and not r['err'], f"{r['nRec']} buildings {r['err']}")
     return r
 
 
@@ -202,6 +202,19 @@ with lib.browser() as b:
                     break
                 time.sleep(0.25)
             E("GAME.step(0.3)")
+        ZDONE = """(() => { if (!window.GEB || !GEB.Z || GEB.jobs() > 0) return !window.GEB || !GEB.Z; const C = [...GEB.Z.cells.values()];
+            if (C.some(c => c.state === 'building' || c.job)) return false; const n = C.filter(c => c.meshes.length).length;
+            return !(FASSADE.state === 'ready' && FASSADE.zonen) || FASSADE.zonen().zellen >= n; })()"""
+
+        def zones(limit=40):
+            """the ETHOS cells round here built (gebaeude/gebaeude.js) and, with the fixes, fixed (FASSADE: one cell each half second)"""
+            t0 = time.time()
+            while time.time() - t0 < limit:
+                E("GAME.step(0.5)")
+                if E(ZDONE):
+                    return True
+                time.sleep(0.2)
+            return False
         s = go_schl()
         print('schleusingen', json.dumps(s), flush=True)
         ck('Schleusingen stands', s['state'] == 'ready', s.get('err', ''))
@@ -229,7 +242,8 @@ with lib.browser() as b:
                 ck(f"through the passage {i + 1} ({q['src']}, {q['a']}) into the yard behind", r2['t'] > q['depth'] + 0.8 and abs(r2['feet'] - r2['g']) < 0.1,
                    json.dumps(r2, ensure_ascii=False))
                 # pictures: from the street into the passage, and from the yard back
-                OUTV = f"""(() => {{ const q = SCHL.fassade.passes[{i}], t = q.stair, x = t ? t.top[0] + (t.top[0] - q.A[0]) * 0.2 : q.A[0] - q.d[0] * 9, y = t ? t.top[1] + (t.top[1] - q.A[1]) * 0.2 : q.A[1] - q.d[1] * 9;
+                # (a gate with a stair: from 3 m down the stair, looking up at the gate over the landing)
+                OUTV = f"""(() => {{ const q = SCHL.fassade.passes[{i}], t = q.stair, x = t ? t.top[0] + (t.bot[0] - t.top[0]) / t.L * 3 : q.A[0] - q.d[0] * 9, y = t ? t.top[1] + (t.bot[1] - t.top[1]) / t.L * 3 : q.A[1] - q.d[1] * 9;
                     GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(q.A[0] - x, q.A[1] - y) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()"""
                 E(OUTV)
                 settle()
@@ -283,6 +297,24 @@ with lib.browser() as b:
                 lib.shot(pg, OUT, 'schleusingen_brandwand_fenster')
             n = json.loads(E("JSON.stringify({ n: SCHL.steps || 0, sets: FASSADE.steps() })"))
             ck('Schleusingen: steps in front of the house doors', n['n'] > 200, json.dumps(n))
+            # the ETHOS cells round the old town (gebaeude/gebaeude.js, built as one walks): fixed one by one as they stand
+            zok = zones()
+            z = json.loads(E("JSON.stringify(FASSADE.zonen ? FASSADE.zonen() : null)"))
+            print('zonen', zok, json.dumps(z), flush=True)
+            if z:
+                r = counts(E, 'zonen')
+                v, n = r['vorher'], r['nachher']
+                k0, k1 = r['byV'].get('tuer: kein Eingang', 0), r['byN'].get('tuer: kein Eingang', 0)
+                ck('the ETHOS cells round Schleusingen: their walls with windows, their buildings with doors (skins in the cells\' own meshes)',
+                   z['zellen'] > 0 and not z['err'] and z['ungemischt'] == 0 and n['fenster'] <= max(3, v['fenster'] // 5) and k1 <= max(3, k0 // 5),
+                   f"{json.dumps(z)} – kein Eingang {k0} → {k1}, tuer {v['tuer']} → {n['tuer']}, fenster {v['fenster']} → {n['fenster']}")
+                q = json.loads(E("JSON.stringify(FASSADE.zonenBild())"))
+                print('zone picture', json.dumps(q), flush=True)
+                if q:
+                    E(f"GAME.view({q['x']}, {q['y']}, KERN.ground({q['x']}, {q['y']}) + 1.65, {q['yaw']}, 4, 62)")
+                    settle()
+                    E(f"GAME.view({q['x']}, {q['y']}, KERN.ground({q['x']}, {q['y']}) + 1.65, {q['yaw']}, 4, 62); GAME.step(0.3)")
+                    lib.shot(pg, OUT, 'schleusingen_zone_fenster')
             ok, rep = lib.check_gl(pg)
             ck('every shader program within 16 textures, none broken', ok, json.dumps({k: rep[k] for k in ('programs', 'maxFrag', 'maxVert')}))
         if want('perf'):
@@ -300,6 +332,7 @@ with lib.browser() as b:
                 go_schl()
                 E(VIEW_M)
                 settle()
+                zones()
                 E(VIEW_M)
                 m = json.loads(E(COUNT))
                 m['town'] = json.loads(E(TOWN))
@@ -309,10 +342,10 @@ with lib.browser() as b:
             s1, s0 = m1['town'], m0['town']
             diff = {k: [m0['keys'].get(k, 0), m1['keys'].get(k, 0)] for k in set(m0['keys']) | set(m1['keys']) if m0['keys'].get(k, 0) != m1['keys'].get(k, 0)}
             print('perf schleusingen: static draw calls that differ (without → with)', json.dumps(diff, ensure_ascii=False), flush=True)
-            ck('Schleusingen: the town draws with as many meshes as before, its triangles within a few per cent', s1['n'] <= s0['n'] and s1['tris'] <= s0['tris'] * 1.03,
+            ck('Schleusingen: the town draws with as many meshes as before, its triangles within a few per cent (the door steps, gateways, stair)', s1['n'] <= s0['n'] and s1['tris'] <= s0['tris'] * 1.06,
                f"{s0['n']} → {s1['n']} meshes, {s0['tris']} → {s1['tris']} triangles of the town")
             ck('Schleusingen: the frame at the Markt about the same (without people, traffic and animals, which vary between two loads)',
-               m1['sCalls'] <= m0['sCalls'] + 4 and m1['sTris'] <= m0['sTris'] * 1.03 + 2000,
+               m1['sCalls'] <= m0['sCalls'] + 4 and m1['sTris'] <= m0['sTris'] * 1.06 + 2000,
                f"static {m0['sCalls']} → {m1['sCalls']} calls, {m0['sTris']} → {m1['sTris']} triangles; whole frame {m0['calls']} → {m1['calls']} calls, "
                f"{m0['tris']} → {m1['tris']} triangles, {m0['ms']} → {m1['ms']} ms per frame (SwiftShader)")
     ck.errors(errs)

@@ -32,6 +32,21 @@ export const FASSADE = (() => {
     n: {},
   };
   S.on = !new URLSearchParams(location.search).has('nofassade');
+  // ETHOS "towers" in the gaps of Schleusingen's old town (12–18 m tall, 21–37 m², each touching a house of the town data and walled in on
+  // every side): parts of the LoD2 roofs of town houses the town draws itself – gebaeude/gebaeude.js built them as tall blank blocks (one
+  // stood at the Markt). Left out after laeden's own (GEB.skip); the list from viz3/extra/gebaeude/quellen/teile.py
+  const TEILE = new Set([
+    'DEG_DETHL57P0000Lz6E',
+    'DEG_DETHL57P0000Lz6Q',
+    'DEG_DETHL57P0000LyRR',
+    'DEG_DETHL57P0000LyTs',
+    'DEG_DETHL57P0000LyYC',
+    'DEG_DETHL57P0000LyYz',
+  ]);
+  if (S.on && GEB.on) {
+    const prev = GEB.skip;
+    GEB.skip = b => !!(prev && prev(b)) || (!!b && typeof b.id === 'string' && TEILE.has(b.id));
+  }
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)),
     linC = c => c.map(lin);
   // ---- records of Ratscher: the village's buildings as the facade shader gets them, the ETHOS ones as gebaeude.js draws them ----
@@ -132,7 +147,7 @@ export const FASSADE = (() => {
     if (o.style === 10) return { k: doorF, u: L / 2, w: Math.min(5, L * 0.4) };
     return { k: doorF, u: (Math.floor(nb / 2) + 0.5) * bw, w: Math.min(3.0, L * 0.35) };
   }
-  function recG(b) {
+  function recG(b, bare) {
     const kind =
       b.k === 4 || b.k === 5
         ? 'turm'
@@ -152,7 +167,7 @@ export const FASSADE = (() => {
       stOf: () => (b.st ? b.st.style : 0),
     });
     r.b = b; // its foot z0 and eave for the stable windows
-    const fx = S.geb.get(b.id);
+    const fx = !bare && S.geb.get(b.id);
     if (fx)
       for (const p of r.fac) {
         if (fx.door && fx.door.k === p.k) [p.du, p.dw] = [fx.door.u, fx.door.w];
@@ -162,7 +177,7 @@ export const FASSADE = (() => {
   }
   function recsRatscher() {
     const V = VILLAGE.ready ? VILLAGE.bld.map(recV) : [],
-      G = GEB.ready ? GEB.bld.filter(b => b.st && b.F).map(recG) : [];
+      G = GEB.ready ? GEB.bld.filter(b => b.st && b.F).map(b => recG(b)) : [];
     for (const r of V.concat(G)) for (const p of r.fac) p.extra = ((S.win.get(r.id) || {})[p.k] || 0) + (p.extra || 0);
     return V.concat(G);
   }
@@ -244,6 +259,19 @@ export const FASSADE = (() => {
           for (const y of yards)
             if (y.area < SCHL.FASS.SMALL) y.rest = 'Zwickel zwischen den Häusern – kein Zugang nötig';
         out = FAUDIT.audit(R, { idx, yards, passes, ort });
+        S.nRec = R.length;
+      } else if (ort === 'zonen') {
+        // the ETHOS cells built now (round where one is): before as gebaeude.js draws them, after with the skins and stable windows
+        const vor = !!o.vorher,
+          R = [];
+        for (const z of ZONE.cells.values())
+          for (const b of z.bs) {
+            const r = recG(b, vor);
+            r.ort = 'zonen';
+            for (const p of r.fac) p.extra = vor ? 0 : (p.extra || 0) + ((S.win.get(r.id) || {})[p.k] || 0);
+            R.push(r);
+          }
+        out = FAUDIT.audit(R, { idx: FAUDIT.index(R), ort });
         S.nRec = R.length;
       }
     } catch (e) {
@@ -441,76 +469,8 @@ export const FASSADE = (() => {
     S.n.fenster += n;
     return n;
   }
-  function fixRatscher() {
-    const t0 = performance.now(),
-      g = RATSCHER.bld[0] && RATSCHER.bld[0].geometry,
-      aD = g && g.attributes.aD;
-    if (!aD) throw new Error('village walls without aD');
-    const R = recsRatscher(),
-      idx = FAUDIT.index(R),
-      free = (x, y) => !idx.at(x, y),
-      setDoor = (b, k, u, w) => {
-        for (const q of b.fac[k].qs)
-          for (let v = 0; v < 4; v++) {
-            aD.array[(q.q * 4 + v) * 4] = u;
-            aD.array[(q.q * 4 + v) * 4 + 1] = w;
-          }
-      };
-    S.n = { tuer: 0, tuerVerlegt: 0, hallen: 0, fenster: 0 };
-    KW = VPROPS.kit ? VPROPS.kit() : null;
-    KG = VPROPS.kit ? VPROPS.kit() : null;
-    for (const r of R) {
-      const b = r.v;
-      if (!b) continue;
-      const doorK = b.fac.findIndex(q => q.door);
-      // a door where there is none (small sheds: no wall long enough for the village's rule), or one that faces a neighbour's wall (not
-      // a house: their door is the one one walks through into the house)
-      let blocked = false;
-      if (doorK >= 0) {
-        const q = b.fac[doorK],
-          x = q.ax + q.dx * q.door.u,
-          y = q.ay + q.dy * q.door.u;
-        blocked = !!idx.at(x + q.nx * 0.7, y + q.ny * 0.7, r);
-      }
-      if ((doorK < 0 && r.area >= 6) || (blocked && b.typ !== 0)) {
-        const pieces = r.fac.map((p, k) =>
-          Object.assign({}, p, { k, blind: FAUDIT.cover(r, p, idx).covered > p.L * 0.5 })
-        );
-        const D = FAUDIT.hofTuer(r, pieces, free);
-        if (D) {
-          if (doorK >= 0) setDoor(b, doorK, -1, 0);
-          setDoor(b, D.k, D.u, D.w);
-          S.doors.set(b.id, { k: D.k, u: D.u, w: D.w, from: doorK >= 0 ? doorK : -1 });
-          S.n[doorK < 0 ? 'tuer' : 'tuerVerlegt']++;
-        }
-      }
-      // halls the shader leaves without a window (its ribbon starts at 3.2 m): stable windows along the long walls
-      if (r.kind === 'halle' && KW) {
-        // every long wall the shader leaves bare (a hall may have its ribbon in a high gable and none on its long walls)
-        const Lmax = Math.max(...r.fac.map(p => p.L)),
-          per = {};
-        b.fac.forEach((q, k) => {
-          if (q.L < Math.max(8, Lmax * 0.5) || FAUDIT.windows(r.fac[k]).length) return;
-          // the foot of the quad under a window (the walls follow the ground)
-          const footAt = u => {
-            let foot = b.foot,
-              uu = 0;
-            for (const qq of q.qs) {
-              if (u >= uu && u <= uu + qq.len) foot = qq.foot;
-              uu += qq.len;
-            }
-            return foot;
-          };
-          const n = stallRow(q, r.fac[k], footAt, b.eave, FAUDIT.cover(r, r.fac[k], idx).spans, b.id);
-          if (n) per[k] = n;
-        });
-        if (Object.keys(per).length) {
-          S.win.set(b.id, per);
-          S.n.hallen++;
-        }
-      }
-    }
-    // the ETHOS halls (gebaeude/gebaeude.js) likewise – their walls stand at the building's foot z0
+  // the ETHOS halls (gebaeude/gebaeude.js) likewise – their walls stand at the building's foot z0
+  function gebHalls(R, idx) {
     for (const r of R) {
       if (r.v || r.kind !== 'halle' || !KW || !r.b || r.area < 150) continue;
       const Lmax = Math.max(...r.fac.map(p => p.L)),
@@ -525,10 +485,11 @@ export const FASSADE = (() => {
         S.n.hallen++;
       }
     }
-    // the ETHOS buildings (gebaeude/gebaeude.js, not changed here): where one has no door, or a party wall that stands free over 3 m
-    // and more (it draws a party wall blank all along), a thin skin 4 cm in front of the wall in the facade layout of the village –
-    // the facade shader paints the door or the windows on it in the building's own style (the village's wall material: no new program)
-    const OV = wallLayer();
+  }
+  // the ETHOS buildings (gebaeude/gebaeude.js, not changed here): where one has no door, or a party wall that stands free over 3 m
+  // and more (it draws a party wall blank all along), a thin skin 4 cm in front of the wall in the facade layout of the village –
+  // the facade shader paints the door or the windows on it in the building's own style (the village's wall material: no new program)
+  function gebSkins(R, idx, free, OV) {
     for (const r of R) {
       if (r.v || !r.b || !r.b.st) continue;
       const b = r.b,
@@ -601,35 +562,112 @@ export const FASSADE = (() => {
       }
       if (fx.door || Object.keys(fx.win).length) S.geb.set(b.id, fx);
     }
+  }
+  // the steps in front of the house doors of records R into kit K → the items for stepAt
+  function houseSteps(R, KS) {
+    const items = [],
+      HOUSE = st => st < 6.5 || st === 12 || st > 12.5;
+    for (const r of R) {
+      const p = r.fac.find(q => q.dw > 0 && q.du >= 0 && q.dw < 1.6);
+      if (!p || !HOUSE(p.st)) continue;
+      let foot = r.b ? r.b.z0 : null;
+      if (r.v) {
+        const q = r.v.fac[p.k];
+        let uu = 0;
+        foot = r.v.foot;
+        for (const qq of q.qs) {
+          if (p.du >= uu && p.du <= uu + qq.len) foot = qq.foot;
+          uu += qq.len;
+        }
+      }
+      if (foot === null) continue;
+      const x = p.ax + p.dx * p.du,
+        y = p.ay + p.dy * p.du,
+        zG = KERN.ground(x + p.nx * 1.2, y + p.ny * 1.2),
+        it =
+          Number.isFinite(zG) && doorSteps(KS, x, y, p.dx, p.dy, p.nx, p.ny, p.dw, foot + (p.raised ? 0.6 : 0.35), zG);
+      if (it) items.push(it);
+    }
+    return items;
+  }
+  function fixRatscher() {
+    const t0 = performance.now(),
+      g = RATSCHER.bld[0] && RATSCHER.bld[0].geometry,
+      aD = g && g.attributes.aD;
+    if (!aD) throw new Error('village walls without aD');
+    const R = recsRatscher(),
+      idx = FAUDIT.index(R),
+      free = (x, y) => !idx.at(x, y),
+      setDoor = (b, k, u, w) => {
+        for (const q of b.fac[k].qs)
+          for (let v = 0; v < 4; v++) {
+            aD.array[(q.q * 4 + v) * 4] = u;
+            aD.array[(q.q * 4 + v) * 4 + 1] = w;
+          }
+      };
+    S.n = { tuer: 0, tuerVerlegt: 0, hallen: 0, fenster: 0 };
+    KW = VPROPS.kit ? VPROPS.kit() : null;
+    KG = VPROPS.kit ? VPROPS.kit() : null;
+    for (const r of R) {
+      const b = r.v;
+      if (!b) continue;
+      const doorK = b.fac.findIndex(q => q.door);
+      // a door where there is none (small sheds: no wall long enough for the village's rule), or one that faces a neighbour's wall (not
+      // a house: their door is the one one walks through into the house)
+      let blocked = false;
+      if (doorK >= 0) {
+        const q = b.fac[doorK],
+          x = q.ax + q.dx * q.door.u,
+          y = q.ay + q.dy * q.door.u;
+        blocked = !!idx.at(x + q.nx * 0.7, y + q.ny * 0.7, r);
+      }
+      if ((doorK < 0 && r.area >= 6) || (blocked && b.typ !== 0)) {
+        const pieces = r.fac.map((p, k) =>
+          Object.assign({}, p, { k, blind: FAUDIT.cover(r, p, idx).covered > p.L * 0.5 })
+        );
+        const D = FAUDIT.hofTuer(r, pieces, free);
+        if (D) {
+          if (doorK >= 0) setDoor(b, doorK, -1, 0);
+          setDoor(b, D.k, D.u, D.w);
+          S.doors.set(b.id, { k: D.k, u: D.u, w: D.w, from: doorK >= 0 ? doorK : -1 });
+          S.n[doorK < 0 ? 'tuer' : 'tuerVerlegt']++;
+        }
+      }
+      // halls the shader leaves without a window (its ribbon starts at 3.2 m): stable windows along the long walls
+      if (r.kind === 'halle' && KW) {
+        // every long wall the shader leaves bare (a hall may have its ribbon in a high gable and none on its long walls)
+        const Lmax = Math.max(...r.fac.map(p => p.L)),
+          per = {};
+        b.fac.forEach((q, k) => {
+          if (q.L < Math.max(8, Lmax * 0.5) || FAUDIT.windows(r.fac[k]).length) return;
+          // the foot of the quad under a window (the walls follow the ground)
+          const footAt = u => {
+            let foot = b.foot,
+              uu = 0;
+            for (const qq of q.qs) {
+              if (u >= uu && u <= uu + qq.len) foot = qq.foot;
+              uu += qq.len;
+            }
+            return foot;
+          };
+          const n = stallRow(q, r.fac[k], footAt, b.eave, FAUDIT.cover(r, r.fac[k], idx).spans, b.id);
+          if (n) per[k] = n;
+        });
+        if (Object.keys(per).length) {
+          S.win.set(b.id, per);
+          S.n.hallen++;
+        }
+      }
+    }
+    gebHalls(R, idx);
+    const OV = wallLayer();
+    gebSkins(R, idx, free, OV);
     if (!OV.empty() && RATSCHER.bld[0]) add(new THREE.Mesh(OV.geo(), RATSCHER.bld[0].material), 'haut');
     // steps in front of the house doors (the door stands on the plinth: 35 cm, 60 cm in a raised ground floor) – in the kit of the
     // stable windows' frames (the same material: no draw call more)
-    const KS = KW || (VPROPS.kit ? VPROPS.kit() : null),
-      items = [],
-      HOUSE = st => st < 6.5 || st === 12 || st > 12.5;
+    const KS = KW || (VPROPS.kit ? VPROPS.kit() : null);
     if (KS) {
-      for (const r of R) {
-        const p = r.fac.find(q => q.dw > 0 && q.du >= 0 && q.dw < 1.6);
-        if (!p || !HOUSE(p.st)) continue;
-        let foot = r.b ? r.b.z0 : null;
-        if (r.v) {
-          const q = r.v.fac[p.k];
-          let uu = 0;
-          foot = r.v.foot;
-          for (const qq of q.qs) {
-            if (p.du >= uu && p.du <= uu + qq.len) foot = qq.foot;
-            uu += qq.len;
-          }
-        }
-        if (foot === null) continue;
-        const x = p.ax + p.dx * p.du,
-          y = p.ay + p.dy * p.du,
-          zG = KERN.ground(x + p.nx * 1.2, y + p.ny * 1.2),
-          it =
-            Number.isFinite(zG) &&
-            doorSteps(KS, x, y, p.dx, p.dy, p.nx, p.ny, p.dw, foot + (p.raised ? 0.6 : 0.35), zG);
-        if (it) items.push(it);
-      }
+      const items = houseSteps(R, KS);
       stepsAdd('ratscher', items);
       S.n.stufen = items.length;
       const paint = VPROPS.mat && VPROPS.mat.paint;
@@ -655,6 +693,195 @@ export const FASSADE = (() => {
     S.ms.ratscher = Math.round(performance.now() - t0);
     markDirty(true);
   }
+  // ---- the ETHOS cells beyond Ratscher's square and round Schleusingen's old town (gebaeude/gebaeude.js GEB.Z, built and dropped as one
+  // walks): the same fixes per cell once it stands – the skins merged into the cell's wall mesh (no draw call more), the stable windows
+  // of its halls (the glass dark: no light at night) and the door steps in one mesh for all cells (the props' paint) ----
+  const ZONE = { done: new WeakSet(), cells: new Map(), mesh: null, acc: 0, dirty: false, err: '', ms: 0 };
+  // geometry g2 appended to mesh m's (the same attributes, both indexed); false where the layouts differ (then nothing changes)
+  function mergeInto(m, g2) {
+    const g1 = m.geometry,
+      keys = Object.keys(g1.attributes);
+    if (
+      !g1.index ||
+      !g2.index ||
+      (g1.groups && g1.groups.length) ||
+      keys.length !== Object.keys(g2.attributes).length ||
+      keys.some(k => !g2.attributes[k] || g2.attributes[k].itemSize !== g1.attributes[k].itemSize)
+    )
+      return false;
+    const n1 = g1.attributes.position.count,
+      n2 = g2.attributes.position.count,
+      g = new THREE.BufferGeometry();
+    for (const k of keys) {
+      const sz = g1.attributes[k].itemSize,
+        arr = new Float32Array((n1 + n2) * sz);
+      arr.set(g1.attributes[k].array.subarray(0, n1 * sz));
+      arr.set(g2.attributes[k].array.subarray(0, n2 * sz), n1 * sz);
+      g.setAttribute(k, new THREE.BufferAttribute(arr, sz));
+    }
+    const I1 = g1.index.array,
+      I2 = g2.index.array,
+      I = n1 + n2 > 65535 ? new Uint32Array(I1.length + I2.length) : new Uint16Array(I1.length + I2.length);
+    I.set(I1);
+    for (let i = 0; i < I2.length; i++) I[I1.length + i] = I2[i] + n1;
+    g.setIndex(new THREE.BufferAttribute(I, 1));
+    g.computeBoundingSphere();
+    m.geometry = g;
+    g1.dispose();
+    g2.dispose();
+    return true;
+  }
+  function fixZone(c, wm) {
+    const t0 = performance.now(),
+      walls = c.meshes.filter(m => m.material === wm);
+    for (const m of walls) ZONE.done.add(m);
+    // a cell built again (its ground changed): its buildings start from scratch
+    for (const b of c.data.b) {
+      S.geb.delete(b.id);
+      S.win.delete(b.id);
+    }
+    const bs = c.data.b.filter(b => b.st && b.F && b.id !== undefined),
+      R = bs.map(b => recG(b)),
+      near = [];
+    for (const [k, z] of ZONE.cells)
+      if (k !== c.key && Math.abs(z.ij[0] - c.ij[0]) <= 1 && Math.abs(z.ij[1] - c.ij[1]) <= 1) near.push(...z.recs);
+    const idx = FAUDIT.index(R.concat(near)),
+      free = (x, y) => !idx.at(x, y),
+      K = VPROPS.kit(),
+      OV = wallLayer(),
+      n0 = Object.assign({}, S.n),
+      keep = [KW, KG];
+    let items = [];
+    KW = KG = K;
+    try {
+      gebHalls(R, idx);
+      gebSkins(R, idx, free, OV);
+      items = houseSteps(R, K);
+    } finally {
+      [KW, KG] = keep;
+    }
+    // the counts of the cells apart from the square's
+    const n = { stufen: items.length };
+    for (const k of ['tuer', 'fenster', 'hallen']) {
+      n[k] = (S.n[k] || 0) - (n0[k] || 0);
+      S.n[k] = n0[k] || 0;
+    }
+    const merged = OV.empty() || (walls.length > 0 && mergeInto(walls[0], OV.geo()));
+    ZONE.cells.set(c.key, {
+      ij: c.ij,
+      bs,
+      recs: R,
+      wall: walls[0] || null,
+      geo: K.empty() ? null : K.geo(),
+      items,
+      n,
+      merged,
+      ms: Math.round(performance.now() - t0),
+    });
+    ZONE.dirty = true;
+  }
+  // the stable windows and steps of all fixed cells in one mesh, the steps' ground
+  function zoneMesh() {
+    ZONE.dirty = false;
+    const Z = [...ZONE.cells.values()],
+      parts = Z.map(z => z.geo).filter(Boolean);
+    stepsAdd('zonen', [].concat(...Z.map(z => z.items)));
+    const paint = VPROPS.mat && VPROPS.mat.paint;
+    if (!paint) return;
+    if (!parts.length) {
+      if (ZONE.mesh) ZONE.mesh.visible = false;
+      return;
+    }
+    const n = parts.reduce((s, q) => s + q.attributes.position.count, 0),
+      size = {},
+      g = new THREE.BufferGeometry();
+    for (const q of parts) for (const k in q.attributes) size[k] = q.attributes[k].itemSize;
+    for (const k in size) {
+      const arr = new Float32Array(n * size[k]);
+      let o = 0;
+      for (const q of parts) {
+        if (q.attributes[k]) arr.set(q.attributes[k].array, o);
+        o += q.attributes.position.count * size[k];
+      }
+      g.setAttribute(k, new THREE.BufferAttribute(arr, size[k]));
+    }
+    g.computeBoundingSphere();
+    if (!ZONE.mesh) {
+      // not in S.meshes (the square's), hidden with the village in the map view
+      const m = new THREE.Mesh(g, paint);
+      m.name = 'fassade zonen';
+      m.userData.noMerge = true;
+      m.castShadow = m.receiveShadow = false;
+      scene.add(m);
+      if (RATSCHER.bld) RATSCHER.bld.push(m);
+      ZONE.mesh = m;
+    } else {
+      ZONE.mesh.geometry.dispose();
+      ZONE.mesh.geometry = g;
+    }
+    ZONE.mesh.visible = !RATSCHER.map;
+    markDirty(true);
+  }
+  function zoneTick(dt) {
+    ZONE.acc += dt || 0;
+    if (ZONE.acc < 0.5 || S.state !== 'ready' || !GEB.Z || !RATSCHER.bld[0]) return;
+    ZONE.acc = 0;
+    try {
+      const wm = RATSCHER.bld[0].material;
+      // dropped or built again: the cell's part goes
+      for (const [k, z] of ZONE.cells) {
+        const c = GEB.Z.cells.get(k);
+        if (c && z.wall && c.meshes.includes(z.wall)) continue;
+        for (const b of z.bs) {
+          S.geb.delete(b.id);
+          S.win.delete(b.id);
+        }
+        ZONE.cells.delete(k);
+        ZONE.dirty = true;
+      }
+      // one newly built cell at a time
+      for (const c of GEB.Z.cells.values()) {
+        if (c.state !== 'built' || !c.data || !c.meshes.length) continue;
+        const w = c.meshes.find(m => m.material === wm);
+        if (!w || ZONE.done.has(w)) continue;
+        const t0 = performance.now();
+        fixZone(c, wm);
+        ZONE.ms = Math.max(ZONE.ms, Math.round(performance.now() - t0));
+        break;
+      }
+      if (ZONE.dirty) zoneMesh();
+    } catch (e) {
+      if (!ZONE.err) console.warn('fassade zonen', e);
+      ZONE.err = String(e);
+    }
+  }
+  S.zonen = () => {
+    const n = { zellen: ZONE.cells.size, gebaeude: 0, tuer: 0, fenster: 0, hallen: 0, stufen: 0, ungemischt: 0 };
+    for (const z of ZONE.cells.values()) {
+      n.gebaeude += z.bs.length;
+      for (const k of ['tuer', 'fenster', 'hallen', 'stufen']) n[k] += z.n[k];
+      if (!z.merged) n.ungemischt++;
+    }
+    return Object.assign(n, { ms: ZONE.ms, err: ZONE.err, mesh: !!ZONE.mesh });
+  };
+  // the zone building with the most new windows on one wall, and where to stand to see it: { id, k, n, L, x, y, yaw } or null (tests)
+  S.zonenBild = () => {
+    let best = null;
+    for (const z of ZONE.cells.values())
+      for (const b of z.bs) {
+        const fx = S.geb.get(b.id);
+        if (fx) for (const k in fx.win) if (!best || fx.win[k] > best.n) best = { b, k: +k, n: fx.win[k] };
+      }
+    if (!best) return null;
+    const f = best.b.F[best.k],
+      L = Math.hypot(f[2] - f[0], f[3] - f[1]),
+      nx = (f[3] - f[1]) / L,
+      ny = -(f[2] - f[0]) / L,
+      d = Math.min(18, 6 + L * 0.6),
+      x = (f[0] + f[2]) / 2 + nx * d,
+      y = (f[1] + f[3]) / 2 + ny * d;
+    return { id: best.b.id, k: best.k, n: best.n, L, x, y, yaw: (Math.atan2(-nx, -ny) * 180) / Math.PI };
+  };
   function add(m, name) {
     m.name = 'fassade ' + name;
     m.userData.noMerge = true;
@@ -694,6 +921,7 @@ export const FASSADE = (() => {
           fixRatscher();
           S.state = 'ready';
           KERN.tick(tick, 'fassade');
+          if (GEB.on) KERN.tick(zoneTick, 'fassade-zonen');
         } catch (e) {
           S.state = 'error';
           S.err = String(e);

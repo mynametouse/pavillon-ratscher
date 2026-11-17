@@ -70,6 +70,13 @@ Werkzeuge sind dafür gebaut, siehe unten).
     (Material der Dorfwände: kein neues Programm, ein Mesh). Ein Gebäude, das ringsum eingebaut ist bis auf ein kurzes freies Stück
     (ab 1,4 m), bekommt dort eine schmale Tür (ein 9 m hoher Schuppen hinter den Häusern, zuvor der letzte „kein Eingang“).
   - **Stufen vor den Haustüren** wie in Schleusingen (Dorf- und ETHOS-Häuser), im Mesh der Stallfenster-Rahmen (dasselbe Material).
+- **Die ETHOS-Zellen** (`gebaeude/gebaeude.js`, die Gebäude von `welt-gebaeude` beiderseits der Strecken – 217 Zellen von 400 m, beim
+  Gehen gebaut und wieder weggeworfen: Schleusingens Stadtteile außerhalb der Altstadt, das Gewerbegebiet, die Ränder Ratschers, die Dörfer
+  an den Strecken): dieselben Korrekturen je Zelle, sobald sie steht – die Haut
+  (Fenster an freien Brandwand-Strecken, Türen, wo keine ist) **in das Wand-Mesh der Zelle gemischt** (kein Draw-Call mehr), die
+  Stallfenster der Hallen ohne Fenster und die Stufen vor den Haustüren in **einem** Mesh für alle Zellen (Material der Requisiten, das Glas
+  dunkel – Hallen am Stadtrand sind nachts dunkel). Eine Zelle, die neu gebaut wird (ihr Boden kam später), wird neu korrigiert; eine
+  weggeworfene nimmt ihren Teil mit. `FASSADE.audit('zonen')` prüft die gerade gebauten Zellen, `FASSADE.zonen()` gibt die Zahlen.
 - **`FASSADE.eingang(id)`** → `{ x, y, hd }` (hd: Kompassrichtung, in die die Tür schaut) für Ratscher (Nummern von `VILLAGE`), Schleusingen
   (900000 + Index wie `SINNEN`): die Haustür, sonst die Hoftür – für `alltag` (Leute, die in ein Haus oder einen Laden gehen).
 
@@ -170,4 +177,5 @@ in OSM aber oft gemappt; (4) zeichnen wie `welt/schleusingen.js` `building()`/`p
   geebnet, die Straßen ringsum nicht (`welt/welt.js`, DGM1 Thüringen würde es lösen).
 - **Weitere OSM-Treppen** (24 in der Altstadt) sind nicht als Treppen gebaut – nur die vor dem Burgtor; das Werkzeug dafür liegt in
   `welt/schleusingen.js` (`stairFrom`, `addStair`, `stairGeo`).
-- Die Schleusinger Stadtteile außerhalb der Altstadt (ETHOS-Zellen von `gebaeude/gebaeude.js`) sind nicht geprüft.
+- **ETHOS-Zellen**: geprüft und korrigiert werden Türen und Fenster; Höfe und Durchgänge nicht (Stadtrand, Gewerbe, Dörfer – Höfe zur
+  Straße offen); der Test prüft die Zellen um Schleusingens Markt.
