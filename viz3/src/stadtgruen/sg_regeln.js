@@ -230,7 +230,8 @@ export const SGREGELN = (() => {
     };
   }
   // ---- where a tree must not stand, checked when the town is there (the data's own checks are in tools/stadtgruen/build.py): the
-  // world as it is then – C: { blds: [{ f: footprint, door: [x, y] | null }], lamps: [[x, y]], bays: [[x, y, az]], pads: [footprint],
+  // world as it is then – C: { blds: [{ f: footprint, cx, cy, R, door: [x, y] | null, n: the door's outward normal, sign: a shop's
+  // sign over the door }], lamps: [[x, y]], bays: [[x, y, az]], pads: [footprint],
   // stops: [[x, y]], keep: [[x, y]] (the Markt trees of welt/schleusingen.js), markt: footprint } → '' (fine) or the reason ----
   function blocked(t, C) {
     const x = t.x,
@@ -238,9 +239,19 @@ export const SGREGELN = (() => {
       hedge = (t.f & F.HEDGE) !== 0,
       rT = hedge ? 0.35 : Math.max(0.5, t.tr + 0.25);
     for (const b of C.blds || []) {
-      if (Math.abs(b.cx - x) > b.R + 6 || Math.abs(b.cy - y) > b.R + 6) continue;
+      if (Math.abs(b.cx - x) > b.R + 12 || Math.abs(b.cy - y) > b.R + 12) continue;
       if (inPoly(b.f, x, y) || distPoly(b.f, x, y) < rT) return 'Gebäude';
-      if (b.door && Math.hypot(b.door[0] - x, b.door[1] - y) < (hedge ? 1.6 : 3.0)) return 'Tür';
+      if (!b.door) continue;
+      if (Math.hypot(b.door[0] - x, b.door[1] - y) < (hedge ? 1.6 : 3.0)) return 'Tür';
+      // the way to the door and, where the house has a shop's sign over it, the view of the sign from the street stay clear: a
+      // corridor out along the facade's normal n (4 m × ±1.3 m; a sign 9 m × ±2.6 m)
+      if (b.n && !hedge) {
+        const dx = x - b.door[0],
+          dy = y - b.door[1],
+          a = dx * b.n[0] + dy * b.n[1],
+          c = Math.abs(dx * b.n[1] - dy * b.n[0]);
+        if (a > -0.5 && a < (b.sign ? 9 : 4) && c < (b.sign ? 2.6 : 1.3) + t.tr) return b.sign ? 'Schild' : 'Tür';
+      }
     }
     for (const p of C.pads || []) if (inPoly(p, x, y) || distPoly(p, x, y) < rT) return 'Ladenfläche';
     for (const l of C.lamps || []) if (Math.hypot(l[0] - x, l[1] - y) < (hedge ? 0.8 : 2.2)) return 'Laterne';
@@ -256,6 +267,8 @@ export const SGREGELN = (() => {
       if (Math.abs(along) < 2.5 + rT && Math.abs(across) < 1.25 + rT) return 'Parkplatz';
     }
     if (!hedge) for (const k of C.keep || []) if (Math.hypot(k[0] - x, k[1] - y) < 3) return 'Marktbaum';
+    // anything solid within reach (a wall, a trunk – the village asks its colliders)
+    if (C.solid && C.solid(x, y, hedge ? 0.4 : rT + 0.6)) return 'Wand oder Stamm';
     if (C.markt && inPoly(C.markt, x, y)) return 'Markt';
     return '';
   }
@@ -282,14 +295,14 @@ export const SGREGELN = (() => {
   // (stadtgruen.js)
   function radii(phone, tier) {
     const k = tier === 'hoch' ? 1 : tier === 'mittel' ? 0.85 : 0.7;
-    return phone ? [10 * k, 45 * k, 105 * k] : [16 * k, 70 * k, 160 * k];
+    return phone ? [10 * k, 40 * k, 95 * k] : [16 * k, 55 * k, 130 * k];
   }
   function budget(phone, tier) {
     const k = tier === 'hoch' ? 1 : tier === 'mittel' ? 0.8 : 0.65;
     const n = a => a.map(v => Math.max(1, Math.round(v * k)));
     return phone
-      ? { tris: Math.round(40000 * k), tree: n([2, 10, 20]), hedge: n([8, 16, 20]) }
-      : { tris: Math.round(128000 * k), tree: n([3, 14, 36]), hedge: n([12, 30, 40]) };
+      ? { tris: Math.round(32000 * k), tree: n([2, 9, 18]), hedge: n([8, 14, 18]) }
+      : { tris: Math.round(118000 * k), tree: n([3, 12, 32]), hedge: n([12, 28, 36]) };
   }
   // ---- the levels of all trees for a camera at (cx, cy) looking along (dx, dy): the nearest in view first, each with the finest
   // level its distance allows while that level's cap and the triangles left allow it, else a coarser one; t.lv = 0 / 1 / 2 (3D),

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Street trees and green of Schleusingen, step 1: fetch the open data for the town's zone into a cache OUTSIDE the repository.
 
-  python3 -I tools/stadtgruen/fetch.py <cache dir>
+  python3 -I tools/stadtgruen/fetch.py <cache dir> [--ratscher] [--osm]
 
 - OpenStreetMap (ODbL 1.0) of the zone: the OSM API's map call in four chunks (Overpass reset the connection here, 17.11.2026)
 - DGM1 and DOM1 (1 m terrain and surface model, © GDI-Th, dl-de/by-2-0): the four 1 km tiles under the zone
@@ -14,9 +14,13 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 G = json.load(open(os.path.join(REPO, 'viz3', 'manifests.json')))['geoman']['xf']
 A, B, EX, EY = G['a'], G['b'], G['ex'], G['ey']
-# the town's zone of viz3/extra/schleusingen/dist/schleusingen/stadt.json (model metres: x0, y0, x1, y1), with a margin for the roads' ends
+# the town's zone of viz3/extra/schleusingen/dist/schleusingen/stadt.json (model metres: x0, y0, x1, y1), with a margin for the roads' ends;
+# with --ratscher the village of Ratscher and its roads (the 2.4 km square of world/ratscher.js, its northern half and the L 3004)
 ZONE = (-1644.7, 681.9, -524.7, 1801.9)
 MARGIN = 60.0
+if '--ratscher' in sys.argv:
+    ZONE = (-1000.0, -1250.0, 1000.0, 700.0)
+    MARGIN = 0.0
 WMS = 'https://www.geoproxy.geoportal-th.de/geoproxy/services/DOP'
 UA = 'PavillonRatscher/1.0 (private non-commercial model)'
 
@@ -64,12 +68,13 @@ def fetch_osm(raw):
     T = Transformer.from_crs('EPSG:25832', 'EPSG:4326', always_xy=True)
     lo0, la0 = T.transform(e0, n0)
     lo1, la1 = T.transform(e1, n1)
-    for i in range(2):
-        for j in range(2):
-            a0 = lo0 + (lo1 - lo0) * i / 2
-            a1 = lo0 + (lo1 - lo0) * (i + 1) / 2
-            b0 = la0 + (la1 - la0) * j / 2
-            b1 = la0 + (la1 - la0) * (j + 1) / 2
+    k = 2 if (e1 - e0) < 1500 else 4  # chunks small enough for the API's 50 000 nodes
+    for i in range(k):
+        for j in range(k):
+            a0 = lo0 + (lo1 - lo0) * i / k
+            a1 = lo0 + (lo1 - lo0) * (i + 1) / k
+            b0 = la0 + (la1 - la0) * j / k
+            b1 = la0 + (la1 - la0) * (j + 1) / k
             fn = os.path.join(out, f'osm_{i}{j}.xml')
             if os.path.exists(fn):
                 continue
@@ -127,6 +132,8 @@ if __name__ == '__main__':
     os.makedirs(raw, exist_ok=True)
     print('UTM box', utm_box(), flush=True)
     fetch_osm(raw)
+    if '--osm' in sys.argv:
+        sys.exit(0)
     fetch_dem(raw)
     fetch_dop(raw, 'th_dop20cir', 'cir')
     fetch_dop(raw, 'th_dop', 'rgb')

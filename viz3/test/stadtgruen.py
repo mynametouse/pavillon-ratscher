@@ -41,7 +41,8 @@ COUNT = """(() => {
   return { calls: I.M[0], tris: I.M[1], shCalls: I.S[0], shTris: I.S[1], sgCalls: I.G[0], sgTris: I.G[1], sgShCalls: I.GS[0], sgShTris: I.GS[1],
            levels: STADTGRUEN.status().levels };
 })()"""
-# every program a mesh of the trees uses is one other meshes (the garden's, Ratscher's trees) use too: no new shader program
+# every program a mesh of the trees uses is one other meshes (the garden's, Ratscher's trees – also through a shared material) use too:
+# no new shader program
 PROGRAMS = """(() => { const R = GAME.R, own = new Set(), mats = new Map();
   for (const m of STADTGRUEN.meshes) mats.set(m.material, m.name);
   const progOf = mat => { const p = R.properties.get(mat); return p && p.currentProgram ? p.currentProgram : null; };
@@ -50,7 +51,7 @@ PROGRAMS = """(() => { const R = GAME.R, own = new Set(), mats = new Map();
   const shared = new Set(); let others = 0;
   GAME.scene ? 0 : 0;
   const scn = STADTGRUEN.meshes[0] && STADTGRUEN.meshes[0].parent;
-  if (scn) scn.traverse(o => { if (!o.isMesh || /^stadtgruen/.test(o.name || '') || mats.has(o.material)) return; const p = progOf(o.material); if (p && own.has(p)) shared.add(p); others++; });
+  if (scn) scn.traverse(o => { if (!o.isMesh || /^stadtgruen/.test(o.name || '')) return; const p = progOf(o.material); if (p && own.has(p)) shared.add(p); others++; });
   return { own: own.size, shared: shared.size, alone: [...own].filter(p => !shared.has(p)).map(p => used.get(p) + ' ' + p.name), others }; })()"""
 
 
@@ -266,7 +267,8 @@ if want & {'stadt', 'bilder'}:
         E = pg.evaluate
         J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
         st0, secs = go_town(pg, errs)
-        ck('nothing of the trees at the start (the town is 1.9 km away)', st0['on'] and st0['state'] == 'idle' and st0['meshes'] == 0 and st0['trees'] == 0, json.dumps(st0))
+        ck('nothing of the town\'s trees at the start (the town is 1.9 km away; near the garden only Ratscher\'s additions, if any)',
+           st0['on'] and st0['area'] != 'schleusingen' and (st0['area'] == 'ratscher' or (st0['state'] == 'idle' and st0['meshes'] == 0)), json.dumps(st0))
         st = J("STADTGRUEN.status()")
         ck('with the town the trees stand', st['state'] == 'ready' and st['shown'] > 1000, f'{json.dumps(st)} after {secs} s')
         if 'stadt' in want:

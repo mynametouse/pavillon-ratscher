@@ -39,7 +39,7 @@ export const STADTGRUEN = (() => {
   };
   window.STADTGRUEN = S;
   if (!S.on) return S;
-  const URL_ = BASE + 'stadtgruen/baeume.json';
+
   // ---- the species' 3D kinds: own ones made like the garden's trees (same materials and programs), else the garden's ----
   const OWN = {
     // lime: a straight stem, a dense oval crown from about a third of the height
@@ -168,25 +168,51 @@ export const STADTGRUEN = (() => {
       return ref;
     }
   }
-  // ---- loading, building, freeing (follows the zone of welt/schleusingen.js) ----
-  let data = null,
-    run = 0;
-  async function start() {
+  // ---- the areas: Schleusingen while the town (welt/schleusingen.js) stands; Ratscher's village while the observer is near it, only
+  // what its trees of the canopy height model and the village lack (the garden and the neighbours' plots as they are). One at a time
+  // (they lie 2 km apart). Each: its data, what it keeps clear of when it is built (context) ----
+  const AREAS = {
+    schleusingen: { file: 'stadtgruen/baeume.json', context: () => contextTown() },
+    ratscher: {
+      file: 'stadtgruen/ratscher.json',
+      context: () => contextVillage(),
+      c: [240, -112],
+      near: 650,
+      far: 850,
+    },
+  };
+  function wanted() {
+    if (SCHL.state === 'ready') return 'schleusingen';
+    if (SCHL.state !== 'idle' || !(window.GAME && GAME.loaded && GAME.loaded())) return null;
+    const o = KERN.where(),
+      R = AREAS.ratscher;
+    if (!o || R.missing) return null;
+    const d = Math.hypot(o[0] - R.c[0], o[1] - R.c[1]);
+    return d < R.near || (S.area === 'ratscher' && d < R.far) ? 'ratscher' : null;
+  }
+  // ---- loading, building, freeing ----
+  let run = 0;
+  async function start(area) {
     if (S.state !== 'idle') return;
     const my = ++run,
-      t0 = performance.now();
+      t0 = performance.now(),
+      A = AREAS[area];
+    S.area = area;
     S.state = 'loading';
     S.err = '';
     try {
-      if (!data) {
-        const r = await fetch(URL_);
-        if (!r.ok) throw new Error('baeume.json ' + r.status);
-        data = await r.json();
+      if (!A.data) {
+        const r = await fetch(BASE + A.file);
+        if (!r.ok) {
+          if (r.status === 404) A.missing = true; // no data for this area on this host
+          throw new Error(A.file + ' ' + r.status);
+        }
+        A.data = await r.json();
       }
       if (my !== run) return;
       S.loadMs = Math.round(performance.now() - t0);
-      S.data = data;
-      S.trees = G.decode(data);
+      S.data = A.data;
+      S.trees = G.decode(A.data);
       S.state = 'kinds';
       S.kq = [...new Set(S.trees.map(t => t.art))];
     } catch (e) {
@@ -220,14 +246,23 @@ export const STADTGRUEN = (() => {
     S.kindMs = 0;
   }
   // what stands in the town now: houses with their doors, lamps, the Markt and its trees, the shops' pads and bays, parked cars, stops
-  function context() {
+  function contextTown() {
     const C = { blds: [], lamps: [], bays: [], pads: [], stops: [], keep: [], markt: null };
     for (const b of SCHL.bld || []) {
       if (!b.f) continue;
       let R = 0;
       for (let k = 0; k < b.f.length; k += 2) R = Math.max(R, Math.hypot(b.f[k] - b.cx, b.f[k + 1] - b.cy));
       const d = b.doorFac;
-      C.blds.push({ f: b.f, cx: b.cx, cy: b.cy, R, door: d ? [d.ax + d.dx * d.u, d.ay + d.dy * d.u] : null });
+      // the door's outward normal: the footprints run counter-clockwise (stadt.json), outside is right of a wall's direction
+      C.blds.push({
+        f: b.f,
+        cx: b.cx,
+        cy: b.cy,
+        R,
+        door: d ? [d.ax + d.dx * d.u, d.ay + d.dy * d.u] : null,
+        n: d ? [d.dy, -d.dx] : null,
+        sign: !!((b.s && b.s.length) || b.lm === 'rathaus'),
+      });
     }
     for (const l of SCHL.lamps || []) C.lamps.push([l.x, l.y]);
     if (SCHL.data && SCHL.data.marktplatz) C.markt = SCHL.data.marktplatz;
@@ -251,9 +286,24 @@ export const STADTGRUEN = (() => {
     if (D) for (const p of D) if (p && isFinite(p.x) && isFinite(p.y)) C.bays.push([p.x, p.y, p.az || 0]);
     return C;
   }
+  // in the village: whatever is solid within reach (walls and trunks of the canopy height model through KERN.pushOut – world/
+  // worldcol.js), the lamps of the village
+  const probe = [0, 0];
+  function contextVillage() {
+    const lamps = [];
+    for (const l of window.VPROPS && VPROPS.lamps ? VPROPS.lamps : []) if (l && isFinite(l.x)) lamps.push([l.x, l.y]);
+    return {
+      lamps,
+      solid: (x, y, r) => {
+        probe[0] = x;
+        probe[1] = y;
+        return KERN.pushOut(probe, r) === true;
+      },
+    };
+  }
   const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
   function build() {
-    const C = context();
+    const C = AREAS[S.area].context();
     S.off = {};
     for (const t of S.trees) {
       t.off = G.blocked(t, C);
@@ -478,6 +528,7 @@ export const STADTGRUEN = (() => {
   // ---- freeing ----
   function stop() {
     run++;
+    S.area = null;
     if (S.state === 'idle') return;
     for (const m of S.meshes) {
       scene.remove(m);
@@ -521,19 +572,20 @@ export const STADTGRUEN = (() => {
     14
   );
   // ---- the round ----
-  KERN.on('zone', e => {
-    if (!e || e.id !== 'schleusingen') return;
-    if (e.state === 'ready') start();
-    else if (e.state === 'idle') stop();
-  });
-  let acc = 0;
+  let acc = 0,
+    look = 1;
   KERN.tick(dt => {
-    // the town went without an event (dropped while building), or came back
-    if (S.state !== 'idle' && SCHL.state !== 'ready') {
-      stop();
-      return;
+    // which area: the town when it stands (welt/schleusingen.js's zone), else Ratscher's village when near (checked twice a second)
+    look += dt;
+    if (look >= 0.5 || (S.area === 'schleusingen') !== (SCHL.state === 'ready')) {
+      look = 0;
+      const w = wanted();
+      if (w !== S.area && !(S.state === 'error' && w === S.area)) {
+        stop();
+        if (w) start(w);
+        return;
+      }
     }
-    if (S.state === 'idle' && SCHL.state === 'ready') start();
     if (S.state === 'kinds') return stepBuild();
     if (S.state !== 'ready') return;
     acc += dt;
@@ -544,6 +596,7 @@ export const STADTGRUEN = (() => {
   // ---- for the tests and the debugging: state, the trees (JSON-safe), the season set by hand ----
   S.status = () => ({
     on: S.on,
+    area: S.area || null,
     state: S.state,
     err: S.err,
     trees: S.trees.length,

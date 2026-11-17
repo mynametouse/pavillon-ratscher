@@ -202,12 +202,26 @@ class World:
             for i in range(len(p) - 1):
                 self.roads.add(bbox([p[i], p[i + 1]], hw + 2), (p[i], p[i + 1], hw, s.get('n', ''), s['k']))
         # the shops: their buildings and pads, doors, the car parks' bays
+        # the corridors in front of a door or a sign that stay clear (x, y, nx, ny, depth, half width, what)
+        self.fronts = Hash(16)
+
+        def front(x, y, nx, ny, L, hw, what):
+            n = math.hypot(nx, ny) or 1
+            nx, ny = nx / n, ny / n
+            pts = [(x + nx * L + ny * hw, y + ny * L - nx * hw), (x - ny * hw, y + nx * hw), (x + ny * hw, y - nx * hw),
+                   (x + nx * L - ny * hw, y + ny * L + nx * hw)]
+            self.fronts.add(bbox(pts, 1), (x, y, nx, ny, L, hw, what))
         for sh in self.laeden.get('shops', []):
             for part in sh.get('parts', []) + sh.get('annex', []):
                 f = list(zip(part['f'][0::2], part['f'][1::2]))
                 self.pads.add(bbox(f, 1), f)
             for d in sh.get('doors', []):
                 self.points.add((d['x'] - 4, d['y'] - 4, d['x'] + 4, d['y'] + 4), (d['x'], d['y'], 3.5, 'Ladentür'))
+                if 'nx' in d:
+                    front(d['x'], d['y'], d['nx'], d['ny'], 8.0, d.get('w', 2) / 2 + 1.5, 'vor der Ladentür')
+            for g in sh.get('signs', []):
+                if 'nx' in g:
+                    front(g['x'], g['y'], g['nx'], g['ny'], 12.0, g.get('w', 3) / 2 + 1.0, 'vor dem Schild')
         for lot in self.laeden.get('lots', []):
             for bx, by, az in lot.get('bays', []):
                 self.bays.add((bx - 4, by - 4, bx + 4, by + 4), (bx, by, az))
@@ -247,6 +261,15 @@ class World:
             if l[0] in ('halt', 'warte'):
                 x, y = l[1] / 10, l[2] / 10
                 self.points.add((x - 6, y - 6, x + 6, y + 6), (x, y, 4.5, 'Haltestelle'))
+        # the bus stops' platforms of the timetable (bus/bus.js): both ends of each
+        try:
+            BUSD = J('viz3', 'extra', 'bus', 'dist', 'bus', 'fahrplan.json')
+        except Exception:
+            BUSD = {}
+        for stn in BUSD.get('stations', []):
+            for pl in stn.get('pl', []):
+                for x, y in ((pl[0] / 10, pl[1] / 10), (pl[4] / 10, pl[5] / 10)):
+                    self.points.add((x - 7, y - 7, x + 7, y + 7), (x, y, 6.0, 'Haltestelle'))
         # the doors of the town's houses as welt/schleusingen.js puts them are known only in the app (checked there); here the OSM
         # entrances
         for nid, (lo, la, tags) in self.nodes.items():
@@ -317,6 +340,11 @@ class World:
                 return 'Fußweg' if k == 8 else 'Fahrbahn'
         for px, py, r, what in self.points.near(x, y, 6):
             if math.hypot(px - x, py - y) < (r * 0.45 if hedge else r):
+                return what
+        for fx, fy, nx, ny, L, hw, what in self.fronts.near(x, y, 2):
+            a = (x - fx) * nx + (y - fy) * ny
+            c = (x - fx) * ny - (y - fy) * nx
+            if -0.5 <= a <= L and abs(c) <= hw + (0 if hedge else tr):
                 return what
         for bx, by, az in self.bays.near(x, y, 4):
             dx, dy = x - bx, y - by
