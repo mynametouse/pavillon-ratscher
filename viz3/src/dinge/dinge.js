@@ -505,6 +505,20 @@ export const DINGE = (() => {
     const w = KERN.where();
     if (!w) return;
     shadowSun();
+    // feat/welt-orte: the areas of the places built later (Hirschbach, Erlau, Waldau …) come from a list of their own, dinge/orte.json
+    // ({ areas: [{ id, c, r, cell }] }) – asked for once one is beyond the square (no request at the start); none there, none added
+    if (!S.orte && !inSquare(w[0], w[1])) {
+      S.orte = 'lädt';
+      fetch(BASE + 'dinge/orte.json')
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          for (const A of (j && j.areas) || [])
+            if (A && A.id && Array.isArray(A.c) && A.r > 0 && !S.areas.some(q => q.id === A.id))
+              S.areas.push({ id: A.id, c: A.c, r: A.r, cell: A.cell || 120 });
+          S.orte = j ? 'da' : 'fehlt';
+        })
+        .catch(() => (S.orte = 'fehlt'));
+    }
     // an area loads when one comes within r of its middle, or within the radius of one of its further points t (a town's outer parts)
     for (const A of S.areas)
       if (
