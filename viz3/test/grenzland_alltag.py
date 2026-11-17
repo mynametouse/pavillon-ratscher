@@ -360,6 +360,8 @@ with lib.browser() as b:
     # ------------------------------------------------------------------ fest: the festivals by the calendar ------------------------------------------------------------------
     if want('fest'):
         X("window.TF = []; KERN.on('grenzland:fest', d => TF.push(d)); GAME.setSound && GAME.setSound(true)")
+        # the songs in the sound repository through the test server's own /pavillon-ton/ (tools/csp/cspserve.py), as on GitHub Pages
+        X("window.GLTON_BASE = location.origin + '/pavillon-ton/'")
         k = J("GLFESTE.kalender()")
         ck('fest: the calendar – Kirmes on Saturday 10 October first, then Sunday, then the Christmas market', [q['id'] for q in k[:3]] == ['kirmes', 'kirmes', 'weihnachtsmarkt'] and 'Sa. 10. Oktober' in k[0]['text'], str(k[:3]))
         # the Kirmes on Saturday evening round the Dorflinde
@@ -402,6 +404,12 @@ with lib.browser() as b:
         X(BLICK_WM)
         steps(0.5, 0.1)
         pic('32_weihnachtsmarkt')
+        # the carols (Kevin MacLeod, in the sound repository) – where the repository answers; else the music box
+        until("/^wm_/.test(String((GLFESTE.debug.stand().musik || {}).datei || ''))", 30, 0.5, 0.2)
+        mu = J("GLFESTE.debug.stand().musik")
+        erreichbar = E("fetch(GLRDATA.ton() + 'radio/wm_tannenbaum.mp3', { method: 'HEAD' }).then(r => r.ok, () => false)")
+        ck('fest: the Christmas market plays a carol from the sound repository' + ('' if erreichbar else ' (repository not reachable here: the music box)'),
+           (not erreichbar) or str((mu or {}).get('datei') or '').startswith('wm_'), str(mu))
         # the Feuerwehrfest on a July evening by the old school
         X("GLFESTE.debug.zu('feuerwehrfest', 21 * 60 + 40); GAME.view(229.5, -112, KERN.ground(229.5, -112) + 1.8, 0, -4)")
         ok = until("GLFESTE.debug.stand().bau === 'feuerwehrfest'", 30, 0.5)

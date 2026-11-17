@@ -131,8 +131,18 @@ export const GLFDATA = (() => {
         }
         return out;
       },
-      // no free Christmas recording yet (the lead's sound repository): a music box played by the synthesiser
-      musik: { lieder: [], spieluhr: true },
+      // five carols by Kevin MacLeod (CC BY 4.0) from the sound repository (pavillon-ton/radio/wm_*); where it cannot be had (another host,
+      // offline) the music box played by the synthesiser
+      musik: {
+        lieder: [
+          'wm_stillenacht.mp3',
+          'wm_tannenbaum.mp3',
+          'wm_adeste.mp3',
+          'wm_merrychristmas.mp3',
+          'wm_jinglebells.mp3',
+        ],
+        spieluhr: true,
+      },
       baum: 'tanne',
       dienst: { gluehwein: 'tobias', wurst: 'rainer', tombola: 'baerbel', stollen: 'sabine' },
       staende: [
