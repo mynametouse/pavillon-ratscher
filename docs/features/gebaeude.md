@@ -165,8 +165,9 @@ ganz ohne Fenster (alle Wände gedeckt) und eine Wand von 8,8 m.
   `KERN.provide('ground', …, 11)` (nur auf den Stufen vor Türen, sonst `undefined`), Fenstername `FASSADE`, `FAUDIT`; `?nofassade`.
   `FASSADE` hängt sich an `GEB.skip` an (das von `laeden` bleibt vorne: `prev(b) || …`) und mischt Geometrie in die Wand-Meshes der
   ETHOS-Zellen (`GEB.Z.cells[…].meshes`, gleiches Attribut-Layout; `gebaeude.js` gibt sie beim Wegwerfen wie bisher frei).
-- **Getestete Stände**: Lauf 3 (`f958ce6e3`) und Lauf 5 (`4b265907e`: Treppen, ETHOS-Zellen, Türme weg) ganz grün; der Stand für das
-  Zusammenführen um 20:30 ist der letzte grüne Lauf auf `feat/gebaeude` (Lauf 6 mit der Ansicht je Gebäude, siehe Bericht an den Lead).
+- **Getestete Stände** (GitHub Actions, alle Themen-Tests): Lauf 3 (`f958ce6e3`), Lauf 5 (`4b265907e`: Treppen, ETHOS-Zellen, Türme
+  weg) und Lauf 6 (`0dd2c35f5`: dazu die Ansicht je Gebäude, Wohnblöcke, Schulen) grün; Lauf 7 (die erweiterte Ansicht: Art, Geschosse,
+  Flachdach, Töne, Ratschers Häuser) siehe Bericht an den Lead – lokal `gebaeude:schleusingen` 20/20 und `gebaeude:ratscher` 13/13.
   Themen-Tests (`viz3/extra/gebaeude/tests.txt`): `gebaeude:ratscher`, `gebaeude:schleusingen,perf`, `schleusingen`, `schleusingen_innen`
   (zwei Teile), `haeuser` (Bilder), `laeden`, `smoke`.
 - **Ansicht je Gebäude (für `schleusingen-ansicht`)**: Werte aus Straßenansichten gehen über `FASSADE` in die Häuser, angewandt beim Bau:
@@ -193,13 +194,14 @@ ganz ohne Fenster (alle Wände gedeckt) und eine Wand von 8,8 m.
       "gruen", "form": "flach" }` – Farbe und Deckung nur Altstadt; `form: "flach"` macht aus einem Sattel- ein Flachdach (Altstadt).
     - `geschosse` (1–8, Altstadt): die Traufe auf 0,4 m + 2,75 m je Geschoss, Wände und Dach mit (für Garagen, die als zweigeschossig in
       den Daten stehen).
-  - **Im Spiel** (Test, Werkzeug): `FASSADE.ansicht(schlüssel, ansicht)` vor dem Bau; `FASSADE.ansichtOf(b)`, `FASSADE.ansichtStand()`.
+  - **Im Spiel** (Test, Werkzeug): `FASSADE.ansicht(schlüssel, ansicht)` vor dem Bau; `FASSADE.ansichtDorf()` (Ratschers Häuser sofort),
+    `FASSADE.ansichtOf(b)`, `FASSADE.ansichtStand()` (Schlüssel, aus der Datei, benutzt, Fehler).
   - **An den Chat von `schleusingen-ansicht`** (PARALLEL 18:37, „sagt, was euch lieber ist“): lieber über `FASSADE`, ohne Zeile in
     `welt/schleusingen.js` – entweder eure Werte in diesem Format als `viz3/extra/schleusingen-ansicht/dist/fassade/ansicht.json`
     (Schlüssel `"#<i>"`), oder euer Modul `SAFASS` ruft beim Laden je Gebäude `FASSADE.ansicht('#' + i, SAFASS.look(…))` (vor dem Bau der
     Stadt; das Modul in `modules.txt` nach `fassade/fassade.js`). Ratschers Häuser (`VILLAGE`, `"ratscher:<id>"` oder `"@x,y"`) bekommen die
     Ansicht wie die ETHOS-Gebäude auf ihre Wände gemalt (Farbe, Material, Läden, Rahmen, Tür, Töne), wenn `FASSADE` das Dorf korrigiert
-    (die Datei ist dann geladen) – im Browser noch nicht mit echten Werten geprüft (es gibt noch keine).
+    (die Datei ist dann geladen); später gegebene sofort mit `FASSADE.ansichtDorf()` (der Test färbt so ein Haus um).
   - Die Altstadt nimmt die Ansicht vor dem Bau in ihren Stil (`welt/schleusingen.js` `styleOf` danach, Geschosse und Flachdach in ihre
     Geometrie), die ETHOS-Gebäude und Ratschers Häuser bekommen sie auf ihre Wände gemalt, sobald sie stehen (Farbe, Material, Läden,
     Rahmen, Tür, Töne – Dach, Achsen, Türbreite und Höhe bleiben, wie `gebaeude.js` und `world/village.js` sie bauen).
