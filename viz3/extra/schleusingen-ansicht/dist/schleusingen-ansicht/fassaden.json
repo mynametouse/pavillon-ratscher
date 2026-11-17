@@ -28,6 +28,27 @@
    ]
   },
   {
+   "i": 12,
+   "x": -912.0,
+   "y": 1507.5,
+   "adresse": "Hainstraße 2",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#d8d9db",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: weiß, dunkelgraues Dach mit verschieferter Gaube",
+   "sicher": "hoch",
+   "ansichten": [
+    "w010"
+   ]
+  },
+  {
    "i": 16,
    "x": -1346.3,
    "y": 1189.4,
@@ -257,8 +278,12 @@
    "name": "Wiesenbauschule",
    "art": "haus",
    "material": "fachwerk_og",
-   "wand": "#8c3a2e",
+   "wand": "#ebe9e2",
    "wand_quelle": "geschätzt",
+   "eg": {
+    "material": "putz",
+    "farbe": "#8c3a2e"
+   },
    "fachwerk": "schwarz",
    "dach": {
     "material": "ziegel",
@@ -279,8 +304,12 @@
    "adresse": "Christian-Juncker-Straße 1",
    "art": "haus",
    "material": "fachwerk_og",
-   "wand": "#d6d2d2",
+   "wand": "#ebe9e2",
    "wand_quelle": "gemessen",
+   "eg": {
+    "material": "putz",
+    "farbe": "#d6d2d2"
+   },
    "fachwerk": "schwarz",
    "dach": {
     "material": "ziegel",
@@ -525,6 +554,131 @@
    ]
   },
   {
+   "i": 94,
+   "x": -868.5,
+   "y": 1421.7,
+   "adresse": "Königstraße 6",
+   "name": "Hebamme",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ecebe6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#4f4d4c"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: weiß mit Rundbogenfenstern (hinter Bäumen)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "w004"
+   ]
+  },
+  {
+   "i": 114,
+   "x": -900.8,
+   "y": 1476.5,
+   "adresse": "Königstraße 10",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ecebe6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: weiß (hinter Bäumen)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "w008"
+   ]
+  },
+  {
+   "i": 115,
+   "x": -851.0,
+   "y": 1484.8,
+   "art": "block",
+   "material": "putz_modern",
+   "wand": "#cccdcc",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: weißer dreigeschossiger Block",
+   "sicher": "mittel",
+   "ansichten": [
+    "w006"
+   ]
+  },
+  {
+   "i": 116,
+   "x": -857.4,
+   "y": 1457.1,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e3e1df",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#4f4d4c"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: weiß, dreigeschossig (hinter Bäumen)",
+   "sicher": "mittel",
+   "ansichten": [
+    "w004"
+   ]
+  },
+  {
+   "i": 118,
+   "x": -887.3,
+   "y": 1447.6,
+   "adresse": "Königstraße 8",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e8dccf",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: creme/beige, Fensterfaschen und Ecken sandsteinfarben",
+   "sicher": "hoch",
+   "ansichten": [
+    "w006"
+   ]
+  },
+  {
+   "i": 119,
+   "x": -933.5,
+   "y": 1527.3,
+   "adresse": "Hainstraße 1",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e9e0bd",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#4f4d4c"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: groß, OG creme/blassgelb, EG roter Backstein, Stahltreppe",
+   "sicher": "hoch",
+   "ansichten": [
+    "w012"
+   ]
+  },
+  {
    "i": 148,
    "x": -540.1,
    "y": 1526.6,
@@ -701,8 +855,12 @@
    "adresse": "Hildburghäuser Straße 1a",
    "art": "haus",
    "material": "fachwerk_og",
-   "wand": "#dee0e5",
+   "wand": "#ebe9e2",
    "wand_quelle": "gemessen",
+   "eg": {
+    "material": "putz",
+    "farbe": "#dee0e5"
+   },
    "fachwerk": "braun",
    "dach": {
     "material": "ziegel",
@@ -1306,13 +1464,60 @@
    ]
   },
   {
+   "i": 331,
+   "x": -907.3,
+   "y": 1407.7,
+   "adresse": "Königstraße 5",
+   "art": "haus",
+   "material": "fachwerk_giebel",
+   "wand": "#ebe7dc",
+   "wand_quelle": "geschätzt",
+   "fachwerk": "braun",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: hell verputzt, Giebel Fachwerk dunkelbraun, orangerotes Dach",
+   "sicher": "mittel",
+   "ansichten": [
+    "w002"
+   ]
+  },
+  {
+   "i": 332,
+   "x": -882.1,
+   "y": 1325.0,
+   "adresse": "Königstraße 1",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e9e3d2",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: creme, Giebel zur Straße, Rundbogentor, Schriftzug an der Fassade",
+   "sicher": "hoch",
+   "ansichten": [
+    "v067"
+   ]
+  },
+  {
    "i": 349,
    "x": -1444.2,
    "y": 1111.6,
    "art": "haus",
    "material": "fachwerk_og",
-   "wand": "#edece8",
+   "wand": "#ebe9e2",
    "wand_quelle": "gemessen",
+   "eg": {
+    "material": "putz",
+    "farbe": "#edece8"
+   },
    "fachwerk": "schwarz",
    "dach": {
     "material": "ziegel",
@@ -1473,11 +1678,11 @@
    "adresse": "Hildburghäuser Straße 6",
    "art": "haus",
    "material": "fachwerk_og",
-   "wand": "#d4cecb",
+   "wand": "#ebe9e2",
    "wand_quelle": "gemessen",
    "eg": {
     "material": "verkleidung",
-    "farbe": "#cfcfcb"
+    "farbe": "#d4cecb"
    },
    "fachwerk": "rot",
    "dach": {
@@ -1549,8 +1754,12 @@
    "adresse": "Suhler Straße 23",
    "art": "haus",
    "material": "fachwerk_og",
-   "wand": "#c9d4be",
+   "wand": "#dfe6d6",
    "wand_quelle": "geschätzt",
+   "eg": {
+    "material": "putz",
+    "farbe": "#c9d4be"
+   },
    "fachwerk": "rot",
    "dach": {
     "material": "ziegel",
@@ -1588,6 +1797,68 @@
    "ansichten": [
     "v068",
     "v066"
+   ]
+  },
+  {
+   "i": 423,
+   "x": -937.3,
+   "y": 1460.1,
+   "adresse": "Königstraße 7",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#f2f2f6",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße 8: weiß/hellgrau, rotes Dach",
+   "sicher": "mittel",
+   "ansichten": [
+    "w007"
+   ]
+  },
+  {
+   "i": 424,
+   "x": -940.7,
+   "y": 1448.0,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#8f857a",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: graubrauner Rauputz, älter",
+   "sicher": "niedrig",
+   "ansichten": [
+    "w005"
+   ]
+  },
+  {
+   "i": 425,
+   "x": -970.5,
+   "y": 1449.3,
+   "adresse": "Königstraße 7a",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e9dcae",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: creme/gelb, rotes Dach (weit)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "w009"
    ]
   },
   {
@@ -1689,11 +1960,11 @@
    "name": "Weber'sche Mühle",
    "art": "haus",
    "material": "fachwerk_og",
-   "wand": "#c1c2c2",
+   "wand": "#ebe9e2",
    "wand_quelle": "gemessen",
    "eg": {
     "material": "stein",
-    "farbe": "#c9c1b2"
+    "farbe": "#c1c2c2"
    },
    "fachwerk": "rot",
    "dach": {
@@ -1756,6 +2027,27 @@
     "v017",
     "v050",
     "v028"
+   ]
+  },
+  {
+   "i": 538,
+   "x": -892.6,
+   "y": 1374.3,
+   "adresse": "Königstraße 3",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ece0b5",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße 3: blassgelb/creme (Modell: Fachwerk-OG)",
+   "sicher": "mittel",
+   "ansichten": [
+    "w002"
    ]
   },
   {
@@ -1829,7 +2121,7 @@
    "y": 1062.1,
    "art": "villa",
    "material": "fachwerk_og",
-   "wand": "#9a4a3a",
+   "wand": "#ebe9e2",
    "wand_quelle": "geschätzt",
    "eg": {
     "material": "klinker",
@@ -1963,6 +2255,87 @@
    ]
   },
   {
+   "i": 614,
+   "x": -949.1,
+   "y": 1553.9,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#d3d3d5",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: weiß-hellgrau, dreigeschossig, rotes Dach",
+   "sicher": "hoch",
+   "ansichten": [
+    "w013"
+   ]
+  },
+  {
+   "i": 615,
+   "x": -942.6,
+   "y": 1561.2,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#d2d3d5",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#4f4d4c"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: weiß, dunkles Dach mit Solarplatten",
+   "sicher": "mittel",
+   "ansichten": [
+    "w013"
+   ]
+  },
+  {
+   "i": 616,
+   "x": -955.7,
+   "y": 1571.6,
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#4f5258",
+   "wand_quelle": "geschätzt",
+   "schiefer": "dunkel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: klein, ganz Schiefer dunkelgrau, orangerotes Dach",
+   "sicher": "hoch",
+   "ansichten": [
+    "w013"
+   ]
+  },
+  {
+   "i": 635,
+   "x": -943.7,
+   "y": 1372.6,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#efeeea",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Königstraße: weiß, dreigeschossig",
+   "sicher": "mittel",
+   "ansichten": [
+    "w002"
+   ]
+  },
+  {
    "i": 645,
    "x": -1111.8,
    "y": 1275.1,
@@ -2012,7 +2385,7 @@
    "y": 1248.5,
    "art": "haus",
    "material": "fachwerk_og",
-   "wand": "#ece8df",
+   "wand": "#ebe9e2",
    "wand_quelle": "geschätzt",
    "eg": {
     "material": "klinker",
@@ -2105,8 +2478,12 @@
    "y": 1257.5,
    "art": "haus",
    "material": "schiefer_og",
-   "wand": "#ecebe6",
+   "wand": "#55575d",
    "wand_quelle": "geschätzt",
+   "eg": {
+    "material": "putz",
+    "farbe": "#ecebe6"
+   },
    "dach": {
     "material": "ziegel",
     "farbe": "#b5553a"
@@ -2128,7 +2505,7 @@
    "y": 1321.0,
    "art": "haus",
    "material": "schiefer_og",
-   "wand": "#5d5f66",
+   "wand": "#55575d",
    "wand_quelle": "geschätzt",
    "eg": {
     "material": "klinker",
@@ -2469,6 +2846,10 @@
  ],
  "nicht_lesbar": [
   {
+   "i": 25,
+   "warum": "Hecke"
+  },
+  {
    "i": 28,
    "warum": "Bäume"
   },
@@ -2481,16 +2862,72 @@
    "warum": "Bäume"
   },
   {
+   "i": 113,
+   "warum": "Koniferen"
+  },
+  {
+   "i": 117,
+   "warum": "nur ein schmaler Streifen"
+  },
+  {
+   "i": 120,
+   "warum": "hinter Sträuchern, nur das Dach"
+  },
+  {
+   "i": 121,
+   "warum": "hinter Bäumen, nur das Dach"
+  },
+  {
    "i": 189,
    "warum": "Bäume"
+  },
+  {
+   "i": 333,
+   "warum": "Bäume"
+  },
+  {
+   "i": 334,
+   "warum": "Hecke"
+  },
+  {
+   "i": 338,
+   "warum": "Baum"
+  },
+  {
+   "i": 339,
+   "warum": "Baum"
   },
   {
    "i": 410,
    "warum": "Bäume"
   },
   {
+   "i": 421,
+   "warum": "Hecke, unscharf"
+  },
+  {
+   "i": 422,
+   "warum": "Bäume"
+  },
+  {
    "i": 439,
    "warum": "Bäume"
+  },
+  {
+   "i": 613,
+   "warum": "Garten, Bäume"
+  },
+  {
+   "i": 636,
+   "warum": "Baum"
+  },
+  {
+   "i": 637,
+   "warum": "unscharf"
+  },
+  {
+   "i": 638,
+   "warum": "hinter Hecke, nur Dächer"
   },
   {
    "i": 721,
