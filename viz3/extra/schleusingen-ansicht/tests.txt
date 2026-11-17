@@ -4,8 +4,8 @@ smoke
 # the model pictures from 12 of the 104 viewpoints (each waits up to a minute for the world round it; all of them on the chat machine)
 schleusingen_ansicht:data,fassaden,markt,bilder=12
 memphone
-# the looks (fassade/ansicht.json) change styles, colours and storeys of the town's houses: the town and its houses from inside (SINNEN
-# reads the town's walls and storeys). gebaeude:schleusingen checks the roofs of #308 (tiles) and #72 (slate) from gebaeude's own look
-# file – the views show slate on #308 and tiles on #72, our file overrides them; back in once that check reads the looks (lead asked)
+# the looks (fassade/ansicht.json) change styles, colours and storeys of the town's houses: gebaeude's check of the town (it reads the
+# roofs of its findings from the look that wins, bbaf2ac4), the town and its houses from inside (SINNEN reads the town's walls and storeys)
+gebaeude:schleusingen,perf
 schleusingen
 schleusingen_innen:only=door+walk+night+mem+treppe+save,bilder=1

@@ -112,12 +112,14 @@ if 'ratscher' in want:
         for v in RV:
             if only and v['name'] not in only: continue
             x, y = v['x'], v['y']
+            E(f"window.FOVX = {v['vfov']}")   # GAME.shot sets the walking camera's field from FOVX
             E(f"GAME.setView3(false, true); GAME.view({x}, {y}, KERN.ground({x}, {y}) + {v['eye']}, {v['yaw']}, {v['pitch']}, {v['vfov']}); for (let i = 0; i < 6; i++) GAME.step(0.25)")
             time.sleep(0.5)
             E(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + {v['eye']}, {v['yaw']}, {v['pitch']}, {v['vfov']})")
             d = E("(() => { GAME.shot(); return document.querySelector('#stage canvas').toDataURL('image/jpeg', 0.86); })()")
             open(os.path.join(OUT, v['name'] + '.jpg'), 'wb').write(base64.b64decode(d.split(',')[1]))
             done += 1
+        E("delete window.FOVX")
         ck('model pictures from the Ratscher viewpoints', done == len([v for v in RV if not only or v['name'] in only]), f'{done}')
         ck.errors(errs)
 if BROWSER:
