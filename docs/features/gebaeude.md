@@ -46,6 +46,13 @@ Werkzeuge sind dafür gebaut, siehe unten).
     Häuser ringsum (gewichtet nach Abstand: am Hang trifft jede Wand den Hof auf Höhe ihres Erdgeschosses; vorher Buckel aus dem
     Oberflächenmodell), bis 2,5 m unter die Wände gezogen (das 2-m-Netz der Kacheln trifft die Wände eben). Im HUD: „Tordurchfahrt,
     Bertholdstraße 6“, „Hof hinter Bertholdstraße 6“, im Burghof „Schloss Bertholdsburg“.
+  - **Die Burgtreppe**: vor dem Westtor der Burg führt laut OSM (Weg 204348789) eine gerade Treppe von 25,7 m zur Schloßstraße hinab
+    (Luftbild 2024). Gebaut: ein ebener Absatz vom Tor bis zur Treppe mit Brüstungen, Stufen aus Sandsteinplatten (je ~17 cm), gestufte
+    Wangenmauern beiderseits, bis zum Gelände am Fuß (12,0 m → −2,1 m); man geht sie hinauf und hinab (Boden über die Pads der Stadt).
+  - **Stufen vor den Haustüren**: Der Fassaden-Shader malt eine Haustür auf den Sockel – 35 cm über dem Fuß des Hauses, 60 cm bei
+    Hochparterre; sie hing in der Luft. Jetzt steht vor jeder Haus-, Hof- und zweiten Tür, deren Schwelle über dem Boden liegt, eine Treppe
+    aus Steinblöcken (je ~17 cm Steigung, 50 cm Podest, 30 cm Auftritt), und man steigt sie hinauf (`KERN.ground`, Priorität 11 – nur auf
+    den Stufen selbst, sonst antwortet der nächste Anbieter). Die Blöcke liegen im Mesh der Requisiten der Stadt (kein Draw-Call mehr).
   - `?nofassade` baut die Stadt wie vorher (zum Vergleich).
 - **Ratscher** (`fassade/fassade.js`, von außen eingehängt – `world/village.js` und `gebaeude/gebaeude.js` bleiben unverändert):
   - **Türen**, wo ein Gebäude keine hatte (kleine Schuppen: keine Wand lang genug für die Regel des Dorfs), und Türen von Scheunen und
@@ -57,28 +64,36 @@ Werkzeuge sind dafür gebaut, siehe unten).
     (`gebaeude/gebaeude.js`), die der Shader aus demselben Grund ohne Fenster ließ. Ein Mesh im Material der Dorf-Requisiten
     (kein neues Shader-Programm), das Glas in drei Gruppen, die nachts mit den Fenstern des Dorfs nach der Uhrzeit angehen (emissiv, keine
     Lampen).
+  - **Die ETHOS-Häuser** (`gebaeude/gebaeude.js`, unverändert) zeichnen eine Brandwand auf ganzer Länge blank und manchmal gar keine Tür.
+    Wo eine Brandwand ab 3 m frei steht oder ein Gebäude keine Tür hat, liegt 4 cm vor der Wand eine **Haut aus Fassaden-Vierecken** im
+    Fassaden-Layout des Dorfs: der Shader des Dorfs malt darauf Fenster im Stil des Hauses (Fachwerk, Putz, Klinker …) und die Tür
+    (Material der Dorfwände: kein neues Programm, ein Mesh). Ein Gebäude, das ringsum eingebaut ist bis auf ein kurzes freies Stück
+    (ab 1,4 m), bekommt dort eine schmale Tür (ein 9 m hoher Schuppen hinter den Häusern, zuvor der letzte „kein Eingang“).
+  - **Stufen vor den Haustüren** wie in Schleusingen (Dorf- und ETHOS-Häuser), im Mesh der Stallfenster-Rahmen (dasselbe Material).
 - **`FASSADE.eingang(id)`** → `{ x, y, hd }` (hd: Kompassrichtung, in die die Tür schaut) für Ratscher (Nummern von `VILLAGE`), Schleusingen
   (900000 + Index wie `SINNEN`): die Haustür, sonst die Hoftür – für `alltag` (Leute, die in ein Haus oder einen Laden gehen).
 
 ## Prüfung: Zahlen
 
-Stand nach dem ersten Lauf (vorher → nachher; „erklärt“ = mit `rest`):
+Stand von Lauf 4 (GitHub Actions 44112584752, `67d381d80`; vorher → nachher; „erklärt“ = mit `rest`):
 
 | Ort | Tür | Fenster | Durchgang | Hof | erklärt |
 |---|---|---|---|---|---|
-| Ratscher vorher | 4 kein Eingang, 19 Tür vor einer Wand | 23 Wandstrecken ohne Fenster, 3 Hallen ganz ohne | 0 | 1 | 19 |
-| Ratscher nachher (Lauf 3) | 1 | 20 (alle an ETHOS-Häusern) | 0 | 1 | 19 |
-| Schleusingen vorher | 194 kein Eingang | 84 Wandstrecken ohne Fenster | 2 (Burgtore laut OSM) | 8 Höfe ohne Zugang | 3 |
-| Schleusingen nachher | **0** | **0** | **0** | **0** | 8 |
+| Ratscher vorher | 23: 4 kein Eingang, 19 Tür vor der Wand eines Nachbarn | 26: 23 Wandstrecken ohne Fenster, 3 Hallen ganz ohne | 0 | 0 | 19 |
+| Ratscher nachher | 1 (seit 5c: 0, siehe unten) | **0** | **0** | **0** | 19 |
+| Schleusingen vorher | 194 kein Eingang | 84 Wandstrecken ohne Fenster | 2 (Burgtore laut OSM) | 7 Höfe ohne Zugang | 3 |
+| Schleusingen nachher | **0** | **0** | **0** | **0** | 7 |
 
 In Ratscher erklärt: 16 Haustüren, vor denen 0,7 m davor ein Nachbargebäude steht – durch sie geht man ins Haus (`HAEUSER`, der Grundriss
 hängt an der Tür), sie bleiben; 3 kleine umschlossene Flächen unter 80 m². Gebaut: 3 Türen, 19 verlegte Tore/Türen von Scheunen und
-Schuppen, 198 Stallfenster an 5 Hallen (Lauf 3). Seit Lauf 4 auch die ETHOS-Häuser (Haut aus Fassaden-Vierecken) und der Hof am Anger
-offen (eine schräge Lücke von 1,5 m ist begehbar) – Zahlen siehe unten.
+Schuppen, Stallfenster an 5 Hallen, die Haut der ETHOS-Häuser (Fenster an freien Brandwänden, Türen) – zusammen 241 neue Fenster. Der
+letzte „kein Eingang“ von Lauf 4 (ein ETHOS-Schuppen, 9 m hoch, ringsum eingebaut bis auf 1,5 m) bekommt seit 5c eine schmale Tür
+(Unit-Test; im Browser bestätigt Lauf 5).
 
-Erklärt bleiben in Schleusingen 3 Zwickel unter 25 m² (zwischen zwei Häusern, kein Zugang nötig) und 5 kleine Höfe von 31–67 m² (nur
+Erklärt bleiben in Schleusingen 2–3 Zwickel unter 25 m² (zwischen zwei Häusern, kein Zugang nötig) und 4–5 kleine Höfe von 31–67 m² (nur
 durch die Häuser daneben – keine Tordurchfahrt für einen Hof dieser Größe). Gebaut: 191 Hoftüren (Häuser, Schuppen, Hallen ohne Tür zur
-Straße), 18 Türen nach OSM-Eingängen, 84 Fensterstrecken an Brandwänden, 4 Durchgänge (2 Burgtore, 2 Tordurchfahrten), die Burgtreppe.
+Straße), 18 Türen nach OSM-Eingängen, 84 Fensterstrecken an Brandwänden, 4 Durchgänge (2 Burgtore, 2 Tordurchfahrten), die Burgtreppe;
+seit 5 die Stufen vor den Türen.
 
 ## Schnittstelle
 
@@ -95,17 +110,21 @@ Straße), 18 Türen nach OSM-Eingängen, 84 Fensterstrecken an Brandwänden, 4 D
 
 ## Leistung
 
-- Schleusingen: der Plan beim Aufbau der Stadt 105–210 ms im Testrechner (Höfe im Raster 0,5 m je Block, Durchgänge, Türen, Brandwände,
-  OSM-Eingänge); alles in den vorhandenen Meshes der Stadt (Wände, Dächer, Requisiten) – **10 → 10 Meshes, 311 598 → 312 704 Dreiecke
-  (+0,35 %)** gegenüber `?nofassade` (Lauf 3).
-- Ratscher: einmal nach dem Aufbau des Dorfs 14–34 ms; 2 Meshes für die Stallfenster (Rahmen und dunkles Glas, das Glas, das nachts
-  leuchtet) – +4 Draw-Calls mit Tiefen-/AO-Durchgang, +0,2 % Dreiecke vor der langen Halle (Lauf 3); dazu 1 Mesh für die Haut der
-  ETHOS-Häuser.
-- Keine neuen Shader-Programme (Wand- und Dachmaterial der Stadt, Material der Dorf-Requisiten und Klone davon), keine Lichter.
+- Schleusingen: der Plan beim Aufbau der Stadt 105–250 ms im Testrechner (Höfe im Raster 0,5 m je Block, Durchgänge, Türen, Brandwände,
+  OSM-Eingänge); alles in den vorhandenen Meshes der Stadt (Wände, Dächer, Requisiten) – **10 → 10 Meshes, 311 598 → 315 214 Dreiecke
+  (+1,2 %, mit Burgtreppe und Torgewänden)** gegenüber `?nofassade` (Lauf 4); die Stufen (seit 5) kommen ins Mesh der Requisiten.
+- Das ganze Bild am Markt: der Test misst es seit 5c in zwei frischen Ladungen (mit und ohne `?nofassade`) und ohne das, was sich bewegt
+  (Figuren, Verkehr, Tiere) – Lauf 4 maß die zweite Ladung nach einem langen Gang durch die Stadt und sah +29 Draw-Calls von Leuten und
+  Autos, die sich inzwischen gesammelt hatten.
+- Ratscher: einmal nach dem Aufbau des Dorfs 14–34 ms; 3 Meshes (Rahmen der Stallfenster mit dunklem Glas und den Stufen, das Glas, das
+  nachts leuchtet, die Haut der ETHOS-Häuser) – vor der langen Halle **+4 Draw-Calls, +0,2 % Dreiecke** (Lauf 4: 1182 → 1186 Calls,
+  2 026 884 → 2 030 052 Dreiecke).
+- Keine neuen Shader-Programme (Wand- und Dachmaterial der Stadt, Material der Dorf-Requisiten und Klone davon), keine Lichter; höchstens
+  15 Texturen je Programm (Test: 179 Programme, alle heil).
 
 ## Testen
 
-- Unit-Tests: `node --test viz3/test/unit/fassade.test.mjs` (9; in `tools/check.sh`).
+- Unit-Tests: `node --test viz3/test/unit/fassade.test.mjs` (11; in `tools/check.sh`).
 - Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9044 --serve gebaeude:ratscher,schleusingen` (Bilder in
   `out/gebaeude/`), Abschnitt `perf` lädt zum Vergleich `?nofassade`. Themen-Tests `viz3/extra/gebaeude/tests.txt`.
 
@@ -113,7 +132,12 @@ Straße), 18 Türen nach OSM-Eingängen, 84 Fensterstrecken an Brandwänden, 4 D
 
 - **Zusammenführen**: neue Module `fassade/fassade_audit.js` (vor `welt/schleusingen.js`) und `fassade/fassade.js` (nach
   `schleusingen/si_innen.js`) in `modules.txt`; geänderte eigene Datei `welt/schleusingen.js` (die Zeile `LAEDEN.skipStadt` bleibt). Keine
-  gemeinsame Datei geändert.
+  gemeinsame Datei geändert; `haeuser/haeuser_heute.js` nicht angefasst (nichts außen Sichtbares darin). Neu für alle: ein Boden-Anbieter
+  `KERN.provide('ground', …, 11)` (nur auf den Stufen vor Türen, sonst `undefined`), Fenstername `FASSADE`, `FAUDIT`; `?nofassade`.
+- **Getestete Stände**: Lauf 3 (`f958ce6e3`) ganz grün; Lauf 4 (`67d381d80`) grün bis auf den Vergleich des ganzen Bilds am Markt (Leute
+  und Autos, siehe „Leistung“ – der Test misst seither anders); Lauf 5 (Stufen, schmale Tür, Test-Umbau) siehe Bericht an den Lead. Die
+  Themen-Tests (`viz3/extra/gebaeude/tests.txt`): `gebaeude` (Ratscher; Schleusingen mit `perf`), `schleusingen`, `schleusingen_innen`
+  (zwei Teile), `haeuser` (Bilder), `laeden`.
 - **An `innen-real`**: (1) An den freien Strecken von Brandwänden malt die Stadt jetzt Fenster (`b.open[k]`, `b.pieces`), `SIPLAN.facades`
   behandelt die ganze Wand noch als blind – drinnen fehlt dort das Fenster. Ein Zusatz in `si_plan.js`: die Stücke aus `b.pieces` statt
   `b.F` (Fenster je Stück wie `ZIPLAN.facadeWindows`). (2) Häuser mit Tordurchfahrt haben `doorFac.w` = Breite der Durchfahrt (> 1,3 m) →
