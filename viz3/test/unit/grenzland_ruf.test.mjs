@@ -121,3 +121,63 @@ test('the chat: every gossip line reads with a name or a description; nobody rea
   // the HUD has a line for every step, the steps' chat lines exist
   for (const s of R.STUFEN) assert.ok(R.HUD[s.id] && R.GEREDE[s.id], s.id);
 });
+
+// ---------------------------------------------------------------- the side jobs (GLJOBSDATA) ----------------------------------------------------------------
+import { GLJOBSDATA as J } from '../../src/grenzland/gl_jobs_data.js';
+const DAY = (y, m, d) => Date.UTC(y, m - 1, d) / 864e5;
+
+test('jobs: the weekday of the story\'s first day, when each job may begin', () => {
+  const fr = DAY(2026, 9, 4);
+  assert.equal(J.wochentag(fr), 5, 'Friday, 4 September 2026');
+  assert.equal(J.wochentag(fr + 1), 6);
+  assert.equal(J.wochentag(fr + 2), 0);
+  const t = (h, m = 0) => h * 60 + m; // within the day (CLOCK.t of day 0)
+  // Friday 17:20: the rolls tomorrow 5:30, the exercise tomorrow 8:40, the wood tomorrow 8:00
+  assert.equal(J.bis(J.JOBS.broetchen, t(17, 20), fr), 24 * 60 - t(17, 20) + t(5, 30));
+  assert.equal(J.bis(J.JOBS.feuerwehr, t(17, 20), fr), 24 * 60 - t(17, 20) + t(8, 40));
+  assert.equal(J.wann(J.JOBS.broetchen, t(17, 20), fr), 'morgen ab 5:30');
+  assert.equal(J.bis(J.JOBS.feuerwehr, t(9), fr + 1), 0, 'Saturday 9:00: now');
+  assert.equal(J.wann(J.JOBS.feuerwehr, t(9), fr + 1), 'jetzt bis 9:30');
+  assert.equal(J.bis(J.JOBS.feuerwehr, t(9, 30), fr + 1), 7 * 1440 - 50, 'missed: next Saturday');
+  assert.equal(J.wann(J.JOBS.feuerwehr, t(9, 30), fr + 1), 'Samstag ab 8:40');
+  assert.equal(J.bis(J.JOBS.broetchen, t(6), fr + 2), 1440 - 30, 'no rolls on Sunday: Monday 5:30');
+  assert.ok(J.offenAm(J.JOBS.broetchen, 1, t(6)) && !J.offenAm(J.JOBS.broetchen, 0, t(6)) && !J.offenAm(J.JOBS.broetchen, 1, t(7, 5)));
+  assert.ok(J.offenAm(J.JOBS.holz, 3, t(10)) && !J.offenAm(J.JOBS.holz, 3, t(18)));
+});
+
+test('jobs: what the rolls pay – the tip for being quick, a deduction for each squashed bag, never below nothing', () => {
+  const B = J.JOBS.broetchen;
+  assert.deepEqual(J.lohnBroetchen({ sek: 200 }), { lohn: B.lohn, trinkgeld: B.trinkgeld, abzug: 0, summe: B.lohn + B.trinkgeld, ruf: B.ruf + 1 });
+  assert.equal(J.lohnBroetchen({ sek: (B.par + B.spaet) / 2 }).trinkgeld, B.trinkgeld / 2);
+  assert.equal(J.lohnBroetchen({ sek: B.spaet + 100 }).trinkgeld, 0);
+  const p = J.lohnBroetchen({ sek: 200, platt: 2 });
+  assert.equal(p.abzug, 2 * B.platt);
+  assert.equal(p.summe, B.lohn + B.trinkgeld - 2 * B.platt);
+  assert.ok(p.ruf < B.ruf + 1, 'squashed rolls cost a little of the reputation gain');
+  const s = J.lohnBroetchen({ sek: 200, zuSpaet: true });
+  assert.equal(s.trinkgeld, 0, 'after half past seven: no tip');
+  assert.ok(s.ruf >= 1 && s.ruf < B.ruf);
+  assert.equal(J.lohnBroetchen({ sek: 900, platt: 20 }).summe, 0, 'never below nothing');
+  assert.deepEqual(J.lohnHolz(2), { summe: 2 * J.JOBS.holz.lohn, ruf: 2 * J.JOBS.holz.ruf });
+  assert.equal(J.lohnHolz(9).summe, J.JOBS.holz.fuhren * J.JOBS.holz.lohn, 'no more loads than there are');
+  assert.equal(J.urteil(J.JOBS.feuerwehr.par - 1), 'schnell');
+  assert.equal(J.urteil(J.JOBS.feuerwehr.par * 1.3), 'gut');
+  assert.equal(J.urteil(J.JOBS.feuerwehr.par * 3), 'langsam');
+  assert.equal(J.mmss(125), '2:05');
+});
+
+test('jobs: the town hall\'s hours; every job and quest with its words, a hint field for chapter 2, nobody real', () => {
+  const Z = J.AUFGABEN.chronik.zeiten;
+  assert.ok(J.zeitOffen(Z, 2, 14 * 60), 'Tuesday afternoon open');
+  assert.ok(!J.zeitOffen(Z, 6, 10 * 60), 'Saturday shut');
+  assert.ok(!J.zeitOffen(Z, 1, 12 * 60), 'Monday at noon shut');
+  assert.match(J.zeitenText(Z), /Di 9:00–12:00, 13:00–18:00/);
+  for (const X of Object.values(J.alle())) {
+    assert.equal(typeof X.hinweis, 'string', X.id + ': hint field');
+    assert.ok(X.titel && X.von && X.angebot && X.kurz && X.tage.length && X.ab < X.bis, X.id);
+    assert.ok(!/Hubert|Ronald/.test(JSON.stringify(X)), X.id + ': never Hubert or Ronald');
+  }
+  const L = J.linien();
+  assert.ok(L.length >= 10 && L.every(([w, t]) => (w === 'fw_steffen' || w === 'fw_anja') && typeof t === 'string' && t.length > 3));
+  assert.ok(!/Hubert|Ronald/.test(JSON.stringify(J.T) + JSON.stringify(J.FW)));
+});
