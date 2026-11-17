@@ -529,6 +529,11 @@ export const LIBAU = (() => {
     K.sign([String(n)], u + W / 2 - 0.08, v0 + 0.06, 1.8, 0.3, 0.3, -1, 2, true);
     K.solid(u, vm, W + 0.1, lc);
     K.spot('kasse', u + W / 2 + 0.36, v0 + lc * 0.6, [-1, 0]);
+    // feat/laeden-leben: where a customer pays (across from the cashier) and the counter's two ends (the queue begins at the one away
+    // from the doors – laeden/leben.js decides)
+    K.spot('zahlen', u - W / 2 - 0.42, v0 + lc * 0.62, [1, 0]);
+    K.spot('ende', u - W / 2 - 0.42, v0 - 0.5, [0, 1]);
+    K.spot('ende', u - W / 2 - 0.42, v0 + lc + 0.5, [0, -1]);
     void R;
   }
   void goodsRunU;
