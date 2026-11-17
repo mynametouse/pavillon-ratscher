@@ -259,6 +259,16 @@ export const FASSADE = (() => {
       const f = b.fac[k];
       return { x: f.ax + f.dx * u, y: f.ay + f.dy * u, hd: az(f.nx, f.ny) };
     }
+    // an ETHOS building of the square (gebaeude/gebaeude.js): the door its building() gives it
+    const g = GEB.ready && GEB.bld.find(q => q.id === id);
+    const d = g && gebDoor(g);
+    if (d) {
+      const f = g.F[d.k],
+        L = Math.hypot(f[2] - f[0], f[3] - f[1]),
+        dx = (f[2] - f[0]) / L,
+        dy = (f[3] - f[1]) / L;
+      return { x: f[0] + dx * d.u, y: f[1] + dy * d.u, hd: az(dy, -dx) };
+    }
     return null;
   }
   // ---- Ratscher's fixes (once, after the village and the ETHOS buildings stand) ----

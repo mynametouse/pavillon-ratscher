@@ -66,8 +66,14 @@ Stand nach dem ersten Lauf (vorher → nachher; „erklärt“ = mit `rest`):
 
 | Ort | Tür | Fenster | Durchgang | Hof | erklärt |
 |---|---|---|---|---|---|
-| Ratscher | (folgt) | | | | |
-| Schleusingen | (folgt) | | | | |
+| Ratscher vorher | (folgt) | | | | |
+| Ratscher nachher | (folgt) | | | | |
+| Schleusingen vorher | 194 kein Eingang | 84 Wandstrecken ohne Fenster | 2 (Burgtore laut OSM) | 8 Höfe ohne Zugang | 3 |
+| Schleusingen nachher | **0** | **0** | **0** | **0** | 8 |
+
+Erklärt bleiben in Schleusingen 3 Zwickel unter 25 m² (zwischen zwei Häusern, kein Zugang nötig) und 5 kleine Höfe von 31–67 m² (nur
+durch die Häuser daneben – keine Tordurchfahrt für einen Hof dieser Größe). Gebaut: 191 Hoftüren (Häuser, Schuppen, Hallen ohne Tür zur
+Straße), 18 Türen nach OSM-Eingängen, 84 Fensterstrecken an Brandwänden, 4 Durchgänge (2 Burgtore, 2 Tordurchfahrten), die Burgtreppe.
 
 ## Schnittstelle
 
