@@ -7,7 +7,7 @@ import { GLLDATA as D } from '../../src/grenzland/gl_linien_data.js';
 import { GLLOGIK as G } from '../../src/grenzland/gl_logik.js';
 import { GLLWEG as WEG } from '../../src/grenzland/gl_linien_data.js';
 import { VNETZ } from '../../src/verkehr/verkehr_netz.js';
-import { ways } from '../../extra/grenzland-polizei/sim/welt.mjs';
+import { ways, BOX } from '../../extra/grenzland-polizei/sim/welt.mjs';
 
 const MO = { wd: 0, hol: null, ferien: false },
   SA = { wd: 5, hol: null, ferien: false },
@@ -199,8 +199,17 @@ test('encounters on the way: the hitchhiker and the breakdown on the land by day
   );
 });
 
-// the runs on the real road graph of the square (the police's fixture: the OSM ways as world/roads.js has them)
-test('every run of the square has a way on the real roads: no turning back on itself, its stops in order, dead ends reversed into', () => {
+// the runs on the real road graph of the square (the police's fixture: the OSM ways as world/roads.js has them); beyond the square's
+// road ends they go on along the region's roads (viz3/extra/fahrt) as grenzland/gl_linien.js does it
+test('every run of the square has a way on the real roads: no turning back on itself, its stops in order, dead ends reversed into', async () => {
+  const F = await regionWays(),
+    RG = {};
+  const rand = (q, aus) => {
+    const k = Math.round(q[0]) + ',' + Math.round(q[1]);
+    if (!(k in RG)) RG[k] = WEG.stadtNetz(F, q[0], q[1], 1200);
+    return WEG.verlaengerung(RG[k], q, aus, BOX);
+  };
+  const draussen = (x, y) => Math.max(BOX[0] - x, x - BOX[2], BOX[1] - y, y - BOX[3]);
   const Gr = VNETZ.graph(ways(), { kinds: new Set([0, 1, 2, 3, 4, 5, 6]) });
   const zuf = Gr.nodes
     .filter(n => n.edges.length === 1 && n.edges[0].kind <= 2 && n.edges[0].kind >= 1)
@@ -239,9 +248,40 @@ test('every run of the square has a way on the real roads: no turning back on it
       }
       return { w, q, n: nodeNear(q[0], q[1]) };
     });
-    const legs = WEG.beine(Gr, W, lkw, f.weg[f.weg.length - 1].rand ? null : 0);
+    const z = W.length - 1;
+    if (f.weg[0].rand) W[0].vor = rand(W[0].q, false);
+    if (f.weg[z].rand) W[z].nach = rand(W[z].q, true);
+    const legs = WEG.beine(Gr, W, lkw, f.weg[z].rand ? null : 0);
     assert.ok(legs, f.id + ': a way');
     const Lf = WEG.fertigLinie(f, legs, W, lkw);
+    // beyond the square: it starts and ends on the region's roads out of it, through the square's road end without a jump
+    for (const [k, i] of [
+      [0, 0],
+      [z, -1],
+    ]) {
+      if (!f.weg[k].rand) continue;
+      const R = (i === 0 ? legs[0] : legs[legs.length - 1]).line,
+        j = i === 0 ? 0 : R.n - 1;
+      assert.ok(
+        draussen(R.X[j], R.Y[j]) > 50,
+        f.id +
+          ': its ' +
+          (i === 0 ? 'start' : 'end') +
+          ' beyond the square (' +
+          Math.round(draussen(R.X[j], R.Y[j])) +
+          ' m)'
+      );
+      const pr = VNETZ.project(R, W[k].q[0], W[k].q[1]);
+      assert.ok(
+        pr && pr.d < 4,
+        f.id + ": through the road end at the square's edge (" + (pr && Math.round(pr.d * 10) / 10) + ' m)'
+      );
+    }
+    for (const l of legs) {
+      const R = l.line;
+      for (let j = 0; j + 1 < R.n; j++)
+        assert.ok(Math.hypot(R.X[j + 1] - R.X[j], R.Y[j + 1] - R.Y[j]) < 3, f.id + ': no jump in its line');
+    }
     assert.equal(
       Lf.kehre,
       0,
@@ -262,12 +302,10 @@ test('every run of the square has a way on the real roads: no turning back on it
   }
 });
 
-// the deliveries on the town's real roads (the region's ways, viz3/extra/fahrt) to the real loading doors (viz3/extra/laeden)
-test('every delivery in Schleusingen: in from the town edge, past the lane, backwards to the loading door, out forward', async () => {
+// the region's ways as welt/fahrt.js has them (FAHRT.data.ways: { kind, hw, p (x, y, z …), n, bb }) from viz3/extra/fahrt
+async function regionWays() {
   const fs = await import('node:fs');
-  const url = p => new URL(p, import.meta.url);
-  const J = JSON.parse(fs.readFileSync(url('../../extra/fahrt/dist/fahrt/strassen.json'), 'utf8')),
-    LJ = JSON.parse(fs.readFileSync(url('../../extra/laeden/dist/laeden/laeden.json'), 'utf8'));
+  const J = JSON.parse(fs.readFileSync(new URL('../../extra/fahrt/dist/fahrt/strassen.json', import.meta.url), 'utf8'));
   const KINDS = ['motorway', 'main', 'county', 'street', 'lane', 'service', 'track', 'path', 'foot'];
   const F = [];
   for (const [k0, , w10, , , , q] of J.ways) {
@@ -287,6 +325,15 @@ test('every delivery in Schleusingen: in from the town edge, past the lane, back
     }
     F.push({ kind, hw: w10 / 20, p, n, bb: [x0, y0, x1, y1] });
   }
+  return F;
+}
+// the deliveries on the town's real roads (the region's ways, viz3/extra/fahrt) to the real loading doors (viz3/extra/laeden)
+test('every delivery in Schleusingen: in from the town edge, past the lane, backwards to the loading door, out forward', async () => {
+  const fs = await import('node:fs');
+  const LJ = JSON.parse(
+    fs.readFileSync(new URL('../../extra/laeden/dist/laeden/laeden.json', import.meta.url), 'utf8')
+  );
+  const F = await regionWays();
   // (the box lorry of grenzland/gl_typen.js: its back 5.9 m behind its middle, the rear axle 2.6 m; the reversing line begins where the
   // rear axle stands when its back is half a metre from the door – as grenzland/gl_linien.js asks for it)
   const yr = -5.9,

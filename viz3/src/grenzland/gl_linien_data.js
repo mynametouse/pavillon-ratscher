@@ -561,11 +561,12 @@ export const GLLWEG = (() => {
       rein = stueck(spur.pts, spur);
     return { vor, rein, on };
   }
-  // the legs of a run on graph G from its waypoints W ({ q, n } a node to pass, { q, e } a stop on edge e; { spur } a dead end of its own)
+  // the legs of a run on graph G from its waypoints W ({ q, n } a node to pass, { q, e } a stop on edge e; { spur } a dead end of its own).
+  // W[0].vor / W[last].nach: pieces of another graph before its start or after its end (verlaengerung: beyond the square's road ends)
   function beine(G, W, lkw, vEndLast) {
     const legs = [],
       deg = n => G.nodes[n].edges.length;
-    let cur = [],
+    let cur = W[0].vor ? W[0].vor.slice() : [],
       pos = W[0].n,
       lastE = null;
     // a route that does not leave by the edge it came by (no turning on the spot), unless there is no other way
@@ -630,7 +631,7 @@ export const GLLWEG = (() => {
       lastE = e;
       pos = n1;
     }
-    legs.push({ path: cur, rev: false, vEnd: vEndLast });
+    legs.push({ path: cur.concat(W[W.length - 1].nach || []), rev: false, vEnd: vEndLast });
     // the lines
     let s0 = 0;
     const out = [];
@@ -642,6 +643,49 @@ export const GLLWEG = (() => {
       s0 += line.L;
     }
     return out.length ? out : null;
+  }
+  // ---- beyond the square: a run that comes in or leaves by one of the square's road ends goes on along the region's roads (welt/fahrt.js;
+  //      the same OSM ways – the square's to half a metre) to an end of G, a graph of the region round that end (stadtNetz): a main or
+  //      county road first, the one farthest from the square, never back into it. aus: leaving (q → out), else coming in (out → q). The
+  //      pieces join the run's first or last leg (beine: W[0].vor, W[last].nach): no vehicle appears or vanishes at the square's edge.
+  //      box: the square [x0, y0, x1, y1]; null if the region has no road there ----
+  function verlaengerung(G, q, aus, box, M = 40) {
+    if (!G || !G.nodes.length || !box) return null;
+    const E = nearestEdge(G, q[0], q[1]);
+    if (!E || E.d > 6) return null;
+    const drin = (x, y) => x > box[0] + M && x < box[2] - M && y > box[1] + M && y < box[3] - M,
+      cx = (box[0] + box[2]) / 2,
+      cy = (box[1] + box[3]) / 2,
+      e = E.e,
+      A = G.nodes[e.a],
+      B = G.nodes[e.b];
+    // the edge's end out of the square (else the one farther from its middle)
+    const aIn = drin(A.x, A.y),
+      bIn = drin(B.x, B.y),
+      o = aIn !== bIn ? (aIn ? e.b : e.a) : hyp(A.x - cx, A.y - cy) >= hyp(B.x - cx, B.y - cy) ? e.a : e.b;
+    const kosten = x => (x === e || x.pts.some(p => drin(p[0], p[1])) ? Infinity : cost(x));
+    const dist = VNETZ.reach(G, o, kosten);
+    let ex = -1,
+      best = -1;
+    for (const big of [true, false]) {
+      G.nodes.forEach((n, i) => {
+        if (!n.exit || i === o || !(dist[i] < Infinity) || drin(n.x, n.y)) return;
+        if (big && !n.edges.some(k => k.kind <= 2)) return;
+        const d = hyp(n.x - cx, n.y - cy);
+        if (d > best) {
+          best = d;
+          ex = i;
+        }
+      });
+      if (ex >= 0) break;
+    }
+    const nah = teil(e, o, q),
+      laenge = P => P.reduce((a, p, i) => (i ? a + hyp(p[0] - P[i - 1][0], p[1] - P[i - 1][1]) : 0), 0);
+    const stueckE = laenge(nah) > 0.5 ? [stueck(aus ? nah.slice().reverse() : nah, e)] : [];
+    if (ex < 0) return stueckE.length ? stueckE : null;
+    const r = aus ? VNETZ.route(G, o, ex, kosten) : VNETZ.route(G, ex, o, kosten);
+    if (!r || !r.length) return stueckE.length ? stueckE : null;
+    return aus ? stueckE.concat(r) : r.concat(stueckE);
   }
   // where along the legs each waypoint lies (global metres): a reversing leg's stop at its end, the others by projection
   function wegpunkte(legs, W) {
@@ -853,6 +897,7 @@ export const GLLWEG = (() => {
     stadtNetz,
     rampenWeg,
     stadtWeg,
+    verlaengerung,
   };
 })();
 if (typeof window !== 'undefined') window.GLLDATA = GLLDATA;

@@ -92,6 +92,13 @@ with lib.browser() as b:
             li = L[rid]
             ck(f'linie {rid}: a way on the roads', li is not None and li['L'] > 300, str(li and {k: li[k] for k in ('L', 'ws', 'dauer', 'kehre', 'legs')}) + ' ' + str(E("GLLINIEN.err")))
             if li: ck(f'linie {rid}: never turns back on itself', li['kehre'] == 0, str(li['kehre']))
+        # beyond the square's road ends on along the region's roads (no vehicle appears or vanishes at the square's edge)
+        B = J("GEOMAN.roads.box")
+        aus = lambda q: max(B[0] - q[0], q[0] - B[2], B[1] - q[1], q[1] - B[3])
+        for rid in ['milch', 'k2-tag']:
+            li = L.get(rid)
+            ok = li and li['pts'] and aus(li['pts'][0]) > 300 and aus(li['pts'][-1]) > 50
+            ck(f'linie {rid}: starts and ends beyond the square, on the region\'s roads', ok, str(li and (li['pts'][0], li['pts'][-1], B)))
         open(os.path.join(OUT, 'linien.json'), 'w').write(json.dumps(L))
     if want('holz'):
         # ---- the timber lorry: Friday 14:05 run, 230 m before the pile, the player by the pile ----

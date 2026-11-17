@@ -38,12 +38,20 @@ Stunde je Minute –, so machen es auch die Busse des Spiels).
   Schritttempo, und wer hinter dem Lkw steht, hält ihn auf. Kein Weg verlässt einen Knoten über die Kante, auf der er kam (kein Wenden auf
   der Stelle); geprüft für jeden Lauf.
 - **Nie vor den Augen:** Läge der Platz eines Fahrzeugs nach seinen Zahlen im Blick und näher als 190 m, erscheint es weiter hinten auf
-  seinem Weg, wo niemand hinsieht, und kommt von dort (es ist dann etwas verspätet).
+  seinem Weg, wo niemand hinsieht, und kommt von dort (es ist dann etwas verspätet). Am Ende seines Wegs verschwindet es nur, wenn
+  niemand hinsieht – sonst wartet es dort.
+- **Über das Quadrat hinaus:** Wer über eine Straße am Rand des Quadrats kommt oder geht, fährt auf den Straßen der Region weiter
+  (`welt/fahrt.js` – dieselben OSM-Wege, im Quadrat auf einen halben Meter gleich): bis an das Ende eines Graphen von 1,2 km um diesen
+  Rand, am liebsten eine Bundes- oder Kreisstraße, so weit weg vom Quadrat wie möglich, nie zurück hinein (`GLLWEG.verlaengerung`).
+  Milchlaster, Streife und Krähwinkels Lkw kommen so durch Schleusingen und fahren durch die Stadt wieder hinaus; nach Westen, Norden
+  und Süden geht es über 1 km weiter, nach Südosten hat die Region nur noch gut 100 m Straße. Die Abfahrtszeit gilt am Rand des
+  Quadrats (der Weg davor beginnt entsprechend früher).
 - **Fahrer in den Kabinen:** eine Figur des Modus sitzt am Steuer (die Streife hat zwei Beamte); sie sehen, was man tut, und melden es
   wie jeder Zeuge – die Beamten der Streife zählen als Polizei, also sofort. Ab dem ersten Stern weicht die Streife: sie fährt weiter und
   verschwindet außer Sicht, die Fahndung schickt ihre eigenen Wagen (`gl_fahndung.js`).
-- **Der Holzpolter:** ein Stapel Fichtenstämme (5 m) auf zwei Unterlegern neben dem Waldweg, auf der Seite des Waldes, 5 m vom Weg
-  (der Kran reicht 8 m); steht, solange man näher als 350 m ist.
+- **Der Holzpolter:** wie ein Polter an der Waldstraße für den Kran gesetzt wird – 5-m-Fichtenstämme quer zum Weg, die Schnittflächen
+  zum Weg, 12 m lang und gut 1,7 m hoch in fünf Lagen auf zwei Unterlegern, auf der Seite des Waldes, die Stirnseiten knapp 3 m von der
+  Wegmitte (der Kran reicht 8 m); steht, solange man näher als 350 m ist.
 - **Die Lkw** (`gl_typen.js`, neue Typen): Frontlenker von heute ohne Hersteller – ein Fahrerhaus aus seinen Teilen um echte Öffnungen
   (Windschutzscheibe, Türfenster) mit dunklem Innenraum, Armaturenbrett, Lenkrad und zwei Sitzen (man sieht hinein und den Fahrer),
   Sonnenblende, Grill, Scheinwerfer in der Stoßstange, Spiegel an Auslegern, Trittstufen, Rahmen, Tank, Seitenschutz, Kotflügel, Rücklichter,
@@ -111,7 +119,9 @@ oder zurückgelassen):
   „beide waren eben da“.
 - `viz3/test/grenzland_strasse.py <port> <teile>`: `linien` (jede Fahrt hat eine Linie ohne Kehre), `holz`, `milch`, `kraeh`, `streife`,
   `schule`, `paket`, `liefer` (Schleusingen: REWE-Rampe, Apotheke), `begegnung`; die Zeilen in `viz3/extra/grenzland-strasse/tests.txt`.
-  Bilder in `out/grenzland_strasse/`.
+  Bilder in `out/grenzland_strasse/` (auf GitHub Actions im Artefakt `out`: `01_holz_am_polter`, `02_holz_beladen`, `03_milch_am_hof`,
+  `04_kraehwinkel_am_lager`, `05_streife_am_anger`, `06_schueler_am_anger`, `07_liefer_rewe`, `08_paket`, `08_z-apo`, `10_anhalter`,
+  `11_panne`, `12_jaeger_hochsitz`). Grün: Lauf 44105726443 (`42121fcf7`).
 - Formen ohne Browser: `node viz3/extra/grenzland-auto/werkzeug/bild.mjs koffer out/karosse/koffer.png --opt '{"text":"Spedition Krähwinkel","band":"#7a1f24"}'`.
 
 ## Offen

@@ -38,6 +38,7 @@ import { GLLDATA, GLLWEG } from './gl_linien_data.js';
 export const GLLINIEN = (() => {
   const S = {
     V: {}, // per vehicle of GLLDATA.FZ: { id, def, run, c (GLAUTO car), F (figures in it), lade, ... }
+    randG: {}, // the region's road graph round each of the square's road ends that a run uses
     L: {}, // per run id: { legs, ws, len, L, P, kehre } (GLLWEG.fertigLinie) or null when it cannot be driven here
     err: '',
     n: { spawn: 0, drop: 0, fig: 0 },
@@ -203,10 +204,32 @@ export const GLLINIEN = (() => {
       return { w, q, n: GLAUTO.nodeNear(q[0], q[1]) };
     });
     if (W.some(o => !o)) return null;
-    const legs = beine(G, W, lkw, f.weg[f.weg.length - 1].rand ? null : 0);
-    return legs
-      ? Object.assign(fertigLinie(f, legs, W, lkw), { tueren: f.weg.map(w => (w.zustellen ? tuerVon(w) : null)) })
-      : null;
+    // beyond the square's road ends on along the region's roads: nobody appears or vanishes at the square's edge
+    const z = W.length - 1;
+    if (f.weg[0].rand) W[0].vor = randWeg(W[0].q, false);
+    if (f.weg[z].rand) W[z].nach = randWeg(W[z].q, true);
+    const legs = beine(G, W, lkw, f.weg[z].rand ? null : 0);
+    if (!legs) return null;
+    // (the departure is the time at the square's edge: the way in from beyond starts that much earlier)
+    const vorL = (W[0].vor || []).reduce((a, k) => a + laenge(k.e.pts), 0);
+    return Object.assign(fertigLinie(f, legs, W, lkw), {
+      tueren: f.weg.map(w => (w.zustellen ? tuerVon(w) : null)),
+      vorMin: vorL / f.tempo,
+    });
+  }
+  const laenge = P => P.reduce((a, p, i) => (i ? a + hyp(p[0] - P[i - 1][0], p[1] - P[i - 1][1]) : 0), 0);
+  // the region's roads round one of the square's road ends (welt/fahrt.js; built once) and the way on along them (GLLWEG.verlaengerung)
+  function randWeg(q, aus) {
+    const F = FAHRT && FAHRT.data && FAHRT.data.ways,
+      box = window.GEOMAN && GEOMAN.roads && GEOMAN.roads.box;
+    if (!F || !F.length || !box) return null;
+    const k = Math.round(q[0]) + ',' + Math.round(q[1]);
+    try {
+      if (!(k in S.randG)) S.randG[k] = GLLWEG.stadtNetz(F, q[0], q[1], 1200);
+      return GLLWEG.verlaengerung(S.randG[k], q, aus, box);
+    } catch (e) {
+      return null;
+    }
   }
   // ---- Schleusingen: the town's roads (the region's ways beyond the square, welt/fahrt.js) as a graph round a point; the loading doors
   //      of its shops (laeden/laeden.js, laeden.json: doors with k 'liefer'; a field `anlieferung` [{ x, y, nx, ny }] of the agent
@@ -311,7 +334,7 @@ export const GLLINIEN = (() => {
           [d0, day],
           [d0 - 1440, dayG || day],
         ]) {
-          const t0 = d + ab,
+          const t0 = d + ab - (Lf.vorMin || 0),
             key = f.id + '@' + t0;
           if (t < t0 || t - t0 >= Lf.P.dauer || v.done.has(key) || !GLLDATA.faehrt(f, dd)) continue;
           v.run = { key, f, t0, lag: 0, P: Lf.P, Lf, i: -1 };
@@ -510,6 +533,13 @@ export const GLLINIEN = (() => {
       li = Math.min(v.leg || 0, Lf.legs.length - 1),
       leg = Lf.legs[li];
     if (c.line !== leg.line) GLAUTO.onLine(c, leg.line, leg.rev ? leg.L - c.T.a - 0.4 : 0, 0);
+    // at the end of its last leg it stands (and goes when nobody looks)
+    if (c.ende && li >= Lf.legs.length - 1) {
+      c.v = 0;
+      c.bremst = true;
+      GLAUTO.pose(c);
+      return;
+    }
     if (c.tand) for (const g of c.tand) g.rotation.x = -c.spin;
     c.blau = false;
     c.horn = false;
@@ -693,8 +723,9 @@ export const GLLINIEN = (() => {
     markDirty(true);
   }
   // ------------------------------------------------------------------ the timber pile ------------------------------------------------------------------
-  // A pile of spruce logs („Polter“) beside the forest track near the Untere Klinge where the timber lorry loads: 5 m logs in a stack
-  // some 1.6 m high on two skids, on the side of the wood, a little off the track (the crane reaches 8 m). Built when the player comes
+  // A pile of spruce logs („Polter“) beside the forest track near the Untere Klinge where the timber lorry loads: 5 m logs across, their
+  // cut ends to the track, a pile 12 m long and some 1.7 m high on two skids, on the side of the wood beside the track (the crane reaches
+  // 8 m). Built when the player comes
   // within 350 m, gone beyond 450 m and at the end. Vertex colours on the traffic's material (no new shader program).
   function polterLage() {
     const G = GLAUTO.netz(),
@@ -746,26 +777,24 @@ export const GLLINIEN = (() => {
         0.17, 0.21, 0.19, 0.16, 0.22, 0.18, 0.2, 0.17, 0.19, 0.21, 0.18, 0.2, 0.16, 0.19, 0.22, 0.18, 0.17, 0.2, 0.19,
         0.21,
       ];
-    // two skids across, then the logs along the track in rows
-    for (const y of [-1.6, 1.6]) K.box(0, y, 0.08, 3.6, 0.22, 0.16, 0, bark2);
+    // as a pile by a forest road is laid for the crane: the logs across, their cut ends to the track, the pile 12 m along it on two skids,
+    // five layers (each lying in the hollows of the one below)
+    const LP = 12;
+    for (const x of [-1.6, 1.6]) K.box(x, 0, 0.08, 0.22, LP + 0.5, 0.16, 0, bark2);
     let n = 0,
       z = 0.16;
-    for (const [cnt, w] of [
-      [9, 3.4],
-      [8, 3.05],
-      [7, 2.7],
-      [5, 2.0],
-    ]) {
-      let rm = 0;
+    for (let row = 0; row < 5; row++) {
+      const cnt = 30 - row * 2,
+        w = cnt * 0.4,
+        r0 = R[(row * 7) % R.length];
       for (let i = 0; i < cnt; i++) {
         const r = R[n++ % R.length],
-          x = -w / 2 + (w * (i + 0.5)) / cnt,
-          y0 = -2.5 + ((i * 7) % 3) * 0.05,
-          y1 = 2.5 - ((i * 5) % 3) * 0.06;
-        GLORTE.rolle(K, [x, y0, z + r], [x, y1, z + r], r, i % 3 ? bark : bark2, 8, { capCol: wood });
-        rm = Math.max(rm, r);
+          y = -w / 2 + (w * (i + 0.5)) / cnt,
+          x0 = -2.5 + ((i * 7 + row) % 3) * 0.06,
+          x1 = 2.5 - ((i * 5 + row) % 3) * 0.07;
+        GLORTE.rolle(K, [x0, y, z + r], [x1, y, z + r], r, i % 3 ? bark : bark2, 8, { capCol: wood });
       }
-      z += rm * 1.62;
+      z += r0 * 1.7;
     }
     const m = new THREE.Mesh(K.geo(), VFIG.mat());
     m.userData.noMerge = true;
@@ -913,7 +942,8 @@ export const GLLINIEN = (() => {
           const d = hyp(v.c.x - p.x, v.c.y - p.y);
           // far: a number again (with the delay it made); the patrol while somebody is wanted: as soon as it is out of sight
           const weg = d > R_OUT || (v.def.art === 'streife' && sterne > 0 && (d > 120 || !imBlick(v.c.x, v.c.y)));
-          const amEnde = v.c.ende && (v.leg || 0) >= run.Lf.legs.length - 1;
+          // at the end of its way (where the region's roads end): gone – but not under the player's eyes (it waits there till then)
+          const amEnde = v.c.ende && (v.leg || 0) >= run.Lf.legs.length - 1 && (d >= R_SEE || !imBlick(v.c.x, v.c.y));
           if (weg || amEnde) {
             const el = elVon(run, globS(v));
             run.lag = Math.max(0, t - run.t0 - el);
