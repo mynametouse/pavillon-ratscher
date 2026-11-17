@@ -247,6 +247,14 @@ with lib.browser() as b:
                   if (HAEUSER.H && f.at.mode !== 'lie') { const rr = H.rooms.find(q => q.id === rid); if (rr) H.light(rid, true); }
                   __T.stand(ex, ey, r.z0, Math.atan2(p[0] - ex, p[1] - ey) * 180 / Math.PI); CAM3.want = false; GAME.view(ex, ey, r.z0 + 1.6, Math.atan2(p[0] - ex, p[1] - ey) * 180 / Math.PI, -18, 78); GAME.step(0.3); return 1; })()""")
                 shot(f'r_gerhard_{label}', {'house': 247, 'doing': g.get('doing')})
+                # sitting: where his knees and hips are – metres before the spot along his heading and above the floor (the seat's front edge
+                # at.front, its top at.seatTop): the legs belong in front of the couch, the thighs on its cushion
+                if (g.get('at') or {}).get('mode') == 'sit':
+                    kn = J("""(() => { const f = HGAST.f, at = f.at, a = at.hd * Math.PI / 180, dx = Math.sin(a), dy = Math.cos(a), out = {};
+                      f.g.traverse(o => { if (o.isBone && /Hips$|LeftLeg$|LeftFoot$/.test(o.name.replace(/_\\d+$/, ''))) { const v = o.getWorldPosition(new THREE.Vector3());
+                        out[o.name.replace(/^mixamorig:?/, '').replace(/_\\d+$/, '')] = [+(((v.x - at.x) * dx + (-v.z - at.y) * dy)).toFixed(3), +(v.y - at.z).toFixed(3)]; } });
+                      return { front: at.front ?? null, seatTop: at.seatTop, bones: out }; })()""")
+                    print('sitzt', label, json.dumps(kn), flush=True)
             ck(f'Gerhard at home ({label}): his figure where one is at that hour ({"/".join(want)})', g['fig'] and g.get('doing') in want, g)
             leave()
             mode('day')

@@ -547,6 +547,48 @@ export const HAEUSER = (() => {
     return 'tv';
   }
   const roomKind = (H, sp) => (H.rooms.find(r => r.id === sp.room) || {}).kind;
+  // the height of what one sits on at a spot: the top of the furniture under it (a ray down from a metre above the floor) – the kit's
+  // couches stand higher than today's sofas, and with one height for all the figure had sunk into the cushions to the waist
+  const _ray = new THREE.Raycaster(),
+    _down = new THREE.Vector3(0, -1, 0);
+  // the height above the floor z0 of the first thing under (x, y) – the laid-on light and shade left out; −1 where there is none
+  function heightAt(H, x, y, z0) {
+    _ray.set(new THREE.Vector3(x, z0 + 1.0, -y), _down);
+    _ray.far = 1.0;
+    const hit = _ray
+      .intersectObject(H.group, true)
+      .find(h => h.object.isMesh && !/schatten|fensterlicht/.test((h.object.material && h.object.material.name) || ''));
+    return hit ? 1.0 - hit.distance : -1;
+  }
+  function seatTop(H, s, def) {
+    try {
+      H.group.updateMatrixWorld(true);
+      const t = heightAt(H, s.pos[0], s.pos[1], s.pos[2]);
+      if (t > 0.3 && t < 0.68) return t - 0.015; // (a cushion gives a little)
+    } catch (e) {
+      console.warn('haeuser seat', e);
+    }
+    return def;
+  }
+  // how far before the spot the seat ends, along the way one faces (rays down every 5 cm): the knees go just over its edge – on a deep
+  // couch the legs had hung inside it
+  function seatFront(H, s, hd, top) {
+    try {
+      const a = (hd * Math.PI) / 180,
+        dx = Math.sin(a),
+        dy = Math.cos(a);
+      let seen = false;
+      for (let d = 0; d <= 0.8; d += 0.05) {
+        const h = heightAt(H, s.pos[0] + dx * d, s.pos[1] + dy * d, s.pos[2]),
+          on = Math.abs(h - top) < 0.09;
+        if (on) seen = true;
+        else if (seen) return d - 0.025;
+      }
+    } catch (e) {
+      console.warn('haeuser seat front', e);
+    }
+    return null;
+  }
   // the place for it: a spot of the house (kit: zombie/z_innen*.js) and how one is there
   function placeFor(H, what) {
     const sp = H.spots,
@@ -577,7 +619,15 @@ export const HAEUSER = (() => {
           hd: feet,
           mode: 'lie',
           head: [s.head[0] - f[0] * 0.05, s.head[1] - f[1] * 0.05],
-          duvet: { x: s.head[0] + f[0] * 0.3, y: s.head[1] + f[1] * 0.3, hd: feet, len: 1.5, w: 0.8, hex: 0xf1efe8 },
+          // (the bed linen by household: white, light blue, rose, sage – a white box under the night's lamp had glared)
+          duvet: {
+            x: s.head[0] + f[0] * 0.3,
+            y: s.head[1] + f[1] * 0.3,
+            hd: feet,
+            len: 1.5,
+            w: 0.9,
+            hex: [0xe9e4d8, 0xd5dee6, 0xe6d6cf, 0xdbe0cf][Math.floor(ZIPLAN.hh(H.id * 1.73 + 0.4) * 4) % 4],
+          },
         };
       }
     } else if (what === 'herd') {
@@ -592,8 +642,13 @@ export const HAEUSER = (() => {
           z: s.pos[2],
           hd: s.kind === 'tisch' ? s.yaw : (s.yaw + 180) % 360,
           mode: 'sit',
-          seatTop: s.kind === 'tisch' ? 0.48 : 0.47,
+          seatTop: seatTop(H, s, s.kind === 'tisch' ? 0.48 : 0.47),
         };
+      // (on a couch: where its seat ends before one – once per spot)
+      if (at && s.kind === 'sitz') {
+        if (s.front === undefined) s.front = seatFront(H, s, at.hd, at.seatTop + 0.015);
+        at.front = s.front;
+      }
     }
     return s && at ? { sp: s, at, what } : null;
   }

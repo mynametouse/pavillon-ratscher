@@ -638,50 +638,177 @@ export const ZIMOB = (() => {
     // kitchen (stube-13), a Thuringian Forest landscape
     bilder(q, w) {
       const S = w / 2;
+      // feat/innen-real: the two paintings painted, not drawn – layers far to near (paler and bluer with distance), soft clouds and mist,
+      // then a few thousand short strokes of the colour under them (the brushwork of an oil print); before, flat shapes like a comic
+      // a ridge from x0 to x1: its line at y = base + two waves, filled down to yb
+      const ridge = (x0, x1, base, amp, f, ph, col, yb) => {
+          q.fillStyle = col;
+          q.beginPath();
+          q.moveTo(x0, yb);
+          for (let x = x0; x <= x1 + 0.1; x += 3)
+            q.lineTo(x, base + Math.sin(x * f + ph) * amp + Math.sin(x * f * 2.7 + ph * 1.9) * amp * 0.35);
+          q.lineTo(x1, yb);
+          q.fill();
+          return x => base + Math.sin(x * f + ph) * amp + Math.sin(x * f * 2.7 + ph * 1.9) * amp * 0.35;
+        },
+        // spruces along a line: narrow dark triangles of varied height
+        spruces = (x0, x1, line, h0, h1, col, step) => {
+          for (let x = x0 - 4; x < x1 + 4; x += step * (0.6 + R0() * 0.8)) {
+            const y = line(x) + 2,
+              h = h0 + R0() * (h1 - h0),
+              b = h * 0.22;
+            q.fillStyle = col;
+            q.beginPath();
+            q.moveTo(x, y - h);
+            q.lineTo(x - b, y);
+            q.lineTo(x + b, y);
+            q.fill();
+          }
+        },
+        soft = (px, draw) => {
+          q.save();
+          q.filter = 'blur(' + px + 'px)';
+          draw();
+          q.restore();
+        },
+        // the brushwork: short strokes in the colour found under them, a little lighter or darker, mostly across
+        brush = (x0, y0, n, len, wid, steep) => {
+          const d = q.getImageData(x0, y0, S, S).data;
+          q.save();
+          q.beginPath();
+          q.rect(x0, y0, S, S);
+          q.clip();
+          q.lineCap = 'round';
+          for (let i = 0; i < n; i++) {
+            const x = R0() * S,
+              y = R0() * S,
+              k = ((y | 0) * S + (x | 0)) * 4,
+              j = (R0() - 0.5) * 22,
+              a = (steep && steep(x, y) ? Math.PI / 2 : 0) + (R0() - 0.5) * 0.7,
+              l = len * (0.5 + R0());
+            q.strokeStyle = `rgba(${Math.max(0, Math.min(255, d[k] + j)) | 0},${Math.max(0, Math.min(255, d[k + 1] + j)) | 0},${
+              Math.max(0, Math.min(255, d[k + 2] + j)) | 0
+            },0.55)`;
+            q.lineWidth = wid * (0.6 + R0() * 0.8);
+            q.beginPath();
+            q.moveTo(x0 + x - (Math.cos(a) * l) / 2, y0 + y - (Math.sin(a) * l) / 2);
+            q.lineTo(x0 + x + (Math.cos(a) * l) / 2, y0 + y + (Math.sin(a) * l) / 2);
+            q.stroke();
+          }
+          q.restore();
+        };
       {
-        const g = q.createLinearGradient(0, 0, 0, S);
-        g.addColorStop(0, '#e9a85a');
-        g.addColorStop(0.5, '#c86a3a');
-        g.addColorStop(1, '#3a3020');
+        // the roaring stag at sundown (Röhrender Hirsch, the print over many a couch): the sky, the sun behind the far hills, a lake, the
+        // forest, the stag on the meadow in front
+        const hz = S * 0.6;
+        const g = q.createLinearGradient(0, 0, 0, hz);
+        g.addColorStop(0, '#3b3a5c');
+        g.addColorStop(0.42, '#a8605c');
+        g.addColorStop(0.78, '#eea85e');
+        g.addColorStop(1, '#f6d58e');
         q.fillStyle = g;
         q.fillRect(0, 0, S, S);
-        q.fillStyle = '#20281a';
-        for (let i = 0; i < 12; i++) {
-          const x = i * 24 - 10,
-            y = 150 + (i % 3) * 8;
+        const sg = q.createRadialGradient(S * 0.64, hz - 6, 2, S * 0.64, hz - 6, S * 0.5);
+        sg.addColorStop(0, 'rgba(255,244,200,1)');
+        sg.addColorStop(0.12, 'rgba(255,220,150,0.7)');
+        sg.addColorStop(1, 'rgba(255,200,120,0)');
+        q.fillStyle = sg;
+        q.fillRect(0, 0, S, hz + 10);
+        soft(4, () => {
+          for (const [cx, cy, rx, ry, c] of [
+            [50, 46, 80, 9, 'rgba(110,70,96,0.6)'],
+            [190, 70, 90, 8, 'rgba(140,76,84,0.55)'],
+            [96, 104, 100, 7, 'rgba(236,150,104,0.55)'],
+            [210, 122, 60, 5, 'rgba(250,196,130,0.6)'],
+          ]) {
+            q.fillStyle = c;
+            q.beginPath();
+            q.ellipse(cx, cy, rx, ry, 0, 0, 6.3);
+            q.fill();
+          }
+        });
+        ridge(0, S, hz - 18, 9, 0.025, 1.3, '#8a6a86', hz + 2);
+        const mid = ridge(0, S, hz - 4, 6, 0.04, 0.2, '#4a4a5a', hz + 2);
+        spruces(0, S, mid, 8, 16, '#3c4048', 4);
+        // the lake: the sky upside down, darker, with ripples of light
+        const lg = q.createLinearGradient(0, hz, 0, S * 0.8);
+        lg.addColorStop(0, '#e8b070');
+        lg.addColorStop(1, '#6a4a5a');
+        q.fillStyle = lg;
+        q.fillRect(0, hz, S, S * 0.8 - hz);
+        for (let i = 0; i < 40; i++) {
+          const y = hz + 2 + R0() * (S * 0.8 - hz - 4),
+            x = S * 0.64 + (R0() - 0.5) * (30 + (y - hz) * 1.6);
+          q.fillStyle = `rgba(255,236,190,${0.25 + R0() * 0.4})`;
+          q.fillRect(x, y, 6 + R0() * 18, 1.4);
+        }
+        // the near forest down to the water on the left, mist over the shore
+        const near = ridge(0, S * 0.45, hz + 8, 10, 0.05, 2.2, '#1f2a22', S * 0.8);
+        spruces(0, S * 0.42, near, 30, 62, '#18221b', 7);
+        soft(5, () => {
+          q.fillStyle = 'rgba(250,226,190,0.45)';
+          q.fillRect(0, S * 0.76, S, 8);
+        });
+        // the meadow in front
+        const mg = q.createLinearGradient(0, S * 0.78, 0, S);
+        mg.addColorStop(0, '#5a4a2a');
+        mg.addColorStop(1, '#2a2416');
+        q.fillStyle = mg;
+        q.beginPath();
+        q.moveTo(0, S);
+        for (let x = 0; x <= S; x += 4) q.lineTo(x, S * 0.8 + Math.sin(x * 0.03) * 3);
+        q.lineTo(S, S);
+        q.fill();
+        // the stag: dark against the light water, head up, roaring
+        q.fillStyle = '#2a1a10';
+        q.beginPath();
+        q.ellipse(150, 196, 30, 13, -0.05, 0, 6.3);
+        q.fill();
+        for (const [x, d] of [
+          [128, 0],
+          [136, 4],
+          [162, 2],
+          [170, 5],
+        ]) {
           q.beginPath();
-          q.moveTo(x, y - 70);
-          q.lineTo(x - 16, y + 20);
-          q.lineTo(x + 16, y + 20);
+          q.moveTo(x - 3, 200);
+          q.lineTo(x + 3, 200);
+          q.lineTo(x + 2 + d * 0.3, 232);
+          q.lineTo(x - 1 + d * 0.3, 232);
           q.fill();
         }
-        q.fillStyle = '#4a3220';
-        q.fillRect(0, 200, S, 56);
-        q.fillStyle = '#5a3a22';
         q.beginPath();
-        q.ellipse(130, 175, 42, 20, 0, 0, 6.3);
+        q.moveTo(170, 192);
+        q.lineTo(184, 160);
+        q.lineTo(194, 150);
+        q.lineTo(204, 146);
+        q.lineTo(203, 154);
+        q.lineTo(194, 164);
+        q.lineTo(182, 200);
         q.fill();
-        q.fillRect(98, 180, 8, 40);
-        q.fillRect(150, 180, 8, 40);
-        q.fillRect(112, 185, 7, 38);
-        q.fillRect(140, 185, 7, 38);
-        q.beginPath();
-        q.moveTo(162, 168);
-        q.lineTo(188, 130);
-        q.lineTo(198, 138);
-        q.lineTo(176, 178);
-        q.fill();
-        q.strokeStyle = '#d8c8a0';
-        q.lineWidth = 3;
-        for (const sx of [-1, 1]) {
+        q.strokeStyle = '#3a2618';
+        q.lineCap = 'round';
+        q.lineWidth = 2.2;
+        for (const s of [-1, 1]) {
           q.beginPath();
-          q.moveTo(190, 128);
-          q.lineTo(190 + sx * 18, 100);
-          q.lineTo(190 + sx * 30, 92);
-          q.moveTo(190 + sx * 10, 112);
-          q.lineTo(190 + sx * 24, 112);
+          q.moveTo(193, 150);
+          q.quadraticCurveTo(186 + s * 6, 132, 176 + s * 16, 112);
+          q.moveTo(188 + s * 2, 136);
+          q.lineTo(196 + s * 10, 128);
+          q.moveTo(182 + s * 8, 124);
+          q.lineTo(190 + s * 18, 116);
+          q.moveTo(178 + s * 12, 116);
+          q.lineTo(170 + s * 18, 104);
           q.stroke();
         }
+        // its breath in the cold evening
+        soft(2, () => {
+          q.fillStyle = 'rgba(255,240,220,0.5)';
+          q.beginPath();
+          q.ellipse(212, 140, 8, 4, -0.6, 0, 6.3);
+          q.fill();
+        });
+        brush(0, 0, 5200, 7, 2.6, (x, y) => y > S * 0.62 && x < S * 0.42 && y < S * 0.78);
       }
       {
         q.fillStyle = '#efe6d0';
@@ -719,32 +846,87 @@ export const ZIMOB = (() => {
         }
       }
       {
-        const g = q.createLinearGradient(0, S, 0, 2 * S);
-        g.addColorStop(0, '#a8c8e0');
-        g.addColorStop(0.55, '#d8e4dc');
-        g.addColorStop(1, '#6a8a4a');
+        // a landscape of the Thuringian Forest: summer sky with clouds, blue ridges far off, the forest, a village with its church on the
+        // slope, fields and a path in front
+        const X = S,
+          Y = S,
+          g = q.createLinearGradient(0, Y, 0, Y + S * 0.55);
+        g.addColorStop(0, '#7fa6cf');
+        g.addColorStop(1, '#dfe8e6');
         q.fillStyle = g;
-        q.fillRect(S, S, S, S);
-        for (const [y, c] of [
-          [S + 120, '#5a7a5a'],
-          [S + 150, '#3f5f3f'],
-          [S + 185, '#2f4a2f'],
-        ]) {
-          q.fillStyle = c;
+        q.fillRect(X, Y, S, S);
+        soft(3, () => {
+          for (let i = 0; i < 7; i++) {
+            const cx = X + 20 + R0() * (S - 40),
+              cy = Y + 24 + R0() * 50;
+            for (let k = 0; k < 5; k++) {
+              q.fillStyle = `rgba(255,255,255,${0.5 + R0() * 0.35})`;
+              q.beginPath();
+              q.ellipse(cx + (k - 2) * 9, cy - (k % 2) * 5, 14 + R0() * 8, 7 + R0() * 4, 0, 0, 6.3);
+              q.fill();
+            }
+          }
+        });
+        ridge(X, X + S, Y + S * 0.48, 7, 0.03, 0.4, '#9aaec4', Y + S);
+        const r2 = ridge(X, X + S, Y + S * 0.55, 10, 0.026, 2.0, '#6f8a86', Y + S);
+        spruces(X, X + S, r2, 5, 10, '#55716a', 3);
+        const r3 = ridge(X, X + S, Y + S * 0.64, 12, 0.02, 4.1, '#3f5f3a', Y + S);
+        spruces(X, X + S * 0.55, r3, 10, 20, '#2f4a2c', 4);
+        // meadows and fields on the near slope
+        ridge(X, X + S, Y + S * 0.72, 8, 0.022, 1.0, '#8fae54', Y + S);
+        for (let i = 0; i < 9; i++) {
+          q.save();
+          q.translate(X + 20 + R0() * (S - 40), Y + S * 0.76 + R0() * S * 0.16);
+          q.rotate((R0() - 0.5) * 0.3);
+          q.fillStyle = R0() > 0.5 ? 'rgba(214,196,96,0.85)' : 'rgba(120,150,70,0.8)';
+          q.fillRect(-22, -5, 44 + R0() * 20, 10 + R0() * 6);
+          q.restore();
+        }
+        // the village: white walls, red roofs, the church tower with its slate spire
+        const vx = X + S * 0.62,
+          vy = Y + S * 0.7;
+        for (let i = 0; i < 7; i++) {
+          const x = vx + (i - 3) * 11 + R0() * 4,
+            y = vy + (i % 3) * 4;
+          q.fillStyle = '#efe8da';
+          q.fillRect(x, y, 9, 6);
+          q.fillStyle = '#a8442e';
           q.beginPath();
-          q.moveTo(S, 2 * S);
-          for (let x = 0; x <= S; x += 8) q.lineTo(S + x, y + Math.sin(x * 0.03 + y) * 14);
-          q.lineTo(2 * S, 2 * S);
+          q.moveTo(x - 1.5, y);
+          q.lineTo(x + 4.5, y - 5);
+          q.lineTo(x + 10.5, y);
           q.fill();
         }
-        q.fillStyle = '#e8e0d0';
-        q.fillRect(S + 150, S + 160, 26, 18);
-        q.fillStyle = '#9a3a2a';
+        q.fillStyle = '#f2ecdf';
+        q.fillRect(vx + 2, vy - 16, 6, 18);
+        q.fillStyle = '#4a4e58';
         q.beginPath();
-        q.moveTo(S + 146, S + 160);
-        q.lineTo(S + 163, S + 146);
-        q.lineTo(S + 180, S + 160);
+        q.moveTo(vx + 1, vy - 16);
+        q.lineTo(vx + 5, vy - 30);
+        q.lineTo(vx + 9, vy - 16);
         q.fill();
+        // round trees by the path, the path itself
+        q.strokeStyle = '#d8c69a';
+        q.lineWidth = 5;
+        q.beginPath();
+        q.moveTo(X + S * 0.3, Y + S);
+        q.quadraticCurveTo(X + S * 0.42, Y + S * 0.86, X + S * 0.58, Y + S * 0.76);
+        q.stroke();
+        for (const [tx, ty, r] of [
+          [X + 30, Y + S * 0.84, 16],
+          [X + 52, Y + S * 0.88, 12],
+          [X + S - 40, Y + S * 0.9, 20],
+        ]) {
+          q.fillStyle = '#4a3a2a';
+          q.fillRect(tx - 1.5, ty, 3, r * 0.9);
+          for (let k = 0; k < 6; k++) {
+            q.fillStyle = k % 2 ? '#3f6a32' : '#57843e';
+            q.beginPath();
+            q.arc(tx + (R0() - 0.5) * r, ty - (R0() * r) / 2, r * (0.5 + R0() * 0.3), 0, 6.3);
+            q.fill();
+          }
+        }
+        brush(X, Y, 5200, 6, 2.4, null);
       }
     },
     // feat/innen-real: a blurred square for the laid-on shade: full in the middle half, falling off smoothly over the outer quarters
@@ -783,6 +965,91 @@ export const ZIMOB = (() => {
   };
   // ---- materials (made at the first mount; the same shader settings as materials the model has already: no new programs) ----
   const M = { ready: false };
+  // feat/innen-real: woodchip paper (Raufaser), drawn once: chips of 1–4 mm scattered over a tile of half a metre (seamless), their
+  // shoulders softened; the colour a faint shading of the chips, the relief a normal map made from their heights (512² each, ≈ 3 MB
+  // with mipmaps; on a phone 256² over a quarter of a metre, < 1 MB; freed with the kit's other drawn textures)
+  let RFT = null;
+  function woodchip() {
+    if (RFT) return RFT;
+    const small = COARSE || (window.TEXHALF && window.TEXHALF.level > 0),
+      W = small ? 256 : 512,
+      cv = document.createElement('canvas');
+    cv.width = cv.height = W;
+    const q = cv.getContext('2d');
+    q.fillStyle = '#000';
+    q.fillRect(0, 0, W, W);
+    for (let i = 0, n = (22000 * W * W) / (512 * 512); i < n; i++) {
+      const x = R0() * W,
+        y = R0() * W,
+        rx = 0.6 + R0() * 1.7,
+        ry = rx * (0.35 + R0() * 0.65),
+        a = R0() * Math.PI,
+        v = (90 + R0() * 165) | 0;
+      q.fillStyle = `rgb(${v},${v},${v})`;
+      for (const ox of [-W, 0, W])
+        for (const oy of [-W, 0, W]) {
+          const px = x + ox,
+            py = y + oy;
+          if (px < -4 || px > W + 4 || py < -4 || py > W + 4) continue;
+          q.beginPath();
+          q.ellipse(px, py, rx, ry, a, 0, 6.3);
+          q.fill();
+        }
+    }
+    const d = q.getImageData(0, 0, W, W).data,
+      raw = new Float32Array(W * W),
+      h = new Float32Array(W * W),
+      at = (x, y) => ((y + W) % W) * W + ((x + W) % W);
+    for (let i = 0; i < W * W; i++) raw[i] = d[i * 4] / 255;
+    for (let y = 0; y < W; y++)
+      for (let x = 0; x < W; x++) {
+        let s = 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) s += raw[at(x + dx, y + dy)];
+        h[y * W + x] = s / 9;
+      }
+    const image = fill => {
+        const c = document.createElement('canvas');
+        c.width = c.height = W;
+        const g = c.getContext('2d'),
+          img = g.createImageData(W, W);
+        fill(img.data);
+        g.putImageData(img, 0, 0);
+        return c;
+      },
+      tex = (c, srgb) => {
+        const t = new THREE.CanvasTexture(c);
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+        t.anisotropy = ANISO;
+        t.repeat.set(1024 / W, 1024 / W); // (half a metre per tile – a quarter on a phone: a pixel a millimetre)
+        TEX.push(t);
+        return t;
+      };
+    let lin = 0;
+    const col = image(o => {
+        for (let i = 0; i < W * W; i++) {
+          const v = Math.round(232 + h[i] * 16);
+          o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = v;
+          o[i * 4 + 3] = 255;
+          lin += Math.pow((v / 255 + 0.055) / 1.055, 2.4);
+        }
+      }),
+      K = 2.2,
+      nrm = image(o => {
+        for (let y = 0; y < W; y++)
+          for (let x = 0; x < W; x++) {
+            const i = y * W + x,
+              gx = (h[at(x + 1, y)] - h[at(x - 1, y)]) * K,
+              gy = (h[at(x, y + 1)] - h[at(x, y - 1)]) * K,
+              l = Math.hypot(gx, gy, 1);
+            o[i * 4] = Math.round((-gx / l) * 127.5 + 127.5);
+            o[i * 4 + 1] = Math.round((gy / l) * 127.5 + 127.5);
+            o[i * 4 + 2] = Math.round((1 / l) * 127.5 + 127.5);
+            o[i * 4 + 3] = 255;
+          }
+      });
+    return (RFT = { map: tex(col, true), nrm: tex(nrm, false), mean: lin / (W * W) });
+  }
   function mats() {
     if (M.ready) return M;
     const T = (name, w, h, mx, my, srgb) => scaled(ctex(w, h, DRAW[name], srgb), mx, my);
@@ -799,9 +1066,16 @@ export const ZIMOB = (() => {
       const key = 'rf' + hex;
       if (M[key]) return M[key];
       const m = twin(plasIn),
-        c = new THREE.Color(hex);
-      m.color.setRGB(c.r / PLAS[0], c.g / PLAS[1], c.b / PLAS[2]);
-      m.normalScale.set(0.3, 0.3);
+        c = new THREE.Color(hex),
+        T = m.map && m.normalMap ? woodchip() : null;
+      // (the paper's own chips in the slots of the plaster's photo – same program; the photo's weather streaks had shown on every wall)
+      if (T) {
+        m.map = T.map;
+        m.normalMap = T.nrm;
+      }
+      const A = T ? [T.mean, T.mean, T.mean] : PLAS;
+      m.color.setRGB(c.r / A[0], c.g / A[1], c.b / A[2]);
+      m.normalScale.set(0.5, 0.5);
       m.userData.look = c; // (its colour for the light thrown back – daylight())
       m.name = 'innen-raufaser';
       if (M.bounce) {

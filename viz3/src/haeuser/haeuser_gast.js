@@ -72,9 +72,11 @@ export const HGAST = (() => {
     g.add(inner);
     inner.add(model);
     prepModel(model, p.h);
-    let hips = null;
+    let hips = null,
+      knee = null;
     model.traverse(x => {
       if (x.isBone && !hips && canonBone(x.name) === 'Hips') hips = x;
+      if (x.isBone && !knee && canonBone(x.name) === 'LeftLeg') knee = x;
     });
     // feat/innen-real: the pose by what one is doing – sitting, standing at the stove with the hands busy ('interactLoop'), lying
     const mixer = new THREE.AnimationMixer(model),
@@ -97,7 +99,14 @@ export const HGAST = (() => {
       hips.getWorldPosition(_v);
       g.worldToLocal(_v);
       pz = at.z + (at.seatTop ?? 0.47) + 0.07 - _v.y;
-      const fw = -_v.z + 0.04;
+      let fw = -_v.z + 0.04;
+      // feat/innen-real: where the seat's front edge is known (a couch: at.front metres before the spot), the knees just over it – the
+      // legs hang in front of the couch, not in it (the hips stay between 15 cm behind and 25 cm before the spot)
+      if (at.front != null && knee) {
+        const k = knee.getWorldPosition(new THREE.Vector3());
+        g.worldToLocal(k);
+        fw = Math.min(-_v.z + 0.15, Math.max(-_v.z - 0.25, -k.z - (at.front + 0.03)));
+      }
       px -= Math.sin(a) * fw;
       py -= Math.cos(a) * fw;
     }
@@ -129,14 +138,17 @@ export const HGAST = (() => {
     let duvet = null;
     if (at.mode === 'lie' && at.duvet) {
       try {
-        const m = new ZIMOB.Mesher(null, { soft: true }),
+        const m = new ZIMOB.Mesher(null, { soft: true, pal: ZIMOB.M.palIn || null }), // (the room's palette: the room around it, not the sky)
           d = at.duvet,
           L = d.len || 1.55,
-          W = d.w || 0.85,
+          W = d.w || 0.95,
           zz = at.z + 0.01;
         duvet = new THREE.Group();
-        // (thick enough to lie over the body: its top a good 30 cm over the mattress, higher in the middle)
-        m.box(ZIMOB.col(d.hex || 0xf2f0ea, 0.95), -W / 2, W / 2, 0, L, zz, zz + 0.3, { puff: 0.06 });
+        // (spread flat over the mattress, and over the body a long soft hill 26 cm high – one box over everything had stood on the bed
+        // like a white chest)
+        const cloth = ZIMOB.col(d.hex || 0xe9e4d8, 0.95);
+        m.box(cloth, -W / 2, W / 2, 0, L, zz, zz + 0.07, { r: 0.03 });
+        m.box(cloth, -0.24, 0.24, 0.02, L - 0.12, zz + 0.02, zz + 0.23, { r: 0.1, puff: 0.035 });
         m.finish(duvet, false);
         const sh = V(d.x, d.y, 0);
         duvet.position.set(sh.x, 0, sh.z);

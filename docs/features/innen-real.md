@@ -23,7 +23,9 @@ dieselben Räume „nachher“: `out/innen_real/nachher/`. Was ein Fremder sofor
 7. **Räume, die es so nicht gibt**: in den langen Bauernhäusern (bis 22 m tief) ein Bad mit 22 m², Schlafzimmer 8 m lang.
 8. **Lampenschirme** als Kristalle mit zwölf Kanten.
 9. **Leere Häuser**: der Bewohner saß zu jeder Stunde auf dem Sofa (oder schlief unsichtbar).
-10. Weiter offen (siehe unten): flache Wandbilder im Comicstil, Pflanzen aus wenigen Blättern, das Fensterlicht ohne Lichtfleck.
+10. Flache Wandbilder im Comicstil, Topfpflanzen als grüne Kristalle mit roter Kappe, kein Lichtfleck vor den Fenstern, Brettstühle aus
+    vier Stöcken und einer Planke (am Tisch seitlich stehend), Sofakissen als drei Rollen, Häkeldeckchen, die über der Lehne in der Luft
+    standen, der Bewohner bis zur Hüfte im Sofa, die Bettdecke über dem Schlafenden eine weiße Kiste.
 
 ## 2 Was jetzt anders ist
 
@@ -55,9 +57,11 @@ dieselben Räume „nachher“: `out/innen_real/nachher/`. Was ein Fremder sofor
   Edelstahl (alt: Messing). Die **Haustür** von innen: in den Häusern von heute weiß oder anthrazit mit Milchglasstreifen, sonst die
   Holztür mit Füllungen; Langschild mit Drücker und Schließzylinder.
 - **Treppe** im Erdgeschoss unten geschlossen: verputzte Untersicht und das Dreieck unter der offenen Seite (mit Sockelleiste).
-- **Wände mit Raufaser**: gestrichene Wände über Raufaser, wie in den meisten deutschen Zimmern – das Foto des Putzes des Pavillons mit
-  leichtem Relief, auf die Farbe der Wand getönt (`M.raufaser(hex)`, im Programm der Gartenhaus-Böden: kein neues); vorher sahen die Wände
-  aus wie Pappe. Auch die farbigen Wände von heute (getauscht wie der Boden).
+- **Wände mit Raufaser**: gestrichene Wände über Raufaser, wie in den meisten deutschen Zimmern (`M.raufaser(hex)`, auf die Farbe der
+  Wand getönt; auch die farbigen Wände von heute, getauscht wie der Boden). Die Raufaser ist gezeichnet: 22 000 Holzspäne von 1–4 mm auf
+  einer nahtlosen Kachel von einem halben Meter, die Kanten weich, daraus Farbe (die Späne kaum heller) und Relief (Normalen) – je 512²,
+  am Telefon 256² auf einem Viertelmeter; in den Fächern des Putz-Materials, also dessen Programm (kein neues). Prüflauf 4 hatte noch das
+  Foto des Außenputzes des Pavillons: seine Wetterstreifen und Flecken auf jeder Wand sahen nach altem Putz aus; vorher (ohne) wie Pappe.
 - **Böden aus echter Eiche**: Laminat/Parkett aus dem Foto der Eiche des Pavillons (mit Relief), im Programm der Böden der Gartenhäuser;
   vier Töne (hell, natur, grau, dunkel) – je Haus einer aus seiner Nummer (`haeuser/haeuser.js` `floors`: tauscht vor jedem Haus den Boden
   in der Materialtafel von `HHEUTE`; der Baukasten selbst für „nachwende“).
@@ -83,13 +87,28 @@ dieselben Räume „nachher“: `out/innen_real/nachher/`. Was ein Fremder sofor
 - **Alltag nach Haushalt** (`ZIEINR.L.alltag`, aus dem Zufall des Hauses): Schuhe neben der Haustür (Kinderschuhe in Familien), ein
   Getränkekasten in der Küche, der Wäschekorb im Schlaf- oder Badezimmer, Bauklötze und ein Ball im Kinderzimmer (manchmal im
   Wohnzimmer).
+- **Gemalte Bilder** (`ZIMOB` `DRAW.bilder`): der Röhrende Hirsch und die Thüringer-Wald-Landschaft in Schichten von fern (blasser,
+  bläulicher) nach nah, mit weichen Wolken und Dunst, Wald aus Fichten, See mit Lichtreflexen, Dorf mit Kirche, und darüber ein paar
+  tausend kurze Pinselstriche in der Farbe darunter – wie ein Öldruck; vorher flache Formen. (Die Drucke von heute in `haeuser_heute.js` –
+  abstrakte Formen, Strichzeichnungen – sind, was 2026 an solchen Wänden hängt.)
+- **Topfpflanzen** (`ZIEINR.DK.pflanze`, auf den Fensterbrettern aller Häuser): die Geranie ein Busch aus zwölf runden, nach außen
+  gekippten Blättern mit drei Dolden auf Stielen, die Grünlilie überhängende Blattbänder grün und hell, Erde im Topf; vorher ein grüner
+  Kegel mit roter Kappe.
+- **Stühle** (`ZIEINR.L.chair`): wie ein Tischler sie baut – Sitz auf einer Zarge, Streben unten, die Hinterbeine gehen in die Lehne über;
+  in alten Häusern ein Lehnbrett, sonst drei Sprossen. Die Stühle am Küchentisch mit der Eckbank stehen jetzt zum Tisch (vorher seitlich).
+- **Sofa der DDR**: Kissen mit Knick aus zwei Hälften (vorher drei Rollen), das Häkeldeckchen liegt über der Lehne und hängt vorn mit
+  gezacktem Saum herab (`L.ueberwurf`; vorher eine flache Scheibe, die über der gerundeten Lehne in der Luft stand).
+- **Lichtfleck** vor jedem Fenster bei Tag: ein weicher heller Fleck auf dem Boden, 0,6–1,4 m in den Raum, im Material und Netz des
+  Fensterschleiers (keine Draw-Call), nachts weg.
 - **Lampenschirme rund** (22 Segmente statt 12). Das Tageslicht-Fülllicht (geliehen) 1,3 m vor dem Fenster in Sturzhöhe (vorher 1 m in
   halber Höhe: sein Glanzpunkt saß auf Duschglas und Spiegeln wie eine Glühbirne). Der Badeofen aus Kupfer mit Nähten statt eines
   orangefarbenen Zylinders.
 - **Die Bewohner nach der Uhr** (`haeuser/haeuser.js` `doing`, `haeuser/haeuser_gast.js`): 6:30–8 Frühstück am Küchentisch, vormittags
   Sofa oder Tisch mit der Zeitung, 11:30–12:30 **am Herd** (stehend, die Hände bei der Arbeit – `interactLoop`), Mittag am Tisch,
   nachmittags Sofa, 17:30–18:30 wieder am Herd, Abendbrot am Tisch, ab 19:15 **Sofa mit laufendem Fernseher**, nachts **im Bett unter der
-  Decke** (Schlafpose `lie`, der Körper vom Kissen zum Fußende gedreht, die Decke darüber); geht die Stunde weiter, solange man drin ist,
+  Decke** (Schlafpose `lie`, der Körper vom Kissen zum Fußende gedreht, die Decke darüber – 28 cm hoch, bis zur Matratze gerundet, in der
+  Bettwäsche des Haushalts: weiß, hellblau, rosé oder salbei); **sitzend auf der Höhe des Polsters** (ein Strahl von oben findet die
+  Sitzfläche: die Couch der DDR ist höher als ein Sofa von heute – vorher saß Gerhard bis zur Hüfte im Kissen); geht die Stunde weiter, solange man drin ist,
   wechseln sie den Platz; „… grüßen“ nicht, solange einer schläft. Nachts brennt im Raum, in dem sie sind, das Licht. Getestet an Gerhard
   (247) um 14, 11:40, 19:30 und 23 Uhr (`out/innen_real/<tag>/r_gerhard_{nachmittag,mittag,abend,nacht}.jpg`).
 - **Prüfung** (`ZINNEN` `H.survey()`): Küche mit Spüle und Herd, Bad mit WC und Waschbecken, Bett in jedem Schlafzimmer, Haustür in den Flur,
@@ -110,9 +129,19 @@ Bildes; der Vergleich oben druckt sie):
 
 | Haus | Draw-Calls vorher → nachher | Dreiecke vorher → nachher |
 |---|---|---|
-| Ratscher 4004 (heute) | 29 → 33 | 11 300 → 18 400 |
-| Ratscher 247 Gerhard (heute-ddr) | 33 → 39 | 19 500 → 29 600 |
-| Ratscher 219 Manfred (heute-90) | 33 → 39 | 18 500 → 41 200 |
+| Ratscher 4004 (heute, Szene) | 29 → 34 | 11 300 → 20 300 |
+| Ratscher 247 Gerhard (heute-ddr) | 33 → 38 | 19 500 → 28 800 |
+| Ratscher 219 Manfred (heute-90) | 33 → 40 | 18 500 → 40 600 |
+| Ratscher 189 (alt) | 30 → 32 | 14 000 → 21 500 |
+| Ratscher 253 (heute, das größte) | 46 → 56 | 38 700 → 90 500 |
+| Ratscher 281 (heute, das kleinste) | – → 21 | – → 10 200 |
+| Schleusingen 900244 (Szene) | 39 → 41 | 18 100 → 38 200 |
+| Schleusingen 900462 (heute-ddr) | 44 → 46 | 17 000 → 39 100 |
+| Schleusingen 900245 (heute) | 36 → 38 | 19 000 → 40 500 |
+
+(nachher: Prüflauf 4 der Feature-CI, `1af25e80`; der Durchgang aller 230 Häuser in `haeuser:bilder=1`, Prüflauf 5: höchstens 60
+Draw-Calls – über 60 lässt ein Haus erst den Fensterschleier, dann den Schatten-Saum weg –, höchstens 116 000 Dreiecke, Bauzeit im Mittel
+175 ms, höchstens 686 ms.)
 
 Mehr Draw-Calls: der Schatten-Saum und der Fensterschleier (je +1; ein Haus über 60 lässt erst den Schleier, dann den Saum weg), neue
 Bäder mit ihren Fliesen (wo vorher keins war), mehr Türen, wo Räume geteilt wurden. Das
@@ -120,7 +149,9 @@ ganze Bild (Haus und was durch die Fenster zu sehen ist, SwiftShader, Stufe „m
 609 000 → 635 000, Zeit je Bild 13,0 → 9,8 s (auf der geteilten Maschine schwankend – kein Rückschritt). Neue Shader-Programme: zwei,
 beide nur im normalen Spiel und beim ersten Haus hinter dem Schwarz übersetzt (`HAEUSER` `warmLooks`): der Schatten-Saum (Basic mit
 Alpha-Karte) und das Material, mit dem `PMREM` das Zimmer einmal zeichnet; die Innen-Palette und das Eichenparkett sind Zwillinge
-vorhandener Programme. Keine neuen Lichter. Am Telefon keine Zimmer-Umgebung (6 MB gespart), dafür der Himmel mit 60 %.
+vorhandener Programme. Keine neuen Lichter. Am Telefon keine Zimmer-Umgebung (6 MB gespart), dafür der Himmel mit 60 %. Neue Texturen:
+die Raufaser (Farbe und Relief je 512², ≈ 3 MB mit Mipmaps; am Telefon 256², < 1 MB), gezeichnet beim ersten Haus, frei mit dem Baukasten.
+Mehr Dreiecke vor allem durch die gerundeten Polster, Pflanzen und Stühle – im Möbel-Netz, ohne Draw-Call.
 
 ## 5 Testen
 
@@ -136,7 +167,10 @@ vorhandener Programme. Keine neuen Lichter. Am Telefon keine Zimmer-Umgebung (6 
   `schleusingen_innen` (zwei Hälften), `zombie_innen`, `memphone`. Prüfläufe: 1 (9d78fe66) alles grün außer `innen_real:schleusingen`
   (eine Küche ohne Spüle – behoben), 2 (826e8109) grün außer `innen_real` (ein kleines Haus ohne Bad, ein Treppenhaus mit falsch
   gezählten Fenstern – beides behoben), 3 (957b859c) grün außer dem kleinen Haus 281 (Küche ohne Zeile, Schlafzimmer ohne Bett – behoben),
-  4 (1af25e80) grün außer Gerhard nachts (sein Haus hatte kein Schlafzimmer mehr: die Teilung war zu streng – behoben), 5 siehe Bericht.
+  4 (1af25e80) grün außer Gerhard nachts (sein Haus hatte kein Schlafzimmer mehr: die Teilung war zu streng – behoben), 5 (83754066)
+  **alles grün** (der Stand zum Zusammenführen um 17:30; `haeuser:bilder=1` 35/35, Durchgang aller 230 Häuser: höchstens 60 Draw-Calls,
+  116 000 Dreiecke, Bauzeit im Mittel 175 ms). Danach Stufe 2 (siehe oben: Bilder, Pflanzen, Stühle, Sofa, Bettdecke, Sitzhöhe,
+  Lichtfleck, gezeichnete Raufaser) – Prüflauf 6.
 
 ## 6 Für den Lead
 

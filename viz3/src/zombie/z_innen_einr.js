@@ -301,8 +301,9 @@ export const ZIEINR = (() => {
       tw = Math.min(1.25, LA - 0.7),
       td = 0.8;
     L.table(C, F, tu, tu + tw, tv, tv + td, wood, C.look === 'ddr' ? M.tischdecke : C.R.chance(0.6) ? M.karo : null);
-    L.chair(C, F, tu + tw * 0.3, tv + td + 0.32, Math.PI, wood);
-    L.chair(C, F, tu + tw * 0.75, tv + td + 0.32, Math.PI, wood);
+    // (feat/innen-real: facing the table – they had stood sideways to it)
+    L.chair(C, F, tu + tw * 0.3, tv + td + 0.32, -Math.PI / 2, wood);
+    L.chair(C, F, tu + tw * 0.75, tv + td + 0.32, -Math.PI / 2, wood);
     C.spot('tisch', F.P(tu + tw / 2, tv + td + 0.55, z), F, null);
     C.seat(F.P(u0 + LA * 0.6, 0.25, z), F, 'Auf die Eckbank setzen');
     C.solid(F.rect(u0, u0 + LA, 0, 0.48), z, z + 0.92);
@@ -329,26 +330,42 @@ export const ZIEINR = (() => {
     if (u1 - u0 > 0.6) top(C, F, u0 + 0.15, u1 - 0.15, (v0 + v1) / 2, z + (cloth ? 0.768 : 0.76), 'tisch');
   };
   // a board chair (Brettstuhl) at (u, v) facing angle a (radians in the item frame: 0 = +u, π/2 = +v)
+  // (feat/innen-real: a chair as a joiner builds it – the seat on a frame (Zarge) between the legs, stretchers low down, the back legs going
+  // on up as the posts of the back; the back a shaped board in the old houses, three slats in the others; before, a seat on four sticks
+  // and a plank as wide as the seat)
   L.chair = (C, F, u, v, a, wood) => {
     const m = C.m,
       z = C.z,
       c = Math.cos(a),
       s = Math.sin(a),
-      Q = (du, dv) => [u + du * c - dv * s, v + du * s + dv * c];
-    const p = F.P(u, v, 0),
-      ang = Math.atan2(F.a[1], F.a[0]) + a;
-    m.box(wood, p[0] - 0.2, p[0] + 0.2, p[1] - 0.2, p[1] + 0.2, z + 0.43, z + 0.47, { a: ang });
+      Q = (du, dv) => [u + du * c - dv * s, v + du * s + dv * c],
+      // (the heading of its front in the house, from two points – whichever way round the frame's axes are)
+      f0 = F.P(...Q(0, 0), 0),
+      f1 = F.P(...Q(1, 0), 0),
+      ang = Math.atan2(f1[1] - f0[1], f1[0] - f0[0]),
+      // a board centred at (du, dv) of the chair: half sizes hu (towards its front) and hv (across), from za to zb
+      bd = (du, dv, hu, hv, za, zb) => {
+        const q = F.P(...Q(du, dv), 0);
+        m.box(wood, q[0] - hu, q[0] + hu, q[1] - hv, q[1] + hv, z + za, z + zb, { a: ang });
+      };
+    bd(0.005, 0, 0.205, 0.2, 0.43, 0.465); // the seat
     for (const [du, dv] of [
       [-0.17, -0.17],
       [-0.17, 0.17],
       [0.17, -0.17],
       [0.17, 0.17],
-    ]) {
-      const q = F.P(...Q(du, dv), 0);
-      m.box(wood, q[0] - 0.02, q[0] + 0.02, q[1] - 0.02, q[1] + 0.02, z, z + 0.43);
+    ])
+      bd(du, dv, 0.018, 0.018, 0, 0.43);
+    // the frame under the seat and the stretchers
+    for (const sg of [-1, 1]) {
+      bd(sg * 0.17, 0, 0.01, 0.15, 0.36, 0.43);
+      bd(0, sg * 0.17, 0.15, 0.01, 0.36, 0.43);
+      bd(0, sg * 0.17, 0.15, 0.008, 0.13, 0.16);
     }
-    const bk = F.P(...Q(-0.19, 0), 0);
-    m.box(wood, bk[0] - 0.02, bk[0] + 0.02, bk[1] - 0.19, bk[1] + 0.19, z + 0.47, z + 0.95, { a: ang });
+    // the back: its two posts and a board or slats
+    for (const sg of [-1, 1]) bd(-0.175, sg * 0.17, 0.017, 0.017, 0.465, 0.93);
+    if (C.look === 'alt') bd(-0.175, 0, 0.012, 0.15, 0.6, 0.9);
+    else for (const zz of [0.62, 0.74, 0.86]) bd(-0.175, 0, 0.01, 0.155, zz, zz + 0.055);
   };
   // the kitchen dresser (Küchenbüfett, stube-8/14): base with two doors and two drawers, a set-back top with glass doors, tins on top
   L.buefett = (C, F, label) => {
@@ -783,14 +800,17 @@ export const ZIEINR = (() => {
     top(C, F, u0 + 0.45, u0 + w / 2 - 0.14, (tv0 + tv1) / 2, z + 0.505, 'couchtisch');
     top(C, F, u0 + w / 2 + 0.14, u0 + w - 0.45, (tv0 + tv1) / 2, z + 0.505, 'couchtisch');
     // cushions with the chop in the top (the 'Knick') against the back; doilies over the back in the DDR
+    // (feat/innen-real: one cushion, its two upper corners standing up as ears with the chop between them; three pieces side by side
+    // had become three rolls once soft, two halves two pillows)
     const kis = C.col(C.R.pick([0xc8a050, 0x7a2a2a, 0x3a5a7a, 0xd8c8a8, 0x5a6a3a]), 0.95);
     for (const cu of [u0 + 0.38, u0 + w - 0.38]) {
-      F.box(m, kis, cu - 0.2, cu - 0.03, 0.24, 0.36, z + 0.52, z + 0.9);
-      F.box(m, kis, cu + 0.03, cu + 0.2, 0.24, 0.36, z + 0.52, z + 0.9);
-      F.box(m, kis, cu - 0.03, cu + 0.03, 0.25, 0.35, z + 0.52, z + 0.8);
+      F.box(m, kis, cu - 0.21, cu + 0.21, 0.24, 0.37, z + 0.52, z + 0.83, { r: 0.06, puff: 0.025 });
+      for (const sg of [-1, 1])
+        F.box(m, kis, cu + (sg < 0 ? -0.21 : 0.07), cu + (sg < 0 ? -0.07 : 0.21), 0.25, 0.36, z + 0.76, z + 0.9, {
+          r: 0.045,
+        });
     }
-    if (C.look === 'ddr')
-      for (const k of [0.3, 0.7]) L.deckchen(C, ...F.P(u0 + w * k, 0.12, 0).slice(0, 2), z + 0.822, 0.15);
+    if (C.look === 'ddr') for (const k of [0.3, 0.7]) L.ueberwurf(C, F, u0 + w * k, 0.24, z + 0.82);
     // two armchairs facing the couch's ends
     // (feat/innen-real: an armchair as it is built – short wooden legs, an upholstered base, a seat cushion between the two arms, the
     // back with its cushion; before, a block with a slab at its back)
@@ -1192,6 +1212,50 @@ export const ZIEINR = (() => {
         [x + Math.cos(a0) * rr, y + Math.sin(a0) * rr, z],
         [x + Math.cos(a1) * rr, y + Math.sin(a1) * rr, z],
         [0, 0, 1]
+      );
+    }
+  };
+  // feat/innen-real: a doily laid over the back of a couch (Schondeckchen): flat on its top, round over its edge, hanging down its
+  // front with a scalloped hem – the back (v 0..vb, its top at zt) has the soft box's rounded edge (r); a flat disc on it had stood out
+  // over the rounded back like a sheet of paper in the air
+  L.ueberwurf = (C, F, u, vb, zt, hw = 0.15, drop = 0.19, r = 0.055) => {
+    const m = C.m,
+      w = C.col(0xf6f2e8, 0.95),
+      e = 0.005,
+      N = (nv, nz) => [nv * F.n[0], nv * F.n[1], nz],
+      arc = [[vb - r - 0.11, zt + e]];
+    for (let k = 1; k <= 3; k++) {
+      const a = (k / 3) * (Math.PI / 2);
+      arc.push([vb - r + Math.sin(a) * (r + e), zt - r + Math.cos(a) * (r + e)]);
+    }
+    arc.push([vb + e, zt - drop]);
+    for (let i = 0; i + 1 < arc.length; i++) {
+      const [v0, z0] = arc[i],
+        [v1, z1] = arc[i + 1],
+        L = Math.hypot(v1 - v0, z1 - z0) || 1;
+      m.quad(
+        w,
+        F.P(u - hw, v0, z0),
+        F.P(u + hw, v0, z0),
+        F.P(u + hw, v1, z1),
+        F.P(u - hw, v1, z1),
+        N(-(z1 - z0) / L, (v1 - v0) / L)
+      );
+    }
+    // the hem: little points hanging below the edge
+    const n = 8,
+      zb = zt - drop,
+      vh = vb + e;
+    for (let k = 0; k < n; k++) {
+      const a = u - hw + (k * 2 * hw) / n,
+        b = a + (2 * hw) / n;
+      m.quad(
+        w,
+        F.P(a, vh, zb),
+        F.P(b, vh, zb),
+        F.P((a + b) / 2, vh, zb - 0.022),
+        F.P((a + b) / 2, vh, zb - 0.022),
+        N(1, 0)
       );
     }
   };
@@ -2104,48 +2168,113 @@ export const ZIEINR = (() => {
   };
   // a house plant: a geranium, a spider plant (Grünlilie) or a cactus (on the sills of the DDR)
   DK.pflanze = (C, x, y, z, kind) => {
-    const m = C.m;
-    m.cyl(C.col(0xb4653f, 0.88), x, y, z, z + 0.12, 0.055, 0.07, 8);
+    const m = C.m,
+      R = C.R;
+    m.cyl(C.col(0xb4653f, 0.88), x, y, z, z + 0.12, 0.055, 0.07, 10);
+    m.cyl(C.col(0x3a2a1c, 0.95), x, y, z + 0.1, z + 0.105, 0.064, 0.064, 10); // (the soil)
+    // feat/innen-real: plants of leaves – a geranium a bush of round leaves facing out and up, with three umbels of flowers on stalks;
+    // a spider plant arching ribbons, green and pale; before, a green cone with a red cap (a crystal more than a plant)
     if (kind === 'gruenlilie') {
-      for (let k = 0; k < 9; k++) {
-        const a = (k / 9) * Math.PI * 2,
-          l = 0.16 + (k % 3) * 0.04;
-        m.rod(
-          C.col(k % 2 ? 0x6a9a3a : 0xd8e0b0, 0.8),
-          [x, y, z + 0.11],
-          [x + Math.cos(a) * l, y + Math.sin(a) * l, z + 0.2 - (k % 3) * 0.05],
-          0.006,
-          3
-        );
+      const green = C.col(0x5f8f3a, 0.8),
+        pale = C.col(0xc8d8a0, 0.8),
+        n = 13;
+      for (let k = 0; k < n; k++) {
+        const a = (k / n) * Math.PI * 2 + R() * 0.4,
+          d = [Math.cos(a), Math.sin(a)],
+          s = [-d[1] * 0.007, d[0] * 0.007],
+          L = 0.18 + R() * 0.1,
+          up = 0.06 + R() * 0.06,
+          // the ribbon's middle line: up from the soil, out, then down over the rim
+          pts = [
+            [0, 0.105],
+            [0.25, 0.105 + up],
+            [0.55, 0.105 + up * 1.2],
+            [0.8, 0.105 + up * 0.8],
+            [1.0, 0.105 + up * 0.1],
+          ].map(([t, h]) => [x + d[0] * L * t, y + d[1] * L * t, z + h]),
+          mat = k % 3 === 1 ? pale : green;
+        for (let i = 0; i + 1 < pts.length; i++) {
+          const a0 = pts[i],
+            a1 = pts[i + 1],
+            w0 = i === 0 ? 0.6 : 1,
+            w1 = i + 1 === pts.length - 1 ? 0.25 : 1,
+            e = [a1[0] - a0[0], a1[1] - a0[1], a1[2] - a0[2]],
+            nn = [-e[2] * d[0], -e[2] * d[1], e[0] * d[0] + e[1] * d[1]],
+            l = Math.hypot(...nn) || 1;
+          m.quad(
+            mat,
+            [a0[0] - s[0] * w0, a0[1] - s[1] * w0, a0[2]],
+            [a0[0] + s[0] * w0, a0[1] + s[1] * w0, a0[2]],
+            [a1[0] + s[0] * w1, a1[1] + s[1] * w1, a1[2]],
+            [a1[0] - s[0] * w1, a1[1] - s[1] * w1, a1[2]],
+            [nn[0] / l, nn[1] / l, nn[2] / l]
+          );
+        }
       }
     } else if (kind === 'kaktus') {
-      m.cyl(C.col(0x4a7a3a, 0.7), x, y, z + 0.12, z + 0.3, 0.035, 0.03, 8);
+      m.cyl(C.col(0x4a7a3a, 0.7), x, y, z + 0.1, z + 0.3, 0.035, 0.03, 10);
+      m.cyl(C.col(0x4a7a3a, 0.7), x + 0.03, y, z + 0.16, z + 0.22, 0.016, 0.014, 8);
       m.cyl(C.col(0xd8486a, 0.6), x, y, z + 0.3, z + 0.33, 0.018, 0.005, 6);
     } else {
-      m.lathe(
-        C.col(0x4f7d3a, 0.85),
-        x,
-        y,
-        [
-          [0.08, z + 0.11],
-          [0.12, z + 0.19],
-          [0.0, z + 0.27],
-        ],
-        7,
-        { caps: false }
-      );
-      m.lathe(
-        C.col(C.R.pick([0xc8352b, 0xe05a8a, 0xd8302a]), 0.6),
-        x,
-        y,
-        [
-          [0.04, z + 0.25],
-          [0.06, z + 0.29],
-          [0.0, z + 0.32],
-        ],
-        6,
-        { caps: false }
-      );
+      const leafA = C.col(0x4f7d3a, 0.85),
+        leafB = C.col(0x3f6a2e, 0.85),
+        flower = C.col(R.pick([0xc8352b, 0xe05a8a, 0xd8302a, 0xf08a9a]), 0.6),
+        stem = C.col(0x5a7a3a, 0.8),
+        c = [x, y, z + 0.15];
+      // the leaves: discs of seven points round a hemisphere, tilted out
+      for (let k = 0; k < 12; k++) {
+        const a = (k / 12) * Math.PI * 2 + R() * 0.5,
+          el = k % 3 === 0 ? 0.9 : 0.35 + R() * 0.3,
+          dir = [Math.cos(a) * Math.cos(el), Math.sin(a) * Math.cos(el), Math.sin(el)],
+          rr = 0.07 + R() * 0.04,
+          p = [c[0] + dir[0] * rr, c[1] + dir[1] * rr, c[2] + dir[2] * rr * 0.8],
+          nrm = [dir[0] * 0.6, dir[1] * 0.6, dir[2] * 0.6 + 0.55],
+          nl = Math.hypot(...nrm),
+          n = nrm.map(v => v / nl),
+          t1 = (h => [h[0] / (Math.hypot(...h) || 1), h[1] / (Math.hypot(...h) || 1), h[2] / (Math.hypot(...h) || 1)])([
+            -n[1],
+            n[0],
+            0,
+          ]),
+          t2 = [n[1] * t1[2] - n[2] * t1[1], n[2] * t1[0] - n[0] * t1[2], n[0] * t1[1] - n[1] * t1[0]],
+          r = 0.034 + R() * 0.014,
+          mat = k % 2 ? leafA : leafB,
+          ring = [];
+        for (let i = 0; i < 7; i++) {
+          const b = (i / 7) * Math.PI * 2,
+            q = r * (i % 2 ? 1 : 0.86);
+          ring.push([
+            p[0] + (t1[0] * Math.cos(b) + t2[0] * Math.sin(b)) * q,
+            p[1] + (t1[1] * Math.cos(b) + t2[1] * Math.sin(b)) * q,
+            p[2] + (t1[2] * Math.cos(b) + t2[2] * Math.sin(b)) * q,
+          ]);
+        }
+        for (let i = 0; i < 7; i++) ftri(m, mat, p, ring[i], ring[(i + 1) % 7], n);
+      }
+      // three umbels on their stalks
+      for (let k = 0; k < 3; k++) {
+        const a = (k / 3) * Math.PI * 2 + R() * 1.0,
+          top = [x + Math.cos(a) * 0.04, y + Math.sin(a) * 0.04, z + 0.27 + R() * 0.06];
+        m.rod(stem, [x, y, z + 0.14], top, 0.003, 3);
+        for (let i = 0; i < 5; i++) {
+          const b = (i / 5) * Math.PI * 2,
+            fx = top[0] + Math.cos(b) * 0.018,
+            fy = top[1] + Math.sin(b) * 0.018,
+            fz = top[2] + (i % 2) * 0.008;
+          m.lathe(
+            flower,
+            fx,
+            fy,
+            [
+              [0.0001, fz - 0.012],
+              [0.014, fz],
+              [0.0, fz + 0.012],
+            ],
+            5,
+            { caps: false }
+          );
+        }
+      }
     }
   };
   // a triangle turned to face n (the mesher's tri keeps the order it is given)

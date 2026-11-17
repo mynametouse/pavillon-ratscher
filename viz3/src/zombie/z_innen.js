@@ -340,6 +340,22 @@ export const ZINNEN = (() => {
           [0.5, 0.5],
         ]
       );
+    // and the daylight it lets in on the floor before it: a soft pale patch reaching into the room (the veil's material and mesh: no
+    // draw call of its own), gone at night with the veil
+    if (C.shade && M.glare && C.slab9 && h.z0 - C.room.z0 < 1.4 && C.room.kind !== 'keller' && C.room.kind !== 'boden')
+      C.slab9(
+        M.glare,
+        P(0, C.room.z0 + 0.004, 0),
+        [s.d[0], s.d[1], 0],
+        [-o[0], -o[1], 0],
+        [0, 0, 1],
+        h.u0 - 0.1,
+        h.u1 + 0.1,
+        0.25,
+        0.25 + Math.min(1.4, 0.6 + (h.z1 - h.z0) * 0.6),
+        0.32,
+        0.5
+      );
     const p = P(h.u0 - 0.05, 0, -0.14),
       q = P(h.u1 + 0.05, 0, 0.05);
     C.furn.box(
@@ -711,7 +727,7 @@ export const ZINNEN = (() => {
     // a rectangle in the plane through c (axes ea, eb, normal n), its soft rim e wide inside the texture's falloff: nine quads – the
     // corners and edges keep their width however big the rectangle; t ∈ (0, 1] how dark its middle is (the texture at 0.25·t, where
     // its falloff is f(t)² – the middle part stays there, the rim runs out to the texture's edge)
-    function slab9(c, ea, eb, n, a0, a1, b0, b1, e, t = 1) {
+    function slab9(c, ea, eb, n, a0, a1, b0, b1, e, t = 1, mat = M.schatten) {
       const xs = [a0 - e, a0 + e, a1 - e, a1 + e],
         ys = [b0 - e, b0 + e, b1 - e, b1 + e],
         us = [0, 0.25 * t, 0.25 * t, 0],
@@ -719,22 +735,18 @@ export const ZINNEN = (() => {
       for (let i = 0; i < 3; i++)
         for (let j = 0; j < 3; j++) {
           if (xs[i + 1] - xs[i] < 1e-4 || ys[j + 1] - ys[j] < 1e-4) continue;
-          shade.quad(
-            M.schatten,
-            P3(xs[i], ys[j]),
-            P3(xs[i + 1], ys[j]),
-            P3(xs[i + 1], ys[j + 1]),
-            P3(xs[i], ys[j + 1]),
-            n,
-            [
-              [us[i], us[j]],
-              [us[i + 1], us[j]],
-              [us[i + 1], us[j + 1]],
-              [us[i], us[j + 1]],
-            ]
-          );
+          shade.quad(mat, P3(xs[i], ys[j]), P3(xs[i + 1], ys[j]), P3(xs[i + 1], ys[j + 1]), P3(xs[i], ys[j + 1]), n, [
+            [us[i], us[j]],
+            [us[i + 1], us[j]],
+            [us[i + 1], us[j + 1]],
+            [us[i], us[j + 1]],
+          ]);
         }
     }
+    // (the openings' light on the floor uses it too, in the window veil's material)
+    C.slab9 = shade
+      ? (mat, c, ea, eb, n, a0, a1, b0, b1, e, t) => slab9(c, ea, eb, n, a0, a1, b0, b1, e, t, mat)
+      : null;
     // a strip at an edge: along a (length L from p), reaching w away along b, darkest at the edge (the texture at 0.25·t → its rim)
     function strip(p, a, b, n, L, w, t) {
       const v0 = 0.25 * t,
