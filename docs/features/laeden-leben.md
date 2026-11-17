@@ -63,7 +63,40 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
   - Stadtkirche St. Johannis (tagsüber offen), Stadtbibliothek, Postfiliale, Feuerwehr Ratscher (Dienstabend, Samstagsdienst) –
     **angenommen**; Alte Schule Ratscher: der Skatabend freitags (aus `dorf/dorf_cal.js`).
 - **Die Kassen wie in echt** (`laeden/innen_markt.js`): bis zum 17.11. lagen Band und Süßwarenregal am Ausgang und das Packfach im Laden;
-  jetzt beginnt die Schlange auf der Seite des Ladens (Süßwaren, Band), dann Scanner und Kassiererin, das Packfach zum Ausgang hin.
+  jetzt beginnt die Schlange auf der Seite des Ladens (Süßwaren, Band), dann Scanner und Kassiererin, das Packfach zum Ausgang hin. Jede
+  Kasse kennt ihren eigenen Bezahlplatz (gegenüber der Kassiererin, 1,6–1,9 m über das Band) und den Anfang ihrer Schlange.
+- **Waren, die wie Waren aussehen** (`laeden/waren_bild.js`, `WBILD`): jedes Produkt hat eine bedruckte Vorderseite wie so eine Packung –
+  ohne Marke, ohne Logo: das Wort der Ware in schlichter Schrift („Kaffee“, „Spirelli“, „Vollmilch“, „Wandfarbe“), was es ist („gemahlen“),
+  die Menge („500 g“), ein einfaches Bild des Inhalts (Bohnen, Tomate, Milch, Ähren, Nudeln …) auf den Farben der Abteilung; Flaschen sind
+  Glas mit Etikett, Holz ist Holz mit Aufkleber. An jedem Warenblock auf der Preisschiene das **Preisschild** (weiß, der Preis groß, der
+  Name klein, gelber Rand) – der Preis, den die Kasse nimmt. Alles in einem Canvas-Atlas (Rechner 2048², Telefon 1024², ~0,1 s), gemalt,
+  wenn die erste Gruppe Läden in 900 m Nähe kommt; gezeichnet je Abschnitt in einem Mesh auf einem Basic-Material mit dem Atlas (ein
+  Programm für alle Läden, mit dem Programm der Räume vorab übersetzt). Die dunklen leeren Schildchen an den Schienen sind weg.
+- **Arbeitskleidung**: das Personal trägt schlichte Arbeitskleidung, nach Körperzonen in die eigenen Texturen der Figur gemalt
+  (`GLFIG.dress` des Grenzland-Moduls, wenn es da ist): an der Kasse ein dunkelblaues Polo, an der Bäckertheke weißes Oberteil mit
+  Schürze, im Baumarkt eine dunkelgrüne Arbeitsjacke – keine Farbe einer Kette. Die Leute an öffentlichen Schaltern tragen ihre eigene
+  Kleidung.
+- **Öffentliche Gebäude** (`einkauf/oeffentlich.js`, `OEFFENTLICH`; Personal über `LLEBEN.posten`: eine Figur am Schalter, solange
+  geöffnet ist und man in der Nähe ist):
+  - **Rathaus, Bürgerbüro** (die Halle von `welt/schleusingen.js`): zu den echten Zeiten steht die Sachbearbeiterin am Schalter und
+    arbeitet; „Bürgerbüro: am Schalter fragen“ – wann was offen hat, **Meldebescheinigung** (10 €, ins Inventar), **gelbe Säcke** (umsonst,
+    wie in Thüringer Städten üblich), während der Wahl des Ortsvorstehers „Wahlamt, Bauamt, Stadtrat“ (`AMT.rathaus(true)`); geschlossen
+    sagt der Schalter die Zeiten. Die Aktion von `amt/` bleibt (sie gewinnt, solange die Wahl läuft).
+  - **Naturhistorisches Museum, Schloss Bertholdsburg** (`einkauf/museum.js`, `MUSEUM`): an der Tür der Burg zur Stadt (die Fassade am
+    Informationsbrett östlich der Burg) „Naturhistorisches Museum – hineingehen“ (kurz schwarz, wie in die Häuser); drinnen im Ostflügel
+    die **Eingangshalle mit der Kasse** (Kassierer zu den Öffnungszeiten, Preistafel, Bank, Garderobe) – Karte für Erwachsene 6 €,
+    ermäßigt 4 €, Turm 2 € (`museumskarte`, `turmkarte` ins Inventar) – und durch eine Öffnung der **Ausstellungsraum**: Vitrinen mit
+    Mineralen aus Thüringen und den **Schneekopfkugeln** (aufgeschnitten unter Glas), eine Platte **Muschelkalk mit Ceratiten**, ein
+    Gemälde **Thüringen vor 300 Millionen Jahren**, das **Wappen der Henneberger** (schwarze Henne auf grünem Dreiberg) mit der Geschichte
+    der Burg, an jedem eine Texttafel; „Ansehen …“ zeigt den Text. Ohne Karte schickt einen die Aufsicht zurück zur Kasse. Am Wochenende
+    stehen Besucher an den Vitrinen. Gezeichnet mit dem Baukasten der Läden (`LINNEN.drawPlan`) und einer Bilder-Canvas auf dem Programm
+    der bedruckten Waren – nichts Neues zu übersetzen; gebaut näher als 90 m an der Burg, frei ab 150 m. Montags geschlossen.
+  - **Stadtbibliothek** (der OSM-Ort östlich der Altstadt): „Stadtbibliothek: Buch ausleihen“ – Leseausweis 10 € im Jahr, ein Buch ins
+    Inventar, zurückgeben.
+  - **Feuerwehr Ratscher** (die alte Schule ist das Feuerwehrhaus, `dorf/dorf_school.js` nur gelesen): am Aushangkasten „Aushang der
+    Feuerwehr lesen“ – Dienstzeiten, Mitmachen ab 16, „Zum nächsten Dienst vormerken“ (Ereignis für Nebenaufgaben). Der Skatabend
+    freitags bleibt, wie er ist.
+  - Alle Optionen sind Ereignisse `oeffentlich` `{ id, was }` bzw. `museum` `{ was, id }` für die Nebenaufgaben von `ruf`.
 
 ## Schnittstellen
 
@@ -94,15 +127,20 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
 
 ## Offen
 
-- Waren als Verpackungen mit Aufdruck (eine Textur ohne Marken), Preisschilder an den Regalkanten mit dem Preis, Kleidung des Personals,
-  OBI und die Bäckerei im Test, die öffentlichen Gebäude mit Personal und Optionen (Rathausschalter, Museum mit Kasse und einem
-  Ausstellungsraum, Kirche, Bibliothek/Post, Feuerwehr und Alte Schule in Ratscher) – folgen.
+- **St. Johannis** hat nur ihre Zeiten im Verzeichnis (tagsüber offen) – ein Innenraum der Kirche ist nicht gebaut; die **Post** ebenso
+  (OSM kennt in Schleusingen keine Filiale).
+- Ware aus dem Baumarkt taucht noch nicht in der Werkstatt oder im Garten auf (nur im Inventar); Brecheisen und Taschenlampe sind im
+  Grenzland-Modus Dinge des Modus (`GL.inv`), die Missionen fragen sie noch nicht ab.
+- Obst, Gemüse, Brot und Kästen bleiben Formen in Eckfarben (keine Aufdrucke); Tiefkühlware ist von oben nur farbig.
+- Die Kunden gehen auf dem Raster und warten voreinander; sie weichen einander nicht aus (nach 3 s Warten gehen sie weiter).
 
 ## Für den Lead
 
-- `viz3/src/modules.txt`: Block `# feat/laeden-leben` vor `# feat/laeden` (vier Module `einkauf/*`) und ein zweiter nach
-  `laeden/innen.js` (`laeden/leben_plan.js`, `laeden/leben.js`, `laeden/kauf.js`).
-- Neue `window`-Namen: `OEFFNUNG`, `WAREN`, `GELD`, `INVENTAR`, `LLPLAN`, `LLEBEN`, `LKAUF`. Neue Speicher-Schlüssel (in den Modulen selbst
+- `viz3/src/modules.txt`: Block `# feat/laeden-leben` vor `# feat/laeden` (vier Module `einkauf/*`), `laeden/waren_bild.js` vor
+  `laeden/innen.js`, und ein Block nach `laeden/innen.js` (`laeden/leben_plan.js`, `laeden/leben.js`, `laeden/kauf.js`,
+  `einkauf/oeffentlich.js`, `einkauf/museum.js` – die beiden letzten brauchen `LLEBEN` und `LKAUF`, deshalb dort).
+- `KERN.provide`: `pushOut` 18, `ground` 12, `inside` 12, `place` 36 – nur im Museum (`MUSEUM`, solange man drin ist).
+- Neue `window`-Namen: `OEFFNUNG`, `WAREN`, `GELD`, `INVENTAR`, `LLPLAN`, `LLEBEN`, `LKAUF`, `WBILD`, `OEFFENTLICH`, `MUSEUM`. Neue Speicher-Schlüssel (in den Modulen selbst
   über `SAVE.key` eingetragen, `core/save.js` unverändert): `pav-geld-v1`, `pav-inventar-v1` – für `docs/ARCHITECTURE.md` Abschnitt 8.
 - Geliehenes Licht: `KERN.lights.borrow({ id: 'laeden:leben', n: 1, prio: 1 })` nur drinnen in einem Laden mit Leuten.
 - Zur Laufzeit eingehängt (keine fremde Datei geändert): der Knopf `#einkaufbtn` in `#hudtr` vor `#menubtn`, ein Teil `.einkauf-inv` im
