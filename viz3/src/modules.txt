@@ -119,6 +119,8 @@ vehicles/minimap.js         # V16b small map while driving: roads, route to the 
 welt/fahrt.js               # feat/fahrt driving out of the square: tiles ahead, the edge, roads with profiles, signs, the map (FAHRT)
 # feat/strassen: the road map beyond the square below this line (after welt/fahrt.js: its roads)
 strassen/strassen_karte.js  # feat/strassen the road map of a window around the observer for the tiles' shader, rastered a few ways per frame (STRKARTE)
+# feat/welt-wald: the region's trees in 3D beyond Ratscher's square (cells of 400 m; the Klinge's and the garden's tree programs)
+weltwald/weltwald.js        # feat/welt-wald the trees of the world tiles from tools/weltwald/baeume.py (WWALD)
 world/fell.js               # V16c2 felling at the Klinge: forest gear, chainsaw, felling the professional way, delimbing, bucking, measuring (FELL)
 werk/holz.js                # V16d wood 1: the logs as objects – on the fork, the trailer, the log yard (HOLZ)
 werk/holz_saw.js            # V16d wood 2: the band sawmill – clamp, plan, cut board by board, blocks beside the mill (HOLZSAW)
