@@ -62,9 +62,9 @@ with lib.browser() as b:
             g = J("{ n: GRASS.meshes.length, drawn: GRASS.meshes.filter(m => m.count > 0 && m.visible).length, bw: GRASS.bw }")
             ck('the old lawn clumps are not drawn', g['bw'] and g['drawn'] == 0, g)
         if 'wiese' in WANT:
-            # the meadow west of the garden (the site outside the garden: the rules give hay meadow), June before the cut
+            # a hay meadow east of the garden (class 4 in the area maps), June before the cut
             E("BEWUCHS.set({ doy: 156 })")
-            view(-30, 20, 200, -10)
+            view(112, -22, 150, -10)
             s = st()
             print('meadow', json.dumps(s['halm']), flush=True)
             R = {r['tag']: r for r in s['halm']['rings']}
@@ -73,7 +73,7 @@ with lib.browser() as b:
             bl = J("BEWUCHS.state().blumen")
             print('flowers', json.dumps(bl), flush=True)
             ck('flowers out in June (margerites, buttercups …)', bl['species']['margerite'] > 0.3 and bl['species']['hahnenfuss'] > 0.3 and bl['rings'][0]['slots'] > 500, json.dumps(bl)[:300])
-            view(-30, 20, 200, -30, fov=45)
+            view(112, -22, 150, -30, fov=45)
             lib.shot(pg, OUT, 'wiese_juni_nah')
         if 'ferne' in WANT:
             # flowering meadows far away: the colour speckles in the ground (bw_ferne.js through the hook in world/roads.js)
@@ -82,7 +82,7 @@ with lib.browser() as b:
                 E("GAME.step(0.1)")
                 if J("BEWUCHS.state().ferne.on"):
                     break
-            view(-40, 60, 300, -8, h=4.0, fov=55, n=12)
+            view(120, 20, 150, -7, h=6.0, fov=55, n=12)
             f = J("BEWUCHS.state().ferne")
             print('far', json.dumps(f), flush=True)
             ck('the far bloom is there (window filled, classes in flower)', f['on'] and len(f['classes']) > 0, json.dumps(f)[:300])
