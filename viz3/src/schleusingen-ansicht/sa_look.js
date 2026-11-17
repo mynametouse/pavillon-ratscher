@@ -1,8 +1,8 @@
 // ===================== feat/schleusingen-ansicht: a facade record → the town's look of a building – pure (SALOOK) =====================
 // The records of viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/fassaden.json (read off private views from the street; checked
 // by tools/schleusingen-ansicht/check.py) turned into what welt/schleusingen.js draws: the style codes of world/village.js's facade shader
-// (0 plaster, 1 modern, 2 slate, 3 slate upper floors, 4 slate gable, 5 half-timbering, 6 half-timbered upper floors, 8 boards, 9 brick,
-// 10 sheet-metal hall, 11 shed), the wall colour linear × 0.82 like the town's palette, the timber, frames, shutters, the slate's tone
+// (0 plaster – brick too, in its colour –, 1 modern, 2 slate, 3 slate upper floors, 4 slate gable, 5 half-timbering, 6 half-timbered upper
+// floors, 8 boards, 10 sheet-metal hall, 11 shed), the wall colour linear × 0.82 like the town's palette, the timber, frames, shutters, the slate's tone
 // (3 = shingles in the wall's own colour), the type (0 house, 1 hall, 2 shed), the roof's kind and colour (sRGB 0…1, the town makes it
 // linear). No imports: unit-tested in node (viz3/test/unit/schleusingen_ansicht.test.mjs).
 export const SALOOK = (() => {
@@ -15,7 +15,6 @@ export const SALOOK = (() => {
     FW: 5,
     FW_UP: 6,
     BARN_FULL: 8,
-    BRICK: 9,
     HALL: 10,
     SHED: 11,
   };
@@ -64,7 +63,9 @@ export const SALOOK = (() => {
     else if (m === 'fachwerk_og') {
       o.style = ST.FW_UP;
       if (eg) o.col = eg;
-    } else if (m === 'klinker') o.style = ST.BRICK;
+    } else if (m === 'klinker') o.style = ST.PLASTER;
+    // brick: plaster in the brick's colour – style 9 falls into the facade shader's barn branch (6.5 < st < 9.5) and would be drawn
+    // as boards (Suhl does the same, docs/PARALLEL.md 13.11.)
     else if (m === 'bretter') o.style = r.art === 'scheune' ? ST.BARN_FULL : ST.SHED;
     else if (m === 'blech') o.style = ST.HALL;
     if (r.fachwerk && TIMBER[r.fachwerk] !== undefined) o.timber = TIMBER[r.fachwerk];

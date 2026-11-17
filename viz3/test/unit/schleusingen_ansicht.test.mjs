@@ -53,7 +53,10 @@ test('every record of fassaden.json turns into a valid look and roof', () => {
   for (const r of DOC.gebaeude) {
     const o = SALOOK.look(r, BASE),
       tag = `building ${r.i} (${r.material})`;
-    assert.ok([0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11].includes(o.style), `${tag}: style ${o.style}`);
+    assert.ok(
+      [0, 1, 2, 3, 4, 5, 6, 8, 10, 11].includes(o.style),
+      `${tag}: style ${o.style} (never 9: drawn as boards)`
+    );
     assert.equal(o.col.length, 3, tag);
     for (const c of o.col) assert.ok(Number.isFinite(c) && c >= 0 && c <= 0.82 + 1e-9, `${tag}: colour ${o.col}`);
     assert.ok([0, 1, 2].includes(o.timber), `${tag}: timber ${o.timber}`);
@@ -94,6 +97,14 @@ test('the materials map to the facade styles of world/village.js', () => {
   assert.equal(st(32).slate, 3);
   assert.equal(st(712).style, SALOOK.ST.SLATE_UP, 'slate above a brick ground floor');
   assert.deepEqual(st(712).col, SALOOK.hexLin(rec(712).eg.farbe));
+  assert.equal(
+    st(717).style,
+    SALOOK.ST.PLASTER,
+    'brick: plaster in the brick colour (style 9 would be drawn as boards)'
+  );
+  assert.deepEqual(st(717).col, SALOOK.hexLin(rec(717).wand));
+  assert.equal(st(345).style, SALOOK.ST.SLATE_UP, 'Bertholdstraße 19: slate above a plaster ground floor');
+  assert.equal(st(345).slate, SALOOK.TONE.dunkel);
   for (const r of DOC.gebaeude.filter(q => q.art === 'block'))
     assert.equal(SALOOK.look(r, BASE).shutters, false, `block ${r.i}: no shutters (the model had some)`);
 });

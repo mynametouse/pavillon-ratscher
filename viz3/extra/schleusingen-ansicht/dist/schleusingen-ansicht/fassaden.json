@@ -47,7 +47,10 @@
    "besonders": "Königstraße: weiß, dunkelgraues Dach mit verschieferter Gaube",
    "sicher": "hoch",
    "ansichten": [
-    "w010"
+    "w010",
+    "w015",
+    "w008",
+    "w006"
    ]
   },
   {
@@ -597,7 +600,8 @@
    "besonders": "Königstraße: weiß mit Rundbogenfenstern (hinter Bäumen)",
    "sicher": "niedrig",
    "ansichten": [
-    "w004"
+    "w004",
+    "w003"
    ]
   },
   {
@@ -619,7 +623,12 @@
    "besonders": "Königstraße: weiß (hinter Bäumen)",
    "sicher": "niedrig",
    "ansichten": [
-    "w008"
+    "w008",
+    "w006",
+    "w004",
+    "w015",
+    "w003",
+    "w010"
    ]
   },
   {
@@ -640,6 +649,8 @@
    "besonders": "Königstraße: weißer dreigeschossiger Block",
    "sicher": "mittel",
    "ansichten": [
+    "w010",
+    "w015",
     "w006"
    ]
   },
@@ -683,7 +694,10 @@
    "besonders": "Königstraße: creme/beige, Fensterfaschen und Ecken sandsteinfarben",
    "sicher": "hoch",
    "ansichten": [
-    "w006"
+    "w006",
+    "w003",
+    "w004",
+    "w015"
    ]
   },
   {
@@ -705,7 +719,11 @@
    "besonders": "Königstraße: groß, OG creme/blassgelb, EG roter Backstein, Stahltreppe",
    "sicher": "hoch",
    "ansichten": [
-    "w012"
+    "w012",
+    "w010",
+    "w008",
+    "w006",
+    "w014"
    ]
   },
   {
@@ -1100,7 +1118,9 @@
    "sicher": "hoch",
    "ansichten": [
     "v070",
-    "v071"
+    "v071",
+    "p5_180",
+    "p5_300"
    ]
   },
   {
@@ -1528,6 +1548,34 @@
    ]
   },
   {
+   "i": 310,
+   "x": -933.8,
+   "y": 1256.8,
+   "adresse": "Bertholdstraße 22",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#c9c99a",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "braun",
+   "besonders": "Bertholdstraße 22: im Modell ein Grundriss für zwei alte Häuser – blass olivgrün mit Ziergiebel und braunen Fenstern, an der Kreuzung rosa-beige mit Läden; dahinter ein Glasdach",
+   "sicher": "mittel",
+   "ansichten": [
+    "p6_180",
+    "p6_300",
+    "p6_240",
+    "p5_120",
+    "p5_0",
+    "p5_60"
+   ]
+  },
+  {
    "i": 331,
    "x": -907.3,
    "y": 1407.7,
@@ -1547,7 +1595,10 @@
    "besonders": "Königstraße: hell verputzt, Giebel Fachwerk dunkelbraun, orangerotes Dach",
    "sicher": "mittel",
    "ansichten": [
-    "w002"
+    "w002",
+    "w001",
+    "w000",
+    "w015"
    ]
   },
   {
@@ -1569,7 +1620,42 @@
    "besonders": "Königstraße: creme, Giebel zur Straße, Rundbogentor, Schriftzug an der Fassade",
    "sicher": "hoch",
    "ansichten": [
-    "v067"
+    "w000",
+    "v067",
+    "w001"
+   ]
+  },
+  {
+   "i": 345,
+   "x": -920.8,
+   "y": 1301.5,
+   "adresse": "Bertholdstraße 19",
+   "art": "haus",
+   "material": "schiefer_og",
+   "wand": "#55575d",
+   "wand_quelle": "geschätzt",
+   "eg": {
+    "material": "putz",
+    "farbe": "#ddd8bc"
+   },
+   "schiefer": "dunkel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße 19 (Ecke): Obergeschosse ganz mit dunklem Schiefer verkleidet, EG cremefarbener Rauputz, grauer Sockel",
+   "sicher": "hoch",
+   "ansichten": [
+    "p6_120",
+    "p6_60",
+    "p6_0",
+    "p6_180",
+    "p5_60",
+    "w001"
    ]
   },
   {
@@ -1874,7 +1960,62 @@
    "sicher": "hoch",
    "ansichten": [
     "v068",
-    "v066"
+    "w000",
+    "v066",
+    "p6_180",
+    "p6_60",
+    "p6_120"
+   ]
+  },
+  {
+   "i": 416,
+   "x": -943.7,
+   "y": 1296.7,
+   "adresse": "Bertholdstraße 17",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#ceceb3",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße 17 (Ecke): elfenbeinfarben, Eckeingang unter einem Bogen auf zwei Sandsteinsäulen, Laden (Optiker)",
+   "sicher": "mittel",
+   "ansichten": [
+    "p6_300",
+    "p6_0",
+    "p6_60"
+   ]
+  },
+  {
+   "i": 417,
+   "x": -957.8,
+   "y": 1260.8,
+   "adresse": "Bertholdstraße 20",
+   "art": "geschaeft",
+   "material": "putz_modern",
+   "wand": "#e8e8e4",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "grau",
+   "besonders": "weißer moderner Bau mit Glasecke und Glasbalkon",
+   "sicher": "mittel",
+   "ansichten": [
+    "p6_240",
+    "p6_300",
+    "p5_0",
+    "p5_120"
    ]
   },
   {
@@ -1896,7 +2037,10 @@
    "besonders": "Königstraße 8: weiß/hellgrau, rotes Dach",
    "sicher": "mittel",
    "ansichten": [
-    "w007"
+    "w007",
+    "w015",
+    "w005",
+    "w002"
    ]
   },
   {
@@ -1939,7 +2083,8 @@
    "besonders": "Königstraße: creme/gelb, rotes Dach (weit)",
    "sicher": "niedrig",
    "ansichten": [
-    "w009"
+    "w009",
+    "w007"
    ]
   },
   {
@@ -2118,6 +2263,236 @@
    ]
   },
   {
+   "i": 503,
+   "x": -988.3,
+   "y": 1274.4,
+   "adresse": "Bertholdstraße 5",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#d1beb8",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße: rosa, dreigeschossig, Laden mit dunkler Holzfront (Fleischerei); im Modell ein Grundriss für drei Häuser – westlich weiß mit Hoftor und pfirsichfarben",
+   "sicher": "mittel",
+   "ansichten": [
+    "p5_300",
+    "p5_180",
+    "p5_240"
+   ]
+  },
+  {
+   "i": 504,
+   "x": -979.9,
+   "y": 1276.8,
+   "adresse": "Bertholdstraße 7",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e4ddc5",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "gruen",
+   "besonders": "Bertholdstraße: blassgelb, dreigeschossig, grüne Fensterrahmen, Sandsteinsockel, Laden mit dunkler Holzfront (Fleischerei)",
+   "sicher": "hoch",
+   "ansichten": [
+    "p5_0",
+    "p5_300",
+    "p5_240"
+   ]
+  },
+  {
+   "i": 505,
+   "x": -973.9,
+   "y": 1279.8,
+   "adresse": "Bertholdstraße 9",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#cedce4",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße: hellblau, Fensterfaschen rosa, schmiedeeiserne Blumenkonsolen, Laden mit hellblauer Front (Konditorei)",
+   "sicher": "hoch",
+   "ansichten": [
+    "p5_60",
+    "p5_300",
+    "p5_0"
+   ]
+  },
+  {
+   "i": 506,
+   "x": -966.3,
+   "y": 1281.4,
+   "adresse": "Bertholdstraße 11",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#f9f4ec",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße: cremeweiß, dreigeschossig, rotes Dach mit Gauben",
+   "sicher": "mittel",
+   "ansichten": [
+    "p5_60",
+    "p5_0"
+   ]
+  },
+  {
+   "i": 507,
+   "x": -963.0,
+   "y": 1256.4,
+   "adresse": "Bertholdstraße 18",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e3d8c6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "braun",
+   "besonders": "Bertholdstraße: creme-beige, dreigeschossig, braune Fensterrahmen und Holztür, Blumenkonsolen",
+   "sicher": "mittel",
+   "ansichten": [
+    "p5_120",
+    "p5_0",
+    "p5_60",
+    "p6_240",
+    "p6_300",
+    "p6_0"
+   ]
+  },
+  {
+   "i": 508,
+   "x": -971.6,
+   "y": 1250.9,
+   "adresse": "Bertholdstraße 16",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e6d9c7",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "braun",
+   "besonders": "Bertholdstraße: großer Laden mit dunkelbrauner Holzfront (Eisenwaren, Hausrat, Spielwaren), darüber creme",
+   "sicher": "mittel",
+   "ansichten": [
+    "p5_120",
+    "p5_180",
+    "p5_60",
+    "p5_240",
+    "p6_0",
+    "p6_240"
+   ]
+  },
+  {
+   "i": 510,
+   "x": -982.6,
+   "y": 1256.0,
+   "adresse": "Bertholdstraße 14",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e8c3a5",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße: pfirsich- bis lachsfarben, im EG das Ende der braunen Holz-Ladenfront des Nachbarn",
+   "sicher": "mittel",
+   "ansichten": [
+    "p5_240",
+    "p5_180",
+    "p6_0",
+    "p6_240"
+   ]
+  },
+  {
+   "i": 511,
+   "x": -1000.0,
+   "y": 1269.7,
+   "adresse": "Bertholdstraße 3",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#d9a596",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße: lachsrosa, zweigeschossig, dunkelrotes Ziegeldach mit Gaube",
+   "sicher": "mittel",
+   "ansichten": [
+    "p5_300",
+    "p5_180",
+    "p5_240"
+   ]
+  },
+  {
+   "i": 536,
+   "x": -933.1,
+   "y": 1324.5,
+   "adresse": "Brauhausgasse 1",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ced4b6",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "cremeweiß, zweigeschossig, rotbraunes Dach (weit)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "p6_0",
+    "p6_60"
+   ]
+  },
+  {
    "i": 538,
    "x": -892.6,
    "y": 1374.3,
@@ -2136,7 +2511,9 @@
    "besonders": "Königstraße 3: blassgelb/creme (Modell: Fachwerk-OG)",
    "sicher": "mittel",
    "ansichten": [
-    "w002"
+    "w002",
+    "w001",
+    "w000"
    ]
   },
   {
@@ -2162,6 +2539,56 @@
     "v049",
     "v047",
     "v046"
+   ]
+  },
+  {
+   "i": 554,
+   "x": -895.4,
+   "y": 1280.3,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e3d25c",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "leuchtend gelb, dreigeschossig, weiße Fenster, Dach mit Gauben (weit)",
+   "sicher": "mittel",
+   "ansichten": [
+    "p6_180",
+    "p6_120"
+   ]
+  },
+  {
+   "i": 555,
+   "x": -907.1,
+   "y": 1278.9,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e6d8bc",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße (Ecke): cremefarben, dreigeschossig, ockerfarbene Ecklisenen und Fensterfaschen",
+   "sicher": "mittel",
+   "ansichten": [
+    "p6_120",
+    "p6_240",
+    "p6_180",
+    "p5_0",
+    "p5_60",
+    "p5_120"
    ]
   },
   {
@@ -2205,6 +2632,53 @@
    "sicher": "niedrig",
    "ansichten": [
     "v003"
+   ]
+  },
+  {
+   "i": 568,
+   "x": -902.7,
+   "y": 1266.5,
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e4dccb",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "cremefarben mit Zwerchgiebel, Schaufenster im EG",
+   "sicher": "niedrig",
+   "ansichten": [
+    "p6_120",
+    "p6_240",
+    "p6_180"
+   ]
+  },
+  {
+   "i": 569,
+   "x": -902.3,
+   "y": 1254.8,
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e6d3c3",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "rosa-beige, dreigeschossig, Schaufenster im EG (zum Teil verdeckt)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "p6_240",
+    "p6_180"
    ]
   },
   {
@@ -2370,7 +2844,11 @@
    "besonders": "Königstraße: weiß-hellgrau, dreigeschossig, rotes Dach",
    "sicher": "hoch",
    "ansichten": [
-    "w013"
+    "w013",
+    "w014",
+    "w012",
+    "w010",
+    "w008"
    ]
   },
   {
@@ -2413,7 +2891,8 @@
    "besonders": "Königstraße: klein, ganz Schiefer dunkelgrau, orangerotes Dach",
    "sicher": "hoch",
    "ansichten": [
-    "w013"
+    "w013",
+    "w012"
    ]
   },
   {
@@ -2434,7 +2913,9 @@
    "besonders": "Königstraße: weiß, dreigeschossig",
    "sicher": "mittel",
    "ansichten": [
-    "w002"
+    "w005",
+    "w002",
+    "w000"
    ]
   },
   {
@@ -2592,6 +3073,7 @@
     "material": "putz",
     "farbe": "#ecebe6"
    },
+   "schiefer": "dunkel",
    "dach": {
     "material": "ziegel",
     "farbe": "#b5553a",
@@ -2620,6 +3102,7 @@
     "material": "klinker",
     "farbe": "#9a4a3a"
    },
+   "schiefer": "dunkel",
    "dach": {
     "material": "ziegel",
     "farbe": "#b5553a",
@@ -2963,6 +3446,7 @@
    "besonders": "Autohaus: Glaskasten, weißgraue Metallpaneele, ein blaues Feld",
    "sicher": "mittel",
    "ansichten": [
+    "w013",
     "v034",
     "v035"
    ]
@@ -3026,6 +3510,14 @@
    "warum": "Bäume"
   },
   {
+   "i": 414,
+   "warum": "nur streifend von der Seite"
+  },
+  {
+   "i": 415,
+   "warum": "nur streifend von der Seite"
+  },
+  {
    "i": 421,
    "warum": "Hecke, unscharf"
   },
@@ -3036,6 +3528,10 @@
   {
    "i": 439,
    "warum": "Bäume"
+  },
+  {
+   "i": 512,
+   "warum": "nur klein in der Ferne"
   },
   {
    "i": 613,
