@@ -853,6 +853,21 @@ export const SCHL = (() => {
   };
   S.FASS = FASS;
   S.streetDoor = b => streetDoor(b);
+  // a flight of steps OSM maps leading away from a passage's outer end A (within 12 m, in front of the wall): { top, bot, osm } or null
+  function stairFrom(A, d) {
+    for (const m of (S.osmF && S.osmF.steps) || []) {
+      const p = m.p,
+        n = p.length,
+        e0 = [p[0], p[1]],
+        e1 = [p[n - 2], p[n - 1]],
+        d0 = Math.hypot(e0[0] - A[0], e0[1] - A[1]),
+        d1 = Math.hypot(e1[0] - A[0], e1[1] - A[1]),
+        [top, bot] = d0 < d1 ? [e0, e1] : [e1, e0];
+      if (Math.min(d0, d1) > 12 || (top[0] - A[0]) * d[0] + (top[1] - A[1]) * d[1] > -0.5) continue;
+      return { top, bot, osm: m.osm };
+    }
+    return null;
+  }
   function fassPlan(town) {
     const t0 = performance.now(),
       F = (S.fassade = { yards: [], passes: [], pads: [], paint: [], ms: 0, n: { tuerHof: 0, tor: 0, fenster: 0 } });
@@ -962,8 +977,9 @@ export const SCHL = (() => {
               ? b.z0 + 0.05
               : ground(P.B[0] + dx * 1.2, P.B[1] + dy * 1.2),
         zOut = ground(P.A[0] - dx * 1.2, P.A[1] - dy * 1.2),
-        dz = Math.max(-FASS.SLOPE * L, Math.min(FASS.SLOPE * L, zOut - zB)),
-        zA = zB + dz;
+        st = src === 'osm' ? stairFrom(P.A, P.d) : null,
+        dz = st ? 0 : Math.max(-FASS.SLOPE * L, Math.min(FASS.SLOPE * L, zOut - zB)),
+        zA = zB + dz; // a mapped stair outside takes the height: the passage stays level
       if (src === 'hof' && Math.abs(zOut - zB) > FASS.SLOPE * L + 0.6) return null; // a gateway would be a ramp: not plausible
       const hole = (fc, c0, c1) => {
         const lo = Math.max(0.05, Math.min(c0.u, c1.u)),
@@ -1005,13 +1021,55 @@ export const SCHL = (() => {
         z: (x, y, raw) => {
           const t = (x - P.A[0]) * dx + (y - P.A[1]) * dy;
           if (t >= 0) return zA + ((zB - zA) * Math.min(L, t)) / Math.max(L, 0.1);
-          return zA + (raw - zA) * Math.min(1, -t / land);
+          return st ? zA : zA + (raw - zA) * Math.min(1, -t / land);
         },
       });
       F.paint.push({ poly: [a0.p, a1.p, b1.p, b0.p].flat(), surf: src === 'osm' ? 200 : 120 });
       F.passes.push(Q);
       if (yd) yd.reach = true;
+      if (st) addStair(Q, st);
       return Q;
+    };
+    // the landing from the gate to the stair (level), the stair down to the ground at its foot (a ramp under the steps), the parapets
+    const rectPoly = (a, c, hw, ext = 0.3, extC = ext) => {
+      const L = Math.hypot(c[0] - a[0], c[1] - a[1]) || 1,
+        ux = (c[0] - a[0]) / L,
+        uy = (c[1] - a[1]) / L;
+      return [
+        [a[0] - ux * ext - uy * hw, a[1] - uy * ext + ux * hw],
+        [c[0] + ux * extC - uy * hw, c[1] + uy * extC + ux * hw],
+        [c[0] + ux * extC + uy * hw, c[1] + uy * extC - ux * hw],
+        [a[0] - ux * ext + uy * hw, a[1] - uy * ext - ux * hw],
+      ].flat();
+    };
+    const addStair = (Q, st) => {
+      const top = st.top,
+        bot = st.bot,
+        L = Math.hypot(bot[0] - top[0], bot[1] - top[1]),
+        ux = (bot[0] - top[0]) / L,
+        uy = (bot[1] - top[1]) / L,
+        zL = Q.zA,
+        zF = ground(bot[0] + ux * 1.0, bot[1] + uy * 1.0),
+        W = 2.6;
+      Q.stair = { A: Q.A, top, bot, zL, zF, W, lw: Q.w, L, osm: st.osm };
+      F.pads.push({ poly: rectPoly(Q.A, top, Q.w / 2 + 1.2, 1.4, 0.2), z: zL });
+      F.pads.push({
+        poly: rectPoly(top, bot, W / 2 + 1.2, 0.2),
+        z: (x, y) => zL + (zF - zL) * Math.max(0, Math.min(1, ((x - top[0]) * ux + (y - top[1]) * uy) / L)) - 0.06,
+      });
+      // the parapets stop the walker at the edges (the landing's end towards the stair stays open)
+      const LA = Math.hypot(top[0] - Q.A[0], top[1] - Q.A[1]) || 1,
+        ax = (top[0] - Q.A[0]) / LA,
+        ay = (top[1] - Q.A[1]) / LA;
+      for (const sg of [-1, 1]) {
+        const ox = -ay * sg * (Q.w / 2 + 0.15),
+          oy = ax * sg * (Q.w / 2 + 0.15);
+        S.segs.push([Q.A[0] + ox, Q.A[1] + oy, top[0] - ax * 1.6 + ox, top[1] - ay * 1.6 + oy]);
+        const px = -uy * sg * (W / 2 + 0.15),
+          py = ux * sg * (W / 2 + 0.15);
+        S.segs.push([top[0] + ux * 0.6 + px, top[1] + uy * 0.6 + py, bot[0] + px, bot[1] + py]);
+      }
+      F.n.treppe = (F.n.treppe || 0) + 1;
     };
     // the yards' ground: from the feet of the walls round each yard (inverse distance weighted – on a slope the yard follows the
     // houses: each wall meets it at its ground floor), a pad grown 2.5 m under the walls (the 2 m grid of the tiles meets them level)
@@ -1144,6 +1202,45 @@ export const SCHL = (() => {
       }
     }
     F.ms = Math.round(performance.now() - t0);
+  }
+  // ---- feat/gebaeude: the stair outside a gate (the castle's west gate onto its long stair down to the Schloßstraße: OSM steps, DOP
+  // 2024) – a level landing with parapets, steps of sandstone slabs, stepped parapets (cheek walls) on both sides, all down to the ground ----
+  function stairGeo(K, t) {
+    const STONE = SAND,
+      STEP = linC([0.66, 0.64, 0.6], 0.82),
+      LA = Math.hypot(t.top[0] - t.A[0], t.top[1] - t.A[1]) || 1,
+      ax = (t.top[0] - t.A[0]) / LA,
+      ay = (t.top[1] - t.A[1]) / LA,
+      ux = (t.bot[0] - t.top[0]) / t.L,
+      uy = (t.bot[1] - t.top[1]) / t.L,
+      foot = (x, y, w) => Math.min(ground(x, y), ground(x + w[0], y + w[1]), ground(x - w[0], y - w[1])) - 0.4;
+    // the landing's parapets: walls from below the ground beside them up to 0.9 m over the landing
+    for (const sg of [-1, 1]) {
+      const ox = -ay * sg * (t.lw / 2 + 0.15),
+        oy = ax * sg * (t.lw / 2 + 0.15),
+        l = Math.max(0.5, LA - 1.6),
+        cx = t.A[0] + ax * (l / 2) + ox,
+        cy = t.A[1] + ay * (l / 2) + oy,
+        z0 = Math.min(t.zL - 0.6, foot(cx, cy, [ax * l * 0.4, ay * l * 0.4]));
+      K.box(cx, cy, z0, l, 0.3, t.zL + 0.9 - z0, Math.atan2(ay, ax), STONE);
+    }
+    // the steps: n slabs of about 17 cm rise
+    const n = Math.max(3, Math.round(Math.abs(t.zL - t.zF) / 0.17)),
+      tr = t.L / n,
+      rot = Math.atan2(uy, ux);
+    for (let i = 0; i < n; i++) {
+      const h = t.zL + ((t.zF - t.zL) * (i + 1)) / n,
+        cx = t.top[0] + ux * tr * (i + 0.5),
+        cy = t.top[1] + uy * tr * (i + 0.5);
+      K.box(cx, cy, h - 0.45, tr + 0.02, t.W, 0.45, rot, STEP);
+      // stepped cheek walls
+      for (const sg of [-1, 1]) {
+        const px = -uy * sg * (t.W / 2 + 0.15),
+          py = ux * sg * (t.W / 2 + 0.15),
+          hi = Math.max(h, t.zL + ((t.zF - t.zL) * i) / n);
+        K.box(cx + px, cy + py, hi - 1.3, tr + 0.02, 0.3, 2.2, rot, STONE);
+      }
+    }
   }
   // ---- feat/gebaeude: the frame of a gateway (old-town Tordurchfahrten, photos of Thuringian small towns: a sandstone surround, a
   // segmental arch, a wooden gate standing open in the day) – props geometry, at both ends of the passage ----
@@ -1893,6 +1990,7 @@ export const SCHL = (() => {
     for (const q of (S.fassade && S.fassade.passes) || [])
       try {
         gateway(K, q);
+        if (q.stair) stairGeo(K, q.stair);
       } catch (e) {
         console.warn('schleusingen gateway', e);
       }

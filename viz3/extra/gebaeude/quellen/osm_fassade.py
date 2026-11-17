@@ -103,8 +103,11 @@ def main():
                     passes.append({'osm': 'w' + wid, 'b': 'w' + pid[j], 'k': hw, 'tags': ';'.join(f'{k}={t[k]}' for k in ('tunnel', 'covered', 'layer', 'surface') if k in t),
                                    'p': [round(v, 2) for xy in (c[0], c[-1]) for v in xy], 'len': round(g.length, 1)})
         ent = [{'osm': 'n' + i, 'x': M[i][0], 'y': M[i][1], 'e': nodes[i][2]['entrance']} for i in ids if 'entrance' in nodes[i][2]]
-        out[place] = {'pass': passes, 'ent': ent}
-        log(place, len(nodes), 'nodes', len(ways), 'ways:', len(passes), 'passages,', len(ent), 'entrances')
+        # flights of steps (highway=steps): where one leads away from a passage (the castle's west gate opens onto its long stair, DOP 2024)
+        steps = [{'osm': 'w' + wid, 'p': [v for r in refs if r in M for v in M[r]], 'inc': t.get('incline', ''), 's': t.get('surface', '')}
+                 for wid, (refs, t) in ways.items() if t.get('highway') == 'steps' and len(refs) >= 2]
+        out[place] = {'pass': passes, 'ent': ent, 'steps': steps}
+        log(place, len(nodes), 'nodes', len(ways), 'ways:', len(passes), 'passages,', len(ent), 'entrances,', len(steps), 'steps')
     json.dump(out, open(a.out, 'w'), ensure_ascii=False, separators=(',', ':'))
     log(a.out, os.path.getsize(a.out), 'bytes')
 

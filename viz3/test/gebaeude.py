@@ -217,6 +217,23 @@ with lib.browser() as b:
                 settle()
                 E(f"""(() => {{ const q = SCHL.fassade.passes[{i}], x = q.B[0] + q.d[0] * 7, y = q.B[1] + q.d[1] * 7; GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(-q.d[0], -q.d[1]) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()""")
                 lib.shot(pg, OUT, f"schleusingen_durchgang{i + 1}_hof")
+            # the stair outside the castle's west gate (OSM steps): from its foot looking up at the gate, and walking down it from the landing
+            for i, q in enumerate(P):
+                if not E(f"!!SCHL.fassade.passes[{i}].stair"):
+                    continue
+                st = json.loads(E(f"JSON.stringify((() => {{ const t = SCHL.fassade.passes[{i}].stair; return {{ top: t.top, bot: t.bot, zL: t.zL, zF: t.zF, L: t.L, osm: t.osm }}; }})())"))
+                print('stair', json.dumps(st), flush=True)
+                ux, uy = (st['bot'][0] - st['top'][0]) / st['L'], (st['bot'][1] - st['top'][1]) / st['L']
+                E(f"GAME.view({st['bot'][0] + ux * 8}, {st['bot'][1] + uy * 8}, KERN.ground({st['bot'][0] + ux * 8}, {st['bot'][1] + uy * 8}) + 1.65, {math.degrees(math.atan2(-ux, -uy))}, 12, 62)")
+                settle()
+                E(f"GAME.view({st['bot'][0] + ux * 8}, {st['bot'][1] + uy * 8}, KERN.ground({st['bot'][0] + ux * 8}, {st['bot'][1] + uy * 8}) + 1.65, {math.degrees(math.atan2(-ux, -uy))}, 12, 62); GAME.step(0.3)")
+                lib.shot(pg, OUT, f"schleusingen_burgtreppe")
+                r3 = json.loads(E(f"""JSON.stringify((() => {{ const x = {st['top'][0] + ux * 0.3}, y = {st['top'][1] + uy * 0.3};
+                    GAME.view(x, y, KERN.ground(x, y) + 1.62, {math.degrees(math.atan2(ux, uy))}, 0, 62); GAME.step(0.5); const z0 = GAME.P.feet; GAME.step(Math.ceil({st['L']} / 1.2), 1);
+                    const t = (GAME.P.x - {st['top'][0]}) * {ux} + (GAME.P.y - {st['top'][1]}) * {uy};
+                    return {{ t, z0, feet: GAME.P.feet, g: KERN.ground(GAME.P.x, GAME.P.y) }}; }})())"""))
+                ck('down the castle stair from the landing to its foot', r3['t'] > st['L'] - 1.5 and abs(r3['feet'] - r3['g']) < 0.15 and abs(r3['feet'] - r3['z0']) > 0.5 * abs(st['zL'] - st['zF']),
+                   json.dumps(r3))
             # a street (the Markt) by day and by night
             E(VIEW_M)
             lib.shot(pg, OUT, 'schleusingen_markt_tag')
