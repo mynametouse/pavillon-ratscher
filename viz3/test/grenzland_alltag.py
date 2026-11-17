@@ -394,9 +394,13 @@ with lib.browser() as b:
         ok = until("window.SCHL && SCHL.state === 'ready' && GLFESTE.debug.stand().bau === 'weihnachtsmarkt'", 300, 1.0, 0.5)
         st = J("GLFESTE.debug.stand()")
         ck('fest: the Christmas market stands round the fountain on the Markt', bool(ok) and len(st['staende']) >= 3 and not st['err'], str(st))
-        X("const f = SCHL.fountain; TA.blick(f[0], f[1], 200, 17, 1.7, -1)")
+        # the view: from the south across the square to the huts – a clear line to a point inside the ring (the fountain's own middle
+        # is inside its basin, no line reaches it), else straight from 20 m south
+        BLICK_WM = "const f = SCHL.fountain; if (!TA.blick(f[0], f[1] - 4.5, 0, 16, 1.7, -3)) GAME.view(f[0], f[1] - 20, KERN.ground(f[0], f[1] - 20) + 1.7, 0, -4)"
+        X(BLICK_WM)
         warte_figuren("TA.da('fest').length >= 2", 150)
-        steps(2, 0.1)
+        X(BLICK_WM)
+        steps(0.5, 0.1)
         pic('32_weihnachtsmarkt')
         # the Feuerwehrfest on a July evening by the old school
         X("GLFESTE.debug.zu('feuerwehrfest', 21 * 60 + 40); GAME.view(229.5, -112, KERN.ground(229.5, -112) + 1.8, 0, -4)")
