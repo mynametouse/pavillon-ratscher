@@ -774,7 +774,14 @@ export const FAUDIT = (() => {
             const um = (a + b) / 2,
               dx = (p.bx - p.ax) / (p.L || 1),
               dy = (p.by - p.ay) / (p.L || 1);
-            bare.push({ x: p.ax + dx * um, y: p.ay + dy * um, len: b - a });
+            bare.push({
+              x: p.ax + dx * um,
+              y: p.ay + dy * um,
+              len: b - a,
+              k: p.k,
+              run: [+a.toFixed(1), +b.toFixed(1)],
+              n: W.length,
+            });
           }
       }
       if (NEEDS_WIN(r) && seen === 0)
@@ -788,6 +795,9 @@ export const FAUDIT = (() => {
             x: q.x,
             y: q.y,
             text: `${q.len.toFixed(1)} m Wand ohne Fenster`,
+            k: q.k,
+            run: q.run,
+            nWin: q.n,
           });
     }
     for (const y of ctx.yards || [])

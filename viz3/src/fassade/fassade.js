@@ -29,12 +29,23 @@ export const FASSADE = (() => {
     b.st && b.st.style === 12
       ? 'schule'
       : b.typ === 0
-        ? 'haus'
+        ? b.st && b.st.style > 6.5 && b.st.style < 9.5
+          ? 'scheune' // a dwelling the centre's look (world/dorfkern_data.js) draws as a brick or board building: barn windows
+          : 'haus'
         : b.typ === 1
           ? b.st && b.st.style === 10
             ? 'halle'
             : 'scheune'
           : 'schuppen';
+  // the style a facade is drawn in: the house's, or the look of the centre's table for the side it faces (world/village.js faceLook)
+  function faceStyle(o, f) {
+    if (o.faces) {
+      const az = (Math.atan2(f.nx, f.ny) * 180) / Math.PI;
+      for (const [a, F] of o.faces)
+        if (Math.abs(((az - a + 540) % 360) - 180) < 50 && F.style !== undefined) return F.style;
+    }
+    return o.style || 0;
+  }
   function recV(b) {
     const st = b.st || {},
       f = [];
@@ -64,7 +75,7 @@ export const FASSADE = (() => {
           gable: q.kind === 'gable',
           du,
           dw,
-          st: st.style || 0,
+          st: faceStyle(st, q),
           sp: st.sp || 3,
           raised: !!st.raised,
           eave: b.eave,

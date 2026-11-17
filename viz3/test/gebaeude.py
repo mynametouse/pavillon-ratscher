@@ -82,7 +82,7 @@ def counts(E, ort):
     print(f'audit {ort} nachher', json.dumps(r['nachher']), json.dumps(r['byN'], ensure_ascii=False), flush=True)
     print(f'audit {ort} still open (first 12)', json.dumps(r['rest'], ensure_ascii=False), flush=True)
     det = json.loads(E(f"""JSON.stringify(FASSADE.audit('{ort}').filter(q => !q.rest).slice(0, 40).map(q => {{ const b = window.VILLAGE && VILLAGE.byId && VILLAGE.byId.get(q.id);
-        return [q.art, q.text, q.id, Math.round(q.x), Math.round(q.y), b ? [b.typ, b.st && b.st.style, +b.eave.toFixed(2), +b.area.toFixed(0), b.fac.map(f => [+f.L.toFixed(1), f.kind, +f.t0.toFixed(1), +f.t1.toFixed(1), f.door ? 'T' : ''])] : null]; }}))"""))
+        return [q.art, q.text, q.id, q.k, q.run, q.nWin, Math.round(q.x), Math.round(q.y), b ? [b.typ, b.st && b.st.style, +b.eave.toFixed(2), +b.area.toFixed(0), b.fac.map(f => [+f.L.toFixed(1), f.kind, +f.t0.toFixed(1), +f.t1.toFixed(1), f.door ? 'T' : ''])] : null]; }}))"""))
     for d in det:
         print('  open', json.dumps(d, ensure_ascii=False), flush=True)
     ck(f'{ort}: the audit covers the buildings of the place', r['nRec'] > (300 if ort == 'ratscher' else 700) and not r['err'], f"{r['nRec']} buildings {r['err']}")
