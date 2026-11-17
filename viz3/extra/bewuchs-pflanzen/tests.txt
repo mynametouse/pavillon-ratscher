@@ -1,0 +1,2 @@
+# feat/bewuchs-pflanzen: no browser test in the CI – the data and the atlas are checked by viz3/test/unit/bewuchs_arten.test.mjs (tools/check.sh);
+# viz3/test/bewuchs_pflanzen.py (the plants as crossed quads on a patch of the garden in April, June, August, October) is run by hand for pictures
