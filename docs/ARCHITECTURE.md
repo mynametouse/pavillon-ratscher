@@ -233,6 +233,7 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   `resize`), Eingabe (`input`), Schleife (`game`: `frame`, Physik des Gehens) – bis Phase 1 eine Datei `game.js` –; Aktionen/Inventar,
   Haus (Schalter, Ofen, Sitzen), Aufgaben, HUD, Spielfigur
 - `jetpack/` – der Jetpack (`JET`, V18s, `docs/features/jetpack.md`): anlegen, fliegen über Haken J1 in `game/game.js` `physics()`, Überblick mit Ortsnamen, Zielflug zu den Orten
+- `navi/` – der Autopilot im Auto (`NAVI`, V18t, `docs/features/navi.md`): Ziel im Fahrzeugfeld, Graph über `ROADS.ways` und `FAHRT.data.ways`, fährt über `VEH.auto`
 - `audio/` – Ton-Engine (Aufnahmen, Synthese, Atmosphäre, Stimmen), Musik (Klavier, Platten, Ukulele)
 - `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus, Tagesablauf (`life`)
 - `dorf/` – Dorfleben (Kalender, Texte, Dorfbewohner, Schule, Feuer)
