@@ -483,12 +483,16 @@ export const GLFESTE = (() => {
       return;
     }
     T.i = (T.i + 1) % frei.length;
+    // (a song of the radio's lists; one that is in none of them lies in the sound repository)
     const datei = frei[T.i],
-      l = (GLRDATA.LIEDER.kirmes || []).find(x => x.datei === datei);
+      l = Object.values(GLRDATA.LIEDER || {})
+        .flat()
+        .find(x => x && x.datei === datei),
+      imRepo = !l || !!l.ton;
     T.datei = datei;
-    const base = l && l.ton ? GLRDATA.ton() : '';
-    T.el.src = l && l.ton ? (base ? base + 'radio/' + datei : '') : BASE + 'snd/radio/' + datei;
-    if (!T.el.src || (l && l.ton && !base)) {
+    const base = imRepo ? GLRDATA.ton() : '';
+    T.el.src = imRepo ? (base ? base + 'radio/' + datei : '') : BASE + 'snd/radio/' + datei;
+    if (imRepo && !base) {
       T.fehl[datei] = 1;
       return naechstes(T, lieder);
     }

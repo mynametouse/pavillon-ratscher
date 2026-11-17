@@ -111,6 +111,6 @@ Vielleicht fliegen auch mal Vögel rum …“
 - **Für `laeden-leben`:** wer in einen Laden der Altstadt geht, verschwindet an dessen Tür (`SINNEN.doors`, offen nach `SINNEN.shopOpen`)
   und kommt nach ein paar Minuten heraus; drinnen sind eure Leute. `OEFFNUNG.offen(id, t)` nehme ich, sobald es da ist.
 - **Musik für den Weihnachtsmarkt:** ein freies Weihnachtsstück (CC BY / gemeinfrei) im Klang-Repository wäre gut – Eintrag in
-  `GLFDATA.FESTE.weihnachtsmarkt.musik.lieder` (Dateiname wie in `GLRDATA.LIEDER.kirmes`, dort mit `ton: true` eintragen); bis dahin spielt
+  `GLFDATA.FESTE.weihnachtsmarkt.musik.lieder` (eine Datei aus `pavillon-ton/radio/` – oder ein Eintrag in `GLRDATA.LIEDER`); bis dahin spielt
   eine Spieluhr aus dem Synthesizer.
 - **Die alte Zufalls-Kirmes** (`gl_ereignis.js`, Agent `strasse`) soll aus sein, sobald `window.GLFESTE` da ist (so im gemeinsamen Auftrag).
