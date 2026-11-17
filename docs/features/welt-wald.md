@@ -90,7 +90,7 @@ Auswahl höchstens 3,5 ms; Sommer, Oktober (Herbstfarben), Januar (kahl, Atlas o
 - Die Korridore nach Schleusingen (`markt`) und nach Kloster Veßra (`baumschule`): erzeugt, auf `wip/welt-wald` (85822f9d,
   `viz3/extra/welt-wald/dist/weltwald/z/`), noch nicht dabei. Die übrigen Kacheln der Welt: 1 692 Zellen, etwa 18 MB, einige Stunden
   Abrufe (DOP, Kronenhöhen) – `baeume.py --tiles --skip-done` (mit `WW_OUT` außerhalb des Repos).
-- OSM (Waldwege, Gleise, Waldflächen): der Abruf in Stücken über Overpass war zu langsam; der erste Stand kommt ohne (keine Baum auf den
+- OSM (Waldwege, Gleise, Waldflächen): der Abruf in Stücken über Overpass war zu langsam; der erste Stand kommt ohne (kein Baum auf den
   App-Straßen, die Luftbilder zeigen breite Wege als Lücken).
 - Kiefer aus dem Luftbild unterscheiden (heute ist jeder Nadelbaum außer der Lärche eine Fichte).
 - Die waagrechte Ebene der Karten sieht man von der Straße als dünne Linie im Bestand; sie könnte nur von oben gezeichnet werden.
