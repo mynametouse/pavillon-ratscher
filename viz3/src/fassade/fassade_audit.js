@@ -727,6 +727,21 @@ export const FAUDIT = (() => {
       name: b.n || b.a || '',
     });
   }
+  // ---- steps in front of a door whose threshold stands over the ground (the facade shader paints a house door over its plinth, 35 or
+  // 60 cm): [{ d (depth from the wall), top }] from the landing at the door out to the lowest step; a box from the wall out to d each ----
+  function stufen(zDoor, zG, o = {}) {
+    const dz = zDoor - zG;
+    if (!(dz >= 0.12) || dz > 1.6) return [];
+    const n = Math.max(1, Math.round(dz / 0.17)),
+      rise = dz / n,
+      out = [];
+    let d = o.landing || 0.5;
+    for (let i = 0; i < n; i++) {
+      out.push({ d, top: zDoor - i * rise });
+      d += o.tread || 0.3;
+    }
+    return out;
+  }
   // ---- the audit: what is still implausible ----
   // ctx: { idx (index over all footprints of the place), yards (hoefe() + reach), passes ([{ x, y, open, text }]), minRun (m) }
   // (a hall or a barn with an eave under 2.6 m is a shelter for machines or a shed: open or blank, no windows needed)
@@ -859,6 +874,7 @@ export const FAUDIT = (() => {
     tor,
     passLine,
     hofTuer,
+    stufen,
     KIND_F,
     fromF,
     audit,

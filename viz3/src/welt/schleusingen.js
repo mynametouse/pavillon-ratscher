@@ -1242,6 +1242,54 @@ export const SCHL = (() => {
       }
     }
   }
+  // ---- feat/gebaeude: steps in front of every house door whose threshold stands over the ground (fassade/fassade.js: the blocks and the
+  // ground one walks on – KERN.ground) ----
+  function doorSteps() {
+    if (!window.FASSADE || !FASSADE.doorSteps || !VPROPS.kit || !S.propMat) return;
+    const K = VPROPS.kit(),
+      items = [],
+      raw = (x, y) => {
+        const z = gz && gz(x, y);
+        return z !== undefined && z !== null ? z : ground(x, y);
+      },
+      zAt = (x, y) => (WELT.padAt ? WELT.padAt(x, y, raw(x, y)) : ground(x, y));
+    for (const b of S.bld) {
+      if (b.lm) continue;
+      const o = b.st,
+        doors = [];
+      if (b.doorFac && b.doorFac.w < 1.6 && !b.passDoor)
+        doors.push([b.doorUse && b.doorUse.k, b.doorFac.u, b.doorFac.w]);
+      if (b.doorYard) doors.push([b.doorYard.k, b.doorYard.u, b.doorYard.w]);
+      for (const e of b.extraDoors || []) doors.push([e.k, e.u, e.w]);
+      for (const [k, u, w] of doors) {
+        const f = k !== undefined && k !== null ? b.F[k] : null;
+        if (!f || w >= 1.6) continue;
+        const st = b.stF ? b.stF(f, k) : f[8] & 1 && (o.style === ST.FW || o.style === ST.FW_UP) ? ST.PLASTER : o.style;
+        if (!(st < 6.5 || st === 12 || st > 12.5)) continue;
+        const L = Math.hypot(f[2] - f[0], f[3] - f[1]),
+          tx = (f[2] - f[0]) / L,
+          ty = (f[3] - f[1]) / L,
+          x = f[0] + tx * u,
+          y = f[1] + ty * u,
+          it = FASSADE.doorSteps(
+            K,
+            x,
+            y,
+            tx,
+            ty,
+            ty,
+            -tx,
+            w,
+            b.z0 + (o.raised ? 0.6 : 0.35),
+            zAt(x + ty * 1.2, y - tx * 1.2)
+          );
+        if (it) items.push(it);
+      }
+    }
+    FASSADE.stepsAdd('schleusingen', items);
+    S.steps = items.length;
+    if (!K.empty()) add(new THREE.Mesh(K.geo(), S.propMat), 'stufen');
+  }
   // ---- feat/gebaeude: the frame of a gateway (old-town Tordurchfahrten, photos of Thuringian small towns: a sandstone surround, a
   // segmental arch, a wooden gate standing open in the day) – props geometry, at both ends of the passage ----
   function gateway(K, q) {
@@ -1457,6 +1505,12 @@ export const SCHL = (() => {
       });
     }
     if (WELT.setPads) WELT.setPads('schleusingen', pads);
+    // feat/gebaeude: steps in front of the doors (the door stands on the plinth; the ground as drawn with the pads)
+    try {
+      if (FASS.on) doorSteps();
+    } catch (e) {
+      console.warn('schleusingen steps', e);
+    }
     S.ms = Math.round(performance.now() - t0);
     S.state = 'ready';
     pc = [1e9, 0, null]; // the cached place name was given before the town stood
@@ -1492,6 +1546,7 @@ export const SCHL = (() => {
     S.rathaus = null;
     S.pool = null;
     if (WELT.setPads) WELT.setPads('schleusingen', []);
+    if (window.FASSADE && FASSADE.stepsAdd) FASSADE.stepsAdd('schleusingen', []); // feat/gebaeude
     if (WELT.setOverlay) WELT.setOverlay(null);
     data = null;
     S.data = null;
@@ -2001,6 +2056,7 @@ export const SCHL = (() => {
       envMapIntensity: 0.7,
     });
     const pm = add(new THREE.Mesh(K.geo(), mp), 'props');
+    S.propMat = mp; // feat/gebaeude: the door steps share it
     pm.userData.own = true;
     lamps();
     signs();

@@ -338,6 +338,71 @@ export const FASSADE = (() => {
       },
     };
   }
+  // ---- door steps: the ground one walks on in front of the doors (KERN.ground, before the terrain), per place ----
+  const STEPS = new Map(),
+    SG = 4;
+  function stepsAdd(name, list) {
+    const grid = new Map();
+    for (const it of list) {
+      const D = it.boxes.length ? it.boxes[it.boxes.length - 1].d : 0,
+        xs = [
+          it.x - it.tx * it.hw,
+          it.x + it.tx * it.hw,
+          it.x - it.tx * it.hw + it.nx * D,
+          it.x + it.tx * it.hw + it.nx * D,
+        ],
+        ys = [
+          it.y - it.ty * it.hw,
+          it.y + it.ty * it.hw,
+          it.y - it.ty * it.hw + it.ny * D,
+          it.y + it.ty * it.hw + it.ny * D,
+        ];
+      for (let i = Math.floor(Math.min(...xs) / SG); i <= Math.floor(Math.max(...xs) / SG); i++)
+        for (let j = Math.floor(Math.min(...ys) / SG); j <= Math.floor(Math.max(...ys) / SG); j++) {
+          const k = i * 100003 + j;
+          if (!grid.has(k)) grid.set(k, []);
+          grid.get(k).push(it);
+        }
+    }
+    if (list.length) STEPS.set(name, { list, grid });
+    else STEPS.delete(name);
+  }
+  function stepAt(x, y) {
+    let best;
+    const k = Math.floor(x / SG) * 100003 + Math.floor(y / SG);
+    for (const set of STEPS.values()) {
+      const a = set.grid.get(k);
+      if (a)
+        for (const it of a) {
+          const dx = x - it.x,
+            dy = y - it.y,
+            o = dx * it.nx + dy * it.ny;
+          if (o < 0 || Math.abs(dx * it.tx + dy * it.ty) > it.hw) continue;
+          for (const b of it.boxes)
+            if (o <= b.d) {
+              if (best === undefined || b.top > best) best = b.top;
+              break;
+            }
+        }
+    }
+    return best;
+  }
+  KERN.provide('ground', (x, y) => (STEPS.size ? stepAt(x, y) : undefined), 11);
+  S.stepsAdd = stepsAdd;
+  S.stepAt = stepAt;
+  S.steps = () => [...STEPS].map(([k, v]) => [k, v.list.length]);
+  // the steps of one door into a kit (stone blocks from below the ground up to each step) and as an item for stepAt
+  const STEPC = linC([0.6, 0.58, 0.55]);
+  function doorSteps(K, x, y, tx, ty, nx, ny, w, zDoor, zG) {
+    const boxes = FAUDIT.stufen(zDoor, zG);
+    if (!boxes.length) return null;
+    const hw = w / 2 + 0.2,
+      rot = Math.atan2(ty, tx);
+    for (const b of boxes)
+      K.box(x + nx * (b.d / 2), y + ny * (b.d / 2), zG - 0.2, hw * 2, b.d, b.top - zG + 0.2, rot, STEPC);
+    return { x, y, tx, ty, nx, ny, hw, boxes };
+  }
+  S.doorSteps = doorSteps;
   // ---- Ratscher's fixes (once, after the village and the ETHOS buildings stand) ----
   const STALL = { sp: 3.0, w: 1.2, h: 0.8, sill: 1.75 }; // stable windows of the farms' halls (LPG halls, 1960s–80s: a row, high)
   // a row of stable windows along a wall q ({ ax, ay, dx, dy, nx, ny, L }): bays of 3 m, not at the door (p.du, p.dw) nor where a
@@ -537,6 +602,38 @@ export const FASSADE = (() => {
       if (fx.door || Object.keys(fx.win).length) S.geb.set(b.id, fx);
     }
     if (!OV.empty() && RATSCHER.bld[0]) add(new THREE.Mesh(OV.geo(), RATSCHER.bld[0].material), 'haut');
+    // steps in front of the house doors (the door stands on the plinth: 35 cm, 60 cm in a raised ground floor)
+    const KS = VPROPS.kit ? VPROPS.kit() : null,
+      items = [],
+      HOUSE = st => st < 6.5 || st === 12 || st > 12.5;
+    if (KS) {
+      for (const r of R) {
+        const p = r.fac.find(q => q.dw > 0 && q.du >= 0 && q.dw < 1.6);
+        if (!p || !HOUSE(p.st)) continue;
+        let foot = r.b ? r.b.z0 : null;
+        if (r.v) {
+          const q = r.v.fac[p.k];
+          let uu = 0;
+          foot = r.v.foot;
+          for (const qq of q.qs) {
+            if (p.du >= uu && p.du <= uu + qq.len) foot = qq.foot;
+            uu += qq.len;
+          }
+        }
+        if (foot === null) continue;
+        const x = p.ax + p.dx * p.du,
+          y = p.ay + p.dy * p.du,
+          zG = KERN.ground(x + p.nx * 1.2, y + p.ny * 1.2),
+          it =
+            Number.isFinite(zG) &&
+            doorSteps(KS, x, y, p.dx, p.dy, p.nx, p.ny, p.dw, foot + (p.raised ? 0.6 : 0.35), zG);
+        if (it) items.push(it);
+      }
+      stepsAdd('ratscher', items);
+      S.n.stufen = items.length;
+      const paint = VPROPS.mat && VPROPS.mat.paint;
+      if (paint && !KS.empty()) add(new THREE.Mesh(KS.geo(), paint), 'stufen');
+    }
     aD.needsUpdate = true;
     // the meshes: frames and dark glass in the props' paint; the glass that lights at night (a share of the windows) in a clone of it
     // with emissive (the same program)

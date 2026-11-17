@@ -146,6 +146,18 @@ with lib.browser() as b:
             E(f"GAME.view({d['x']}, {d['y']}, {d['z']}, {d['yaw']}, -6, 60); GAME.step(0.5)")
             lib.shot(pg, OUT, 'ratscher_tuer')
             ck('FASSADE.eingang gives the new door', bool(d['e']) and abs(d['e']['x'] - (d['x'])) < 7.5, json.dumps(d['e']))
+        # steps in front of the house doors: how many, one walked on, a picture
+        print('steps', E("JSON.stringify(FASSADE.steps())"), flush=True)
+        st = json.loads(E("""JSON.stringify((() => { const n = (FASSADE.status().doors || {}).stufen || 0; let pick = null;
+            for (const b of VILLAGE.bld) { const f = b.fac.find(q => q.door); if (!f || b.typ !== 0) continue; const x = f.ax + f.dx * f.door.u + f.nx * 0.25, y = f.ay + f.dy * f.door.u + f.ny * 0.25, z = FASSADE.stepAt(x, y);
+              if (z !== undefined && z - KERN.ground(x + f.nx * 2, y + f.ny * 2) > 0.4) { pick = { id: b.id, x, y, z, g: KERN.ground(x, y), nx: f.nx, ny: f.ny }; break; } }
+            return { n, pick }; })())"""))
+        print('door steps', json.dumps(st), flush=True)
+        ck('Ratscher: steps in front of the house doors, the ground on them', st['n'] > 50 and bool(st['pick']) and abs(st['pick']['g'] - st['pick']['z']) < 0.01, json.dumps(st))
+        if st['pick']:
+            q = st['pick']
+            E(f"GAME.view({q['x'] + q['nx'] * 4.5}, {q['y'] + q['ny'] * 4.5}, KERN.ground({q['x'] + q['nx'] * 4.5}, {q['y'] + q['ny'] * 4.5}) + 1.6, {math.degrees(math.atan2(-q['nx'], -q['ny']))}, -10, 60); GAME.step(0.4)")
+            lib.shot(pg, OUT, 'ratscher_haustuer_stufen')
         # the Anger (a street of the village) by day and by night
         E("GAME.view(240.0, -112.0, KERN.ground(240.0, -112.0) + 1.65, 250, -2, 62); GAME.step(0.5)")
         lib.shot(pg, OUT, 'ratscher_anger_tag')
@@ -254,6 +266,8 @@ with lib.browser() as b:
             print('party wall run', json.dumps(w), flush=True)
             if w:
                 lib.shot(pg, OUT, 'schleusingen_brandwand_fenster')
+            n = json.loads(E("JSON.stringify({ n: SCHL.steps || 0, sets: FASSADE.steps() })"))
+            ck('Schleusingen: steps in front of the house doors', n['n'] > 200, json.dumps(n))
             ok, rep = lib.check_gl(pg)
             ck('every shader program within 16 textures, none broken', ok, json.dumps({k: rep[k] for k in ('programs', 'maxFrag', 'maxVert')}))
         if want('perf'):
