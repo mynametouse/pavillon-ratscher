@@ -788,6 +788,34 @@ export const FASSADE = (() => {
     }
     return items;
   }
+  // the looks of the village's houses ('ratscher:<id>' as VILLAGE.byId, or '@x,y') onto the village's walls (as gebLooks); → how many
+  function villageLooks() {
+    if ((!LOOK.key.size && !LOOK.at.length) || !RATSCHER.bld[0] || !VILLAGE.ready) return 0;
+    const sh = VILLAGE.bld
+      .filter(b => b.st && b.fac && b.fac.length)
+      .map(b => ({
+        b,
+        id: b.id,
+        vid: b.id,
+        typ: b.typ,
+        st: b.st,
+        k: 0,
+        f: [].concat(...b.fac.map(q => [q.ax, q.ay])),
+      }));
+    const n = gebLooks(sh, [RATSCHER.bld[0]]);
+    for (const q of sh) q.b.st = q.st;
+    if (n) markDirty(true);
+    return n;
+  }
+  // looks given after the village stood: onto its houses now (the town takes them at its next build, the ETHOS cells as they are built)
+  S.ansichtDorf = () => {
+    try {
+      return villageLooks();
+    } catch (e) {
+      LOOK.err = String(e);
+      return 0;
+    }
+  };
   function fixRatscher() {
     // the looks of the square's ETHOS buildings first (their records and skins follow them)
     const nLook =
@@ -797,23 +825,7 @@ export const FASSADE = (() => {
             GEB.meshes.filter(m => m.material === RATSCHER.bld[0].material)
           )
         : 0;
-    // and of the village's houses ('ratscher:<id>' as VILLAGE.byId, or '@x,y'), onto the village's walls
-    let nLookV = 0;
-    if ((LOOK.key.size || LOOK.at.length) && RATSCHER.bld[0]) {
-      const sh = VILLAGE.bld
-        .filter(b => b.st && b.fac && b.fac.length)
-        .map(b => ({
-          b,
-          id: b.id,
-          vid: b.id,
-          typ: b.typ,
-          st: b.st,
-          k: 0,
-          f: [].concat(...b.fac.map(q => [q.ax, q.ay])),
-        }));
-      nLookV = gebLooks(sh, [RATSCHER.bld[0]]);
-      for (const q of sh) q.b.st = q.st;
-    }
+    const nLookV = villageLooks();
     const t0 = performance.now(),
       g = RATSCHER.bld[0] && RATSCHER.bld[0].geometry,
       aD = g && g.attributes.aD;

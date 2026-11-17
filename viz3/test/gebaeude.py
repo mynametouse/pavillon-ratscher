@@ -172,6 +172,13 @@ with lib.browser() as b:
         night(E, pg, True)
         lib.shot(pg, OUT, 'ratscher_anger_nacht')
         night(E, pg, False)
+        # a look given for a village house after the village stood (FASSADE.ansicht 'ratscher:<id>', FASSADE.ansichtDorf): its walls repainted
+        vl = json.loads(E("""JSON.stringify((() => { const b = VILLAGE.bld.find(q => q.typ === 0 && q.fac.length && q.fac[0].ax < -700 && q.st && !(q.st.style === 5 || q.st.style === 6)); if (!b) return null;
+            FASSADE.ansicht('ratscher:' + b.id, { farbe: '#3a62b0', laeden: 'gruen' }); const n = FASSADE.ansichtDorf(), g = RATSCHER.bld[0].geometry, W = g.attributes.aW.array, C = g.attributes.aC.array, D = g.attributes.aD.array;
+            let hit = 0, blue = 0, sh = 0; for (let v = 0; v < g.attributes.aW.count; v++) if (Math.round(W[v * 4 + 3]) === 4 * b.id + b.typ) { hit++; if (C[v * 4 + 2] > C[v * 4] * 3) blue++; if (Math.round(D[v * 4 + 3]) & 2) sh++; }
+            return { id: b.id, n, hit, blue, sh, col: b.st.col.map(v => +v.toFixed(3)), shutters: b.st.shutters }; })())"""))
+        print('village look', json.dumps(vl), flush=True)
+        ck('a look given later for a village house: its walls repainted (colour, shutters)', bool(vl) and vl['n'] >= 1 and vl['blue'] > 0 and vl['blue'] >= vl['hit'] // 2 and vl['sh'] > 0, json.dumps(vl))
         ck('the eingang of a house with a door inside (HAEUSER) is its painted door',
            E("(() => { const L = window.HAEUSER && HAEUSER.list ? HAEUSER.list() : []; if (!L.length) return true; const o = L[0], e = FASSADE.eingang(o.id); return !!e && Math.hypot(e.x - o.door.x, e.y - o.door.y) < 0.8; })()"))
 
