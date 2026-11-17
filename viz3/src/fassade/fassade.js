@@ -66,20 +66,33 @@ export const FASSADE = (() => {
   const LOOK = { key: new Map(), at: [], file: 0, used: 0, err: '', done: !S.on };
   const MAT = {
     putz: 0,
+    stein: 0,
     glatt: 1,
     modern: 1,
+    verkleidung: 1,
+    glas: 1,
     schiefer: 2,
+    'schiefer-ganz': 2,
     'schiefer-og': 3,
     'schiefer-giebel': 4,
     fachwerk: 5,
+    'fachwerk-ganz': 5,
     'fachwerk-og': 6,
+    'fachwerk-giebel': 6,
     scheune: 7,
     holz: 8,
+    bretter: 8,
     klinker: 9,
     halle: 10,
+    blech: 10,
     schuppen: 11,
     'schule-alt': 12,
   };
+  // the kinds a look can give a building (art): its type (the town's door and steps follow it) and, without a material, its style
+  const ART = { haus: [0, 0], halle: [1, 10], scheune: [1, 7], schuppen: [2, 11], kirche: [0, 0] },
+    // the roof's covering (village.js roofKind): clay tiles, light fibre cement, corrugated sheet, slate, flat (gravel, bitumen)
+    DACH = { ziegel: 0, eternit: 1, faserzement: 1, blech: 2, schiefer: 3, flach: 4, bitumen: 4, kies: 4, gruen: 4 },
+    SAND = [0.88, 0.82, 0.7];
   const RAHMEN = { weiss: 0, weiß: 0, braun: 1, gruen: 2, grün: 2, grau: 3 },
     LAEDEN = { gruen: 0, grün: 0, braun: 1, grau: 2 };
   // '#rrggbb' or [r, g, b] (sRGB 0–1) → the linear colour the towns' palettes hold (× 0.82)
@@ -148,7 +161,17 @@ export const FASSADE = (() => {
         doorW: 1.3,
         col: colOf([0.93, 0.92, 0.89]),
       });
+    if (typeof L.art === 'string' && ART[L.art]) {
+      const [typ, st] = ART[L.art];
+      n.typ = typ;
+      if (!(typeof L.material === 'string' && MAT[L.material] !== undefined) && n.typ !== o.typ) n.style = st;
+      if (typ === 0 && o.typ !== 0) n.sp = 2.8;
+      // a church or chapel of rubble sandstone (the Gottesackerkirche): sandstone, plain frames, an oak door
+      if (L.art === 'kirche')
+        Object.assign(n, { style: 0, col: colOf(SAND), frame: 3, door: 7, sp: 3.4, shutters: false });
+    }
     if (typeof L.material === 'string' && MAT[L.material] !== undefined) n.style = MAT[L.material];
+    if (L.material === 'stein' && !L.farbe) n.col = colOf(SAND);
     if (L.fachwerk === true || Number.isFinite(L.fachwerk)) {
       if (n.style !== 5 && n.style !== 6) n.style = 6;
       if (Number.isFinite(L.fachwerk)) n.timber = Math.max(0, Math.min(2, Math.round(L.fachwerk)));
@@ -169,7 +192,17 @@ export const FASSADE = (() => {
     }
     if (Number.isFinite(L.achse)) n.sp = Math.max(2, Math.min(6, L.achse));
     if (typeof L.sockel === 'boolean') n.raised = L.sockel;
+    // the tones of the timbers (0–3: dark brown, red-brown, black, grey) and of the slate (0 blue-black, 1 silver-grey, 2 mid grey,
+    // 3 the house's colour)
+    if (Number.isFinite(L.fachwerkTon)) n.timber = Math.max(0, Math.min(3, Math.round(L.fachwerkTon)));
+    if (Number.isFinite(L.schieferTon)) n.slate = Math.max(0, Math.min(3, Math.round(L.schieferTon)));
     return n;
+  };
+  // the roof's covering of a look (dach: { material }) as village.js roof kind, or null
+  S.ansichtDachArt = L => {
+    const d = L && L.dach,
+      m = d && typeof d === 'object' ? d.material : null;
+    return typeof m === 'string' && DACH[m] !== undefined ? DACH[m] : null;
   };
   // the roof colour of a look ('dach': '#rrggbb' or { farbe }) as the town data holds it (sRGB 0–1), or null
   S.ansichtDach = L => {
@@ -665,7 +698,7 @@ export const FASSADE = (() => {
         sp: o.sp || 3,
         fl: (o.shutters ? 2 : 0) + (o.orn ? 4 : 0) + (o.raised ? 8 : 0),
         col: o.col,
-        pk: (o.timber || 0) + 4 * (o.frame || 0) + 16 * (o.door || 0) + 128 * (o.shut || 0),
+        pk: (o.timber || 0) + 4 * (o.frame || 0) + 16 * (o.door || 0) + 128 * (o.shut || 0) + 512 * (o.slate || 0),
       });
       // the top line of a facade at u (gable apex or straight)
       const topOf = (p, u) =>
@@ -898,7 +931,8 @@ export const FASSADE = (() => {
         C.array[v * 4] = o.col[0];
         C.array[v * 4 + 1] = o.col[1];
         C.array[v * 4 + 2] = o.col[2];
-        C.array[v * 4 + 3] = (o.timber || 0) + 4 * (o.frame || 0) + 16 * (o.door || 0) + 128 * (o.shut || 0);
+        C.array[v * 4 + 3] =
+          (o.timber || 0) + 4 * (o.frame || 0) + 16 * (o.door || 0) + 128 * (o.shut || 0) + 512 * (o.slate || 0);
         D.array[v * 4 + 3] = (Math.round(D.array[v * 4 + 3]) & ~2) | (o.shutters ? 2 : 0);
       }
       if (hit) V.needsUpdate = C.needsUpdate = D.needsUpdate = true;

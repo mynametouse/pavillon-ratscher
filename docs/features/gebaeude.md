@@ -175,14 +175,29 @@ ganz ohne Fenster (alle Wände gedeckt) und eine Wand von 8,8 m.
   - **Schlüssel**: `"#236"` (ein Gebäude der Altstadtdaten, Index wie `SCHL.bld[].i`, für `SINNEN` 900000 + i), eine Adresse
     (`"Markt 12"` – die Häuser mit dieser Adresse), eine ETHOS-Nummer (`"DEG_…"`, die Gebäude von `gebaeude/gebaeude.js` am Stadtrand und an
     den Strecken), `"@x,y"` (Modellmeter: das Gebäude, das dort steht – am einfachsten für Punkte aus einer Straßenansicht).
-  - **Ansicht** (alles freiwillig): `farbe` (`"#rrggbb"` oder `[r, g, b]` 0–1, sRGB), `material` (`putz`, `glatt` = Putz von heute mit
-    großen Fenstern, `schiefer`, `schiefer-og`, `schiefer-giebel`, `fachwerk`, `fachwerk-og`, `klinker`, `scheune`, `holz` (Bretter),
-    `halle`, `schuppen`, `schule-alt` = Ratschers Schule von 1828 – die Stile des Fassaden-Shaders), `fachwerk` (`true`/`false` oder Muster
-    0–2), `laeden` (`true`/`false` oder Farbe `gruen`/`braun`/`grau`), `rahmen` (`weiss`/`braun`/`gruen`/`grau`), `tuer` (Art 0–7:
-    dunkelbraun, braun, grün, blau, hellgrau mit Glas, rot, hellblau, Eiche – oder `{ "art": 4, "breite": 1.3 }`, in der Altstadt höchstens
-    1,3 m: breiter ist für `SIPLAN` eine Durchfahrt), `dach` (`"#rrggbb"`: Farbe der Dachdeckung, nur Altstadt), `achse` (Fensterachse in
-    m, nur Altstadt), `sockel` (Hochparterre), `art: "schule"` (Schule von heute: glatt, hell, weite Achsen, helle Glastür, keine Läden).
+  - **Ansicht** (alles freiwillig):
+    - `art`: `haus` (Haus statt Halle/Schuppen: Fenster und Tür eines Hauses), `halle`, `scheune`, `schuppen`, `kirche` (Bruchstein aus
+      Sandstein, schlichte Rahmen, Eichentür – Rundbogenfenster kann der Shader nicht), `schule` (Schule von heute: glatt, hell, weite
+      Achsen, helle Glastür, keine Läden).
+    - `material`: `putz`, `stein` (Putzstil in Sandsteinfarbe), `glatt`/`verkleidung`/`glas` (glatter Putz von heute mit großen Fenstern),
+      `schiefer`/`schiefer-ganz`, `schiefer-og`, `schiefer-giebel`, `fachwerk`/`fachwerk-ganz`, `fachwerk-og`, `fachwerk-giebel` (wie
+      `fachwerk-og`: der Shader kennt Fachwerk nur ab dem Obergeschoss), `klinker`, `scheune`, `holz`/`bretter`, `halle`/`blech`,
+      `schuppen`, `schule-alt` (Ratschers Schule von 1828) – die Stile des Fassaden-Shaders.
+    - `farbe` (`"#rrggbb"` oder `[r, g, b]` 0–1, sRGB), `fachwerk` (`true`/`false` oder Muster 0–2), `fachwerkTon` (0–3: dunkelbraun,
+      rotbraun, schwarz, grau), `schieferTon` (0 blauschwarz, 1 silbergrau, 2 mittelgrau, 3 Hausfarbe), `laeden` (`true`/`false` oder
+      Farbe `gruen`/`braun`/`grau`), `rahmen` (`weiss`/`braun`/`gruen`/`grau`), `tuer` (Art 0–7: dunkelbraun, braun, grün, blau,
+      hellgrau mit Glas, rot, hellblau, Eiche – oder `{ "art": 4, "breite": 1.3 }`, in der Altstadt höchstens 1,3 m: breiter ist für
+      `SIPLAN` eine Durchfahrt), `achse` (Fensterachse in m, nur Altstadt), `sockel` (Hochparterre).
+    - `dach`: `"#rrggbb"` oder `{ "farbe": …, "material": "ziegel" | "eternit" | "blech" | "schiefer" | "flach" | "kies" | "bitumen" |
+      "gruen", "form": "flach" }` – Farbe und Deckung nur Altstadt; `form: "flach"` macht aus einem Sattel- ein Flachdach (Altstadt).
+    - `geschosse` (1–8, Altstadt): die Traufe auf 0,4 m + 2,75 m je Geschoss, Wände und Dach mit (für Garagen, die als zweigeschossig in
+      den Daten stehen).
   - **Im Spiel** (Test, Werkzeug): `FASSADE.ansicht(schlüssel, ansicht)` vor dem Bau; `FASSADE.ansichtOf(b)`, `FASSADE.ansichtStand()`.
+  - **An den Chat von `schleusingen-ansicht`** (PARALLEL 18:37, „sagt, was euch lieber ist“): lieber über `FASSADE`, ohne Zeile in
+    `welt/schleusingen.js` – entweder eure Werte in diesem Format als `viz3/extra/schleusingen-ansicht/dist/fassade/ansicht.json`
+    (Schlüssel `"#<i>"`), oder euer Modul `SAFASS` ruft beim Laden je Gebäude `FASSADE.ansicht('#' + i, SAFASS.look(…))` (vor dem Bau der
+    Stadt; das Modul in `modules.txt` nach `fassade/fassade.js`). Für Ratschers Häuser (`VILLAGE`) gibt es den Weg noch nicht – die
+    Dorf-Häuser baut `world/village.js` (gemeinsam); dafür bräuchte es einen Haken dort oder ein Umfärben der Wände wie bei ETHOS.
   - Die Altstadt nimmt die Ansicht vor dem Bau in ihren Stil (`welt/schleusingen.js` `styleOf` danach), die ETHOS-Gebäude bekommen sie auf
     ihre Wände gemalt, sobald ihre Zelle steht (Farbe, Material, Läden, Rahmen, Tür – Dach, Achsen und Türbreite bleiben, wie
     `gebaeude.js` sie baut). Dachform und Höhe kommen weiter aus den Daten.

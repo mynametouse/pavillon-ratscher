@@ -218,6 +218,7 @@ with lib.browser() as b:
         # looks from outside (FASSADE.ansicht, as feat/schleusingen-ansicht will give them): one town house by its index, one ETHOS
         # building by a point – before the town and the cells are built
         E("""FASSADE.ansicht('#56', { farbe: '#3a62b0', laeden: 'braun', rahmen: 'weiss' });
+            FASSADE.ansicht('#80', { art: 'schule', geschosse: 2, dach: { form: 'flach', material: 'kies' } });
             FASSADE.ansicht('@-1161.5,1217.9', { farbe: '#b03a3a', material: 'klinker' })""")
         s = go_schl()
         print('schleusingen', json.dumps(s), flush=True)
@@ -320,12 +321,14 @@ with lib.browser() as b:
                     E(f"GAME.view({q['x']}, {q['y']}, KERN.ground({q['x']}, {q['y']}) + 1.65, {q['yaw']}, 4, 62); GAME.step(0.3)")
                     lib.shot(pg, OUT, 'schleusingen_zone_fenster')
             # the looks given before the build: the town house in blue with brown shutters, the ETHOS shed in red brick
-            lk = json.loads(E("""JSON.stringify((() => { const b = SCHL.bld.find(q => q.i === 56), z = FASSADE.zonen ? FASSADE.zonen() : {};
+            lk = json.loads(E("""JSON.stringify((() => { const b = SCHL.bld.find(q => q.i === 56), s = SCHL.bld.find(q => q.i === 80), z = FASSADE.zonen ? FASSADE.zonen() : {};
                 return { st: b && b.st.style, col: b && b.st.col.map(v => +v.toFixed(3)), shutters: b && b.st.shutters, shut: b && b.st.shut, look: !!(b && b.look),
-                  zonen: z.ansicht, stand: FASSADE.ansichtStand() }; })())"""))
+                  school: s && { style: s.st.style, e: +s.e.toFixed(2), fl: s.fl, rk: s.rk, top: Math.max(...s.rv.filter((v, k) => k % 3 === 2)) }, zonen: z.ansicht, stand: FASSADE.ansichtStand() }; })())"""))
             print('looks', json.dumps(lk), flush=True)
-            ck('looks given from outside (FASSADE.ansicht) on a town house and on an ETHOS building', lk['look'] and lk['shutters'] and lk['shut'] == 1 and lk['col'][2] > lk['col'][0] and (lk['zonen'] or 0) >= 1,
-               json.dumps(lk))
+            sc = lk.get('school') or {}
+            ck('looks given from outside (FASSADE.ansicht) on town houses (colour, shutters; a school with two storeys and a flat roof) and on an ETHOS building',
+               lk['look'] and lk['shutters'] and lk['shut'] == 1 and lk['col'][2] > lk['col'][0] and (lk['zonen'] or 0) >= 1
+               and sc.get('style') == 1 and sc.get('fl') == 1 and sc.get('rk') == 4 and abs(sc.get('e', 0) - 5.9) < 0.01 and abs(sc.get('top', 0) - 5.9) < 0.01, json.dumps(lk))
             # the three findings of schleusingen-ansicht: the Markt from its south-east corner looking west (a grey block stood there), the
             # blocks of flats on Hildburghäuser Straße (white, no shutters), the school (a school's look, not a house's)
             E("""(() => { const P = SCHL.data.marktplatz; let bx = 0, by = 0, best = -1e9; for (let k = 0; k < P.length; k += 2) if (P[k] - P[k + 1] > best) { best = P[k] - P[k + 1]; bx = P[k]; by = P[k + 1]; }

@@ -95,6 +95,55 @@ export const SCHL = (() => {
     CREAM = linC([0.95, 0.87, 0.66], 0.82), // the Rathaus front
     SAND_B = linC([0.74, 0.67, 0.56], 0.82), // rough sandstone under the castle and the church
     BASE_C = linC([0.6, 0.58, 0.54], 0.82); // the stone base of a house on a slope
+  // ---- feat/gebaeude: the geometry a look asks for (FASSADE.ansicht) – storeys (geschosse: the eave at 0.4 + 2.75 m each, the walls' top
+  // lines and the roof lifted or lowered with it) and a flat roof (dach: { form: 'flach' }: the footprint at the eave, the walls without
+  // gables). From the data as loaded each time (the town may be built again from the same objects); without a look as the data is ----
+  function lookGeo(b, L) {
+    if (b.F0 === undefined) {
+      if (!L) return;
+      b.F0 = b.F.map(f => f.slice());
+      b.rv0 = b.rv ? b.rv.slice() : null;
+      b.rt0 = b.rt ? b.rt.slice() : null;
+      b.e0 = b.e;
+      b.lv0 = b.lv;
+      b.fl0 = b.fl;
+      b.rk0 = b.rk;
+    }
+    b.F = b.F0.map(f => f.slice());
+    b.rv = b.rv0 ? b.rv0.slice() : b.rv0;
+    b.rt = b.rt0 ? b.rt0.slice() : b.rt0;
+    b.e = b.e0;
+    b.lv = b.lv0;
+    b.fl = b.fl0;
+    b.rk = b.rk0;
+    if (!L) return;
+    const n = Number.isFinite(L.geschosse) ? Math.max(1, Math.min(8, Math.round(L.geschosse))) : 0;
+    if (n) {
+      const d = 0.4 + n * 2.75 - b.e;
+      b.e += d;
+      b.lv = n;
+      for (const f of b.F) {
+        f[4] += d;
+        f[6] += d;
+        f[7] += d;
+      }
+      if (b.rv) for (let k = 2; k < b.rv.length; k += 3) b.rv[k] += d;
+    }
+    const form = L.dach && typeof L.dach === 'object' ? L.dach.form : null;
+    if (form === 'flach' && b.f.length >= 6) {
+      const ring = [];
+      for (let k = 0; k < b.f.length; k += 2) ring.push(new THREE.Vector2(b.f[k], b.f[k + 1]));
+      const tri = THREE.ShapeUtils.triangulateShape(ring, []);
+      if (tri.length) {
+        b.rv = [];
+        for (const p of ring) b.rv.push(p.x, p.y, b.e);
+        b.rt = [].concat(...tri);
+        b.fl = 1;
+        b.rk = 4;
+        for (const f of b.F) f[4] = f[6] = f[7] = b.e;
+      }
+    }
+  }
   const areaOf = f => {
     let A = 0;
     for (let k = 0; k < f.length; k += 2) {
@@ -306,7 +355,7 @@ export const SCHL = (() => {
   // is kept as pieces for the audit (b.pieces, fassade/fassade.js)
   function building(b, i, z0, WB, RB) {
     const o = b.st,
-      pk = o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut,
+      pk = o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut + 512 * (o.slate || 0), // feat/gebaeude: the slate's tone (a look)
       eave = b.e,
       D = b.doorUse !== undefined ? b.doorUse : streetDoor(b);
     // the Rathaus: a blue-grey stone ground floor under the cream plaster (photos 2025) – its facade quads are split at the floor line
@@ -1510,9 +1559,12 @@ export const SCHL = (() => {
       b.st = styleOf(b, i);
       // feat/gebaeude: a look given from outside for this house (FASSADE.ansicht: colour, material, shutters, frames, door, roof colour)
       const look = !b.lm && window.FASSADE && FASSADE.ansichtOf ? FASSADE.ansichtOf(b) : null;
+      lookGeo(b, look);
       if (look) {
         b.st = FASSADE.ansichtStil(b.st, look);
         b.rc = FASSADE.ansichtDach(look) || b.rc;
+        const rk = FASSADE.ansichtDachArt ? FASSADE.ansichtDachArt(look) : null;
+        if (rk !== null) b.rk = rk;
         b.look = look;
       }
       LM_PREP[b.lm] && LM_PREP[b.lm](b);
