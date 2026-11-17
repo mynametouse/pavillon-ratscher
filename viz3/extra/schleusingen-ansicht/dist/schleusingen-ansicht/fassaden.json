@@ -1,0 +1,2520 @@
+{
+ "v": 1,
+ "stand": "2026-11-17",
+ "quelle": "private Ansichten von der Straße (nicht im Repo), gelesen von Hand; Farben sRGB, von einer besonnten Stelle gemessen oder – wo nur Schatten zu sehen war – geschätzt (wand_quelle)",
+ "gebaeude_von": "viz3/extra/schleusingen/dist/schleusingen/stadt.json (Index i in b, Schwerpunkt x, y zum Prüfen)",
+ "gebaeude": [
+  {
+   "i": 7,
+   "x": -1118.6,
+   "y": 1445.0,
+   "adresse": "Jägerhausstraße 7",
+   "name": "Sagasser",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e9e8e3",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Bungalow, weiß, Dach braungrau (hinter dem Schild)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v016",
+    "v039"
+   ]
+  },
+  {
+   "i": 16,
+   "x": -1346.3,
+   "y": 1189.4,
+   "art": "pavillon",
+   "material": "stein",
+   "wand": "#bba98f",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Sandstein-Arkaden/Pavillon unter der Burg, rotes Dach",
+   "sicher": "mittel",
+   "ansichten": [
+    "v017",
+    "v050",
+    "v000"
+   ]
+  },
+  {
+   "i": 17,
+   "x": -1094.9,
+   "y": 1536.7,
+   "art": "haus",
+   "material": "verkleidung",
+   "wand": "#c9c8c2",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": true,
+   "laden": false,
+   "rahmen": "gruen",
+   "besonders": "hellgraue Schindeln, dunkelgrüne Fensterläden, bemoostes Dach",
+   "sicher": "mittel",
+   "ansichten": [
+    "v039",
+    "v038"
+   ]
+  },
+  {
+   "i": 18,
+   "x": -1008.7,
+   "y": 1692.1,
+   "art": "autohaus",
+   "material": "glas",
+   "wand": "#bebeb6",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Autohaus: Glasfront, weißgraue Verkleidung, Vordach",
+   "sicher": "mittel",
+   "ansichten": [
+    "v034",
+    "v035"
+   ]
+  },
+  {
+   "i": 32,
+   "x": -1107.6,
+   "y": 1544.2,
+   "adresse": "Suhler Straße 24",
+   "art": "haus",
+   "material": "verkleidung",
+   "wand": "#6cbcae",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "türkis/mintgrüne Schindeln, gelbe Fensterfaschen, alte orangerote Ziegel",
+   "sicher": "hoch",
+   "ansichten": [
+    "v039",
+    "v037",
+    "v038"
+   ]
+  },
+  {
+   "i": 40,
+   "x": -1145.7,
+   "y": 1537.5,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e7e4dc",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Haus mit Solardach",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v036",
+    "v040"
+   ]
+  },
+  {
+   "i": 48,
+   "x": -1155.3,
+   "y": 1523.5,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#d1d0d0",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "anderthalbgeschossig, weiß, großes Landschaftswandbild an der Seite",
+   "sicher": "hoch",
+   "ansichten": [
+    "v036",
+    "v040",
+    "v042"
+   ]
+  },
+  {
+   "i": 50,
+   "x": -1153.1,
+   "y": 1550.0,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#5e4636",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Giebel mit dunklen Brettern",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v040"
+   ]
+  },
+  {
+   "i": 51,
+   "x": -989.3,
+   "y": 1705.4,
+   "art": "autohaus",
+   "material": "glas",
+   "wand": "#e8eae9",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Autohaus, weißes Vordach",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v034",
+    "v035"
+   ]
+  },
+  {
+   "i": 53,
+   "x": -769.3,
+   "y": 1417.7,
+   "adresse": "Ilmenauer Straße 15",
+   "name": "Sonnenblume (Rehazentrum)",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#cecdcf",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "gruen",
+   "besonders": "weiß, Flügel mit roten Dächern (Kindergarten?)",
+   "sicher": "mittel",
+   "ansichten": [
+    "v063",
+    "v061",
+    "v067"
+   ]
+  },
+  {
+   "i": 56,
+   "x": -1333.3,
+   "y": 1290.8,
+   "adresse": "Suhler Straße 11",
+   "name": "Teutsche Schule",
+   "art": "haus",
+   "material": "fachwerk",
+   "wand": "#ece8df",
+   "wand_quelle": "geschätzt",
+   "fachwerk": "braun",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Teutsche Schule: reiches Fachwerk dunkelbraun mit Schnitzband, Sandsteinsockel, Schiefergauben",
+   "sicher": "hoch",
+   "ansichten": [
+    "v029",
+    "v025",
+    "v027"
+   ]
+  },
+  {
+   "i": 70,
+   "x": -740.0,
+   "y": 1335.9,
+   "adresse": "Christian-Juncker-Straße 2",
+   "name": "Wiesenbauschule",
+   "art": "haus",
+   "material": "fachwerk_og",
+   "wand": "#8c3a2e",
+   "wand_quelle": "geschätzt",
+   "fachwerk": "schwarz",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "EG dunkelroter Putz, OG Fachwerk schwarz/weiß (Modell: modern)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v064"
+   ]
+  },
+  {
+   "i": 71,
+   "x": -713.6,
+   "y": 1352.9,
+   "adresse": "Christian-Juncker-Straße 1",
+   "art": "haus",
+   "material": "fachwerk_og",
+   "wand": "#d6d2d2",
+   "wand_quelle": "gemessen",
+   "fachwerk": "schwarz",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiß mit Fachwerk",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v064"
+   ]
+  },
+  {
+   "i": 72,
+   "x": -720.9,
+   "y": 1380.4,
+   "name": "Kreuzkirche",
+   "art": "kirche",
+   "material": "stein",
+   "wand": "#c2b49a",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Gottesackerkirche: Sandstein-Bruchmauerwerk beigegrau, Rundbogenfenster (Modell: Wohnhaus)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v062"
+   ]
+  },
+  {
+   "i": 79,
+   "x": -559.3,
+   "y": 1472.6,
+   "adresse": "Ilmenauer Straße 10",
+   "art": "block",
+   "material": "putz_modern",
+   "wand": "#e2d49c",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "blau",
+   "besonders": "Block blass ockergelb, blaue Fenster, Wellblech an den Treppenhäusern",
+   "sicher": "hoch",
+   "ansichten": [
+    "v056",
+    "v054",
+    "v052"
+   ]
+  },
+  {
+   "i": 80,
+   "x": -526.5,
+   "y": 1488.9,
+   "adresse": "Ilmenauer Straße 12",
+   "art": "schule",
+   "material": "putz_modern",
+   "wand": "#e8e8e4",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "moderne Schule: zweigeschossig, Flachdach, weißer Putz mit senkrechten dunkelgrauen Verkleidungsbändern zwischen den Fenstern, dunkle Attika, grauer Metallsockel (Modell: Wohnhaus)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v054",
+    "v052",
+    "v056"
+   ]
+  },
+  {
+   "i": 82,
+   "x": -790.3,
+   "y": 1298.7,
+   "adresse": "Prof.-Franke-Platz 1",
+   "name": "Rossteuscher",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e6dcc0",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#4f4d4c"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "creme",
+   "sicher": "mittel",
+   "ansichten": [
+    "v064",
+    "v066"
+   ]
+  },
+  {
+   "i": 83,
+   "x": -768.2,
+   "y": 1334.4,
+   "adresse": "Ilmenauer Straße 6",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e8e1ce",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "creme, weißer Vorbau",
+   "sicher": "hoch",
+   "ansichten": [
+    "v066",
+    "v062"
+   ]
+  },
+  {
+   "i": 84,
+   "x": -767.4,
+   "y": 1346.4,
+   "adresse": "Ilmenauer Straße 6a",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e7eae9",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiß, dunkles Schieferdach",
+   "sicher": "hoch",
+   "ansichten": [
+    "v062",
+    "v064",
+    "v066"
+   ]
+  },
+  {
+   "i": 85,
+   "x": -818.9,
+   "y": 1325.9,
+   "adresse": "Ilmenauer Straße 4",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e0cfa4",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "blass ockersand, weiße Lisenen, Schilder",
+   "sicher": "hoch",
+   "ansichten": [
+    "v068",
+    "v066",
+    "v064"
+   ]
+  },
+  {
+   "i": 86,
+   "x": -833.7,
+   "y": 1298.0,
+   "adresse": "Prof.-Franke-Platz 2",
+   "name": "Feuerwehr Schleusingen",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#dfdcd0",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "niedrig, weiß",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v068",
+    "v064",
+    "v066"
+   ]
+  },
+  {
+   "i": 92,
+   "x": -775.5,
+   "y": 1376.8,
+   "adresse": "Ilmenauer Straße 13",
+   "name": "Rehazentrum",
+   "art": "block",
+   "material": "putz",
+   "wand": "#d5cca8",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Block blass olivkhaki, Sandsteinsockel",
+   "sicher": "hoch",
+   "ansichten": [
+    "v065",
+    "v063",
+    "v067"
+   ]
+  },
+  {
+   "i": 93,
+   "x": -822.2,
+   "y": 1351.7,
+   "name": "Kinderkrippe",
+   "art": "block",
+   "material": "putz",
+   "wand": "#e8e1ca",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Block blass cremebeige mit ockerfarbenen Lisenen, Sandsteinsockel",
+   "sicher": "hoch",
+   "ansichten": [
+    "v067",
+    "v065",
+    "v063"
+   ]
+  },
+  {
+   "i": 148,
+   "x": -540.1,
+   "y": 1526.6,
+   "adresse": "Ilmenauer Straße 31",
+   "art": "villa",
+   "material": "putz",
+   "wand": "#eceded",
+   "wand_quelle": "gemessen",
+   "giebel": "fachwerk",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiß, Seitenwand Schiefer, Schiefergauben, Fachwerkgiebel dunkelbraun, kleiner Fachwerkbalkon",
+   "sicher": "hoch",
+   "ansichten": [
+    "v055",
+    "v053"
+   ]
+  },
+  {
+   "i": 149,
+   "x": -557.0,
+   "y": 1513.5,
+   "adresse": "Ilmenauer Straße 29",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#f7f3f1",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiß",
+   "sicher": "hoch",
+   "ansichten": [
+    "v057",
+    "v055",
+    "v053"
+   ]
+  },
+  {
+   "i": 150,
+   "x": -576.0,
+   "y": 1504.8,
+   "adresse": "Ilmenauer Straße 27",
+   "art": "villa",
+   "material": "putz",
+   "wand": "#f3f2f3",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiß, dunkelrote Backsteinfaschen, Walmdach mit Gaube",
+   "sicher": "hoch",
+   "ansichten": [
+    "v057",
+    "v055",
+    "v058",
+    "v053"
+   ]
+  },
+  {
+   "i": 151,
+   "x": -594.7,
+   "y": 1494.3,
+   "adresse": "Ilmenauer Straße 25",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e7e7e3",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiß, Gauben",
+   "sicher": "hoch",
+   "ansichten": [
+    "v058",
+    "v057",
+    "v055",
+    "v053"
+   ]
+  },
+  {
+   "i": 152,
+   "x": -619.0,
+   "y": 1487.6,
+   "adresse": "Ilmenauer Straße 23",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#efefeb",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#4f4d4c"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "viergeschossig, weiß",
+   "sicher": "hoch",
+   "ansichten": [
+    "v059",
+    "v058",
+    "v057",
+    "v055"
+   ]
+  },
+  {
+   "i": 153,
+   "x": -650.2,
+   "y": 1466.8,
+   "adresse": "Ilmenauer Straße 21",
+   "art": "villa",
+   "material": "verkleidung",
+   "wand": "#d8d7d0",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "hellgrauweiße Schindeln, olivgrüne Fensterfaschen, Türmchen",
+   "sicher": "hoch",
+   "ansichten": [
+    "v060",
+    "v059",
+    "v058",
+    "v057"
+   ]
+  },
+  {
+   "i": 154,
+   "x": -684.1,
+   "y": 1449.7,
+   "adresse": "Ilmenauer Straße 19",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#a6a4a5",
+   "wand_quelle": "gemessen",
+   "eg": {
+    "material": "klinker",
+    "farbe": "#9a4a3a"
+   },
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "EG roter Backstein, OG mittelgrauer Rauputz",
+   "sicher": "hoch",
+   "ansichten": [
+    "v061",
+    "v060",
+    "v059",
+    "v058"
+   ]
+  },
+  {
+   "i": 190,
+   "x": -1414.5,
+   "y": 1080.3,
+   "adresse": "Hildburghäuser Straße 1a",
+   "art": "haus",
+   "material": "fachwerk_og",
+   "wand": "#dee0e5",
+   "wand_quelle": "gemessen",
+   "fachwerk": "braun",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Mehrfamilienhaus, EG weiß, OG Fachwerk dunkelbraun, Holzbalkone über drei Ebenen",
+   "sicher": "hoch",
+   "ansichten": [
+    "v014",
+    "v019",
+    "v013",
+    "v011"
+   ]
+  },
+  {
+   "i": 211,
+   "x": -1088.8,
+   "y": 1192.1,
+   "adresse": "Markt 5",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#9da58a",
+   "wand_quelle": "geschätzt",
+   "giebel": "schiefer",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt SW: oliv/graugrün, dreigeschossig, Giebel hellgrauer Schiefer, Läden",
+   "sicher": "hoch",
+   "ansichten": [
+    "v072",
+    "v074",
+    "v073"
+   ]
+  },
+  {
+   "i": 212,
+   "x": -1101.5,
+   "y": 1187.9,
+   "adresse": "Markt 6",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#efede8",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt W: weiß, roter Giebel",
+   "sicher": "mittel",
+   "ansichten": [
+    "v074",
+    "v073"
+   ]
+  },
+  {
+   "i": 217,
+   "x": -1028.8,
+   "y": 1201.9,
+   "adresse": "Markt 1",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#c3b9a8",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt S: graubeige (Modell: Schiefer-OG)",
+   "sicher": "mittel",
+   "ansichten": [
+    "v071",
+    "v072"
+   ]
+  },
+  {
+   "i": 218,
+   "x": -1037.1,
+   "y": 1201.6,
+   "adresse": "Markt 2",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e0b867",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt S: ocker/gelb",
+   "sicher": "mittel",
+   "ansichten": [
+    "v071",
+    "v072"
+   ]
+  },
+  {
+   "i": 219,
+   "x": -1046.2,
+   "y": 1202.4,
+   "adresse": "Markt 3a",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#d7d6d0",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt S: weißgrau",
+   "sicher": "mittel",
+   "ansichten": [
+    "v071",
+    "v073",
+    "v072"
+   ]
+  },
+  {
+   "i": 220,
+   "x": -1057.2,
+   "y": 1196.9,
+   "adresse": "Markt 3",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#dca95a",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt S: ocker/orangegelb, Läden",
+   "sicher": "mittel",
+   "ansichten": [
+    "v073",
+    "v071",
+    "v072"
+   ]
+  },
+  {
+   "i": 221,
+   "x": -1071.3,
+   "y": 1197.8,
+   "adresse": "Markt 4",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#d9876a",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt S: terrakotta/lachs, Gauben",
+   "sicher": "hoch",
+   "ansichten": [
+    "v073",
+    "v072"
+   ]
+  },
+  {
+   "i": 226,
+   "x": -1031.0,
+   "y": 1257.6,
+   "adresse": "Markt 22",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#b9644d",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt SO: terrakotta/ziegelrot, dreigeschossig",
+   "sicher": "hoch",
+   "ansichten": [
+    "v070",
+    "v071"
+   ]
+  },
+  {
+   "i": 227,
+   "x": -1026.7,
+   "y": 1223.5,
+   "adresse": "Markt 24",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#bdb7aa",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt SO: hellgrau-beige",
+   "sicher": "mittel",
+   "ansichten": [
+    "v072",
+    "v071"
+   ]
+  },
+  {
+   "i": 228,
+   "x": -1031.1,
+   "y": 1236.7,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#bdb7aa",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt SO: lang, zweigeschossig, hellgrau-beige (Modell: Schiefer-OG)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v072",
+    "v070",
+    "v071"
+   ]
+  },
+  {
+   "i": 232,
+   "x": -1575.5,
+   "y": 975.4,
+   "adresse": "Hildburghäuser Straße 11",
+   "art": "block",
+   "material": "putz",
+   "wand": "#a9b3c6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Wohnblock, blassblau-grau, Treppenhausachse blassgrün",
+   "sicher": "hoch",
+   "ansichten": [
+    "v004",
+    "v003",
+    "v001"
+   ]
+  },
+  {
+   "i": 233,
+   "x": -1551.5,
+   "y": 992.6,
+   "adresse": "Hildburghäuser Straße 9",
+   "art": "block",
+   "material": "putz",
+   "wand": "#d5d6b6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Wohnblock, blass gelbgrün",
+   "sicher": "mittel",
+   "ansichten": [
+    "v006",
+    "v004",
+    "v003"
+   ]
+  },
+  {
+   "i": 234,
+   "x": -1527.8,
+   "y": 1008.7,
+   "adresse": "Hildburghäuser Straße 7",
+   "art": "block",
+   "material": "putz",
+   "wand": "#e2dbb2",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Wohnblock, blassgelb, Treppenhausachse graublau",
+   "sicher": "hoch",
+   "ansichten": [
+    "v008",
+    "v006",
+    "v004",
+    "v003"
+   ]
+  },
+  {
+   "i": 235,
+   "x": -1599.1,
+   "y": 1003.6,
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#8e8f8f",
+   "wand_quelle": "geschätzt",
+   "schiefer": "hell",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#4f4d4c"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "lang, ganz Naturschiefer mittelgrau, Bruchsteinsockel, Holzvordach",
+   "sicher": "hoch",
+   "ansichten": [
+    "v002"
+   ]
+  },
+  {
+   "i": 236,
+   "x": -1630.9,
+   "y": 938.8,
+   "art": "block",
+   "material": "putz",
+   "wand": "#dcd6c4",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Wohnblock, cremeweiß, Treppenhausachsen blassgelb, blaue Vordächer",
+   "sicher": "hoch",
+   "ansichten": [
+    "v001"
+   ]
+  },
+  {
+   "i": 239,
+   "x": -1046.6,
+   "y": 1282.7,
+   "adresse": "Markt 20",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#b5baa7",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt O: graugrün",
+   "sicher": "mittel",
+   "ansichten": [
+    "v071",
+    "v070"
+   ]
+  },
+  {
+   "i": 241,
+   "x": -1080.7,
+   "y": 1267.3,
+   "adresse": "Markt 18",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e4e3dd",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt NO: weiß, lang, zweigeschossig, Gauben, Markisen",
+   "sicher": "hoch",
+   "ansichten": [
+    "v069",
+    "v071",
+    "v070"
+   ]
+  },
+  {
+   "i": 242,
+   "x": -1063.5,
+   "y": 1273.4,
+   "adresse": "Markt 19",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#b8c4b0",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt O: salbeigrün/graugrün, Läden mit Markisen",
+   "sicher": "hoch",
+   "ansichten": [
+    "v071",
+    "v069",
+    "v070"
+   ]
+  },
+  {
+   "i": 243,
+   "x": -1113.0,
+   "y": 1255.2,
+   "adresse": "Markt 15",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#ede2b8",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt N: cremegelb, lang, Gauben, gelbe Markise",
+   "sicher": "hoch",
+   "ansichten": [
+    "v074",
+    "v070",
+    "v069"
+   ]
+  },
+  {
+   "i": 244,
+   "x": -1104.3,
+   "y": 1258.2,
+   "adresse": "Markt 16",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#efe9cc",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt N: creme/blassgelb, Läden (Modell: Schiefer-OG)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v070",
+    "v074",
+    "v069"
+   ]
+  },
+  {
+   "i": 245,
+   "x": -1095.5,
+   "y": 1261.3,
+   "adresse": "Markt 17",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#f6dfd1",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt N: rosa, Gauben",
+   "sicher": "hoch",
+   "ansichten": [
+    "v070",
+    "v069"
+   ]
+  },
+  {
+   "i": 246,
+   "x": -1126.1,
+   "y": 1251.8,
+   "adresse": "Markt 14",
+   "art": "haus",
+   "material": "fachwerk",
+   "wand": "#ece6da",
+   "wand_quelle": "geschätzt",
+   "fachwerk": "rot",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt N: Fachwerk rot/weiß",
+   "sicher": "mittel",
+   "ansichten": [
+    "v074",
+    "v069"
+   ]
+  },
+  {
+   "i": 247,
+   "x": -1143.3,
+   "y": 1230.7,
+   "adresse": "Markt 12",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#efe5a6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt NW: gelb",
+   "sicher": "mittel",
+   "ansichten": [
+    "v069",
+    "v074"
+   ]
+  },
+  {
+   "i": 250,
+   "x": -1136.3,
+   "y": 1210.8,
+   "adresse": "Markt 10",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#f1dbba",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt NW: lachs/apricot, dreigeschossig, Ladenbögen",
+   "sicher": "hoch",
+   "ansichten": [
+    "v069",
+    "v073",
+    "v074"
+   ]
+  },
+  {
+   "i": 251,
+   "x": -1137.5,
+   "y": 1222.0,
+   "adresse": "Markt 11",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#f8f8f2",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Markt NW: weiß mit grauen Faschen, dreigeschossig, Gauben",
+   "sicher": "hoch",
+   "ansichten": [
+    "v073",
+    "v069",
+    "v074"
+   ]
+  },
+  {
+   "i": 308,
+   "x": -1502.6,
+   "y": 1026.6,
+   "adresse": "Hildburghäuser Straße 5",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#d4d4d8",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Wohn- und Geschäftshaus, 3 Geschosse und Dach, Zwerchgiebel, weißgrau verwittert, leerer Laden, Sandsteinsockel (Modell: Halle)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v008",
+    "v006",
+    "v004",
+    "v003"
+   ]
+  },
+  {
+   "i": 349,
+   "x": -1444.2,
+   "y": 1111.6,
+   "art": "haus",
+   "material": "fachwerk_og",
+   "wand": "#edece8",
+   "wand_quelle": "gemessen",
+   "fachwerk": "schwarz",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "EG weiß verputzt, OG Fachwerk schwarz/weiß, lang mit Gauben, schmaler Giebelteil braunes Fachwerk (Modell: Halle)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v012",
+    "v010",
+    "v009",
+    "v000",
+    "v007",
+    "v018"
+   ]
+  },
+  {
+   "i": 350,
+   "x": -1413.8,
+   "y": 1143.1,
+   "adresse": "Schleusinger Bahnhofstraße 2",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e4e5e4",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "viergeschossig, Front weißgrau mit Faschen; Ostseite dunkler Schiefer mit großem Schild; Rückseite blassgraugrün mit gelben Balkonen",
+   "sicher": "mittel",
+   "ansichten": [
+    "v000",
+    "v018",
+    "v019"
+   ]
+  },
+  {
+   "i": 351,
+   "x": -1394.2,
+   "y": 1172.2,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#c9c4bc",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "braun",
+   "besonders": "lang, zweigeschossig, weiß/Rauputz, braune Fensterrahmen",
+   "sicher": "hoch",
+   "ansichten": [
+    "v019",
+    "v051",
+    "v018"
+   ]
+  },
+  {
+   "i": 352,
+   "x": -1400.2,
+   "y": 1138.8,
+   "adresse": "Suhler Straße 1",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e2e2e2",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiß verputzt, anderthalbgeschossig, Dach orangerot mit Gaube (Suhler Straße 1)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v000",
+    "v019",
+    "v012",
+    "v018"
+   ]
+  },
+  {
+   "i": 374,
+   "x": -1575.0,
+   "y": 931.3,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#aba498",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "grau, dahinter Fachwerkgiebel",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v003"
+   ]
+  },
+  {
+   "i": 376,
+   "x": -1575.9,
+   "y": 950.3,
+   "art": "schuppen",
+   "material": "putz",
+   "wand": "#a3a29a",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "niedrig, grauer Rauputz",
+   "sicher": "mittel",
+   "ansichten": [
+    "v003"
+   ]
+  },
+  {
+   "i": 380,
+   "x": -1522.2,
+   "y": 1069.4,
+   "adresse": "Hildburghäuser Straße 10",
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#5d6067",
+   "wand_quelle": "geschätzt",
+   "schiefer": "mittel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "ganz Schiefer dunkelgrau, weiße Fenster",
+   "sicher": "hoch",
+   "ansichten": [
+    "v009",
+    "v007",
+    "v010",
+    "v005"
+   ]
+  },
+  {
+   "i": 400,
+   "x": -1477.6,
+   "y": 1085.0,
+   "adresse": "Hildburghäuser Straße 6",
+   "art": "haus",
+   "material": "fachwerk_og",
+   "wand": "#d4cecb",
+   "wand_quelle": "gemessen",
+   "eg": {
+    "material": "verkleidung",
+    "farbe": "#cfcfcb"
+   },
+   "fachwerk": "rot",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "EG hellgrau verkleidet, OG und Giebel Fachwerk ochsenblutrot, Zwerchgiebel; Seiten Schiefer",
+   "sicher": "hoch",
+   "ansichten": [
+    "v010",
+    "v009",
+    "v007",
+    "v005",
+    "v012"
+   ]
+  },
+  {
+   "i": 401,
+   "x": -1473.8,
+   "y": 1106.0,
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#b4b3ac",
+   "wand_quelle": "gemessen",
+   "schiefer": "hell",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "lang, Schiefer hellgrau, weiße Fenster, Gauben",
+   "sicher": "hoch",
+   "ansichten": [
+    "v012",
+    "v007",
+    "v009"
+   ]
+  },
+  {
+   "i": 408,
+   "x": -1207.1,
+   "y": 1422.7,
+   "art": "haus",
+   "material": "verkleidung",
+   "wand": "#c8c2b8",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "dreigeschossig, hellgraue Rautenschindeln, Sandsteinsockel",
+   "sicher": "hoch",
+   "ansichten": [
+    "v047",
+    "v046",
+    "v044",
+    "v042"
+   ]
+  },
+  {
+   "i": 409,
+   "x": -1220.9,
+   "y": 1408.2,
+   "adresse": "Suhler Straße 23",
+   "art": "haus",
+   "material": "fachwerk_og",
+   "wand": "#c9d4be",
+   "wand_quelle": "geschätzt",
+   "fachwerk": "rot",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "EG blassgrün mit dunkelgrünen Ecksteinen, OG Fachwerk dunkelrot mit hellgrüner/weißer Ausfachung, Ziergiebel, Solardach",
+   "sicher": "hoch",
+   "ansichten": [
+    "v049",
+    "v023",
+    "v047",
+    "v046",
+    "v044"
+   ]
+  },
+  {
+   "i": 411,
+   "x": -866.8,
+   "y": 1302.1,
+   "adresse": "Walchstraße 1",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ecd660",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#4f4d4c"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "kräftig gelb",
+   "sicher": "hoch",
+   "ansichten": [
+    "v068",
+    "v066"
+   ]
+  },
+  {
+   "i": 430,
+   "x": -1281.8,
+   "y": 1389.1,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ecebe6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "niedriges weißes Haus",
+   "sicher": "mittel",
+   "ansichten": [
+    "v025",
+    "v049",
+    "v047",
+    "v021"
+   ]
+  },
+  {
+   "i": 431,
+   "x": -1241.2,
+   "y": 1403.9,
+   "adresse": "Suhler Straße 23",
+   "name": "Getränkemarkt Jürgen Weiß",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#d4d3d5",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiße Wand mit großer Werbetafel",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v021",
+    "v023",
+    "v049",
+    "v047"
+   ]
+  },
+  {
+   "i": 436,
+   "x": -1226.7,
+   "y": 1429.6,
+   "art": "schuppen",
+   "material": "bretter",
+   "wand": "#6b3a2e",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Carport/Schuppen aus dunkelrotbraunen Brettern",
+   "sicher": "mittel",
+   "ansichten": [
+    "v047",
+    "v044",
+    "v046"
+   ]
+  },
+  {
+   "i": 438,
+   "x": -1221.0,
+   "y": 1429.0,
+   "art": "schuppen",
+   "material": "bretter",
+   "wand": "#6b3a2e",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Schuppen aus dunkelrotbraunen Brettern",
+   "sicher": "mittel",
+   "ansichten": [
+    "v047",
+    "v044"
+   ]
+  },
+  {
+   "i": 457,
+   "x": -1313.7,
+   "y": 1253.5,
+   "adresse": "Suhler Straße 6",
+   "name": "Weber'sche Mühle",
+   "art": "haus",
+   "material": "fachwerk_og",
+   "wand": "#c1c2c2",
+   "wand_quelle": "gemessen",
+   "eg": {
+    "material": "stein",
+    "farbe": "#c9c1b2"
+   },
+   "fachwerk": "rot",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Webersche Mühle: EG Bruch-/Werkstein hellgraubeige mit Rundbogenfenstern, OG Fachwerk dunkelrot, Gauben",
+   "sicher": "hoch",
+   "ansichten": [
+    "v028",
+    "v026",
+    "v050",
+    "v024",
+    "v015"
+   ]
+  },
+  {
+   "i": 459,
+   "x": -1218.4,
+   "y": 1338.8,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e7dfc4",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#4f4d4c"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "zweigeschossig mit Dach, blasscreme",
+   "sicher": "mittel",
+   "ansichten": [
+    "v022",
+    "v020"
+   ]
+  },
+  {
+   "i": 460,
+   "x": -1332.3,
+   "y": 1215.6,
+   "adresse": "Suhler Straße 4",
+   "name": "Schloßmühle",
+   "art": "haus",
+   "material": "putz",
+   "wand": "#dfe0e0",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "braun",
+   "besonders": "weiß verputzt, dunkelrote Fensterrahmen, unter der Burg",
+   "sicher": "hoch",
+   "ansichten": [
+    "v017",
+    "v050",
+    "v028"
+   ]
+  },
+  {
+   "i": 552,
+   "x": -1261.4,
+   "y": 1366.9,
+   "art": "halle",
+   "material": "blech",
+   "wand": "#8f9a8e",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Gewerbehalle, graugrünes Trapezblech, unten beige Paneele, Schaufenster",
+   "sicher": "hoch",
+   "ansichten": [
+    "v023",
+    "v021",
+    "v049",
+    "v047",
+    "v046"
+   ]
+  },
+  {
+   "i": 561,
+   "x": -661.7,
+   "y": 1475.3,
+   "art": "villa",
+   "material": "verkleidung",
+   "wand": "#d8d7d0",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Flügel der Schindelvilla",
+   "sicher": "mittel",
+   "ansichten": [
+    "v061",
+    "v060"
+   ]
+  },
+  {
+   "i": 564,
+   "x": -1592.5,
+   "y": 932.5,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e0dfd6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Haus mit gelbgrünen Balkonbrüstungen",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v003"
+   ]
+  },
+  {
+   "i": 577,
+   "x": -1430.8,
+   "y": 1062.1,
+   "art": "villa",
+   "material": "fachwerk_og",
+   "wand": "#9a4a3a",
+   "wand_quelle": "geschätzt",
+   "eg": {
+    "material": "klinker",
+    "farbe": "#9a4a3a"
+   },
+   "fachwerk": "schwarz",
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Villa, EG roter Backstein, OG Fachwerk schwarz/weiß, Türmchengiebel, Schieferdach",
+   "sicher": "mittel",
+   "ansichten": [
+    "v013",
+    "v011",
+    "v014",
+    "v008"
+   ]
+  },
+  {
+   "i": 578,
+   "x": -1454.7,
+   "y": 1048.9,
+   "art": "villa",
+   "material": "putz",
+   "wand": "#dcdcd6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Villa mit spitzem Turm, hell verputzt, Schieferdach (hinter Bäumen)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v013",
+    "v011"
+   ]
+  },
+  {
+   "i": 579,
+   "x": -1545.5,
+   "y": 1057.9,
+   "art": "haus",
+   "material": "fachwerk_giebel",
+   "wand": "#d3d1d0",
+   "wand_quelle": "gemessen",
+   "fachwerk": "rot",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiß verputzt, Giebel Fachwerk rotbraun (Modell: Halle)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v007",
+    "v002",
+    "v005"
+   ]
+  },
+  {
+   "i": 580,
+   "x": -1551.9,
+   "y": 1032.2,
+   "art": "garage",
+   "material": "putz",
+   "wand": "#dddbd8",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "eingeschossige Garagen und Schuppen, Rauputz hellgrau, Werbetafeln (Modell: zweigeschossiges Haus)",
+   "sicher": "mittel",
+   "ansichten": [
+    "v005",
+    "v002",
+    "v007"
+   ]
+  },
+  {
+   "i": 584,
+   "x": -1135.4,
+   "y": 1406.6,
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#55575d",
+   "wand_quelle": "geschätzt",
+   "schiefer": "mittel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "dunkle Schieferhäuser dahinter",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v043",
+    "v016",
+    "v041"
+   ]
+  },
+  {
+   "i": 595,
+   "x": -1147.3,
+   "y": 1251.9,
+   "art": "haus",
+   "material": "fachwerk",
+   "wand": "#ece6da",
+   "wand_quelle": "geschätzt",
+   "fachwerk": "rot",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt NW: rotes Fachwerk",
+   "sicher": "mittel",
+   "ansichten": [
+    "v074",
+    "v069"
+   ]
+  },
+  {
+   "i": 645,
+   "x": -1111.8,
+   "y": 1275.1,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#eadfb5",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Markt N: cremegelb",
+   "sicher": "mittel",
+   "ansichten": [
+    "v070",
+    "v069"
+   ]
+  },
+  {
+   "i": 653,
+   "x": -1151.5,
+   "y": 1395.4,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e2cfa6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "blassocker",
+   "sicher": "mittel",
+   "ansichten": [
+    "v016",
+    "v048",
+    "v045",
+    "v043"
+   ]
+  },
+  {
+   "i": 673,
+   "x": -1378.8,
+   "y": 1248.5,
+   "art": "haus",
+   "material": "fachwerk_og",
+   "wand": "#ece8df",
+   "wand_quelle": "geschätzt",
+   "eg": {
+    "material": "klinker",
+    "farbe": "#9a4a3a"
+   },
+   "fachwerk": "braun",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Fachwerk weiß/dunkelbraun, rötliches EG, Solardach",
+   "sicher": "mittel",
+   "ansichten": [
+    "v051",
+    "v029"
+   ]
+  },
+  {
+   "i": 706,
+   "x": -1496.8,
+   "y": 1099.3,
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#b3afa4",
+   "wand_quelle": "gemessen",
+   "schiefer": "hell",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Schiefer hellgrau (Teil der langen Zeile)",
+   "sicher": "mittel",
+   "ansichten": [
+    "v009"
+   ]
+  },
+  {
+   "i": 709,
+   "x": -1482.4,
+   "y": 1099.9,
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#a9aaa9",
+   "wand_quelle": "geschätzt",
+   "schiefer": "hell",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Schiefer hellgrau (Teil der langen Zeile)",
+   "sicher": "mittel",
+   "ansichten": [
+    "v012",
+    "v007",
+    "v009"
+   ]
+  },
+  {
+   "i": 710,
+   "x": -1384.6,
+   "y": 1180.7,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e8e0cc",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "EG weißgrauer Rauputz, OG blasscreme, Gaube",
+   "sicher": "mittel",
+   "ansichten": [
+    "v018",
+    "v051",
+    "v019",
+    "v000"
+   ]
+  },
+  {
+   "i": 711,
+   "x": -1356.8,
+   "y": 1257.5,
+   "art": "haus",
+   "material": "schiefer_og",
+   "wand": "#ecebe6",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "EG weiß, OG und Giebel Schiefer dunkelgrau, Markise",
+   "sicher": "mittel",
+   "ansichten": [
+    "v051",
+    "v029",
+    "v027",
+    "v025"
+   ]
+  },
+  {
+   "i": 712,
+   "x": -1314.5,
+   "y": 1321.0,
+   "art": "haus",
+   "material": "schiefer_og",
+   "wand": "#5d5f66",
+   "wand_quelle": "geschätzt",
+   "eg": {
+    "material": "klinker",
+    "farbe": "#9a4a3a"
+   },
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "EG roter Backstein, OG Schiefer dunkelgrau",
+   "sicher": "hoch",
+   "ansichten": [
+    "v027",
+    "v022",
+    "v021",
+    "v025"
+   ]
+  },
+  {
+   "i": 713,
+   "x": -1174.2,
+   "y": 1474.1,
+   "art": "garage",
+   "material": "putz",
+   "wand": "#b8afa0",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Garagenreihe, ocker/braune Tore",
+   "sicher": "mittel",
+   "ansichten": [
+    "v044",
+    "v040",
+    "v036",
+    "v042",
+    "v046"
+   ]
+  },
+  {
+   "i": 714,
+   "x": -1172.6,
+   "y": 1463.7,
+   "art": "garage",
+   "material": "putz",
+   "wand": "#b8afa0",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Garagenreihe, ocker/braune Tore",
+   "sicher": "mittel",
+   "ansichten": [
+    "v044",
+    "v042",
+    "v040",
+    "v036"
+   ]
+  },
+  {
+   "i": 715,
+   "x": -1309.4,
+   "y": 1231.7,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#ece2c4",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "zweigeschossig, creme/blassgelb, Gauben",
+   "sicher": "mittel",
+   "ansichten": [
+    "v017",
+    "v050",
+    "v028",
+    "v026"
+   ]
+  },
+  {
+   "i": 716,
+   "x": -1296.3,
+   "y": 1241.3,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e7e7e4",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#8e4632"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiß/creme",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v050"
+   ]
+  },
+  {
+   "i": 717,
+   "x": -1290.9,
+   "y": 1265.0,
+   "art": "garage",
+   "material": "klinker",
+   "wand": "#9a5442",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "niedrige Garagen/Schuppen aus rotem Backstein (Modell: dreigeschossig)",
+   "sicher": "mittel",
+   "ansichten": [
+    "v026",
+    "v028",
+    "v015",
+    "v024",
+    "v022"
+   ]
+  },
+  {
+   "i": 718,
+   "x": -1165.5,
+   "y": 1422.6,
+   "art": "haus",
+   "material": "schiefer",
+   "wand": "#56585e",
+   "wand_quelle": "geschätzt",
+   "schiefer": "mittel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "ganz Schiefer dunkelgrau, orangerotes Dach",
+   "sicher": "hoch",
+   "ansichten": [
+    "v045",
+    "v043",
+    "v041",
+    "v036",
+    "v042"
+   ]
+  },
+  {
+   "i": 719,
+   "x": -1175.8,
+   "y": 1406.0,
+   "art": "schuppen",
+   "material": "blech",
+   "wand": "#8b8f8f",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "blech",
+    "farbe": "#8c9090"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Wellblechschuppen",
+   "sicher": "mittel",
+   "ansichten": [
+    "v045",
+    "v043",
+    "v042"
+   ]
+  },
+  {
+   "i": 720,
+   "x": -1142.4,
+   "y": 1442.0,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#e6e6e7",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#5e3b2f"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "braun",
+   "besonders": "weiß, dunkelrotbraune Holzfenster",
+   "sicher": "hoch",
+   "ansichten": [
+    "v043",
+    "v041",
+    "v016"
+   ]
+  },
+  {
+   "i": 761,
+   "x": -1256.7,
+   "y": 1285.0,
+   "art": "schuppen",
+   "material": "bretter",
+   "wand": "#6a5d50",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "lange niedrige Schuppen mit Pappdach (Antiquitäten-Zentrum)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v026",
+    "v024",
+    "v015"
+   ]
+  },
+  {
+   "i": 762,
+   "x": -1264.7,
+   "y": 1279.2,
+   "art": "schuppen",
+   "material": "bretter",
+   "wand": "#6a5d50",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "lange niedrige Schuppen mit Pappdach",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v026",
+    "v024"
+   ]
+  },
+  {
+   "i": 763,
+   "x": -1213.1,
+   "y": 1356.2,
+   "art": "scheune",
+   "material": "putz",
+   "wand": "#a39d92",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Scheune, grauer Rauputz, alte orangerote Biberschwanzziegel (Modell: Schiefer-OG)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v020",
+    "v048",
+    "v045"
+   ]
+  },
+  {
+   "i": 767,
+   "x": -1255.2,
+   "y": 1316.6,
+   "art": "haus",
+   "material": "putz",
+   "wand": "#c8cbd1",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "schiefer",
+    "farbe": "#3a3d44"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "weiße Wände, dunkles Dach (hinter Bäumen)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "v015",
+    "v024",
+    "v020",
+    "v048",
+    "v022"
+   ]
+  },
+  {
+   "i": 768,
+   "x": -1257.9,
+   "y": 1308.9,
+   "art": "haus",
+   "material": "fachwerk",
+   "wand": "#9c5642",
+   "wand_quelle": "geschätzt",
+   "fachwerk": "braun",
+   "ausfachung": "ziegel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#7c3127"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Sichtfachwerk dunkelbraun mit Ziegelausfachung (rot)",
+   "sicher": "hoch",
+   "ansichten": [
+    "v024",
+    "v015"
+   ]
+  },
+  {
+   "i": 773,
+   "x": -984.2,
+   "y": 1662.9,
+   "art": "autohaus",
+   "material": "glas",
+   "wand": "#d1d3d9",
+   "wand_quelle": "gemessen",
+   "dach": {
+    "material": "flach",
+    "farbe": "#55555a"
+   },
+   "laeden": false,
+   "laden": true,
+   "besonders": "Autohaus: Glaskasten, weißgraue Metallpaneele, ein blaues Feld",
+   "sicher": "mittel",
+   "ansichten": [
+    "v034",
+    "v035"
+   ]
+  }
+ ],
+ "nicht_lesbar": [
+  {
+   "i": 28,
+   "warum": "Bäume"
+  },
+  {
+   "i": 41,
+   "warum": "Garten, Heuballen davor"
+  },
+  {
+   "i": 57,
+   "warum": "Bäume"
+  },
+  {
+   "i": 189,
+   "warum": "Bäume"
+  },
+  {
+   "i": 410,
+   "warum": "Bäume"
+  },
+  {
+   "i": 439,
+   "warum": "Bäume"
+  },
+  {
+   "i": 721,
+   "warum": "hinter Koniferen, nur das Dach"
+  },
+  {
+   "i": 722,
+   "warum": "Fichte davor"
+  },
+  {
+   "i": 764,
+   "warum": "Bäume, nur Dächer"
+  },
+  {
+   "i": 765,
+   "warum": "Bäume, nur Dächer"
+  },
+  {
+   "i": 766,
+   "warum": "Bäume"
+  },
+  {
+   "i": 769,
+   "warum": "zu weit, nur Dächer"
+  }
+ ]
+}
