@@ -804,10 +804,10 @@ export const ZIEINR = (() => {
     // had become three rolls once soft, two halves two pillows)
     const kis = C.col(C.R.pick([0xc8a050, 0x7a2a2a, 0x3a5a7a, 0xd8c8a8, 0x5a6a3a]), 0.95);
     for (const cu of [u0 + 0.38, u0 + w - 0.38]) {
-      F.box(m, kis, cu - 0.21, cu + 0.21, 0.24, 0.37, z + 0.52, z + 0.83, { r: 0.06, puff: 0.025 });
+      F.box(m, kis, cu - 0.21, cu + 0.21, 0.24, 0.37, z + 0.52, z + 0.845, { r: 0.06, puff: 0.025 });
       for (const sg of [-1, 1])
-        F.box(m, kis, cu + (sg < 0 ? -0.21 : 0.07), cu + (sg < 0 ? -0.07 : 0.21), 0.25, 0.36, z + 0.76, z + 0.9, {
-          r: 0.045,
+        F.box(m, kis, cu + (sg < 0 ? -0.21 : 0.095), cu + (sg < 0 ? -0.095 : 0.21), 0.255, 0.355, z + 0.79, z + 0.88, {
+          r: 0.035,
         });
     }
     if (C.look === 'ddr') for (const k of [0.3, 0.7]) L.ueberwurf(C, F, u0 + w * k, 0.24, z + 0.82);

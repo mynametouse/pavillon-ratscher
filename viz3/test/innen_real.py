@@ -251,7 +251,7 @@ with lib.browser() as b:
                 # at.front, its top at.seatTop): the legs belong in front of the couch, the thighs on its cushion
                 if (g.get('at') or {}).get('mode') == 'sit':
                     kn = J("""(() => { const f = HGAST.f, at = f.at, a = at.hd * Math.PI / 180, dx = Math.sin(a), dy = Math.cos(a), out = {};
-                      f.g.traverse(o => { if (o.isBone && /Hips$|LeftLeg$|LeftFoot$/.test(o.name.replace(/_\\d+$/, ''))) { const v = o.getWorldPosition(new THREE.Vector3());
+                      f.g.traverse(o => { if (o.isBone && /Hips$|LeftLeg$|LeftFoot$|_Pelvis$|_L_Calf$|_L_Foot$/.test(o.name.replace(/_\\d+$/, ''))) { const v = o.getWorldPosition(new THREE.Vector3());
                         out[o.name.replace(/^mixamorig:?/, '').replace(/_\\d+$/, '')] = [+(((v.x - at.x) * dx + (-v.z - at.y) * dy)).toFixed(3), +(v.y - at.z).toFixed(3)]; } });
                       return { front: at.front ?? null, seatTop: at.seatTop, bones: out }; })()""")
                     print('sitzt', label, json.dumps(kn), flush=True)
