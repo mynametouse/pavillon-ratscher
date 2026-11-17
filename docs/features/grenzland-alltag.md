@@ -46,6 +46,9 @@ Vielleicht fliegen auch mal Vögel rum …“
   umdrehen, „Mit euch red ich nicht.“ **Mit E** („Reden mit …“) ein fester Satz je Person und Lage (Wagen, Bus, Pause, Arbeit, Feuerwehr,
   Abend, Kirche, Runde, Fest) im trockenen Ton des Dorf-Chats; misstrauisch und verhasst antworten knapp.
 - **Zeugen:** die Leute sind Figuren des Modus, sehen also Taten; die aus Ratscher kennen die beiden (Gesicht bekannt).
+- **Zeitsprung:** springt die Uhr (Warten, Schlafen, von Hand), gehen die Figuren und die richtigen kommen – niemand läuft nachts um zwei
+  noch vom Nachmittag nach Hause. Bleibt jemand hängen (Zaun, Wand, Auto), geht er nahe der Tür hinein, außer Sicht verschwindet er, in Sicht
+  bleibt er stehen.
 - **Wann:** nur im Modus, nur heute (nicht 1989), nicht während einer Mission (`GLALLTAG.mitMission = true` schaltet sie für Kapitel 2
   dazu), alles weg nach „Beenden“.
 - **Schnittstelle:** `GLALLTAG.leute()` → `[{ id, name, ort, x, y, tun, platz, gezeigt }]` · `person(name | id)` · `reden()` ·
