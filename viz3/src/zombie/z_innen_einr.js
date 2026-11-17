@@ -232,7 +232,7 @@ export const ZIEINR = (() => {
       w = 0.95,
       d = 0.75,
       glaze = C.R.pick([M.kachel.gruen, M.kachel.braun, M.kachel.creme, M.kachel.gruen]);
-    F.box(m, C.col(0x4a4038, 0.9), u0 + 0.06, u0 + w - 0.06, 0.04, d - 0.06, z, z + 0.25); // plinth
+    F.box(m, C.col(0x4a4038, 0.9, 0, false), u0 + 0.06, u0 + w - 0.06, 0.04, d - 0.06, z, z + 0.25); // plinth
     F.box(m, glaze, u0, u0 + w, 0, d, z + 0.25, z + 1.05); // fire box
     F.box(m, C.col(0x3a3430, 0.6), u0 - 0.03, u0 + w + 0.03, -0.03, d + 0.03, z + 1.05, z + 1.12); // ledge
     F.box(m, glaze, u0 + 0.08, u0 + w - 0.08, 0, d - 0.12, z + 1.12, z + 1.8); // top part
@@ -301,9 +301,11 @@ export const ZIEINR = (() => {
       tw = Math.min(1.25, LA - 0.7),
       td = 0.8;
     L.table(C, F, tu, tu + tw, tv, tv + td, wood, C.look === 'ddr' ? M.tischdecke : C.R.chance(0.6) ? M.karo : null);
-    L.chair(C, F, tu + tw * 0.3, tv + td + 0.32, Math.PI, wood);
-    L.chair(C, F, tu + tw * 0.75, tv + td + 0.32, Math.PI, wood);
-    C.spot('tisch', F.P(tu + tw / 2, tv + td + 0.55, z), F, null);
+    // (feat/innen-real: facing the table – they had stood sideways to it)
+    L.chair(C, F, tu + tw * 0.3, tv + td + 0.32, -Math.PI / 2, wood);
+    L.chair(C, F, tu + tw * 0.75, tv + td + 0.32, -Math.PI / 2, wood);
+    // (the place at the table on the second chair – the villager sits there at his meals; between the chairs he had sat on air)
+    C.spot('tisch', F.P(tu + tw * 0.75, tv + td + 0.32, z), F, null);
     C.seat(F.P(u0 + LA * 0.6, 0.25, z), F, 'Auf die Eckbank setzen');
     C.solid(F.rect(u0, u0 + LA, 0, 0.48), z, z + 0.92);
     C.solid(F.rect(ub, ub + 0.48, 0.48, 0.48 + LB), z, z + 0.92);
@@ -329,26 +331,42 @@ export const ZIEINR = (() => {
     if (u1 - u0 > 0.6) top(C, F, u0 + 0.15, u1 - 0.15, (v0 + v1) / 2, z + (cloth ? 0.768 : 0.76), 'tisch');
   };
   // a board chair (Brettstuhl) at (u, v) facing angle a (radians in the item frame: 0 = +u, π/2 = +v)
+  // (feat/innen-real: a chair as a joiner builds it – the seat on a frame (Zarge) between the legs, stretchers low down, the back legs going
+  // on up as the posts of the back; the back a shaped board in the old houses, three slats in the others; before, a seat on four sticks
+  // and a plank as wide as the seat)
   L.chair = (C, F, u, v, a, wood) => {
     const m = C.m,
       z = C.z,
       c = Math.cos(a),
       s = Math.sin(a),
-      Q = (du, dv) => [u + du * c - dv * s, v + du * s + dv * c];
-    const p = F.P(u, v, 0),
-      ang = Math.atan2(F.a[1], F.a[0]) + a;
-    m.box(wood, p[0] - 0.2, p[0] + 0.2, p[1] - 0.2, p[1] + 0.2, z + 0.43, z + 0.47, { a: ang });
+      Q = (du, dv) => [u + du * c - dv * s, v + du * s + dv * c],
+      // (the heading of its front in the house, from two points – whichever way round the frame's axes are)
+      f0 = F.P(...Q(0, 0), 0),
+      f1 = F.P(...Q(1, 0), 0),
+      ang = Math.atan2(f1[1] - f0[1], f1[0] - f0[0]),
+      // a board centred at (du, dv) of the chair: half sizes hu (towards its front) and hv (across), from za to zb
+      bd = (du, dv, hu, hv, za, zb) => {
+        const q = F.P(...Q(du, dv), 0);
+        m.box(wood, q[0] - hu, q[0] + hu, q[1] - hv, q[1] + hv, z + za, z + zb, { a: ang });
+      };
+    bd(0.005, 0, 0.205, 0.2, 0.43, 0.465); // the seat
     for (const [du, dv] of [
       [-0.17, -0.17],
       [-0.17, 0.17],
       [0.17, -0.17],
       [0.17, 0.17],
-    ]) {
-      const q = F.P(...Q(du, dv), 0);
-      m.box(wood, q[0] - 0.02, q[0] + 0.02, q[1] - 0.02, q[1] + 0.02, z, z + 0.43);
+    ])
+      bd(du, dv, 0.018, 0.018, 0, 0.43);
+    // the frame under the seat and the stretchers
+    for (const sg of [-1, 1]) {
+      bd(sg * 0.17, 0, 0.01, 0.15, 0.36, 0.43);
+      bd(0, sg * 0.17, 0.15, 0.01, 0.36, 0.43);
+      bd(0, sg * 0.17, 0.15, 0.008, 0.13, 0.16);
     }
-    const bk = F.P(...Q(-0.19, 0), 0);
-    m.box(wood, bk[0] - 0.02, bk[0] + 0.02, bk[1] - 0.19, bk[1] + 0.19, z + 0.47, z + 0.95, { a: ang });
+    // the back: its two posts and a board or slats
+    for (const sg of [-1, 1]) bd(-0.175, sg * 0.17, 0.017, 0.017, 0.465, 0.93);
+    if (C.look === 'alt') bd(-0.175, 0, 0.012, 0.15, 0.6, 0.9);
+    else for (const zz of [0.62, 0.74, 0.86]) bd(-0.175, 0, 0.01, 0.155, zz, zz + 0.055);
   };
   // the kitchen dresser (Küchenbüfett, stube-8/14): base with two doors and two drawers, a set-back top with glass doors, tins on top
   L.buefett = (C, F, label) => {
@@ -444,12 +462,19 @@ export const ZIEINR = (() => {
       front = ddr ? C.col(0xece6b8, 0.4) : M.birke,
       edge = ddr ? C.col(0xd86a28, 0.4) : C.col(0xd8d0c0, 0.5),
       w = n * 0.6;
-    F.box(m, C.col(0xdedad0, 0.6), u0, u0 + w, 0, 0.56, z + 0.08, z + 0.86);
+    F.box(m, C.col(0xdedad0, 0.6), u0, u0 + w, 0, 0.56, z + 0.08, z + 0.86, { skip: 't' });
     F.box(m, C.col(0x5a5650, 0.8), u0 + 0.02, u0 + w - 0.02, 0.0, 0.5, z, z + 0.08);
-    F.box(m, ddr ? C.col(0xe8e4dc, 0.35) : C.col(0x8a8378, 0.35), u0 - 0.01, u0 + w + 0.01, 0, 0.6, z + 0.86, z + 0.9);
+    // the worktop round the sink's opening (feat/innen-real: a real basin let into it, 16 cm deep – a steel plate on top before)
+    const wt = ddr ? C.col(0xe8e4dc, 0.35) : C.col(0x8a8378, 0.35),
+      sa = u0 + 0.66,
+      sb = u0 + 1.14;
+    F.box(m, wt, u0 - 0.01, sa, 0, 0.6, z + 0.86, z + 0.9);
+    F.box(m, wt, sb, u0 + w + 0.01, 0, 0.6, z + 0.86, z + 0.9);
+    F.box(m, wt, sa, sb, 0, 0.08, z + 0.86, z + 0.9);
+    F.box(m, wt, sa, sb, 0.5, 0.6, z + 0.86, z + 0.9);
     F.box(m, edge, u0 - 0.01, u0 + w + 0.01, 0.6, 0.62, z + 0.86, z + 0.9);
     // the sink in the second unit
-    F.box(m, M.stahl, u0 + 0.66, u0 + 1.14, 0.08, 0.5, z + 0.9, z + 0.905);
+    L.becken(C, F, sa, sb, 0.08, 0.5, z + 0.9, 0.16, M.stahl);
     F.cyl(m, M.stahl, u0 + 0.9, 0.06, z + 0.9, z + 1.15, 0.015, 0.015, 6);
     F.rod(m, M.stahl, [u0 + 0.9, 0.06, z + 1.15], [u0 + 0.9, 0.25, z + 1.15], 0.013, 6);
     C.spot('spuele', F.P(u0 + 0.9, 0.9, z), F, null);
@@ -462,6 +487,18 @@ export const ZIEINR = (() => {
       L.drawer(C, F, a + 0.02, a + 0.58, 0.56, z + 0.68, z + 0.84, front, M.stahl, i === 0 ? drawer : null);
       L.leaf(C, F, a + 0.02, 1, 0.56, 0.56, z + 0.1, z + 0.66, front, M.stahl, i === 2 ? under : null);
     }
+    // feat/innen-real: the tiled splashback between the worktop and the wall units (Fliesenspiegel) – blue and white in the DDR, beige
+    // later; the wall behind a kitchen row is never bare plaster
+    F.box(
+      m,
+      ddr ? M.fliesen : C.col(C.R.pick([0xe8dcc4, 0xd8d4cc, 0xeee8dc]), 0.3),
+      u0,
+      u0 + w,
+      0,
+      0.008,
+      z + 0.9,
+      z + 1.45
+    );
     // wall units
     F.box(m, C.col(0xdedad0, 0.6), u0, u0 + w, 0, 0.33, z + 1.45, z + 2.15);
     for (let i = 0; i < n; i++)
@@ -470,6 +507,159 @@ export const ZIEINR = (() => {
     // the worktop beside the sink (under the wall units: low things only)
     top(C, F, u0 + 0.05, u0 + 0.6, 0.3, z + 0.9, 'arbeit');
     if (n > 2) top(C, F, u0 + 1.25, u0 + w - 0.05, 0.3, z + 0.9, 'arbeit');
+  };
+  // ---- feat/innen-real: the everyday things of a household on the floor (no two houses alike: what lies about follows the house's own
+  // seed – shoes at the front door, a crate of bottles in the kitchen, slippers at the foot of the bed, the laundry basket, the
+  // children's toys where there are children); palette colours, the soft ones rounded – no draw call of their own ----
+  L.schuhe = (C, F, u, v, a, hex, kid) => {
+    const m = C.m,
+      z = C.z,
+      L0 = kid ? 0.19 : 0.28,
+      W = kid ? 0.07 : 0.1;
+    for (const s of [-1, 1]) {
+      const uu = u + s * (W / 2 + 0.02),
+        p = F.P(uu, v, 0),
+        ang = Math.atan2(F.n[1], F.n[0]) + a + s * 0.06;
+      m.box(C.col(0x2a2826, 0.7), p[0] - L0 / 2, p[0] + L0 / 2, p[1] - W / 2, p[1] + W / 2, z, z + 0.025, { a: ang });
+      m.box(
+        C.col(hex, 0.55, 0, true),
+        p[0] - L0 / 2 + 0.01,
+        p[0] + L0 / 2 - 0.05,
+        p[1] - W / 2 + 0.005,
+        p[1] + W / 2 - 0.005,
+        z + 0.02,
+        z + (kid ? 0.07 : 0.095),
+        { a: ang }
+      );
+    }
+  };
+  L.alltag = (C, room, Pl, all, family) => {
+    const R = C.R,
+      m = C.m,
+      z = C.z,
+      kind = room.kind;
+    if (kind === 'flur' && room.fl === 0) {
+      // shoes by the wall near the front door: two or three pairs (a child's among them in a family)
+      const F = Pl.any(['x0', 'x1'], 0.95, 0.34, 0.15, 0.04) || Pl.any(['x0', 'x1', 'y1'], 0.95, 0.34, 0.15, 0.2);
+      if (F) {
+        const n = 2 + (R() < 0.5),
+          cols = [0x2a2422, 0x5a3a26, 0xe8e6e0, 0x3a4a5a, 0x8a2a2a];
+        for (let i = 0; i < n; i++)
+          L.schuhe(
+            C,
+            F,
+            F.u0 + 0.16 + i * 0.32,
+            0.17,
+            R.r(-0.15, 0.15),
+            family && i === n - 1 ? R.pick([0xd04a3a, 0x3a7ad0, 0xe0b030]) : R.pick(cols),
+            family && i === n - 1
+          );
+      }
+    } else if (kind === 'kueche' && R() < 0.75) {
+      // a crate of bottles in a corner (water or beer – the returnable crate of every German kitchen)
+      const F = Pl.any(all, 0.42, 0.32, 0.36, R.pick([0.02, 0.98]));
+      if (F) {
+        const u = F.u0,
+          crate = C.col(R.pick([0x2a5aa0, 0xb02a24, 0x2a7a3a, 0xd8a020]), 0.55),
+          glass = C.col(R.pick([0x6a4a20, 0x2a5a3a, 0xd8e4e0]), 0.25);
+        F.box(m, crate, u, u + 0.4, 0.01, 0.31, z, z + 0.3);
+        for (let i = 0; i < 4; i++)
+          for (let j = 0; j < 3; j++) {
+            const uu = u + 0.06 + i * 0.093,
+              vv = 0.07 + j * 0.085;
+            F.cyl(m, glass, uu, vv, z + 0.3, z + 0.34, 0.028, 0.012, 6);
+            F.cyl(m, C.col(0xc8c8c0, 0.4, 0.5), uu, vv, z + 0.34, z + 0.355, 0.014, 0.014, 6);
+          }
+        C.solid(F.rect(u, u + 0.4, 0, 0.32), z, z + 0.36);
+      }
+    } else if ((kind === 'schlafzimmer' || kind === 'bad') && R() < (kind === 'bad' ? 0.5 : 0.6)) {
+      // the laundry basket in a corner, the washing heaped in it
+      const F = Pl.any(all, 0.5, 0.38, 0.5, R.pick([0.02, 0.98]));
+      if (F) {
+        const u = F.u0;
+        m.rbox(C.col(R.pick([0xe8e4d8, 0xb8a888, 0x8a9aa8]), 0.7), ...F.rect(u, u + 0.48, 0.02, 0.36), z, z + 0.4, {
+          r: 0.03,
+          s: 1,
+        });
+        m.rbox(
+          C.col(R.pick([0x5a6a8a, 0xe8e2d4, 0x8a3a3a, 0x3a5a4a]), 0.95),
+          ...F.rect(u + 0.05, u + 0.43, 0.06, 0.32),
+          z + 0.32,
+          z + 0.46,
+          { r: 0.05 }
+        );
+        C.solid(F.rect(u, u + 0.48, 0, 0.38), z, z + 0.46);
+      }
+    }
+    if ((kind === 'kinderzimmer' || (kind === 'stube' && family && R() < 0.5)) && Pl.floorFree) {
+      // toys on the floor: a few blocks and a ball
+      const r = Pl.floorFree(1.0, 0.8);
+      if (r) {
+        const toyCols = [0xd83a2a, 0x2a6ad8, 0xe8c020, 0x3aa04a, 0xf08a20];
+        for (let i = 0; i < 5; i++) {
+          const x = r[0] + R.r(0.1, 0.9) * (r[1] - r[0]),
+            y = r[2] + R.r(0.1, 0.9) * (r[3] - r[2]),
+            s = R.r(0.04, 0.06);
+          m.box(C.col(R.pick(toyCols), 0.6), x - s, x + s, y - s, y + s, z + 0.012, z + 0.012 + 2 * s, {
+            a: R.r(0, 1.5),
+          });
+        }
+        const bx = r[0] + 0.25,
+          by = r[3] - 0.2,
+          prof = [];
+        for (let k = 0; k <= 8; k++) {
+          const t = (k / 8) * Math.PI;
+          prof.push([Math.sin(t) * 0.09, z + 0.012 + 0.09 - Math.cos(t) * 0.09]);
+        }
+        m.lathe(C.col(R.pick(toyCols), 0.45), bx, by, prof, 12, { caps: false });
+      }
+    }
+  };
+  // feat/innen-real: a sink unit of 60 cm on its own (a small kitchen): the base cabinet, the worktop round the basin, the tap
+  L.spuelschrank = (C, F) => {
+    const m = C.m,
+      M = C.M,
+      z = C.z,
+      u0 = F.u0,
+      front = C.look === 'ddr' ? C.col(0xece6b8, 0.4) : M.birke,
+      wt = C.col(C.look === 'ddr' ? 0xe8e4dc : 0x8a8378, 0.35);
+    F.box(m, C.col(0xdedad0, 0.6), u0, u0 + 0.6, 0, 0.56, z + 0.08, z + 0.86, { skip: 't' });
+    F.box(m, C.col(0x5a5650, 0.8), u0 + 0.02, u0 + 0.58, 0, 0.5, z, z + 0.08);
+    F.box(m, front, u0 + 0.01, u0 + 0.59, 0.56, 0.58, z + 0.1, z + 0.84);
+    F.box(m, M.stahl, u0 + 0.5, u0 + 0.52, 0.58, 0.6, z + 0.5, z + 0.75);
+    F.box(m, wt, u0 - 0.01, u0 + 0.07, 0, 0.6, z + 0.86, z + 0.9);
+    F.box(m, wt, u0 + 0.53, u0 + 0.61, 0, 0.6, z + 0.86, z + 0.9);
+    F.box(m, wt, u0 + 0.07, u0 + 0.53, 0, 0.08, z + 0.86, z + 0.9);
+    F.box(m, wt, u0 + 0.07, u0 + 0.53, 0.5, 0.6, z + 0.86, z + 0.9);
+    L.becken(C, F, u0 + 0.07, u0 + 0.53, 0.08, 0.5, z + 0.9, 0.16, M.stahl);
+    F.cyl(m, M.stahl, u0 + 0.3, 0.05, z + 0.9, z + 1.15, 0.015, 0.015, 6);
+    F.rod(m, M.stahl, [u0 + 0.3, 0.05, z + 1.15], [u0 + 0.3, 0.24, z + 1.15], 0.013, 6);
+    C.spot('spuele', F.P(u0 + 0.3, 0.9, z), F, null);
+    C.solid(F.rect(u0, u0 + 0.6, 0, 0.6), z, z + 0.9);
+  };
+  // feat/innen-real: a basin let into a top: its rim, four walls inwards, the bottom with the drain (u0..u1 × v0..v1 at the top's height zt)
+  L.becken = (C, F, u0, u1, v0, v1, zt, depth, mat) => {
+    const m = C.m,
+      zb = zt - depth,
+      Q = (a, b, c, d, n) =>
+        m.quad(mat, F.P(...a), F.P(...b), F.P(...c), F.P(...d), [
+          F.a[0] * n[0] + F.n[0] * n[1],
+          F.a[1] * n[0] + F.n[1] * n[1],
+          n[2],
+        ]);
+    Q([u0, v0, zb], [u1, v0, zb], [u1, v1, zb], [u0, v1, zb], [0, 0, 1]);
+    Q([u0, v0, zb], [u0, v1, zb], [u0, v1, zt], [u0, v0, zt], [1, 0, 0]);
+    Q([u1, v0, zb], [u1, v0, zt], [u1, v1, zt], [u1, v1, zb], [-1, 0, 0]);
+    Q([u0, v0, zb], [u0, v0, zt], [u1, v0, zt], [u1, v0, zb], [0, 1, 0]);
+    Q([u0, v1, zb], [u1, v1, zb], [u1, v1, zt], [u0, v1, zt], [0, -1, 0]);
+    for (const [a, b, c, d] of [
+      [u0 - 0.02, u1 + 0.02, v0 - 0.02, v0],
+      [u0 - 0.02, u1 + 0.02, v1, v1 + 0.02],
+      [u0 - 0.02, u0, v0, v1],
+      [u1, u1 + 0.02, v0, v1],
+    ])
+      F.box(m, mat, a, b, c, d, zt, zt + 0.004);
+    F.cyl(m, C.col(0x3a3c3e, 0.4), (u0 + u1) / 2, (v0 + v1) / 2, zb, zb + 0.003, 0.03, 0.03, 12);
   };
   // the fridge (DDR „Kristall“ type, small, white; later a tall one)
   L.kuehlschrank = (C, F) => {
@@ -494,9 +684,10 @@ export const ZIEINR = (() => {
       h = 2.35,
       nM = Math.max(3, Math.floor(w / 0.9)),
       mw = w / nM,
-      // feat/haeuser: a kept wall unit of today (a look with its own TV) opens its niches – the carcass without its front face (the
-      // item's front, not the house frame's +y), a dark back behind the gaps; the zombie night's stays closed as before
-      open = C.ext && C.ext.tv ? (F.n[1] > 0.5 ? 'y1' : F.n[0] < -0.5 ? 'x0' : F.n[1] < -0.5 ? 'y0' : 'x1') : null;
+      // its niches open: the carcass without its front face (the item's front, not the house frame's +y), a dark back behind the gaps
+      // (feat/haeuser found the closed front for the looks of today; since V18r the zombie night's wall unit shows its TV, glasses and
+      // books too – taken over from wip/zombie-kit 3af4303a)
+      open = F.n[1] > 0.5 ? 'y1' : F.n[0] < -0.5 ? 'x0' : F.n[1] < -0.5 ? 'y0' : 'x1';
     F.box(m, ver, u0, u0 + w, 0, d, z + 0.06, z + h, open ? { skip: open } : undefined);
     if (open) F.box(m, C.col(0x2a2018, 0.8), u0, u0 + w, 0, 0.02, z + 0.06, z + h);
     F.box(m, C.col(0x2a2018, 0.8), u0 + 0.02, u0 + w - 0.02, 0, d - 0.04, z, z + 0.06);
@@ -576,9 +767,10 @@ export const ZIEINR = (() => {
       z = C.z,
       u0 = F.u0 + (arms === 2 ? 0.95 : 0),
       leather = C.look === 'nachwende',
+      // (feat/innen-real: leather and the plain velours are soft too – rounded like the rest of the upholstery)
       fab = leather
-        ? C.col(0x5a3a26, 0.45)
-        : C.R.pick([M.velours, C.col(0x3f5a3a, 0.9), C.col(0xa8361e, 0.85), C.col(0xb8a07a, 0.9)]),
+        ? C.col(0x5a3a26, 0.45, 0, true)
+        : C.R.pick([M.velours, C.col(0x3f5a3a, 0.9), C.col(0xa8361e, 0.85, 0, true), C.col(0xb8a07a, 0.9)]),
       w = 2.0;
     // couch with its back to the wall
     F.box(m, fab, u0, u0 + w, 0.0, 0.88, z + 0.12, z + 0.42);
@@ -610,24 +802,42 @@ export const ZIEINR = (() => {
     top(C, F, u0 + 0.45, u0 + w / 2 - 0.14, (tv0 + tv1) / 2, z + 0.505, 'couchtisch');
     top(C, F, u0 + w / 2 + 0.14, u0 + w - 0.45, (tv0 + tv1) / 2, z + 0.505, 'couchtisch');
     // cushions with the chop in the top (the 'Knick') against the back; doilies over the back in the DDR
+    // (feat/innen-real: one cushion, its two upper corners standing up as ears with the chop between them; three pieces side by side
+    // had become three rolls once soft, two halves two pillows)
     const kis = C.col(C.R.pick([0xc8a050, 0x7a2a2a, 0x3a5a7a, 0xd8c8a8, 0x5a6a3a]), 0.95);
     for (const cu of [u0 + 0.38, u0 + w - 0.38]) {
-      F.box(m, kis, cu - 0.2, cu - 0.03, 0.24, 0.36, z + 0.52, z + 0.9);
-      F.box(m, kis, cu + 0.03, cu + 0.2, 0.24, 0.36, z + 0.52, z + 0.9);
-      F.box(m, kis, cu - 0.03, cu + 0.03, 0.25, 0.35, z + 0.52, z + 0.8);
+      F.box(m, kis, cu - 0.21, cu + 0.21, 0.24, 0.37, z + 0.52, z + 0.845, { r: 0.06, puff: 0.025 });
+      for (const sg of [-1, 1])
+        F.box(m, kis, cu + (sg < 0 ? -0.21 : 0.095), cu + (sg < 0 ? -0.095 : 0.21), 0.255, 0.355, z + 0.79, z + 0.88, {
+          r: 0.035,
+        });
     }
-    if (C.look === 'ddr')
-      for (const k of [0.3, 0.7]) L.deckchen(C, ...F.P(u0 + w * k, 0.12, 0).slice(0, 2), z + 0.822, 0.15);
+    if (C.look === 'ddr') for (const k of [0.3, 0.7]) L.ueberwurf(C, F, u0 + w * k, 0.24, z + 0.82);
     // two armchairs facing the couch's ends
+    // (feat/innen-real: an armchair as it is built – short wooden legs, an upholstered base, a seat cushion between the two arms, the
+    // back with its cushion; before, a block with a slab at its back)
+    const legW = leather ? C.col(0x2a1c12, 0.5) : C.col(0x5a3a22, 0.55);
     for (const [cu, a] of [
       [u0 - 0.55, 0],
       [u0 + w + 0.55, Math.PI],
     ].slice(arms === 2 ? 0 : 1, arms ? 2 : 0)) {
-      const p = F.P(cu, 1.55, 0),
-        ang = Math.atan2(F.a[1], F.a[0]) + a;
-      m.box(fab, p[0] - 0.42, p[0] + 0.42, p[1] - 0.42, p[1] + 0.42, z + 0.12, z + 0.44, { a: ang });
-      const bp = F.P(cu + (a ? 0.32 : -0.32), 1.55, 0);
-      m.box(fab, bp[0] - 0.1, bp[0] + 0.1, bp[1] - 0.42, bp[1] + 0.42, z + 0.44, z + 0.95, { a: ang });
+      const dir = a ? -1 : 1,
+        cv = 1.55,
+        U = (p, q) => [Math.min(cu + dir * p, cu + dir * q), Math.max(cu + dir * p, cu + dir * q)],
+        part = (mat, p, q, v0, v1, za, zb, o) => F.box(m, mat, ...U(p, q), cv + v0, cv + v1, z + za, z + zb, o);
+      for (const [pu, pv] of [
+        [-0.34, -0.34],
+        [0.3, -0.34],
+        [-0.34, 0.3],
+        [0.3, 0.3],
+      ])
+        part(legW, pu, pu + 0.045, pv, pv + 0.045, 0, 0.13);
+      part(fab, -0.4, 0.4, -0.4, 0.4, 0.12, 0.36);
+      part(fab, -0.2, 0.4, -0.27, 0.27, 0.36, 0.48);
+      for (const s of [-1, 1]) part(fab, -0.4, 0.4, s > 0 ? 0.27 : -0.4, s > 0 ? 0.4 : -0.27, 0.36, 0.62);
+      part(fab, -0.4, -0.22, -0.4, 0.4, 0.36, 0.9);
+      part(fab, -0.23, -0.1, -0.26, 0.26, 0.48, 0.84);
+      const p = F.P(cu, cv, 0);
       C.solidW([p[0] - 0.42, p[0] + 0.42, p[1] - 0.42, p[1] + 0.42], z, z + 0.6);
     }
     C.seat(F.P(u0 + w / 2, 0.45, z), F, 'Auf die Couch setzen');
@@ -847,8 +1057,13 @@ export const ZIEINR = (() => {
       z = C.z,
       u = F.u0 + 0.25;
     F.box(m, C.col(0x2a2826, 0.5, 0.4), u - 0.22, u + 0.22, 0.04, 0.44, z, z + 0.55);
-    F.cyl(m, C.col(0xb8703a, 0.3, 0.8), u, 0.24, z + 0.55, z + 1.85, 0.19, 0.19, 12);
-    F.cyl(m, C.col(0xb8703a, 0.3, 0.8), u, 0.24, z + 1.85, z + 1.95, 0.19, 0.08, 12);
+    // (feat/innen-real: copper as copper – darker, with its seams and the rim of its lid; a smooth cylinder of 12 sides had looked
+    // like an orange pencil)
+    const cu = C.col(0x93552e, 0.38, 0.8),
+      seam = C.col(0x6e3d22, 0.45, 0.6);
+    F.cyl(m, cu, u, 0.24, z + 0.55, z + 1.85, 0.19, 0.19, 18);
+    F.cyl(m, cu, u, 0.24, z + 1.85, z + 1.95, 0.19, 0.08, 18);
+    for (const zz of [0.6, 1.1, 1.6, 1.84]) F.cyl(m, seam, u, 0.24, z + zz, z + zz + 0.025, 0.196, 0.196, 18);
     F.cyl(m, C.col(0x2a2826, 0.5, 0.4), u, 0.24, z + 1.95, z + 2.4, 0.05, 0.05, 8);
     F.rod(m, C.M.messing, [u + 0.12, 0.42, z + 1.0], [u + 0.12, 0.6, z + 1.0], 0.015, 6);
     C.spot('ofen', F.P(u, 0.85, z), F, 'Badeofen anheizen');
@@ -893,7 +1108,7 @@ export const ZIEINR = (() => {
     const m = C.m,
       z = C.z,
       u = F.u0 + 0.4;
-    F.box(m, C.col(0x8a5a40, 0.9), u - 0.38, u + 0.38, 0.02, 0.72, z, z + 0.75);
+    F.box(m, C.col(0x8a5a40, 0.9, 0, false), u - 0.38, u + 0.38, 0.02, 0.72, z, z + 0.75);
     F.cyl(m, C.col(0x9aa1a4, 0.4, 0.6), u, 0.37, z + 0.75, z + 0.8, 0.32, 0.32, 12);
     F.cyl(m, C.col(0x9a7a50, 0.8), u + 0.9, 0.4, z, z + 0.6, 0.32, 0.38, 12);
     C.spot('ofen', F.P(u, 1.0, z), F, 'Waschkessel anheizen');
@@ -941,7 +1156,7 @@ export const ZIEINR = (() => {
       w = 0.9,
       d = 0.75,
       h = 1.85,
-      wall = C.col(0xb8b0a0, 0.9);
+      wall = C.col(0xb8b0a0, 0.9, 0, false);
     F.box(m, wall, 0, w, 0, 0.05, z, z + h);
     F.box(m, wall, 0, 0.05, 0.05, d, z, z + h);
     F.box(m, wall, w - 0.05, w, 0.05, d, z, z + h);
@@ -999,6 +1214,50 @@ export const ZIEINR = (() => {
         [x + Math.cos(a0) * rr, y + Math.sin(a0) * rr, z],
         [x + Math.cos(a1) * rr, y + Math.sin(a1) * rr, z],
         [0, 0, 1]
+      );
+    }
+  };
+  // feat/innen-real: a doily laid over the back of a couch (Schondeckchen): flat on its top, round over its edge, hanging down its
+  // front with a scalloped hem – the back (v 0..vb, its top at zt) has the soft box's rounded edge (r); a flat disc on it had stood out
+  // over the rounded back like a sheet of paper in the air
+  L.ueberwurf = (C, F, u, vb, zt, hw = 0.15, drop = 0.19, r = 0.055) => {
+    const m = C.m,
+      w = C.col(0xf6f2e8, 0.95),
+      e = 0.005,
+      N = (nv, nz) => [nv * F.n[0], nv * F.n[1], nz],
+      arc = [[vb - r - 0.11, zt + e]];
+    for (let k = 1; k <= 3; k++) {
+      const a = (k / 3) * (Math.PI / 2);
+      arc.push([vb - r + Math.sin(a) * (r + e), zt - r + Math.cos(a) * (r + e)]);
+    }
+    arc.push([vb + e, zt - drop]);
+    for (let i = 0; i + 1 < arc.length; i++) {
+      const [v0, z0] = arc[i],
+        [v1, z1] = arc[i + 1],
+        L = Math.hypot(v1 - v0, z1 - z0) || 1;
+      m.quad(
+        w,
+        F.P(u - hw, v0, z0),
+        F.P(u + hw, v0, z0),
+        F.P(u + hw, v1, z1),
+        F.P(u - hw, v1, z1),
+        N(-(z1 - z0) / L, (v1 - v0) / L)
+      );
+    }
+    // the hem: little points hanging below the edge
+    const n = 8,
+      zb = zt - drop,
+      vh = vb + e;
+    for (let k = 0; k < n; k++) {
+      const a = u - hw + (k * 2 * hw) / n,
+        b = a + (2 * hw) / n;
+      m.quad(
+        w,
+        F.P(a, vh, zb),
+        F.P(b, vh, zb),
+        F.P((a + b) / 2, vh, zb - 0.022),
+        F.P((a + b) / 2, vh, zb - 0.022),
+        N(1, 0)
       );
     }
   };
@@ -1376,11 +1635,39 @@ export const ZIEINR = (() => {
     },
   };
   // ---- a room: what stands where, after its kind and the house's look ----
+  // (feat/innen-real: the spots of a room are watched while it is furnished – C.spot given back whichever way the room ends)
   function furnish(C, room) {
+    const spot0 = C.spot;
+    try {
+      return furnishRoom(C, room);
+    } finally {
+      C.spot = spot0;
+    }
+  }
+  function furnishRoom(C, room) {
     const Pl = placer(room, room.blocks),
       look = C.look,
       R = C.R,
       M = C.M;
+    // feat/innen-real: what was asked of the placer and what found a place (footprint w × d, height h) – a bath whose toilet found no
+    // place gets a compact one after all (below), and the realism survey (ZINNEN H.survey) reads it
+    const got = (room.got = []),
+      any0 = Pl.any,
+      place0 = Pl.place,
+      spot0 = C.spot,
+      spots = [];
+    // (and the spots made here with their frames: today's sink is drawn over as a basin below)
+    C.spot = (kind, pos, F, label, o) => (spots.push({ kind, pos, F }), spot0(kind, pos, F, label, o));
+    Pl.any = (list, w, d, h, pref) => {
+      const F = any0(list, w, d, h, pref);
+      got.push({ w, d, h, ok: !!F });
+      return F;
+    };
+    Pl.place = (side, w, d, h, pref) => {
+      const F = place0(side, w, d, h, pref);
+      got.push({ w, d, h, ok: !!F, side });
+      return F;
+    };
     C.room = room;
     C.z = room.z0;
     const cx = (room.x0 + room.x1) / 2,
@@ -1516,8 +1803,8 @@ export const ZIEINR = (() => {
         F = Pl.any(outer.concat(inner), 1.0, 0.55, 0.85, 0.5);
         if (F) {
           // the sink stone with a bucket
-          F.box(C.m, C.col(0x8a8478, 0.9), F.u0, F.u0 + 1.0, 0, 0.55, C.z + 0.75, C.z + 0.85);
-          F.box(C.m, C.col(0x6a6458, 0.9), F.u0 + 0.05, F.u0 + 0.95, 0.05, 0.5, C.z, C.z + 0.75);
+          F.box(C.m, C.col(0x8a8478, 0.9, 0, false), F.u0, F.u0 + 1.0, 0, 0.55, C.z + 0.75, C.z + 0.85);
+          F.box(C.m, C.col(0x6a6458, 0.9, 0, false), F.u0 + 0.05, F.u0 + 0.95, 0.05, 0.5, C.z, C.z + 0.75);
           F.cyl(C.m, M.zink, F.u0 + 0.5, 0.3, C.z, C.z + 0.3, 0.14, 0.16, 10);
           C.spot('spuele', F.P(F.u0 + 0.5, 0.95, C.z), F, null);
           C.solid(F.rect(F.u0, F.u0 + 1.0, 0, 0.55), C.z, C.z + 0.85);
@@ -1690,6 +1977,62 @@ export const ZIEINR = (() => {
         C.m.panel(cloth, [p[0], p[1], zl - h / 2], d, lx ? [0, -1, 0] : [-1, 0, 0], w, h);
       }
     }
+    // feat/innen-real: the sink of today's fitted kitchen (haeuser/haeuser_heute.js: a plate on the worktop) gets its bowl drawn on –
+    // a rim, the darker inside, the drain – so that it reads as a basin let into the top
+    if (kind === 'kueche' && C.ext && look === 'heute')
+      for (const sp of spots) {
+        if (sp.kind !== 'spuele' || !sp.F || !sp.F.a) continue;
+        const F = sp.F,
+          su = (sp.pos[0] - F.O[0]) * F.a[0] + (sp.pos[1] - F.O[1]) * F.a[1],
+          zt = C.z + 0.9232;
+        F.box(C.m, C.col(0x6e7276, 0.4, 0.3), su - 0.205, su + 0.205, 0.13, 0.47, zt, zt + 0.0006);
+        F.box(C.m, C.col(0x595d61, 0.45, 0.3), su - 0.205, su + 0.205, 0.13, 0.16, zt + 0.0006, zt + 0.0009);
+        F.cyl(C.m, C.col(0x2c2e30, 0.4), su, 0.3, zt + 0.0006, zt + 0.0012, 0.028, 0.028, 12);
+      }
+    // feat/innen-real: a kitchen has a sink and a stove – where the kitchen row found no wall long enough, a sink unit and a cooker
+    // of 60 cm stand where they fit
+    if (kind === 'kueche' && look !== 'alt') {
+      const has = k => spots.some(q => q.kind === k);
+      if (!has('spuele')) {
+        const Fs = any0(all, 0.62, 0.62, 0.95, 0.5) || any0(all, 0.62, 0.62, 0.95, 0.1);
+        if (Fs) L.spuelschrank(C, Fs);
+      }
+      if (!has('herd')) {
+        const Fh = any0(all, 0.62, 0.62, 0.9, 0.9) || any0(all, 0.62, 0.62, 0.9, 0.3);
+        if (Fh) L.herd(C, Fh);
+      }
+    }
+    // feat/innen-real: a bathroom has a toilet and a basin – where the look's found no place (a small bath), a compact one goes in
+    if (kind === 'bad') {
+      const asked = (w, d) => got.some(q => q.ok && Math.abs(q.w - w) < 1e-6 && Math.abs(q.d - d) < 1e-6);
+      room.wc = asked(0.72, 0.7) || asked(0.5, 0.62);
+      if (!room.wc) {
+        const Fw = any0(all, 0.46, 0.56, 0.45, 0.5);
+        if (Fw) {
+          L.wc(C, Fw);
+          room.wc = true;
+        }
+      }
+      room.basin = asked(0.8, 0.5) || asked(0.6, 0.45);
+      if (!room.basin) {
+        const Fb = any0(all, 0.6, 0.45, 1.6, 0.6);
+        if (Fb) {
+          L.waschbecken(C, Fb);
+          room.basin = true;
+        }
+      }
+    }
+    try {
+      L.alltag(
+        C,
+        room,
+        Pl,
+        all,
+        C.P.rooms.some(q => q.kind === 'kinderzimmer')
+      ); // feat/innen-real
+    } catch (e) {
+      console.warn('zinnen alltag', e);
+    }
     if (C.owner && PERSONAL[C.owner]) PERSONAL[C.owner](C, Pl, room);
     if (!(C.ext && C.ext.deko && C.ext.deko(C, Pl, room, inner, outer))) deko(C, Pl, room, inner, outer); // feat/haeuser
   }
@@ -1827,48 +2170,113 @@ export const ZIEINR = (() => {
   };
   // a house plant: a geranium, a spider plant (Grünlilie) or a cactus (on the sills of the DDR)
   DK.pflanze = (C, x, y, z, kind) => {
-    const m = C.m;
-    m.cyl(C.col(0xb4653f, 0.88), x, y, z, z + 0.12, 0.055, 0.07, 8);
+    const m = C.m,
+      R = C.R;
+    m.cyl(C.col(0xb4653f, 0.88), x, y, z, z + 0.12, 0.055, 0.07, 10);
+    m.cyl(C.col(0x3a2a1c, 0.95), x, y, z + 0.1, z + 0.105, 0.064, 0.064, 10); // (the soil)
+    // feat/innen-real: plants of leaves – a geranium a bush of round leaves facing out and up, with three umbels of flowers on stalks;
+    // a spider plant arching ribbons, green and pale; before, a green cone with a red cap (a crystal more than a plant)
     if (kind === 'gruenlilie') {
-      for (let k = 0; k < 9; k++) {
-        const a = (k / 9) * Math.PI * 2,
-          l = 0.16 + (k % 3) * 0.04;
-        m.rod(
-          C.col(k % 2 ? 0x6a9a3a : 0xd8e0b0, 0.8),
-          [x, y, z + 0.11],
-          [x + Math.cos(a) * l, y + Math.sin(a) * l, z + 0.2 - (k % 3) * 0.05],
-          0.006,
-          3
-        );
+      const green = C.col(0x5f8f3a, 0.8),
+        pale = C.col(0xc8d8a0, 0.8),
+        n = 13;
+      for (let k = 0; k < n; k++) {
+        const a = (k / n) * Math.PI * 2 + R() * 0.4,
+          d = [Math.cos(a), Math.sin(a)],
+          s = [-d[1] * 0.007, d[0] * 0.007],
+          L = 0.18 + R() * 0.1,
+          up = 0.06 + R() * 0.06,
+          // the ribbon's middle line: up from the soil, out, then down over the rim
+          pts = [
+            [0, 0.105],
+            [0.25, 0.105 + up],
+            [0.55, 0.105 + up * 1.2],
+            [0.8, 0.105 + up * 0.8],
+            [1.0, 0.105 + up * 0.1],
+          ].map(([t, h]) => [x + d[0] * L * t, y + d[1] * L * t, z + h]),
+          mat = k % 3 === 1 ? pale : green;
+        for (let i = 0; i + 1 < pts.length; i++) {
+          const a0 = pts[i],
+            a1 = pts[i + 1],
+            w0 = i === 0 ? 0.6 : 1,
+            w1 = i + 1 === pts.length - 1 ? 0.25 : 1,
+            e = [a1[0] - a0[0], a1[1] - a0[1], a1[2] - a0[2]],
+            nn = [-e[2] * d[0], -e[2] * d[1], e[0] * d[0] + e[1] * d[1]],
+            l = Math.hypot(...nn) || 1;
+          m.quad(
+            mat,
+            [a0[0] - s[0] * w0, a0[1] - s[1] * w0, a0[2]],
+            [a0[0] + s[0] * w0, a0[1] + s[1] * w0, a0[2]],
+            [a1[0] + s[0] * w1, a1[1] + s[1] * w1, a1[2]],
+            [a1[0] - s[0] * w1, a1[1] - s[1] * w1, a1[2]],
+            [nn[0] / l, nn[1] / l, nn[2] / l]
+          );
+        }
       }
     } else if (kind === 'kaktus') {
-      m.cyl(C.col(0x4a7a3a, 0.7), x, y, z + 0.12, z + 0.3, 0.035, 0.03, 8);
+      m.cyl(C.col(0x4a7a3a, 0.7), x, y, z + 0.1, z + 0.3, 0.035, 0.03, 10);
+      m.cyl(C.col(0x4a7a3a, 0.7), x + 0.03, y, z + 0.16, z + 0.22, 0.016, 0.014, 8);
       m.cyl(C.col(0xd8486a, 0.6), x, y, z + 0.3, z + 0.33, 0.018, 0.005, 6);
     } else {
-      m.lathe(
-        C.col(0x4f7d3a, 0.85),
-        x,
-        y,
-        [
-          [0.08, z + 0.11],
-          [0.12, z + 0.19],
-          [0.0, z + 0.27],
-        ],
-        7,
-        { caps: false }
-      );
-      m.lathe(
-        C.col(C.R.pick([0xc8352b, 0xe05a8a, 0xd8302a]), 0.6),
-        x,
-        y,
-        [
-          [0.04, z + 0.25],
-          [0.06, z + 0.29],
-          [0.0, z + 0.32],
-        ],
-        6,
-        { caps: false }
-      );
+      const leafA = C.col(0x4f7d3a, 0.85),
+        leafB = C.col(0x3f6a2e, 0.85),
+        flower = C.col(R.pick([0xc8352b, 0xe05a8a, 0xd8302a, 0xf08a9a]), 0.6),
+        stem = C.col(0x5a7a3a, 0.8),
+        c = [x, y, z + 0.15];
+      // the leaves: discs of seven points round a hemisphere, tilted out
+      for (let k = 0; k < 12; k++) {
+        const a = (k / 12) * Math.PI * 2 + R() * 0.5,
+          el = k % 3 === 0 ? 0.9 : 0.35 + R() * 0.3,
+          dir = [Math.cos(a) * Math.cos(el), Math.sin(a) * Math.cos(el), Math.sin(el)],
+          rr = 0.07 + R() * 0.04,
+          p = [c[0] + dir[0] * rr, c[1] + dir[1] * rr, c[2] + dir[2] * rr * 0.8],
+          nrm = [dir[0] * 0.6, dir[1] * 0.6, dir[2] * 0.6 + 0.55],
+          nl = Math.hypot(...nrm),
+          n = nrm.map(v => v / nl),
+          t1 = (h => [h[0] / (Math.hypot(...h) || 1), h[1] / (Math.hypot(...h) || 1), h[2] / (Math.hypot(...h) || 1)])([
+            -n[1],
+            n[0],
+            0,
+          ]),
+          t2 = [n[1] * t1[2] - n[2] * t1[1], n[2] * t1[0] - n[0] * t1[2], n[0] * t1[1] - n[1] * t1[0]],
+          r = 0.034 + R() * 0.014,
+          mat = k % 2 ? leafA : leafB,
+          ring = [];
+        for (let i = 0; i < 7; i++) {
+          const b = (i / 7) * Math.PI * 2,
+            q = r * (i % 2 ? 1 : 0.86);
+          ring.push([
+            p[0] + (t1[0] * Math.cos(b) + t2[0] * Math.sin(b)) * q,
+            p[1] + (t1[1] * Math.cos(b) + t2[1] * Math.sin(b)) * q,
+            p[2] + (t1[2] * Math.cos(b) + t2[2] * Math.sin(b)) * q,
+          ]);
+        }
+        for (let i = 0; i < 7; i++) ftri(m, mat, p, ring[i], ring[(i + 1) % 7], n);
+      }
+      // three umbels on their stalks
+      for (let k = 0; k < 3; k++) {
+        const a = (k / 3) * Math.PI * 2 + R() * 1.0,
+          top = [x + Math.cos(a) * 0.04, y + Math.sin(a) * 0.04, z + 0.27 + R() * 0.06];
+        m.rod(stem, [x, y, z + 0.14], top, 0.003, 3);
+        for (let i = 0; i < 5; i++) {
+          const b = (i / 5) * Math.PI * 2,
+            fx = top[0] + Math.cos(b) * 0.018,
+            fy = top[1] + Math.sin(b) * 0.018,
+            fz = top[2] + (i % 2) * 0.008;
+          m.lathe(
+            flower,
+            fx,
+            fy,
+            [
+              [0.0001, fz - 0.012],
+              [0.014, fz],
+              [0.0, fz + 0.012],
+            ],
+            5,
+            { caps: false }
+          );
+        }
+      }
     }
   };
   // a triangle turned to face n (the mesher's tri keeps the order it is given)
@@ -1947,13 +2355,72 @@ export const ZIEINR = (() => {
     onWall(C, F, u - w / 2, u + w / 2, z - h / 2, z + h / 2);
   };
   // a calendar in the kitchen: a picture above, the month below
+  // (feat/innen-real: a calendar as one hangs in a kitchen – the month's picture a landscape (sky, blue hills, a green slope with a
+  // field), the red month bar, a grid of the days with the Sundays red, the wire binding at the top; before, a coloured block over grey
+  // lines like an icon)
   DK.kalender = (C, F, u, z) => {
-    const m = C.m;
+    const m = C.m,
+      R = C.R,
+      N = [F.n[0], F.n[1], 0],
+      v = 0.0095,
+      q = (mat, u0, u1, z0, z1, z2 = z1, z3 = z0) =>
+        m.quad(mat, F.P(u0, v, z0), F.P(u1, v, z3), F.P(u1, v, z2), F.P(u0, v, z1), N);
     F.box(m, C.col(0xf4f2ec, 0.9), u - 0.15, u + 0.15, 0, 0.008, z - 0.25, z + 0.2);
-    F.box(m, C.col(C.R.pick([0x5a8aa8, 0x6a8a4a, 0xb89a6a]), 0.8), u - 0.13, u + 0.13, 0.008, 0.01, z + 0.0, z + 0.18);
+    // the picture: sky, a far ridge, the near slope with a field, in three bands with wavy edges
+    const zp = z + 0.005,
+      W = 0.13,
+      sky = C.col(R.pick([0x9ec3e0, 0xb7cfe2, 0xe8c9a0]), 0.8),
+      far = C.col(R.pick([0x7d93a6, 0x8a96a8]), 0.8),
+      near = C.col(R.pick([0x5f8a45, 0x6f9a4a, 0x7a8a3a]), 0.8),
+      field = C.col(R.pick([0xd8c060, 0xc8a84a]), 0.8);
+    q(sky, u - W, u + W, zp + 0.06, zp + 0.175, zp + 0.175, zp + 0.06);
+    for (let i = 0; i < 6; i++) {
+      const a = u - W + (i * 2 * W) / 6,
+        b = a + (2 * W) / 6,
+        h0 = 0.075 + Math.sin(i * 1.3 + 0.4) * 0.018,
+        h1 = 0.075 + Math.sin((i + 1) * 1.3 + 0.4) * 0.018,
+        g0 = 0.045 + Math.sin(i * 0.9 + 2.1) * 0.014,
+        g1 = 0.045 + Math.sin((i + 1) * 0.9 + 2.1) * 0.014;
+      m.quad(
+        far,
+        F.P(a, v + 0.001, zp + 0.03),
+        F.P(b, v + 0.001, zp + 0.03),
+        F.P(b, v + 0.001, zp + h1),
+        F.P(a, v + 0.001, zp + h0),
+        N
+      );
+      m.quad(
+        near,
+        F.P(a, v + 0.002, zp),
+        F.P(b, v + 0.002, zp),
+        F.P(b, v + 0.002, zp + g1),
+        F.P(a, v + 0.002, zp + g0),
+        N
+      );
+    }
+    m.quad(
+      field,
+      F.P(u + 0.01, v + 0.003, zp + 0.008),
+      F.P(u + 0.09, v + 0.003, zp + 0.014),
+      F.P(u + 0.08, v + 0.003, zp + 0.03),
+      F.P(u + 0.02, v + 0.003, zp + 0.024),
+      N
+    );
+    // the month bar and the days (seven columns, five rows; Sundays red)
     F.box(m, C.col(0xb8302a, 0.8), u - 0.13, u + 0.13, 0.008, 0.01, z - 0.04, z - 0.01);
-    for (let k = 0; k < 4; k++)
-      F.box(m, C.col(0x8a8a8a, 0.9), u - 0.12, u + 0.12, 0.008, 0.01, z - 0.22 + k * 0.045, z - 0.21 + k * 0.045);
+    const day = C.col(0x6a6a6a, 0.9),
+      sun = C.col(0xc8302a, 0.85);
+    for (let r = 0; r < 5; r++)
+      for (let c = 0; c < 7; c++) {
+        const uu = u - 0.12 + c * 0.04,
+          zz = z - 0.075 - r * 0.035;
+        q(c === 6 ? sun : day, uu, uu + 0.018, zz, zz + 0.011);
+      }
+    // the wire binding along the top
+    for (let k = 0; k < 9; k++) {
+      const uu = u - 0.12 + k * 0.03;
+      F.box(m, C.col(0x3a3a3a, 0.5, 0.5), uu, uu + 0.006, 0.006, 0.014, z + 0.19, z + 0.21);
+    }
     onWall(C, F, u - 0.16, u + 0.16, z - 0.26, z + 0.21);
   };
   // kitchen things on the worktop: storage tins (Vorratsdosen), a kettle, a bread bin, a coffee grinder in the old houses

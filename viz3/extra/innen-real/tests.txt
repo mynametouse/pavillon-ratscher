@@ -1,0 +1,11 @@
+# feat/innen-real: the houses of Ratscher and Schleusingen from inside, real instead of sketchy (docs/features/innen-real.md); one
+# 'name[:args]' per line as for viz3/test/run.py – every line a job of its own in the feature CI (≤ 60 min each)
+smoke
+innen_real:ratscher
+innen_real:schleusingen
+# what the push builds on and must keep working: Ratscher's houses (HAEUSER), the town's (SINNEN), the zombie night's kit (ZINNEN)
+haeuser:bilder=1
+schleusingen_innen:only=door+walk+night+mem+treppe+save,bilder=1
+schleusingen_innen:only=laden+looks+sweep+phone,bilder=1
+zombie_innen
+memphone
