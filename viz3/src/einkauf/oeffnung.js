@@ -201,6 +201,33 @@ export const OEFFNUNG = (() => {
     oh: 'Fr 19:00-23:00',
     quelle: 'der Skat- und Rommé-Abend (dorf/dorf_cal.js)',
   });
+  // ---- the shops from the start (laeden/innen.js registers the same again when their data has loaded – the side quests may ask
+  // before): OSM's hours, else the usual ones of their kind (as DEFAULT_OH there) ----
+  const OSM = 'OpenStreetMap',
+    ANG = 'angenommen (übliche Zeiten)';
+  for (const [id, name, oh, q] of [
+    ['edeka', 'EDEKA', 'Mo-Sa 07:00-20:00', OSM],
+    ['rewe', 'REWE', 'Mo-Fr 06:00-22:00; Sa 06:00-20:00', OSM],
+    ['lidl', 'Lidl', 'Mo-Sa 07:00-20:00; Su,PH off', OSM],
+    ['lidlbaecker', 'Café & Backshop Drei Ähren', 'Mo-Fr 08:00-18:00; Sa 08:00-12:00; Su,PH off', OSM],
+    ['aldi', 'Aldi', 'Mo-Sa 07:00-20:00; Su off', OSM],
+    ['obi', 'OBI', 'Mo-Fr 08:30-19:00; Sa 08:30-18:00', OSM],
+    ['apotheke', 'Spangenberg-Apotheke', 'Mo-Fr 08:00-19:00; Sa 08:00-16:00', OSM],
+    ['waesche', 'Wäscheservice', 'Mo-Fr 09:00-18:00', OSM],
+    ['mcd', "McDonald's", 'Mo-Su 09:00-24:00', OSM],
+    ['mega', 'Mega Center', 'Mo-Sa 08:00-20:00', ANG],
+    ['megarest', 'Mega-Restaurant', 'Mo-Su 11:00-22:00', ANG],
+    ['megamoebel', 'Mega-Möbel', 'Mo-Fr 10:00-19:00; Sa 10:00-18:00', ANG],
+    ['getraenke', 'Getränkequelle', 'Mo-Fr 09:00-19:00; Sa 08:00-16:00', ANG],
+    ['turan', 'Turan Kebap Haus', 'Mo-Su 10:00-22:00', ANG],
+    ['shell', 'Shell', 'Mo-Sa 06:00-22:00; Su 07:00-22:00', ANG],
+    // the shops behind the old town's signs (schleusingen/si_innen.js: assumed there too)
+    ['adlerapotheke', 'Adler Apotheke', 'Mo-Fr 08:00-18:30; Sa 08:00-12:00', ANG],
+    ['stadtcafe', 'Stadtcafé', 'Mo-Su 09:00-18:00', ANG],
+    ['ratsstube', 'Ratsstube', 'Mo-Su 11:00-22:00', ANG],
+    ['goldenerloewe', 'Zum Goldenen Löwen', 'Mo-Su 11:00-22:00', ANG],
+  ])
+    add(id, { name, oh, art: 'laden', ort: 'Schleusingen', quelle: q });
   return { add, offen, zeiten, naechste, text, info, liste, parse, am, short, uhr, hm, DE, DEL, REG };
 })();
 if (typeof window !== 'undefined') window.OEFFNUNG = OEFFNUNG;
