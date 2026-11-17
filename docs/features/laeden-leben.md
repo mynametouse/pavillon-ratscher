@@ -143,7 +143,9 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
   Aldi, OBI und der Bäckerei ist ein Produkt –, Andrang und Besetzung, Wege durch EDEKA, Geldbörse frei und im Grenzland-Modus).
 - Im Browser: `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9045 --serve laeden_leben` (Abschnitte
   `markt,obi,kaufen,oeffentlich,kirche`, einzeln z. B. `laeden_leben:kirche`; Bilder in `out/laeden_leben/`); bei GitHub über
-  `viz3/extra/laeden-leben/tests.txt` (dazu `smoke`, `laeden_innen`, `laeden`). Bilder der Läufe: `markt_samstag_*`, `markt_kasse`,
+  `viz3/extra/laeden-leben/tests.txt` (dazu `smoke`, `laeden_innen`, `laeden`); `amt` und `schleusingen_innen` (deren Dinge diese
+  Arbeit berührt: das Rathaus, `LINNEN.drawPlan`) laufen im Prüfpaket unter ihren eigenen Themen – nicht doppelt in dieser Liste.
+  Bilder der Läufe: `markt_samstag_*`, `markt_kasse`,
   `markt_dienstag`, `markt_sonntag_tuer`, `obi_*`, `kaufen_*`, `baecker_theke`, `rathaus_*`, `museum_*`, `bibliothek`, `kirche_*`.
 
 ## Offen
@@ -172,8 +174,9 @@ rumlaufen, Kassierer und all das. Also öffentliche Gebäude sollten, so gut es 
 - Zur Laufzeit eingehängt (keine fremde Datei geändert): der Knopf `#einkaufbtn` in `#hudtr` vor `#menubtn`, ein Teil `.einkauf-inv` im
   Inventarfenster `#invwin` (MutationObserver), die Fenster `#einkaufpanel`, `#kassepanel`, der Hinweis `#korbchip` (Stil vom Modul selbst).
 - Grenzland: `GELD`/`INVENTAR` lesen `window.GLSTATE` (nur wenn `on`) – keine Änderung an `grenzland/*`.
-- Laufzeiten bei GitHub (SwiftShader): `laeden_leben:markt,obi,kaufen` ~7 min, `laeden_leben:oeffentlich,kirche` ~9 min; die
-  bestehenden `laeden` (13–24 min) und `laeden_innen` (15–22 min) sind mit den bedruckten Waren und den Leuten langsamer als vorher
-  (bis 766 s bzw. 645 s) – innerhalb der Grenze von 60 min, aber im Prüfpaket spürbar.
+- Laufzeiten bei GitHub (SwiftShader, letzter Lauf 44112204940 auf `e4a5bb2cc`, alles grün): `laeden_leben:markt,obi,kaufen` 755 s
+  (23/23), `laeden_leben:oeffentlich,kirche` 752 s (29/29), `laeden_innen` 674 s (51/51), `laeden` 1540 s (64/64), `smoke` 69 s. `laeden`
+  war vor dieser Arbeit 766 s – die Leute in jedem Laden, den der Test besucht, und die bedruckten Waren kosten in SwiftShader Zeit
+  (innerhalb der Grenze von 60 min, aber im Prüfpaket der längste dieser Jobs; mit `?noleben` ließen sich die Leute dort weglassen).
 - Für den Suhl-Chat (Nachricht 15:35): die Bausätze sind `LLEBEN.posten` (eine Figur an einem Schalter), `OEFFNUNG.add`, `LKAUF.zeige`
   (ein Fenster mit Knöpfen), `GELD`/`INVENTAR` und `LINNEN.drawPlan` mit `LIPLAN.kit` (Innenräume wie Museum und Kirche).
