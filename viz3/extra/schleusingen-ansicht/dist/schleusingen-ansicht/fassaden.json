@@ -140,6 +140,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "türkis/mintgrüne Schindeln, gelbe Fensterfaschen, alte orangerote Ziegel",
    "sicher": "hoch",
    "ansichten": [
@@ -620,6 +621,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
+   "first": "giebel",
    "besonders": "Königstraße: weiß mit Rundbogenfenstern (hinter Bäumen)",
    "sicher": "niedrig",
    "ansichten": [
@@ -1134,6 +1137,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Markt S: terrakotta/lachs, Gauben",
    "sicher": "hoch",
    "ansichten": [
@@ -1232,6 +1236,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "Wohnblock, blassblau-grau, Treppenhausachse blassgrün",
    "sicher": "hoch",
    "ansichten": [
@@ -1256,6 +1261,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Wohnblock, blass gelbgrün",
    "sicher": "mittel",
    "ansichten": [
@@ -1280,6 +1286,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Wohnblock, blassgelb, Treppenhausachse graublau",
    "sicher": "hoch",
    "ansichten": [
@@ -1327,6 +1334,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 4,
    "besonders": "Wohnblock, cremeweiß, Treppenhausachsen blassgelb, blaue Vordächer",
    "sicher": "hoch",
    "ansichten": [
@@ -1953,6 +1961,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "niedrig, grauer Rauputz",
    "sicher": "mittel",
    "ansichten": [
@@ -2368,6 +2377,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "zweigeschossig mit Dach, blasscreme",
    "sicher": "mittel",
    "ansichten": [
@@ -2708,6 +2718,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Königstraße 3: blassgelb/creme (Modell: Fachwerk-OG)",
    "sicher": "mittel",
    "ansichten": [
@@ -2957,6 +2968,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "dunkle Schieferhäuser dahinter",
    "sicher": "niedrig",
    "ansichten": [
@@ -3003,6 +3015,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Königstraße: weiß-hellgrau, dreigeschossig, rotes Dach",
    "sicher": "hoch",
    "ansichten": [
@@ -3074,6 +3087,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "Königstraße: weiß, dreigeschossig",
    "sicher": "mittel",
    "ansichten": [
@@ -3248,6 +3262,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "EG weiß, OG und Giebel Schiefer dunkelgrau, Markise",
    "sicher": "mittel",
    "ansichten": [
@@ -3277,6 +3292,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "EG roter Backstein, OG Schiefer dunkelgrau",
    "sicher": "hoch",
    "ansichten": [
@@ -3352,6 +3368,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "zweigeschossig, creme/blassgelb, Gauben",
    "sicher": "mittel",
    "ansichten": [
@@ -3597,6 +3614,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
+   "first": "giebel",
    "besonders": "Sichtfachwerk dunkelbraun mit Ziegelausfachung (rot)",
    "sicher": "hoch",
    "ansichten": [
@@ -3619,6 +3638,8 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 1,
+   "dachform": "flach",
    "besonders": "Autohaus: Glaskasten, weißgraue Metallpaneele, ein blaues Feld",
    "sicher": "mittel",
    "ansichten": [

@@ -18,7 +18,7 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   - `dach` (`material` ziegel, schiefer, blech, flach, faserzement; `farbe` sRGB), `laeden` (Fensterläden), `laden` (Ladenfront),
     `rahmen`, `besonders` (was man sieht, deutsch), `sicher` (hoch, mittel, niedrig), `ansichten` (Blickpunkte).
   - Runde 3 (begonnen): `geschosse` (Vollgeschosse bis zur Traufe), `dachform` (sattel, walm, krueppelwalm, mansard, flach, pult, zelt),
-    `first` (`giebel`: der Giebel zur Straße, sonst `trauf`) – bisher für 99 Gebäude die Geschosse, 56 davon anders als in den
+    `first` (`giebel`: der Giebel zur Straße, sonst `trauf`) – bisher für 117 Gebäude die Geschosse, 65 davon anders als in den
     Altstadtdaten (z. B. #331 und #48 eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei Geschosse mit Gauben).
   - `nicht_lesbar`: Gebäude, die eine Ansicht zeigt, aber nicht lesbar (Bäume, Hecke, unscharf) – mit Grund.
   - Stand: Runde 1 (Hildburghäuser, Suhler, Ilmenauer Straße, Markt; 71 Ansichten), Königstraße (16) und Bertholdstraße (zwei
