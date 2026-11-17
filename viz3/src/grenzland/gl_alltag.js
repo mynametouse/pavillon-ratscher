@@ -1067,6 +1067,10 @@ export const GLALLTAG = (() => {
     S.grussT -= dt;
     if ((S.simT -= dt) <= 0) {
       S.simT = 0.5;
+      // the clock jumped (a wait, a sleep, set by hand): the world as it is at the new time – the figures go, the right ones come
+      const sprung = S.lastT != null && (CLOCK.t - S.lastT > 15 || CLOCK.t < S.lastT - 1);
+      S.lastT = CLOCK.t;
+      if (sprung) alleWeg();
       sim();
       // who should be a figure; who is too far or no longer wanted is let go out of sight (or at once when far)
       const G = gewollt(),
@@ -1110,6 +1114,7 @@ export const GLALLTAG = (() => {
     } catch (e) {}
     S.on = false;
     S.lade = null;
+    S.lastT = null;
     S.jetzt = {};
     S.wo = {};
   }
