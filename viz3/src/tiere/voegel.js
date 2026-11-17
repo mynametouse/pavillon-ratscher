@@ -393,7 +393,16 @@ export const VOEGEL = (() => {
         break;
       }
     }
-    if (auf) scheuchenIn(K, auf[0], auf[1], 10, p);
+    if (auf) scheuchenIn(K, auf[0], auf[1], 16, p);
+    // one goes up, the ones beside it follow
+    for (const b of K.b)
+      if (b.st === 'boden' && K.b.some(q => (q.st === 'auf' || q.st === 'warte') && hyp(q.x - b.x, q.y - b.y) < 5)) {
+        b.st = 'warte';
+        b.t = rnd(0.15, 0.6);
+        b.hd = Math.atan2(b.x - p.x, b.y - p.y) + rnd(-0.7, 0.7);
+        b.h0 = rnd(8, 14);
+        b.r = rnd(9, 17);
+      }
     let n = 0;
     for (const b of K.b) {
       b.t -= dt;

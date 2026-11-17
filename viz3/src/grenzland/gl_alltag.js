@@ -547,7 +547,8 @@ export const GLALLTAG = (() => {
       const w = S.wo[p.id],
         j = S.jetzt[p.id];
       if (!w || !w.zeigbar || w.x == null || !j) continue;
-      if (w.ph === 'drin') continue;
+      // (inside: not drawn – who is drawn still walks in at the door)
+      if (w.ph === 'drin' && !S.figs.has(p.id)) continue;
       // in at a door already (until the slot says out again), or done with it
       if (w.aus === 'fertig' || (w.aus === 'tuer' && w.ph !== 'raus' && w.ph !== 'nach')) continue;
       if (dorfZeigt(p)) continue;
@@ -865,13 +866,25 @@ export const GLALLTAG = (() => {
     if (w && w.ph === 'drin' && o.st === 'da' && w.tuer) {
       return gehe(o, [[w.tuer.x, w.tuer.y]], 'tuer');
     }
-    // stuck walking (a wall, a fence): after a while let go if out of sight, else just stand there
-    if ((o.st === 'hin' || o.st === 'weg' || o.st === 'tuer' || o.st === 'heim') && o.t > 70) {
-      if (!imBlick(F.x, F.y, 50) || o.st !== 'hin') return weg(o);
-      F.path = null;
-      F.st = 'steht';
-      ankommen(o, w);
-    }
+    // stuck walking (a wall, a fence, a car): no headway for four seconds – near the door: in; out of sight: gone (as if arrived);
+    // in sight: standing where one is
+    if (o.st === 'hin' || o.st === 'weg' || o.st === 'tuer' || o.st === 'heim') {
+      o.fortT = (o.fortT || 0) + dt;
+      if (o.fortT > 4) {
+        const zl = o.ziel ? hyp(F.x - o.ziel[0], F.y - o.ziel[1]) : 0,
+          gut = o.fortD == null || o.fortD - zl > 0.3 || (F.vNow || 0) > 0.3;
+        o.fortT = 0;
+        o.fortD = zl;
+        if (!gut || o.t > 90) {
+          if ((o.st === 'tuer' || o.st === 'heim') && zl < 8) return weg(o, o.st);
+          if (!imBlick(F.x, F.y, 60)) return weg(o, o.st === 'tuer' || o.st === 'heim' ? o.st : null);
+          F.path = null;
+          F.st = 'steht';
+          if (o.st === 'hin') ankommen(o, w);
+          else o.st = 'weg';
+        }
+      }
+    } else o.fortD = null;
     const d = hyp(F.x - px, F.y - py);
     if (o.st === 'weg' && d > R_OUT * 0.8 && !imBlick(F.x, F.y, 80)) return weg(o);
     // the player passes: a greeting, a nod, a look away (standing or walking)

@@ -212,7 +212,6 @@ with lib.browser() as b:
         ck('stadt: no errors in the module', not st['err'], str(st['err']))
     # ------------------------------------------------------------------ voegel: the birds (base game – the same in the mode) ------------------------------------------------------------------
     if want('voegel'):
-        prog0 = E("GAME.R.info.programs.length")
         # sparrows at the hedges of the Anger on a Tuesday morning
         X("GLALLTAG.debug.zeit(10 * 60, 2); GAME.view(236, -104.6, KERN.ground(236, -104.6) + 1.2, 180, -18)")
         ok = until("(VOEGEL.stand().aktiv.spatz || 0) > 0", 20, 0.5)
@@ -220,6 +219,7 @@ with lib.browser() as b:
         X("const b = VOEGEL.debug.voegel('spatz')[0]; GAME.view(b.x - 2.2, b.y - 1.2, KERN.ground(b.x - 2.2, b.y - 1.2) + 0.9, Math.atan2(2.2, 1.2) * 180 / Math.PI, -14)")
         steps(0.6, 0.05)
         pic('20_spatzen')
+        prog0 = E("GAME.R.info.programs.length")
         # walking at them: they dart into the hedge
         X("const b = VOEGEL.debug.voegel('spatz')[0]; GAME.view(b.x - 0.8, b.y - 0.6, KERN.ground(b.x - 0.8, b.y - 0.6) + 1.6, 50, -10)")
         ok = until("VOEGEL.stand().versteckt > 0", 6, 0.1)
@@ -245,6 +245,7 @@ with lib.browser() as b:
             X("const b = VOEGEL.debug.voegel('star'); let x = 0, y = 0; for (const q of b) { x += q.x; y += q.y } x /= b.length; y /= b.length; GAME.view(x - 120, y - 90, KERN.ground(x - 120, y - 90) + 1.7, Math.atan2(120, 90) * 180 / Math.PI, 16)")
             steps(1, 0.05)
             pic('23_stare')
+        prog1 = E("GAME.R.info.programs.length")
         # pigeons on the Markt of Schleusingen: they flutter up when one comes close and come down again
         X("GLALLTAG.debug.zeit(11 * 60, 2); GAME.view(-1084.7, 1225, 400, 0, -30)")
         ok = until("window.SCHL && SCHL.state === 'ready'", 300, 1.0, 0.5)
@@ -262,8 +263,9 @@ with lib.browser() as b:
         ok = until("VOEGEL.stand().flug === 0", 60, 0.5)
         ck('voegel: and come down again on the square when nobody is near', bool(ok), str(J("VOEGEL.stand()")))
         st = J("VOEGEL.stand()")
-        prog1 = E("GAME.R.info.programs.length")
-        ck('voegel: cheap (< 0.6 ms per frame here) and no new shader program', st['ms'] < 0.6 and prog1 - prog0 <= 1 and not st['err'], f"{st['ms']} ms, programs {prog0} → {prog1}, err {st['err']}")
+        mats = J("[...new Set(GAME.scene.children.filter(o => /^voegel /.test(o.name)).map(o => o.material.uuid))].length")
+        ck('voegel: cheap (< 0.6 ms per frame here), one shared material for all kinds, no new shader program for crows, swallows, starlings',
+           st['ms'] < 0.6 and prog1 - prog0 <= 1 and mats == 1 and not st['err'], f"{st['ms']} ms, programs {prog0} → {prog1}, materials {mats}, err {st['err']}")
     # ------------------------------------------------------------------ fest: the festivals by the calendar ------------------------------------------------------------------
     if want('fest'):
         X("window.TF = []; KERN.on('grenzland:fest', d => TF.push(d)); GAME.setSound && GAME.setSound(true)")
