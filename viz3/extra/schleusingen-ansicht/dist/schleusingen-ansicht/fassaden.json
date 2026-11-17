@@ -577,6 +577,8 @@
    "ansichten": [
     "v067",
     "v065",
+    "p6_60",
+    "p6_180",
     "v063"
    ]
   },
@@ -1554,22 +1556,21 @@
    "adresse": "Bertholdstraße 22",
    "art": "geschaeft",
    "material": "putz",
-   "wand": "#c9c99a",
+   "wand": "#dcc07e",
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632",
-    "farbe_quelle": "Ansicht"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
    },
    "laeden": false,
    "laden": true,
-   "rahmen": "braun",
-   "besonders": "Bertholdstraße 22: im Modell ein Grundriss für zwei alte Häuser – blass olivgrün mit Ziergiebel und braunen Fenstern, an der Kreuzung rosa-beige mit Läden; dahinter ein Glasdach",
-   "sicher": "mittel",
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße 22: ockergelb, dreigeschossig, an der Ecke ein moderner Bau aus Glas und weißen Platten (weit); dahinter ein Glasdach",
+   "sicher": "niedrig",
    "ansichten": [
-    "p6_180",
-    "p6_300",
     "p6_240",
+    "p6_300",
     "p5_120",
     "p5_0",
     "p5_60"
@@ -1622,14 +1623,16 @@
    "ansichten": [
     "w000",
     "v067",
-    "w001"
+    "w001",
+    "p6_180",
+    "p6_60"
    ]
   },
   {
-   "i": 345,
-   "x": -920.8,
-   "y": 1301.5,
-   "adresse": "Bertholdstraße 19",
+   "i": 335,
+   "x": -892.4,
+   "y": 1316.4,
+   "adresse": "Bertholdstraße 25",
    "art": "haus",
    "material": "schiefer_og",
    "wand": "#55575d",
@@ -1647,15 +1650,100 @@
    "laeden": false,
    "laden": false,
    "rahmen": "weiss",
-   "besonders": "Bertholdstraße 19 (Ecke): Obergeschosse ganz mit dunklem Schiefer verkleidet, EG cremefarbener Rauputz, grauer Sockel",
+   "besonders": "Bertholdstraße 25 (Ecke): wie Nr. 21 – Schiefer über cremefarbenem Rauputz (nur schräg zu sehen)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "p6_180",
+    "p6_60"
+   ]
+  },
+  {
+   "i": 336,
+   "x": -898.5,
+   "y": 1313.3,
+   "adresse": "Bertholdstraße 23",
+   "art": "haus",
+   "material": "schiefer_og",
+   "wand": "#55575d",
+   "wand_quelle": "geschätzt",
+   "eg": {
+    "material": "putz",
+    "farbe": "#ddd8bc"
+   },
+   "schiefer": "dunkel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße 23: die Schieferfront geht von Nr. 21 durch (nur schräg zu sehen)",
+   "sicher": "niedrig",
+   "ansichten": [
+    "p6_180",
+    "p6_60",
+    "w001"
+   ]
+  },
+  {
+   "i": 337,
+   "x": -904.4,
+   "y": 1310.2,
+   "adresse": "Bertholdstraße 21",
+   "art": "haus",
+   "material": "schiefer_og",
+   "wand": "#55575d",
+   "wand_quelle": "geschätzt",
+   "eg": {
+    "material": "putz",
+    "farbe": "#ddd8bc"
+   },
+   "schiefer": "dunkel",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße 21: Obergeschosse ganz mit dunklem Schiefer verkleidet, EG cremefarbener Rauputz, grauer Sockel",
    "sicher": "hoch",
    "ansichten": [
     "p6_120",
     "p6_60",
     "p6_0",
-    "p6_180",
+    "p6_180"
+   ]
+  },
+  {
+   "i": 345,
+   "x": -920.8,
+   "y": 1301.5,
+   "adresse": "Bertholdstraße 19",
+   "art": "geschaeft",
+   "material": "putz",
+   "wand": "#e6e1cf",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "ziegel",
+    "farbe": "#b5553a",
+    "farbe_quelle": "Luftbild 2024"
+   },
+   "laeden": false,
+   "laden": true,
+   "rahmen": "weiss",
+   "besonders": "Bertholdstraße 19 (Ecke Walchstraße): elfenbeinfarben, Eckeingang unter einem Bogen auf zwei Sandsteinsäulen, Laden (Optiker)",
+   "sicher": "hoch",
+   "ansichten": [
+    "p6_300",
+    "p6_0",
+    "p6_60",
     "p5_60",
-    "w001"
+    "w001",
+    "p5_0"
    ]
   },
   {
@@ -1961,35 +2049,9 @@
    "ansichten": [
     "v068",
     "w000",
-    "v066",
     "p6_180",
-    "p6_60",
-    "p6_120"
-   ]
-  },
-  {
-   "i": 416,
-   "x": -943.7,
-   "y": 1296.7,
-   "adresse": "Bertholdstraße 17",
-   "art": "geschaeft",
-   "material": "putz",
-   "wand": "#ceceb3",
-   "wand_quelle": "gemessen",
-   "dach": {
-    "material": "ziegel",
-    "farbe": "#b5553a",
-    "farbe_quelle": "Luftbild 2024"
-   },
-   "laeden": false,
-   "laden": true,
-   "rahmen": "weiss",
-   "besonders": "Bertholdstraße 17 (Ecke): elfenbeinfarben, Eckeingang unter einem Bogen auf zwei Sandsteinsäulen, Laden (Optiker)",
-   "sicher": "mittel",
-   "ansichten": [
-    "p6_300",
-    "p6_0",
-    "p6_60"
+    "p6_120",
+    "v066"
    ]
   },
   {
@@ -1997,25 +2059,26 @@
    "x": -957.8,
    "y": 1260.8,
    "adresse": "Bertholdstraße 20",
-   "art": "geschaeft",
-   "material": "putz_modern",
+   "art": "haus",
+   "material": "putz",
    "wand": "#e8e8e4",
    "wand_quelle": "geschätzt",
    "dach": {
-    "material": "flach",
-    "farbe": "#55555a",
+    "material": "ziegel",
+    "farbe": "#4f4d4c",
     "farbe_quelle": "Ansicht"
    },
    "laeden": false,
-   "laden": true,
-   "rahmen": "grau",
-   "besonders": "weißer moderner Bau mit Glasecke und Glasbalkon",
-   "sicher": "mittel",
+   "laden": false,
+   "rahmen": "weiss",
+   "besonders": "weiß, dreigeschossig, neben dem Glasbau von Nr. 22 (weit)",
+   "sicher": "niedrig",
    "ansichten": [
+    "p6_0",
     "p6_240",
-    "p6_300",
     "p5_0",
-    "p5_120"
+    "p5_120",
+    "p6_300"
    ]
   },
   {
@@ -2385,7 +2448,6 @@
     "p5_0",
     "p5_60",
     "p6_240",
-    "p6_300",
     "p6_0"
    ]
   },
@@ -2413,8 +2475,8 @@
     "p5_180",
     "p5_60",
     "p5_240",
-    "p6_0",
-    "p6_240"
+    "p6_240",
+    "p6_0"
    ]
   },
   {
@@ -2439,8 +2501,8 @@
    "ansichten": [
     "p5_240",
     "p5_180",
-    "p6_0",
-    "p6_240"
+    "p6_240",
+    "p6_0"
    ]
   },
   {
@@ -2469,14 +2531,14 @@
    ]
   },
   {
-   "i": 536,
-   "x": -933.1,
-   "y": 1324.5,
-   "adresse": "Brauhausgasse 1",
+   "i": 535,
+   "x": -886.7,
+   "y": 1285.4,
+   "adresse": "Walchstraße 2",
    "art": "haus",
    "material": "putz",
-   "wand": "#ced4b6",
-   "wand_quelle": "gemessen",
+   "wand": "#e6d8bc",
+   "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
     "farbe": "#8e4632",
@@ -2485,11 +2547,14 @@
    "laeden": false,
    "laden": false,
    "rahmen": "weiss",
-   "besonders": "cremeweiß, zweigeschossig, rotbraunes Dach (weit)",
-   "sicher": "niedrig",
+   "besonders": "Walchstraße 2: cremefarben, dreigeschossig, ockerfarbene Lisenen und Fensterfaschen",
+   "sicher": "mittel",
    "ansichten": [
-    "p6_0",
-    "p6_60"
+    "p6_120",
+    "p6_240",
+    "p6_180",
+    "p5_0",
+    "p5_60"
    ]
   },
   {
@@ -2545,21 +2610,22 @@
    "i": 554,
    "x": -895.4,
    "y": 1280.3,
-   "art": "haus",
+   "art": "geschaeft",
    "material": "putz",
-   "wand": "#e3d25c",
+   "wand": "#e6d3c3",
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632",
+    "farbe": "#5e3b2f",
     "farbe_quelle": "Ansicht"
    },
    "laeden": false,
-   "laden": false,
+   "laden": true,
    "rahmen": "weiss",
-   "besonders": "leuchtend gelb, dreigeschossig, weiße Fenster, Dach mit Gauben (weit)",
+   "besonders": "rosa-beige, dreigeschossig mit Zwerchhaus, Schaufenster im EG",
    "sicher": "mittel",
    "ansichten": [
+    "p6_240",
     "p6_180",
     "p6_120"
    ]
@@ -2570,7 +2636,7 @@
    "y": 1278.9,
    "art": "haus",
    "material": "putz",
-   "wand": "#e6d8bc",
+   "wand": "#c9c99a",
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
@@ -2579,13 +2645,13 @@
    },
    "laeden": false,
    "laden": false,
-   "rahmen": "weiss",
-   "besonders": "Bertholdstraße (Ecke): cremefarben, dreigeschossig, ockerfarbene Ecklisenen und Fensterfaschen",
+   "rahmen": "braun",
+   "besonders": "blass olivgrün, dreigeschossig mit Ziergiebel, braune Fensterrahmen",
    "sicher": "mittel",
    "ansichten": [
-    "p6_120",
-    "p6_240",
+    "p6_300",
     "p6_180",
+    "p6_240",
     "p5_0",
     "p5_60",
     "p5_120"
@@ -2632,53 +2698,6 @@
    "sicher": "niedrig",
    "ansichten": [
     "v003"
-   ]
-  },
-  {
-   "i": 568,
-   "x": -902.7,
-   "y": 1266.5,
-   "art": "geschaeft",
-   "material": "putz",
-   "wand": "#e4dccb",
-   "wand_quelle": "geschätzt",
-   "dach": {
-    "material": "ziegel",
-    "farbe": "#5e3b2f",
-    "farbe_quelle": "Ansicht"
-   },
-   "laeden": false,
-   "laden": true,
-   "rahmen": "weiss",
-   "besonders": "cremefarben mit Zwerchgiebel, Schaufenster im EG",
-   "sicher": "niedrig",
-   "ansichten": [
-    "p6_120",
-    "p6_240",
-    "p6_180"
-   ]
-  },
-  {
-   "i": 569,
-   "x": -902.3,
-   "y": 1254.8,
-   "art": "geschaeft",
-   "material": "putz",
-   "wand": "#e6d3c3",
-   "wand_quelle": "geschätzt",
-   "dach": {
-    "material": "ziegel",
-    "farbe": "#5e3b2f",
-    "farbe_quelle": "Ansicht"
-   },
-   "laeden": false,
-   "laden": true,
-   "rahmen": "weiss",
-   "besonders": "rosa-beige, dreigeschossig, Schaufenster im EG (zum Teil verdeckt)",
-   "sicher": "niedrig",
-   "ansichten": [
-    "p6_240",
-    "p6_180"
    ]
   },
   {

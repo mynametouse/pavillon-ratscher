@@ -27,8 +27,8 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   hier etwa +3,0° – eingerechnet aus `manifests.json` `geoman.xf`; Bildwinkel senkrecht 90°, 1366 × 559) – für die Modellbilder des
   Tests und die Abdeckungsprüfung. Bei 360°-Ansichten (`p5_*`, `p6_*`, Augenhöhe 1,6 m) stimmen weder der angegebene Standort noch die
   eigene Nordrichtung des Fotos: Standort und Drehung sind an die Gebäude der Stadt angepasst (Ecken, Dachlinien, Straßenfluchten; bei
-  `p6` dazu der Sonnenstand) – `p5` 4 m östlich und 2 m südlich, Drehung +26,5°; `p6` 13 m nordwestlich am Eckeingang von
-  Bertholdstraße 17, Drehung −57°.
+  `p6` dazu der Sonnenstand und die Lage des Ladens laut OSM) – `p5` 4 m östlich und 2 m südlich, Drehung +26,5°; `p6` 28 m nordöstlich
+  am Eckeingang von Bertholdstraße 19, Drehung −63°.
 - **Prüfwerkzeug** `tools/schleusingen-ansicht/check.py`: Schema, jedes Gebäude existiert und liegt, wo die Daten sagen, und **Abdeckung**:
   von jedem Blickpunkt ein Strahl je Spalte – jedes Gebäude, das über ≥ 40 px innerhalb 45 m das vorderste ist, steht in `gebaeude` oder
   `nicht_lesbar`. `--list` zeigt je Blickpunkt, welche Gebäude er zeigt.
@@ -80,6 +80,18 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
 6. Der graue Klotz am Markt: ein ETHOS-„Turm“ aus `gebaeude/gebaeude.js` – `feat/gebaeude` lässt sechs solche weg.
 7. Für den Kern (`world/village.js`, nicht Teil dieses Zweigs): der Zweig `st == 9.0` (Klinker) im Fassaden-Shader wird nie erreicht –
    `barn` (6,5 < st < 9,5) fängt Stil 9 vorher ab; SALOOK umgeht es.
+
+## Abgleich und Runde 3 (geplant, Falko 19:39: Schritt für Schritt zur besten Übereinstimmung)
+
+- **Abgleich** `tools/schleusingen-ansicht/abgleich.py --ref DIR --out DIR` (nur auf dem Chat-Rechner, der die Ansichten hat; `--ref` und
+  `--out` müssen außerhalb des Repos liegen): je Blickpunkt Ansicht und Modellbild (Abschnitt `bilder` des Tests, dieselbe Kamera)
+  nebeneinander, je Gebäude der Farbunterschied ΔE im Band zwischen Fuß und Traufe (CIELAB, Helligkeit halb gewichtet), dazu der
+  Unterschied der Dachlinie in Grad; Wertung = mittleres ΔE + 2 × Dachlinie, Liste `abgleich.json` (nur Zahlen) mit den schlechtesten
+  Blickpunkten zuerst. Jede Runde fängt bei ihnen an.
+- **Runde 3** – je Gebäude, was die Ansichten zeigen, als Daten für den Weg von `gebaeude` in `FASSADE` (die Geometrie baut
+  `gebaeude`): Geschosse, Dachform (Sattel, Walm, Krüppelwalm, Mansarde, flach) und Firstrichtung (trauf- oder giebelständig), Gauben,
+  Fensterreihen und -größen, Türen und Tore, Ladenfronten mit ihrer Aufschrift (schlichte Schrift), Balkone, zur Straße Zaun, Mauer
+  oder Hecke. Nichts von den Bildern selbst geht ins Spiel – nur, was man abliest.
 
 ## Offen
 

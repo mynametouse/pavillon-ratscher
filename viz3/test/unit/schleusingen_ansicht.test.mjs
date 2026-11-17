@@ -103,8 +103,8 @@ test('the materials map to the facade styles of world/village.js', () => {
     'brick: plaster in the brick colour (style 9 would be drawn as boards)'
   );
   assert.deepEqual(st(717).col, SALOOK.hexLin(rec(717).wand));
-  assert.equal(st(345).style, SALOOK.ST.SLATE_UP, 'Bertholdstraße 19: slate above a plaster ground floor');
-  assert.equal(st(345).slate, SALOOK.TONE.dunkel);
+  assert.equal(st(337).style, SALOOK.ST.SLATE_UP, 'Bertholdstraße 21: slate above a plaster ground floor');
+  assert.equal(st(337).slate, SALOOK.TONE.dunkel);
   for (const r of DOC.gebaeude.filter(q => q.art === 'block'))
     assert.equal(SALOOK.look(r, BASE).shutters, false, `block ${r.i}: no shutters (the model had some)`);
 });
