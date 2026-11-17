@@ -175,6 +175,9 @@ export const ZINNEN = (() => {
   };
   // ---- materials of a room after the look ----
   function roomMats(P, r, M, R, look = P.look) {
+    // feat/innen-real: a town house's stairwell (schleusingen/si_plan.js r.trep) has stone flags on its floor, as the old ones do –
+    // not the laminate of a flat
+    if (r.trep) return { wall: M.putz, floor: M.platten, ceil: M.decke };
     const X = ZIEINR.looks[P.look], // feat/haeuser
       own = X && X.mats && X.mats(P, r, M, R, look);
     if (own) return own;
@@ -207,7 +210,8 @@ export const ZINNEN = (() => {
         wall = R.pick([M.tapete.blume, M.tapete.streifen, M.putz]);
       if (k === 'kueche' || k === 'flur') floor = M.linoleum;
     } else {
-      if (k !== 'kueche') floor = M.laminat;
+      if (k !== 'kueche')
+        floor = M.parkett ? M.parkett.natur : M.laminat; // feat/innen-real: laminate of real oak
       else floor = M.platten;
     }
     return { wall, floor, ceil, wainscot };
@@ -259,37 +263,44 @@ export const ZINNEN = (() => {
         C.furn.box(fc, Math.min(p[0], q[0]), Math.max(p[0], q[0]), Math.min(p[1], q[1]), Math.max(p[1], q[1]), z0, z1);
       };
     if (h.kind === 'front') {
-      // the front door from inside: a panelled leaf in the reveal (the game leaves the house through it), its frame and handle
-      const leaf = C.col(0x5a3a22, 0.6);
-      const p = P(h.u0, 0, k - 0.02),
-        q = P(h.u1, 0, k + 0.03);
-      C.furn.box(
-        leaf,
-        Math.min(p[0], q[0]),
-        Math.max(p[0], q[0]),
-        Math.min(p[1], q[1]),
-        Math.max(p[1], q[1]),
-        h.z0,
-        h.z1
-      );
-      for (const [za, zb] of [
-        [h.z0 + 0.15, h.z0 + 0.95],
-        [h.z0 + 1.1, h.z1 - 0.15],
-      ]) {
-        const p2 = P(h.u0 + 0.14, 0, k - 0.04),
-          q2 = P(h.u1 - 0.14, 0, k - 0.02);
-        C.furn.box(
-          C.col(0x4a2e1a, 0.65),
-          Math.min(p2[0], q2[0]),
-          Math.max(p2[0], q2[0]),
-          Math.min(p2[1], q2[1]),
-          Math.max(p2[1], q2[1]),
-          za,
-          zb
-        );
-      }
-      const hp = P(h.u1 - 0.12, 0, k - 0.08);
-      C.furn.box(M.messing, hp[0] - 0.03, hp[0] + 0.03, hp[1] - 0.03, hp[1] + 0.03, h.z0 + 1.0, h.z0 + 1.08);
+      // the front door from inside: a leaf in the reveal (the game leaves the house through it), its frame and handle
+      // (feat/innen-real: a door of today – white or anthracite with a frosted glass strip – in the houses of 2026, the panelled wooden
+      // one in the older looks; a long escutcheon with a lever and the lock's cylinder instead of a brass block)
+      const today = /^heute/.test(C.P.look),
+        leaf = today ? C.col(C.R.pick([0xf2f1ec, 0xf2f1ec, 0x3b3e42, 0x6a4a32]), 0.45) : C.col(0x5a3a22, 0.6),
+        bx = (mat, u0, u1, k0, k1, za, zb) => {
+          const p = P(u0, 0, k0),
+            q = P(u1, 0, k1);
+          C.furn.box(
+            mat,
+            Math.min(p[0], q[0]),
+            Math.max(p[0], q[0]),
+            Math.min(p[1], q[1]),
+            Math.max(p[1], q[1]),
+            za,
+            zb
+          );
+        };
+      bx(leaf, h.u0, h.u1, k - 0.02, k + 0.03, h.z0, h.z1);
+      if (today) {
+        // the frosted glass strip, set in a little
+        const gu = (h.u0 + h.u1) / 2 + (C.R() < 0.5 ? -0.12 : 0.12);
+        bx(C.col(0xc9d2d6, 0.3), gu - 0.08, gu + 0.08, k - 0.025, k - 0.015, h.z0 + 0.35, h.z1 - 0.3);
+      } else
+        for (const [za, zb] of [
+          [h.z0 + 0.15, h.z0 + 0.95],
+          [h.z0 + 1.1, h.z1 - 0.15],
+        ])
+          bx(C.col(0x4a2e1a, 0.65), h.u0 + 0.14, h.u1 - 0.14, k - 0.04, k - 0.02, za, zb);
+      const metal = today ? M.stahl : M.messing,
+        uh = h.u1 - 0.09;
+      bx(metal, uh - 0.022, uh + 0.022, k - 0.032, k - 0.02, h.z0 + 0.86, h.z0 + 1.14);
+      const a = P(uh, h.z0 + 1.05, k - 0.032),
+        b = P(uh, h.z0 + 1.05, k - 0.075),
+        c = P(uh - 0.13, h.z0 + 1.05, k - 0.078);
+      C.furn.rod(metal, [a[0], a[1], h.z0 + 1.05], [b[0], b[1], h.z0 + 1.05], 0.009, 8);
+      C.furn.rod(metal, [b[0], b[1], h.z0 + 1.05], [c[0], c[1], h.z0 + 1.045], 0.0095, 8);
+      bx(C.col(0x2a2a2a, 0.5), uh - 0.006, uh + 0.006, k - 0.034, k - 0.031, h.z0 + 0.9, h.z0 + 0.94);
       return;
     }
     // window: frame, mullion and transom as the facade paints them, glass, the sill board inside, curtains
@@ -312,6 +323,39 @@ export const ZINNEN = (() => {
       P(h.u0, h.z1, k + 0.035),
       [s.n[0], s.n[1], 0]
     );
+    // feat/innen-real (normal game): the window seen from inside by day is bright – a pale veil on the glass whose strength follows the
+    // daylight (zombie/z_innen_mob.js M.glare: the shade's program, its colour white), as a photo of a room shows its windows
+    if (C.shade && M.glare)
+      C.shade.quad(
+        M.glare,
+        P(h.u0, h.z0, k + 0.031),
+        P(h.u1, h.z0, k + 0.031),
+        P(h.u1, h.z1, k + 0.031),
+        P(h.u0, h.z1, k + 0.031),
+        [s.n[0], s.n[1], 0],
+        [
+          [0.5, 0.5],
+          [0.5, 0.5],
+          [0.5, 0.5],
+          [0.5, 0.5],
+        ]
+      );
+    // and the daylight it lets in on the floor before it: a soft pale patch reaching into the room (the veil's material and mesh: no
+    // draw call of its own), gone at night with the veil
+    if (C.shade && M.glare && C.slab9 && h.z0 - C.room.z0 < 1.4 && C.room.kind !== 'keller' && C.room.kind !== 'boden')
+      C.slab9(
+        M.glare,
+        P(0, C.room.z0 + 0.004, 0),
+        [s.d[0], s.d[1], 0],
+        [-o[0], -o[1], 0],
+        [0, 0, 1],
+        h.u0 - 0.1,
+        h.u1 + 0.1,
+        0.25,
+        0.25 + Math.min(1.4, 0.6 + (h.z1 - h.z0) * 0.6),
+        0.32,
+        0.5
+      );
     const p = P(h.u0 - 0.05, 0, -0.14),
       q = P(h.u1 + 0.05, 0, 0.05);
     C.furn.box(
@@ -485,8 +529,10 @@ export const ZINNEN = (() => {
           e = S.poolWalk.length ? fill(S.poolWalk.pop(), v) : (WALK.push(v), v);
         H.walks.push(e);
       };
-    const shell = new ZIMOB.Mesher(),
-      furn = new ZIMOB.Mesher(),
+    // feat/innen-real: soft things rounded; in the normal game (o.still) the palette's indoor material
+    const palM = o && o.still ? M.palIn : null,
+      shell = new ZIMOB.Mesher(null, { pal: palM }),
+      furn = new ZIMOB.Mesher(null, { soft: true, pal: palM }),
       // moving parts (one draw call each): ten, fewer in big houses with many doors (each door leaf is one too); none when nothing is
       // searched (feat/haeuser: the normal game, o.still – every leaf is part of its furniture)
       PARTS_MAX = o && o.still ? 0 : Math.max(3, Math.min(10, 17 - P.doors.length));
@@ -509,7 +555,7 @@ export const ZINNEN = (() => {
     };
     C.ext = ZIEINR.looks[P.look] || null; // feat/haeuser: the look's hooks (none in the zombie night)
     C.find = kind => C.found[kind] || null;
-    C.solid = (r, z0, z1) => col(r[0], r[1], r[2], r[3], z0, z1);
+    C.solid = (r, z0, z1) => (foots.push([r, z0, z1]), col(r[0], r[1], r[2], r[3], z0, z1));
     C.solidW = C.solid;
     C.container = (kind, label, pos) => {
       const c = {
@@ -654,7 +700,7 @@ export const ZINNEN = (() => {
                           [r * 0.35, z + 0.12],
                           [0.03, z + 0.16],
                         ],
-        seg = kind === 'bulb' ? 8 : kind === 'small' ? 10 : 12;
+        seg = kind === 'bulb' ? 8 : kind === 'small' ? 14 : 22; // feat/innen-real: round shades, not faceted (12)
       furn.lathe(C.col(shadeCol, 0.9), x, y, prof, seg, { caps: false });
       pm.lathe(
         mat,
@@ -669,6 +715,217 @@ export const ZINNEN = (() => {
       pm.finish(g, false);
       H.lamps.push({ room: C.room.id, mat, pos: P.toW(x, y).concat(z), kind, g });
     };
+    // ---- feat/innen-real: what every real room has along its walls (the first look round showed rooms without them – a Thuringian
+    // house without a radiator under the window would be cold, a room without a light switch dark): skirting boards, a radiator under
+    // each window where the house has central heating (not in the coal-stove rooms of before 1960 and of the DDR), a light switch on
+    // the latch side of each door, sockets near the floor. All palette colours in the furniture's meshes: no draw call, no program ----
+    // feat/innen-real: the laid-on shade of the normal game's rooms (zombie/z_innen_mob.js M.schatten): what stands on a floor (the
+    // furniture's colliders) and the rims of every room – in a mesher of its own, one mesh
+    const shade = o && o.still && M.schatten ? new ZIMOB.Mesher() : null,
+      foots = [];
+    C.shade = shade;
+    // a rectangle in the plane through c (axes ea, eb, normal n), its soft rim e wide inside the texture's falloff: nine quads – the
+    // corners and edges keep their width however big the rectangle; t ∈ (0, 1] how dark its middle is (the texture at 0.25·t, where
+    // its falloff is f(t)² – the middle part stays there, the rim runs out to the texture's edge)
+    function slab9(c, ea, eb, n, a0, a1, b0, b1, e, t = 1, mat = M.schatten) {
+      const xs = [a0 - e, a0 + e, a1 - e, a1 + e],
+        ys = [b0 - e, b0 + e, b1 - e, b1 + e],
+        us = [0, 0.25 * t, 0.25 * t, 0],
+        P3 = (a, b) => [c[0] + ea[0] * a + eb[0] * b, c[1] + ea[1] * a + eb[1] * b, c[2] + ea[2] * a + eb[2] * b];
+      for (let i = 0; i < 3; i++)
+        for (let j = 0; j < 3; j++) {
+          if (xs[i + 1] - xs[i] < 1e-4 || ys[j + 1] - ys[j] < 1e-4) continue;
+          shade.quad(mat, P3(xs[i], ys[j]), P3(xs[i + 1], ys[j]), P3(xs[i + 1], ys[j + 1]), P3(xs[i], ys[j + 1]), n, [
+            [us[i], us[j]],
+            [us[i + 1], us[j]],
+            [us[i + 1], us[j + 1]],
+            [us[i], us[j + 1]],
+          ]);
+        }
+    }
+    // (the openings' light on the floor uses it too, in the window veil's material)
+    C.slab9 = shade
+      ? (mat, c, ea, eb, n, a0, a1, b0, b1, e, t) => slab9(c, ea, eb, n, a0, a1, b0, b1, e, t, mat)
+      : null;
+    // a strip at an edge: along a (length L from p), reaching w away along b, darkest at the edge (the texture at 0.25·t → its rim)
+    function strip(p, a, b, n, L, w, t) {
+      const v0 = 0.25 * t,
+        P3 = (s, t) => [p[0] + a[0] * s + b[0] * t, p[1] + a[1] * s + b[1] * t, p[2] + a[2] * s + b[2] * t];
+      shade.quad(M.schatten, P3(0, 0), P3(L, 0), P3(L, w), P3(0, w), n, [
+        [0.5, v0],
+        [0.5, v0],
+        [0.5, 0],
+        [0.5, 0],
+      ]);
+    }
+    const heated = P.look !== 'alt' && P.look !== 'ddr',
+      today = /^heute/.test(P.look),
+      fitted = (H.fitted = { skirting: 0, radiators: 0, switches: 0, sockets: 0, windows: 0 });
+    function fittings(r, s, k) {
+      if (r.kind === 'keller' || r.kind === 'boden') return;
+      const R = C.R,
+        z0 = r.z0,
+        A = s.A,
+        d = s.d,
+        n = s.n,
+        at = (u, v) => [A[0] + d[0] * u + n[0] * v, A[1] + d[1] * u + n[1] * v],
+        bx = (mat, u0, u1, v0, v1, za, zb, skip) => {
+          const p = at(u0, v0),
+            q = at(u1, v1);
+          furn.box(
+            mat,
+            Math.min(p[0], q[0]),
+            Math.max(p[0], q[0]),
+            Math.min(p[1], q[1]),
+            Math.max(p[1], q[1]),
+            za,
+            zb,
+            {
+              skip,
+            }
+          );
+        },
+        holes = s.holes.slice().sort((a, b) => a.u0 - b.u0),
+        free = (u0, u1, za, zb) =>
+          u0 > 0.04 &&
+          u1 < s.L - 0.04 &&
+          !holes.some(h => u0 < h.u1 + 0.07 && u1 > h.u0 - 0.07 && za < h.z1 && zb > h.z0);
+      // the darker rims (normal game): on the floor along the wall, on the wall above the floor and under the ceiling – the wall's between
+      // its doors and windows
+      if (shade) {
+        const nn = [n[0], n[1], 0],
+          da = [d[0], d[1], 0],
+          up = [0, 0, 1],
+          dn = [0, 0, -1],
+          inn = [n[0], n[1], 0];
+        strip([A[0] + n[0] * 0.003, A[1] + n[1] * 0.003, z0 + 0.002], da, inn, up, s.L, 0.32, 0.55);
+        strip([A[0] + n[0] * 0.003, A[1] + n[1] * 0.003, r.z1], da, dn, nn, s.L, 0.3, 0.35);
+        let u = 0;
+        for (const h of holes.filter(q => q.kind !== 'window').concat([{ u0: s.L, u1: s.L }])) {
+          if (h.u0 - u > 0.05)
+            strip(
+              [A[0] + d[0] * u + n[0] * 0.003, A[1] + d[1] * u + n[1] * 0.003, z0],
+              da,
+              up,
+              nn,
+              h.u0 - u,
+              0.28,
+              0.45
+            );
+          u = Math.max(u, h.u1);
+        }
+      }
+      // skirting boards (Sockelleisten): white today, wood in the older looks; in the bath and a tiled kitchen the tiles' own
+      if (r.kind !== 'bad') {
+        const sk = C.col(
+          today && C.look === 'heute' ? 0xf1f0ec : C.look === 'alt' ? 0x5a3e28 : C.look === 'ddr' ? 0x7a5a3a : 0x9a7a52,
+          0.5
+        );
+        let u = 0;
+        for (const h of holes.filter(q => q.kind !== 'window').concat([{ u0: s.L, u1: s.L }])) {
+          if (h.u0 - u > 0.05) {
+            bx(sk, u, h.u0, 0, 0.014, z0, z0 + 0.06);
+            fitted.skirting++;
+          }
+          u = Math.max(u, h.u1);
+        }
+      }
+      // a radiator under each window of an outer wall (a panel radiator: ribbed front, a thermostat valve, the pipes into the floor)
+      if (heated && s.outer && !(r.kind === 'bad' && today))
+        for (const h of holes) {
+          if (h.kind !== 'window' || h.z0 - z0 < 0.55 || h.z0 - z0 > 1.3) continue;
+          const w = Math.min(1.4, Math.max(0.6, h.u1 - h.u0 - 0.05)),
+            uc = (h.u0 + h.u1) / 2,
+            ua = uc - w / 2,
+            ub = uc + w / 2,
+            za = z0 + 0.13,
+            zb = Math.min(h.z0 - 0.1, z0 + 0.73),
+            white = C.col(0xf3f2ee, 0.38),
+            groove = C.col(0xd8d8d4, 0.5);
+          if (zb - za < 0.3) continue;
+          bx(white, ua, ub, 0.045, 0.115, za, zb);
+          // the front's profile: shallow vertical grooves every 5 cm, the cover grille on top
+          for (let g = ua + 0.05; g < ub - 0.03; g += 0.075)
+            bx(groove, g - 0.004, g + 0.004, 0.114, 0.118, za + 0.03, zb - 0.03, 'tb');
+          bx(C.col(0xe2e1dc, 0.6), ua + 0.01, ub - 0.01, 0.05, 0.11, zb, zb + 0.004);
+          // the valve and its thermostat head at the end towards the room's corner, the pipes down into the floor
+          const vu = ua - 0.06;
+          bx(white, vu - 0.012, vu + 0.012, 0.06, 0.1, za + 0.05, zb - 0.05);
+          const vp = at(vu, 0.08);
+          furn.cyl(white, vp[0], vp[1], zb - 0.05, zb + 0.05, 0.022, 0.022, 10);
+          furn.cyl(C.col(0xe8e8e4, 0.45), vp[0], vp[1], zb + 0.05, zb + 0.13, 0.026, 0.026, 12);
+          for (const pu of [ua + 0.05, ub - 0.05]) {
+            const pp = at(pu, 0.08);
+            furn.cyl(white, pp[0], pp[1], z0, za, 0.008, 0.008, 6);
+          }
+          const p = at(ua - 0.08, 0),
+            q = at(ub, 0.12);
+          col(Math.min(p[0], q[0]), Math.max(p[0], q[0]), Math.min(p[1], q[1]), Math.max(p[1], q[1]), z0, zb + 0.13);
+          fitted.radiators++;
+        }
+      // a light switch beside each door at 1.05 m (on the latch side: the hinge is at the door's lower end), a socket under it
+      const plate = C.col(0xf6f5f1, 0.35),
+        rock = C.col(0xebeae5, 0.4);
+      for (const h of holes) {
+        if (h.kind === 'window') continue;
+        let uS;
+        if (h.kind === 'front') uS = h.u1 + 0.16;
+        else {
+          const dd = h.d,
+            vert = dd.axis === 'y',
+            uL = vert ? s.u(A[0], dd.y + dd.w / 2) : s.u(dd.x + dd.w / 2, A[1]);
+          uS = Math.abs(uL - h.u1) < Math.abs(uL - h.u0) ? h.u1 + 0.16 : h.u0 - 0.16;
+        }
+        if (r.kind === 'flur' && h.kind !== 'front' && R() > 0.35) continue;
+        if (!free(uS - 0.05, uS + 0.05, z0 + 0.25, z0 + 1.15)) continue;
+        bx(plate, uS - 0.04, uS + 0.04, 0, 0.011, z0 + 1.01, z0 + 1.09);
+        bx(rock, uS - 0.027, uS + 0.027, 0.011, 0.015, z0 + 1.023, z0 + 1.077);
+        fitted.switches++;
+        if (r.kind !== 'flur' || R() < 0.5) {
+          socket(uS, z0 + 0.3);
+        }
+      }
+      // one or two more sockets low on a free stretch of wall (behind where the furniture will stand – as in real rooms)
+      const nS = r.kind === 'flur' ? 0 : r.kind === 'kueche' ? 1 : (R() < 0.6) + 1;
+      for (let i = 0; i < nS; i++) {
+        const u = R.r(0.3, Math.max(0.35, s.L - 0.3));
+        if (free(u - 0.05, u + 0.05, z0 + 0.2, z0 + 0.4)) socket(u, z0 + 0.3);
+      }
+      function socket(u, zc) {
+        bx(plate, u - 0.04, u + 0.04, 0, 0.011, zc - 0.04, zc + 0.04);
+        const c = at(u, 0.011),
+          dir = [n[0], n[1]];
+        // the round inset with its two holes, seen as a dark ring (a flat disc facing into the room)
+        const disc = (mat, rr, v) => {
+          const q = at(u, v);
+          for (let i = 0; i < 12; i++) {
+            const a0 = (i / 12) * Math.PI * 2,
+              a1 = ((i + 1) / 12) * Math.PI * 2,
+              P0 = [q[0] + d[0] * Math.cos(a0) * rr, q[1] + d[1] * Math.cos(a0) * rr, zc + Math.sin(a0) * rr],
+              P1 = [q[0] + d[0] * Math.cos(a1) * rr, q[1] + d[1] * Math.cos(a1) * rr, zc + Math.sin(a1) * rr];
+            // (one side: the one that faces into the room – P0 → P1 turns with d × up, the wall's normal decides the order)
+            if (d[1] * dir[0] - d[0] * dir[1] > 0) furn.tri(mat, [q[0], q[1], zc], P0, P1, [dir[0], dir[1], 0]);
+            else furn.tri(mat, [q[0], q[1], zc], P1, P0, [dir[0], dir[1], 0]);
+          }
+        };
+        disc(C.col(0xdcdbd6, 0.5), 0.024, 0.0125);
+        for (const o of [-0.01, 0.01]) {
+          const hp = at(u + o, 0.0128);
+          furn.box(
+            C.col(0x2a2a2a, 0.6),
+            hp[0] - 0.002,
+            hp[0] + 0.002,
+            hp[1] - 0.002,
+            hp[1] + 0.002,
+            zc - 0.002,
+            zc + 0.002
+          );
+        }
+        void c;
+        fitted.sockets++;
+      }
+      void k;
+    }
     // ---- holes: the main stair's in every upper floor, the attic stair's in the attic floor, the hatch in the ground floor ----
     const holeOf = st => {
       const dir = st.y1 >= st.y0 ? 1 : -1,
@@ -720,6 +977,8 @@ export const ZINNEN = (() => {
             s.n,
             s.holes
           );
+        if (!attic) fittings(r, s, k); // feat/innen-real
+        fitted.windows += s.holes.filter(h => h.kind === 'window').length;
         for (const h of s.holes) {
           if (s.outer && (h.kind === 'window' || h.kind === 'front')) opening(C, s, h, P.t, house);
           blocks.push({ side: k, u0: h.u0 - 0.1, u1: h.u1 + 0.1, z0: h.z0, door: h.kind !== 'window' });
@@ -998,6 +1257,40 @@ export const ZINNEN = (() => {
         col(hx - 0.04, hx + 0.04, rl[0] - (dir > 0 ? 0.05 : 0), rl[1] + (dir > 0 ? 0 : 0.05), ztop + 0.3, ztop + 1.0);
       }
       furn.box(wood, hx - 0.04, hx + 0.04, yE - 0.04, yE + 0.04, zE, ztop + 1.02);
+      // feat/innen-real: the ground floor's flight closed underneath as in the old houses – a plastered soffit under the steps and
+      // the triangle below its open side (seen from the hall the steps had hung in the air like a stack of boards)
+      if (st === P.stair && Math.abs(z0 - P.zG) < 0.01) {
+        const ya = st.y0 + dir * st.tread * 0.6,
+          za = z0 + 0.02,
+          zb = zB - 0.22,
+          tz = zb - za,
+          ty = st.y1 - ya,
+          L = Math.hypot(ty, tz) || 1,
+          nn = [0, (Math.sign(ty || 1) * tz) / L, -Math.abs(ty) / L];
+        shell.quad(M.putz, [st.x0, ya, za], [st.x1, ya, za], [st.x1, st.y1, zb], [st.x0, st.y1, zb], nn);
+        const xo = open + oS * 0.006;
+        shell.tri(M.putz, [xo, ya, za], [xo, st.y1, za], [xo, st.y1, zb], [oS, 0, 0]);
+        shell.tri(M.putz, [xo, ya, za], [xo, st.y1, zb], [xo, st.y1, za], [oS, 0, 0]);
+        // the skirting along it, and a collider where it is high enough to walk into
+        furn.box(
+          C.col(0xf1f0ec, 0.5),
+          Math.min(xo, xo + oS * 0.014),
+          Math.max(xo, xo + oS * 0.014),
+          Math.min(ya, st.y1),
+          Math.max(ya, st.y1),
+          za - 0.02,
+          za + 0.04
+        );
+        const yc = ya + (st.y1 - ya) * 0.35;
+        col(
+          Math.min(xo, xo - oS * 0.05),
+          Math.max(xo, xo - oS * 0.05),
+          Math.min(yc, st.y1),
+          Math.max(yc, st.y1),
+          za,
+          zb
+        );
+      }
       if (!cont) {
         furn.rod(wood, [st.x0, yh, ztop + 0.95], [st.x1, yh, ztop + 0.95], 0.025, 6);
         col(st.x0, st.x1, yh - 0.04, yh + 0.04, ztop + 0.3, ztop + 1.0);
@@ -1139,20 +1432,38 @@ export const ZINNEN = (() => {
         sign = -aw[1] * iw[0] + aw[0] * iw[1] > 0 ? 1 : -1;
       const key = 'zinnen:' + id + ':' + d.id,
         g = new THREE.Group(),
-        lm = new ZIMOB.Mesher(),
+        lm = new ZIMOB.Mesher(null, { pal: palM }),
         leafCol =
           (C.ext && C.ext.leaf) || // feat/haeuser
           (P.look === 'alt' ? C.R.pick([0x7a5a3a, 0xe8e0cc, 0x5a3a22]) : P.look === 'ddr' ? 0xf0ece0 : 0x9a7a52),
         lc = C.col(leafCol, 0.55);
       lm.box(lc, 0.01, w - 0.01, -0.02, 0.02, 0, hgt - 0.01);
-      for (const [za, zb] of [
-        [0.15, 0.9],
-        [1.05, hgt - 0.15],
-      ])
-        for (const sgn of [-1, 1])
-          lm.box(C.col(leafCol, 0.6), 0.12, w - 0.12, sgn > 0 ? 0.02 : -0.028, sgn > 0 ? 0.028 : -0.02, za, zb);
-      for (const sgn of [-1, 1])
-        lm.box(M.messing, w - 0.11, w - 0.05, sgn * 0.02 - 0.012, sgn * 0.02 + 0.012 + sgn * 0.03, 1.0, 1.03);
+      // feat/innen-real: the doors of today are flat (white lacquer), the older ones have their two raised panels
+      if (!/^heute/.test(P.look))
+        for (const [za, zb] of [
+          [0.15, 0.9],
+          [1.05, hgt - 0.15],
+        ])
+          for (const sgn of [-1, 1])
+            lm.box(C.col(leafCol, 0.6), 0.12, w - 0.12, sgn > 0 ? 0.02 : -0.028, sgn > 0 ? 0.028 : -0.02, za, zb);
+      // feat/innen-real: a lever handle on a round rosette at 1.05 m on both faces, the key's rosette below it (a brass box before)
+      const metal = P.look === 'alt' ? M.messing : P.look === 'ddr' ? C.col(0xb9b4a8, 0.4, 0.6) : M.stahl,
+        xh = w - 0.075;
+      for (const sgn of [-1, 1]) {
+        lm.rod(metal, [xh, sgn * 0.02, 1.05], [xh, sgn * 0.031, 1.05], 0.026, 12);
+        lm.rod(metal, [xh, sgn * 0.031, 1.05], [xh, sgn * 0.058, 1.05], 0.009, 8);
+        lm.rod(metal, [xh + 0.004, sgn * 0.058, 1.05], [xh - 0.125, sgn * 0.062, 1.045], 0.0095, 8);
+        lm.rod(metal, [xh, sgn * 0.02, 0.92], [xh, sgn * 0.028, 0.92], 0.022, 12);
+        lm.box(
+          C.col(0x1a1a1a, 0.6),
+          xh - 0.0035,
+          xh + 0.0035,
+          sgn > 0 ? 0.028 : -0.0285,
+          sgn > 0 ? 0.0285 : -0.028,
+          0.905,
+          0.93
+        );
+      }
       lm.finish(g, false);
       const Dd = hingeDoor(key, g, { hx: hw[0], hy: hw[1], a: aw, w, sign, z0: d.z0, z1: d.z1, thick: 0.05 });
       Dd.ph = null;
@@ -1176,10 +1487,10 @@ export const ZINNEN = (() => {
         furn.box(fz, d.x + w / 2, d.x + w / 2 + 0.05, t0, t1, d.z0, d.z1 + 0.05);
         furn.box(fz, d.x - w / 2 - 0.05, d.x + w / 2 + 0.05, t0, t1, d.z1, d.z1 + 0.05);
       }
-      // the wall above the door in the gap between both faces (closed from both sides)
-      // (feat/haeuser: in the normal game a few millimetres inside both faces – flush with them the white plaster flickered through a
-      // wallpaper above the door; the zombie night's as before)
-      const ins = o && o.still ? 0.004 : 0;
+      // the wall above the door in the gap between both faces (closed from both sides), a few millimetres inside both faces – flush with
+      // them the white plaster flickered through a wallpaper above the door (feat/haeuser found it; since V18r in the zombie night too –
+      // taken over from wip/zombie-kit 3af4303a)
+      const ins = 0.004;
       if (vert) furn.box(M.putz, d.x - PW / 2 + ins, d.x + PW / 2 - ins, d.y - w / 2, d.y + w / 2, d.z1 + 0.05, r.z1);
       else furn.box(M.putz, d.x - w / 2, d.x + w / 2, d.y - PW / 2 + ins, d.y + PW / 2 - ins, d.z1 + 0.05, r.z1);
     }
@@ -1256,17 +1567,46 @@ export const ZINNEN = (() => {
         r.stoveSide = k;
         r.stovePref = k === 'y1' ? (hallLeft ? 0.95 : 0.05) : hallLeft ? 0.05 : 0.95;
       }
+      // feat/innen-real: the colours a room's furniture takes (its signature for the survey: no two living rooms alike)
+      const used = (r.cols = new Set());
+      C.col = (hex, rough, metal, soft) => (used.add(hex), ZIMOB.col(hex, rough, metal, soft));
       try {
         ZIEINR.furnish(C, r);
       } catch (e) {
         console.warn('zinnen furnish', r.id, e);
         S.err = String((e && e.stack) || e);
       }
+      C.col = ZIMOB.col;
       await tick0();
     }
+    // feat/innen-real: contact shadows under what stands on a floor (sofas, beds, cupboards, tables): its footprint, soft at the edges
+    if (shade)
+      for (const [rc, z0, z1] of foots) {
+        const r = rooms.find(
+          q => Math.abs(q.z0 - z0) < 0.03 && rc[0] < q.x1 && rc[1] > q.x0 && rc[2] < q.y1 && rc[3] > q.y0
+        );
+        if (!r || z1 - z0 < 0.25) continue;
+        slab9(
+          [0, 0, z0 + 0.003],
+          [1, 0, 0],
+          [0, 1, 0],
+          [0, 0, 1],
+          rc[0],
+          rc[1],
+          rc[2],
+          rc[3],
+          0.1,
+          z1 - z0 > 0.6 ? 0.85 : 0.7
+        );
+      }
     // ---- meshes ----
     const shellMeshes = shell.finish(G, true),
-      furnMeshes = furn.finish(G, false);
+      furnMeshes = furn.finish(G, false),
+      shadeMeshes = shade ? shade.finish(G, false) : []; // feat/innen-real
+    for (const me of shadeMeshes) {
+      me.receiveShadow = false;
+      me.renderOrder = 1;
+    }
     scene.add(G);
     G.traverse(o => {
       if (o.userData) {
@@ -1699,6 +2039,74 @@ export const ZINNEN = (() => {
         run: () => useSpot(H, sp),
       });
     }
+    // ---- feat/innen-real: the realism survey of the house (viz3/test/innen_real.py): a kitchen with a sink and a stove, a bath with a
+    // toilet and a basin, a bed in every bedroom, the front door into the hall, windows inside where the facade has them, a lamp in
+    // every room, the fittings; and a signature of the living room (its size, materials and the colours of its things) ----
+    H.survey = () => {
+      const miss = [],
+        spotIn = (r, k) => H.spots.some(q => q.room === r.id && q.kind === k),
+        lived = r => !['keller', 'boden', 'vorrat'].includes(r.kind) && !r.trep;
+      if (!rooms.some(r => r.kind === 'bad') && !P.shop) miss.push('kein Bad');
+      if (!rooms.some(r => r.kind === 'kueche') && !P.shop) miss.push('keine Küche');
+      for (const r of rooms) {
+        if (r.kind === 'kueche' && !(spotIn(r, 'spuele') && spotIn(r, 'herd'))) miss.push(r.id + ': Spüle/Herd');
+        if (r.kind === 'bad' && !(r.wc && r.basin)) miss.push(r.id + ': ' + (r.wc ? 'Waschbecken' : 'WC'));
+        if (r.kind === 'schlafzimmer' && !spotIn(r, 'bett')) miss.push(r.id + ': Bett');
+        if (lived(r) && !H.lamps.some(l => l.room === r.id)) miss.push(r.id + ': Lampe');
+      }
+      // a window the facade shows is lost inside when a room reaches it but a partition cuts it (where no room is – a locked flat of a
+      // stairwell house, beside the attic's knee walls – nobody looks out of it)
+      const edgeOf = r => ({
+          front: Math.abs(r.y0 - P.yi0) < 0.02,
+          back: Math.abs(r.y1 - P.yi1) < 0.02,
+          left: Math.abs(r.x0 - P.xi0) < 0.02,
+          right: Math.abs(r.x1 - P.xi1) < 0.02,
+        }),
+        lostWin = P.windows.filter(w => {
+          const hits = rooms.filter(r => {
+            if (r.fl !== w.fl || r.kind === 'keller' || !edgeOf(r)[w.edge]) return false;
+            const lo = w.edge === 'front' || w.edge === 'back' ? r.x0 : r.y0,
+              hi = w.edge === 'front' || w.edge === 'back' ? r.x1 : r.y1;
+            return w.a < hi && w.b > lo;
+          });
+          return (
+            hits.length > 0 &&
+            !hits.some(r => {
+              const lo = w.edge === 'front' || w.edge === 'back' ? r.x0 : r.y0,
+                hi = w.edge === 'front' || w.edge === 'back' ? r.x1 : r.y1;
+              return w.a >= lo + 0.05 && w.b <= hi - 0.05;
+            })
+          );
+        }).length;
+      const front = H.openings[0],
+        doorHall = !!front && front.id === 'haustuer' && (rooms.find(r => r.id === front.room) || {}).kind === 'flur',
+        wins = P.windows.length,
+        st = rooms.find(r => r.kind === 'stube' || r.kind === 'wohnzimmer'),
+        sig = st
+          ? [
+              P.look,
+              (st.x1 - st.x0).toFixed(1),
+              (st.y1 - st.y0).toFixed(1),
+              [...(st.cols || [])].sort().join('.'),
+            ].join('|')
+          : null;
+      if (!doorHall) miss.push('Haustür nicht in den Flur');
+      return {
+        kitchenOk: !miss.some(t => /Spüle|Herd|Küche/.test(t)),
+        bathOk: !miss.some(t => /WC|Waschbecken|Bad/.test(t)),
+        bedOk: !miss.some(t => /Bett/.test(t)),
+        lampsOk: !miss.some(t => /Lampe/.test(t)),
+        doorHall,
+        // every window the facade shows is a window inside too (none lost in a partition)
+        winOk: wins > 0 && lostWin === 0,
+        windows: wins,
+        drawn: H.fitted.windows,
+        lost: lostWin,
+        fitted: H.fitted,
+        sig,
+        miss,
+      };
+    };
     // ---- done ----
     H.stats = {
       ms: Math.round(performance.now() - t0),
@@ -1726,6 +2134,17 @@ export const ZINNEN = (() => {
       DOORS[k].group.traverse(o => {
         if (o.isMesh) H.stats.draws++;
       });
+    // feat/innen-real: the laid-on light and shade cost a draw call each – a house at the edge of the budget (60) goes without the
+    // window's veil first, then without the shade
+    for (const name of ['innen-fensterlicht', 'innen-schatten']) {
+      if (H.stats.draws <= 60) break;
+      const me = shadeMeshes.find(q => q.material && q.material.name === name);
+      if (me) {
+        G.remove(me);
+        me.geometry.dispose();
+        H.stats.draws--;
+      }
+    }
     S.built.push(H);
     terrainHole(H);
     wire();
@@ -1864,20 +2283,23 @@ export const ZINNEN = (() => {
     const mid = [(r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2];
     for (const w of P.windows) {
       if (w.fl !== r.fl) continue;
+      // (feat/innen-real: 1.3 m in and at the window's head – a metre in at its middle the lamp's own highlight sat on the glass of a
+      // shower or a cabinet near the window like a bulb)
       const c = (w.a + w.b) / 2,
+        IN = 1.3,
         p =
           w.edge === 'front'
-            ? [c, P.yi0 + 1.0]
+            ? [c, P.yi0 + IN]
             : w.edge === 'back'
-              ? [c, P.yi1 - 1.0]
+              ? [c, P.yi1 - IN]
               : w.edge === 'left'
-                ? [P.xi0 + 1.0, c]
-                : [P.xi1 - 1.0, c];
+                ? [P.xi0 + IN, c]
+                : [P.xi1 - IN, c];
       if (p[0] < r.x0 || p[0] > r.x1 || p[1] < r.y0 || p[1] > r.y1) continue;
       const d = Math.hypot(p[0] - mid[0], p[1] - mid[1]);
       if (d < bd) {
         bd = d;
-        best = P.toW(p[0], p[1]).concat((w.z0 + w.z1) / 2);
+        best = P.toW(p[0], p[1]).concat(Math.min(w.z1, r.z1 - 0.25));
       }
     }
     return best || P.toW(mid[0], mid[1]).concat(r.z1 - 0.4);
@@ -1910,7 +2332,10 @@ export const ZINNEN = (() => {
     lastRoom = key;
     S.lightDirty = false;
     if (best) {
-      l.position.copy(V(best.pos[0], best.pos[1], best.pos[2] - 0.15));
+      // (feat/innen-real: half a metre under a lamp at the ceiling, a quarter under a pendant – right under the shade the ceiling around
+      // it stayed dark at night and a hot spot sat over the lamp)
+      const drop = best.kind === 'fluter' || best.kind === 'schale' ? 0.5 : best.kind === 'bulb' ? 0.3 : 0.25;
+      l.position.copy(V(best.pos[0], best.pos[1], best.pos[2] - drop));
       l.color.set(0xffd6a0);
       l.distance = 7.5;
       l.decay = 2;

@@ -569,13 +569,68 @@ export const GLHANDY = (() => {
       return true;
     },
   });
+  // (feat/grenzland-ruf) the side jobs and side quests of grenzland/gl_jobs.js (GLJOBS) and what the village thinks of the two (GLRUF):
+  // a tap on an offer sets a waypoint (and accepts a job that may begin within the hour); „Warten“ lets the clock run to its beginning
+  const RUFNAME = { ratscher: 'Ratscher', schleusingen: 'Schleusingen' };
   HANDY.app('auftraege', {
     name: 'Aufträge',
     icon: ICON.auftraege,
     farbe: ['#8e8e93', '#3a3a3c'],
     render(el) {
-      el.innerHTML = '<p class="hy-leer">Keine Aufträge.<br>Wer fragt, bekommt welche.</p>';
-      return { titel: 'Aufträge' };
+      const J = window.GLJOBS,
+        R = window.GLRUF,
+        L = J && J.angebote ? J.angebote() : [];
+      const ruf =
+        R && R.wert
+          ? `<p style="opacity:.8;margin:0 0 3cqmin;font-size:3.4cqmin">Ruf: ${Object.keys(RUFNAME)
+              .map(
+                o =>
+                  esc(RUFNAME[o]) +
+                  ' <b>' +
+                  esc(R.stufe(o)) +
+                  '</b> (' +
+                  (R.wert(o) > 0 ? '+' : '') +
+                  Math.round(R.wert(o)) +
+                  ')'
+              )
+              .join(' · ')}</p>`
+          : '';
+      if (!L.length) {
+        el.innerHTML = ruf + '<p class="hy-leer">Keine Aufträge.<br>Wer fragt, bekommt welche.</p>';
+        return { titel: 'Aufträge' };
+      }
+      const lauf = L.find(a => a.st === 'läuft' && a.art === 'job');
+      el.innerHTML =
+        ruf +
+        L.map(
+          a =>
+            `<button type="button" class="hy-zeile${a.st === 'läuft' ? ' hy-ung' : ''}" data-hy="j:${esc(a.id)}"${a.st === 'erledigt' ? ' style="opacity:.55"' : ''}><div><b><span>${esc(a.titel)}</span><time>${esc(a.st === 'erledigt' ? 'erledigt' : a.wann || (a.st === 'läuft' ? 'läuft' : ''))}</time></b><small>${esc(a.von)} · ${esc(a.text)}</small></div><span class="hy-pf">${a.st === 'läuft' ? '▶' : a.st === 'erledigt' ? '✓' : ''}</span></button>` +
+            (a.art === 'job' && a.st === 'offen' && !a.jetzt && !lauf && /ab \d/.test(a.wann || '')
+              ? `<button type="button" class="hy-zeile" data-hy="w:${esc(a.id)}"><div><b><span>Bis zum Beginn warten</span></b><small>${esc(a.wann)}</small></div><span class="hy-pf">⏱</span></button>`
+              : '')
+        ).join('') +
+        (lauf
+          ? `<button type="button" class="hy-zeile" data-hy="x:"><div><b><span>Auftrag abbrechen</span></b><small>${esc(lauf.titel)}</small></div><span class="hy-pf">✕</span></button>`
+          : '');
+      return { titel: 'Aufträge', sub: 'Nebenjobs und Bitten aus dem Dorf' };
+    },
+    klick(k, b, c) {
+      const J = window.GLJOBS;
+      if (!J) return false;
+      const id = k.slice(2);
+      if (k.startsWith('x:')) J.abbrechen();
+      else if (k.startsWith('w:')) J.warten && J.warten(id);
+      else if (k.startsWith('j:')) {
+        const a = J.angebote().find(q => q.id === id);
+        if (a && a.ziel) {
+          S.ziel = { pos: a.ziel.slice(0, 2), name: a.titel };
+          S.zielId = '';
+          GL.emit('ziel', { pos: a.ziel.slice(0, 2), name: a.titel });
+        }
+        if (a && a.art === 'job' && a.st === 'offen') J.start(id);
+      }
+      c.neu();
+      return true;
     },
   });
   // ---------------- the world ----------------

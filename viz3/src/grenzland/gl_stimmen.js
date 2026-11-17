@@ -40,7 +40,20 @@ export const GLSTIMMEN = (() => {
   const STORY = ['GLMISSION', 'GLKAP1', 'GLKAMERA', 'GLSCORE', 'GLLAGER', 'GLMDATA'];
   // modules with many small variants per person (welt's reactions: every commenter has every line) – recorded person by person, as far
   // as the budget goes; the player's own lines from there are the world (2)
-  const MENGE = ['GLREAKTION'];
+  // (17.11.2026: the village's gossip and the side jobs of grenzland-ruf, the drivers of grenzland-strasse, the village people and the
+  // festivals of grenzland-alltag – hundreds of fragments; recorded as far as the budget goes)
+  const MENGE = [
+    'GLREAKTION',
+    'GLRUF',
+    'GLRUFDATA',
+    'GLJOBS',
+    'GLJOBSDATA',
+    'GLLINIEN',
+    'GLALLTAG',
+    'GLALDATA',
+    'GLFESTE',
+    'GLFDATA',
+  ];
   const SPIELER = ['gl_falko', 'gl_sarah'];
   // the police reports of 1989 (gl_radio_data.js POLIZEI): said by the stations of the flashback, the others by today's
   const P89 = ['kiste', 'ausweis'];
