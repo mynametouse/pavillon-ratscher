@@ -192,7 +192,15 @@ export const WELT = (() => {
     if (old && old !== tex) old.dispose();
     markDirty(true);
   };
-  const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver; uniform float uPave;
+  // feat/suhl (W5): gNy – how level the ground is (the world normal's up part, set before weltGround): a bank beside a road (steeper than
+  // ~15–23°) is no road and no paving; where the photo there is not green (the road, a roof or a shadow smeared over the slope) it is
+  // grass and earth
+  const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver; uniform float uPave; float gNy = 1.0;
+    vec3 bankGround( vec2 p, float dist ) {   // feat/suhl (W5): grass on a bank, bare earth in patches and at the foot
+      float n1 = rdN( p * 0.35 ), n2 = rdN( p * 2.1 + 7.3 ), n3 = rdH( floor( p * 7.0 ) );
+      vec3 grass = vec3( 0.088, 0.118, 0.062 ) * ( 0.8 + 0.4 * n1 ) * ( 0.92 + 0.16 * n3 );
+      vec3 earth = vec3( 0.19, 0.155, 0.11 ) * ( 0.85 + 0.3 * n2 );
+      return landDetail( p, mix( grass, earth, smoothstep( 0.72, 0.92, n2 ) * 0.45 ), dist ); }
     vec3 setts( vec2 p, vec3 c, float sc, float fwp ) {   // small stones in offset rows, each a little different, dark joints
       vec2 q = p * sc; q.x += 0.5 * mod( floor( q.y ), 2.0 );
       vec2 f = fract( q ); float fine = 1.0 - smoothstep( 0.15, 0.6, fwp * sc );
@@ -223,7 +231,16 @@ export const WELT = (() => {
       // feat/strassen: the roads from the map of a window around the vehicle (ROADS.W, strassen/strassen_karte.js) – asphalt with its
       // wear, shoulders, kerbs, pavements and markings like in the square, also over the asphalt a zone has laid; a zone's sett,
       // slabs and gravel stay as the zone made them (mode 2: nothing)
+      // feat/suhl (W5): on a slope no road can lie on, the road map's pavement and kerbs stay off (they reached up the banks)
+      float bank = 1.0 - smoothstep( 0.92, 0.965, gNy ), steepR = 1.0 - smoothstep( 0.935, 0.965, gNy );   // 15–23°; streets stay below 12°
+      vec3 g0 = g;
       g = roadShade( p, g, dist, o.r > 0.03 && uPave > 0.5 && o.g / max( o.r, 0.01 ) >= 0.3 ? 2.0 : 0.0 );
+      g = mix( g, g0, steepR );
+      pk *= 1.0 - bank;
+      // feat/suhl (W5): the bank itself – where the photo is grey or beige there (smeared road, wall, roof), grass and earth
+      // (green in the photo – meadow, bushes, forest on a slope – stays as photographed; grey, beige, blue-grey shadow becomes the bank)
+      float veg = smoothstep( 0.06, 0.16, ( c.g - max( c.r, c.b ) ) / max( mx, 0.03 ) );
+      g = mix( g, bankGround( p, dist ), bank * ( 1.0 - veg ) );
       // grey land near the camera as sett (a zone's squares and yards on the photo) – not where the road map has a road: the asphalt
       // took its brightness from the stones and showed them (the L 1625 before Kloster Veßra)
       if ( pk * ( 1.0 - gRdCov ) > 0.01 ) g = mix( g, setts( p, landHi( c ) * 0.78, 7.5, fwp ), pk * ( 1.0 - gRdCov ) );
@@ -248,20 +265,24 @@ export const WELT = (() => {
       Object.assign(sh.uniforms, OVER);
       if (ROADS.W) Object.assign(sh.uniforms, ROADS.W); // feat/strassen: the tiles read the road map of the window, not the square's
       sh.vertexShader =
-        'varying vec2 vGeo;\n' +
+        'varying vec2 vGeo; varying float vGeoH;\n' +
         sh.vertexShader.replace(
           '#include <begin_vertex>',
-          '#include <begin_vertex>\n vGeo = vec2( position.x, -position.z );'
+          '#include <begin_vertex>\n vGeo = vec2( position.x, -position.z ); vGeoH = position.y;'
         );
       sh.fragmentShader =
-        'varying vec2 vGeo;\n' +
+        'varying vec2 vGeo; varying float vGeoH;\n' +
         G +
         '\n' +
         TILE_GLSL +
         '\n' +
         sh.fragmentShader.replace(
           '#include <map_fragment>',
-          '#include <map_fragment>\n diffuseColor.rgb = weltGround( vGeo, diffuseColor.rgb, length( vViewPosition ) );'
+          // feat/suhl (W5): the slope of the drawn triangle itself (a bank a few metres wide is only one or two cells of the tile: the
+          // smoothed normal makes it too flat) and of the smoothed normal – the steeper of the two
+          '#include <map_fragment>\n { vec3 gq = vec3( vGeo, vGeoH ), gfn = normalize( cross( dFdx( gq ), dFdy( gq ) ) );' +
+            ' gNy = min( abs( gfn.z ), normalize( ( vec4( normalize( vNormal ), 0.0 ) * viewMatrix ).xyz ).y ); }' +
+            '\n diffuseColor.rgb = weltGround( vGeo, diffuseColor.rgb, length( vViewPosition ) );'
         );
       if (ROADS.gloss) sh.fragmentShader = ROADS.gloss(sh.fragmentShader);
     };

@@ -44,3 +44,8 @@ and material, slate, half-timbering, roof – and the Markt is complete. Positio
    final report with the CI run id, test counts, pictures and open points.
 8. Code comments English, UI German; no keys, no parcel or private raw data in the repo. Commit messages end with
    `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and `Claude-Session: https://claude.ai/code/session_01Mmpsvp11QsXpPSQRRbZ4Jv`.
+
+## Erweiterung 17.11. 18:20 (Falko: „um die Vollständigkeit Schleusingens zu garantieren … und auch für Ratscher“)
+
+The whole town zone, not only the three roads: Königstraße has street-level coverage too, and a second round of private views (user 360° photos in the old town, old-town street photos with an open licence) comes into the same folder. Then Ratscher: private views in `/home/claude/ref-ansichten/ratscher/` (open-licence street photos 2020/2025 along the L 3004 and through the village; the usual big street-view service has nothing there). Same rules as above.
+For Ratscher: the same attributes for the village's houses (`world/village.js`, `VILLAGE` ids) as a separate data file; Ratscher's buildings are also in the Grenzland chat's `gebaeude` scope – data only until the lead releases the hook. Where Falko's photos already shaped a house (Dorfkern V16e, Anger V17c), only note differences.

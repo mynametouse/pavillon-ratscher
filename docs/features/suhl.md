@@ -173,6 +173,7 @@ Ein eigener Commit: `b0d40d80` („the hooks in shared files“), 4 Dateien, 23 
 | W2 | `welt/welt.js`, `setOf` | `tiling.levels[L].has` = Liste `[x, y]`; `rect` ist dann nur der Rahmen | nein (die 11 Kacheln der Stufe 10 füllen ihr Rechteck von 4 × 4 nicht) |
 | W3 | `welt/welt.js`, `lowerOuter` | `WELT.lowerAlso(x, y)` wird gefragt; `WELT.lowerOuter` zum Neu-Rechnen | nein |
 | **W4** | `welt/welt.js` | `WELT.tileMat` – das Material der Kacheln | **neu, nicht im Plan.** Ja, mit einem eigenen Programm für den Fernboden; dann aber anderes Aussehen an der Naht und ein Programm mehr. So folgt der Fernboden allem, was der Straßen-Chat am Kachel-Material ändert. |
+| **W5** | `welt/welt.js` | `TILE_GLSL`: `gNy` (Neigung je Dreieck und geglättet, die steilere), `bankGround()`; ab ~15–23° keine Straßenfarbe und kein Pflaster, nicht-grünes Luftbild (verschmierte Straße, Dach, Schatten) wird Gras mit etwas Erde (V18u, Falko 17.11.: „Achte darauf, dass die Straßenböschungen realistisch sind“) | Nein – die Böschungen liegen in den Kacheln der Welt; gilt auch für die Landstraßen der Region. |
 | S1 | `garden/env.js` | Himmelskugel folgt der Kamera, wird nicht weggeschnitten | nein |
 | K1 | `game/camera.js`, `applyCam` | Mitte der Draufsicht bis x −16 km, y +23 km | nein |
 | H2 | – | **nicht nötig:** der Menüknopf entsteht im Anmelde-Modul (seit V18h ohne Zusatz, `?suhl=0` ohne) | |
