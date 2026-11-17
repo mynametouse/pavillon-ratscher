@@ -16,8 +16,9 @@ OUT = lib.out('bewuchs_pflanzen')
 ck = lib.Checks('bewuchs_pflanzen')
 errs = []
 
-# the patches: class id of bw_arten.js flaechen, model rectangle x0, y0, x1, y1 (m), a share of the table's density (a test, not the budget)
-PATCHES = [(1, 6.0, 9.0, 10.0, 13.0, 1.0), (4, 10.0, 9.0, 14.0, 13.0, 1.0), (3, 14.0, 9.0, 18.0, 11.0, 1.0), (7, 14.0, 11.0, 18.0, 13.0, 1.0)]
+# the patches: class id of bw_arten.js flaechen, model rectangle x0, y0, x1, y1 (m) relative to the open square the test finds on the
+# garden's lawn (8 x 8 m: lawn south-west, meadow south-east, verge north-west, margin north-east), a share of the table's density
+PATCHES0 = [(1, 0, 0, 4, 4, 1.0), (4, 4, 0, 8, 4, 1.0), (3, 0, 4, 4, 8, 1.0), (7, 4, 4, 8, 8, 1.0)]
 
 HELP = r"""
 window.__BP = {
@@ -30,8 +31,32 @@ window.__BP = {
     if (!this.tex) return { ok: false };
     this.tex.colorSpace = THREE.SRGBColorSpace;
     this.tex.anisotropy = 4;
-    this.mat = new THREE.MeshStandardMaterial({ map: this.tex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85, metalness: 0 });
+    // front faces only: each quad is there twice with opposite windings and both normals up (DoubleSide would flip the normal of a back
+    // face downwards – half the plants dark)
+    this.mat = new THREE.MeshStandardMaterial({ map: this.tex, alphaTest: 0.5, side: THREE.FrontSide, roughness: 0.85, metalness: 0 });
     return { ok: true, w: this.tex.image.width, h: this.tex.image.height, cells: this.atlas.size };
+  },
+  // the most open 8 x 8 m square of the garden's lawn: a 1 m grid of the lawn clumps (GRASS.meshes, hidden ones have scale 0),
+  // the square whose emptiest cell is fullest (no building, gravel or ditch inside)
+  spot() {
+    const G = new Map(), k = (i, j) => i * 10000 + j;
+    for (const im of window.GRASS ? GRASS.meshes : []) {
+      const a = im.instanceMatrix.array, n = im.userData.n0 ?? im.count;
+      for (let i = 0; i < n; i++) {
+        if (Math.abs(a[i * 16 + 5]) < 1e-4) continue;
+        const key = k(Math.floor(a[i * 16 + 12]), Math.floor(-a[i * 16 + 14]));
+        G.set(key, (G.get(key) || 0) + 1);
+      }
+    }
+    let best = null;
+    for (let x0 = -14; x0 <= 14; x0++)
+      for (let y0 = -24; y0 <= 26; y0++) {
+        let mn = 1e9, sum = 0;
+        for (let i = 0; i < 8 && mn > 0; i++) for (let j = 0; j < 8; j++) { const c = G.get(k(x0 + i, y0 + j)) || 0; mn = Math.min(mn, c); sum += c; }
+        const sc = mn * 1000 + sum;
+        if (!best || sc > best.sc) best = { x0, y0, mn, sum, sc };
+      }
+    return best;
   },
   rng(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; },
   // one plant's frame on a day (the rule of bw_arten.js: its own shift of ± streuung_tage; a window's share shows it, the others show
@@ -50,7 +75,7 @@ window.__BP = {
       const k = pos.length / 3;
       pos.push(-h * ax, 0, -h * az, h * ax, 0, h * az, h * ax, 1, h * az, -h * ax, 1, -h * az);
       uv.push(u0, v0, u1, v0, u1, v1, u0, v1);
-      idx.push(k, k + 1, k + 2, k, k + 2, k + 3);
+      idx.push(k, k + 1, k + 2, k, k + 2, k + 3, k, k + 2, k + 1, k, k + 3, k + 2);
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -147,7 +172,11 @@ with lib.browser() as b:
     ld = pg.evaluate("__BP.load()")
     ck('the atlas loads (1024 x 1024, 64 cells)', ld.get('ok') and ld.get('w') == 1024 and ld.get('cells') == 64, ld)
     E("__BP.hide(); if (window.DN && !DN.active) GAME.setMode('auto'); CAM3.want = false; GAME.step(0.1)")
-    print('places', J("[[8, 11], [12, 11], [16, 11]].map(([x, y]) => ({ x, y, floor: +GAME.floorAt(x, y, 0.3).toFixed(2), place: KERN.place ? KERN.place(x, y, 0) : null }))"), flush=True)
+    sp = J("__BP.spot()")
+    ck('an open square of lawn found', sp and sp['mn'] > 0, sp)
+    X0, Y0 = (sp['x0'], sp['y0']) if sp else (-8, 10)
+    PATCHES = [(c, X0 + a, Y0 + b_, X0 + c_, Y0 + d, k) for c, a, b_, c_, d, k in PATCHES0]
+    print('patches', PATCHES, J(f"[[{X0 + 2}, {Y0 + 2}], [{X0 + 6}, {Y0 + 2}], [{X0 + 2}, {Y0 + 6}], [{X0 + 6}, {Y0 + 6}]].map(([x, y]) => ({{ x, y, place: KERN.place ? KERN.place(x, y, 0) : null }}))"), flush=True)
     for doy in DAYS:
         m, d = DATE.get(doy, (int((doy - 1) / 30.5), 15))
         E(f"DN.e0 = Date.UTC(2026, {m}, {d}) / 864e5 - Math.floor(CLOCK.t / 1440); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 11 * 60 + 30; DN.update(true)")
@@ -157,11 +186,13 @@ with lib.browser() as b:
         print('day', doy, 'plants', st['plants'], 'heads', st['heads'], 'meshes', st['meshes'], top, flush=True)
         ck(f'day {doy}: plants placed', st['plants'] > 40, st['plants'])
         tag = f'{doy:03d}'
-        E("GAME.view(12, 4.2, 1.65, 0, -13, 62); GAME.step(0.05)"); shot(f'{tag}_ueberblick')
-        E("GAME.view(12, 7.6, 1.15, 0, -24, 60); GAME.step(0.05)"); shot(f'{tag}_wiese')
-        E("GAME.view(8, 7.4, 0.95, 0, -30, 58); GAME.step(0.05)"); shot(f'{tag}_rasen')
-        E("GAME.view(16, 7.6, 1.2, 0, -22, 60); GAME.step(0.05)"); shot(f'{tag}_bankett_saum')
+        def cam(x, y, h, yaw, pitch, fov, name):
+            E(f"GAME.view({x}, {y}, GAME.floorAt({x}, {y}, 0.3) + {h}, {yaw}, {pitch}, {fov}); GAME.step(0.05)"); shot(f'{tag}_{name}')
+        cam(X0 + 4, Y0 - 4.5, 1.65, 0, -14, 62, 'ueberblick')
+        cam(X0 + 6, Y0 - 1.4, 1.1, 0, -24, 60, 'wiese')
+        cam(X0 + 2, Y0 - 1.0, 0.9, 0, -32, 58, 'rasen')
+        cam(X0 + 4, Y0 + 2.6, 1.25, 0, -24, 62, 'bankett_saum')
         if opts.get('top') == '1' and doy == DAYS[0]:
-            E("GAME.view(12, 2, 14, 0, -55, 60); GAME.step(0.05)"); shot(f'{tag}_von_oben')
+            cam(X0 + 4, Y0 - 3, 9, 0, -60, 60, 'von_oben')
     ck.errors(errs)
     ck.done()

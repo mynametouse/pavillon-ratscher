@@ -22,7 +22,7 @@
    "breite": 0.969,
    "oben": 0.875,
    "deckung": 0.2891,
-   "farbe": "#557a36"
+   "farbe": "#567c37"
   },
   {
    "zelle": [
@@ -37,7 +37,7 @@
    "breite": 0.734,
    "oben": 1.0,
    "deckung": 0.1436,
-   "farbe": "#5c783a"
+   "farbe": "#617f3e"
   },
   {
    "zelle": [
@@ -52,7 +52,7 @@
    "breite": 0.875,
    "oben": 0.977,
    "deckung": 0.2067,
-   "farbe": "#838a33"
+   "farbe": "#878e35"
   },
   {
    "zelle": [
@@ -67,7 +67,7 @@
    "breite": 0.516,
    "oben": 1.0,
    "deckung": 0.1542,
-   "farbe": "#a2ae8e"
+   "farbe": "#a6b391"
   },
   {
    "zelle": [
@@ -82,7 +82,7 @@
    "breite": 0.688,
    "oben": 0.977,
    "deckung": 0.1919,
-   "farbe": "#87906a"
+   "farbe": "#8b956d"
   },
   {
    "zelle": [
@@ -97,7 +97,7 @@
    "breite": 0.969,
    "oben": 0.977,
    "deckung": 0.1895,
-   "farbe": "#81956a"
+   "farbe": "#83986b"
   },
   {
    "zelle": [
@@ -113,7 +113,7 @@
    "breite": 0.984,
    "oben": 0.961,
    "deckung": 0.2692,
-   "farbe": "#577f3c"
+   "farbe": "#58813d"
   },
   {
    "zelle": [
@@ -128,7 +128,7 @@
    "breite": 0.797,
    "oben": 0.969,
    "deckung": 0.2264,
-   "farbe": "#775b55"
+   "farbe": "#785c55"
   },
   {
    "zelle": [
@@ -143,7 +143,7 @@
    "breite": 0.734,
    "oben": 0.977,
    "deckung": 0.13,
-   "farbe": "#7d8d38"
+   "farbe": "#7f903a"
   },
   {
    "zelle": [
@@ -159,7 +159,7 @@
    "breite": 0.969,
    "oben": 0.953,
    "deckung": 0.2747,
-   "farbe": "#496f30"
+   "farbe": "#4b7130"
   },
   {
    "zelle": [
@@ -174,7 +174,7 @@
    "breite": 0.562,
    "oben": 0.977,
    "deckung": 0.0775,
-   "farbe": "#879177"
+   "farbe": "#899579"
   },
   {
    "zelle": [
@@ -189,7 +189,7 @@
    "breite": 0.547,
    "oben": 0.961,
    "deckung": 0.1325,
-   "farbe": "#677a4c"
+   "farbe": "#6b804e"
   },
   {
    "zelle": [
@@ -204,7 +204,7 @@
    "breite": 0.969,
    "oben": 0.82,
    "deckung": 0.2762,
-   "farbe": "#4e7036"
+   "farbe": "#4f7338"
   },
   {
    "zelle": [
@@ -219,7 +219,7 @@
    "breite": 0.438,
    "oben": 0.977,
    "deckung": 0.1119,
-   "farbe": "#5b6e3f"
+   "farbe": "#617643"
   },
   {
    "zelle": [
@@ -234,7 +234,7 @@
    "breite": 0.75,
    "oben": 0.977,
    "deckung": 0.1551,
-   "farbe": "#94a278"
+   "farbe": "#96a57a"
   },
   {
    "zelle": [
@@ -249,7 +249,7 @@
    "breite": 0.656,
    "oben": 0.977,
    "deckung": 0.1327,
-   "farbe": "#727d49"
+   "farbe": "#75804b"
   },
   {
    "zelle": [
@@ -268,7 +268,7 @@
    "breite": 0.547,
    "oben": 0.977,
    "deckung": 0.1391,
-   "farbe": "#54773a"
+   "farbe": "#577b3c"
   },
   {
    "zelle": [
@@ -283,7 +283,7 @@
    "breite": 0.953,
    "oben": 0.977,
    "deckung": 0.1219,
-   "farbe": "#6b7871"
+   "farbe": "#6d7a72"
   },
   {
    "zelle": [
@@ -298,7 +298,7 @@
    "breite": 0.719,
    "oben": 0.977,
    "deckung": 0.1742,
-   "farbe": "#5a755a"
+   "farbe": "#5c785b"
   },
   {
    "zelle": [
@@ -313,7 +313,7 @@
    "breite": 0.734,
    "oben": 0.977,
    "deckung": 0.1385,
-   "farbe": "#6e6455"
+   "farbe": "#706657"
   },
   {
    "zelle": [
@@ -328,7 +328,7 @@
    "breite": 0.609,
    "oben": 0.969,
    "deckung": 0.0995,
-   "farbe": "#848c31"
+   "farbe": "#869033"
   },
   {
    "zelle": [
@@ -343,7 +343,7 @@
    "breite": 0.656,
    "oben": 0.969,
    "deckung": 0.1373,
-   "farbe": "#5f7559"
+   "farbe": "#60765a"
   },
   {
    "zelle": [
@@ -358,7 +358,7 @@
    "breite": 0.719,
    "oben": 0.977,
    "deckung": 0.1041,
-   "farbe": "#b9c5a7"
+   "farbe": "#bac6a7"
   },
   {
    "zelle": [
@@ -373,7 +373,7 @@
    "breite": 0.547,
    "oben": 0.984,
    "deckung": 0.0973,
-   "farbe": "#93913d"
+   "farbe": "#94923e"
   },
   {
    "zelle": [
@@ -388,7 +388,7 @@
    "breite": 0.594,
    "oben": 0.977,
    "deckung": 0.095,
-   "farbe": "#70865c"
+   "farbe": "#748a5e"
   },
   {
    "zelle": [
@@ -404,7 +404,7 @@
    "breite": 0.656,
    "oben": 0.977,
    "deckung": 0.0744,
-   "farbe": "#7f7057"
+   "farbe": "#817258"
   },
   {
    "zelle": [
@@ -424,7 +424,7 @@
    "breite": 1.0,
    "oben": 0.891,
    "deckung": 0.2855,
-   "farbe": "#44662e"
+   "farbe": "#476930"
   },
   {
    "zelle": [
@@ -439,7 +439,7 @@
    "breite": 0.562,
    "oben": 0.977,
    "deckung": 0.0936,
-   "farbe": "#909e7f"
+   "farbe": "#93a180"
   },
   {
    "zelle": [
@@ -454,7 +454,7 @@
    "breite": 0.469,
    "oben": 1.0,
    "deckung": 0.0955,
-   "farbe": "#6d6a45"
+   "farbe": "#706c47"
   },
   {
    "zelle": [
@@ -469,7 +469,7 @@
    "breite": 0.719,
    "oben": 0.977,
    "deckung": 0.1637,
-   "farbe": "#788d62"
+   "farbe": "#7b9163"
   },
   {
    "zelle": [
@@ -484,7 +484,7 @@
    "breite": 0.609,
    "oben": 0.977,
    "deckung": 0.0854,
-   "farbe": "#8a8d61"
+   "farbe": "#8b8f62"
   },
   {
    "zelle": [
@@ -499,7 +499,7 @@
    "breite": 0.969,
    "oben": 0.883,
    "deckung": 0.3602,
-   "farbe": "#4b7031"
+   "farbe": "#4c7132"
   },
   {
    "zelle": [
@@ -514,7 +514,7 @@
    "breite": 0.703,
    "oben": 0.977,
    "deckung": 0.1932,
-   "farbe": "#83966c"
+   "farbe": "#869a6e"
   },
   {
    "zelle": [
@@ -529,7 +529,7 @@
    "breite": 0.688,
    "oben": 0.977,
    "deckung": 0.1024,
-   "farbe": "#626a3f"
+   "farbe": "#656e41"
   },
   {
    "zelle": [
@@ -544,7 +544,7 @@
    "breite": 0.594,
    "oben": 0.977,
    "deckung": 0.1268,
-   "farbe": "#6d7a33"
+   "farbe": "#6e7c34"
   },
   {
    "zelle": [
@@ -559,7 +559,7 @@
    "breite": 0.531,
    "oben": 0.977,
    "deckung": 0.0996,
-   "farbe": "#6d8890"
+   "farbe": "#6f8b92"
   },
   {
    "zelle": [
@@ -574,7 +574,7 @@
    "breite": 0.672,
    "oben": 1.0,
    "deckung": 0.146,
-   "farbe": "#7e512f"
+   "farbe": "#805431"
   },
   {
    "zelle": [
@@ -589,7 +589,7 @@
    "breite": 0.562,
    "oben": 0.977,
    "deckung": 0.08,
-   "farbe": "#75794d"
+   "farbe": "#787d4f"
   },
   {
    "zelle": [
@@ -604,7 +604,7 @@
    "breite": 0.828,
    "oben": 0.969,
    "deckung": 0.129,
-   "farbe": "#586d87"
+   "farbe": "#596e88"
   },
   {
    "zelle": [
@@ -619,7 +619,7 @@
    "breite": 0.609,
    "oben": 0.961,
    "deckung": 0.0878,
-   "farbe": "#98a875"
+   "farbe": "#9aaa76"
   },
   {
    "zelle": [
@@ -634,7 +634,7 @@
    "breite": 0.906,
    "oben": 1.0,
    "deckung": 0.2307,
-   "farbe": "#a08aa2"
+   "farbe": "#a18ba3"
   },
   {
    "zelle": [
@@ -649,7 +649,7 @@
    "breite": 0.484,
    "oben": 0.969,
    "deckung": 0.2441,
-   "farbe": "#57823e"
+   "farbe": "#598440"
   },
   {
    "zelle": [
@@ -664,7 +664,7 @@
    "breite": 0.469,
    "oben": 0.961,
    "deckung": 0.0856,
-   "farbe": "#6a7a55"
+   "farbe": "#6c7c56"
   },
   {
    "zelle": [
@@ -679,7 +679,7 @@
    "breite": 0.375,
    "oben": 0.961,
    "deckung": 0.0965,
-   "farbe": "#868f69"
+   "farbe": "#88916b"
   },
   {
    "zelle": [
@@ -694,7 +694,7 @@
    "breite": 0.594,
    "oben": 0.977,
    "deckung": 0.2379,
-   "farbe": "#4f6d3b"
+   "farbe": "#52723d"
   },
   {
    "zelle": [
@@ -709,7 +709,7 @@
    "breite": 0.453,
    "oben": 0.977,
    "deckung": 0.1912,
-   "farbe": "#4d683a"
+   "farbe": "#4e6a3b"
   },
   {
    "zelle": [
@@ -724,7 +724,7 @@
    "breite": 0.375,
    "oben": 0.977,
    "deckung": 0.1298,
-   "farbe": "#7a7256"
+   "farbe": "#7c7457"
   },
   {
    "zelle": [
@@ -739,7 +739,7 @@
    "breite": 0.406,
    "oben": 0.977,
    "deckung": 0.1199,
-   "farbe": "#637a44"
+   "farbe": "#657b45"
   },
   {
    "zelle": [
@@ -754,7 +754,7 @@
    "breite": 0.297,
    "oben": 0.969,
    "deckung": 0.0892,
-   "farbe": "#7d6762"
+   "farbe": "#816c66"
   },
   {
    "zelle": [
@@ -769,7 +769,7 @@
    "breite": 0.969,
    "oben": 0.867,
    "deckung": 0.5021,
-   "farbe": "#577148"
+   "farbe": "#597449"
   },
   {
    "zelle": [
@@ -784,7 +784,7 @@
    "breite": 0.547,
    "oben": 1.0,
    "deckung": 0.1329,
-   "farbe": "#78815d"
+   "farbe": "#7a835d"
   },
   {
    "zelle": [
@@ -799,7 +799,7 @@
    "breite": 0.516,
    "oben": 0.977,
    "deckung": 0.1553,
-   "farbe": "#546338"
+   "farbe": "#566539"
   },
   {
    "zelle": [
@@ -814,7 +814,7 @@
    "breite": 0.344,
    "oben": 0.977,
    "deckung": 0.1067,
-   "farbe": "#855f5e"
+   "farbe": "#86605f"
   },
   {
    "zelle": [
@@ -829,7 +829,7 @@
    "breite": 0.297,
    "oben": 0.992,
    "deckung": 0.0502,
-   "farbe": "#7f7658"
+   "farbe": "#82785a"
   },
   {
    "zelle": [
@@ -844,7 +844,7 @@
    "breite": 0.688,
    "oben": 0.969,
    "deckung": 0.2864,
-   "farbe": "#4d7835"
+   "farbe": "#4f7b36"
   },
   {
    "zelle": [
@@ -859,7 +859,7 @@
    "breite": 0.969,
    "oben": 0.898,
    "deckung": 0.1979,
-   "farbe": "#5b843a"
+   "farbe": "#5c853a"
   },
   {
    "zelle": [
@@ -881,7 +881,7 @@
    "breite": 0.359,
    "oben": 0.977,
    "deckung": 0.0752,
-   "farbe": "#c7c7b4",
+   "farbe": "#c9cab6",
    "toenen": true
   },
   {
@@ -904,7 +904,7 @@
    "breite": 0.75,
    "oben": 0.977,
    "deckung": 0.0706,
-   "farbe": "#c8c9b6",
+   "farbe": "#cacbb8",
    "toenen": true
   },
   {
@@ -922,7 +922,7 @@
    "breite": 0.375,
    "oben": 0.977,
    "deckung": 0.047,
-   "farbe": "#c3c3b3",
+   "farbe": "#c6c6b5",
    "toenen": true
   },
   {
@@ -940,7 +940,7 @@
    "breite": 0.328,
    "oben": 0.977,
    "deckung": 0.0416,
-   "farbe": "#bfc0ad",
+   "farbe": "#c2c3af",
    "toenen": true
   },
   {
@@ -956,7 +956,7 @@
    "breite": 0.531,
    "oben": 0.984,
    "deckung": 0.0914,
-   "farbe": "#a5a496",
+   "farbe": "#a7a697",
    "toenen": true
   },
   {
@@ -976,7 +976,7 @@
    "breite": 0.469,
    "oben": 0.977,
    "deckung": 0.127,
-   "farbe": "#cfcebc",
+   "farbe": "#d0cfbd",
    "toenen": true
   },
   {
@@ -992,7 +992,7 @@
    "breite": 0.531,
    "oben": 0.992,
    "deckung": 0.1003,
-   "farbe": "#b2b4a0",
+   "farbe": "#b4b6a1",
    "toenen": true
   },
   {
@@ -1009,7 +1009,7 @@
    "breite": 0.297,
    "oben": 0.961,
    "deckung": 0.1108,
-   "farbe": "#a6a890",
+   "farbe": "#abac94",
    "toenen": true
   }
  ]
