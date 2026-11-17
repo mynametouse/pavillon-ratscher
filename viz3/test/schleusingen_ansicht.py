@@ -167,7 +167,7 @@ if BROWSER:
             # each look laid over the town's style once more changes nothing: the town drew the building with it
             res = J("""(() => { const out = { ok: 0, off: [], miss: [], roof: [], kinds: {} }, A = %s;
                 const close = (p, q) => !!p && !!q && p.every((v, j) => Math.abs(v - q[j]) < 2e-3);
-                for (const k in A) { const i = +k.slice(1), b = SCHL.bld.find(q => q.i === i);
+                for (const k in A) { if (k[0] !== '#') continue; const i = +k.slice(1), b = SCHL.bld.find(q => q.i === i);
                   if (!b) { out.miss.push(i); continue; }
                   const L = FASSADE.ansichtOf(b), n = L ? FASSADE.ansichtStil(b.st, L) : null;
                   if (!n || n.style !== b.st.style || !close(n.col, b.st.col) || n.frame !== b.st.frame || !!n.shutters !== !!b.st.shutters ||
@@ -175,9 +175,14 @@ if BROWSER:
                   const rc = FASSADE.ansichtDach(L); if (rc && !close(rc, b.rc)) out.roof.push(i);
                   out.ok++; out.kinds[L.material] = (out.kinds[L.material] || 0) + 1; }
                 return out; })()""" % json.dumps(AN))
+            NT = len([k for k in AN if k[0] == '#'])
             ck('the town draws the buildings as read: style, wall colour, frames, shutters, slate and timber tones, type, roof colour',
-               res['ok'] >= len(AN) - len(res['miss']) and not res['off'] and not res['roof'] and len(res['miss']) <= 3,
+               res['ok'] >= NT - len(res['miss']) and not res['off'] and not res['roof'] and len(res['miss']) <= 3,
                f"{res['ok']} as read; off: {res['off'][:10]}; roof off: {res['roof'][:10]}; not in the town (shops build themselves): {res['miss']}; {res['kinds']}")
+            # Ratscher's houses: FASSADE finds their looks by the village's ids (painted onto the village's walls when it stands)
+            RK = [k for k in AN if k.startswith('ratscher:')]
+            rv = J("(() => { const A = %s; return A.map(k => !!FASSADE.ansichtOf({ vid: +k.split(':')[1] })); })()" % json.dumps(RK))
+            ck("Ratscher's houses have their looks (ratscher:<id>)", all(rv) and len(rv) == len(RK), json.dumps(dict(zip(RK, rv))))
         if 'markt' in want:
             t0 = time.time()
             while time.time() - t0 < 120 and J("SAMARKT.status().state") != 'ready':

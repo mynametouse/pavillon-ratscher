@@ -22,6 +22,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 SRC = os.path.join(ROOT, 'viz3', 'extra', 'schleusingen-ansicht', 'dist', 'schleusingen-ansicht', 'fassaden.json')
 OUT = os.path.join(ROOT, 'viz3', 'extra', 'schleusingen-ansicht', 'dist', 'fassade', 'ansicht.json')
 BASE = os.path.join(ROOT, 'viz3', 'extra', 'gebaeude', 'dist', 'gebaeude', 'ansicht.json')   # gebaeude's own looks (may be missing)
+RAT = os.path.join(ROOT, 'viz3', 'extra', 'schleusingen-ansicht', 'dist', 'schleusingen-ansicht', 'ratscher.json')  # Ratscher's houses
 HOLZ = {'braun': 0, 'rot': 1, 'schwarz': 2}            # fachwerkTon: dark brown, red-brown, black
 TON = {'dunkel': 0, 'hell': 1, 'mittel': 2}            # schieferTon: blue-black, silver-grey, mid grey (3: the house's colour)
 RAHMEN = {'weiss': 'weiss', 'braun': 'braun', 'gruen': 'gruen', 'grau': 'grau', 'blau': 'weiss'}
@@ -89,8 +90,9 @@ def look(r):
     return L
 
 
-def build(doc, base=None):
-    """all looks; base: gebaeude's own looks ({key: look}) – their fields stay where ours say nothing"""
+def build(doc, base=None, rat=None):
+    """all looks; base: gebaeude's own looks ({key: look}) – their fields stay where ours say nothing; rat: Ratscher's houses
+    (ratscher.json, keys 'ratscher:<id>' – FASSADE paints them onto the village's walls: colour, material, shutters, frames)"""
     out = {}
     for r in doc['gebaeude']:
         k = f"#{r['i']}"
@@ -104,10 +106,21 @@ def build(doc, base=None):
                 b['dach'] = d
             L = b
         out[k] = L
+    for r in (rat or {}).get('gebaeude', []):
+        L = look(r)
+        L.pop('geschosse', None)   # the village keeps its heights
+        out[f"ratscher:{r['id']}"] = L
     return {'v': 1,
             'quelle': 'feat/schleusingen-ansicht: aus viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/fassaden.json '
-                      '(private Ansichten von der Straße, von Hand gelesen) – tools/schleusingen-ansicht/ansicht.py',
+                      '(private Ansichten von der Straße, von Hand gelesen) und ratscher.json (freie Fotos) – tools/schleusingen-ansicht/ansicht.py',
             'b': out}
+
+
+def rat_doc():
+    try:
+        return json.load(open(RAT))
+    except (OSError, ValueError):
+        return None
 
 
 def base_looks():
@@ -122,7 +135,7 @@ if __name__ == '__main__':
     if '--out' in sys.argv:
         out = sys.argv[sys.argv.index('--out') + 1]
     doc = json.load(open(SRC))
-    a = build(doc, base_looks())
+    a = build(doc, base_looks(), rat_doc())
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, 'w') as f:
         json.dump(a, f, ensure_ascii=False, indent=0)

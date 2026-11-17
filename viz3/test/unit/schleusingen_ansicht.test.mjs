@@ -15,6 +15,7 @@ const read = p => JSON.parse(fs.readFileSync(V(p), 'utf8'));
 const DOC = read('extra/schleusingen-ansicht/dist/schleusingen-ansicht/fassaden.json');
 const LOOKS = read('extra/schleusingen-ansicht/dist/fassade/ansicht.json').b;
 const OWN = read('extra/gebaeude/dist/gebaeude/ansicht.json').b;
+const RAT = read('extra/schleusingen-ansicht/dist/schleusingen-ansicht/ratscher.json');
 const STADT = read('extra/schleusingen/dist/schleusingen/stadt.json');
 const SRC = fs.readFileSync(V('src/fassade/fassade.js'), 'utf8');
 // the keys of an object literal in fassade.js: const NAME = { a: 0, 'b-c': 1, … }
@@ -58,7 +59,16 @@ test('every record has its look, in the words FASSADE knows', () => {
     if (L.achse !== undefined) assert.ok(L.achse >= 2 && L.achse <= 6, tag);
     assert.ok(L.dach && DACH.has(L.dach.material) && HEX.test(L.dach.farbe), `${tag}: dach ${JSON.stringify(L.dach)}`);
   }
-  assert.equal(Object.keys(LOOKS).length, DOC.gebaeude.length, 'one look per record, nothing else');
+  assert.equal(
+    Object.keys(LOOKS).length,
+    DOC.gebaeude.length + RAT.gebaeude.length,
+    'one look per record, nothing else'
+  );
+  for (const r of RAT.gebaeude) {
+    const L = LOOKS['ratscher:' + r.id];
+    assert.ok(L && MAT.has(L.material) && HEX.test(L.farbe), `ratscher:${r.id}: ${JSON.stringify(L)}`);
+    assert.equal(L.geschosse, undefined, `ratscher:${r.id}: the village keeps its heights`);
+  }
 });
 
 test('the choices of the converter', () => {

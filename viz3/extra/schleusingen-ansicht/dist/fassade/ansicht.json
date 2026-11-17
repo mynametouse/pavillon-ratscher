@@ -1,6 +1,6 @@
 {
 "v": 1,
-"quelle": "feat/schleusingen-ansicht: aus viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/fassaden.json (private Ansichten von der Straße, von Hand gelesen) – tools/schleusingen-ansicht/ansicht.py",
+"quelle": "feat/schleusingen-ansicht: aus viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/fassaden.json (private Ansichten von der Straße, von Hand gelesen) und ratscher.json (freie Fotos) – tools/schleusingen-ansicht/ansicht.py",
 "b": {
 "#7": {
 "art": "haus",
@@ -1800,6 +1800,17 @@
 "form": "flach"
 },
 "geschosse": 1
+},
+"ratscher:196": {
+"art": "halle",
+"material": "blech",
+"achse": 4.5,
+"farbe": "#5c7090",
+"laeden": false,
+"dach": {
+"material": "blech",
+"farbe": "#6a7891"
+}
 }
 }
 }
