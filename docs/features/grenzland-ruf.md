@@ -105,13 +105,21 @@ laufender Job nicht (nach dem Neuladen wird er wieder angeboten).
   Brötchen am Samstag 5:45 (Kiste am Wagen, auf dem Gepäckträger, eine zerdrückte Tüte, sechs Türen, Lohn mit Trinkgeld und Abzug,
   Beschwerde-SMS); Feuerwehr am Samstag 8:55 (zwei Freiwillige, Becken, Pumpe, Ziel, Tisch; Saugschlauch, Pumpe, Schlauchleitung bis zur
   Markierung, Wasser marsch, Kaffee und Kuchen, 10 €); Brennholz (Stapel, Kombi, zwei Fuhren, 40 €); Nebenaufgaben (Tonne, Krümel,
-  Paket, Milchreis, Fotomappe mit Öffnungszeiten); „Aufträge“ im Handy; nach „Beenden“ bleibt nichts liegen. Bilder
-  `out/grenzland_ruf/10_broetchen_moped` … `21_hund_leine`.
+  Paket, Milchreis, Fotomappe mit Öffnungszeiten); „Aufträge“ im Handy; nach „Beenden“ bleibt nichts liegen (37 Prüfungen, auf Actions
+  grün 17.11. ~14:55, hier grün 15:05). Bilder `out/grenzland_ruf/10_broetchen_moped`, `11_broetchen_tuer`, `12_broetchen_fertig`,
+  `13_feuerwehr_aufbau`, `14_feuerwehr_wasser`, `15_feuerwehr_kaffee`, `16_holz_laden`, `17_holz_gerhard`, `18_tonne_strasse`,
+  `19_handy_auftraege`, `20_hund_scheune`, `21_hund_leine`.
+- Auf Actions zusätzlich die Tests der übernommenen Dateien: `grenzland_welt:film,wahl` (15 ok), `grenzland_radio` (49 ok), `handy`.
 
 ## Entscheidungen
 
 - Der Ruf hängt am Ort der Tat, nicht an der Person (Falko und Sarah zählen gemeinsam – das Dorf redet über „die zwei vom Garten“).
 - Die Stufe „verhasst“ ruft die Polizei nur, wenn eine benannte Person einen eine Weile ansieht – nicht im Vorbeifahren.
+- **Realismus (Falko 13:27):** die Feuerwehrübung sucht sich freien Boden hinter dem Feuerwehrhaus (nicht auf der Straße, nicht unter
+  der Linde, nicht in einer Wand – erster Entwurf stand mitten auf der Dorfstraße); die gelbe Tonne kommt an die nächste Bordsteinkante,
+  Griff zur Straße; Krümel hat sich nach dem Knall in der Feldscheune verkrochen; die Brötchentüten hängen an der Türklinke; das Holz wird
+  ordentlich an der Hauswand geschichtet, Stirnseiten nach außen; Wolfgangs Stapel bleibt stehen (zwei Fuhren machen keinen Stapel leer).
+- Angebote kommen nie, solange das Handy in der Hand ist, und erst nach einer Minute freien Spiels.
 - 1989 gibt es keinen Ruf (eine andere Zeit, ein anderes Dorf); nichts davon läuft vor dem Start des Modus.
 
 ## Für den Lead
