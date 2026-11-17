@@ -13,7 +13,7 @@ import { COARSE } from '../core/head.js';
 import { ANISO } from '../core/assets.js';
 import { WAREN } from '../einkauf/waren.js';
 export const WBILD = (() => {
-  const S = { made: false, ms: 0, size: 0, n: 0, texture: null, F: new Map(), T: new Map() };
+  const S = { made: false, ms: 0, size: 0, n: 0, texture: null, F: new Map(), T: new Map(), H: new Map() };
   const FONT = '"Helvetica Neue", Helvetica, Arial, "Liberation Sans", "DejaVu Sans", sans-serif';
   // the colours of a department: ground, second colour, the ink
   const PAL = {
@@ -339,6 +339,100 @@ export const WBILD = (() => {
     }
     q.restore();
   }
+  // ---- loose goods seen from above: fruit and vegetables in a crate, rolls on a tray, plants in pots ----
+  const LOSE = {
+    aepfel: ['#b8261c', '#d9452b', 'apfel'],
+    orangen: ['#e6801c', '#f29a2e', 'rund'],
+    bananen: ['#e8c63a', '#f2d65a', 'banane'],
+    birnen: ['#a6b83a', '#c2cc56', 'birne'],
+    trauben: ['#a9c45a', '#c4d978', 'traube'],
+    pflaumen: ['#4a2445', '#6b3561', 'oval'],
+    salat: ['#7fb23e', '#a6cc5a', 'salat'],
+    moehren: ['#e2731c', '#f08a2a', 'moehre'],
+    tomaten: ['#c8261a', '#e0402a', 'tomate'],
+    kartoffeln: ['#b08a52', '#c9a36a', 'knolle'],
+    zwiebeln: ['#c9923e', '#e0b060', 'rund'],
+    gurke: ['#2f5e22', '#477a32', 'gurke'],
+    broetchen: ['#c98c45', '#e0a85a', 'broetchen'],
+    brot: ['#8a5528', '#a86a35', 'laib'],
+    kraeuter: ['#3f7a2c', '#5a9a3c', 'blatt'],
+    topfblume: ['#3f7a2c', '#d23a5a', 'bluete'],
+  };
+  function lose(q, id, x, y, W, H) {
+    const [c0, c1, form] = LOSE[id];
+    q.save();
+    q.beginPath();
+    q.rect(x, y, W, H);
+    q.clip();
+    q.fillStyle = form === 'broetchen' || form === 'laib' ? '#d9c8a8' : '#3a2a1c';
+    q.fillRect(x, y, W, H);
+    const r = W / 9;
+    let k = 0;
+    for (let j = 0; j < 9; j++)
+      for (let i = 0; i < 9; i++) {
+        const cx = x + (i + 0.5 + (j % 2 ? 0.45 : 0)) * (W / 9),
+          cy = y + (j + 0.5) * (H / 9),
+          v = h(id + k++),
+          col = v < 0.5 ? c0 : c1,
+          a = v * 6.28;
+        q.fillStyle = col;
+        q.beginPath();
+        if (form === 'banane' || form === 'moehre' || form === 'gurke') {
+          q.ellipse(cx, cy, r * 1.25, r * 0.45, a, 0, Math.PI * 2);
+        } else if (
+          form === 'birne' ||
+          form === 'oval' ||
+          form === 'knolle' ||
+          form === 'broetchen' ||
+          form === 'laib'
+        ) {
+          q.ellipse(cx, cy, r * (form === 'laib' ? 1.2 : 0.95), r * (form === 'laib' ? 0.8 : 0.72), a, 0, Math.PI * 2);
+        } else if (form === 'traube') {
+          for (let t = 0; t < 5; t++) {
+            q.moveTo(cx + Math.cos(t * 1.3) * r * 0.45 + r * 0.32, cy + Math.sin(t * 1.3) * r * 0.45);
+            q.arc(cx + Math.cos(t * 1.3) * r * 0.45, cy + Math.sin(t * 1.3) * r * 0.45, r * 0.32, 0, Math.PI * 2);
+          }
+        } else if (form === 'salat' || form === 'blatt') {
+          for (let t = 0; t < 6; t++) {
+            q.moveTo(cx, cy);
+            q.ellipse(
+              cx + Math.cos(a + t) * r * 0.4,
+              cy + Math.sin(a + t) * r * 0.4,
+              r * 0.62,
+              r * 0.36,
+              a + t,
+              0,
+              Math.PI * 2
+            );
+          }
+        } else q.arc(cx, cy, r * 0.82, 0, Math.PI * 2);
+        q.fill();
+        // light from above: a highlight; the details of each kind
+        q.fillStyle = 'rgba(255,255,255,0.22)';
+        q.beginPath();
+        q.arc(cx - r * 0.25, cy - r * 0.25, r * 0.28, 0, Math.PI * 2);
+        q.fill();
+        if (form === 'tomate' || form === 'apfel') {
+          q.fillStyle = form === 'tomate' ? '#3f7a2c' : '#4a3020';
+          q.fillRect(cx - r * 0.08, cy - r * 0.08, r * 0.16, r * 0.16);
+        }
+        if (form === 'broetchen' || form === 'laib') {
+          q.strokeStyle = 'rgba(240,215,160,0.9)';
+          q.lineWidth = Math.max(1, r * 0.12);
+          q.beginPath();
+          q.moveTo(cx - Math.cos(a) * r * 0.6, cy - Math.sin(a) * r * 0.6);
+          q.lineTo(cx + Math.cos(a) * r * 0.6, cy + Math.sin(a) * r * 0.6);
+          q.stroke();
+        }
+        if (form === 'bluete' && v > 0.45) {
+          q.fillStyle = ['#d23a5a', '#f2c53a', '#9a4ad2', '#f4f0f0'][k % 4];
+          q.beginPath();
+          q.arc(cx, cy, r * 0.45, 0, Math.PI * 2);
+          q.fill();
+        }
+      }
+    q.restore();
+  }
   // ---- a price tag: white, the price large, the name small (as on German shelf edges) ----
   function tag(q, w, x, y, W, H) {
     q.fillStyle = '#fbfbf7';
@@ -383,6 +477,13 @@ export const WBILD = (() => {
         tag(q, w, x + 1, y + 1, cell - 2, cell / 2 - 2);
         S.T.set(w.id, [(x + 2) / N, 1 - (y + cell / 2 - 2) / N, (x + cell - 2) / N, 1 - (y + 2) / N]);
       });
+      // loose goods from above: the last two rows of the upper half (from cell 224 on)
+      Object.keys(LOSE).forEach((id, i) => {
+        const x = (i % 16) * cell,
+          y = (14 + Math.floor(i / 16)) * cell;
+        lose(q, id, x + 1, y + 1, cell - 2, cell - 2);
+        S.H.set(id, [(x + 2) / N, 1 - (y + cell - 2) / N, (x + cell - 2) / N, 1 - (y + 2) / N]);
+      });
       S.n = L.length;
     } catch (e) {
       S.err = String((e && e.message) || e).slice(0, 120);
@@ -403,6 +504,7 @@ export const WBILD = (() => {
     tex: () => make(),
     front: id => (S.made || make() ? S.F.get(id) || null : null),
     tag: id => (S.made || make() ? S.T.get(id) || null : null),
+    lose: id => (S.made || make() ? S.H.get(id) || null : null),
     words,
     status: () => ({ made: S.made, ms: S.ms, size: S.size, n: S.n, err: S.err || '' }),
   });

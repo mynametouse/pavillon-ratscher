@@ -78,6 +78,13 @@ export const WAREN = (() => {
     ['tomaten', 'Rispentomaten 500 g', 199, 0.5, 'heap', 'gemuese', ['heap'], 'essen'],
     ['kartoffeln', 'Speisekartoffeln 2,5 kg', 299, 2.5, 'heap', 'gemuese', [], 'essen'],
     ['moehren', 'Möhren 1 kg', 129, 1, 'heap', 'gemuese', [], 'essen'],
+    ['orangen', 'Orangen, Netz 1,5 kg', 249, 1.5, 'heap', 'obst', [], 'essen'],
+    ['birnen', 'Birnen 1 kg', 299, 1, 'heap', 'obst', [], 'essen'],
+    ['trauben', 'Weintrauben hell 500 g', 249, 0.5, 'heap', 'obst', [], 'essen'],
+    ['pflaumen', 'Pflaumen 1 kg', 299, 1, 'heap', 'obst', [], 'essen'],
+    ['salat', 'Eisbergsalat, ein Kopf', 129, 0.5, 'heap', 'gemuese', [], 'essen'],
+    ['gurke', 'Salatgurke, ein Stück', 79, 0.4, 'heap', 'gemuese', [], 'essen'],
+    ['zwiebeln', 'Zwiebeln 1 kg', 129, 1, 'heap', 'gemuese', [], 'essen'],
     // ---- bakery ----
     ['broetchen', 'Brötchen', 45, 0.06, 'heap', 'brot', ['heap'], 'essen'],
     ['brot', 'Bauernbrot 1 kg', 349, 1, 'loaf', 'brot', ['loaf'], 'essen'],
@@ -215,6 +222,26 @@ export const WAREN = (() => {
     }
     return M;
   }
-  return { get, list, fuer, euro, farbenKarte, CAT, DEPTCAT, ITEMS };
+  // what lies in a crate or on a table, by the colour it was painted with (the palettes of laeden/innen_markt.js and innen_bau.js, in their
+  // order: fruit – red, orange, yellow, green, light green, purple; vegetables – green, orange, red, brown, pale, green; the bakery's
+  // two browns; the plants and their blossoms)
+  function heapKarte(LIMARKT, LIBAU) {
+    const M = new Map(),
+      put = (pal, ids) => (pal || []).forEach((c, i) => ids[i] && M.set(c, ids[i]));
+    if (LIMARKT && LIMARKT.PAL) {
+      put(LIMARKT.PAL.obst, ['aepfel', 'orangen', 'bananen', 'birnen', 'trauben', 'pflaumen']);
+      put(LIMARKT.PAL.gemuese, ['salat', 'moehren', 'tomaten', 'kartoffeln', 'zwiebeln', 'gurke']);
+    }
+    if (LIMARKT && LIMARKT.C) {
+      M.set(LIMARKT.C.bread, 'broetchen');
+      M.set(LIMARKT.C.breadD, 'brot');
+    }
+    if (LIBAU && LIBAU.B) {
+      for (const c of LIBAU.B.plant || []) M.set(c, 'kraeuter');
+      for (const c of LIBAU.B.bloom || []) M.set(c, 'topfblume');
+    }
+    return M;
+  }
+  return { get, list, fuer, euro, farbenKarte, heapKarte, CAT, DEPTCAT, ITEMS };
 })();
 if (typeof window !== 'undefined') window.WAREN = WAREN;

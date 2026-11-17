@@ -431,6 +431,8 @@ export const MUSEUM = (() => {
       [r0, rv0, r1, rv1] = R.room;
     const between = R.side > 0 ? h1 + 0.125 : h0 - 0.125;
     wall(h0, hv0, h1, hv0, [[-0.75, 0.75]]);
+    // the door itself stops one (out through the action button, as at the houses)
+    seg(-0.75, hv0, 0.75, hv0);
     wall(h0, hv1, h1, hv1);
     wall(R.side > 0 ? h0 : h1, hv0, R.side > 0 ? h0 : h1, hv1);
     wall(between, hv0, between, Math.max(hv1, rv1), [[1.4, 3.4]]);
@@ -905,6 +907,8 @@ export const MUSEUM = (() => {
         return;
       }
       const near = Math.hypot(P.x - b.cx, P.y - b.cy);
+      // moved out some other way (the menu's places, a scene): no longer inside
+      if (S.inside && !S.busy && !where(P.x, P.y)) S.inside = false;
       if (!S.built && near < 90) build();
       else if (S.built && !S.inside && near > 150) drop();
     } catch (e) {

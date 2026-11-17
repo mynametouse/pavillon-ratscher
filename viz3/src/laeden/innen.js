@@ -255,6 +255,30 @@ export const LINNEN = (() => {
         else I.push(nv, nv + 2, nv + 1, nv, nv + 3, nv + 2);
         nv += 4;
       },
+      // a face from four corners [x, y, z] (in order round it) with its picture's corners u0 v0 → u1 v0 → u1 v1 → u0 v1; up: facing up
+      quad4(c, uv, k) {
+        const [u0, v0, u1, v1] = uv,
+          T = [
+            [u0, v0],
+            [u1, v0],
+            [u1, v1],
+            [u0, v1],
+          ];
+        const ux = c[1][0] - c[0][0],
+          uy = c[1][1] - c[0][1],
+          vx = c[3][0] - c[0][0],
+          vy = c[3][1] - c[0][1],
+          up = ux * vy - uy * vx >= 0;
+        c.forEach((p, i) => {
+          P.push(p[0], zf(p[0], p[1]) + p[2], -p[1]);
+          const cc = k * ao(p[2]);
+          C.push(cc, cc, cc);
+          UV.push(T[i][0], T[i][1]);
+        });
+        if (up) I.push(nv, nv + 1, nv + 2, nv, nv + 2, nv + 3);
+        else I.push(nv, nv + 2, nv + 1, nv, nv + 3, nv + 2);
+        nv += 4;
+      },
       empty: () => !I.length,
       tris: () => I.length / 3,
       geo() {
@@ -271,7 +295,10 @@ export const LINNEN = (() => {
   }
   // the department of a block of goods by the colour its layout painted it with (the same array objects), its product
   const CATMAP = WAREN.farbenKarte(LIMARKT, LIBAU);
-  const wareOf = (gd, i) => WAREN.fuer(CATMAP.get(gd.col) || null, gd.k, i * 7 + Math.round(gd.x * 3));
+  const HEAPMAP = WAREN.heapKarte(LIMARKT, LIBAU);
+  const wareOf = (gd, i) =>
+    (gd.k === 'heap' && HEAPMAP.get(gd.col)) ||
+    WAREN.fuer(CATMAP.get(gd.col) || null, gd.k, i * 7 + Math.round(gd.x * 3));
 
   // =============================== text as vertex-coloured rectangles (read by night as by day, no texture) ===============================
   const FONT = '"Helvetica Neue", Helvetica, Arial, "Liberation Sans", "DejaVu Sans", sans-serif';
@@ -437,9 +464,15 @@ export const LINNEN = (() => {
       K.faceN(pt(a0, f, za), pt(a1, f, za), pt(a1, f, zb), pt(a0, f, zb), fx, fy, 0, cl, false, kk);
     const top = (a0, a1, f0, f1, z, cl, kk) =>
       K.faceN(pt(a0, f0, z), pt(a1, f0, z), pt(a1, f1, z), pt(a0, f1, z), 0, 0, 1, cl, false, kk);
+    // feat/laeden-leben: loose goods seen from above – apples, tomatoes, rolls, plants – on the heap's tops
+    const uvH = T && gd.k === 'heap' && gd.ware ? WBILD.lose(gd.ware) : null;
+    const topP = (a0, a1, f0, f1, z, cl, kk) =>
+      uvH
+        ? T.quad4([pt(a0, f0, z), pt(a1, f0, z), pt(a1, f1, z), pt(a0, f1, z)], uvH, kk)
+        : top(a0, a1, f0, f1, z, cl, kk);
     if (gd.k === 'heap' && ph) {
       // a phone: the heap as one frustum (its top and four slopes from the foot)
-      top(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
+      topP(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
       for (const s2 of [1, -1]) {
         const f = fr * s2,
           a = (gd.len / 2) * s2;
@@ -472,8 +505,8 @@ export const LINNEN = (() => {
     }
     if (gd.k === 'heap') {
       // fruit in a crate: a heap in two layers, the colour varied
-      top(-gd.len / 2, gd.len / 2, -fr, fr, z0 + h * 0.6, c, 0.95);
-      top(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
+      topP(-gd.len / 2, gd.len / 2, -fr, fr, z0 + h * 0.6, c, 0.95);
+      topP(-gd.len * 0.32, gd.len * 0.32, -fr * 0.6, fr * 0.6, z0 + h, c, 1.05);
       // the heap's four slopes (and its sides down to the crate)
       for (const s2 of [1, -1]) {
         const f = fr * s2,
