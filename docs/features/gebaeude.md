@@ -167,7 +167,9 @@ ganz ohne Fenster (alle Wände gedeckt) und eine Wand von 8,8 m.
   ETHOS-Zellen (`GEB.Z.cells[…].meshes`, gleiches Attribut-Layout; `gebaeude.js` gibt sie beim Wegwerfen wie bisher frei).
 - **Getestete Stände** (GitHub Actions, alle Themen-Tests): Lauf 3 (`f958ce6e3`), Lauf 5 (`4b265907e`: Treppen, ETHOS-Zellen, Türme
   weg) und Lauf 6 (`0dd2c35f5`: dazu die Ansicht je Gebäude, Wohnblöcke, Schulen) grün; Lauf 7 (die erweiterte Ansicht: Art, Geschosse,
-  Flachdach, Töne, Ratschers Häuser) siehe Bericht an den Lead – lokal `gebaeude:schleusingen` 20/20 und `gebaeude:ratscher` 13/13.
+  Flachdach, Töne, Ratschers Häuser; `f861125dd` mit der eigenen Ansicht-Datei): alles grün bis auf den Bildvergleich am Markt – dort
+  standen in der einen Ladung zwei ETHOS-Zellen schon, in der anderen noch nicht (+4 Draw-Calls von `gebaeude.js`, nicht von uns); der
+  Test zieht solche Zellen seither ab (`gebaeude:perf` lokal). Lokal: `gebaeude:schleusingen` 21/21, `gebaeude:ratscher` 13/13.
   Themen-Tests (`viz3/extra/gebaeude/tests.txt`): `gebaeude:ratscher`, `gebaeude:schleusingen,perf`, `schleusingen`, `schleusingen_innen`
   (zwei Teile), `haeuser` (Bilder), `laeden`, `smoke`.
 - **Ansicht je Gebäude (für `schleusingen-ansicht`)**: Werte aus Straßenansichten gehen über `FASSADE` in die Häuser, angewandt beim Bau:

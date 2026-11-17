@@ -28,12 +28,12 @@ COUNT = r"""
   R.renderBufferDirect = function (camera, scene, geometry, material, object, group) {
     const n = geometry.index ? geometry.index.count : geometry.attributes.position ? geometry.attributes.position.count : 0;
     if (scene) { const t = Math.round((group ? group.count : n) / 3) * (object.isInstancedMesh ? object.count : 1); I[0]++; I[1] += t;
-      if (!dyn(object)) { I[2]++; I[3] += t; const k = key(object); K[k] = (K[k] || 0) + 1; } }
+      if (!dyn(object)) { I[2]++; I[3] += t; const k = key(object); K[k] = K[k] || [0, 0]; K[k][0]++; K[k][1] += t; } }
     return rbd.call(this, camera, scene, geometry, material, object, group);
   };
   let t = 0;
   try { GAME.shot(); const t0 = performance.now(); for (let k = 0; k < 3; k++) GAME.shot(); t = (performance.now() - t0) / 3; } finally { R.renderBufferDirect = rbd; }
-  for (const k in K) K[k] = Math.round(K[k] / 4);
+  for (const k in K) K[k] = [Math.round(K[k][0] / 4), Math.round(K[k][1] / 4)];
   return JSON.stringify({ calls: Math.round(I[0] / 4), tris: Math.round(I[1] / 4), sCalls: Math.round(I[2] / 4), sTris: Math.round(I[3] / 4), ms: Math.round(t), keys: K });
 })()
 """
@@ -395,13 +395,20 @@ with lib.browser() as b:
                 print(f'perf schleusingen ({tag} the fixes)', json.dumps({k: m[k] for k in m if k != 'keys'}), flush=True)
             m1, m0 = M['with'], M['without']
             s1, s0 = m1['town'], m0['town']
-            diff = {k: [m0['keys'].get(k, 0), m1['keys'].get(k, 0)] for k in set(m0['keys']) | set(m1['keys']) if m0['keys'].get(k, 0) != m1['keys'].get(k, 0)}
+            z0 = [0, 0]
+            diff = {k: [m0['keys'].get(k, z0)[0], m1['keys'].get(k, z0)[0]] for k in set(m0['keys']) | set(m1['keys']) if m0['keys'].get(k, z0)[0] != m1['keys'].get(k, z0)[0]}
             print('perf schleusingen: static draw calls that differ (without → with)', json.dumps(diff, ensure_ascii=False), flush=True)
+            # an ETHOS cell (gebaeude/gebaeude.js builds them as one walks) standing in one load and not yet in the other is not the fixes'
+            # doing: its calls and triangles come off the difference (the fixes add none to a cell's meshes – they merge into them)
+            only = [k for k in set(m0['keys']) ^ set(m1['keys']) if k.startswith('gebaeude z ')]
+            dC = sum(m1['keys'].get(k, z0)[0] - m0['keys'].get(k, z0)[0] for k in only)
+            dT = sum(m1['keys'].get(k, z0)[1] - m0['keys'].get(k, z0)[1] for k in only)
+            print('perf schleusingen: ETHOS cells in one load only', json.dumps(only), dC, dT, flush=True)
             ck('Schleusingen: the town draws with as many meshes as before, its triangles within a few per cent (the door steps, gateways, stair)', s1['n'] <= s0['n'] and s1['tris'] <= s0['tris'] * 1.06,
                f"{s0['n']} → {s1['n']} meshes, {s0['tris']} → {s1['tris']} triangles of the town")
             ck('Schleusingen: the frame at the Markt about the same (without people, traffic and animals, which vary between two loads)',
-               m1['sCalls'] <= m0['sCalls'] + 4 and m1['sTris'] <= m0['sTris'] * 1.06 + 2000,
-               f"static {m0['sCalls']} → {m1['sCalls']} calls, {m0['sTris']} → {m1['sTris']} triangles; whole frame {m0['calls']} → {m1['calls']} calls, "
+               m1['sCalls'] - dC <= m0['sCalls'] + 4 and m1['sTris'] - dT <= m0['sTris'] * 1.06 + 2000,
+               f"static {m0['sCalls']} → {m1['sCalls']} calls, {m0['sTris']} → {m1['sTris']} triangles (ETHOS cells in one load only: {dC} calls, {dT} triangles); whole frame {m0['calls']} → {m1['calls']} calls, "
                f"{m0['tris']} → {m1['tris']} triangles, {m0['ms']} → {m1['ms']} ms per frame (SwiftShader)")
     ck.errors(errs)
 ck.done()
