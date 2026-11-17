@@ -53,6 +53,11 @@ Werkzeuge sind dafür gebaut, siehe unten).
     Hochparterre; sie hing in der Luft. Jetzt steht vor jeder Haus-, Hof- und zweiten Tür, deren Schwelle über dem Boden liegt, eine Treppe
     aus Steinblöcken (je ~17 cm Steigung, 50 cm Podest, 30 cm Auftritt), und man steigt sie hinauf (`KERN.ground`, Priorität 11 – nur auf
     den Stufen selbst, sonst antwortet der nächste Anbieter). Die Blöcke liegen im Mesh der Requisiten der Stadt (kein Draw-Call mehr).
+  - **Hohe graue Blöcke in der Altstadt weg**: Am Markt stand links ein 16,6 m hoher, fensterloser grauer Block (der Test fand ihn mit einem
+    Strahl aus der Kamera: ein ETHOS-Gebäude der Art „Turm“ aus `gebaeude/gebaeude.js`). Sechs solche „Türme“ (12–18 m hoch, 21–37 m²)
+    stehen in Lücken der Altstadtdaten, jeder berührt ein Haus von `stadt.json` und ist in ETHOS ringsum angebaut – Teile der LoD2-Dächer
+    von Altstadthäusern, die die Stadt selbst zeichnet. Sie bleiben weg (`GEB.skip`, nach dem von `laeden`; Liste aus
+    `viz3/extra/gebaeude/quellen/teile.py`).
   - `?nofassade` baut die Stadt wie vorher (zum Vergleich).
 - **Ratscher** (`fassade/fassade.js`, von außen eingehängt – `world/village.js` und `gebaeude/gebaeude.js` bleiben unverändert):
   - **Türen**, wo ein Gebäude keine hatte (kleine Schuppen: keine Wand lang genug für die Regel des Dorfs), und Türen von Scheunen und
@@ -141,6 +146,8 @@ seit 5 die Stufen vor den Türen.
   `schleusingen/si_innen.js`) in `modules.txt`; geänderte eigene Datei `welt/schleusingen.js` (die Zeile `LAEDEN.skipStadt` bleibt). Keine
   gemeinsame Datei geändert; `haeuser/haeuser_heute.js` nicht angefasst (nichts außen Sichtbares darin). Neu für alle: ein Boden-Anbieter
   `KERN.provide('ground', …, 11)` (nur auf den Stufen vor Türen, sonst `undefined`), Fenstername `FASSADE`, `FAUDIT`; `?nofassade`.
+  `FASSADE` hängt sich an `GEB.skip` an (das von `laeden` bleibt vorne: `prev(b) || …`) und mischt Geometrie in die Wand-Meshes der
+  ETHOS-Zellen (`GEB.Z.cells[…].meshes`, gleiches Attribut-Layout; `gebaeude.js` gibt sie beim Wegwerfen wie bisher frei).
 - **Getestete Stände**: Lauf 3 (`f958ce6e3`) ganz grün; Lauf 4 (`67d381d80`) grün bis auf den Vergleich des ganzen Bilds am Markt (Leute
   und Autos, siehe „Leistung“ – der Test misst seither anders); Lauf 5 (Stufen, schmale Tür, Test-Umbau) siehe Bericht an den Lead. Die
   Themen-Tests (`viz3/extra/gebaeude/tests.txt`): `gebaeude` (Ratscher; Schleusingen mit `perf`), `schleusingen`, `schleusingen_innen`

@@ -271,7 +271,22 @@ export const FASSADE = (() => {
             for (const p of r.fac) p.extra = vor ? 0 : (p.extra || 0) + ((S.win.get(r.id) || {})[p.k] || 0);
             R.push(r);
           }
-        out = FAUDIT.audit(R, { idx: FAUDIT.index(R), ort });
+        const idx = FAUDIT.index(R.concat(townRecs())),
+          byId = new Map(R.map(r => [r.id, r]));
+        out = FAUDIT.audit(R, { idx, ort });
+        // built in all round (no wall with room for a door, as gebSkins looks for one): reached through the buildings beside it
+        for (const q of out) {
+          const r = q.art === 'tuer' && q.text === 'kein Eingang' && byId.get(q.id);
+          if (
+            r &&
+            !FAUDIT.hofTuer(
+              r,
+              r.fac.map(p => Object.assign({}, p, { blind: p.blind && FAUDIT.cover(r, p, idx).covered > p.L * 0.5 })),
+              (x, y) => !idx.at(x, y)
+            )
+          )
+            q.rest = 'ringsum eingebaut – Zugang durch die Gebäude daneben';
+        }
         S.nRec = R.length;
       }
     } catch (e) {
@@ -308,9 +323,15 @@ export const FASSADE = (() => {
       const f = b.fac[k];
       return { x: f.ax + f.dx * u, y: f.ay + f.dy * u, hd: az(f.nx, f.ny) };
     }
-    // an ETHOS building of the square (gebaeude/gebaeude.js): the door its building() gives it
-    const g = GEB.ready && GEB.bld.find(q => q.id === id);
-    const d = g && gebDoor(g);
+    // an ETHOS building of the square or of a cell built now (gebaeude/gebaeude.js): the door its building() gives it, else the skin's
+    let g = GEB.ready && GEB.bld.find(q => q.id === id);
+    if (!g)
+      for (const z of ZONE.cells.values()) {
+        g = z.bs.find(q => q.id === id);
+        if (g) break;
+      }
+    const fx = g && S.geb.get(id),
+      d = g && (gebDoor(g) || (fx && fx.door));
     if (d) {
       const f = g.F[d.k],
         L = Math.hypot(f[2] - f[0], f[3] - f[1]),
@@ -476,7 +497,8 @@ export const FASSADE = (() => {
       const Lmax = Math.max(...r.fac.map(p => p.L)),
         per = {};
       for (const p of r.fac) {
-        if (p.L < Math.max(8, Lmax * 0.5) || p.blind || FAUDIT.windows(p).length) continue;
+        // a party wall in the data too: the windows only where no neighbour stands (stallRow skips the covered spans)
+        if (p.L < Math.max(8, Lmax * 0.5) || FAUDIT.windows(p).length) continue;
         const n = stallRow(p, p, () => r.b.z0, r.b.e, FAUDIT.cover(r, p, idx).spans, r.id);
         if (n) per[p.k] = n;
       }
@@ -548,7 +570,12 @@ export const FASSADE = (() => {
           }
         }
       if (r.area >= 6 && r.kind !== 'turm' && !r.fac.some(p => p.dw > 0)) {
-        const D = FAUDIT.hofTuer(r, r.fac, free);
+        // the walls as they stand: a party wall in the data with no neighbour along most of it can take the door
+        const D = FAUDIT.hofTuer(
+          r,
+          r.fac.map(p => Object.assign({}, p, { blind: p.blind && FAUDIT.cover(r, p, idx).covered > p.L * 0.5 })),
+          free
+        );
         if (D) {
           const p = r.fac.find(q => q.k === D.k),
             a = Math.max(0, D.u - D.w / 2 - 0.4),
@@ -731,7 +758,20 @@ export const FASSADE = (() => {
     g2.dispose();
     return true;
   }
+  // the records of Schleusingen's houses as neighbours of the cells round the old town (once per build of the town)
+  let TR = null,
+    TRof = null;
+  const townRecs = () => {
+    if (SCHL.state !== 'ready') return [];
+    if (TRof !== SCHL.bld) {
+      TRof = SCHL.bld;
+      TR = recsSchl(false);
+    }
+    return TR;
+  };
   function fixZone(c, wm) {
+    // while the old town is being built its houses are not there yet to stand beside the cell's buildings: later
+    if (SCHL.state === 'loading' || SCHL.state === 'data') return false;
     const t0 = performance.now(),
       walls = c.meshes.filter(m => m.material === wm);
     for (const m of walls) ZONE.done.add(m);
@@ -745,7 +785,7 @@ export const FASSADE = (() => {
       near = [];
     for (const [k, z] of ZONE.cells)
       if (k !== c.key && Math.abs(z.ij[0] - c.ij[0]) <= 1 && Math.abs(z.ij[1] - c.ij[1]) <= 1) near.push(...z.recs);
-    const idx = FAUDIT.index(R.concat(near)),
+    const idx = FAUDIT.index(R.concat(near, townRecs())),
       free = (x, y) => !idx.at(x, y),
       K = VPROPS.kit(),
       OV = wallLayer(),
@@ -779,6 +819,7 @@ export const FASSADE = (() => {
       ms: Math.round(performance.now() - t0),
     });
     ZONE.dirty = true;
+    return true;
   }
   // the stable windows and steps of all fixed cells in one mesh, the steps' ground
   function zoneMesh() {
@@ -845,8 +886,7 @@ export const FASSADE = (() => {
         const w = c.meshes.find(m => m.material === wm);
         if (!w || ZONE.done.has(w)) continue;
         const t0 = performance.now();
-        fixZone(c, wm);
-        ZONE.ms = Math.max(ZONE.ms, Math.round(performance.now() - t0));
+        if (fixZone(c, wm)) ZONE.ms = Math.max(ZONE.ms, Math.round(performance.now() - t0));
         break;
       }
       if (ZONE.dirty) zoneMesh();

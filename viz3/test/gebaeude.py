@@ -242,8 +242,8 @@ with lib.browser() as b:
                 ck(f"through the passage {i + 1} ({q['src']}, {q['a']}) into the yard behind", r2['t'] > q['depth'] + 0.8 and abs(r2['feet'] - r2['g']) < 0.1,
                    json.dumps(r2, ensure_ascii=False))
                 # pictures: from the street into the passage, and from the yard back
-                # (a gate with a stair: from 3 m down the stair, looking up at the gate over the landing)
-                OUTV = f"""(() => {{ const q = SCHL.fassade.passes[{i}], t = q.stair, x = t ? t.top[0] + (t.bot[0] - t.top[0]) / t.L * 3 : q.A[0] - q.d[0] * 9, y = t ? t.top[1] + (t.bot[1] - t.top[1]) / t.L * 3 : q.A[1] - q.d[1] * 9;
+                # (a gate with a stair: from the landing at the top of the stair, looking at the gate)
+                OUTV = f"""(() => {{ const q = SCHL.fassade.passes[{i}], t = q.stair, x = t ? t.top[0] + (q.A[0] - t.top[0]) * 0.1 : q.A[0] - q.d[0] * 9, y = t ? t.top[1] + (q.A[1] - t.top[1]) * 0.1 : q.A[1] - q.d[1] * 9;
                     GAME.view(x, y, KERN.ground(x, y) + 1.65, Math.atan2(q.A[0] - x, q.A[1] - y) * 180 / Math.PI, 2, 62); GAME.step(0.3); }})()"""
                 E(OUTV)
                 settle()
