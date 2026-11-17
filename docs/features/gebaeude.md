@@ -66,10 +66,15 @@ Stand nach dem ersten Lauf (vorher → nachher; „erklärt“ = mit `rest`):
 
 | Ort | Tür | Fenster | Durchgang | Hof | erklärt |
 |---|---|---|---|---|---|
-| Ratscher vorher | (folgt) | | | | |
-| Ratscher nachher | (folgt) | | | | |
+| Ratscher vorher | 4 kein Eingang, 19 Tür vor einer Wand | 23 Wandstrecken ohne Fenster, 3 Hallen ganz ohne | 0 | 1 | 19 |
+| Ratscher nachher (Lauf 3) | 1 | 20 (alle an ETHOS-Häusern) | 0 | 1 | 19 |
 | Schleusingen vorher | 194 kein Eingang | 84 Wandstrecken ohne Fenster | 2 (Burgtore laut OSM) | 8 Höfe ohne Zugang | 3 |
 | Schleusingen nachher | **0** | **0** | **0** | **0** | 8 |
+
+In Ratscher erklärt: 16 Haustüren, vor denen 0,7 m davor ein Nachbargebäude steht – durch sie geht man ins Haus (`HAEUSER`, der Grundriss
+hängt an der Tür), sie bleiben; 3 kleine umschlossene Flächen unter 80 m². Gebaut: 3 Türen, 19 verlegte Tore/Türen von Scheunen und
+Schuppen, 198 Stallfenster an 5 Hallen (Lauf 3). Seit Lauf 4 auch die ETHOS-Häuser (Haut aus Fassaden-Vierecken) und der Hof am Anger
+offen (eine schräge Lücke von 1,5 m ist begehbar) – Zahlen siehe unten.
 
 Erklärt bleiben in Schleusingen 3 Zwickel unter 25 m² (zwischen zwei Häusern, kein Zugang nötig) und 5 kleine Höfe von 31–67 m² (nur
 durch die Häuser daneben – keine Tordurchfahrt für einen Hof dieser Größe). Gebaut: 191 Hoftüren (Häuser, Schuppen, Hallen ohne Tür zur
@@ -90,9 +95,12 @@ Straße), 18 Türen nach OSM-Eingängen, 84 Fensterstrecken an Brandwänden, 4 D
 
 ## Leistung
 
-- Schleusingen: der Plan beim Aufbau der Stadt ≈ (folgt) ms (Höfe im Raster 0,5 m je Block, Durchgänge, Türen, Brandwände); alles in den
-  vorhandenen Wand- und Dach-Meshes der Stadt – **keine zusätzlichen Draw-Calls**, wenige Dreiecke mehr.
-- Ratscher: einmal nach dem Aufbau des Dorfs ≈ (folgt) ms; 1 Mesh für Rahmen, bis 3 für das Glas (Draw-Calls +4 höchstens).
+- Schleusingen: der Plan beim Aufbau der Stadt 105–210 ms im Testrechner (Höfe im Raster 0,5 m je Block, Durchgänge, Türen, Brandwände,
+  OSM-Eingänge); alles in den vorhandenen Meshes der Stadt (Wände, Dächer, Requisiten) – **10 → 10 Meshes, 311 598 → 312 704 Dreiecke
+  (+0,35 %)** gegenüber `?nofassade` (Lauf 3).
+- Ratscher: einmal nach dem Aufbau des Dorfs 14–34 ms; 2 Meshes für die Stallfenster (Rahmen und dunkles Glas, das Glas, das nachts
+  leuchtet) – +4 Draw-Calls mit Tiefen-/AO-Durchgang, +0,2 % Dreiecke vor der langen Halle (Lauf 3); dazu 1 Mesh für die Haut der
+  ETHOS-Häuser.
 - Keine neuen Shader-Programme (Wand- und Dachmaterial der Stadt, Material der Dorf-Requisiten und Klone davon), keine Lichter.
 
 ## Testen

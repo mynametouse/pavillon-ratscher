@@ -585,8 +585,12 @@ export const FASSADE = (() => {
   }
   if (S.on && RATSCHER.on)
     whenLoaded(() => {
+      let seen = 0;
       const off = KERN.tick(() => {
-        if (!VILLAGE.ready || (GEB.on && !GEB.ready)) return;
+        if (!VILLAGE.ready) return;
+        // the ETHOS buildings come over some frames after the village; if they never come (no data on this host), go on without them
+        if (!seen) seen = performance.now();
+        if (GEB.on && !GEB.ready && performance.now() - seen < 30000) return;
         off();
         try {
           fixRatscher();
