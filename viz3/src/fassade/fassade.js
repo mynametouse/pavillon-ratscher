@@ -122,7 +122,7 @@ export const FASSADE = (() => {
               ? 'halle'
               : 'scheune'
             : 'haus';
-    return FAUDIT.fromF(b, {
+    const r = FAUDIT.fromF(b, {
       id: b.id,
       ort: 'ratscher',
       door: gebDoor(b),
@@ -130,11 +130,13 @@ export const FASSADE = (() => {
       kind,
       stOf: () => (b.st ? b.st.style : 0),
     });
+    r.b = b; // its foot z0 and eave for the stable windows
+    return r;
   }
   function recsRatscher() {
     const V = VILLAGE.ready ? VILLAGE.bld.map(recV) : [],
       G = GEB.ready ? GEB.bld.filter(b => b.st && b.F).map(recG) : [];
-    for (const r of V) for (const p of r.fac) p.extra = (S.win.get(r.id) || {})[p.k] || 0;
+    for (const r of V.concat(G)) for (const p of r.fac) p.extra = (S.win.get(r.id) || {})[p.k] || 0;
     return V.concat(G);
   }
   // ---- records of Schleusingen: before (the street door only, each facade one piece) and as drawn (welt/schleusingen.js b.pieces) ----
@@ -163,6 +165,7 @@ export const FASSADE = (() => {
         if (vor) {
           // before: the doors and windows as village.js and gebaeude.js drew them
           for (const r of R) {
+            for (const p of r.fac) p.extra = 0;
             if (r.ort !== 'ratscher' || !r.v) continue;
             r.v.fac.forEach((q, k) => {
               r.fac[k].du = q.door ? q.door.u : -1;
@@ -235,6 +238,42 @@ export const FASSADE = (() => {
   }
   // ---- Ratscher's fixes (once, after the village and the ETHOS buildings stand) ----
   const STALL = { sp: 3.0, w: 1.2, h: 0.8, sill: 1.75 }; // stable windows of the farms' halls (LPG halls, 1960s–80s: a row, high)
+  // a row of stable windows along a wall q ({ ax, ay, dx, dy, nx, ny, L }): bays of 3 m, not at the door (p.du, p.dw) nor where a
+  // neighbour stands (spans); into the kits KW (frames) and KG (the glass in three groups); → how many
+  let KW = null,
+    KG = null;
+  const FR = linC([0.62, 0.62, 0.6]),
+    GL = linC([0.05, 0.06, 0.07]);
+  function stallRow(q, p, footAt, eave, spans, seed) {
+    const nb = Math.max(1, Math.floor((q.L - 0.6) / STALL.sp)),
+      bw = q.L / nb,
+      top = Math.min(STALL.sill + STALL.h, eave - 0.35),
+      sill = top - STALL.h,
+      hw = STALL.w / 2;
+    if (sill < 1.2) return 0;
+    // the kit's quads are seen from the side they wind counter-clockwise: the walls run either way round
+    const flip = q.dx * q.ny - q.dy * q.nx > 0;
+    let n = 0;
+    for (let bi = 0; bi < nb; bi++) {
+      const u = (bi + 0.5) * bw;
+      if (p.dw > 0 && Math.abs(u - p.du) < p.dw / 2 + hw + 0.4) continue;
+      if (spans.some(([a, c]) => u + hw + 0.3 > a && u - hw - 0.3 < c)) continue;
+      const foot = footAt(u),
+        at = (du, z, o) => [q.ax + q.dx * (u + du) + q.nx * o, q.ay + q.dy * (u + du) + q.ny * o, foot + z],
+        rect = (K, du0, du1, z0, z1, o, col) =>
+          flip
+            ? K.quad(at(du0, z0, o), at(du0, z1, o), at(du1, z1, o), at(du1, z0, o), col, z1 - z0, du1 - du0)
+            : K.quad(at(du0, z0, o), at(du1, z0, o), at(du1, z1, o), at(du0, z1, o), col, du1 - du0, z1 - z0);
+      // a concrete frame, the glass in it, a muntin cross (steel stable windows with small panes)
+      rect(KW, -hw - 0.08, hw + 0.08, sill - 0.08, top + 0.08, 0.025, FR);
+      rect(KG[Math.floor(FAUDIT.hh(seed * 7.3 + bi * 1.9) * 3)], -hw, hw, sill, top, 0.035, GL);
+      rect(KW, -0.03, 0.03, sill, top, 0.045, FR);
+      rect(KW, -hw, hw, sill + STALL.h / 2 - 0.03, sill + STALL.h / 2 + 0.03, 0.045, FR);
+      n++;
+    }
+    S.n.fenster += n;
+    return n;
+  }
   function fixRatscher() {
     const t0 = performance.now(),
       g = RATSCHER.bld[0] && RATSCHER.bld[0].geometry,
@@ -251,10 +290,8 @@ export const FASSADE = (() => {
           }
       };
     S.n = { tuer: 0, tuerVerlegt: 0, hallen: 0, fenster: 0 };
-    const KW = VPROPS.kit ? VPROPS.kit() : null,
-      KG = [0, 1, 2].map(() => (VPROPS.kit ? VPROPS.kit() : null)),
-      FR = linC([0.62, 0.62, 0.6]),
-      GL = linC([0.05, 0.06, 0.07]);
+    KW = VPROPS.kit ? VPROPS.kit() : null;
+    KG = [0, 1, 2].map(() => (VPROPS.kit ? VPROPS.kit() : null));
     for (const r of R) {
       const b = r.v;
       if (!b) continue;
@@ -288,48 +325,40 @@ export const FASSADE = (() => {
           per = {};
         b.fac.forEach((q, k) => {
           if (q.L < Math.max(8, Lmax * 0.5)) return;
-          const p = r.fac[k],
-            cv = FAUDIT.cover(r, p, idx),
-            nb = Math.max(1, Math.floor((q.L - 0.6) / STALL.sp)),
-            bw = q.L / nb,
-            top = Math.min(STALL.sill + STALL.h, b.eave - 0.35),
-            sill = top - STALL.h;
-          if (sill < 1.2) return;
-          let n = 0;
-          for (let bi = 0; bi < nb; bi++) {
-            const u = (bi + 0.5) * bw;
-            if (p.dw > 0 && Math.abs(u - p.du) < p.dw / 2 + STALL.w / 2 + 0.4) continue;
-            if (cv.spans.some(([a, c]) => u + STALL.w / 2 + 0.3 > a && u - STALL.w / 2 - 0.3 < c)) continue;
-            // the foot of the quad under the window (the walls follow the ground)
+          // the foot of the quad under a window (the walls follow the ground)
+          const footAt = u => {
             let foot = b.foot,
               uu = 0;
             for (const qq of q.qs) {
               if (u >= uu && u <= uu + qq.len) foot = qq.foot;
               uu += qq.len;
             }
-            // the kit's quads are seen from the side they wind counter-clockwise: the walls run either way round
-            const flip = q.dx * q.ny - q.dy * q.nx > 0,
-              at = (du, z, o) => [q.ax + q.dx * (u + du) + q.nx * o, q.ay + q.dy * (u + du) + q.ny * o, foot + z],
-              rect = (K, du0, du1, z0, z1, o, col) =>
-                flip
-                  ? K.quad(at(du0, z0, o), at(du0, z1, o), at(du1, z1, o), at(du1, z0, o), col, z1 - z0, du1 - du0)
-                  : K.quad(at(du0, z0, o), at(du1, z0, o), at(du1, z1, o), at(du0, z1, o), col, du1 - du0, z1 - z0),
-              hw = STALL.w / 2;
-            // a concrete frame, the glass in it, a muntin cross (steel stable windows with small panes)
-            rect(KW, -hw - 0.08, hw + 0.08, sill - 0.08, top + 0.08, 0.025, FR);
-            const KGi = KG[Math.floor(FAUDIT.hh(b.id * 7.3 + bi * 1.9) * 3)];
-            rect(KGi, -hw, hw, sill, top, 0.035, GL);
-            rect(KW, -0.03, 0.03, sill, top, 0.045, FR);
-            rect(KW, -hw, hw, sill + STALL.h / 2 - 0.03, sill + STALL.h / 2 + 0.03, 0.045, FR);
-            n++;
-          }
+            return foot;
+          };
+          const n = stallRow(q, r.fac[k], footAt, b.eave, FAUDIT.cover(r, r.fac[k], idx).spans, b.id);
           if (n) per[k] = n;
-          S.n.fenster += n;
         });
         if (Object.keys(per).length) {
           S.win.set(b.id, per);
           S.n.hallen++;
         }
+      }
+    }
+    // the ETHOS halls (gebaeude/gebaeude.js) likewise – their walls stand at the building's foot z0
+    for (const r of R) {
+      if (r.v || r.kind !== 'halle' || !KW || !r.b) continue;
+      const seen = r.fac.reduce((s, p) => s + FAUDIT.windows(p).length, 0);
+      if (seen > 0 || r.area < 150) continue;
+      const Lmax = Math.max(...r.fac.map(p => p.L)),
+        per = {};
+      for (const p of r.fac) {
+        if (p.L < Math.max(8, Lmax * 0.5) || p.blind) continue;
+        const n = stallRow(p, p, () => r.b.z0, r.b.e, FAUDIT.cover(r, p, idx).spans, r.id);
+        if (n) per[p.k] = n;
+      }
+      if (Object.keys(per).length) {
+        S.win.set(r.id, per);
+        S.n.hallen++;
       }
     }
     aD.needsUpdate = true;
