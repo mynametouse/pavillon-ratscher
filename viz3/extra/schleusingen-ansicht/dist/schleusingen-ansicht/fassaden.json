@@ -44,6 +44,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Königstraße: weiß, dunkelgraues Dach mit verschieferter Gaube",
    "sicher": "hoch",
    "ansichten": [
@@ -114,6 +115,8 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 1,
+   "dachform": "flach",
    "besonders": "Autohaus: Glasfront, weißgraue Verkleidung, Vordach",
    "sicher": "mittel",
    "ansichten": [
@@ -160,6 +163,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Haus mit Solardach",
    "sicher": "niedrig",
    "ansichten": [
@@ -182,6 +186,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "anderthalbgeschossig, weiß, großes Landschaftswandbild an der Seite",
    "sicher": "hoch",
    "ansichten": [
@@ -205,6 +210,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
+   "first": "giebel",
    "besonders": "Giebel mit dunklen Brettern",
    "sicher": "niedrig",
    "ansichten": [
@@ -226,6 +233,8 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 1,
+   "dachform": "flach",
    "besonders": "Autohaus, weißes Vordach",
    "sicher": "niedrig",
    "ansichten": [
@@ -277,6 +286,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Teutsche Schule: reiches Fachwerk dunkelbraun mit Schnitzband, Sandsteinsockel, Schiefergauben",
    "sicher": "hoch",
    "ansichten": [
@@ -307,6 +317,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "EG dunkelroter Putz, OG Fachwerk schwarz/weiß (Modell: modern)",
    "sicher": "hoch",
    "ansichten": [
@@ -379,6 +390,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "blau",
+   "geschosse": 3,
    "besonders": "Block blass ockergelb, blaue Fenster, Wellblech an den Treppenhäusern",
    "sicher": "hoch",
    "ansichten": [
@@ -403,6 +415,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
+   "dachform": "flach",
    "besonders": "moderne Schule: zweigeschossig, Flachdach, weißer Putz mit senkrechten dunkelgrauen Verkleidungsbändern zwischen den Fenstern, dunkle Attika, grauer Metallsockel (Modell: Wohnhaus)",
    "sicher": "hoch",
    "ansichten": [
@@ -428,6 +442,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
+   "dachform": "walm",
    "besonders": "creme",
    "sicher": "mittel",
    "ansichten": [
@@ -451,6 +467,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "creme, weißer Vorbau",
    "sicher": "hoch",
    "ansichten": [
@@ -498,6 +515,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "blass ockersand, weiße Lisenen, Schilder",
    "sicher": "hoch",
    "ansichten": [
@@ -523,6 +541,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "niedrig, weiß",
    "sicher": "niedrig",
    "ansichten": [
@@ -548,6 +567,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "Block blass olivkhaki, Sandsteinsockel",
    "sicher": "hoch",
    "ansichten": [
@@ -572,6 +592,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 4,
    "besonders": "Block blass cremebeige mit ockerfarbenen Lisenen, Sandsteinsockel",
    "sicher": "hoch",
    "ansichten": [
@@ -648,6 +669,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "Königstraße: weißer dreigeschossiger Block",
    "sicher": "mittel",
    "ansichten": [
@@ -671,6 +693,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
+   "first": "giebel",
    "besonders": "Königstraße: weiß, dreigeschossig (hinter Bäumen)",
    "sicher": "mittel",
    "ansichten": [
@@ -693,6 +717,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "Königstraße: creme/beige, Fensterfaschen und Ecken sandsteinfarben",
    "sicher": "hoch",
    "ansichten": [
@@ -718,6 +743,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Königstraße: groß, OG creme/blassgelb, EG roter Backstein, Stahltreppe",
    "sicher": "hoch",
    "ansichten": [
@@ -745,6 +771,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "weiß, Seitenwand Schiefer, Schiefergauben, Fachwerkgiebel dunkelbraun, kleiner Fachwerkbalkon",
    "sicher": "hoch",
    "ansichten": [
@@ -768,6 +795,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "weiß",
    "sicher": "hoch",
    "ansichten": [
@@ -792,6 +820,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
+   "dachform": "walm",
    "besonders": "weiß, dunkelrote Backsteinfaschen, Walmdach mit Gaube",
    "sicher": "hoch",
    "ansichten": [
@@ -817,6 +847,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "weiß, Gauben",
    "sicher": "hoch",
    "ansichten": [
@@ -842,6 +873,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 4,
    "besonders": "viergeschossig, weiß",
    "sicher": "hoch",
    "ansichten": [
@@ -867,6 +899,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "hellgrauweiße Schindeln, olivgrüne Fensterfaschen, Türmchen",
    "sicher": "hoch",
    "ansichten": [
@@ -896,6 +929,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "EG roter Backstein, OG mittelgrauer Rauputz",
    "sicher": "hoch",
    "ansichten": [
@@ -926,6 +960,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
+   "first": "giebel",
    "besonders": "Mehrfamilienhaus, EG weiß, OG Fachwerk dunkelbraun, Holzbalkone über drei Ebenen",
    "sicher": "hoch",
    "ansichten": [
@@ -952,6 +988,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 3,
    "besonders": "Markt SW: oliv/graugrün, dreigeschossig, Giebel hellgrauer Schiefer, Läden",
    "sicher": "hoch",
    "ansichten": [
@@ -999,6 +1036,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Markt S: graubeige (Modell: Schiefer-OG)",
    "sicher": "mittel",
    "ansichten": [
@@ -1022,6 +1060,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 2,
    "besonders": "Markt S: ocker/gelb",
    "sicher": "mittel",
    "ansichten": [
@@ -1045,6 +1084,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Markt S: weißgrau",
    "sicher": "mittel",
    "ansichten": [
@@ -1069,6 +1109,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 2,
    "besonders": "Markt S: ocker/orangegelb, Läden",
    "sicher": "mittel",
    "ansichten": [
@@ -1116,6 +1157,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "Markt SO: terrakotta/ziegelrot, dreigeschossig",
    "sicher": "hoch",
    "ansichten": [
@@ -1142,6 +1184,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Markt SO: hellgrau-beige",
    "sicher": "mittel",
    "ansichten": [
@@ -1164,6 +1207,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Markt SO: lang, zweigeschossig, hellgrau-beige (Modell: Schiefer-OG)",
    "sicher": "hoch",
    "ansichten": [
@@ -1261,6 +1305,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "lang, ganz Naturschiefer mittelgrau, Bruchsteinsockel, Holzvordach",
    "sicher": "hoch",
    "ansichten": [
@@ -1304,6 +1349,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Markt O: graugrün",
    "sicher": "mittel",
    "ansichten": [
@@ -1327,6 +1373,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 2,
    "besonders": "Markt NO: weiß, lang, zweigeschossig, Gauben, Markisen",
    "sicher": "hoch",
    "ansichten": [
@@ -1351,6 +1398,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 2,
    "besonders": "Markt O: salbeigrün/graugrün, Läden mit Markisen",
    "sicher": "hoch",
    "ansichten": [
@@ -1375,6 +1423,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 2,
    "besonders": "Markt N: cremegelb, lang, Gauben, gelbe Markise",
    "sicher": "hoch",
    "ansichten": [
@@ -1399,6 +1448,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 2,
    "besonders": "Markt N: creme/blassgelb, Läden (Modell: Schiefer-OG)",
    "sicher": "hoch",
    "ansichten": [
@@ -1423,6 +1473,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 2,
    "besonders": "Markt N: rosa, Gauben",
    "sicher": "hoch",
    "ansichten": [
@@ -1447,6 +1498,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Markt N: Fachwerk rot/weiß",
    "sicher": "mittel",
    "ansichten": [
@@ -1470,6 +1522,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "Markt NW: gelb",
    "sicher": "mittel",
    "ansichten": [
@@ -1493,6 +1546,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 3,
    "besonders": "Markt NW: lachs/apricot, dreigeschossig, Ladenbögen",
    "sicher": "hoch",
    "ansichten": [
@@ -1517,6 +1571,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 3,
    "besonders": "Markt NW: weiß mit grauen Faschen, dreigeschossig, Gauben",
    "sicher": "hoch",
    "ansichten": [
@@ -1541,6 +1596,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 3,
    "besonders": "Wohn- und Geschäftshaus, 3 Geschosse und Dach, Zwerchgiebel, weißgrau verwittert, leerer Laden, Sandsteinsockel (Modell: Halle)",
    "sicher": "hoch",
    "ansichten": [
@@ -1567,6 +1623,7 @@
    "laeden": false,
    "laden": true,
    "rahmen": "weiss",
+   "geschosse": 3,
    "besonders": "Bertholdstraße 22: ockergelb, dreigeschossig, an der Ecke ein moderner Bau aus Glas und weißen Platten (weit); dahinter ein Glasdach",
    "sicher": "niedrig",
    "ansichten": [
@@ -1592,6 +1649,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
+   "first": "giebel",
    "besonders": "Königstraße: hell verputzt, Giebel Fachwerk dunkelbraun, orangerotes Dach",
    "sicher": "mittel",
    "ansichten": [
@@ -1617,6 +1676,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
+   "first": "giebel",
    "besonders": "Königstraße: creme, Giebel zur Straße, Rundbogentor, Schriftzug an der Fassade",
    "sicher": "hoch",
    "ansichten": [
@@ -1708,6 +1769,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "weiss",
+   "geschosse": 3,
    "besonders": "Bertholdstraße 21: Obergeschosse ganz mit dunklem Schiefer verkleidet, EG cremefarbener Rauputz, grauer Sockel",
    "sicher": "hoch",
    "ansichten": [
@@ -1765,6 +1827,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "EG weiß verputzt, OG Fachwerk schwarz/weiß, lang mit Gauben, schmaler Giebelteil braunes Fachwerk (Modell: Halle)",
    "sicher": "hoch",
    "ansichten": [
@@ -1792,6 +1855,7 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 4,
    "besonders": "viergeschossig, Front weißgrau mit Faschen; Ostseite dunkler Schiefer mit großem Schild; Rückseite blassgraugrün mit gelben Balkonen",
    "sicher": "mittel",
    "ansichten": [
@@ -1816,6 +1880,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "braun",
+   "geschosse": 2,
    "besonders": "lang, zweigeschossig, weiß/Rauputz, braune Fensterrahmen",
    "sicher": "hoch",
    "ansichten": [
@@ -1840,6 +1905,8 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
+   "first": "giebel",
    "besonders": "weiß verputzt, anderthalbgeschossig, Dach orangerot mit Gaube (Suhler Straße 1)",
    "sicher": "hoch",
    "ansichten": [
@@ -1864,6 +1931,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "grau, dahinter Fachwerkgiebel",
    "sicher": "niedrig",
    "ansichten": [
@@ -1938,6 +2006,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "EG hellgrau verkleidet, OG und Giebel Fachwerk ochsenblutrot, Zwerchgiebel; Seiten Schiefer",
    "sicher": "hoch",
    "ansichten": [
@@ -1964,6 +2033,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "lang, Schiefer hellgrau, weiße Fenster, Gauben",
    "sicher": "hoch",
    "ansichten": [
@@ -1987,6 +2057,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "dreigeschossig, hellgraue Rautenschindeln, Sandsteinsockel",
    "sicher": "hoch",
    "ansichten": [
@@ -2017,6 +2088,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 3,
    "besonders": "EG blassgrün mit dunkelgrünen Ecksteinen, OG Fachwerk dunkelrot mit hellgrüner/weißer Ausfachung, Ziergiebel, Solardach",
    "sicher": "hoch",
    "ansichten": [
@@ -2043,6 +2115,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "kräftig gelb",
    "sicher": "hoch",
    "ansichten": [
@@ -2118,6 +2191,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Königstraße: graubrauner Rauputz, älter",
    "sicher": "niedrig",
    "ansichten": [
@@ -2162,6 +2236,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "niedriges weißes Haus",
    "sicher": "mittel",
    "ansichten": [
@@ -2188,6 +2263,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "weiße Wand mit großer Werbetafel",
    "sicher": "niedrig",
    "ansichten": [
@@ -2212,6 +2288,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Carport/Schuppen aus dunkelrotbraunen Brettern",
    "sicher": "mittel",
    "ansichten": [
@@ -2235,6 +2312,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Schuppen aus dunkelrotbraunen Brettern",
    "sicher": "mittel",
    "ansichten": [
@@ -2264,6 +2342,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Webersche Mühle: EG Bruch-/Werkstein hellgraubeige mit Rundbogenfenstern, OG Fachwerk dunkelrot, Gauben",
    "sicher": "hoch",
    "ansichten": [
@@ -2314,6 +2393,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "braun",
+   "geschosse": 2,
    "besonders": "weiß verputzt, dunkelrote Fensterrahmen, unter der Burg",
    "sicher": "hoch",
    "ansichten": [
@@ -2339,6 +2419,7 @@
    "laeden": false,
    "laden": true,
    "rahmen": "weiss",
+   "geschosse": 3,
    "besonders": "Bertholdstraße 5: rosa, dreigeschossig, Laden mit dunkler Holzfront (Fleischerei)",
    "sicher": "hoch",
    "ansichten": [
@@ -2364,6 +2445,7 @@
    "laeden": false,
    "laden": true,
    "rahmen": "gruen",
+   "geschosse": 3,
    "besonders": "Bertholdstraße: blassgelb, dreigeschossig, grüne Fensterrahmen, Sandsteinsockel, Laden mit dunkler Holzfront (Fleischerei)",
    "sicher": "hoch",
    "ansichten": [
@@ -2389,6 +2471,7 @@
    "laeden": false,
    "laden": true,
    "rahmen": "weiss",
+   "geschosse": 3,
    "besonders": "Bertholdstraße: hellblau, Fensterfaschen rosa, schmiedeeiserne Blumenkonsolen, Laden mit hellblauer Front (Konditorei)",
    "sicher": "hoch",
    "ansichten": [
@@ -2414,6 +2497,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "weiss",
+   "geschosse": 3,
    "besonders": "Bertholdstraße: cremeweiß, dreigeschossig, rotes Dach mit Gauben",
    "sicher": "mittel",
    "ansichten": [
@@ -2438,6 +2522,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "braun",
+   "geschosse": 3,
    "besonders": "Bertholdstraße: creme-beige, dreigeschossig, braune Fensterrahmen und Holztür, Blumenkonsolen",
    "sicher": "mittel",
    "ansichten": [
@@ -2519,6 +2604,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "weiss",
+   "geschosse": 3,
    "besonders": "Bertholdstraße 3: pfirsichfarben, dreigeschossig, weiße Fenster",
    "sicher": "mittel",
    "ansichten": [
@@ -2543,6 +2629,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "weiss",
+   "geschosse": 2,
    "besonders": "Bertholdstraße: weiß, zweigeschossig, großes Holztor zum Hof",
    "sicher": "mittel",
    "ansichten": [
@@ -2567,6 +2654,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "weiss",
+   "geschosse": 2,
    "besonders": "Bertholdstraße: lachsrosa, zweigeschossig, dunkelrotes Ziegeldach mit Gaube",
    "sicher": "mittel",
    "ansichten": [
@@ -2592,6 +2680,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "weiss",
+   "geschosse": 3,
    "besonders": "Walchstraße 2: cremefarben, dreigeschossig, ockerfarbene Lisenen und Fensterfaschen",
    "sicher": "mittel",
    "ansichten": [
@@ -2642,6 +2731,8 @@
    },
    "laeden": false,
    "laden": true,
+   "geschosse": 1,
+   "dachform": "flach",
    "besonders": "Gewerbehalle, graugrünes Trapezblech, unten beige Paneele, Schaufenster",
    "sicher": "hoch",
    "ansichten": [
@@ -2668,6 +2759,7 @@
    "laeden": false,
    "laden": true,
    "rahmen": "weiss",
+   "geschosse": 3,
    "besonders": "rosa-beige, dreigeschossig mit Zwerchhaus, Schaufenster im EG",
    "sicher": "mittel",
    "ansichten": [
@@ -2692,6 +2784,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "braun",
+   "geschosse": 3,
    "besonders": "blass olivgrün, dreigeschossig mit Ziergiebel, braune Fensterrahmen",
    "sicher": "mittel",
    "ansichten": [
@@ -2740,6 +2833,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Haus mit gelbgrünen Balkonbrüstungen",
    "sicher": "niedrig",
    "ansichten": [
@@ -2766,6 +2860,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Villa, EG roter Backstein, OG Fachwerk schwarz/weiß, Türmchengiebel, Schieferdach",
    "sicher": "mittel",
    "ansichten": [
@@ -2813,6 +2908,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "weiß verputzt, Giebel Fachwerk rotbraun (Modell: Halle)",
    "sicher": "hoch",
    "ansichten": [
@@ -2836,6 +2932,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "eingeschossige Garagen und Schuppen, Rauputz hellgrau, Werbetafeln (Modell: zweigeschossiges Haus)",
    "sicher": "mittel",
    "ansichten": [
@@ -2931,6 +3028,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Königstraße: weiß, dunkles Dach mit Solarplatten",
    "sicher": "mittel",
    "ansichten": [
@@ -2953,6 +3051,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Königstraße: klein, ganz Schiefer dunkelgrau, orangerotes Dach",
    "sicher": "hoch",
    "ansichten": [
@@ -3049,6 +3148,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Fachwerk weiß/dunkelbraun, rötliches EG, Solardach",
    "sicher": "mittel",
    "ansichten": [
@@ -3094,6 +3194,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "Schiefer hellgrau (Teil der langen Zeile)",
    "sicher": "mittel",
    "ansichten": [
@@ -3117,6 +3218,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 2,
    "besonders": "EG weißgrauer Rauputz, OG blasscreme, Gaube",
    "sicher": "mittel",
    "ansichten": [
@@ -3199,6 +3301,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Garagenreihe, ocker/braune Tore",
    "sicher": "mittel",
    "ansichten": [
@@ -3224,6 +3327,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Garagenreihe, ocker/braune Tore",
    "sicher": "mittel",
    "ansichten": [
@@ -3293,6 +3397,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "niedrige Garagen/Schuppen aus rotem Backstein (Modell: dreigeschossig)",
    "sicher": "mittel",
    "ansichten": [
@@ -3319,6 +3424,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "ganz Schiefer dunkelgrau, orangerotes Dach",
    "sicher": "hoch",
    "ansichten": [
@@ -3344,6 +3450,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Wellblechschuppen",
    "sicher": "mittel",
    "ansichten": [
@@ -3368,6 +3475,7 @@
    "laeden": false,
    "laden": false,
    "rahmen": "braun",
+   "geschosse": 2,
    "besonders": "weiß, dunkelrotbraune Holzfenster",
    "sicher": "hoch",
    "ansichten": [
@@ -3391,6 +3499,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "lange niedrige Schuppen mit Pappdach (Antiquitäten-Zentrum)",
    "sicher": "niedrig",
    "ansichten": [
@@ -3414,6 +3523,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "lange niedrige Schuppen mit Pappdach",
    "sicher": "niedrig",
    "ansichten": [
@@ -3436,6 +3546,7 @@
    },
    "laeden": false,
    "laden": false,
+   "geschosse": 1,
    "besonders": "Scheune, grauer Rauputz, alte orangerote Biberschwanzziegel (Modell: Schiefer-OG)",
    "sicher": "hoch",
    "ansichten": [

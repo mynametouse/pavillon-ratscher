@@ -25,6 +25,7 @@ EG = {'putz', 'klinker', 'stein', 'verkleidung'}
 HOLZ = {'braun', 'rot', 'schwarz'}
 RAHMEN = {'weiss', 'braun', 'gruen', 'grau', 'blau'}
 SICHER = {'hoch', 'mittel', 'niedrig'}
+DACHFORM = {'sattel', 'walm', 'krueppelwalm', 'mansard', 'flach', 'pult', 'zelt'}
 HEX = re.compile(r'^#[0-9a-f]{6}$')
 
 
@@ -105,6 +106,14 @@ def main(argv):
             errs.append(f'{tag}: fachwerk {r["fachwerk"]!r}')
         if str(r.get('material')).startswith('schiefer') and r.get('schiefer') not in ('hell', 'mittel', 'dunkel'):
             errs.append(f'{tag}: slate without its tone (schiefer: hell, mittel, dunkel)')
+        if 'geschosse' in r and r['geschosse'] not in range(1, 9):
+            errs.append(f'{tag}: geschosse {r["geschosse"]!r} (1–8, the storeys up to the eave)')
+        if 'dachform' in r and r['dachform'] not in DACHFORM:
+            errs.append(f'{tag}: dachform {r["dachform"]!r} not in {sorted(DACHFORM)}')
+        if 'first' in r and r['first'] not in ('trauf', 'giebel'):
+            errs.append(f'{tag}: first {r["first"]!r} (trauf or giebel towards the street)')
+        if r.get('dachform') == 'flach' and (r.get('dach') or {}).get('material') not in ('flach', 'blech'):
+            errs.append(f'{tag}: a flat roof covered with {(r.get("dach") or {}).get("material")}')
         if 'rahmen' in r and r['rahmen'] not in RAHMEN:
             errs.append(f'{tag}: rahmen {r["rahmen"]!r}')
         for k in ('laeden', 'laden'):

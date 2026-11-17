@@ -17,6 +17,9 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
     `fachwerk` (braun, rot, schwarz), `schiefer` (hell, mittel, dunkel), `ausfachung`, `giebel`,
   - `dach` (`material` ziegel, schiefer, blech, flach, faserzement; `farbe` sRGB), `laeden` (Fensterläden), `laden` (Ladenfront),
     `rahmen`, `besonders` (was man sieht, deutsch), `sicher` (hoch, mittel, niedrig), `ansichten` (Blickpunkte).
+  - Runde 3 (begonnen): `geschosse` (Vollgeschosse bis zur Traufe), `dachform` (sattel, walm, krueppelwalm, mansard, flach, pult, zelt),
+    `first` (`giebel`: der Giebel zur Straße, sonst `trauf`) – bisher für 99 Gebäude die Geschosse, 56 davon anders als in den
+    Altstadtdaten (z. B. #331 und #48 eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei Geschosse mit Gauben).
   - `nicht_lesbar`: Gebäude, die eine Ansicht zeigt, aber nicht lesbar (Bäume, Hecke, unscharf) – mit Grund.
   - Stand: Runde 1 (Hildburghäuser, Suhler, Ilmenauer Straße, Markt; 71 Ansichten), Königstraße (16) und Bertholdstraße (zwei
     360°-Ansichten, je 6 Richtungen): 143 Gebäude gelesen (65 hoch, 55 mittel, 23 niedrig sicher), 29 als nicht lesbar benannt;
@@ -64,22 +67,29 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   zeichnet Modellbilder von den Blickpunkten in `views_ratscher.json` (die Standorte der freien Panoramax-Fotos). Unit-Tests
   `viz3/test/unit/schleusingen_ansicht.test.mjs`.
 
-## Für `welt/schleusingen.js` (nach dem Merge von `feat/gebaeude`, mit dem Grenzland-Chat abgesprochen)
+## Ins Spiel über `FASSADE` (sobald `feat/gebaeude` in `src` ist; abgesprochen mit dem Grenzland-Chat, ohne Zeile in `welt/schleusingen.js`)
 
-1. Der Haken: in `build()` nach `b.st = styleOf(b, i);` die Zeile `if (window.SAFASS) SAFASS.apply(b); // feat/schleusingen-ansicht` –
-   und in `building()` der Schiefer-Ton im Packwert: `pk = … + 128 * o.shut + 512 * (o.slate || 0)` (wie im Dorf; sonst ist Schiefer
-   immer blauschwarz).
-2. Geometrie: als Halle gezeichnet, aber Häuser: 308 (Hildburghäuser Straße 5), 349 (langes Fachwerkhaus), 579, 430 – und 310
-   (Bertholdstraße 22: ein Grundriss für zwei alte dreigeschossige Häuser mit Läden, dahinter ein Glasdach); 580 und 717 sind
-   eingeschossige Garagen (im Modell zwei-/dreigeschossig); Flachdächer (Schule 80, Garagen, Hallen, Autohäuser, 417) haben
-   Satteldach-Geometrie (SALOOK zeichnet sie dann als Faserzement statt Kies). Die Daten tragen dafür `art` und `besonders`.
-3. Die Schule an der Ilmenauer Straße (80): moderner zweigeschossiger Flachdachbau, weiß mit dunkelgrauen senkrechten Bändern.
-4. Die Gottesackerkirche (72): Sandstein, Rundbogenfenster – SAFASS nimmt die Hausfenster weg, die Bögen wären Sache der Stadt.
-5. Der Marktbrunnen trägt seinen grauen Winterdeckel immer (nicht nach Datum); die Ansicht vom Mai zeigt das offene Becken mit Wasser –
+- `tools/schleusingen-ansicht/ansicht.py` schreibt aus `fassaden.json` die Datei `viz3/extra/schleusingen-ansicht/dist/fassade/ansicht.json`
+  im Format von `FASSADE` (`docs/features/gebaeude.md`, „Ansicht je Gebäude“): Schlüssel `#i`, `art` (haus, halle, schuppen, scheune,
+  kirche, schule – Tür und Stufen eines Hauses auch dort, wo die Stadt eine Halle zeichnete), `material`, `farbe`, `schieferTon`,
+  `fachwerkTon`, `laeden`, `rahmen`, `achse`, `dach` (`material`, `farbe`, bei Flachdächern `form: "flach"`). `check.py` prüft, dass die
+  Datei aus den Daten gemacht ist.
+- `FASSADE` lädt erst die kleine `gebaeude/ansicht.json` von `gebaeude` und dann diese Datei darüber, Schlüssel für Schlüssel – deshalb
+  übernimmt `ansicht.py` deren Felder (Geschosse von #80, #580, #717, das Flachdach der Schule) und legt die gelesenen darüber.
+- Eigene Entscheidungen: Klinker als Putz in der Klinkerfarbe (Stil 9 würde als Bretter gezeichnet, s. u.); Schiefer und helle oder
+  farbige Schindeln als Schiefer in der gelesenen Farbe (`schieferTon` 3); bei Schiefer oder Fachwerk über dem Erdgeschoss die Farbe des
+  Erdgeschosses. **#72** (die Kirche an der Ilmenauer Straße): unser Dach gilt über dem Schieferdach von `gebaeude` – die Ansicht von der
+  Straße (Oktober 2022) zeigt rotbraune Ziegel.
+- SAFASS und SALOOK (das Aussehen in diesem Zweig, bevor es den Weg gab) gehen dann aus dem Spiel: ihre Aufgabe übernimmt `FASSADE`.
+
+## Offen für `gebaeude` und den Kern
+
+1. Der Marktbrunnen trägt seinen grauen Winterdeckel immer (nicht nach Datum); die Ansicht vom Mai zeigt das offene Becken mit Wasser –
    Vorschlag: zugedeckt etwa November bis März (nach der Spielzeit), sonst offen mit Wasser.
-6. Der graue Klotz am Markt: ein ETHOS-„Turm“ aus `gebaeude/gebaeude.js` – `feat/gebaeude` lässt sechs solche weg.
-7. Für den Kern (`world/village.js`, nicht Teil dieses Zweigs): der Zweig `st == 9.0` (Klinker) im Fassaden-Shader wird nie erreicht –
-   `barn` (6,5 < st < 9,5) fängt Stil 9 vorher ab; SALOOK umgeht es.
+2. Die Kirche #72: Rundbogenfenster; die Schule #80: dunkelgraue senkrechte Bänder – beides kennt der Fassaden-Shader nicht.
+3. #310 (Bertholdstraße 22): ein Grundriss für mehrere Häuser (ockergelb, dazu ein moderner Glasbau an der Ecke; dahinter ein Glasdach).
+4. Für den Kern (`world/village.js`, nicht Teil dieses Zweigs): der Zweig `st == 9.0` (Klinker) im Fassaden-Shader wird nie erreicht –
+   `barn` (6,5 < st < 9,5) fängt Stil 9 vorher ab.
 
 ## Abgleich und Runde 3 (geplant, Falko 19:39: Schritt für Schritt zur besten Übereinstimmung)
 
@@ -97,7 +107,9 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
 
 - Runde 2: die 360°-Ansichten im Schlosshof (`p0`–`p4`) zeigen nur das Wahrzeichen; `p7` (Spielplatz an der
   Johann-Sebastian-Bach-Straße, am Südrand der Stadtdaten) ließ sich nicht verorten – die Häuser südlich davon fehlen in den Daten –,
-  nicht gelesen; Mapillary in der Altstadt: noch keine Ansichten.
+  nicht gelesen. Mapillary in der Altstadt (18 Ansichten, Nov. 2016, aus dem Auto): die Standorte liegen bis zu Dutzende Meter daneben,
+  eine Blickrichtung fehlt – `ansicht-aufnahme` liefert Blickrichtung und Straßenseite nach; was sich dann nicht verorten lässt, bleibt
+  hier offen. `m013`–`m017` zeigen nur die Burg.
 - Ratscher (Daten in eigener Datei, Häuser der Dorfmitte nach Falkos Video nur mit Unterschieden): die 109 freien Panoramax-Fotos
   (2020/2025) stehen alle auf Wegen außerhalb des Dorfs – das nächste rund 160 m von der nächsten Hauswand –, keine Fassade
   lesbar; Mapillary an der L 3004 (Ostrand) steht noch aus.
