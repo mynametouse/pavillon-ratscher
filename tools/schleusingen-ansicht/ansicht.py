@@ -83,6 +83,8 @@ def look(r):
             L['dach']['form'] = form   # FASSADE builds 'flach'; the other forms are data for later
     if r.get('geschosse'):
         L['geschosse'] = r['geschosse']
+    if r.get('tuer') is not None:
+        L['tuer'] = r['tuer']         # the door's type as seen
     if r.get('first'):
         L['first'] = r['first']        # gable ('giebel') or eave ('trauf') towards the street – data for later
     if art == 'schule':

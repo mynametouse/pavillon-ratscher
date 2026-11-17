@@ -831,7 +831,8 @@
 "dach": {
 "material": "ziegel",
 "farbe": "#b5553a"
-}
+},
+"tuer": 4
 },
 "#349": {
 "art": "haus",
@@ -900,7 +901,8 @@
 "dach": {
 "material": "ziegel",
 "farbe": "#b5553a"
-}
+},
+"tuer": 4
 },
 "#361": {
 "art": "haus",
@@ -1230,7 +1232,8 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 3
+"geschosse": 3,
+"tuer": 0
 },
 "#504": {
 "art": "haus",
@@ -1242,7 +1245,8 @@
 "material": "ziegel",
 "farbe": "#8e4632"
 },
-"geschosse": 3
+"geschosse": 3,
+"tuer": 0
 },
 "#505": {
 "art": "haus",
@@ -1254,7 +1258,8 @@
 "material": "ziegel",
 "farbe": "#8e4632"
 },
-"geschosse": 3
+"geschosse": 3,
+"tuer": 6
 },
 "#506": {
 "art": "haus",
@@ -1278,7 +1283,8 @@
 "material": "ziegel",
 "farbe": "#b5553a"
 },
-"geschosse": 3
+"geschosse": 3,
+"tuer": 1
 },
 "#508": {
 "art": "haus",
@@ -1289,7 +1295,8 @@
 "dach": {
 "material": "ziegel",
 "farbe": "#b5553a"
-}
+},
+"tuer": 1
 },
 "#510": {
 "art": "haus",
@@ -1395,7 +1402,8 @@
 "material": "ziegel",
 "farbe": "#5e3b2f"
 },
-"geschosse": 3
+"geschosse": 3,
+"tuer": 4
 },
 "#555": {
 "art": "haus",

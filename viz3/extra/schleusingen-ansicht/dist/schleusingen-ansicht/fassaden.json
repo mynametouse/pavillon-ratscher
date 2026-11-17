@@ -1856,6 +1856,7 @@
    "laeden": false,
    "laden": true,
    "rahmen": "weiss",
+   "tuer": 4,
    "besonders": "Bertholdstraße 19 (Ecke Walchstraße): elfenbeinfarben, Eckeingang unter einem Bogen auf zwei Sandsteinsäulen, Laden (Optiker)",
    "sicher": "hoch",
    "ansichten": [
@@ -2018,6 +2019,7 @@
    "laeden": false,
    "laden": true,
    "rahmen": "weiss",
+   "tuer": 4,
    "besonders": "Klosterstraße 14: blass mintgrün, Laden (Apotheke)",
    "sicher": "mittel",
    "ansichten": [
@@ -2758,6 +2760,7 @@
    "laden": true,
    "rahmen": "weiss",
    "geschosse": 3,
+   "tuer": 0,
    "besonders": "Bertholdstraße 5: rosa, dreigeschossig, Laden mit dunkler Holzfront (Fleischerei)",
    "sicher": "hoch",
    "ansichten": [
@@ -2784,6 +2787,7 @@
    "laden": true,
    "rahmen": "gruen",
    "geschosse": 3,
+   "tuer": 0,
    "besonders": "Bertholdstraße: blassgelb, dreigeschossig, grüne Fensterrahmen, Sandsteinsockel, Laden mit dunkler Holzfront (Fleischerei)",
    "sicher": "hoch",
    "ansichten": [
@@ -2810,6 +2814,7 @@
    "laden": true,
    "rahmen": "weiss",
    "geschosse": 3,
+   "tuer": 6,
    "besonders": "Bertholdstraße: hellblau, Fensterfaschen rosa, schmiedeeiserne Blumenkonsolen, Laden mit hellblauer Front (Konditorei)",
    "sicher": "hoch",
    "ansichten": [
@@ -2861,6 +2866,7 @@
    "laden": false,
    "rahmen": "braun",
    "geschosse": 3,
+   "tuer": 1,
    "besonders": "Bertholdstraße: creme-beige, dreigeschossig, braune Fensterrahmen und Holztür, Blumenkonsolen",
    "sicher": "mittel",
    "ansichten": [
@@ -2888,6 +2894,7 @@
    "laeden": false,
    "laden": true,
    "rahmen": "braun",
+   "tuer": 1,
    "besonders": "Bertholdstraße: großer Laden mit dunkelbrauner Holzfront (Eisenwaren, Hausrat, Spielwaren), darüber creme",
    "sicher": "mittel",
    "ansichten": [
@@ -3124,6 +3131,7 @@
    "laden": true,
    "rahmen": "weiss",
    "geschosse": 3,
+   "tuer": 4,
    "besonders": "rosa-beige, dreigeschossig mit Zwerchhaus, Schaufenster im EG",
    "sicher": "mittel",
    "ansichten": [

@@ -18,7 +18,8 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   - `dach` (`material` ziegel, schiefer, blech, flach, faserzement; `farbe` sRGB), `laeden` (Fensterläden), `laden` (Ladenfront),
     `rahmen`, `besonders` (was man sieht, deutsch), `sicher` (hoch, mittel, niedrig), `ansichten` (Blickpunkte).
   - Runde 3 (begonnen): `geschosse` (Vollgeschosse bis zur Traufe), `dachform` (sattel, walm, krueppelwalm, mansard, flach, pult, zelt),
-    `first` (`giebel`: der Giebel zur Straße, sonst `trauf`) – bisher für 117 Gebäude die Geschosse, 65 davon anders als in den
+    `first` (`giebel`: der Giebel zur Straße, sonst `trauf`), `tuer` (Art der Haustür wie in `FASSADE`, 0–7, wo die Ansicht nah ist) –
+    bisher für 117 Gebäude die Geschosse, 65 davon anders als in den
     Altstadtdaten (z. B. #331 und #48 eineinhalbgeschossig statt drei Geschosse, die Häuser am Markt Nord und Ost zwei Geschosse mit
     Gauben).
   - `nicht_lesbar`: Gebäude, die eine Ansicht zeigt, aber nicht lesbar (Bäume, Hecke, unscharf) – mit Grund.
@@ -68,8 +69,9 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
   im Format von `FASSADE` (`docs/features/gebaeude.md`, „Ansicht je Gebäude“): Schlüssel `#i`, `art` (haus, halle, schuppen, scheune,
   kirche, schule – Tür und Stufen eines Hauses auch dort, wo die Stadt eine Halle zeichnete), `material`, `farbe`, `schieferTon`,
   `fachwerkTon`, `laeden`, `rahmen`, `achse`, `dach` (`material`, `farbe`, `form`: `flach` baut `FASSADE`, die anderen Formen sind
-  Daten für später), `geschosse` (die Stadt hebt oder senkt Traufe und Dach), `first` (Daten für später). `check.py` prüft, dass die
-  Datei aus den Daten gemacht ist.
+  Daten für später), `geschosse` (die Stadt hebt oder senkt Traufe und Dach), `tuer`, `first` (Daten für später); für Ratschers Häuser
+  aus `ratscher.json` die Schlüssel `ratscher:<id>` (aufs Dorf gemalt, Höhen bleiben). `check.py` prüft, dass die Datei aus den Daten
+  gemacht ist.
 - `FASSADE` lädt erst die kleine `gebaeude/ansicht.json` von `gebaeude` und dann diese Datei darüber, Schlüssel für Schlüssel – deshalb
   übernimmt `ansicht.py` deren Felder (Geschosse von #80, #580, #717, das Flachdach der Schule) und legt die gelesenen darüber.
 - Eigene Entscheidungen: Klinker als Putz in der Klinkerfarbe (Stil 9 `BRICK` fällt im Fassaden-Shader in den Zweig der Scheunen und

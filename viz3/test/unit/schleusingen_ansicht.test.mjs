@@ -89,6 +89,7 @@ test('the choices of the converter', () => {
     if (r.dach.material === 'flach' || r.dachform === 'flach')
       assert.equal(L.dach.form, 'flach', `${tag}: a flat roof is built flat`);
     if (r.geschosse) assert.equal(L.geschosse, r.geschosse, `${tag}: the storeys read`);
+    if (r.tuer !== undefined) assert.equal(L.tuer, r.tuer, `${tag}: the door read`);
     assert.equal(L.dach.farbe, r.dach.farbe, tag);
   }
   assert.equal(LOOKS['#308'].art, 'haus', 'Hildburghäuser Straße 5: a house, not a hall');
