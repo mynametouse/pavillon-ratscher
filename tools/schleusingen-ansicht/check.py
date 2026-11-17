@@ -95,7 +95,7 @@ def main(argv):
         if r.get('wand_quelle') not in ('gemessen', 'geschätzt'):
             errs.append(f'{tag}: wand_quelle')
         d = r.get('dach') or {}
-        if d.get('material') not in DACH or not HEX.match(str(d.get('farbe', ''))):
+        if d.get('material') not in DACH or not HEX.match(str(d.get('farbe', ''))) or d.get('farbe_quelle', 'Ansicht') not in ('Ansicht', 'Luftbild 2024'):
             errs.append(f'{tag}: dach {d}')
         if 'eg' in r and (r['eg'].get('material') not in EG or not HEX.match(str(r['eg'].get('farbe', '')))):
             errs.append(f'{tag}: eg {r["eg"]}')

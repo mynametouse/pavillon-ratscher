@@ -22,6 +22,40 @@ SITE = os.environ.get('WELT_SITE', 'https://mynametouse.github.io/pavillon-ratsc
 DIST = os.path.join(lib.ROOT, 'viz3', 'dist', 'welt-test')
 XF = json.load(open(os.path.join(lib.ROOT, 'viz3', 'manifests.json')))['geoman']['xf']
 MARKT = (-1084.7, 1241.9)
+# section vorschau: the data applied in the page to the town's wall and roof meshes (attributes only: style, colour, pack, flags, bays; roof kind
+# and colour by footprint) – what the hook in welt/schleusingen.js will show, for pictures before it exists (test only, nothing shipped)
+VORSCHAU_JS = """(() => {
+  const W = SCHL.meshes.find(m => m.name === 'schleusingen walls'), R = SCHL.meshes.find(m => m.name === 'schleusingen roofs');
+  const byI = new Map(SCHL.bld.map(b => [b.i, b])), looks = new Map();
+  for (const [i, b] of byI) { const r = SAFASS.record(i); if (r && SALOOK.matches(r, b.cx, b.cy)) looks.set(i, { o: SALOOK.look(r, b.st), rf: SALOOK.roof(r, !!b.fl), b }); }
+  const g = W.geometry, aW = g.attributes.aW, aV = g.attributes.aV, aC = g.attributes.aC, aD = g.attributes.aD;
+  let nv = 0;
+  for (let v = 0; v < aW.count; v++) {
+    const L = looks.get(Math.floor(Math.round(aW.getW(v)) / 4)); if (!L) continue; const o = L.o;
+    const blind = Math.abs(aV.getY(v) - 0.5) < 1e-3; // a party wall: half-timbering there is plaster (as building() does)
+    aV.setW(v, blind && (o.style === 5 || o.style === 6) ? 0 : o.style);
+    aC.setXYZW(v, o.col[0], o.col[1], o.col[2], o.timber + 4 * o.frame + 16 * o.door + 128 * o.shut + 512 * (o.slate || 0));
+    const fl = Math.round(aD.getW(v)); aD.setW(v, (fl & 1) + (o.shutters ? 2 : 0) + (o.orn ? 4 : 0) + (fl & 8));
+    if (aD.getY(v) > 0 || aV.getY(v) > 0.5) aD.setZ(v, o.sp);
+    nv++;
+  }
+  aV.needsUpdate = aC.needsUpdate = aD.needsUpdate = true;
+  const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  const inP = (f, x, y) => { let c = false; for (let p = 0, q = f.length - 2; p < f.length; q = p, p += 2) { const xi = f[p], yi = f[p + 1], xj = f[q], yj = f[q + 1]; if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; };
+  const rg = R.geometry, P = rg.attributes.position, aR = rg.attributes.aR; let nr = 0;
+  const grid = new Map(); for (const [i, L] of looks) { const f = L.b.f; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (let k = 0; k < f.length; k += 2) { x0 = Math.min(x0, f[k]); x1 = Math.max(x1, f[k]); y0 = Math.min(y0, f[k + 1]); y1 = Math.max(y1, f[k + 1]); }
+    for (let gx = Math.floor((x0 - 1) / 8); gx <= Math.floor((x1 + 1) / 8); gx++) for (let gy = Math.floor((y0 - 1) / 8); gy <= Math.floor((y1 + 1) / 8); gy++) { const key = gx + ',' + gy; if (!grid.has(key)) grid.set(key, []); grid.get(key).push(L); } }
+  for (let v = 0; v < P.count; v += 3) {
+    const x = (P.getX(v) + P.getX(v + 1) + P.getX(v + 2)) / 3, y = -(P.getZ(v) + P.getZ(v + 1) + P.getZ(v + 2)) / 3;
+    const cand = grid.get(Math.floor(x / 8) + ',' + Math.floor(y / 8)); if (!cand) continue;
+    const L = cand.find(c => inP(c.b.f, x, y)) || cand.find(c => { const f = c.b.f; for (let k = 0; k < f.length; k += 2) if (Math.hypot(f[k] - x, f[k + 1] - y) < 1.2) return true; return false; });
+    if (!L || !L.rf) continue;
+    for (let w = v; w < v + 3; w++) { const k = Math.round(aR.getX(w)); if (k > 13 && k < 17) continue; aR.setXYZW(w, k <= 4 ? L.rf.rk : k, lin(L.rf.rc[0]), lin(L.rf.rc[1]), lin(L.rf.rc[2])); }
+    nr++;
+  }
+  aR.needsUpdate = true; if (window.markDirty) markDirty(true);
+  return { looks: looks.size, wallVerts: nv, roofTris: nr };
+})()"""
 
 
 def utm(x, y):
@@ -84,7 +118,7 @@ if 'data' in want:
     ck('fassaden.json is valid (tools/schleusingen-ansicht/check.py)', r.returncode == 0, (r.stdout + r.stderr).strip()[-400:])
 
 # ---------------------------------------------------------------- in the browser -----------------------------------------------------
-BROWSER = [s for s in ('fassaden', 'markt', 'bilder') if s in want]
+BROWSER = [s for s in ('fassaden', 'markt', 'bilder', 'vorschau') if s in want]
 if 'ratscher' in want:
     # Ratscher's houses (world/village.js) with their walls and looks, and model pictures from the viewpoints of
     # viz3/extra/schleusingen-ansicht/views_ratscher.json (the village loads at the start)
@@ -205,7 +239,10 @@ if BROWSER:
                     E(f"GAME.setView3(false, true); GAME.view({x}, {y}, KERN.ground({x}, {y}) + {h}, {yaw}, {pitch}, 62)"); E("GAME.step(0.05)")
                     E(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + {h}, {yaw}, {pitch}, 62)")
                 lib.shot(pg, OUT, nm)
-        if 'bilder' in want:
+        if 'vorschau' in want:
+            pv = J(VORSCHAU_JS)
+            ck('the preview applies the data to the town\'s meshes', pv['looks'] >= 100 and pv['wallVerts'] > 1000 and pv['roofTris'] > 500, json.dumps(pv))
+        if 'bilder' in want or 'vorschau' in want:
             done = 0
             for v in views:
                 x, y = v['x'], v['y']
@@ -213,7 +250,7 @@ if BROWSER:
                 settle(60)
                 E(f"GAME.view({x}, {y}, KERN.ground({x}, {y}) + {v['eye']}, {v['yaw']}, {v['pitch']}, {v['vfov']})")
                 d = E("(() => { GAME.shot(); return document.querySelector('#stage canvas').toDataURL('image/jpeg', 0.88); })()")
-                open(os.path.join(OUT, v['name'] + '.jpg'), 'wb').write(base64.b64decode(d.split(',')[1]))
+                open(os.path.join(OUT, v['name'] + ('_vorschau' if 'vorschau' in want else '') + '.jpg'), 'wb').write(base64.b64decode(d.split(',')[1]))
                 cam = J(f"({{ z: KERN.ground({x}, {y}) }})")
                 json.dump({**v, **cam}, open(os.path.join(OUT, v['name'] + '.json'), 'w'))
                 done += 1

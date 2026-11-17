@@ -16,7 +16,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -38,7 +39,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -58,7 +60,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -80,7 +83,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": true,
    "laden": false,
@@ -102,7 +106,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -124,7 +129,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -146,7 +152,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -167,7 +174,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -189,7 +197,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -209,7 +218,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -232,7 +242,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -258,7 +269,8 @@
    "fachwerk": "braun",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -287,7 +299,8 @@
    "fachwerk": "schwarz",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -313,7 +326,8 @@
    "fachwerk": "schwarz",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -334,7 +348,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -355,7 +370,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -379,7 +395,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -403,7 +420,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#4f4d4c"
+    "farbe": "#4f4d4c",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -425,7 +443,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -447,7 +466,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -470,7 +490,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -494,7 +515,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -518,7 +540,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -541,7 +564,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -565,7 +589,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#4f4d4c"
+    "farbe": "#4f4d4c",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -586,7 +611,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -606,7 +632,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -626,7 +653,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#4f4d4c"
+    "farbe": "#4f4d4c",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -647,7 +675,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -668,7 +697,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#4f4d4c"
+    "farbe": "#4f4d4c",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -690,7 +720,8 @@
    "giebel": "fachwerk",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -712,7 +743,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -735,7 +767,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -759,7 +792,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -783,7 +817,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#4f4d4c"
+    "farbe": "#4f4d4c",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -807,7 +842,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -835,7 +871,8 @@
    },
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -864,7 +901,8 @@
    "fachwerk": "braun",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -889,7 +927,8 @@
    "giebel": "schiefer",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -912,7 +951,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -934,7 +974,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -956,7 +997,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -978,7 +1020,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1001,7 +1044,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1024,7 +1068,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1046,7 +1091,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1068,7 +1114,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1089,7 +1136,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1112,7 +1160,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1135,7 +1184,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1158,7 +1208,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1182,7 +1233,8 @@
    "schiefer": "hell",
    "dach": {
     "material": "ziegel",
-    "farbe": "#4f4d4c"
+    "farbe": "#4f4d4c",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1202,7 +1254,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1223,7 +1276,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1245,7 +1299,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1268,7 +1323,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1291,7 +1347,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1314,7 +1371,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1337,7 +1395,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1360,7 +1419,8 @@
    "fachwerk": "rot",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1382,7 +1442,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1404,7 +1465,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1427,7 +1489,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1450,7 +1513,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1475,7 +1539,8 @@
    "fachwerk": "braun",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1496,7 +1561,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1521,7 +1587,8 @@
    "fachwerk": "schwarz",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1547,7 +1614,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -1569,7 +1637,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1593,7 +1662,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1616,7 +1686,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1636,7 +1707,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1658,7 +1730,8 @@
    "schiefer": "mittel",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1687,7 +1760,8 @@
    "fachwerk": "rot",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1712,7 +1786,8 @@
    "schiefer": "hell",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1734,7 +1809,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1763,7 +1839,8 @@
    "fachwerk": "rot",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1788,7 +1865,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#4f4d4c"
+    "farbe": "#4f4d4c",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1810,7 +1888,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1830,7 +1909,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1851,7 +1931,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1871,7 +1952,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1896,7 +1978,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1919,7 +2002,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1941,7 +2025,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1969,7 +2054,8 @@
    "fachwerk": "rot",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -1993,7 +2079,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#4f4d4c"
+    "farbe": "#4f4d4c",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2016,7 +2103,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2040,7 +2128,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2060,7 +2149,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
@@ -2084,7 +2174,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2105,7 +2196,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2130,7 +2222,8 @@
    "fachwerk": "schwarz",
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2153,7 +2246,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2175,7 +2269,8 @@
    "fachwerk": "rot",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2197,7 +2292,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2220,7 +2316,8 @@
    "schiefer": "mittel",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2243,7 +2340,8 @@
    "fachwerk": "rot",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2264,7 +2362,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2284,7 +2383,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#4f4d4c"
+    "farbe": "#4f4d4c",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2305,7 +2405,8 @@
    "schiefer": "dunkel",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2325,7 +2426,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2345,7 +2447,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2366,7 +2469,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2394,7 +2498,8 @@
    "fachwerk": "braun",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2416,7 +2521,8 @@
    "schiefer": "hell",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2437,7 +2543,8 @@
    "schiefer": "hell",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2459,7 +2566,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2486,7 +2594,8 @@
    },
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2513,7 +2622,8 @@
    },
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2536,7 +2646,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2560,7 +2671,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2583,7 +2695,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2606,7 +2719,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#8e4632"
+    "farbe": "#8e4632",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2626,7 +2740,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2651,7 +2766,8 @@
    "schiefer": "mittel",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2675,7 +2791,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "blech",
-    "farbe": "#8c9090"
+    "farbe": "#8c9090",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2697,7 +2814,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "ziegel",
-    "farbe": "#5e3b2f"
+    "farbe": "#5e3b2f",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2720,7 +2838,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2742,7 +2861,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2763,7 +2883,8 @@
    "wand_quelle": "geschätzt",
    "dach": {
     "material": "ziegel",
-    "farbe": "#b5553a"
+    "farbe": "#b5553a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2785,7 +2906,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "schiefer",
-    "farbe": "#3a3d44"
+    "farbe": "#3a3d44",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2811,7 +2933,8 @@
    "ausfachung": "ziegel",
    "dach": {
     "material": "ziegel",
-    "farbe": "#7c3127"
+    "farbe": "#7c3127",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": false,
@@ -2832,7 +2955,8 @@
    "wand_quelle": "gemessen",
    "dach": {
     "material": "flach",
-    "farbe": "#55555a"
+    "farbe": "#55555a",
+    "farbe_quelle": "Ansicht"
    },
    "laeden": false,
    "laden": true,
