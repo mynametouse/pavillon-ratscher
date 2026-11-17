@@ -170,6 +170,11 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `HAEUSER`, `HHEUTE`, `HGAST` | haeuser/ | Häuser von Ratscher von innen im normalen Spiel (V18p): Tür über `KERN.act` („Hineingehen · E“), Einrichtung der Zombie-Nacht (`ZINNEN.mount(id, {look, still: true})`), Stil „heute“ (`HHEUTE`), Dorfbewohner zu Hause (`HGAST`, liest `DLIFE`), Fülllicht `haeuser:fill` (geliehen, Priorität 0); `pav-haeuser-v1`, `pav-haeuser-hinweis`; Ereignisse `haeuser:enter`, `haeuser:leave` (`docs/features/haeuser.md`) |
 | `LINNEN`, `LIPLAN`, `LIMARKT`, `LIBAU`, `LIHAUS` | laeden/innen*.js | Läden von innen (V18p): Schiebetüren nach Öffnungszeiten, Räume beim Näherkommen gebaut (unbeleuchtet, Licht eingebacken; höchstens 2 Läden, Telefon 1 und ≤ 120 000 Dreiecke), Haken in `laeden/laeden.js` nur mit `LAEDEN.ownLeaves`; `?noinnen` (`docs/features/laeden-innen.md`) |
 | `SINNEN`, `SIPLAN`, `SILADEN` | schleusingen/ | Häuser von Schleusingen von innen (V18q): `SIPLAN` (rein) macht aus einem Gebäude von `welt/schleusingen.js` einen Datensatz wie `VILLAGE.bld` (Nummern ab 900000, Regeln, Art, Stil, Treppenhaus und Wohnungen, Verkaufsraum), `SILADEN` (rein) die Läden hinter den Schildern, `SINNEN` den Index in Scheiben, die Türen als Quelle von `HAEUSER` (`HAEUSER.addSource`) und des Baukastens (`ZIPLAN.source`, `room.own`), Läden über `LINNEN.drawPlan`; Ort-Anbieter Vorrang 96; Ereignis `schleusingen-innen:ready`; Aktionen `si:zu:<id>:<i>`, `si:personal:<id>`, `si:geschlossen`; Szene `schleusingen-innen` (`docs/features/schleusingen-innen.md`) |
+| `OEFFNUNG`, `WAREN`, `GELD`, `INVENTAR`, `OEFFENTLICH` | einkauf/ | Einkaufen und Öffnungszeiten (V18v): Öffnungszeiten aller Läden und öffentlichen Gebäude, Waren mit Preis, die Geldbörse des freien Spiels (im Grenzland das Geld des Modus), das Inventar mit Fenster; öffentliche Gebäude mit Personal und Möglichkeiten (`docs/features/laeden-leben.md`) |
+| `LLPLAN`, `LLEBEN`, `LKAUF`, `WBILD`, `MUSEUM`, `KIRCHE` | laeden/ | Läden belebt (V18v): Kassierer, Theken, Kunden nach Stunde und Wochentag, nur im Laden, den man betritt; Kassieren; Packungen als Atlas; das Museum in der Bertholdsburg, St. Johannis von innen |
+| `FASSADE`, `FAUDIT` | fassade/ | Gebäude von außen plausibel (V18v): Prüfung `FASSADE.audit(ort)` (Türen, Fenster, Durchgänge, Höfe), Türen, Fenster an freien Brandwänden, Durchgänge in Höfe, Stufen; Aussehen je Gebäude über `fassade/ansicht.json` oder `FASSADE.ansicht(key, look)` (`docs/features/gebaeude.md`); `?nofassade` zeigt den alten Stand |
+| `VOEGEL` | tiere/voegel.js | Vögel (V18v): Tauben am Markt, Spatzen, Krähen, Schwalben im Sommer, Starenschwärme im Herbst – überall, nah am Spieler |
+| `GLRUF`, `GLRUFDATA`, `GLJOBS`, `GLJOBSDATA`, `GLLINIEN`, `GLLDATA`, `GLRAST`, `GLALLTAG`, `GLALDATA`, `GLFESTE`, `GLFDATA` | grenzland/ | Grenzland, Kapitel 2 Etappe 1 (V18v): Ruf je Ort und Gerede, Nebenjobs und Nebenquests; Verkehr mit Ziel und Begegnungen; die Leute nach Uhrzeit und die Feste (`docs/features/grenzland-ruf.md`, `-strasse.md`, `-alltag.md`) |
 
 ## 7 Assets
 
@@ -215,6 +220,8 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | `pav-loadlog`, `pav-texlevel` | Ladeprotokoll des letzten Versuchs; halbe Texturen nach abgebrochenem Laden am Telefon |
 | `pav-haeuser-v1`, `pav-haeuser-hinweis` | Häuser von innen (V18p): das Haus, in dem gespeichert wurde, und der Platz vor seiner Tür (nach dem Laden steht man dort); Hinweis „Ausgedacht“ schon gezeigt; seit V18q auch die Häuser von Schleusingen (Nummern ab 900000) |
 | `pav-schl-innen-hinweis` | Häuser von Schleusingen von innen (V18q): Hinweis „Ausgedacht“ schon gezeigt |
+| `pav-geld-v1`, `pav-inventar-v1` | Geldbörse und Inventar des Einkaufs (V18v, `einkauf/`) |
+| `pav-gl-ruf-v1`, `pav-gl-jobs-v1` | Grenzland: der Ruf je Ort und die erledigten Nebenjobs und -quests (V18v) |
 
 Neue Schlüssel: Präfix `pav-`, Versionssuffix bei Spielständen (`-v1`), in `core/save.js` und hier eintragen.
 
