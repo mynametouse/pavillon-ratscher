@@ -332,9 +332,14 @@ with lib.browser() as b:
                 const x = bx - 4, y = by + 4; GAME.view(x, y, KERN.ground(x, y) + 1.65, 285, 2, 62); GAME.step(0.3); })()""")
             settle()
             lib.shot(pg, OUT, 'schleusingen_markt_suedost')
-            fd = json.loads(E("""JSON.stringify([236, 314].map(i => { const b = SCHL.bld.find(q => q.i === i); if (!b) return null; let k = 0;
-                b.F.forEach((f, j) => { if (f[9] < b.F[k][9] && !(f[8] & 1)) k = j; }); const f = b.F[k], L = Math.hypot(f[2] - f[0], f[3] - f[1]), nx = (f[3] - f[1]) / L, ny = -(f[2] - f[0]) / L, d = Math.min(30, 8 + L * 0.7);
-                return { i, a: b.a || '', n: b.n || '', style: b.st.style, shutters: b.st.shutters, col: b.st.col.map(v => +v.toFixed(3)), x: (f[0] + f[2]) / 2 + nx * d, y: (f[1] + f[3]) / 2 + ny * d, yaw: Math.atan2(-nx, -ny) * 180 / Math.PI }; }))"""))
+            # (from the longest free wall near a street, as far off as fits – not inside another building: a carport roof hid the school)
+            fd = json.loads(E("""JSON.stringify([236, 314].map(i => { const b = SCHL.bld.find(q => q.i === i); if (!b) return null; let k = -1, best = -1e9;
+                b.F.forEach((f, j) => { const L = Math.hypot(f[2] - f[0], f[3] - f[1]), sc = L - (f[9] > 25 ? 1000 : 0); if (!(f[8] & 1) && sc > best) { best = sc; k = j; } });
+                if (k < 0) return null; const f = b.F[k], L = Math.hypot(f[2] - f[0], f[3] - f[1]), nx = (f[3] - f[1]) / L, ny = -(f[2] - f[0]) / L, mx = (f[0] + f[2]) / 2, my = (f[1] + f[3]) / 2;
+                const inR = (f, x, y) => { let c = false; for (let p = 0, q = f.length - 2; p < f.length; q = p, p += 2) if ((f[p + 1] > y) !== (f[q + 1] > y) && x < ((f[q] - f[p]) * (y - f[p + 1])) / (f[q + 1] - f[p + 1]) + f[p]) c = !c; return c; };
+                const inB = (x, y) => SCHL.bld.some(q => inR(q.f, x, y)) || [...((window.GEB && GEB.Z && GEB.Z.cells.values()) || [])].some(c => c.data && c.data.b.some(q => q.st && inR(q.f, x, y)));
+                let d = 14; for (const t of [Math.min(32, 10 + L * 0.6), 26, 20, 14, 9]) if (!inB(mx + nx * t, my + ny * t)) { d = t; break; }
+                return { i, a: b.a || '', n: b.n || '', style: b.st.style, shutters: b.st.shutters, col: b.st.col.map(v => +v.toFixed(3)), x: mx + nx * d, y: my + ny * d, yaw: Math.atan2(-nx, -ny) * 180 / Math.PI }; }))"""))
             print('findings', json.dumps(fd, ensure_ascii=False), flush=True)
             for q, name in zip(fd, ('schleusingen_wohnblock', 'schleusingen_schule')):
                 if q:

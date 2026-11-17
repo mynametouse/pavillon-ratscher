@@ -87,25 +87,30 @@ Werkzeuge sind dafür gebaut, siehe unten).
 
 ## Prüfung: Zahlen
 
-Stand von Lauf 4 (GitHub Actions 44112584752, `67d381d80`; vorher → nachher; „erklärt“ = mit `rest`):
+Stand von Lauf 5 (GitHub Actions 44129192546, `4b265907e`; Ratscher lokal gleich; vorher → nachher; „erklärt“ = mit `rest`):
 
 | Ort | Tür | Fenster | Durchgang | Hof | erklärt |
 |---|---|---|---|---|---|
 | Ratscher vorher | 23: 4 kein Eingang, 19 Tür vor der Wand eines Nachbarn | 26: 23 Wandstrecken ohne Fenster, 3 Hallen ganz ohne | 0 | 0 | 19 |
-| Ratscher nachher | 1 (seit 5c: 0, siehe unten) | **0** | **0** | **0** | 19 |
+| Ratscher nachher | **0** | **0** | **0** | **0** | 19 |
 | Schleusingen vorher | 194 kein Eingang | 84 Wandstrecken ohne Fenster | 2 (Burgtore laut OSM) | 7 Höfe ohne Zugang | 3 |
 | Schleusingen nachher | **0** | **0** | **0** | **0** | 7 |
+| ETHOS-Zellen um den Markt vorher (19 Zellen, 1 548 Gebäude) | 5 kein Eingang | 127: 111 Wandstrecken ohne Fenster, 16 Hallen ganz ohne | – | – | 11 |
+| ETHOS-Zellen nachher | **0** | 2 | – | – | 11 |
 
 In Ratscher erklärt: 16 Haustüren, vor denen 0,7 m davor ein Nachbargebäude steht – durch sie geht man ins Haus (`HAEUSER`, der Grundriss
-hängt an der Tür), sie bleiben; 3 kleine umschlossene Flächen unter 80 m². Gebaut: 3 Türen, 19 verlegte Tore/Türen von Scheunen und
-Schuppen, Stallfenster an 5 Hallen, die Haut der ETHOS-Häuser (Fenster an freien Brandwänden, Türen) – zusammen 241 neue Fenster. Der
-letzte „kein Eingang“ von Lauf 4 (ein ETHOS-Schuppen, 9 m hoch, ringsum eingebaut bis auf 1,5 m) bekommt seit 5c eine schmale Tür
-(Unit-Test; im Browser bestätigt Lauf 5).
+hängt an der Tür), sie bleiben; 3 kleine umschlossene Flächen unter 80 m². Gebaut: 4 Türen (eine schmale am ringsum eingebauten
+ETHOS-Schuppen), 19 verlegte Tore/Türen von Scheunen und Schuppen, Stallfenster an 6 Hallen, die Haut der ETHOS-Häuser (Fenster an freien
+Brandwänden, Türen) – zusammen 248 neue Fenster; 173 Treppen vor Haustüren.
 
 Erklärt bleiben in Schleusingen 2–3 Zwickel unter 25 m² (zwischen zwei Häusern, kein Zugang nötig) und 4–5 kleine Höfe von 31–67 m² (nur
 durch die Häuser daneben – keine Tordurchfahrt für einen Hof dieser Größe). Gebaut: 191 Hoftüren (Häuser, Schuppen, Hallen ohne Tür zur
-Straße), 18 Türen nach OSM-Eingängen, 84 Fensterstrecken an Brandwänden, 4 Durchgänge (2 Burgtore, 2 Tordurchfahrten), die Burgtreppe;
-seit 5 die Stufen vor den Türen.
+Straße), 18 Türen nach OSM-Eingängen, 84 Fensterstrecken an Brandwänden, 4 Durchgänge (2 Burgtore, 2 Tordurchfahrten), die Burgtreppe,
+272 Treppen vor Türen; 6 ETHOS-„Türme“ in Lücken der Altstadt weggelassen.
+
+In den ETHOS-Zellen um den Markt erklärt: 11 Gebäude, die ringsum eingebaut sind (keine Wand mit Platz für eine Tür – Zugang durch die
+Gebäude daneben). Gebaut: 5 Türen, 961 Fenster (Haut an freien Brandwänden, Stallfenster an 34 Hallen), 87 Treppen. Offen: eine Halle
+ganz ohne Fenster (alle Wände gedeckt) und eine Wand von 8,8 m.
 
 ## Schnittstelle
 
@@ -128,16 +133,19 @@ seit 5 die Stufen vor den Türen.
 ## Leistung
 
 - Schleusingen: der Plan beim Aufbau der Stadt 105–250 ms im Testrechner (Höfe im Raster 0,5 m je Block, Durchgänge, Türen, Brandwände,
-  OSM-Eingänge); alles in den vorhandenen Meshes der Stadt (Wände, Dächer, Requisiten) – **10 → 10 Meshes, 311 598 → 315 214 Dreiecke
-  (+1,2 %, mit Burgtreppe und Torgewänden)** gegenüber `?nofassade` (Lauf 4); die Stufen (seit 5) kommen ins Mesh der Requisiten.
+  OSM-Eingänge); alles in den vorhandenen Meshes der Stadt (Wände, Dächer, Requisiten) – **10 → 10 Meshes, 311 598 → 326 724 Dreiecke
+  (+4,9 %: 272 Treppen vor Türen, Burgtreppe, Torgewände)** gegenüber `?nofassade` (Lauf 5).
 - Das ganze Bild am Markt: der Test misst es seit 5c in zwei frischen Ladungen (mit und ohne `?nofassade`) und ohne das, was sich bewegt
   (Figuren, Verkehr, Tiere) – Lauf 4 maß die zweite Ladung nach einem langen Gang durch die Stadt und sah +29 Draw-Calls von Leuten und
   Autos, die sich inzwischen gesammelt hatten.
 - Ratscher: einmal nach dem Aufbau des Dorfs 14–34 ms; 3 Meshes (Rahmen der Stallfenster mit dunklem Glas und den Stufen, das Glas, das
-  nachts leuchtet, die Haut der ETHOS-Häuser) – vor der langen Halle **+4 Draw-Calls, +0,2 % Dreiecke** (Lauf 4: 1182 → 1186 Calls,
-  2 026 884 → 2 030 052 Dreiecke).
+  nachts leuchtet, die Haut der ETHOS-Häuser) – vor der langen Halle **+4 Draw-Calls, +0,8 % Dreiecke** (lokal: 1186 → 1190 Calls,
+  2 034 518 → 2 050 006 Dreiecke, 30 → 30 ms).
+- ETHOS-Zellen: je Zelle einmal, wenn sie steht, 10–54 ms (lokal / im Testrechner von GitHub); die Haut im Wand-Mesh der Zelle, die
+  Stallfenster und Treppen aller Zellen in **einem** Mesh (am Markt: 174 → 177 Draw-Calls ohne Figuren und Verkehr, davon 1 dieses Mesh und
+  2 eine Zelle, die in der einen Ladung schon stand; +4,5 % Dreiecke im ganzen Bild, Lauf 5).
 - Keine neuen Shader-Programme (Wand- und Dachmaterial der Stadt, Material der Dorf-Requisiten und Klone davon), keine Lichter; höchstens
-  15 Texturen je Programm (Test: 179 Programme, alle heil).
+  15 Texturen je Programm (Test: 171–189 Programme, alle heil).
 
 ## Testen
 
@@ -157,33 +165,34 @@ seit 5 die Stufen vor den Türen.
   `KERN.provide('ground', …, 11)` (nur auf den Stufen vor Türen, sonst `undefined`), Fenstername `FASSADE`, `FAUDIT`; `?nofassade`.
   `FASSADE` hängt sich an `GEB.skip` an (das von `laeden` bleibt vorne: `prev(b) || …`) und mischt Geometrie in die Wand-Meshes der
   ETHOS-Zellen (`GEB.Z.cells[…].meshes`, gleiches Attribut-Layout; `gebaeude.js` gibt sie beim Wegwerfen wie bisher frei).
-- **Getestete Stände**: Lauf 3 (`f958ce6e3`) ganz grün; Lauf 4 (`67d381d80`) grün bis auf den Vergleich des ganzen Bilds am Markt (Leute
-  und Autos, siehe „Leistung“ – der Test misst seither anders); Lauf 5 (Stufen, schmale Tür, Test-Umbau) siehe Bericht an den Lead. Die
-  Themen-Tests (`viz3/extra/gebaeude/tests.txt`): `gebaeude` (Ratscher; Schleusingen mit `perf`), `schleusingen`, `schleusingen_innen`
-  (zwei Teile), `haeuser` (Bilder), `laeden`.
+- **Getestete Stände**: Lauf 3 (`f958ce6e3`) und Lauf 5 (`4b265907e`: Treppen, ETHOS-Zellen, Türme weg) ganz grün; der Stand für das
+  Zusammenführen um 20:30 ist der letzte grüne Lauf auf `feat/gebaeude` (Lauf 6 mit der Ansicht je Gebäude, siehe Bericht an den Lead).
+  Themen-Tests (`viz3/extra/gebaeude/tests.txt`): `gebaeude:ratscher`, `gebaeude:schleusingen,perf`, `schleusingen`, `schleusingen_innen`
+  (zwei Teile), `haeuser` (Bilder), `laeden`, `smoke`.
 - **Ansicht je Gebäude (für `schleusingen-ansicht`)**: Werte aus Straßenansichten gehen über `FASSADE` in die Häuser, angewandt beim Bau:
   - **Datei** `fassade/ansicht.json` – ein Extra legt sie unter `viz3/extra/<extra>/dist/fassade/ansicht.json` ab (nur eines!); die App lädt
     sie beim Start (fehlt sie, gilt nichts). Format: `{ "v": 1, "quelle": "…", "b": { "<Schlüssel>": { …Ansicht… } } }`.
   - **Schlüssel**: `"#236"` (ein Gebäude der Altstadtdaten, Index wie `SCHL.bld[].i`, für `SINNEN` 900000 + i), eine Adresse
     (`"Markt 12"` – die Häuser mit dieser Adresse), eine ETHOS-Nummer (`"DEG_…"`, die Gebäude von `gebaeude/gebaeude.js` am Stadtrand und an
     den Strecken), `"@x,y"` (Modellmeter: das Gebäude, das dort steht – am einfachsten für Punkte aus einer Straßenansicht).
-  - **Ansicht** (alles freiwillig): `farbe` (`"#rrggbb"` oder `[r, g, b]` 0–1, sRGB), `material` (`putz`, `glatt` = Putz von heute mit großen
-    Fenstern, `schiefer`, `schiefer-og`, `schiefer-giebel`, `fachwerk`, `fachwerk-og`, `klinker`, `scheune`, `holz` (Bretter), `halle`,
-    `schuppen`, `schule-alt` = Ratschers Schule von 1828 – die Stile des Fassaden-Shaders), `fachwerk` (`true`/`false` oder Muster 0–2), `laeden` (`true`/`false` oder
-    Farbe `gruen`/`braun`/`grau`), `rahmen` (`weiss`/`braun`/`gruen`/`grau`), `tuer` (Art 0–7: dunkelbraun, braun, grün, blau, hellgrau mit
-    Glas, rot, hellblau, Eiche – oder `{ "art": 4, "breite": 1.3 }`, in der Altstadt höchstens 1,3 m: breiter ist für `SIPLAN` eine
-    Durchfahrt), `dach` (`"#rrggbb"`: Farbe der Dachdeckung, nur Altstadt), `achse` (Fensterachse in m, nur Altstadt), `sockel`
-    (Hochparterre), `art: "schule"` (Schule von heute: glatt, hell, weite Achsen, helle Glastür, keine Läden).
+  - **Ansicht** (alles freiwillig): `farbe` (`"#rrggbb"` oder `[r, g, b]` 0–1, sRGB), `material` (`putz`, `glatt` = Putz von heute mit
+    großen Fenstern, `schiefer`, `schiefer-og`, `schiefer-giebel`, `fachwerk`, `fachwerk-og`, `klinker`, `scheune`, `holz` (Bretter),
+    `halle`, `schuppen`, `schule-alt` = Ratschers Schule von 1828 – die Stile des Fassaden-Shaders), `fachwerk` (`true`/`false` oder Muster
+    0–2), `laeden` (`true`/`false` oder Farbe `gruen`/`braun`/`grau`), `rahmen` (`weiss`/`braun`/`gruen`/`grau`), `tuer` (Art 0–7:
+    dunkelbraun, braun, grün, blau, hellgrau mit Glas, rot, hellblau, Eiche – oder `{ "art": 4, "breite": 1.3 }`, in der Altstadt höchstens
+    1,3 m: breiter ist für `SIPLAN` eine Durchfahrt), `dach` (`"#rrggbb"`: Farbe der Dachdeckung, nur Altstadt), `achse` (Fensterachse in
+    m, nur Altstadt), `sockel` (Hochparterre), `art: "schule"` (Schule von heute: glatt, hell, weite Achsen, helle Glastür, keine Läden).
   - **Im Spiel** (Test, Werkzeug): `FASSADE.ansicht(schlüssel, ansicht)` vor dem Bau; `FASSADE.ansichtOf(b)`, `FASSADE.ansichtStand()`.
   - Die Altstadt nimmt die Ansicht vor dem Bau in ihren Stil (`welt/schleusingen.js` `styleOf` danach), die ETHOS-Gebäude bekommen sie auf
     ihre Wände gemalt, sobald ihre Zelle steht (Farbe, Material, Läden, Rahmen, Tür – Dach, Achsen und Türbreite bleiben, wie
     `gebaeude.js` sie baut). Dachform und Höhe kommen weiter aus den Daten.
 - **Die drei Funde von `schleusingen-ansicht`**: (1) der graue Block ohne Fassade am Markt (von der Südost-Ecke nach Westen) war ein
-  ETHOS-„Turm“ – weg (siehe oben, Bild `schleusingen_markt_suedost.jpg`); (2) die Wohnblöcke an der Hildburghäuser Straße (Nr. 13/15:
+  ETHOS-„Turm“ – weg (siehe oben, Bild `schleusingen_markt_suedost.jpg`). (2) Die Wohnblöcke an der Hildburghäuser Straße (Nr. 13/15:
   Altstadtdaten `#236`; Nr. 17–28 sind ETHOS-Gebäude außerhalb der Altstadtdaten): eine Regel für die Wohnblöcke außerhalb der Altstadt
-  (nicht alt, ab 250 m², ohne Läden und Namen, über 200 m vom Markt – 26 Häuser) – glatter Putz in Weiß, Creme oder Hellgrau, keine Läden
-  (Bild `schleusingen_wohnblock.jpg`); die ETHOS-Blöcke dahinter brauchen ihre Werte über die Datei (`"@x,y"` oder `"DEG_…"`); (3) die Schule:
-  in den Altstadtdaten heißen die Schulen von heute „Staatliche Grundschule“ und „Staatliche Regelschule“ (Helmut-Kohl-Straße 5 und 7) –
+  (nicht alt, ab 250 m², ohne Läden und Namen, über 200 m vom Markt – 26 Häuser): glatter Putz in Weiß oder Creme, keine Läden (nur mit
+  den Korrekturen; `?nofassade` wie vorher; Bild `schleusingen_wohnblock.jpg`). Die ETHOS-Blöcke dahinter brauchen ihre Werte über die
+  Datei (`"@x,y"` oder `"DEG_…"`); ihre Höhe (die Altstadtdaten kennen nur 2 Geschosse, wo OSM keine angibt) bleibt. (3) Die Schule: in
+  den Altstadtdaten heißen die Schulen von heute „Staatliche Grundschule“ und „Staatliche Regelschule“ (Helmut-Kohl-Straße 5 und 7) –
   beide jetzt im Aussehen einer Schule von heute (Bild `schleusingen_schule.jpg`); an der Ilmenauer Straße kennen die Altstadtdaten keine
   Schule (dort stehen Wohnhäuser, das Rehazentrum, die Wiesenbauschule – heute Stadtbibliothek); liegt die gemeinte außerhalb, ist sie ein
   ETHOS-Gebäude: `{ "@x,y": { "art": "schule" } }`.

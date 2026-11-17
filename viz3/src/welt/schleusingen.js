@@ -126,7 +126,7 @@ export const SCHL = (() => {
     if (b.k === 2) return Object.assign(o, { style: ST.SHED, col: linC(BOARDS[Math.floor(k * 3)], 0.8), sp: 3.2 });
     // feat/gebaeude: a school of our time (named in OSM, not an old building – the Teutsche Schule, the Wiesenbauschule keep their look):
     // smooth light plaster, wide bays, white frames, a wider light door with glass, no shutters
-    if (b.k === 0 && !b.old && /schule|gymnasium/i.test(b.n || '') && !/wiesenbau|teutsch/i.test(b.n))
+    if (FASS.on && b.k === 0 && !b.old && /schule|gymnasium/i.test(b.n || '') && !/wiesenbau|teutsch/i.test(b.n))
       return Object.assign(o, {
         style: ST.MODERN,
         col: PAL[[5, 4, 6][Math.floor(k * 3)]],
@@ -136,11 +136,11 @@ export const SCHL = (() => {
         doorW: 1.3,
       });
     // feat/gebaeude: the blocks of flats beyond the old town (not old, 250 m² and more, no shops or name; Hildburghäuser Straße and the
-    // like – white or light in the street views, without shutters): the modern style in white, cream or light grey
-    if (b.k === 0 && !b.old && !b.n && !b.s && !b.lm && dM > 200 && areaOf(b.f) >= 250)
+    // like – white or light in the street views, without shutters): the modern style in white or cream
+    if (FASS.on && b.k === 0 && !b.old && !b.n && !b.s && !b.lm && dM > 200 && areaOf(b.f) >= 250)
       return Object.assign(o, {
         style: ST.MODERN,
-        col: PAL[[5, 4, 6][Math.floor(k2 * 3)]],
+        col: PAL[[5, 5, 4][Math.floor(k2 * 3)]],
         sp: 3.1 + hh(i + 4) * 0.3,
         frame: 0,
       });
