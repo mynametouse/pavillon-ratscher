@@ -85,6 +85,21 @@ test('where a tree must not stand: building, door, shop pad, lamp, bus stop, bay
   assert.equal(G.blocked(tree(81, 81, G.F.HEDGE), C), '', 'a hedge may stand by a Markt tree');
 });
 
+test('in the village: not on a road or its shoulder, never a duplicate of one of the world trees', () => {
+  // a road along y = 0, 3 m half width: road(x, y) is the signed distance to its edge (positive on it)
+  const C = { road: (x, y) => 3 - Math.abs(y), trees: G.grid([{ x: 50, y: 20 }], 16) };
+  const tree = (x, y, f = 2) => ({ x, y, f, tr: 0.2 });
+  assert.equal(G.blocked(tree(10, 1), C), 'Fahrbahn');
+  assert.equal(G.blocked(tree(10, 4), C), 'Fahrbahn', 'on the shoulder (1 m beyond the edge)');
+  assert.equal(G.blocked(tree(10, 4), { road: C.road }), 'Fahrbahn');
+  assert.equal(G.blocked(tree(10, 6), C), '', 'on the bank beyond it');
+  assert.equal(G.blocked(tree(10, 4.2, G.F.HEDGE), C), '', 'a bush may stand closer');
+  assert.equal(G.blocked(tree(53, 21), C), 'Baum der Welt', 'within 4 m of a world tree');
+  assert.equal(G.blocked(tree(55, 21), C), '');
+  assert.equal(G.blocked(tree(51.5, 20, G.F.HEDGE), C), 'Baum der Welt', 'a bush within 2 m');
+  assert.equal(G.blocked(tree(53, 20, G.F.HEDGE), C), '');
+});
+
 test('levels: the nearest in view first, each level within its cap and the triangles left, behind beyond the near ring not drawn', () => {
   const R = [16, 70, 160],
     N = { tree: [2, 3, 4], hedge: [1, 1, 1] },

@@ -2,6 +2,7 @@
 """Street trees and green of Schleusingen, step 2: the trees the app draws (viz3/src/stadtgruen/) from the data fetched by fetch.py.
 
   python3 -I tools/stadtgruen/build.py <cache dir> [--out viz3/extra/stadtgruen/dist/stadtgruen] [--debug <dir>]
+  python3 -I tools/stadtgruen/build.py <cache dir of fetch.py --ratscher> --ratscher   (→ ratscher.json, see ratscher() below)
 
 Sources: the town's data of the app (viz3/extra/schleusingen/dist/schleusingen/stadt.json: buildings, streets, lamps, the Markt), the
 shops' pads, doors and bays (viz3/extra/laeden/dist/laeden/laeden.json), the parking places (viz3/extra/welt-dinge/plaetze_schleusingen.json),
@@ -693,11 +694,210 @@ def thin(trees, dmin_tree=3.0, dmin_hedge=0.9):
     return kept
 
 
+# ---------------------------------------------------------------- Ratscher: the road south of the village --------------------------
+# The world of Ratscher has its trees already (~21 000 tree tops of the canopy height model, tools/geo/build_bld.py, at their measured
+# places). The private views from the street along the L 1625 and the L 3004 south of the village (October 2025) show belts of birches,
+# pines, maples and ashes on the banks and cuttings of the road where the world has bare grass – grown since the surface model or too
+# bare for its infrared test. Only these are added: crowns found in the orthophotos (April 2024) on the road's banks, never within 4 m of
+# one of the world's trees, never on a road, a building or water, nothing round Falko's garden and the two neighbours' plots.
+RAT_ROADS = ('L 1625', 'L 3004')  # the road of the views
+RAT_BAND = (5.3, 25.0)  # the belts: from beyond the shoulder (centreline + 3.3 m half width + 2 m) to the field, metres
+RAT_KEEP = 150.0  # Falko's garden and the two neighbours' plots round the origin stay exactly as they are (and their surroundings)
+RAT_WORLD = 4.0  # no tree within this of one of the world's trees (no duplicate)
+# The belts the views show, along the L 1625 from the west towards the L 3004 (model x of the stretch; side s = south, n = north of the
+# road; the L 1625 only – the L 3004 north of the junction is not in the views): species as seen in October 2025, heights, the rows' distances from the centreline where the photos show no crown to place.
+# Open stretches stay open (the field at x -440 … -400 on the south side, the north side mostly, the L 3004 southwards).
+RAT_BELTS = [
+    dict(s='s', x0=-830, x1=-480, mix=['birke'] * 8 + ['ahorn', 'eiche'], h=(14.0, 20.0), rows=(7.0, 11.5, 16.0)),  # tall birches
+    dict(s='s', x0=-480, x1=-445, mix=['birke', 'birke', 'nadel'], h=(7.0, 12.0), rows=(7.0, 11.0)),  # young birch and pine
+    dict(s='s', x0=-390, x1=-200, mix=['ahorn', 'linde', 'birke', 'birke', 'esche', 'nadel'], h=(11.0, 17.0), rows=(7.0, 11.5)),
+    dict(s='s', x0=-200, x1=160, mix=['nadel', 'nadel', 'birke', 'birke', 'ahorn', 'esche', 'eiche', 'nadel'], h=(10.0, 18.0),
+         rows=(7.0, 11.5, 16.0)),  # the dense belt of pines and broadleaves on the bank
+    dict(s='s', x0=160, x1=360, mix=['birke', 'ahorn', 'esche', 'hecke', 'hecke', 'birke'], h=(5.0, 10.0), rows=(8.0, 12.0)),  # young
+    dict(s='n', x0=-160, x1=-90, mix=['birke', 'ahorn', 'birke'], h=(9.0, 14.0), rows=(7.5,)),  # trees beyond the guard rail
+    dict(s='n', x0=20, x1=115, mix=['birke', 'hecke', 'hecke', 'nadel'], h=(3.0, 7.0), rows=(14.0,)),  # young trees and bushes
+]
+RAT_KIND = {'motorway': 1, 'trunk': 1, 'primary': 1, 'secondary': 2, 'secondary_link': 3, 'tertiary': 3, 'tertiary_link': 3,
+            'unclassified': 5, 'residential': 5, 'living_street': 5, 'service': 6, 'track': 7, 'path': 8, 'footway': 8, 'cycleway': 8}
+
+
+class Village:
+    """Ratscher's OpenStreetMap in the shape crowns() masks with: buildings, roads by class, water (no town data, no shops)"""
+
+    def __init__(self, raw):
+        self.nodes, self.ways, self.xy = load_osm(raw)
+        m, st, wp, wl = {}, [], [], []
+        for wid, (refs, tags) in self.ways.items():
+            if len(refs) < 2 or not all(r in self.xy for r in refs):
+                continue
+            pts = [self.xy[r] for r in refs]
+            if 'building' in tags:
+                m[wid] = [('osm', pts)]
+            elif tags.get('highway') in RAT_KIND:
+                st.append({'p': [c for q in pts for c in q], 'k': RAT_KIND[tags['highway']], 'ref': tags.get('ref', ''),
+                           'hw': tags['highway']})
+            elif tags.get('natural') == 'water' or tags.get('landuse') in ('reservoir', 'basin'):
+                wp.append(pts)
+            elif tags.get('waterway') in ('stream', 'ditch', 'drain', 'river', 'canal'):
+                wl.append((pts, 6.0 if tags['waterway'] == 'river' else 1.5))
+
+        class _B:
+            pass
+        self.bld = _B()
+        self.bld.m = m
+        self.pads_list, self.water_polys, self.water_lines = [], wp, wl
+        self.stadt = {'st': st}
+        self.road = [list(zip(s['p'][0::2], s['p'][1::2])) for s in st if s['ref'] in RAT_ROADS and s['hw'].startswith('secondary')]
+        self.l1625 = [list(zip(s['p'][0::2], s['p'][1::2])) for s in st if s['ref'] == 'L 1625' and s['hw'] == 'secondary']
+        self.H = Hash(32)
+        for s in st:
+            p = list(zip(s['p'][0::2], s['p'][1::2]))
+            self.H.add(bbox(p, 4), ('road', p, HALF_W.get(s['k'], 1.5)))
+        for wid, it in m.items():
+            self.H.add(bbox(it[0][1], 4), ('bld', it[0][1], 0))
+        for p in wp:
+            self.H.add(bbox(p, 2), ('water', p, 0))
+        for p, hw in wl:
+            self.H.add(bbox(p, hw + 2), ('waterline', p, hw))
+
+    def why_not(self, x, y):
+        if math.hypot(x, y) < RAT_KEEP:
+            return 'Garten und Nachbarn'
+        d = min((line_dist(p, x, y) for p in self.road), default=1e9)
+        if d < RAT_BAND[0]:
+            return 'Fahrbahn'
+        if d > RAT_BAND[1]:
+            return 'nicht an der Straße'
+        for kind, p, hw in self.H.near(x, y, 4.0):
+            if kind == 'road' and line_dist(p, x, y) < hw + 1.6:
+                return 'Weg oder Straße'
+            if kind == 'bld' and (inside(p, x, y) or poly_dist(p, x, y) < 3.0):
+                return 'Gebäude'
+            if kind == 'water' and (inside(p, x, y) or poly_dist(p, x, y) < 1.0):
+                return 'Wasser'
+            if kind == 'waterline' and line_dist(p, x, y) < hw + 1.0:
+                return 'Wasser'
+        return ''
+
+
+def world_trees():
+    """the world's own trees (viz3/dist/geo/trees.b64.json: x, y in dm, height and crown radius in cm, conifer) → (x, y) in metres"""
+    import base64
+    p = os.path.join(REPO, 'viz3', 'dist', 'geo', 'trees.b64.json')
+    t = np.frombuffer(base64.b64decode(json.load(open(p))['b64']), '<i2').reshape(-1, 5).astype(float)
+    return t[:, 0] / 10, t[:, 1] / 10
+
+
+def road_side(V, x, y):
+    """(distance from the L 1625's centreline, side 's' or 'n': right or left of the road run west to east)"""
+    best = (1e9, 's')
+    for p in V.l1625:
+        for i in range(len(p) - 1):
+            (ax, ay), (bx, by) = p[i], p[i + 1]
+            if bx < ax:
+                ax, ay, bx, by = bx, by, ax, ay
+            d = seg_dist(x, y, ax, ay, bx, by)
+            if d < best[0]:
+                cr = (bx - ax) * (y - ay) - (by - ay) * (x - ax)
+                best = (d, 'n' if cr > 0 else 's')
+    return best
+
+
+def belt_of(V, x, y):
+    d, side = road_side(V, x, y)
+    if not (RAT_BAND[0] <= d <= RAT_BAND[1]) or min(line_dist(p, x, y) for p in V.road) < RAT_BAND[0]:
+        return None
+    for bl in RAT_BELTS:
+        if bl['s'] == side and bl['x0'] <= x <= bl['x1']:
+            return bl
+    return None
+
+
+def belt_tree(bl, x, y, evf=0.0):
+    hs = (math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1
+    hs2 = (math.sin(x * 39.3468 + y * 11.135) * 24634.6345) % 1
+    art = 'nadel' if evf > 0.45 else bl['mix'][int(hs * len(bl['mix']))]
+    h = bl['h'][0] + (bl['h'][1] - bl['h'][0]) * hs2
+    if art == 'hecke':
+        return (x, y, AI[art], min(3.5, 1.8 + 0.25 * h), 1.4, F_HEDGE | F_STREET)
+    r = max(1.8, min(5.0, 0.28 * h + 0.4)) if art != 'nadel' else max(1.4, min(3.0, 0.17 * h + 0.4))
+    return (x, y, AI[art], h, r, F_STREET)
+
+
+def belt_fill(V, bl, taken):
+    """stations every 4.5 m along the belt's stretch, a tree in each row where no crown was found nearby (the belts are continuous)"""
+    out = []
+    for p in V.l1625:
+        for s_, x, y, tx, ty in stations(p, 4.5):
+            if not (bl['x0'] <= x <= bl['x1']):
+                continue
+            nx, ny = (ty, -tx) if tx >= 0 else (-ty, tx)  # the normal to the south of a road run west to east
+            sg = 1 if bl['s'] == 's' else -1
+            for k, off in enumerate(bl['rows']):
+                hs = (math.sin(x * 7.13 + y * 3.71 + k * 1.3) * 43758.5453) % 1
+                hs2 = (math.sin(x * 2.17 + y * 5.33 + k * 0.7) * 24634.6345) % 1
+                o = off + (hs - 0.5) * 2.4
+                px, py = x + sg * nx * o + tx * (hs2 - 0.5) * 2.6, y + sg * ny * o + ty * (hs2 - 0.5) * 2.6
+                if belt_of(V, px, py) is not bl:
+                    continue
+                if any(math.hypot(q[0] - px, q[1] - py) < 3.6 for q in taken.near(px, py, 4)):
+                    continue
+                t = belt_tree(bl, px, py)
+                out.append(t + (True,))
+                taken.add((px, py, px, py), (px, py))
+    return out
+
+
+def ratscher(a, log):
+    t0 = time.time()
+    V = Village(a.raw)
+    O = Ortho(a.raw)
+    log(f'Ratscher: {len(V.road)} Abschnitte der L 1625 und L 3004, {len(V.bld.m)} Gebäude, {len(V.stadt["st"])} Wege und Straßen')
+    wx, wy = world_trees()
+    WH = Hash(8)
+    for i in range(len(wx)):
+        WH.add((wx[i], wy[i], wx[i], wy[i]), (float(wx[i]), float(wy[i])))
+    world_near = lambda x, y, r: any(math.hypot(q[0] - x, q[1] - y) < r for q in WH.near(x, y, r))
+    found = crowns(V, O, log)
+    # the crowns the orthophotos show in a belt of the views (elsewhere the open country's lines and verges look rough too: left out)
+    cand, why = [], {}
+    taken = Hash(8)
+    for x, y, d, evf, area in found:
+        bl = belt_of(V, x, y)
+        if bl is None:
+            why['nicht in einem Gürtel der Ansichten'] = why.get('nicht in einem Gürtel der Ansichten', 0) + 1
+            continue
+        cand.append(belt_tree(bl, x, y, evf))
+        taken.add((x, y, x, y), (x, y))
+    for x_, y_ in zip(wx, wy):
+        taken.add((x_, y_, x_, y_), (float(x_), float(y_)))
+    n_img = len(cand)
+    for bl in RAT_BELTS:
+        cand += [t[:6] for t in belt_fill(V, bl, taken)]
+    ok = []
+    for t in cand:
+        w = V.why_not(t[0], t[1])
+        if not w and world_near(t[0], t[1], 2.0 if t[5] & F_HEDGE else RAT_WORLD):
+            w = 'Baum der Welt'
+        if w:
+            why[w] = why.get(w, 0) + 1
+            continue
+        ok.append(t)
+    trees = thin(ok)
+    log(f'{len(found)} Kronen, davon {n_img} in den Gürteln, {len(cand) - n_img} ergänzt; {len(trees)} Bäume und Büsche an der Straße; '
+        f'ausgelassen: {why}')
+    xs = [t[0] for t in trees]
+    ys = [t[1] for t in trees]
+    zone = [math.floor(min(xs) - 10), math.floor(min(ys) - 10), math.ceil(max(xs) + 10), math.ceil(max(ys) + 10)] if trees else [0, 0, 0, 0]
+    return trees, zone, time.time() - t0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('raw')
     ap.add_argument('--out', default=os.path.join(REPO, 'viz3', 'extra', 'stadtgruen', 'dist', 'stadtgruen'))
     ap.add_argument('--debug', default=None)
+    ap.add_argument('--ratscher', action='store_true', help='the road south of Ratscher (cache of fetch.py --ratscher) → ratscher.json')
     a = ap.parse_args()
     t0 = time.time()
     logs = []
@@ -705,6 +905,13 @@ def main():
     def log(m):
         logs.append(m)
         print(m, flush=True)
+    if a.ratscher:
+        trees, zone, dt = ratscher(a, log)
+        write(a, log, logs, trees, zone, [], 'ratscher.json',
+              'Bäume und Büsche an der L 1625 und L 3004 südlich von Ratscher, die den Bäumen der Welt (Kronenhöhenmodell) fehlen: Lage '
+              'aus den Orthophotos DOP 20 cm in Farbe und Infrarot © GDI-Th (dl-de/by-2-0), Straßen und Gebäude aus OpenStreetMap © '
+              'OpenStreetMap-Mitwirkende (ODbL 1.0); geprüft an privaten Ansichten von der Straße (nicht veröffentlicht).', t0)
+        return
     W = World(a.raw)
     O = Ortho(a.raw) if os.path.exists(os.path.join(a.raw, 'cir.png')) else None
     R = rows(W, O, log)
@@ -722,6 +929,13 @@ def main():
         ok.append(t[:6])
     trees = thin(ok)
     log(f'{len(cand)} Kandidaten, {len(trees)} Bäume und Büsche; ausgelassen: {why}')
+    write(a, log, logs, trees, W.zone, R, 'baeume.json',
+          'Straßenbäume und Grün von Schleusingen: Lage aus den Orthophotos DOP 20 cm in Farbe und Infrarot © GDI-Th (dl-de/by-2-0) '
+          'und OpenStreetMap © OpenStreetMap-Mitwirkende (ODbL 1.0); Arten, Größe und Abstand der Alleen geprüft an privaten '
+          'Ansichten von der Straße (nicht veröffentlicht).', t0)
+
+
+def write(a, log, logs, trees, zone, R, name, src, t0):
     b = []
     for x, y, art, h, r, f in trees:
         b += [int(round(x * 10)), int(round(y * 10)), int(art), int(round(h * 10)), int(round(r * 10)), int(f)]
@@ -731,22 +945,20 @@ def main():
     out = {
         'v': 1,
         'made': time.strftime('%Y-%m-%d'),
-        'src': 'Straßenbäume und Grün von Schleusingen: Lage aus den Orthophotos DOP 20 cm in Farbe und Infrarot © GDI-Th (dl-de/by-2-0) '
-               'und OpenStreetMap © OpenStreetMap-Mitwirkende (ODbL 1.0); Arten, Größe und Abstand der Alleen geprüft an privaten '
-               'Ansichten von der Straße (nicht veröffentlicht).',
-        'zone': W.zone,
+        'src': src,
+        'zone': zone,
         'arten': ARTEN,
         'b': b,
         'reihen': [{'n': r['n'], 's': r['s'], 'art': r['art'], 'sp': r['sp'], 'n_b': len(r['trees'])} for r in R],
         'anzahl': by_art,
     }
     os.makedirs(a.out, exist_ok=True)
-    p = os.path.join(a.out, 'baeume.json')
+    p = os.path.join(a.out, name)
     json.dump(out, open(p, 'w'), separators=(',', ':'))
     log(f'{p}: {len(trees)} ({by_art}), {os.path.getsize(p) / 1024:.0f} KB in {time.time() - t0:.0f} s')
     if a.debug:
         os.makedirs(a.debug, exist_ok=True)
-        json.dump({'trees': trees, 'logs': logs}, open(os.path.join(a.debug, 'baeume_debug.json'), 'w'))
+        json.dump({'trees': trees, 'logs': logs}, open(os.path.join(a.debug, name.replace('.json', '_debug.json')), 'w'))
 
 
 if __name__ == '__main__':

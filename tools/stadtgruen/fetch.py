@@ -3,6 +3,8 @@
 
   python3 -I tools/stadtgruen/fetch.py <cache dir> [--ratscher] [--osm]
 
+(--ratscher: the road south of Ratscher into another cache dir, for build.py --ratscher)
+
 - OpenStreetMap (ODbL 1.0) of the zone: the OSM API's map call in four chunks (Overpass reset the connection here, 17.11.2026)
 - DGM1 and DOM1 (1 m terrain and surface model, © GDI-Th, dl-de/by-2-0): the four 1 km tiles under the zone
 - DOP 20 cm in colour and colour infrared (© GDI-Th, dl-de/by-2-0) over the zone at 0.25 m/px, UTM axes (north up)
@@ -15,11 +17,14 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 G = json.load(open(os.path.join(REPO, 'viz3', 'manifests.json')))['geoman']['xf']
 A, B, EX, EY = G['a'], G['b'], G['ex'], G['ey']
 # the town's zone of viz3/extra/schleusingen/dist/schleusingen/stadt.json (model metres: x0, y0, x1, y1), with a margin for the roads' ends;
-# with --ratscher the village of Ratscher and its roads (the 2.4 km square of world/ratscher.js, its northern half and the L 3004)
+# with --ratscher the road south of Ratscher as far as the private views from the street reach (OpenStreetMap: the village and its
+# roads, the 2.4 km square of world/ratscher.js down to the road)
 ZONE = (-1644.7, 681.9, -524.7, 1801.9)
 MARGIN = 60.0
+OSM_ZONE = None
 if '--ratscher' in sys.argv:
-    ZONE = (-1000.0, -1250.0, 1000.0, 700.0)
+    ZONE = (-1000.0, -1300.0, 860.0, 60.0)
+    OSM_ZONE = (-1000.0, -1250.0, 1000.0, 700.0)
     MARGIN = 0.0
 WMS = 'https://www.geoproxy.geoportal-th.de/geoproxy/services/DOP'
 UA = 'PavillonRatscher/1.0 (private non-commercial model)'
@@ -52,8 +57,9 @@ def m2u(x, y):
     return EX + A * x - B * y, EY + B * x + A * y
 
 
-def utm_box():
-    x0, y0, x1, y1 = ZONE[0] - MARGIN, ZONE[1] - MARGIN, ZONE[2] + MARGIN, ZONE[3] + MARGIN
+def utm_box(zone=None):
+    z = zone or ZONE
+    x0, y0, x1, y1 = z[0] - MARGIN, z[1] - MARGIN, z[2] + MARGIN, z[3] + MARGIN
     pts = [m2u(x, y) for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1))]
     E = [p[0] for p in pts]
     N = [p[1] for p in pts]
@@ -64,7 +70,7 @@ def fetch_osm(raw):
     from pyproj import Transformer
     out = os.path.join(raw, 'osm')
     os.makedirs(out, exist_ok=True)
-    e0, n0, e1, n1 = utm_box()
+    e0, n0, e1, n1 = utm_box(OSM_ZONE)
     T = Transformer.from_crs('EPSG:25832', 'EPSG:4326', always_xy=True)
     lo0, la0 = T.transform(e0, n0)
     lo1, la1 = T.transform(e1, n1)
@@ -134,7 +140,8 @@ if __name__ == '__main__':
     fetch_osm(raw)
     if '--osm' in sys.argv:
         sys.exit(0)
-    fetch_dem(raw)
+    if '--ratscher' not in sys.argv:  # Ratscher's heights are the world's own (canopy height model of tools/geo)
+        fetch_dem(raw)
     fetch_dop(raw, 'th_dop20cir', 'cir')
     fetch_dop(raw, 'th_dop', 'rgb')
     print('ALL DONE', flush=True)

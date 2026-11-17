@@ -232,12 +232,17 @@ export const SGREGELN = (() => {
   // ---- where a tree must not stand, checked when the town is there (the data's own checks are in tools/stadtgruen/build.py): the
   // world as it is then – C: { blds: [{ f: footprint, cx, cy, R, door: [x, y] | null, n: the door's outward normal, sign: a shop's
   // sign over the door }], lamps: [[x, y]], bays: [[x, y, az]], pads: [footprint],
-  // stops: [[x, y]], keep: [[x, y]] (the Markt trees of welt/schleusingen.js), markt: footprint } → '' (fine) or the reason ----
+  // stops: [[x, y]], keep: [[x, y]] (the Markt trees of welt/schleusingen.js), markt: footprint; in the village: road(x, y) the signed
+  // distance to the nearest road's edge (positive on it), trees: a grid of the world's own trees (no duplicate within 4 m, a bush 2 m) }
+  // → '' (fine) or the reason ----
+  const nearBuf = [];
   function blocked(t, C) {
     const x = t.x,
       y = t.y,
       hedge = (t.f & F.HEDGE) !== 0,
       rT = hedge ? 0.35 : Math.max(0.5, t.tr + 0.25);
+    if (C.road && C.road(x, y) > -(hedge ? 0.8 : 1.5)) return 'Fahrbahn';
+    if (C.trees && C.trees.near(x, y, hedge ? 2 : 4, nearBuf).length) return 'Baum der Welt';
     for (const b of C.blds || []) {
       if (Math.abs(b.cx - x) > b.R + 12 || Math.abs(b.cy - y) > b.R + 12) continue;
       if (inPoly(b.f, x, y) || distPoly(b.f, x, y) < rT) return 'Gebäude';

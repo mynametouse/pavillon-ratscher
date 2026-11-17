@@ -5,16 +5,19 @@
 # it stands, every program shared with the garden's trees – no new shader programs), draw calls and triangles at the Markt and in
 # Hildburghäuser Straße within the budget, summer green / October colours / bare in January (the crowns' instance colours), a trunk
 # stops the walker, pictures from the viewpoints of viz3/extra/stadtgruen/blick.json (the model only); freed when the town goes.
-# With the phone flag (iPhone profile, coarse pointer): the phone's budget of triangles. Pictures in out/stadtgruen/.
-#   python3 viz3/test/stadtgruen.py 9051 [sections]      sections: data,stadt,bilder,telefon (default all)
+# With the phone flag (iPhone profile, coarse pointer): the phone's budget of triangles. Ratscher (stadtgruen/ratscher.json): the belts
+# on the banks of the L 1625 south of the village – none round the garden, none within 4 m of a world tree, none on a road; built
+# when one comes near the road (not at the start in the garden), freed back in the garden. Pictures in out/stadtgruen/.
+#   python3 viz3/test/stadtgruen.py 9051 [sections]      sections: data,stadt,bilder,telefon,ratscher (default all)
 import sys, os, json, time, math, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 port = sys.argv[1] if len(sys.argv) > 1 else '8951'
-want = set((sys.argv[2] if len(sys.argv) > 2 else 'data,stadt,bilder,telefon').split(','))
+want = set((sys.argv[2] if len(sys.argv) > 2 else 'data,stadt,bilder,telefon,ratscher').split(','))
 ck = lib.Checks('stadtgruen')
 OUT = lib.out('stadtgruen')
 EXTRA = os.path.join(lib.ROOT, 'viz3', 'extra')
 DATA = json.load(open(os.path.join(EXTRA, 'stadtgruen', 'dist', 'stadtgruen', 'baeume.json')))
+RAT = json.load(open(os.path.join(EXTRA, 'stadtgruen', 'dist', 'stadtgruen', 'ratscher.json')))
 STADT = json.load(open(os.path.join(EXTRA, 'schleusingen', 'dist', 'schleusingen', 'stadt.json')))
 LAEDEN = json.load(open(os.path.join(EXTRA, 'laeden', 'dist', 'laeden', 'laeden.json')))
 PLAETZE = json.load(open(os.path.join(EXTRA, 'welt-dinge', 'plaetze_schleusingen.json')))
@@ -223,6 +226,32 @@ if 'data' in want:
     ck('trees along the three roads and Königstraße (within 15 m of the street)', all(v >= 10 for v in near.values()), json.dumps(near, ensure_ascii=False))
     ck('the rows the data names', len(DATA.get('reihen', [])) >= 2, json.dumps(DATA.get('reihen', []), ensure_ascii=False)[:300])
 
+if 'data' in want or 'ratscher' in want:
+    import base64
+    b = RAT['b']
+    RT = [(b[i] / 10, b[i + 1] / 10, b[i + 2], b[i + 3] / 10, b[i + 4] / 10, b[i + 5]) for i in range(0, len(b), 6)]
+    ck('Ratscher: the data names its sources and calls the views private', 'GDI-Th' in RAT['src'] and 'ODbL' in RAT['src']
+       and 'privaten Ansichten von der Straße' in RAT['src'], RAT['src'][:100])
+    ck('Ratscher: nothing round Falko\'s garden and the two neighbours\' plots (150 m)', len(RT) > 50 and all(math.hypot(t[0], t[1]) > 150 for t in RT),
+       f'{len(RT)} trees, nearest {min(math.hypot(t[0], t[1]) for t in RT):.0f} m from the garden')
+    w = base64.b64decode(json.load(open(os.path.join(lib.ROOT, 'viz3', 'dist', 'geo', 'trees.b64.json')))['b64'])
+    import array
+    a_ = array.array('h'); a_.frombytes(w)
+    cells = {}
+    for i in range(0, len(a_), 5):
+        x, y = a_[i] / 10, a_[i + 1] / 10
+        cells.setdefault((int(x // 8), int(y // 8)), []).append((x, y))
+    dup = []
+    for t in RT:
+        i, j = int(t[0] // 8), int(t[1] // 8)
+        lim = 2 if t[2] == HECKE else 4  # a bush 2 m
+        if any(math.hypot(q[0] - t[0], q[1] - t[1]) < lim for di in (-1, 0, 1) for dj in (-1, 0, 1) for q in cells.get((i + di, j + dj), ())):
+            dup.append((round(t[0], 1), round(t[1], 1)))
+    ck('Ratscher: no tree within 4 m of one of the world\'s trees (a bush 2 m; no duplicate)', not dup, f'{len(a_) // 5} world trees; {dup[:5]}')
+    Zr = RAT['zone']
+    ck('Ratscher: every tree inside its zone (the road south of the village)', all(Zr[0] <= t[0] <= Zr[2] and Zr[1] <= t[1] <= Zr[3] for t in RT)
+       and Zr[1] < -400, json.dumps(Zr))
+
 # ---------------------------------------------------------------- in the browser -----------------------------------------------------
 MARKT = (-1084.7, 1241.9)
 if want & {'stadt', 'bilder', 'telefon'}:
@@ -267,8 +296,8 @@ if want & {'stadt', 'bilder'}:
         E = pg.evaluate
         J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
         st0, secs = go_town(pg, errs)
-        ck('nothing of the town\'s trees at the start (the town is 1.9 km away; near the garden only Ratscher\'s additions, if any)',
-           st0['on'] and st0['area'] != 'schleusingen' and (st0['area'] == 'ratscher' or (st0['state'] == 'idle' and st0['meshes'] == 0)), json.dumps(st0))
+        ck('nothing built at the start (the town is 1.9 km away, the road south of Ratscher 500 m)',
+           st0['on'] and st0['area'] is None and st0['state'] == 'idle' and st0['meshes'] == 0, json.dumps(st0))
         st = J("STADTGRUEN.status()")
         ck('with the town the trees stand', st['state'] == 'ready' and st['shown'] > 1000, f'{json.dumps(st)} after {secs} s')
         if 'stadt' in want:
@@ -356,5 +385,54 @@ if 'telefon' in want:
             c = J(COUNT)
             ck(f'phone, {name}: ≤ {TRIS_PHONE // 1000} k triangles of trees', st['state'] == 'ready' and c['sgTris'] <= TRIS_PHONE, json.dumps(c))
         lib.shot(pg, OUT, 'telefon_hildburghaeuser')
+        ck.errors(errs)
+
+# ---------------------------------------------------------------- Ratscher ---------------------------------------------------------
+RAT_SPOTS = {'L 1625 (Birken)': (-674.4, -80.5, 110, 'l1625_birken'), 'L 1625 (Böschung)': (-258.2, -344.4, 112, 'l1625_boeschung'),
+             'L 1625 (Kreuzung)': (308.8, -517.7, 69, 'l1625_kreuzung')}
+if 'ratscher' in want:
+    with lib.browser() as b:
+        errs = []
+        pg = lib.page(b, 1920, 1080, errs, tier='hoch')
+        lib.boot(pg, port)
+        E = pg.evaluate
+        J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
+        E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden')")
+        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 14 * 60; DN.update(true)")
+        lib.settle_light(pg)
+        for i in range(8):
+            E("GAME.step(0.25)")
+        st0 = J("STADTGRUEN.status()")
+        ck('Ratscher: nothing built in the garden (the road is 500 m away)', st0['area'] is None and st0['meshes'] == 0, json.dumps(st0))
+        first = True
+        for name, (x, y, yaw, fn) in RAT_SPOTS.items():
+            look(pg, x, y, yaw, 1.6, 2, 75)
+            for i in range(40):
+                st = J("STADTGRUEN.status()")
+                if st['area'] == 'ratscher' and st['state'] in ('ready', 'error'):
+                    break
+                E("GAME.step(0.25)")
+                time.sleep(0.2)
+            if first:
+                first = False
+                ck('Ratscher: near the road the belts stand', st['area'] == 'ratscher' and st['state'] == 'ready' and st['shown'] > 50, json.dumps(st))
+                chk = J("""(() => { const T = STADTGRUEN.live, own = RATSCHER.treeXY || [], road = [], dup = [];
+                  for (const t of T) { if (window.ROADS && ROADS.edgeAt(t.x, t.y) > -1.5) road.push([t.x, t.y]);
+                    const lim = t.f & 64 ? 2 : 4;
+                    for (let i = 0; i < own.length; i += 3) if (Math.abs(own[i] - t.x) < lim && Math.abs(own[i + 1] - t.y) < lim && Math.hypot(own[i] - t.x, own[i + 1] - t.y) < lim) { dup.push([t.x, t.y]); break; } }
+                  return { n: T.length, road: road.slice(0, 5), nRoad: road.length, dup: dup.slice(0, 5), nDup: dup.length, off: STADTGRUEN.status().off }; })()""")
+                ck('Ratscher: no tree on a road or its shoulder as the world draws it, none within 4 m of a world tree',
+                   chk['nRoad'] == 0 and chk['nDup'] == 0, json.dumps(chk, ensure_ascii=False))
+            look(pg, x, y, yaw, 1.6, 2, 75)
+            c = J(COUNT)
+            ck(f'Ratscher, {name}: within the budget (≤ {CALLS} draw calls, ≤ {TRIS_PC // 1000} k triangles)', c['sgCalls'] <= CALLS and c['sgTris'] <= TRIS_PC, json.dumps(c))
+            lib.shot(pg, OUT, 'ratscher_' + fn)
+        E("GAME.go('garten')")
+        for i in range(40):
+            E("GAME.step(0.5)")
+            if J("STADTGRUEN.status().area") is None and J("STADTGRUEN.status().state") == 'idle':
+                break
+        st2 = J("STADTGRUEN.status()")
+        ck('Ratscher: freed back in the garden', st2['state'] == 'idle' and st2['meshes'] == 0 and st2['freed'] >= 1, json.dumps(st2))
         ck.errors(errs)
 ck.done()

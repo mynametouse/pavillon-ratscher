@@ -173,12 +173,20 @@ export const STADTGRUEN = (() => {
   // (they lie 2 km apart). Each: its data, what it keeps clear of when it is built (context) ----
   const AREAS = {
     schleusingen: { file: 'stadtgruen/baeume.json', context: () => contextTown() },
+    // the L 1625 south of the village (tools/stadtgruen/build.py --ratscher): built when one comes within `near` of a point along the
+    // road (from the garden the nearest is 490 m: not at the start), freed beyond `far`
     ratscher: {
       file: 'stadtgruen/ratscher.json',
       context: () => contextVillage(),
-      c: [240, -112],
-      near: 650,
-      far: 850,
+      seasons: false,
+      c: [
+        [-760, -60],
+        [-420, -250],
+        [0, -500],
+        [300, -540],
+      ],
+      near: 380,
+      far: 470,
     },
   };
   function wanted() {
@@ -187,7 +195,8 @@ export const STADTGRUEN = (() => {
     const o = KERN.where(),
       R = AREAS.ratscher;
     if (!o || R.missing) return null;
-    const d = Math.hypot(o[0] - R.c[0], o[1] - R.c[1]);
+    let d = 1e9;
+    for (const c of R.c) d = Math.min(d, Math.hypot(o[0] - c[0], o[1] - c[1]));
     return d < R.near || (S.area === 'ratscher' && d < R.far) ? 'ratscher' : null;
   }
   // ---- loading, building, freeing ----
@@ -292,8 +301,16 @@ export const STADTGRUEN = (() => {
   function contextVillage() {
     const lamps = [];
     for (const l of window.VPROPS && VPROPS.lamps ? VPROPS.lamps : []) if (l && isFinite(l.x)) lamps.push([l.x, l.y]);
+    // the world's own trees (canopy height model, world/ratscher.js; the forest's at the Klinge too): none added within 4 m of one
+    const own = [],
+      xy = RATSCHER.treeXY || [];
+    for (let i = 0; i + 1 < xy.length; i += 3) own.push({ x: xy[i], y: xy[i + 1] });
+    for (const f of RATSCHER.forestCHM || []) own.push({ x: f[0], y: f[1] });
+    const roads = window.ROADS;
     return {
       lamps,
+      trees: G.grid(own, 16),
+      road: roads && roads.edgeAt ? (x, y) => roads.edgeAt(x, y) : null,
       solid: (x, y, r) => {
         probe[0] = x;
         probe[1] = y;
@@ -432,9 +449,11 @@ export const STADTGRUEN = (() => {
       S.cards.push(im);
     }
   }
-  // ---- the season of the game's date ----
+  // ---- the season of the game's date; in Ratscher the trees keep the summer of the world's own trees beside them (world/ratscher.js has
+  // no seasons for its broadleaved trees yet – AREAS.ratscher.seasons) ----
   function doyNow() {
     if (S.doy !== null) return S.doy;
+    if (S.area && AREAS[S.area].seasons === false) return 196;
     try {
       return G.doyOf(DN.jdOf(CLOCK.t));
     } catch (e) {
