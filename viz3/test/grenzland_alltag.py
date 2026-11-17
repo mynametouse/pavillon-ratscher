@@ -165,13 +165,14 @@ with lib.browser() as b:
         ck('tag: … and queues there', ok, json.dumps(J("TA.st()"))[:300])
         gone = E("!TA.an('haltestelle').length")
         ck('tag: the school bus has taken the two (none at the stop later)', gone, str(J("TA.an('haltestelle')")))
+        # a greeting when one passes (counted from here: the view of the van comes within 6.5 m of some), and E
+        n0 = J("TA.st().n.gruss")
         X("TA.zeig(TA.da('wagen'), 160, 7)")
         steps(3, 0.1)
         pic('02_morgen_wagen')
-        # a greeting when one passes, and E
-        n0 = J("TA.st().n.gruss")
         X("const F = GLALLTAG.debug.hin('ingrid'); GAME.view(F[0] - 3.2, F[1] - 2.5, KERN.ground(F[0] - 3.2, F[1] - 2.5) + 1.65, Math.atan2(3.2, 2.5) * 180 / Math.PI, -5)")
-        steps(3, 0.1)
+        until(f"TA.st().n.gruss > {n0}", 8, 0.5)  # one greeting at a time, six seconds apart
+        steps(1, 0.1)
         g = J("TA.st()")
         ck('tag: passing by, the people at the van greet (neutral without the agent ruf: „Morgen.“)', g['n']['gruss'] > n0 and g['gruesse'] and g['gruesse'][-1]['text'] == 'Morgen.', str(g['gruesse'][-3:]))
         X("const F = GLALLTAG.debug.hin('ingrid'); GAME.view(F[0] - 1.2, F[1] - 1.0, KERN.ground(F[0] - 1.2, F[1] - 1.0) + 1.65, Math.atan2(1.2, 1.0) * 180 / Math.PI, -5)")
