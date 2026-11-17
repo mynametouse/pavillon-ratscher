@@ -95,6 +95,10 @@ nach Ansicht“ und „Markt fertig machen“; ~18:20: Schleusingen vollständig
 3. #310 (Bertholdstraße 22): ein Grundriss für mehrere Häuser (ockergelb, dazu ein moderner Glasbau an der Ecke; dahinter ein Glasdach).
 4. Für den Kern (`world/village.js`, nicht Teil dieses Zweigs): der Zweig `st == 9.0` (Klinker) im Fassaden-Shader wird nie erreicht –
    `barn` (6,5 < st < 9,5) fängt Stil 9 vorher ab.
+5. Haustüren, die man von der Straße nicht erreicht (gefunden, als die gelesenen Geschosse die Wahl im Treppenhaus-Abschnitt von
+   `schleusingen_innen` verschoben – #221 am Markt hat zwei Geschosse): #623 – die Straßentür 1,76 m über dem Pflaster auf der Talseite,
+   auf hohem Sockel ohne Stufen; #240 2,28 m darüber, #644 1,52 m darunter. Der Test wählt seither nur Treppenhäuser, deren Tür man vom
+   Pflaster erreicht (markiert, mit Zustimmung des Kern-Chats).
 
 ## Abgleich und Runde 3 (begonnen, Falko 19:39: Schritt für Schritt zur besten Übereinstimmung)
 
