@@ -43,7 +43,7 @@ export const BWHALM = (() => {
     tBwF: { value: one },
     uBwF: { value: new THREE.Vector4(0, 0, 0, 0) }, // orthophoto box (as world/ratscher.js: ex − e0, ey − n0, 1/w), w = on
     uBwAB: { value: new THREE.Vector2(1, 0) },
-    uBwP: { value: new THREE.Vector4(150, 1, 0, 0) }, // day of year, density scale, 0, 0
+    uBwP: { value: new THREE.Vector4(150, 1, 0, 0) }, // day of year, density scale, snow lying (0–1), hoarfrost (0–1)
   };
   // ---------- the patch of one tile: K blades, each 5 vertices (near: two segments and the tip) or 3 (one triangle) ----------
   function mulberry(a) {
@@ -194,6 +194,8 @@ void bwBlade( out vec3 P, out vec3 N ) {
   dens *= fade;
   float h = bwHeight( cls, q ) * mix( 0.55, 1.35, rH ) * mix( 0.72, 1.22, bwNoise( q * 0.37 + 5.3 ) );
   if ( uBwQ.x > 0.5 ) h *= smoothstep( 0.0, 0.5, fade );
+  // snow lying (wetter/wetter.js): the short grass under it, the tall sticks out of it, bowed
+  h = max( 0.0, h - 0.07 * uBwP.z ) * ( 1.0 - 0.3 * uBwP.z );
   float stripe = 0.0;
   if ( uBwM.z > 0.0 ) {
     vec2 mu = ( q - uBwM.xy ) * uBwM.zw;
@@ -230,6 +232,8 @@ void bwBlade( out vec3 P, out vec3 N ) {
   col *= 1.0 + 0.14 * stripe;
   float seed = k3.w * step( 0.72, fract( rT * 5.3 ) ) * smoothstep( 0.72, 1.0, t );
   vBwC = mix( col, vec3( 0.3, 0.24, 0.17 ), seed * 0.7 );
+  // hoarfrost on the tips, a little snow caught in tall grass
+  vBwC = mix( vBwC, vec3( 0.7, 0.74, 0.79 ), max( uBwP.w, 0.6 * uBwP.z ) * smoothstep( 0.35, 1.0, t ) * 0.75 );
 }
 `;
   function material(tag, ringU) {

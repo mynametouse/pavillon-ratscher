@@ -244,36 +244,46 @@ export const BWBLUME = (() => {
       for (const [fr, q] of Object.entries(b.bilder || {}))
         if (q && Array.isArray(q.zelle))
           frames[fr] = { cell: q.zelle[1] * 8 + q.zelle[0], k: Number.isFinite(q.hoehe) ? q.hoehe : 1 };
-      L.push({ id, h: b.hoehe_m.slice(0, 2), frames, jahr: b.jahr, col: b.farbe });
+      L.push({ id, h: b.hoehe_m.slice(0, 2), frames, jahr: b.jahr, col: b.farbe, colSeed: b.farbe_samen });
     }
     if (!L.length) return 0;
-    SP.length = 0;
-    SP.push(...L.slice(0, NS));
-    IDX = Object.fromEntries(SP.map((s, i) => [s.id, i]));
     const M = {};
+    const ids = new Set(L.slice(0, NS).map(s => s.id));
     for (const [c, e] of Object.entries(A.flaechen || {})) {
       const top = Object.entries((e && e.blumen) || {})
-        .filter(([id, v]) => IDX[id] !== undefined && v > 0)
+        .filter(([id, v]) => ids.has(id) && v > 0)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 8);
       if (top.length) M[c] = Object.fromEntries(top);
     }
     if (M[1]) M[18] = M[1]; // the garden's own lawn: the lawn's flowers
-    MIX = M;
-    S.MIX = M;
-    mixes();
-    // the atlas
-    if (base != null)
-      new THREE.TextureLoader().load(base + 'bewuchs/blumen.png', t => {
-        t.colorSpace = THREE.SRGBColorSpace;
-        t.anisotropy = 4;
-        atlas(t, null);
-        markDirty();
-      });
-    if (Number.isFinite(S.doy)) day(S.doy);
-    S.arten = true;
-    return SP.length;
+    // species and atlas together (the stand-in's cells are elsewhere): once the picture is there
+    const apply = tex => {
+      SP.length = 0;
+      SP.push(...L.slice(0, NS));
+      IDX = Object.fromEntries(SP.map((s, i) => [s.id, i]));
+      MIX = M;
+      S.MIX = M;
+      mixes();
+      atlas(tex, null);
+      S.arten = true;
+      markDirty();
+    };
+    if (base == null) apply(null);
+    else
+      new THREE.TextureLoader().load(
+        base + 'bewuchs/blumen.png',
+        t => {
+          t.colorSpace = THREE.SRGBColorSpace;
+          t.anisotropy = 4;
+          apply(t);
+        },
+        undefined,
+        e => (S.err = 'blumen.png: ' + String((e && e.message) || e || 'nicht geladen'))
+      );
+    return L.length;
   }
+
   // ---------- the flower patch: F slots per tile, each two crossed quads ----------
   function patch(F, ring) {
     const nv = 8,
@@ -358,7 +368,7 @@ void flPlant( out vec3 P ) {
   vFlUv = vec2( 0.0 );
   float code = flCode( q );
   int cls = int( mod( code, 32.0 ) );
-  if ( cls == 0 ) return;
+  if ( cls == 0 || uBwP.z > 0.3 ) return;   // no flowers under snow
   vec4 k3 = texelFetch( tBwK, ivec2( 3, cls ), 0 );
   // slots used: flowers per m² at peak × the tile's area / slots, by the ring's fade
   vec2 cm = vec2( cameraPosition.x, - cameraPosition.z );

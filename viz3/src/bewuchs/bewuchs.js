@@ -6,6 +6,7 @@
 //   bw_phaeno.js the year: heights, cuts, colours per kind of area (the helper bewuchs-pflanzen's table replaces the estimates)
 //   bw_halm.js   the blades in three rings around the camera
 //   bw_blume.js  the wildflowers on the same tiles (stage 2)
+//   bw_ferne.js  their colour in the ground far away (stage 2b, through a marked hook in world/roads.js)
 // Each frame (KERN.tick): the maps near the observer, the tiles in view, the day of the year (when it changed), the garden's mowing
 // (GRASS.MOW of garden/grass.js – the mower and the strategy view cut there – as a texture the blades read). The tier of the device
 // (render/render.js: hoch, mittel, schnell; phones and tablets the lightest) sets how far and how dense; a change rebuilds the rings
@@ -21,10 +22,13 @@ import { markDirty } from '../core/assets.js';
 import { GRASS } from '../garden/grass.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { RENDER } from '../render/render.js';
+import { WETTER } from '../wetter/wetter.js';
 import { BWKARTE } from './bw_karte.js';
 import { BWPHAENO } from './bw_phaeno.js';
 import { BWHALM } from './bw_halm.js';
 import { BWBLUME } from './bw_blume.js';
+import { BWFERNE } from './bw_ferne.js';
+import { ROADS } from '../world/roads.js';
 export const BEWUCHS = (() => {
   const S = {
     on: false,
@@ -165,12 +169,30 @@ export const BEWUCHS = (() => {
       }
       // the maps around the camera (the rings follow it)
       BWKARTE.want(cam.position.x, -cam.position.z);
+      // new map data (cells, the garden's site): the far bloom again
+      const kn = BWKARTE.loaded * 1000 + BWKARTE.site.n;
+      if (kn !== S.kn) {
+        S.kn = kn;
+        BWFERNE.refill();
+      }
+      BWFERNE.want(cam.position.x, -cam.position.z);
       BWKARTE.tick();
       const d = doyNow();
       if (!(Math.abs(d - S.doy) < 0.05)) {
         S.doy = d;
         BWHALM.day(d);
         BWBLUME.day(d);
+        BWFERNE.day(d);
+      }
+      // snow lying and hoarfrost of the weather (eased there)
+      const W = WETTER && WETTER.S,
+        sn = (W && W.snowC) || 0,
+        fr = (W && W.frostC) || 0,
+        P4 = BWHALM.U.uBwP.value;
+      if (Math.abs(sn - P4.z) > 0.01 || Math.abs(fr - P4.w) > 0.01) {
+        P4.z = sn;
+        P4.w = fr;
+        markDirty();
       }
       const t = window.CLOCK ? CLOCK.t : 0;
       if (mowDirty || (S.mowN && Math.abs(t - mowT) > 20)) mowUpload(t);
@@ -181,6 +203,8 @@ export const BEWUCHS = (() => {
     }
   }
   KERN.tick(tick, 'bewuchs');
+  // flowering meadows far away: the ground shaders call bwFar (marked hook in world/roads.js) – its body from bw_ferne.js
+  if (ROADS) ROADS.bwFar = BWFERNE.shader;
   // the garden's buildings moved or a worn patch changed (garden/grass.js footHideApply): the site texture again
   if (GRASS) GRASS.onFoot = () => BWKARTE.siteDirty();
   // built at load: the programs compile with the others before the first picture
@@ -213,6 +237,7 @@ export const BEWUCHS = (() => {
     karte: BWKARTE.state(),
     halm: BWHALM.stats(),
     blumen: BWBLUME.stats(),
+    ferne: BWFERNE.state(),
   });
   Object.assign(S, { state, set, SPEC });
   return S;

@@ -200,6 +200,7 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | Schlüssel | Inhalt |
 |---|---|
 | `pav-tier` | Grafikstufe (hoch/mittel/schnell) |
+| `pav-bewuchs-v1` | Gras und Blumen in 3D (voll/einfach/aus; Menü → Einstellungen → Grafik) |
 | `pav-light2` | Lichtmodus (auto/day/gold/dusk/night) |
 | `pav-variant`, `pav-facade`, `pav-style`, `pav-layout`, `pav-site`, `pav-plan-ts` | Entwurf: Variante, Fassade, Innenstil, Möbel, Gebäude/Zäune, Stand des veröffentlichten Plans |
 | `pav-gh-token` | GitHub-Schlüssel des Eigentümers zum Veröffentlichen des Plans (nur in seinem Browser, nie im Repo) |
@@ -251,6 +252,9 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Wald an der Klinge (`forest`), Fällen (`fell`, V16c2), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
   Kollision mit der Umgebung (`worldcol`), Bäume, die Fahrzeugen nachgeben (`treehit`)
 - `time/` – Uhr, Sterndaten, Tag und Nacht
+- `bewuchs/` – Bewuchs in 3D (feat/bewuchs, `docs/features/bewuchs.md`): Halme in drei Ringen um die Kamera (`bw_halm`, `BWHALM`), Wildblumen auf
+  denselben Kacheln (`bw_blume`, `BWBLUME`), das Jahr je Flächenart (`bw_phaeno`, `BWPHAENO`, rein), was wo wächst (`bw_karte`, `BWKARTE`),
+  die Arten des Hilfs-Agenten `bewuchs-pflanzen` (`bw_arten`, `BWARTEN`, rein), Stufe, Tag und Mähen (`bewuchs`, `BEWUCHS`)
 - `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster; Holz vom Stamm zum Brett (`holz`, `holz_saw`, `holz_dry`, V16d);
   Rückewinde und Kran (`winde`, `kran`)
 - `boot/` – Start
