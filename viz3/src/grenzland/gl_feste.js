@@ -520,8 +520,9 @@ export const GLFESTE = (() => {
         if (g <= 0.001 && !T.el.paused && d > 200) T.el.pause();
       } catch (e) {}
     }
-    // the music box of the Christmas market (no recording yet): a gentle tune in bells, note by note
-    if (F && F.musik && F.musik.spieluhr && g > 0.001) spieluhr(R, g, dt);
+    // the music box of the Christmas market – only while none of its recordings plays (another host, offline): a gentle tune in bells
+    const platte = !!(T.el && T.datei && !T.el.paused);
+    if (F && F.musik && F.musik.spieluhr && g > 0.001 && !platte) spieluhr(R, g, dt);
   }
   function naechstes(T, lieder) {
     const frei = lieder.filter(x => !T.fehl[x]);
