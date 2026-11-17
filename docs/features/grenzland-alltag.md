@@ -62,21 +62,36 @@ Vielleicht fliegen auch mal Vögel rum …“
   Material der Verkehrsfiguren (`VFIG.mat`) – kein neues Shader-Programm, keine Textur, keine Lampe; nur was nah und dran ist, wird
   gerechnet. `?novoegel` lässt sie weg. `VOEGEL.scheuchen(x, y, r)` scheucht alles in der Nähe auf (ein Böller des Modus tut es schon).
 
-## Feste im Kalender (`grenzland/gl_feste_data.js` GLFDATA – bisher nur Daten und Kalender)
+## Feste im Kalender (`grenzland/gl_feste_data.js` GLFDATA, `grenzland/gl_feste.js` GLFESTE)
 
-- Kirmes in Ratscher: **zweites Oktoberwochenende** (Sa 14–24, So 10–20 Uhr) – **Annahme**: ein Datum der echten Kirmes fanden wir nicht
-  (zwei Websuchen am 17.11.2026; das Region-Dossier führt es als „vor Ort fragen“). Weihnachtsmarkt in Schleusingen auf dem Markt an den
-  vier Adventswochenenden (Fr 16–21, Sa 12–21, So 12–19 Uhr; 2026: 27.11.–20.12.). Feuerwehrfest: **für das Spiel erfunden**, zweites
+- **Wann:** Kirmes in Ratscher am **zweiten Oktoberwochenende** (Sa 14–24, So 10–20 Uhr) – **Annahme**: ein Datum der echten Kirmes fanden
+  wir nicht (zwei Websuchen am 17.11.2026; das Region-Dossier führt es als „vor Ort fragen“). Weihnachtsmarkt in Schleusingen an den vier
+  Adventswochenenden (Fr 16–21, Sa 12–21, So 12–19 Uhr; 2026: 27.11.–20.12.). Feuerwehrfest: **für das Spiel erfunden**, zweites
   Juliwochenende an der alten Schule (im Spiel das Haus des Feuerwehrvereins); es beschreibt kein Fest eines echten Vereins.
-- Stände, Dienst (wer am Grill, an der Tombola steht), Verkauf, Tombola, Kalender (`kalender`, `offen`, `naechster`) sind fertig und
-  getestet; das Bauen in der Welt (`gl_feste.js`: Stände, Lichterketten ohne neue Lampen, Musik über ein Media-Element) kommt erst nach den
-  Leuten und den Vögeln (Lead, 17.11. ~14:00). Die Leute gehen schon heute auf ein Fest, sobald `GLFESTE.offen()` eines meldet.
+- **Wo und wie:** offen und der Spieler höchstens ~450 m entfernt, steht das Fest in der Welt – die Kirmes **rund um die Dorflinde** (unter der
+  Linde wurde getanzt) mit Kirmesbaum, der Weihnachtsmarkt **rund um den Brunnen auf dem Markt** mit Holzhütten, Tannengirlanden (im Winter
+  Schnee auf den Dächern) und einem Christbaum mit Lichterspirale, das Feuerwehrfest auf dem Rasen vor der alten Schule (ein Mast trägt die
+  Lichterketten). Die Stände suchen sich freien Boden im Ring um die Mitte und schauen zu ihr hin; Lichterketten vom Baum zu den Ständen
+  leuchten nachts (eine Kopie des Lampenmaterials der Autos wie bei den Glühbirnen der Feldscheune – keine neue Lampe, kein neues
+  Shader-Programm).
+- **Menge:** die Leute aus `gl_alltag.js` gehen hin – der Großteil des eigenen Ortes für eine Weile, ein Teil des anderen; wer Dienst hat,
+  steht die ganze Zeit hinter dem Stand (Kirmes: Uwe am Grill – der „Bratwurst-Uwe“ –, Ingrid an der Tombola, sie hat den Hauptpreis
+  gesucht, Kalle am Ausschank, Heike mit Kirmeskuchen; Weihnachtsmarkt: Tobias am Glühwein, Rainer an der Wurst, Bärbel an der Tombola,
+  Sabine beim Stollen; Feuerwehrfest: Manfred am Grill, Jens am Ausschank, Heike an der Tombola).
+- **Kaufen mit E:** Rostbratwurst (3 €), Bier oder Fassbrause, Kirmeskuchen, Glühwein oder Kinderpunsch, Stollen, ein Los der Tombola (1 €:
+  meist Niete, manchmal Honig, Kürbis, Gutschein, selten der Präsentkorb) – der Mensch hinter dem Stand sagt seinen Satz.
+- **Musik:** eine Polka der Kirmeswelle (`GLRDATA.LIEDER.kirmes`; Feuerwehrfest mit dem Waunobe March) über **ein** Media-Element, lauter, je
+  näher man ist, leiser unter dem Autoradio; Lieder des Klang-Repositorys nur, wo es erreichbar ist (`GLRDATA.ton()`), sonst die der Seite.
+  Weihnachtsmarkt: eine Spieluhr aus dem Synthesizer (eigene kleine Melodie, kein Weihnachtslied) – bis ein freies Stück da ist.
+- **Für Missionen:** `GLFESTE.aktiv()` → `{ id, name, ort, x, y, r, bis }`, `GLFESTE.deckung(x, y)` → 0 … 1 (Menge zum Untertauchen),
+  `KERN.emit('grenzland:fest', { id, an })`, `GLFESTE.kalender(t)`; zum Ausprobieren `GLFESTE.debug.zu('kirmes', 20 * 60 + 30)` (Datum und
+  Uhr auf die nächste Öffnung).
 
 ## Tests
 
 - Ohne Browser: `viz3/test/unit/grenzland_alltag.test.mjs` (Leute, Pläne, Schulbus, Wagen, Kirche, Winter, Nacht, Grundspiel zuerst,
   Feste, Kalender, Tombola, Sätze).
-- Im Browser: `viz3/test/grenzland_alltag.py` mit den Abschnitten `tag` (Ratscher), `stadt` (Schleusingen), `voegel`, `blick`
+- Im Browser: `viz3/test/grenzland_alltag.py` mit den Abschnitten `tag` (Ratscher), `stadt` (Schleusingen), `voegel`, `fest`, `blick`
   (Draufsichten zum Platzieren); Bilder in `out/grenzland_alltag/`. Liste für Actions: `viz3/extra/grenzland-alltag/tests.txt`.
 
 ## Für den Lead
@@ -84,7 +99,8 @@ Vielleicht fliegen auch mal Vögel rum …“
 - **Keine Zeile in `gl_modus.js` nötig:** `GLALLTAG` hängt sich wie `gl_ereignis.js` mit `KERN.tick(tick, 'grenzland/alltag')` ein und
   räumt bei `grenzland:stop` und `grenzland:era` auf. Wer die Reihenfolge im Takt des Modus will: `window.GLALLTAG && GLALLTAG.tick(dt)`
   nach `GLUMGEBUNG.tick(dt)` und das `KERN.tick` hier entfernen.
-- `modules.txt`: zwei Zeilen am Ende des Grenzland-Blocks (`gl_alltag_data.js`, `gl_alltag.js`), eine im Tiere-Block (`tiere/voegel.js`).
+- `modules.txt`: vier Zeilen am Ende des Grenzland-Blocks (`gl_alltag_data.js`, `gl_alltag.js`, `gl_feste_data.js`, `gl_feste.js`), eine im
+  Tiere-Block (`tiere/voegel.js`).
 - **Stimmen:** `GLALLTAG.linien()` (und später `GLFDATA.linien()`) in den Sammler `tools/voices/grenzland_linien.mjs` aufnehmen; die
   Sprecher heißen `al_<id>` (gesprochen `gl_al_<id>`). Für die sieben des Dorfs wären ihre Stimmen aus dem Grundspiel die richtigen
   (`STIMME`: `ingrid`, `uwe`, `manfred`, …).
@@ -94,5 +110,7 @@ Vielleicht fliegen auch mal Vögel rum …“
   zurück; fährt ein Bus von `GLLINIEN` dort vorbei, wäre das Einsteigen der nächste Schritt (noch nicht verdrahtet: sie gehen um 7:08).
 - **Für `laeden-leben`:** wer in einen Laden der Altstadt geht, verschwindet an dessen Tür (`SINNEN.doors`, offen nach `SINNEN.shopOpen`)
   und kommt nach ein paar Minuten heraus; drinnen sind eure Leute. `OEFFNUNG.offen(id, t)` nehme ich, sobald es da ist.
-- **Musik für den Weihnachtsmarkt:** ein freies Weihnachtsstück (CC BY / gemeinfrei) im Klang-Repository wäre gut – bis dahin ist eine
-  Spieluhr aus dem Synthesizer vorgesehen.
+- **Musik für den Weihnachtsmarkt:** ein freies Weihnachtsstück (CC BY / gemeinfrei) im Klang-Repository wäre gut – Eintrag in
+  `GLFDATA.FESTE.weihnachtsmarkt.musik.lieder` (Dateiname wie in `GLRDATA.LIEDER.kirmes`, dort mit `ton: true` eintragen); bis dahin spielt
+  eine Spieluhr aus dem Synthesizer.
+- **Die alte Zufalls-Kirmes** (`gl_ereignis.js`, Agent `strasse`) soll aus sein, sobald `window.GLFESTE` da ist (so im gemeinsamen Auftrag).

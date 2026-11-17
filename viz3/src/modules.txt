@@ -283,6 +283,8 @@ grenzland/gl_partner_data.js # feat/grenzland-partner talking with the other of 
 grenzland/gl_partner.js     # feat/grenzland-partner talking with the other of the two anywhere today: the prompt, the panel, topics, the AI person with quest context (GLPARTNER)
 grenzland/gl_alltag_data.js # feat/grenzland-alltag the day plans of the village people: who, where, when, what they say – pure (GLALDATA)
 grenzland/gl_alltag.js      # feat/grenzland-alltag the village people in the world by the clock: near the player, groups, shops, greetings (GLALLTAG)
+grenzland/gl_feste_data.js  # feat/grenzland-alltag festivals by the calendar: Kirmes, Christmas market, Feuerwehrfest – dates, stalls, tombola – pure (GLFDATA)
+grenzland/gl_feste.js       # feat/grenzland-alltag the festivals in the world: stalls, a tree, strings of bulbs, the crowd, music, buying (GLFESTE)
 # feat/tiere: the animals of the region and the dog below this line (after the forest, the vehicles, the neighbours and their goats; before the frame loop)
 tiere/tiere_arten.js        # feat/tiere the animals around Ratscher: species, profiles with sources, flight distances, signs – data (TARTEN)
 tiere/tiere_koerper.js      # feat/tiere the bodies: procedural, true to size, skinned, the coat in vertex colours, gaits and poses (TKOERPER)
