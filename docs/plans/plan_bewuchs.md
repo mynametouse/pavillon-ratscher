@@ -1,7 +1,7 @@
 # Plan: Bewuchs in 3D – Rasen, Gras, Wildblumen, Büsche, Beete (die ganze Welt)
 
-Stand: 17.11.2026, 21:00 · Straßen-Chat (session_01WqScFDtq8GSy4n7wU7foJx) · **nur Plan** – gebaut wird nach Falkos Okay. Falkos Wunsch
-vom 17.11., 20:19:
+Stand: 17.11.2026, 21:45 · Straßen-Chat (session_01WqScFDtq8GSy4n7wU7foJx) · **Stufe 1 und 2 in Arbeit** (Falko 21:30: beides zugleich,
+mit zwei Hilfs-Agenten). Falkos Wunsch vom 17.11., 20:19:
 
 > „… insbesondere nochmal um den Garten kümmern, um [Rasen] und eine Vorlage für Gras bauen, denn das Gras ist noch 2D, komplett flach,
 > also Bäume sind in 3D, was aber fehlt, sind sowas wie Büsche mit Beeren, Gräser, Blumen und was so üblicherweise dort wächst auf Wiesen.
@@ -179,14 +179,17 @@ Hauptprozessor.
   Schnittstelle für Mähen, Draufsicht und Zukunft), `world/roads.js` (`landDetail`), `welt/welt.js` (Bodenfarbe), `garden/env.js`
   (Boden im Garten), `dorf/dorf_life.js` (`beds()`).
 
-## 7. Entscheidungen (offen – Falko)
+## 7. Entscheidungen (Falko, 17.11.2026 ~21:30, angeklickt)
 
-1. **Anfang:** Stufe 1 (Rasen und Gras, Garten und Ratscher) – Empfehlung; sonst Wiesen und Blumen zuerst.
-2. **Äcker:** Weizen, Gerste, Raps, Mais nach Monat, Stoppeln, Furchen – ein großer Teil der heute flachen Fläche; Empfehlung: ja, als
-   letzter Schritt von Stufe 5.
-3. **Tempo:** Stufe für Stufe in diesem Chat, oder mit Hilfs-Agenten parallel (Vorlage, Daten, Pflanzenmodelle) – schneller, aber mehr
-   Abstimmung und Kosten.
+1. **Anfang:** „Versuch beides, Rasen und Gras und Wiesen und Wildblumen zugleich.“ – Stufe 1 und 2 laufen zusammen.
+2. **Äcker:** ja, als letzter Schritt (Weizen, Gerste, Raps, Mais nach Monat, Stoppeln, Furchen – mit Stufe 5).
+3. **Tempo:** mit zwei Hilfs-Agenten – `bewuchs-daten` (die Karten der Flächenart: wo was wächst, Auftrag
+   `docs/plans/auftraege/bewuchs-daten.md`) und `bewuchs-pflanzen` (Gräser, Wildblumen, ihr Jahr und der Blumenatlas, später Büsche und
+   Beetpflanzen: `docs/plans/auftraege/bewuchs-pflanzen.md`); die Vorlage selbst (Halme, Blumen zeichnen, Boden, Mähen, Budget) baut der
+   Straßen-Chat.
 4. Büsche ab ~1 m fest (wie Stämme), darunter durchgehbar – so geplant.
+5. Abgrenzung bestätigt (Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv, 20:44): Rasen, Baumscheiben und Beete unter `stadtgruen`s Bäumen und
+   Hecken, die Krautschicht in `welt-wald`s Wäldern, Vorgärten und Gärten an `welt-orte`s Häusern kommen von hier.
 
 ## 8. Technik im Detail (für die Umsetzung)
 
