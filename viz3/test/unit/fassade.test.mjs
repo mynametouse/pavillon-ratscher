@@ -14,7 +14,9 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DATA = JSON.parse(
   fs.readFileSync(path.join(HERE, '..', '..', 'extra', 'schleusingen', 'dist', 'schleusingen', 'stadt.json'), 'utf8')
 );
-const OSM = JSON.parse(fs.readFileSync(path.join(HERE, '..', '..', 'extra', 'gebaeude', 'dist', 'gebaeude', 'osm.json'), 'utf8'));
+const OSM = JSON.parse(
+  fs.readFileSync(path.join(HERE, '..', '..', 'extra', 'gebaeude', 'dist', 'gebaeude', 'osm.json'), 'utf8')
+);
 
 // a box building in the town data's format (CCW footprint, one facade per side, eave e, flat top line)
 function box(i, x0, y0, x1, y1, o = {}) {
@@ -24,7 +26,18 @@ function box(i, x0, y0, x1, y1, o = {}) {
   for (let k = 0; k < 4; k++) {
     const a = k * 2,
       b = ((k + 1) % 4) * 2;
-    F.push([f[a], f[a + 1], f[b], f[b + 1], e, 0, e, e, (o.blind || []).includes(k) ? 1 : 0, (o.street || {})[k] ?? 99]);
+    F.push([
+      f[a],
+      f[a + 1],
+      f[b],
+      f[b + 1],
+      e,
+      0,
+      e,
+      e,
+      (o.blind || []).includes(k) ? 1 : 0,
+      (o.street || {})[k] ?? 99,
+    ]);
   }
   return { i, k: o.k || 0, f, e, F, st: { style: o.style || 0, sp: 2.8, raised: false } };
 }
@@ -42,7 +55,10 @@ test('windows: a house wall of 10 m, two storeys, three bays – six windows, fi
   assert.equal(FAUDIT.windows(facade(10, { LF: 0.5 })).length, 0);
   // a gable: attic windows up to the apex
   const g = FAUDIT.windows(facade(9, { tA: 11, uA: 4.5, gable: true }));
-  assert.ok(g.some(w => w.fi >= 2), JSON.stringify(g));
+  assert.ok(
+    g.some(w => w.fi >= 2),
+    JSON.stringify(g)
+  );
 });
 
 test('windows: a hall of 3.45 m eave gets none from the shader, one of 4.5 m a ribbon', () => {
@@ -168,6 +184,18 @@ test('Schleusingen: the yards of the old town, a gateway into the big one, the c
       dy = (p[n - 1] - p[1]) / L,
       P = FAUDIT.passLine(burg, [p[0] - dx * 3, p[1] - dy * 3, p[n - 2] + dx * 3, p[n - 1] + dy * 3], 3);
     assert.ok(P && P.depth > 6 && P.depth < 14, m.osm + ' ' + JSON.stringify(P && P.depth));
-    assert.ok(castle.at(P.B[0] + P.d[0] * 1.2, P.B[1] + P.d[1] * 1.2) || castle.at(P.A[0] - P.d[0] * 1.2, P.A[1] - P.d[1] * 1.2));
+    assert.ok(
+      castle.at(P.B[0] + P.d[0] * 1.2, P.B[1] + P.d[1] * 1.2) || castle.at(P.A[0] - P.d[0] * 1.2, P.A[1] - P.d[1] * 1.2)
+    );
   }
+});
+
+test('stufen: steps from a door on its plinth down to the ground, none where the door is at the ground', () => {
+  const s = FAUDIT.stufen(10.6, 10.0);
+  assert.ok(s.length >= 3 && s.length <= 4, String(s.length));
+  assert.ok(Math.abs(s[0].top - 10.6) < 1e-9 && s[0].d === 0.5);
+  for (let i = 1; i < s.length; i++) assert.ok(s[i].top < s[i - 1].top && s[i].d > s[i - 1].d);
+  assert.ok(s[s.length - 1].top - 10.0 < 0.2);
+  assert.equal(FAUDIT.stufen(10.05, 10.0).length, 0);
+  assert.equal(FAUDIT.stufen(13, 10.0).length, 0); // a wall over a slope, not a door to climb to
 });
