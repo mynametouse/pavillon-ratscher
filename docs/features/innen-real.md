@@ -110,9 +110,12 @@ dieselben Räume „nachher“: `out/innen_real/nachher/`. Was ein Fremder sofor
   nachmittags Sofa, 17:30–18:30 wieder am Herd, Abendbrot am Tisch, ab 19:15 **Sofa mit laufendem Fernseher**, nachts **im Bett unter der
   Decke** (Schlafpose `lie`, der Körper vom Kissen zum Fußende gedreht, die Decke darüber – 28 cm hoch, bis zur Matratze gerundet, in der
   Bettwäsche des Haushalts: weiß, hellblau, rosé oder salbei); **sitzend auf der Höhe des Polsters** (ein Strahl von oben findet die
-  Sitzfläche: die Couch der DDR ist höher als ein Sofa von heute – vorher saß Gerhard bis zur Hüfte im Kissen); geht die Stunde weiter, solange man drin ist,
+  Sitzfläche: die Couch der DDR ist höher als ein Sofa von heute – vorher saß Gerhard bis zur Hüfte im Kissen), auf der Couch **die Knie
+  über ihrer Vorderkante** (weitere Strahlen finden, wo die Sitzfläche endet; die Beine hingen vorher in der Couch), **beim Essen auf dem
+  Stuhl** (am Tisch mit der Eckbank saß er zwischen den Stühlen in der Luft); geht die Stunde weiter, solange man drin ist,
   wechseln sie den Platz; „… grüßen“ nicht, solange einer schläft. Nachts brennt im Raum, in dem sie sind, das Licht. Getestet an Gerhard
-  (247) um 14, 11:40, 19:30 und 23 Uhr (`out/innen_real/<tag>/r_gerhard_{nachmittag,mittag,abend,nacht}.jpg`).
+  (247) um 6:35, 14, 11:40, 19:30 und 23 Uhr (`out/innen_real/<tag>/r_gerhard_{fruehstueck,nachmittag,mittag,abend,nacht}.jpg`; der Test
+  druckt beim Sitzen, wo Becken, Knie und Füße vor dem Platz stehen – Zeile `sitzt`).
 - **Prüfung** (`ZINNEN` `H.survey()`): Küche mit Spüle und Herd, Bad mit WC und Waschbecken, Bett in jedem Schlafzimmer, Haustür in den Flur,
   Fenster innen wie außen, Lampe in jedem Wohnraum, die Ausstattung gezählt, eine Signatur des Wohnzimmers (keine zwei gleich).
 
@@ -170,9 +173,12 @@ Mehr Dreiecke vor allem durch die gerundeten Polster, Pflanzen und Stühle – i
   (eine Küche ohne Spüle – behoben), 2 (826e8109) grün außer `innen_real` (ein kleines Haus ohne Bad, ein Treppenhaus mit falsch
   gezählten Fenstern – beides behoben), 3 (957b859c) grün außer dem kleinen Haus 281 (Küche ohne Zeile, Schlafzimmer ohne Bett – behoben),
   4 (1af25e80) grün außer Gerhard nachts (sein Haus hatte kein Schlafzimmer mehr: die Teilung war zu streng – behoben), 5 (83754066)
-  **alles grün** (der Stand zum Zusammenführen um 17:30; `haeuser:bilder=1` 35/35, Durchgang aller 230 Häuser: höchstens 60 Draw-Calls,
-  116 000 Dreiecke, Bauzeit im Mittel 175 ms). Danach Stufe 2 (siehe oben: Bilder, Pflanzen, Stühle, Sofa, Bettdecke, Sitzhöhe,
-  Lichtfleck, gezeichnete Raufaser) – Prüflauf 6.
+  **alles grün** (Stufe 1; `haeuser:bilder=1` 35/35, Durchgang aller 230 Häuser: höchstens 60 Draw-Calls, 116 000 Dreiecke, Bauzeit im
+  Mittel 175 ms), 6 (7f4a97b9, Stufe 2: Bilder, Pflanzen, Stühle, Sofa, Bettdecke, Sitzhöhe, Lichtfleck, gezeichnete Raufaser, die zwei
+  Zeilen aus `wip/zombie-kit`) **alles grün** (`innen_real` 20/20 und 13/13, `haeuser` 35/35 – Durchgang: höchstens 60 Draw-Calls,
+  132 000 Dreiecke, im Mittel 206 ms –, `zombie_innen` 72/72, beide Hälften `schleusingen_innen`, `memphone`), 7 (Kalender, Essplatz am
+  Tisch mit Eckbank, Frühstück im Test) siehe Bericht. Lokal (Port 9046, `nur=`): Gerhards Haus, das Haus „alt“, Szene, „gross“, „klein“
+  in `out/innen_real/probe2` … `probe6`.
 
 ## 6 Für den Lead
 

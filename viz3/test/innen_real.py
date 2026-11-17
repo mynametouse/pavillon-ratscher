@@ -228,7 +228,8 @@ with lib.browser() as b:
             svs.append(house('r', hid, lbl, night=NIGHT and i < 2))
         # the villager at home by the hour (haeuser/haeuser.js doing): Gerhard in the afternoon on his couch, at noon at the stove, late in
         # the evening with the TV on, at night asleep in his bed – each time the first minute of the hour's span when dorf's day has him in
-        for label, h0, h1, want, md in (('nachmittag', 14, 17, ('sofa', 'tisch'), 'day'), ('mittag', 11.6, 12.4, ('herd',), 'day'),
+        for label, h0, h1, want, md in (('fruehstueck', 6.6, 7.9, ('tisch',), 'day'), ('nachmittag', 14, 17, ('sofa', 'tisch'), 'day'),
+                                         ('mittag', 11.6, 12.4, ('herd',), 'day'),
                                          ('abend', 19.5, 22.3, ('tv',), 'night'), ('nacht', 23, 23.9, ('bett',), 'night')) if GAST else ():
             t = J(f"""(() => {{ const d = Math.floor(CLOCK.t / 1440) + 1; for (let m = Math.round({h0} * 60); m < Math.round({h1} * 60); m += 5) {{ const t = d * 1440 + m;
               if (!DLIFE.away('gerhard', t) && !DLIFE.routine('gerhard', t) && !DCAL.on('skat', t) && !DCAL.on('fire', t)) {{ CLOCK.t = t; return t; }} }} return null; }})()""")
@@ -249,7 +250,7 @@ with lib.browser() as b:
                 shot(f'r_gerhard_{label}', {'house': 247, 'doing': g.get('doing')})
                 # sitting: where his knees and hips are – metres before the spot along his heading and above the floor (the seat's front edge
                 # at.front, its top at.seatTop): the legs belong in front of the couch, the thighs on its cushion
-                if (g.get('at') or {}).get('mode') == 'sit':
+                if (g.get('at') or {}).get('mode') == 'sit':  # (at the table too: hips over the chair, knees towards the table)
                     kn = J("""(() => { const f = HGAST.f, at = f.at, a = at.hd * Math.PI / 180, dx = Math.sin(a), dy = Math.cos(a), out = {};
                       f.g.traverse(o => { if (o.isBone && /Hips$|LeftLeg$|LeftFoot$|_Pelvis$|_L_Calf$|_L_Foot$/.test(o.name.replace(/_\\d+$/, ''))) { const v = o.getWorldPosition(new THREE.Vector3());
                         out[o.name.replace(/^mixamorig:?/, '').replace(/_\\d+$/, '')] = [+(((v.x - at.x) * dx + (-v.z - at.y) * dy)).toFixed(3), +(v.y - at.z).toFixed(3)]; } });

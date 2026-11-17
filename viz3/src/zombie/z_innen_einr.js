@@ -304,7 +304,8 @@ export const ZIEINR = (() => {
     // (feat/innen-real: facing the table – they had stood sideways to it)
     L.chair(C, F, tu + tw * 0.3, tv + td + 0.32, -Math.PI / 2, wood);
     L.chair(C, F, tu + tw * 0.75, tv + td + 0.32, -Math.PI / 2, wood);
-    C.spot('tisch', F.P(tu + tw / 2, tv + td + 0.55, z), F, null);
+    // (the place at the table on the second chair – the villager sits there at his meals; between the chairs he had sat on air)
+    C.spot('tisch', F.P(tu + tw * 0.75, tv + td + 0.32, z), F, null);
     C.seat(F.P(u0 + LA * 0.6, 0.25, z), F, 'Auf die Eckbank setzen');
     C.solid(F.rect(u0, u0 + LA, 0, 0.48), z, z + 0.92);
     C.solid(F.rect(ub, ub + 0.48, 0.48, 0.48 + LB), z, z + 0.92);
