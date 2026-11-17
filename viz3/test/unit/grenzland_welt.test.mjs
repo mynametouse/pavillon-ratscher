@@ -117,7 +117,8 @@ test('random events: only in free play, after minutes of driving, where they fit
   assert.ok(P.next >= 150 && P.next <= 300);
   // the same again only after a quarter of an hour
   const Q = G.planNeu();
-  Q.zuletzt = { blitzer: 100, traktorstau: 100 };
+  // (feat/grenzland-strasse: the hitchhiker and the breakdown come on the land by day too)
+  Q.zuletzt = { blitzer: 100, traktorstau: 100, anhalter: 100, panne: 100 };
   Q.fahrt = 999;
   assert.equal(G.plan(Q, ctx({ t: 500 }), r), '', 'both were there a few minutes ago');
   assert.equal(G.plan(Q, ctx({ t: 1100 }), r), 'blitzer');
