@@ -289,11 +289,20 @@ if want & {'hirschbach', 'strecke'}:
                 if calm >= 6 and time.time() - t0 > 20:
                     break
                 time.sleep(0.25)
-            for _ in range(10):   # a cell set down again when the tiles under it came in
-                E("GAME.step(0.5)")
+            # a cell is set down again when the tiles under it came in after it was built (gebaeude.js: its probe – every seventh
+            # building – off by more than 0.4 m, one cell every 2 s, built again in pieces): wait until no built cell has one off and
+            # nothing is being built
+            PEND = ("[...GEB.Z.cells.values()].filter(c => c.meshes.length && c.probe && c.probe.some(([x, y, z]) => "
+                    "{ const g = KERN.terrain(x, y); return Number.isFinite(g) && Math.abs(g - z) > 0.4; })).length + GEB.jobs() + (GEB.Z.busy ? 1 : 0)")
+            t1, ok = time.time(), 0
+            while time.time() - t1 < 180 and ok < 4:
+                for _ in range(4):
+                    E("GAME.step(0.5)")
+                ok = ok + 1 if J(PEND) == 0 else 0
                 time.sleep(0.1)
             s = J(f"{NEAR}({cx}, {cy}, {R})")
             s['secs'] = round(time.time() - t0)
+            s['reseated'] = J("[...GEB.Z.cells.values()].reduce((n, c) => n + (c.reseat || 0), 0)")
             return s
 
         DRAW = """(() => { let meshes = 0, tris = 0, bytes = 0; for (const c of GEB.Z.cells.values()) for (const m of c.meshes) { meshes++; const g = m.geometry;
