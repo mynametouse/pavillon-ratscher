@@ -17,6 +17,7 @@ import { TREES } from '../garden/trees.js';
 import { warmUp } from '../render/render.js';
 import { P } from '../game/walkable.js';
 import { go } from '../game/player.js';
+import { toast } from '../audio/audio.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
 import { WELT } from './welt.js';
@@ -154,9 +155,8 @@ export const SUHL = (() => {
   S.data.each = (...a) => S.load().then(p => p.data.each(...a));
   // Suhl 1989 – the night at the gate (lazy/suhl/kern/jahr1989.js): for Grenzland's mission 3, „Die Nacht am Tor“. SUHL.jahr1989(true,
   // { nacht }) → Promise of { on, built, people, candles, banners, fence, cars, err }; false gives everything back. To look at it without
-  // the mission: ?suhl1989=1 switches it on when Suhl is built (with the clock at 20:30).
+  // the mission: the scene „Suhl 1989: Nacht am Tor“ (menu Szenen, ?szenario=suhl1989, or ?suhl1989=1) – below the places to jump to.
   S.jahr1989 = (on, o) => S.load().then(p => (p.jahr1989 ? p.jahr1989(on, o) : null));
-  if (/[?&]suhl1989=1/.test(location.search)) built.push(() => S.jahr1989(true, { nacht: true }));
   Object.defineProperty(S.data, 'meta', { get: () => (api ? api.data.meta : null) });
   S.status = () =>
     Object.assign(
@@ -172,11 +172,36 @@ export const SUHL = (() => {
     suhl_steinweg: [[-4753.5, 12321.8], -131, 'Suhl, Steinweg'], // on the street's axis, 5 m from the houses on both sides (was inside Steinweg 18)
     suhl_bahnhof: [[-5352, 11938], -120, 'Suhl, Bahnhof'],
     suhl_ccs: [[-4990, 12400], -62, 'Suhl, Congress Centrum'],
+    // Suhl 1989: in the Hölderlinstraße 16 m before the gate of the Stasi's district office, in the crowd, facing the gate (the layer
+    // keeps room and an aisle behind for the camera – lazy/suhl/kern/jahr1989.js); Falko, 18.11.2026: the way there from the Markt was 700 m
+    suhl1989: [[-3961.2, 12377.5], 177, 'Suhl 1989, Hölderlinstraße'],
   };
   S.SPOTS = SPOTS;
   for (const [k, [pos, yaw, label]] of Object.entries(SPOTS))
     KERN.spot(k, { mode: 'walk', pos, z: 60, yaw, pitch: 4, label });
   KERN.scenario('suhl', { label: 'Suhl, Markt', order: 33, menu: S.MENU, run: () => go('suhl') });
+  // the night of 4 December 1989 before the gate (Grenzland's mission 3 switches the layer on itself, with its own people)
+  KERN.scenario('suhl1989', {
+    label: 'Suhl 1989: Nacht am Tor',
+    order: 34,
+    menu: S.MENU,
+    ask: 'stellt die Uhr auf den 4. Dezember 1989, 20:30, und zeigt Suhl, wie es damals war',
+    run: () => {
+      go('suhl1989');
+      S.jahr1989(true, { nacht: true, spieler: true });
+      toast(
+        'Suhl, Montag, 4. Dezember 1989, 20:30 Uhr: Tausende stehen mit Kerzen vor der Bezirksverwaltung der Staatssicherheit. ' +
+          'Das Suhl von heute: Seite neu laden.',
+        9000
+      );
+    },
+  });
+  // ?suhl1989=1 (since V19h the address to look at it): the same scene once the page is up – unless another one is asked for
+  if (QS.get('suhl1989') === '1' && !QS.get('szenario'))
+    KERN.until(() => window.PAV_LOADED, 3600).then(
+      () => setTimeout(() => KERN.scenario('suhl1989').run(), 500),
+      () => {}
+    );
   if (S.MENU) {
     // the menu entries (off with ?suhl=0; game/input.js has bound its chips before this module runs)
     // the menu was bound before this chip existed (game/hud.js closes it for every data-spot it found): close it here as well

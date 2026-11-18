@@ -185,7 +185,12 @@ export async function start(ctx) {
     tick,
     covers: (x, y) => B.on && B.covers(x, y),
     ownFade: (x, y) => (B.on ? B.ownFade(x, y) : 1),
-    pushOut: (p, r) => (C.on ? C.pushOut(p, r) : undefined),
+    // walls and trunks; in 1989 also the people, the fence and the gate before the Stasi's office (kern/jahr1989.js)
+    pushOut(p, r) {
+      const a = J && J.on ? J.pushOut(p, r) : undefined,
+        b = C.on ? C.pushOut(p, r) : undefined;
+      return a || b;
+    },
     place(x, y) {
       if (!B.on || !B.covers(x, y)) return undefined;
       const n = ST.on ? ST.nameAt(x, y) : null;
@@ -274,6 +279,7 @@ export async function start(ctx) {
     },
     // Suhl 1989 on or off (Grenzland's mission 3, or ?suhl1989=1): { on, built, people, candles, banners, fence, cars, err }
     jahr1989: (on, o) => (J ? J.set(on, o) : null),
+    jahr1989dbg: () => (J ? J.dbg() : null),
     status: () => ({
       on: A.on,
       d: Math.round(A.d),

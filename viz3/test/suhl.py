@@ -752,6 +752,16 @@ def jahr1989():
         for _ in range(6):
             E("GAME.step(0.5)")
         after = J("({ e0: DN.e0, t: CLOCK.t, st: SUHL.status().jahr1989 })")
+        # the scene „Suhl 1989: Nacht am Tor“ (menu Szenen, ?szenario=suhl1989, ?suhl1989=1): to the gate, the layer on, the player dressed
+        sc = J("(() => { const s = KERN.scenario('suhl1989'); if (!s) return null; s.run(); return { label: s.label, ask: !!s.ask, x: GAME.P.x, y: GAME.P.y, yaw: GAME.P.yaw }; })()")
+        for _ in range(4):
+            E("GAME.step(0.5)")
+        on = J("SUHL.status().jahr1989")
+        ck('1989: the scene jumps to the gate (16 m before it in the Hölderlinstraße) and switches the layer on',
+           sc and abs(sc['x'] + 3961.2) < 0.5 and abs(sc['y'] - 12377.5) < 0.5 and sc['ask'] and on and on['on'], json.dumps({'sc': sc, 'st': on}))
+        E("SUHL.jahr1989(false)")
+        for _ in range(4):
+            E("GAME.step(0.5)")
         ck('1989: off – the layer gone, the date as before', not after['st']['on'] and not after['st']['built'] and after['st']['real'] == 0 and after['e0'] == before['e0'],
            json.dumps({'before': before, 'after': after}))
         ck.errors(errs)

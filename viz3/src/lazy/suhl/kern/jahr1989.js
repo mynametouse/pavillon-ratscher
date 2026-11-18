@@ -15,7 +15,14 @@
 //   - the crowd: about 1 700 people drawn (instanced: legs, coat, head, a cap for some; winter colours of the time), on the street in front
 //     of the gate and up the side roads, facing the gate, swaying a little; four in ten hold a candle (the flames flicker); banners with the
 //     slogans on poles above them; a few Volkspolizisten inside the gate;
-//   - cars of the time (Grenzland's GLAUTO: Trabant, Wartburg, Barkas) parked along the streets further down, when that module is there.
+//   - cars of the time (Grenzland's GLAUTO: Trabant, Wartburg, Barkas) parked along the streets further down, when that module is there;
+//   - one does not walk through it (Falko, 18.11.2026 20:54 „machst du weiter?“ – open since V19h): the people, the fence and the gate hold
+//     the walker and vehicles off (KERN.pushOut through the package: a point within 0.6 m of the observer, or a probe of 0.5 m and more –
+//     the figures of a mission walk on as before); whom the walker presses gives way a little, across his way, and comes back after a
+//     while – so one gets through the crowd step by step, as in a real one;
+//   - no buses of today while it is on (the stop „Suhl, Hölderlinstraße“ is 36 m from the gate; Grenzland's flashback does the same);
+//   - the jump point welt/suhl.js SPOTS.suhl1989 (scene „Suhl 1989: Nacht am Tor“, ?suhl1989=1): 16 m before the gate in the street,
+//     an aisle in the crowd behind it, where the camera stands.
 // The mission puts its own people (Gerhard, the witness, the driver with the Barkas) on top; the night itself (clock, weather) is its
 // business – api.jahr1989(true, { nacht: true }) sets 20:30 for a look without the mission.
 // The compound lies in a loop of the Hölderlinstraße (south, west and north of it); the drive into the courtyard leaves the street's
@@ -58,7 +65,9 @@ export function jahr1989(ctx, C, ST, api) {
     G = new THREE.Group();
   G.name = 'suhl 1989';
   let undo = [],
-    mats = [];
+    mats = [],
+    HASH = null; // the people in cells of 2 m (S.pushOut)
+  const WALLS = []; // the fence, the gate and its pillars: [x0, y0, x1, y1, half width]
   const hh = n => {
     const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
     return x - Math.floor(x);
@@ -119,6 +128,33 @@ export function jahr1989(ctx, C, ST, api) {
   }
   // the side of the compound: the normal of the street towards the centre of the compound
   const towardIn = (x, y) => (CENTRE[0] - x) * INWARD[0] + (CENTRE[1] - y) * INWARD[1];
+
+  // ---- where a person stands right now: the spot, moved aside by (ox, oy) while giving way (oz: the ground there) ----
+  const _q = new THREE.Quaternion(),
+    _e = new THREE.Euler(),
+    _v = new THREE.Vector3(),
+    _sc = new THREE.Vector3();
+  const at = f => [f.x + (f.ox || 0), f.y + (f.oy || 0), f.oz === undefined ? f.z : f.oz];
+  function bodyM(f, m) {
+    const [x, y, z] = at(f);
+    _e.set(0, -f.hd, 0, 'YXZ');
+    _q.setFromEuler(_e);
+    _sc.set(f.s, f.s, f.s);
+    return m.compose(_v.set(x, z, -y), _q, _sc);
+  }
+  // a candle: in the right hand in front of the chest (up: the flame above the wax)
+  function candleM(f, up, m) {
+    const [x, y, z] = at(f),
+      fx = Math.sin(f.hd),
+      fy = Math.cos(f.hd),
+      rx = Math.cos(f.hd),
+      ry = -Math.sin(f.hd);
+    return m.makeTranslation(
+      x + fx * 0.28 * f.s + rx * 0.11 * f.s,
+      z + 1.1 * f.s + up,
+      -(y + fy * 0.28 * f.s + ry * 0.11 * f.s)
+    );
+  }
 
   // ---- the people: one instanced mesh per part (legs, coat, head, cap) and the candles' wax and flames ----
   function figures(list) {
@@ -212,15 +248,16 @@ export function jahr1989(ctx, C, ST, api) {
       emissive: '#0e0804',
       emissiveIntensity: 1,
     });
-    // a slow sway (weight from one foot to the other) in the vertex shader: by instance, more at the shoulders than at the feet
+    // a slow sway (weight from one foot to the other) in the vertex shader: by person (aPh – the instance's number differs between the
+    // parts, a cap swayed off its head with it), more at the shoulders than at the feet
     const U = { uT: { value: 0 } };
     mat.onBeforeCompile = sh => {
       sh.uniforms.uT = U.uT;
       sh.vertexShader =
-        'uniform float uT;\n' +
+        'attribute float aPh;\nuniform float uT;\n' +
         sh.vertexShader.replace(
           '#include <begin_vertex>',
-          '#include <begin_vertex>\n float ph = float( gl_InstanceID ) * 1.7317; transformed.x += sin( uT * 0.9 + ph ) * 0.018 * transformed.y; transformed.z += sin( uT * 0.63 + ph * 1.3 ) * 0.01 * transformed.y;'
+          '#include <begin_vertex>\n float ph = aPh; transformed.x += sin( uT * 0.9 + ph ) * 0.018 * transformed.y; transformed.z += sin( uT * 0.63 + ph * 1.3 ) * 0.01 * transformed.y;'
         );
     };
     mat.customProgramCacheKey = () => 'suhl1989-fig';
@@ -233,28 +270,22 @@ export function jahr1989(ctx, C, ST, api) {
       [hairG, i => (list[i].cap ? null : list[i].hair)],
     ];
     const m4 = new THREE.Matrix4(),
-      q = new THREE.Quaternion(),
-      e = new THREE.Euler(),
-      v = new THREE.Vector3(),
-      sc = new THREE.Vector3(),
       col = new THREE.Color();
     for (const [geo, colOf] of parts) {
-      const cnt = list.filter((f, i) => colOf(i)).length;
-      const me = new THREE.InstancedMesh(geo, mat, Math.max(1, cnt));
+      const cnt = list.filter((f, i) => colOf(i)).length,
+        me = new THREE.InstancedMesh(geo, mat, Math.max(1, cnt)),
+        ph = new Float32Array(Math.max(1, cnt));
       let k = 0;
       list.forEach((f, i) => {
         const c = colOf(i);
         if (!c) return;
-        e.set(0, -f.hd, 0, 'YXZ');
-        q.setFromEuler(e);
-        sc.set(f.s, f.s, f.s);
-        v.set(f.x, f.z, -f.y);
-        m4.compose(v, q, sc);
-        me.setMatrixAt(k, m4);
+        me.setMatrixAt(k, bodyM(f, m4));
         me.setColorAt(k, col.set(c));
-        (f.inst || (f.inst = [])).push([me, k]); // where this one is drawn (a real figure folds it away)
+        ph[k] = i * 1.7317;
+        (f.inst || (f.inst = [])).push([me, k]); // where this one is drawn (a real figure folds it away, giving way moves it)
         k++;
       });
+      geo.setAttribute('aPh', new THREE.InstancedBufferAttribute(ph, 1));
       me.count = k;
       me.castShadow = false;
       me.receiveShadow = false;
@@ -301,20 +332,10 @@ export function jahr1989(ctx, C, ST, api) {
       const W = new THREE.InstancedMesh(waxG, waxM, lit.length),
         F = new THREE.InstancedMesh(flG, flM, lit.length),
         H = new THREE.InstancedMesh(glowG, glowM, lit.length);
+      W.userData.up = 0;
+      F.userData.up = H.userData.up = 0.09;
       lit.forEach((f, i) => {
-        // in the right hand in front of the chest
-        const fx = Math.sin(f.hd),
-          fy = Math.cos(f.hd),
-          rx = Math.cos(f.hd),
-          ry = -Math.sin(f.hd),
-          x = f.x + fx * 0.28 * f.s + rx * 0.11 * f.s,
-          y = f.y + fy * 0.28 * f.s + ry * 0.11 * f.s,
-          z = f.z + 1.1 * f.s;
-        m4.makeTranslation(x, z, -y);
-        W.setMatrixAt(i, m4);
-        m4.makeTranslation(x, z + 0.09, -y);
-        F.setMatrixAt(i, m4);
-        H.setMatrixAt(i, m4);
+        for (const me of [W, F, H]) me.setMatrixAt(i, candleM(f, me.userData.up, m4));
         (f.inst || (f.inst = [])).push([W, i], [F, i], [H, i]);
       });
       for (const me of [W, F, H]) {
@@ -339,6 +360,13 @@ export function jahr1989(ctx, C, ST, api) {
       g.fillStyle = 'rgba(0,0,0,' + (0.03 + hh(x + i) * 0.04) + ')';
       g.fillRect(hh(y + i) * 512, 0, 6 + hh(i + x) * 18, 160);
     }
+    // the back: the same sheet before the paint (the paint shows through below, faint – seen from behind it reads mirrored, as
+    // through a bedsheet; painted black on both faces it looked like a mistake)
+    const cb = document.createElement('canvas');
+    cb.width = 512;
+    cb.height = 160;
+    const gb = cb.getContext('2d');
+    gb.drawImage(c, 0, 0);
     g.fillStyle = hh(x * 3) < 0.35 ? '#9a1f1a' : '#1d1d1d';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
@@ -358,14 +386,21 @@ export function jahr1989(ctx, C, ST, api) {
         xx += wch;
       }
     });
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 4;
-    const m = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, side: THREE.DoubleSide });
-    mats.push(m);
+    gb.globalAlpha = 0.16;
+    gb.drawImage(c, 0, 0);
+    const tex = new THREE.CanvasTexture(c),
+      texB = new THREE.CanvasTexture(cb);
+    for (const t of [tex, texB]) {
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = 4;
+    }
+    const m = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, side: THREE.FrontSide }),
+      mB = new THREE.MeshStandardMaterial({ map: texB, roughness: 0.95, side: THREE.BackSide });
+    mats.push(m, mB);
     const h = w * 0.3,
       z = gz(x, y),
       sheet = new THREE.Mesh(new THREE.PlaneGeometry(w, h, 8, 2), m);
+    sheet.add(new THREE.Mesh(sheet.geometry, mB));
     // a little sag in the middle
     const p = sheet.geometry.attributes.position;
     for (let i = 0; i < p.count; i++) p.setZ(i, Math.sin((p.getX(i) / w + 0.5) * Math.PI) * 0.06);
@@ -434,6 +469,7 @@ export function jahr1989(ctx, C, ST, api) {
         pan.rotation.set(0, Math.atan2(y1 - y0, x1 - x0), 0);
         G.add(pan);
         posts.push([x0, y0, z0]);
+        WALLS.push([x0, y0, x1, y1, 0.08]); // one does not walk through it (S.pushOut)
       }
     }
     const PI = new THREE.InstancedMesh(postG, post, Math.max(1, posts.length));
@@ -471,7 +507,13 @@ export function jahr1989(ctx, C, ST, api) {
       leaf.position.set(gx + across[0] * s * 4.05, gzz, -(gy + across[1] * s * 4.05));
       leaf.rotation.y = Math.atan2(across[1], across[0]);
       G.add(leaf);
+      // the pillar holds one off as well (a point with its half width)
+      const px = gx + across[0] * s * 4.3,
+        py = gy + across[1] * s * 4.3;
+      WALLS.push([px, py, px, py, 0.3]);
     }
+    // the shut gate across the drive, from pillar to pillar
+    WALLS.push([gx - across[0] * 4.3, gy - across[1] * 4.3, gx + across[0] * 4.3, gy + across[1] * 4.3, 0.08]);
     S.fence = posts.length;
   }
 
@@ -479,6 +521,18 @@ export function jahr1989(ctx, C, ST, api) {
   function crowd(L) {
     const out = [];
     const near = (x, y) => Math.hypot(x - GATE[0], y - GATE[1]);
+    // the jump point (welt/suhl.js SPOTS.suhl1989): room to stand, and an aisle behind it to the right shoulder, where the camera is
+    const J0 = ctx.SUHL && ctx.SUHL.SPOTS && ctx.SUHL.SPOTS.suhl1989,
+      jx = J0 ? J0[0][0] : 1e9,
+      jy = J0 ? J0[0][1] : 1e9,
+      jy0 = J0 ? (J0[1] * Math.PI) / 180 : 0,
+      aisle = (x, y) => {
+        const dx = x - jx,
+          dy = y - jy,
+          fwd = dx * Math.sin(jy0) + dy * Math.cos(jy0),
+          right = dx * Math.cos(jy0) - dy * Math.sin(jy0);
+        return dx * dx + dy * dy < 1.2 * 1.2 || (fwd < 0 && fwd > -4.6 && right > -0.7 && right < 1.5);
+      };
     let tries = 0,
       seed = 1;
     const want = 1700;
@@ -510,7 +564,7 @@ export function jahr1989(ctx, C, ST, api) {
       // not behind the fence: on the compound's side only up to the fence line, except in the gate's mouth
       const side = (x - x0) * INWARD[0] + (y - y0) * INWARD[1];
       if (side > w / 2 + 2.6 && near(x, y) > 6) continue;
-      if (near(x, y) < 2.6) continue;
+      if (near(x, y) < 2.6 || aisle(x, y)) continue;
       if (api.buildingAt && api.buildingAt(x, y)) continue;
       if (out.some(o => (o.x - x) ** 2 + (o.y - y) ** 2 < 0.36)) continue;
       const z = gz(x, y);
@@ -526,7 +580,8 @@ export function jahr1989(ctx, C, ST, api) {
   // the spots then nearest (placed again, not loaded again); beyond 160 m they are let go. Without GLFIG (no Grenzland in the page) the
   // instanced crowd alone. During the mission Grenzland's loop moves them (GLFIG.tick), else this layer does. ----
   const NEAR_N = ctx.COARSE ? 6 : 24,
-    NEAR = { figs: [], busy: false, k: 0, t: 0, at: [1e9, 1e9], err: '' },
+    VP_N = ctx.COARSE ? 2 : 6,
+    NEAR = { figs: [], vp: [], busy: false, k: 0, t: 0, at: [1e9, 1e9], err: '' },
     ZERO = new THREE.Matrix4().makeScale(0, 0, 0),
     _m = new THREE.Matrix4(),
     _s3 = new THREE.Vector3();
@@ -569,6 +624,22 @@ export function jahr1989(ctx, C, ST, api) {
       arm: true,
     },
   };
+  // the Volkspolizei behind the gate: Grenzland's uniform and cap of the time (KLEID/hut 'vopo') on several figures
+  const VPS = [
+    ['vk_m02', 1.83, null],
+    ['vk_m16', 1.79, 'schnauzer'],
+    ['vk_m11', 1.81, null],
+    ['vk_m20', 1.77, null],
+    ['vk_m07', 1.85, 'schnauzer'],
+    ['vk_m16', 1.8, null],
+  ];
+  function vpCast(k) {
+    const D = window.GLDATA,
+      [fig, h, bart] = VPS[k % VPS.length],
+      id = 'suhl89vp_' + (k % VPS.length);
+    if (!D.CAST[id]) D.CAST[id] = { name: 'Volkspolizist', fig, clips: 'm', h, kleid: 'vopo', hut: 'vopo', bart };
+    return id;
+  }
   const FG = () => (window.GLFIG && window.GLDATA && GLFIG.make && GLFIG.place && GLFIG.avail ? GLFIG : null);
   function castOf(k) {
     const D = window.GLDATA,
@@ -653,22 +724,17 @@ export function jahr1989(ctx, C, ST, api) {
     G.add(g);
     return { g, flame: f, glow: h, bone: B };
   }
-  // fold a spot's stand-ins away, or bring them back
-  function standIn(f, show) {
+  // a spot's stand-ins: where the person stands now, or folded away (a real figure stands there)
+  function put(f, hide) {
     if (!f.inst) return;
     for (const [me, k] of f.inst) {
-      if (show) {
-        if (f.saved && f.saved.has(me)) me.setMatrixAt(k, f.saved.get(me));
-      } else {
-        if (!f.saved) f.saved = new Map();
-        if (!f.saved.has(me)) {
-          me.getMatrixAt(k, _m);
-          f.saved.set(me, _m.clone());
-        }
-        me.setMatrixAt(k, ZERO);
-      }
+      me.setMatrixAt(k, hide ? ZERO : me.userData.up === undefined ? bodyM(f, _m) : candleM(f, me.userData.up, _m));
       me.instanceMatrix.needsUpdate = true;
     }
+  }
+  function standIn(f, show) {
+    if (show) f.fig = null;
+    put(f, !show);
   }
   function nearDrop() {
     const G2 = FG();
@@ -677,7 +743,12 @@ export function jahr1989(ctx, C, ST, api) {
       if (n.c && n.c.g.parent) n.c.g.parent.remove(n.c.g);
       if (G2) G2.drop(n.F);
     }
+    for (const n of NEAR.vp) {
+      if (n.spot) standIn(n.spot, true);
+      if (G2 && n.F) G2.drop(n.F);
+    }
     NEAR.figs = [];
+    NEAR.vp = [];
     NEAR.k = 0;
   }
   function nearTick(dt) {
@@ -688,7 +759,7 @@ export function jahr1989(ctx, C, ST, api) {
     if (
       !(window.GLSTATE && GLSTATE.on) &&
       G2.tick &&
-      (G2.figs || []).every(F => !F.g.visible || NEAR.figs.some(n => n.F === F))
+      (G2.figs || []).every(F => !F.g.visible || NEAR.figs.some(n => n.F === F) || NEAR.vp.some(n => n.F === F))
     )
       G2.tick(dt);
     // the candles: in the fist (a little before and above the wrist), upright, flickering
@@ -732,6 +803,38 @@ export function jahr1989(ctx, C, ST, api) {
           });
       } else NEAR.k++;
     }
+    // the Volkspolizei behind the bars as real figures too, once the first demonstrators stand and the observer is within 70 m (the
+    // stand-ins looked like shop-window dummies through the gate)
+    const vps = S.list.filter(f => !f.demo);
+    if (
+      !NEAR.busy &&
+      NEAR.vp.length < Math.min(VP_N, vps.length) &&
+      NEAR.figs.length >= Math.min(NEAR_N, 6) &&
+      Math.hypot(o[0] - GATE[0], o[1] - GATE[1]) < 70
+    ) {
+      const id = vpCast(NEAR.vp.length);
+      if (G2.avail(id)) {
+        NEAR.busy = true;
+        G2.make(id, { era: '1989' })
+          .then(F => {
+            NEAR.busy = false;
+            if (!F) return;
+            const sp = vps.find(v => !v.fig);
+            if (!S.on || !S.built || !sp) return G2.drop(F);
+            F.sees = false;
+            const n = { F, spot: sp, vp: true };
+            NEAR.vp.push(n);
+            standIn(sp, false);
+            sp.fig = n;
+            G2.place(F, sp.x, sp.y, sp.hd);
+          })
+          .catch(e => {
+            NEAR.busy = false;
+            NEAR.vp.push({ F: null, spot: null, vp: true });
+            NEAR.err = String((e && e.message) || e);
+          });
+      } else NEAR.vp.push({ F: null, spot: null, vp: true }); // that figure is not there: the stand-in stays
+    }
     // the spots nearest the observer (demonstrators only), each figure to one of them
     const want = S.list
       .filter(f => f.demo)
@@ -748,8 +851,204 @@ export function jahr1989(ctx, C, ST, api) {
       n.spot = sp;
       taken.add(sp);
       standIn(sp, false);
-      G2.place(n.F, sp.x, sp.y, sp.hd);
+      sp.fig = n;
+      const [x, y] = at(sp);
+      G2.place(n.F, x, y, sp.hd);
     }
+    markDirty(true);
+  }
+
+  // ---- one does not walk through people, the fence or the gate. Each person is a circle of 0.23 m (by size); who is held off: the
+  // walker (a point within 0.6 m of the observer) and vehicles (their probes of 0.5 m and more – welt/fahrt.js VEH.hitsOut); the figures
+  // of a mission (smaller probes away from the observer) walk on as before. Whom the walker presses gives way: up to 0.4 m across his
+  // way, to the side the person stands on (straight away from him when he stands), in about half a second, and back slowly once he has
+  // gone on – so one gets through the crowd step by step. A real figure on that spot moves with it. ----
+  const BODY = 0.23,
+    GIVE = 0.4,
+    CELL = 2,
+    WK = { x: 0, y: 0, vx: 0, vy: 0, ok: false }, // the observer and how he moves (smoothed)
+    giving = new Set();
+  const cellKey = (i, j) => i * 65536 + j;
+  function hashUp(list) {
+    HASH = new Map();
+    for (const f of list) {
+      const k = cellKey(Math.floor(f.x / CELL), Math.floor(f.y / CELL));
+      let a = HASH.get(k);
+      if (!a) HASH.set(k, (a = []));
+      a.push(f);
+    }
+  }
+  function give(f, dx, dy) {
+    // dx, dy: from the person to the walker
+    let gx = -dx,
+      gy = -dy;
+    const vv = Math.hypot(WK.vx, WK.vy);
+    if (vv > 0.25) {
+      const ux = WK.vx / vv,
+        uy = WK.vy / vv,
+        left = ux * gy - uy * gx >= 0; // the person stands left of his way
+      gx = (left ? -uy : uy) * 0.9 + ux * 0.25;
+      gy = (left ? ux : -ux) * 0.9 + uy * 0.25;
+    }
+    const l = Math.hypot(gx, gy) || 1;
+    f.gx = gx / l;
+    f.gy = gy / l;
+    f.gt = 2.2;
+    giving.add(f);
+  }
+  S.pushOut = (p, r) => {
+    if (!S.built || !HASH) return undefined;
+    const ex = p[0] - GATE[0],
+      ey = p[1] - GATE[1];
+    if (ex * ex + ey * ey > 230 * 230) return undefined;
+    const walker = WK.ok && r < 0.5 && Math.hypot(WK.x - p[0], WK.y - p[1]) < 0.6;
+    if (!walker && r < 0.5) return undefined;
+    let moved = false;
+    for (const [ax, ay, bx, by, w] of WALLS) {
+      const dx = bx - ax,
+        dy = by - ay,
+        l2 = dx * dx + dy * dy,
+        u = l2 > 1e-9 ? Math.max(0, Math.min(1, ((p[0] - ax) * dx + (p[1] - ay) * dy) / l2)) : 0,
+        qx = ax + dx * u,
+        qy = ay + dy * u,
+        nx = p[0] - qx,
+        ny = p[1] - qy,
+        d = Math.hypot(nx, ny),
+        rr = r + w;
+      if (d >= rr || d < 1e-6) continue;
+      p[0] = qx + (nx / d) * rr;
+      p[1] = qy + (ny / d) * rr;
+      moved = true;
+    }
+    const R = r + BODY * 1.1 + 0.15,
+      i0 = Math.floor((p[0] - R) / CELL),
+      i1 = Math.floor((p[0] + R) / CELL),
+      j0 = Math.floor((p[1] - R) / CELL),
+      j1 = Math.floor((p[1] + R) / CELL);
+    for (let i = i0; i <= i1; i++)
+      for (let j = j0; j <= j1; j++) {
+        const a = HASH.get(cellKey(i, j));
+        if (!a) continue;
+        for (const f of a) {
+          const [fx, fy] = at(f),
+            dx = p[0] - fx,
+            dy = p[1] - fy,
+            d2 = dx * dx + dy * dy,
+            rr = r + BODY * f.s;
+          if (walker && f.demo && d2 < (rr + 0.12) * (rr + 0.12)) give(f, dx, dy);
+          if (d2 >= rr * rr) continue;
+          const d = Math.sqrt(d2);
+          if (d > 1e-6) {
+            p[0] = fx + (dx / d) * rr;
+            p[1] = fy + (dy / d) * rr;
+          } else p[0] = fx + rr;
+          moved = true;
+        }
+      }
+    return moved ? true : undefined;
+  };
+  function giveTick(dt) {
+    const o = KERN.where ? KERN.where() : null;
+    if (o) {
+      if (WK.ok && dt > 0) {
+        const vx = (o[0] - WK.x) / dt,
+          vy = (o[1] - WK.y) / dt,
+          k = Math.min(1, dt * 6);
+        if (Math.hypot(vx, vy) < 12) {
+          WK.vx += (vx - WK.vx) * k;
+          WK.vy += (vy - WK.vy) * k;
+        } else WK.vx = WK.vy = 0; // a jump, not a walk
+      }
+      WK.x = o[0];
+      WK.y = o[1];
+      WK.ok = true;
+    }
+    if (!giving.size) return;
+    const G2 = FG();
+    for (const f of giving) {
+      f.gt -= dt;
+      const ox = f.ox || 0,
+        oy = f.oy || 0;
+      let tx = 0,
+        ty = 0,
+        v = 0.25; // back, slowly
+      if (f.gt > 0) {
+        tx = f.gx * GIVE;
+        ty = f.gy * GIVE;
+        v = 0.9;
+      } else if (o && Math.hypot(o[0] - f.x, o[1] - f.y) < 1.1) continue; // he is still beside: stays aside
+      const dx = tx - ox,
+        dy = ty - oy,
+        d = Math.hypot(dx, dy);
+      if (d < 0.004) {
+        if (f.gt <= 0) {
+          f.ox = f.oy = 0;
+          f.oz = undefined;
+          giving.delete(f);
+        }
+        continue;
+      }
+      const st = Math.min(d, v * dt);
+      f.ox = ox + (dx / d) * st;
+      f.oy = oy + (dy / d) * st;
+      const [x, y] = at(f),
+        z = gz(x, y);
+      f.oz = Number.isFinite(z) ? z : f.z;
+      if (f.fig && G2) G2.place(f.fig.F, x, y, f.hd);
+      else if (!f.fig) put(f, false);
+    }
+    markDirty(true);
+  }
+  // ---- no buses of today in 1989: while the layer is on and Suhl near (its zone ticks), the bus plan starts none and those about go
+  // (not the one ridden); given back when the layer goes or Suhl is left – only if this layer stopped them ----
+  const BH = { on: false, took: false };
+  function buses(hold) {
+    const B = window.BUS;
+    if (!B || !B.S || hold === BH.on) return;
+    BH.on = hold;
+    if (hold) {
+      BH.took = !!B.S.auto;
+      B.S.auto = false;
+      for (const I of (B.S.inst || []).slice()) if (!(B.S.ride && B.S.ride.I === I) && B.drop) B.drop(I);
+    } else if (BH.took) {
+      BH.took = false;
+      if (B.S.auto === false) B.S.auto = true;
+    }
+  }
+
+  // ---- the player in a coat of the time (the scene „Suhl 1989: Nacht am Tor“ asks for it – { spieler: true }; Grenzland's mission
+  // dresses its Gerhard itself): a December night, not a shirt. Painted over the figure's own textures by Grenzland's GLFIG.dress, as
+  // its flashback does; given back with the layer. ----
+  async function dressPlayer() {
+    const A = window.AVATAR,
+      G2 = window.GLFIG,
+      D = window.GLDATA;
+    if (!A || A.failed || !window.PLAYERMAN || !G2 || !G2.dress || !G2.pixels || !D || !D.KLEID) return;
+    const kind = A.kind,
+      Fg = A.figs && A.figs[kind],
+      file = A.FIGS && A.FIGS[kind] && A.FIGS[kind].file;
+    if (!Fg || !Fg.model || !file) return;
+    for (const [n, v] of Object.entries(KLEID89)) if (!D.KLEID[n]) D.KLEID[n] = v;
+    const K = D.KLEID[kind === 'f' ? 's89steppblau' : kind === 'c' ? 's89steppbraun' : 'parka'];
+    const R = { restore: [], tex: [] };
+    try {
+      await G2.pixels(Fg.model, window.PLAYERMAN[file]);
+      if (!S.on || !S.built) return G2.forget(Fg.model);
+      R.tex = G2.dress(Fg.model, K, R.restore);
+      G2.forget(Fg.model);
+    } catch (e) {
+      S.err = 'Spieler: ' + String((e && e.message) || e);
+      return;
+    }
+    S.dressed = kind;
+    undo.push(() => {
+      for (const [m, map] of R.restore) {
+        m.map = map;
+        m.needsUpdate = true;
+      }
+      for (const t of R.tex) t.dispose();
+      S.dressed = '';
+    });
     markDirty(true);
   }
 
@@ -802,6 +1101,7 @@ export function jahr1989(ctx, C, ST, api) {
       });
     }
     figures(list);
+    hashUp(list);
     S.list = list;
     S.people = list.length;
     S.candles = list.filter(f => f.candle).length;
@@ -813,6 +1113,8 @@ export function jahr1989(ctx, C, ST, api) {
       if (bs.every(q => Math.hypot(q.x - p.x, q.y - p.y) > 9)) bs.push(p);
     }
     bs.forEach((p, i) => banner(SLOGANS[i], p.x, p.y, Math.atan2(GATE[0] - p.x, GATE[1] - p.y), 2.6));
+    S.bannerAt = bs.map(p => [p.x, p.y]);
+    S.streetL = L;
     // cars of the time further down the streets (Grenzland's models), parked along the kerb
     const GA = window.GLAUTO;
     if (GA && GA.spawn && GA.park) {
@@ -845,12 +1147,16 @@ export function jahr1989(ctx, C, ST, api) {
     }
     scene.add(G);
     S.built = true;
+    if (S.spieler) dressPlayer();
     markDirty(true);
     return true;
   }
   function clear() {
     nearDrop();
     S.list = null;
+    HASH = null;
+    WALLS.length = 0;
+    giving.clear();
     candleKit = null;
     scene.remove(G);
     G.traverse(o => {
@@ -873,12 +1179,15 @@ export function jahr1989(ctx, C, ST, api) {
   }
   S.set = (on, o = {}) => {
     on = !!on;
+    if (on && o.spieler) S.spieler = true;
     if (on === S.on && !o.again) return S.state();
     S.on = on;
     C.jahr(on ? 1989 : 0);
     if (!on) {
       S.nacht = null;
+      S.spieler = false;
       clear();
+      buses(false);
       return S.state();
     }
     // a look without the mission: the evening of Monday, 4 December 1989, half past eight (the game's day becomes that date, as
@@ -923,10 +1232,15 @@ export function jahr1989(ctx, C, ST, api) {
       S.u.uT.value = S.t;
       markDirty();
     }
-    if (S.built) nearTick(dt);
+    buses(true);
+    if (S.built) {
+      giveTick(dt);
+      nearTick(dt);
+    }
   };
   S.leave = () => {
     if (S.built) clear();
+    buses(false);
   };
   S.state = () => ({
     on: S.on,
@@ -938,8 +1252,27 @@ export function jahr1989(ctx, C, ST, api) {
     cars: S.cars,
     wait: S.wait || '',
     real: NEAR.figs.length,
+    vp: NEAR.vp.filter(n => n.F).length,
     realPlaced: NEAR.figs.filter(n => n.spot).length,
+    walls: WALLS.length,
+    dressed: S.dressed || '',
+    giving: giving.size,
+    buses: BH.on,
     err: S.err || NEAR.err,
+  });
+  // for the tests (test/suhl.py jahr1989, the inspections): where people and walls are, who gives way
+  S.dbg = () => ({
+    walls: WALLS.map(w => w.map(v => +v.toFixed(2))),
+    spots: (S.list || []).map(f => [
+      +f.x.toFixed(2),
+      +f.y.toFixed(2),
+      +(f.ox || 0).toFixed(3),
+      +(f.oy || 0).toFixed(3),
+      f.demo ? 1 : 0,
+    ]),
+    wk: [WK.x, WK.y, WK.vx, WK.vy],
+    banners: (S.bannerAt || []).map(b => b.map(v => +v.toFixed(2))),
+    street: (S.streetL || []).map(w => w.map(v => +v.toFixed(2))),
   });
   return S;
 }
