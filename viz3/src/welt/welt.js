@@ -211,13 +211,21 @@ export const WELT = (() => {
       vec3 grass = vec3( 0.088, 0.118, 0.062 ) * ( 0.8 + 0.4 * n1 ) * ( 0.92 + 0.16 * n3 );
       vec3 earth = vec3( 0.14, 0.115, 0.083 ) * ( 0.85 + 0.3 * n2 );
       return landDetail( p, mix( grass, earth, smoothstep( 0.74, 0.94, n2 ) * 0.35 ), dist ); }
-    vec3 setts( vec2 p, vec3 c, float sc, float fwp ) {   // small stones in offset rows, each a little different, dark joints
-      vec2 q = p * sc; q.x += 0.5 * mod( floor( q.y ), 2.0 );
-      vec2 f = fract( q ); float fine = 1.0 - smoothstep( 0.15, 0.6, fwp * sc );
-      float jt = ( 1.0 - smoothstep( 0.0, 0.14, min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) ) ) ) * fine;
-      float h2 = rdH( floor( q ) + vec2( 17.3, 5.1 ) );   // mixed stones as on the Markt photos: grey, a few blue-grey, some warm
-      vec3 tint = mix( mix( vec3( 1.0 ), vec3( 0.92, 0.97, 1.05 ), step( h2, 0.22 ) ), vec3( 1.12, 0.98, 0.84 ), step( 0.68, h2 ) );
-      return c * mix( vec3( 1.0 ), tint, fine ) * ( 0.84 + 0.32 * rdH( floor( q ) ) * fine ) * ( 1.0 - 0.45 * jt ); }
+    // feat/fotorealismus (foto-boeden): setts as they are laid – in courses, each course with its own stone width and offset, the
+    // lines wandering a little; each stone a shade and a faint tint (mixed stones as on the Markt photos: grey, a few blue-grey,
+    // some warm), its top rounded off towards the joint; crisp dark joints. Where a pixel is wider than a stone the stones go and
+    // their mean stays (no step in brightness – they were squares in a strict half bond in strong tints up close and a flat grey
+    // from 6 m on); the courses' shades show a little further. slab 1: paving slabs – even, in a half bond, thin joints, no tints.
+    // Returns the factor for the surface's colour (sc: courses per metre; fwp: the pixel's footprint in metres).
+    vec3 setts( vec2 p, float sc, float fwp, float slab ) {
+      float qy = p.y * sc + 0.08 * ( 1.0 - slab ) * sin( p.x * 5.3 + p.y * 1.9 ), row = floor( qy ), hr = rdH( vec2( row, 3.7 ) ), ar = mix( 0.8 + 0.4 * hr, 1.0, slab );
+      float qx = p.x * sc * ar + mix( hr * 37.0 + 0.07 * sin( p.y * 6.1 + row * 2.4 ), 0.5 * mod( row, 2.0 ), slab ), ix = floor( qx );
+      vec2 f = vec2( fract( qx ), fract( qy ) ); float fw = fwp * sc, fine = 1.0 - smoothstep( 0.25, 0.9, fw ), jw = mix( 0.045, 0.014, slab );
+      float d = min( min( f.x, 1.0 - f.x ) / ar, min( f.y, 1.0 - f.y ) ), aw = max( fw * 0.7, 0.012 ), jt = 1.0 - smoothstep( jw - aw, jw + aw, d );
+      float h = rdH( vec2( ix, row ) ), h2 = rdH( vec2( ix, row ) + vec2( 17.3, 5.1 ) );
+      vec3 tint = mix( mix( mix( vec3( 1.0 ), vec3( 0.96, 0.985, 1.025 ), step( h2, 0.22 ) ), vec3( 1.06, 0.99, 0.92 ), step( 0.68, h2 ) ), vec3( 1.0 ), slab );
+      vec3 near = tint * ( ( 1.0 + ( h - 0.5 ) * mix( 0.24, 0.1, slab ) ) * mix( 0.9 + 0.13 * smoothstep( 0.0, 0.3, d ), 1.0, slab ) * ( 1.0 - 0.6 * jt ) );
+      return mix( vec3( mix( 0.886, 0.975, slab ) ), near, fine ) * ( 1.0 + ( rdH( vec2( row, 9.1 ) ) - 0.5 ) * 0.1 * ( 1.0 - slab ) * ( 1.0 - smoothstep( 0.6, 1.8, fw ) ) ); }
     vec3 weltGround( vec2 p, vec3 c, float dist ) {
       // derivatives and texture reads first, before any branch that differs per pixel
       float fwp = fwidth( p.x ) + fwidth( p.y );
@@ -227,12 +235,16 @@ export const WELT = (() => {
       float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), chroma = ( mx - mn ) / max( mx, 0.02 ), lum = dot( c, vec3( 0.3, 0.59, 0.11 ) );
       float near = 1.0 - smoothstep( 40.0, 90.0, dist ), pave = ( 1.0 - smoothstep( 0.1, 0.24, chroma ) ) * smoothstep( 0.03, 0.07, mx ) * near * uPave;
       vec3 g = landDetail( p, c, dist ), kc = vec3( 0.0 ); float pk = 0.0, kb = 0.0;
+      // feat/fotorealismus (foto-boeden): one pattern of stones for a pixel – a zone's setts, its paving slabs, or the grey land near
+      // the camera (one call instead of three: every one is paid at every pixel without a graphics card)
+      float zc = o.r > 0.03 ? o.g / max( o.r, 0.01 ) : 0.47, slab = step( 0.62, zc ) * step( zc, 0.86 );
+      vec3 sv = setts( p * vec2( 1.0, 1.0 - 0.5 * slab ), mix( o.r > 0.03 ? 8.0 : 7.5, 3.3, slab ), fwp, slab );
       if ( o.r > 0.03 ) {
-        float code = o.g / max( o.r, 0.01 ), cov = o.r, n1 = rdN( p * 0.6 ), n2 = rdN( p * 5.0 );
+        float code = zc, cov = o.r, n1 = rdN( p * 0.6 ), n2 = rdN( p * 5.0 );
         vec3 r;
         if ( code < 0.3 ) r = vec3( 0.085, 0.088, 0.092 ) * clamp( lum / 0.14, 0.75, 1.3 ) * ( 0.86 + 0.24 * n1 ) * ( 0.92 + 0.16 * n2 );   // asphalt, patches after the photo
-        else if ( code < 0.62 ) r = setts( p, vec3( 0.168, 0.151, 0.13 ) * clamp( lum / 0.26, 0.75, 1.12 ) * ( 0.85 + 0.3 * n1 ), 8.0, fwp );   // sett: grey-brown, worn patches
-        else if ( code < 0.86 ) r = setts( p * vec2( 1.0, 0.5 ), vec3( 0.27, 0.26, 0.245 ), 3.3, fwp );   // paving slabs
+        else if ( code < 0.62 ) r = sv * vec3( 0.168, 0.151, 0.13 ) * clamp( lum / 0.26, 0.75, 1.12 ) * ( 0.85 + 0.3 * n1 );   // sett: grey-brown, worn patches
+        else if ( code < 0.86 ) r = sv * vec3( 0.27, 0.26, 0.245 );   // paving slabs
         else { float fg = 1.0 - smoothstep( 0.25, 0.8, fwp * 23.0 ), fg2 = 1.0 - smoothstep( 0.25, 0.8, fwp * 6.0 );   // water-bound gravel, reddish (the paths and yards of Kloster Veßra): fine grain, a few coarser patches
           r = vec3( 0.34, 0.25, 0.19 ) * clamp( lum / 0.3, 0.8, 1.15 ) * ( 0.86 + 0.2 * n1 ) * mix( 1.0, 0.9 + 0.2 * rdH( floor( p * 23.0 ) ), fg ) * mix( 1.0, 0.95 + 0.1 * rdH( floor( p * 6.0 ) + 3.1 ), fg2 ); }
         float kerb = code < 0.3 ? ( 1.0 - smoothstep( 0.08, 0.2, abs( cov - 0.42 ) ) ) * near * uPave : 0.0;   // a light kerb stone along the asphalt (a zone's streets; the country roads of welt/fahrt.js get their edges from the road map below)
@@ -267,7 +279,7 @@ export const WELT = (() => {
       g = mix( g, bankGround( p, dist ) * clamp( 0.8 + ( lum - 0.14 ) * 1.6, 0.72, 1.18 ), bank * ( 1.0 - veg ) );
       // grey land near the camera as sett (a zone's squares and yards on the photo) – not where the road map has a road: the asphalt
       // took its brightness from the stones and showed them (the L 1625 before Kloster Veßra)
-      if ( pk * ( 1.0 - gRdCov ) > 0.01 ) g = mix( g, setts( p, landHi( c ) * 0.78, 7.5, fwp ), pk * ( 1.0 - gRdCov ) );
+      if ( pk * ( 1.0 - gRdCov ) > 0.01 ) g = mix( g, sv * landHi( c ) * 0.78, pk * ( 1.0 - gRdCov ) );
       // the zone's kerb line along its asphalt – where the road map knows the street it has drawn its own edge (kerb, gutter, shoulder)
       g = mix( g, kc, kb * ( 1.0 - gRdCov ) );
       return g; }`;
