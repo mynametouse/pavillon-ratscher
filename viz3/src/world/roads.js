@@ -115,7 +115,7 @@ export const ROADS = (() => {
     // feat/fotorealismus (foto-boeden): one stone in every cell of a lattice – somewhere in it, of some size and brightness, soft at its
     // rim (hard-edged cells of single pixels were drawn out into a weave by the picture's anti-aliasing)
     float rdGrit( vec2 q ) { float h = rdH( floor( q ) ); vec2 o = fract( q ) - 0.5 - ( vec2( fract( h * 17.3 ), fract( h * 91.7 ) ) - 0.5 ) * 0.5;
-      return ( 1.0 - smoothstep( 0.04, 0.16 + 0.1 * fract( h * 7.1 ), dot( o, o ) ) ) * fract( h * 43.7 ); }
+      return ( 1.0 - smoothstep( 0.008, 0.03 + 0.03 * fract( h * 7.1 ), dot( o, o ) ) ) * fract( h * 43.7 ); }   // (the stone stays inside its cell)
     // dark joints of a pattern of cells (q in cells, jw the joint's half width in cells, fw the pixel's footprint in cells)
     float rdJoint( vec2 q, float jw, float fw ) { vec2 f = fract( q ); float d = min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) );
       return ( 1.0 - smoothstep( jw, jw + max( fw, 0.02 ), d ) ) * ( 1.0 - smoothstep( 0.25, 0.7, fw ) ); }
@@ -167,7 +167,7 @@ export const ROADS = (() => {
         // (pf: the place modulo 64 m – the hash keeps its digits far out.) gk: how much of the grain shows – less where the wheels
         // have polished the surface and on newer asphalt (a patch); sl: bitumen lines (seams, sealed cracks), laid over the grain
         vec2 pf = fract( p / 64.0 ) * 64.0;
-        float ag = ( rdGrit( pf * 131.0 ) + rdGrit( mat2( 0.8, -0.6, 0.6, 0.8 ) * pf * 97.0 + 3.3 ) - 0.37 ) * ( 1.0 - smoothstep( 0.003, 0.01, fwp ) ) * 0.2
+        float ag = ( rdGrit( pf * 131.0 ) + rdGrit( mat2( 0.8, -0.6, 0.6, 0.8 ) * pf * 97.0 + 3.3 ) - 0.083 ) * ( 1.0 - smoothstep( 0.003, 0.01, fwp ) ) * 0.45
           + ( rdN( pf * 47.0 ) - 0.5 ) * ( 1.0 - smoothstep( 0.009, 0.03, fwp ) ) * 0.2;
         float gk = 1.0, sl = 0.0;
         if ( kind < 5.5 ) {
