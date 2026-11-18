@@ -9,7 +9,8 @@
 // Until the helper's atlas and table are merged: a stand-in atlas drawn here (simple stems, leaves and heads) and the lead's mixes.
 //   BWBLUME.build()      (re)make the meshes on the rings of BWHALM (bw_halm.js calls it after its build)
 //   BWBLUME.day(doy)     the species' frames and amounts of the day → texture
-//   BWBLUME.fromArten(A, base)  the helper's species (BWARTEN) and its atlas (base + bewuchs/blumen.png, blumen.json) – S.ver counts up
+//   BWBLUME.fromArten(A, base)  the helper's species (BWARTEN) and its atlases (base + bewuchs/blumen.png, beete.png, acker.png with their
+//                        .json) – S.ver counts up. Stage 5b: the crops' plants on their fields (maize, potatoes, rape, the cereals' ears …)
 //   BWBLUME.phaseAt(s, doy, k)  [frame, share, began] of the plants of group k (0–3: earlier … later by the species' spread), or null
 //   BWBLUME.stats()      { rings: [{ tiles, slots }], species: { id: [[cell, share] × 4 groups] }, standin, arten }
 import * as THREE from 'three';
@@ -18,6 +19,7 @@ import { markDirty, patchSV } from '../core/assets.js';
 import { WXWIND } from '../wetter/wx_wind.js';
 import { BWKARTE } from './bw_karte.js';
 import { BWHALM } from './bw_halm.js';
+import { BWPHAENO } from './bw_phaeno.js';
 export const BWBLUME = (() => {
   const S = { meshes: [], err: '', standin: true, doy: NaN, ver: 0 };
   // ---------- species: height (m), colour, the calendar of one plant (frames of the atlas by day of year) ----------
@@ -187,14 +189,16 @@ export const BWBLUME = (() => {
   //   x 7, 8  the colour its bloom and its seed frames are multiplied with (1 – the grass heads are drawn light and neutral: their
   //        colour over the cell's); x 2 .z: 1 for a grass head (it stands its height above the sward)
   // rows NS … NS + 7: the atlas' cells (cell n at (n % 8, NS + n / 8)): how high the drawing reaches in its cell, how wide it is
-  const NS = 128, // species at most (wildflowers, grass heads, bed plants)
+  const NS = 128, // species at most (wildflowers, grass heads, bed plants, crops)
+    NCELL = 192, // the atlas' cells: wildflowers 0–63, bed plants 64–127, crops 128–191 (8 a row)
+    NCR = NCELL / 8,
     NOFF = 4,
     OFF = [-0.75, -0.25, 0.25, 0.75];
   const SPW = 10;
   const SPT = new THREE.DataTexture(
-    new Float32Array(SPW * (NS + 16) * 4),
+    new Float32Array(SPW * (NS + NCR) * 4),
     SPW,
-    NS + 16,
+    NS + NCR,
     THREE.RGBAFormat,
     THREE.FloatType
   );
@@ -215,7 +219,7 @@ export const BWBLUME = (() => {
   MXT.generateMipmaps = false;
   // the atlas' cells: [oben, breite, mean colour (linear rgb)] – how high the plant reaches in its cell (the card is height / oben tall),
   // how much of the width it covers (the card that wide, the cell's middle only: less drawn for nothing); the stand-in's end ~0.86 up
-  let CELLINFO = Array.from({ length: 128 }, () => [0.86, 1, null]);
+  let CELLINFO = Array.from({ length: NCELL }, () => [0.86, 1, null]);
   const lin = v => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
   const hexLin = h =>
     typeof h === 'string' && /^#[0-9a-f]{6}$/i.test(h)
@@ -307,6 +311,13 @@ export const BWBLUME = (() => {
       D.set([s.bt, s.nst, s.nbb, s.bloomLen * 0.6], o);
       D.set([bl ? bl.cell : -1, bl ? hk('bluete', bl) : 0, lf ? lf.cell : -1, lf ? hk('blatt', lf) : 0], o + 4);
       D.set([s.h[0], s.h[1], s.grass ? 1 : 0, 0], o + 8);
+      // a crop: as tall as it stands today (BWPHAENO.cropNow – the blades' height); cut, its stubble's picture that low (or nothing)
+      if (s.crop) {
+        const N = BWPHAENO.cropNow(s.crop, doy),
+          hh = N ? Math.max(0.02, N.h) : 0;
+        D.set([hh * 0.9, hh * 1.04, 0, 0], o + 8);
+        D[o + 7] = lf && N ? Math.min(1, N.stub / Math.max(0.05, hh)) : 0;
+      }
       for (let k = 0; k < NOFF; k++) {
         const p = phaseAt(s, doy, k),
           f = p && F[p[0]],
@@ -321,7 +332,7 @@ export const BWBLUME = (() => {
       D.set([...ts, 1], o + 32);
     });
     tplRows(doy);
-    for (let n = 0; n < 128; n++) {
+    for (let n = 0; n < NCELL; n++) {
       const o = ((NS + (n >> 3)) * SPW + (n & 7)) * 4,
         c = CELLINFO[n] || [0.97, 1];
       D.set([c[0], c[1], 0, 0], o);
@@ -390,8 +401,54 @@ export const BWBLUME = (() => {
         colSeed: a.reif_farbe || a.farbe,
       });
     }
+    // stage 5b: the crops (BWPHAENO.CROPS, rows CROP0 + i of the class table) – their plants from the acker atlas (cells 128–191): a
+    // phase's picture (bilder) or the cereals' ears (kopf.zellen); in the harvest days the picture of the phase before until its field is
+    // cut (bw_halm.js: each field on its own day), then the stubble's picture (as the 'blatt' frame: what is left after a cut) or nothing
+    const crops = [];
+    BWPHAENO.CROPS.forEach((cid, i) => {
+      const F = A.feldfruechte && A.feldfruechte[cid];
+      if (!F || !Array.isArray(F.jahr)) return;
+      const cellOf = z => (Array.isArray(z) ? 128 + z[1] * 8 + z[0] : -1),
+        picOf = q =>
+          cellOf(
+            q && q.bild && F.bilder && F.bilder[q.bild]
+              ? F.bilder[q.bild].zelle
+              : q && q.kopf && F.kopf && F.kopf.zellen
+                ? F.kopf.zellen[q.kopf]
+                : null
+          ),
+        ie = F.jahr.findIndex(q => q.name === 'ernte'),
+        frames = {},
+        jahr = [];
+      F.jahr.forEach((q, k) => {
+        const c = picOf(k === ie && ie > 0 ? F.jahr[ie - 1] : q);
+        if (c < 0 || !Number.isFinite(q.von) || !Number.isFinite(q.bis)) return;
+        frames[q.name] = { cell: c, k: 1 };
+        jahr.push([q.name, q.von, q.bis, 1]);
+      });
+      const st = F.bilder && F.bilder.stoppel;
+      if (st) frames.blatt = { cell: cellOf(st.zelle), k: 1 };
+      if (!jahr.length) return;
+      crops.push([BWPHAENO.CROP0 + i, 'acker:' + cid]);
+      L.push({
+        id: 'acker:' + cid,
+        crop: F,
+        h: [0.5, 1],
+        frames,
+        jahr,
+        streu: 2,
+        wuchs: null,
+        bt: 0, // cut: its stubble at once (or nothing), never again this year
+        nst: -1,
+        nbb: 0,
+        bloomLen: 1,
+        col: null,
+        colSeed: null,
+      });
+    });
     const M = {};
     const ids = new Set(L.slice(0, NS).map(s => s.id));
+    for (const [c, id] of crops) if (ids.has(id)) M[c] = { [id]: 1 };
     for (const [c, e] of Object.entries(A.flaechen || {})) {
       const heads = Object.entries((e && e.gras) || {})
         .map(([gid, sh]) => {
@@ -419,7 +476,8 @@ export const BWBLUME = (() => {
       if (B.length) M[c] = Object.fromEntries(B.map(([t, sh]) => ['tpl:' + tix[t], sh]));
     }
     // species and atlas together (the stand-in's cells are elsewhere): once the picture is there
-    const apply = (tex, cells) => {
+    const apply = (tex, cells, rows) => {
+      if (rows) U.uFlRows.value = rows;
       SP.length = 0;
       SP.push(...L.slice(0, NS));
       IDX = Object.fromEntries(SP.map((s, i) => [s.id, i]));
@@ -437,7 +495,7 @@ export const BWBLUME = (() => {
       return L.length;
     }
     // the cells' measures (blumen.json; without it: the drawings reach the top, full width)
-    const C = Array.from({ length: 128 }, () => [0.97, 1]);
+    const C = Array.from({ length: NCELL }, () => [0.97, 1]);
     const table = (file, c0) =>
       fetch(base + 'bewuchs/' + file)
         .then(r => (r.ok ? r.json() : null))
@@ -463,25 +521,36 @@ export const BWBLUME = (() => {
         im.onerror = () => res(null);
         im.src = base + 'bewuchs/' + file;
       });
-    // one picture of 8 × 16 cells: the wildflowers above, the bed plants below (one material, one draw call per ring)
-    Promise.all([img('blumen.png'), img('beete.png'), table('blumen.json', 0), table('beete.json', 64)]).then(
-      ([a, b]) => {
-        if (!a) {
-          S.err = 'blumen.png nicht geladen';
-          return;
-        }
-        const cv = document.createElement('canvas');
-        cv.width = a.width;
-        cv.height = a.height * 2;
-        const g = cv.getContext('2d');
-        g.drawImage(a, 0, 0);
-        if (b) g.drawImage(b, 0, a.height, a.width, a.height);
-        const t = new THREE.CanvasTexture(cv);
-        t.colorSpace = THREE.SRGBColorSpace;
-        t.anisotropy = 4;
-        apply(t, C);
+    // one picture of 8 × 24 cells: the wildflowers above, the bed plants below them, the crops at the bottom (one material, one draw call
+    // per ring); on phones and tablets at the texture level of every other image (core/assets.js TEXHALF: half or a quarter the size)
+    Promise.all([
+      img('blumen.png'),
+      img('beete.png'),
+      img('acker.png'),
+      table('blumen.json', 0),
+      table('beete.json', 64),
+      table('acker.json', 128),
+    ]).then(([a, b, c]) => {
+      if (!a) {
+        S.err = 'blumen.png nicht geladen';
+        return;
       }
-    );
+      const L2 = (typeof window !== 'undefined' && window.TEXHALF && window.TEXHALF.level) || 0,
+        w = Math.max(64, a.width >> L2),
+        h = Math.max(64, a.height >> L2),
+        cv = document.createElement('canvas');
+      cv.width = w;
+      cv.height = h * 3;
+      const g = cv.getContext('2d');
+      g.drawImage(a, 0, 0, w, h);
+      if (b) g.drawImage(b, 0, h, w, h);
+      if (c) g.drawImage(c, 0, h * 2, w, h);
+      const t = new THREE.CanvasTexture(cv);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = 4;
+      S.atlasPx = [cv.width, cv.height];
+      apply(t, C, NCR);
+    });
     return L.length;
   }
 
@@ -527,10 +596,12 @@ export const BWBLUME = (() => {
   }
   const VS = `uniform highp sampler2D tBwK, tBwG, tBwS, tBwM, tBwSp, tBwMx;
 uniform vec4 uBwG, uBwS, uBwM, uBwP, uBwFr;
+uniform float uFlRows;
 uniform vec4 wxSw; uniform vec2 wxSwD; uniform vec2 wxGr;
 attribute vec4 aF; attribute vec3 aQ; attribute vec4 iT; attribute vec4 iU;
 varying vec2 vFlUv; varying vec3 vFlTint;
 float flHash( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
+${BWHALM.cropGlsl('flHash')}
 float flCode( vec2 q ) {
   vec2 s = ( q - uBwS.xy ) * uBwS.zw;
   if ( s.x > 0.0 && s.y > 0.0 && s.x < 1.0 && s.y < 1.0 ) return floor( texture( tBwS, s ).r * 255.0 + 0.5 );
@@ -573,8 +644,11 @@ void flPlant( out vec3 P ) {
   float code = flCode( q );
   int cls = int( mod( code, 32.0 ) );
   if ( cls == 0 || uBwP.z > 0.3 ) return;   // no flowers under snow
+  // a field: its crop (the blades' choice) – a crop sown in rows has its plants on them
+  if ( cls == 9 || ( cls >= 19 && cls <= 22 ) ) cls = bwCrop( cls, q );
   float vig = floor( code / 32.0 ) / 7.0;
   vec4 k3 = texelFetch( tBwK, ivec2( 3, cls ), 0 ), k6 = texelFetch( tBwK, ivec2( 6, cls ), 0 );
+  if ( cls >= ${BWPHAENO.CROP0} && k6.w > 0.1 ) { q = bwCropRow( q, k6.w ); P.x = q.x; P.z = - q.y; }
   // slots used: plants per m² at peak (fewer on rich ground) × the tile's area / slots, by the ring's fade
   vec2 cm = vec2( cameraPosition.x, - cameraPosition.z );
   float d = distance( q, cm );
@@ -631,12 +705,13 @@ void flPlant( out vec3 P ) {
   vec2 xy = q + dir * aQ.x * hw + wd * wb * H * t * t;
   P = vec3( xy.x, zr + zb + H * t, - xy.y );
   float col = mod( cell, 8.0 ), row = floor( cell / 8.0 );
-  vFlUv = vec2( ( col + 0.5 + aQ.x * 0.5 * cd.y ) / 8.0, 1.0 - ( row + 1.0 - t ) / 16.0 );
+  vFlUv = vec2( ( col + 0.5 + aQ.x * 0.5 * cd.y ) / 8.0, 1.0 - ( row + 1.0 - t ) / uFlRows );
 }
 `;
   const U = {
     tBwSp: { value: SPT },
     tBwMx: { value: MXT },
+    uFlRows: { value: 16 }, // the atlas' rows of cells: the stand-in's 16, the helper's three pictures 24
     map: null,
   };
   function material(F) {
@@ -732,6 +807,9 @@ void flPlant( out vec3 P ) {
     arten: !!S.arten,
     // stage 4: the bed templates and the classes planted with them
     tpl: TPL.length,
+    // stage 5b: the crops with plants from the acker atlas, the atlas' size
+    acker: SP.filter(s => s.crop).map(s => s.id),
+    atlasPx: S.atlasPx || null,
     beds: Object.keys(MIX).filter(c => Object.keys(MIX[c]).some(id => id.startsWith('tpl:'))),
   });
   Object.assign(S, { build, day, atlas, stats, fromArten, phaseAt, SP, MIX, U });

@@ -151,6 +151,24 @@ with lib.browser() as b:
                         ck('shrubs stand in the thicket (kinds built, shrubs drawn, some close)', t['kinds'] >= 3 and t['drawn'] >= 20 and t['near'] >= 1 and not t['failed'], json.dumps(t))
                     if name == 'september':
                         ck('berries in September', t['dots'] > 50, json.dumps(t))
+                # solid from 1 m: a body on foot (the walker's 0.21 m) at a tall shrub is moved out of it – after three steps (shrubs that
+                # overlap hand it on) outside every shrub round it; a vehicle's circle (0.9 m) passes as before
+                E("BEWUCHS.set({ doy: 156 })")
+                view(vx, vy, math.degrees(math.atan2(sx - vx, sy - vy)), -6)
+                hit = J("""(() => { let best = null;
+                    for (const c of BWKARTE.cells.values()) if (c.solid) for (const L of c.solid.values()) for (let n = 0; n < L.length; n += 3) {
+                      const d = Math.hypot(L[n] - GAME.cam.position.x, L[n + 1] + GAME.cam.position.z); if (!best || d < best[3]) best = [L[n], L[n + 1], L[n + 2], d]; }
+                    if (!best) return null;
+                    const [x, y, r] = best, k = [x + 0.05, y + 0.02], v = [x + 0.05, y + 0.02];
+                    for (let i = 0; i < 3; i++) KERN.pushOut(k, 0.21);
+                    BWSTRAUCH.pushOut(v, 0.9);
+                    let pen = 0;
+                    for (const c of BWKARTE.cells.values()) if (c.solid) for (const L of c.solid.values()) for (let n = 0; n < L.length; n += 3) {
+                      const d = Math.hypot(k[0] - L[n], k[1] - L[n + 1]); if (d < 6) pen = Math.max(pen, L[n + 2] + 0.21 - d); }
+                    return { r: +r.toFixed(2), moved: +Math.hypot(k[0] - x - 0.05, k[1] - y - 0.02).toFixed(2), pen: +pen.toFixed(3),
+                      vehicle: +Math.hypot(v[0] - x - 0.05, v[1] - y - 0.02).toFixed(3), solid: BWSTRAUCH.state().solid, pushes: BWSTRAUCH.state().pushes }; })()""")
+                print('solid', json.dumps(hit), flush=True)
+                ck('shrubs from 1 m are solid for a walker (moved out, then outside all of them), not for a vehicle', bool(hit) and hit['solid'] > 20 and hit['moved'] >= hit['r'] and hit['pen'] <= 0.02 and hit['vehicle'] == 0, json.dumps(hit))
         if 'beet' in WANT:
             # stage 4: the bed classes have their templates; a place of class 13–16 near the garden in July
             bl = J("BEWUCHS.state().blumen")
@@ -182,6 +200,25 @@ with lib.browser() as b:
                     lib.shot(pg, OUT, 'acker_' + name)
                     if name == 'juni':
                         ck('the field stands in June (blades on its tiles)', s['halm']['blades'] > 2000, json.dumps(s['halm']['rings'])[:300])
+            # stage 5b: the crops' plants from the acker atlas – the atlas three pictures high, every crop with its pictures; maize in August
+            # with its cobs (the phase kolben, cells 128–191), and a field of maize, beet or potatoes (class 21) seen from its edge
+            bl = J("BWBLUME.stats()")
+            ck('the crops have their plants from the acker atlas (cells 128–191, an atlas of 8 × 24 cells)', len(bl['acker']) >= 6 and bool(bl['atlasPx']) and bl['atlasPx'][1] == 3 * bl['atlasPx'][0], json.dumps({k: bl[k] for k in ('acker', 'atlasPx')}))
+            E("BEWUCHS.set({ doy: 232 })")
+            for i in range(3):
+                E("GAME.step(0.1)")
+            sm = J("BWBLUME.stats().species['acker:silomais'] || null")
+            ck('maize in August: the picture of its cobs', bool(sm) and all(g[0] == 128 + 8 + 3 for g in sm), sm)
+            sp21 = J("""(() => { let best = null; for (const c of BWKARTE.cells.values()) { if (c.state !== 'ok') continue;
+                for (let v = 0; v < c.n; v += 6) for (let u = 0; u < c.n; u += 6) { if ((c.px[v * c.n + u] & 31) !== 21) continue;
+                  const x = c.i * 400 + (u + 0.5) * c.res, y = c.j * 400 + (c.n - 1 - v + 0.5) * c.res, d = Math.hypot(x - 2, y - 2);
+                  if (d > 80 && (!best || d < best[2])) best = [x, y, d]; } } return best; })()""")
+            print('field 21', sp21, flush=True)
+            if sp21:
+                for d, name in ((175, 'juni'), (232, 'august')):
+                    E(f"BEWUCHS.set({{ doy: {d} }})")
+                    view(sp21[0] - 4, sp21[1] - 4, 45, -6)
+                    lib.shot(pg, OUT, 'acker21_' + name)
         if 'leistung' in WANT:
             view(14, 16, math.degrees(math.atan2(2 - 14, 2 - 16)), -14)
             r = J("(() => { const R = GAME.R; R.info.autoReset = false; R.info.reset(); GAME.shot(); const o = { calls: R.info.render.calls, tris: R.info.render.triangles }; R.info.autoReset = true; return o; })()")

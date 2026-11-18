@@ -254,3 +254,26 @@ test('the field crops (stage 5a): rows 23–30, wheat green in May, ripe in July
     for (const [row] of ch[c]) assert.ok(row >= P.CROP0 && row < 32);
   }
 });
+
+test('the crops plants (stage 5b): plants per m² and rows in the table, the height of the day, the harvest days', async () => {
+  const { BWARTEN } = await import('../../src/bewuchs/bw_arten.js');
+  assert.ok(P.fromCrops(BWARTEN) >= 6);
+  const W = P.TW * 4,
+    row = (id, d) => {
+      const r = P.CROP0 + P.CROPS.indexOf(id);
+      return P.table(d).slice(r * W, r * W + W);
+    };
+  // maize: its plants from the atlas (k3.z), sown in rows of 75 cm (k6.w); wheat a few ears, no rows
+  const mz = row('silomais', 230),
+    wz = row('winterweizen', 180);
+  assert.ok(mz[14] >= 5 && mz[27] > 0.5 && mz[27] < 1, 'maize ' + mz[14] + ' ' + mz[27]);
+  assert.ok(wz[14] > 0 && wz[14] < mz[14] && wz[27] === 0, 'wheat ' + wz[14] + ' ' + wz[27]);
+  // the day's state: maize tall in August, its stubble low; in its harvest days standing as before (the fields are cut one by one)
+  const F = BWARTEN.feldfruechte.silomais,
+    aug = P.cropNow(F, 230),
+    E = F.ernte;
+  assert.ok(aug && aug.h > 2 && aug.stub < 0.5 && !aug.inH, 'August ' + JSON.stringify(aug && { h: aug.h, stub: aug.stub }));
+  const inH = P.cropNow(F, E.doy);
+  assert.ok(inH && inH.inH && inH.h > 2, 'harvest days ' + JSON.stringify(inH && { h: inH.h, inH: inH.inH }));
+  assert.equal(P.cropNow(F, 1) === null || P.cropNow(F, 1).h === 0, true);
+});

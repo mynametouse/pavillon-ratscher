@@ -428,22 +428,36 @@ export const BWPHAENO = (() => {
   }
   // the crop's row of the table: its height today (grown within the phase), colour, how much of the ground it covers, its blade, its
   // ears; the harvest as a cut on each field's own day (± spread), the stubble standing until the plough
-  function cropRow(k, d, T, o) {
-    const F = k.crop,
-      E = F.ernte || {},
+  // a crop on day d: its phase, the height it stands (within the harvest days each field is cut on its own day: until then it stands as
+  // at the end of its last phase), its stubble's height, whether it is in its harvest days – null before its year (bw_blume.js: its plants)
+  function cropNow(F, d) {
+    const E = F.ernte || {},
       sp = E.streuung_tage || 0,
       L = F.jahr || [],
       ie = L.findIndex(q => q.name === 'ernte'),
-      // within the harvest days each field is cut on its own day: until then it stands as at the end of its last phase
       inH = Number.isFinite(E.doy) && ie > 0 && Math.abs(d - E.doy) <= sp;
     const p = inH ? L[ie - 1] : cropPhase(F, d);
-    if (!p) return;
+    if (!p) return null;
     const t = inH ? 1 : Math.max(0, Math.min(1, (d - p.von) / Math.max(1, p.bis - p.von + 1))),
-      hh = Array.isArray(p.hoehe_m) ? p.hoehe_m[0] + (p.hoehe_m[1] - p.hoehe_m[0]) * t : 0.1,
+      st = L.find(q => q.name === 'stoppel');
+    return {
+      p,
+      inH,
+      sp,
+      h: Array.isArray(p.hoehe_m) ? p.hoehe_m[0] + (p.hoehe_m[1] - p.hoehe_m[0]) * t : 0.1,
+      stub: st && Array.isArray(st.hoehe_m) ? st.hoehe_m[0] : 0.15,
+    };
+  }
+  function cropRow(k, d, T, o) {
+    const F = k.crop,
+      E = F.ernte || {},
+      N = cropNow(F, d);
+    if (!N) return;
+    const { p, inH, sp } = N,
+      hh = N.h,
       col = hexL(p.farbe) || [0.1, 0.18, 0.05],
       cover = 1 - Math.max(0, Math.min(1, Number.isFinite(p.boden) ? p.boden : 0.3)),
-      st = L.find(q => q.name === 'stoppel'),
-      stubble = st && Array.isArray(st.hoehe_m) ? st.hoehe_m[0] : 0.15;
+      stubble = N.stub;
     T[o] = inH ? stubble : hh;
     T[o + 1] = hh;
     T[o + 2] = 0;
@@ -455,9 +469,10 @@ export const BWPHAENO = (() => {
     T.set([col[0], col[1], col[2], hh > 0.01 ? Math.max(0.05, cover) * k.dens : 0], o + 8);
     // the ears and panicles: seed heads on the blades while they stand
     const ears = !!(p.kopf || /aehre|rispe|bluete|reife|fahne/.test(p.name));
-    T.set([k.w, k.bend, 0, ears ? 0.85 : 0], o + 12);
+    // k3.z: the crop's plants from the acker atlas per m² (bw_blume.js; only in phases with a picture); k6.w: its rows' spacing (m, 0: none)
+    T.set([k.w, k.bend, k.cards || 0, ears ? 0.85 : 0], o + 12);
     T.set([1, 1, 1, 1], o + 20);
-    T.set([1, 1, 0, 0.5], o + 24);
+    T.set([1, 1, 0, k.row || 0], o + 24);
   }
   function fromCrops(A) {
     const FF = (A && A.feldfruechte) || {};
@@ -484,6 +499,9 @@ export const BWPHAENO = (() => {
         w,
         bend: id.includes('mais') ? 0.15 : 0.35,
         dens,
+        // the plants drawn from the acker atlas per m² (bw_blume.js caps them by its slots): maize and potatoes as they stand, rape
+        // thinner (its blades are the rest), the cereals a few ears over the blades' tips, clover grass its flowers
+        cards: id.includes('mais') ? 9 : id === 'kartoffel' ? 4 : id === 'winterraps' ? 12 : id === 'kleegras' ? 6 : 4,
         row: row > 0.3 ? row : 0,
         h0: 0.15,
         hMax: 3,
@@ -657,6 +675,7 @@ export const BWPHAENO = (() => {
     CROPS,
     CROP0,
     cropPhase,
+    cropNow,
     fromCrops,
     cropChoice,
     everyNow,

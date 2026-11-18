@@ -209,8 +209,9 @@ export const BEWUCHS = (() => {
       const t = window.CLOCK ? CLOCK.t : 0;
       if (mowDirty || (S.mowN && Math.abs(t - mowT) > 20)) mowUpload(t);
       BWHALM.update(false, dt);
-      // stage 3: the shrubs round the camera (not seen from high above)
-      BWSTRAUCH.set({ on: cam.position.y < 160 });
+      // stage 3: the shrubs round the camera (not seen from high above: 160 m over the ground under it – a hill counts as ground)
+      const gz = BWHALM.zAt(Math.floor(cam.position.x), Math.floor(-cam.position.z), 1);
+      BWSTRAUCH.set({ on: cam.position.y - gz < 160 });
       BWSTRAUCH.tick(cam.position.x, -cam.position.z, S.doy);
     } catch (e) {
       if (!S.err) console.warn('bewuchs', e);
