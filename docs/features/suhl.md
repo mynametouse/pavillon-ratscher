@@ -337,9 +337,21 @@ die Torlampe und der warme Schein der Kerzen über der Menge.
 **Bewegt:** außerhalb von Grenzland ruft die Schicht `GLFIG.tick` selbst (nur wenn keine fremden Figuren stehen); im Modus tut es
 Grenzlands Schleife.
 
-**Offen:** die instanzierte Menge aus der Nähe noch schlicht (die nächsten 24 sind echte Figuren); keine Sprechchöre (Ton beim
-Grenzland-Chat); die Gebäude von 1989, die heute fehlen (abgerissen), sind nicht da; das Tor geht nicht auf (die 16, die kurz vor
-Mitternacht hineingelassen wurden – eine Schnittstelle dafür, wenn die Mission sie braucht).
+**Die Nacht lebt (Schritt 3):** solange die Schicht steht und der Beobachter höchstens 250 m entfernt ist: das Murmeln der Menge
+(Schleife, nach Entfernung), alle 25–50 s ein Sprechchor („Stasi raus!“, „Keine Gewalt!“, „Wir sind das Volk!“, „Stasi in die
+Produktion!“; ohne Ton als Zeile unten), die Köpfe heben sich im Takt (`uCh`, `uChF` im Shader der Menge). Der Abend in wenigen
+Minuten (`STEPS`, ab Ankunft): 4 s worum es geht, 50 s Megafon, 95 s das Tor öffnet sich (die Flügel schwingen nach innen, die Torwand
+fällt weg, die Volkspolizisten treten 2,4 m zur Seite) und sechs aus der Menge gehen als Abordnung hinein, 112 s Tor zu, 175 s sie kommen
+zurück, 190 s Beifall und „Keine Gewalt!“, 255 s was daraus wurde. Die Hinweise halten sich an die Quellen im Kopf von `jahr1989.js`.
+Mitmachen über den Handlungsknopf: „Ansprechen“ bei einer echten Figur in 2,4 m (zehn Sätze, was sie sehen und fürchten; jedes zweite
+Mal beginnt ein Sprechchor) und „Den Volkspolizisten ansprechen“ am Tor. Töne: `tools/suhl/ton1989.py` → `snd/suhl89/` (Extra
+`suhl-laufzeit`, Quellenzeile über `manifest.json`): Piper mit vielen Stimmen aus Multilingual LibriSpeech (CC BY 4.0) und Thorsten
+emotional (CC0), Beifall synthetisch; abgespielt über `audio.raw()` (Busse `vox`, `amb`, `sfx`). Gebaut wird erst, wenn der nahe Boden
+am Tor da ist (sonst standen die Leute bis 2 m im Hang). Für Tests: `(await SUHL.load()).jahr1989at(t)` springt im Ablauf.
+
+**Offen:** die instanzierte Menge aus der Nähe noch schlicht (die nächsten 24 sind echte Figuren); die Sprechchöre sind
+gemischte Sprachsynthese (keine Aufnahme von 1989); die Gebäude von 1989, die heute fehlen (abgerissen), sind nicht da; die Abordnung zählt sechs statt 16
+Menschen; Mission 3 kann den Ablauf später mit eigenen Figuren ersetzen.
 
 ## 8 Straßen: wer sie zeichnet
 
