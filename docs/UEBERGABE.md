@@ -16,6 +16,19 @@ veröffentlicht.
 
 ## Stand
 
+- **18.11.2026: Fotorealismus Schritt 1 (Fotorealismus-Chat session_01L6Yrpe4euXqyTbnuvdamYz, `docs/features/fotorealismus.md`; Falkos
+  Auftrag „Fotorealismus-Upgrade“ vom 18.11. – zuerst analysieren, zehn Schwächen, dann die wirkungsvollsten direkt bauen; dazu seit 11:13
+  der Bewuchs).** Neu: `viz3/src/foto/` – **Sonnenschatten in drei Zonen** (`SCHATTEN`: die Schattenkarte der Sonne als Atlas, eine ferne
+  Kachel ±96 m und eine weite ±640 m, `sunShadow()` in three's Bausteinen; Gelände, Gebäude und Bäume der Welt werfen und empfangen;
+  Schalter Menü → Grafik → „Schatten in der Ferne“, `pav-schatten-v1`, „auto“ = aus auf „schnell“ und am Telefon), **Luft** (`LUFT`: Dunst
+  nach Höhe und zur Sonne hin, three's Nebel-Bausteine); im Bewuchs `bw_ferne.js` neu geschrieben (**Blüte als Tönung**, **Äcker als
+  Bestand im Boden**, eine Textur 512 × 1024), Halme der Feldfrüchte angepasst; `world/ratscher.js`: Kronenlicht der fernen Baumkarten.
+  Tests `viz3/test/fotorealismus.py`, feste Blickpunkte `viz3/test/fotoref.py` (`viz3/extra/fotorealismus/views.json`; der Vergleich mit
+  V19b: `python3 viz3/test/fotoref.py PORT name=…,wetter=klar,map=4096`). **Wichtig für Nachfolger:** die gemeinsamen Uniforms (Schatten,
+  Luft) sind typisierte Arrays in `THREE.ShaderLib` – nach einem three-Update prüft `fotorealismus.py`, ob sie noch ankommen; echte
+  Bildzeiten (Grafikkarte, Falkos Laptop mit Intel UHD 620, iPhone) sind **nicht gemessen** (hier nur Software-Grafik). **Offen:** Stufe
+  „Ultra“ (Plan im Feature-Dokument), Gelände als Schattenwerfer bei tiefer Sonne, Wasser des Stausees, Rasen von oben, Feldfrüchte weiter
+  als 340 m, Schatten der Detailzonen (`SCHATTEN.add` durch ihre Module), die offenen Punkte des Bewuchses (Eintrag darunter).
 - **18.11.2026: der Bewuchs in 3D, alle Stufen (V18z 06:31, V19 07:56, V19a 09:50, V19b 11:47; Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx, Hilfs-Agenten `bewuchs-daten` und `bewuchs-pflanzen`, `docs/features/bewuchs.md`, Plan
   `docs/plans/plan_bewuchs.md`). Übergeben an den Fotorealismus-Chat (Falko 18.11. 11:13: „… stopp erstmal hier die Arbeit … und lass den
   Fotorealismus-Chat den Rest übernehmen“).** Module `viz3/src/bewuchs/` (`BEWUCHS`, `BWHALM` Halme in drei Ringen und die Frucht je Feld

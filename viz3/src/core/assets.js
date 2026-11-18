@@ -776,7 +776,7 @@ float figSh() {
 const LFB_FIG = (() => {
   const s = THREE.ShaderChunk.lights_fragment_begin,
     rx =
-      /(directLight\.color \*= \( directLight\.visible && receiveShadow \) \? getShadow\( directionalShadowMap\[ i \][^;]*;)/;
+      /(directLight\.color \*= \( directLight\.visible && receiveShadow \) \? (?:get|sun)Shadow\( directionalShadowMap\[ i \][^;]*;)/; // feat/fotorealismus: sunShadow() – the sun's shadow in cascades (foto/schatten_glsl.js)
   if (!rx.test(s)) {
     console.warn('Figurenschatten: three-Shader geändert, aus');
     return null;

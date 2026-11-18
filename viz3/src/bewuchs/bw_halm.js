@@ -225,7 +225,10 @@ void bwBlade( out vec3 P, out vec3 N ) {
   if ( k6.z > 0.0 ) dens *= smoothstep( k6.z - 0.025, k6.z + 0.025, bwNoise( q / max( k6.w, 0.15 ) + vec2( 23.7, 7.1 ) ) );
   vec3 col = k2.rgb;
   // the orthophoto at the foot (outside the modelled site): no blades where it is not green, the colour a little towards it
-  if ( uBwF.w > 0.5 && site < 0.5 ) {
+  // (feat/fotorealismus: not for a crop – its field is what the crop table says, whatever the photo showed there in its April; the
+  // ground under it takes the crop's colours too, bw_ferne.js)
+  float crop = cls >= ${BWPHAENO.CROP0} ? 1.0 : 0.0;
+  if ( uBwF.w > 0.5 && site < 0.5 && crop < 0.5 ) {
     vec2 uv = vec2( uBwAB.x * q.x - uBwAB.y * q.y + uBwF.x, uBwAB.y * q.x + uBwAB.x * q.y + uBwF.y ) * uBwF.z;
     if ( uv.x > 0.0 && uv.y > 0.0 && uv.x < 1.0 && uv.y < 1.0 ) {
       vec3 pc = texture( tBwF, uv ).rgb;
@@ -270,12 +273,15 @@ void bwBlade( out vec3 P, out vec3 N ) {
   // the blade's face, turned up a little more towards its tip (the light shades it blade by blade)
   // (a short sward faces the sky like the ground under it; tall grass stands, its sides shade it)
   float tall = smoothstep( 0.1, 0.5, h );
-  N = normalize( mix( vec3( dir.x, 0.0, - dir.y ), vec3( 0.0, 1.0, 0.0 ), mix( 0.55, 0.22, tall ) + 0.28 * t ) );
+  // (feat/fotorealismus: a crop is a closed stand lit from above – its blades face the sky like the surface the ground shows of it
+  // further away, or they would stand as dark hairs on it)
+  N = normalize( mix( vec3( dir.x, 0.0, - dir.y ), vec3( 0.0, 1.0, 0.0 ), mix( mix( 0.55, 0.22, tall ), 0.66, crop ) + 0.28 * t ) );
   // a little variety, a few dry blades in tall grass, darker at the foot (the sward shades itself), the mower's stripe, seed heads
   col *= mix( 0.78, 1.14, fract( rH * 3.7 + th ) );
   float dry = step( 1.0 - ( k0h( cls ) > 0.2 ? 0.1 : 0.025 ), fract( rH * 11.3 + th * 2.1 ) );
   col = mix( col, vec3( 0.34, 0.29, 0.12 ), dry * 0.8 );
-  col *= mix( mix( 0.45, 0.2, tall ), mix( 1.12, 1.0, tall ), smoothstep( 0.0, 0.85, t ) );
+  // (a crop's foot: dark close by, where one looks into the stand; in the outer ring, where few blades stand for many, hardly)
+  col *= mix( mix( mix( 0.45, 0.2, tall ), mix( 0.4, 0.8, uBwQ.x ), crop ), mix( 1.12, 1.0, tall ), smoothstep( 0.0, 0.85, t ) );
   col *= 1.0 + 0.14 * stripe;
   float seed = k3.w * step( 0.72, fract( rT * 5.3 ) ) * smoothstep( 0.72, 1.0, t );
   vBwC = mix( col, vec3( 0.3, 0.24, 0.17 ), seed * 0.7 );

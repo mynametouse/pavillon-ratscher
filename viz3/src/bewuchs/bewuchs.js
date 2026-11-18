@@ -185,7 +185,8 @@ export const BEWUCHS = (() => {
         S.kn = kn;
         BWFERNE.refill();
       }
-      BWFERNE.want(cam.position.x, -cam.position.z);
+      // (feat/fotorealismus: with the camera's height above the ground – from high up the fields keep the photo, bw_ferne.js)
+      BWFERNE.want(cam.position.x, -cam.position.z, cam.position.y - KERN.ground(cam.position.x, -cam.position.z));
       BWKARTE.tick();
       const d = doyNow();
       // a new day – or the helper's species and atlas just arrived (bw_blume.js fromArten)
