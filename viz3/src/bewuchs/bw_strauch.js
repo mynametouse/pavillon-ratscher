@@ -425,7 +425,7 @@ export const BWSTRAUCH = (() => {
           lm.setColorAt(i, col);
           // flowers and berries: on its leaf cards (before the leaves and in winter: on the twigs)
           const D = dots(s, d - shift);
-          if (D && dl.length < MAXDOTS * 5) {
+          if (D && dl.length < MAXDOTS * 5 && Math.hypot(px - x, py - y) < 70) {
             const [dc, amount, size, twigs] = D,
               pts = twigs || !(full > 0.3) ? K.twigs : K.cards,
               np = pts.length / 3,
@@ -494,12 +494,14 @@ export const BWSTRAUCH = (() => {
     }
     if (S.dirty || !(Math.hypot(x - S.cx, y - S.cy) < 20)) rebuild(x, y, Math.floor(S.doy));
   }
+  // (called every frame for on/off: only a change refills)
   function set(o = {}) {
+    const was = [S.on, S.R, S.cap, S.NEAR].join();
     if (o.on !== undefined) S.on = !!o.on;
     if (Number.isFinite(o.r)) S.R = o.r;
     if (Number.isFinite(o.cap)) S.cap = o.cap;
     if (Number.isFinite(o.near)) S.NEAR = o.near;
-    S.dirty = true;
+    if ([S.on, S.R, S.cap, S.NEAR].join() !== was) S.dirty = true;
   }
   const state = () => {
     let cells = 0,
