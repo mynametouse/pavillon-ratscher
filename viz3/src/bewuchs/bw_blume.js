@@ -743,7 +743,14 @@ void flPlant( out vec3 P ) {
           'float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;\n  vec3 normal = normalize( vNormal );\n  vec3 nonPerturbedNormal = normal;'
         )
         // the grass heads' colour (their cells are drawn light and neutral; every other plant: 1)
-        .replace('#include <map_fragment>', '#include <map_fragment>\n  diffuseColor.rgb *= vFlTint;');
+        .replace('#include <map_fragment>', '#include <map_fragment>\n  diffuseColor.rgb *= vFlTint;')
+        // feat/fotorealismus: no mirror of the sky on the plants. Their cards stand upright but are lit as ground (the normal points
+        // up), so seen from a walker's height every card is seen at a grazing angle – and reflected the bright sky at the horizon
+        // nearly in full: ferns in a wood pale mint, grass heads like milk glass. Leaves scatter; a little sheen stays.
+        .replace(
+          '#include <lights_fragment_end>',
+          '#include <lights_fragment_end>\n  reflectedLight.indirectSpecular *= 0.12; reflectedLight.directSpecular *= 0.3;'
+        );
     };
     m.customProgramCacheKey = () => 'bwblume';
     m.userData.ringU = ringU;

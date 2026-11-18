@@ -1056,10 +1056,82 @@ export const FOREST = (() => {
     relod(true);
   }
   // ---------- ground cover ----------
+  // feat/fotorealismus: the ground cover in the stand's light. Its materials came as the models bring them – under the crowns the ferns
+  // had the whole sky and, beyond the sun's shadow box, the whole sun: a pale mint carpet in a dark wood. Now each plant takes the
+  // canopy's shade at its place like the trees (patch above: per instance, in the vertex shader), and a colour of its own.
+  function coverLight(m) {
+    if (!m || m.userData.fcov) return m;
+    m.userData.fcov = true;
+    const prev = m.onBeforeCompile;
+    m.onBeforeCompile = (sh, r) => {
+      if (prev) prev(sh, r);
+      Object.assign(sh.uniforms, CU);
+      sh.vertexShader =
+        'uniform sampler2D tCan; uniform vec4 bCan, uSunBox; varying float vCovSh;\n' +
+        sh.vertexShader.replace(
+          '#include <project_vertex>',
+          `#include <project_vertex>
+        {
+        #ifdef USE_INSTANCING
+          vec4 cpw = modelMatrix * instanceMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );
+        #else
+          vec4 cpw = modelMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );
+        #endif
+          vec2 cgp = vec2( cpw.x, -cpw.z ); float can = texture( tCan, ( cgp - bCan.xy ) * bCan.zw ).r;
+          float ob = max( smoothstep( uSunBox.z - 3.0, uSunBox.z, max( abs( cgp.x - uSunBox.x ), abs( cgp.y - uSunBox.y ) ) ), uSunBox.w );
+          vCovSh = 1.0 - 0.82 * can * ob; }`
+        );
+      sh.fragmentShader =
+        'varying float vCovSh;\n' +
+        sh.fragmentShader.replace(
+          '#include <lights_fragment_end>',
+          `#include <lights_fragment_end>
+          reflectedLight.directDiffuse *= vCovSh; reflectedLight.directSpecular *= vCovSh * vCovSh; reflectedLight.indirectDiffuse *= mix( vec3( 0.42, 0.47, 0.34 ), vec3( 1.0 ), vCovSh ); reflectedLight.indirectSpecular *= vCovSh;`
+        );
+    };
+    const key = m.customProgramCacheKey ? m.customProgramCacheKey.bind(m) : null;
+    m.customProgramCacheKey = () => (key ? key() : '') + '|fcov';
+    return m;
+  }
+  // ferns grow in patches: a soft field of ~15 m (0 … 1) from a lattice of random values
+  function patches(seed) {
+    const r = mulberry(seed),
+      N = 64,
+      g = new Float32Array(N * N);
+    for (let i = 0; i < g.length; i++) g[i] = r();
+    const v = (x, y, c) => {
+      const fx = x / c,
+        fy = y / c,
+        i = Math.floor(fx),
+        j = Math.floor(fy),
+        u = fx - i,
+        w = fy - j,
+        a = (i, j) => g[(((j % N) + N) % N) * N + (((i % N) + N) % N)],
+        su = u * u * (3 - 2 * u),
+        sw = w * w * (3 - 2 * w);
+      return (a(i, j) * (1 - su) + a(i + 1, j) * su) * (1 - sw) + (a(i, j + 1) * (1 - su) + a(i + 1, j + 1) * su) * sw;
+    };
+    return (x, y) => 0.65 * v(x, y, 15) + 0.35 * v(x + 31.7, y - 12.3, 5.5);
+  }
   function cover(P0) {
     const rnd = mulberry(77),
+      rc = mulberry(4711), // colours, companions: a stream of their own, the places stay where they were
+      patch = patches(913),
       items = { fern: [], stump: [], stump2: [], deadlog: [] },
-      ground = (x, y) => KERN.ground(x, y);
+      ground = (x, y) => KERN.ground(x, y),
+      // a fern's own green: darker or lighter, some yellowing, a few brown with age
+      fernCol = () => {
+        const b = 0.5 + 0.5 * rc(),
+          y = rc(),
+          old = rc() < 0.07;
+        return old
+          ? [0.62 * b + 0.2, 0.5 * b + 0.14, 0.3 * b + 0.06]
+          : [b * (0.78 + 0.34 * y), b * (0.92 + 0.08 * y), b * (0.7 - 0.25 * y)];
+      },
+      woodCol = () => {
+        const b = 0.72 + 0.3 * rc();
+        return [b, b * (0.96 + 0.06 * rc()), b * (0.9 + 0.08 * rc())];
+      };
     for (let y = LB[1]; y < LB[3]; y += 2)
       for (let x = LB[0]; x < LB[2]; x += 2) {
         const px = x + rnd() * 2,
@@ -1071,14 +1143,29 @@ export const FOREST = (() => {
         }
         const k = at(P0.cov, px, py),
           r = rnd(),
-          f = k > 0.25 && k < 0.85 ? 0.16 : k >= 0.85 ? 0.05 : 0.08;
+          // (feat/fotorealismus: in patches – none over wide stretches of litter, close together where they grow)
+          pt = Math.max(0, (patch(px, py) - 0.42) / 0.3),
+          f = (k > 0.25 && k < 0.85 ? 0.16 : k >= 0.85 ? 0.05 : 0.08) * Math.min(2.4, pt * pt * 2.2);
         if (r < f) {
-          if (!nearAny(px, py, 0.5)) items.fern.push({ x: px, y: py, s: 0.9 + rnd() * 0.8, v: Math.floor(rnd() * 4) });
+          if (!nearAny(px, py, 0.5)) {
+            const s0 = 0.55 + rnd() * 0.95,
+              v0 = Math.floor(rnd() * 4);
+            items.fern.push({ x: px, y: py, s: s0, v: v0, c: fernCol() });
+            // one to three smaller ones beside it
+            for (let q = Math.floor(rc() * 3.4); q > 0; q--) {
+              const a = rc() * 6.283,
+                d = 0.45 + rc() * 0.9,
+                qx = px + Math.cos(a) * d,
+                qy = py + Math.sin(a) * d;
+              if (inPoly(LOBE, qx, qy) && !nearAny(qx, qy, 0.4))
+                items.fern.push({ x: qx, y: qy, s: s0 * (0.45 + 0.4 * rc()), v: Math.floor(rc() * 4), c: fernCol() });
+            }
+          }
         } else if (r < f + 0.012) {
           if (!nearAny(px, py, 0.9))
-            items[rnd() < 0.7 ? 'stump' : 'stump2'].push({ x: px, y: py, s: 0.45 + rnd() * 0.45 });
+            items[rnd() < 0.7 ? 'stump' : 'stump2'].push({ x: px, y: py, s: 0.45 + rnd() * 0.45, c: woodCol() });
         } else if (r < f + 0.017) {
-          if (!nearAny(px, py, 1.6)) items.deadlog.push({ x: px, y: py, s: 0.8 + rnd() * 0.6 });
+          if (!nearAny(px, py, 1.6)) items.deadlog.push({ x: px, y: py, s: 0.8 + rnd() * 0.6, c: woodCol() });
         }
       }
     for (const [id, list] of Object.entries(items)) {
@@ -1103,6 +1190,7 @@ export const FOREST = (() => {
                 mt.alphaTest = Math.max(mt.alphaTest, 0.45);
               }
               if (id === 'fern') mt.color && mt.color.multiplyScalar(0.8);
+              coverLight(mt); // feat/fotorealismus
             });
             const im = new THREE.InstancedMesh(part.geo, part.mat, MAXC);
             im.count = 0;
@@ -1111,6 +1199,9 @@ export const FOREST = (() => {
             im.receiveShadow = true;
             im.userData.noMerge = true;
             im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            // (feat/fotorealismus: each plant its colour – the attribute from the start, so the program is built once)
+            im.setColorAt(0, colT.setRGB(1, 1, 1));
+            im.instanceColor.setUsage(THREE.DynamicDrawUsage);
             scene.add(im);
             CIM.push({ im, list: by[vi], local: part.local });
           }
@@ -1198,10 +1289,12 @@ export const FOREST = (() => {
           q4.setFromAxisAngle(up3, it.rot);
           m4.compose(V(it.x, it.y, it.z - 0.04), q4, sv3.set(it.s, it.s, it.s));
           m4.multiply(C.local);
+          if (it.c) C.im.setColorAt(n, colT.setRGB(it.c[0], it.c[1], it.c[2]));
           C.im.setMatrixAt(n++, m4);
         }
       C.im.count = n;
       C.im.instanceMatrix.needsUpdate = true;
+      if (C.im.instanceColor) C.im.instanceColor.needsUpdate = true;
     }
     S.nNear = n0;
     S.nMid = n1;

@@ -315,9 +315,11 @@ void bwBlade( out vec3 P, out vec3 N ) {
           .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= vBwC;')
           // feat/fotorealismus: the blades' glitter against a low sun a little calmer (thin bright blades flicker in motion), and
           // nearer to the sheen the ground beyond them keeps (world/ratscher.js)
+          // (and of the sky's a quarter: the blades are lit from above like the ground, so across a meadow each one mirrored the
+          // pale sky at the horizon – a milky veil over the green)
           .replace(
             '#include <lights_fragment_end>',
-            '#include <lights_fragment_end>\n  reflectedLight.directSpecular *= 0.6;'
+            '#include <lights_fragment_end>\n  reflectedLight.directSpecular *= 0.6; reflectedLight.indirectSpecular *= 0.25;'
           )
           .replace(
             '#include <normal_fragment_begin>',

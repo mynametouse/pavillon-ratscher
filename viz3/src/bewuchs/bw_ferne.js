@@ -21,6 +21,7 @@
 //   BWFERNE.state()          { on, x0, y0, n, classes: { id: share }, crops: [{ id, cover, cut }] }
 import * as THREE from 'three';
 import { markDirty } from '../core/assets.js';
+import { DETAIL } from '../core/detail.js';
 import { BWKARTE } from './bw_karte.js';
 import { BWPHAENO } from './bw_phaeno.js';
 import { BWBLUME } from './bw_blume.js';
@@ -237,6 +238,12 @@ export const BWFERNE = (() => {
     U.uBwFarB.value.set(S.x0, S.y0, 1 / SPAN, 1);
     markDirty();
   }
+  // the woods' floor: the class of the maps and the layers of the ground's detail textures (core/detail.js) it is made of
+  const WOOD = BWPHAENO.CLASSES.indexOf('waldboden'),
+    LF = DETAIL.L.forestfloor.toFixed(1),
+    LM = DETAIL.L.mossfloor.toFixed(1),
+    TL = (DETAIL.tile.forestfloor || 2).toFixed(2),
+    TM = (DETAIL.tile.mossfloor || 2).toFixed(2);
   // the ground shaders' part (the derivatives first: they must not sit after a branch that differs from pixel to pixel)
   const GLSL = `
 uniform sampler2D tBwFar; uniform vec4 uBwFarB, uBwFarC;
@@ -256,14 +263,26 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
   // footprint's two axes)
   float ja = dot( dx, dx ), jb = dot( dx, dy ), jd = dot( dy, dy ), jt = 0.5 * ( ja + jd ), jq = sqrt( max( jt * jt - ( ja * jd - jb * jb ), 0.0 ) );
   float fw = sqrt( jt + jq ), sinEl = clamp( sqrt( max( jt - jq, 0.0 ) ) / max( fw, 1e-6 ), 0.04, 1.0 );
-  // ---- the crops of the fields ----
+  // ---- the crops of the fields, the floor of the woods ----
   float wC = ( 1.0 - smoothstep( uBwFarC.x, uBwFarC.y, dist ) ) * uBwFarC.z;
-  if ( wC > 0.001 ) {
+  float wW = ( 1.0 - smoothstep( 110.0, 240.0, dist ) ) * uBwFarC.z;
+  if ( max( wC, wW ) > 0.001 ) {
     // (the classes are texels of 2 m: read a little beside the point, so a field's edge is no staircase)
     vec2 pw = p + 0.8 * vec2( sin( p.y * 0.83 + 1.7 * sin( p.x * 0.31 ) ), sin( p.x * 0.77 + 1.3 * sin( p.y * 0.37 ) ) );
     ivec2 ti = ivec2( clamp( ( pw - uBwFarB.xy ) * uBwFarB.z, 0.0, 0.9999 ) * ${N}.0 );
     int code = int( texelFetch( tBwFar, ivec2( ti.x, ti.y + ${N} ), 0 ).r * 255.0 + 0.5 ), cls = code - ( code / 32 ) * 32;
-    if ( cls == 9 || ( cls >= 19 && cls <= 22 ) ) {
+    if ( cls == ${WOOD} && wW > 0.001 ) {
+      // Under trees the aerial photo shows their crowns from above – dark blue-green, as ground a slate floor. Where the maps say
+      // wood the ground is what lies under trees: litter with moss and herbs in patches (the detail layers of the forest at the
+      // Klinge, world/forest.js – its own floor comes on top there). Close by and from the walker's height only: from above and far
+      // away the photo's crowns are what one sees.
+      vec3 lf = textureGrad( tDet, vec3( p / ${TL}, ${LF} ), dx / ${TL}, dy / ${TL} ).rgb, ms = textureGrad( tDet, vec3( p / ${TM} + 0.37, ${LM} ), dx / ${TM}, dy / ${TM} ).rgb;
+      float mz = smoothstep( 0.4, 0.72, bwFB( p * 0.13 + 3.1 ) ) * ( 0.55 + 0.45 * bwFB( p * 0.9 + 1.7 ) );
+      vec3 fl = mix( lf * vec3( 0.5, 0.43, 0.36 ), ms * vec3( 0.55, 0.66, 0.46 ), mz * 0.8 ) * ( 0.82 + 0.36 * bwFB( p * 0.31 + 7.0 ) );
+      // (the photo's light and dark a little: a clearing stays lighter than the stand)
+      fl *= clamp( 0.78 + 2.4 * dot( c, vec3( 0.3, 0.59, 0.11 ) ), 0.78, 1.22 );
+      c = mix( c, fl, wW * 0.92 );
+    } else if ( wC > 0.001 && ( cls == 9 || ( cls >= 19 && cls <= 22 ) ) ) {
       int row = bwCrop( cls, p ) - ${BWPHAENO.CROP0};
       if ( row >= 0 && row < ${NC} ) {
         vec4 fc = uBwFc[ row ], fh = uBwFh[ row ];
