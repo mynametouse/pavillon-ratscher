@@ -17,6 +17,7 @@ import { brunnen } from './suhl/kern/brunnen.js';
 import { tuerme } from './suhl/kern/tuerme.js';
 import { wasser } from './suhl/kern/wasser.js';
 import { autos } from './suhl/kern/autos.js';
+import { jahr1989 } from './suhl/kern/jahr1989.js';
 import { probe } from './suhl/kern/probe.js';
 // the worker behind promises: ask({ op, … }, [transfer]) → the answer
 function workerOf(url, xf) {
@@ -81,6 +82,11 @@ export async function start(ctx) {
     TU = C.on ? tuerme(ctx, C) : null,
     WA = ST.on ? wasser(ctx, ST) : null,
     AU = ST.on ? autos(ctx, ST) : null,
+    // Suhl 1989 for Grenzland's „Die Nacht am Tor“ (kern/jahr1989.js): asks the package for ground and houses when it builds
+    J =
+      C.on && ST.on
+        ? jahr1989(ctx, C, ST, { ground: (x, y) => api.ground(x, y), buildingAt: (x, y) => api.buildingAt(x, y) })
+        : null,
     T = { index: Math.round(performance.now() - t0), enter: 0, warm: 0, first: 0 },
     A = { on: false, stage: 0, d: 1e9, quarter: null, mem0: null };
   // ---- the drive (welt/fahrt.js, round 2 of the roads system) asks a zone with ground of its own where that ground is: true (drawn
@@ -127,7 +133,11 @@ export async function start(ctx) {
     if (ST.on) ST.tick(dt, o, d < NEAR);
     // the things of the street space near the observer: hidden when the observer is far or high above
     const close = d < NEAR && top() < 150;
-    for (const X of [AM, ZE, LA, BR, TU, WA, AU]) if (X) close ? X.tick(dt, o) : X.away();
+    // (in 1989 no shop fronts with today's names and no parked cars of today)
+    const in89 = J && J.on;
+    for (const X of [AM, ZE, LA, BR, TU, WA, AU])
+      if (X) close && !(in89 && (X === LA || X === AU)) ? X.tick(dt, o) : X.away();
+    if (J) J.tick(dt);
     if (!T.first && C.on && C.n.built > 0) T.first = Math.round(performance.now() - T.t0);
     acc += dt;
     if (acc > 1) {
@@ -166,6 +176,7 @@ export async function start(ctx) {
       if (TU) TU.leave();
       if (WA) WA.leave();
       if (AU) AU.leave();
+      if (J) J.leave();
       if (ST.on) ST.clear();
       worker.stop();
       A.warmed = false;
@@ -261,6 +272,8 @@ export async function start(ctx) {
         ),
       },
     },
+    // Suhl 1989 on or off (Grenzland's mission 3, or ?suhl1989=1): { on, built, people, candles, banners, fence, cars, err }
+    jahr1989: (on, o) => (J ? J.set(on, o) : null),
     status: () => ({
       on: A.on,
       d: Math.round(A.d),
@@ -278,6 +291,7 @@ export async function start(ctx) {
       tuerme: TU ? TU.state() : null,
       wasser: WA ? WA.state() : null,
       autos: AU ? AU.state() : null,
+      jahr1989: J ? J.state() : null,
       worker: worker.busy(),
       live: Object.assign({}, LIVE),
       times: T,
