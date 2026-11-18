@@ -1,0 +1,989 @@
+{
+ "v": 1,
+ "bild": "beete.png",
+ "groesse_px": 1024,
+ "zelle_px": 128,
+ "spalten": 8,
+ "zeilen": 8,
+ "hinweis": "Zelle (Spalte, Zeile) von oben links; eine Beetpflanze von der Seite, Fuß unten in der Mitte, füllt die Höhe der Zelle; breite = Anteil der Zellbreite (Alpha ≥ 0,5); farbe = mittlere Farbe (sRGB); bild = das Bild der Zelle, auch = weitere Bilder derselben Art, die sie zeigt (eine junge Kartoffel ist die große, kleiner). Erzeugt von tools/bewuchs/pflanzen/beete.py (eigene Zeichnung).",
+ "zellen": [
+  {
+   "zelle": [
+    0,
+    0
+   ],
+   "id": "tulpe-blatt",
+   "bild": "blatt",
+   "arten": [
+    "tulpe",
+    "narzisse"
+   ],
+   "breite": 0.969,
+   "oben": 0.891,
+   "deckung": 0.3796,
+   "farbe": "#6b8661"
+  },
+  {
+   "zelle": [
+    1,
+    0
+   ],
+   "id": "tulpe-bluete",
+   "bild": "bluete",
+   "arten": [
+    "tulpe"
+   ],
+   "breite": 0.484,
+   "oben": 0.977,
+   "deckung": 0.1641,
+   "farbe": "#767656"
+  },
+  {
+   "zelle": [
+    2,
+    0
+   ],
+   "id": "tulpe-bluete-gelb",
+   "bild": "bluete",
+   "arten": [
+    "tulpe"
+   ],
+   "breite": 0.484,
+   "oben": 0.977,
+   "deckung": 0.1628,
+   "farbe": "#7a8a54"
+  },
+  {
+   "zelle": [
+    3,
+    0
+   ],
+   "id": "narzisse-bluete",
+   "bild": "bluete",
+   "arten": [
+    "narzisse"
+   ],
+   "breite": 0.641,
+   "oben": 0.977,
+   "deckung": 0.1686,
+   "farbe": "#7c934f"
+  },
+  {
+   "zelle": [
+    4,
+    0
+   ],
+   "id": "stiefmuetterchen-bluete",
+   "bild": "bluete",
+   "arten": [
+    "stiefmuetterchen"
+   ],
+   "breite": 0.812,
+   "oben": 0.977,
+   "deckung": 0.3403,
+   "farbe": "#8e8046"
+  },
+  {
+   "zelle": [
+    5,
+    0
+   ],
+   "id": "vergissmeinnicht-bluete",
+   "bild": "bluete",
+   "arten": [
+    "vergissmeinnicht"
+   ],
+   "breite": 0.906,
+   "oben": 0.977,
+   "deckung": 0.2106,
+   "farbe": "#62826d"
+  },
+  {
+   "zelle": [
+    6,
+    0
+   ],
+   "id": "immergruen-bluete",
+   "bild": "bluete",
+   "arten": [
+    "immergruen"
+   ],
+   "breite": 0.828,
+   "oben": 0.977,
+   "deckung": 0.1821,
+   "farbe": "#577163"
+  },
+  {
+   "zelle": [
+    7,
+    0
+   ],
+   "id": "efeu-blatt",
+   "bild": "blatt",
+   "arten": [
+    "efeu",
+    "immergruen"
+   ],
+   "breite": 0.969,
+   "oben": 0.836,
+   "deckung": 0.36,
+   "farbe": "#344927"
+  },
+  {
+   "zelle": [
+    0,
+    1
+   ],
+   "id": "geranie-bluete",
+   "bild": "bluete",
+   "arten": [
+    "geranie"
+   ],
+   "breite": 0.781,
+   "oben": 0.977,
+   "deckung": 0.3044,
+   "farbe": "#6c5a30"
+  },
+  {
+   "zelle": [
+    1,
+    1
+   ],
+   "id": "begonie-bluete",
+   "bild": "bluete",
+   "arten": [
+    "begonie"
+   ],
+   "breite": 0.875,
+   "oben": 0.977,
+   "deckung": 0.3484,
+   "farbe": "#65653a"
+  },
+  {
+   "zelle": [
+    2,
+    1
+   ],
+   "id": "tagetes-bluete",
+   "bild": "bluete",
+   "arten": [
+    "tagetes"
+   ],
+   "breite": 0.672,
+   "oben": 0.977,
+   "deckung": 0.2043,
+   "farbe": "#73702d"
+  },
+  {
+   "zelle": [
+    3,
+    1
+   ],
+   "id": "heide-bluete",
+   "bild": "bluete",
+   "arten": [
+    "heide"
+   ],
+   "breite": 0.516,
+   "oben": 0.977,
+   "deckung": 0.1556,
+   "farbe": "#935c71"
+  },
+  {
+   "zelle": [
+    4,
+    1
+   ],
+   "id": "chrysantheme-bluete",
+   "bild": "bluete",
+   "arten": [
+    "chrysantheme"
+   ],
+   "breite": 0.953,
+   "oben": 0.977,
+   "deckung": 0.257,
+   "farbe": "#866d2f"
+  },
+  {
+   "zelle": [
+    5,
+    1
+   ],
+   "id": "zwergkonifere",
+   "bild": "blatt",
+   "arten": [
+    "zwergkonifere"
+   ],
+   "breite": 0.781,
+   "oben": 0.984,
+   "deckung": 0.2113,
+   "farbe": "#2d4523"
+  },
+  {
+   "zelle": [
+    6,
+    1
+   ],
+   "id": "tannengruen",
+   "bild": "blatt",
+   "arten": [
+    "tannengruen"
+   ],
+   "breite": 0.969,
+   "oben": 0.602,
+   "deckung": 0.1725,
+   "farbe": "#324629"
+  },
+  {
+   "zelle": [
+    7,
+    1
+   ],
+   "id": "buchskugel",
+   "bild": "blatt",
+   "arten": [
+    "buchskugel"
+   ],
+   "breite": 0.922,
+   "oben": 0.984,
+   "deckung": 0.1738,
+   "farbe": "#2d4820"
+  },
+  {
+   "zelle": [
+    0,
+    2
+   ],
+   "id": "lavendel-blatt",
+   "bild": "blatt",
+   "arten": [
+    "lavendel",
+    "katzenminze"
+   ],
+   "breite": 0.953,
+   "oben": 0.93,
+   "deckung": 0.3146,
+   "farbe": "#7b8a6c"
+  },
+  {
+   "zelle": [
+    1,
+    2
+   ],
+   "id": "lavendel-bluete",
+   "bild": "bluete",
+   "arten": [
+    "lavendel"
+   ],
+   "breite": 0.656,
+   "oben": 0.977,
+   "deckung": 0.2333,
+   "farbe": "#7f877e"
+  },
+  {
+   "zelle": [
+    2,
+    2
+   ],
+   "id": "katzenminze-bluete",
+   "bild": "bluete",
+   "arten": [
+    "katzenminze"
+   ],
+   "breite": 0.828,
+   "oben": 0.977,
+   "deckung": 0.2189,
+   "farbe": "#7f8697"
+  },
+  {
+   "zelle": [
+    3,
+    2
+   ],
+   "id": "sonnenhut-gelb-bluete",
+   "bild": "bluete",
+   "arten": [
+    "sonnenhut_gelb"
+   ],
+   "breite": 0.641,
+   "oben": 0.969,
+   "deckung": 0.2139,
+   "farbe": "#767b2f"
+  },
+  {
+   "zelle": [
+    4,
+    2
+   ],
+   "id": "sonnenhut-samen",
+   "bild": "samen",
+   "arten": [
+    "sonnenhut_gelb",
+    "sonnenhut_rot"
+   ],
+   "breite": 0.516,
+   "oben": 0.977,
+   "deckung": 0.1036,
+   "farbe": "#544737"
+  },
+  {
+   "zelle": [
+    5,
+    2
+   ],
+   "id": "sonnenhut-rot-bluete",
+   "bild": "bluete",
+   "arten": [
+    "sonnenhut_rot"
+   ],
+   "breite": 0.703,
+   "oben": 0.977,
+   "deckung": 0.2299,
+   "farbe": "#816658"
+  },
+  {
+   "zelle": [
+    6,
+    2
+   ],
+   "id": "fetthenne-blatt",
+   "bild": "blatt",
+   "arten": [
+    "fetthenne"
+   ],
+   "breite": 0.781,
+   "oben": 0.977,
+   "deckung": 0.2673,
+   "farbe": "#758d69"
+  },
+  {
+   "zelle": [
+    7,
+    2
+   ],
+   "id": "fetthenne-bluete",
+   "bild": "bluete",
+   "arten": [
+    "fetthenne"
+   ],
+   "breite": 0.781,
+   "oben": 0.977,
+   "deckung": 0.2741,
+   "farbe": "#7e7d6b"
+  },
+  {
+   "zelle": [
+    0,
+    3
+   ],
+   "id": "fetthenne-samen",
+   "bild": "samen",
+   "arten": [
+    "fetthenne"
+   ],
+   "breite": 0.594,
+   "oben": 0.977,
+   "deckung": 0.2258,
+   "farbe": "#6d533b"
+  },
+  {
+   "zelle": [
+    1,
+    3
+   ],
+   "id": "aster-bluete",
+   "bild": "bluete",
+   "arten": [
+    "aster"
+   ],
+   "breite": 0.812,
+   "oben": 0.977,
+   "deckung": 0.1791,
+   "farbe": "#6f6c6f"
+  },
+  {
+   "zelle": [
+    2,
+    3
+   ],
+   "id": "pfingstrose-blatt",
+   "bild": "blatt",
+   "arten": [
+    "pfingstrose"
+   ],
+   "breite": 0.922,
+   "oben": 0.977,
+   "deckung": 0.2599,
+   "farbe": "#4c6139"
+  },
+  {
+   "zelle": [
+    3,
+    3
+   ],
+   "id": "pfingstrose-bluete",
+   "bild": "bluete",
+   "arten": [
+    "pfingstrose"
+   ],
+   "breite": 0.859,
+   "oben": 0.977,
+   "deckung": 0.3123,
+   "farbe": "#774946"
+  },
+  {
+   "zelle": [
+    4,
+    3
+   ],
+   "id": "frauenmantel-bluete",
+   "bild": "bluete",
+   "arten": [
+    "frauenmantel"
+   ],
+   "breite": 0.812,
+   "oben": 0.977,
+   "deckung": 0.2819,
+   "farbe": "#7d9251"
+  },
+  {
+   "zelle": [
+    5,
+    3
+   ],
+   "id": "chinaschilf-blatt",
+   "bild": "blatt",
+   "arten": [
+    "chinaschilf"
+   ],
+   "breite": 0.953,
+   "oben": 0.664,
+   "deckung": 0.1619,
+   "farbe": "#5e844d"
+  },
+  {
+   "zelle": [
+    6,
+    3
+   ],
+   "id": "chinaschilf-samen",
+   "bild": "samen",
+   "arten": [
+    "chinaschilf"
+   ],
+   "breite": 0.766,
+   "oben": 0.945,
+   "deckung": 0.2108,
+   "farbe": "#b5ab85"
+  },
+  {
+   "zelle": [
+    7,
+    3
+   ],
+   "id": "stockrose-bluete",
+   "bild": "bluete",
+   "arten": [
+    "stockrose"
+   ],
+   "breite": 0.656,
+   "oben": 0.969,
+   "deckung": 0.1773,
+   "farbe": "#736953"
+  },
+  {
+   "zelle": [
+    0,
+    4
+   ],
+   "id": "rose-blatt",
+   "bild": "blatt",
+   "arten": [
+    "beetrose",
+    "bodendeckerrose"
+   ],
+   "breite": 0.938,
+   "oben": 0.977,
+   "deckung": 0.1871,
+   "farbe": "#3d602d"
+  },
+  {
+   "zelle": [
+    1,
+    4
+   ],
+   "id": "beetrose-bluete",
+   "bild": "bluete",
+   "arten": [
+    "beetrose"
+   ],
+   "breite": 0.969,
+   "oben": 0.977,
+   "deckung": 0.3068,
+   "farbe": "#5f3e2a"
+  },
+  {
+   "zelle": [
+    2,
+    4
+   ],
+   "id": "bodendeckerrose-bluete",
+   "bild": "bluete",
+   "arten": [
+    "bodendeckerrose"
+   ],
+   "breite": 0.969,
+   "oben": 0.797,
+   "deckung": 0.2723,
+   "farbe": "#746652"
+  },
+  {
+   "zelle": [
+    3,
+    4
+   ],
+   "id": "zwergmispel-blatt",
+   "bild": "blatt",
+   "arten": [
+    "zwergmispel"
+   ],
+   "breite": 0.969,
+   "oben": 0.758,
+   "deckung": 0.1676,
+   "farbe": "#335628"
+  },
+  {
+   "zelle": [
+    4,
+    4
+   ],
+   "id": "zwergmispel-frucht",
+   "bild": "frucht",
+   "arten": [
+    "zwergmispel"
+   ],
+   "breite": 0.969,
+   "oben": 0.742,
+   "deckung": 0.1611,
+   "farbe": "#465127"
+  },
+  {
+   "zelle": [
+    5,
+    4
+   ],
+   "id": "fingerstrauch-bluete",
+   "bild": "bluete",
+   "arten": [
+    "fingerstrauch"
+   ],
+   "breite": 0.781,
+   "oben": 0.977,
+   "deckung": 0.2075,
+   "farbe": "#7f7d3d"
+  },
+  {
+   "zelle": [
+    6,
+    4
+   ],
+   "id": "staude-blatt",
+   "bild": "blatt",
+   "arten": [
+    "sonnenhut_gelb",
+    "sonnenhut_rot",
+    "aster",
+    "frauenmantel",
+    "stockrose"
+   ],
+   "breite": 0.609,
+   "oben": 0.977,
+   "deckung": 0.2448,
+   "farbe": "#4a6b35"
+  },
+  {
+   "zelle": [
+    7,
+    4
+   ],
+   "id": "fingerstrauch-blatt",
+   "bild": "blatt",
+   "arten": [
+    "fingerstrauch"
+   ],
+   "breite": 0.781,
+   "oben": 0.969,
+   "deckung": 0.1982,
+   "farbe": "#637047"
+  },
+  {
+   "zelle": [
+    0,
+    5
+   ],
+   "id": "salat-jung",
+   "bild": "jung",
+   "arten": [
+    "salat"
+   ],
+   "breite": 0.969,
+   "oben": 0.688,
+   "deckung": 0.4789,
+   "farbe": "#77a14c"
+  },
+  {
+   "zelle": [
+    1,
+    5
+   ],
+   "id": "salat-reif",
+   "bild": "reif",
+   "arten": [
+    "salat"
+   ],
+   "breite": 0.969,
+   "oben": 0.562,
+   "deckung": 0.4102,
+   "farbe": "#7aa151"
+  },
+  {
+   "zelle": [
+    2,
+    5
+   ],
+   "id": "kohl-jung",
+   "bild": "jung",
+   "arten": [
+    "kohl"
+   ],
+   "breite": 0.969,
+   "oben": 0.703,
+   "deckung": 0.4501,
+   "farbe": "#627f75"
+  },
+  {
+   "zelle": [
+    3,
+    5
+   ],
+   "id": "kohl-reif",
+   "bild": "reif",
+   "arten": [
+    "kohl"
+   ],
+   "breite": 0.969,
+   "oben": 0.852,
+   "deckung": 0.6544,
+   "farbe": "#7f957b"
+  },
+  {
+   "zelle": [
+    4,
+    5
+   ],
+   "id": "zwiebel-blatt",
+   "bild": "blatt",
+   "arten": [
+    "zwiebel"
+   ],
+   "breite": 0.328,
+   "oben": 0.969,
+   "deckung": 0.1108,
+   "farbe": "#728254"
+  },
+  {
+   "zelle": [
+    5,
+    5
+   ],
+   "id": "zwiebel-welk",
+   "bild": "welk",
+   "arten": [
+    "zwiebel"
+   ],
+   "breite": 0.938,
+   "oben": 0.492,
+   "deckung": 0.0892,
+   "farbe": "#9a8d57"
+  },
+  {
+   "zelle": [
+    6,
+    5
+   ],
+   "id": "moehre-blatt",
+   "bild": "blatt",
+   "arten": [
+    "moehre"
+   ],
+   "breite": 0.547,
+   "oben": 0.969,
+   "deckung": 0.1788,
+   "farbe": "#4f7c39"
+  },
+  {
+   "zelle": [
+    7,
+    5
+   ],
+   "id": "lauch-blatt",
+   "bild": "blatt",
+   "arten": [
+    "lauch"
+   ],
+   "breite": 0.844,
+   "oben": 0.969,
+   "deckung": 0.1602,
+   "farbe": "#688770"
+  },
+  {
+   "zelle": [
+    0,
+    6
+   ],
+   "id": "kartoffel-kraut",
+   "bild": "reif",
+   "arten": [
+    "kartoffel"
+   ],
+   "auch": [
+    "jung"
+   ],
+   "breite": 0.812,
+   "oben": 0.977,
+   "deckung": 0.2806,
+   "farbe": "#4a6c35"
+  },
+  {
+   "zelle": [
+    1,
+    6
+   ],
+   "id": "kartoffel-bluete",
+   "bild": "bluete",
+   "arten": [
+    "kartoffel"
+   ],
+   "breite": 0.953,
+   "oben": 0.977,
+   "deckung": 0.3351,
+   "farbe": "#5b7749"
+  },
+  {
+   "zelle": [
+    2,
+    6
+   ],
+   "id": "kartoffel-welk",
+   "bild": "welk",
+   "arten": [
+    "kartoffel"
+   ],
+   "breite": 0.969,
+   "oben": 0.805,
+   "deckung": 0.2807,
+   "farbe": "#948a49"
+  },
+  {
+   "zelle": [
+    3,
+    6
+   ],
+   "id": "bohne-jung",
+   "bild": "jung",
+   "arten": [
+    "bohne"
+   ],
+   "breite": 0.328,
+   "oben": 0.977,
+   "deckung": 0.0576,
+   "farbe": "#657f44"
+  },
+  {
+   "zelle": [
+    4,
+    6
+   ],
+   "id": "bohne-reif",
+   "bild": "reif",
+   "arten": [
+    "bohne"
+   ],
+   "breite": 0.328,
+   "oben": 0.977,
+   "deckung": 0.1888,
+   "farbe": "#5a8640"
+  },
+  {
+   "zelle": [
+    5,
+    6
+   ],
+   "id": "tomate-jung",
+   "bild": "jung",
+   "arten": [
+    "tomate"
+   ],
+   "breite": 0.656,
+   "oben": 0.977,
+   "deckung": 0.1451,
+   "farbe": "#516f37"
+  },
+  {
+   "zelle": [
+    6,
+    6
+   ],
+   "id": "tomate-frucht",
+   "bild": "frucht",
+   "arten": [
+    "tomate"
+   ],
+   "breite": 0.656,
+   "oben": 0.977,
+   "deckung": 0.162,
+   "farbe": "#676735"
+  },
+  {
+   "zelle": [
+    7,
+    6
+   ],
+   "id": "kuerbis",
+   "bild": "frucht",
+   "arten": [
+    "kuerbis"
+   ],
+   "auch": [
+    "jung"
+   ],
+   "breite": 0.734,
+   "oben": 0.977,
+   "deckung": 0.3399,
+   "farbe": "#6b7930"
+  },
+  {
+   "zelle": [
+    0,
+    7
+   ],
+   "id": "rhabarber-blatt",
+   "bild": "blatt",
+   "arten": [
+    "rhabarber"
+   ],
+   "breite": 0.969,
+   "oben": 0.609,
+   "deckung": 0.1979,
+   "farbe": "#60693d"
+  },
+  {
+   "zelle": [
+    1,
+    7
+   ],
+   "id": "erdbeere-bluete",
+   "bild": "bluete",
+   "arten": [
+    "erdbeere"
+   ],
+   "auch": [
+    "blatt"
+   ],
+   "breite": 0.969,
+   "oben": 0.812,
+   "deckung": 0.2003,
+   "farbe": "#4f723c"
+  },
+  {
+   "zelle": [
+    2,
+    7
+   ],
+   "id": "erdbeere-frucht",
+   "bild": "frucht",
+   "arten": [
+    "erdbeere"
+   ],
+   "breite": 0.969,
+   "oben": 0.961,
+   "deckung": 0.246,
+   "farbe": "#616f3b"
+  },
+  {
+   "zelle": [
+    3,
+    7
+   ],
+   "id": "dahlie-blatt",
+   "bild": "blatt",
+   "arten": [
+    "dahlie"
+   ],
+   "breite": 0.609,
+   "oben": 0.977,
+   "deckung": 0.2232,
+   "farbe": "#416332"
+  },
+  {
+   "zelle": [
+    4,
+    7
+   ],
+   "id": "dahlie-bluete",
+   "bild": "bluete",
+   "arten": [
+    "dahlie"
+   ],
+   "breite": 0.578,
+   "oben": 0.977,
+   "deckung": 0.2855,
+   "farbe": "#6a5441"
+  },
+  {
+   "zelle": [
+    5,
+    7
+   ],
+   "id": "sonnenblume-jung",
+   "bild": "jung",
+   "arten": [
+    "sonnenblume"
+   ],
+   "breite": 0.688,
+   "oben": 0.977,
+   "deckung": 0.2502,
+   "farbe": "#496e39"
+  },
+  {
+   "zelle": [
+    6,
+    7
+   ],
+   "id": "sonnenblume-bluete",
+   "bild": "bluete",
+   "arten": [
+    "sonnenblume"
+   ],
+   "breite": 0.484,
+   "oben": 0.969,
+   "deckung": 0.2249,
+   "farbe": "#667633"
+  },
+  {
+   "zelle": [
+    7,
+    7
+   ],
+   "id": "sonnenblume-samen",
+   "bild": "samen",
+   "arten": [
+    "sonnenblume"
+   ],
+   "breite": 0.5,
+   "oben": 0.977,
+   "deckung": 0.2469,
+   "farbe": "#7b6f3e"
+  }
+ ]
+}

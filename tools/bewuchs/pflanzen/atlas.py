@@ -2245,31 +2245,38 @@ def measure(rgb, a):
     }
 
 
-def build(out_dir, only=None):
+def build(out_dir, only=None, layout=None, name='blumen', tinted=None, seed0=1000, note=None):
+    """draw a layout [(cell, id, frame, species, drawer)] into OUT_DIR/<name>.png + <name>.json (the second atlas, beete, uses it too)"""
+    layout = LAYOUT if layout is None else layout
+    tinted = TINTED if tinted is None else tinted
     atlas_rgb = np.zeros((CELL * GRID, CELL * GRID, 3), np.float32)
     atlas_a = np.zeros((CELL * GRID, CELL * GRID), np.float32)
     cells = []
-    for i, ((c, r), cid, frame, species, fn) in enumerate(LAYOUT):
+    for i, ((c, r), cid, frame, species, fn) in enumerate(layout):
         if only and cid not in only:
             continue
-        rgb, a = draw_cell(fn, 1000 + 37 * i)
+        rgb, a = draw_cell(fn, seed0 + 37 * i)
         rgb = bleed(rgb, a)
         atlas_rgb[r * CELL:(r + 1) * CELL, c * CELL:(c + 1) * CELL] = rgb
         atlas_a[r * CELL:(r + 1) * CELL, c * CELL:(c + 1) * CELL] = a
-        e = {'zelle': [c, r], 'id': cid, 'bild': frame, 'arten': species}
+        # frame: one frame, or a list when the cell serves several (the first is the main one; the others go to 'auch')
+        frames = [frame] if isinstance(frame, str) else list(frame)
+        e = {'zelle': [c, r], 'id': cid, 'bild': frames[0], 'arten': species}
+        if len(frames) > 1:
+            e['auch'] = frames[1:]
         e.update(measure(rgb, a))
-        if cid in TINTED:
+        if cid in tinted:
             e['toenen'] = True
         cells.append(e)
         print('cell', c, r, cid, e['breite'], e['farbe'], flush=True)
     img = np.dstack([atlas_rgb, atlas_a])
     im = Image.fromarray(np.clip(img * 255 + 0.5, 0, 255).astype(np.uint8), 'RGBA')
     os.makedirs(out_dir, exist_ok=True)
-    png = os.path.join(out_dir, 'blumen.png')
+    png = os.path.join(out_dir, name + '.png')
     im.save(png, optimize=True)
     meta = {
         'v': 1,
-        'bild': 'blumen.png',
+        'bild': name + '.png',
         'groesse_px': CELL * GRID,
         'zelle_px': CELL,
         'spalten': GRID,
@@ -2277,10 +2284,10 @@ def build(out_dir, only=None):
         'hinweis': 'Zelle (Spalte, Zeile) von oben links; eine Pflanze von der Seite, Stängelfuß unten in der Mitte, die Pflanze füllt die '
                    'Höhe der Zelle; breite = Anteil der Zellbreite, den sie bedeckt (Alpha ≥ 0,5); farbe = mittlere Farbe (sRGB); '
                    'toenen: Grasähren hell und fast neutral gezeichnet – mit der Farbe der Art / farbe multiplizieren. Erzeugt von '
-                   'tools/bewuchs/pflanzen/atlas.py (eigene Zeichnung).',
+                   'tools/bewuchs/pflanzen/atlas.py (eigene Zeichnung).' if note is None else note,
         'zellen': cells,
     }
-    with open(os.path.join(out_dir, 'blumen.json'), 'w', encoding='utf8') as f:
+    with open(os.path.join(out_dir, name + '.json'), 'w', encoding='utf8') as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)
     print('wrote', png, os.path.getsize(png), 'bytes', flush=True)
     return im, meta
@@ -2296,7 +2303,7 @@ def font(size):
     return ImageFont.load_default()
 
 
-def sheets(im, meta, d):
+def sheets(im, meta, d, prefix='atlas', meadow='wiese_bildschirm'):
     os.makedirs(d, exist_ok=True)
     G = (96, 122, 62)
     # 1:1 with labels, on a grass-green ground
@@ -2315,14 +2322,14 @@ def sheets(im, meta, d):
             e = by.get((c, r))
             dr.text((c * CELL + 3, r * (CELL + lab) + CELL + 2), (e['id'] if e else '–')[:21], fill=(240, 240, 230), font=fnt)
             dr.rectangle((c * CELL, r * (CELL + lab), (c + 1) * CELL - 1, r * (CELL + lab) + CELL - 1), outline=(70, 90, 46))
-    sh.save(os.path.join(d, 'atlas_1zu1.png'))
+    sh.save(os.path.join(d, prefix + '_1zu1.png'))
     # 1:4 (32 px cells, as a texture at that size gives it), magnified x3 with nearest neighbour
     small = im.resize((W // 4, W // 4), Image.BOX)
     bg = Image.new('RGBA', small.size, G + (255,))
     s4 = Image.alpha_composite(bg, small).convert('RGB').resize((W // 4 * 3, W // 4 * 3), Image.NEAREST)
-    s4.save(os.path.join(d, 'atlas_1zu4.png'))
+    s4.save(os.path.join(d, prefix + '_1zu4.png'))
     # the colour channels alone (alpha ignored): the bled colour must look like the plant, without dark or white borders
-    Image.fromarray(np.asarray(im)[..., :3]).save(os.path.join(d, 'atlas_rgb.png'))
+    Image.fromarray(np.asarray(im)[..., :3]).save(os.path.join(d, prefix + '_rgb.png'))
     # a meadow: plants at the sizes they have on screen (5–60 px), over grass-coloured noise, mixed by kind
     rng = np.random.default_rng(5)
     Wm, Hm = 1200, 600
@@ -2342,7 +2349,7 @@ def sheets(im, meta, d):
             cell = im.crop((c * CELL, r * CELL, (c + 1) * CELL, (r + 1) * CELL)).resize((size, size), Image.BOX)
             x = int(k * size * 0.55 + rng.integers(0, max(1, size // 3)))
             mead.alpha_composite(cell, (min(Wm - size, x), min(Hm - size, y - size + int(rng.integers(0, 10)))))
-    mead.convert('RGB').save(os.path.join(d, 'wiese_bildschirm.png'))
+    mead.convert('RGB').save(os.path.join(d, meadow + '.png'))
     print('sheets in', d, flush=True)
 
 

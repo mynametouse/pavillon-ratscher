@@ -21,8 +21,10 @@ const range = (v, lo, hi, what) => {
   assert.ok(v[0] <= v[1], what + ': von > bis');
   assert.ok(v[0] >= lo && v[1] <= hi, what + ': ' + v + ' außerhalb ' + lo + '…' + hi);
 };
-const num = (v, lo, hi, what) => assert.ok(isNum(v) && v >= lo && v <= hi, what + ': ' + v + ' außerhalb ' + lo + '…' + hi);
-const doy = (v, what) => assert.ok(Number.isInteger(v) && v >= 1 && v <= 366, what + ': Tag des Jahres 1–366, nicht ' + v);
+const num = (v, lo, hi, what) =>
+  assert.ok(isNum(v) && v >= lo && v <= hi, what + ': ' + v + ' außerhalb ' + lo + '…' + hi);
+const doy = (v, what) =>
+  assert.ok(Number.isInteger(v) && v >= 1 && v <= 366, what + ': Tag des Jahres 1–366, nicht ' + v);
 const months = (v, lo, hi, what) => {
   assert.ok(Array.isArray(v) && v.length === 12, what + ': 12 Monatswerte erwartet');
   v.forEach((x, i) => num(x, lo, hi, what + '[' + i + ']'));
@@ -56,7 +58,8 @@ const FRAMES = ['knospe', 'bluete', 'frucht', 'samen', 'blatt'];
 
 test('the table: version, parts, sources', () => {
   assert.equal(B.v, 1);
-  for (const k of ['gras', 'blumen', 'flaechen', 'atlas', 'farbjahr', 'quellen']) assert.ok(B[k] && typeof B[k] === 'object', k);
+  for (const k of ['gras', 'blumen', 'flaechen', 'atlas', 'farbjahr', 'quellen'])
+    assert.ok(B[k] && typeof B[k] === 'object', k);
   assert.ok(Object.keys(B.gras).length >= 15, 'grasses ' + Object.keys(B.gras).length);
   assert.ok(Object.keys(B.blumen).length >= 25, 'flowers ' + Object.keys(B.blumen).length);
   for (const [k, q] of Object.entries(B.quellen)) {
@@ -65,7 +68,8 @@ test('the table: version, parts, sources', () => {
   }
   // every source is used somewhere
   const used = new Set();
-  for (const part of [B.gras, B.blumen, B.flaechen]) for (const e of Object.values(part)) for (const k of e.quellen) used.add(k);
+  for (const part of [B.gras, B.blumen, B.flaechen, B.straeucher || {}, B.beet || {}, B.beetvorlagen || {}])
+    for (const e of Object.values(part)) for (const k of e.quellen) used.add(k);
   for (const k of Object.keys(B.quellen)) assert.ok(used.has(k), 'Quelle nicht benutzt: ' + k);
 });
 
@@ -79,7 +83,8 @@ test('grasses: blades, colours by season, seed heads with their atlas cells', ()
     num(g.biegung, 0, 1, at + '.biegung');
     num(g.glanz, 0, 1, at + '.glanz');
     assert.ok(['horst', 'locker', 'rasen'].includes(g.wuchs), at + '.wuchs');
-    for (const s of ['frisch', 'sommer', 'trocken', 'herbst', 'winter']) assert.match(g.farbe[s], HEX, at + '.farbe.' + s);
+    for (const s of ['frisch', 'sommer', 'trocken', 'herbst', 'winter'])
+      assert.match(g.farbe[s], HEX, at + '.farbe.' + s);
     const a = g.aehre;
     assert.ok(['rispe', 'aehre', 'aehrenrispe', 'knaeuel', 'busch', 'aehrchen'].includes(a.form), at + '.aehre.form');
     doy(a.von, at + '.aehre.von');
@@ -94,7 +99,10 @@ test('grasses: blades, colours by season, seed heads with their atlas cells', ()
       const c = CELL.get(String(a[k]));
       assert.ok(c, at + '.aehre.' + k + ' ' + a[k] + ' fehlt im Atlas');
       assert.ok(c.arten.includes(id), at + ': Zelle ' + c.id + ' nennt die Art nicht');
-      assert.ok(k === 'zelle' ? c.bild === 'aehre' : ['aehre', 'reif'].includes(c.bild), at + '.aehre.' + k + ': Bild ' + c.bild);
+      assert.ok(
+        k === 'zelle' ? c.bild === 'aehre' : ['aehre', 'reif'].includes(c.bild),
+        at + '.aehre.' + k + ': Bild ' + c.bild
+      );
       assert.ok(c.toenen, at + ': Grasähren sind zum Tönen gezeichnet');
     }
     sources(g.quellen, at);
@@ -139,8 +147,14 @@ test('flowers: heights, frames in the atlas, the year as ordered day windows', (
     months(f.wuchs, 0, 1, at + '.wuchs');
     for (const k of ['nach_schnitt_tage', 'blatt_tage'])
       assert.ok(f[k] === null || (Number.isInteger(f[k]) && f[k] >= 0 && f[k] <= 120), at + '.' + k);
-    assert.ok(f.nachbluete_bis === null || (Number.isInteger(f.nachbluete_bis) && f.nachbluete_bis <= 366), at + '.nachbluete_bis');
-    assert.ok((f.nach_schnitt_tage === null) === (f.nachbluete_bis === null), at + ': nach_schnitt_tage und nachbluete_bis');
+    assert.ok(
+      f.nachbluete_bis === null || (Number.isInteger(f.nachbluete_bis) && f.nachbluete_bis <= 366),
+      at + '.nachbluete_bis'
+    );
+    assert.ok(
+      (f.nach_schnitt_tage === null) === (f.nachbluete_bis === null),
+      at + ': nach_schnitt_tage und nachbluete_bis'
+    );
     if (f.offen_h) range(f.offen_h, 0, 24, at + '.offen_h');
     for (const k of ['verfaerbung', 'beeren'])
       if (f[k]) {
@@ -301,4 +315,122 @@ test('the year is plausible: meadow and verge flower from April to October, the 
   }
   assert.equal(B.farbjahr[0][0], 1);
   assert.equal(B.farbjahr[B.farbjahr.length - 1][0], 366);
+});
+
+// the EZ-Tree presets the app has (viz3/src/eztree/presets/index.js) and the option paths a bush may change
+const PRESETS = [
+  ...fs.readFileSync(path.join(HERE, '../../src/eztree/presets/index.js'), 'utf8').matchAll(/^\s+'([^']+)': \w+,$/gm),
+].map(m => m[1]);
+const MOD_PATH =
+  /^(branch\.(levels|force\.strength|(angle|children|gnarliness|length|radius|sections|segments|start|taper|twist)\.[0-3])|leaves\.(type|count|size|angle|start|sizeVariance|billboard|tint)|bark\.(type|tint|textured))$/;
+const win = (v, what) => {
+  assert.ok(Array.isArray(v) && v.length === 2, what + ': [von, bis] erwartet');
+  doy(v[0], what);
+  doy(v[1], what);
+  assert.ok(v[0] <= v[1], what + ': von > bis');
+};
+
+test('bushes: size, form, EZ-Tree preset and changes, leaves, bloom and fruit as day windows, care', () => {
+  assert.ok(B.straeucher && Object.keys(B.straeucher).length >= 16, 'mindestens 16 Sträucher');
+  assert.ok(PRESETS.includes('Bush 1') && PRESETS.length >= 10, 'presets ' + PRESETS);
+  for (const [id, b] of Object.entries(B.straeucher)) {
+    const at = 'straeucher.' + id;
+    assert.match(id, /^[a-z_]+$/, at);
+    assert.ok(typeof b.name === 'string' && b.name.length > 2 && typeof b.latein === 'string', at + ' name/latein');
+    assert.ok(['wild', 'garten'].includes(b.gruppe), at + '.gruppe');
+    assert.ok(Array.isArray(b.wo) && b.wo.length >= 1, at + '.wo');
+    for (const w of b.wo) assert.ok(KLASSEN.includes(w) || ['garten', 'hecke'].includes(w), at + '.wo ' + w);
+    range(b.hoehe_m, 0.1, 10, at + '.hoehe_m');
+    range(b.breite_m, 0.1, 8, at + '.breite_m');
+    assert.ok(
+      [
+        'aufrecht',
+        'rund',
+        'breit',
+        'ueberhaengend',
+        'dickicht',
+        'ranken',
+        'ruten',
+        'kugel',
+        'saeule',
+        'hecke',
+      ].includes(b.form),
+      at + '.form'
+    );
+    num(b.dichte, 0, 1, at + '.dichte');
+    assert.equal(typeof b.dornen, 'boolean', at + '.dornen');
+    num(b.fest_ab_m, 0, 2, at + '.fest_ab_m');
+    assert.ok(PRESETS.includes(b.eztree.preset), at + '.eztree.preset ' + b.eztree.preset);
+    assert.ok(Number.isInteger(b.eztree.seed), at + '.eztree.seed');
+    for (const [k, v] of Object.entries(b.eztree.mod)) {
+      assert.match(k, MOD_PATH, at + '.eztree.mod ' + k);
+      assert.ok(
+        isNum(v) || ['ash', 'aspen', 'oak', 'pine', 'birch', 'willow', 'single', 'double'].includes(v),
+        at + '.eztree.mod ' + k + ' = ' + v
+      );
+    }
+    const L = b.laub;
+    assert.ok(['sommergruen', 'halbimmergruen', 'immergruen'].includes(L.typ), at + '.laub.typ');
+    for (const k of ['farbe', 'austrieb_farbe']) assert.match(L[k], HEX, at + '.laub.' + k);
+    win(L.austrieb, at + '.laub.austrieb');
+    if (L.typ === 'immergruen') assert.match(L.winter_farbe, HEX, at + '.laub.winter_farbe');
+    else {
+      assert.match(L.herbst_farbe, HEX, at + '.laub.herbst_farbe');
+      win(L.herbst, at + '.laub.herbst');
+      win(L.fall, at + '.laub.fall');
+      assert.ok(
+        L.austrieb[1] < L.herbst[0] && L.herbst[0] <= L.fall[0] && L.herbst[1] <= L.fall[1],
+        at + '.laub: Austrieb, Herbst, Fall in Reihenfolge'
+      );
+    }
+    if (b.bluete) {
+      const f = b.bluete;
+      win([f.von, f.bis], at + '.bluete');
+      assert.match(f.farbe, HEX, at + '.bluete.farbe');
+      assert.ok(['dolde', 'rispe', 'traube', 'einzeln', 'kaetzchen', 'ball'].includes(f.form), at + '.bluete.form');
+      num(f.groesse_m, 0.005, 0.5, at + '.bluete.groesse_m');
+      num(f.menge, 0.05, 1, at + '.bluete.menge');
+      assert.equal(typeof f.vor_laub, 'boolean', at + '.bluete.vor_laub');
+      if (f.vor_laub) assert.ok(f.von < L.austrieb[1], at + ': blüht vor dem Laub, aber erst nach dem Austrieb');
+    }
+    if (b.frucht) {
+      const f = b.frucht;
+      if (f.gruen !== null) win(f.gruen, at + '.frucht.gruen');
+      assert.ok(Array.isArray(f.reif) && f.reif.length >= 1, at + '.frucht.reif');
+      f.reif.forEach(r => win(r, at + '.frucht.reif'));
+      for (const k of ['farbe', 'farbe_gruen']) assert.match(f[k], HEX, at + '.frucht.' + k);
+      assert.ok(['dolde', 'rispe', 'traube', 'einzeln', 'sammel', 'ball'].includes(f.form), at + '.frucht.form');
+      num(f.groesse_m, 0.005, 0.5, at + '.frucht.groesse_m');
+      num(f.menge, 0.05, 1, at + '.frucht.menge');
+      if (b.bluete && f.gruen) assert.ok(b.bluete.von < f.gruen[0], at + ': die Frucht folgt der Blüte'); // (Brombeere: both at once)
+      if (f.gruen) assert.ok(f.gruen[1] < f.reif[0][0], at + ': grün vor reif');
+    }
+    if (b.schnitt) {
+      assert.ok(['kugel', 'hecke', 'auslichten', 'rueckschnitt'].includes(b.schnitt.art), at + '.schnitt.art');
+      b.schnitt.doy.forEach(d => doy(d, at + '.schnitt.doy'));
+    }
+    sources(b.quellen, at);
+  }
+  // what the plan's season table promises
+  const inWin = (w, d) => w && d >= w[0] && d <= w[1];
+  const S = B.straeucher;
+  assert.ok(
+    inWin([S.schlehe.bluete.von, S.schlehe.bluete.bis], 110) &&
+      inWin([S.forsythie.bluete.von, S.forsythie.bluete.bis], 105),
+    'April: Schlehe und Forsythie'
+  );
+  assert.ok(
+    inWin([S.weissdorn.bluete.von, S.weissdorn.bluete.bis], 140) &&
+      inWin([S.flieder.bluete.von, S.flieder.bluete.bis], 140),
+    'Mai: Weißdorn, Flieder'
+  );
+  assert.ok(inWin([S.holunder.bluete.von, S.holunder.bluete.bis], 160), 'Juni: Holunder');
+  assert.ok(
+    S.johannisbeere.frucht.reif.some(r => inWin(r, 195)) && S.brombeere.frucht.reif.some(r => inWin(r, 230)),
+    'Juli/August: Beeren'
+  );
+  assert.ok(
+    S.hundsrose.frucht.reif.some(r => inWin(r, 20)) && S.schlehe.frucht.reif.some(r => inWin(r, 20)),
+    'Winter: Hagebutten und Schlehen hängen'
+  );
 });
