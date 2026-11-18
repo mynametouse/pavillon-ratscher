@@ -6,6 +6,8 @@
 core/late.js                # LATE: what a module needs from a module further down (handed over when that one loads)
 core/save.js                # SAVE: every value kept in this browser (registry, safe reads/writes, migrations, test hooks)
 core/head.js                # renderer, scene, camera, query flags, small helpers (THREE also on window)
+# feat/fotorealismus: the shader side of the sun's shadow cascades – before core/assets.js, whose patchSV copies three's lights chunk when it loads
+foto/schatten_glsl.js       # feat/fotorealismus sunShadow() in three's shadow chunks, sunLand() for the hills' shadows, the shared uniforms csmM/csmN/csmP/csmQ/csmL/csmH, three's own shadow pass (CSMU)
 core/kern.js                # KERN: ground, terrain, road surface, collision, place names – services the world modules provide
 core/tasks.js               # TASKS: tasks as data – steps advance on KERN events, saved (pav-tasks-v1), listed in the one journal
 core/rig.js                 # canonical bone names of the people (Mixamo, CC, Biped, UE) and the compact clip format
@@ -13,6 +15,8 @@ core/assets.js              # loading manager, textures, PBR materials, patchSV 
 core/mats.js                # shared materials MAT
 core/geo.js                 # box/cylinder builders with collision + walk registry (COL, WALK), building registry (bldBegin/bldEnd, BUILD)
 core/detail.js              # V16b1 detail textures of the ground shaders as one texture array (DETAIL); sampler count check and fallback (GLCHECK)
+# feat/bewuchs-pflanzen: the species of the vegetation – pure data, high up so that every bewuchs module can import it
+bewuchs/bw_arten.js         # feat/bewuchs-pflanzen grasses, wildflowers, their year, the care of each kind of area, the flower atlas' cells – data (BWARTEN)
 pavilion/house_base.js      # the planned pavilion: dimensions, levels, wall/window/railing/ladder helpers
 pavilion/house_common.js    # parts both variants share (slab, EG walls S/N/W, joists, chimney, EG windows, floor, stove)
 pavilion/house_tower.js     # variant A: stair tower
@@ -241,6 +245,14 @@ wetter/wx_ton.js            # feat/wetter the sound of the weather: rain outside
 wetter/wx_boden.js          # feat/wetter wet ground and roofs: darker and glossier while it rains and for hours after (WXBODEN)
 wetter/wx_wind.js           # feat/wetter the garden's trees sway with the real wind: a few lines in their leaf shader at load (WXWIND)
 wetter/wetter.js            # feat/wetter live as the default, switchable to the calendar's: the game's moment, easing, clock window, menu (WETTER)
+# feat/bewuchs: the vegetation template below this line (after the world, the garden's lawn and the wind it reads; docs/plans/plan_bewuchs.md)
+bewuchs/bw_phaeno.js        # feat/bewuchs the year of the vegetation: heights, cuts, colours per kind of area – pure (BWPHAENO)
+bewuchs/bw_karte.js         # feat/bewuchs what grows where: the area maps near the camera, the garden's site texture (BWKARTE)
+bewuchs/bw_halm.js          # feat/bewuchs grass blades in three rings around the camera, made on the graphics card (BWHALM)
+bewuchs/bw_blume.js         # feat/bewuchs stage 2: wildflowers on the blades' tiles, their year from the species table (BWBLUME)
+bewuchs/bw_ferne.js         # feat/bewuchs stage 2b: flowering meadows far away – coloured speckles in the ground (BWFERNE)
+bewuchs/bw_strauch.js       # feat/bewuchs stage 3: shrubs with flowers and berries from the species table (BWSTRAUCH)
+bewuchs/bewuchs.js          # feat/bewuchs the template: tiers, the day, the garden's mowing, each frame (BEWUCHS)
 # feat/strassen: the furniture of the roads below this line (after the parked things, the traffic and the weather; before the frame loop)
 strassen/strassen_modelle.js # feat/strassen delineators, guard rails, traffic signs, street lamps, power poles and towers as geometry – pure (STRMOD)
 strassen/strassen.js        # feat/strassen the furniture built per cell near the observer, lamps at night, wet roads (STRASSEN)
@@ -381,6 +393,10 @@ schleusingen-ansicht/sa_markt.js    # feat/schleusingen-ansicht the Markt as it 
 jetpack/jetpack.js          # feat/jetpack put on a jetpack, fly high and far, the overview with the places' names, fly to a place by itself (JET)
 # feat/navi: the autopilot in the car (Falko 17.11.2026) – after the traffic (VNETZ, VAUTO) and the drive (FAHRT)
 navi/navi.js                # feat/navi a destination in the vehicle panel, the autopilot drives there – route over the village's and the drive's roads (NAVI)
+# feat/fotorealismus: picture quality below this line (after the world it lights, before the frame loop)
+foto/schatten_land.js       # feat/fotorealismus the hills' shadows at a low sun: a raster of the terrain's heights around the walker, swept along the sun into a field of shadow heights (SCHLAND)
+foto/schatten.js            # feat/fotorealismus the sun's shadows beyond the walker's box: a far and a wide tile in the sun's shadow atlas, the land casts and receives, the hills' field in a strip of the atlas (SCHATTEN)
+foto/luft.js                # feat/fotorealismus the air: haze that lies in the valleys and brightens towards the sun – three's fog chunks, shared uniforms (LUFT)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue

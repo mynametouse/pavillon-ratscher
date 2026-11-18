@@ -124,6 +124,16 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
   Kasten um den Pavillon (weicher Rand 1,5 m, Tönung `GI.tint`), Figurenschatten (`FIGSH`), Maske gegen Lampenlicht durch Wände
   (`material.userData.leak`, Rasen/Kies). Programm-Cache-Schlüssel beachten (`customProgramCacheKey`), sonst teilen Varianten Shader.
 - Lichter nie per `visible` an/aus (ändert die Shader-Varianten → alles neu kompilieren); stattdessen `intensity = 0`.
+- **Sonnenschatten in drei Zonen** (`foto/schatten_glsl.js`, `foto/schatten.js`, `SCHATTEN`, seit 18.11.2026): die Schattenkarte der Sonne
+  ist ein Atlas – links der Kasten um die Spielfigur (`garden/env.js` `sunFollow`), rechts zwei Kacheln halber Größe (fern ±96 m, weit
+  ±640 m), gezeichnet von three's Schattenpass für je ein verstecktes Licht und in den Atlas kopiert. Der Shader (`sunShadow()` statt
+  `getShadow()` in three's Bausteinen) rechnet die Kachel-Koordinaten aus der Schattenkoordinate des Kastens – **kein neues Licht, keine
+  neue Textur, kein neues Programm**. Die Uniforms dafür (und für die Luft) stehen als typisierte Arrays in `THREE.ShaderLib`: so teilen
+  sie sich alle Materialien (three klont nur seine eigenen Typen) – nach einem three-Update `viz3/test/fotorealismus.py` laufen lassen.
+  Wer in der Welt Schatten wirft und empfängt, setzt `SCHATTEN` (Gelände, Gebäude, Bäume; `SCHATTEN.add` für eigene Dinge).
+- **Luft** (`foto/luft.js`, `LUFT`): der Dunst (`scene.fog`, exponentiell, `world/ratscher.js`) nach Höhe (Skalenhöhe 450 m) und zur Sonne hin
+  heller – in three's Nebel-Bausteinen; das Varying `vLuft` (Blick von der Kamera zum Punkt in Weltachsen) steht jedem Material mit Nebel
+  zur Verfügung.
 - **Höchstens 16 Texturen je Shader-Programm** (Fragment- und Vertex-Shader getrennt gezählt). Das ist die Untergrenze von WebGL 2 und
   auf vielen Laptops, Macs und Telefonen auch die Obergrenze; SwiftShader in den Tests erlaubt 32. Mehr Texturen → das Programm kompiliert
   nicht, das Mesh fehlt (V16b: Boden um den Garten mit 21 Texturen, der Himmel schien durch). Gleichartige Kacheltexturen deshalb als
@@ -203,6 +213,8 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | Schlüssel | Inhalt |
 |---|---|
 | `pav-tier` | Grafikstufe (hoch/mittel/schnell) |
+| `pav-bewuchs-v1` | Gras und Blumen in 3D (voll/einfach/aus; Menü → Einstellungen → Grafik) |
+| `pav-schatten-v1` | Schatten in der Ferne (auto/an/aus; Menü → Einstellungen → Grafik; `foto/schatten.js`) |
 | `pav-light2` | Lichtmodus (auto/day/gold/dusk/night) |
 | `pav-variant`, `pav-facade`, `pav-style`, `pav-layout`, `pav-site`, `pav-plan-ts` | Entwurf: Variante, Fassade, Innenstil, Möbel, Gebäude/Zäune, Stand des veröffentlichten Plans |
 | `pav-gh-token` | GitHub-Schlüssel des Eigentümers zum Veröffentlichen des Plans (nur in seinem Browser, nie im Repo) |
@@ -254,6 +266,12 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Wald an der Klinge (`forest`), Fällen (`fell`, V16c2), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
   Kollision mit der Umgebung (`worldcol`), Bäume, die Fahrzeugen nachgeben (`treehit`)
 - `time/` – Uhr, Sterndaten, Tag und Nacht
+- `bewuchs/` – Bewuchs in 3D (feat/bewuchs, `docs/features/bewuchs.md`): Halme in drei Ringen um die Kamera (`bw_halm`, `BWHALM`), Wildblumen auf
+  denselben Kacheln (`bw_blume`, `BWBLUME`), das Jahr je Flächenart (`bw_phaeno`, `BWPHAENO`, rein), was wo wächst (`bw_karte`, `BWKARTE`),
+  die Arten des Hilfs-Agenten `bewuchs-pflanzen` (`bw_arten`, `BWARTEN`, rein), blühende Wiesen in der Ferne im Bodenshader (`bw_ferne`,
+  `BWFERNE`, Haken `bwFar` in `world/roads.js`), Stufe, Tag und Mähen (`bewuchs`, `BEWUCHS`)
+- `foto/` – Bildqualität (feat/fotorealismus, `docs/features/fotorealismus.md`): die Shader-Seite der Schattenzonen (`schatten_glsl`, lädt gleich nach
+  `core/head.js`, vor `core/assets.js`), die Kacheln und wer Schatten wirft (`schatten`, `SCHATTEN`), die Luft (`luft`, `LUFT`)
 - `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster; Holz vom Stamm zum Brett (`holz`, `holz_saw`, `holz_dry`, V16d);
   Rückewinde und Kran (`winde`, `kran`)
 - `boot/` – Start
