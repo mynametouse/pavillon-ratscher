@@ -334,19 +334,20 @@ export const BWSTRAUCH = (() => {
     group().add(m);
     return m;
   }
-  // a kind's four meshes (bark and crown, near and far), made anew with room to spare when more are needed
-  function meshesOf(id, K, nN, nF) {
+  // a kind's meshes in two bands – close (the full bark and crown) and the rest (in leaf: only the crown thinned most; bare: only the far
+  // bark) – made anew with room to spare when more are needed (few draw calls: at most KINDS kinds, 2 + 1 each)
+  const CLOSE = 14,
+    KINDS = 8;
+  function meshesOf(id, K, need) {
     let M = S.meshes[id];
-    if (!M || M.capN < nN || M.capF < nF) {
+    if (!M || need.some((n, b) => M.cap[b] < n)) {
       if (M) for (const m of M.all) (S.G.remove(m), m.dispose());
-      const cN = Math.max(16, nN * 2),
-        cF = Math.max(32, nF * 2);
-      M = { capN: cN, capF: cF };
-      M.bN = im(K.bg, K.bark, cN);
-      M.lN = im(K.lv[0], K.leaf, cN, true);
-      M.bF = im(K.bgFar, K.bark, cF);
-      M.lF = im(K.lv[2], K.leaf, cF, true);
-      M.all = [M.bN, M.lN, M.bF, M.lF];
+      M = { cap: need.map(n => Math.max(16, n * 2)) };
+      const BG = [K.bg, K.bgFar],
+        LG = [K.lv[0], K.lv[2]];
+      M.b = M.cap.map((c, i) => im(BG[i], K.bark, c));
+      M.l = M.cap.map((c, i) => im(LG[i], K.leaf, c, true));
+      M.all = [...M.b, ...M.l];
       S.meshes[id] = M;
     }
     return M;
@@ -374,30 +375,50 @@ export const BWSTRAUCH = (() => {
     }
     list.sort((a, b) => a[0] - b[0]);
     if (list.length > S.cap) list.length = S.cap;
-    // per kind, near and far
+    // the KINDS most frequent species round the camera get their own shape; the others borrow one (of the same preset, else the most
+    // frequent) and keep their own leaves, flowers and berries
+    const cnt = new Map();
+    for (const e of list) {
+      const si = e[1][e[2] + 2];
+      cnt.set(si, (cnt.get(si) || 0) + 1);
+    }
+    const top = [...cnt.keys()].sort((a, b) => cnt.get(b) - cnt.get(a)).slice(0, KINDS);
+    const shape = new Map();
+    for (const si of cnt.keys()) {
+      if (top.includes(si)) shape.set(si, si);
+      else {
+        const pr = S.sp[si].e.eztree.preset,
+          same = top.find(t => S.sp[t].e.eztree.preset === pr);
+        shape.set(si, same !== undefined ? same : top[0]);
+      }
+    }
+    // per shape, close and the rest
     const by = new Map();
     for (const e of list) {
       const si = e[1][e[2] + 2],
-        K = kindOf(si);
+        ki = shape.get(si),
+        K = kindOf(ki);
       if (!K) continue;
-      let b = by.get(si);
-      if (!b) by.set(si, (b = { K, n: [], f: [] }));
-      (e[0] < S.NEAR ? b.n : b.f).push(e);
+      let b = by.get(ki);
+      if (!b) by.set(ki, (b = { K, bands: [[], []] }));
+      b.bands[e[0] < CLOSE ? 0 : 1].push(e);
     }
     for (const M of Object.values(S.meshes)) for (const m of M.all) m.count = 0;
     const dl = [];
     let nNear = 0,
       nAll = 0;
-    for (const [si, b] of by) {
-      const s = S.sp[si],
-        K = b.K,
-        M = meshesOf(s.id, K, b.n.length, b.f.length);
-      for (const [band, bm, lm] of [
-        [b.n, M.bN, M.lN],
-        [b.f, M.bF, M.lF],
-      ]) {
-        let i = 0;
+    for (const [ki, b] of by) {
+      const K = b.K,
+        M = meshesOf(
+          S.sp[ki].id,
+          K,
+          b.bands.map(a => a.length)
+        );
+      for (const [bi, band, bm, lm] of b.bands.map((a, i) => [i, a, M.b[i], M.l[i]])) {
+        let ib = 0,
+          il = 0;
         for (const [, A, o] of band) {
+          const s = S.sp[A[o + 2]];
           const px = A[o],
             py = A[o + 1],
             hh = A[o + 3],
@@ -410,11 +431,14 @@ export const BWSTRAUCH = (() => {
             sx = THREE.MathUtils.clamp(ww / 2 / Math.max(0.2, K.R), sy * 0.7, sy * 1.45);
           q.setFromAxisAngle(up, rr * 6.2832);
           m4.compose(V(px, py, z - 0.05), q, sv.set(sx, sy, sx));
-          bm.setMatrixAt(i, m4);
-          // the crown: hidden when bare, a little smaller while budding or falling
+          // the bark: close always, beyond only while the crown is thin (in leaf the crown hides it)
+          if (bi === 0 || full < 0.6) bm.setMatrixAt(ib++, m4);
+          // the crown: none when bare, a little smaller while budding or falling
           const kf = full > 0.02 ? 0.55 + 0.45 * full : 0;
-          m4.compose(V(px, py, z - 0.05), q, sv.set(sx * kf, sy * (kf ? 0.6 + 0.4 * kf : 0), sx * kf));
-          lm.setMatrixAt(i, m4);
+          if (kf > 0) {
+            m4.compose(V(px, py, z - 0.05), q, sv.set(sx * kf, sy * (0.6 + 0.4 * kf), sx * kf));
+            lm.setMatrixAt(il, m4);
+          }
           const av = K.avg,
             k = 0.9 + 0.2 * rr;
           col.setRGB(
@@ -422,7 +446,7 @@ export const BWSTRAUCH = (() => {
             THREE.MathUtils.clamp((lc[1] / Math.max(0.01, av[1])) * k, 0.25, 2.8),
             THREE.MathUtils.clamp((lc[2] / Math.max(0.01, av[2])) * k, 0.25, 2.8)
           );
-          lm.setColorAt(i, col);
+          if (kf > 0) lm.setColorAt(il++, col);
           // flowers and berries: on its leaf cards (before the leaves and in winter: on the twigs)
           const D = dots(s, d - shift);
           if (D && dl.length < MAXDOTS * 5 && Math.hypot(px - x, py - y) < 70) {
@@ -439,16 +463,16 @@ export const BWSTRAUCH = (() => {
               }
             }
           }
-          i++;
         }
-        bm.count = lm.count = i;
+        bm.count = ib;
+        lm.count = il;
         for (const m of [bm, lm]) {
           m.instanceMatrix.needsUpdate = true;
           if (m.instanceColor) m.instanceColor.needsUpdate = true;
         }
       }
-      nNear += b.n.length;
-      nAll += b.n.length + b.f.length;
+      nNear += b.bands[0].length;
+      nAll += b.bands[0].length + b.bands[1].length;
     }
     // the dots
     const nd = dl.length / 5;

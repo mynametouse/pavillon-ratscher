@@ -146,7 +146,7 @@ with lib.browser() as b:
                     print('strauch', name, json.dumps(t), flush=True)
                     lib.shot(pg, OUT, 'strauch_' + name)
                     if name == 'juni':
-                        ck('shrubs stand in the thicket (kinds built, near ones drawn)', t['kinds'] >= 3 and t['near'] >= 5 and not t['failed'], json.dumps(t))
+                        ck('shrubs stand in the thicket (kinds built, shrubs drawn, some close)', t['kinds'] >= 3 and t['drawn'] >= 20 and t['near'] >= 1 and not t['failed'], json.dumps(t))
                     if name == 'september':
                         ck('berries in September', t['dots'] > 50, json.dumps(t))
         if 'leistung' in WANT:
