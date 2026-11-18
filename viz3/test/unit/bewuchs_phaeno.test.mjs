@@ -207,7 +207,15 @@ test('the helper’s species table (bw_arten.js) as the class table: heights, ca
   // regular mowing by month (a number or twelve) – the table gives the days for each month
   const T = P.table(140),
     W = P.TW * 4;
-  assert.equal(P.TW, 7);
+  assert.equal(P.TW, 8); // feat/fotorealismus (foto-wald): texel 7 – the light under trees, the herb layer's patches
+  // open ground everywhere but under trees: a wood's floor gets less than half of the sun, its herbs stand in patches of several metres
+  assert.deepEqual([...T.slice(4 * W + 28, 4 * W + 32)], [1, 1, 0, 0]);
+  const f11 = BWARTEN.flaechen[11];
+  assert.ok(T[11 * W + 28] > 0.2 && T[11 * W + 28] < 0.6 && near(T[11 * W + 28], f11.schirm.sonne, 1e-6));
+  assert.ok(T[11 * W + 30] >= 8 && T[11 * W + 30] <= 20, 'patches of 8–20 m');
+  // the soft field's quantiles: the grasses' share of the area lies above the threshold of the row
+  assert.ok(near(P.fieldT(0.5), 0.5, 0.01) && P.fieldT(0.1) < P.fieldT(0.3) && P.fieldT(0.3) < P.fieldT(0.9));
+  assert.ok(near(T[11 * W + 31], P.fieldT(1 - f11.flecken.gras), 1e-6));
   assert.ok(T[1 * W + 4] >= 5 && T[1 * W + 4] <= 10, 'lawn mown every ' + T[1 * W + 4] + ' days in May');
   // vigour and bare spots from the table of the areas
   const f4 = BWARTEN.flaechen[4];
@@ -272,7 +280,10 @@ test('the crops plants (stage 5b): plants per m² and rows in the table, the hei
   const F = BWARTEN.feldfruechte.silomais,
     aug = P.cropNow(F, 230),
     E = F.ernte;
-  assert.ok(aug && aug.h > 2 && aug.stub < 0.5 && !aug.inH, 'August ' + JSON.stringify(aug && { h: aug.h, stub: aug.stub }));
+  assert.ok(
+    aug && aug.h > 2 && aug.stub < 0.5 && !aug.inH,
+    'August ' + JSON.stringify(aug && { h: aug.h, stub: aug.stub })
+  );
   const inH = P.cropNow(F, E.doy);
   assert.ok(inH && inH.inH && inH.h > 2, 'harvest days ' + JSON.stringify(inH && { h: inH.h, inH: inH.inH }));
   assert.equal(P.cropNow(F, 1) === null || P.cropNow(F, 1).h === 0, true);
