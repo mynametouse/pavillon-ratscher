@@ -352,7 +352,9 @@ Trauben und Kätzchen zu sehen sein sollen, kann ich einen dritten Atlas mit Bl�
   Geraden durch die Stationsmittel über der Höhe (+4 bis +7 Tage je 100 m). Daraus: Blühbeginn von Hasel, Sal-Weide, Kornelkirsche,
   Forsythie, Schlehe, Flieder, Weißdorn (zweigriffelig, gilt für beide), Holunder, Hundsrose, Johannis- und Stachelbeere; reife Früchte von
   Holunder und Hundsrose; Pflückreife von Johannis- und Stachelbeere; Austrieb und Blattentfaltung der Stachelbeere. Ende der Blüte, Laubfärbung und -fall der
-  Sträucher sind nicht gemeldet: aus den Floren und den gemeldeten Bäumen (geschätzt). Die Werte (Tag des Jahres):
+  Sträucher sind nicht gemeldet: aus den Floren, geeicht an Rotbuche und Eberesche derselben Stationen (unten) – die Laubfenster der Sträucher
+  liegen um deren Tage (Holunder, Hasel und Flieder behalten ihr Laub länger, Hartriegel und Pfaffenhütchen färben früher). Die Werte (Tag
+  des Jahres):
 
   | Art | Phase | bei 450 m | alle Meldungen: Median (mittlere Hälfte) | Stationen | in der Tabelle |
   |---|---|---|---|---|---|
@@ -372,6 +374,8 @@ Trauben und Kätzchen zu sehen sein sollen, kann ich einen dritten Atlas mit Bl�
   | Wiesen-Knäuelgras (Teil 1) | Vollblüte | 155 | 154 (146–161) | 120 | Rispe ab 150 – stimmt |
   | Herbstzeitlose (Teil 1) | Blühbeginn | 246 | 245 (236–253) | 29 | ab 245 (vorher 238) |
   | Heidekraut | Blühbeginn | 222 | 222 (216–228) | 86 | die Knospenheide der Beete ist eine Gartenform (ab 245) |
+  | Rotbuche (zum Eichen des Laubs) | Blattentfaltung, Verfärbung, Blattfall (je die Hälfte) | 118, 281, 299 | 117 (112–121), 283 (276–290), 300 (294–307) | 110–120 | Hainbuchenhecke: Austrieb 105–125, Herbst 280–305 |
+  | Eberesche (zum Eichen des Laubs) | Austrieb, Blattentfaltung, Blattfall | 99, 112, 286 | 98, 110 (104–116), 289 (280–296) | 116–122 | Sträucher: Laub fällt meist 290–318 |
 
   Teil 1 ist damit an zwei Stellen verschoben (Wiesen-Fuchsschwanz +7 Tage, Herbstzeitlose +7, die Felder bleiben); Hasel, Kornelkirsche und
   Salweide streuen von Jahr zu Jahr um Wochen (milde Winter), die Tabelle hat das mittlere Jahr.

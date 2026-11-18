@@ -438,6 +438,8 @@ test('bushes: size, form, places, EZ-Tree preset and changes, leaves, bloom and 
       assert.ok(Array.isArray(b.schnitt.doy) && b.schnitt.doy.length >= 1, at + '.schnitt.doy');
       b.schnitt.doy.forEach(d => doy(d, at + '.schnitt.doy'));
     } else assert.equal(b.schnitt, null, at + '.schnitt');
+    if (b.rinde_winter !== undefined) assert.match(b.rinde_winter, HEX, at + '.rinde_winter');
+    if (b.zuensler !== undefined) num(b.zuensler, 0, 1, at + '.zuensler');
     sources(b.quellen, at);
   }
   assert.ok(n.wild >= 12 && n.garten >= 15, 'wild ' + n.wild + ', Garten ' + n.garten);

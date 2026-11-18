@@ -1823,7 +1823,7 @@ export const BWARTEN = (() => {
       kahl: { anteil: 0.05, flecken_m: [0.2, 0.8], boden: '#6e6252', moos: 0 },
       kraft: { dichte: [0.3, 1], hoehe: [0.7, 1.1], blumen: [0.7, 1] },
       hinweis:
-        'der Rasen hier; Bodendecker in Rindenmulch und Ziergräser nach der Vorlage verkehrsinsel (beetvorlagen)',
+        'der Rasen hier; Bodendecker in Rindenmulch, Ziergräser und Stauden nach den Vorlagen verkehrsinsel und kreisel (beete)',
       quellen: ['hessenMobil', 'eigen'],
     },
     16: {
@@ -1884,7 +1884,8 @@ export const BWARTEN = (() => {
   // vehicles from this height (plan: ~1 m; thickets lower); streuung_tage: ± days one bush is earlier or later than the table (from the
   // hash of its place, for leaves, bloom and fruit alike); geschnitten: true = clipped into its shape (form 'kugel' | 'saeule' | 'hecke':
   // draw the outline smooth, schnitt.art 'kugel' | 'hecke'), false = natural outline; schnitt: the garden's care { art 'kugel' | 'hecke'
-  // | 'auslichten' (old shoots out) | 'rueckschnitt' (cut back), doy [days] } or null (never cut).
+  // | 'auslichten' (old shoots out) | 'rueckschnitt' (cut back), doy [days] } or null (never cut). Optional: rinde_winter (#rrggbb: the
+  // bare twigs in winter, Hartriegel), zuensler (0–1: share of box plants brown or bare from the box tree moth), bluete.farben.
   const LAGEN = [
     'feldhecke', // hedgerows between fields and along farm tracks
     'waldrand',
