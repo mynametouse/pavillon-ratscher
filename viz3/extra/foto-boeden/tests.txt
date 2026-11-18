@@ -1,4 +1,13 @@
-# feat/foto-boeden: the ground up close – asphalt driven on and aged (world/roads.js roadShade; docs/features/foto-boeden.md)
+# feat/foto-boeden: the ground up close – asphalt driven on and aged, setts in courses (world/roads.js roadShade, welt/welt.js setts,
+# schleusingen-ansicht/sa_markt.js settCanvas; docs/features/foto-boeden.md); one 'name[:args]' per line as for viz3/test/run.py
 foto_boeden
-# what the road shader touches: the roads' own test (styles, furniture, wet roads, the window map on a drive)
+# what the ground shaders touch: the roads' own test (styles, furniture, wet roads, the window map on a drive), the limits of graphics
+# cards (16 textures a program, the ground visible), the load without a graphics card (every line of the ground shader is paid at
+# every pixel there), draw calls and triangles, the memory on a phone
 strassen
+gpu
+softgl
+leistung
+memphone
+# the Markt of Schleusingen: its paving and props stand, share their programs, lie on the ground
+schleusingen_ansicht:markt

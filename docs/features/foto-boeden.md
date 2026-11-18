@@ -87,7 +87,21 @@ neuen Assets.
 
 ## Kosten
 
-MESSWERTE
+- **Programme, Texturen, Zeichenaufrufe:** unverändert – kein neues Programm (gezählt im Bilderlauf: 187–188 wie vorher), höchstens
+  16 Texturen je Programm (`lib.check_gl`: `maxFrag` 16, keines defekt), kein neuer Zeichenaufruf, keine neue Textur. Das Marktpflaster
+  ist dasselbe Netz mit demselben Bild (1024², 4 m) wie vorher; sein Bild entsteht beim Aufbau der Stadt in ~0,2 s statt ~0,15 s
+  (in node gemessen).
+- **Länge der Shader** (ohne Kommentare und Leerraum): das Straßen-GLSL 11 542 → 13 944 Zeichen (+21 %), das Kachel-GLSL
+  3 972 → 4 724 (+19 %); die ganzen Fragment-Shader der Böden (mit three's Bausteinen und Kommentaren) rund 108 Tsd. → 113–121 Tsd.
+  Zeichen (+5 %).
+- **Was ohne Grafikkarte an jedem Bodenpunkt dazukommt** (dort werden alle Zweige gerechnet): in `roadShade()` zwei Rauschabfragen
+  (`rdN`: Nahtlücken, Sprenkel 2 cm) und vier einfache Hashes (zwei für das Korn, zwei für die Gräben) – etwa ein Sechstel mehr
+  Rauschen als vorher, keine Texturabfrage mehr als vorher (die neun Abfragen des Detail-Arrays kosten dort am meisten); in
+  `weltGround()` ein Pflaster-Aufruf statt drei (vier Hashes und zwei Sinus statt sechs Hashes). Texturabfragen mit Bildschirm-
+  Ableitungen stehen in keinem neuen Zweig (Direct3D).
+- **Ladezeit ohne Grafikkarte (`softgl`) und Speicher am Telefon (`memphone`): im Chat-Rechner nicht gemessen** – die Warteschlange
+  des einen Test-Browsers war am 18.11. abends ~50 Minuten lang; beide laufen mit `gpu`, `leistung` und `strassen` im Feature-Lauf
+  bei GitHub (`viz3/extra/foto-boeden/tests.txt`). Nicht gemessen: Bildzeiten auf einer echten Grafikkarte, auf Falkos Laptop, am iPhone.
 
 ## Tests
 
@@ -96,11 +110,15 @@ sind von oben dunkler als der Asphalt daneben; aus 1,3 m zeigt der Asphalt Korn,
 ist wärmer als der der Landstraße; aus der Szene – das Marktpflaster liegt in Reihen (ganze Bildzeilen unterscheiden sich, Spalten
 kaum) und kachelt ohne Naht; die Bodenshader bleiben in ihrer Länge, kein Programm über 16 Texturen, keines defekt, kein neues.
 
-TESTWERTE
+Stand 18.11. abends: `tools/check.sh` grün (427 Unit-Tests); im Chat-Rechner nur Bilder (alle Programme übersetzt und gelinkt,
+höchstens 16 Texturen, in drei Bilderläufen); die Tests laufen im Feature-Lauf bei GitHub (Lauf-Nummer im Bericht). Die Grenzen
+des eigenen Tests (`GRAIN`, `WHEEL`, `SHADER`) sind weit gesetzt und werden nach den ersten Zahlen von dort enger gezogen.
 
-Bilder vorher/nachher: `/home/claude/scratch/foto/boeden/` (`vorher/`, `nachher/`; Zwischenstände `n1/`, `n2/`; Vorschau des
-Pflasters ohne Browser `sett/`). Wer den Markt oder einen Ort jenseits des Quadrats im Test-Browser ansieht, holt vorher die Kacheln
-(`sett/../tiles.py` bzw. `fetch_tiles()` in `viz3/test/schleusingen.py`).
+Bilder vorher/nachher (Arbeitsordner des Chats, nicht im Repo): `/home/claude/scratch/foto/boeden/` – `vorher/` (Stand vor der
+Arbeit; der Markt dort ohne Kacheln), `n2/` (nachher, 20:30: Asphalt und Marktpflaster auf echten Kacheln), `nachher/` (Endstand,
+sobald der Bilderlauf durch die Warteschlange ist), `sett/` (Vorschau ohne Browser: `alt_*` das alte Marktbild, `neu_*` das neue,
+`shader_alt_*`/`shader_neu_*` das Pflaster der Kacheln, `grain_*` das Korn). Wer den Markt oder einen Ort jenseits des Quadrats im
+Test-Browser ansieht, holt vorher die Kacheln (`fetch_tiles()` wie in `viz3/test/schleusingen.py`).
 
 ## Offen
 
