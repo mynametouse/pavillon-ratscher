@@ -53,6 +53,11 @@ umsetzen kannst, das tu“.
   - **Brücken:** die Straßenkarte lässt Brücken aus (sonst läge unter dem Deck eine Straße auf dem Talboden) – ihre Mittel- und
     Randlinien liegen als Farbe auf dem Deck (`STRMOD.deckMarks`; die Decks des Quadrats und die von `welt/fahrt.js`).
   - **Rückstrahler:** nachts leuchten die Rückstrahler der Leitpfosten dem Auto entgegen, das man fährt (kleine helle Flächen, addiert).
+  - **Schilder reflektieren** (seit 18.11.2026): die Schildflächen tragen ihr Bild auch als Leuchtbild (`emissiveMap`); im Shader
+    (`onBeforeCompile` des Materials der Flächen, beim Laden übersetzt) zählt nachts nur das Licht des Autos, das man fährt: wie gerade die
+    Fläche zu den Scheinwerfern steht, ob sie im Lichtkegel liegt (Abblendlicht, ±35°, in der Mitte am stärksten) und der Abstand (bei
+    60 m die Hälfte) – Uniforms `uHl` (Ort der Scheinwerfer, w die Stärke 0…1) und `uHd` (Richtung), gesetzt in `light()`; am Tag, zu Fuß
+    und mit ausgeschaltetem Licht 0 (`STRASSEN.state().shine`).
 - **Kein neues Shader-Programm zur Laufzeit:** alles mit Vertexfarben auf dem Material der geparkten Autos (`DMOD.mat`), die
   Schildflächen, das Lampenglas, die Seile und die Linien mit je einem Material, das beim Laden mitkompiliert wird (Träger-Dreiecke).
 
@@ -147,7 +152,6 @@ deren Achsen und Breiten ausgerichtet. Braucht `pyproj`, `numpy`. Nach neuen Fah
 ## Offen
 
 - **Einmündungen in spitzem Winkel:** zwei Mittellinien nebeneinander, wo zwei Wege fast parallel zusammenlaufen (wie vorher).
-- **Schilder** sind nachts dunkel (die Rückstrahler der Leitpfosten leuchten im Licht des Autos, das man fährt).
 - **Ampeln** (drei Fußgängerampeln in OSM) fehlen; **Gehwege** stehen in der Region überall in der Stadt beidseitig – die Fahrtdaten
   der Region tragen die Merker 256/512 noch nicht (`viz3/extra/fahrt/strecke.py` liest OSM `sidewalk` nicht), ebenso wenig 32 und 64;
   Suhls Daten bringen sie mit. In der Region gilt bis dahin: Einbahnstraßen der Arten 1 und 2 (dort sind auch die Kreisverkehre so
