@@ -38,7 +38,8 @@ Stück diese flachen Satellitenbilder mit realem Leben und realen 3D-Darstellung
   - **Mitte** – Nadelbäume bis 105 / 90 / 72 / 50 m: dieselben Modelle gröber, jeder Baum am Waldrand, ein Teil der inneren.
   - **Karten** – bis 520 / 450 / 380 / 300 m, die Laubbäume schon jenseits des Nahbereichs (ihre 3D-Kronen sind schwer): ein beim Laden
     gezeichneter Atlas der fünf Arten (Fichte, Kiefer, Lärche, Laubbaum, Birke) von der Seite (zwei gekreuzte Ebenen) und von oben (eine
-    waagrechte Ebene in der Krone – ein Bestand bleibt vom Hang oder aus der Luft geschlossen); gezeichnet mit dem Programm der fernen
+    waagrechte Ebene in der Krone – ein Bestand bleibt vom Hang oder aus der Luft geschlossen; sie behält 0,28 ihres Alphas, so fällt sie
+    fern oder flach angeschaut unter den Alphatest, statt als oliv gefülltes Quadrat oder als Strich quer durch die Kronen zu stehen); gezeichnet mit dem Programm der fernen
     Bäume Ratschers (`world/ratscher.js`, `geotree`); mit der Entfernung ausgedünnt, die übrigen Karten etwas breiter.
   - **dahinter** das Luftbild der Kacheln wie bisher.
   - **Grenzen:** höchstens 10 Zeichenaufrufe (Telefon 8) und 145 000 Dreiecke (Telefon 56 000) der Bäume im Blick – die nächsten Bäume in
