@@ -593,8 +593,21 @@ def f_fingerstrauch_bluete(p):
     fingerstrauch(p, True)
 
 
-def f_fingerstrauch_blatt(p):
-    fingerstrauch(p, False)
+def f_blauschwingel(p):
+    # a dense blue-grey cushion of hair-fine blades (Festuca glauca), lit from the upper left; a few thin stalks with pale panicles
+    items = sorted(((a := p.r(-1.15, 1.15)), abs(a)) for _ in range(120))
+    items.sort(key=lambda q: -q[1])  # the outer blades first (behind), the upright ones in front
+    for a, _ in items:
+        L = 0.5 * (0.72 + 0.28 * math.cos(a)) * p.r(0.85, 1.05)
+        lit = 0.84 + 0.28 * max(0.0, -math.sin(a)) * 0.8 + 0.12 * math.cos(a) + p.r(-0.05, 0.05)
+        col = mul(p.jit(hx('#86a0ae'), 0.05), lit)
+        p.leaf((p.r(-0.03, 0.03), 0), a, L, 0.016, col, shape='linear', bend=0.3 * sgn(a) * min(1.0, abs(a)), rib=False)
+    for k in range(4):
+        path = stalk(p, p.r(-0.16, 0.16), p.r(0.82, 0.95), p.r(-0.04, 0.04), w=0.006, col=hx('#a8a488'))
+        tip = path[-1]
+        for b in range(7):
+            q = (tip[0] + p.r(-0.025, 0.025), tip[1] - p.r(0.0, 0.11))
+            p.stroke([q, (q[0] + p.r(-0.025, 0.025), q[1] - 0.03)], 0.006, 0.003, hx('#c8bc98'), hl=0)
 
 
 def f_staude_blatt(p):
@@ -919,18 +932,19 @@ LAYOUT2 = [
     ((2, 3), 'pfingstrose-blatt', 'blatt', ['pfingstrose'], f_pfingstrose_blatt),
     ((3, 3), 'pfingstrose-bluete', 'bluete', ['pfingstrose'], f_pfingstrose_bluete),
     ((4, 3), 'frauenmantel-bluete', 'bluete', ['frauenmantel'], f_frauenmantel),
-    ((5, 3), 'chinaschilf-blatt', 'blatt', ['chinaschilf'], f_chinaschilf_blatt),
-    ((6, 3), 'chinaschilf-samen', 'samen', ['chinaschilf'], f_chinaschilf_samen),
+    ((5, 3), 'chinaschilf-blatt', 'blatt', ['chinaschilf', 'reitgras', 'lampenputzergras'], f_chinaschilf_blatt),
+    ((6, 3), 'chinaschilf-samen', 'samen', ['chinaschilf', 'reitgras', 'lampenputzergras'], f_chinaschilf_samen),
     ((7, 3), 'stockrose-bluete', 'bluete', ['stockrose'], f_stockrose),
-    # row 4: roses, ground cover of traffic islands, the leaves of perennials
+    # row 4: roses, ground cover of traffic islands, the leaves of perennials, Blau-Schwingel
     ((0, 4), 'rose-blatt', 'blatt', ['beetrose', 'bodendeckerrose'], f_rose_blatt),
     ((1, 4), 'beetrose-bluete', 'bluete', ['beetrose'], f_beetrose_bluete),
     ((2, 4), 'bodendeckerrose-bluete', 'bluete', ['bodendeckerrose'], f_bodendeckerrose),
     ((3, 4), 'zwergmispel-blatt', 'blatt', ['zwergmispel'], f_zwergmispel_blatt),
     ((4, 4), 'zwergmispel-frucht', 'frucht', ['zwergmispel'], f_zwergmispel_frucht),
     ((5, 4), 'fingerstrauch-bluete', 'bluete', ['fingerstrauch'], f_fingerstrauch_bluete),
-    ((6, 4), 'staude-blatt', 'blatt', ['sonnenhut_gelb', 'sonnenhut_rot', 'aster', 'frauenmantel', 'stockrose'], f_staude_blatt),
-    ((7, 4), 'fingerstrauch-blatt', 'blatt', ['fingerstrauch'], f_fingerstrauch_blatt),
+    ((6, 4), 'staude-blatt', 'blatt', ['sonnenhut_gelb', 'sonnenhut_rot', 'aster', 'frauenmantel', 'stockrose', 'fingerstrauch'],
+     f_staude_blatt),
+    ((7, 4), 'blauschwingel', 'blatt', ['blauschwingel'], f_blauschwingel),
     # row 5: vegetables
     ((0, 5), 'salat-jung', 'jung', ['salat'], f_salat_jung),
     ((1, 5), 'salat-reif', 'reif', ['salat'], f_salat_reif),

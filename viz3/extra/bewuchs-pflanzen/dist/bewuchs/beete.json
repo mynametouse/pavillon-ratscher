@@ -454,7 +454,9 @@
    "id": "chinaschilf-blatt",
    "bild": "blatt",
    "arten": [
-    "chinaschilf"
+    "chinaschilf",
+    "reitgras",
+    "lampenputzergras"
    ],
    "breite": 0.953,
    "oben": 0.664,
@@ -469,7 +471,9 @@
    "id": "chinaschilf-samen",
    "bild": "samen",
    "arten": [
-    "chinaschilf"
+    "chinaschilf",
+    "reitgras",
+    "lampenputzergras"
    ],
    "breite": 0.766,
    "oben": 0.945,
@@ -594,7 +598,8 @@
     "sonnenhut_rot",
     "aster",
     "frauenmantel",
-    "stockrose"
+    "stockrose",
+    "fingerstrauch"
    ],
    "breite": 0.609,
    "oben": 0.977,
@@ -606,15 +611,15 @@
     7,
     4
    ],
-   "id": "fingerstrauch-blatt",
+   "id": "blauschwingel",
    "bild": "blatt",
    "arten": [
-    "fingerstrauch"
+    "blauschwingel"
    ],
-   "breite": 0.781,
-   "oben": 0.969,
-   "deckung": 0.1982,
-   "farbe": "#637047"
+   "breite": 0.922,
+   "oben": 0.914,
+   "deckung": 0.2301,
+   "farbe": "#7b8b8c"
   },
   {
    "zelle": [
