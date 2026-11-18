@@ -98,8 +98,26 @@ vec2 bwCropRow( vec2 q, float sp ) {
   const fieldGlsl = h => `float bwFn( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
   return mix( mix( ${h}( i ), ${h}( i + vec2( 1.0, 0.0 ) ), f.x ), mix( ${h}( i + vec2( 0.0, 1.0 ) ), ${h}( i + vec2( 1.0, 1.0 ) ), f.x ), f.y ); }
 float bwField( vec2 q, float s, vec2 o ) { return 0.7 * bwFn( q / s + o ) + 0.3 * bwFn( q / ( s * 0.37 ) + o.yx + 3.3 ); }`;
+  // feat/fotorealismus (foto-wald, step 3): sun flecks. A stand's shade is not even – where the crowns have gaps the sun reaches the
+  // floor, the herbs and the feet of the trunks in patches of 0.3–3 m. bwFleck( p, c, fw ): how much of the direct sun comes through
+  // at p (0 … 1); c: how closed the crowns are there (the forest's canopy map; 1 where nothing knows them); fw: the size of a pixel
+  // on the ground (m; 0 for a plant). The gaps are a soft field of the world (bwField at 2.4 m: blobs of 1–3 m with ragged edges
+  // down to a foot), fixed at the crowns' height – on the floor they lie shifted away from the sun (uFleck.xy) and wander with it
+  // through the day, a few centimetres a minute; at a low sun a second tap further along its direction (uFleck.zw) stretches them.
+  // None under closed crowns in the dense parts of a stand (a field of ~40 m: here dense spruce, there a thinned stand – generic,
+  // nothing surveyed), more where the canopy map shows a gap or the stand's edge; none without sun (uFleckK.x: night, overcast, the
+  // sun on the horizon). Far away, where a pixel is wider than a fleck, their mean. Needs fieldGlsl before it.
+  const fleckGlsl = () => `uniform vec4 uFleck, uFleckK;
+float bwFleck( vec2 p, float c, float fw ) {
+  float g = uFleckK.x * mix( 0.8 * smoothstep( 0.4, 0.62, bwFn( p / 37.0 + vec2( 3.7, 91.3 ) ) ), 1.0, 1.0 - smoothstep( uFleckK.z, uFleckK.w, c ) );
+  if ( g < 0.004 ) return 0.0;
+  vec2 q = p + uFleck.xy;
+  float n = max( bwField( q, 2.4, vec2( 61.3, 17.9 ) ), bwField( q + uFleck.zw, 2.4, vec2( 61.3, 17.9 ) ) );
+  return g * mix( smoothstep( uFleckK.y - 0.04, uFleckK.y + 0.04, n ), 0.2, smoothstep( 0.5, 1.6, fw ) );
+}`;
   const woodGlsl = h => `uniform sampler2D tCan; uniform vec4 bCan, uSunBox;
 ${fieldGlsl(h)}
+${fleckGlsl()}
 vec3 bwLight( vec2 q, vec2 kl, float w ) {
   if ( w < 0.5 ) return vec3( kl, 0.0 );
   float can = texture( tCan, ( q - bCan.xy ) * bCan.zw ).r;
@@ -111,11 +129,42 @@ vec3 bwLight( vec2 q, vec2 kl, float w ) {
   const woodLight = vL =>
     `reflectedLight.directDiffuse *= ${vL}.x; reflectedLight.directSpecular *= ${vL}.x * ${vL}.x; reflectedLight.indirectDiffuse *= mix( vec3( 0.46, 0.5, 0.36 ), vec3( 1.0 ), ${vL}.y ); reflectedLight.indirectSpecular *= 0.2 + 0.8 * ${vL}.y;`;
   // the forest's canopy map and the sun's shadow box (its own uniforms – the same objects); without the forest: nothing lies in it
-  const WU = (FOREST && FOREST.CU) || {
-    tCan: { value: one },
-    bCan: { value: new THREE.Vector4(0, 0, 0, 0) },
-    uSunBox: { value: new THREE.Vector4(0, 0, 16, 0.8) },
-  };
+  const WU = Object.assign(
+    {
+      // the sun flecks (fleckGlsl above; bewuchs.js sets them each frame from the sun): the shift on the floor (m, model axes x east,
+      // y north) and the second tap's offset; how much sun there is for them (0–1), the field's value above which a gap is open, the
+      // canopy map's values between which they thin out to none
+      uFleck: { value: new THREE.Vector4(0, 0, 0, 0) },
+      uFleckK: { value: new THREE.Vector4(0, 0.62, 0.5, 0.94) },
+    },
+    (FOREST && FOREST.CU) || {
+      tCan: { value: one },
+      bCan: { value: new THREE.Vector4(0, 0, 0, 0) },
+      uSunBox: { value: new THREE.Vector4(0, 0, 16, 0.8) },
+    }
+  );
+  // the flecks for a sun at elevation el (degrees) in the direction (sx, sy) on the ground (towards it, model axes), k: how much of
+  // it shines (0–1). The share of the floor in light where the stand lets them through: a fifth at a high sun.
+  const FLECK = { H: 9, share: 0.2, el: NaN, k: NaN };
+  function sunFlecks(sx, sy, el, k) {
+    const e = Math.max(el, 0.1),
+      r = (e * Math.PI) / 180,
+      // the gap stands FLECK.H above the floor: its light lands that far away from the sun (not further than 30 m: a low sun
+      // comes through a long way of crowns – the flecks go, below)
+      d = Math.min(30, FLECK.H / Math.tan(Math.max(r, 0.12))),
+      // stretched along the sun's direction by 1 / sin of its height, up to a blob's length and a half
+      st = Math.min(3.6, 1.2 * (1 / Math.sin(Math.max(r, 0.2)) - 1)),
+      low = Math.max(0, Math.min(1, (el - 4) / 10)),
+      kk = Math.max(0, Math.min(1, k)) * low * low * (3 - 2 * low);
+    WU.uFleck.value.set(sx * d, sy * d, -sx * st, -sy * st);
+    // (two taps cover more than one: the threshold a little higher the further they lie apart)
+    WU.uFleckK.value.x = kk;
+    WU.uFleckK.value.y = BWPHAENO.fieldT(1 - FLECK.share / (1 + 0.75 * Math.min(1, st / 2)));
+    const ch = !(Math.abs(el - FLECK.el) < 0.02 && Math.abs(kk - FLECK.k) < 0.01);
+    FLECK.el = el;
+    FLECK.k = kk;
+    return ch;
+  }
   // ---------- the patch of one tile: K blades, each 5 vertices (near: two segments and the tip) or 3 (one triangle) ----------
   function mulberry(a) {
     return () => {
@@ -302,6 +351,9 @@ void bwBlade( out vec3 P, out vec3 N ) {
     }
   }
   if ( cls == 0 || rT > dens || h < 0.004 ) { P = vec3( q.x, zr - 0.05, - q.y ); N = vec3( 0.0, 1.0, 0.0 ); vBwC = vec3( 0.0 ); return; }
+  // feat/fotorealismus (foto-wald, step 3): sun flecks – a blade that stands under trees in a gap of the crowns has the sun (and a
+  // little more of the sky)
+  if ( wl.x < 0.995 ) { float fk = bwFleck( q, iU.w > 0.5 ? wl.z : 1.0, 0.0 ); vBwL = vec2( mix( wl.x, 1.0, fk ), wl.y + ( 1.0 - wl.y ) * 0.4 * fk ); }
   float a = rR * 6.2832;
   vec2 dir = vec2( cos( a ), sin( a ) ), sd = vec2( - dir.y, dir.x );
   float t = aV.y;
@@ -645,7 +697,23 @@ void bwBlade( out vec3 P, out vec3 N ) {
     };
   }
   heightsNow();
-  Object.assign(S, { build, update, day, stats, U, zAt, crops, cropGlsl, fieldGlsl, woodGlsl, woodLight, WU });
+  Object.assign(S, {
+    build,
+    update,
+    day,
+    stats,
+    U,
+    zAt,
+    crops,
+    cropGlsl,
+    fieldGlsl,
+    fleckGlsl,
+    woodGlsl,
+    woodLight,
+    WU,
+    sunFlecks,
+    FLECK,
+  });
   return S;
 })();
 if (typeof window !== 'undefined') window.BWHALM = BWHALM;

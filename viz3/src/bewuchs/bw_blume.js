@@ -789,6 +789,8 @@ void flPlant( out vec3 P ) {
   vFlTint.a = wood * step( fract( rS * 517.3 + th * 2.3 ), 0.05 ) * mix( 0.5, 0.85, ry );
   // (z: a wood's plant keeps its cover when it is small in the picture – the fragment shader's lines before the alpha test)
   vFlL = vec3( wl.xy, wood * uFlMip );
+  // feat/fotorealismus (foto-wald, step 3): sun flecks – a plant under trees in a gap of the crowns stands in the sun
+  if ( wl.x < 0.995 ) { float fk = bwFleck( q, iU.w > 0.5 ? wl.z : 1.0, 0.0 ); vFlL.xy = vec2( mix( wl.x, 1.0, fk ), wl.y + ( 1.0 - wl.y ) * 0.4 * fk ); }
   // the card: as tall as the plant over how high the drawing reaches in its cell, as wide as the drawing (the cell's middle only)
   vec4 cd = texelFetch( tBwSp, ivec2( int( mod( cell, 8.0 ) ), ${NS} + int( cell / 8.0 ) ), 0 );
   float H = hf / max( cd.x, 0.3 ), hw = 0.5 * cd.y * H;
