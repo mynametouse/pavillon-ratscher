@@ -99,7 +99,19 @@ Neue Assets: **keine** (keine Texturen, keine Modelle, keine fremden Daten).
 Gezählt mit `viz3/test/fotoref.py` (Stufe „hoch“, 1280 × 720, Wetter „klar“, 15:30 Uhr; Software-Grafik – Zeiten sagen dort nichts,
 deshalb Zeichenaufrufe und Dreiecke). Vorher = V19b (`c71a27ee`), nachher = dieser Stand.
 
-<!-- TABELLE -->
+| Blickpunkt | Bild vorher: Aufrufe / Dreiecke | nachher | Schattenkarte des Kastens vorher | nachher |
+|---|---|---|---|---|
+| Garten gesamt (r1) | 996 / 2,14 M | 987 / 2,14 M | 81 / 89 Tsd. | 94 / 175 Tsd. |
+| Pavillon nah (r2) | 869 / 1,88 M | 867 / 1,87 M | 343 / 550 Tsd. | 355 / 585 Tsd. |
+| Vegetation (r3) | 390 / 1,54 M | 379 / 1,54 M | 243 / 380 Tsd. | 249 / 416 Tsd. |
+| Gebäude und Landschaft, Anger (r4) | 631 / 1,33 M | 629 / 1,34 M | 54 / 29 Tsd. | 68 / 102 Tsd. |
+| Bodenperspektive (r5) | 892 / 1,72 M | 884 / 1,72 M | 214 / 372 Tsd. | 218 / 407 Tsd. |
+| Abendblick West (r6) | 354 / 1,05 M | 356 / 1,04 M | 367 / 503 Tsd. | 383 / 545 Tsd. |
+| Feldweg (r7) | 294 / 0,86 M | 284 / 0,86 M | 56 / 22 Tsd. | 66 / 115 Tsd. |
+| Tal von oben (r8) | 469 / 1,13 M | 458 / 1,13 M | 62 / 54 Tsd. | 63 / 87 Tsd. |
+
+Das Bild selbst kostet gleich viel (dieselben Aufrufe und Dreiecke); die Schattenkarte des Kastens wächst um 33–93 Tsd. Dreiecke, weil
+Häuser und Bäume der Welt jetzt hineinzeichnen. Programme: 185 statt 183 (Bauphase 0), 173 statt 170 (fertig), höchstens 16 Texturen.
 
 - Eine Kachel kostet einmal 250–600 Tsd. Dreiecke (wie die Schattenkarte des Kastens, die schon bisher alle paar Meter neu entsteht),
   aber nur alle paar Sekunden beim Gehen bzw. alle 1–2° Sonnenlauf; im Stand keine.

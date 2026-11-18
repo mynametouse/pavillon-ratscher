@@ -50,7 +50,9 @@ done = 0
 with lib.browser() as b:
     for ph, vs in groups.items():
         pg = lib.page(b, W, H, errs=errs, tier=TIER); E = pg.evaluate
-        q = f'?bauphase={ph}' + (f'&wetter={WX}' if WX and WX != '-' else '') + (('&' + opts['q'].replace(';', '&')) if opts.get('q') else '')
+        # (kaskade=an: this browser has no graphics card, and without one the page leaves the far shadows out – foto/schatten_glsl.js;
+        # the pictures shall show what a graphics card shows. q=kaskade=aus for the comparison without them)
+        q = f'?bauphase={ph}' + (f'&wetter={WX}' if WX and WX != '-' else '') + ('' if 'kaskade' in opts.get('q', '') else '&kaskade=an') + (('&' + opts['q'].replace(';', '&')) if opts.get('q') else '')
         lib.boot(pg, port, q)
         E("GAME.setView3 && GAME.setView3(false)")
         if opts.get('map'):   # the sun's shadow map as large as on a graphics card (software graphics start with 1024²)

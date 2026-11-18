@@ -46,7 +46,8 @@ window.__FT = {
 with lib.browser() as b:
     pg = lib.page(b, 1100, 620, errs=errs, tier='hoch'); E = pg.evaluate
     J = lambda s: json.loads(E(f"JSON.stringify({s})"))
-    lib.boot(pg, port, '?bauphase=0&wetter=klar')
+    # (kaskade=an: the tests' browser has no graphics card – without it the page leaves three's shadow chunks alone, foto/schatten_glsl.js)
+    lib.boot(pg, port, '?bauphase=0&wetter=klar&kaskade=an')
     E(HELP)
     E("GAME.setView3 && GAME.setView3(false)")
     E("document.querySelectorAll('#toast,#hud,#topbar,#minimap,#joy,.hud').forEach(e => e.style.visibility = 'hidden')")
@@ -58,7 +59,7 @@ with lib.browser() as b:
 
     if 'schatten' in WANT:
         s0 = J("SCHATTEN.state()")
-        ck('the cascades are on at the tier „hoch“ (three\'s shadow chunks as expected)', s0['ok'] and s0['on'], json.dumps(s0)[:200])
+        ck('the cascades are on (three\'s shadow chunks as expected; asked for in the address, as this browser has no graphics card)', s0['ok'] and s0['on'], json.dumps(s0)[:200])
         view(-26, 46, 15, 143, -24, 52)
         E("SCHATTEN.set({ mode: 'an' }); SCHATTEN.settle(); 0")
         E("window.__a = __FT.grab(); 0")
@@ -84,7 +85,7 @@ with lib.browser() as b:
         lib.shot(pg, OUT, 'schatten_aus')
         ck('shadows far from the walker (the garden from above: over 0.8 % of the lit picture darker)', d['dark'] > 0.008, json.dumps(d))
         ck('and no light where there was shadow (under 0.5 % brighter)', d['bright'] < 0.005, json.dumps(d))
-        E("SCHATTEN.set({ mode: 'auto' }); SCHATTEN.settle(); 0")
+        E("SCHATTEN.set({ mode: 'an' }); SCHATTEN.settle(); 0")
     if 'luft' in WANT:
         view(-26, 46, 15, 143, -24, 52)
         E("__FT.grab(); 0")

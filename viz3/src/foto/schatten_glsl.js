@@ -12,9 +12,14 @@
 //   – the uniforms csmM, csmN, csmP, csmQ are added to three's lit shaders. Their values are typed arrays: three copies a material's
 //     uniforms from the library when it builds the program (UniformsUtils.clone) and keeps anything that is not one of its own math
 //     types by reference – so every material shares these four arrays, and foto/schatten.js writes into them (WebGLUniforms accepts a
-//     Float32Array for a mat4 or vec4 and compares it with what the program has). viz3/test/schatten.py checks that this still holds.
+//     Float32Array for a mat4 or vec4 and compares it with what the program has). viz3/test/fotorealismus.py checks that this still
+//     holds.
+// Without a graphics card (SwiftShader, Windows' „Microsoft Basic Render Driver“ – the same test as render/render.js GLINFO, which loads
+// later) the chunks stay as they were: there every line of a shader is paid for at every pixel and again when it is compiled (the first
+// picture took a fifth longer with them, viz3/test/softgl.py), and such a machine could never afford the tiles. ?kaskade=an patches
+// them all the same (the tests' browser has no graphics card either), ?nokaskade leaves them alone everywhere.
 import * as THREE from 'three';
-import { R } from '../core/head.js';
+import { QS, R } from '../core/head.js';
 export const CSMU = {
   // near shadow coordinate (x, y 0–1 across the sun's own box, z its depth) → the far tile's and the wide tile's
   M: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
@@ -22,7 +27,8 @@ export const CSMU = {
   // x: tiles in use (0 none, 1 far, 2 far and wide), y: the own box's share of the atlas' width (1 without tiles, 2/3 with),
   // z, w: depth bias of the far and of the wide tile (in their depth range)
   P: new Float32Array([0, 1, 0, 0]),
-  // x: 0 four taps (bilinear), 1 nine (a two-texel box); y: 1 shows which cascade answers (red own box, green far, blue wide – tests)
+  // x: 4 – a tile read with four taps (bilinear; a small map), z: 9 – with nine (a soft box; maps from 2048²), both 0 with the tiles
+  // off; y: 1 shows which cascade answers (red own box, green far, blue wide – tests)
   Q: new Float32Array([0, 0, 0, 0]),
 };
 // three's own shadow pass, before core/assets.js wraps it (its wrapper counts the sun's maps and sets the trees' levels): the tiles are
@@ -36,23 +42,30 @@ const GLSL = /* glsl */ `
 	uniform vec4 csmP;
 	uniform vec4 csmQ;
 	vec3 csmDbg = vec3( 1.0 );
-	float csmCmp( sampler2D map, vec2 uv, float z ) { return step( z, unpackRGBAToDepth( texture2D( map, uv ) ) ); }
+	// (textureLod: the map has one level, and a lookup without screen derivatives may stay inside a branch – Direct3D runs both sides
+	// of a branch that holds a derivative, so every pixel would pay for both tiles)
+	float csmCmp( sampler2D map, vec2 uv, float z ) { return step( z, unpackRGBAToDepth( textureLod( map, uv, 0.0 ) ) ); }
 	// one tile (rect: its place in the atlas, uv) at the tile coordinate c (xy 0–1, z depth): soft over one texel
+	// one tile of the atlas, filtered as a bilinear lookup (2 × 2 texels) or a soft box (3 × 3) – as loops whose rounds are uniforms
+	// (csmQ.x: 4 or 0, csmQ.z: 9 or 0): with the tiles off nothing is read, also where a branch costs both its sides (software graphics
+	// run every branch for every pixel; a loop of no rounds costs nothing)
 	float csmTile( sampler2D map, vec2 size, vec4 rect, vec3 c, float bias ) {
 		vec2 tpx = rect.zw * size;
 		vec2 q = clamp( c.xy, 2.0 / tpx, 1.0 - 2.0 / tpx ) * tpx + rect.xy * size;
 		vec2 ct = floor( q ), f = q - ct, t = 1.0 / size, b = ( ct + 0.5 ) * t;
-		float z = c.z - bias;
-		if ( csmQ.x < 0.5 ) {
-			vec2 o = step( 0.5, f ) * 2.0 - 1.0, w = abs( f - 0.5 );
-			float s00 = csmCmp( map, b, z ), s10 = csmCmp( map, b + vec2( o.x * t.x, 0.0 ), z ),
-				s01 = csmCmp( map, b + vec2( 0.0, o.y * t.y ), z ), s11 = csmCmp( map, b + o * t, z );
-			return mix( mix( s00, s10, w.x ), mix( s01, s11, w.x ), w.y );
+		float z = c.z - bias, s = 0.0;
+		vec2 o = step( 0.5, f ) * 2.0 - 1.0, w = abs( f - 0.5 );
+		int n2 = int( csmQ.x ), n3 = int( csmQ.z );
+		for ( int i = 0; i < n2; i ++ ) {
+			vec2 d = vec2( float( i - ( i / 2 ) * 2 ), float( i / 2 ) );
+			s += mix( 1.0 - w.x, w.x, d.x ) * mix( 1.0 - w.y, w.y, d.y ) * csmCmp( map, b + d * o * t, z );
 		}
 		vec3 wx = vec3( 1.0 - f.x, 1.0, f.x ), wy = vec3( 1.0 - f.y, 1.0, f.y );
-		float s = 0.0;
-		for ( int j = 0; j < 3; j ++ ) for ( int i = 0; i < 3; i ++ ) s += wx[ i ] * wy[ j ] * csmCmp( map, b + vec2( float( i - 1 ), float( j - 1 ) ) * t, z );
-		return s * 0.25;
+		for ( int i = 0; i < n3; i ++ ) {
+			int ix = i - ( i / 3 ) * 3, iy = i / 3;
+			s += 0.25 * wx[ ix ] * wy[ iy ] * csmCmp( map, b + vec2( float( ix - 1 ), float( iy - 1 ) ) * t, z );
+		}
+		return s;
 	}
 	float sunShadow( sampler2D shadowMap, vec2 shadowMapSize, float shadowIntensity, float shadowBias, float shadowRadius, vec4 shadowCoord ) {
 		vec3 p = shadowCoord.xyz / shadowCoord.w;
@@ -87,9 +100,23 @@ const CALL = 'getShadow( directionalShadowMap[ i ], directionalLightShadow.shado
     THREE.ShaderChunk.lights_fragment_begin.includes(CALL) &&
     THREE.ShaderChunk.lights_fragment_begin.includes(TAIL) &&
     THREE.ShaderChunk.shadowmap_pars_fragment.includes('float getShadow( sampler2D shadowMap, vec2 shadowMapSize,');
-// false: three's shader text is not what this was written for (r169) – then nothing changes and the sun keeps its one box
-CSMU.ok = OK;
-if (OK) {
+const SOFT = (() => {
+  try {
+    const gl = R.getContext(),
+      d = gl.getExtension('WEBGL_debug_renderer_info');
+    return /swiftshader|basic render|llvmpipe|softpipe|software/i.test(
+      String((d && gl.getParameter(d.UNMASKED_RENDERER_WEBGL)) || gl.getParameter(gl.RENDERER) || '')
+    );
+  } catch (e) {
+    return false;
+  }
+})();
+const WANT = QS.get('kaskade') === 'an' || (!SOFT && !QS.has('nokaskade'));
+// false: three's shader text is not what this was written for (r169), or no graphics card – then nothing changes and the sun keeps its
+// one box
+CSMU.ok = OK && WANT;
+CSMU.soft = SOFT;
+if (OK && WANT) {
   THREE.ShaderChunk.shadowmap_pars_fragment += GLSL;
   THREE.ShaderChunk.lights_fragment_begin = THREE.ShaderChunk.lights_fragment_begin
     .replace(CALL, 'sunShadow( directionalShadowMap[ i ], directionalLightShadow.shadowMapSize,')
@@ -102,4 +129,4 @@ if (OK) {
     L.uniforms.csmP = { value: CSMU.P };
     L.uniforms.csmQ = { value: CSMU.Q };
   }
-} else console.warn('Schatten in der Ferne: three-Shader geändert, aus');
+} else if (!OK) console.warn('Schatten in der Ferne: three-Shader geändert, aus');

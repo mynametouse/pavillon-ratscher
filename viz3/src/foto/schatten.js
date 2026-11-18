@@ -94,10 +94,11 @@ export const SCHATTEN = (() => {
       o
     );
   };
-  // step: the sun's turn (rad) that asks for a new tile; wait: ms a tile rests at least; minR: smaller things cast nothing into it;
+  // step: the sun's turn (rad) that asks for a new tile; wait: ms a tile rests at least (rest: after a mere change in the scene);
+  // minR: smaller things cast nothing into it;
   // dense: nor do instanced things with more triangles than this in under 8 m; rect: its place in the atlas in units of the sun's map
-  S.tiles.push(mkTile('far', { step: 0.0175, wait: 1200, minR: 1, dense: 0, rect: [1, 0] }));
-  S.tiles.push(mkTile('wide', { step: 0.035, wait: 3500, minR: 2.5, dense: 3000, rect: [1, 0.5] }));
+  S.tiles.push(mkTile('far', { step: 0.0175, wait: 1200, rest: 10000, minR: 1, dense: 0, rect: [1, 0] }));
+  S.tiles.push(mkTile('wide', { step: 0.035, wait: 3500, rest: 30000, minR: 2.5, dense: 3000, rect: [1, 0.5] }));
   const [FAR, WIDE] = S.tiles;
   // the tiles' half sizes follow the sun's own box: ±16 m on foot, ±32 m at the wheel from 65 km/h, up to ±90 m in the plan view
   const farR = () => Math.min(288, Math.max(96, sunHalf * 6)),
@@ -124,6 +125,7 @@ export const SCHATTEN = (() => {
     }
     S.pending = null;
     if (!on) uniforms();
+    label();
     markDirty(true);
   }
   // ---- what the shaders read ----
@@ -132,6 +134,7 @@ export const SCHATTEN = (() => {
     if (!S.on || !FAR.ok || !sun.shadow.map) {
       P[0] = 0;
       P[1] = S.on ? 1 / EXT : 1;
+      CSMU.Q[0] = CSMU.Q[2] = 0; // no tile is read (foto/schatten_glsl.js: the loops' rounds)
       return;
     }
     _inv.copy(sun.shadow.matrix).invert();
@@ -143,7 +146,10 @@ export const SCHATTEN = (() => {
     }
     P[0] = WIDE.ok ? 2 : 1;
     P[1] = 1 / EXT;
-    CSMU.Q[0] = sun.shadow.mapSize.x >= 2048 ? 1 : 0; // the nine taps where a tile has 1024² and more
+    // four taps a tile, nine where a tile has 1024² and more
+    const nine = sun.shadow.mapSize.x >= 2048;
+    CSMU.Q[0] = nine ? 0 : 4;
+    CSMU.Q[2] = nine ? 9 : 0;
   }
   // ---- the light's direction and the middle the tiles should cover now ----
   const dirNow = out => out.subVectors(sun.position, sun.target.position).normalize();
@@ -404,7 +410,10 @@ export const SCHATTEN = (() => {
       else if (dir.angleTo(t.dir) > t.step) due = 'sun';
       else if (Math.abs((t === FAR ? farR() : wideR()) - t.R) > 1) due = 'size';
       else if (t.light.shadow.mapSize.x !== Math.max(256, sun.shadow.mapSize.x >> 1)) due = 'tier';
-      else if (t.dirty) due = 'scene';
+      // (something in the scene changed while sun and box stood still – a door, a felled tree, a part of the world just built. What
+      // matters close by is in the walker's box at once; a tile follows at its leisure, or a thing that keeps moving – the laundry
+      // in the wind – would have both tiles drawn every few seconds while one only stands there)
+      else if (t.dirty && (force || now - t.t > t.rest)) due = 'scene';
       else {
         // how far the middle has moved across the light (along it nothing changes for the tile)
         _v.subVectors(_c, t.c);
@@ -530,7 +539,16 @@ export const SCHATTEN = (() => {
     if (!b) return;
     b.setAttribute('aria-pressed', S.on ? 'true' : 'false');
     const s = b.querySelector('span');
-    if (s) s.textContent = S.mode === 'auto' ? (want() ? 'auto (an)' : 'auto (aus)') : S.mode;
+    if (s)
+      s.textContent = !S.ok
+        ? CSMU.soft
+          ? 'aus (ohne Grafikkarte)'
+          : 'aus'
+        : S.mode === 'auto'
+          ? want()
+            ? 'auto (an)'
+            : 'auto (aus)'
+          : S.mode;
   }
   function set(o = {}) {
     if (o.mode && MODES.includes(o.mode)) {
