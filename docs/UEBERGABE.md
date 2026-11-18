@@ -16,7 +16,7 @@ veröffentlicht.
 
 ## Stand
 
-- **18.11.2026: Fotorealismus Schritt 2, V19d (Fotorealismus-Chat session_01L6Yrpe4euXqyTbnuvdamYz, `docs/features/fotorealismus.md`
+- **18.11.2026: Fotorealismus Schritt 2, V19e (Fotorealismus-Chat session_01L6Yrpe4euXqyTbnuvdamYz, `docs/features/fotorealismus.md`
   Abschnitte 5 und 6; Falko 18.11. 15:39: „Stück für Stück die nächsten Versionen.“).** **Hügel werfen Schatten:**
   `foto/schatten_land.js` (`SCHLAND`) hält ein Raster der Geländehöhen um die Spielfigur (±7,7 km, `KERN.terrain`, in jedem Bild ein
   paar Dutzend Zellen aufgefrischt) und rechnet daraus je Sonnenschritt ein Feld der „Schattenhöhe“ (256² Zellen von 24 m, zwei Höhen

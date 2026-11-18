@@ -20,7 +20,7 @@ Detailstufen, kleine Dinge in der Ferne ausgeblendet (`CULL`), ein Bild nur bei 
 | # | Schwäche | Stand |
 |---|---|---|
 | 1 | Sonnenschatten nur im Kasten ±16 m um die Spielfigur: Bäume ab 30 m, das ganze Dorf und die Landschaft schattenlos; das echte Gelände, Häuser und Bäume der Welt warfen und empfingen nichts | **erledigt** – Schatten in drei Zonen (unten) |
-| 2 | Tiefe Sonne: ferne Wälder leuchteten blass-cremefarben, egal aus welcher Richtung; die tiefe Sonne schien in jedes Tal, Felder spiegelten sie wie ein See | **erledigt** – Kronen-Licht der fernen Bäume, lange Schatten mit 1, seit V19d **Hügelschatten** und kein Spiegel mehr auf dem Land (unten); offen: Laub in der tiefen Sonne (cremefarben), die Lichtstimmung selbst |
+| 2 | Tiefe Sonne: ferne Wälder leuchteten blass-cremefarben, egal aus welcher Richtung; die tiefe Sonne schien in jedes Tal, Felder spiegelten sie wie ein See | **erledigt** – Kronen-Licht der fernen Bäume, lange Schatten mit 1, seit V19e **Hügelschatten** und kein Spiegel mehr auf dem Land (unten); offen: Laub in der tiefen Sonne (cremefarben), die Lichtstimmung selbst |
 | 3 | Luft: eine Dunstfarbe ringsum, gleiche Dichte in jeder Höhe | **erledigt** – Dunst nach Höhe und Sonnenrichtung (unten) |
 | 4 | Blühende Wiesen von oben wie Konfetti (40 cm bis 3 m große Farbkleckse) | **erledigt** – Blüte als Tönung in Flecken (unten) |
 | 5 | Äcker: dunkle Halme auf dem hellen Luftbild-Boden, nur im Ring um die Kamera; dahinter kahles Luftbild | **erledigt** – Bestand im Boden bis ~340 m, Halme passen dazu (unten) |
@@ -80,7 +80,7 @@ Detailstufen, kleine Dinge in der Ferne ausgeblendet (`CULL`), ein Bild nur bei 
   Betrachter (eine Krone, von dort gesehen): von vorn beschienen leuchtet der Waldrand, gegen das Licht steht er dunkel; der untere
   Teil der Krone liegt im eigenen Schatten.
 
-### 5 Hügel werfen Schatten (V19d: `foto/schatten_land.js` `SCHLAND`, `foto/schatten_glsl.js` `sunLand`)
+### 5 Hügel werfen Schatten (V19e: `foto/schatten_land.js` `SCHLAND`, `foto/schatten_glsl.js` `sunLand`)
 
 - **Was fehlte:** das Gelände warf keinen Schatten. Am 1. Juni geht die Sonne um 5:10 auf – der Garten liegt aber bis 6:00 im
   Schatten der Hügel im Nordosten (die Sonne steht dann schon 6° hoch) und abends ab 20:55 (Untergang 21:19); im Winter steht die
@@ -100,7 +100,7 @@ Detailstufen, kleine Dinge in der Ferne ausgeblendet (`CULL`), ein Bild nur bei 
   innerhalb des Quadrats von Ratscher steht nicht im Raster (seine Bäume werfen ihre Schatten in den Kacheln, also nur bis 640 m);
   jenseits von ±3 km kein Hügelschatten.
 
-### 6 Das Land spiegelt die tiefe Sonne nicht mehr (V19d: markierte Zeilen in `world/ratscher.js`, `garden/env.js`, `welt/welt.js`, `bewuchs/bw_halm.js`)
+### 6 Das Land spiegelt die tiefe Sonne nicht mehr (V19e: markierte Zeilen in `world/ratscher.js`, `garden/env.js`, `welt/welt.js`, `bewuchs/bw_halm.js`)
 
 - Gegen die tiefe Sonne glänzte jedes Feld wie ein See: eine Fläche mit Rauheit 1 wirft im Rechenmodell bei streifendem Licht noch ein
   Vielfaches ihres Streulichts als Glanz zurück – Gras und Erde tun das nicht, sie beschatten sich selbst. Der direkte Glanz der Sonne
@@ -118,10 +118,10 @@ Detailstufen, kleine Dinge in der Ferne ausgeblendet (`CULL`), ein Bild nur bei 
 | Halme (`bewuchs/bw_halm.js`) | Feldfrüchte: Dichte/Farbe ohne Luftbild, Normale, Fuß |
 | ferne Baumkarten (`world/ratscher.js`) | Normale und Eigenschatten der Krone |
 | Schattenpass | zusätzlich je Kachel ein Pass von three (`R.shadowMap.render` für ein verstecktes Licht), Kopie in den Atlas mit einem kleinen Vollbild-Dreieck |
-| three `shadowmap_pars_fragment`, `lights_fragment_begin` (V19d) | `sunLand()`: das Höhenfeld der Hügelschatten aus dem Streifen des Atlas, vier Texel gewichtet, für jedes beleuchtete Material (außerhalb der Abfrage `receiveShadow`); Uniforms `csmL` (Matrix), `csmH` |
-| Schatten-Atlas (V19d) | 256 Texel breiter als bisher (1,5 Karten + 256); das Feld wird wie die Kacheln hineinkopiert |
-| Boden: `world/ratscher.js`, `garden/env.js`, `welt/welt.js` (V19d) | `reflectedLight.directSpecular` × 0,3 außerhalb von Straßen und Pfützen |
-| Halme `bewuchs/bw_halm.js` (V19d) | `reflectedLight.directSpecular` × 0,6 |
+| three `shadowmap_pars_fragment`, `lights_fragment_begin` (V19e) | `sunLand()`: das Höhenfeld der Hügelschatten aus dem Streifen des Atlas, vier Texel gewichtet, für jedes beleuchtete Material (außerhalb der Abfrage `receiveShadow`); Uniforms `csmL` (Matrix), `csmH` |
+| Schatten-Atlas (V19e) | 256 Texel breiter als bisher (1,5 Karten + 256); das Feld wird wie die Kacheln hineinkopiert |
+| Boden: `world/ratscher.js`, `garden/env.js`, `welt/welt.js` (V19e) | `reflectedLight.directSpecular` × 0,3 außerhalb von Straßen und Pfützen |
+| Halme `bewuchs/bw_halm.js` (V19e) | `reflectedLight.directSpecular` × 0,6 |
 
 Neue Assets: **keine** (keine Texturen, keine Modelle, keine fremden Daten).
 
@@ -152,12 +152,12 @@ Häuser und Bäume der Welt jetzt hineinzeichnen. Programme: 185 statt 183 (Baup
 - **Nicht gemessen:** echte Bildzeiten auf einer Grafikkarte, auf Falkos Laptop (Intel UHD 620) und am iPhone – im Chat-Rechner gibt
   es nur Software-Grafik. Deshalb ist „auto“ vorsichtig (aus auf „schnell“ und am Telefon).
 
-**Hügelschatten (V19d):** kein Zeichnen, keine Dreiecke. Ein Feld kostet auf der CPU rund 2 ms (im Chat-Rechner gemessen, eine
+**Hügelschatten (V19e):** kein Zeichnen, keine Dreiecke. Ein Feld kostet auf der CPU rund 2 ms (im Chat-Rechner gemessen, eine
 Spielstunde am Morgen: 121 Felder, je Bild im Mittel 0,6 ms über drei, vier Bilder, 1 % der Schritte über 3 ms), neu bei jedem
 Sonnenschritt – bei normaler Spielzeit etwa zweimal je Sekunde, in Echtzeit alle halbe Minute; über 19° Sonnenhöhe gar nicht. Das Höhenraster: einmal 0,3 s Rechenzeit, verteilt mit 1 ms je Bild (einige Sekunden nach dem
 Laden), danach 0,08 ms je Bild. Im Bild: vier Texel-Abrufe je beleuchtetem Bildpunkt aus der Schattenkarte, die das Programm ohnehin
 liest (nur unter 19°). Speicher: 4 MB Felder, der Atlas 256 Texel breiter (6400 × 4096 statt 6144 × 4096 auf „hoch“). Zeichenaufrufe
-und Dreiecke der Blickpunkte bleiben, wie sie waren (Tabelle oben; `leistung` 15/15). Die Blickpunkte bei tiefer Sonne, V19c → V19d
+und Dreiecke der Blickpunkte bleiben, wie sie waren (Tabelle oben; `leistung` 15/15). Die Blickpunkte bei tiefer Sonne, V19c → V19e
 (`fotoref`, Schattenkarte 2048²): Abendblick West (r6) 358 / 1,06 M → 358 / 1,06 M, Morgen im Tal (r9) 246 / 0,84 M → 239 / 0,85 M,
 Sonnenaufgang von oben (r10) 193 / 0,48 M → 188 / 0,48 M; Schattenkarte des Kastens unverändert (545 / 231 / 195 Tsd. Dreiecke).
 
@@ -188,7 +188,7 @@ und die Anzeige (andere Module lesen `RENDER.tier` als hoch/mittel/schnell) und 
   Bild über 5 % dunkler, nirgends heller), um 7:15 in der Sonne, nachmittags wird kein Feld gerechnet oder gelesen; der Dunst dünner
   in der Höhe; ein Feld 90 m entfernt ist im Juni grün; kein Programm über 16 Texturen.
 - `viz3/test/fotoref.py`: die festen Blickpunkte (`views.json`: Garten gesamt, Pavillon nah, Vegetation, Gebäude und Landschaft,
-  Bodenperspektive, Abendblick nach Westen, Feldweg, Tal von oben, seit V19d Morgen im Tal und Sonnenaufgang von oben) mit Kosten je Bild; `python3 viz3/test/fotoref.py PORT
+  Bodenperspektive, Abendblick nach Westen, Feldweg, Tal von oben, seit V19e Morgen im Tal und Sonnenaufgang von oben) mit Kosten je Bild; `python3 viz3/test/fotoref.py PORT
   name=…,wetter=klar,map=4096` (`map`: Schattenkarte wie auf einer Grafikkarte). Bilder unter `out/fotoref/<name>/`.
 - Vor jeder Version dazu: smoke, gpu, leistung, memphone, bewuchs, garage.
 
