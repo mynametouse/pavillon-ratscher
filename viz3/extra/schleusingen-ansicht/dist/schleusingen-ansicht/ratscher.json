@@ -1,0 +1,84 @@
+{
+ "v": 1,
+ "stand": "2026-11-17",
+ "quelle": "freie Fotos von der Straße (Mapillary, 360°-Aufnahmen an der L 3004, 22.03.2020; Panoramax 2020/2025; beide CC BY-SA 4.0) – nur abgelesene Werte, keine Bilder; Farben sRGB, geschätzt (die Fassaden im Gegenlicht)",
+ "gebaeude_von": "world/village.js (VILLAGE.bld, id; x, y: Mittel der Wandpunkte zum Prüfen); Häuser der Dorfmitte nach Falkos Video (world/dorfkern_data.js) nur mit Unterschieden",
+ "gebaeude": [
+  {
+   "id": 196,
+   "x": 426.3,
+   "y": -267.1,
+   "art": "halle",
+   "material": "blech",
+   "wand": "#5c7090",
+   "wand_quelle": "geschätzt",
+   "dach": {
+    "material": "blech",
+    "farbe": "#6a7891",
+    "farbe_quelle": "Ansicht"
+   },
+   "laeden": false,
+   "laden": false,
+   "besonders": "Halle (Futtermittel, Getreide, Gartencenter): oben graublaues Trapezblech mit Fensterband, unten weißer Sockel mit mintgrünem Schriftband (im Dorf dunkelgrün)",
+   "sicher": "mittel",
+   "ansichten": [
+    "m006",
+    "m005",
+    "m007",
+    "m004",
+    "m008"
+   ]
+  }
+ ],
+ "nicht_lesbar": [
+  {
+   "id": 200,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 201,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 202,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 203,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 204,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 205,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 206,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 207,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 263,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 264,
+   "warum": "hinter Bäumen und Büschen, 55–120 m"
+  },
+  {
+   "id": 187,
+   "warum": "rund 100 m (m009): wohl ein Haus mit dunkler Schieferverkleidung und weißen Fenstern statt der Scheune im Dorf – zu weit, um es sicher zuzuordnen"
+  },
+  {
+   "id": 186,
+   "warum": "rund 120 m (m009): rotes Ziegeldach, Wand nicht lesbar"
+  }
+ ],
+ "panoramax": "die 109 Fotos stehen alle auf Wegen außerhalb des Dorfs – das nächste rund 160 m von der nächsten Hauswand: keine Fassade lesbar"
+}

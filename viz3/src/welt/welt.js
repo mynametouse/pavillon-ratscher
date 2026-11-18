@@ -9,7 +9,7 @@
 // Veßra and the road corridor there from the test block, tools/welt/wlib.py ZONES), each with its own meta.json – WELT.addSet(sub) once;
 // a tile comes from the first set whose level rect holds it, wherever the camera is (walking in a zone or driving between them).
 import * as THREE from 'three';
-import { scene, cam } from '../core/head.js';
+import { scene, cam, COARSE } from '../core/head.js';
 import { KERN } from '../core/kern.js';
 import { ANISO, markDirty } from '../core/assets.js';
 import { P } from '../game/walkable.js';
@@ -46,10 +46,16 @@ export const WELT = (() => {
   const ROOT_E0 = 420700,
     ROOT_N0 = 5390800,
     ROOT = 409600,
-    NS = 51, // vertices per tile side as drawn (every second height: 2 m at level 12)
+    NS = 51, // vertices per tile side as drawn (every second height: 2 m at level 12; W7: all of them at level 12 on a computer)
     RING = { 10: 760, 11: 380, 12: 150 }, // a tile of level L is wanted within this distance (m) of the camera
     SKIRT = { 10: 6, 11: 3, 12: 1.5 };
   const tsize = L => ROOT / (1 << L);
+  // feat/suhl (W7): level 12 near the camera is drawn with every height of the tile (1 m) – Falko, 17.11.2026: banks reached into the
+  // streets and the streets up the banks; the cut of a street (Suhl's 1 m ground) has edges a metre wide, and every second height lost
+  // them. Within ~90 m (beyond 120 m every second height again, the tile drawn anew as the camera moves); on phones and tablets every
+  // second height as before (a quarter of the triangles).
+  const FINE = [90, 120],
+    nsOf = t => (t.L === 12 && !COARSE && t.fine && t.n >= 2 * NS - 1 ? 2 * NS - 1 : NS);
   const key = (L, x, y) => L + '/' + x + '/' + y;
   S.base = (() => {
     const q = new URLSearchParams(location.search).get('welt');
@@ -195,12 +201,16 @@ export const WELT = (() => {
   // feat/suhl (W5): gNy – how level the ground is (the world normal's up part, set before weltGround): a bank beside a road (steeper than
   // ~15–23°) is no road and no paving; where the photo there is not green (the road, a roof or a shadow smeared over the slope) it is
   // grass and earth
-  const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver; uniform float uPave; float gNy = 1.0;
+  const TILE_GLSL = `uniform sampler2D tOver; uniform vec4 uOver; uniform float uPave; float gNy = 1.0, gNyS = 1.0; vec2 gFall = vec2( 0.0 );
     vec3 bankGround( vec2 p, float dist ) {   // feat/suhl (W5): grass on a bank, bare earth in patches and at the foot
-      float n1 = rdN( p * 0.35 ), n2 = rdN( p * 2.1 + 7.3 ), n3 = rdH( floor( p * 7.0 ) );
+      // feat/suhl (W8): the patterns measured along the slope, not on the map – on a steep bank the map's metre is ~2 m of slope, and
+      // the earth patches and the grain stood in streaks down it
+      float fl = length( gFall ); vec2 d = fl > 1e-4 ? gFall / fl : vec2( 1.0, 0.0 ), e = vec2( -d.y, d.x );
+      vec2 q = d * ( dot( p, d ) / max( gNy, 0.35 ) ) + e * dot( p, e );
+      float n1 = rdN( q * 0.35 ), n2 = rdN( q * 1.3 + 7.3 ), n3 = rdN( q * 6.0 + 2.9 );
       vec3 grass = vec3( 0.088, 0.118, 0.062 ) * ( 0.8 + 0.4 * n1 ) * ( 0.92 + 0.16 * n3 );
-      vec3 earth = vec3( 0.19, 0.155, 0.11 ) * ( 0.85 + 0.3 * n2 );
-      return landDetail( p, mix( grass, earth, smoothstep( 0.72, 0.92, n2 ) * 0.45 ), dist ); }
+      vec3 earth = vec3( 0.14, 0.115, 0.083 ) * ( 0.85 + 0.3 * n2 );
+      return landDetail( p, mix( grass, earth, smoothstep( 0.74, 0.94, n2 ) * 0.35 ), dist ); }
     vec3 setts( vec2 p, vec3 c, float sc, float fwp ) {   // small stones in offset rows, each a little different, dark joints
       vec2 q = p * sc; q.x += 0.5 * mod( floor( q.y ), 2.0 );
       vec2 f = fract( q ); float fine = 1.0 - smoothstep( 0.15, 0.6, fwp * sc );
@@ -231,16 +241,29 @@ export const WELT = (() => {
       // feat/strassen: the roads from the map of a window around the vehicle (ROADS.W, strassen/strassen_karte.js) – asphalt with its
       // wear, shoulders, kerbs, pavements and markings like in the square, also over the asphalt a zone has laid; a zone's sett,
       // slabs and gravel stay as the zone made them (mode 2: nothing)
-      // feat/suhl (W5): on a slope no road can lie on, the road map's pavement and kerbs stay off (they reached up the banks)
-      float bank = 1.0 - smoothstep( 0.92, 0.965, gNy ), steepR = 1.0 - smoothstep( 0.935, 0.965, gNy );   // 15–23°; streets stay below 12°
       vec3 g0 = g;
       g = roadShade( p, g, dist, o.r > 0.03 && uPave > 0.5 && o.g / max( o.r, 0.01 ) >= 0.3 ? 2.0 : 0.0 );
-      g = mix( g, g0, steepR );
+      // feat/suhl (W5): on a slope no road can lie on, the road map's shoulder and kerbs stay off (they reached up the banks)
+      // feat/suhl (W8, Falko 17.11.2026: grass on the street, the street up the bank): where the road map lies decides how steep the
+      // ground may be before it is a bank – the carriageway (Suhl's 1 m ground has it level in 98 % of its stretches, W7) only from
+      // 23–28°; a kerb and pavement from 8–12° (the map gives every town street a pavement, also where a bank comes down to the asphalt);
+      // beside the road, up to 4 m out, from 6–10° (the photo's grey there is the road smeared up the slope, a wall, a shadow); elsewhere
+      // from 15–23° (W5). The road map's paint goes where it is a bank (the photo, or grass and earth, takes its place).
+      float inCw = smoothstep( -0.05, 0.1, gRdE ), inFoot = 1.0 - smoothstep( -0.05, 0.12, gRdFoot - gRdE ), wPav = max( inFoot - inCw, 0.0 );
+      // (the pavement by the smoothed slope alone: by the slope of each triangle its edge to the bank ran in steps of a metre)
+      float s25 = 1.0 - smoothstep( 0.88, 0.92, gNy ), s15 = 1.0 - smoothstep( 0.92, 0.965, gNy ), s8 = 1.0 - smoothstep( 0.978, 0.99, gNyS ),
+        s6 = 1.0 - smoothstep( 0.984, 0.995, gNy ), nearRd = smoothstep( -3.95, -3.1, gRdE );
+      float bank = inCw * s25 + wPav * s8 + ( 1.0 - inFoot ) * mix( s15, max( s6, s15 ), nearRd );
+      g = mix( g, g0, bank );
+      gRdGloss *= 1.0 - bank; gRdPud *= 1.0 - bank;   // and no wet-road sheen there (it mirrored the sky: a pale bank)
       pk *= 1.0 - bank;
       // feat/suhl (W5): the bank itself – where the photo is grey or beige there (smeared road, wall, roof), grass and earth
       // (green in the photo – meadow, bushes, forest on a slope – stays as photographed; grey, beige, blue-grey shadow becomes the bank)
-      float veg = smoothstep( 0.06, 0.16, ( c.g - max( c.r, c.b ) ) / max( mx, 0.03 ) );
-      g = mix( g, bankGround( p, dist ), bank * ( 1.0 - veg ) );
+      // feat/suhl (W8): on a bank only the dark of a forest's crowns stays as photographed – the photo is the land lit by the spring sun
+      // from above; a meadow's light green and the smeared road's grey, lit again by the low sun on a slope that faces it, came out pale
+      // grey (Am Domberg, Pfarrstraße). The bank's grass takes the photo's light and dark (a path, a bush) as a little more or less.
+      float veg = smoothstep( 0.1, 0.18, ( c.g - max( c.r, c.b ) ) / max( mx, 0.03 ) ) * ( 1.0 - smoothstep( 0.07, 0.11, lum ) );
+      g = mix( g, bankGround( p, dist ) * clamp( 0.8 + ( lum - 0.14 ) * 1.6, 0.72, 1.18 ), bank * ( 1.0 - veg ) );
       // grey land near the camera as sett (a zone's squares and yards on the photo) – not where the road map has a road: the asphalt
       // took its brightness from the stones and showed them (the L 1625 before Kloster Veßra)
       if ( pk * ( 1.0 - gRdCov ) > 0.01 ) g = mix( g, setts( p, landHi( c ) * 0.78, 7.5, fwp ), pk * ( 1.0 - gRdCov ) );
@@ -248,7 +271,7 @@ export const WELT = (() => {
       g = mix( g, kc, kb * ( 1.0 - gRdCov ) );
       return g; }`;
   const STUB =
-    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }';
+    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0, gRdE = -99.0, gRdFoot = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }';
   // one material per tile (its photo); all share one program
   function tileMat(tex) {
     const m = new THREE.MeshStandardMaterial({
@@ -281,10 +304,16 @@ export const WELT = (() => {
           // feat/suhl (W5): the slope of the drawn triangle itself (a bank a few metres wide is only one or two cells of the tile: the
           // smoothed normal makes it too flat) and of the smoothed normal – the steeper of the two
           '#include <map_fragment>\n { vec3 gq = vec3( vGeo, vGeoH ), gfn = normalize( cross( dFdx( gq ), dFdy( gq ) ) );' +
-            ' gNy = min( abs( gfn.z ), normalize( ( vec4( normalize( vNormal ), 0.0 ) * viewMatrix ).xyz ).y ); }' +
+            ' gNyS = normalize( ( vec4( normalize( vNormal ), 0.0 ) * viewMatrix ).xyz ).y; gNy = min( abs( gfn.z ), gNyS ); gFall = gfn.xy * sign( gfn.z ); }' +
             '\n diffuseColor.rgb = weltGround( vGeo, diffuseColor.rgb, length( vViewPosition ) );'
         );
       if (ROADS.gloss) sh.fragmentShader = ROADS.gloss(sh.fragmentShader);
+      // feat/suhl (W8): land reflects little of the sky – the sheen of a rough surface at a grazing angle turned dark banks pale grey
+      // (the photo's shadow under the trees of Am Domberg, seen along the slope); roads keep theirs (wet asphalt, puddles)
+      sh.fragmentShader = sh.fragmentShader.replace(
+        '#include <lights_fragment_end>',
+        '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= mix( 0.3, 1.0, gRdCov );'
+      );
     };
     m.customProgramCacheKey = () => 'welt-tile' + (window.GLCHECK && GLCHECK.lite ? '-lite' : '');
     return m;
@@ -380,6 +409,7 @@ export const WELT = (() => {
         const old = t.mesh.geometry;
         t.mesh.geometry = makeGeo(t);
         old.dispose();
+        stitch(t);
       }
       if (performance.now() - t0 > ms) break;
     }
@@ -398,47 +428,88 @@ export const WELT = (() => {
   }
   function makeGeo(t) {
     const n = t.n,
-      st = (n - 1) / (NS - 1),
+      ns = nsOf(t),
+      st = (n - 1) / (ns - 1),
       s = tsize(t.L),
-      cell = s / (NS - 1),
-      pos = new Float32Array((NS * NS + 4 * NS) * 3),
-      uv = new Float32Array((NS * NS + 4 * NS) * 2),
-      hz = new Float32Array(NS * NS);
-    for (let j = 0; j < NS; j++)
-      for (let i = 0; i < NS; i++) {
-        const E = t.e0 + (i / (NS - 1)) * s,
-          N = t.n0 + (j / (NS - 1)) * s,
+      cell = s / (NS - 1), // the step innerFix was made for (where the tiles step down beneath the inner terrain)
+      pos = new Float32Array((ns * ns + 4 * ns) * 3),
+      uv = new Float32Array((ns * ns + 4 * ns) * 2),
+      hz = new Float32Array(ns * ns);
+    for (let j = 0; j < ns; j++)
+      for (let i = 0; i < ns; i++) {
+        const E = t.e0 + (i / (ns - 1)) * s,
+          N = t.n0 + (j / (ns - 1)) * s,
           [x, y] = toM(E, N),
           raw = innerFix(x, y, t.h[j * st * n + i * st], cell),
           pz = pads.length ? padZ(x, y, raw) : undefined,
           z = pz !== undefined ? pz : raw,
-          k = j * NS + i;
+          k = j * ns + i;
         hz[k] = z;
         pos[k * 3] = x;
         pos[k * 3 + 1] = z;
         pos[k * 3 + 2] = -y;
-        uv[k * 2] = i / (NS - 1);
-        uv[k * 2 + 1] = j / (NS - 1);
+        uv[k * 2] = i / (ns - 1);
+        uv[k * 2 + 1] = j / (ns - 1);
       }
     const idx = [];
-    for (let j = 0; j < NS - 1; j++)
-      for (let i = 0; i < NS - 1; i++) {
-        const a = j * NS + i,
+    for (let j = 0; j < ns - 1; j++)
+      for (let i = 0; i < ns - 1; i++) {
+        const a = j * ns + i,
           b = a + 1,
-          c = a + NS + 1,
-          d = a + NS;
+          c = a + ns + 1,
+          d = a + ns;
         idx.push(a, b, c, a, c, d);
       }
-    // skirts: the border pulled down (no gaps to a coarser neighbour)
-    let v = NS * NS;
+    // feat/suhl (W6): the normals of the ground alone – the face sums of the drawn triangles (as computeVertexNormals adds them), kept
+    // unnormalised for the border, where the neighbours' sums join them (stitch). With the skirts in the sum every border vertex leaned
+    // ~37° outwards: a dark or bright line along each border, and a strip of bank (W5) across streets and squares – the seams
+    // Falko saw from above (17.11.2026).
+    const sum = new Float32Array(ns * ns * 3);
+    for (let q = 0; q < idx.length; q += 3) {
+      const a = idx[q] * 3,
+        b = idx[q + 1] * 3,
+        c = idx[q + 2] * 3,
+        ux = pos[b] - pos[a],
+        uy = pos[b + 1] - pos[a + 1],
+        uz = pos[b + 2] - pos[a + 2],
+        vx = pos[c] - pos[a],
+        vy = pos[c + 1] - pos[a + 1],
+        vz = pos[c + 2] - pos[a + 2],
+        nx = uy * vz - uz * vy,
+        ny = uz * vx - ux * vz,
+        nz = ux * vy - uy * vx;
+      sum[a] += nx;
+      sum[a + 1] += ny;
+      sum[a + 2] += nz;
+      sum[b] += nx;
+      sum[b + 1] += ny;
+      sum[b + 2] += nz;
+      sum[c] += nx;
+      sum[c + 1] += ny;
+      sum[c + 2] += nz;
+    }
+    const nrm = new Float32Array((ns * ns + 4 * ns) * 3);
+    for (let k = 0; k < ns * ns * 3; k += 3) {
+      const l = Math.hypot(sum[k], sum[k + 1], sum[k + 2]) || 1;
+      nrm[k] = sum[k] / l;
+      nrm[k + 1] = sum[k + 1] / l;
+      nrm[k + 2] = sum[k + 2] / l;
+    }
+    // skirts: the border pulled down (no gaps to a coarser neighbour); lit like the ground they hang from
+    let v = ns * ns;
     const sk = SKIRT[t.L],
-      border = [];
-    for (let i = 0; i < NS; i++) border.push(i); // south, west to east
-    for (let j = 1; j < NS; j++) border.push(j * NS + NS - 1); // east, south to north
-    for (let i = NS - 2; i >= 0; i--) border.push((NS - 1) * NS + i); // north, east to west
-    for (let j = NS - 2; j >= 1; j--) border.push(j * NS); // west, north to south
+      border = [],
+      skirtAt = new Int32Array(ns * ns).fill(-1);
+    for (let i = 0; i < ns; i++) border.push(i); // south, west to east
+    for (let j = 1; j < ns; j++) border.push(j * ns + ns - 1); // east, south to north
+    for (let i = ns - 2; i >= 0; i--) border.push((ns - 1) * ns + i); // north, east to west
+    for (let j = ns - 2; j >= 1; j--) border.push(j * ns); // west, north to south
     const first = v;
     for (const k of border) {
+      skirtAt[k] = v;
+      nrm[v * 3] = nrm[k * 3];
+      nrm[v * 3 + 1] = nrm[k * 3 + 1];
+      nrm[v * 3 + 2] = nrm[k * 3 + 2];
       pos[v * 3] = pos[k * 3];
       pos[v * 3 + 1] = pos[k * 3 + 1] - sk;
       pos[v * 3 + 2] = pos[k * 3 + 2];
@@ -456,12 +527,82 @@ export const WELT = (() => {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos.subarray(0, v * 3), 3));
     g.setAttribute('uv', new THREE.BufferAttribute(uv.subarray(0, v * 2), 2));
+    g.setAttribute('normal', new THREE.BufferAttribute(nrm.subarray(0, v * 3), 3));
     g.setIndex(idx);
-    g.computeVertexNormals();
     g.computeBoundingSphere();
     t.hz = hz; // the drawn heights (KERN), the raw ones stay for a rebuild with pads
+    t.ns = ns;
+    t.nsum = sum;
+    t.skirtAt = skirtAt;
     return g;
   }
+  // feat/suhl (W6): a border vertex is lit by the ground on both sides – the face sums of every drawn tile of the same level that holds
+  // it (two along a side, four at a corner), written into all of them (and their skirts). Called when a tile is built or built again;
+  // a neighbour that comes later stitches itself.
+  function stitch(t) {
+    if (!t.mesh || !t.nsum) return;
+    const ns = t.ns,
+      m = ns - 1,
+      nb = new Map();
+    for (const dx of [-1, 0, 1])
+      for (const dy of [-1, 0, 1]) {
+        if (!dx && !dy) continue;
+        const u = S.tiles.get(key(t.L, t.x + dx, t.y + dy));
+        if (u && u.mesh && u.nsum && u.ns === ns) nb.set(dx * 3 + dy, u);
+      }
+    if (!nb.size) return;
+    const touched = new Set(),
+      list = [];
+    const put = (i, j) => {
+      const ex = i === 0 ? -1 : i === m ? 1 : 0,
+        ey = j === 0 ? -1 : j === m ? 1 : 0;
+      list.length = 0;
+      list.push(t, j * ns + i);
+      if (ex && nb.has(ex * 3)) list.push(nb.get(ex * 3), j * ns + i - ex * m);
+      if (ey && nb.has(ey)) list.push(nb.get(ey), (j - ey * m) * ns + i);
+      if (ex && ey && nb.has(ex * 3 + ey)) list.push(nb.get(ex * 3 + ey), (j - ey * m) * ns + i - ex * m);
+      if (list.length < 4) return;
+      let x = 0,
+        y = 0,
+        z = 0;
+      for (let q = 0; q < list.length; q += 2) {
+        const a = list[q].nsum,
+          k = list[q + 1] * 3;
+        x += a[k];
+        y += a[k + 1];
+        z += a[k + 2];
+      }
+      const l = Math.hypot(x, y, z) || 1;
+      x /= l;
+      y /= l;
+      z /= l;
+      for (let q = 0; q < list.length; q += 2) {
+        const u = list[q],
+          k = list[q + 1],
+          nr = u.mesh.geometry.attributes.normal.array,
+          sk = u.skirtAt[k];
+        nr[k * 3] = x;
+        nr[k * 3 + 1] = y;
+        nr[k * 3 + 2] = z;
+        if (sk >= 0) {
+          nr[sk * 3] = x;
+          nr[sk * 3 + 1] = y;
+          nr[sk * 3 + 2] = z;
+        }
+        touched.add(u);
+      }
+    };
+    for (let i = 0; i < ns; i++) {
+      put(i, 0);
+      put(i, m);
+    }
+    for (let j = 1; j < m; j++) {
+      put(0, j);
+      put(m, j);
+    }
+    for (const u of touched) u.mesh.geometry.attributes.normal.needsUpdate = true;
+  }
+  S.stitch = stitch;
   const queue = [];
   let busy = 0;
   function request(L, x, y) {
@@ -506,6 +647,7 @@ export const WELT = (() => {
           t.h = tr.h;
           t.tex = tex;
           buildMesh(t);
+          stitch(t);
           t.st = 'ok';
           S.n.ok++;
           dirty = true;
@@ -542,7 +684,10 @@ export const WELT = (() => {
     return Math.hypot(Math.max(e0 - E, 0, E - e0 - s), Math.max(n0 - N, 0, N - n0 - s));
   };
   function plan(E, N) {
-    const W = new Set(),
+    const CU = toU(cam.position.x, -cam.position.z),
+      cg = heightAt(cam.position.x, -cam.position.z),
+      CH = Number.isFinite(cg) ? Math.max(0, cam.position.y - cg) : 0, // the camera's height above the ground (from high up: coarse)
+      W = new Set(),
       R = new Set(),
       s10 = tsize(10),
       r = RING[10],
@@ -566,6 +711,16 @@ export const WELT = (() => {
       const t = request(L, x, y);
       t.d = d;
       t.used = performance.now();
+      // feat/suhl (W7): fine near the camera, coarse again farther off (a tile already drawn is drawn anew) – by the camera, not by
+      // the point ahead of a fast vehicle the tiles are planned around (the ground under the wheels would change while driving on it)
+      if (L === 12 && !COARSE) {
+        const dc = Math.hypot(distTo(L, x, y, CU[0], CU[1]), CH),
+          f = t.fine ? dc < FINE[1] : dc < FINE[0];
+        if (f !== !!t.fine) {
+          t.fine = f;
+          if (t.mesh && t.h) REB.add(t);
+        }
+      }
     };
     for (let x = x0; x <= x1; x++)
       for (let y = y0; y <= y1; y++)
@@ -674,17 +829,18 @@ export const WELT = (() => {
         ty = Math.floor((N - ROOT_N0) / s),
         t = S.tiles.get(key(L, tx, ty));
       if (!t || !t.hz || !S.visible.has(t.k)) continue;
-      const fu = ((E - t.e0) / s) * (NS - 1),
-        fv = ((N - t.n0) / s) * (NS - 1),
-        i = Math.min(NS - 2, Math.max(0, Math.floor(fu))),
-        j = Math.min(NS - 2, Math.max(0, Math.floor(fv))),
+      const ns = t.ns || NS,
+        fu = ((E - t.e0) / s) * (ns - 1),
+        fv = ((N - t.n0) / s) * (ns - 1),
+        i = Math.min(ns - 2, Math.max(0, Math.floor(fu))),
+        j = Math.min(ns - 2, Math.max(0, Math.floor(fv))),
         u = fu - i,
         v = fv - j,
-        k = j * NS + i,
+        k = j * ns + i,
         za = t.hz[k],
         zb = t.hz[k + 1],
-        zc = t.hz[k + NS + 1],
-        zd = t.hz[k + NS];
+        zc = t.hz[k + ns + 1],
+        zd = t.hz[k + ns];
       // the same diagonal as the mesh (a, b, c) and (a, c, d)
       return u >= v ? za + u * (zb - za) + v * (zc - zb) : za + v * (zd - za) + u * (zc - zd);
     }

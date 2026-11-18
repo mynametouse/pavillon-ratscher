@@ -62,6 +62,7 @@ export const ROADS = (() => {
   // ---- the ground shader part: roadShade( p (site metres), ground colour, distance from the camera ) → colour ----
   S.GLSL = `uniform sampler2D tRoad; uniform highp sampler2DArray tDet; uniform vec4 bRoad, uRoad, uDTile;
     float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0;   // set by roadShade: the pixel is wet hard road / standing water / a road or its edge
+    float gRdE = -99.0, gRdFoot = 0.0;   // feat/suhl (W8): the edge distance here (−99: no road within 4 m) and where the road's own surface ends
     float rdH( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
     float rdN( vec2 p ) { vec2 i = floor( p ), f = fract( p ); vec2 u = f * f * ( 3.0 - 2.0 * f ); return mix( mix( rdH( i ), rdH( i + vec2( 1.0, 0.0 ) ), u.x ), mix( rdH( i + vec2( 0.0, 1.0 ) ), rdH( i + vec2( 1.0, 1.0 ) ), u.x ), u.y ); }
     float rdLine( float d, float hw, float fw ) { return clamp( ( hw - d ) / fw + 0.5, 0.0, 1.0 ) * min( 1.0, 2.0 * hw / fw ); }   // coverage of a line of half width hw
@@ -114,7 +115,8 @@ export const ROADS = (() => {
       // everything that needs screen derivatives first, before any per-pixel branch
       vec2 dx = dFdx( p ), dy = dFdy( p ), uv = ( p - bRoad.xy ) * bRoad.zw; float fwp = length( abs( dx ) + abs( dy ) );
       vec4 t = texture( tRoad, uv ); float e = t.r * ${ERNG.toFixed(1)} + ${EMIN.toFixed(1)}, lat = t.b * ${(2 * LRNG).toFixed(1)} - ${LRNG.toFixed(1)}, fwE = max( fwidth( e ), 0.01 ), fwL = max( fwidth( lat ), 0.01 );
-      if ( mode > 1.5 || uv.x <= 0.001 || uv.y <= 0.001 || uv.x >= 0.999 || uv.y >= 0.999 || e < -2.6 ) return c;
+      // feat/suhl (W8): read on to 4 m beside a road (the tiles decide there whether the photo's grey on a slope is a bank, welt/welt.js)
+      if ( mode > 1.5 || uv.x <= 0.001 || uv.y <= 0.001 || uv.x >= 0.999 || uv.y >= 0.999 || e < -3.95 ) return c;
       // the square's roads fade into the photo far away; a window around the vehicle ends before its own edge
       float far = uRoad.z > 0.5 ? 1.0 - smoothstep( uRoad.z - 70.0, uRoad.z, dist ) : 1.0 - smoothstep( 600.0, 1400.0, dist );
       if ( far <= 0.0 ) return c;
@@ -125,6 +127,9 @@ export const ROADS = (() => {
       float level = step( 8.5, kind );   // a level surface (a pedestrian zone, a square, a car park): flush with what lies beside it
       // kerbs: in a town along its streets, in a village along the through roads; pavements in the town
       float kerbed = hard * built * step( kind, mix( 2.5, 3.5, town ) ), walk = hard * town * step( kind, 3.5 ) * ( kind < 2.5 ? 1.7 : 1.3 );
+      // feat/suhl (W8): the road's own surface ends at the outer edge of a town street's pavement, else at the carriageway's edge
+      gRdE = far > 0.5 ? e : -99.0; gRdFoot = kerbed > 0.5 ? -0.15 - walk : 0.0;
+      if ( e < -2.6 ) return c;
       if ( mode > 0.5 && ( kind > 2.5 || hard < 0.5 || dist > 220.0 || e < 0.0 ) ) return c;
       float eN = e + ( ( rdN( p * 1.7 ) - 0.5 ) * mix( 0.5, 0.13, hard ) + ( rdN( p * 9.0 ) - 0.5 ) * 0.05 * mid ) * ( 1.0 - kerbed ) * ( 1.0 - level * hard );
       float k = smoothstep( -fwE, fwE, eN ) * far;
@@ -209,7 +214,7 @@ export const ROADS = (() => {
     vec3 roadShade( vec2 p, vec3 c, float dist ) { return roadShade( p, c, dist, 0.0 ); }`;
   // without textures (GPU below what the shader needs, core/detail.js GLCHECK.lite): the same functions, plain
   S.STUB =
-    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';
+    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0, gRdE = -99.0, gRdFoot = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';
   S.shader = sh => {
     if (window.GLCHECK && GLCHECK.lite) return S.STUB;
     Object.assign(sh.uniforms, U);

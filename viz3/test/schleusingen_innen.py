@@ -350,8 +350,12 @@ with lib.browser() as b:
 
     # ---- a stairwell house: the letter boxes, up the stairs to every storey, the attic, a locked flat, into the open flat ----
     if want('treppe'):
+        # feat/schleusingen-ansicht: only a house whose street door the walker reaches from the pavement (its floor within 1.2 m of the
+        # ground in front) – with the storeys read from the views (fassade/ansicht.json) #221 at the Markt has two, and the next one with
+        # an attic, #623, has its street door 1.76 m over the pavement on its downhill side (no steps)
         tid = E("""(() => { const M = SCHL.MARKT, L = SINNEN.list().filter(h => h.kind === 'treppenhaus').sort((a, b) => Math.hypot(a.door.x - M[0], a.door.y - M[1]) - Math.hypot(b.door.x - M[0], b.door.y - M[1]));
-          const I = h => SINNEN.info(h.id), ok = L.find(h => { const i = I(h); return i.storeys >= 3 && i.open === i.storeys && i.locked >= i.storeys && i.attic; }) || L.find(h => I(h).storeys >= 3 && I(h).locked >= 1) || L[0];
+          const reach = h => { const x = h.door.x + h.door.nx * 1.6, y = h.door.y + h.door.ny * 1.6; return Math.abs(KERN.ground(x, y) - h.door.z) < 1.2; }, R = L.filter(reach);
+          const I = h => SINNEN.info(h.id), ok = R.find(h => { const i = I(h); return i.storeys >= 3 && i.open === i.storeys && i.locked >= i.storeys && i.attic; }) || R.find(h => I(h).storeys >= 3 && I(h).locked >= 1) || R[0] || L[0];
           return ok ? ok.id : null; })()""")
         ti = J(f"SINNEN.info({tid})")
         print('stairwell house', tid, json.dumps(ti, ensure_ascii=False)[:900], flush=True)

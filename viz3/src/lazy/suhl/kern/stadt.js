@@ -222,8 +222,59 @@ export function stadt(ctx, G, IX, worker, opt) {
         s = Math.max(hw * 2, H);
       return { w: (hw * 2) / s, h: H / s };
     });
-    atlas = { geo: src.geometry, mat: src.material, info };
+    atlas = { geo: topCards(src.geometry), mat: src.material, info };
     return atlas;
+  }
+  // the crossed cards and two flat ones through the crown (Falko, 17.11.2026: from the jetpack the trees were green crosses) – the crown
+  // part of the same atlas cell, lying at 55 and 63 % of the height, turned 90° to each other: edge-on from the side, a crown from above
+  function topCards(src) {
+    const parts = [src];
+    for (const [y, rot] of [
+      [0.55, 0],
+      [0.63, 1],
+    ]) {
+      const p = new THREE.PlaneGeometry(0.7, 0.7);
+      p.rotateX(-Math.PI / 2);
+      if (rot) p.rotateY(Math.PI / 2);
+      p.translate(0, y, 0);
+      const uv = p.attributes.uv;
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, 0.15 + uv.getX(i) * 0.7, 0.3 + uv.getY(i) * 0.65);
+      parts.push(p);
+    }
+    let nv = 0,
+      ni = 0;
+    for (const p of parts) {
+      nv += p.attributes.position.count;
+      ni += p.index ? p.index.count : p.attributes.position.count;
+    }
+    const pos = new Float32Array(nv * 3),
+      uv = new Float32Array(nv * 2),
+      nrm = new Float32Array(nv * 3),
+      idx = new Uint32Array(ni);
+    let v = 0,
+      k = 0;
+    for (const p of parts) {
+      const P = p.attributes.position,
+        U = p.attributes.uv,
+        n = P.count;
+      for (let i = 0; i < n; i++) {
+        pos[(v + i) * 3] = P.getX(i);
+        pos[(v + i) * 3 + 1] = P.getY(i);
+        pos[(v + i) * 3 + 2] = P.getZ(i);
+        uv[(v + i) * 2] = U.getX(i);
+        uv[(v + i) * 2 + 1] = U.getY(i);
+        nrm[(v + i) * 3 + 1] = 1; // as the crossed cards: lit like a crown, not like a sheet
+      }
+      if (p.index) for (let i = 0; i < p.index.count; i++) idx[k++] = v + p.index.getX(i);
+      else for (let i = 0; i < n; i++) idx[k++] = v + i;
+      v += n;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    g.setIndex(new THREE.BufferAttribute(idx, 1));
+    return g;
   }
   function installTrees(t, r) {
     const K = treeKit();
