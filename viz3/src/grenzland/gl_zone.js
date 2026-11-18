@@ -255,26 +255,28 @@ export const GLZONE = (() => {
   // ------------------------------------------------------------------ grass and heather (instanced, the slabs' material) ------------------------------------------------------------------
   // a tuft of blades or a heather clump as one small geometry with colours per vertex (base dark, tips light), normals up (soft light)
   function buschelGeo(art) {
-    const pos = [],
+    // colours in linear light (as the renderer reads vertex colours): December – dry grass, rust-brown heather with grey-green shoots
+    const heide = art === 'heide',
+      pos = [],
       col = [],
-      R = D.zufall(art === 'heide' ? 31 : 17),
-      n = art === 'heide' ? 16 : 7,
-      fuss = art === 'heide' ? [0.16, 0.12, 0.08] : [0.07, 0.1, 0.04],
-      spitze = art === 'heide' ? [0.32, 0.18, 0.12] : [0.36, 0.38, 0.16],
-      grau = [0.2, 0.22, 0.16];
+      R = D.zufall(heide ? 31 : 17),
+      n = heide ? 14 : 7,
+      fuss = heide ? [0.035, 0.026, 0.018] : [0.03, 0.04, 0.018],
+      spitze = heide ? [0.12, 0.075, 0.05] : [0.16, 0.15, 0.07],
+      grau = [0.075, 0.08, 0.06];
     for (let k = 0; k < n; k++) {
-      const a = (k / n) * Math.PI * 2 + R() * 0.6,
-        r0 = art === 'heide' ? 0.04 + R() * 0.08 : 0.02,
-        h = art === 'heide' ? 0.16 + R() * 0.18 : 0.22 + R() * 0.26,
-        lean = art === 'heide' ? 0.12 + R() * 0.12 : 0.05 + R() * 0.12,
-        w = art === 'heide' ? 0.07 : 0.022,
+      const a = (k / n) * Math.PI * 2 + R() * 0.8,
+        r0 = heide ? R() * 0.16 : 0.02,
+        h = heide ? 0.14 + R() * 0.16 : 0.22 + R() * 0.26,
+        lean = heide ? 0.03 + R() * 0.07 : 0.05 + R() * 0.12,
+        w = heide ? 0.05 + R() * 0.03 : 0.022,
         bx = Math.cos(a) * r0,
         by = Math.sin(a) * r0,
         tx = Math.cos(a) * (r0 + lean),
         ty = Math.sin(a) * (r0 + lean),
         px = -Math.sin(a) * w,
         py = Math.cos(a) * w,
-        tip = art === 'heide' && R() < 0.3 ? grau : spitze;
+        tip = heide && R() < 0.35 ? grau : spitze;
       // two-sided: both windings (x east, y up, z = -north, as three.js has it)
       const A = [bx - px, 0, -(by - py)],
         B = [bx + px, 0, -(by + py)],
@@ -297,40 +299,84 @@ export const GLZONE = (() => {
     g.computeBoundingSphere();
     return g;
   }
-  // instances in cells of 60 m, each drawn within maxD (VEG thins them with distance)
-  function instanzen(geo, list, maxD, name) {
+  // ground cover near the player: the items (x, y, turn, size, height, r, g, b) in cells of 40 m; a cell is built when the ground under
+  // it is drawn (its heights are then the drawn ones – nothing floats, nothing sinks) and dropped farther off
+  const DECK = { arten: [], near: new Map() },
+    DC = 40;
+  function decke(geo, list, maxD, name) {
     const by = new Map();
     for (const q of list) {
-      const k = Math.floor(q[0] / 60) + ':' + Math.floor(q[1] / 60);
+      const k = Math.floor(q[0] / DC) + ':' + Math.floor(q[1] / DC);
       let a = by.get(k);
       if (!a) by.set(k, (a = []));
       a.push(q);
     }
+    DECK.arten.push({ geo, by, maxD, name });
+  }
+  function deckeZelle(A, key, list) {
     const mat = plattenMat(),
       up = new THREE.Vector3(0, 1, 0),
-      sv = new THREE.Vector3();
-    for (const a of by.values()) {
-      const im = new THREE.InstancedMesh(geo, mat, a.length);
-      a.forEach((q, j) => {
-        q4.setFromAxisAngle(up, q[3]);
-        m4.compose(V(q[0], q[1], q[2]), q4, sv.set(q[4], q[4] * (q[5] || 1), q[4]));
-        im.setMatrixAt(j, m4);
-        im.setColorAt(j, c4.setRGB(q[6] || 1, q[7] || 1, q[8] || 1));
-      });
-      im.castShadow = false;
-      im.receiveShadow = false;
-      im.userData.noMerge = true;
-      im.userData.n0 = a.length;
-      im.userData.thin = [maxD * 0.45, maxD * 0.75];
-      im.name = name;
-      vegReady(im, maxD);
-      scene.add(im);
-      S.meshes.push(im);
-      S.far.push(im);
+      sv = new THREE.Vector3(),
+      im = new THREE.InstancedMesh(A.geo, mat, list.length);
+    let n = 0;
+    for (const q of list) {
+      const z = WELT.heightAt(q[0], q[1]);
+      if (z === undefined) continue;
+      q4.setFromAxisAngle(up, q[2]);
+      m4.compose(V(q[0], q[1], z - 0.02), q4, sv.set(q[3], q[3] * q[4], q[3]));
+      im.setMatrixAt(n, m4);
+      im.setColorAt(n, c4.setRGB(q[5], q[6], q[7]));
+      n++;
     }
+    im.count = n;
+    im.castShadow = false;
+    im.receiveShadow = false;
+    im.userData.noMerge = true;
+    im.userData.n0 = n;
+    im.userData.thin = [A.maxD * 0.5, A.maxD * 0.8];
+    im.name = A.name;
+    vegReady(im, A.maxD);
+    scene.add(im);
+    S.far.push(im);
+    return im;
+  }
+  function deckeNah(x, y) {
+    let built = 0;
+    for (const [k, im] of DECK.near) {
+      const [ai, cx, cy] = k.split(':').map(Number),
+        A = DECK.arten[ai],
+        dx = Math.max(cx * DC - x, 0, x - (cx + 1) * DC),
+        dy = Math.max(cy * DC - y, 0, y - (cy + 1) * DC);
+      if (!A || Math.hypot(dx, dy) > A.maxD + 40) {
+        scene.remove(im);
+        im.dispose();
+        const i = VEG.far.indexOf(im);
+        if (i >= 0) VEG.far.splice(i, 1);
+        const j = S.far.indexOf(im);
+        if (j >= 0) S.far.splice(j, 1);
+        DECK.near.delete(k);
+      }
+    }
+    DECK.arten.forEach((A, ai) => {
+      if (built > 1) return;
+      for (const [ck, list] of A.by) {
+        const key = ai + ':' + ck;
+        if (DECK.near.has(key)) continue;
+        const [cx, cy] = ck.split(':').map(Number),
+          dx = Math.max(cx * DC - x, 0, x - (cx + 1) * DC),
+          dy = Math.max(cy * DC - y, 0, y - (cy + 1) * DC);
+        if (Math.hypot(dx, dy) > A.maxD) continue;
+        // only on drawn ground: the cell's middle and corners
+        const m = [(cx + 0.5) * DC, (cy + 0.5) * DC];
+        if (WELT.heightAt(m[0], m[1]) === undefined) continue;
+        DECK.near.set(key, deckeZelle(A, key, list));
+        if (++built > 1) return;
+      }
+    });
+    if (built) markDirty(true);
   }
   // the grass between the two lanes and along their outer edges
-  function bauGras(hAt) {
+  function bauGras() {
     const R = D.zufall(4242),
       list = [];
     for (const Lw of S.lin) {
@@ -364,11 +410,11 @@ export const GLZONE = (() => {
         }
       }
     }
-    instanzen(buschelGeo('gras'), list, 55, 'grenzland-zone-gras');
+    decke(buschelGeo('gras'), list, 55, 'grenzland-zone-gras');
     S.gras = list.length;
   }
   // heather where the photo shows the heath (the land cover's class 2), near the Kolonnenweg
-  async function bauHeide(hAt) {
+  async function bauHeide() {
     const b = S.data.bewuchs;
     if (!b || typeof DecompressionStream === 'undefined') return;
     const raw = new Uint8Array(
@@ -393,7 +439,9 @@ export const GLZONE = (() => {
         if (Math.abs(x - Lw.x[0]) > 4000) continue;
         const nq = D.naechst(Lw, x, y);
         if (nq.d > 160 || nq.d < 2.6) continue;
-        for (let k = 0; k < 3; k++) {
+        // a closed carpet near the way (about two clumps a square metre), thinner farther off
+        const nk = nq.d < 70 ? 6 : 3;
+        for (let k = 0; k < nk; k++) {
           const px = x + (R() - 0.5) * step,
             py = y + (R() - 0.5) * step,
             z = WELT.heightAt(px, py),
@@ -412,24 +460,23 @@ export const GLZONE = (() => {
           ]);
         }
       }
-    instanzen(buschelGeo('heide'), list, 70, 'grenzland-zone-heide');
+    decke(buschelGeo('heide'), list, 70, 'grenzland-zone-heide');
     S.heide = list.length;
     markDirty(true);
   }
 
   async function bauBoden() {
     if (!WELT.sampler) return;
+    bauGras();
+    await bauHeide();
     const r = S.data.rect,
       hAt = await WELT.sampler(r[0], r[1], r[2], r[3]);
     if (!S.an || !hAt.tiles) return;
-    // the pads of the zone (none so far) and the carved ground are in the tiles already: the raw heights are the drawn ones
-    bauGras(hAt);
     try {
       bauSteine(hAt);
     } catch (e) {
       console.warn('grenzland zone: steine', e);
     }
-    await bauHeide(hAt);
     markDirty(true);
   }
   // ------------------------------------------------------------------ the trees at the forest edges ------------------------------------------------------------------
@@ -689,9 +736,9 @@ export const GLZONE = (() => {
     granitD: L(110, 106, 102),
     glas: L(52, 62, 70),
     rahmen: L(70, 72, 70),
-    turm: L(176, 172, 160),
-    turmD: L(140, 136, 126),
-    mauer: L(188, 184, 172),
+    turm: L(146, 143, 134),
+    turmD: L(116, 113, 105),
+    mauer: L(152, 149, 140),
     gitter: L(120, 124, 126),
   };
   // which side of the Kolonnenweg the old border lies (+1 right of the way's direction, −1 left)
@@ -940,7 +987,26 @@ export const GLZONE = (() => {
     for (let k = 0; k < 3; k++) {
       const r = lx + 3.2 + k * 3.1;
       F.box(r, ly + 0.5, -0.4, 0.12, 0.12, 3.5, W.turmD);
-      if (k < 2) FM.box(r + 1.55, ly + 0.5, 0.15, 2.9, 0.02, 2.9, W.gitter);
+      if (k < 2) {
+        // the expanded metal mesh: a lattice of thin diagonal bars over the 2.9 × 2.9 m panel (one sees through it)
+        const rL = r + 0.1,
+          z0 = 0.15,
+          Wp = 2.9;
+        for (let t = -Wp; t <= Wp; t += 0.16) {
+          const v0 = Math.max(0, -t),
+            v1 = Math.min(Wp, Wp - t);
+          if (v1 - v0 > 0.05)
+            FM.beam([rL + v0 + t, ly + 0.5, z0 + v0], [rL + v1 + t, ly + 0.5, z0 + v1], 0.012, 0.012, W.gitter);
+        }
+        for (let t = 0; t <= 2 * Wp; t += 0.16) {
+          const v0 = Math.max(0, t - Wp),
+            v1 = Math.min(Wp, t);
+          if (v1 - v0 > 0.05)
+            FM.beam([rL + t - v0, ly + 0.5, z0 + v0], [rL + t - v1, ly + 0.5, z0 + v1], 0.012, 0.012, W.gitter);
+        }
+        FM.box(rL + Wp / 2, ly + 0.5, z0 + Wp - 0.03, Wp, 0.03, 0.05, W.gitter);
+        FM.box(rL + Wp / 2, ly + 0.5, z0, Wp, 0.03, 0.05, W.gitter);
+      }
     }
     // the shelter with the boards (OpenStreetMap: amenity=shelter, tourism=information)
     const sh = o.punkte ? o.punkte.find(p => p[0] === 'unterstand') : null;
@@ -1345,8 +1411,12 @@ export const GLZONE = (() => {
     for (const im of S.far) {
       const i = VEG.far.indexOf(im);
       if (i >= 0) VEG.far.splice(i, 1);
+      scene.remove(im);
+      if (im.dispose) im.dispose();
     }
     S.far.length = 0;
+    DECK.near.clear();
+    DECK.arten.length = 0;
     for (const c of S.cols) {
       const i = VEH.extra.indexOf(c.x);
       if (i >= 0) VEH.extra.splice(i, 1);
@@ -1396,7 +1466,10 @@ export const GLZONE = (() => {
         S.farT += t;
         if (S.farT > D.KEEP) abbauen();
       } else S.farT = 0;
-      if (S.an && inZone(x, y, 150)) nahBaeume(x, y);
+      if (S.an && inZone(x, y, 150)) {
+        nahBaeume(x, y);
+        deckeNah(x, y);
+      }
       zufahrt(x, y);
     } catch (e) {
       if (!S._e) {
@@ -1572,6 +1645,7 @@ export const GLZONE = (() => {
       baeume: BA.n,
       gras: S.gras,
       heide: S.heide,
+      decke: DECK.near.size,
       baeumeNah: BA.nahN,
       zellenNah: BA.near.size,
       lods: S.lods.length,
