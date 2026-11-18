@@ -1,0 +1,2 @@
+# feat/bewuchs: the vegetation in 3D – rings of blades, kinds of area, wildflowers, the far bloom, mowing (viz3/test/bewuchs.py)
+bewuchs
