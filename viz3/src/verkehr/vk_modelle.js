@@ -23,7 +23,8 @@ import { VKTYPEN } from './vk_typen.js';
 import { VKBAU } from './vk_bau.js';
 export const VKMOD = (() => {
   const S = {
-    geo: new Map(), // typ → [level 0, 1, 2] { op: BufferGeometry, gl: BufferGeometry | null }
+    geo: new Map(), // typ → [level 0, 1, 2] { op: BufferGeometry, gl: BufferGeometry | null, cut (feat/strassen: see front()) }
+    cps: new Map(), // typ → where the cockpit sits when one borrows it (VKTYPEN cockpitAt, feat/strassen; VKMOD.cp)
     asked: new Map(), // typ|lod → true while the worker builds it
     queue: [], // [typ, lod] waiting for the worker
     live: new Set(), // the vehicles made
@@ -284,7 +285,9 @@ if (vkL > 0.5) {
       op: toGeo(geo.op, false),
       gl: geo.gl ? toGeo(geo.gl, true) : null,
       tris: geo.op.tris + (geo.gl ? geo.gl.tris : 0),
+      cut: geo.op.cut ?? null,
     };
+    if (geo.cp && !S.cps.has(geo.typ)) S.cps.set(geo.typ, geo.cp);
     S.stats.built++;
     S.stats.ms += geo.ms || 0;
     // vehicles waiting for this level take it at their next placing
@@ -469,13 +472,33 @@ if (vkL > 0.5) {
       return want;
     }
     const G = L[want];
-    m.body.geometry = G.op;
+    m.body.geometry = want === 0 && m.noFront && G.cut != null ? cutOf(G) : G.op;
     m.body.visible = true;
     m.glas.visible = !!G.gl;
     if (G.gl) m.glas.geometry = G.gl;
     markDirty();
     return want;
   }
+  // feat/strassen: the car one borrows draws its near level without the dashboard, wheel, front seats and wipers (the part merged last,
+  // verkehr/vk_bau.js op.cut) once the cockpit of vehicles/cockpit.js is in it: the same buffers, a geometry of its own with a draw range
+  function cutOf(G) {
+    if (!G.opCut) {
+      const g = new THREE.BufferGeometry();
+      for (const k in G.op.attributes) g.setAttribute(k, G.op.attributes[k]);
+      g.setIndex(G.op.index);
+      g.setDrawRange(0, G.cut);
+      g.boundingSphere = G.op.boundingSphere;
+      G.opCut = g;
+    }
+    return G.opCut;
+  }
+  function front(m, on) {
+    if (!m || !m.noFront === !!on) return;
+    m.noFront = !on;
+    m.lodT = -1;
+    if (m.lod >= 0) place(m, m.d);
+  }
+  const cp = typ => S.cps.get(typ) || null;
   function lamps(m, o) {
     const U = m.U;
     U.uLamp.value.set(o.head || 0, o.tail || 0, o.brake || 0, o.rev || 0);
@@ -604,7 +627,24 @@ if (vkL > 0.5) {
     const e = pick(FARBEN, r);
     return { col: e[0], metal: e[2] };
   }
-  Object.assign(S, { make, place, lamps, wheels, free, tick, need, ready, paint, farbe, FARBEN, vehMat, GLAS, SH });
+  Object.assign(S, {
+    make,
+    place,
+    lamps,
+    wheels,
+    free,
+    tick,
+    need,
+    ready,
+    paint,
+    farbe,
+    FARBEN,
+    vehMat,
+    GLAS,
+    SH,
+    front,
+    cp,
+  });
   return S;
 })();
 window.VKMOD = VKMOD;

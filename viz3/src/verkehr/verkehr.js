@@ -1775,7 +1775,9 @@ export const VERKEHR = (() => {
       const line = carRoute(Pl, o.from, o.to),
         who = driverFor(Pl, o.who);
       if (!line || !who) return null;
-      const c = VAUTO.spawn({ place: Pl.id, line, s: o.s || 0, who, typ: typFor(who), col: PP[who].car, v: o.v ?? 0 });
+      // o.typ: a type of today chosen (a test of the cockpit in every type – feat/strassen); else the driver's own
+      const typ = o.typ && VKTYPEN.TYP[o.typ] ? o.typ : typFor(who),
+        c = VAUTO.spawn({ place: Pl.id, line, s: o.s || 0, who, typ, col: PP[who].car, v: o.v ?? 0 });
       c.vk = 1;
       c.laneOff = 1.2;
       S.busy[who] = 'car';

@@ -31,7 +31,7 @@ import { VKREGELN } from './vk_regeln.js';
 // feat/verkehr-real stage 3: a knock moves the car after its mass, the driver complains (verkehr/vk_unfall.js)
 import { VKUNFALL } from './vk_unfall.js';
 export const VAUTO = (() => {
-  const S = { cars: [], n: 0, honks: 0, knocks: 0, crashes: 0, ev: [] };
+  const S = { cars: [], n: 0, honks: 0, knocks: 0, crashes: 0, ev: [], wornN: 0 };
   // the measures of the player's car (vehicles/car.js): axles, overhangs, width, wheels
   const A = 1.25,
     B = 1.655,
@@ -1395,7 +1395,24 @@ export const VAUTO = (() => {
       VKMOD.wheels(vm, sp, -(veh.st.steer || 0));
       VKMOD.lamps(vm, { head: px.head.v, tail: px.tail.v, brake: px.brake.v, rev: px.rev.v, drl: px.head.v ? 0 : 2.2 });
     };
-    S.worn = { vm, px };
+    // feat/strassen: the cockpit (vehicles/cockpit.js) in the car one borrows – where it sits in this type (spec.cockpit, the eye of the
+    // driver's view from it), the type's own dashboard, wheel, front seats and wipers as model.inside (the cockpit hides it when it is
+    // built: VKMOD.front); key: a new cockpit for every car one borrows
+    const cp = VKMOD.cp(vm.typ),
+      eye0 = v.spec.eye;
+    if (cp) {
+      v.spec.cockpit = Object.assign({ body: vm.g.name, key: ++S.wornN }, JSON.parse(JSON.stringify(cp)));
+      v.spec.eye = cp.eye.slice();
+      M.inside = {
+        get visible() {
+          return !vm.noFront;
+        },
+        set visible(x) {
+          VKMOD.front(vm, x);
+        },
+      };
+    }
+    S.worn = { vm, px, eye0 };
   }
   function unwear(v) {
     const M = v.model,
@@ -1409,6 +1426,12 @@ export const VAUTO = (() => {
     M.bodyMesh.visible = true;
     for (const x of M.oldLamps) x.visible = true;
     for (const x of M.wms) x.visible = true;
+    // feat/strassen: the traffic car drives on with its own inside; the borrowed vehicle forgets the anchors (vehicles/cockpit.js drops
+    // the cockpit built for them)
+    VKMOD.front(W.vm, true);
+    M.inside = null;
+    delete v.spec.cockpit;
+    if (W.eye0) v.spec.eye = W.eye0;
     scene.add(W.vm.g);
     W.vm.g.visible = false;
     S.worn = null;

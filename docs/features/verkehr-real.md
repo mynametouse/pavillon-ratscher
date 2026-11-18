@@ -176,6 +176,19 @@ Minuten still; `bus_modell.js` `B.blink(2)`: beide Seiten), die Busfahrerin oder
 Stimme über `verkehr/verkehr.js`), dann fährt er weiter – der Fahrplan bleibt die Wahrheit (er ist danach verspätet). Test
 `viz3/test/verkehr_bus.py` (Szene `?szenario=bus`: der 205 an der Schleusebrücke, das Auto fährt mit 4 m/s auf; 8 Prüfungen).
 
+## Das Cockpit im fremden Auto (seit 18.11.2026)
+
+Hält man ein Auto an und fährt „Selbst“, sitzt man im **Cockpit** wie im eigenen Kombi (`vehicles/cockpit*.js`: Instrumente,
+Lenkrad mit Händen, Navi, echte Spiegel, Wischer, Blinker) – passend in den Typ gesetzt: `cockpitAt` in `verkehr/vk_typen.js` rechnet aus
+der Karosserie die Ankerpunkte (Fuß und Oberkante der Frontscheibe, Breiten, Spiegelköpfe, Boden; die Kette Brett → Lenkrad → H-Punkt →
+Auge des Kombi), `VKMOD.cp(typ)`. Das eigene Armaturenbrett des Typs, Lenkrad, Vordersitze und Wischer baut `innenVK` als eigenen Teil
+`'cockpit'`, den `verkehr/vk_bau.js` zuletzt zusammenführt (`op.cut`); das geliehene Auto zeichnet seine Nahstufe dann mit einem
+Zeichenbereich ohne ihn (`VKMOD.front`, dieselben Puffer – kein Zeichenaufruf mehr, keine Kopie). Alle anderen Autos bleiben ein Mesh wie
+bisher. Gibt man das Auto zurück, fährt es mit seinem eigenen Inneren weiter, das Cockpit wird verworfen (`spec.cockpit.key`).
+Markierte Haken in `vehicles/cockpit.js` (`KIND`, `drop`) und `vehicles/cockpit_build.js` (`trim`); `VERKEHR.addCar({ …, typ })` für den
+Test. Test: `viz3/test/verkehr.py` Abschnitt `cockpit` (jeder der zwölf Typen einmal geliehen: Anker, Teil weggelassen, Fahrersicht,
+keine neuen Shader-Programme; Bilder `out/verkehr/k_cockpit_<typ>.jpg`), Unit-Test in `verkehr_real.test.mjs`.
+
 ## Was als Nächstes kommt (Plan, Stufe 4b und danach)
 
 Radfahrer im Verkehr (fest, stürzen und stehen wieder auf; Autos überholen mit Abstand), eine Delle

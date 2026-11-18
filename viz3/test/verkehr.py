@@ -4,7 +4,7 @@
 # Schleusingen has people and cars when one is there and frees them when one leaves (textures/geometries before and after); the time
 # per frame; textures per shader. Pictures in out/verkehr/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 8986 --serve verkehr        (or: python3 viz3/test/verkehr.py 8986 walk,car)
-# Sections (second argument, comma-separated): net,walk,night,car,brake,wave,ride,selbst,yield,fahrt,stadt,prof,gl
+# Sections (second argument, comma-separated): net,walk,night,car,brake,wave,ride,selbst,cockpit,yield,fahrt,stadt,prof,gl
 import sys, os, time, json, math, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
@@ -240,7 +240,7 @@ with lib.browser() as b:
             ck('section ran: night', False, repr(ex)[:400])
 
     car_ok = False
-    if want('car') or want('brake') or want('wave') or want('ride') or want('selbst'):
+    if want('car') or want('brake') or want('wave') or want('ride') or want('selbst') or want('cockpit'):
         E(pg, "VERKEHR.autoOn(false); VERKEHR.clear(); __vk.day(10)")
         thr = J(pg, f"__vk.through('dorf', {ANGER[0]}, {ANGER[1]})")
         print('route through the village', json.dumps(thr), flush=True)
@@ -394,6 +394,43 @@ with lib.browser() as b:
             E(pg, "VERKEHR.clear()")
         except Exception as ex:
             ck('section ran: selbst', False, repr(ex)[:400])
+
+    if want('cockpit'):
+        # feat/strassen: the cockpit (vehicles/cockpit.js) in the car one borrows, in every type of today – where it sits comes with the
+        # type, the type's own dashboard, wheel, front seats and wipers are left out while it is in (a draw range of the near level),
+        # each car borrowed gets a cockpit of its own, given back the car has its own inside again; no new shader program after the first
+        try:
+            types = J(pg, "VKTYPEN.PKW.map(e => e[0])")
+            res, bad, progs = {}, [], []
+            for t in types:
+                E(pg, f"VKMOD.need('{t}', 1); VKMOD.need('{t}', 0)")
+                E(pg, f"__vk.until(() => {{ const L = VKMOD.geo.get('{t}'); return !!(L && L[0] && L[1] && L[2]); }}, 90)")
+                cid = E(pg, f"VERKEHR.addCar({{ from: {thr['a']}, to: {thr['b']}, s: {max(0, thr['s'] - 20)}, v: 0, typ: '{t}' }})")
+                E(pg, "GAME.step(0.2)")
+                E(pg, f"(() => {{ const c = VERKEHR.car({cid}); VAUTO.lend(c); VEH.enter('verkehr'); GAME.setView3(false); }})()")
+                for k in range(10):
+                    E(pg, "GAME.step(0.1)")
+                r = J(pg, f"""(() => {{ const c = VERKEHR.car({cid}), v = VEH.by.verkehr, cs = COCKPIT.S.cs.verkehr, cp = v.spec.cockpit, g = c.vm.body.geometry,
+                    L = VKMOD.geo.get(c.typ)[0];
+                  return {{ typ: c.typ, key: cp ? cp.key : null, built: !!cs && !!cp && cs.key === cp.key, front: !c.vm.noFront, lod: c.vm.lod,
+                    draw: g.drawRange.count, cut: L.cut, idx: L.op.index.count, eye: v.spec.eye, cpEye: cp ? cp.eye : null,
+                    inside: v.model.inside ? v.model.inside.visible : null, view: COCKPIT.info().view, progs: (GAME.R.info.programs || []).length }}; }})()""")
+                lib.shot(pg, OUT, 'k_cockpit_' + t)
+                E(pg, "VEH.exit(); GAME.step(0.3); VAUTO.unlend(null); GAME.step(0.3)")
+                r2 = J(pg, f"(() => {{ const c = VERKEHR.car({cid}); return {{ front: c ? !c.vm.noFront : null, cs: !!COCKPIT.S.cs.verkehr, anchors: !!VEH.by.verkehr.spec.cockpit }}; }})()")
+                E(pg, "VERKEHR.clear(); GAME.step(0.3)")
+                ok = (r['typ'] == t and r['built'] and not r['front'] and r['inside'] is False and r['lod'] == 0 and r['cut'] and r['draw'] == r['cut'] < r['idx']
+                      and r['eye'] == r['cpEye'] and r['view'] and r2['front'] and not r2['cs'] and not r2['anchors'])
+                res[t] = ok
+                progs.append(r['progs'])
+                if not ok:
+                    bad.append([t, r, r2])
+                print('cockpit', t, 'ok' if ok else 'BAD', json.dumps(r)[:300], json.dumps(r2), flush=True)
+            ck('the cockpit in every type one may borrow: its anchors, the type\'s own front left out, the driver\'s view',
+               len(types) >= 10 and all(res.values()), json.dumps(bad)[:600])
+            ck('no new shader program for the cockpits after the first', len(progs) > 1 and max(progs[1:]) <= progs[0], str(progs))
+        except Exception as ex:
+            ck('section ran: cockpit', False, repr(ex)[:400])
 
     if want('yield'):
         try:

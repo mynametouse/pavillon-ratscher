@@ -62,11 +62,19 @@ Guss; die Karosserien des Verkehrs bleiben beim Straßen-Chat.
 - **Navi statt Eckkarte** (Einstellung, an): in der Fahrersicht weicht die kleine Karte oben links, solange das Navi zu sehen ist.
 
 ### Teil 6 – die anderen Fahrzeuge
-- **Fremdes Auto** (das man im Verkehr anhalten und fahren darf, `verkehr/verkehr_auto.js` `id: 'verkehr'`): **vorerst ohne dieses
-  Cockpit** (13.11. abends) – seine Karosserie bringt ein einfaches Inneres im selben Mesh mit (Boden in 0,8 m Höhe, Armaturenbrett,
-  ein Lenkrad aus Balken, Sitze, seit 26.10.), das das Cockpit nicht ausblenden kann: zwei Lenkräder übereinander, der Boden durch die
-  Sitze (`k_verkehr_driver` vorher). Es kommt zurück (eine Zeile in `KIND`, `vehicles/cockpit.js`), sobald dieses Innere ein eigener Teil
-  ist (`model.inside` wie in `car.js`) – Bitte an den Straßen-Chat. Bis dahin fährt es mit seinem eigenen Inneren und dem Auge von heute.
+- **Fremdes Auto** (das man im Verkehr anhalten und fahren darf, `verkehr/verkehr_auto.js` `id: 'verkehr'`): **mit diesem Cockpit seit
+  18.11.2026** (Straßen-Chat, auf die Bitte von hier). Das Auto trägt das Modell seines Typs von heute (`verkehr/vk_typen.js`, elf
+  Pkw und der Hochdachkombi); dessen Armaturenbrett, Lenkrad, Vordersitze und Wischer sind ein eigener Teil (`'cockpit'`, in
+  `verkehr/vk_bau.js` als letzter zusammengeführt, `op.cut`), den das geliehene Auto über einen Zeichenbereich weglässt, sobald das
+  Cockpit gebaut ist (`VKMOD.front`, als `model.inside` – das Cockpit blendet es aus wie in `car.js`); Boden, Stirnwand, Rückbank und
+  Innenschale bleiben. Wo das Cockpit sitzt, rechnet der Typ selbst aus (`cockpitAt` in `vk_typen.js`, die Felder der Ankerpunkte
+  unten, `VKMOD.cp(typ)`): vom Fuß der Frontscheibe 0,42 m zurück die Front des Armaturenbretts, dahinter die Kette des Kombi (Lenkrad
+  0,36 m, H-Punkt 0,30 m, Auge 0,11 m dahinter und 0,57 m darüber), das Auge 0,20 m über der Oberkante des Bretts (Hochdachkombi
+  0,30 m), Spiegelköpfe der Karosserie (`heads` false), Innenschale (`apil` false, `head` null); dazu `trim` (die Türverkleidungen
+  wandern mit dem H-Punkt, Haken in `cockpit_build.js`). `spec.cockpit.key` ist für jedes geliehene Auto neu: gibt man es zurück,
+  verwirft `vehicles/cockpit.js` das Cockpit (`drop`, Haken in `frame`), das nächste wird für das nächste Auto gebaut (~0,1–0,2 s beim
+  Einsteigen). Ohne Typ (der alte schlichte Wagen) bleibt es wie bisher ohne Cockpit (`k_verkehr_driver`). Test:
+  `viz3/test/verkehr.py` Abschnitt `cockpit` (jeder Typ einmal geliehen, Bilder `k_cockpit_<typ>` in `out/verkehr/`).
 - **Traktor** (`vehicles/tractor.js`): eigenes Lenkrad (dünner Kranz, drei Metallspeichen, Lenkradknauf) dreht mit dem Einschlag × 18 –
   das feste Lenkrad der Karosserie wird ausgeblendet (die Gruppe mit dem Ring, ohne Änderung an `tractor.js`) –, eine Instrumententafel auf
   der Säule (Drehzahl 0–3000, rot ab 2350; Geschwindigkeit, Gang F/R, Betriebsstunden, Tank, Licht, Handbremse), Blinkpfeile, die Hände am

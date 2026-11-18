@@ -32,10 +32,13 @@ import { KOMBI } from './kombi.js';
 export const COCKPIT = (() => {
   const RATIO = 15; // the steering's ratio: turns of the wheel per turn of the road wheels
   const LEVER = { P: -0.24, R: -0.09, N: 0.03, D: 0.15 };
-  // the vehicles with this cockpit: Falko's estate and the tractor. Not the traffic car one may drive (verkehr/verkehr_auto.js): its
-  // body brings a simple inside of its own in the same mesh (floor, dashboard, a wheel of beams, seats) that the cockpit cannot hide –
-  // it comes back here ('verkehr: car') once that inside is a part of its own (model.inside, as in vehicles/car.js)
-  const KIND = { car: 'car', tractor: 'tractor' };
+  // the vehicles with this cockpit: Falko's estate and the tractor. feat/strassen (18.11.2026): and the traffic car one borrows
+  // (verkehr/verkehr_auto.js) while it wears a type of today – its anchors come with the type (spec.cockpit, key: one per car
+  // borrowed), its own dashboard, wheel, front seats and wipers are model.inside (hidden here as in vehicles/car.js). The plain old
+  // body without a type (it brings its inside in one mesh) still gets none.
+  const KIND = { car: 'car', tractor: 'tractor', verkehr: 'car' };
+  const keyOf = v => (v && v.spec && v.spec.cockpit && v.spec.cockpit.key) || null;
+  const can = v => !!KIND[v.id] && (v.id !== 'verkehr' || keyOf(v) != null);
   // cs: one cockpit per vehicle id; c: the one driven now (or last)
   const S = { cs: {}, c: null, view: false, rainK: null, buildMs: 0, frameMs: 0, warm: 0, keys: 0 };
   const rad = d => (d * Math.PI) / 180;
@@ -64,6 +67,7 @@ export const COCKPIT = (() => {
     parts.ce.lever.add(knob);
     const c = {
       v,
+      key: keyOf(v), // feat/strassen
       A,
       P: parts,
       face,
@@ -461,7 +465,9 @@ export const COCKPIT = (() => {
       v.spec.eye = CPBUILD.CAR.eye.slice();
       delete v.spec.cockpit;
     }
-    if (v && KIND[v.id] && !S.cs[v.id]) build(v);
+    // feat/strassen: a cockpit built for another body (the traffic car one borrowed before) goes; the next one is built for this one
+    for (const id in S.cs) if ((S.cs[id].key || null) !== keyOf(S.cs[id].v)) drop(id);
+    if (v && can(v) && !S.cs[v.id]) build(v);
     const t0 = performance.now();
     let any = false;
     for (const id in S.cs) {
@@ -472,6 +478,27 @@ export const COCKPIT = (() => {
     }
     if (!v || !S.cs[v.id]) S.view = false;
     if (any) S.frameMs = S.frameMs * 0.9 + (performance.now() - t0) * 0.1;
+  }
+  // feat/strassen: a cockpit off its body (the borrowed car given back): out of the body, its geometry and canvases freed
+  function drop(id) {
+    const c = S.cs[id];
+    if (!c) return;
+    delete S.cs[id];
+    if (S.c === c) S.c = null;
+    const root = c.P && c.P.root;
+    if (root) {
+      if (root.parent) root.parent.remove(root);
+      root.traverse(o => {
+        if (o.isMesh && o.geometry) o.geometry.dispose();
+      });
+    }
+    for (const f of [c.face, c.navi]) {
+      if (f && f.tex) f.tex.dispose();
+      if (f && f.mat) f.mat.dispose();
+    }
+    if (c.v && c.v.model && c.v.model.inside) c.v.model.inside.visible = true;
+    S.dropped = (S.dropped || 0) + 1;
+    markDirty(true);
   }
   function step(c, dt, v) {
     if (c.kind === 'tractor') return stepTractor(c, dt, v);

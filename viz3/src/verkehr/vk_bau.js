@@ -14,6 +14,7 @@
 //       axle: 0 the body, 1 … 4 the axles in the order of VKTYPEN.achsen (they turn: the shader spins them; axle 1 steers if it may)
 //       side: 1 for a wheel on the right (the steering pivot's side)
 //     gl: { n, pos, nor, idx } or null
+//     op.cut (lod 0 of cars and vans): the indices before the part the cockpit replaces (feat/strassen); cp: where the cockpit sits
 import { VKTYPEN } from './vk_typen.js';
 export const VKBAU = (() => {
   const KIND = { matt: 0, lack0: 1, lack1: 2, chrom: 3, glas: 4, head: 6, tail: 7, blink: 8 };
@@ -114,13 +115,20 @@ export const VKBAU = (() => {
         tris: ni / 3,
       };
     }
-    return { add, out };
+    return { add, out, count: () => ni };
   }
   // ---- the parts of a build (VKTYPEN.bau) into one mesh (and the glass apart) ----
+  // feat/strassen: the part 'cockpit' (the dashboard, the wheel, the front seats, the wipers – VKTYPEN apart()) goes in last: op.cut is
+  // the number of indices before it, so the car one borrows can draw without it (VKMOD.front) while its cockpit is built
   function merge(M, apart) {
     const T = M.T,
-      src = [[M.body, 0, 0, 0]];
+      body = Object.assign({}, M.body),
+      front = body.cockpit;
+    delete body.cockpit;
+    const src = [[body, 0, 0, 0]];
     M.axles.forEach((a, i) => src.push([a.parts, -a.y, a.r, Math.min(4, i + 1)]));
+    if (front) src.push([{ cockpit: front }, 0, 0, 0]);
+    let cut = null;
     let nc = 0,
       ng = 0;
     for (const [parts] of src)
@@ -133,6 +141,7 @@ export const VKBAU = (() => {
       G = apart && ng ? welder(ng, true) : null;
     for (const [parts, dz, dy, ax] of src)
       for (const [name, q] of Object.entries(parts)) {
+        if (name === 'cockpit') cut = W.count();
         const P = q.pos,
           N = q.nor,
           Cc = q.col,
@@ -164,7 +173,9 @@ export const VKBAU = (() => {
           W.add(x, y, z, N[i], N[i + 1], N[i + 2], s8(r), s8(g), s8(b), kind, lamp, ax, ax && x > 0 ? 1 : 0);
         }
       }
-    return { op: W.out(), gl: G ? G.out() : null };
+    const op = W.out();
+    if (cut != null) op.cut = cut;
+    return { op, gl: G ? G.out() : null };
   }
   // ---- far away: the corners clustered in a grid (each cluster one vertex where its corners lie on average); kind, lamp, axle, side
   //      and a coarse colour keep clusters apart, so a lamp stays a lamp and a plate stays white ----
@@ -262,24 +273,27 @@ export const VKBAU = (() => {
       T = VKTYPEN.TYP[typ];
     if (!T) throw new Error('unknown vehicle type ' + typ);
     if (lod === 0) {
-      const R = merge(VKTYPEN.bau(typ, {}), true);
-      return { typ, lod, op: R.op, gl: R.gl, ms: Date.now() - t0 };
+      const M = VKTYPEN.bau(typ, {}),
+        R = merge(M, true);
+      return { typ, lod, op: R.op, gl: R.gl, ms: Date.now() - t0, cp: M.cp };
     }
-    const R = merge(VKTYPEN.bau(typ, { lod: 1 }), false);
-    if (lod === 1) return { typ, lod, op: R.op, gl: null, ms: Date.now() - t0 };
-    return { typ, lod, op: cluster(R.op, cellOf(T)), gl: null, ms: Date.now() - t0 };
+    const M = VKTYPEN.bau(typ, { lod: 1 }),
+      R = merge(M, false);
+    if (lod === 1) return { typ, lod, op: R.op, gl: null, ms: Date.now() - t0, cp: M.cp };
+    return { typ, lod, op: cluster(R.op, cellOf(T)), gl: null, ms: Date.now() - t0, cp: M.cp };
   }
   // both far levels at once (the worker's usual order: what a vehicle needs before it may drive)
   function geo12(typ) {
     const t0 = Date.now(),
       T = VKTYPEN.TYP[typ];
     if (!T) throw new Error('unknown vehicle type ' + typ);
-    const R = merge(VKTYPEN.bau(typ, { lod: 1 }), false),
+    const M = VKTYPEN.bau(typ, { lod: 1 }),
+      R = merge(M, false),
       far = cluster(R.op, cellOf(T)),
       ms = Date.now() - t0;
     return [
-      { typ, lod: 1, op: R.op, gl: null, ms },
-      { typ, lod: 2, op: far, gl: null, ms },
+      { typ, lod: 1, op: R.op, gl: null, ms, cp: M.cp },
+      { typ, lod: 2, op: far, gl: null, ms, cp: M.cp },
     ];
   }
   // what to hand over without copying

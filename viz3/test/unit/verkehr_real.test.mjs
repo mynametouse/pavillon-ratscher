@@ -406,3 +406,34 @@ test('stage 3: after the knock – it rolls, slides, brakes and stands; it turns
   assert.equal(U.who('trak', 'traktor', 'f'), 'Die Landwirtin');
   assert.equal(U.who('pkw', 'kombi', 'm'), 'Der Fahrer');
 });
+
+// feat/strassen: the cockpit in the car one borrows – the part it replaces is merged last (op.cut), the anchors lie inside the body
+test('the cockpit in a borrowed car: the front part last in the near level, the anchors in the cab', () => {
+  for (const [typ] of VKTYPEN.PKW) {
+    const T = VKTYPEN.TYP[typ],
+      g0 = VKBAU.geo(typ, 0),
+      g1 = VKBAU.geo(typ, 1),
+      op = g0.op,
+      cp = g0.cp;
+    // the front part: a few thousand triangles at the end of the index list; the far levels have none
+    assert.ok(op.cut > 0 && op.cut < op.idx.length && (op.idx.length - op.cut) / 3 > 1000, typ + ' cut ' + op.cut);
+    assert.equal(g1.op.cut, undefined, typ + ' far level without a front part');
+    assert.deepEqual(g1.cp, cp, typ + ' the same anchors on every level');
+    // everything behind the cut lies inside the cab, in front of the B pillar's region and below the roof
+    let zMax = -1e9,
+      xMax = 0;
+    for (let i = op.cut; i < op.idx.length; i++) {
+      const v = op.idx[i];
+      xMax = Math.max(xMax, Math.abs(op.pos[v * 3]));
+      zMax = Math.max(zMax, op.pos[v * 3 + 1]);
+    }
+    assert.ok(xMax < T.hw && zMax < T.h, typ + ' front part inside the body ' + xMax.toFixed(3) + ' ' + zMax.toFixed(3));
+    // the anchors: the driver on the left, floor < H-point < eye < roof; the chain wheel → face → windscreen's foot forward
+    assert.ok(cp.eye[0] < -0.25 && cp.eye[0] > -T.hw + 0.3, typ + ' eye x');
+    assert.ok(cp.floor < cp.hp[2] - 0.15 && cp.hp[2] < cp.eye[2] && cp.eye[2] < cp.roof - 0.15, typ + ' heights');
+    assert.ok(cp.eye[1] < cp.hp[1] && cp.hp[1] < cp.wheel.c[1] && cp.wheel.c[1] < cp.dash.face && cp.dash.face < cp.ws.y0, typ + ' order');
+    assert.ok(cp.ws.y1 < cp.ws.y0 && cp.ws.z1 > cp.ws.z0 && cp.ws.w1 < cp.ws.w0 && cp.ws.w0 < T.hw, typ + ' windscreen');
+    assert.ok(cp.door > 0.6 && cp.door < T.hw && cp.dash.x < T.hw, typ + ' widths');
+    assert.ok(cp.mirR[0] > T.hw - 0.05 && cp.mirL[0] === -cp.mirR[0] && cp.head === null && !cp.heads && !cp.apil, typ + ' mirrors, roof');
+  }
+});

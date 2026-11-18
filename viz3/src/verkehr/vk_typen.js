@@ -17,7 +17,119 @@ import { GLTYPEN } from '../grenzland/gl_typen.js';
 export const VKTYPEN = (() => {
   const { rgb } = K,
     mix = (a, b, t) => a + (b - a) * t;
-  const { schild, wischer, innen } = GLTYPEN.parts;
+  const { schild, wischer, innen, sitz, lenkrad } = GLTYPEN.parts;
+  // ---- feat/strassen: the cockpit in the car one borrows (verkehr/verkehr_auto.js, vehicles/cockpit.js) ----
+  // A kit through which everything goes into the part 'cockpit': the dashboard, the wheel, the front seats and the wipers of a car –
+  // what vehicles/cockpit_build.js brings of its own. verkehr/vk_bau.js merges that part last, so the car one borrows leaves it out
+  // by a draw range once its cockpit is built (VKMOD.front); every other car keeps it, one mesh as before.
+  const apart = k =>
+    new Proxy(k, {
+      get(t, n) {
+        const f = t[n];
+        return typeof f === 'function' ? (m, ...r) => f.call(t, typeof m === 'string' ? 'cockpit' : m, ...r) : f;
+      },
+    });
+  // the cab's inside as GLTYPEN.parts.innen builds it (the same faces and colours), its front apart (kc): the shelf under the
+  // windscreen, the dashboard, the wheel and its column, the front seats; floor, fire wall, rear bench and shelf stay with the body
+  function innenVK(k, B, D, T, o, I) {
+    const kc = apart(k),
+      G = GLTYPEN.C,
+      Cb = D.cab,
+      yA = Cb.y3,
+      hwF = y => B.x(y, I.floor + 0.2) - 0.03;
+    const fy0 = I.rearWall ?? Cb.y0 + 0.02,
+      fy1 = yA + (I.foot ?? 0.32);
+    k.quad(
+      'matt',
+      [-hwF(fy0), fy0, I.floor],
+      [hwF(fy0), fy0, I.floor],
+      [hwF(fy1), fy1, I.floor],
+      [-hwF(fy1), fy1, I.floor],
+      G.dark
+    );
+    const sh = B.S(yA).sh;
+    k.quad2(
+      'matt',
+      [-hwF(fy1), fy1, I.floor],
+      [hwF(fy1), fy1, I.floor],
+      [hwF(fy1), yA + 0.02, sh - 0.02],
+      [-hwF(fy1), yA + 0.02, sh - 0.02],
+      G.dark
+    );
+    const xd = B.x(yA, sh) - 0.05;
+    kc.quad(
+      'matt',
+      [-xd, yA - 0.3, sh - 0.035],
+      [xd, yA - 0.3, sh - 0.035],
+      [xd, yA + 0.03, sh - 0.012],
+      [-xd, yA + 0.03, sh - 0.012],
+      I.dash
+    );
+    kc.box('matt', [0, yA - 0.33, sh - 0.14], [2 * xd, 0.07, 0.2], I.dash, 'f');
+    kc.pad('matt', [-(I.seatX + 0.02), yA - 0.32, sh - 0.0], [0.3, 0.12, 0.08], 0.03, I.dash);
+    kc.at({ p: [-I.seatX, yA - 0.44, sh - 0.06], rx: -1.05 }, () => lenkrad(kc, 'matt', I.wheelR, I.wheel));
+    kc.tube(
+      'matt',
+      [
+        [-I.seatX, yA - 0.43, sh - 0.07],
+        [-I.seatX, yA - 0.2, sh - 0.2],
+      ],
+      0.018,
+      6,
+      I.dash
+    );
+    for (const s of [-1, 1]) sitz(kc, s * I.seatX, I.seatY, I.seatZ, I.seatW, I.seat, { head: I.head });
+    if (I.bench != null)
+      sitz(k, 0, I.bench, I.seatZ + 0.01, 2 * I.seatX + I.seatW - 0.06, I.seat, { d: 0.44, hb: 0.5, lean: 0.36 });
+  }
+  // where the cockpit sits in this body: the fields of CPBUILD.CAR (docs/features/cockpit.md, „Ankerpunkte“) in the vehicle frame
+  // (x right, y forward, z up from the ground – the frame the borrowed car wears the mesh in). The chain of the estate's cockpit kept:
+  // from the windscreen's foot back to the dashboard's face, the wheel 0.36 m behind it, the H-point 0.30 m behind the wheel, the eye
+  // 0.11 m behind and 0.57 m above that; in height from the dashboard's top (the screen's foot): the eye `lift` above it (the estate
+  // 0.20), the wheel's centre 0.095 below it. trim: how far the door panels move from where they sit in the estate (with the H-point).
+  //   x: { y3, y2 (the screen's foot and top edge), roofZ, deep (foot to the dashboard's face), lift, mir: [y, z, size] (the door
+  //   mirrors as spiegel() puts them), seatX, floor, wheelR }
+  function cockpitAt(B, x) {
+    const r = v => Math.round(v * 1000) / 1000,
+      P = a => a.map(r),
+      { y3, y2, roofZ, mir } = x,
+      z0 = B.top(y3 - 0.012, 0),
+      z1 = B.top(y2 + 0.012, 0),
+      top = z0 - 0.004,
+      face = y3 - x.deep,
+      wy = face - 0.36,
+      ez = Math.min(top + x.lift, roofZ - 0.22),
+      eye = [-x.seatX, wy - 0.41, ez],
+      hp = [-x.seatX, wy - 0.3, ez - 0.57],
+      wz = Math.min(top - 0.095, ez - 0.25),
+      mx = B.x(mir[0], mir[1]) + 0.13 * mir[2],
+      mi = y2 + 0.15;
+    return {
+      eye: P(eye),
+      hp: P(hp),
+      trim: P([hp[1] + 0.19, hp[2] - 0.6]),
+      wheel: { c: P([-x.seatX, wy, wz]), tilt: 0.44, r: x.wheelR },
+      dash: { face: r(face), top: r(top), ws: r(y3), x: r(B.x(face + 0.15, top - 0.04) - 0.035) },
+      ws: {
+        y0: r(y3),
+        z0: r(z0),
+        w0: r(B.x(y3 - 0.012, z0 + 0.01) - 0.025),
+        y1: r(y2),
+        z1: r(z1),
+        w1: r(B.x(y2 + 0.012, z1 - 0.01) - 0.025),
+      },
+      floor: r(Math.min(x.floor, hp[2] - 0.25)),
+      door: r(B.x(hp[1], hp[2] + 0.3) - 0.035),
+      mirL: P([-mx, mir[0], mir[1] + 0.04 * mir[2]]),
+      mirR: P([mx, mir[0], mir[1] + 0.04 * mir[2]]),
+      mirI: P([0, mi, B.top(mi, 0) - 0.085]),
+      roof: r(roofZ - 0.03),
+      head: null,
+      heads: false,
+      apil: false,
+      mirBack: 0.05,
+    };
+  }
   const C = {
     black: rgb(14, 14, 15),
     rubber: rgb(22, 22, 23),
@@ -1123,11 +1235,23 @@ export const VKTYPEN = (() => {
       k.pad('blink', B.side(s, a - pr - 0.16, belt - 0.11, 0.003), [0.01, 0.06, 0.018], 0.004, C.amber);
     }
     if (P.rails) reling(k, B, y1 + 0.12, y2 - 0.2, suv || P.chromeSims ? C.alu : C.black);
-    if (o.lod) return { B };
+    // feat/strassen: where the cockpit sits when one borrows this car (the far levels carry it too: no inside needed for it)
+    const cp = cockpitAt(B, {
+      y3,
+      y2,
+      roofZ,
+      deep: 0.42,
+      lift: 0.2,
+      mir: [y3 - 0.14, belt + 0.05, 1],
+      seatX: hw * 0.4,
+      floor: zb0 + 0.18,
+      wheelR: 0.185,
+    });
+    if (o.lod) return { B, cp };
     k.pad('matt', [0, y1 + 0.18, B.top(y1 + 0.18, 0) + 0.025], [0.05, 0.15, 0.05], 0.02, C.black);
-    wischer(k, B, -hw * 0.66, -hw * 0.06, y3 - 0.02, y3 - 0.32);
-    wischer(k, B, hw * 0.02, hw * 0.6, y3 - 0.02, y3 - 0.32);
-    innen(k, B, D, T, o, {
+    wischer(apart(k), B, -hw * 0.66, -hw * 0.06, y3 - 0.02, y3 - 0.32);
+    wischer(apart(k), B, hw * 0.02, hw * 0.6, y3 - 0.02, y3 - 0.32);
+    innenVK(k, B, D, T, o, {
       floor: zb0 + 0.18,
       seat: C.cloth,
       seatZ: zb0 + 0.42,
@@ -1141,7 +1265,7 @@ export const VKTYPEN = (() => {
       head: true,
       rearWall: y0 + 0.1,
     });
-    return { B };
+    return { B, cp };
   }
 
   // ======================= vans: one box over a short bonnet =======================
@@ -1460,7 +1584,19 @@ export const VKTYPEN = (() => {
       // the side indicator behind the front arch
       k.pad('blink', B.side(s, a + pr * 0.2, zb0 + 0.62, 0.003), [0.01, 0.06, 0.02], 0.004, C.amber);
     }
-    if (o.lod) return { B };
+    // feat/strassen: where the cockpit sits when one borrows the tall estate (the seat higher, the eye further above the dashboard)
+    const cp = cockpitAt(B, {
+      y3,
+      y2,
+      roofZ,
+      deep: 0.42,
+      lift: 0.3,
+      mir: [y3 - 0.16, belt + 0.1, car ? 1.1 : 1.35],
+      seatX: hw * 0.45,
+      floor: zb0 + 0.3,
+      wheelR: 0.2,
+    });
+    if (o.lod) return { B, cp };
     // ---- the shut line of the bonnet, the wipers, the cab inside ----
     for (const s of [-1, 1]) {
       const line = [];
@@ -1471,9 +1607,9 @@ export const VKTYPEN = (() => {
       }
       k.tube('matt', line, 0.0035, 3, C.black);
     }
-    wischer(k, B, -hw * 0.6, -hw * 0.06, y3 - 0.03, y3 - 0.33);
-    wischer(k, B, hw * 0.02, hw * 0.56, y3 - 0.03, y3 - 0.33);
-    innen(k, B, D, T, o, {
+    wischer(apart(k), B, -hw * 0.6, -hw * 0.06, y3 - 0.03, y3 - 0.33);
+    wischer(apart(k), B, hw * 0.02, hw * 0.56, y3 - 0.03, y3 - 0.33);
+    innenVK(k, B, D, T, o, {
       floor: zb0 + 0.3,
       seat: C.cloth,
       seatZ: zb0 + 0.62,
@@ -1496,7 +1632,7 @@ export const VKTYPEN = (() => {
         [-(hw - 0.16), yB + 0.05, roofZ - 0.1],
         C.grey
       );
-    return { B };
+    return { B, cp };
   }
 
   // ======================= lorries: a cab over the front axle, a chassis, the body =======================
@@ -2109,8 +2245,8 @@ export const VKTYPEN = (() => {
     const key = typ + '|' + (o.rim || '') + '|' + (o.lod || 0);
     if (cache.has(key)) return cache.get(key);
     const k = K.kit();
-    builder(T)(k, T, o);
-    const M = { typ, T, body: k.done(), axles: achsen(T, o), tris: k.count() };
+    const R = builder(T)(k, T, o) || {};
+    const M = { typ, T, body: k.done(), axles: achsen(T, o), tris: k.count(), cp: R.cp || null };
     cache.set(key, M);
     return M;
   }

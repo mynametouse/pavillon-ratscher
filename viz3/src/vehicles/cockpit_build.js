@@ -31,6 +31,7 @@ export const CPBUILD = (() => {
     heads: true, // door mirror heads of the cockpit's own (a body with housings: false; mirL/mirR then their centres)
     apil: true, // A-pillar trims of the cockpit's own (a body with an inner shell: false)
     mirBack: 0.0705, // from a mirror head's centre to its glass
+    trim: [0, 0], // feat/strassen: the door panels moved by [y, z] from where they sit in the estate (a body of another size)
   };
   // the tractor (vehicles/tractor.js): eye from its spec, the wheel on its column, the pod in front of it, the levers on the right
   const TRACTOR = {
@@ -577,19 +578,20 @@ export const CPBUILD = (() => {
   function trims(st, mov, A) {
     const M = MAT,
       dx = A.door,
-      w = A.ws;
+      w = A.ws,
+      [ty, tz] = A.trim || [0, 0]; // feat/strassen
     for (const sx of [-1, 1]) {
       const x = sx * (dx - 0.012);
       // armrest with the pull handle and the window switches, the inner handle, the speaker
-      put(st, rb(0.075, 0.42, 0.05, 0.02, 3), M.leather, x - sx * 0.02, 0.05, 0.69);
-      put(st, rb(0.03, 0.14, 0.05, 0.012), M.hard, x - sx * 0.035, 0.12, 0.735);
-      put(st, rb(0.05, 0.09, 0.012, 0.005), M.gloss, x - sx * 0.035, 0.2, 0.718);
-      put(st, rb(0.02, 0.08, 0.03, 0.008), M.satin, x - sx * 0.008, 0.36, 0.81);
-      put(st, rb(0.03, 0.14, 0.06, 0.02), M.hard, x - sx * 0.006, 0.37, 0.81);
+      put(st, rb(0.075, 0.42, 0.05, 0.02, 3), M.leather, x - sx * 0.02, ty + 0.05, tz + 0.69);
+      put(st, rb(0.03, 0.14, 0.05, 0.012), M.hard, x - sx * 0.035, ty + 0.12, tz + 0.735);
+      put(st, rb(0.05, 0.09, 0.012, 0.005), M.gloss, x - sx * 0.035, ty + 0.2, tz + 0.718);
+      put(st, rb(0.02, 0.08, 0.03, 0.008), M.satin, x - sx * 0.008, ty + 0.36, tz + 0.81);
+      put(st, rb(0.03, 0.14, 0.06, 0.02), M.hard, x - sx * 0.006, ty + 0.37, tz + 0.81);
       const spk = new THREE.CylinderGeometry(0.075, 0.075, 0.01, 28);
       spk.rotateZ(Math.PI / 2);
-      put(st, spk, M.black, x - sx * 0.004, 0.36, A.floor + 0.12);
-      put(st, rb(0.03, 0.62, 0.36, 0.03), M.hard, x + sx * 0.004, 0.1, A.floor + 0.19);
+      put(st, spk, M.black, x - sx * 0.004, ty + 0.36, A.floor + 0.12);
+      put(st, rb(0.03, 0.62, 0.36, 0.03), M.hard, x + sx * 0.004, ty + 0.1, A.floor + 0.19);
       // A-pillar trim: dark grey plastic over the body's pillar, from the dashboard's corner up to the header
       if (!A.apil) continue;
       const H = A.head,
