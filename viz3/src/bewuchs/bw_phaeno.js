@@ -539,7 +539,8 @@ export const BWPHAENO = (() => {
         dens,
         // the plants drawn from the acker atlas per m² (bw_blume.js caps them by its slots): maize and potatoes as they stand, rape
         // thinner (its blades are the rest), the cereals a few ears over the blades' tips, clover grass its flowers
-        cards: id.includes('mais') ? 9 : id === 'kartoffel' ? 4 : id === 'winterraps' ? 12 : id === 'kleegras' ? 6 : 4,
+        // (feat/fotorealismus, foto-wald: the cereals' ears at their real size – a hand's breadth –, so twice as many: 8, before 4)
+        cards: id.includes('mais') ? 9 : id === 'kartoffel' ? 4 : id === 'winterraps' ? 12 : id === 'kleegras' ? 6 : 8,
         row: row > 0.3 ? row : 0,
         h0: 0.15,
         hMax: 3,

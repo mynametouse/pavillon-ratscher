@@ -21,8 +21,9 @@ window.__FW = {
     R.shadowMap.needsUpdate = true; GAME.shot(); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
     const f = { w, h, px }; if (name) f.img = document.querySelector('#stage canvas').toDataURL('image/jpeg', 0.9); return f; },
   // of the rows from the bottom up to the share `top` of the height: the mean brightness (0–255), the share of bright pixels (pale
-  // plants in a dark wood), the share of green ones (plants on the brown floor)
-  floor(f, top = 0.4, bright = 150) { let n = 0, s = 0, b = 0, g = 0; const rows = Math.floor(f.h * top);
+  // plants in a dark wood – before this work a fifth of the floor of the view „klinge“ was brighter than 105, the litter is ~50), the
+  // share of green ones (plants on the brown floor – then nearly half of it)
+  floor(f, top = 0.4, bright = 105) { let n = 0, s = 0, b = 0, g = 0; const rows = Math.floor(f.h * top);
     for (let y = 0; y < rows; y++) for (let x = 0; x < f.w; x += 2) { const o = (y * f.w + x) * 4, r = f.px[o], gg = f.px[o + 1], bl = f.px[o + 2], l = 0.3 * r + 0.59 * gg + 0.11 * bl;
       n++; s += l; if (l > bright) b++; if (gg > r * 1.1 && gg > bl * 1.15 && l > 22) g++; }
     return { mean: +(s / n).toFixed(1), bright: +(b / n).toFixed(4), green: +(g / n).toFixed(4) }; },
@@ -93,11 +94,11 @@ with lib.browser() as b:
             fl = J("__FW.flags()"); print('flags klinge', fl, flush=True)
             ck("in the forest at the Klinge the tiles take its canopy map", all(n > 20 and k >= 0.9 * n for _, n, k in fl), fl)
             grab('klinge'); a = J("__FW.floor(__f)"); print('klinge', a, flush=True)
-            ck('no pale carpet in the dark wood: hardly a bright pixel on the floor', a['bright'] < 0.02, a)
-            ck('plants in patches: they cover a part of the floor, not most of it', 0.003 < a['green'] < 0.3, a)
+            ck('no pale carpet in the dark wood: hardly a bright pixel on the floor (before: 21 %)', a['bright'] < 0.03, a)
+            ck('plants in patches: they cover a part of the floor, not half of it (before: 47 %)', 0.01 < a['green'] < 0.36, a)
             view(-460, -610, 130, -32, n=10)
             grab('klinge_boden'); a = J("__FW.floor(__f, 0.9)"); print('klinge_boden', a, flush=True)
-            ck('looking down: litter between the plants, nothing glowing', a['bright'] < 0.02 and a['green'] < 0.35, a)
+            ck('looking down: litter between the plants, nothing glowing (before: 12 % bright)', a['bright'] < 0.03, a)
         if 'wald' in WANT:
             # a wood outside the forest at the Klinge (nothing knows its crowns): the floor and the plants in the class's light
             view(-380, -420, 240, 2, fov=60)

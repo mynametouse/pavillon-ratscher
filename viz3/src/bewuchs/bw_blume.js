@@ -233,7 +233,9 @@ export const BWBLUME = (() => {
   const tintOf = (hex, cell) => {
     const c = hexLin(hex),
       m = (CELLINFO[cell] && CELLINFO[cell][2]) || [0.58, 0.59, 0.48];
-    return c ? c.map((v, i) => Math.max(0.15, Math.min(1.3, (0.72 * v) / Math.max(0.05, m[i])))) : [1, 1, 1];
+    // (feat/fotorealismus, foto-wald: 0.5 of its colour, before 0.72 – a head is fine and open, the sward shows through it; drawn
+    // as a closed shape in its full colour it stood two to three times as bright as the blades: pale blobs over a lawn)
+    return c ? c.map((v, i) => Math.max(0.12, Math.min(1.3, (0.5 * v) / Math.max(0.05, m[i])))) : [1, 1, 1];
   };
   // feat/fotorealismus (foto-wald): a wood's herb layer stands in patches (BWARTEN flaechen[c].flecken → PATCH[c]: { grass: the
   // share of the area with its grasses, arten: { id: [share of the area with its patches, their size] } }). Each species has a soft
@@ -348,7 +350,11 @@ export const BWBLUME = (() => {
       if (s.crop) {
         const N = BWPHAENO.cropNow(s.crop, doy),
           hh = N ? Math.max(0.02, N.h) : 0;
-        D.set([hh * 0.9, hh * 1.04, 0, 0], o + 8);
+        // feat/fotorealismus (foto-wald): a cereal's picture is its ear alone – as long as the table says (kopf.laenge_m, a hand's
+        // breadth), standing on the stand like a grass's head (z: 1). It was drawn as tall as the crop: ears of 90 cm, pale blobs
+        // over the field.
+        if (s.earLen) D.set([hh > 0.05 ? s.earLen * 0.8 : 0, hh > 0.05 ? s.earLen * 1.1 : 0, 1, 0], o + 8);
+        else D.set([hh * 0.9, hh * 1.04, 0, 0], o + 8);
         D[o + 7] = lf && N ? Math.min(1, N.stub / Math.max(0.05, hh)) : 0;
       }
       for (let k = 0; k < NOFF; k++) {
@@ -466,6 +472,8 @@ export const BWBLUME = (() => {
       L.push({
         id: 'acker:' + cid,
         crop: F,
+        // (its pictures are ears only – no phase has a picture of the whole plant: the ear's length, m)
+        earLen: F.kopf && F.kopf.laenge_m > 0 && !F.jahr.some(q => q.bild) ? F.kopf.laenge_m : 0,
         h: [0.5, 1],
         frames,
         jahr,
