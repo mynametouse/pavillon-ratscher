@@ -11,11 +11,7 @@ import { GLZDATA as D } from '../../src/grenzland/gl_zone_data.js';
 const ZJ = new URL('../../extra/grenzland-zone/dist/grenzland-zone/zone.json', import.meta.url);
 const Z = fs.existsSync(ZJ) ? JSON.parse(fs.readFileSync(ZJ, 'utf8')) : null;
 // a straight way 100 m to the east, rising 5 m (x, y in dm, z in cm)
-const gerade = () =>
-  D.linie(
-    Array.from({ length: 51 }, (_, i) => [i * 20, 0, i * 10]).flat(),
-    3
-  );
+const gerade = () => D.linie(Array.from({ length: 51 }, (_, i) => [i * 20, 0, i * 10]).flat(), 3);
 
 test('a line: lengths, a point along it, the nearest point with its side', () => {
   const L = gerade();
@@ -82,7 +78,16 @@ test('zone.json: the Kolonnenweg, places, the drive there, the land cover and th
   assert.ok(L.len > 2000, 'the Kolonnenweg in the zone: ' + L.len);
   // its profile has no cliffs: no step over 0.7 m between points 2 m apart (the real way climbs steeply in places, up to ~30 %)
   for (let i = 1; i < L.n; i++) assert.ok(Math.abs(L.z[i] - L.z[i - 1]) < 0.7, 'step at ' + L.s[i]);
-  for (const k of ['kolonnenweg_a', 'kolonnenweg_b', 'bunker', 'museum', 'heide', 'parkplatz', 'ankunft'])
+  for (const k of [
+    'kolonnenweg_a',
+    'kolonnenweg_b',
+    'bunker',
+    'museum',
+    'heide',
+    'parkplatz',
+    'ankunft',
+    'ankunft_nord',
+  ])
     assert.ok(Z.orte[k] && D.inRect(Z.rect, Z.orte[k][0], Z.orte[k][1]), k);
   // the bunker lies off the way, in the heath, not on it
   const nb = D.naechst(L, Z.orte.bunker[0], Z.orte.bunker[1]);
@@ -94,6 +99,21 @@ test('zone.json: the Kolonnenweg, places, the drive there, the land cover and th
   const e = af[af.length - 1];
   assert.ok(Math.hypot(e[0] - Z.orte.parkplatz[0], e[1] - Z.orte.parkplatz[1]) < 200, 'ends at the car park');
   assert.ok(D.anfahrt(Z.anfahrt, 200).length < af.length);
+  // the Simson's way: from Ratscher over the L 3004 and through Eisfeld, no motorway; it passes the end of the region's L 3004 (where
+  // riding on leads to the zone) and comes in on the Coburger Straße by the northern arrival
+  const al = D.anfahrt(Z.anfahrt_land);
+  assert.ok(Z.anfahrt_land.km > 15 && Z.anfahrt_land.km < 25, 'km ' + Z.anfahrt_land.km);
+  const legs = Z.anfahrt_land.abschnitte.map(a => a[0]);
+  assert.ok(legs.includes('L 3004') && legs.includes('Coburger Straße') && !legs.includes('A 73'), legs.join(', '));
+  assert.ok(Math.hypot(al[0][0], al[0][1]) < 1500, 'starts at Ratscher');
+  const el = al[al.length - 1];
+  assert.ok(Math.hypot(el[0] - Z.orte.parkplatz[0], el[1] - Z.orte.parkplatz[1]) < 200, 'ends at the car park');
+  const near = (pts, q) => Math.min(...pts.map(p => Math.hypot(p[0] - q[0], p[1] - q[1])));
+  assert.ok(near(al, D.LAND.ende) < 30, 'passes the end of the L 3004: ' + near(al, D.LAND.ende));
+  assert.ok(near(al, Z.orte.ankunft_nord) < 30, 'and the northern arrival: ' + near(al, Z.orte.ankunft_nord));
+  assert.ok(near(af, D.A73.ende) < 60, 'the car passes the end of the A 73: ' + near(af, D.A73.ende));
+  assert.equal(D.strecke('gl-moped'), D.LAND);
+  assert.equal(D.strecke('gl-auto'), D.A73);
   // the land cover grid inflates to its size and knows heath at the heath
   const px = zlib.inflateSync(Buffer.from(D.bytes(Z.bewuchs.b64)));
   assert.equal(px.length, Z.bewuchs.nx * Z.bewuchs.ny);

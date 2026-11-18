@@ -1,3 +1,3 @@
 # feat/grenzland-zone: browser tests on GitHub Actions (one job per line; sections of viz3/test/grenzland_zone.py)
-grenzland_zone:weg,bunker
-grenzland_zone:heide,turm
+grenzland_zone:weg,bunker,zufahrt
+grenzland_zone:heide,turm,schnell

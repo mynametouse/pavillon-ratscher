@@ -26,6 +26,8 @@ export const GLZDATA = (() => {
     heide: 'Görsdorfer Heide',
     parkplatz: 'Parkplatz am Grenzturm',
     hide: 'Beobachtungsstand in der Heide',
+    ankunft: 'Coburger Straße, von Eisfeld-Süd',
+    ankunft_nord: 'Coburger Straße, aus Eisfeld',
   };
   D.PLATZ = {
     zone: 'Grünes Band bei Eisfeld',
@@ -73,7 +75,25 @@ export const GLZDATA = (() => {
     hd: 137.6, // degrees, compass
     zurueck: [2558, -974, 317.6], // where one comes back: on the northbound carriageway, towards Schleusingen
     r: 90, // m around the end: a vehicle heading on there goes to the zone
+    titel: 'A 73 · Richtung Coburg',
+    unter: 'Ausfahrt Eisfeld-Süd',
+    ort: 'ankunft',
+    heim: ['A 73 · Richtung Suhl', 'Schleusingen'],
   };
+  // the way over the Landstraße (the Simson may not take the motorway): the L 3004 leaves the region's road data east of the square,
+  // south-east towards Eisfeld (zone.json anfahrt_land); one comes in through Eisfeld town on the Coburger Straße
+  D.LAND = {
+    ende: [1637, -2526],
+    hd: 97,
+    zurueck: [1600, -2522, 277], // back on the L 3004, westbound towards Ratscher
+    r: 90,
+    titel: 'L 3004 · Richtung Eisfeld',
+    unter: 'über die Landstraße nach Eisfeld',
+    ort: 'ankunft_nord',
+    heim: ['L 3004 · Richtung Schleusingen', 'Ratscher'],
+  };
+  // which way a vehicle takes: the Simson the Landstraße, everything else the motorway
+  D.strecke = id => (id === 'gl-moped' ? D.LAND : D.A73);
   // ---------------------------------------------------------------- pure helpers ----------------------------------------------------------------
   // a fixed random from a seed
   D.zufall = seed => {

@@ -180,6 +180,33 @@ export const GLKAP2 = (() => {
       else if (typeof Z.lade === 'function') Z.lade(!!on);
     } catch (e) {}
   }
+  // agent zone's own helpers while its zone is the one in use (feat/grenzland-zone after V19g: ort('foto' | 'fremder'), netz(x, y) …) –
+  // undefined without them
+  function zhelp(fn, ...a) {
+    const Z = zone();
+    if (Z === ZONE0 || !Z || typeof Z[fn] !== 'function') return undefined;
+    try {
+      return Z[fn](...a);
+    } catch (e) {
+      return undefined;
+    }
+  }
+  const zort = name => {
+    const p = zhelp('ort', name);
+    return p && Number.isFinite(p.x) && Number.isFinite(p.y) ? [p.x, p.y] : null;
+  };
+  // the Simson's way there by the Landstraße (L 3004 through Eisfeld) on the radar, while one rides there
+  function zoneRoute(on) {
+    try {
+      const Z = window.GLZONE;
+      if (Z && typeof Z.route === 'function' && S.zoneTest === undefined) Z.route(!!on, 'land');
+    } catch (e) {}
+  }
+  // a signal for the phone (agent zone: -1 in the heath, 4 at the car park); without the zone's netz: always
+  const netzDa = () => {
+    const n = zhelp('netz', P.x, P.y);
+    return n === undefined || n === null || n > 0;
+  };
   // agent zone's real zone, when there is one (not in tests that give their own zone object): it brings its own ground and the cut there
   const echteZone = () => {
     const Z = window.GLZONE;
@@ -207,6 +234,17 @@ export const GLKAP2 = (() => {
     try {
       KERN.pushOut(vorn, 0.5);
     } catch (e) {}
+    const wp = zhelp('punkte', 'wachen'),
+      wachen =
+        Array.isArray(wp) && wp.length >= 3 && wp.slice(0, 3).every(q => Number.isFinite(q[0]) && Number.isFinite(q[1]))
+          ? ['w1', 'w2', 'w3'].map((k, i) => [
+              k,
+              'wache' + (i + 1),
+              [wp[i][0], wp[i][1]],
+              ['pick', 'saw', null][i],
+              Number.isFinite(wp[i][2]) ? (wp[i][2] * Math.PI) / 180 : null,
+            ])
+          : null;
     return {
       b,
       s: n.s,
@@ -217,18 +255,21 @@ export const GLKAP2 = (() => {
       vanHd: on.hd + Math.PI,
       vorn,
       vornHd: yawTo(vorn, b),
-      men: [
-        ['w1', 'wache1', [b[0] - ux * 1.3 + uy * 0.6, b[1] - uy * 1.3 - ux * 0.6], 'pick'],
-        ['w2', 'wache2', [b[0] - ux * 1.1 - uy * 1.2, b[1] - uy * 1.1 + ux * 1.2], 'saw'],
-        ['w3', 'wache3', [on.x + ux * 3.2 + uy * 2.5, on.y + uy * 3.2 - ux * 2.5], null],
+      // [key, cast, [x, y], pose, heading or null: towards the bunker] – agent zone's spots round its bunker when it has them
+      men: wachen || [
+        ['w1', 'wache1', [b[0] - ux * 1.3 + uy * 0.6, b[1] - uy * 1.3 - ux * 0.6], 'pick', null],
+        ['w2', 'wache2', [b[0] - ux * 1.1 - uy * 1.2, b[1] - uy * 1.1 + ux * 1.2], 'saw', null],
+        ['w3', 'wache3', [on.x + ux * 3.2 + uy * 2.5, on.y + uy * 3.2 - ux * 2.5], null, null],
       ],
-      // the stranger: at the edge of the heath, beyond the bunker
-      fremder: [b[0] + ux * 58 - uy * 16, b[1] + uy * 58 + ux * 16],
+      // the stranger: at the edge of the heath, beyond the bunker (the zone's own place for him, when it has one)
+      fremder: zort('fremder') || [b[0] + ux * 58 - uy * 16, b[1] + uy * 58 + ux * 16],
     };
   }
   let BP = null;
   const bp = () => {
-    const k = ort('bunker').join() + '|' + weg().length;
+    // (agent zone's spots round its bunker follow the bunker it builds: again once the zone is built)
+    const zs = zhelp('state'),
+      k = ort('bunker').join() + '|' + weg().length + '|' + !!(zs && zs.an);
     if (!BP || BP.k !== k) BP = Object.assign(bunkerPlan(), { k });
     return BP;
   };
@@ -273,13 +314,16 @@ export const GLKAP2 = (() => {
   };
   // the men's attention (as at the Klinge in chapter 1): they see with their eyes – the dark and ducking help, a moped is heard
   const K1 = { W: [], job: 'arbeit', n: 0, ft: 0, fremder: false, fremderGesehen: false };
+  // where a man of the plan looks: his own heading, or towards the bunker
+  const blick = (B, m) => (m[4] != null ? m[4] : Math.atan2(B.b[0] - m[2][0], B.b[1] - m[2][1]));
   function maennerHeim(B) {
     K1.job = 'arbeit';
-    for (const [key, , p, pk] of B.men) {
-      const f = MI.F(key);
+    for (const m of B.men) {
+      const [key, , p, pk] = m,
+        f = MI.F(key);
       if (f && !f.gone)
         GLFIG.go(f, p, 1.4, q => {
-          q.hd = Math.atan2(B.b[0] - q.x, B.b[1] - q.y);
+          q.hd = blick(B, m);
           GLFIG.pose(q, pk);
         });
     }
@@ -757,6 +801,7 @@ export const GLKAP2 = (() => {
       abbruch() {
         fotoAus();
         zoneLaden(false);
+        zoneRoute(false);
         V1.fahrt = false;
       },
       szene(i, A) {
@@ -769,12 +814,14 @@ export const GLKAP2 = (() => {
         if (ersatz()) A.ding('k2bunker', () => ding(bunkerForm, B.b[0], B.b[1], B.vanHd));
         if (i <= 8) {
           A.auto('k2van', 'kasten', B.van[0], B.van[1], B.vanHd, { col: '#d9d9d2' });
-          for (const [key, cast, p, pk] of B.men)
-            A.fig(key, cast, p[0], p[1], Math.atan2(B.b[0] - p[0], B.b[1] - p[1]), {
+          for (const m of B.men) {
+            const [key, cast, p, pk] = m;
+            A.fig(key, cast, p[0], p[1], blick(B, m), {
               karte: 'feind',
               hut: key === 'w3' ? 'strick' : undefined,
               ready: F => GLFIG.pose(F, pk),
             });
+          }
           if (i >= 7 && K1.fremder)
             A.fig(
               'fremder',
@@ -800,6 +847,7 @@ export const GLKAP2 = (() => {
             if (!imDezember()) dezember(9, 40, 1);
             wetter(true);
             zoneLaden(true);
+            zoneRoute(true);
             sms('jule1');
             // the moped in the garden (unless one sits on it or it stands near); full
             const m = O.moped,
@@ -821,6 +869,9 @@ export const GLKAP2 = (() => {
           text: TX.k2m1.museum,
           ort: 'Grenzturm-Museum',
           ziel: () => ort('museum'),
+          an() {
+            zoneRoute(false);
+          },
           tick(dt, S) {
             const w = MI.wo();
             return (S.r || (w.v < 1.5 && MI.fern(ort('parkplatz')) < 60) || S.t > 25) && sag(S, 'k2museum');
@@ -860,11 +911,11 @@ export const GLKAP2 = (() => {
             K1.fremder = false;
             K1.fremderGesehen = false;
             const B = bp();
-            for (const [key, , p, pk] of B.men) {
-              const f = MI.F(key);
+            for (const m of B.men) {
+              const f = MI.F(m[0]);
               if (f) {
-                GLFIG.place(f, p[0], p[1], Math.atan2(B.b[0] - p[0], B.b[1] - p[1]));
-                GLFIG.pose(f, pk);
+                GLFIG.place(f, m[2][0], m[2][1], blick(B, m));
+                GLFIG.pose(f, m[3]);
               }
             }
             if (why === 'nochmal') {
@@ -888,7 +939,8 @@ export const GLKAP2 = (() => {
           text: () => TX.k2m1.fotos(K1.n),
           ort: 'Bunker',
           nochmal: [T.geschnappt, T.geschnapptSub],
-          ziel: () => bp().b,
+          // (agent zone's place to take them from, when it has one)
+          ziel: () => zort('foto') || bp().b,
           an() {
             K1.ft = 0;
             fotoAn();
@@ -1013,14 +1065,19 @@ export const GLKAP2 = (() => {
           text: TX.k2m1.heim,
           ort: 'Garten',
           ziel: () => O.garten.pos,
-          // a signal again: the stranger's message
-          an(S, why) {
+          // a signal again (agent zone's netz: out of the heath): the stranger's message
+          an(S) {
             zoneLaden(false);
-            if (sms('fremder')) MI.denk(T.netz, 2600);
-            if (why !== 'reload') S.redeT = 1.2;
+            // (sms() sends a message once: after a reload it comes only if it had not come yet)
+            S.sms = true;
             MI.extra(T.heimfahren, () => fahrt('heim'));
           },
           tick(dt, S) {
+            if (S.sms && netzDa()) {
+              S.sms = false;
+              if (sms('fremder')) MI.denk(T.netz, 2600);
+              S.redeT = 1.2;
+            }
             if (S.redeT > 0 && (S.redeT -= dt) <= 0 && !MI.redet()) MI.rede('k2fremderSms');
             const w = MI.wo();
             return (S.r || (MI.fern(O.garten.pos) < 22 && w.v < 3 && !MI.redet())) && sag(S, 'k2heim1');
@@ -1561,8 +1618,32 @@ export const GLKAP2 = (() => {
       return false;
     }
   };
+  // the same from the menu (Falko, 18.11.2026 21:58: chapter 2 in the normal version, without the extra address):
+  // Szenen → „Grenzland · Kapitel 2“ (?szenario=grenzland2) – the mode's fresh start, then chapter 2 at once
+  let kap2Menu = false;
   KERN.on('grenzland:start', () => {
-    if (kapitelUrl()) S.direkt = true;
+    if (kapitelUrl() || kap2Menu) S.direkt = true;
+  });
+  KERN.scenario('grenzland2', {
+    label: 'Grenzland · Kapitel 2',
+    order: 6.1,
+    ask: 'Grenzland ab Kapitel 2 – Kapitel 1 gilt als erledigt; eine eigene Welt für Erwachsene mit eigenem Spielstand',
+    run: () => {
+      // started by the link: the address without it, so that a reload goes on instead of starting afresh
+      try {
+        const u = new URL(location.href);
+        if (u.searchParams.get('szenario') === 'grenzland2') {
+          u.searchParams.delete('szenario');
+          history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+        }
+      } catch (e) {}
+      kap2Menu = true;
+      try {
+        return window.GRENZLAND.start();
+      } finally {
+        kap2Menu = false;
+      }
+    },
   });
   function direkt() {
     S.direkt = false;
