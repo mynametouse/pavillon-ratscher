@@ -3,7 +3,7 @@ app's roads (inside the square dist/geo/roads.b64.json; beyond it the drive's di
 paths with the widths of tools/geo/build_roads.py), its built-up areas (dist/strassen/ausstattung.json), its buildings (OSM footprints of
 the fetch, ETHOS footprints of dist/gebaeude/ratscher.json and z/, the towns' own of dist/schleusingen/stadt.json and dist/vessra/ort.json),
 its measured trees (dist/geo/trees.b64.json), the site and brook (app_daten.mjs), the centre of the village (world/dorfkern_data.js), the
-hedges of stadtgruen and of Kloster Veßra (drawn there, so 0 here)."""
+hedges of stadtgruen and of Kloster Veßra (drawn there, so 0 here), the streets the two towns paint over the photo (TOWN_ST)."""
 import base64, glob, json, math, os, subprocess, sys
 import numpy as np
 from shapely.geometry import LineString, Point, Polygon, box
@@ -79,6 +79,42 @@ def road_of(t):
     except ValueError:
         pass
     return RKI[k], RSURF.index(s), float(np.clip(wd, 1.0, 14.0)), t.get('bridge') not in (None, 'no')
+
+
+# the towns' streets as their modules paint them over the photo (welt/schleusingen.js and welt/vessra.js streetMap(): a window of
+# 2 × 460 m round the Markt / the monastery, one width per kind) – wider than build_roads.py's for the main roads, so the carriageway is
+# the wider of the two (test_daten.py compares these numbers with the modules)
+TOWN_ST = {
+    'schleusingen': {'file': 'schleusingen/stadt.json', 'c': (-1084.7, 1241.9), 'half': 460.0,
+                     'w': {1: 8.0, 2: 7.0, 3: 5.6, 5: 3.6, 8: 2.2}},
+    'vessra': {'file': 'vessra/ort.json', 'c': (-8790.0, -235.0), 'half': 460.0,
+               'w': {1: 7.0, 2: 6.5, 3: 5.2, 5: 3.2, 6: 2.8, 7: 1.8, 8: 1.8}},
+}
+# vessra.js paints a track or path only with a known surface (or inside the museum's grounds); the others the photo shows
+TOWN_SURF = {'asphalt', 'concrete', 'paved', 'chipseal', 'sett', 'cobblestone', 'paving_stones', 'gravel', 'fine_gravel', 'compacted',
+             'unpaved', 'dirt', 'ground', 'pebblestone'}
+
+
+def town_streets(name, data):
+    """the streets a town paints (TOWN_ST[name]) from its data (stadt.json / ort.json): [{kind, surf, w, bridge, p}] clipped to the window"""
+    T = TOWN_ST[name]
+    cx, cy = T['c']
+    win = box(cx - T['half'], cy - T['half'], cx + T['half'], cy + T['half'])
+    mu = next((Polygon(np.asarray(a['p'], float).reshape(-1, 2)) for a in data.get('areas', []) if a.get('k') == 'museum'), None)
+    out = []
+    for s in data.get('st', []):
+        k, sf, q = s.get('k'), s.get('s') or '', s.get('p') or []
+        if k not in T['w'] or len(q) < 4:
+            continue
+        if name == 'vessra' and k > 5 and sf not in TOWN_SURF:
+            mi = (len(q) >> 2) * 2
+            if not (k >= 7 and mu is not None and mu.contains(Point(q[mi], q[mi + 1]))):
+                continue
+        ln = LineString(np.asarray(q, float).reshape(-1, 2)).intersection(win)
+        for g in getattr(ln, 'geoms', [ln]):
+            if g.geom_type == 'LineString' and g.length > 0.5:
+                out.append({'kind': k, 'surf': 0, 'w': T['w'][k], 'bridge': False, 'p': np.asarray(g.coords)[:, :2], 'town': name})
+    return out
 
 
 def kind_of(t):
@@ -163,6 +199,12 @@ class Quellen:
         self.app = json.load(open(os.path.join(RAW, 'app.json'))) if os.path.exists(os.path.join(RAW, 'app.json')) else self._app()
         self.stadtgruen_hedges = self._stadtgruen()
         self.zone_b, self.zone_lines = self._zones()
+        self.town_st = []
+        for name, T in TOWN_ST.items():
+            fn = os.path.join(DIST, T['file'])
+            if os.path.exists(fn):
+                with open(fn) as fh:
+                    self.town_st += town_streets(name, json.load(fh))
         self._zcells = {}
         from shapely.geometry import box as _box
         x0, y0, x1, y1 = (json.load(open(os.path.join(REPO, 'viz3', 'manifests.json')))['geoman']['roads']['box'])
@@ -238,13 +280,14 @@ class Quellen:
 
     def roads_in(self, bx):
         """the roads of a box: inside the square the app's own (roads.b64.json); beyond it the drive's ways and OSM's (streets, tracks,
-        paths – the drive has the roads one drives; OSM adds the town streets, tracks and paths with the widths of build_roads.py)"""
+        paths – the drive has the roads one drives; OSM adds the town streets, tracks and paths with the widths of build_roads.py) and the
+        streets Schleusingen and Kloster Veßra paint over the photo (TOWN_ST; where two overlap, the wider one shows)"""
         from shapely.geometry import LineString as LS
         out = []
         if self.square.intersects(bx):
             out += self.roads
         if not self.square.contains(bx):
-            for r in self.fahrt + self.highways:
+            for r in self.fahrt + self.highways + getattr(self, 'town_st', []):
                 ln = LS(r['p'])
                 if not ln.intersects(bx):
                     continue

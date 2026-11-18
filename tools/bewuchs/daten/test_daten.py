@@ -119,6 +119,33 @@ class Areas(unittest.TestCase):
                 if k not in sq:
                     self.assertIn((k[0], k[1], 0.5), c)
 
+class TownStreets(unittest.TestCase):
+    def test_same_as_the_towns(self):  # quellen.TOWN_ST keeps the widths and windows of streetMap() in welt/schleusingen.js, welt/vessra.js
+        import quellen
+        for name, js, centre in (('schleusingen', 'schleusingen.js', r'const MARKT = \[(-?[\d.]+), (-?[\d.]+)\]'),
+                                 ('vessra', 'vessra.js', r'C0 = \[(-?[\d.]+), (-?[\d.]+)\]')):
+            s = read(SRC, 'welt', js)
+            body = s[s.index('function streetMap()'):][:4000]
+            T = quellen.TOWN_ST[name]
+            w = re.search(r'\bW = \{([^}]*)\}', body).group(1)
+            self.assertEqual({int(k): float(v) for k, v in re.findall(r'(\d+):\s*([\d.]+)', w)}, T['w'], name)
+            self.assertEqual(float(re.search(r'half = ([\d.]+)', body).group(1)), T['half'], name)
+            c = re.search(centre, s)
+            self.assertEqual((float(c.group(1)), float(c.group(2))), T['c'], name)
+
+    def test_clipped_and_filtered(self):
+        import quellen
+        cx, cy = quellen.TOWN_ST['vessra']['c']
+        data = {'areas': [{'k': 'museum', 'p': [cx - 50, cy - 50, cx + 50, cy - 50, cx + 50, cy + 50, cx - 50, cy + 50]}],
+                'st': [{'k': 1, 's': '', 'p': [cx - 1000, cy, cx + 1000, cy]},          # a main road: clipped to the 920 m window
+                       {'k': 6, 's': '', 'p': [cx + 100, cy + 100, cx + 200, cy + 100]},  # a track of unknown surface: the photo's
+                       {'k': 7, 's': '', 'p': [cx - 10, cy, cx, cy, cx + 10, cy]},        # a path in the museum's grounds: painted
+                       {'k': 4, 's': 'asphalt', 'p': [cx, cy, cx, cy + 10]}]}           # a lane: no width in vessra.js
+        r = quellen.town_streets('vessra', data)
+        self.assertEqual([x['kind'] for x in r], [1, 7])
+        self.assertAlmostEqual(float(r[0]['p'][:, 0].max() - r[0]['p'][:, 0].min()), 920.0, 3)
+        self.assertEqual(r[0]['w'], 7.0)
+
 
 if __name__ == '__main__':
     unittest.main()
