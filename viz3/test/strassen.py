@@ -335,9 +335,13 @@ with lib.browser() as b:
         vis = E("[...STRASSEN.cells.values()].filter(c => c.built && c.glint && c.glint.visible).length")
         ck('at night the reflectors shine back at the car one drives', not g0 and g1 and vis > 0, f"day {g0}, night {g1}, {vis} cells")
         lib.shot(pg, OUT, '10_nachtfahrt')
+        # the sign faces too (retroreflective, in the beam of the lamps): the shine is on at night in the car, off on foot and by day
+        sh1 = st()['shine']
+        ck('at night the sign faces shine back in the lamps of the car one drives', sh1 > 0.5, f"shine {sh1}")
         E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 14 * 60 + 30; DN.update(true)")
         lib.settle_light(pg)
         steps(1, 0.025)
+        ck('by day the sign faces do not shine', st()['shine'] == 0, f"shine {st()['shine']}")
         E("VEH.follow([[0, 0], [0, 1]]); VEH.auto = null")
     if want('sets') and ck('the tiles around the made-up town are there', TILES):
         roads, furn = probe_town(*PC)
