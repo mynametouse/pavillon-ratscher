@@ -215,7 +215,7 @@ export const BWBLUME = (() => {
   const tintOf = (hex, cell) => {
     const c = hexLin(hex),
       m = (CELLINFO[cell] && CELLINFO[cell][2]) || [0.58, 0.59, 0.48];
-    return c ? c.map((v, i) => Math.max(0.15, Math.min(1.6, v / Math.max(0.05, m[i])))) : [1, 1, 1];
+    return c ? c.map((v, i) => Math.max(0.15, Math.min(1.3, (0.72 * v) / Math.max(0.05, m[i])))) : [1, 1, 1];
   };
   function mixes() {
     const D = MXT.image.data;
@@ -324,7 +324,7 @@ export const BWBLUME = (() => {
     if (!L.length) return 0;
     // the grasses' heads (ear or panicle): green in flower from aehre.von to bis, ripe and straw coloured to reif_bis, standing ueber_m
     // above the sward; anteil of the tufts carries one – as plants per m² of the area: its share of the grass × anteil × HEADS
-    const HEADS = 14;
+    const HEADS = 10;
     for (const [gid, g] of Object.entries(A.gras || {})) {
       const a = g && g.aehre;
       if (!a || !Array.isArray(a.zelle) || !Number.isFinite(a.von) || !Number.isFinite(a.bis)) continue;
@@ -536,8 +536,9 @@ void flPlant( out vec3 P ) {
     if ( cell < 0.0 ) return;
   }
   // its height (by its frame and the month); in a short sward not far above the grass – a grass head stands its own height above it
-  float hf = mix( s2.x, s2.y, fract( rZ * 13.7 ) ) * hk;
-  if ( s2.z > 0.5 ) hf += hc;
+  float hf = mix( s2.x, s2.y, fract( rZ * 13.7 ) ) * hk, zb = 0.0;
+  // a grass head: the card's upper part (the head, ~45 % of the drawing) over the sward, its stem down into it
+  if ( s2.z > 0.5 ) { zb = max( 0.0, hc - 0.5 * hf ); hf = hc + hf - zb; }
   else hf = min( hf, max( hc * 2.2, 0.08 ) );
   if ( hf < 0.012 ) return;
   // the colour of a grass head (drawn neutral): the bloom's or the ripe one's
@@ -553,7 +554,7 @@ void flPlant( out vec3 P ) {
   vec2 wd = vec2( wxSwD.x, - wxSwD.y );
   float wb = wxGr.x * ( 0.7 + 0.3 * sin( wxSw.z * 1.9 - dot( q, wd ) * 0.7 ) ) + wxGr.y * sin( wxSw.z * 7.3 + q.x * 3.1 + q.y * 2.3 );
   vec2 xy = q + dir * aQ.x * hw + wd * wb * H * t * t;
-  P = vec3( xy.x, zr + H * t, - xy.y );
+  P = vec3( xy.x, zr + zb + H * t, - xy.y );
   float col = mod( cell, 8.0 ), row = floor( cell / 8.0 );
   vFlUv = vec2( ( col + 0.5 + aQ.x * 0.5 * cd.y ) / 8.0, 1.0 - ( row + 1.0 - t ) / 8.0 );
 }
@@ -648,7 +649,7 @@ void flPlant( out vec3 P ) {
     species: Object.fromEntries(
       SP.map((s, i) => {
         const D = SPT.image.data,
-          o = i * 32;
+          o = i * SPW * 4;
         return [s.id, [0, 1, 2, 3].map(k => [D[o + 12 + k * 4], +D[o + 14 + k * 4].toFixed(2)])];
       })
     ),
