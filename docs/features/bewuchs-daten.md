@@ -125,7 +125,21 @@ der modellierten Zone (die Gartenkarte). Neue Klassen (vom Straßen-Chat 18.11. 
 
 Der Wuchs der Früchte wird auf der Spanne des Ackers (9) seines Flugtags gemessen – das Teilen ändert ihn nicht. `classify` ruft
 `feldfrucht.apply` auf dem Kern der Zelle auf; für die Karten von Teil a–c lief der Schritt auf den Zwischenständen
-(`python3 -I tools/bewuchs/daten/feldfrucht.py`, dasselbe Ergebnis wie ein Neubau). ⟨D_ZAHLEN⟩
+(`python3 -I tools/bewuchs/daten/feldfrucht.py`, dasselbe Ergebnis wie ein Neubau; 438 Zellen mit Acker, 395 PNGs neu, 6 min).
+
+Anteile am Ackerland (9 und 19–22; die Ackerränder 10 bleiben):
+
+| Gebiet | Ackerland | Wintergetreide | Winterraps | Mais, Rübe, Kartoffel | Kleegras | unklar (9) |
+|---|---|---|---|---|---|---|
+| Quadrat | 188 ha | 27 % | 27 % | 39 % | – | 6 % |
+| Strecken | 616 ha | 44 % | 8 % | 40 % | 0,1 % | 7 % |
+| Welt | 1003 ha | 50 % | 10 % | 30 % | 0,2 % | 11 % |
+| alle | 1806 ha | 45 % | 11 % | 34 % | 0,1 % | 9 % |
+
+Unsicher: „offener Boden“ im April umfasst auch Sommergetreide, Erbsen, Sonnenblumen, die noch nicht aufgegangen sind – Klasse 21 ist eher
+„im Frühjahr bestellt“ als nur Mais, Rübe, Kartoffel; Kleegras und Feldfutter sind im Aprilbild nicht von Getreide zu trennen und im Maibild
+nur, wo sie gemäht oder dünn sind (kaum gefunden); Felder, die über eine Zellgrenze reichen, entscheiden je Zelle (bei einheitlichen Feldern
+gleich). Größen nach Teil d: alle 895 Zellen 28,5 MB (Quadrat 2,55 MB), die größten 4 × 4 Zellen 1,17 MB, `index.json` 121 KB.
 
 ### Klassen (ids fest)
 
