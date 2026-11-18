@@ -1618,8 +1618,32 @@ export const GLKAP2 = (() => {
       return false;
     }
   };
+  // the same from the menu (Falko, 18.11.2026 21:58: chapter 2 in the normal version, without the extra address):
+  // Szenen → „Grenzland · Kapitel 2“ (?szenario=grenzland2) – the mode's fresh start, then chapter 2 at once
+  let kap2Menu = false;
   KERN.on('grenzland:start', () => {
-    if (kapitelUrl()) S.direkt = true;
+    if (kapitelUrl() || kap2Menu) S.direkt = true;
+  });
+  KERN.scenario('grenzland2', {
+    label: 'Grenzland · Kapitel 2',
+    order: 6.1,
+    ask: 'Grenzland ab Kapitel 2 – Kapitel 1 gilt als erledigt; eine eigene Welt für Erwachsene mit eigenem Spielstand',
+    run: () => {
+      // started by the link: the address without it, so that a reload goes on instead of starting afresh
+      try {
+        const u = new URL(location.href);
+        if (u.searchParams.get('szenario') === 'grenzland2') {
+          u.searchParams.delete('szenario');
+          history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+        }
+      } catch (e) {}
+      kap2Menu = true;
+      try {
+        return window.GRENZLAND.start();
+      } finally {
+        kap2Menu = false;
+      }
+    },
   });
   function direkt() {
     S.direkt = false;
