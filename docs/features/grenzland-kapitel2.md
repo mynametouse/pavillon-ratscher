@@ -129,8 +129,11 @@ Kolonnenweg (ihr Transporter fährt ihn ab), seine Nachricht, sobald wieder Netz
   orange Warnjacke.
 - **Handy:** im Grünen Band sollte `netz()` 0 Balken zeigen (Mission 1 sagt „Kein Netz“ als Gedanke); und „Aufträge“ bleibt gesperrt.
 - **Das Reden mit dem Partner** (`gl_partner_data.js`) kennt die Schritte von Kapitel 2 noch nicht.
-- **Mission 1** einschalten, sobald `zone` da ist: `GLK2DATA.KAP.vorab = false` (eine Zeile in `gl_kapitel2_data.js`); mit `GLZONE` (`ort`
-  für `parkplatz`, `museum`, `kolonnenweg_a`, `kolonnenweg_b`, `heide`, `bunker`; `weg()`, optional `lade(on)`) läuft sie dort.
+- **Mission 1** einschalten, sobald `zone` da ist: `GLK2DATA.KAP.vorab = false` (eine Zeile in `gl_kapitel2_data.js`). Sie nimmt von
+  `GLZONE` (Stand `feat/grenzland-zone` e9973fee3): `ort()` für `parkplatz`, `museum`, `kolonnenweg_a`, `kolonnenweg_b`, `heide`, `bunker`,
+  `weg()`, `da()`, `need('gl-k2', an)` von „Grünes Band“ bis zur Heimfahrt und `hin({ ort: 'parkplatz', mit: 'moped', fade: false })` für
+  „Hinfahren“ (die eigene Blende von Mission 1 liegt darüber). Solange `GLZONE.ort('bunker')` nichts liefert (Zone nicht geladen), gilt der
+  Ersatz westlich von Ratscher.
 
 ## Offen
 
