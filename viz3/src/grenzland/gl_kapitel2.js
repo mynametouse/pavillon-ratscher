@@ -40,7 +40,8 @@ import { GLMDATA, GLMLOGIK } from './gl_mission_data.js';
 import { GLKAMERA } from './gl_kamera.js';
 import { GLSCORE } from './gl_score.js';
 import { GLMISSION as MI } from './gl_mission.js';
-import { GLK2DATA, GLK2LOGIK } from './gl_kapitel2_data.js';
+import { GLK2DATA, GLK2LOGIK, GLKNLOGIK } from './gl_kapitel2_data.js';
+import { GLKNACKEN } from './gl_knacken.js';
 export const GLKAP2 = (() => {
   const D = GLK2DATA,
     L = GLK2LOGIK,
@@ -559,272 +560,155 @@ export const GLKAP2 = (() => {
     const q = strasseBei(s, 30, 60) || { p: [s[0] + 40, s[1]], hd: 0 };
     return (LKW = { k: s.join(), p: q.p, hd: q.hd });
   }
-  // ================================================================ mission 1 · Grünes Band (with the chapter's opening) ================================================================
-  MI.def({
-    id: 'k2m1',
-    kap: 2,
-    titelBei: 'aufbruch',
-    lohn: T.lohn1,
-    pause: 6,
-    gabe() {
-      if (!GL.has('k2fotos')) GL.add('k2fotos', 2);
-    },
-    abbruch() {
-      fotoAus();
-      zoneLaden(false);
-      V1.fahrt = false;
-    },
-    szene(i, A) {
-      // the barn: the clique and Gerhard in winter
-      if (i <= 1) {
-        const H = amHof(),
-          hut = { jule: 'strickblau', timo: 'schiebergrau', basti: 'basecap', gerhard: 'hut' };
-        for (const id of ['jule', 'timo', 'basti', 'gerhard'])
-          A.fig(id, id, H.P[id][0], H.P[id][1], H.hd(H.P[id]), {
-            karte: id === 'gerhard' ? undefined : 'clique',
-            hut: hut[id],
-            era: 'heute',
-          });
-        if (i === 1) {
-          const l = lkwPlatz();
-          A.auto('k2lkw', 'koffer', l.p[0], l.p[1], l.hd, { text: 'Spedition Krähwinkel', band: '#7a1f24' });
-        }
-        return;
-      }
-      if (i < 5) return;
-      const B = bp();
-      if (ersatz()) A.ding('k2bunker', () => ding(bunkerForm, B.b[0], B.b[1], B.vanHd));
-      if (i <= 8) {
-        A.auto('k2van', 'kasten', B.van[0], B.van[1], B.vanHd, { col: '#d9d9d2' });
-        for (const [key, cast, p, pk] of B.men)
-          A.fig(key, cast, p[0], p[1], Math.atan2(B.b[0] - p[0], B.b[1] - p[1]), {
-            karte: 'feind',
-            hut: key === 'w3' ? 'strick' : undefined,
-            ready: F => GLFIG.pose(F, pk),
-          });
-        if (i >= 7 && K1.fremder)
-          A.fig(
-            'fremder',
-            'fremder',
-            B.fremder[0],
-            B.fremder[1],
-            Math.atan2(B.b[0] - B.fremder[0], B.b[1] - B.fremder[1]),
-            {
-              hut: 'hut',
-            }
-          );
-      }
-    },
-    steps: [
-      {
-        id: 'scheune',
-        text: TX.k2m1.scheune,
-        ort: 'Feldscheune',
-        ziel: () => hof(),
-        // black: three months later, December, the barn at dusk in the snow; the chapter's card
-        an(S, why) {
-          const g = St.gen;
-          (async () => {
-            const n = await dunkel(K.blendeA, K.blendeB);
-            if (St.gen !== g) return void hell(n);
-            if (!imDezember() || why === 'start' || why === 'debug') dezember(16, 40);
-            wetter(true);
-            const H = amHof();
-            MI.hin(H.ich[0], H.ich[1], H.ichYaw);
-            const m = H.at(3.5, 6.5);
-            GLAUTO.mopedAt(m[0], m[1], Math.atan2(H.ux, H.uy));
-            await sleep(1200);
-            await hell(n);
-            if (St.gen !== g) return;
-            S.da = true;
-            try {
-              GLHUD.titel(K.titel, K.ueber, 5.5, K.unter);
-            } catch (e) {}
-            GLSCORE.stich('start');
-            GL.emit('kapitel', { kap: 2, st: 'beginnt' });
-          })();
-        },
-        tick(dt, S) {
-          if (!S.da) return false;
-          // (the talk waits a moment for the figures – it should be a scene with them)
-          if (!S.r && !MI.F('jule') && S.t < 9) return false;
-          return sag(S, 'k2auftakt');
-        },
-      },
-      {
-        id: 'spur',
-        text: TX.k2m1.spur,
-        ort: 'Feldweg',
-        ziel: () => lkwPlatz().p,
-        an(S) {
-          S.smsT = 2.5;
-          S.auf0 = GLHANDY.isOpen();
-        },
-        ev: {
-          'grenzland:handy': (d, S) => {
-            S.auf = true;
-          },
-        },
-        tick(dt, S) {
-          if (S.smsT > 0 && (S.smsT -= dt) <= 0) {
-            sms('unbekannt');
-            chat('lkw');
-          }
-          if (GLHANDY.isOpen()) S.auf = true;
-          // the lorry leaves once they talk about it – over the field track out of the square
-          if (S.r && !S.fort) {
-            S.fort = true;
-            try {
-              const c = MI.C('k2lkw'),
-                l = lkwPlatz(),
-                Z = GLAUTO.zufahrten().sort(
-                  (a, b) => hyp(a[0] - l.p[0], a[1] - l.p[1]) - hyp(b[0] - l.p[0], b[1] - l.p[1])
-                ),
-                line = Z[0] && GLAUTO.route(l.p, Z[0], { k: 1.2 });
-              if (c && line) {
-                GLAUTO.onLine(c, line, 0, 0);
-                S.fahrt = true;
-              }
-            } catch (e) {}
-          }
-          const c = MI.C('k2lkw');
-          if (c && S.fahrt) {
-            GLAUTO.drive(c, dt, { k: 1, acc: 1.6 });
-            if (c.ende || MI.fern([c.x, c.y]) > 320) MI.autoWeg('k2lkw');
-          }
-          const gelesen = S.smsT <= 0 && ((S.auf && !GLHANDY.isOpen()) || S.t > 30);
-          return (S.r || gelesen) && sag(S, 'k2spur');
-        },
-      },
-      {
-        id: 'nacht',
-        text: TX.k2m1.nacht,
-        ort: 'Garten',
-        ziel: () => O.garten.pos,
-        an() {
-          MI.autoWeg('k2lkw');
-        },
-        tick: (dt, S) => (S.n || (MI.zuFuss() && MI.fern(O.garten.pos) < 14)) && schlaf(S, T.morgenA, T.morgenB, 9, 40),
-        ab() {
-          chat('schnee');
-        },
-      },
-      {
-        id: 'aufbruch',
-        text: TX.k2m1.aufbruch,
-        ort: 'Grünes Band',
-        ziel: () => ort('parkplatz'),
-        an(S, why) {
+  // ================================================================ the chapter's opening (the first steps of the chapter's first mission) ================================================================
+  // the barn at dusk in December, the clique and Gerhard, the traitor's trace, the night – in the preview (K.vorab) before mission 2,
+  // later before mission 1
+  const AUFTAKT = [
+    {
+      id: 'scheune',
+      text: TX.k2m1.scheune,
+      ort: 'Feldscheune',
+      ziel: () => hof(),
+      // black: three months later, December, the barn at dusk in the snow; the chapter's card
+      an(S, why) {
+        const g = St.gen;
+        (async () => {
+          const n = await dunkel(K.blendeA, K.blendeB);
+          if (St.gen !== g) return void hell(n);
+          if (!imDezember() || why === 'start' || why === 'debug') dezember(16, 40);
           wetter(true);
-          zoneLaden(true);
-          sms('jule1');
-          // the moped in the garden (unless one sits on it or it stands near); full
-          const m = O.moped,
-            v = GLAUTO.moped;
-          if (!(VEH.cur && VEH.cur.id === 'gl-moped') && !(v && v.g.visible && MI.fern([v.st.x, v.st.y]) < 30))
-            GLAUTO.mopedAt(m.pos[0], m.pos[1], ((m.az || 0) * Math.PI) / 180);
-          if (GL.tank < 3) {
-            GL.tank = 5;
-            GL.save();
-            if (why !== 'reload') MI.denk(T.tank, 3500);
-          }
-          MI.extra(T.hinfahren, () => fahrt('hin'));
-          if (why === 'weiter') MI.rede('k2morgen');
-        },
-        tick: () => MI.fern(ort('parkplatz')) < 45,
+          const H = amHof();
+          MI.hin(H.ich[0], H.ich[1], H.ichYaw);
+          const m = H.at(3.5, 6.5);
+          GLAUTO.mopedAt(m[0], m[1], Math.atan2(H.ux, H.uy));
+          await sleep(1200);
+          await hell(n);
+          if (St.gen !== g) return;
+          S.da = true;
+          try {
+            GLHUD.titel(K.titel, K.vorab ? K.ueberVorab : K.ueber, 5.5, K.unter);
+          } catch (e) {}
+          GLSCORE.stich('start');
+          GL.emit('kapitel', { kap: 2, st: 'beginnt' });
+        })();
       },
-      {
-        id: 'museum',
-        text: TX.k2m1.museum,
-        ort: 'Grenzturm-Museum',
-        ziel: () => ort('museum'),
-        tick(dt, S) {
-          const w = MI.wo();
-          return (S.r || (w.v < 1.5 && MI.fern(ort('parkplatz')) < 60) || S.t > 25) && sag(S, 'k2museum');
-        },
+      tick(dt, S) {
+        if (!S.da) return false;
+        // (the talk waits a moment for the figures – it should be a scene with them)
+        if (!S.r && !MI.F('jule') && S.t < 9) return false;
+        return sag(S, 'k2auftakt');
       },
-      {
-        id: 'kolonnenweg',
-        text: TX.k2m1.kolonnenweg,
-        ort: 'Görsdorfer Heide',
-        ziel: () => ort('heide'),
-        an() {
-          MI.denk(T.funkloch, 3500);
-        },
-        tick(dt, S) {
-          const w = MI.wo();
-          if (!S.platten && L.abstand(weg(), w.x, w.y).d < 6 && !MI.redet()) {
-            S.platten = true;
-            MI.rede('k2platten');
-          }
-          return MI.fern(bp().b) < 115;
+    },
+    {
+      id: 'spur',
+      text: TX.k2m1.spur,
+      ort: 'Feldweg',
+      ziel: () => lkwPlatz().p,
+      an(S) {
+        S.smsT = 2.5;
+        S.auf0 = GLHANDY.isOpen();
+      },
+      ev: {
+        'grenzland:handy': (d, S) => {
+          S.auf = true;
         },
       },
-      {
-        id: 'bunker',
-        text: TX.k2m1.bunker,
-        ort: 'Bunker',
-        nochmal: [T.geschnappt, T.geschnapptSub],
-        ziel: () => bp().b,
-        // (also where one starts again: at the edge of the heath, the men calm at their work)
-        an(S, why) {
-          K1.W = [];
-          K1.job = 'arbeit';
-          K1.n = 0;
-          K1.ft = 0;
-          K1.fremder = false;
-          K1.fremderGesehen = false;
-          const B = bp();
-          for (const [key, , p, pk] of B.men) {
-            const f = MI.F(key);
-            if (f) {
-              GLFIG.place(f, p[0], p[1], Math.atan2(B.b[0] - p[0], B.b[1] - p[1]));
-              GLFIG.pose(f, pk);
+      tick(dt, S) {
+        if (S.smsT > 0 && (S.smsT -= dt) <= 0) {
+          sms('unbekannt');
+          chat('lkw');
+        }
+        if (GLHANDY.isOpen()) S.auf = true;
+        // the lorry leaves once they talk about it – over the field track out of the square
+        if (S.r && !S.fort) {
+          S.fort = true;
+          try {
+            const c = MI.C('k2lkw'),
+              l = lkwPlatz(),
+              Z = GLAUTO.zufahrten().sort(
+                (a, b) => hyp(a[0] - l.p[0], a[1] - l.p[1]) - hyp(b[0] - l.p[0], b[1] - l.p[1])
+              ),
+              line = Z[0] && GLAUTO.route(l.p, Z[0], { k: 1.2 });
+            if (c && line) {
+              GLAUTO.onLine(c, line, 0, 0);
+              S.fahrt = true;
             }
-          }
-          if (why === 'nochmal') {
-            const m = L.entlang(weg(), Math.max(0, B.s - 125));
-            if (VEH.cur) VEH.exit();
-            GLAUTO.mopedAt(m.x, m.y, m.hd);
-            MI.hin(B.vorn[0], B.vorn[1], B.vornHd);
-          }
-        },
-        tick(dt, S) {
-          maenner(dt, S);
-          return MI.zuFuss() && MI.fern(bp().b) < 55 && K1.job !== 'jagt';
-        },
-        ab() {
-          MI.rede('k2bunkerDa');
-        },
+          } catch (e) {}
+        }
+        const c = MI.C('k2lkw');
+        if (c && S.fahrt) {
+          GLAUTO.drive(c, dt, { k: 1, acc: 1.6 });
+          if (c.ende || MI.fern([c.x, c.y]) > 320) MI.autoWeg('k2lkw');
+        }
+        const gelesen = S.smsT <= 0 && ((S.auf && !GLHANDY.isOpen()) || S.t > 30);
+        return (S.r || gelesen) && sag(S, 'k2spur');
       },
-      {
-        id: 'fotos',
-        cp: 'bunker',
-        text: () => TX.k2m1.fotos(K1.n),
-        ort: 'Bunker',
-        nochmal: [T.geschnappt, T.geschnapptSub],
-        ziel: () => bp().b,
-        an() {
-          K1.ft = 0;
-          fotoAn();
-        },
-        aus() {
-          fotoAus();
-        },
-        ev: {
-          'grenzland:foto': d => {
-            if (d.von !== 'mission' && d.n > K1.n) K1.n = Math.min(2, d.n);
-          },
-        },
-        tick(dt, S) {
-          if (K1.ft > 0) K1.ft -= dt;
-          maenner(dt, S);
-          GLHUD.hint('Fotos: ' + K1.n + ' von 2');
-          // the stranger at the edge of the heath, from the first photo on (or when one comes close)
-          const B = bp();
-          if (!K1.fremder && (K1.n >= 1 || MI.fern(B.b) < 30)) {
-            K1.fremder = true;
-            MI.A.fig(
+    },
+    {
+      id: 'nacht',
+      text: TX.k2m1.nacht,
+      ort: 'Garten',
+      ziel: () => O.garten.pos,
+      an() {
+        MI.autoWeg('k2lkw');
+      },
+      tick: (dt, S) => (S.n || (MI.zuFuss() && MI.fern(O.garten.pos) < 14)) && schlaf(S, T.morgenA, T.morgenB, 9, 40),
+      ab() {
+        chat('schnee');
+      },
+    },
+  ];
+  function auftaktSzene(id, A) {
+    if (id !== 'scheune' && id !== 'spur') return false;
+    const H = amHof(),
+      hut = { jule: 'strickblau', timo: 'schiebergrau', basti: 'basecap', gerhard: 'hut' };
+    for (const k of ['jule', 'timo', 'basti', 'gerhard'])
+      A.fig(k, k, H.P[k][0], H.P[k][1], H.hd(H.P[k]), {
+        karte: k === 'gerhard' ? undefined : 'clique',
+        hut: hut[k],
+        era: 'heute',
+      });
+    if (id === 'spur') {
+      const l = lkwPlatz();
+      A.auto('k2lkw', 'koffer', l.p[0], l.p[1], l.hd, { text: 'Spedition Krähwinkel', band: '#7a1f24' });
+    }
+    return true;
+  }
+  // ================================================================ mission 1 · Grünes Band (with the chapter's opening) ================================================================
+  // (the preview of 18.11.2026 – K.vorab – has the zone's mission not yet: the opening goes before mission 2 then)
+  if (!K.vorab)
+    MI.def({
+      id: 'k2m1',
+      kap: 2,
+      titelBei: 'aufbruch',
+      lohn: T.lohn1,
+      pause: 6,
+      gabe() {
+        if (!GL.has('k2fotos')) GL.add('k2fotos', 2);
+      },
+      abbruch() {
+        fotoAus();
+        zoneLaden(false);
+        V1.fahrt = false;
+      },
+      szene(i, A) {
+        // the barn: the clique and Gerhard in winter
+        const sid = this.steps[i].id;
+        if (auftaktSzene(sid, A)) return;
+        if (!['kolonnenweg', 'bunker', 'fotos', 'rueckzug', 'heim'].includes(sid)) return;
+        i = { kolonnenweg: 5, bunker: 6, fotos: 7, rueckzug: 8, heim: 9 }[sid];
+        const B = bp();
+        if (ersatz()) A.ding('k2bunker', () => ding(bunkerForm, B.b[0], B.b[1], B.vanHd));
+        if (i <= 8) {
+          A.auto('k2van', 'kasten', B.van[0], B.van[1], B.vanHd, { col: '#d9d9d2' });
+          for (const [key, cast, p, pk] of B.men)
+            A.fig(key, cast, p[0], p[1], Math.atan2(B.b[0] - p[0], B.b[1] - p[1]), {
+              karte: 'feind',
+              hut: key === 'w3' ? 'strick' : undefined,
+              ready: F => GLFIG.pose(F, pk),
+            });
+          if (i >= 7 && K1.fremder)
+            A.fig(
               'fremder',
               'fremder',
               B.fremder[0],
@@ -834,109 +718,690 @@ export const GLKAP2 = (() => {
                 hut: 'hut',
               }
             );
-          }
-          const f = MI.F('fremder');
-          if (
-            f &&
-            !K1.fremderGesehen &&
-            MI.fern([f.x, f.y]) < L.FREMDER_R &&
-            GLFAHNDUNG.los(P.x, P.y, f.x, f.y) &&
-            !MI.redet()
-          ) {
-            K1.fremderGesehen = true;
-            MI.rede('k2fremderDa');
-          }
-          return K1.n >= 2;
+        }
+      },
+      steps: [
+        ...AUFTAKT,
+        {
+          id: 'aufbruch',
+          text: TX.k2m1.aufbruch,
+          ort: 'Grünes Band',
+          ziel: () => ort('parkplatz'),
+          an(S, why) {
+            wetter(true);
+            zoneLaden(true);
+            sms('jule1');
+            // the moped in the garden (unless one sits on it or it stands near); full
+            const m = O.moped,
+              v = GLAUTO.moped;
+            if (!(VEH.cur && VEH.cur.id === 'gl-moped') && !(v && v.g.visible && MI.fern([v.st.x, v.st.y]) < 30))
+              GLAUTO.mopedAt(m.pos[0], m.pos[1], ((m.az || 0) * Math.PI) / 180);
+            if (GL.tank < 3) {
+              GL.tank = 5;
+              GL.save();
+              if (why !== 'reload') MI.denk(T.tank, 3500);
+            }
+            MI.extra(T.hinfahren, () => fahrt('hin'));
+            if (why === 'weiter') MI.rede('k2morgen');
+          },
+          tick: () => MI.fern(ort('parkplatz')) < 45,
         },
+        {
+          id: 'museum',
+          text: TX.k2m1.museum,
+          ort: 'Grenzturm-Museum',
+          ziel: () => ort('museum'),
+          tick(dt, S) {
+            const w = MI.wo();
+            return (S.r || (w.v < 1.5 && MI.fern(ort('parkplatz')) < 60) || S.t > 25) && sag(S, 'k2museum');
+          },
+        },
+        {
+          id: 'kolonnenweg',
+          text: TX.k2m1.kolonnenweg,
+          ort: 'Görsdorfer Heide',
+          ziel: () => ort('heide'),
+          an() {
+            MI.denk(T.funkloch, 3500);
+          },
+          tick(dt, S) {
+            const w = MI.wo();
+            if (!S.platten && L.abstand(weg(), w.x, w.y).d < 6 && !MI.redet()) {
+              S.platten = true;
+              MI.rede('k2platten');
+            }
+            return MI.fern(bp().b) < 115;
+          },
+        },
+        {
+          id: 'bunker',
+          text: TX.k2m1.bunker,
+          ort: 'Bunker',
+          nochmal: [T.geschnappt, T.geschnapptSub],
+          ziel: () => bp().b,
+          // (also where one starts again: at the edge of the heath, the men calm at their work)
+          an(S, why) {
+            K1.W = [];
+            K1.job = 'arbeit';
+            K1.n = 0;
+            K1.ft = 0;
+            K1.fremder = false;
+            K1.fremderGesehen = false;
+            const B = bp();
+            for (const [key, , p, pk] of B.men) {
+              const f = MI.F(key);
+              if (f) {
+                GLFIG.place(f, p[0], p[1], Math.atan2(B.b[0] - p[0], B.b[1] - p[1]));
+                GLFIG.pose(f, pk);
+              }
+            }
+            if (why === 'nochmal') {
+              const m = L.entlang(weg(), Math.max(0, B.s - 125));
+              if (VEH.cur) VEH.exit();
+              GLAUTO.mopedAt(m.x, m.y, m.hd);
+              MI.hin(B.vorn[0], B.vorn[1], B.vornHd);
+            }
+          },
+          tick(dt, S) {
+            maenner(dt, S);
+            return MI.zuFuss() && MI.fern(bp().b) < 55 && K1.job !== 'jagt';
+          },
+          ab() {
+            MI.rede('k2bunkerDa');
+          },
+        },
+        {
+          id: 'fotos',
+          cp: 'bunker',
+          text: () => TX.k2m1.fotos(K1.n),
+          ort: 'Bunker',
+          nochmal: [T.geschnappt, T.geschnapptSub],
+          ziel: () => bp().b,
+          an() {
+            K1.ft = 0;
+            fotoAn();
+          },
+          aus() {
+            fotoAus();
+          },
+          ev: {
+            'grenzland:foto': d => {
+              if (d.von !== 'mission' && d.n > K1.n) K1.n = Math.min(2, d.n);
+            },
+          },
+          tick(dt, S) {
+            if (K1.ft > 0) K1.ft -= dt;
+            maenner(dt, S);
+            GLHUD.hint('Fotos: ' + K1.n + ' von 2');
+            // the stranger at the edge of the heath, from the first photo on (or when one comes close)
+            const B = bp();
+            if (!K1.fremder && (K1.n >= 1 || MI.fern(B.b) < 30)) {
+              K1.fremder = true;
+              MI.A.fig(
+                'fremder',
+                'fremder',
+                B.fremder[0],
+                B.fremder[1],
+                Math.atan2(B.b[0] - B.fremder[0], B.b[1] - B.fremder[1]),
+                {
+                  hut: 'hut',
+                }
+              );
+            }
+            const f = MI.F('fremder');
+            if (
+              f &&
+              !K1.fremderGesehen &&
+              MI.fern([f.x, f.y]) < L.FREMDER_R &&
+              GLFAHNDUNG.los(P.x, P.y, f.x, f.y) &&
+              !MI.redet()
+            ) {
+              K1.fremderGesehen = true;
+              MI.rede('k2fremderDa');
+            }
+            return K1.n >= 2;
+          },
+          ab() {
+            K1.n = 2;
+            if (!GL.has('k2fotos')) GL.add('k2fotos', 2);
+          },
+        },
+        {
+          id: 'rueckzug',
+          text: TX.k2m1.rueckzug,
+          ort: 'Simson',
+          nochmal: [T.gesehenWeg, T.gesehenWegSub],
+          ziel: () => {
+            const v = GLAUTO.moped;
+            return v && v.g.visible ? [v.st.x, v.st.y] : ort('parkplatz');
+          },
+          // the men pack up and get into the van, which drives the Kolonnenweg out; the stranger goes
+          an(S, why) {
+            const B = bp(),
+              c = MI.C('k2van');
+            if (why === 'nochmal') {
+              MI.hin(B.vorn[0] + (B.b[0] - B.vorn[0]) * 0.55, B.vorn[1] + (B.b[1] - B.vorn[1]) * 0.55, B.vornHd);
+              if (c) GLAUTO.park(c, B.van[0], B.van[1], B.vanHd);
+            }
+            V1.s = B.s;
+            V1.v = 0;
+            V1.fahrt = false;
+            S.einT = 4.5;
+            if (!MI.redet()) MI.rede('k2abzug');
+            for (const [key] of B.men) {
+              const f = MI.F(key);
+              if (f) {
+                GLFIG.pose(f, null);
+                GLFIG.go(f, [B.van[0], B.van[1]], 1.6);
+              }
+            }
+            const f = MI.F('fremder');
+            if (f)
+              GLFIG.go(
+                f,
+                [B.fremder[0] + (B.fremder[0] - B.b[0]) * 0.8, B.fremder[1] + (B.fremder[1] - B.b[1]) * 0.8],
+                1.5,
+                () => MI.figWeg('fremder')
+              );
+          },
+          aus() {
+            V1.fahrt = false;
+          },
+          tick(dt, S) {
+            const B = bp();
+            if (S.einT > 0 && (S.einT -= dt) <= 0) {
+              for (const [key] of B.men) MI.figWeg(key);
+              V1.fahrt = true;
+            }
+            vanTick(dt);
+            if (vanSieht() && !S.aus) {
+              S.aus = true;
+              MI.fehl(T.gesehenWeg, T.gesehenWegSub);
+              return false;
+            }
+            const c = MI.C('k2van'),
+              w = MI.wo(),
+              fern = MI.fern(B.b) > 280,
+              frei = !c || hyp(c.x - w.x, c.y - w.y) > 100;
+            return fern && frei;
+          },
+          ab() {
+            MI.autoWeg('k2van');
+            V1.fahrt = false;
+          },
+        },
+        {
+          id: 'heim',
+          text: TX.k2m1.heim,
+          ort: 'Garten',
+          ziel: () => O.garten.pos,
+          // a signal again: the stranger's message
+          an(S, why) {
+            zoneLaden(false);
+            if (sms('fremder')) MI.denk(T.netz, 2600);
+            if (why !== 'reload') S.redeT = 1.2;
+            MI.extra(T.heimfahren, () => fahrt('heim'));
+          },
+          tick(dt, S) {
+            if (S.redeT > 0 && (S.redeT -= dt) <= 0 && !MI.redet()) MI.rede('k2fremderSms');
+            const w = MI.wo();
+            return (S.r || (MI.fern(O.garten.pos) < 22 && w.v < 3 && !MI.redet())) && sag(S, 'k2heim1');
+          },
+        },
+      ],
+    });
+  // ================================================================ mission 2 · Ein Auto für die Nacht ================================================================
+  // Fiedler's Wartburg at the edge of the old town of Schleusingen (by the Zentralhaltestelle), Fiedler at the Christmas market (or, when it
+  // is shut, in the inn at the Markt); crack it (grenzland/gl_knacken.js), he sees it go and calls the police; to the field barn; a new
+  // paint, the plates of Basti's old Golf, the haulier's work jacket. The market's crowd is cover for whoever is on foot in it.
+  const A2 = D.AUTO;
+  const markt = () => {
+    try {
+      const a = window.GLFESTE && window.GLFESTE.aktiv && window.GLFESTE.aktiv();
+      if (a && a.id === 'weihnachtsmarkt') return { p: [a.x, a.y], r: a.r || 34, offen: true };
+    } catch (e) {}
+    return { p: [-1084.7, 1241.9], r: 34, offen: false };
+  };
+  // a kerb near the bus station: a street's edge (KERN.surface: inside a road, a metre from its edge), along it – else free ground beside it
+  let PARK = null;
+  function parkplatz() {
+    const z = O.zh.pos;
+    if (PARK && PARK.k === z.join()) return PARK;
+    let best = null;
+    for (let r = 8; r <= 46 && !best; r += 2)
+      for (let a = 0; a < 360 && !best; a += 10) {
+        const q = [z[0] + Math.sin((a * Math.PI) / 180) * r, z[1] + Math.cos((a * Math.PI) / 180) * r];
+        let s = null;
+        try {
+          s = KERN.surface(q[0], q[1]);
+        } catch (e) {}
+        if (s && s.kind >= 3 && s.kind <= 5 && s.e > 0.85 && s.e < 1.5) best = { p: q, hd: richtung(q[0], q[1]) };
+      }
+    let fb = false;
+    if (!best) {
+      // (the town's streets are not there yet: free ground beside the bus station – asked again once the town stands)
+      fb = true;
+      const q = [z[0] + 11, z[1] - 7];
+      try {
+        KERN.pushOut(q, 1.6);
+      } catch (e) {}
+      best = { p: q, hd: (O.zh.yaw || 0) * (Math.PI / 180) };
+    }
+    const f = [Math.sin(best.hd), Math.cos(best.hd)];
+    return (PARK = {
+      k: z.join(),
+      fb,
+      p: best.p,
+      hd: best.hd,
+      hinter: [best.p[0] - f[0] * 6.4, best.p[1] - f[1] * 6.4],
+    });
+  }
+  function autosStellen(neu) {
+    const P0 = parkplatz(),
+      c = GLKNACKEN.auto(A2.id);
+    if (neu || !c || !c.gestohlen)
+      GLKNACKEN.stelle(A2.id, {
+        typ: A2.typ,
+        alt: true,
+        x: P0.p[0],
+        y: P0.p[1],
+        hd: P0.hd,
+        farbe: A2.farbe,
+        kz: A2.kz,
+        neu: true,
+      });
+    GLKNACKEN.stelle(A2.neu.id, {
+      typ: A2.neu.typ,
+      alt: false,
+      x: P0.hinter[0],
+      y: P0.hinter[1],
+      hd: P0.hd,
+      farbe: A2.neu.farbe,
+      kz: A2.neu.kz,
+      neu: true,
+    });
+  }
+  const stadtDa = () => {
+    try {
+      const z = KERN.zones().find(q => q.id === 'schleusingen');
+      return !z || z.state === 'ready';
+    } catch (e) {
+      return true;
+    }
+  };
+  const wartburg = () => GLKNACKEN.fz(A2.id);
+  const imWagen = () => GLKNACKEN.drin(A2.id);
+  // where Fiedler stands at the market: by the mulled wine, facing the stalls
+  const fiedlerPlatz = () => {
+    const m = markt();
+    return [m.p[0] + 7, m.p[1] - 5];
+  };
+  // the market's crowd hides whoever is on foot in it (the wanted level's hiding places)
+  const DECK = { e: null };
+  function deckung(on) {
+    const ex = GLFAHNDUNG.extra;
+    if (!ex) return;
+    if (on && !DECK.e) {
+      const m = markt();
+      DECK.e = { x: m.p[0], y: m.p[1], r: m.r * 0.8 };
+      ex.push(DECK.e);
+    } else if (!on && DECK.e) {
+      const i = ex.indexOf(DECK.e);
+      if (i >= 0) ex.splice(i, 1);
+      DECK.e = null;
+    }
+  }
+  function marktDeckung() {
+    const m = markt();
+    deckung(m.offen && MI.zuFuss() && MI.fern(m.p) < m.r * 0.8);
+  }
+  const clique2 = A => {
+    const H = amHof(),
+      hut = { jule: 'strickblau', timo: 'schiebergrau', basti: 'basecap' };
+    for (const k of ['jule', 'timo', 'basti'])
+      A.fig(k, k, H.P[k][0], H.P[k][1], H.hd(H.P[k]), { karte: 'clique', hut: hut[k], era: 'heute' });
+  };
+  const nahJule = (S, r = 6.5) => {
+    const f = MI.F('jule'),
+      w = MI.wo();
+    return w.v < 2 && MI.zuFuss() && (f ? hyp(f.x - w.x, f.y - w.y) < r : MI.fern(hof()) < 10 || S.t > 8);
+  };
+  const unterDach = () => {
+    const v = wartburg();
+    if (!v || !v.g.visible) return false;
+    return (
+      (GLORTE.inScheune && GLORTE.inScheune(v.st.x, v.st.y)) || hyp(v.st.x - scheune()[0], v.st.y - scheune()[1]) < 8
+    );
+  };
+  const amWagen = (r = 3.2) => {
+    const v = wartburg();
+    return !!v && !VEH.cur && hyp(P.x - v.st.x, P.y - v.st.y) < r;
+  };
+  function m2Ende() {
+    KERN.unact('gl:k2lack');
+    KERN.unact('gl:k2schild');
+    KERN.unact('gl:k2jacke');
+    try {
+      CLOCK.unfocus('gl-k2');
+    } catch (e) {}
+    deckung(false);
+    if (window.GLALLTAG) window.GLALLTAG.mitMission = false;
+  }
+  const GLKNLOGIK_LACK = () => GLKNLOGIK.LACK;
+  MI.def({
+    id: 'k2m2',
+    kap: 2,
+    titelBei: 'treff',
+    lohn: T.lohn2,
+    pause: 6,
+    gabe() {
+      if (!GL.has('arbeitsjacke')) GL.add('arbeitsjacke');
+    },
+    abbruch() {
+      m2Ende();
+      const c = GLKNACKEN.auto(A2.id);
+      if (!c || !c.gestohlen) GLKNACKEN.weg(A2.id);
+      GLKNACKEN.weg(A2.neu.id);
+    },
+    szene(i, A) {
+      const sid = this.steps[i].id;
+      if (auftaktSzene(sid, A)) return;
+      if (['treff', 'lackieren', 'schilder', 'jacke', 'ende'].includes(sid)) clique2(A);
+      if ((sid === 'knacken' || sid === 'weg') && markt().offen) {
+        const f = fiedlerPlatz(),
+          m = markt().p;
+        A.fig('fiedler', 'fiedler', f[0], f[1], Math.atan2(m[0] - f[0], m[1] - f[1]), {
+          sees: true,
+          knows: false,
+          r: 30,
+        });
+      }
+    },
+    steps: [
+      ...(K.vorab ? AUFTAKT : []),
+      {
+        id: 'treff',
+        text: TX.k2m2.scheune,
+        ort: 'Feldscheune',
+        ziel: () => {
+          const f = MI.F('jule');
+          return f ? [f.x, f.y] : hof();
+        },
+        an(S, why) {
+          wetter(true);
+          if (!imDezember()) dezember(10, 20);
+          if (why !== 'reload') sms('jule2');
+        },
+        tick: (dt, S) => (S.r || nahJule(S)) && sag(S, 'k2auto'),
         ab() {
-          K1.n = 2;
-          if (!GL.has('k2fotos')) GL.add('k2fotos', 2);
+          if (!GL.has('draht')) GL.add('draht');
+          if (!GL.has('arbeitsjacke')) GL.add('arbeitsjacke');
+          MI.denk('Draht und Arbeitsjacke sind dabei.', 2600);
         },
       },
       {
-        id: 'rueckzug',
-        text: TX.k2m1.rueckzug,
-        ort: 'Simson',
-        nochmal: [T.gesehenWeg, T.gesehenWegSub],
-        ziel: () => {
-          const v = GLAUTO.moped;
-          return v && v.g.visible ? [v.st.x, v.st.y] : ort('parkplatz');
-        },
-        // the men pack up and get into the van, which drives the Kolonnenweg out; the stranger goes
+        id: 'abend',
+        text: TX.k2m2.abend,
+        ort: 'Schleusingen',
+        nochmal: [T.zuSpaet, T.zuSpaetSub],
+        ziel: () => parkplatz().p,
         an(S, why) {
-          const B = bp(),
-            c = MI.C('k2van');
-          if (why === 'nochmal') {
-            MI.hin(B.vorn[0] + (B.b[0] - B.vorn[0]) * 0.55, B.vorn[1] + (B.b[1] - B.vorn[1]) * 0.55, B.vornHd);
-            if (c) GLAUTO.park(c, B.van[0], B.van[1], B.vanHd);
+          if (why === 'nochmal') CLOCK.t -= 60;
+          autosStellen(why !== 'reload');
+          if (window.GLALLTAG) window.GLALLTAG.mitMission = true;
+          MI.extra(T.abend, () => {
+            const m = GLMLOGIK.tag(CLOCK.t);
+            if (m < 17 * 60 + 30 && !CLOCK.warp) CLOCK.wait(GLMLOGIK.bis(CLOCK.t, 17, 50), 'Warten');
+          });
+        },
+        tick(dt, S) {
+          // the town stands now: the kerb is found again (while the car is still shut)
+          if (PARK && PARK.fb && stadtDa() && !GLKNACKEN.offen(A2.id)) {
+            PARK = null;
+            autosStellen(true);
           }
-          V1.s = B.s;
-          V1.v = 0;
-          V1.fahrt = false;
-          S.einT = 4.5;
-          if (!MI.redet()) MI.rede('k2abzug');
-          for (const [key] of B.men) {
-            const f = MI.F(key);
-            if (f) {
-              GLFIG.pose(f, null);
-              GLFIG.go(f, [B.van[0], B.van[1]], 1.6);
+          const m = GLMLOGIK.tag(CLOCK.t),
+            abends = m >= 17 * 60 + 30 || m < 60;
+          if (MI.fern(parkplatz().p) > 75) return false;
+          if (abends) return true;
+          if (!S.hell) {
+            S.hell = true;
+            MI.denk(T.nochHell, 3500);
+          }
+          return false;
+        },
+      },
+      {
+        id: 'knacken',
+        cp: 'abend',
+        text: () => TX.k2m2.knacken(markt().offen ? 'markt' : 'gast'),
+        ort: 'Wartburg',
+        nochmal: [T.zuSpaet, T.zuSpaetSub],
+        ziel: () => {
+          const p = GLKNACKEN.tuer(A2.id);
+          return p ? [p[0], p[1]] : parkplatz().p;
+        },
+        an(S, why) {
+          try {
+            CLOCK.focus('gl-k2');
+          } catch (e) {}
+          // Fiedler stays at the market a while (real time): then he comes back for his car
+          S.bis = 150;
+          if (why !== 'reload') MI.rede(markt().offen ? 'k2markt' : 'k2gaststaette');
+        },
+        ev: {
+          'grenzland:knacken': (d, S) => {
+            if (d.id === A2.neu.id && d.st === 'alarm' && !MI.redet()) MI.rede('k2alarm');
+          },
+        },
+        tick(dt, S) {
+          marktDeckung();
+          if (imWagen()) return true;
+          const f = MI.F('fiedler'),
+            P0 = parkplatz();
+          if ((S.bis -= dt) <= 0) {
+            if (!S.kommt) {
+              S.kommt = true;
+              MI.denk(T.fiedlerKommt, 2600);
+              if (f) GLFIG.go(f, [P0.p[0] + 2, P0.p[1] + 2], 1.3);
+            }
+            // he is at his car (or, from the inn, after a minute): too late
+            if ((f && hyp(f.x - P0.p[0], f.y - P0.p[1]) < 6) || (!f && S.bis < -60)) {
+              if (!S.aus) {
+                S.aus = true;
+                MI.fehl(T.zuSpaet, T.zuSpaetSub);
+              }
             }
           }
-          const f = MI.F('fremder');
-          if (f)
-            GLFIG.go(
-              f,
-              [B.fremder[0] + (B.fremder[0] - B.b[0]) * 0.8, B.fremder[1] + (B.fremder[1] - B.b[1]) * 0.8],
-              1.5,
-              () => MI.figWeg('fremder')
-            );
-        },
-        aus() {
-          V1.fahrt = false;
-        },
-        tick(dt, S) {
-          const B = bp();
-          if (S.einT > 0 && (S.einT -= dt) <= 0) {
-            for (const [key] of B.men) MI.figWeg(key);
-            V1.fahrt = true;
-          }
-          vanTick(dt);
-          if (vanSieht() && !S.aus) {
-            S.aus = true;
-            MI.fehl(T.gesehenWeg, T.gesehenWegSub);
-            return false;
-          }
-          const c = MI.C('k2van'),
-            w = MI.wo(),
-            fern = MI.fern(B.b) > 280,
-            frei = !c || hyp(c.x - w.x, c.y - w.y) > 100;
-          return fern && frei;
-        },
-        ab() {
-          MI.autoWeg('k2van');
-          V1.fahrt = false;
+          return false;
         },
       },
       {
-        id: 'heim',
-        text: TX.k2m1.heim,
-        ort: 'Garten',
-        ziel: () => O.garten.pos,
-        // a signal again: the stranger's message
+        id: 'weg',
+        text: TX.k2m2.weg,
+        ort: 'Feldscheune',
+        ziel: () => scheune(),
+        // Fiedler sees his car go – he shouts and calls the police: the wanted level knows the car
         an(S, why) {
-          zoneLaden(false);
-          if (sms('fremder')) MI.denk(T.netz, 2600);
-          if (why !== 'reload') S.redeT = 1.2;
-          MI.extra(T.heimfahren, () => fahrt('heim'));
+          try {
+            CLOCK.unfocus('gl-k2');
+          } catch (e) {}
+          S.meldT = why === 'reload' ? -1 : 2.6;
+          const f = MI.F('fiedler'),
+            P0 = parkplatz();
+          if (f && why !== 'reload') {
+            const d = hyp(f.x - P0.p[0], f.y - P0.p[1]);
+            if (d > 45)
+              GLFIG.place(f, P0.p[0] + ((f.x - P0.p[0]) / d) * 40, P0.p[1] + ((f.y - P0.p[1]) / d) * 40, f.hd);
+            GLFIG.go(f, [P0.p[0] + 1.5, P0.p[1] + 1.5], 2.0);
+          }
         },
         tick(dt, S) {
-          if (S.redeT > 0 && (S.redeT -= dt) <= 0 && !MI.redet()) MI.rede('k2fremderSms');
-          const w = MI.wo();
-          return (S.r || (MI.fern(O.garten.pos) < 22 && w.v < 3 && !MI.redet())) && sag(S, 'k2heim1');
+          marktDeckung();
+          if (S.meldT > 0 && (S.meldT -= dt) <= 0) {
+            const f = MI.F('fiedler');
+            if (f) {
+              GLFIG.stop(f);
+              if (GLFIG.geste) GLFIG.geste(f, 'telefon', { sec: 6 });
+            }
+            MI.rede('k2besitzer');
+            GLKNACKEN.melde(A2.id, D.AUTO.besitzer);
+          }
+          const v = wartburg();
+          return !!v && unterDach() && hyp(v.st.u, v.st.v) < 1;
+        },
+        ab() {
+          deckung(false);
+          chat('wartburg');
+          try {
+            GLHANDY.feed(D.FEED.wartburg[0], D.FEED.wartburg[1], '');
+          } catch (e) {}
+        },
+      },
+      {
+        id: 'lackieren',
+        text: TX.k2m2.lackieren,
+        ort: 'Feldscheune',
+        ziel: () => {
+          const v = wartburg();
+          return v ? [v.st.x, v.st.y] : scheune();
+        },
+        an(S) {
+          if (window.GLALLTAG) window.GLALLTAG.mitMission = false;
+          const g = St.gen;
+          KERN.act({
+            id: 'gl:k2lack',
+            label: () => (GL.on && amWagen() && !S.fertig && !S.wahl ? T.lack : null),
+            pos: () => [P.x, P.y, P.feet],
+            r: 2,
+            prio: 3,
+            run() {
+              if (stars() > 0) return void MI.denk(T.lackSterne, 2600);
+              if (!unterDach()) return void MI.denk(T.lackDach, 2600);
+              S.wahl = true;
+              GLHUD.wahl(
+                T.lackTitel,
+                T.lackText,
+                GLKNLOGIK_LACK().map(k => ({ t: GLKNACKEN.FARBEN[k].name, s: '' }))
+              ).then(async i => {
+                S.wahl = false;
+                if (St.gen !== g || i < 0) return;
+                const farbe = GLKNLOGIK_LACK()[i];
+                const n = await dunkel(T.lackA, T.lackB);
+                if (St.gen !== g) return void hell(n);
+                CLOCK.t += 180;
+                try {
+                  if (DN && DN.active) DN.update(true);
+                } catch (e) {}
+                GLKNACKEN.lackieren(A2.id, farbe);
+                await sleep(900);
+                await hell(n);
+                if (St.gen === g) S.fertig = true;
+              });
+            },
+          });
+        },
+        aus() {
+          KERN.unact('gl:k2lack');
+        },
+        tick(dt, S) {
+          if (!S.r0 && MI.zuFuss() && MI.fern(scheune()) < 14 && !MI.redet()) {
+            S.r0 = true;
+            MI.rede('k2scheune2');
+          }
+          return !!S.fertig && sag(S, 'k2lack');
+        },
+      },
+      {
+        id: 'schilder',
+        text: TX.k2m2.schilder,
+        ort: 'Feldscheune',
+        ziel: () => {
+          const v = wartburg();
+          return v ? [v.st.x, v.st.y] : scheune();
+        },
+        an(S) {
+          KERN.act({
+            id: 'gl:k2schild',
+            label: () => (GL.on && amWagen() && !S.fertig ? T.schild : null),
+            pos: () => [P.x, P.y, P.feet],
+            r: 2,
+            hold: 4,
+            prio: 3,
+            gest3: 'pickupLow',
+            work(k) {
+              const n = Math.floor(k * 4);
+              if (n !== S.dreh) {
+                S.dreh = n;
+                GLTON.fx('tick');
+              }
+            },
+            run() {
+              GLKNACKEN.schildern(A2.id, A2.kzNeu);
+              MI.denk(T.schildOk, 2600);
+              S.fertig = true;
+            },
+          });
+        },
+        aus() {
+          KERN.unact('gl:k2schild');
+        },
+        tick: (dt, S) => !!S.fertig && sag(S, 'k2schild'),
+        ab() {
+          const c = GLKNACKEN.auto(A2.id);
+          if (c && c.kz !== A2.kzNeu) GLKNACKEN.schildern(A2.id, A2.kzNeu);
+        },
+      },
+      {
+        id: 'jacke',
+        text: TX.k2m2.jacke,
+        ort: 'Jule',
+        ziel: () => {
+          const f = MI.F('jule');
+          return f ? [f.x, f.y] : hof();
+        },
+        an(S) {
+          const an = () => (GLFAHNDUNG.kleidVon || {})[GL.wer] === 'warn';
+          S.an = an();
+          KERN.act({
+            id: 'gl:k2jacke',
+            label: () => (GL.on && !VEH.cur && GL.has('arbeitsjacke') && !an() ? T.jacke : null),
+            pos: () => [P.x, P.y, P.feet],
+            r: 2,
+            prio: 2.5,
+            run() {
+              const r = GLFAHNDUNG.umziehen ? GLFAHNDUNG.umziehen() : '';
+              if (r === 'gesehen') return;
+              if (an()) {
+                S.an = true;
+                MI.denk(T.jackeAn, 3600);
+              }
+            },
+          });
+        },
+        aus() {
+          KERN.unact('gl:k2jacke');
+        },
+        tick: (dt, S) => (S.r || (S.an && nahJule(S, 7))) && sag(S, 'k2jacke'),
+      },
+      {
+        id: 'ende',
+        text: TX.k2m2.ende,
+        ort: 'Jule',
+        ziel: () => {
+          const f = MI.F('jule');
+          return f ? [f.x, f.y] : hof();
+        },
+        tick: (dt, S) => (S.r || nahJule(S, 7)) && sag(S, 'k2ende'),
+        ab() {
+          m2Ende();
+          GLKNACKEN.weg(A2.neu.id);
         },
       },
     ],
   });
+  // the chapter's first mission (the preview: mission 2)
+  const ERSTE = () => (K.vorab ? 'k2m2' : 'k2m1');
   // ================================================================ free play after chapter 1: when chapter 2 begins ================================================================
   const kap1Ids = () => (MI.R ? GLMDATA.ORDER.filter(id => MI.R.by(id) && !((GLMDATA.M[id] || {}).kap > 1)) : []);
   const kap1Fertig = () => {
@@ -961,10 +1426,10 @@ export const GLKAP2 = (() => {
     S.frei = 0;
     GL.kap = 2;
     GL.save(true);
-    MI.start('k2m1');
+    MI.start(ERSTE());
   }
   function freiTick(dt) {
-    const k2 = !!(MI.R.by('k2m1') && MI.R.st('k2m1') !== 'offen');
+    const k2 = !!(MI.R.by(ERSTE()) && MI.R.st(ERSTE()) !== 'offen');
     if (!kap1Fertig() || k2 || (GL.kap || 1) > 1) {
       knopf(false);
       S.frei = 0;
@@ -1008,6 +1473,7 @@ export const GLKAP2 = (() => {
     try {
       if (GL.era !== 'heute') return;
       freiTick(dt);
+      GLKNACKEN.tick(dt);
       // the snow belongs to the story's December while chapter 2 runs
       const k2 = (GL.kap || 1) > 1 && imDezember();
       if (k2 && !S.wetter) wetter(true);
@@ -1067,6 +1533,7 @@ export const GLKAP2 = (() => {
     }),
     bp: () => bp(),
     lkw: () => lkwPlatz(),
+    park: () => parkplatz(),
     hof: () => amHof(),
   };
   return { S, tick, stop, linien, zone, ort, weg, ersatz, fahrt, debug, K1, V1 };

@@ -18,8 +18,12 @@ export const GLK2DATA = (() => {
   // ---- the chapter's card (the opening of mission 1) ----
   const KAP = {
     nr: 2,
+    // the preview (Falko, 18.11.2026 18:42: a „Vorabversion“ of chapter 2 at ~20:30): the opening and mission 2 – mission 1 at the
+    // Grünes Band comes with agent zone's zone; until then the chapter opens before mission 2 and its card says so
+    vorab: true,
     titel: 'Kolonnenweg',
     ueber: 'Kapitel 2',
+    ueberVorab: 'Kapitel 2 – Vorabversion',
     unter: 'Ratscher · Feldscheune · Dezember',
     blendeA: 'Drei Monate später',
     blendeB: 'Dezember. Krähwinkel hat sich nicht gerührt – kein Anruf, kein Besuch. Das war das Unheimlichste daran.',
@@ -289,6 +293,8 @@ export const GLK2DATA = (() => {
   const T = {
     morgenA: 'Samstagmorgen',
     morgenB: 'Über Nacht sind zehn Zentimeter Schnee gefallen. Die Simson springt trotzdem an.',
+    morgenVorab:
+      'Samstag. Mission 1 „Grünes Band“ – zum Bunker am Kolonnenweg – kommt mit der nächsten Version. Heute braucht die Clique ein Auto.',
     hinfahren: 'Hinfahren',
     hinA: 'Eine halbe Stunde später',
     hinB: 'Über die Landstraße bis Eisfeld – die Simson darf nicht auf die Autobahn, und das ist auch gut so.',
