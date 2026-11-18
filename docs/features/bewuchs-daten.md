@@ -113,7 +113,7 @@ Die Ackerpunkte (9) bekommen die Frucht ihres Feldes, aus dem Luftbild ihres Flu
 zusammenhängende Ackerland einer Zelle zwischen den Ackerrändern (10), geteilt an den OSM-Flächen `landuse=farmland` und an der
 Flugtag-Grenze (N 5 597 000: nördlich der 15.05.2024, südlich der 07.04.2024; ganz im Westen auch nördlich April); entscheidend sind die
 Mediane des Feldes (NDVI, Anteil offenen Bodens mit NDVI < 0,25, Gelbton (R + G) / 2 − B je Helligkeit). Unter 400 m² bleibt 9, ebenso in
-der modellierten Zone (die Gartenkarte). Neue Klassen (vom Straßen-Chat 18.11. vergeben; 18 bleibt frei):
+der modellierten Zone (die Gartenkarte). Neue Klassen (vom Straßen-Chat 18.11. vergeben; 18 ist `gartenrasen` der Laufzeit, `BWPHAENO`, nie in den Karten):
 
 | id | Name | April (07.04.) | Mai (15.05.) |
 |---|---|---|---|
@@ -163,7 +163,7 @@ gleich). Größen nach Teil d: alle 895 Zellen 28,5 MB (Quadrat 2,55 MB), die gr
 | 15 | verkehrsgruen | Verkehrsinsel, Kreiselmitte, Mittelstreifen, Parkplatzgrün | grüne Inseln ≤ 500 m², zu ≥ 75 % von Fahrbahn umgeben; Teil e: Kreiselmitten, Inseln, Mittelstreifen, Parkplatzgrün nach OSM |
 | 16 | friedhof | Friedhof | OSM, Basis-DLM (im Quadrat keiner); die OSM-Wege darin 0 |
 | 17 | sportrasen | Spielfeld | OSM pitch mit Rasen (Kunstrasen, Tartan, Sand: 0) |
-| 18 | reserviert | – | frei |
+| 18 | gartenrasen | – | nur in der Laufzeit (`BWPHAENO`), nie in den Karten |
 | 19–22 | wintergetreide, winterraps, hackfrucht, kleegras | die Frucht eines Ackers (Teil d) | Luftbild des Flugtags, je Feld (siehe oben) |
 
 Nicht im Bild: die Hecken des Angers (`world/dorfkern_data.js`) und von `stadtgruen` (`ratscher.json`, solange es nicht in `src` ist, von

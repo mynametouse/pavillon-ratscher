@@ -17,7 +17,7 @@ DIST = os.path.join(REPO, 'viz3', 'dist')
 # ---- the classes (ids fixed by the brief docs/plans/auftraege/bewuchs-daten.md; 18–31 reserved) ----
 CLASSES = ['nichts', 'zierrasen', 'oeffentlich', 'bankett', 'maehwiese', 'weide', 'streuobst', 'saum', 'ufer', 'acker', 'ackerrand',
            'waldboden', 'gebuesch', 'beet', 'gemuese', 'verkehrsgruen', 'friedhof', 'sportrasen',
-           'reserviert', 'wintergetreide', 'winterraps', 'hackfrucht', 'kleegras']  # 19–22: the crops of the fields (part d, feldfrucht.py)
+           'gartenrasen', 'wintergetreide', 'winterraps', 'hackfrucht', 'kleegras']  # 18: the runtime's own (BWPHAENO, never in the maps); 19–22: the crops (part d, feldfrucht.py)
 K = {n: i for i, n in enumerate(CLASSES)}
 # colours of the check sheets (not used by the app)
 COLOURS = {
@@ -27,7 +27,7 @@ COLOURS = {
     20: (255, 110, 110), 21: (95, 55, 25), 22: (120, 210, 200)}
 NAMES_DE = {0: 'nichts (Fahrbahn, Weg, Hof, Gebäude, Wasser)', 1: 'Zierrasen', 2: 'öffentliches Grün', 3: 'Bankett', 4: 'Mähwiese',
             5: 'Weide', 6: 'Streuobstwiese', 7: 'Saum, Brache, Graben', 8: 'Ufer', 9: 'Acker', 10: 'Ackerrand', 11: 'Waldboden',
-            12: 'Gebüsch', 13: 'Beet', 14: 'Gemüsebeet', 15: 'Verkehrsgrün', 16: 'Friedhof', 17: 'Sportrasen', 18: 'reserviert',
+            12: 'Gebüsch', 13: 'Beet', 14: 'Gemüsebeet', 15: 'Verkehrsgrün', 16: 'Friedhof', 17: 'Sportrasen', 18: 'Gartenrasen (nur Laufzeit)',
             19: 'Wintergetreide', 20: 'Winterraps', 21: 'Mais, Rübe, Kartoffel', 22: 'Kleegras, Feldfutter'}
 
 
