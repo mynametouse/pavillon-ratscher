@@ -63,6 +63,8 @@ NAH_B = [
     ('nah_schleusingen_markt', (-1200, 1150, -980, 1330), 0.25),
     ('nah_schleusingen_rand', (-1650, 700, -1300, 980), 0.4),
     ('nah_vessra', (-8990, -420, -8700, -180), 0.3),
+    ('nah_vessra_bahn', (-8800, -260, -8560, -100), 0.25),
+    ('nah_schleusingen_bahnhof', (-1950, 900, -1650, 1150), 0.3),
 ]
 
 

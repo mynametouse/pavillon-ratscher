@@ -131,6 +131,10 @@ def dop_cell(i, j, margin=12.0, res=0.2, layers=('th_dop', 'th_dop20cir')):
     for L in layers:
         fn = os.path.join(d, f'{L}_{i}_{j}.jpg')
         meta = {'e0': e0, 'n1': n0 + H * res, 'res': res, 'w': W, 'h': H, 'layer': L}
+        if os.path.exists(fn) and os.path.exists(fn + '.json'):  # a cell that changed its resolution: fetched again
+            with open(fn + '.json') as fh:
+                if abs(json.load(fh).get('res', res) - res) > 1e-6:
+                    os.remove(fn)
         if not os.path.exists(fn):
             q = (f'{WMS_DOP}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS={L}&STYLES=&CRS=EPSG:25832'
                  f'&BBOX={e0:.2f},{n0:.2f},{e0 + W * res:.2f},{n0 + H * res:.2f}&WIDTH={W}&HEIGHT={H}&FORMAT=image/jpeg')
