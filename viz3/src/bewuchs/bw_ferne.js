@@ -279,7 +279,7 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
         // the stand as one surface, closed the flatter the view (the plants stand before the soil behind them); looking down into it
         // the soil between the plants, in their shade
         // (only from where the plants are too small to see one by one: close by they stand there themselves, on their soil)
-        float app = 1.0 - pow( 1.0 - cover, 1.0 + 3.0 * ( 1.0 - sinEl ) * smoothstep( 8.0, 45.0, dist ) );
+        float app = 1.0 - pow( 1.0 - cover, mix( 1.0, min( 1.0 / sinEl, 6.0 ), smoothstep( 8.0, 45.0, dist ) ) );
         c = mix( c, mix( mix( soil * ( 1.0 - 0.35 * cover ), can, app ), c, 0.15 ), wC );
       }
     }
@@ -290,10 +290,11 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
   if ( f.a < 0.004 ) return c;
   // in from where the flowers of bw_blume.js end, out before the window's edge
   float fade = smoothstep( 20.0, 34.0, dist ) * ( 1.0 - smoothstep( uBwFarC.x + 20.0, uBwFarC.y + 40.0, dist ) );
-  // in drifts: denser here, thinner there (mean ~1)
-  float share = min( 0.5, f.a * 0.5 * ( 0.25 + 1.5 * bwFB( p * 0.06 ) * ( 0.6 + 0.8 * bwFB( p * 0.21 + 5.7 ) ) ) );
-  // seen flat over the meadow the heads stand before the grass behind them: more of the pixel is flower than from above
-  float app = 1.0 - pow( 1.0 - share, 1.0 + 2.0 * ( 1.0 - sinEl ) );
+  // how much of the ground the heads cover seen from above, in drifts: denser here, thinner there (mean ~1)
+  float share = f.a * 0.35 * ( 0.25 + 1.5 * bwFB( p * 0.06 ) * ( 0.6 + 0.8 * bwFB( p * 0.21 + 5.7 ) ) );
+  // seen flat over the meadow the heads stand before the grass behind them: the flatter the view, the more of the pixel is flower
+  // (their share by 1 / sin of the view's angle, each hiding the next – until the grass before them hides as many)
+  float app = 1.0 - exp( - share * min( 1.0 / sinEl, 10.0 ) );
   // single heads (tufts of 12 cm) only where a pixel is finer than they are; beyond, their share of the pixel
   float dots = step( bwFH( floor( p / 0.12 ) ), app );
   float k = mix( dots, app, smoothstep( 0.05, 0.16, fw ) );

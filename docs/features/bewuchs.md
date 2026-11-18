@@ -88,7 +88,8 @@ wobei es trotzdem im Browser weiterhin flüssig laufen können soll.“ Gewählt
   geschnitten ist (dieselben Felder wie die Halme), danach beim Mais die Stoppeln, sonst nichts. Der Blumen-Shader wählt die Frucht des
   Felds wie die Halme (`BWHALM.cropGlsl`: ein Text für beide); Pflanzen je m² aus k3.z der Fruchtzeile (Mais 9, Kartoffel 4, Raps 12,
   Kleegras 6, Getreide 4 Ähren – gedeckelt durch die Plätze der Kacheln), Mais und Kartoffeln in Reihen (k6.w: 75 cm, je Feld eine
-  Richtung aus seinem Hash). Aus der Ferne bleibt die Farbe des Felds die des Luftbilds (keine Fernblüte für Früchte).
+  Richtung aus seinem Hash). Aus der Ferne zeigt der Boden den Bestand der Frucht (seit 18.11., Fotorealismus-Chat – unten bei
+  „Bewuchs in der Ferne“); vorher blieb dort das Luftbild.
 
 ## Flüssig
 
@@ -114,12 +115,22 @@ Garten und auf der Wiese, Budget je Stufe, Blumen im Rasen im Mai und in der Wie
 Halme, `GRASS.cutCount` aus dem Raster, keine Programme über 16 Texturen; Bilder in `out/bewuchs/`. Unit-Tests
 `viz3/test/unit/bewuchs_phaeno.test.mjs` (auch mit der echten Artentabelle) und `bewuchs_arten.test.mjs` (die Daten des Hilfs-Agenten). Dazu `garage` (Mähen, Aufgabe, Speicherstand).
 
-- **Blühende Wiesen in der Ferne** (`bewuchs/bw_ferne.js`, `BWFERNE`): wo keine 3D-Blumen mehr stehen (ab ~20 m), färben Punkte von
-  ~0,4 m den Boden (weiter weg ihr Mittel) – ein Fenster von 1 km um die Kamera (512² zu 2 m), je Texel die Farbe einer Art, die dort
-  heute blüht, und der Anteil des Bodens; gemähte Felder weniger. Haken in `world/roads.js` (`landDetail` ruft `bwFar`, markiert
-  `feat/bewuchs`, angekündigt in `docs/PARALLEL.md` 17.11. 22:15).
+- **Bewuchs in der Ferne** (`bewuchs/bw_ferne.js`, `BWFERNE`; seit 18.11. vom Fotorealismus-Chat, `docs/features/fotorealismus.md`):
+  eine Textur von 512 × 1024 um die Kamera (Texel von 2 m, 1 km; folgt ihr in Schritten von 96 m) – oben die **Blüte** jedes Orts (die
+  Farbe einer Art, die dort heute blüht, halb zum Mittel der Fläche hin, und ihr Anteil am Boden; gemähte Felder weniger), unten die
+  **Flächenklasse** (ungefiltert gelesen). Der Bodenshader (`world/roads.js`: `landDetail` ruft `bwFar`, markiert `feat/bewuchs`)
+  nimmt die Blüte ab ~20 m als **Tönung** – mehr, je flacher der Blick (Anteil / Sinus des Blickwinkels, gedeckelt), in Flecken;
+  einzelne Tupfer von 12 cm nur, wo ein Bildpunkt feiner ist. (Bis V19b: Punkte von 0,4–3 m in der vollen Blütenfarbe – von jedem
+  erhöhten Punkt aus Konfetti.) Auf den Feldern der Fruchtklassen (9, 19–22) zeigt der Boden den **Bestand der Frucht**: dieselbe
+  Wahl je Feld wie die Halme (`BWHALM.cropGlsl` mit deren Hash, dieselbe Uniform `uBwCr`), Farbe und Deckung der Phase von heute
+  (`BWPHAENO.cropNow`), der Boden der Phase (`BWARTEN.ackerboden`), in den Erntetagen jedes Feld an seinem Tag (wie `bwHeight`),
+  das Hell und Dunkel des Luftbilds bleibt. Bis ~340 m um die Kamera; über ~70 m Höhe behalten die Felder das Luftbild. Die Halme
+  der Früchte dazu: nicht mehr vom Luftbild ausgedünnt, von oben beleuchtet, im äußeren Ring ohne dunklen Fuß (`bw_halm.js`).
 
 ## Offen
+
+- (Fotorealismus-Chat, 18.11.) Feldfrüchte im Boden weiter als 340 m und aus der Höhe (größeres Fenster, die Karten weiter laden),
+  Fahrgassen und Furchen; der modellierte Rasen von oben (eine gleichmäßige Fläche); Rüben und Sonnenblumen; die Suhl-Korridore.
 
 - Grasähren aus dem Atlas (getönt), Dürre- und Schattenfarbe der Flächen, der kiesige Bankettrand, Geilstellen der Weide; die
   Jahreszeit des Bodenbilds im Garten.

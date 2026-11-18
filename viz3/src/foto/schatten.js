@@ -7,15 +7,19 @@
 // depth materials, alpha-tested leaves and custom depth materials are those of the sun's map), into a target of its own; after every
 // new map of the sun – three clears the whole atlas for it – the tiles are copied back in (one small draw each). A tile is drawn anew
 // only when the sun has turned a visible step since (1° far, 2° wide), when the walker has left its middle third, or a moment after the
-// scene itself changed – one tile a frame, and not in the frame that draws the sun's own map (a stutter otherwise, V17g). Things under
-// 0.6 m cast nothing into a tile (its texel is larger than they are).
+// scene itself changed – one tile a frame, and not in the frame that draws the sun's own map (a stutter otherwise, V17g). A tile draws
+// the trees in their coarsest level and leaves out what is smaller than its texels can show (under 1 m far, 2.5 m wide; in the wide one
+// dense small trees too) and whatever follows the camera (the forest's trees: their light beyond the box is the forest's own).
 // What the real land needs for it: the terrain, the village's walls and roofs and the trees of the canopy model receive the sun's
-// shadow, and the buildings and trees cast one (they did neither: nothing reached beyond the garden's box anyway).
+// shadow, and the buildings and trees cast one (they did neither: nothing reached beyond the garden's box anyway) – also inside the
+// walker's box where the tiles are off. The rest of the world as it is built (the ground tiles of the land beyond the square, the
+// buildings of every place) by its meshes' names; a module adds its own with SCHATTEN.add.
 // Off on the tier „schnell“ and on phones and tablets (memory: the atlas is half as large again, the tiles have their targets) unless
 // switched on by hand: Menü → Einstellungen → Grafik → „Schatten in der Ferne“ (auto / an / aus, pav-schatten-v1); ?kaskade=an|aus.
 //   SCHATTEN.state()        { on, mode, tiles: [{ name, ok, R, n, calls, tris, ms }], blits, atlas: [w, h] }   (tests)
 //   SCHATTEN.set({ mode })  'auto' | 'an' | 'aus'; { debug: true } tints what each cascade covers (red own box, green far, blue wide)
 //   SCHATTEN.settle()       draws the tiles that are due at once (tests, pictures) – in the game they come a frame or two later
+//   SCHATTEN.add(mesh, { cast, receive, roof })   a module's own thing into the sun's shadows (roof: an open sheet, both sides cast)
 import * as THREE from 'three';
 import { $, cam, COARSE, QS, R, scene, V } from '../core/head.js';
 import { SAVE } from '../core/save.js';
@@ -168,7 +172,14 @@ export const SCHATTEN = (() => {
       o.getMatrixAt(0, _m);
       _m.decompose(_v, _q, sv);
       const n = g.index ? g.index.count : g.attributes.position ? g.attributes.position.count : 0;
-      L.push({ o, r: g.boundingSphere.radius * Math.max(Math.abs(sv.x), Math.abs(sv.y), Math.abs(sv.z)), tris: n / 3 });
+      L.push({
+        o,
+        r: g.boundingSphere.radius * Math.max(Math.abs(sv.x), Math.abs(sv.y), Math.abs(sv.z)),
+        tris: n / 3,
+        // instances rewritten as the camera moves (the forest's trees and ferns around it, world/forest.js): theirs is the walker's
+        // box alone – beyond it the forest dims the light under its crowns itself (its canopy map), a tile's shadow would double it
+        dyn: !!(o.instanceMatrix && o.instanceMatrix.usage === THREE.DynamicDrawUsage),
+      });
     });
     INST.list = L;
     INST.geo = R.info.memory.geometries;
@@ -185,7 +196,7 @@ export const SCHATTEN = (() => {
       // dense: a tile with texels of half a metre and more also leaves out what has thousands of triangles in a few metres (a fruit
       // tree of 15 000 leaf cards is a handful of its texels)
       for (const e of INST.list)
-        if (e.o.castShadow && (e.r < minR || (dense && e.tris > dense && e.r < 8))) {
+        if (e.o.castShadow && (e.dyn || e.r < minR || (dense && e.tris > dense && e.r < 8))) {
           e.o.castShadow = false;
           _off.push(e.o);
         }
@@ -409,6 +420,7 @@ export const SCHATTEN = (() => {
     acc += dt;
     if (acc < 0.2) return;
     acc = 0;
+    sweep();
     check(false);
     if (S.pending) markDirty();
   }, 'foto/schatten');
@@ -440,13 +452,42 @@ export const SCHATTEN = (() => {
     // lime trees, the buildings the app lacked (gebaeude/gebaeude.js). The roofs are open sheets: both sides into the sun's map, or a
     // roof would cast nothing (three draws only the backs of single-sided things into a shadow map).
     (RATSCHER.bld || []).forEach((m, i) => {
-      if (!m || !m.isMesh) return;
-      m.castShadow = m.receiveShadow = true;
-      if (m.material && (i === 1 || /\broofs\b/.test(m.name || ''))) m.material.shadowSide = THREE.DoubleSide;
+      if (m && m.isMesh) add(m, { cast: true, receive: true, roof: i === 1 || /\broofs\b/.test(m.name || '') });
     });
     for (const m of RATSCHER.mid || []) m.castShadow = m.receiveShadow = true;
     for (const m of RATSCHER.trees || []) cards(m);
     markDirty(true);
+  }
+  // ---- the rest of the world, as it comes (the tiles of the land beyond the square, the buildings of every place): by their names ----
+  //   SCHATTEN.add(mesh, { cast, receive, roof })   for a module that wants its own things in (roof: an open sheet – both its sides
+  //   into the shadow map)
+  const RULES = [
+    [/^welt /, { receive: true }], // welt/welt.js: the ground of the world's tiles
+    [/^gebaeude /, { cast: true, receive: true }], // gebaeude/gebaeude.js: walls and roofs of a cell of buildings
+  ];
+  function add(m, o = {}) {
+    if (!m || !m.isMesh) return;
+    if (o.receive !== undefined) m.receiveShadow = !!o.receive;
+    if (o.cast !== undefined) m.castShadow = !!o.cast;
+    if (o.roof && m.material && !Array.isArray(m.material)) m.material.shadowSide = THREE.DoubleSide;
+    m.userData.schatten = 1;
+  }
+  const SW = { n: -1, g: -1 };
+  function sweep() {
+    const n = scene.children.length,
+      g = R.info.memory.geometries;
+    if (n === SW.n && g === SW.g) return;
+    SW.n = n;
+    SW.g = g;
+    let ch = 0;
+    for (const o of scene.children) {
+      if (!o.isMesh || o.userData.schatten || !o.name) continue;
+      const r = RULES.find(q => q[0].test(o.name));
+      if (!r) continue;
+      add(o, Object.assign({ roof: /\broofs\b/.test(o.name) }, r[1]));
+      ch++;
+    }
+    if (ch) markDirty(true);
   }
   // the far trees are crossed cards with a picture out of an atlas (one column per kind, world/ratscher.js): their depth material reads
   // the same column, else every card would cast the shadows of all five kinds side by side
@@ -527,6 +568,6 @@ export const SCHATTEN = (() => {
   $('schbtn')?.addEventListener('click', () => set({ mode: MODES[(MODES.indexOf(S.mode) + 1) % MODES.length] }));
   whenLoaded(label);
   apply();
-  return { state, set, land, settle, S };
+  return { state, set, add, land, settle, S };
 })();
 window.SCHATTEN = SCHATTEN;
