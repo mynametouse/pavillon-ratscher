@@ -173,10 +173,10 @@ export const SAMARKT = (() => {
           damp = clamp((0.45 - patch) / 0.25),
           dome = 0.84 + 0.2 * Math.sqrt(clamp(d / 0.024)), // the rounded top: darker towards the joint
           hsh = (((x * 73856093) ^ (y * 19349663)) >>> 0) % 1000,
-          f = (0.93 + 0.14 * patch) * dome * (0.955 + (0.09 * hsh) / 1000);
+          f = (0.97 + 0.06 * patch) * dome * (0.955 + (0.09 * hsh) / 1000); // (the patches faint: they repeat with the tile, seen from above)
         // the joint: sand and dirt, sunk – dark, darker and a little mossy where it stays damp
         const jt = clamp((JW[qi] - d) / 0.0025 + 0.5),
-          jn = (0.85 + (0.3 * ((hsh * 7919) % 1000)) / 1000) * (1 - 0.25 * damp),
+          jn = (0.85 + (0.3 * ((hsh * 7919) % 1000)) / 1000) * (1 - 0.15 * damp),
           o = (y * N + x) * 4,
           C = R.C;
         D[o] = Math.min(255, (C[i * 3] * f * (1 - jt) + (0.3 * jn - 0.016 * damp) * jt) * 255);
