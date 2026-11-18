@@ -9,6 +9,8 @@ from scipy import ndimage as ndi
 from shapely.geometry import LineString, Polygon, box
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from gemeinsam import Grid, K, SITE_ZONE  # noqa: E402
+import feldfrucht  # noqa: E402
+import gestaltung  # noqa: E402
 import handdaten  # noqa: E402
 import raster  # noqa: E402
 
@@ -348,6 +350,9 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True, res=RES):
         cls[rland & bare & ~np.isin(cls, [K['waldboden'], K['gebuesch'], K['ufer']])] = K['nichts']
         cls[rail] = K['nichts']
 
+    # ---------- designed areas (part e): front-garden beds, vegetable plots, traffic green, the cemeteries' paths (gestaltung.py) ----------
+    gst = gestaltung.apply(q, g, cls, {'X': X, 'Y': Y, 'carr': carr, 'bldx': bldx, 'water': water_all, 'bare': bare, 'use': use})
+
     # ---------- built things: buildings, water, the app's own village centre and stadtgruen's hedges ----------
     cls[bldx | water | (stream_m & ~carr)] = K['nichts']
     dk = q.app.get('dorfkern') or {}
@@ -375,4 +380,9 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True, res=RES):
             cls[inz] = gm[v, u]
 
     core = g.inner(int(round(MARGIN / g.res)))
-    return cls[core], nd[core], {'use': use[core]}
+    cls = cls[core]
+    # ---------- the crops of the fields (part d): on the core, one class per field (feldfrucht.py) ----------
+    import holen
+    gc = Grid.cell(i, j, g.res)
+    fst = feldfrucht.apply(cls, nd[core], f['rgb'][core], X[core], Y[core], holen.flight(i, j), feldfrucht.farm_labels(q, gc), g.res)
+    return cls, nd[core], {'use': use[core], 'gestaltung': gst, 'feldfrucht': fst}

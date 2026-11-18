@@ -228,6 +228,8 @@ export const BEWUCHS = (() => {
     S.arten = BWPHAENO.fromArten(BWARTEN);
     BWBLUME.fromArten(BWARTEN, BASE);
     BWSTRAUCH.fromArten(BWARTEN);
+    // stage 5a: the field crops as rows of the class table, the choices of the maps' crop classes for the shaders
+    if (BWPHAENO.fromCrops(BWARTEN)) BWHALM.crops(BWPHAENO.cropChoice(BWARTEN));
   } catch (e) {
     S.err = 'arten: ' + String((e && e.message) || e);
   }

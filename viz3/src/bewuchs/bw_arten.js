@@ -52,6 +52,12 @@
 //   BWARTEN.beetvorlagen[id]  a kind of bed: edge, soil (BWARTEN.boden), raster, plants per m², the plantings of the year (phasen).
 //   BWARTEN.lagen         the places a bush or bed stands (hedgerow, forest edge, front garden, grave …).
 //   BWARTEN.atlas_beete   the beds atlas: dist/bewuchs/beete.png + beete.json, the format of the flower atlas (tools/bewuchs/pflanzen/beete.py).
+// Part 3 (the arable land, class 9):
+//   BWARTEN.feldfruechte[id]  a field crop: its share of the arable land, sowing and harvest, its phases by day of year with height,
+//                         colour and soil, plants per m² and rows, the ears of the cereals and the cells of the others (atlas_acker), the
+//                         crop of the next year; flaechen[9].feldfruechte: the shares the template draws from (Landkreis Hildburghausen).
+//   BWARTEN.zwischenfrucht  the catch crop between a cereal harvest and a spring crop; BWARTEN.ackerboden: the colours of the soil.
+//   BWARTEN.atlas_acker   the acker atlas: dist/bewuchs/acker.png + acker.json (tools/bewuchs/pflanzen/acker.py), cells only where used.
 // Days of year for southern Thuringia at ~450 m (Ratscher, Schleusingen): phenology of the lowlands shifted ~+5 days per 200 m.
 export const BWARTEN = (() => {
   const W = t => ['Wikipedia (de): ' + t.replace(/_/g, ' '), 'https://de.wikipedia.org/wiki/' + t];
@@ -102,6 +108,18 @@ export const BWARTEN = (() => {
     dwdPhaeno: [
       'DWD Climate Data Center: phänologische Jahresmelder (Wildpflanzen, Obst), historical bis 2024 – ausgewertet 1995–2024, alle Stationen bis 75 km um Schleusingen in 250–750 m, der Tag bei 450 m aus der Geraden über der Stationshöhe',
       'https://opendata.dwd.de/climate_environment/CDC/observations_germany/phenology/annual_reporters/',
+    ],
+    dwdKultur: [
+      'DWD Climate Data Center: phänologische Jahresmelder, landwirtschaftliche Kulturpflanzen (Winterweizen, Wintergerste, Winterroggen, Sommergerste, Winterraps, Mais, Zuckerrübe, Sonnenblume, Dauergrünland), historical bis 2024 – ausgewertet wie dwdPhaeno',
+      'https://opendata.dwd.de/climate_environment/CDC/observations_germany/phenology/annual_reporters/crops/historical/',
+    ],
+    tlsBodennutzung: [
+      'Thüringer Landesamt für Statistik: Pressemitteilung 176/2025 „Bodennutzung 2025“ (29.7.2025) – Ackerland 602 700 ha, stillgelegt 19 900 ha',
+      'https://statistik.thueringen.de/presse/2025/pr_176_25.pdf',
+    ],
+    tlsErnte: [
+      'Thüringer Landesamt für Statistik: Statistischer Bericht C II - j/25, Ernte- und Betriebsberichterstattung Feldfrüchte und Grünland 2025 – Anbauflächen (endgültiges Ergebnis der Bodennutzungshaupterhebung) für Thüringen und den Landkreis Hildburghausen',
+      'https://statistik.thueringen.de/webshop/pdf/2025/03201_2025_00.pdf',
     ],
     eigen: ['Eigene Schätzung nach den Quellen dieser Datei (Dichte, Farben, Anteile) – im Spiel zu prüfen', null],
   };
@@ -4473,6 +4491,474 @@ export const BWARTEN = (() => {
   for (const [k, v] of Object.entries(STRAUCHMIX)) flaechen[k].straeucher = v;
   for (const [k, v] of Object.entries(BEETMIX)) flaechen[k].beete = v;
 
+  // ---------------- field crops (part 3): what grows on the arable land (class 9), its year and its look ----------------
+  // feldfruechte[id]: gruppe 'wintergetreide' | 'sommergetreide' | 'raps' | 'mais' | 'hackfrucht' | 'oelfrucht' | 'futter';
+  // anteil { thueringen (share of Thuringia's arable land, 602 700 ha, 2025), hildburghausen (share of the main crops of the district,
+  // ~18 400 ha, 2025) } – flaechen[9].feldfruechte has the shares the template draws from; winterung: sown in the autumn before the
+  // harvest year; saat { doy (for a winterung: the day in the autumn before), streuung_tage (± per field) }; ernte { doy, streuung_tage,
+  // art 'maehdrusch' | 'haeckseln' | 'roden' | 'schnitt' } (kleegras: schnitte [{ doy, streuung_tage }]); herbst (winterung: the phases in
+  // the autumn before, from the sowing to day 366) and jahr (the harvest year from day 1): ordered phases { name, von, bis (days of year),
+  // hoehe_m [at the start, at the end] (m, the crop's height; interpolate), farbe (#rrggbb: the stand seen from a little way off), boden
+  // (0–1: share of soil seen from above), boden_art? (a key of ackerboden: the soil's colour; default 'saatbett'), kopf? ('gruen' |
+  // 'bluete' | 'reif': the cereal ears on the stalks, cells in kopf.zellen), bild? (a frame of bilder: the plants' cell in the acker
+  // atlas) }; a field shifts all its days by its own offset (± streuung_tage of saat in the autumn, of ernte from spring on);
+  // bestand { pflanzen_m2, halme_m2 (ears or shoots per m² at harvest), reihe_cm (row distance), damm (potato ridges) };
+  // kopf (cereals) { form 'aehre' | 'grannen' | 'roggen' | 'triticale', laenge_m (the ear with its awns), nickt (0–1: how far the ripe
+  // ear bows), zellen { gruen, reif, bluete? } }; bilder { frame: { zelle [c, r], hoehe (share of the phase's height) } } (non-cereals);
+  // nachfolger { id: weight }: the crop of the next year on the same field (crop rotation).
+  // After the harvest: ernte (swaths or bare), stoppel, then umbruch (worked soil) until the next crop: a winterung shows its herbst from
+  // its saat (at the earliest 3 days after the stubble is worked), a spring crop leaves the field as umbruch (or with a zwischenfrucht)
+  // into the winter and starts its jahr with pflugacker.
+  const PH = (name, von, bis, hoehe_m, farbe, boden, x = {}) =>
+    Object.assign({ name, von, bis, hoehe_m, farbe, boden }, x);
+  const ACKERBODEN = {
+    pflug: '#5e4a38', // freshly ploughed, moist (Buntsandstein redder, Muschelkalk greyer – the far ground keeps the aerial photo)
+    saatbett: '#7a6650', // harrowed and dry
+    damm: '#6e5a44', // the potato ridges
+    stoppel_getreide: '#c8b47a', // straw-yellow stubble over soil
+    stoppel_raps: '#8a7c5c',
+    stoppel_mais: '#9a8a66',
+    mulch: '#7a6a4a', // a frozen catch crop lying on the soil
+  };
+  // the cells of the acker atlas
+  const AZ = (c, r, hoehe = 1) => ({ zelle: [c, r], hoehe });
+  const KOPF = {
+    weizen: { gruen: [0, 4], reif: [1, 4] },
+    gerste: { gruen: [2, 4], reif: [3, 4] },
+    roggen: { gruen: [4, 4], reif: [5, 4], bluete: [4, 3] },
+    triticale: { gruen: [6, 4], reif: [7, 4] },
+  };
+  // the last phases of a combine crop: swaths on the stubble, the stubble, then the worked soil into the autumn
+  const NACH_DRUSCH = (d, stoppel_art, hoehe, tage = 21) => [
+    PH('ernte', d, d + 2, [hoehe, hoehe], '#d4c088', 0.35, { boden_art: stoppel_art }),
+    PH('stoppel', d + 3, d + 3 + tage, [hoehe, hoehe], ACKERBODEN[stoppel_art], 0.45, { boden_art: stoppel_art }),
+    PH('umbruch', d + 4 + tage, 366, [0, 0], ACKERBODEN.saatbett, 1, { boden_art: 'saatbett' }),
+  ];
+  const FRUEHJAHR = (saat, pflug_bis = saat - 12) => [
+    PH('pflugacker', 1, pflug_bis, [0, 0], ACKERBODEN.pflug, 1, { boden_art: 'pflug' }),
+    PH('saatbett', pflug_bis + 1, saat - 1, [0, 0], ACKERBODEN.saatbett, 1, { boden_art: 'saatbett' }),
+  ];
+  const DWD = ['dwdKultur'];
+  const feldfruechte = {
+    winterweizen: {
+      name: 'Winterweizen',
+      latein: 'Triticum aestivum',
+      gruppe: 'wintergetreide',
+      anteil: { thueringen: 0.312, hildburghausen: 0.321 },
+      winterung: true,
+      // DWD round Schleusingen at 450 m: sown day 278, emerges 292, shoots 123, ears 156, milk ripe 187, yellow ripe 204, harvested 227
+      saat: { doy: 278, streuung_tage: 10 },
+      ernte: { doy: 227, streuung_tage: 9, art: 'maehdrusch' },
+      herbst: [
+        PH('saat', 278, 291, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 292, 310, [0.01, 0.06], '#6e9a48', 0.85),
+        PH('bestockung', 311, 366, [0.06, 0.1], '#5f8a40', 0.6),
+      ],
+      jahr: [
+        PH('winter', 1, 75, [0.08, 0.1], '#5e7a42', 0.55),
+        PH('bestockung', 76, 122, [0.1, 0.3], '#5a8c3a', 0.3),
+        PH('schossen', 123, 155, [0.3, 0.75], '#4a7c2e', 0.08),
+        PH('aehre', 156, 163, [0.75, 0.85], '#527f30', 0.05, { kopf: 'gruen' }),
+        PH('bluete', 164, 186, [0.85, 0.9], '#5c8634', 0.05, { kopf: 'gruen' }),
+        PH('milchreife', 187, 203, [0.9, 0.9], '#8a9a4a', 0.05, { kopf: 'gruen' }),
+        PH('gelbreife', 204, 226, [0.9, 0.88], '#c6a85c', 0.05, { kopf: 'reif' }),
+        ...NACH_DRUSCH(227, 'stoppel_getreide', 0.15),
+      ],
+      bestand: { pflanzen_m2: 300, halme_m2: 600, reihe_cm: 12.5 },
+      kopf: { form: 'aehre', laenge_m: 0.1, nickt: 0.15, zellen: KOPF.weizen },
+      nachfolger: {
+        wintergerste: 0.35,
+        silomais: 0.2,
+        sommergerste: 0.12,
+        winterraps: 0.1,
+        winterweizen: 0.08,
+        zuckerruebe: 0.05,
+        triticale: 0.05,
+        sonnenblume: 0.02,
+        kleegras: 0.02,
+        kartoffel: 0.01,
+      },
+      quellen: [...DWD, 'tlsErnte', 'tlsBodennutzung', 'eigen'],
+    },
+    wintergerste: {
+      name: 'Wintergerste',
+      latein: 'Hordeum vulgare (mehrzeilig)',
+      gruppe: 'wintergetreide',
+      anteil: { thueringen: 0.116, hildburghausen: 0.103 },
+      winterung: true,
+      // DWD: sown 260, emerges 272, shoots 115, ears 139, yellow ripe 181, harvested 202 – the first combine of the summer
+      saat: { doy: 260, streuung_tage: 8 },
+      ernte: { doy: 202, streuung_tage: 7, art: 'maehdrusch' },
+      herbst: [
+        PH('saat', 260, 271, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 272, 290, [0.01, 0.07], '#6e9a48', 0.8),
+        PH('bestockung', 291, 366, [0.07, 0.12], '#5a8640', 0.5),
+      ],
+      jahr: [
+        PH('winter', 1, 70, [0.1, 0.12], '#62783e', 0.45), // barley yellows a little in the frost
+        PH('bestockung', 71, 114, [0.12, 0.3], '#5a8c3a', 0.25),
+        PH('schossen', 115, 138, [0.3, 0.8], '#4e7e30', 0.08),
+        PH('aehre', 139, 152, [0.8, 0.95], '#5a8a3c', 0.05, { kopf: 'gruen' }), // flowers inside the leaf sheath
+        PH('milchreife', 153, 180, [0.95, 0.95], '#86a050', 0.05, { kopf: 'gruen' }),
+        PH('gelbreife', 181, 201, [0.95, 0.9], '#d0bc80', 0.05, { kopf: 'reif' }), // pale, the ears bowed
+        ...NACH_DRUSCH(202, 'stoppel_getreide', 0.15),
+      ],
+      bestand: { pflanzen_m2: 280, halme_m2: 650, reihe_cm: 12.5 },
+      kopf: { form: 'grannen', laenge_m: 0.18, nickt: 0.7, zellen: KOPF.gerste },
+      nachfolger: { winterraps: 0.7, winterweizen: 0.1, silomais: 0.1, sommergerste: 0.05, kleegras: 0.05 },
+      quellen: [...DWD, 'tlsErnte', 'eigen'],
+    },
+    winterroggen: {
+      name: 'Winterroggen',
+      latein: 'Secale cereale',
+      gruppe: 'wintergetreide',
+      anteil: { thueringen: 0.012, hildburghausen: 0.011 },
+      winterung: true,
+      // DWD: sown 268, emerges 280, shoots 115, ears 140, flowering 154 (full 161), yellow ripe 202, harvested 222; tall and blue-green
+      saat: { doy: 268, streuung_tage: 9 },
+      ernte: { doy: 222, streuung_tage: 9, art: 'maehdrusch' },
+      herbst: [
+        PH('saat', 268, 279, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 280, 298, [0.01, 0.06], '#6a9a4a', 0.85),
+        PH('bestockung', 299, 366, [0.06, 0.1], '#5e8a44', 0.6),
+      ],
+      jahr: [
+        PH('winter', 1, 72, [0.08, 0.1], '#5e7a48', 0.5),
+        PH('bestockung', 73, 114, [0.1, 0.35], '#5a8a44', 0.3),
+        PH('schossen', 115, 139, [0.35, 1.2], '#5a8458', 0.08),
+        PH('aehre', 140, 153, [1.2, 1.4], '#6a8e64', 0.05, { kopf: 'gruen' }),
+        PH('bluete', 154, 168, [1.4, 1.45], '#7a9468', 0.05, { kopf: 'bluete' }), // the anthers hang out, the pollen drifts
+        PH('milchreife', 169, 201, [1.45, 1.45], '#9aa064', 0.05, { kopf: 'gruen' }),
+        PH('gelbreife', 202, 221, [1.45, 1.4], '#c4aa6c', 0.05, { kopf: 'reif' }),
+        ...NACH_DRUSCH(222, 'stoppel_getreide', 0.2),
+      ],
+      bestand: { pflanzen_m2: 250, halme_m2: 550, reihe_cm: 12.5 },
+      kopf: { form: 'roggen', laenge_m: 0.16, nickt: 0.4, zellen: KOPF.roggen },
+      nachfolger: { winterraps: 0.3, silomais: 0.3, sommergerste: 0.2, kleegras: 0.2 },
+      quellen: [...DWD, 'tlsErnte', 'eigen'],
+    },
+    triticale: {
+      name: 'Triticale',
+      latein: '× Triticosecale',
+      gruppe: 'wintergetreide',
+      anteil: { thueringen: 0.015, hildburghausen: 0.065 },
+      winterung: true,
+      // not in the DWD programme: between wheat and rye (estimated)
+      saat: { doy: 272, streuung_tage: 10 },
+      ernte: { doy: 220, streuung_tage: 9, art: 'maehdrusch' },
+      herbst: [
+        PH('saat', 272, 285, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 286, 304, [0.01, 0.06], '#6c9a4a', 0.85),
+        PH('bestockung', 305, 366, [0.06, 0.1], '#5e8a42', 0.6),
+      ],
+      jahr: [
+        PH('winter', 1, 74, [0.08, 0.1], '#5e7a44', 0.55),
+        PH('bestockung', 75, 118, [0.1, 0.32], '#5a8a3e', 0.3),
+        PH('schossen', 119, 149, [0.32, 1.0], '#4e7e3a', 0.08),
+        PH('aehre', 150, 160, [1.0, 1.15], '#5c8640', 0.05, { kopf: 'gruen' }),
+        PH('bluete', 161, 180, [1.15, 1.2], '#628a44', 0.05, { kopf: 'gruen' }),
+        PH('milchreife', 181, 199, [1.2, 1.2], '#8e9c50', 0.05, { kopf: 'gruen' }),
+        PH('gelbreife', 200, 219, [1.2, 1.15], '#c2a866', 0.05, { kopf: 'reif' }),
+        ...NACH_DRUSCH(220, 'stoppel_getreide', 0.18),
+      ],
+      bestand: { pflanzen_m2: 280, halme_m2: 500, reihe_cm: 12.5 },
+      kopf: { form: 'triticale', laenge_m: 0.15, nickt: 0.3, zellen: KOPF.triticale },
+      nachfolger: { winterraps: 0.35, silomais: 0.35, sommergerste: 0.15, kleegras: 0.15 },
+      quellen: ['tlsErnte', 'eigen'],
+    },
+    sommergerste: {
+      name: 'Sommergerste (Braugerste)',
+      latein: 'Hordeum vulgare (zweizeilig)',
+      gruppe: 'sommergetreide',
+      anteil: { thueringen: 0.062, hildburghausen: 0.049 },
+      winterung: false,
+      // DWD: sown 87, emerges 102, shoots 139, ears 160, yellow ripe 195, harvested 217
+      saat: { doy: 87, streuung_tage: 10 },
+      ernte: { doy: 217, streuung_tage: 8, art: 'maehdrusch' },
+      jahr: [
+        ...FRUEHJAHR(87),
+        PH('saat', 87, 101, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 102, 112, [0.01, 0.06], '#7aa250', 0.85),
+        PH('bestockung', 113, 138, [0.06, 0.25], '#62983e', 0.45),
+        PH('schossen', 139, 159, [0.25, 0.65], '#559236', 0.1),
+        PH('aehre', 160, 175, [0.65, 0.75], '#5f9a40', 0.05, { kopf: 'gruen' }),
+        PH('milchreife', 176, 194, [0.75, 0.75], '#8aa858', 0.05, { kopf: 'gruen' }),
+        PH('gelbreife', 195, 216, [0.75, 0.72], '#d4c286', 0.05, { kopf: 'reif' }),
+        ...NACH_DRUSCH(217, 'stoppel_getreide', 0.12),
+      ],
+      bestand: { pflanzen_m2: 320, halme_m2: 800, reihe_cm: 12.5 },
+      kopf: { form: 'grannen', laenge_m: 0.17, nickt: 0.9, zellen: KOPF.gerste },
+      // often with clover-grass sown under it
+      nachfolger: { winterraps: 0.4, winterweizen: 0.35, silomais: 0.15, kleegras: 0.1 },
+      quellen: [...DWD, 'tlsErnte', 'tlsBodennutzung', 'eigen'],
+    },
+    winterraps: {
+      name: 'Winterraps',
+      latein: 'Brassica napus',
+      gruppe: 'raps',
+      anteil: { thueringen: 0.162, hildburghausen: 0.136 },
+      winterung: true,
+      // DWD: sown 234, emerges 247, rosettes 271, stems grow 97, buds 108, flowering begins 123, ripe 201, harvested 213
+      saat: { doy: 234, streuung_tage: 6 },
+      ernte: { doy: 213, streuung_tage: 8, art: 'maehdrusch' },
+      herbst: [
+        PH('saat', 234, 246, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 247, 270, [0.01, 0.1], '#6c9a4c', 0.8, { bild: 'rosette' }),
+        PH('rosette', 271, 366, [0.1, 0.25], '#4e7450', 0.35, { bild: 'rosette' }), // dense blue-green rosettes all autumn
+      ],
+      jahr: [
+        PH('winter', 1, 80, [0.2, 0.2], '#566e4c', 0.45, { bild: 'rosette' }), // frost dulls and reddens the leaves
+        PH('streckung', 81, 107, [0.25, 0.7], '#507c42', 0.25, { bild: 'knospe' }),
+        PH('knospe', 108, 122, [0.7, 1.1], '#6a8c3e', 0.1, { bild: 'knospe' }),
+        PH('bluete', 123, 150, [1.1, 1.5], '#eccc24', 0.02, { bild: 'bluete' }), // the yellow fields of May
+        PH('schoten', 151, 186, [1.5, 1.5], '#62843a', 0.05, { bild: 'schoten' }),
+        PH('reife', 187, 212, [1.5, 1.4], '#857a52', 0.1, { bild: 'reif' }),
+        ...NACH_DRUSCH(213, 'stoppel_raps', 0.3),
+      ],
+      bestand: { pflanzen_m2: 40, halme_m2: null, reihe_cm: 25 },
+      bilder: { rosette: AZ(0, 0), knospe: AZ(1, 0), bluete: AZ(2, 0), schoten: AZ(3, 0), reif: AZ(4, 0) },
+      nachfolger: { winterweizen: 0.85, wintergerste: 0.05, triticale: 0.05, winterroggen: 0.05 },
+      quellen: [...DWD, 'tlsErnte', 'tlsBodennutzung', 'eigen'],
+    },
+    silomais: {
+      name: 'Silomais',
+      latein: 'Zea mays',
+      gruppe: 'mais',
+      anteil: { thueringen: 0.088, hildburghausen: 0.174 },
+      winterung: false,
+      // DWD: sown 119, emerges 136, stems grow 164, tassels 202, flowering 210, milk ripe 234, dough ripe 249 – chopped for silage then
+      saat: { doy: 119, streuung_tage: 7 },
+      ernte: { doy: 266, streuung_tage: 10, art: 'haeckseln' },
+      jahr: [
+        ...FRUEHJAHR(119, 105),
+        PH('saat', 119, 135, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 136, 150, [0.02, 0.1], '#72a046', 0.95, { bild: 'jung' }),
+        PH('jugend', 151, 163, [0.1, 0.45], '#5e9a3e', 0.8, { bild: 'jung' }),
+        PH('streckung', 164, 201, [0.45, 2.5], '#3f7a2e', 0.1, { bild: 'streckung' }),
+        PH('fahne', 202, 225, [2.5, 2.9], '#4c7c32', 0.05, { bild: 'fahne' }),
+        PH('kolben', 226, 248, [2.9, 2.9], '#557a34', 0.05, { bild: 'kolben' }),
+        PH('reife', 249, 265, [2.9, 2.85], '#7e8444', 0.05, { bild: 'reif' }),
+        PH('ernte', 266, 268, [0.25, 0.25], ACKERBODEN.stoppel_mais, 0.8, {
+          boden_art: 'stoppel_mais',
+          bild: 'stoppel',
+        }),
+        PH('stoppel', 269, 290, [0.25, 0.25], ACKERBODEN.stoppel_mais, 0.8, {
+          boden_art: 'stoppel_mais',
+          bild: 'stoppel',
+        }),
+        PH('umbruch', 291, 366, [0, 0], ACKERBODEN.saatbett, 1, { boden_art: 'saatbett' }),
+      ],
+      bestand: { pflanzen_m2: 9, halme_m2: null, reihe_cm: 75 },
+      bilder: {
+        jung: AZ(0, 1),
+        streckung: AZ(1, 1),
+        fahne: AZ(2, 1),
+        kolben: AZ(3, 1),
+        reif: AZ(4, 1),
+        trocken: AZ(5, 1),
+        stoppel: AZ(6, 1),
+      },
+      nachfolger: { winterweizen: 0.55, triticale: 0.15, silomais: 0.15, sommergerste: 0.1, winterroggen: 0.05 },
+      quellen: [...DWD, 'tlsErnte', 'tlsBodennutzung', 'eigen'],
+    },
+    koernermais: {
+      name: 'Körnermais',
+      latein: 'Zea mays',
+      gruppe: 'mais',
+      anteil: { thueringen: 0.013, hildburghausen: 0 },
+      winterung: false,
+      // like the silage maize, but it stands until it is dry and brown (threshed in October)
+      saat: { doy: 119, streuung_tage: 7 },
+      ernte: { doy: 290, streuung_tage: 12, art: 'maehdrusch' },
+      jahr: [
+        ...FRUEHJAHR(119, 105),
+        PH('saat', 119, 135, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 136, 150, [0.02, 0.1], '#72a046', 0.95, { bild: 'jung' }),
+        PH('jugend', 151, 163, [0.1, 0.45], '#5e9a3e', 0.8, { bild: 'jung' }),
+        PH('streckung', 164, 201, [0.45, 2.4], '#3f7a2e', 0.1, { bild: 'streckung' }),
+        PH('fahne', 202, 225, [2.4, 2.8], '#4c7c32', 0.05, { bild: 'fahne' }),
+        PH('kolben', 226, 248, [2.8, 2.8], '#557a34', 0.05, { bild: 'kolben' }),
+        PH('reife', 249, 265, [2.8, 2.8], '#7e8444', 0.05, { bild: 'reif' }),
+        PH('trocken', 266, 289, [2.8, 2.7], '#a8966a', 0.1, { bild: 'trocken' }),
+        PH('ernte', 290, 292, [0.3, 0.3], ACKERBODEN.stoppel_mais, 0.7, { boden_art: 'stoppel_mais', bild: 'stoppel' }),
+        PH('stoppel', 293, 315, [0.3, 0.3], ACKERBODEN.stoppel_mais, 0.7, {
+          boden_art: 'stoppel_mais',
+          bild: 'stoppel',
+        }),
+        PH('umbruch', 316, 366, [0, 0], ACKERBODEN.pflug, 1, { boden_art: 'pflug' }),
+      ],
+      bestand: { pflanzen_m2: 9, halme_m2: null, reihe_cm: 75 },
+      bilder: {
+        jung: AZ(0, 1),
+        streckung: AZ(1, 1),
+        fahne: AZ(2, 1),
+        kolben: AZ(3, 1),
+        reif: AZ(4, 1),
+        trocken: AZ(5, 1),
+        stoppel: AZ(6, 1),
+      },
+      nachfolger: { winterweizen: 0.5, sommergerste: 0.3, silomais: 0.2 },
+      quellen: [...DWD, 'tlsErnte', 'eigen'],
+    },
+    zuckerruebe: {
+      name: 'Zuckerrübe',
+      latein: 'Beta vulgaris subsp. vulgaris',
+      gruppe: 'hackfrucht',
+      anteil: { thueringen: 0.021, hildburghausen: 0 },
+      winterung: false,
+      // DWD (lowland stations): sown 98–105, emerges 121, rows close 165, lifted 278–281 – the campaign runs into November
+      saat: { doy: 105, streuung_tage: 8 },
+      ernte: { doy: 285, streuung_tage: 18, art: 'roden' },
+      jahr: [
+        ...FRUEHJAHR(105, 90),
+        PH('saat', 105, 120, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 121, 140, [0.01, 0.06], '#74a24c', 0.95, { bild: 'jung' }),
+        PH('jugend', 141, 164, [0.06, 0.35], '#5e9442', 0.55, { bild: 'jung' }),
+        PH('bestand', 165, 250, [0.35, 0.55], '#3f7c3a', 0.02, { bild: 'blatt' }),
+        PH('herbst', 251, 284, [0.55, 0.45], '#5e8442', 0.05, { bild: 'herbst' }), // the outer leaves yellow, the crowns show
+        PH('ernte', 285, 287, [0, 0], '#6a5a3e', 0.9, { boden_art: 'saatbett' }), // beet clamps at the field's edge
+        PH('stoppel', 288, 300, [0, 0], '#6a5a3e', 0.9, { boden_art: 'saatbett' }),
+        PH('umbruch', 301, 366, [0, 0], ACKERBODEN.pflug, 1, { boden_art: 'pflug' }),
+      ],
+      bestand: { pflanzen_m2: 9, halme_m2: null, reihe_cm: 45 },
+      bilder: { jung: AZ(0, 2), blatt: AZ(1, 2), herbst: AZ(2, 2) },
+      nachfolger: { winterweizen: 0.9, sommergerste: 0.1 },
+      quellen: [...DWD, 'tlsErnte', 'eigen'],
+    },
+    kartoffel: {
+      name: 'Kartoffel',
+      latein: 'Solanum tuberosum',
+      gruppe: 'hackfrucht',
+      anteil: { thueringen: 0.003, hildburghausen: 0.002 },
+      winterung: false,
+      // not in the DWD programme (estimated): planted in ridges end of April, flowering July, haulm killed in August, lifted in September
+      saat: { doy: 115, streuung_tage: 7 },
+      ernte: { doy: 256, streuung_tage: 12, art: 'roden' },
+      jahr: [
+        ...FRUEHJAHR(115, 100),
+        PH('saat', 115, 140, [0, 0], ACKERBODEN.damm, 1, { boden_art: 'damm' }),
+        PH('auflaufen', 141, 155, [0.03, 0.15], '#5e8a40', 0.85, { boden_art: 'damm', bild: 'jung' }),
+        PH('kraut', 156, 175, [0.15, 0.55], '#3e6a2e', 0.3, { boden_art: 'damm', bild: 'kraut' }),
+        PH('bluete', 176, 200, [0.55, 0.6], '#5e7e4c', 0.1, { boden_art: 'damm', bild: 'bluete' }),
+        PH('abreife', 201, 232, [0.55, 0.35], '#9a9450', 0.25, { boden_art: 'damm', bild: 'welk' }),
+        PH('krautfrei', 233, 255, [0.3, 0.2], '#5e4c38', 0.7, { boden_art: 'damm', bild: 'krautfrei' }),
+        PH('ernte', 256, 258, [0, 0], ACKERBODEN.damm, 1, { boden_art: 'damm' }),
+        PH('stoppel', 259, 275, [0, 0], ACKERBODEN.saatbett, 1, { boden_art: 'saatbett' }),
+        PH('umbruch', 276, 366, [0, 0], ACKERBODEN.pflug, 1, { boden_art: 'pflug' }),
+      ],
+      bestand: { pflanzen_m2: 4, halme_m2: null, reihe_cm: 75, damm: true },
+      bilder: { jung: AZ(3, 2), kraut: AZ(4, 2), bluete: AZ(5, 2), welk: AZ(6, 2), krautfrei: AZ(7, 2) },
+      nachfolger: { winterweizen: 0.7, triticale: 0.2, wintergerste: 0.1 },
+      quellen: ['tlsErnte', 'eigen'],
+    },
+    sonnenblume: {
+      name: 'Sonnenblume',
+      latein: 'Helianthus annuus',
+      gruppe: 'oelfrucht',
+      anteil: { thueringen: 0.011, hildburghausen: 0.003 },
+      winterung: false,
+      // DWD: sown 114, emerges 129, leaves 145, buds 176, flowering 199, harvested 263
+      saat: { doy: 114, streuung_tage: 7 },
+      ernte: { doy: 263, streuung_tage: 10, art: 'maehdrusch' },
+      jahr: [
+        ...FRUEHJAHR(114, 100),
+        PH('saat', 114, 128, [0, 0.01], ACKERBODEN.saatbett, 1),
+        PH('auflaufen', 129, 144, [0.02, 0.08], '#6a9a48', 0.9, { bild: 'jung' }),
+        PH('jugend', 145, 175, [0.08, 0.8], '#4f8a36', 0.5, { bild: 'jung' }),
+        PH('knospe', 176, 198, [0.8, 1.8], '#4a7e32', 0.1, { bild: 'knospe' }),
+        PH('bluete', 199, 225, [1.8, 1.9], '#d8b820', 0.05, { bild: 'bluete' }), // the heads face east
+        PH('reife', 226, 262, [1.9, 1.8], '#6a6438', 0.1, { bild: 'reif' }),
+        PH('ernte', 263, 265, [0.35, 0.35], ACKERBODEN.stoppel_raps, 0.6, { boden_art: 'stoppel_raps' }),
+        PH('stoppel', 266, 285, [0.35, 0.35], ACKERBODEN.stoppel_raps, 0.6, { boden_art: 'stoppel_raps' }),
+        PH('umbruch', 286, 366, [0, 0], ACKERBODEN.saatbett, 1, { boden_art: 'saatbett' }),
+      ],
+      bestand: { pflanzen_m2: 7, halme_m2: null, reihe_cm: 70 },
+      bilder: { jung: AZ(0, 3), knospe: AZ(1, 3), bluete: AZ(2, 3), reif: AZ(3, 3) },
+      nachfolger: { winterweizen: 0.8, sommergerste: 0.2 },
+      quellen: [...DWD, 'tlsErnte', 'tlsBodennutzung', 'eigen'],
+    },
+    kleegras: {
+      name: 'Kleegras und Luzerne (Ackerfutter)',
+      latein: 'Trifolium pratense, Medicago sativa, Lolium',
+      gruppe: 'futter',
+      anteil: { thueringen: 0.05, hildburghausen: 0.087 },
+      winterung: false,
+      mehrjaehrig: 2, // years a ley usually stays (nachfolger keeps it with 0.5)
+      // cut for silage four times; the first cut with the grassland's first silage cut (DWD: day 146 at 450 m)
+      saat: { doy: 100, streuung_tage: 10 },
+      schnitte: [
+        { doy: 146, streuung_tage: 7 },
+        { doy: 190, streuung_tage: 8 },
+        { doy: 235, streuung_tage: 10 },
+        { doy: 285, streuung_tage: 12 },
+      ],
+      jahr: [
+        PH('winter', 1, 85, [0.08, 0.08], '#5e7c46', 0.2),
+        PH('aufwuchs', 86, 135, [0.08, 0.5], '#4e8a3a', 0.05),
+        PH('bluete', 136, 145, [0.5, 0.55], '#5e8a44', 0.05, { bild: 'bluete' }),
+        PH('schnitt', 146, 148, [0.07, 0.07], '#8a9a5a', 0.1), // the swaths dry for a day or two
+        PH('aufwuchs', 149, 180, [0.07, 0.45], '#4e8a3a', 0.05),
+        PH('bluete', 181, 189, [0.45, 0.5], '#5e8a44', 0.05, { bild: 'bluete' }),
+        PH('schnitt', 190, 192, [0.07, 0.07], '#8a9a5a', 0.1),
+        PH('aufwuchs', 193, 225, [0.07, 0.42], '#528a3c', 0.05),
+        PH('bluete', 226, 234, [0.42, 0.45], '#5e8a44', 0.05, { bild: 'bluete' }),
+        PH('schnitt', 235, 237, [0.07, 0.07], '#8a9a5a', 0.1),
+        PH('aufwuchs', 238, 284, [0.07, 0.35], '#528a3e', 0.05),
+        PH('schnitt', 285, 287, [0.07, 0.07], '#8a9a5a', 0.1),
+        PH('herbst', 288, 366, [0.08, 0.12], '#5a8444', 0.1),
+      ],
+      // the template's blades and the flower atlas: the sward of the field
+      gras: { weidelgras: 0.6, wiesenschwingel: 0.2, knaulgras: 0.2 },
+      blumen: { rotklee: 40, weissklee: 10 },
+      bestand: { pflanzen_m2: null, halme_m2: 2000, reihe_cm: 12.5 },
+      bilder: { bluete: AZ(7, 0), luzerne: AZ(6, 0) },
+      luzerne: 0.35, // share of the fields with lucerne (purple) instead of red clover
+      nachfolger: { kleegras: 0.5, silomais: 0.25, winterweizen: 0.25 },
+      quellen: [...DWD, 'tlsErnte', 'eigen'],
+    },
+  };
+  // the catch crop between a cereal harvest and a spring crop (mustard, phacelia, oil radish): sown in August, yellow (mustard) in
+  // October, frozen and lying in the winter, worked in before the spring sowing
+  const zwischenfrucht = {
+    name: 'Zwischenfrucht (Senf, Phacelia, Ölrettich)',
+    anteil: 0.5, // share of the fields before a spring crop that carry one (estimated)
+    saat: { doy: 228, streuung_tage: 10 },
+    herbst: [
+      PH('saat', 228, 238, [0, 0.01], ACKERBODEN.saatbett, 1),
+      PH('auflaufen', 239, 255, [0.02, 0.15], '#74a44c', 0.7, { bild: 'jung' }),
+      PH('wuchs', 256, 274, [0.15, 0.6], '#5e9a40', 0.15, { bild: 'jung' }),
+      PH('bluete', 275, 305, [0.6, 0.8], '#d8c838', 0.1, { bild: 'bluete' }), // mustard
+      PH('frost', 306, 366, [0.6, 0.3], '#7a7a4a', 0.4, { bild: 'jung' }),
+    ],
+    fruehjahr: [PH('mulch', 1, 80, [0.2, 0.05], ACKERBODEN.mulch, 0.6, { boden_art: 'mulch' })],
+    bilder: { jung: AZ(5, 3), bluete: AZ(5, 0) },
+    quellen: ['eigen'],
+  };
+  // class 9 (acker): the crops the template draws, normalised over the crops in this table – Landkreis Hildburghausen 2025 (Ratscher and
+  // Schleusingen lie in it); Thuringia's shares in feldfruechte[id].anteil.thueringen for the world beyond
+  flaechen[9].feldfruechte = {
+    winterweizen: 0.331,
+    silomais: 0.184,
+    winterraps: 0.144,
+    wintergerste: 0.109,
+    kleegras: 0.092,
+    triticale: 0.069,
+    sommergerste: 0.052,
+    winterroggen: 0.011,
+    sonnenblume: 0.005,
+    kartoffel: 0.003,
+  };
+  flaechen[9].hinweis =
+    'die Feldfrüchte nach feldfruechte (Anteile hier: Landkreis Hildburghausen 2025), je Feld ein eigener Kalender und eine Fruchtfolge';
+  const atlas_acker = {
+    bild: 'bewuchs/acker.png',
+    daten: 'bewuchs/acker.json',
+    groesse_px: 1024,
+    zelle_px: 128,
+    spalten: 8,
+    zeilen: 8,
+  };
+
   const atlas = {
     bild: 'bewuchs/blumen.png',
     daten: 'bewuchs/blumen.json',
@@ -4512,8 +4998,12 @@ export const BWARTEN = (() => {
     beetvorlagen,
     boden: BODEN,
     lagen: LAGEN,
+    feldfruechte,
+    zwischenfrucht,
+    ackerboden: ACKERBODEN,
     atlas,
     atlas_beete,
+    atlas_acker,
     farbjahr,
     quellen: Q,
   };

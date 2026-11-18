@@ -180,12 +180,20 @@ class Quellen:
         self.fences = []
         self.highways = []  # OSM roads beyond the square: {kind, surf, w, bridge, p, osm}
         self.rails = []  # OSM tracks on the ground (not on bridges, not in tunnels): LineStrings
+        self.roundabouts, self.islands, self.oneways = [], [], []  # (part e: traffic green, gestaltung.py)
         for g, t, i in lines:
             if t.get('railway') in RAIL_KINDS and t.get('tunnel') in (None, 'no') and t.get('bridge') in (None, 'no'):
                 self.rails.append(g)
+            if 'highway' in t and t.get('junction') in ('roundabout', 'circular'):
+                self.roundabouts.append(g)
+            if t.get('traffic_calming') == 'island':
+                cs = list(g.coords)
+                self.islands.append(Polygon(cs) if len(cs) >= 4 and cs[0] == cs[-1] else g)
             r = road_of(t) if 'highway' in t and t.get('area') != 'yes' and t.get('tunnel') in (None, 'no') else None
             if r:
                 self.highways.append({'kind': r[0], 'surf': r[1], 'w': r[2], 'bridge': r[3], 'p': np.asarray(g.coords), 'osm': True})
+                if r[0] <= 2 and not r[3] and (t.get('oneway') in ('yes', '1', '-1') or t.get('highway') == 'motorway'):
+                    self.oneways.append({'kind': r[0], 'w': r[2], 'p': np.asarray(g.coords)})  # dual carriageways: medians
             w = t.get('waterway')
             if w in WATER_W and t.get('tunnel') not in ('culvert', 'yes'):
                 try:
@@ -267,24 +275,47 @@ class Quellen:
                         lines.append((LineString(pp), 1.2 if key == 'hedges' else 0.6))
         return polys, lines
 
+    def _zcell(self, key):
+        """the ETHOS footprints of one building cell (dist/gebaeude/z/<key>.json) with their kind: [(polygon, k)]"""
+        if key not in self._zcells:
+            fn = os.path.join(DIST, 'gebaeude', 'z', key + '.json')
+            L = []
+            if os.path.exists(fn):
+                for bb in json.load(open(fn)).get('b', []):
+                    ff = np.asarray(bb['f'], float).reshape(-1, 2)
+                    if len(ff) >= 3:
+                        p = Polygon(ff)
+                        L.append((p if p.is_valid else p.buffer(0), bb.get('k')))
+            self._zcells[key] = L
+        return self._zcells[key]
+
     def ethos_z(self, i, j):
         """ETHOS footprints of the building cells (dist/gebaeude/z/) round cell (i, j)"""
-        out = []
-        for a in (i - 1, i, i + 1):
-            for b in (j - 1, j, j + 1):
-                key = f'{a}_{b}'
-                if key not in self._zcells:
-                    fn = os.path.join(DIST, 'gebaeude', 'z', key + '.json')
-                    L = []
-                    if os.path.exists(fn):
-                        for bb in json.load(open(fn)).get('b', []):
-                            ff = np.asarray(bb['f'], float).reshape(-1, 2)
-                            if len(ff) >= 3:
-                                p = Polygon(ff)
-                                L.append(p if p.is_valid else p.buffer(0))
-                    self._zcells[key] = L
-                out += self._zcells[key]
-        return out
+        return [p for a in (i - 1, i, i + 1) for b in (j - 1, j, j + 1) for p, k in self._zcell(f'{a}_{b}')]
+
+    def houses_in(self, bx):
+        """the dwellings round a box (part e, gestaltung.py): ETHOS footprints of kind 0 (dist/gebaeude/ratscher.json and z/), OSM buildings
+        that are no shed, barn, garage …, the towns' own – 40–400 m²; one footprint per place (the first source wins: ETHOS, OSM, towns)"""
+        import math
+        import gestaltung
+        cand = [(p, gestaltung.is_house(p, kind=k)) for p, k in self.ethos_k if p.intersects(bx)]
+        x0, y0, x1, y1 = bx.bounds
+        for a in range(math.floor(x0 / 400) - 1, math.floor(x1 / 400) + 2):
+            for b in range(math.floor(y0 / 400) - 1, math.floor(y1 / 400) + 2):
+                cand += [(p, gestaltung.is_house(p, kind=k)) for p, k in self._zcell(f'{a}_{b}') if p.intersects(bx)]
+        for geom, kind, tags, oid in self.areas_in(bx):
+            if kind == 'building':
+                cand += [(p, gestaltung.is_house(p, tags=tags)) for p in getattr(geom, 'geoms', [geom]) if p.geom_type == 'Polygon']
+        cand += [(p, gestaltung.is_house(p)) for p in self.zone_b if p.intersects(bx)]
+        if not cand:
+            return []
+        tree = STRtree([p for p, h in cand])
+        kept = np.zeros(len(cand), bool)
+        for n, (p, h) in enumerate(cand):
+            c = p.representative_point()
+            if not any(kept[m] and cand[m][0].contains(c) for m in tree.query(c)):
+                kept[n] = True
+        return [p for (p, h), k in zip(cand, kept) if k and h]
 
     def roads_in(self, bx):
         """the roads of a box: inside the square the app's own (roads.b64.json); beyond it the drive's ways and OSM's (streets, tracks,
@@ -322,13 +353,14 @@ class Quellen:
 
     def _ethos(self):
         fn = os.path.join(DIST, 'gebaeude', 'ratscher.json')
-        out = []
+        out, self.ethos_k = [], []
         if os.path.exists(fn):
             for b in json.load(open(fn))['b']:
                 f = np.asarray(b['f'], float).reshape(-1, 2)
                 if len(f) >= 3:
                     p = Polygon(f)
                     out.append(p if p.is_valid else p.buffer(0))
+                    self.ethos_k.append((out[-1], b.get('k')))
         return out
 
     def _app(self):

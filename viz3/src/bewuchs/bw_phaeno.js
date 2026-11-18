@@ -36,7 +36,24 @@ export const BWPHAENO = (() => {
     'friedhof',
     'sportrasen',
     'gartenrasen',
+    // the field crops of the maps (bewuchs-daten part d), each field one; a field of 9 (unclear) takes one by the shares of the district
+    'wintergetreide',
+    'raps',
+    'hackfrucht',
+    'kleegras',
   ];
+  // stage 5a: the rows 23–30 of the table are the crops themselves (never in the maps – the shaders pick one per field)
+  const CROPS = [
+    'winterweizen',
+    'wintergerste',
+    'triticale',
+    'sommergerste',
+    'winterraps',
+    'silomais',
+    'kleegras',
+    'kartoffel',
+  ];
+  const CROP0 = 23;
   // growth through the year: share of the peak rate in each month (southern Thuringia, ~450 m: starts in March, peak in May, a summer dip,
   // a little in autumn) – grassland growth curves (e.g. the Bavarian and Thuringian grassland guides) rounded
   const SHAPE = [0, 0, 0.12, 0.55, 1.0, 0.85, 0.55, 0.5, 0.45, 0.22, 0.05, 0];
@@ -340,6 +357,10 @@ export const BWPHAENO = (() => {
     for (let c = 0; c < NC; c++) {
       const k = K[c];
       if (!k) continue;
+      if (k.crop) {
+        cropRow(k, doy, T, c * TW * 4);
+        continue;
+      }
       const o = c * TW * 4,
         m = k.mow || {},
         col = colour(k, doy);
@@ -393,6 +414,107 @@ export const BWPHAENO = (() => {
   // care, density; the blades' width, bend, colours and seed heads from the mix of its grasses; the flowers per m² summed. The lead's
   // class 18 (the garden's own lawn) takes the zierrasen's grasses and flowers but keeps its own care (only the player mows).
   const SEASONS = { frisch: 'fresh', sommer: 'summer', trocken: 'dry', herbst: 'autumn', winter: 'winter' };
+  // ---------- stage 5a: the crops ----------
+  const hexL = h =>
+    typeof h === 'string' && /^#[0-9a-f]{6}$/i.test(h)
+      ? [1, 3, 5].map(i => lin(parseInt(h.slice(i, i + 2), 16) / 255))
+      : null;
+  // a crop's phase on day d (its own year; a winter crop after its stubble: sown again in autumn, as if the same crop)
+  function cropPhase(F, d) {
+    const H = F.herbst || [];
+    if (H.length && d >= H[0].von) for (const p of H) if (d >= p.von && d < p.bis + 1) return p;
+    for (const p of F.jahr || []) if (d >= p.von && d < p.bis + 1) return p;
+    return null;
+  }
+  // the crop's row of the table: its height today (grown within the phase), colour, how much of the ground it covers, its blade, its
+  // ears; the harvest as a cut on each field's own day (± spread), the stubble standing until the plough
+  function cropRow(k, d, T, o) {
+    const F = k.crop,
+      E = F.ernte || {},
+      sp = E.streuung_tage || 0,
+      L = F.jahr || [],
+      ie = L.findIndex(q => q.name === 'ernte'),
+      // within the harvest days each field is cut on its own day: until then it stands as at the end of its last phase
+      inH = Number.isFinite(E.doy) && ie > 0 && Math.abs(d - E.doy) <= sp;
+    const p = inH ? L[ie - 1] : cropPhase(F, d);
+    if (!p) return;
+    const t = inH ? 1 : Math.max(0, Math.min(1, (d - p.von) / Math.max(1, p.bis - p.von + 1))),
+      hh = Array.isArray(p.hoehe_m) ? p.hoehe_m[0] + (p.hoehe_m[1] - p.hoehe_m[0]) * t : 0.1,
+      col = hexL(p.farbe) || [0.1, 0.18, 0.05],
+      cover = 1 - Math.max(0, Math.min(1, Number.isFinite(p.boden) ? p.boden : 0.3)),
+      st = L.find(q => q.name === 'stoppel'),
+      stubble = st && Array.isArray(st.hoehe_m) ? st.hoehe_m[0] : 0.15;
+    T[o] = inH ? stubble : hh;
+    T[o + 1] = hh;
+    T[o + 2] = 0;
+    if (inH) {
+      T[o + 5] = E.doy;
+      T[o + 7] = sp;
+      T[o + 17] = 1;
+    }
+    T.set([col[0], col[1], col[2], hh > 0.01 ? Math.max(0.05, cover) * k.dens : 0], o + 8);
+    // the ears and panicles: seed heads on the blades while they stand
+    const ears = !!(p.kopf || /aehre|rispe|bluete|reife|fahne/.test(p.name));
+    T.set([k.w, k.bend, 0, ears ? 0.85 : 0], o + 12);
+    T.set([1, 1, 1, 1], o + 20);
+    T.set([1, 1, 0, 0.5], o + 24);
+  }
+  function fromCrops(A) {
+    const FF = (A && A.feldfruechte) || {};
+    let n = 0;
+    CROPS.forEach((id, i) => {
+      const F = FF[id];
+      if (!F || !Array.isArray(F.jahr)) return;
+      const B = F.bestand || {},
+        row = (B.reihe_cm || 12) / 100;
+      // the blade: maize and potatoes broad and few, the cereals narrow and dense, rape between
+      const w = id.includes('mais')
+        ? 0.03
+        : id === 'kartoffel'
+          ? 0.02
+          : id === 'winterraps'
+            ? 0.012
+            : id === 'kleegras'
+              ? 0.008
+              : 0.0055;
+      const dens = id.includes('mais') ? 0.25 : id === 'kartoffel' ? 0.45 : id === 'winterraps' ? 0.8 : 1;
+      K[CROP0 + i] = {
+        crop: F,
+        id,
+        w,
+        bend: id.includes('mais') ? 0.15 : 0.35,
+        dens,
+        row: row > 0.3 ? row : 0,
+        h0: 0.15,
+        hMax: 3,
+        flowers: 0,
+      };
+      n++;
+    });
+    return n;
+  }
+  // the crops to choose for a field of each map class: [[row, cumulative share] …] (class 9: the district's shares)
+  function cropChoice(A) {
+    const sh = (A && A.flaechen && A.flaechen[9] && A.flaechen[9].feldfruechte) || {},
+      pick = ids => {
+        const L = ids.map(id => [id, sh[id] || 0.01]).filter(([id]) => CROPS.includes(id)),
+          sum = L.reduce((a, [, w]) => a + w, 0) || 1;
+        let acc = 0;
+        return L.map(([id, w]) => [CROP0 + CROPS.indexOf(id), (acc += w / sum)]);
+      };
+    return {
+      // (the shader takes four: the district's most frequent)
+      9: pick(
+        ['winterweizen', 'silomais', 'winterraps', 'wintergerste', 'kleegras', 'triticale', 'sommergerste', 'kartoffel']
+          .sort((a, b) => (sh[b] || 0) - (sh[a] || 0))
+          .slice(0, 4)
+      ),
+      19: pick(['winterweizen', 'wintergerste', 'triticale']),
+      20: pick(['winterraps']),
+      21: pick(['silomais', 'sommergerste', 'kartoffel']),
+      22: pick(['kleegras']),
+    };
+  }
   function fromArten(A) {
     if (!A || !A.flaechen) return 0;
     const G = A.gras || {};
@@ -479,6 +601,12 @@ export const BWPHAENO = (() => {
         k.col = Object.assign({}, k.col, out);
       }
       k.flowers = Object.values(e.blumen || {}).reduce((a, v) => a + (+v || 0), 0);
+      // a bed class (stage 4): the plants per m² of its templates
+      if (e.beete && A.beetvorlagen)
+        k.flowers = Object.entries(e.beete).reduce(
+          (a, [t, sh]) => a + (+sh || 0) * ((A.beetvorlagen[t] && A.beetvorlagen[t].dichte_m2) || 8),
+          0
+        );
       // the vigour of the place (the map's bits 5–7): a thin, poor sward or a rich one – a rich meadow has fewer flowers
       const pair = (v, d) => (Array.isArray(v) && v.length === 2 && v.every(Number.isFinite) ? v.slice() : d);
       if (e.kraft)
@@ -526,6 +654,11 @@ export const BWPHAENO = (() => {
     shapeAt,
     seedK,
     kahlT,
+    CROPS,
+    CROP0,
+    cropPhase,
+    fromCrops,
+    cropChoice,
     everyNow,
     table,
     merge,

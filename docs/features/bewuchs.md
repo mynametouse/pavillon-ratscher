@@ -65,6 +65,17 @@ wobei es trotzdem im Browser weiterhin flüssig laufen können soll.“ Gewählt
 - **Die ganze Welt** (Teile b und c von `bewuchs-daten`): die Strecken nach Schleusingen und Kloster Veßra und beide Orte, die Welt-Kacheln
   (Block B, Veßra) und die flachen Orte – 895 Zellen im Index (28 MB, je 4 × 4 Zellen unter 1,5 MB); geladen wird nur, was um die Kamera liegt.
 
+- **Beete** (Stufe 4, `BWBLUME`): die Beetpflanzen (`BWARTEN.beet`, 44) als Arten eines zweiten Atlas (`beete.png`, in einer Leinwand
+  von 8 × 16 Zellen mit den Wildblumen – ein Material); die Beetklassen 13–16 nach ihren Vorlagen (`BWARTEN.beetvorlagen`: Wechselflor,
+  Kübel, Stauden, Rosen, Bauerngarten, Kiesbeet, Grab, Verkehrsinsel, Kreisel, Gemüsegarten) – ein Beet eine Vorlage (nach der Stelle,
+  ~3 m), ihre Pflanzen der heutigen Phase; die Beetflächen setzt `bewuchs-daten` (Teil e: Vorgärten, Gemüse hinter dem Haus,
+  Kleingärten, Kreisel, Inseln, Mittelstreifen, Parkplatzgrün, Friedhof).
+- **Äcker** (Stufe 5a, `BWPHAENO` Zeilen 23–30, `BWHALM`): die Fruchtklassen der Karten (19 Wintergetreide, 20 Raps, 21 Mais/Hackfrucht,
+  22 Kleegras; 9 unklar – Teil d von `bewuchs-daten`, aus den Luftbildern je Feld) wählen je Feld (~140 m, gewellte Ränder) eine Frucht
+  nach den Anteilen (`BWARTEN.feldfruechte`, Landkreis Hildburghausen); ihre Zeile der Tabelle hat die Höhe heute (in der Phase
+  gewachsen), Farbe, Deckung, Halm (Mais breit, Getreide schmal), Ähren; geerntet Feld für Feld über die Erntetage, Stoppel bis zum
+  Pflug, Winterungen im Herbst neu gesät.
+
 ## Flüssig
 
 - Je Ring ein Zeichenaufruf für die Halme und einer für die Blumen (zusammen 5), die Programme beim Laden übersetzt (keine neuen im

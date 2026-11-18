@@ -57,9 +57,10 @@ class Cells(unittest.TestCase):
 
 
 class Coding(unittest.TestCase):
-    def test_classes_fixed(self):  # ids of the brief docs/plans/auftraege/bewuchs-daten.md
+    def test_classes_fixed(self):  # ids of the brief docs/plans/auftraege/bewuchs-daten.md; 19–22 the crops (part d, lead 18.11.)
         self.assertEqual(G.CLASSES, ['nichts', 'zierrasen', 'oeffentlich', 'bankett', 'maehwiese', 'weide', 'streuobst', 'saum', 'ufer', 'acker',
-                                     'ackerrand', 'waldboden', 'gebuesch', 'beet', 'gemuese', 'verkehrsgruen', 'friedhof', 'sportrasen'])
+                                     'ackerrand', 'waldboden', 'gebuesch', 'beet', 'gemuese', 'verkehrsgruen', 'friedhof', 'sportrasen',
+                                     'gartenrasen', 'wintergetreide', 'winterraps', 'hackfrucht', 'kleegras'])
         self.assertEqual(set(G.COLOURS), set(range(len(G.CLASSES))))
         self.assertEqual(set(G.NAMES_DE), set(range(len(G.CLASSES))))
 
