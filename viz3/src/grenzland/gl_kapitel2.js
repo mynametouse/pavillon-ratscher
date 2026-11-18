@@ -180,6 +180,33 @@ export const GLKAP2 = (() => {
       else if (typeof Z.lade === 'function') Z.lade(!!on);
     } catch (e) {}
   }
+  // agent zone's own helpers while its zone is the one in use (feat/grenzland-zone after V19g: ort('foto' | 'fremder'), netz(x, y) …) –
+  // undefined without them
+  function zhelp(fn, ...a) {
+    const Z = zone();
+    if (Z === ZONE0 || !Z || typeof Z[fn] !== 'function') return undefined;
+    try {
+      return Z[fn](...a);
+    } catch (e) {
+      return undefined;
+    }
+  }
+  const zort = name => {
+    const p = zhelp('ort', name);
+    return p && Number.isFinite(p.x) && Number.isFinite(p.y) ? [p.x, p.y] : null;
+  };
+  // the Simson's way there by the Landstraße (L 3004 through Eisfeld) on the radar, while one rides there
+  function zoneRoute(on) {
+    try {
+      const Z = window.GLZONE;
+      if (Z && typeof Z.route === 'function' && S.zoneTest === undefined) Z.route(!!on, 'land');
+    } catch (e) {}
+  }
+  // a signal for the phone (agent zone: -1 in the heath, 4 at the car park); without the zone's netz: always
+  const netzDa = () => {
+    const n = zhelp('netz', P.x, P.y);
+    return n === undefined || n === null || n > 0;
+  };
   // agent zone's real zone, when there is one (not in tests that give their own zone object): it brings its own ground and the cut there
   const echteZone = () => {
     const Z = window.GLZONE;
@@ -222,8 +249,8 @@ export const GLKAP2 = (() => {
         ['w2', 'wache2', [b[0] - ux * 1.1 - uy * 1.2, b[1] - uy * 1.1 + ux * 1.2], 'saw'],
         ['w3', 'wache3', [on.x + ux * 3.2 + uy * 2.5, on.y + uy * 3.2 - ux * 2.5], null],
       ],
-      // the stranger: at the edge of the heath, beyond the bunker
-      fremder: [b[0] + ux * 58 - uy * 16, b[1] + uy * 58 + ux * 16],
+      // the stranger: at the edge of the heath, beyond the bunker (the zone's own place for him, when it has one)
+      fremder: zort('fremder') || [b[0] + ux * 58 - uy * 16, b[1] + uy * 58 + ux * 16],
     };
   }
   let BP = null;
@@ -757,6 +784,7 @@ export const GLKAP2 = (() => {
       abbruch() {
         fotoAus();
         zoneLaden(false);
+        zoneRoute(false);
         V1.fahrt = false;
       },
       szene(i, A) {
@@ -800,6 +828,7 @@ export const GLKAP2 = (() => {
             if (!imDezember()) dezember(9, 40, 1);
             wetter(true);
             zoneLaden(true);
+            zoneRoute(true);
             sms('jule1');
             // the moped in the garden (unless one sits on it or it stands near); full
             const m = O.moped,
@@ -821,6 +850,9 @@ export const GLKAP2 = (() => {
           text: TX.k2m1.museum,
           ort: 'Grenzturm-Museum',
           ziel: () => ort('museum'),
+          an() {
+            zoneRoute(false);
+          },
           tick(dt, S) {
             const w = MI.wo();
             return (S.r || (w.v < 1.5 && MI.fern(ort('parkplatz')) < 60) || S.t > 25) && sag(S, 'k2museum');
@@ -888,7 +920,8 @@ export const GLKAP2 = (() => {
           text: () => TX.k2m1.fotos(K1.n),
           ort: 'Bunker',
           nochmal: [T.geschnappt, T.geschnapptSub],
-          ziel: () => bp().b,
+          // (agent zone's place to take them from, when it has one)
+          ziel: () => zort('foto') || bp().b,
           an() {
             K1.ft = 0;
             fotoAn();
@@ -1013,14 +1046,19 @@ export const GLKAP2 = (() => {
           text: TX.k2m1.heim,
           ort: 'Garten',
           ziel: () => O.garten.pos,
-          // a signal again: the stranger's message
-          an(S, why) {
+          // a signal again (agent zone's netz: out of the heath): the stranger's message
+          an(S) {
             zoneLaden(false);
-            if (sms('fremder')) MI.denk(T.netz, 2600);
-            if (why !== 'reload') S.redeT = 1.2;
+            // (sms() sends a message once: after a reload it comes only if it had not come yet)
+            S.sms = true;
             MI.extra(T.heimfahren, () => fahrt('heim'));
           },
           tick(dt, S) {
+            if (S.sms && netzDa()) {
+              S.sms = false;
+              if (sms('fremder')) MI.denk(T.netz, 2600);
+              S.redeT = 1.2;
+            }
             if (S.redeT > 0 && (S.redeT -= dt) <= 0 && !MI.redet()) MI.rede('k2fremderSms');
             const w = MI.wo();
             return (S.r || (MI.fern(O.garten.pos) < 22 && w.v < 3 && !MI.redet())) && sag(S, 'k2heim1');

@@ -164,8 +164,10 @@ Das Kapitel beginnt mit Mission 1 (mit dem Kapitelstart), Mission 2 folgt am sel
   den Kapitelstart, am nächsten Morgen. Sie nimmt von
   `GLZONE` (V19g): `ort()` für `parkplatz`, `museum`, `kolonnenweg_a`, `kolonnenweg_b`, `heide`, `bunker`,
   `weg()`, `da()`, `need('gl-k2', an)` von „Grünes Band“ bis zur Heimfahrt und `hin({ ort: 'parkplatz', mit: 'moped', fade: false })` für
-  „Hinfahren“ (die eigene Blende von Mission 1 liegt darüber). Solange `GLZONE.ort('bunker')` nichts liefert (Zone nicht geladen), gilt der
-  Ersatz westlich von Ratscher.
+  „Hinfahren“ (die eigene Blende von Mission 1 liegt darüber). Wenn es sie gibt (`feat/grenzland-zone` nach V19g): `route(true, 'land')`
+  beim Aufbruch (der Weg der Simson über die L 3004 auf dem Radar), `route(false)` am Grenzturm; `ort('fremder')` für den Fremden,
+  `ort('foto')` als Ziel der Fotos; `netz(x, y) > 0`, bevor die Nachricht des Fremden kommt. Solange `GLZONE.ort('bunker')` nichts liefert
+  (Zone nicht geladen), gilt der Ersatz westlich von Ratscher.
 
 ## Offen
 

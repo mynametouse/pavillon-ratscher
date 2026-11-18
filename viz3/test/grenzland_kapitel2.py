@@ -403,6 +403,8 @@ with lib.browser() as b:
         far = (b[0] + uy * 330, b[1] - ux * 330)
         put(far, 0)
         ok = bis('heim', 60)
+        # (a signal again – agent zone's netz has none in the heath: at the car park)
+        put(J("GLKAP2.ort('parkplatz')"), 0, (3, 3)); steps(1.5)
         st = J("({ sms: GLSTATE.sms.map(q => q.text.slice(0, 30)) })")
         ck('away from the way and out of the heath: a signal – the stranger\'s message („Ich will die Akte, nicht das Geld.“)', ok and any('Mein Vater stand 1989' in t or 'Ihr wart am Bunker' in t for t in st['sms']), str(st))
         talk()
