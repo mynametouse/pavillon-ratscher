@@ -143,6 +143,16 @@ test('the chapter begins in calm free play after chapter 1 – by the button, at
   assert.equal(L.beginnt({ ...o, knopf: true, kap1: false }), '', 'only after chapter 1');
   assert.equal(L.beginnt({ ...o, knopf: true, era: '1989' }), '');
 });
+test('the direct way in (?kapitel=2): chapter 1 marked done if it is not, chapter 2 opens – once it has begun, nothing', () => {
+  const k1 = s => Array(5).fill(s);
+  // a fresh start has begun chapter 1's first mission
+  assert.equal(L.direkt({ kap: 1, kap1: ['läuft', ...k1('offen').slice(1)], k2: ['offen', 'offen'] }), 'kap1');
+  assert.equal(L.direkt({ kap: 1, kap1: k1('erledigt'), k2: ['offen', 'offen'] }), 'beginnen');
+  assert.equal(L.direkt({ kap: 2, kap1: k1('erledigt'), k2: ['offen', 'offen'] }), 'nichts');
+  assert.equal(L.direkt({ kap: 1, kap1: k1('erledigt'), k2: ['offen', 'erledigt'] }), 'nichts', 'a save of the preview');
+  assert.equal(L.direkt({ kap: 1, kap1: k1('erledigt'), k2: ['läuft', 'offen'] }), 'nichts');
+  assert.equal(L.direkt({ kap: 1, kap1: [], k2: [] }), 'kap1');
+});
 test('December: Friday, 4 December 2026 – the Christmas market of Schleusingen is open on its evenings', () => {
   const d = new Date(L.DEZ * 864e5);
   assert.deepEqual([d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCDay()], [2026, 11, 4, 5]);

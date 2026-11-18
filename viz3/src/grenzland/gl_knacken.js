@@ -599,8 +599,15 @@ export const GLKNACKEN = (() => {
     save();
   }
   // a car taken and kept (stolen, cracked) stands where it was left, for the missions that follow
-  function start() {
+  // (a fresh start of the mode is a new story: the cars of the old one are gone)
+  function start(fresh) {
     load();
+    if (fresh) {
+      for (const id of Object.keys(S.welt)) weg(id);
+      S.autos = {};
+      save();
+      return;
+    }
     for (const [id, c] of Object.entries(S.autos)) if (c.gestohlen && c.alt && c.pos && !S.welt[id]) stelle(id, {});
   }
   function stop() {
@@ -655,7 +662,7 @@ export const GLKNACKEN = (() => {
       S.err = String((e && e.message) || e);
     }
   }
-  KERN.on('grenzland:start', () => setTimeout(() => GL.on && start(), 0));
+  KERN.on('grenzland:start', d => setTimeout(() => GL.on && start(!!(d && d.fresh)), 0));
   KERN.on('grenzland:stop', () => stop());
   const stand = () => ({
     autos: JSON.parse(JSON.stringify(S.autos)),
