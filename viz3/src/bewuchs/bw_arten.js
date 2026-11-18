@@ -42,6 +42,16 @@
 //                         of the width it covers, its mean colour). Made by tools/bewuchs/pflanzen/atlas.py.
 //   BWARTEN.farbjahr      the colour seasons of the grass at ~450 m: [day of year, season] anchors to interpolate between ('trocken'
 //                         comes from the weather, not the calendar).
+// Part 2 (bushes and beds; the fields are explained where they are defined below):
+//   BWARTEN.straeucher[id] a bush, wild or in gardens: size, form, where (wo: class names, lage: LAGEN), EZ-Tree preset and changes,
+//                         leaves, bloom and fruit as day-of-year windows (fruit: hanging in winter, edible), cut into shape or natural.
+//   BWARTEN.flaechen[k].straeucher  which bushes grow on a kind of area, how many per 100 m², how spread; flaechen[k].beete: the bed
+//                         templates of classes 13–16 with their shares.
+//   BWARTEN.beet[id]      a bed plant (bedding of spring, summer, autumn, perennials, ornamental grasses, roses, ground cover, the
+//                         plants of graves, vegetables): fields and rules as blumen; pictures in the second atlas (atlas_beete).
+//   BWARTEN.beetvorlagen[id]  a kind of bed: edge, soil (BWARTEN.boden), raster, plants per m², the plantings of the year (phasen).
+//   BWARTEN.lagen         the places a bush or bed stands (hedgerow, forest edge, front garden, grave …).
+//   BWARTEN.atlas_beete   the beds atlas: dist/bewuchs/beete.png + beete.json, the format of the flower atlas (tools/bewuchs/pflanzen/beete.py).
 // Days of year for southern Thuringia at ~450 m (Ratscher, Schleusingen): phenology of the lowlands shifted ~+5 days per 200 m.
 export const BWARTEN = (() => {
   const W = t => ['Wikipedia (de): ' + t.replace(/_/g, ' '), 'https://de.wikipedia.org/wiki/' + t];
@@ -88,6 +98,10 @@ export const BWARTEN = (() => {
     gplan: [
       'Pflanzen-Datenbank des Gartenplaners (viz3/extra/pflanzen/dist/gartenplaner/pflanzen.json): Blütemonate und Farben von Schafgarbe und Weißklee übernommen',
       null,
+    ],
+    dwdPhaeno: [
+      'DWD Climate Data Center: phänologische Jahresmelder (Wildpflanzen, Obst), historical bis 2024 – ausgewertet 1995–2024, alle Stationen bis 75 km um Schleusingen in 250–750 m, der Tag bei 450 m aus der Geraden über der Stationshöhe',
+      'https://opendata.dwd.de/climate_environment/CDC/observations_germany/phenology/annual_reporters/',
     ],
     eigen: ['Eigene Schätzung nach den Quellen dieser Datei (Dichte, Farben, Anteile) – im Spiel zu prüfen', null],
   };
@@ -404,7 +418,7 @@ export const BWARTEN = (() => {
         zelle: KNAEUEL,
         reif_zelle: KNAEUEL,
       },
-      quellen: [w('Wiesen-Knäuelgras'), 'hlnugPhaeno', ...BASIS],
+      quellen: ['dwdPhaeno', w('Wiesen-Knäuelgras'), 'hlnugPhaeno', ...BASIS],
     },
     fuchsschwanz: {
       name: 'Wiesen-Fuchsschwanzgras',
@@ -417,9 +431,9 @@ export const BWARTEN = (() => {
       farbe: { frisch: '#5c9040', sommer: '#58863c', trocken: '#a8a062', herbst: '#5e8242', winter: '#6a7c4e' },
       aehre: {
         form: 'aehrenrispe',
-        von: 128,
-        bis: 165,
-        reif_bis: 210,
+        von: 135, // DWD round Schleusingen: flowering begins on day 135 at 450 m (full flowering 141)
+        bis: 170,
+        reif_bis: 214,
         ueber_m: [0.25, 0.6],
         anteil: 0.4,
         farbe: '#8c8a72',
@@ -427,7 +441,7 @@ export const BWARTEN = (() => {
         zelle: AEHRENRISPE,
         reif_zelle: AEHRENRISPE,
       },
-      quellen: [w('Wiesen-Fuchsschwanzgras'), 'hlnugPhaeno', ...BASIS],
+      quellen: ['dwdPhaeno', w('Wiesen-Fuchsschwanzgras'), 'hlnugPhaeno', ...BASIS],
     },
     lieschgras: {
       name: 'Wiesen-Lieschgras',
@@ -768,7 +782,7 @@ export const BWARTEN = (() => {
       nachbluete_bis: 290,
       blatt_tage: 4,
       offen_h: [7, 17],
-      quellen: [w('Gewöhnlicher_Löwenzahn'), 'hercynia', ...BASIS],
+      quellen: ['dwdPhaeno', w('Gewöhnlicher_Löwenzahn'), 'hercynia', ...BASIS],
     },
     gaensebluemchen: {
       name: 'Gänseblümchen',
@@ -1202,14 +1216,14 @@ export const BWARTEN = (() => {
       bilder: { blatt: B([1, 5]), bluete: B([0, 5], 0.6) },
       jahr: [
         ['blatt', 95, 172],
-        ['bluete', 238, 292],
+        ['bluete', 245, 292], // DWD round Schleusingen: flowering begins on day 246 at 450 m
       ],
       streuung_tage: 8,
       wuchs: VOLL,
       nach_schnitt_tage: null, // the flowers come from the corm in autumn whatever the cuts
       nachbluete_bis: null,
       blatt_tage: null,
-      quellen: [w('Herbstzeitlose'), ...BASIS],
+      quellen: ['dwdPhaeno', w('Herbstzeitlose'), ...BASIS],
     },
     distel: {
       name: 'Acker-Kratzdistel',
@@ -1867,7 +1881,8 @@ export const BWARTEN = (() => {
   // vor_laub (on bare twigs) } or null; frucht { gruen [from, to] or null, reif [[from, to], …] (ripe and hanging; across the new year as
   // [a, 366] and [1, b]), winter (still hanging on 1 January = reif has a window from day 1), farbe_gruen, farbe, form, groesse_m, menge,
   // essbar 'ja' | 'gekocht' (only cooked or processed) | 'nein' (poisonous or inedible) } or null; fest_ab_m: solid for walker and
-  // vehicles from this height (plan: ~1 m; thickets lower); geschnitten: true = clipped into its shape (form 'kugel' | 'saeule' | 'hecke':
+  // vehicles from this height (plan: ~1 m; thickets lower); streuung_tage: ± days one bush is earlier or later than the table (from the
+  // hash of its place, for leaves, bloom and fruit alike); geschnitten: true = clipped into its shape (form 'kugel' | 'saeule' | 'hecke':
   // draw the outline smooth, schnitt.art 'kugel' | 'hecke'), false = natural outline; schnitt: the garden's care { art 'kugel' | 'hecke'
   // | 'auslichten' (old shoots out) | 'rueckschnitt' (cut back), doy [days] } or null (never cut).
   const LAGEN = [
@@ -1919,6 +1934,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1201,
@@ -1931,12 +1947,12 @@ export const BWARTEN = (() => {
         },
       },
       laub: LAUB([88, 112], [280, 300], [292, 315], '#3f6a2e', '#6e9a44', '#8a8a3a'),
-      // bloom: HLNUG Holunder 145 (1991–2009), Saxony-Anhalt 155 – at 450 m from ~150; the planner: May–June
-      bluete: { von: 150, bis: 172, farbe: '#f4f0dc', form: 'dolde', groesse_m: 0.18, menge: 0.5, vor_laub: false },
-      // ripe berries: HLNUG 242 → ~245 at 450 m; the birds take them by mid-October
+      // bloom: DWD round Schleusingen begins on day 154 at 450 m (HLNUG Hesse 145, Saxony-Anhalt 155); the planner: May–June
+      bluete: { von: 154, bis: 176, farbe: '#f4f0dc', form: 'dolde', groesse_m: 0.18, menge: 0.5, vor_laub: false },
+      // ripe berries: DWD first ripe fruit on day 243 at 450 m (HLNUG 242); the birds take them by mid-October
       frucht: {
-        gruen: [173, 237],
-        reif: [[238, 282]],
+        gruen: [177, 242],
+        reif: [[243, 285]],
         winter: false,
         farbe_gruen: '#6a8a3a',
         farbe: '#2a1a2a',
@@ -1946,7 +1962,7 @@ export const BWARTEN = (() => {
         essbar: 'gekocht',
       },
       schnitt: null,
-      quellen: [w('Schwarzer_Holunder'), 'hlnugPhaeno', 'hercynia', 'gplan', ...BASIS],
+      quellen: ['dwdPhaeno', w('Schwarzer_Holunder'), 'hlnugPhaeno', 'hercynia', 'gplan', ...BASIS],
     },
     traubenholunder: {
       name: 'Roter Holunder (Traubenholunder)',
@@ -1961,6 +1977,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1241,
@@ -2002,6 +2019,7 @@ export const BWARTEN = (() => {
       dornen: true,
       fest_ab_m: 0.6,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1203,
@@ -2015,7 +2033,8 @@ export const BWARTEN = (() => {
         },
       },
       laub: LAUB([100, 118], [280, 298], [292, 312], '#3e6a2c', '#7aa44c', '#b0702e'),
-      bluete: { von: 132, bis: 150, farbe: '#f6f4ec', form: 'dolde', groesse_m: 0.06, menge: 0.85, vor_laub: false },
+      // DWD round Schleusingen (two-styled hawthorn): flowering begins on day 136, ripe haws on day 250 at 450 m; the one-styled some days later
+      bluete: { von: 140, bis: 158, farbe: '#f6f4ec', form: 'dolde', groesse_m: 0.06, menge: 0.85, vor_laub: false },
       // the red haws hang into the winter (birds)
       frucht: {
         gruen: [151, 249],
@@ -2032,7 +2051,7 @@ export const BWARTEN = (() => {
         essbar: 'ja',
       },
       schnitt: null,
-      quellen: [w('Eingriffeliger_Weißdorn'), ...BASIS],
+      quellen: ['dwdPhaeno', w('Eingriffeliger_Weißdorn'), ...BASIS],
     },
     schlehe: {
       name: 'Schlehe',
@@ -2047,6 +2066,7 @@ export const BWARTEN = (() => {
       dornen: true,
       fest_ab_m: 0.5,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1205,
@@ -2058,12 +2078,12 @@ export const BWARTEN = (() => {
           'branch.gnarliness.1': 0.2,
         },
       },
-      laub: LAUB([112, 130], [280, 298], [290, 310], '#3f6630', '#6e9a46', '#8a6a3a'),
-      // white clouds on black twigs before the leaves (April at 450 m)
-      bluete: { von: 100, bis: 118, farbe: '#f8f6f0', form: 'einzeln', groesse_m: 0.015, menge: 0.95, vor_laub: true },
+      laub: LAUB([120, 138], [280, 298], [290, 310], '#3f6630', '#6e9a46', '#8a6a3a'),
+      // white clouds on black twigs before the leaves (DWD round Schleusingen: flowering begins on day 112 at 450 m)
+      bluete: { von: 112, bis: 130, farbe: '#f8f6f0', form: 'einzeln', groesse_m: 0.015, menge: 0.95, vor_laub: true },
       // the sloes: blue-black and frosted, they hang through the winter
       frucht: {
-        gruen: [140, 254],
+        gruen: [135, 254],
         reif: [
           [255, 366],
           [1, 45],
@@ -2077,7 +2097,7 @@ export const BWARTEN = (() => {
         essbar: 'ja', // after the first frost
       },
       schnitt: null,
-      quellen: [w('Schlehdorn'), ...BASIS],
+      quellen: ['dwdPhaeno', w('Schlehdorn'), ...BASIS],
     },
     hundsrose: {
       name: 'Hundsrose',
@@ -2092,6 +2112,7 @@ export const BWARTEN = (() => {
       dornen: true,
       fest_ab_m: 0.6,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1207,
@@ -2104,12 +2125,13 @@ export const BWARTEN = (() => {
         },
       },
       laub: LAUB([100, 118], [278, 298], [292, 312], '#4f7a35', '#76a04a', '#c0702a'),
-      bluete: { von: 158, bis: 180, farbe: '#f4c8d0', form: 'einzeln', groesse_m: 0.05, menge: 0.45, vor_laub: false },
-      // hips (HLNUG Hunds-Rose ripe 249 → ~252 at 450 m) hang until late winter
+      // DWD round Schleusingen: flowering begins on day 155, the first hips are ripe on day 251 at 450 m
+      bluete: { von: 155, bis: 177, farbe: '#f4c8d0', form: 'einzeln', groesse_m: 0.05, menge: 0.45, vor_laub: false },
+      // the hips hang until late winter
       frucht: {
-        gruen: [181, 251],
+        gruen: [178, 250],
         reif: [
-          [252, 366],
+          [251, 366],
           [1, 60],
         ],
         winter: true,
@@ -2121,7 +2143,7 @@ export const BWARTEN = (() => {
         essbar: 'gekocht', // tea and purée, the hairy seeds out
       },
       schnitt: null,
-      quellen: [w('Hunds-Rose'), 'hlnugPhaeno', 'gplan', ...BASIS],
+      quellen: ['dwdPhaeno', w('Hunds-Rose'), 'hlnugPhaeno', 'gplan', ...BASIS],
     },
     hasel: {
       name: 'Gemeine Hasel',
@@ -2136,6 +2158,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1209,
@@ -2148,8 +2171,8 @@ export const BWARTEN = (() => {
         },
       },
       laub: LAUB([105, 122], [280, 300], [295, 318], '#4f7a35', '#7aa24a', '#d0b040'),
-      // the yellow catkins on bare twigs (HLNUG Hasel 58 → ~65 at 450 m)
-      bluete: { von: 55, bis: 85, farbe: '#d8c86a', form: 'kaetzchen', groesse_m: 0.06, menge: 0.7, vor_laub: true },
+      // the yellow catkins on bare twigs (DWD round Schleusingen: flowering begins on day 58 at 450 m; mild winters weeks earlier)
+      bluete: { von: 58, bis: 84, farbe: '#d8c86a', form: 'kaetzchen', groesse_m: 0.06, menge: 0.7, vor_laub: true },
       frucht: {
         gruen: [170, 244],
         reif: [[245, 275]],
@@ -2162,7 +2185,7 @@ export const BWARTEN = (() => {
         essbar: 'ja',
       },
       schnitt: null,
-      quellen: [w('Gemeine_Hasel'), 'hlnugPhaeno', 'gplan', ...BASIS],
+      quellen: ['dwdPhaeno', w('Gemeine_Hasel'), 'hlnugPhaeno', 'gplan', ...BASIS],
     },
     brombeere: {
       name: 'Brombeere',
@@ -2177,6 +2200,7 @@ export const BWARTEN = (() => {
       dornen: true,
       fest_ab_m: 0.4, // the tangle stops one already low
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1211,
@@ -2229,6 +2253,7 @@ export const BWARTEN = (() => {
       dornen: true,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1213,
@@ -2271,6 +2296,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1215,
@@ -2306,6 +2332,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: { preset: 'Bush 2', seed: 1217, mod: { 'branch.children.0': 7, 'branch.angle.1': 35, 'leaves.size': 2 } },
       laub: LAUB([105, 122], [272, 295], [292, 312], '#4a7432', '#78a24c', '#c84a6a'),
       bluete: { von: 140, bis: 160, farbe: '#c8d0a0', form: 'einzeln', groesse_m: 0.01, menge: 0.3, vor_laub: false },
@@ -2337,6 +2364,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1219,
@@ -2349,11 +2377,11 @@ export const BWARTEN = (() => {
         },
       },
       laub: LAUB([105, 122], [282, 302], [295, 318], '#5a7a4a', '#88aa60', '#c8b048'),
-      // the silver catkins („Palmkätzchen“), then yellow with pollen, on bare twigs
-      bluete: { von: 75, bis: 105, farbe: '#e8e0a0', form: 'kaetzchen', groesse_m: 0.03, menge: 0.75, vor_laub: true },
+      // the silver catkins („Palmkätzchen“), then yellow with pollen, on bare twigs (DWD: flowering begins on day 87 at 450 m)
+      bluete: { von: 87, bis: 108, farbe: '#e8e0a0', form: 'kaetzchen', groesse_m: 0.03, menge: 0.75, vor_laub: true },
       frucht: null,
       schnitt: null,
-      quellen: [w('Sal-Weide'), ...BASIS],
+      quellen: ['dwdPhaeno', w('Sal-Weide'), ...BASIS],
     },
     schneeball: {
       name: 'Gewöhnlicher Schneeball',
@@ -2368,6 +2396,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1243,
@@ -2413,6 +2442,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 0.8,
       geschnitten: false,
+      streuung_tage: 5,
       // green whippy twigs, nearly leafless – needle cards stand in for them; on the acid Buntsandstein round Schleusingen
       eztree: {
         preset: 'Bush 2',
@@ -2456,6 +2486,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1247,
@@ -2468,11 +2499,11 @@ export const BWARTEN = (() => {
         },
       },
       laub: LAUB([105, 122], [275, 295], [290, 312], '#4f7a35', '#7aa44c', '#c0602a'),
-      // the first yellow of the year, on bare twigs (the planner: February–March)
-      bluete: { von: 65, bis: 95, farbe: '#e8c832', form: 'dolde', groesse_m: 0.02, menge: 0.85, vor_laub: true },
+      // the first yellow of the year, on bare twigs (DWD round Schleusingen: flowering begins on day 84 at 450 m, ripe fruit day 243)
+      bluete: { von: 84, bis: 106, farbe: '#e8c832', form: 'dolde', groesse_m: 0.02, menge: 0.85, vor_laub: true },
       frucht: {
-        gruen: [120, 225],
-        reif: [[226, 262]],
+        gruen: [110, 242],
+        reif: [[243, 275]],
         winter: false,
         farbe_gruen: '#8aa04a',
         farbe: '#b01e2a',
@@ -2482,7 +2513,7 @@ export const BWARTEN = (() => {
         essbar: 'ja',
       },
       schnitt: null,
-      quellen: [w('Kornelkirsche'), 'gplan', ...BASIS],
+      quellen: ['dwdPhaeno', w('Kornelkirsche'), 'gplan', ...BASIS],
     },
     // -- gardens, front gardens, public green, cemeteries
     johannisbeere: {
@@ -2498,6 +2529,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1221,
@@ -2510,11 +2542,12 @@ export const BWARTEN = (() => {
         },
       },
       laub: LAUB([95, 115], [275, 295], [288, 308], '#5f8a3a', '#84aa52', '#c9a23a'),
-      bluete: { von: 108, bis: 125, farbe: '#c8d08a', form: 'traube', groesse_m: 0.05, menge: 0.5, vor_laub: false },
-      // HLNUG: picking ripe 186 → ~190 at 450 m; the planner's late sort: end of July to mid-August
+      // DWD round Schleusingen: flowering begins on day 114, ripe for picking on day 188 at 450 m
+      bluete: { von: 114, bis: 130, farbe: '#c8d08a', form: 'traube', groesse_m: 0.05, menge: 0.5, vor_laub: false },
+      // the planner's late sort ripens end of July to mid-August
       frucht: {
-        gruen: [140, 184],
-        reif: [[185, 220]],
+        gruen: [131, 187],
+        reif: [[188, 222]],
         winter: false,
         farbe_gruen: '#a8c070',
         farbe: '#d0202a',
@@ -2524,7 +2557,7 @@ export const BWARTEN = (() => {
         essbar: 'ja',
       },
       schnitt: { art: 'auslichten', doy: [45] },
-      quellen: [w('Rote_Johannisbeere'), 'hlnugPhaeno', 'gplan', ...BASIS],
+      quellen: ['dwdPhaeno', w('Rote_Johannisbeere'), 'hlnugPhaeno', 'gplan', ...BASIS],
     },
     johannisbeere_schwarz: {
       name: 'Schwarze Johannisbeere',
@@ -2539,6 +2572,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1223,
@@ -2551,10 +2585,10 @@ export const BWARTEN = (() => {
         },
       },
       laub: LAUB([95, 115], [275, 295], [288, 308], '#4f7a35', '#7aa24a', '#b8a050'),
-      bluete: { von: 108, bis: 125, farbe: '#c8a88a', form: 'traube', groesse_m: 0.04, menge: 0.45, vor_laub: false },
+      bluete: { von: 112, bis: 128, farbe: '#c8a88a', form: 'traube', groesse_m: 0.04, menge: 0.45, vor_laub: false },
       frucht: {
-        gruen: [140, 187],
-        reif: [[188, 212]],
+        gruen: [129, 189],
+        reif: [[190, 214]],
         winter: false,
         farbe_gruen: '#7a9a4a',
         farbe: '#1a1420',
@@ -2564,7 +2598,7 @@ export const BWARTEN = (() => {
         essbar: 'ja',
       },
       schnitt: { art: 'auslichten', doy: [45] },
-      quellen: [w('Schwarze_Johannisbeere'), 'gplan', ...BASIS],
+      quellen: ['dwdPhaeno', w('Schwarze_Johannisbeere'), 'gplan', ...BASIS],
     },
     stachelbeere: {
       name: 'Stachelbeere',
@@ -2579,6 +2613,7 @@ export const BWARTEN = (() => {
       dornen: true,
       fest_ab_m: 0.8,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1225,
@@ -2590,12 +2625,13 @@ export const BWARTEN = (() => {
           'branch.children.0': 9,
         },
       },
-      // the earliest leaves of the garden (HLNUG: leaf unfolding 96 → ~100 at 450 m)
-      laub: LAUB([92, 108], [272, 292], [285, 305], '#5a8a3a', '#86ae56', '#c0a040'),
-      bluete: { von: 105, bis: 120, farbe: '#b8c48a', form: 'einzeln', groesse_m: 0.012, menge: 0.35, vor_laub: false },
+      // the earliest leaves of the garden (DWD round Schleusingen at 450 m: bud burst day 83, leaves unfold 96, flowering begins 110,
+      // ripe for picking 193)
+      laub: LAUB([90, 106], [272, 292], [285, 305], '#5a8a3a', '#86ae56', '#c0a040'),
+      bluete: { von: 110, bis: 124, farbe: '#b8c48a', form: 'einzeln', groesse_m: 0.012, menge: 0.35, vor_laub: false },
       frucht: {
-        gruen: [130, 182],
-        reif: [[183, 205]],
+        gruen: [125, 192],
+        reif: [[193, 215]],
         winter: false,
         farbe_gruen: '#a8c070',
         farbe: '#b8c860',
@@ -2605,7 +2641,7 @@ export const BWARTEN = (() => {
         essbar: 'ja',
       },
       schnitt: { art: 'auslichten', doy: [45] },
-      quellen: [w('Stachelbeere'), 'hlnugPhaeno', 'gplan', ...BASIS],
+      quellen: ['dwdPhaeno', w('Stachelbeere'), 'hlnugPhaeno', 'gplan', ...BASIS],
     },
     flieder: {
       name: 'Gemeiner Flieder',
@@ -2620,6 +2656,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1227,
@@ -2627,10 +2664,10 @@ export const BWARTEN = (() => {
       },
       // leaves early, green until they fall in November
       laub: LAUB([100, 118], [300, 318], [305, 325], '#3f6a30', '#6e9a46', '#7a8a3a'),
-      // HLNUG Flieder 131 → ~135 at 450 m
+      // DWD round Schleusingen: flowering begins on day 133 at 450 m
       bluete: {
-        von: 130,
-        bis: 148,
+        von: 133,
+        bis: 150,
         farbe: '#b49ad8',
         farben: ['#b49ad8', '#f4f2ec', '#8a5aa8'],
         form: 'rispe',
@@ -2640,7 +2677,7 @@ export const BWARTEN = (() => {
       },
       frucht: null,
       schnitt: { art: 'rueckschnitt', doy: [155] }, // the faded panicles cut in gardens
-      quellen: [w('Gemeiner_Flieder'), 'hlnugPhaeno', ...BASIS],
+      quellen: ['dwdPhaeno', w('Gemeiner_Flieder'), 'hlnugPhaeno', ...BASIS],
     },
     forsythie: {
       name: 'Forsythie',
@@ -2655,17 +2692,18 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1229,
         mod: { 'leaves.type': 'aspen', 'branch.force.strength': -0.05, 'branch.angle.1': 30, 'branch.children.0': 10 },
       },
       laub: LAUB([110, 128], [285, 305], [298, 320], '#4f7a35', '#7aa44a', '#8a6a4a'),
-      // yellow before the leaves (HLNUG Forsythie 93 → ~100 at 450 m)
-      bluete: { von: 98, bis: 120, farbe: '#f2c418', form: 'einzeln', groesse_m: 0.03, menge: 0.95, vor_laub: true },
+      // yellow before the leaves (DWD round Schleusingen: flowering begins on day 95 at 450 m)
+      bluete: { von: 95, bis: 117, farbe: '#f2c418', form: 'einzeln', groesse_m: 0.03, menge: 0.95, vor_laub: true },
       frucht: null,
       schnitt: { art: 'auslichten', doy: [135] },
-      quellen: [w('Forsythien'), 'hlnugPhaeno', ...BASIS],
+      quellen: ['dwdPhaeno', w('Forsythien'), 'hlnugPhaeno', ...BASIS],
     },
     hortensie: {
       name: 'Garten-Hortensie',
@@ -2680,6 +2718,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1231,
@@ -2733,6 +2772,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1233,
@@ -2771,6 +2811,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1249,
@@ -2812,6 +2853,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 0.8,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1251,
@@ -2856,6 +2898,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1257,
@@ -2886,6 +2929,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1259,
@@ -2925,6 +2969,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1267,
@@ -2957,6 +3002,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 0.8,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 2',
         seed: 1255,
@@ -2997,6 +3043,7 @@ export const BWARTEN = (() => {
       dornen: true,
       fest_ab_m: 0.7,
       geschnitten: false,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1265,
@@ -3042,6 +3089,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 1,
       geschnitten: true,
+      streuung_tage: 5,
       // a cut ball: the template may draw a leafy sphere instead of a tree
       eztree: {
         preset: 'Bush 3',
@@ -3074,6 +3122,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 0.5,
       geschnitten: true,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 3',
         seed: 1237,
@@ -3098,6 +3147,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 0.5,
       geschnitten: true,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 3',
         seed: 1263,
@@ -3133,6 +3183,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 0.6,
       geschnitten: true, // as a hedge; wild in hedgerows it grows free
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1239,
@@ -3179,6 +3230,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 0.6,
       geschnitten: true,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1253,
@@ -3220,6 +3272,7 @@ export const BWARTEN = (() => {
       dornen: false,
       fest_ab_m: 0.5,
       geschnitten: true,
+      streuung_tage: 5,
       eztree: {
         preset: 'Bush 1',
         seed: 1261,
@@ -3251,9 +3304,11 @@ export const BWARTEN = (() => {
 
   // ---------------- bed plants (part 2): bedding, perennials, roses, ground cover, grave plants, vegetables ----------------
   // Like the wildflowers (same fields and rules: hoehe_m, bilder, jahr, streuung_tage, wuchs, farbe), but their pictures are in the second
-  // atlas (atlas_beete: dist/bewuchs/beete.png + beete.json, the same format). gruppe: wechselflor | staude | rose | bodendecker | grab |
-  // gemuese; abstand_m: planting distance (m) in a bed; farben: colour variants of the flowers (a bed or a plant picks one; farbe = the
-  // usual one, for the speckles far away). The frames of vegetables: jung, reif, bluete, frucht, welk (and blatt).
+  // atlas (atlas_beete: dist/bewuchs/beete.png + beete.json, the same format; a cell that also shows other frames of the plant lists them
+  // under 'auch'). Not mown, so no nach_schnitt_tage. gruppe: wechselflor (with saison 'fruehjahr' | 'sommer' | 'herbst') | staude |
+  // ziergras | rose | bodendecker | grab | gemuese; abstand_m: planting distance (m) in a bed; farben: colour variants of the flowers
+  // (farben[0] = farbe, the usual one for the speckles far away; a bed or a plant picks one), bilder_varianten: further cells of the same
+  // frame drawn in another colour (a plant picks one by its hash). The frames of vegetables: jung, reif, bluete, frucht, welk (and blatt).
   const BB = (zelle, hoehe = 1) => ({ zelle, hoehe });
   const GARTEN = M(0, 0, 0.1, 0.4, 0.75, 1, 1, 1, 1, 0.9, 0.5, 0); // perennials in a bed: cut back in March, up again by June
   const IMMER = M(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);

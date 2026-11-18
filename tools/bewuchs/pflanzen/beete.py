@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The second atlas of the vegetation template (feat/bewuchs-pflanzen, part 2): the bed plants of viz3/src/bewuchs/bw_arten.js (BWARTEN.beet) –
-spring and summer bedding, autumn heather, perennials, roses, ground cover, the plants of graves, vegetables in their stages – drawn with the
+spring and summer bedding, autumn heather, perennials, ornamental grasses, roses, ground cover, the plants of graves, vegetables in their
+stages (Reitgras and Lampenputzergras share the Chinaschilf cells, the Fingerstrauch out of flower the perennials' leaves) – drawn with the
 painter of atlas.py (same format: 1024 x 1024 RGBA, 8 x 8 cells of 128 px, cell (c, r) from the top left, one plant in side view, its
 foot at the bottom centre, filling the cell's height, straight alpha with the colour bled into the transparent pixels; our own work).
 

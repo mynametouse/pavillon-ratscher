@@ -366,6 +366,10 @@ test('bushes: size, form, places, EZ-Tree preset and changes, leaves, bloom and 
     assert.equal(typeof b.dornen, 'boolean', at + '.dornen');
     num(b.fest_ab_m, 0, 2, at + '.fest_ab_m');
     assert.equal(typeof b.geschnitten, 'boolean', at + '.geschnitten');
+    assert.ok(
+      Number.isInteger(b.streuung_tage) && b.streuung_tage >= 0 && b.streuung_tage <= 20,
+      at + '.streuung_tage'
+    );
     if (b.geschnitten) {
       assert.ok(['kugel', 'saeule', 'hecke'].includes(b.form), at + ': geschnitten, aber form ' + b.form);
       assert.ok(
@@ -456,9 +460,12 @@ test('bushes: size, form, places, EZ-Tree preset and changes, leaves, bloom and 
   const S = B.straeucher;
   const blooms = (id, d) => S[id].bluete && inWin([S[id].bluete.von, S[id].bluete.bis], d);
   const ripe = (id, d) => S[id].frucht && S[id].frucht.reif.some(r => inWin(r, d));
-  assert.ok(blooms('hasel', 70) && blooms('salweide', 90), 'März: Hasel und Salweide');
-  assert.ok(blooms('schlehe', 110) && blooms('forsythie', 105), 'April: Schlehe und Forsythie');
-  assert.ok(blooms('weissdorn', 140) && blooms('flieder', 140), 'Mai: Weißdorn, Flieder');
+  assert.ok(
+    blooms('hasel', 70) && blooms('salweide', 90) && blooms('kornelkirsche', 90),
+    'März: Hasel, Salweide, Kornelkirsche'
+  );
+  assert.ok(blooms('schlehe', 118) && blooms('forsythie', 105), 'April: Schlehe und Forsythie');
+  assert.ok(blooms('weissdorn', 145) && blooms('flieder', 145), 'Mai: Weißdorn, Flieder');
   assert.ok(blooms('holunder', 160) && blooms('hundsrose', 170), 'Juni: Holunder, Hundsrose');
   assert.ok(ripe('johannisbeere', 195) && ripe('stachelbeere', 195) && ripe('himbeere', 195), 'Juli: Beeren');
   assert.ok(ripe('brombeere', 230), 'August: Brombeeren');

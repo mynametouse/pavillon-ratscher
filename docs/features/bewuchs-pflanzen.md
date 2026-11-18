@@ -1,24 +1,31 @@
-# Bewuchs: Pflanzen – Gräser, Wildblumen, ihr Jahr, die Pflege je Flächenart, der Blumenatlas (Branch `feat/bewuchs-pflanzen`)
+# Bewuchs: Pflanzen – Gräser, Wildblumen, Sträucher, Beete, ihr Jahr, die Pflege je Flächenart, zwei Bildatlanten (Branch `feat/bewuchs-pflanzen`)
 
-Das **Was** der Vorlage für den Bewuchs (Plan `docs/plans/plan_bewuchs.md`, Auftrag `docs/plans/auftraege/bewuchs-pflanzen.md`): jede Grasart
-und Wildblume der Region als Daten, die die Vorlage des Straßen-Chats zeichnet (`viz3/src/bewuchs/`), dazu ein Bildatlas der Blumen in eigener
-Zeichnung. Das **Wo** (Karten der Flächenart, Klassen 0–17) macht `bewuchs-daten`. Stand 17.11.2026, Teil 1 (Gräser, Wildblumen, Flächen);
-Teil 2 (Büsche und Beetpflanzen) folgt auf Zuruf.
+Das **Was** der Vorlage für den Bewuchs (Plan `docs/plans/plan_bewuchs.md`, Auftrag `docs/plans/auftraege/bewuchs-pflanzen.md`): jede Grasart,
+Wildblume, Strauch- und Beetpflanze der Region als Daten, die die Vorlage des Straßen-Chats zeichnet (`viz3/src/bewuchs/`), dazu zwei Bildatlanten
+(Blumen, Beetpflanzen) in eigener Zeichnung. Das **Wo** (Karten der Flächenart, Klassen 0–17) macht `bewuchs-daten`. Teil 1 (Gräser, Wildblumen, Flächen, Blumenatlas)
+17.11.2026, beim Straßen-Chat eingebaut; **Teil 2** (Sträucher mit Beeren, Beet- und Zierpflanzen, Beetvorlagen, zweiter Atlas) 18.11.2026 –
+die Felder von Teil 1 sind unverändert, Teil 2 kommt dazu (`straeucher`, `beet`, `beetvorlagen`, `boden`, `lagen`, `atlas_beete`, und je
+Flächenart `straeucher` und `beete`).
 
 ## Was es gibt
 
 | Datei | Inhalt |
 |---|---|
-| `viz3/src/bewuchs/bw_arten.js` | `BWARTEN = { v: 1, gras, blumen, flaechen, atlas, farbjahr, quellen }` – rein (kein three.js, kein DOM; `window.BWARTEN` nur zur Übergabe an die Seite), Modulzeile unter `# feat/bewuchs-pflanzen` gleich nach `core/detail.js`, damit jedes Bewuchs-Modul es importieren kann |
+| `viz3/src/bewuchs/bw_arten.js` | `BWARTEN = { v: 1, gras, blumen, flaechen, straeucher, beet, beetvorlagen, boden, lagen, atlas, atlas_beete, farbjahr, quellen }` – rein (kein three.js, kein DOM; `window.BWARTEN` nur zur Übergabe an die Seite), Modulzeile unter `# feat/bewuchs-pflanzen` gleich nach `core/detail.js`, damit jedes Bewuchs-Modul es importieren kann |
 | `viz3/extra/bewuchs-pflanzen/dist/bewuchs/blumen.png` | der Atlas: 1024 × 1024 RGBA, 8 × 8 Zellen zu 128 px, Zelle (Spalte, Zeile) von oben links (~1 MB) |
 | `viz3/extra/bewuchs-pflanzen/dist/bewuchs/blumen.json` | je Zelle: `id`, `bild` (Bild der Art), `arten` (wer die Zelle benutzt), `breite`, `oben`, `deckung`, `farbe`, `toenen` |
 | `tools/bewuchs/pflanzen/atlas.py` | der Zeichner des Atlas (Python, Pillow, numpy, scipy) |
+| `viz3/extra/bewuchs-pflanzen/dist/bewuchs/beete.png`, `beete.json` | der zweite Atlas: die Beetpflanzen, gleiches Format (1024 × 1024 RGBA, 8 × 8 Zellen zu 128 px, ~1,25 MB); in `beete.json` zusätzlich `auch` (weitere Bilder derselben Art, die eine Zelle zeigt) |
+| `tools/bewuchs/pflanzen/beete.py` | der Zeichner des zweiten Atlas (benutzt den Maler von `atlas.py`) |
 | `viz3/extra/bewuchs-pflanzen/manifest.json`, `tests.txt` | eine Zeile in „Quellen und Lizenzen“; kein Browsertest in der CI (die Daten prüft der Unit-Test) |
-| `viz3/test/unit/bewuchs_arten.test.mjs` | Prüfung ohne Browser (in `tools/check.sh`): Felder und Bereiche, Kalender als geordnete Tagesfenster 1–366, jede Zelle da und von der richtigen Art, jede Klasse 0–17, Grasanteile = 1, Quellen, PNG 1024² RGBA < 3 MB, ein plausibles Jahr |
+| `viz3/test/unit/bewuchs_arten.test.mjs` | Prüfung ohne Browser (in `tools/check.sh`): Felder und Bereiche, Kalender als geordnete Tagesfenster 1–366, jede Zelle da und von der richtigen Art, jede Klasse 0–17, Grasanteile = 1, Quellen, PNG 1024² RGBA < 3 MB, ein plausibles Jahr; für Teil 2: EZ-Tree-Vorlagen und Optionspfade, Laub, Blüte und Frucht in Reihenfolge, „hängt im Winter“ passend zu den Fenstern, Mischungen je Fläche (Summe 1, nur Arten, die dort wachsen), jede Beetpflanze mit Zellen im zweiten Atlas, Vorlagen mit geordneten Phasen lebender Pflanzen |
 | `viz3/test/bewuchs_pflanzen.py` | nur zum Ansehen (von Hand, nicht in der CI): die Pflanzen als gekreuzte Bildkarten auf vier Flecken zu 4 × 4 m – Zierrasen, Mähwiese, Bankett, Saum – auf dem freiesten 8 × 8 m des Gartenrasens, das der Test selbst aus den Rasenbüscheln (`GRASS.meshes`) sucht (17.11.: x −4…4, y −10…−2, südlich des Pavillons), an Tagen im April, Juni, August, Oktober; Bilder nach `out/bewuchs_pflanzen/` |
 
-**Umfang:** 23 Gräser und Grasartige, 34 Wildblumen, Kräuter und Bodenpflanzen, 18 Flächenarten, 64 Atlaszellen (56 Blumenbilder, davon
-6 von mehreren Arten geteilte Blatt- und Trockenbilder, und 8 Grasähren), 70 Quellen (13 Werke und Stellen, 57 Artikel).
+**Umfang:** Teil 1 – 23 Gräser und Grasartige, 34 Wildblumen, Kräuter und Bodenpflanzen, 18 Flächenarten, 64 Atlaszellen (56 Blumenbilder,
+davon 6 von mehreren Arten geteilte Blatt- und Trockenbilder, und 8 Grasähren). Teil 2 – 34 Sträucher (14 wild, 20 im Garten, auf
+Friedhof und Grünanlage), Strauchmischungen für 10 Flächenarten, 44 Beet- und Zierpflanzen (Wechselflor für Frühjahr, Sommer und Herbst,
+Stauden, Ziergräser, Rosen, Bodendecker, Grabpflanzen, Gemüse), 10 Beetvorlagen, 64 Zellen im zweiten Atlas. 105 Quellen (14
+Werke, Datensätze und Stellen, 91 Artikel).
 
 ## Wie die Vorlage die Daten liest (Vorschlag; die Regeln stehen auch im Kopf von `bw_arten.js`)
 
@@ -53,6 +60,58 @@ Teil 2 (Büsche und Beetpflanzen) folgt auf Zuruf.
 - Klassen ohne eigenen Bewuchs in Teil 1: 0 (nichts), 9 (Acker – Feldfrüchte mit Stufe 5), 13 (Beet), 14 (Gemüse – beides Teil 2); sie haben
   `dichte: 0` und einen `hinweis`.
 
+### Teil 2: Sträucher (`straeucher`) – Vorschlag, die Regeln stehen auch über der Tabelle in `bw_arten.js`
+
+- **Modell:** EZ-Tree wie die Bäume des Gartens (`garden/trees.js` `buildTreeKind`): `eztree.preset` und `seed`, dann jede Zeile von
+  `eztree.mod` als Pfad in die Optionen (`'branch.angle.1': 28` → `o.branch.angle[1] = 28`; Blattbilder `ash`, `aspen`, `oak`, `pine`,
+  Rinde `oak`, `birch`, `pine`, `willow` – alle in `dist/tree/`). `leaves.tint` setzt `buildTreeKind` selbst; die Farbe kommt aus `laub`
+  über die Instanzfarbe wie bei `gplan_3d.js` (gewünschte Farbe / mittlere Farbe des Blattbilds). Das Modell auf `hoehe_m` × `breite_m`
+  skalieren, je Busch zufällig im Bereich. Es sind wenige Vorlagen (`Bush 1` drei Ebenen, `Bush 2` zwei, `Bush 3` immergrün mit Nadeln) –
+  ein Modell je Art mit eigenem `seed`, wiederverwendet mit Maßstab und Drehung.
+- **Laub am Tag d** (jede Pflanze ± `streuung_tage` aus dem Hash ihres Orts, für Laub, Blüte und Frucht gleich): `sommergruen` – vor `austrieb[0]` und nach `fall[1]` kahl; von
+  `austrieb[0]` bis `[1]` wachsen die Blätter (Menge 0 → 1) in `austrieb_farbe`, dann `farbe`; von `herbst[0]` bis `[1]` nach `herbst_farbe`;
+  von `fall[0]` bis `[1]` fallen sie (Menge 1 → 0). `halbimmergruen` (Brombeere, Liguster) – wie sommergrün, aber nur bis auf etwa die Hälfte,
+  den Winter über `winter_farbe`. `immergruen` – immer da, `farbe`, im Winter (Dezember bis Februar) Richtung `winter_farbe`, beim Austrieb
+  kurz heller (`austrieb_farbe`). `trockenlaub` (geschnittene Hainbuchen- und Buchenhecken) – nach `herbst` bleiben die Blätter trocken braun
+  (`winter_farbe`) am Busch, bis die neuen kommen (`fall` liegt im April).
+- **Blüte und Frucht** als Punkte auf den Blattkarten (wie `gplan_3d.js` `dotsOn`): zwischen `bluete.von` und `bis` tragen `menge` der
+  Blattkarten einen Punkt der Größe `groesse_m` in `farbe` (gibt es `farben`, wählt jeder Busch eine; `farben[0]` = `farbe`). `vor_laub`
+  – die Blüten sitzen an kahlen Zweigen (Hasel, Salweide, Schlehe, Forsythie, Kornelkirsche): Punkte an den Zweigen, nicht an den
+  Blattkarten. Frucht: in `gruen` mit `farbe_gruen`, in `reif` mit `farbe`, `form` und `groesse_m` wie bei der Blüte; über Neujahr zwei
+  Fenster `[a, 366]` und `[1, b]`. `winter: true` – hängt am 1. Januar noch (am kahlen Busch gut zu sehen: Hagebutten, Schlehen, Weißdorn,
+  Schneeball, Schneebeere, Feuerdorn, Liguster, die trockenen Blütenbälle der Hortensie). `essbar` (`ja`, `gekocht`, `nein`) für später
+  (Beeren pflücken, `INVENTAR`).
+- **Geschnitten:** `geschnitten: true` – die Gärtner schneiden die Form (`form` `kugel`, `saeule` oder `hecke`; `schnitt.art` `kugel` oder
+  `hecke` an den Tagen `schnitt.doy`): die Hülle glatt zeichnen, die Blätter an der Hülle. `false` – natürlicher Umriss; ein `schnitt` mit
+  `auslichten` oder `rueckschnitt` ändert ihn kaum (Ausnahme: `rueckschnitt` im März beim Sommerflieder und der Hortensie – danach klein,
+  bis zum Sommer wieder voll; die trockenen Blüten sind dann weg). `schnitt: null` – nie geschnitten.
+- **Fest:** ab `fest_ab_m` über dem Boden fest für Spieler und Fahrzeuge (Plan: ~1 m; Dickichte und Hecken tiefer), darunter durchgehbar.
+- **Wo:** `flaechen[k].straeucher` – `je_100m2` Büsche je 100 m² der Klasse, `verteilung` `flaeche` (geschlossen, die ganze Fläche),
+  `gruppen` (2–5 zusammen), `einzeln`, `rand` (entlang der Ränder der Fläche: Zaun, Grundstücksgrenze, Weg), `arten` die Anteile. `wo` (Klassen)
+  und `lage` (`BWARTEN.lagen`: Feldhecke, Waldrand, Wegrand, Böschung, Ufer, Lichtung, Weide, Hausgarten, Vorgarten, Zaun, Hauswand, Hecke,
+  Grünanlage, Friedhof, Grab, Beet) sagen, wo eine Art überhaupt steht – für Regeln (Hecken aus OSM, Büsche nach dem Höhenmodell) und die Prüfung
+  (jede Art einer Mischung nennt die Klasse in `wo`). Keine Büsche auf 0, 3, 4, 9, 10, 15, 17; auf 13 nur die Buchs-Einfassung der
+  Beetvorlagen.
+
+### Teil 2: Beete (`beet`, `beetvorlagen`)
+
+- **Beetpflanzen** lesen sich wie die Wildblumen (`hoehe_m`, `bilder`, `jahr`, `streuung_tage`, `wuchs`, `farbe`): das Fenster im `jahr`
+  nennt das Bild, Tage außerhalb aller Fenster: nichts über der Erde. Die Bilder sind im zweiten Atlas (`atlas_beete`, `beete.png`); eine Zelle
+  mit `auch` zeigt mehrere Bilder derselben Art (die junge Kartoffel ist die große, kleiner – über `bilder[bild].hoehe`). `bilder_varianten`:
+  weitere Zellen desselben Bilds in anderer Farbe (Tulpe rot und gelb) – jede Pflanze wählt eine nach ihrem Hash. Beete werden nicht gemäht:
+  kein `nach_schnitt_tage`. `gruppe` `wechselflor` (mit `saison` `fruehjahr`, `sommer`, `herbst`), `staude`, `ziergras`, `rose`,
+  `bodendecker`, `grab`, `gemuese`; `abstand_m` Pflanzabstand.
+- **Ein Beet:** die Vorlage aus `flaechen[k].beete` (Anteile, je Beet aus dem Hash), zuerst aber nach der Lage, wenn sie bekannt ist (Markt,
+  Rathaus, Kirche → `wechselflor` oder `kuebel`; Kreisel → `kreisel`; Insel, Mittelstreifen → `verkehrsinsel`; Grab → `grab`; Vorgarten eines
+  neueren Hauses → `kiesbeet`; Dorf → `bauerngarten`). `rand` als Kante, `boden` als Bodenfarbe (`BWARTEN.boden`: Erde, dunkle Gartenerde,
+  Rindenmulch, Kies, Splitt), `dichte_m2` Pflanzen je m² im `raster` (`gitter` gleichmäßig, `reihen` im Abstand `reihe_m`, `frei` Gruppen von
+  3–7 gleichen). Die Phase, in der der Tag liegt, nennt die Pflanzen mit Anteilen; jede zeigt darin ihr eigenes `jahr`. Zwischen zwei Phasen
+  leere Erde (das Umpflanzen). `decke: 'tannengruen'` – Tannenreisig über dem Beet (die Pflanze `tannengruen` dicht), die übrigen Anteile
+  (Efeu, Immergrün, eine Zwergkonifere, Heide) schauen heraus.
+- **Wechselflor** dreimal im Jahr: Frühjahr 16.3.–18.5. (Tulpen, Stiefmütterchen, Vergissmeinnicht, Narzissen), Sommer nach den Eisheiligen
+  22.5.–7.10. (Geranien, Begonien, Tagetes), Herbst 11.10.–21.11. (Heide, Chrysanthemen), im Winter Tannengrün; Gräber ebenso, mit Efeu und
+  Immergrün das ganze Jahr.
+
 ## Die Arten
 
 ### Wildblumen und Kräuter (Fenster einer mittleren Pflanze; die Wiese als Ganzes ± `streuung_tage` breiter)
@@ -84,7 +143,7 @@ Teil 2 (Büsche und Beetpflanzen) folgt auf Zuruf.
 | Klatschmohn | 0,25–0,8 | 29.5.–9.7. | Kapseln 10.7.–6.8. | – | blatt 2/3, bluete 4/4, frucht 5/4 |
 | Kornblume | 0,3–0,8 | 7.6.–29.7. | – | – | blatt 0/2, bluete 6/4 |
 | Echte Kamille | 0,15–0,5 | 24.5.–3.8., bis 7.9. (40 %) | – | – | blatt 2/3, bluete 7/4 |
-| Herbstzeitlose | 0,15–0,35 | 26.8.–19.10. (ohne Blätter) | Blätter mit Kapsel 5.4.–21.6. | – | blatt 1/5, bluete 0/5 |
+| Herbstzeitlose | 0,15–0,35 | 2.9.–19.10. (ohne Blätter) | Blätter mit Kapsel 5.4.–21.6. | – | blatt 1/5, bluete 0/5 |
 | Acker-Kratzdistel | 0,5–1,4 | 28.6.–14.8. | Wolle 15.8.–25.9. | 40 Tage | blatt 4/5, bluete 2/5, samen 3/5 |
 | Große Brennnessel | 0,5–1,6 | (grün) 26.3.–6.11. | – | – | blatt 5/5 |
 | Drüsiges Springkraut | 0,8–2 | 8.7.–12.10. (bis zum Frost) | – | 30 Tage | blatt 7/5, bluete 6/5 |
@@ -111,7 +170,7 @@ Wiesenkerbel, Rainfarn, Klatschmohn, Kamille), trockene Dolden 1/3 (Schafgarbe, 
 | Glatthafer | 0,15–0,4 | 4–8 | 7.6.–24.7. | 2.9. | Rispe |
 | Wiesen-Goldhafer | 0,1–0,25 | 2–5 | 4.6.–14.7. | 23.8. | Rispe |
 | Wiesen-Knäuelgras | 0,15–0,45 | 4–10 | 30.5.–14.7. | 28.8. | Knäuel 4/7 |
-| Wiesen-Fuchsschwanzgras | 0,1–0,4 | 3–8 | 8.5.–14.6. | 29.7. | Ährenrispe 2/7 |
+| Wiesen-Fuchsschwanzgras | 0,1–0,4 | 3–8 | 15.5.–19.6. | 2.8. | Ährenrispe 2/7 |
 | Wiesen-Lieschgras | 0,1–0,4 | 3–9 | 14.6.–3.8. | 7.9. | Ährenrispe |
 | Wiesen-Schwingel | 0,1–0,35 | 3–6 | 30.5.–9.7. | 23.8. | Rispe |
 | Wolliges Honiggras | 0,05–0,2 | 3–10 | 14.6.–13.8. | 17.9. | luftig |
@@ -142,13 +201,98 @@ Wiesenkerbel, Rainfarn, Klatschmohn, Kamille), trockene Dolden 1/3 (Schafgarbe, 
 | 9 acker | – | – | – | Stufe 5 |
 | 10 ackerrand | Quecke 45 %, Windhalm 30 %, Weidelgras 10 % | Klatschmohn 2,5, Kamille 2, Kornblume 1,2, Distel 0,6 | 0,1–0,6 | folgt dem Acker |
 | 11 waldboden | Draht-Schmiele 70 %, Straußgras 15 %, Honiggras 15 % | Heidelbeere 2, Farn 1,5, Fingerhut 0,2, Brennnessel 0,2 | 0,3–0,35 | – |
-| 12 gebuesch | Quecke 40 %, Knaulgras 30 %, Glatthafer 30 % | Brennnessel 2, Labkraut 0,3, Distel 0,2 | 0,2–0,6 | – (Sträucher: Teil 2) |
-| 13 beet, 14 gemuese | – | – | – | Teil 2 |
+| 12 gebuesch | Quecke 40 %, Knaulgras 30 %, Glatthafer 30 % | Brennnessel 2, Labkraut 0,3, Distel 0,2 | 0,2–0,6 | – (die Sträucher: Teil 2, unten) |
+| 13 beet, 14 gemuese | – | – | – | Beetvorlagen (Teil 2, unten) |
 | 15 verkehrsgruen | Rot-Schwingel 35 %, Weidelgras 30 %, Wiesen-Rispe 20 % | Gänseblümchen 3, Weißklee 3, Löwenzahn 1, Schafgarbe 1 | 0,06–0,3 | 25.5., 14.7., 12.9. (80 %), je ± 8 |
 | 16 friedhof | Weidelgras 35 %, Wiesen-Rispe 25 %, Rot-Schwingel 25 % | Gänseblümchen 8, Weißklee 4, Löwenzahn 1, Spitzwegerich 0,5 | 0,05–0,25 | Rasen 15.4.–17.10., alle 14 Tage |
 | 17 sportrasen | Weidelgras 60 %, Wiesen-Rispe 40 % | Gänseblümchen 2, Weißklee 1, Löwenzahn 0,3 | 0,035–0,15 | Rasen 5.4.–27.10., alle 4–7 Tage, Streifen |
 
-## Der Atlas
+### Sträucher (Fenster einer mittleren Pflanze bei ~450 m; jede Pflanze ± `streuung_tage` = 5)
+
+| Strauch | Höhe (m) | Laub | Blüte | Frucht reif | im Winter | wo (Flächenarten) | geschnitten |
+|---|---|---|---|---|---|---|---|
+| Schwarzer Holunder | 2,5–6 | 29.3.–11.11. | 3.6.–25.6. | 31.8.–12.10. (gekocht) | – | gebuesch, saum, ufer, waldboden, streuobst, zierrasen | nein |
+| Roter Holunder (Traubenholunder) | 1,5–4 | 5.4.–1.11. | 20.4.–15.5. | 29.6.–13.8. (gekocht) | – | waldboden, saum, gebuesch | nein |
+| Eingriffeliger Weißdorn | 2–6 | 10.4.–8.11. | 20.5.–7.6. | 7.9.–30.1. (ja) | hängt | gebuesch, saum, weide, streuobst | nein |
+| Schlehe | 1–3 | 30.4.–6.11. | 22.4.–10.5. (vor dem Laub) | 12.9.–14.2. (ja) | hängt | gebuesch, saum, weide | nein |
+| Hundsrose | 1,5–3 | 10.4.–8.11. | 4.6.–26.6. | 8.9.–1.3. (gekocht) | hängt | gebuesch, saum, weide, streuobst | nein |
+| Gemeine Hasel | 3–6 | 15.4.–14.11. | 27.2.–25.3. (vor dem Laub) | 2.9.–2.10. (ja) | – | gebuesch, saum, ufer, zierrasen | nein |
+| Brombeere | 0,5–2 | halb immergrün, 10.4.–31.12. | 14.6.–24.7. | 3.8.–17.9. (ja) | – | gebuesch, saum, waldboden, ufer | nein |
+| Himbeere | 1–2 | 12.4.–8.11. | 30.5.–19.6. | 2.7.–31.7. (ja) | – | waldboden, saum, gemuese, zierrasen | nein (auslichten) |
+| Roter Hartriegel | 2–4 | 15.4.–8.11. | 30.5.–19.6. | 7.9.–22.10. (nein) | – | gebuesch, saum, ufer, oeffentlich | nein |
+| Pfaffenhütchen | 2–4 | 15.4.–8.11. | 20.5.–9.6. | 12.9.–26.11. (nein) | – | gebuesch, saum | nein |
+| Sal-Weide | 3–8 | 15.4.–14.11. | 28.3.–18.4. (vor dem Laub) | – | – | ufer, saum, gebuesch, waldboden | nein |
+| Gewöhnlicher Schneeball | 2–4 | 12.4.–8.11. | 25.5.–14.6. | 2.9.–19.2. (nein) | hängt | ufer, gebuesch, saum | nein |
+| Besenginster | 0,8–2 | immergrün | 15.5.–14.6. | 20.7.–28.8. (nein) | – | saum, gebuesch, waldboden | nein |
+| Kornelkirsche | 3–6 | 15.4.–8.11. | 25.3.–16.4. (vor dem Laub) | 31.8.–2.10. (ja) | – | gebuesch, saum, zierrasen, oeffentlich | nein |
+| Rote Johannisbeere | 1–1,5 | 5.4.–4.11. | 24.4.–10.5. | 7.7.–10.8. (ja) | – | zierrasen, gemuese | nein (auslichten) |
+| Schwarze Johannisbeere | 1,2–1,8 | 5.4.–4.11. | 22.4.–8.5. | 9.7.–2.8. (ja) | – | zierrasen, gemuese | nein (auslichten) |
+| Stachelbeere | 0,8–1,2 | 31.3.–1.11. | 20.4.–4.5. | 12.7.–3.8. (ja) | – | zierrasen, gemuese | nein (auslichten) |
+| Gemeiner Flieder | 2,5–5 | 10.4.–21.11. | 13.5.–30.5. | – | – | zierrasen, friedhof, oeffentlich | nein (rueckschnitt) |
+| Forsythie | 1,5–3 | 20.4.–16.11. | 5.4.–27.4. (vor dem Laub) | – | – | zierrasen, oeffentlich, friedhof | nein (auslichten) |
+| Garten-Hortensie | 0,8–1,5 | 20.4.–11.11. | 4.7.–17.9. | 18.9.–21.3. (nein) | hängt | zierrasen, friedhof | nein (rueckschnitt) |
+| Schmetterlingsflieder (Sommerflieder) | 2–3 | 15.4.–26.11. | 9.7.–22.9. | 23.9.–16.3. (nein) | hängt | zierrasen, saum | nein (rueckschnitt) |
+| Kupfer-Felsenbirne | 3–6 | 10.4.–4.11. | 15.4.–5.5. | 18.6.–19.7. (ja) | – | zierrasen, oeffentlich | nein |
+| Gewöhnliche Schneebeere | 1–2 | 2.4.–16.11. | 9.6.–18.8. | 14.8.–1.3. (nein) | hängt | oeffentlich, zierrasen, friedhof, saum | nein |
+| Bauernjasmin (Falscher Jasmin) | 2–3 | 15.4.–14.11. | 7.6.–29.6. | – | – | zierrasen, oeffentlich, friedhof | nein (auslichten) |
+| Weigelie | 1,5–2,5 | 15.4.–14.11. | 20.5.–19.6. | – | – | zierrasen, oeffentlich | nein (auslichten) |
+| Pracht-Spiere | 1,5–2,5 | 10.4.–11.11. | 8.5.–28.5. | – | – | oeffentlich, zierrasen, friedhof | nein (auslichten) |
+| Rhododendron | 1–2,5 | immergrün | 20.5.–11.6. | – | – | zierrasen, friedhof, oeffentlich | nein |
+| Feuerdorn | 1,5–3 | immergrün | 25.5.–14.6. | 3.9.–1.3. (nein) | hängt | zierrasen, oeffentlich, friedhof | nein (rueckschnitt) |
+| Buchsbaum (Kugel, Einfassung) | 0,3–1,2 | immergrün | – | – | – | zierrasen, friedhof, beet | ja (kugel) |
+| Lebensbaum (Thuja, Hecke und Säule) | 1,5–5 | immergrün | – | – | – | zierrasen, friedhof | ja (hecke) |
+| Eibe (Hecke, Kegel) | 1–4 | immergrün | – | 14.8.–27.10. (nein) | – | friedhof, zierrasen, oeffentlich | ja (hecke) |
+| Gewöhnlicher Liguster (Hecke) | 1–3 | halb immergrün, 15.4.–31.12. | 14.6.–4.7. | 12.9.–1.3. (nein) | hängt | zierrasen, oeffentlich, friedhof, saum, gebuesch | ja (hecke) |
+| Kirschlorbeer (Hecke) | 1,2–3 | immergrün | 5.5.–25.5. | 4.8.–17.9. (nein) | – | zierrasen, friedhof, oeffentlich | ja (hecke) |
+| Hainbuchenhecke (auch Rotbuche) | 1,2–2,5 | trockenes Laub über Winter, Austrieb 15.4. | – | – | – | zierrasen, friedhof, oeffentlich | ja (hecke) |
+
+Dazu je Art: Breite, Wuchsform, Dichte, Dornen, fest ab, Laubfarben (Austrieb, Sommer, Herbst, Winter), Blüten- und Fruchtfarbe, -form,
+-größe und -menge, EZ-Tree-Vorlage mit Änderungen – siehe `bw_arten.js`.
+
+### Sträucher je Flächenart (`flaechen[k].straeucher`)
+
+| Klasse | Sträucher je 100 m² | Verteilung | Arten (Hauptanteile) |
+|---|---|---|---|
+| 1 zierrasen | 1,2 | rand | Rote Johannisbeere 10 %, Gemeiner Flieder 8 %, Forsythie 8 %, Lebensbaum 8 %, Stachelbeere 7 % |
+| 2 oeffentlich | 0,6 | gruppen | Forsythie 14 %, Gewöhnliche Schneebeere 12 %, Gemeiner Flieder 10 %, Gewöhnlicher Liguster 10 %, Pracht-Spiere 10 % |
+| 5 weide | 0,05 | einzeln | Eingriffeliger Weißdorn 45 %, Hundsrose 30 %, Schlehe 25 % |
+| 6 streuobst | 0,08 | einzeln | Hundsrose 40 %, Eingriffeliger Weißdorn 35 %, Schwarzer Holunder 25 % |
+| 7 saum | 0,5 | gruppen | Schwarzer Holunder 16 %, Schlehe 14 %, Eingriffeliger Weißdorn 12 %, Hundsrose 12 %, Brombeere 12 % |
+| 8 ufer | 0,7 | gruppen | Sal-Weide 30 %, Brombeere 18 %, Schwarzer Holunder 15 %, Gewöhnlicher Schneeball 15 %, Roter Hartriegel 12 % |
+| 11 waldboden | 0,3 | gruppen | Himbeere 35 %, Brombeere 30 %, Roter Holunder 20 %, Schwarzer Holunder 8 %, Sal-Weide 4 % |
+| 12 gebuesch | 10 | flaeche | Schlehe 20 %, Eingriffeliger Weißdorn 18 %, Hundsrose 12 %, Schwarzer Holunder 12 %, Gemeine Hasel 10 % |
+| 14 gemuese | 0,6 | rand | Rote Johannisbeere 35 %, Stachelbeere 25 %, Himbeere 25 %, Schwarze Johannisbeere 15 % |
+| 16 friedhof | 0,8 | rand | Lebensbaum 28 %, Eibe 15 %, Buchsbaum 15 %, Gewöhnlicher Liguster 8 %, Rhododendron 8 % |
+
+### Beet- und Zierpflanzen (`beet`, Bilder im zweiten Atlas)
+
+- wechselflor (9): Tulpe, Narzisse, Stiefmütterchen, Vergissmeinnicht, Geranie, Eis-Begonie, Studentenblume, Besenheide, Garten-Chrysantheme
+- staude (9): Lavendel, Katzenminze, Gelber Sonnenhut, Roter Sonnenhut, Hohe Fetthenne, Herbst-Aster, Pfingstrose, Weicher Frauenmantel, Stockrose
+- ziergras (4): Chinaschilf, Garten-Reitgras, Lampenputzergras, Blau-Schwingel
+- rose (2): Beetrose, Bodendeckerrose
+- bodendecker (2): Teppich-Zwergmispel, Fingerstrauch
+- grab (5): Efeu, Kleines Immergrün, Zwergkonifere, Buchskugel, Tannengrün
+- gemuese (13): Kopfsalat, Weißkohl und Wirsing, Zwiebel, Möhre, Lauch, Kartoffel, Stangenbohne, Tomate, Kürbis und Zucchini, Rhabarber, Garten-Erdbeere, Dahlie, Sonnenblume
+
+### Beetvorlagen (`beetvorlagen`; je Flächenart `flaechen[k].beete`: 13 Staudenbeet 30 %, Bauerngarten 25 %, Rosenbeet 15 %, Kiesbeet 15 %,
+Wechselflor 10 %, Kübel 5 %; 14 Gemüsegarten 85 %, Bauerngarten 15 %; 15 Verkehrsinsel 70 %, Kreisel 30 %; 16 Grab 90 %, Rosenbeet 10 %)
+
+| Vorlage | wo | Rand | Boden | Pflanzen je m² | Phasen |
+|---|---|---|---|---|---|
+| wechselflor | beet, oeffentlich | bordstein | erde | 14 | 1.1.–15.3.: Tannengrün; 16.3.–18.5.: Stiefmütterchen, Tulpe, Vergissmeinnicht, Narzisse; 22.5.–7.10.: Geranie, Eis-Begonie, Studentenblume; 11.10.–21.11.: Besenheide, Garten-Chrysantheme; 22.11.–31.12.: Tannengrün |
+| kuebel | oeffentlich, beet | pflaster | erde | 12 | 1.1.–20.3.: Zwergkonifere, Tannengrün; 21.3.–18.5.: Stiefmütterchen, Narzisse; 22.5.–7.10.: Geranie, Eis-Begonie; 11.10.–26.11.: Besenheide, Garten-Chrysantheme; 27.11.–31.12.: Zwergkonifere, Tannengrün |
+| staudenbeet | beet, oeffentlich | rasenkante | rindenmulch | 6 | 1.1.–31.12.: Lavendel, Katzenminze, Gelber Sonnenhut, Hohe Fetthenne … |
+| rosenbeet | beet, oeffentlich, friedhof | buchs | erde | 6 | 1.1.–31.12.: Beetrose, Lavendel |
+| bauerngarten | beet, gemuese | buchs | erde | 5 | 1.1.–31.12.: Pfingstrose, Dahlie, Tulpe, Beetrose … |
+| kiesbeet | beet | pflaster | kies | 3 | 1.1.–31.12.: Blau-Schwingel, Lavendel, Hohe Fetthenne, Zwergkonifere … |
+| grab | friedhof | grabstein | erde | 10 | 1.1.–16.3.: Efeu, Besenheide, Kleines Immergrün, Zwergkonifere, Tannengrün; 17.3.–20.5.: Stiefmütterchen, Efeu, Kleines Immergrün, Zwergkonifere; 21.5.–2.10.: Efeu, Eis-Begonie, Geranie, Kleines Immergrün …; 3.10.–18.11.: Besenheide, Efeu, Kleines Immergrün, Zwergkonifere; 19.11.–31.12.: Efeu, Besenheide, Kleines Immergrün, Zwergkonifere, Tannengrün |
+| verkehrsinsel | verkehrsgruen | bordstein | rindenmulch | 2,5 | 1.1.–31.12.: Teppich-Zwergmispel, Bodendeckerrose, Fingerstrauch, Garten-Reitgras … |
+| kreisel | verkehrsgruen, oeffentlich | bordstein | splitt | 7 | 1.1.–31.12.: Garten-Reitgras, Blau-Schwingel, Gelber Sonnenhut, Hohe Fetthenne … |
+| gemuesegarten | gemuese | brett | erde_dunkel | 6 | 1.1.–31.12.: Kartoffel, Weißkohl und Wirsing, Kopfsalat, Zwiebel … |
+
+## Die Atlanten
+
+### Der Blumenatlas (Teil 1)
 
 Jede Zelle ist eine Pflanze von der Seite und leicht von oben (Blütenköpfe zur Kamera geneigt), der Stängelfuß unten in der Mitte; die
 Zeichnung wird nach dem ersten Zeichnen um den Fuß skaliert, bis ihre Spitze die Zelle füllt (oder ihre Seiten an den Rand stoßen –
@@ -166,6 +310,21 @@ Farbtupfen lesbar bleiben; Stängel sind mindestens ~1,5 px breit.
 (`atlas_1zu1.png` mit Namen, `atlas_1zu4.png` wie bei 32 px, `atlas_rgb.png` nur die Farben, `wiese_bildschirm.png` eine Wiese in
 Bildschirmgröße), mit `--only id,id` nur einzelne Zellen. Eine Zelle ändern: ihre Funktion `f_…` in `atlas.py`; eine neue Zelle: Zeile
 in `LAYOUT` und in `bw_arten.js` (die Unit-Tests prüfen, dass beide zusammenpassen). Danach `cd viz3 && python3 build.py --fast`.
+
+### Der Beetatlas (Teil 2)
+
+Gleiches Format und gleicher Maler (`beete.py` importiert `atlas.py`): Zwiebelblumen, Stiefmütterchen, Vergissmeinnicht, Geranien mit dem
+dunklen Ring im Blatt, Begonien, Tagetes, Heide, Chrysanthemenpolster, Lavendel, Katzenminze, Sonnenhut mit Kegel, Fetthenne in drei Stufen,
+Astern, Pfingstrosen, Frauenmantel, Chinaschilf als Fontäne und mit Federn, Blau-Schwingel, Stockrosen, Rosen, Zwergmispel mit Beeren,
+Fingerstrauch, Efeu, Immergrün, Zwergkonifere, Buchskugel, Tannenreisig und das Gemüse in seinen Stufen (Salat, Kohl, Zwiebeln, Möhren,
+Lauch, Kartoffeln mit Blüte und welkem Kraut, Stangenbohnen, Tomaten am Stab, Kürbis, Rhabarber, Erdbeeren, Dahlien, Sonnenblumen). Reitgras
+und Lampenputzergras teilen sich die Zellen des Chinaschilfs (bei 5–60 px gleich), der Fingerstrauch ohne Blüte das Blattbild der Stauden.
+**Neu bauen:** `nice -n 10 python3 tools/bewuchs/pflanzen/beete.py [--sheets ORDNER]` (≈ 15 s, fester Zufall, gleiches Ergebnis) schreibt
+`beete.png` und `beete.json`; Bögen `beete_1zu1.png`, `beete_1zu4.png`, `beete_rgb.png`, `beete_bildschirm.png`. Eine Zelle: Funktion in
+`beete.py`, Zeile in `LAYOUT2` und in `bw_arten.js` (`beet[id].bilder`).
+
+Für die Sträucher gibt es keinen Atlas: Blüten und Beeren sind Punkte auf den Blattkarten (Plan 4.3). Falls sie aus der Nähe als Dolden,
+Trauben und Kätzchen zu sehen sein sollen, kann ich einen dritten Atlas mit Blüten- und Fruchtständen zeichnen (`straeucher.png`, ~40 Zellen).
 
 ## Quellen und wie sicher
 
@@ -188,6 +347,43 @@ in `LAYOUT` und in `bw_arten.js` (die Unit-Tests prüfen, dass beide zusammenpas
 - **Geschätzt** (`eigen`): Pflanzen je m², Anteile der Gräser je Fläche, Dichte, die Wachstumsraten je Monat (aus dem Verlauf: Heuwiese
   von ~5 cm Anfang April auf 80–100 cm Anfang Juni ≈ 1,5–2 cm/Tag im Mai; Rasen 0,5–1 cm/Tag), Farben der Gräser und Blüten (sRGB,
   „wie es im Feld aussieht“), die Verschiebung der Tage für 450 m, die Faktoren für die Wuchskraft. Im Spiel zu prüfen und nachzustellen.
+- **Teil 2, Phänologie der Sträucher** (belegt): DWD, Climate Data Center, phänologische Jahresmelder (Wildpflanzen und Obst, „historical“,
+  1995–2024), alle Stationen im Umkreis von 75 km um Schleusingen in 250–750 m Höhe (62–129 Stationen je Art und Phase); der Wert bei 450 m aus einer
+  Geraden durch die Stationsmittel über der Höhe (+4 bis +7 Tage je 100 m). Daraus: Blühbeginn von Hasel, Sal-Weide, Kornelkirsche,
+  Forsythie, Schlehe, Flieder, Weißdorn (zweigriffelig, gilt für beide), Holunder, Hundsrose, Johannis- und Stachelbeere; reife Früchte von
+  Holunder und Hundsrose; Pflückreife von Johannis- und Stachelbeere; Austrieb und Blattentfaltung der Stachelbeere. Ende der Blüte, Laubfärbung und -fall der
+  Sträucher sind nicht gemeldet: aus den Floren und den gemeldeten Bäumen (geschätzt). Die Werte (Tag des Jahres):
+
+  | Art | Phase | bei 450 m | alle Meldungen: Median (mittlere Hälfte) | Stationen | in der Tabelle |
+  |---|---|---|---|---|---|
+  | Hasel | Blühbeginn | 58 | 55 (39–70) | 118 | Blüte 58–84 |
+  | Sal-Weide | Blühbeginn | 87 | 83 (75–93) | 121 | 87–108 |
+  | Kornelkirsche | Blühbeginn, reife Früchte | 84, 243 | 80 (70–92), 239 (230–249) | 74, 62 | 84–106, ab 243 |
+  | Forsythie | Blühbeginn | 95 | 92 (84–101) | 129 | 95–117 |
+  | Schlehe | Blühbeginn | 112 | 109 (101–116) | 119 | 112–130 (vorher 100–118) |
+  | Rote Johannisbeere | Blühbeginn, Pflückreife | 114, 188 | 112 (105–118), 185 (177–193) | 124, 127 | 114–130, ab 188 |
+  | Stachelbeere | Austrieb, Blattentfaltung, Blühbeginn, Pflückreife | 83, 96, 110, 193 | 81, 93, 108 (101–115), 190 (182–198) | 123–126 | Laub ab 90, Blüte 110–124, ab 193 |
+  | Flieder | Blühbeginn | 133 | 129 (123–135) | 129 | 133–150 |
+  | Zweigriffliger Weißdorn | Blühbeginn, reife Früchte | 136, 250 | 133 (127–139), 248 (240–257) | 120, 110 | eingriffelig 140–158, ab 250 |
+  | Schwarzer Holunder | Blühbeginn, reife Früchte | 154, 243 | 152 (145–160), 240 (231–248) | 126, 124 | 154–176, ab 243 (vorher 150, 238) |
+  | Hundsrose | Blühbeginn, reife Früchte | 155, 251 | 153 (146–160), 250 (240–259) | 124, 121 | 155–177, ab 251 (vorher 158) |
+  | Löwenzahn (Teil 1) | Blühbeginn | 110 | 108 (101–114) | 129 | ab 111 – stimmt |
+  | Wiesen-Fuchsschwanz (Teil 1) | Blühbeginn, Vollblüte | 135, 141 | 133 (126–140), 139 (131–147) | 115 | Ähre ab 135 (vorher 128) |
+  | Wiesen-Knäuelgras (Teil 1) | Vollblüte | 155 | 154 (146–161) | 120 | Rispe ab 150 – stimmt |
+  | Herbstzeitlose (Teil 1) | Blühbeginn | 246 | 245 (236–253) | 29 | ab 245 (vorher 238) |
+  | Heidekraut | Blühbeginn | 222 | 222 (216–228) | 86 | die Knospenheide der Beete ist eine Gartenform (ab 245) |
+
+  Teil 1 ist damit an zwei Stellen verschoben (Wiesen-Fuchsschwanz +7 Tage, Herbstzeitlose +7, die Felder bleiben); Hasel, Kornelkirsche und
+  Salweide streuen von Jahr zu Jahr um Wochen (milde Winter), die Tabelle hat das mittlere Jahr.
+- **Teil 2, aus der Pflanzen-Datenbank des Gartenplaners übernommen:** Höhen, Breiten, Laub-, Blüten-, Frucht- und Herbstfarben von Holunder,
+  Hasel, Hundsrose, Johannis- und Stachelbeere, Kornelkirsche, Felsenbirne (und die Blütemonate, wo der DWD nichts hat).
+- **Teil 2, aus den Floren** (Rothmaler, Flora von Thüringen; Artikel der Wikipedia zu jeder Art verlinkt, aber nicht abgerufen – die
+  Wikipedia sperrt diese Maschine): Höhen, Wuchsformen, Dornen, Fruchtfarben, wo die Arten wachsen (Besenginster auf dem sauren Buntsandstein
+  um Schleusingen, Kornelkirsche eher auf Kalk), Giftigkeit.
+- **Teil 2, geschätzt** (`eigen`): Sträucher je 100 m² und die Anteile je Flächenart, Pflanzen je m² und Zusammensetzung der Beetvorlagen,
+  Pflanz- und Wechseltage (Eisheilige, Totensonntag), Schnitttage der Gärten, Blühfenster der Beet- und Gartenpflanzen ohne DWD-Meldung
+  (Hortensie, Sommerflieder, Weigelie, Bauernjasmin, Rhododendron, Feuerdorn, Stauden, Wechselflor, Gemüse), alle Farben, die EZ-Tree-Änderungen
+  (nicht im Spiel angesehen – keine Browserläufe).
 
 ## Offen (Fragen an den Straßen-Chat)
 
@@ -205,3 +401,11 @@ in `LAYOUT` und in `bw_arten.js` (die Unit-Tests prüfen, dass beide zusammenpas
 - **Herbstzeitlose:** giftig; auf Weiden gemieden, in Heuwiesen problematisch – nur geringe Dichte eingetragen.
 - **Tageszeit:** `offen_h` (Löwenzahn, Gänseblümchen, Pippau, Wegwarte schließen sich abends bzw. Wegwarte mittags) – nur wenn die
   Vorlage es mag.
+- **Teil 2, Name:** die Sträucher heißen `straeucher` (wie im Auftrag vom 17.11.), nicht `buesche`.
+- **Teil 2, EZ-Tree:** die Änderungen (`eztree.mod`) sind nur aus den Vorlagen und der Art geschätzt, nicht angesehen; bitte im Spiel
+  prüfen. Für Buchskugeln, Thuja und geschnittene Hecken ist eine eigene Hülle (Kugel, Säule, Quader mit Blattkarten) wohl besser als ein
+  EZ-Tree.
+- **Teil 2, Punkte vor dem Laub:** Hasel, Salweide, Schlehe, Forsythie und Kornelkirsche blühen an kahlen Zweigen – die Punkte brauchen dann
+  Stellen an den Zweigen (z. B. Enden der Äste aus der Zweig-Geometrie), nicht die Blattkarten.
+- **Teil 2, Beete:** die Vorlage je Beet wählt ihr nach Lage oder nach `flaechen[k].beete`; braucht ihr eine feste Regel im Datensatz (z. B.
+  „Beet am Markt“ aus den Karten von `bewuchs-daten`), sagt Bescheid.
