@@ -14,10 +14,15 @@
 // shadow, and the buildings and trees cast one (they did neither: nothing reached beyond the garden's box anyway) – also inside the
 // walker's box where the tiles are off. The rest of the world as it is built (the ground tiles of the land beyond the square, the
 // buildings of every place) by its meshes' names; a module adds its own with SCHATTEN.add.
+// The hills cast too, at a low sun (under 19°): not into the tiles but as a field of heights that foto/schatten_land.js works out – for
+// ±3 km around the walker the height below which the land towards the sun hides it. It lies in a strip of 256 texels right of the tiles
+// and is copied in again like them; anew whenever the sun has moved (a millisecond or two on the CPU, no drawing), so a hill's shadow
+// creeps across the valley with the clock. Every lit material reads it (foto/schatten_glsl.js sunLand). ?nohuegel leaves it out.
 // Off on the tier „schnell“ and on phones and tablets (memory: the atlas is half as large again, the tiles have their targets) unless
 // switched on by hand: Menü → Einstellungen → Grafik → „Schatten in der Ferne“ (auto / an / aus, pav-schatten-v1); ?kaskade=an|aus.
-//   SCHATTEN.state()        { on, mode, tiles: [{ name, ok, R, n, calls, tris, ms }], blits, atlas: [w, h] }   (tests)
-//   SCHATTEN.set({ mode })  'auto' | 'an' | 'aus'; { debug: true } tints what each cascade covers (red own box, green far, blue wide)
+//   SCHATTEN.state()        { on, mode, tiles: [{ name, ok, R, n, calls, tris, ms }], blits, atlas: [w, h], land: { … } }   (tests)
+//   SCHATTEN.set({ mode })  'auto' | 'an' | 'aus'; { debug: true } tints what each cascade covers (red own box, green far, blue wide,
+//                           magenta light where a hill's shadow lies); { land: false } leaves the hills' shadows out
 //   SCHATTEN.settle()       draws the tiles that are due at once (tests, pictures) – in the game they come a frame or two later
 //   SCHATTEN.add(mesh, { cast, receive, roof })   a module's own thing into the sun's shadows (roof: an open sheet, both sides cast)
 import * as THREE from 'three';
@@ -29,9 +34,12 @@ import { sun, sunC, sunHalf } from '../garden/env.js';
 import { RENDER } from '../render/render.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { CSMU, SM_RENDER0 } from './schatten_glsl.js';
+import { SCHLAND } from './schatten_land.js';
 export const SCHATTEN = (() => {
   const sm = R.shadowMap,
-    EXT = 1.5, // the atlas' width in the sun's own map sizes: the tiles are half that size, one above the other
+    // the atlas' width in the sun's own map sizes: the tiles are half that size, one above the other, and right of them the strip
+    // of the land's field (256 texels whatever the map's size)
+    ext = () => 1.5 + SCHLAND.G / sun.shadow.mapSize.x,
     MODES = ['auto', 'an', 'aus'],
     KEY = SAVE.key('pav-schatten-v1', {
       owner: 'fotorealismus',
@@ -49,7 +57,27 @@ export const SCHATTEN = (() => {
     nearDir: new THREE.Vector3(),
     nearC: new THREE.Vector3(1e9, 0, 0),
     nearN: 0,
+    land: !QS.has('nohuegel'),
   };
+  // the hills' shadows: the field as it was last worked out (for which light, around which point), how much of it shows
+  const LD = {
+    have: false, // a field is worked out
+    inAtlas: false, // … and copied into the atlas as it is now
+    k: 0, // how much of it the sun's height lets show: all under 15°, nothing from 19°
+    shown: 0, // what the shaders use (k, faded in and out)
+    dir: new THREE.Vector3(0, 1, 0),
+    x: 1e9,
+    y: 0,
+    t: -1e9,
+    n: 0,
+    acc: 0,
+  };
+  // degrees: the hills' shadows in full below, none above – at 19° a five-hundredth of the land around Ratscher lies in one, at 10° a
+  // fifteenth, at 6° a fifth, at 3° half (and the shaders read the field only while it shows)
+  const LAND_EL = [15, 19],
+    LAND_SOFT = 0.75, // the edge's softness at least (m of height)
+    LAND_MS = 1, // a frame's share of sampling the heights while cells are missing (ms)
+    LAND_STEP = 0.6; // … and of working out a field
   {
     const q = QS.get('kaskade');
     if (MODES.includes(q)) S.mode = q;
@@ -104,13 +132,18 @@ export const SCHATTEN = (() => {
   const farR = () => Math.min(288, Math.max(96, sunHalf * 6)),
     wideR = () => Math.max(640, farR() * 3);
   const want = () =>
-    S.ok && (S.mode === 'an' || (S.mode === 'auto' && RENDER.tier !== 'schnell' && !COARSE)) && sun.castShadow;
+    S.ok &&
+    (S.mode === 'an' || (S.mode === 'auto' && RENDER.tier !== 'schnell' && !COARSE)) &&
+    sun.castShadow &&
+    R.capabilities.maxTextureSize >= sun.shadow.mapSize.x * 1.5 + SCHLAND.G;
   // ---- on and off: the atlas' shape (three makes the sun's map anew, with or without room for the tiles) ----
   function apply() {
-    const on = want();
-    if (on === S.on) return;
+    const on = want(),
+      e = on ? ext() : 1;
+    // (the width again when the map's size has changed with the tier: the land's strip is as many texels at every size)
+    if (on === S.on && Math.abs(sun.shadow._frameExtents.x - e) < 1e-9) return false;
     S.on = on;
-    sun.shadow._frameExtents.set(on ? EXT : 1, 1);
+    sun.shadow._frameExtents.set(e, 1);
     if (sun.shadow.map) {
       sun.shadow.map.dispose();
       sun.shadow.map = null;
@@ -124,20 +157,35 @@ export const SCHATTEN = (() => {
       }
     }
     S.pending = null;
-    if (!on) uniforms();
+    LD.inAtlas = false;
+    if (!on) {
+      LD.shown = 0;
+      uniforms();
+    }
     label();
     markDirty(true);
+    return true;
   }
   // ---- what the shaders read ----
   function uniforms() {
-    const P = CSMU.P;
-    if (!S.on || !FAR.ok || !sun.shadow.map) {
+    const P = CSMU.P,
+      H = CSMU.H,
+      live = S.on && !!sun.shadow.map;
+    P[1] = 1 / sun.shadow._frameExtents.x;
+    if (live) _inv.copy(sun.shadow.matrix).invert();
+    // the land's field: from the sun's shadow coordinate back to the world and into the field's cells
+    if (live && LD.have && LD.inAtlas && LD.shown > 0) {
+      CSMU.L.set(_m.multiplyMatrices(SCHLAND.Lw, _inv).elements);
+      H[0] = SCHLAND.G;
+      H[1] = SCHLAND.STEP;
+      H[2] = LAND_SOFT;
+      H[3] = LD.shown;
+    } else H[3] = 0; // not read (foto/schatten_glsl.js: the loop's round)
+    if (!live || !FAR.ok) {
       P[0] = 0;
-      P[1] = S.on ? 1 / EXT : 1;
-      CSMU.Q[0] = CSMU.Q[2] = 0; // no tile is read (foto/schatten_glsl.js: the loops' rounds)
+      CSMU.Q[0] = CSMU.Q[2] = 0; // no tile is read (the loops' rounds)
       return;
     }
-    _inv.copy(sun.shadow.matrix).invert();
     CSMU.M.set(_m.multiplyMatrices(FAR.M, _inv).elements);
     P[2] = Math.max(0.25, FAR.texel * 1.6) / FAR.range;
     if (WIDE.ok) {
@@ -145,7 +193,6 @@ export const SCHATTEN = (() => {
       P[3] = (WIDE.texel * 1.6) / WIDE.range;
     }
     P[0] = WIDE.ok ? 2 : 1;
-    P[1] = 1 / EXT;
     // four taps a tile, nine where a tile has 1024² and more
     const nine = sun.shadow.mapSize.x >= 2048;
     CSMU.Q[0] = nine ? 0 : 4;
@@ -327,7 +374,7 @@ export const SCHATTEN = (() => {
     blitScene.add(me);
     blitScene.matrixWorldAutoUpdate = false;
   }
-  function blit(list) {
+  function blit(list, land) {
     const A = sun.shadow.map;
     if (!A) return;
     const N = sun.shadow.mapSize,
@@ -337,17 +384,24 @@ export const SCHATTEN = (() => {
       ac = R.autoClear;
     R.autoClear = false; // three has just cleared the atlas for the sun's own map; nothing of it may go
     try {
-      for (const t of list) {
-        const src = t.ok && t.light.shadow.map;
-        if (!src) continue;
-        _vp.set(t.rect[0] * N.x, t.rect[1] * N.y, N.x * 0.5, N.y * 0.5);
+      const put = (tex, x, y, w, h) => {
+        _vp.set(x, y, w, h);
         A.viewport.copy(_vp);
         A.scissor.copy(_vp);
         A.scissorTest = true;
-        blitMat.uniforms.t.value = src.texture;
+        blitMat.uniforms.t.value = tex;
         R.setRenderTarget(A);
         R.render(blitScene, blitCam);
         S.blits++;
+      };
+      for (const t of list) {
+        const src = t.ok && t.light.shadow.map;
+        if (src) put(src.texture, t.rect[0] * N.x, t.rect[1] * N.y, N.x * 0.5, N.y * 0.5);
+      }
+      // the land's field: texel for texel into its strip right of the tiles
+      if (land && LD.have && A.width >= N.x * 1.5 + SCHLAND.G) {
+        put(SCHLAND.tex, N.x * 1.5, 0, SCHLAND.G, SCHLAND.G);
+        LD.inAtlas = true;
       }
     } finally {
       A.viewport.set(0, 0, A.width, A.height);
@@ -360,7 +414,10 @@ export const SCHATTEN = (() => {
   // ---- the shadow pass of the main scene: the sun's own map as before, the tiles around it ----
   const prev = sm.render;
   sm.render = function (lights, scn, camera) {
-    if (!S.on || scn !== scene || lights.indexOf(sun) < 0) return prev.call(sm, lights, scn, camera);
+    const own = scn === scene && lights.indexOf(sun) >= 0;
+    // the atlas' shape before three makes the map: the switch, the map's size (a tier just chosen) – and its map in this very frame
+    if (own && apply()) sm.needsUpdate = true;
+    if (!S.on || !own) return prev.call(sm, lights, scn, camera);
     const near = sm.needsUpdate,
       p = S.pending;
     // a tile that is due: not in the frame that draws the sun's own map, unless it has waited twice already or was never drawn
@@ -389,7 +446,7 @@ export const SCHATTEN = (() => {
     S.nearDir.copy(_d);
     S.nearC.copy(sun.target.position);
     S.nearN++;
-    blit(S.tiles);
+    blit(S.tiles, true);
     uniforms();
     if (S.pending) markDirty(); // the tile that waited: in the next frame
     return r;
@@ -424,8 +481,73 @@ export const SCHATTEN = (() => {
       if (due && !S.pending) S.pending = t;
     }
   }
+  // ---- the hills' shadows: the heights sampled a little every frame, the field anew when the light has moved ----
+  function landDone() {
+    LD.have = true;
+    LD.t = performance.now();
+    LD.n++;
+    blit([], true);
+    uniforms();
+    markDirty();
+  }
+  function landCheck(force) {
+    if (!S.on || !S.land) {
+      LD.k = 0;
+      return;
+    }
+    const dir = dirNow(_d),
+      el = (Math.asin(Math.max(-1, Math.min(1, dir.y))) * 180) / Math.PI,
+      lit = sun.intensity > 0.02 && dir.y > 0.02;
+    if (!lit) return; // no light to hide: as it is
+    LD.k = Math.max(0, Math.min(1, (LAND_EL[1] - el) / (LAND_EL[1] - LAND_EL[0])));
+    if (el > LAND_EL[1] + 0.5 || !SCHLAND.S.ready || SCHLAND.W.on) return;
+    const x = sunC[0],
+      y = sunC[1];
+    // anew: the light a twentieth of a degree on, the walker 240 m from the field's middle, or heights that have changed (a part
+    // of the world arrived) – those at their leisure
+    if (
+      !force &&
+      LD.have &&
+      dir.angleTo(LD.dir) < 0.0009 &&
+      Math.hypot(x - LD.x, y - LD.y) < 240 &&
+      !(SCHLAND.S.changed > 200 && performance.now() - LD.t > 1500)
+    )
+      return;
+    if (!SCHLAND.begin(dir, x, y)) {
+      LD.k = 0;
+      return;
+    }
+    LD.dir.copy(dir);
+    LD.x = x;
+    LD.y = y;
+  }
+  function landFrame(dt) {
+    if (!S.on) return;
+    if (S.land) {
+      SCHLAND.work(LAND_MS, sunC[0], sunC[1]);
+      // a field in the making: some of its columns in every frame, in the atlas when it is whole
+      if (SCHLAND.W.on) {
+        if (SCHLAND.step(LAND_STEP)) landDone();
+      } else {
+        LD.acc += dt;
+        if (LD.acc >= 0.1) {
+          LD.acc = 0;
+          landCheck(false);
+        }
+      }
+    } else LD.k = 0;
+    // in and out over a second or so (the field is there a moment after the page, and gone when switched off)
+    const to = LD.have ? LD.k : 0;
+    if (LD.shown !== to) {
+      const d = Math.min(0.1, dt) / 1.2;
+      LD.shown = to > LD.shown ? Math.min(to, LD.shown + d) : Math.max(to, LD.shown - d);
+      uniforms();
+      markDirty();
+    }
+  }
   let acc = 0;
   KERN.tick(dt => {
+    landFrame(dt);
     acc += dt;
     if (acc < 0.2) return;
     acc = 0;
@@ -438,6 +560,16 @@ export const SCHATTEN = (() => {
   let tiny = null;
   function settle(n = 6) {
     let k = 0;
+    apply();
+    if (S.on && S.land) {
+      // the hills' shadows: all the heights now, the field for the light as it stands, shown as much as the sun's height says
+      for (let g = 0; g < 400 && !SCHLAND.S.ready; g++) SCHLAND.work(50, sunC[0], sunC[1]);
+      if (SCHLAND.W.on) SCHLAND.step(1e4);
+      landCheck(true);
+      if (SCHLAND.W.on && SCHLAND.step(1e4)) landDone();
+      LD.shown = LD.have ? LD.k : 0;
+      uniforms();
+    }
     for (let i = 0; i < n && S.on; i++) {
       check(true);
       if (!S.pending && !sm.needsUpdate) break;
@@ -559,6 +691,14 @@ export const SCHATTEN = (() => {
       CSMU.Q[1] = o.debug ? 1 : 0;
       markDirty();
     }
+    if (o.land !== undefined) {
+      S.land = !!o.land;
+      if (!S.land) {
+        LD.k = LD.shown = 0;
+        uniforms();
+      }
+      markDirty();
+    }
     apply();
     label();
     return state();
@@ -582,6 +722,18 @@ export const SCHATTEN = (() => {
       ms: t.ms,
     })),
     P: Array.from(CSMU.P),
+    land: Object.assign(
+      {
+        on: S.land,
+        have: LD.have,
+        inAtlas: LD.inAtlas,
+        k: +LD.k.toFixed(3),
+        shown: +LD.shown.toFixed(3),
+        n: LD.n,
+        H: Array.from(CSMU.H),
+      },
+      SCHLAND.state()
+    ),
   });
   $('schbtn')?.addEventListener('click', () => set({ mode: MODES[(MODES.indexOf(S.mode) + 1) % MODES.length] }));
   whenLoaded(label);
