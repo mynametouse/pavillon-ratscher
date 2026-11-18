@@ -63,6 +63,7 @@ export const GLKAP2 = (() => {
     wetter: '', // the preset we set ('' none) and the one before it
     wetterVor: null,
     pause: false,
+    direkt: false, // the mode began with ?kapitel=2: chapter 2 opens on the next frame
     zoneTest: undefined, // tests: a zone object instead of window.GLZONE (null: the stand-in)
   };
   // shouts in the action and whispers: never a cutscene
@@ -606,6 +607,8 @@ export const GLKAP2 = (() => {
   // the barn at dusk in December, the clique and Gerhard, the traitor's trace, the night – in the preview (VORAB) before mission 2,
   // later before mission 1. Both missions begin with these three steps (their step lists stay the same from the preview on – a save keeps
   // its step); the opening is played once: a mission whose partner of the chapter is done goes past them
+  // (how often the chapter's card was shown – tests)
+  let karteN = 0;
   const auftaktWeg = () => {
     const o = GL.cur === 'k2m1' ? 'k2m2' : 'k2m1';
     return !!(MI.R && MI.R.by(o) && MI.R.st(o) === 'erledigt');
@@ -635,6 +638,7 @@ export const GLKAP2 = (() => {
           S.da = true;
           try {
             GLHUD.titel(K.titel, VORAB ? K.ueberVorab : K.ueber, 5.5, K.unter);
+            karteN++;
           } catch (e) {}
           GLSCORE.stich('start');
           GL.emit('kapitel', { kap: 2, st: 'beginnt' });
@@ -1546,10 +1550,45 @@ export const GLKAP2 = (() => {
     if (wie) beginn();
   }
   // ---------------- per frame (grenzland/gl_modus.js, after the place beds) ----------------
+  // the direct way into chapter 2 (Falko, 18.11.2026 20:28 over the lead – his save may not have chapter 1 done): ?kapitel=2 in the
+  // address, with ?szenario=grenzland or the menu's Szenen → Grenzland. On the mode's start – a frame later, after its own fresh start
+  // has begun chapter 1 – chapter 1 is marked done if it is not (as the browser test's KAP1), and chapter 2 opens at once; once
+  // chapter 2 has begun, nothing. Without the parameter nothing changes.
+  const kapitelUrl = () => {
+    try {
+      return new URL(location.href).searchParams.get('kapitel') === '2';
+    } catch (e) {
+      return false;
+    }
+  };
+  KERN.on('grenzland:start', () => {
+    if (kapitelUrl()) S.direkt = true;
+  });
+  function direkt() {
+    S.direkt = false;
+    if (!MI.R) return;
+    const was = L.direkt({
+      kap: GL.kap,
+      kap1: kap1Ids().map(id => MI.R.st(id)),
+      k2: ['k2m1', 'k2m2'].map(id => (MI.R.by(id) ? MI.R.st(id) : 'offen')),
+    });
+    if (was === 'nichts') return;
+    if (was === 'kap1') {
+      MI.stop();
+      for (const id of kap1Ids()) GL.m[id] = { st: 'erledigt', i: 0, n: 0 };
+      for (const id of ['k2m1', 'k2m2']) delete GL.m[id];
+      GL.cur = '';
+      GL.kap = 1;
+      GL.kap1 = true;
+      GL.save(true);
+    }
+    beginn();
+  }
   function tick(dt) {
     if (!GL.on) return;
     try {
       if (GL.era !== 'heute') return;
+      if (S.direkt) direkt();
       freiTick(dt);
       GLKNACKEN.tick(dt);
       // the snow belongs to the story's December while chapter 2 runs
@@ -1562,6 +1601,7 @@ export const GLKAP2 = (() => {
     }
   }
   function stop() {
+    S.direkt = false;
     knopf(false);
     wetter(false);
     fotoAus();
@@ -1608,6 +1648,8 @@ export const GLKAP2 = (() => {
       fremder: K1.fremder,
       van: { s: Math.round(V1.s), fahrt: V1.fahrt },
       err: S.err || '',
+      erste: ERSTE(),
+      karte: karteN,
     }),
     bp: () => bp(),
     lkw: () => lkwPlatz(),

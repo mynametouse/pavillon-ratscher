@@ -1,14 +1,15 @@
-# Grenzland – Kapitel 2 „Kolonnenweg“, Etappe 2: Kapitelstart, Mission 2, Autos knacken (Hilfs-Agent `kapitel2`)
+# Grenzland – Kapitel 2 „Kolonnenweg“, Etappe 2: Kapitelstart, Mission 1 und 2, Autos knacken (Hilfs-Agent `kapitel2`)
 
 Auftrag: `docs/plans/auftraege/grenzland5-kapitel2.md` (gemeinsam: `grenzland5-gemeinsam.md`), Plan `docs/plans/plan_kapitel2.md`
 (Abschnitte 3, 4, 8). Branch `feat/grenzland-kapitel2`. Falko 17.11. 22:26 „Ok dann weiter“; 18.11. 18:42 (über den Lead): **eine
 Vorabversion von Kapitel 2 um ~20:30** – zuerst Kapitelstart und Mission 2 (spielt in Ratscher, Schleusingen und der Feldscheune, braucht
-die Zone nicht), Mission 1 mit der Zone in der nächsten Version.
+die Zone nicht), Mission 1 mit der Zone in der nächsten Version. Die Vorabversion ist V19g (live 18.11. 20:24, mit der Zone von `zone`);
+**seit diesem Stand ist Mission 1 an** (`GLK2DATA.KAP.vorab = false`): Kapitelstart → Mission 1 „Grünes Band“ → Mission 2.
 
 Dateien (`viz3/src/grenzland/`): neu `gl_kapitel2_data.js` (`GLK2DATA`, `GLK2LOGIK`, `GLKNLOGIK` – rein), `gl_knacken.js` (`GLKNACKEN`),
 `gl_kapitel2.js` (`GLKAP2`); markierte Haken (`// grenzland-kapitel2`) in `gl_mission.js` und `gl_mission_data.js`, je eine Zeile in
 `gl_modus.js` (`tick`, `stop`, nach den Zeilen von `GLHANDY`), drei Zeilen in `modules.txt`. Tests `viz3/test/grenzland_kapitel2.py`
-(`:start`, `:m2`, `:knacken`, `:m1`, `:m1z`), `viz3/test/unit/grenzland_kapitel2.test.mjs` (13), CI-Zeilen
+(`:start`, `:m2`, `:knacken`, `:m1`, `:m1e`), `viz3/test/unit/grenzland_kapitel2.test.mjs` (13), CI-Zeilen
 `viz3/extra/grenzland-kapitel2/tests.txt`.
 
 ## Was es gibt
@@ -21,7 +22,8 @@ Dateien (`viz3/src/grenzland/`): neu `gl_kapitel2_data.js` (`GLK2DATA`, `GLK2LOG
 - **„Drei Monate später“:** Schwarz – „Dezember. Krähwinkel hat sich nicht gerührt …“ –, der Kalender der Geschichte springt auf **Freitag,
   4. Dezember 2026, 16:40** (der Weihnachtsmarkt in Schleusingen ist an diesem Wochenende offen), **Schnee** (`WETTER.preset('schnee')`,
   nur für den Besuch; nach „Beenden“ kommt die eigene Wetterwahl zurück). Die beiden stehen an der Feldscheune; Jule, Timo, Basti und
-  Gerhard warten dort (Wintermützen, Gerhard mit Hut). Die Kapitelkarte **„Kapitel 2 – Vorabversion · Kolonnenweg“**.
+  Gerhard warten dort (Wintermützen, Gerhard mit Hut). Die Kapitelkarte **„Kapitel 2 · Kolonnenweg“** (in V19g: „Kapitel 2 –
+  Vorabversion · Kolonnenweg“).
 - **Die Szene** (Zwischensequenz, 16 Sätze): Gerhard war im Stasi-Unterlagen-Archiv in Suhl, seine eigene Akte – „Am zehnten November nahm
   der Lehrer G. eine Kiste in Verwahrung. Inhalt: Unterlagen der Bezirksverwaltung und Devisen.“ – die Kiste kam aus einem Wagen der
   Bezirksverwaltung, gefahren hat ihn der junge Krähwinkel (Namen Dritter werden in den Akten geschwärzt, die von Mitarbeitern nicht);
@@ -30,13 +32,28 @@ Dateien (`viz3/src/grenzland/`): neu `gl_kapitel2_data.js` (`GLK2DATA`, `GLK2LOG
   Unbekannt: „Schöne Grüße in die Feldscheune. Bei Schnee sieht man jede Spur.“ – wer das wusste, bleibt offen (Jule: nur wer heute hier
   war; Timo: oder wer von der Straße aus guckt; Basti: „Hm.“). Der Lkw fährt los. Im Dorf-Chat fragt Wolfgang, was Krähwinkel in die
   Feldflur liefert.
-- **Die Nacht im Garten** → Samstag, 5. Dezember (Vorabversion: 10:20 Uhr, mit dem Satz, dass „Grünes Band“ in der nächsten Version kommt).
+- **Die Nacht im Garten** → Samstag, 5. Dezember, 9:40 – Mission 1 (in V19g: 10:20 Uhr und Mission 2, mit dem Satz, dass „Grünes Band“ in
+  der nächsten Version kommt).
 - **Einmal:** beide Missionen beginnen mit diesen drei Schritten (ihre Schrittlisten bleiben ab der Vorabversion gleich – ein Spielstand
   behält seinen Schritt); gespielt werden sie nur von der ersten Mission, die kommt. Ist die andere Mission des Kapitels schon erledigt,
   geht eine Mission an ihnen vorbei: Mission 2 nach Mission 1 am selben Tag; Mission 1 nach der Mission 2 einer Vorabversion am nächsten
   Morgen um 9:40 („Am nächsten Morgen“).
 
-### Mission 2 „Ein Auto für die Nacht“ (`k2m2`, in der Vorabversion die erste des Kapitels)
+### Mission 1 „Grünes Band“ (`k2m1`) – an seit diesem Stand (in V19g noch aus)
+
+Im Browser durchgespielt – gegen den Ersatz (`grenzland_kapitel2:m1`) und gegen `GLZONE` von `feat/grenzland-zone` (`:m1z`, Stand unten
+unter „Tests“): mit der Simson zum Grünen Band
+(„Hinfahren“ im Grenzland-Feld), Sarah am Grenzturm über die Grenzübergangsstelle Eisfeld–Rottenbach (21. Juni 1973) und das Grüne Band
+(Hof, 9. Dezember 1989), der Kolonnenweg in die Görsdorfer Heide, der Bunker unter einem alten Fundament – Krähwinkels Leute schon dort
+(sie sehen mit den Augen; ducken hilft, ein Moped hört man), zwei Fotos aus der Deckung, der Fremde am Rand der Heide, Rückzug weg vom
+Kolonnenweg (ihr Transporter fährt ihn ab), seine Nachricht, sobald wieder Netz ist: „Ich will die Akte, nicht das Geld.“ Nutzt `GLZONE`
+(Agent `zone`); solange es fehlt oder nicht geladen ist, ein Ersatz mit derselben Schnittstelle (ein Schotterweg westlich von Ratscher).
+In der echten Zone liegt der Bunker ~95 m abseits des Kolonnenwegs: der Weg endet, wenn man an ihm vorbeifährt; neu anfangen am Rand der
+Heide höchstens 75 m vor ihm; Krähwinkels Leute gehen zu ihrem Transporter auf dem Kolonnenweg und steigen ein, erst dann fährt er.
+Das Kapitel beginnt mit Mission 1 (mit dem Kapitelstart), Mission 2 folgt am selben Samstag. Zurück zur Vorabversion (nur Mission 2):
+`GLK2DATA.KAP.vorab = true`.
+
+### Mission 2 „Ein Auto für die Nacht“ (`k2m2`, nach Mission 1 am selben Samstag; in V19g die erste des Kapitels)
 
 1. **Treff** (Missionskarte „Kapitel 2 · Mission 2“): Nachricht von Jule; an der Scheune der Plan – in den Bunker geht man nachts und nicht
    mit drei Mopeds, die Krähwinkel kennt; ein altes Auto ohne Wegfahrsperre; Basti weiß, dass Rentner Rudi Fiedler (erfunden) mit seinem
@@ -75,22 +92,13 @@ Dateien (`viz3/src/grenzland/`): neu `gl_kapitel2_data.js` (`GLK2DATA`, `GLK2LOG
 - **Gespeichert** unter `pav-gl-knacken-v1` (strenge Prüfung); ein gestohlener Wagen steht beim nächsten Start des Modus wieder, wo er
   war. „Beenden“ stellt ihn weg.
 
-### Mission 1 „Grünes Band“ (`k2m1`) – fertig, in der Vorabversion noch aus
-
-Im Browser durchgespielt – gegen den Ersatz (`grenzland_kapitel2:m1`) und gegen `GLZONE` von `feat/grenzland-zone` (`:m1z`, Stand unten
-unter „Tests“): mit der Simson zum Grünen Band
-(„Hinfahren“ im Grenzland-Feld), Sarah am Grenzturm über die Grenzübergangsstelle Eisfeld–Rottenbach (21. Juni 1973) und das Grüne Band
-(Hof, 9. Dezember 1989), der Kolonnenweg in die Görsdorfer Heide, der Bunker unter einem alten Fundament – Krähwinkels Leute schon dort
-(sie sehen mit den Augen; ducken hilft, ein Moped hört man), zwei Fotos aus der Deckung, der Fremde am Rand der Heide, Rückzug weg vom
-Kolonnenweg (ihr Transporter fährt ihn ab), seine Nachricht, sobald wieder Netz ist: „Ich will die Akte, nicht das Geld.“ Nutzt `GLZONE`
-(Agent `zone`); solange es fehlt oder nicht geladen ist, ein Ersatz mit derselben Schnittstelle (ein Schotterweg westlich von Ratscher).
-In der echten Zone liegt der Bunker ~95 m abseits des Kolonnenwegs: der Weg endet, wenn man an ihm vorbeifährt; neu anfangen am Rand der
-Heide höchstens 75 m vor ihm; Krähwinkels Leute gehen zu ihrem Transporter auf dem Kolonnenweg und steigen ein, erst dann fährt er.
-Einschalten: `GLK2DATA.KAP.vorab = false` – dann beginnt das Kapitel mit Mission 1 (mit dem Kapitelstart), Mission 2 folgt am selben
-Samstag.
-
 ## Ausprobieren
 
+- **Direkt in Kapitel 2** (Falko 18.11. 20:28 über den Lead): `?szenario=grenzland&kapitel=2` – oder `?kapitel=2` in der Adresse und
+  Szenen → Grenzland. Beim Start des Modus (einen Frame nach seinem frischen Start) wird Kapitel 1 als erledigt eingetragen, wenn es das
+  nicht ist (wie `KAP1` im Browser-Test), und Kapitel 2 beginnt sofort wie mit „Kapitel 2 beginnen“; hat Kapitel 2 schon begonnen,
+  passiert nichts. Ohne den Parameter ändert sich nichts. Ein frischer Start ist eine neue Geschichte: die Autos der alten (der gestohlene
+  Wartburg) sind dann weg (`GLKNACKEN`).
 - Kapitel 1 erledigt, dann im Grenzland-Feld „Kapitel 2 beginnen“. Konsole: `GLMISSION.debug.go('k2m2')` (vom Kapitelstart an),
   `…go('k2m2', 'abend')`, `…go('k2m2', 'lackieren')`; `GLKAP2.debug.info()`, `GLKNACKEN.stand()`.
 - Tests: `node --test viz3/test/unit/grenzland_kapitel2.test.mjs`; `bash tools/browser_lock.sh python3 viz3/test/run.py --port 9062 --serve
@@ -151,9 +159,10 @@ Samstag.
   orange Warnjacke.
 - **Handy:** im Grünen Band sollte `netz()` 0 Balken zeigen (Mission 1 sagt „Kein Netz“ als Gedanke); und „Aufträge“ bleibt gesperrt.
 - **Das Reden mit dem Partner** (`gl_partner_data.js`) kennt die Schritte von Kapitel 2 noch nicht.
-- **Mission 1** einschalten, sobald `zone` da ist: `GLK2DATA.KAP.vorab = false` (eine Zeile in `gl_kapitel2_data.js`); dann in
-  `viz3/extra/grenzland-kapitel2/tests.txt` die Zeile `grenzland_kapitel2:m1z` dazu (sie braucht `GLZONE`). Sie nimmt von
-  `GLZONE` (Stand `feat/grenzland-zone` e9973fee3): `ort()` für `parkplatz`, `museum`, `kolonnenweg_a`, `kolonnenweg_b`, `heide`, `bunker`,
+- **Mission 1 ist an** (`GLK2DATA.KAP.vorab = false`; `tests.txt` hat `grenzland_kapitel2:m1` – in `GLZONE`). Spielstände von V19g: wer
+  dort mitten in Mission 2 war, macht dort weiter (gleiche Schritte); danach – oder wer Mission 2 schon fertig hatte – kommt Mission 1 ohne
+  den Kapitelstart, am nächsten Morgen. Sie nimmt von
+  `GLZONE` (V19g): `ort()` für `parkplatz`, `museum`, `kolonnenweg_a`, `kolonnenweg_b`, `heide`, `bunker`,
   `weg()`, `da()`, `need('gl-k2', an)` von „Grünes Band“ bis zur Heimfahrt und `hin({ ort: 'parkplatz', mit: 'moped', fade: false })` für
   „Hinfahren“ (die eigene Blende von Mission 1 liegt darüber). Solange `GLZONE.ort('bunker')` nichts liefert (Zone nicht geladen), gilt der
   Ersatz westlich von Ratscher.

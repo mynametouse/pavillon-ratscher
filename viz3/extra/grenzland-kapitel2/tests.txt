@@ -1,3 +1,5 @@
 grenzland_kapitel2:start
 grenzland_kapitel2:m2
+grenzland_kapitel2:m1
+grenzland_kapitel2:direkt
 grenzland_mission:m5
