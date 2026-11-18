@@ -35,7 +35,12 @@
 //                         between, geil (tufts left standing: share, height m), tritt (share trodden); 'keine'), farbe { duerre, schatten: { ziel (#rrggbb), staerke (0–1 mix at full drought / shade) } },
 //                         kahl (bare spots: anteil 0–1 of the area, flecken_m [min, max] m, boden #rrggbb, moos 0–1 in shade),
 //                         kraft { dichte, hoehe, blumen: [factor at vigour 0, factor at vigour 7] } (vigour = bits 5–7 of the map),
-//                         quellen.
+//                         quellen. Under trees (feat/fotorealismus, foto-wald): schirm { sonne, himmel } (0–1: the share of the
+//                         direct sun and of the open sky that reach the plants – a constant of the class; the forest at the Klinge
+//                         knows its crowns), flecken { groesse_m (the size of the soft patches the herb layer stands in), gras (0–1:
+//                         the share of the area where the grasses stand – the rest is litter), arten { id: [share of the area with
+//                         its patches, their size × groesse_m] } } – blumen stays the mean over the whole area, inside its patches
+//                         a species stands blumen / share dense; the first of arten is the carpet (nothing else in its patches).
 //   BWARTEN.atlas         the flower atlas: dist/bewuchs/blumen.png (1024² RGBA, 8 × 8 cells of 128 px, cell (c, r) from the top left,
 //                         one plant in side view, its stem foot at the bottom centre, the plant filling the cell's height, straight
 //                         alpha with the colour bled into the transparent pixels) and blumen.json (cell → species and frame, the share
@@ -1784,8 +1789,19 @@ export const BWARTEN = (() => {
     11: {
       name: 'waldboden',
       gras: { drahtschmiele: 0.7, straussgras: 0.15, honiggras: 0.15 },
-      blumen: { heidelbeere: 2, farn: 1.5, fingerhut: 0.2, brennnessel: 0.2 },
-      dichte: 0.25,
+      // feat/fotorealismus (foto-wald): the herb layer of a spruce and pine wood on the poor sandstone soils of the Thuringian
+      // Forest's foreland (assumed, generic – no survey of these stands): most of the floor bare litter and moss; bilberry as low
+      // carpets where the stand is lighter (8 plants on a m² on a sixth of the area), wavy hair-grass in tussocks on two fifths of
+      // it, male fern in loose groups (two on a m² on a tenth of it; before: 1.5 ferns on every m² – an even carpet), foxglove
+      // and nettle rare, in small groups (clearings, rich spots)
+      blumen: { heidelbeere: 1.4, farn: 0.18, fingerhut: 0.012, brennnessel: 0.015 },
+      schirm: { sonne: 0.38, himmel: 0 },
+      flecken: {
+        groesse_m: 14,
+        gras: 0.4,
+        arten: { heidelbeere: [0.17, 1], farn: [0.1, 0.5], fingerhut: [0.012, 0.3], brennnessel: [0.012, 0.3] },
+      },
+      dichte: 0.4,
       hoehe: {
         gemaeht_m: 0.3,
         max_m: 0.35,

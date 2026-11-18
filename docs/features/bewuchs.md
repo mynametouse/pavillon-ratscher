@@ -109,7 +109,7 @@ wobei es trotzdem im Browser weiterhin flüssig laufen können soll.“ Gewählt
 
 ## Tests
 
-`viz3/test/bewuchs.py` (Abschnitte rasen, maehen, wiese, ferne, jahr, strauch, beet, acker, leistung; seit V19b auch: Sträucher fest für
+`viz3/test/bewuchs.py` (Abschnitte rasen, maehen, wiese, ferne, jahr, strauch, beet, acker, wald, leistung; `viz3/test/foto_wald.py` für den Unterwuchs der Wälder; seit V19b auch: Sträucher fest für
 die Figur, nicht für Fahrzeuge; der Atlas 8 × 24 Zellen, jede Frucht mit Bildern, Mais im August mit Kolben): Artentabelle und Atlas geladen, Ringe und Kacheln im
 Garten und auf der Wiese, Budget je Stufe, Blumen im Rasen im Mai und in der Wiese im Juni, die Blüte in der Ferne, Mähen erreicht die
 Halme, `GRASS.cutCount` aus dem Raster, keine Programme über 16 Texturen; Bilder in `out/bewuchs/`. Unit-Tests
@@ -126,6 +126,15 @@ Halme, `GRASS.cutCount` aus dem Raster, keine Programme über 16 Texturen; Bilde
   (`BWPHAENO.cropNow`), der Boden der Phase (`BWARTEN.ackerboden`), in den Erntetagen jedes Feld an seinem Tag (wie `bwHeight`),
   das Hell und Dunkel des Luftbilds bleibt. Bis ~340 m um die Kamera; über ~70 m Höhe behalten die Felder das Luftbild. Die Halme
   der Früchte dazu: nicht mehr vom Luftbild ausgedünnt, von oben beleuchtet, im äußeren Ring ohne dunklen Fuß (`bw_halm.js`).
+
+- **Wald und Unterwuchs** (seit 18.11., Hilfs-Agent `foto-wald` des Fotorealismus-Chats, `docs/features/foto-wald.md`): die
+  Klassentabelle hat eine achte Spalte `k 7` (`BWPHAENO.TW` 8) – das Licht unter Bäumen (Anteil der Sonne, des offenen Himmels) und die
+  Flecken der Krautschicht (Größe des weichen Felds, Schwelle für die Gräser); `BWARTEN.flaechen[k].schirm` und `.flecken` füllen sie
+  (bisher nur der Waldboden, Klasse 11). Halme und Pflanzen lesen sie (`BWHALM.woodGlsl`: `bwField`, `bwLight`; an der Klinge das
+  Kronenraster von `FOREST`, je Kachel gekennzeichnet); die Mischungstextur der Pflanzen ist doppelt so breit (Spalten 12–23: die
+  Flecken je Art, die erste Art von `flecken.arten` ist der Teppich). Der Boden der Wälder (`BWFERNE`) nimmt den Lichtanteil und trägt
+  die Krautschicht als Farbe (`BEWUCHS.state().ferne.wood`). Dazu: die Ähren des Getreides in ihrer Größe (`kopf.laenge_m`), die
+  Grasähren dunkler getönt.
 
 ## Offen
 
