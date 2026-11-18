@@ -107,6 +107,9 @@ export const STRASSEN = (() => {
       depthWrite: false,
     }),
     geoGlint = new THREE.PlaneGeometry(1, 1);
+  // the lamps of the car one drives for the sign faces (light() below): their place in the scene (w: how strongly they shine back, 0 by
+  // day, on foot or with the lamps off) and their direction (level)
+  const HL = { uHl: { value: new THREE.Vector4(0, -1000, 0, 0) }, uHd: { value: new THREE.Vector3(0, 0, -1) } };
   const geoGlass = new THREE.BoxGeometry(0.17, 0.02, 0.46),
     geoPool = new THREE.PlaneGeometry(9, 9);
   geoPool.rotateX(-Math.PI / 2);
@@ -256,7 +259,44 @@ export const STRASSEN = (() => {
     texFace.anisotropy = 4;
     grown = atlas.grown;
     fitFace();
-    matFace = new THREE.MeshStandardMaterial({ map: texFace, roughness: 0.55, metalness: 0 });
+    // the faces are retroreflective (Falko's open point of Paket 1: „Schilder reflektieren nachts nicht“): at night in the beam of the car
+    // one drives they shine back in their own colours – the face's picture as its emissive map, scaled in the shader by how squarely the
+    // face looks at the lamps, whether it is in the beam (low beam: about ±35°, strongest in the middle) and the distance (half at 60 m)
+    matFace = new THREE.MeshStandardMaterial({
+      map: texFace,
+      roughness: 0.55,
+      metalness: 0,
+      emissive: 0xffffff,
+      emissiveMap: texFace,
+      emissiveIntensity: 1.25,
+    });
+    matFace.onBeforeCompile = sh => {
+      sh.uniforms.uHl = HL.uHl;
+      sh.uniforms.uHd = HL.uHd;
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vHlW;\nvarying vec3 vHlN;')
+        .replace(
+          '#include <fog_vertex>',
+          '#include <fog_vertex>\n  vHlW = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;\n  vHlN = normalize( mat3( modelMatrix ) * objectNormal );'
+        );
+      sh.fragmentShader = sh.fragmentShader
+        .replace(
+          '#include <common>',
+          '#include <common>\nuniform vec4 uHl;\nuniform vec3 uHd;\nvarying vec3 vHlW;\nvarying vec3 vHlN;'
+        )
+        .replace(
+          '#include <emissivemap_fragment>',
+          `#include <emissivemap_fragment>
+  {
+    vec3 tl = uHl.xyz - vHlW;
+    float dl = max( length( tl ), 0.01 );
+    tl /= dl;
+    float face = max( dot( normalize( vHlN ), tl ), 0.0 );
+    float beam = smoothstep( 0.8, 0.975, dot( uHd, - tl ) );
+    totalEmissiveRadiance *= uHl.w * face * beam / ( 1.0 + dl * dl / 3600.0 );
+  }`
+        );
+    };
     matGlass = new THREE.MeshStandardMaterial({
       color: 0x2a2c2e,
       roughness: 0.15,
@@ -755,6 +795,17 @@ export const STRASSEN = (() => {
     // the reflectors shine back at the car one drives with its lamps on (they come on by themselves in the dark)
     const v = VEH.cur;
     glintOn = !!(n > 0.35 && v && v.st && v.st.engine && VEH.lights !== 'off');
+    // the sign faces in the beam: the lamps 2.1 m before the car's middle, 0.75 m up, fading in with the dark
+    const hl = HL.uHl.value,
+      hw = glintOn ? Math.min(1, (n - 0.35) / 0.25) : 0;
+    if (hw > 0) {
+      const f = VEH.fwd(v.st.psi);
+      hl.set(v.st.x + f[0] * 2.1, (v.st.z || 0) + 0.75, -(v.st.y + f[1] * 2.1), hw);
+      HL.uHd.value.set(f[0], 0, -f[1]);
+    } else if (hl.w !== 0) {
+      hl.w = 0;
+      markDirty();
+    }
     for (const c of S.cells.values()) {
       if (!c.built) continue;
       if (c.glint && c.glint.visible !== glintOn) {
@@ -854,6 +905,8 @@ export const STRASSEN = (() => {
     ),
     glow: matGlass ? matGlass.emissiveIntensity : 0,
     glint: glintOn,
+    // the sign faces' shine back at the lamps (0…1)
+    shine: +HL.uHl.value.w.toFixed(3),
     meshes: [...S.cells.values(), ...S.big.values()].reduce(
       (a, c) => a + c.meshes.filter(m => m.parent && m.visible).length,
       0

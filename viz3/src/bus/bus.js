@@ -41,6 +41,8 @@ import { VEH } from '../vehicles/vehicle.js';
 import { audio } from '../audio/audio.js';
 import { Z } from '../zombie/z_state.js';
 import { BUSPLAN } from './bus_fahrplan.js';
+// feat/verkehr-real (Straßen-Chat): a bus in the knock – a body of its mass, it stands with its hazard lights (verkehr/vk_bus.js)
+import { VKBUS } from '../verkehr/vk_bus.js';
 import { BUSMOD } from './bus_modell.js';
 export const BUS = (() => {
   const LSK = SAVE.key('pav-bus-v1', {
@@ -557,6 +559,7 @@ export const BUS = (() => {
       I.tau > I.Rn.A[I.k] + 0.05
     )
       side = -1;
+    if (I.knockT > 0) side = 2; // feat/verkehr-real: the hazard lights after a knock (verkehr/vk_bus.js)
     I.blinkSide = side;
     const lit = side !== 0 && performance.now() % 760 < 400;
     if (I.B.blink(side, lit)) {
@@ -687,6 +690,11 @@ export const BUS = (() => {
       } else if (I.st !== 'halt') I.doorT = 0;
       if (Math.hypot(I.x - ox, I.y - oy) < 300) freeAhead(I, dt);
       else I.r = 1;
+      // feat/verkehr-real: knocked by the player's car – it stands a while (its minutes stop), then goes on (verkehr/vk_bus.js)
+      if (I.knockT > 0) {
+        I.knockT -= dt;
+        I.r = 0;
+      }
       if (S.ride && S.ride.I === I) {
         // held up on the way: its minutes run slower, it is late from then on
         if (I.st === 'fahrt' && I.r < 1 && !S.ride.busy) S.ride.lag += ((1 - I.r) * dt) / 60;
@@ -732,6 +740,7 @@ export const BUS = (() => {
           fy = Math.cos(I.hd);
         return { c: [I.x, I.y], ax: [fy, -fx], ay: [fx, fy], ex: D.W / 2, ey: D.L / 2, z0: I.z, z1: I.z + D.H };
       },
+      dyn: () => VKBUS.body(S.inst[slot]), // feat/verkehr-real: a body of 12.5 t in the knock (verkehr/vk_bus.js)
     });
   // ---------------- boarding ----------------
   // where one gets in and out: beside the front door, at the kerb (right side)

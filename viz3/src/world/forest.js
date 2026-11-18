@@ -1514,6 +1514,7 @@ export const FOREST = (() => {
       im.instanceMatrix.needsUpdate = true;
     }
   };
+  S.kit = () => ({ patch, seasonal, SEAS: SEAS_U, models0: MODELS0, models1: MODELS1, VI, mk: S._mk || null }); // feat/welt-wald
   S.stats = () => ({
     trees: S.list.length,
     core: S.list.filter(t => t.core).length,
