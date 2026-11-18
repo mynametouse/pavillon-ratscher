@@ -4,7 +4,7 @@
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9072 --serve foto_wald[:tabelle,klinge,wald,kosten]
 # What it guards: the class table and the mix texture carry the wood's light and patches (and open ground stays open); the tiles in the
 # forest at the Klinge take its canopy map, those of other woods the class's constant; in the wood no pale carpet (pixels: hardly a bright
-# pixel on the floor, the plants cover a part of it, not all); a wood's floor outside the Klinge and its plants are darker than open
+# pixel on the floor; here a patch of the herb layer, there bare litter); a wood's floor outside the Klinge and its plants are darker than open
 # ground would be; one draw call per ring, the rings' triangles and the programs' textures within their budgets. Pictures in out/foto_wald/.
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
@@ -21,8 +21,8 @@ window.__FW = {
     R.shadowMap.needsUpdate = true; GAME.shot(); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
     const f = { w, h, px }; if (name) f.img = document.querySelector('#stage canvas').toDataURL('image/jpeg', 0.9); return f; },
   // of the rows from the bottom up to the share `top` of the height: the mean brightness (0–255), the share of bright pixels (pale
-  // plants in a dark wood – before this work a fifth of the floor of the view „klinge“ was brighter than 105, the litter is ~50), the
-  // share of green ones (plants on the brown floor – then nearly half of it)
+  // plants in a dark wood – before this work a quarter of the floor of the view „klinge“ was brighter than 105, the litter is ~50),
+  // the share of green ones (plants on the brown floor – then nearly half of it in every view)
   floor(f, top = 0.4, bright = 105) { let n = 0, s = 0, b = 0, g = 0; const rows = Math.floor(f.h * top);
     for (let y = 0; y < rows; y++) for (let x = 0; x < f.w; x += 2) { const o = (y * f.w + x) * 4, r = f.px[o], gg = f.px[o + 1], bl = f.px[o + 2], l = 0.3 * r + 0.59 * gg + 0.11 * bl;
       n++; s += l; if (l > bright) b++; if (gg > r * 1.1 && gg > bl * 1.15 && l > 22) g++; }
@@ -94,11 +94,15 @@ with lib.browser() as b:
             fl = J("__FW.flags()"); print('flags klinge', fl, flush=True)
             ck("in the forest at the Klinge the tiles take its canopy map", all(n > 20 and k >= 0.9 * n for _, n, k in fl), fl)
             grab('klinge'); a = J("__FW.floor(__f)"); print('klinge', a, flush=True)
-            ck('no pale carpet in the dark wood: hardly a bright pixel on the floor (before: 21 %)', a['bright'] < 0.03, a)
-            ck('plants in patches: they cover a part of the floor, not half of it (before: 47 %)', 0.01 < a['green'] < 0.36, a)
+            ck('no pale carpet in the dark wood: hardly a bright pixel on the floor (before: 27 %)', a['bright'] < 0.03, a)
+            ck('here the herb layer stands (a carpet of bilberry, ferns behind it)', a['green'] > 0.03, a)
+            # 60 m on (the lead's view „wald_a“): no patch – bare litter
+            view(-475, -600, 40, 3, n=16)
+            grab('klinge_kahl'); a = J("__FW.floor(__f)"); print('klinge_kahl', a, flush=True)
+            ck('and there it does not: bare litter over a wide stretch (before: 39 % of the floor green, 21 % bright)', a['green'] < 0.25 and a['bright'] < 0.03, a)
             view(-460, -610, 130, -32, n=10)
             grab('klinge_boden'); a = J("__FW.floor(__f, 0.9)"); print('klinge_boden', a, flush=True)
-            ck('looking down: litter between the plants, nothing glowing (before: 12 % bright)', a['bright'] < 0.03, a)
+            ck('looking down: litter between the plants, nothing glowing (before: 14 % bright)', a['bright'] < 0.03, a)
         if 'wald' in WANT:
             # a wood outside the forest at the Klinge (nothing knows its crowns): the floor and the plants in the class's light
             view(-380, -420, 240, 2, fov=60)
