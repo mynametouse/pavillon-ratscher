@@ -349,7 +349,7 @@ Mal beginnt ein Sprechchor) und „Den Volkspolizisten ansprechen“ am Tor. Tö
 emotional (CC0), Beifall synthetisch; abgespielt über `audio.raw()` (Busse `vox`, `amb`, `sfx`). Gebaut wird erst, wenn der nahe Boden
 am Tor da ist (sonst standen die Leute bis 2 m im Hang). Für Tests: `(await SUHL.load()).jahr1989at(t)` springt im Ablauf.
 
-**Die Menge lebt (Schritt 4, Falko 19.11. 0:xx: „Mission 3 spielbar“ – die Geschichte erzählt Grenzlands Mission 3, die Bühne
+**Die Menge lebt (Schritt 4, Falko 19.11. ~0:00: „Mission 3 spielbar“ – die Geschichte erzählt Grenzlands Mission 3, die Bühne
 bewegt sich):** die instanzierten Leute schauen jetzt zum Tor (vorher standen sie verkehrt herum: die Geometrie zeigt nach +z, gedreht
 wird um π − hd); im Sprechchor gehen bei 45 % die linke Faust hoch (die Kerze ist in der rechten), die Nahen drängen in Wellen zum Tor
 (`aIn` je Person: Faust, Drang; `uDr`), das geschlossene Tor rüttelt und klirrt. Echte Figuren nicken im Takt und schauen den Spieler
