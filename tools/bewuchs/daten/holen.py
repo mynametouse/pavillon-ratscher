@@ -119,8 +119,8 @@ def need_box(cells, pad):
 
 # ---------------- orthophoto, colour and colour infrared ----------------
 def dop_cell(i, j, margin=12.0, res=0.2, layers=('th_dop', 'th_dop20cir')):
-    """(res 0.2 m for the 0.5 m cells, 0.4 m for the 1 m cells)"""
-    """the orthophoto around cell (i, j) in UTM at res (the 20 cm DOP); JPEG + meta (bbox) per layer"""
+    """the orthophoto around cell (i, j) in UTM at res (the 20 cm DOP: 0.2 m for the 0.5 m cells, 0.4 m for the 1 m cells); JPEG + meta
+    (bbox) per layer"""
     d = os.path.join(RAW, 'dop')
     os.makedirs(d, exist_ok=True)
     x0, y0, x1, y1 = CELL * i - margin, CELL * j - margin, CELL * (i + 1) + margin, CELL * (j + 1) + margin

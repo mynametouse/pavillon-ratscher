@@ -85,10 +85,6 @@ class Built(unittest.TestCase):
         self.assertLessEqual(int(cls.max()), len(G.CLASSES) - 1)
 
 
-if __name__ == '__main__':
-    unittest.main()
-
-
 class Roads(unittest.TestCase):
     def test_same_rules_as_build_roads(self):  # quellen.road_of keeps the rules of tools/geo/build_roads.py classify()
         import ast
@@ -123,3 +119,6 @@ class Areas(unittest.TestCase):
                 if k not in sq:
                     self.assertIn((k[0], k[1], 0.5), c)
 
+
+if __name__ == '__main__':
+    unittest.main()
