@@ -424,6 +424,11 @@ export const GLZONE = (() => {
     if (!S.an || !hAt.tiles) return;
     // the pads of the zone (none so far) and the carved ground are in the tiles already: the raw heights are the drawn ones
     bauGras(hAt);
+    try {
+      bauSteine(hAt);
+    } catch (e) {
+      console.warn('grenzland zone: steine', e);
+    }
     await bauHeide(hAt);
     markDirty(true);
   }
@@ -714,6 +719,32 @@ export const GLZONE = (() => {
     zeilen.forEach((t, i) => mid(1.5 - i * 0.14, t));
     return F;
   }
+  // a border stone of granite: „DDR“ on the side of the GDR, „B“ (Bayern) on the other
+  function stein(K, x, y, z0, hd) {
+    const F = GLORTE.frame(K, x, y, hd, z0);
+    F.box(0, 0, -0.2, 0.26, 0.18, 0.72, W.granit);
+    F.box(0, 0, 0.5, 0.2, 0.12, 0.04, W.granitD);
+    GLORTE.tafelText(K, 'DDR', F.P(0, 0.093, 0.3), hd, 0.018, W.granitD);
+    GLORTE.tafelText(K, 'B', F.P(0, -0.093, 0.3), hd + Math.PI, 0.018, W.granitD);
+  }
+  function bauSteine(hAt) {
+    const o = S.data,
+      g = o.grenze && o.grenze[0] ? D.linie(o.grenze[0], 2) : null;
+    if (!g) return;
+    const K = GLORTE.kit(),
+      Lw = S.lin[0];
+    for (const f of [0.3, 0.55, 0.8]) {
+      const q = D.bei(g, g.len * f),
+        z = hAt(q.x, q.y);
+      if (z === undefined) continue;
+      // the side of the GDR: towards the Kolonnenweg
+      const n = D.naechst(Lw, q.x, q.y),
+        w = D.bei(Lw, n.s);
+      stein(K, q.x, q.y, z, Math.atan2(w.x - q.x, w.y - q.y));
+    }
+    const m = GLORTE.mesh(K, GLORTE.mat().paint, 'grenzland-zone-steine');
+    if (m) S.meshes.push(m);
+  }
   function bauReste() {
     const K = GLORTE.kit(),
       KM = GLORTE.kit(),
@@ -758,21 +789,9 @@ export const GLZONE = (() => {
             R() * 0.5
           );
     }
-    // the old border stone of granite at the junction (OpenStreetMap: historic=boundary_stone), and more along the line
-    const stones = (o.punkte || []).filter(p => p[0] === 'grenzstein').map(p => [p[1], p[2], p[3]]);
-    const g = o.grenze && o.grenze[0] ? D.linie(o.grenze[0], 2) : null;
-    if (g) for (const s of [0.3, 0.55, 0.8]) stones.push(D.bei(g, g.len * s));
-    for (const st of stones) {
-      const x = st.x !== undefined ? st.x : st[0],
-        y = st.y !== undefined ? st.y : st[1],
-        zz = WELT.heightAt(x, y),
-        z0 = zz !== undefined ? zz : st.z !== undefined ? st.z : st[2],
-        F = GLORTE.frame(K, x, y, st.hd || 0, z0);
-      F.box(0, 0, -0.2, 0.26, 0.18, 0.72, W.granit);
-      F.box(0, 0, 0.5, 0.2, 0.12, 0.04, W.granitD);
-      GLORTE.tafelText(K, 'DDR', F.P(0, 0.093, 0.3), st.hd || 0, 0.018, W.granitD);
-      GLORTE.tafelText(K, 'B', F.P(0, -0.093, 0.3), (st.hd || 0) + Math.PI, 0.018, W.granitD);
-    }
+    // the old border stone of granite at the junction (OpenStreetMap: historic=boundary_stone); more along the line come with the
+    // tiles' heights (bauSteine)
+    for (const st of (o.punkte || []).filter(p => p[0] === 'grenzstein')) stein(K, st[1], st[2], st[3], 0);
     // the boards at the north end of the heath (where OpenStreetMap has them): the Kolonnenweg and the Grünes Band, the nature reserve,
     // the Naturmonument's sign
     const tf = (o.punkte || []).filter(
