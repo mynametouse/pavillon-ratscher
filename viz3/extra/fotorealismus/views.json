@@ -6,5 +6,7 @@
   { "name": "r5_bodenperspektive", "x": 4.0, "y": 23.0, "eye": 1.6, "yaw": 186, "pitch": -9, "vfov": 62, "phase": "0", "time": 15.5 },
   { "name": "r6_weitblick_west_abend", "x": 2.0, "y": 2.0, "eye": 7.6, "yaw": 268, "pitch": -3, "vfov": 55, "phase": "fertig", "time": 20.4 },
   { "name": "r7_feldweg_landschaft", "x": 62, "y": 31, "eye": 1.6, "yaw": 112, "pitch": 1, "vfov": 60, "phase": "0", "time": 11.0 },
-  { "name": "r8_tal_von_oben", "x": 20, "y": 60, "eye": 60, "yaw": 150, "pitch": -12, "vfov": 55, "phase": "0", "time": 15.5 }
+  { "name": "r8_tal_von_oben", "x": 20, "y": 60, "eye": 60, "yaw": 150, "pitch": -12, "vfov": 55, "phase": "0", "time": 15.5 },
+  { "name": "r9_morgen_im_tal", "x": 62, "y": 31, "eye": 1.6, "yaw": 112, "pitch": 1, "vfov": 60, "phase": "0", "time": 5.9 },
+  { "name": "r10_sonnenaufgang_von_oben", "x": 20, "y": 60, "eye": 120, "yaw": 60, "pitch": -10, "vfov": 60, "phase": "0", "time": 5.75 }
 ]

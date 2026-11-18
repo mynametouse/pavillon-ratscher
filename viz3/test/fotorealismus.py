@@ -1,15 +1,17 @@
 # feat/fotorealismus: the machinery of the picture quality – the sun's shadow in cascades (foto/schatten.js: a far and a wide tile in the
-# sun's own shadow map), the air (foto/luft.js: haze by height and towards the sun) and the vegetation far away in the ground
-# (bewuchs/bw_ferne.js: flowers as a tint, the fields' crops as one surface).
-#   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9071 --serve fotorealismus[:schatten,luft,ferne]
+# sun's own shadow map), the hills' shadows at a low sun (foto/schatten_land.js: a field of shadow heights in a strip of the same map),
+# the air (foto/luft.js: haze by height and towards the sun) and the vegetation far away in the ground (bewuchs/bw_ferne.js: flowers as
+# a tint, the fields' crops as one surface).
+#   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9071 --serve fotorealismus[:schatten,land,luft,ferne]
 # What it guards: the shared uniforms still reach the programs (they are typed arrays in THREE.ShaderLib – a three.js update could
 # clone them), the tiles are drawn, used and stay within their budgets, no program over 16 textures, shadows show far from the walker
-# and nowhere light leaks in, the haze thins with the height, a field in June is green out to where the eye reaches.
+# and nowhere light leaks in, the garden lies in the shadow of the hills until the sun is over them in the morning, the haze thins with
+# the height, a field in June is green out to where the eye reaches.
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 
 port = sys.argv[1]
-WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'schatten,luft,ferne').split(','))
+WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'schatten,land,luft,ferne').split(','))
 OUT = lib.out('fotorealismus')
 ck = lib.Checks('fotorealismus')
 errs = []
@@ -31,9 +33,11 @@ window.__FT = {
       const o = (Y * f.w + X) * 4; s[0] += f.px[o]; s[1] += f.px[o + 1]; s[2] += f.px[o + 2]; n++; }
     return n ? s.map(q => Math.round(q / n)) : null; },
   // what the programs hold of the shared uniforms after a frame
-  uni() { const R = GAME.R, gl = R.getContext(), o = { csm: 0, csmOk: 0, luft: 0, luftOk: 0 };
+  uni() { const R = GAME.R, gl = R.getContext(), o = { csm: 0, csmOk: 0, land: 0, landOk: 0, luft: 0, luftOk: 0 };
+    const s = GAME.scene.children.find(o => o.isDirectionalLight && o.castShadow), own = s.shadow.map ? s.shadow.map.height / s.shadow.map.width : 1;
     for (const p of R.info.programs || []) { if (!p.program) continue;
-      const a = gl.getUniformLocation(p.program, 'csmP'); if (a) { o.csm++; const v = gl.getUniform(p.program, a); if (Math.abs(v[0] - 2) < 0.01 && Math.abs(v[1] - 2 / 3) < 0.01) o.csmOk++; }
+      const a = gl.getUniformLocation(p.program, 'csmP'); if (a) { o.csm++; const v = gl.getUniform(p.program, a); if (Math.abs(v[0] - 2) < 0.01 && Math.abs(v[1] - own) < 0.002) o.csmOk++; }
+      const h = gl.getUniformLocation(p.program, 'csmH'); if (h) { o.land++; const v = gl.getUniform(p.program, h); if (v[0] === 256 && v[3] > 0.99) o.landOk++; }
       const l = gl.getUniformLocation(p.program, 'luftA'); if (l) { o.luft++; const v = gl.getUniform(p.program, l); if (v[1] > 0) o.luftOk++; } }
     return o; },
   // how much of the middle of each tile of the sun's atlas holds something (depth below 1)
@@ -65,7 +69,7 @@ with lib.browser() as b:
         E("window.__a = __FT.grab(); 0")
         st = J("SCHATTEN.state()"); print('schatten', json.dumps(st), flush=True)
         T = {t['name']: t for t in st['tiles']}
-        ck('both tiles drawn and in use (atlas one and a half maps wide)', all(t['ok'] for t in st['tiles']) and abs(st['P'][0] - 2) < 0.01 and st['atlas'][0] == st['atlas'][1] * 3 // 2, json.dumps(st)[:300])
+        ck('both tiles drawn and in use (atlas one and a half maps wide, and the strip of the land\'s field)', all(t['ok'] for t in st['tiles']) and abs(st['P'][0] - 2) < 0.01 and st['atlas'][0] == st['atlas'][1] * 3 // 2 + 256, json.dumps(st)[:300])
         u = J("__FT.uni()")
         ck('the shared uniforms reach the programs (typed arrays in THREE.ShaderLib)', u['csmOk'] >= 5 and u['luftOk'] >= 5, json.dumps(u))
         at = J("__FT.atlas()")
@@ -86,6 +90,40 @@ with lib.browser() as b:
         ck('shadows far from the walker (the garden from above: over 0.8 % of the lit picture darker)', d['dark'] > 0.008, json.dumps(d))
         ck('and no light where there was shadow (under 0.5 % brighter)', d['bright'] < 0.005, json.dumps(d))
         E("SCHATTEN.set({ mode: 'an' }); SCHATTEN.settle(); 0")
+    if 'land' in WANT:
+        # the hills' shadows: a quarter to six on the first of June – the sun stands 4° high behind the hills north-east of the garden
+        E("SCHATTEN.set({ mode: 'an', land: true }); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 5.75 * 60; DN.update(true)")
+        lib.settle_light(pg)
+        view(62, 31, 1.6, 112, 1, 60)
+        E("SCHATTEN.settle(); window.__a = __FT.grab(); 0")
+        st = J("SCHATTEN.state()"); L = st['land']; F = L['field']; print('land', json.dumps(L), flush=True)
+        ck('the hills\' field: the heights sampled, a field worked out for the low sun and copied into the atlas', L['ready'] and L['missing'] == 0 and L['have'] and L['inAtlas'] and L['shown'] > 0.99 and 3 < F['el'] < 6 and st['atlas'][0] == st['atlas'][1] * 3 // 2 + 256, json.dumps(L)[:300])
+        u = J("__FT.uni()")
+        ck('its uniforms reach the programs', u['landOk'] >= 5, json.dumps(u))
+        ck('a field is worked out in a few milliseconds (under 12 here)', 0 < F['ms'] < 12, F['ms'])
+        ck('at 4° a fifth to a half of the land around lies in a hill\'s shadow', 0.2 < F['shaded'] < 0.55, F['shaded'])
+        g = J("[SCHLAND.at(2, 2), SCHLAND.at(62, 31), KERN.terrain(62, 31)]")
+        ck('the garden and the field path lie in it: the shadow reaches metres above the ground', bool(g[0]) and g[0]['lo'] > 3 and bool(g[1]) and g[1]['lo'] - g[2] > 3, json.dumps(g))
+        lib.shot(pg, OUT, 'land_morgen')
+        E("SCHATTEN.set({ land: false }); SCHATTEN.settle(); window.__b = __FT.grab(); 0")
+        d = J("__FT.cmp(__a, __b)"); print('land an/aus', d, flush=True)
+        off = J("SCHATTEN.state().land")
+        lib.shot(pg, OUT, 'land_morgen_ohne')
+        ck('switched off the field is not read', off['shown'] == 0 and off['H'][3] == 0, json.dumps(off)[:200])
+        ck('the morning on the field path: the low sun does not reach the ground yet (over 5 % of the lit picture darker), nowhere brighter', d['dark'] > 0.05 and d['bright'] < 0.005, json.dumps(d))
+        # an hour and a half later the sun is over the hills
+        E("SCHATTEN.set({ land: true }); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 7.25 * 60; DN.update(true)")
+        lib.settle_light(pg)
+        E("SCHATTEN.settle(); 0")
+        g2 = J("[SCHLAND.at(2, 2), SCHATTEN.state().land]")
+        ck('at a quarter past seven the sun is over them: the garden in the light', bool(g2[0]) and g2[0]['hi'] < -1 and g2[1]['shown'] > 0, json.dumps(g2)[:260])
+        # and in the afternoon the field is neither worked out nor read
+        n0 = g2[1]['n']
+        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 15.5 * 60; DN.update(true)")
+        lib.settle_light(pg)
+        E("SCHATTEN.settle(); 0")
+        hi = J("SCHATTEN.state().land")
+        ck('at a high sun no field is worked out, none read', hi['shown'] == 0 and hi['H'][3] == 0 and hi['n'] == n0, json.dumps(hi)[:200])
     if 'luft' in WANT:
         view(-26, 46, 15, 143, -24, 52)
         E("__FT.grab(); 0")

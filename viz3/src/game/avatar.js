@@ -368,6 +368,29 @@ export const AVATAR = (() => {
       buds: true,
     },
   };
+  // feat/mehrspieler: begin – the ten people of the streets (verkehr/verkehr_leute.js) as one's own figure for playing together
+  // (netz/netz_avatar.js paints their clothes): ch is the CHARMAN key of the file, h the height (m); the menu's three stay as they are
+  for (const [k, n, h] of [
+    ['vk_m02', 'Mann 1', 1.8],
+    ['vk_m07', 'Mann 2', 1.78],
+    ['vk_m11', 'Mann 3', 1.79],
+    ['vk_m16', 'Mann 4', 1.8],
+    ['vk_m20', 'Mann 5', 1.82],
+    ['vk_f02', 'Frau 1', 1.68],
+    ['vk_f07', 'Frau 2', 1.7],
+    ['vk_f12', 'Frau 3', 1.65],
+    ['vk_f14', 'Frau 4', 1.64],
+    ['vk_f15', 'Frau 5', 1.67],
+  ])
+    FIGS[k] = {
+      name: n,
+      ch: k,
+      clips: k[3] === 'f' ? 'pclips_f' : 'pclips_m',
+      scale: 0,
+      h,
+      gearK: k[3] === 'f' ? 0.94 : 1,
+    };
+  // feat/mehrspieler: end
   const FIGID = { falko: 'm', sarah: 'f', christoph: 'c', mann: 'm', frau: 'f' };
   const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
   const figCode = k =>
@@ -1144,11 +1167,11 @@ export const AVATAR = (() => {
     return (A.loading[kind] = (async () => {
       const fg = FIGS[kind],
         cf = fg && PM[fg.clips],
-        file = fg && (PM[fg.file] || (fg.alt && PM[fg.alt]));
+        file = fg && (PM[fg.file] || (fg.alt && PM[fg.alt]) || (fg.ch && (window.CHARMAN || {})[fg.ch])); // (feat/mehrspieler: ch)
       if (!cf || !file) throw new Error('keine Figur ' + kind);
       const set = await (SETS[cf] || (SETS[cf] = FL.loadAsync(U(cf))));
       const gl = await CHL.loadAsync(U(file));
-      const F = build(gl, set, { h: set.h || (fg.clips === 'pclips_f' ? 1.68 : 1.8), scale: fg.scale, kind });
+      const F = build(gl, set, { h: fg.h || set.h || (fg.clips === 'pclips_f' ? 1.68 : 1.8), scale: fg.scale, kind }); // (fg.h: feat/mehrspieler)
       if (fg.cap || fg.buds)
         try {
           F.hw = figHeadwear(THREE, F, fg.hw || {});

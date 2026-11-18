@@ -9,11 +9,15 @@
 // This module only prepares the shader text and must run before core/assets.js (its patchSV copies three's lights chunk when it loads):
 //   – shadowmap_pars_fragment gets sunShadow() and the tile lookup;
 //   – lights_fragment_begin calls sunShadow() for the directional light (the sun is the only one that casts, garden/env.js);
-//   – the uniforms csmM, csmN, csmP, csmQ are added to three's lit shaders. Their values are typed arrays: three copies a material's
+//   – the uniforms csmM, csmN, csmP, csmQ (and csmL, csmH for the land's field) are added to three's lit shaders. Their values are typed arrays: three copies a material's
 //     uniforms from the library when it builds the program (UniformsUtils.clone) and keeps anything that is not one of its own math
 //     types by reference – so every material shares these four arrays, and foto/schatten.js writes into them (WebGLUniforms accepts a
 //     Float32Array for a mat4 or vec4 and compares it with what the program has). viz3/test/fotorealismus.py checks that this still
 //     holds.
+// The hills' shadows at a low sun (foto/schatten_land.js) are a third thing in the atlas: a strip of 256 texels right of the tiles that
+// holds, for every cell of the land around the walker, the height below which the land towards the sun hides it. sunLand() reads it for
+// every lit material – also for one that receives no shadow otherwise (three asks receiveShadow as a uniform, so each lit program has the
+// sun's map): in the evening the whole valley is in the shadow of its hills, trees and all, and their tops still in the light.
 // Without a graphics card (SwiftShader, Windows' „Microsoft Basic Render Driver“ – the same test as render/render.js GLINFO, which loads
 // later) the chunks stay as they were: there every line of a shader is paid for at every pixel and again when it is compiled (the first
 // picture took a fifth longer with them, viz3/test/softgl.py), and such a machine could never afford the tiles. ?kaskade=an patches
@@ -24,12 +28,17 @@ export const CSMU = {
   // near shadow coordinate (x, y 0–1 across the sun's own box, z its depth) → the far tile's and the wide tile's
   M: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
   N: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
-  // x: tiles in use (0 none, 1 far, 2 far and wide), y: the own box's share of the atlas' width (1 without tiles, 2/3 with),
-  // z, w: depth bias of the far and of the wide tile (in their depth range)
+  // x: tiles in use (0 none, 1 far, 2 far and wide), y: the own box's share of the atlas' width (1 without tiles; with them the
+  // sun's map of 1½ maps and the land's strip – a tile is half as wide as the own box), z, w: depth bias of the far and of the
+  // wide tile (in their depth range)
   P: new Float32Array([0, 1, 0, 0]),
   // x: 4 – a tile read with four taps (bilinear; a small map), z: 9 – with nine (a soft box; maps from 2048²), both 0 with the tiles
-  // off; y: 1 shows which cascade answers (red own box, green far, blue wide – tests)
+  // off; y: 1 shows which cascade answers (red own box, green far, blue wide; magenta where a hill's shadow lies – tests)
   Q: new Float32Array([0, 0, 0, 0]),
+  // the land's field (foto/schatten_land.js). L: near shadow coordinate → the field (x, y in its cells, z the height above its floor, m);
+  // H: x cells a side, y metres a step of the packed heights, z the edge's softness at least (m), w how much of it shows (0: not read)
+  L: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+  H: new Float32Array([0, 0, 0, 0]),
 };
 // three's own shadow pass, before core/assets.js wraps it (its wrapper counts the sun's maps and sets the trees' levels): the tiles are
 // drawn with this one
@@ -82,14 +91,38 @@ const GLSL = /* glsl */ `
 				vec3 d = ( csmN * vec4( p, 1.0 ) ).xyz;
 				vec2 h = min( d.xy, 1.0 - d.xy );
 				float wW = smoothstep( 0.0, 0.1, min( h.x, h.y ) ) * step( d.z, 1.0 ) * step( 0.0, d.z );
-				if ( wW > 0.0 ) { sh = mix( 1.0, csmTile( shadowMap, size, vec4( csmP.y, 0.5, 1.0 - csmP.y, 0.5 ), d, csmP.w ), wW ); csmDbg = mix( vec3( 1.0 ), vec3( 0.3, 0.3, 1.0 ), wW ); }
+				if ( wW > 0.0 ) { sh = mix( 1.0, csmTile( shadowMap, size, vec4( csmP.y, 0.5, csmP.y * 0.5, 0.5 ), d, csmP.w ), wW ); csmDbg = mix( vec3( 1.0 ), vec3( 0.3, 0.3, 1.0 ), wW ); }
 			}
-			if ( wF > 0.0 ) { sh = mix( sh, csmTile( shadowMap, size, vec4( csmP.y, 0.0, 1.0 - csmP.y, 0.5 ), c, csmP.z ), wF ); csmDbg = mix( csmDbg, vec3( 0.3, 1.0, 0.3 ), wF ); }
+			if ( wF > 0.0 ) { sh = mix( sh, csmTile( shadowMap, size, vec4( csmP.y, 0.0, csmP.y * 0.5, 0.5 ), c, csmP.z ), wF ); csmDbg = mix( csmDbg, vec3( 0.3, 1.0, 0.3 ), wF ); }
 			sh = mix( 1.0, sh, shadowIntensity );
 		}
 		if ( wN > 0.0 ) { sh = mix( sh, getShadow( shadowMap, size, shadowIntensity, shadowBias, shadowRadius, vec4( p.x * csmP.y, p.y, p.z, 1.0 ) ), wN ); csmDbg = mix( csmDbg, vec3( 1.0, 0.3, 0.3 ), wN ); }
 		if ( csmQ.y < 0.5 ) csmDbg = vec3( 1.0 );
 		return sh;
+	}
+	// the hills' shadows: the land's field in its strip of the atlas (right of the tiles, from the bottom). A texel holds two heights of
+	// 16 bit – below the first nothing of the sun is seen, above the first plus the second all of it; read at the four cells around the
+	// point and weighted (the heights, not a comparison: the edge runs straight through the cells). As a loop of one round or none
+	// (csmH.w: how much of the field shows), so nothing is read while it is off.
+	uniform mat4 csmL;
+	uniform vec4 csmH;
+	float sunLand( sampler2D map, vec4 shadowCoord ) {
+		float s = 1.0;
+		int n = int( ceil( csmH.w ) );
+		for ( int i = 0; i < n; i ++ ) {
+			vec3 g = ( csmL * vec4( shadowCoord.xyz / shadowCoord.w, 1.0 ) ).xyz;
+			vec2 q = g.xy - 0.5;
+			float last = csmH.x - 1.0;
+			vec2 c = clamp( floor( q ), 0.0, last - 1.0 ), f = clamp( q - c, 0.0, 1.0 );
+			ivec2 o = ivec2( c ) + ivec2( ( textureSize( map, 0 ).y * 3 ) / 2, 0 );
+			vec4 t = mix( mix( texelFetch( map, o, 0 ), texelFetch( map, o + ivec2( 1, 0 ), 0 ), f.x ), mix( texelFetch( map, o + ivec2( 0, 1 ), 0 ), texelFetch( map, o + ivec2( 1, 1 ), 0 ), f.x ), f.y );
+			float lo = dot( t.xy, vec2( 65280.0, 255.0 ) ) * csmH.y, hi = lo + dot( t.zw, vec2( 65280.0, 255.0 ) ) * csmH.y;
+			vec2 e = min( q, last - q );
+			// (nothing beyond the field, fading in over its outer ten cells)
+			s = 1.0 - csmH.w * smoothstep( 0.0, 10.0, min( e.x, e.y ) ) * ( 1.0 - smoothstep( lo - csmH.z, hi + csmH.z, g.z ) );
+			if ( csmQ.y > 0.5 ) { csmDbg *= mix( vec3( 3.0, 0.4, 3.0 ), vec3( 1.0 ), s ); s = 1.0; }	// tests: the hill's shadow as a magenta light
+		}
+		return s;
 	}
 #endif
 `;
@@ -120,7 +153,11 @@ if (OK && WANT) {
   THREE.ShaderChunk.shadowmap_pars_fragment += GLSL;
   THREE.ShaderChunk.lights_fragment_begin = THREE.ShaderChunk.lights_fragment_begin
     .replace(CALL, 'sunShadow( directionalShadowMap[ i ], directionalLightShadow.shadowMapSize,')
-    .replace(TAIL, TAIL + ' directLight.color *= csmDbg;');
+    .replace(
+      TAIL,
+      TAIL +
+        ' directLight.color *= sunLand( directionalShadowMap[ i ], vDirectionalShadowCoord[ i ] ); directLight.color *= csmDbg;'
+    );
   for (const k of ['lambert', 'phong', 'standard', 'physical', 'toon']) {
     const L = THREE.ShaderLib[k];
     if (!L || !L.uniforms) continue;
@@ -128,5 +165,7 @@ if (OK && WANT) {
     L.uniforms.csmN = { value: CSMU.N };
     L.uniforms.csmP = { value: CSMU.P };
     L.uniforms.csmQ = { value: CSMU.Q };
+    L.uniforms.csmL = { value: CSMU.L };
+    L.uniforms.csmH = { value: CSMU.H };
   }
 } else if (!OK) console.warn('Schatten in der Ferne: three-Shader geändert, aus');
