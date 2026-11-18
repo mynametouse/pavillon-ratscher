@@ -16,7 +16,11 @@ export const VKBUS = (() => {
   const M = 12500,
     IZ = 1.6e5;
   const LINES = {
-    knock: ['He! Siehst du den Bus nicht?', 'Mensch, Abstand halten – das ist ein Bus!', 'Na, na, na! Ich hab Fahrgäste drin!'],
+    knock: [
+      'He! Siehst du den Bus nicht?',
+      'Mensch, Abstand halten – das ist ein Bus!',
+      'Na, na, na! Ich hab Fahrgäste drin!',
+    ],
     crash: [
       'Na prima. Jetzt kommen wir alle zu spät.',
       'Ich hab Fahrgäste an Bord! Pass doch auf!',
@@ -51,10 +55,7 @@ export const VKBUS = (() => {
       const f = VEH.fwd(v.st.psi),
         r = VEH.rgt(v.st.psi),
         k = M / v.spec.mass,
-        Wp = [
-          v.st.u * f[0] + v.st.v * r[0] + k * (W[0] - W0[0]),
-          v.st.u * f[1] + v.st.v * r[1] + k * (W[1] - W0[1]),
-        ];
+        Wp = [v.st.u * f[0] + v.st.v * r[0] + k * (W[0] - W0[0]), v.st.u * f[1] + v.st.v * r[1] + k * (W[1] - W0[1])];
       closing = (W0[0] - Wp[0]) * h.n[0] + (W0[1] - Wp[1]) * h.n[1];
     }
     if (!Number.isFinite(dv) || !Number.isFinite(closing)) return;
