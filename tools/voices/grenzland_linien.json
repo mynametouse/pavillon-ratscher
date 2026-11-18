@@ -56,6 +56,11 @@
    "g": "m",
    "age": 47
   },
+  "gl_fiedler": {
+   "name": "Rudi Fiedler",
+   "g": "m",
+   "age": 71
+  },
   "gl_yuki": {
    "name": "Yuki",
    "g": "f",
@@ -971,6 +976,496 @@
    "text": "Passiert.",
    "prio": 1,
    "src": "R.ende"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_ekrrc2",
+   "text": "Drei Monate. Kein Anruf, kein Besuch, kein Wort von Krähwinkel. So ruhig ist der nur, wenn er was vorhat.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_lodc6t",
+   "text": "Vielleicht wartet er auf Schnee. Im Schnee sieht man jede Spur.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1p2qyzr",
+   "text": "Ich war in Suhl, im Stasi-Unterlagen-Archiv. Den Antrag auf meine Akte hab ich vor Jahren gestellt – gestern durfte ich lesen.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_x591x7",
+   "text": "Und was steht drin?",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_12olj78",
+   "text": "„Am zehnten November nahm der Lehrer G. eine Kiste in Verwahrung. Inhalt: Unterlagen der Bezirksverwaltung und Devisen.“",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_s9cwfv",
+   "text": "Devisen. Westgeld?",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_rv0ww4",
+   "text": "Westgeld. Lutz hatte die Kiste aus einem Wagen der Bezirksverwaltung geholt. Gefahren hat den ein junger Mann. Krähwinkel.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_pvqvfs",
+   "text": "Der Spediteur. Mit zwanzig Fahrer bei der Stasi.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_d0vzle",
+   "text": "Die Namen von Leuten wie mir schwärzen sie in den Akten. Die von den Mitarbeitern nicht.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_48h75e",
+   "text": "Dann ist da kein Schatz drin. Da ist drin, was ihn heute noch alles kosten kann.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_u3w4o4",
+   "text": "Und Geld.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_19tc2rq",
+   "text": "Und Geld, Basti. Danke.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_17met9p",
+   "text": "Noch was. Vor einer Woche hat im Laden ein Mann nach mir gefragt. Mitte fünfzig, dunkler Mantel. Ob ich einen Lutz kenne.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1g5j881",
+   "text": "Der von der Haltestelle. Der sucht die Kiste also selbst.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_edjayx",
+   "text": "Dann sind wir vor beiden da. Morgen fahrt ihr zum Kolonnenweg und sucht den Bunker. Nur gucken. Fotos.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1hxsx38",
+   "text": "Nur gucken. Das hat an der Klinge auch prima geklappt.",
+   "prio": 1,
+   "src": "R.k2auftakt"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_5fhsp6",
+   "text": "Der Lkw da draußen stand vorhin schon da. Mit laufendem Motor.",
+   "prio": 1,
+   "src": "R.k2spur"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1pdupju",
+   "text": "„Schöne Grüße in die Feldscheune.“ Das kann nur einer schreiben, der wusste, dass wir heute hier sind.",
+   "prio": 1,
+   "src": "R.k2spur"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_150v83f",
+   "text": "Oder einer, der von der Straße aus guckt. Die Scheune ist nicht gerade ein Versteck.",
+   "prio": 1,
+   "src": "R.k2spur"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_12no534",
+   "text": "Hm.",
+   "prio": 1,
+   "src": "R.k2spur"
+  },
+  {
+   "who": "gl_gerhard",
+   "id": "gl_gerhard_1fkuo2v",
+   "text": "Ich geh nach Hause. Und ich schließ ab. Das hab ich seit neunundachtzig nicht mehr gemacht.",
+   "prio": 1,
+   "src": "R.k2spur"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_8wryxj",
+   "text": "Zehn Zentimeter Neuschnee, und wir fahren Moped. Zum Grünen Band. Freiwillig.",
+   "prio": 1,
+   "src": "R.k2morgen"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1lrcx7x",
+   "text": "Da drüben war die Grenzübergangsstelle Eisfeld–Rottenbach. Aufgemacht am 21. Juni 1973. Heute steht im Turm eine Ausstellung.",
+   "prio": 1,
+   "src": "R.k2museum"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1d9uusc",
+   "text": "Und der Streifen, wo der Zaun war, ist jetzt Naturschutz.",
+   "prio": 1,
+   "src": "R.k2museum"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_11oqz4x",
+   "text": "Das Grüne Band. Am 9. Dezember 1989 haben sich in Hof Naturschützer aus Ost und West getroffen und gesagt: Das bleibt.",
+   "prio": 1,
+   "src": "R.k2museum"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1oar7gq",
+   "text": "Und Krähwinkel hat da einen Bunker. Das ist weniger schön.",
+   "prio": 1,
+   "src": "R.k2museum"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_a0lx8f",
+   "text": "Der Kolonnenweg. Lochplatten, damit die Grenzer auch im Matsch fahren konnten.",
+   "prio": 1,
+   "src": "R.k2platten"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1onw7li",
+   "text": "Und damit man jede Platte im Kreuz spürt.",
+   "prio": 1,
+   "src": "R.k2platten"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_qs3fiz",
+   "text": "(leise) Die sind schon da. Ein Transporter, drei Mann. Die buddeln an einer Luke.",
+   "prio": 1,
+   "src": "R.k2bunkerDa"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1tp05yu",
+   "text": "(leise) Zwei Fotos. Und dann weg, bevor die uns sehen.",
+   "prio": 1,
+   "src": "R.k2bunkerDa"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1kf9zfu",
+   "text": "(leise) Da drüben am Waldrand. Der Mann von der Haltestelle.",
+   "prio": 1,
+   "src": "R.k2fremderDa"
+  },
+  {
+   "who": "gl_wache1",
+   "id": "gl_wache1_ngxd34",
+   "text": "He! Da hinten ist einer!",
+   "prio": 1,
+   "src": "R.k2entdeckt"
+  },
+  {
+   "who": "gl_wache2",
+   "id": "gl_wache2_mkm6sf",
+   "text": "Nichts. Ein Reh, wahrscheinlich.",
+   "prio": 1,
+   "src": "R.k2verloren"
+  },
+  {
+   "who": "gl_wache1",
+   "id": "gl_wache1_14b2c0j",
+   "text": "Rehe tragen keine Mütze.",
+   "prio": 1,
+   "src": "R.k2verloren"
+  },
+  {
+   "who": "gl_wache3",
+   "id": "gl_wache3_1td1dwj",
+   "text": "Die Luke kriegen wir so nicht auf. Einpacken, wir kommen nachts wieder.",
+   "prio": 1,
+   "src": "R.k2abzug"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_kfkr3x",
+   "text": "„Mein Vater stand 1989 in Krähwinkels Berichten.“ Er will die Akte. Nicht das Geld.",
+   "prio": 1,
+   "src": "R.k2fremderSms"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_rqo46o",
+   "text": "Und woher hat er unsere Nummer?",
+   "prio": 1,
+   "src": "R.k2fremderSms"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_1g74i95",
+   "text": "Woher hat Krähwinkel sie?",
+   "prio": 1,
+   "src": "R.k2fremderSms"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_pbqslq",
+   "text": "Zwei Fotos, ein Bunker, drei Männer mit Schaufeln und ein Fremder mit Mantel. Für einen Samstag reicht das.",
+   "prio": 1,
+   "src": "R.k2heim1"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_usqcxu",
+   "text": "Die kommen nachts wieder. Hat einer gesagt.",
+   "prio": 1,
+   "src": "R.k2heim1"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1dfhq3n",
+   "text": "Dann müssen wir vorher da sein.",
+   "prio": 1,
+   "src": "R.k2heim1"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_14bcuen",
+   "text": "In den Bunker gehen wir nachts. Und nicht mit drei Mopeds, die Krähwinkel alle kennt.",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1gfa9v2",
+   "text": "Wir brauchen ein Auto. Ein altes. Alles ab Ende der Neunziger hat eine Wegfahrsperre – da drahtest du, bis du schwarz wirst.",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_lvmfvb",
+   "text": "Fiedlers Wartburg.",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_3u506j",
+   "text": "Wer ist Fiedler?",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1oeed0a",
+   "text": "Rentner. Fährt jeden Samstag nach Schleusingen auf den Weihnachtsmarkt. Parkt immer an derselben Ecke. Um sechs steht er beim Glühwein.",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_vnr1b0",
+   "text": "Woher weißt du so was?",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_10n3zvm",
+   "text": "Man guckt halt.",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_11d6a4a",
+   "text": "Wir leihen ihn aus. Neue Farbe, andere Schilder – und nach der Nacht kriegt er ihn zurück. Gewaschen und vollgetankt.",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_1ms2w02",
+   "text": "Das sagen sie alle.",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1ir07dz",
+   "text": "Hier, ein Draht. Und eine Arbeitsjacke von Krähwinkel, noch vom Paletten-Abladen im Sommer. Damit fragt dich auf seinem Hof keiner was.",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1wds4d8",
+   "text": "Lackiert wird hier in der Scheune. Timo kann das.",
+   "prio": 1,
+   "src": "R.k2auto"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_ich3ae",
+   "text": "Glühwein, Bratwurst, ein Wartburg. Schleusingen hat alles, was man für einen Samstag braucht.",
+   "prio": 1,
+   "src": "R.k2markt"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_929xxe",
+   "text": "Kein Markt heute. Fiedler sitzt drüben beim Schnitzel. Hoffentlich bestellt er noch einen Nachtisch.",
+   "prio": 1,
+   "src": "R.k2gaststaette"
+  },
+  {
+   "who": "gl_fiedler",
+   "id": "gl_fiedler_7ag3kw",
+   "text": "Mein Wartburg! He! Das ist meiner!",
+   "prio": 1,
+   "src": "R.k2besitzer"
+  },
+  {
+   "who": "gl_falko",
+   "id": "gl_falko_iozr96",
+   "text": "Choke raus, zwei Drähte zusammen – er läuft. Fiedler pflegt ihn wirklich.",
+   "prio": 1,
+   "src": "R.k2drin"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_sidj9k",
+   "text": "Rein damit, unters Dach. Licht aus.",
+   "prio": 1,
+   "src": "R.k2scheune2"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_s56nux",
+   "text": "Wenn die Polizei noch sucht, bleibt der Wagen, wo er ist. Lackiert wird, wenn Ruhe ist.",
+   "prio": 1,
+   "src": "R.k2scheune2"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_40bxf9",
+   "text": "Abkleben, anschleifen, zwei Schichten. Morgen früh riecht die ganze Scheune nach Verdünnung.",
+   "prio": 1,
+   "src": "R.k2lack"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_10uw5q9",
+   "text": "Jetzt noch die Schilder. Die Nummer steht in der Anzeige.",
+   "prio": 1,
+   "src": "R.k2lack"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1g45trx",
+   "text": "Von meinem alten Golf. Der war rot.",
+   "prio": 1,
+   "src": "R.k2schild"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_4zfyaz",
+   "text": "Und sind die noch angemeldet?",
+   "prio": 1,
+   "src": "R.k2schild"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1qeiii8",
+   "text": "Nein. Solange keiner nachguckt, ist das ein Kennzeichen.",
+   "prio": 1,
+   "src": "R.k2schild"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1amt36p",
+   "text": "Orange, Reflexstreifen, „Spedition Krähwinkel“ auf dem Rücken. Du siehst aus wie einer, der dort Paletten schiebt.",
+   "prio": 1,
+   "src": "R.k2jacke"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_arh04f",
+   "text": "Auf seinem Hof guckt keiner zweimal hin, wenn du so rumläufst.",
+   "prio": 1,
+   "src": "R.k2jacke"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_1fcpuqk",
+   "text": "Ein weißer Wartburg ist weg. Ein anderer steht da, mit Schildern von einem Golf, den es nicht mehr gibt.",
+   "prio": 1,
+   "src": "R.k2ende"
+  },
+  {
+   "who": "gl_sarah",
+   "id": "gl_sarah_17hos79",
+   "text": "Und Fiedler sucht seinen. Der hat ihn bestimmt gewaschen jeden Sonntag.",
+   "prio": 1,
+   "src": "R.k2ende"
+  },
+  {
+   "who": "gl_jule",
+   "id": "gl_jule_13h6g34",
+   "text": "Er kriegt ihn zurück. Nach der Nacht.",
+   "prio": 1,
+   "src": "R.k2ende"
+  },
+  {
+   "who": "gl_timo",
+   "id": "gl_timo_1bn9fed",
+   "text": "Und wenn die Nacht schiefgeht?",
+   "prio": 1,
+   "src": "R.k2ende"
+  },
+  {
+   "who": "gl_basti",
+   "id": "gl_basti_1mnyu0h",
+   "text": "Dann kriegt er ihn trotzdem zurück. Nur in Blau.",
+   "prio": 1,
+   "src": "R.k2ende"
   },
   {
    "who": "gl_sarah",
