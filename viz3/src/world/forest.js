@@ -1364,7 +1364,10 @@ export const FOREST = (() => {
       uFTile: { value: new THREE.Vector2(DETAIL.tile.needles || 2.4, DETAIL.tile.mossfloor || 2) },
     });
     const LN = DETAIL.L.needles.toFixed(1),
-      LM = DETAIL.L.mossfloor.toFixed(1);
+      LM = DETAIL.L.mossfloor.toFixed(1),
+      // feat/fotorealismus (foto-wald): the herb layer of the woods' floor (bewuchs/bw_ferne.js bwHerb: bilberry carpets, the grass's
+      // patches – where the plants of bewuchs/ stand) over the litter, which would cover it under the crowns
+      HERB = ROADS && ROADS.bwFar ? 'fl = mix( fl, bwHerb.rgb, bwHerb.a );' : '';
     return `uniform sampler2D tCan; uniform vec4 bCan, uSunBox; uniform vec2 uFTile; float fCan = 0.0, fOut = 1.0;
     vec3 forestFloor( vec2 p, vec3 c, float dist ) { vec2 dx = dFdx( p ), dy = dFdy( p ), cu = ( p - bCan.xy ) * bCan.zw;
       float k = ( cu.x > 0.0 && cu.y > 0.0 && cu.x < 1.0 && cu.y < 1.0 ) ? texture( tCan, cu ).r : 0.0;
@@ -1374,6 +1377,7 @@ export const FOREST = (() => {
       vec3 nd = textureGrad( tDet, vec3( p / uFTile.x, ${LN} ), dx / uFTile.x, dy / uFTile.x ).rgb, ms = textureGrad( tDet, vec3( p / uFTile.y + 0.37, ${LM} ), dx / uFTile.y, dy / uFTile.y ).rgb;
       float mz = smoothstep( 0.45, 0.7, rdN( p * 0.11 + 3.1 ) ) * ( 0.6 + 0.4 * rdN( p * 0.9 ) );   // moss and leaf patches
       vec3 fl = mix( nd * vec3( 0.42, 0.37, 0.33 ), ms * vec3( 0.55, 0.66, 0.46 ), mz * 0.85 ) * ( 0.85 + 0.3 * rdN( p * 0.35 ) );
+      ${HERB}
       return mix( c, fl, kf ); }`;
   };
   // the matching light lines (after lights_fragment_end): direct sun dimmed under the crowns beyond the shadow box, less sky

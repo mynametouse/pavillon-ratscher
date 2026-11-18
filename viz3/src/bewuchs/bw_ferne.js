@@ -164,11 +164,17 @@ export const BWFERNE = (() => {
     if (a) H[0].set(-1, BWPHAENO.fieldT(a[0]), BWBLUME.fieldNo(id), a[1] || 1);
     else H[0].set(-1, -1, 0, 1);
     // (seen from above a carpet is leaves and the dark between them: its colour a little darker than the leaf's)
-    C[0].set(cc[0] * 0.62, cc[1] * 0.62, cc[2] * 0.62, a ? 0.78 * leaf : 0);
+    const dull = (c, k, g) => {
+      const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2];
+      return c.map(v => (v + (l - v) * g) * k);
+    };
+    const c0 = dull(cc, 0.5, 0.35);
+    C[0].set(c0[0], c0[1], c0[2], a ? 0.8 * leaf : 0);
     // the grasses: their colour of today, as dense as the blades stand in their patches (thin tussocks: seen from above mostly litter)
     const gc = BWPHAENO.colour(kw, doy).map(lin);
     H[1].set(BWPHAENO.fieldT(1 - kw.patch.grass), 2, 0, 1);
-    C[1].set(gc[0] * 0.7, gc[1] * 0.7, gc[2] * 0.7, Math.min(0.5, 0.55 * kw.dens));
+    const c1 = dull(gc, 0.6, 0.3);
+    C[1].set(c1[0], c1[1], c1[2], Math.min(0.5, 0.7 * kw.dens));
     S.wood = { size: W.y, carpet: id || '', leaf, cover: [+C[0].w.toFixed(2), +C[1].w.toFixed(2)] };
   }
   // feat/fotorealismus: the crops' rows today for the ground – the stand's colour and cover of its phase, the soil of that phase, in its
@@ -304,6 +310,9 @@ export const BWFERNE = (() => {
 uniform sampler2D tBwFar; uniform vec4 uBwFarB, uBwFarC, uBwFarW, uBwFarH[ 2 ], uBwFarHc[ 2 ];
 uniform vec4 uBwFc[ ${NC} ], uBwFs[ ${NC} ], uBwFh[ ${NC} ], uBwFt[ ${NC} ];
 float bwFH( vec2 p ) { return fract( sin( dot( p, vec2( 41.3, 289.1 ) ) ) * 45758.5453 ); }
+// feat/fotorealismus (foto-wald): the herb layer of a wood's floor at this pixel – its colour and how much of the floor it covers
+// (set by bwFar; world/forest.js lays it over its own litter under the crowns, which would hide it)
+vec4 bwHerb = vec4( 0.0 );
 // the blades' own hash (bw_halm.js bwHash): a field carries here the crop it carries there
 float bwFHc( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
 ${BWHALM.cropGlsl('bwFHc')}
@@ -338,21 +347,26 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
       vec3 fl = mix( lf * vec3( 0.5, 0.43, 0.36 ), ms * vec3( 0.55, 0.66, 0.46 ), mz * 0.8 ) * ( 0.82 + 0.36 * bwFB( p * 0.31 + 7.0 ) );
       // (the photo's light and dark a little: a clearing stays lighter than the stand)
       fl *= clamp( 0.78 + 2.4 * dot( c, vec3( 0.3, 0.59, 0.11 ) ), 0.78, 1.22 );
-      // feat/fotorealismus (foto-wald): … and it lies in the shade of its trees. Only the forest at the Klinge knows its crowns (its
-      // canopy map dims the light on its ground: ct.g) – every other wood's floor would lie in the open sun between a few trunks.
-      // So here it takes the share of the light its plants get (their row of the class table), as its colour: the ground's light
-      // is not this function's to change.
-      // Its herb layer in its colour: the carpets of bilberry and the patches of grass where the plants and blades themselves stand
-      // (bw_blume.js, bw_halm.js: the same soft fields) – under them the dark of a closed carpet, beyond them (26 m, 40 m) their
-      // colour instead of bare litter. Seen flat the plants stand before the floor behind them.
+      // feat/fotorealismus (foto-wald): its herb layer in its colour – the carpets of bilberry and the patches of grass where the
+      // plants and blades themselves stand (bw_blume.js, bw_halm.js: the same soft fields): under them the dark of a carpet, beyond
+      // them (26 m, 40 m) their colour instead of bare litter. Seen flat the plants stand before the floor behind them.
       if ( uBwFarW.z > 0.0 ) {
         float f0 = bwField( p, uBwFarW.y * uBwFarH[ 0 ].w, vec2( 23.7, 7.1 ) + uBwFarH[ 0 ].z * vec2( 17.3, 5.9 ) );
         float in0 = smoothstep( -0.05, 0.05, uBwFarH[ 0 ].y - f0 ) * smoothstep( -0.05, 0.05, f0 - uBwFarH[ 0 ].x );
         float in1 = smoothstep( -0.05, 0.05, bwField( p, uBwFarW.y, vec2( 23.7, 7.1 ) ) - uBwFarH[ 1 ].x ) * ( 1.0 - in0 );
-        float fl2 = min( 1.0 / sinEl, 4.0 ), fine = 0.75 + 0.5 * bwFB( p * 2.3 + 4.1 );
-        fl = mix( fl, uBwFarHc[ 0 ].rgb * fine, ( 1.0 - pow( 1.0 - uBwFarHc[ 0 ].a * in0, fl2 ) ) * uBwFarW.z );
-        fl = mix( fl, uBwFarHc[ 1 ].rgb * fine, ( 1.0 - pow( 1.0 - uBwFarHc[ 1 ].a * in1, fl2 ) ) * uBwFarW.z * smoothstep( 6.0, 30.0, dist ) );
+        // (mottled – no carpet is closed: tufts of a foot or two, the litter between them; and no two of one green)
+        float fl2 = min( 1.0 / sinEl, 3.0 ), mo = bwFB( p * 2.9 + 4.1 ) * ( 0.45 + 0.55 * bwFB( p * 7.7 + 1.3 ) ), fine = 0.7 + 0.6 * bwFB( p * 1.1 + 2.7 );
+        float c0 = uBwFarHc[ 0 ].a * in0 * smoothstep( 0.05, 0.5, mo ), c1 = uBwFarHc[ 1 ].a * in1 * smoothstep( 0.1, 0.6, mo ) * smoothstep( 6.0, 30.0, dist );
+        float a0 = ( 1.0 - pow( 1.0 - c0, fl2 ) ) * uBwFarW.z, a1 = ( 1.0 - pow( 1.0 - c1, fl2 ) ) * uBwFarW.z;
+        vec3 hc = ( uBwFarHc[ 0 ].rgb * a0 + uBwFarHc[ 1 ].rgb * a1 ) / max( a0 + a1, 1e-4 ) * fine;
+        // (the grain of the litter's picture stays in it – its mean brightness is 0.19 –: leaves over the same ground, not paint)
+        hc *= clamp( 0.5 + 0.5 * dot( lf, vec3( 0.3, 0.59, 0.11 ) ) / 0.19, 0.55, 1.6 );
+        fl = mix( fl, hc, max( a0, a1 ) );
+        bwHerb = vec4( hc, max( a0, a1 ) * wW * 0.92 );
       }
+      // … and it lies in the shade of its trees. Only the forest at the Klinge knows its crowns (its canopy map dims the light on
+      // its ground: ct.g) – every other wood's floor would lie in the open sun between a few trunks. So here it takes the share of
+      // the light its plants get (their row of the class table), as its colour: the ground's light is not this function's to change.
       fl *= mix( uBwFarW.x, 1.0, ct.g );
       c = mix( c, fl, wW * 0.92 );
     } else if ( wC > 0.001 && ( cls == 9 || ( cls >= 19 && cls <= 22 ) ) ) {

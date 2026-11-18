@@ -1791,9 +1791,10 @@ export const BWARTEN = (() => {
       gras: { drahtschmiele: 0.7, straussgras: 0.15, honiggras: 0.15 },
       // feat/fotorealismus (foto-wald): the herb layer of a spruce and pine wood on the poor sandstone soils of the Thuringian
       // Forest's foreland (assumed, generic – no survey of these stands): most of the floor bare litter and moss; bilberry as low
-      // carpets where the stand is lighter, wavy hair-grass in tussocks, male fern in loose groups of a few plants (before: 1.5 ferns
-      // on every m² – an even carpet), foxglove and nettle rare and in small groups (clearings, rich spots)
-      blumen: { heidelbeere: 1.5, farn: 0.12, fingerhut: 0.012, brennnessel: 0.015 },
+      // carpets where the stand is lighter (8 plants on a m² on a sixth of the area), wavy hair-grass in tussocks on two fifths of
+      // it, male fern in loose groups (two on a m² on a tenth of it; before: 1.5 ferns on every m² – an even carpet), foxglove
+      // and nettle rare, in small groups (clearings, rich spots)
+      blumen: { heidelbeere: 1.4, farn: 0.18, fingerhut: 0.012, brennnessel: 0.015 },
       schirm: { sonne: 0.42, himmel: 0 },
       flecken: {
         groesse_m: 14,

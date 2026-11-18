@@ -258,8 +258,16 @@ void bwBlade( out vec3 P, out vec3 N ) {
   // them (the field of its row), little of it under closed crowns; and the stand's light instead of the open sky's
   vec4 k7 = texelFetch( tBwK, ivec2( 7, cls ), 0 );
   vec3 wl = bwLight( q, k7.xy, iU.w );
-  if ( k7.z > 0.0 ) dens *= smoothstep( k7.w - 0.05, k7.w + 0.05, bwField( q, k7.z, vec2( 23.7, 7.1 ) ) );
-  dens *= 1.0 - 0.65 * smoothstep( 0.72, 1.0, wl.z );
+  dens *= 1.0 - 0.5 * smoothstep( 0.72, 1.0, wl.z );
+  if ( k7.z > 0.0 ) {
+    dens *= smoothstep( k7.w - 0.05, k7.w + 0.05, bwField( q, k7.z, vec2( 23.7, 7.1 ) ) );
+    // … and in tussocks: a thin sward of single blades everywhere stands like hairs on the litter – here whole tufts stand or are
+    // missing (cells of a foot, turned and offset row by row: no grid shows), the root of the density each way
+    vec2 qc = vec2( 0.8 * q.x + 0.6 * q.y, 0.8 * q.y - 0.6 * q.x ) / 0.31;
+    qc.x += 0.5 * floor( qc.y );
+    float dc = sqrt( clamp( dens, 0.0, 1.0 ) );
+    dens = bwHash( floor( qc ) + 11.3 ) > dc ? 0.0 : dc;
+  }
   vBwL = wl.xy;
   vec3 col = k2.rgb;
   // the orthophoto at the foot (outside the modelled site): no blades where it is not green, the colour a little towards it

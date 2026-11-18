@@ -261,7 +261,8 @@ export const BWBLUME = (() => {
           .sort((p, q) => (q[0] === carpet ? 1 : 0) - (p[0] === carpet ? 1 : 0) || q[1] - p[1])
           .slice(0, NMX),
         sum = e.reduce((a, [, w]) => a + w, 0) || 1,
-        mean = e.reduce((a, q) => a + q[2], 0) || 1;
+        // (the table's plants per m² – BWPHAENO's k.flowers – count the species, not the grasses' heads)
+        mean = e.reduce((a, q) => a + (q[0].startsWith('gras:') ? 0 : q[2]), 0) || 1;
       let acc = 0;
       e.forEach(([id, w], k) => {
         acc += w / sum;
@@ -644,10 +645,10 @@ export const BWBLUME = (() => {
   }
   const VS = `uniform highp sampler2D tBwK, tBwG, tBwS, tBwM, tBwSp, tBwMx;
 uniform vec4 uBwG, uBwS, uBwM, uBwP, uBwFr;
-uniform float uFlRows;
+uniform float uFlRows, uFlMip;
 uniform vec4 wxSw; uniform vec2 wxSwD; uniform vec2 wxGr;
 attribute vec4 aF; attribute vec3 aQ; attribute vec4 iT; attribute vec4 iU;
-varying vec2 vFlUv, vFlL; varying vec4 vFlTint;
+varying vec2 vFlUv; varying vec3 vFlL; varying vec4 vFlTint;
 float flHash( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
 ${BWHALM.cropGlsl('flHash')}
 ${BWHALM.woodGlsl('flHash')}
@@ -697,7 +698,7 @@ void flPlant( out vec3 P ) {
   P = vec3( q.x, zr - 0.05, - q.y );
   vFlUv = vec2( 0.0 );
   vFlTint = vec4( 1.0, 1.0, 1.0, 0.0 );
-  vFlL = vec2( 1.0 );
+  vFlL = vec3( 1.0, 1.0, 0.0 );
   float code = flCode( q );
   int cls = int( mod( code, 32.0 ) );
   if ( cls == 0 || uBwP.z > 0.3 ) return;   // no flowers under snow
@@ -724,7 +725,7 @@ void flPlant( out vec3 P ) {
   vec3 wl = bwLight( q, k7.xy, iU.w );
   float wood = m0.z > 0.0 && k7.z > 0.0 ? 1.0 : 0.0, jit = ( fract( rS * 143.7 + th * 1.9 ) - 0.5 ) * 0.1;
   int k0 = 0, ke = 0;
-  use *= 1.0 - 0.6 * smoothstep( 0.72, 1.0, wl.z );
+  use *= 1.0 - 0.5 * smoothstep( 0.72, 1.0, wl.z );
   if ( wood > 0.5 ) {
     use *= m0.z;
     if ( flIn( q, k7.z, texelFetch( tBwMx, ivec2( ${NMX}, cls ), 0 ), jit ) ) { use *= m0.y; mx = m0.x; }
@@ -771,9 +772,10 @@ void flPlant( out vec3 P ) {
   // feat/fotorealismus (foto-wald): no two plants one green – each a little lighter or darker; in a wood more: dark and light
   // ones, some yellowing, a few fronds brown with age (a: how much of the drawing's colour turns to that brown)
   float rc = fract( rS * 191.7 + th * 3.1 ), ry = fract( rS * 357.3 + th * 7.7 );
-  vFlTint.rgb *= mix( vec3( mix( 0.9, 1.08, rc ) ), mix( 0.62, 1.1, rc ) * mix( vec3( 0.9, 1.0, 0.84 ), vec3( 1.13, 1.0, 0.72 ), ry * ry ), wood );
-  vFlTint.a = wood * step( fract( rS * 517.3 + th * 2.3 ), 0.06 ) * mix( 0.55, 0.9, ry );
-  vFlL = wl.xy;
+  vFlTint.rgb *= mix( vec3( mix( 0.9, 1.08, rc ) ), mix( 0.55, 1.0, rc ) * mix( vec3( 0.9, 1.0, 0.84 ), vec3( 1.13, 1.0, 0.72 ), ry * ry ), wood );
+  vFlTint.a = wood * step( fract( rS * 517.3 + th * 2.3 ), 0.05 ) * mix( 0.5, 0.85, ry );
+  // (z: a wood's plant keeps its cover when it is small in the picture – the fragment shader's lines before the alpha test)
+  vFlL = vec3( wl.xy, wood * uFlMip );
   // the card: as tall as the plant over how high the drawing reaches in its cell, as wide as the drawing (the cell's middle only)
   vec4 cd = texelFetch( tBwSp, ivec2( int( mod( cell, 8.0 ) ), ${NS} + int( cell / 8.0 ) ), 0 );
   float H = hf / max( cd.x, 0.3 ), hw = 0.5 * cd.y * H;
@@ -794,6 +796,8 @@ void flPlant( out vec3 P ) {
     tBwSp: { value: SPT },
     tBwMx: { value: MXT },
     uFlRows: { value: 16 }, // the atlas' rows of cells: the stand-in's 16, the helper's three pictures 24
+    // feat/fotorealismus (foto-wald): how much a wood's plant gains in cover per level its picture is drawn smaller (below)
+    uFlMip: { value: 0.42 },
     map: null,
   };
   function material(F) {
@@ -819,7 +823,7 @@ void flPlant( out vec3 P ) {
         sh.vertexShader
           .replace('#include <beginnormal_vertex>', 'vec3 objectNormal = vec3( 0.0, 1.0, 0.0 );')
           .replace('#include <begin_vertex>', 'vec3 transformed; flPlant( transformed );\n  vMapUv = vFlUv;');
-      sh.fragmentShader = ('varying vec4 vFlTint; varying vec2 vFlL;\n' + sh.fragmentShader)
+      sh.fragmentShader = ('varying vec4 vFlTint; varying vec3 vFlL;\n' + sh.fragmentShader)
         .replace(
           '#include <normal_fragment_begin>',
           'float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;\n  vec3 normal = normalize( vNormal );\n  vec3 nonPerturbedNormal = normal;'
@@ -828,7 +832,16 @@ void flPlant( out vec3 P ) {
         // (feat/fotorealismus, foto-wald: and each plant's own shade of green; an old frond brown)
         .replace(
           '#include <map_fragment>',
-          '#include <map_fragment>\n  diffuseColor.rgb *= vFlTint.rgb;\n  diffuseColor.rgb = mix( diffuseColor.rgb, dot( diffuseColor.rgb, vec3( 0.3, 0.59, 0.11 ) ) * vec3( 2.0, 1.0, 0.38 ), vFlTint.a );'
+          '#include <map_fragment>\n  diffuseColor.rgb *= vFlTint.rgb;\n  diffuseColor.rgb = mix( diffuseColor.rgb, dot( diffuseColor.rgb, vec3( 0.3, 0.59, 0.11 ) ) * vec3( 1.5, 0.95, 0.42 ), vFlTint.a );'
+        )
+        // feat/fotorealismus (foto-wald): a wood's small plants keep their cover far away. The drawings are open (a sprig of bilberry
+        // covers a fifth of its cell): drawn small, the alpha of the smaller pictures of the atlas falls under the alpha test and the
+        // plant is gone a few metres away – a carpet of bilberry was a few sprigs at one's feet. So the alpha grows with the level
+        // (as the forest's needle sprays do, world/forest.js): the plant becomes a tuft of its colour (the cells' transparent pixels
+        // carry it) instead of nothing. Only in woods: the flowers of the meadows and the grasses' fine heads stay as they are.
+        .replace(
+          '#include <alphatest_fragment>',
+          '{ vec2 flT = vec2( textureSize( map, 0 ) ), flX = dFdx( vMapUv * flT ), flY = dFdy( vMapUv * flT );\n  diffuseColor.a *= 1.0 + vFlL.z * max( 0.0, 0.5 * log2( max( dot( flX, flX ), dot( flY, flY ) ) ) ); }\n  #include <alphatest_fragment>'
         )
         // feat/fotorealismus: no mirror of the sky on the plants. Their cards stand upright but are lit as ground (the normal points
         // up), so seen from a walker's height every card is seen at a grazing angle – and reflected the bright sky at the horizon
