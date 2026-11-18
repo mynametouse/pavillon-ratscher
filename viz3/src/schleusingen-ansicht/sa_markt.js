@@ -36,7 +36,14 @@ export const SAMARKT = (() => {
   const BIN = [-1082.0, 1231.2];
   S.spots = { FOUNTAIN, BENCHES, PLANTERS, FIGURE, BIN };
   const solids = []; // collision: { kind: 'c', x, y, r } or { kind: 'b', x, y, hx, hy, c, s }
-  // ---- the cobbles: a seamless texture of irregular stones (Voronoi on a jittered grid, wrapped) ----
+  // ---- the setts: a seamless texture of natural stones laid in courses ----
+  // feat/fotorealismus (foto-boeden, 18.11.2026): the stones were the cells of a Voronoi pattern in eight flat colours – up close a
+  // mosaic, from eye height a carpet of coloured noise with its 4 m tile showing (Falko: „Pflaster ein Rauschteppich“). Now they lie
+  // as setts are laid, in courses: each course its own height (9–13 cm), each stone its own width, edges that wander, rounded
+  // corners; the Markt's colours (the palette of the photo of 2016) drawn towards their mean, each stone a shade lighter or
+  // darker, each course a shade; the stone's top rounded off towards the joint; the joints sunk – dark sand and dirt, darker and
+  // a little mossy where it stays damp; soft patches worn lighter by feet. The courses run along the Markt's long side (paving()).
+  // Generic: the bond of the real Markt is not surveyed.
   function settCanvas(N = 1024, METRES = 4, seed = 7) {
     let st = seed >>> 0;
     const rnd = () => {
@@ -46,13 +53,48 @@ export const SAMARKT = (() => {
       t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
-    const G = Math.round(METRES / 0.13), // stones of about 13 cm
-      cs = N / G,
-      cx = new Float32Array(G * G),
-      cy = new Float32Array(G * G),
-      cr = new Float32Array(G * G),
-      cg = new Float32Array(G * G),
-      cb = new Float32Array(G * G);
+    const M = METRES,
+      PX = M / N;
+    // value noise that wraps with the tile: a lattice of G × G random values
+    const lattice = G => {
+      const a = new Float32Array(G * G);
+      for (let k = 0; k < G * G; k++) a[k] = rnd();
+      return { G, a };
+    };
+    const vn = (L, x, y) => {
+      const G = L.G,
+        a = L.a,
+        u = (x / M) * G,
+        v = (y / M) * G,
+        i = Math.floor(u),
+        j = Math.floor(v),
+        i0 = ((i % G) + G) % G,
+        j0 = ((j % G) + G) % G,
+        i1 = (i0 + 1) % G,
+        j1 = (j0 + 1) % G;
+      let fu = u - i,
+        fv = v - j;
+      fu = fu * fu * (3 - 2 * fu);
+      fv = fv * fv * (3 - 2 * fv);
+      return (
+        (a[j0 * G + i0] * (1 - fu) + a[j0 * G + i1] * fu) * (1 - fv) +
+        (a[j1 * G + i0] * (1 - fu) + a[j1 * G + i1] * fu) * fv
+      );
+    };
+    // (the noise fields are smooth: worked out for every fourth pixel and read from there – a quarter of a second less when the town builds)
+    const Q = N >> 2,
+      field = (fn, L2) => {
+        const a = new Float32Array(Q * Q);
+        for (let j = 0; j < Q; j++)
+          for (let i = 0; i < Q; i++) a[j * Q + i] = fn((i + 0.5) * 4 * PX, (j + 0.5) * 4 * PX, L2);
+        return a;
+      };
+    const WX = field((x, y, L2) => (vn(L2, x, y) - 0.5) * 0.022, lattice(24)), // the edges wander by a centimetre
+      WY = field((x, y, L2) => (vn(L2, x, y) - 0.5) * 0.022, lattice(24)),
+      P1 = lattice(3), // patches over a metre or two: worn lighter, damp darker (they survive the mipmaps far off)
+      P2 = lattice(7),
+      PT = field((x, y) => vn(P1, x, y) * 0.6 + vn(P2, x, y) * 0.4),
+      JW = field((x, y, L2) => 0.0042 + 0.002 * vn(L2, x, y), lattice(40)); // the joints' half width
     // the Markt's stones (photo 2016): grey-brown, beige, light beige, a few rose, blue-grey and dark ones
     const PALETTE = [
       [0.56, 0.53, 0.49, 0.22],
@@ -64,20 +106,24 @@ export const SAMARKT = (() => {
       [0.43, 0.41, 0.39, 0.07],
       [0.68, 0.58, 0.52, 0.05],
     ];
-    // patches over a metre or so (periodic): worn lighter paths, darker damp spots – detail that survives the mipmaps far off
-    const P = [];
-    for (let k = 0; k < 5; k++)
-      P.push([1 + Math.floor(rnd() * 3), 1 + Math.floor(rnd() * 3), rnd() * 6.28, rnd() * 6.28]);
-    const patch = (u, v) => {
-      let s = 0;
-      for (const [fu, fv, pu, pv] of P) s += Math.sin(u * fu * 6.2832 + pu) * Math.sin(v * fv * 6.2832 + pv);
-      return s / P.length;
-    };
-    for (let j = 0; j < G; j++)
-      for (let i = 0; i < G; i++) {
-        const k = j * G + i;
-        cx[k] = (i + 0.18 + 0.64 * rnd()) * cs;
-        cy[k] = (j + 0.18 + 0.64 * rnd()) * cs;
+    const KEEP = 0.45, // how much of a stone's own colour stays (the rest: the mean of them all)
+      mean = [0, 0, 0];
+    for (const p of PALETTE) for (let c = 0; c < 3; c++) mean[c] += p[c] * p[3];
+    // the courses (their lower edges B, wrapped) and in each its stones (left edges S, colours C)
+    const NC = Math.round(M / 0.112),
+      hC = M / NC,
+      B = new Float32Array(NC + 1),
+      rows = [];
+    for (let k = 0; k < NC; k++) B[k] = (k + (rnd() - 0.5) * 0.36) * hC;
+    B[NC] = B[0] + M;
+    for (let j = 0; j < NC; j++) {
+      const n = 29 + Math.floor(rnd() * 9), // 11–14 cm on average
+        w = M / n,
+        S2 = new Float32Array(n + 1),
+        C = new Float32Array(n * 3),
+        shade = 0.975 + 0.05 * rnd();
+      for (let k = 0; k < n; k++) {
+        S2[k] = (k + (rnd() - 0.5) * 0.46) * w;
         let q = rnd(),
           c = PALETTE[0];
         for (const p of PALETTE) {
@@ -87,69 +133,55 @@ export const SAMARKT = (() => {
           }
           q -= p[3];
         }
-        const f = (0.86 + 0.28 * rnd()) * (1 + 0.16 * patch(cx[k] / N, cy[k] / N));
-        cr[k] = c[0] * f;
-        cg[k] = c[1] * f;
-        cb[k] = c[2] * f;
+        const f = (0.93 + 0.14 * rnd()) * shade;
+        for (let e = 0; e < 3; e++) C[k * 3 + e] = (mean[e] + (c[e] - mean[e]) * KEEP) * f;
       }
+      S2[n] = S2[0] + M;
+      rows.push({ n, w, off: rnd() * M, S: S2, C });
+    }
     const cv = document.createElement('canvas');
     cv.width = cv.height = N;
     const g = cv.getContext('2d'),
       img = g.createImageData(N, N),
       D = img.data,
-      jw = cs * 0.11;
+      clamp = v => (v < 0 ? 0 : v > 1 ? 1 : v),
+      RC = 0.014; // the corners' radius
     for (let y = 0; y < N; y++) {
-      const gj = Math.floor(y / cs);
+      const Y = (y + 0.5) * PX;
       for (let x = 0; x < N; x++) {
-        const gi = Math.floor(x / cs);
-        let d1 = 1e9,
-          d2 = 1e9,
-          k1 = 0;
-        for (let dj = -1; dj <= 1; dj++)
-          for (let di = -1; di <= 1; di++) {
-            let ii = gi + di,
-              jj = gj + dj,
-              ox = 0,
-              oy = 0;
-            if (ii < 0) {
-              ii += G;
-              ox = -N;
-            } else if (ii >= G) {
-              ii -= G;
-              ox = N;
-            }
-            if (jj < 0) {
-              jj += G;
-              oy = -N;
-            } else if (jj >= G) {
-              jj -= G;
-              oy = N;
-            }
-            const k = jj * G + ii,
-              dx = x - (cx[k] + ox),
-              dy = y - (cy[k] + oy),
-              d = dx * dx + dy * dy;
-            if (d < d1) {
-              d2 = d1;
-              d1 = d;
-              k1 = k;
-            } else if (d < d2) d2 = d;
-          }
-        const e = Math.sqrt(d2) - Math.sqrt(d1), // distance to the joint (×2)
-          r1 = Math.sqrt(d1) / (cs * 0.62),
-          dome = 1.06 - 0.22 * r1 * r1, // the rounded top catches the light
-          grain = 0.93 + (0.14 * ((((x * 73856093) ^ (y * 19349663)) >>> 0) % 1000)) / 1000;
-        let r = cr[k1] * dome * grain,
-          gg = cg[k1] * dome * grain,
-          b = cb[k1] * dome * grain;
-        const jt = Math.max(0, Math.min(1, (jw - e) / (jw * 0.6))); // the joint: sand and dirt, darker
-        r = r * (1 - jt) + 0.36 * jt;
-        gg = gg * (1 - jt) + 0.33 * jt;
-        b = b * (1 - jt) + 0.29 * jt;
-        const o = (y * N + x) * 4;
-        D[o] = Math.min(255, r * 255);
-        D[o + 1] = Math.min(255, gg * 255);
-        D[o + 2] = Math.min(255, b * 255);
+        const X = (x + 0.5) * PX,
+          qi = (y >> 2) * Q + (x >> 2);
+        // the course
+        let yy = Y + WY[qi];
+        yy = ((((yy - B[0]) % M) + M) % M) + B[0];
+        let j = Math.max(0, Math.min(NC - 1, Math.floor(yy / hC)));
+        while (j > 0 && yy < B[j]) j--;
+        while (j < NC - 1 && yy >= B[j + 1]) j++;
+        // the stone in it
+        const R = rows[j],
+          S2 = R.S;
+        let xx = X + WX[qi] + R.off;
+        xx = ((((xx - S2[0]) % M) + M) % M) + S2[0];
+        let i = Math.max(0, Math.min(R.n - 1, Math.floor(xx / R.w)));
+        while (i > 0 && xx < S2[i]) i--;
+        while (i < R.n - 1 && xx >= S2[i + 1]) i++;
+        // the distance to the joint, round the corners
+        const dx = Math.min(xx - S2[i], S2[i + 1] - xx),
+          dy = Math.min(yy - B[j], B[j + 1] - yy),
+          d = dx < RC && dy < RC ? RC - Math.hypot(RC - dx, RC - dy) : Math.min(dx, dy);
+        const patch = PT[qi],
+          damp = clamp((0.45 - patch) / 0.25),
+          dome = 0.84 + 0.2 * Math.sqrt(clamp(d / 0.024)), // the rounded top: darker towards the joint
+          hsh = (((x * 73856093) ^ (y * 19349663)) >>> 0) % 1000,
+          f = (0.93 + 0.14 * patch) * dome * (0.955 + (0.09 * hsh) / 1000);
+        // the joint: sand and dirt, sunk – dark, darker and a little mossy where it stays damp
+        const jt = clamp((JW[qi] - d) / 0.0025 + 0.5),
+          jn = (0.85 + (0.3 * ((hsh * 7919) % 1000)) / 1000) * (1 - 0.25 * damp),
+          o = (y * N + x) * 4,
+          C = R.C;
+        D[o] = Math.min(255, (C[i * 3] * f * (1 - jt) + (0.3 * jn - 0.016 * damp) * jt) * 255);
+        D[o + 1] = Math.min(255, (C[i * 3 + 1] * f * (1 - jt) + (0.27 * jn + 0.01 * damp) * jt) * 255);
+        D[o + 2] = Math.min(255, (C[i * 3 + 2] * f * (1 - jt) + (0.235 * jn - 0.024 * damp) * jt) * 255);
         D[o + 3] = 255;
       }
     }
@@ -167,10 +199,26 @@ export const SAMARKT = (() => {
       uv = [],
       nrm = [];
     const z = (x, y) => KERN.ground(x, y) + 0.03;
+    // feat/fotorealismus (foto-boeden): the courses of the setts run along the Markt's longest side (they ran west–east, askew to
+    // every house front)
+    let ca = 1,
+      sa = 0,
+      best = 0;
+    for (let k = 0; k < pts.length; k++) {
+      const q = pts[(k + 1) % pts.length],
+        dx = q.x - pts[k].x,
+        dy = q.y - pts[k].y,
+        l = Math.hypot(dx, dy);
+      if (l > best) {
+        best = l;
+        ca = dx / l;
+        sa = dy / l;
+      }
+    }
     const emit = (a, b, c) => {
       for (const p of [a, b, c]) {
         pos.push(p[0], z(p[0], p[1]), -p[1]);
-        uv.push(p[0] / 4, p[1] / 4);
+        uv.push((p[0] * ca + p[1] * sa) / 4, (p[1] * ca - p[0] * sa) / 4);
         nrm.push(0, 1, 0);
       }
     };
