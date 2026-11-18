@@ -1,6 +1,6 @@
 # Pavillon Ratscher – Mehrspieler-Modus (Konzept, Fassung 2)
 
-Stand: 17.11.2026, ~21 Uhr · Konzept-Chat (session_01L6Yrpdv3z6vdQt8B5XJNP3) · **nur Konzept, nichts gebaut**
+Stand: 18.11.2026, ~20 Uhr · Mehrspieler-Chat (session_01L6Yrpdv3z6vdQt8B5XJNP3) · **Stufe 1 „Zu zweit im Garten“ ist gebaut und live (V19f)**, siehe Abschnitt 16; alles andere ist Konzept
 
 Falkos Wünsche:
 - 20:30: „Ein Konzept für einen Mehrspieler-Modus, wo man auch andere Spieler sieht, mit eigenen Avataren und so weiter. Erstmal nur als
@@ -399,6 +399,58 @@ Allein bleibt alles möglich, nur langsamer oder mit einem Verbündeten wie Hube
 7. Grenzland: Spielt der zweite Mensch Sarah?
 8. KI-Gespräche der Gäste über deinen Schlüssel?
 
+## 16 Stand der Umsetzung
+
+**Stufe 1 „Zu zweit im Garten“ – live als V19f (18.11.2026)**
+- Falko 17.11. 21:21: „Dann bitte erste funktionsfähige Version umsetzen die dann später erweitert werden kann“.
+- Doku im Repo: `docs/features/mehrspieler.md`; Code in `viz3/src/netz/`.
+
+**Ohne Rückfrage festgelegt** (die Fragen aus Abschnitt 15 sind noch offen):
+- kein Cloudflare-Konto: Die Browser finden sich über Nostr, wie in der Zombie-Nacht;
+- nur die freie Simulation; Zombie-Nacht und Grenzland schließen den Raum;
+- keine Sprache, keine Beifahrer;
+- keine gemeinsame Welt: Jeder sieht seinen eigenen Garten, nur die Uhr kommt vom Gastgeber.
+
+**Drin:**
+- **Raum:** Menü → „Zusammen spielen“ → „Raum erstellen“, dann Link oder Code schicken (`?zusammen=CODE`). Bis etwa vier Spieler.
+- **Avatare:** Falko, Sarah, Christoph oder eine der zehn Leute der Straßen.
+  - Farben für Oberteil, Hose und Schuhe, dazu Muster;
+  - Kopf: Basecap in der eigenen Farbe, Mütze, Hut oder Kopftuch; Brille, Schnauzer;
+  - eine eigene Farbe für Name und Zeigen; „Zufall“.
+- **Die anderen in der Welt:**
+  - Man sieht sie gehen, laufen, ducken, sitzen und fahren.
+  - Ihr Name steht über dem Kopf, auch durch Wände, mit Entfernung.
+  - Das Fahrzeug, das einer fährt, fährt bei allen mit; einsteigen kann dort sonst niemand.
+  - Im Haus sieht man, wer im selben Haus ist.
+- **Die Uhr des Gastgebers** gilt für alle. Danach hat ein Gast seine eigene wieder.
+- **Zeigen mit Bedeutung:** G, die mittlere Maustaste oder ein Knopf am Handy.
+  - Es erscheinen ein Ring und ein Wort: „Hier!“, „Hier rein!“, „Das Auto!“, „Da: Sarah!“.
+  - Die Figur zeigt dorthin.
+- **Gesten:** Winken, Nicken, Kopf schütteln, Schulterzucken.
+- **„Hin“** springt neben den Mitspieler, auch ins selbe Haus.
+- **Verstecken im Dorf:**
+  - 30 s zählen im Dunkeln, dann 5 Minuten suchen;
+  - beim Suchen keine Namen über den Köpfen;
+  - ob jemand gefunden ist, prüft der Gastgeber;
+  - „Nochmal“ für die nächste Runde.
+- **Abbrüche:** Nach einem Funkloch oder einem Neu laden geht es zurück in den Raum. Solange man spielt, bleibt der Bildschirm wach.
+
+**Noch nicht drin:** Fotomodus, Umriss durch Wände (nur der Name ist durch Wände zu sehen), Gastwelt (ohne gemeinsame Welt nicht nötig),
+Rad mit Sätzen, Daumen hoch und Abklatschen.
+
+**Getestet:**
+- Unit-Test `netz.test.mjs`;
+- Browser-Test `mehrspieler` mit zwei Seiten über `?lokal=1`, 32 Prüfungen: sehen, Avatar, Uhr, Ort, „Hin“, Zeigen, Winken, Auto, Haus,
+  Verstecken, Fenster;
+- Pflicht-Teil des Prüfpakets grün.
+
+**Offen bei Falko:**
+- **Echter Test auf zwei Geräten in zwei Netzen:** Laptop im WLAN, iPhone im Mobilfunk. Der Chat-Rechner erreicht die Nostr-Relais nicht.
+  Ohne TURN kann es im Mobilfunk scheitern; dann hilft der Raum-Dienst aus Abschnitt 11.8.
+- **Die Entscheidungen aus Abschnitt 15.**
+
+**Nächste Stufe:** Schritt 2 aus Abschnitt 14 (Zombie-Nacht zu viert), erst auf Falkos Wort.
+
 ## Für Chats
 - **Vorhanden:**
   - `zombie/z_netz.js`: Raum, Übertragung, Zustand, Figur mit Schild, Zombie-Schnappschüsse;
@@ -412,7 +464,8 @@ Allein bleibt alles möglich, nur langsamer oder mit einem Verbündeten wie Hube
   - `zukunft/zk_workshop.js`: `WORKSHOP.slot('phone')`.
 - **Doku im Repo:** `docs/features/figuren.md`, `grenzland-figuren.md`, `workshop.md`, `dorf.md`, `strategie.md`, `strategie-bau.md`; Pläne
   `docs/plans/plan_strategie.md` und `plan_grenzland.md`.
-- **Neu geplant:** `viz3/src/netz/` (`NETZ`), Avatar-Bauplan `pav-avatar-v1`, Test `netz`, Raum-Dienst unter `tools/raum-dienst/`.
+- **Gebaut (Stufe 1):** `viz3/src/netz/` (`NETZ`, `NETZLOGIK`, `NETZRAUM`, `NAVATAR`, `NVERSTECK`, `NETZUI`), Avatar-Bauplan in `pav-netz-v1`, offener Raum in `pav-netz-raum`, Test `mehrspieler`, Doku `docs/features/mehrspieler.md`.
+- **Noch geplant:** Raum-Dienst unter `tools/raum-dienst/`.
 
 ## Quellen
 - **Trystero** (MIT): https://github.com/dmotz/trystero

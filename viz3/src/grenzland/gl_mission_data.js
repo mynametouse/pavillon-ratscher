@@ -631,8 +631,11 @@ export const GLMLOGIK = (() => {
       const m = cur();
       return m ? m.steps[G.m[m.id].i] || null : null;
     };
+    // grenzland-kapitel2: chapters – a mission of a later chapter (m.kap > 1) counts only once the story has reached it (G.kap); without
+    // G.kap (the unit tests of chapter 1) every mission counts
+    const zeigt = m => G.kap == null || (m.kap || 1) <= G.kap;
     // the next mission of the story that is not done (null: the chapter is through)
-    const nextOpen = () => M.find(m => st(m.id) !== 'erledigt') || null;
+    const nextOpen = () => M.find(m => zeigt(m) && st(m.id) !== 'erledigt') || null;
     function start(id, s = 0, why = 'start') {
       const m = by(id);
       if (!m) return false;
@@ -644,6 +647,7 @@ export const GLMLOGIK = (() => {
       const i = Math.min(m.steps.length - 1, idx(m, s));
       G.m[id] = { st: 'läuft', i, n: (G.m[id] && G.m[id].n) || 0 };
       G.cur = id;
+      if (G.kap != null && (m.kap || 1) > G.kap) G.kap = m.kap; // grenzland-kapitel2: a mission of a later chapter begins it
       io.save();
       io.emit('mission', { id, st: 'läuft' });
       io.emit('schritt', { id, i });
@@ -718,6 +722,7 @@ export const GLMLOGIK = (() => {
           G.m[m.id] = { st: 'erledigt', i: m.steps.length - 1, n: (G.m[m.id] && G.m[m.id].n) || 0 };
         } else delete G.m[m.id];
       });
+      if (G.kap != null) G.kap = M[k].kap || 1; // grenzland-kapitel2: the story stands in the chapter of the mission jumped to
       return start(id, s, 'debug');
     }
     // the journal: what is done, what runs, and the next one as a hint (what comes later stays a secret)
@@ -726,14 +731,15 @@ export const GLMLOGIK = (() => {
         nx = nextOpen();
       for (const m of M) {
         const s = st(m.id);
+        if (!zeigt(m) && G.cur !== m.id) continue; // grenzland-kapitel2: a later chapter's missions stay a secret until it begins
         if (s === 'erledigt') out.push({ id: m.id, status: 'erledigt', i: m.steps.length - 1 });
         else if (s === 'läuft' && G.cur === m.id) out.push({ id: m.id, status: 'läuft', i: G.m[m.id].i });
         else if (nx && nx.id === m.id) out.push({ id: m.id, status: 'offen', i: 0 });
       }
       return out;
     }
-    const allDone = () => M.every(m => st(m.id) === 'erledigt');
-    return { by, st, cur, step, cpOf, nextOpen, start, resume, next, fail, finish, jump, list, allDone };
+    const allDone = () => M.every(m => !zeigt(m) || st(m.id) === 'erledigt'); // grenzland-kapitel2: of the chapters begun
+    return { by, st, cur, step, cpOf, nextOpen, start, resume, next, fail, finish, jump, list, allDone, zeigt };
   }
   // ---- the race: a rival's top speed (m/s) by his lead over the player (m; negative: he is behind) ----
   // Far ahead he eases off, far behind he gives all the moped has – never more than a ridden moped does, so a clean ride wins.
