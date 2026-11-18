@@ -51,12 +51,14 @@ class Built(unittest.TestCase):
 
     def test_cells(self):
         tot = 0
+        sq = {f'{i}_{j}' for i, j in G.cells_in(*G.square_box())}
         for key, c in self.idx['cells'].items():
             fn = os.path.join(G.OUT, 'z', key + '.png')
             self.assertTrue(os.path.exists(fn), key)
             sz = os.path.getsize(fn)
             self.assertLess(sz, 200 * 1024, key)
-            tot += sz
+            self.assertIn(c['res'], (0.5, 1.0), key)
+            tot += sz if key in sq else 0
             n = int(round(400 / c['res']))
             v = G.load_png(fn)
             self.assertEqual(v.shape, (n, n), key)
@@ -85,3 +87,39 @@ class Built(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Roads(unittest.TestCase):
+    def test_same_rules_as_build_roads(self):  # quellen.road_of keeps the rules of tools/geo/build_roads.py classify()
+        import ast
+        import quellen
+        src = read(G.REPO, 'tools', 'geo', 'build_roads.py')
+        tree = ast.parse(src)
+        keep = [n for n in tree.body if (isinstance(n, ast.Assign) and any(getattr(t, 'id', '') in ('KINDS', 'KI', 'SURF', 'SI', 'SURF_OSM')
+                                                                             for t in n.targets)) or (isinstance(n, ast.FunctionDef) and n.name == 'classify')]
+        ns = {'np': np}
+        exec(compile(ast.Module(body=keep, type_ignores=[]), 'build_roads', 'exec'), ns)
+        for t in [{'highway': 'secondary'}, {'highway': 'residential', 'surface': 'sett'}, {'highway': 'track', 'tracktype': 'grade1'},
+                  {'highway': 'track', 'surface': 'asphalt'}, {'highway': 'path', 'motor_vehicle': 'agricultural'}, {'highway': 'service', 'service': 'driveway'},
+                  {'highway': 'footway'}, {'highway': 'unclassified', 'width': '4,5 m'}, {'highway': 'motorway_link', 'bridge': 'yes'},
+                  {'highway': 'path', 'surface': 'concrete'}, {'highway': 'steps'}, {'highway': 'tertiary', 'width': '30'}]:
+            a, b = ns['classify'](t), quellen.road_of(t)
+            if a is None:
+                self.assertIsNone(b, t)
+                continue
+            self.assertEqual((a[0], a[1], round(a[2], 2), bool(a[3] & 1)), (b[0], b[1], round(b[2], 2), b[3]), t)
+
+
+class Areas(unittest.TestCase):
+    def test_korridor(self):
+        import gebiete
+        sq = set(G.cells_in(*G.square_box()))
+        c = gebiete.korridor()
+        keys = {(i, j) for i, j, r in c}
+        self.assertFalse(keys & sq)
+        self.assertTrue({r for i, j, r in c} <= {0.5, 1.0})
+        for z in gebiete.zones().values():  # the town zones are all in, at 0.5 m
+            for k in G.cells_in(*z):
+                if k not in sq:
+                    self.assertIn((k[0], k[1], 0.5), c)
+

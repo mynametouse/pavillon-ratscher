@@ -4,7 +4,11 @@ Hilfs-Agent `bewuchs-daten` des Straßen-Chats (session_01WqScFDtq8GSy4n7wU7foJx
 Auftrag: `docs/plans/auftraege/bewuchs-daten.md`, Plan: `docs/plans/plan_bewuchs.md` (Abschnitt 4.5). Die Vorlage, die daraus Halme,
 Blumen, Büsche und Beete zeichnet, baut der Straßen-Chat (`viz3/src/bewuchs/`); die Arten macht `bewuchs-pflanzen`.
 
-## Was es gibt (Teil a: Ratschers Quadrat und Falkos Garten)
+## Was es gibt
+
+Teil a (17.11.): Ratschers Quadrat und Falkos Garten. Teil b (17./18.11.): die Strecken nach Schleusingen und Kloster Veßra, Schleusingens
+Stadtzone und Kloster Veßra – im selben Format, im selben Index (Abschnitt „Teil b“ unten).
+
 
 - **Eine Karte je 400-m-Zelle** des Rasters von `gebaeude/z/` (Schlüssel `i_j`: Modell-x ∈ [400 i, 400 (i + 1)), y ∈ [400 j, 400 (j + 1))):
   `viz3/extra/bewuchs-daten/dist/bewuchs/z/<i>_<j>.png` → nach dem Bauen `dist/bewuchs/z/`. 8-Bit-Graustufen, 800 × 800 Punkte zu
@@ -20,6 +24,30 @@ Blumen, Büsche und Beete zeichnet, baut der Straßen-Chat (`viz3/src/bewuchs/`)
   "vigour": { "<Klasse>": [NDVI für 0, NDVI für 7] } }` (`w`, `h`, `n` im Garten und `vigour` sind Zusätze zum Format des Auftrags).
 - `viz3/extra/bewuchs-daten/manifest.json`: die Quellenzeile (`credits_add`).
 
+### Teil b: Strecken, Schleusingen, Kloster Veßra
+
+- **Zellen** (`gebiete.py korridor`): die 400-m-Zellen der Gebäude jenseits des Quadrats (`dist/gebaeude/z/index.json`: die Orte an den
+  Straßen nach Schleusingen und Kloster Veßra, Schleusingen um die Altstadt, Kloster Veßra), die Zellen bis 60 m neben den beiden Routen
+  der Fahrt (`dist/fahrt/strassen.json` `routes` – die Strecken zwischen den Orten, wo die Gebäudezellen Lücken lassen) und alle Zellen der
+  beiden Stadtzonen (`dist/schleusingen/stadt.json`, `dist/vessra/ort.json` `zone`) – 239 Zellen. **0,5 m**, wo eine bebaute Fläche der
+  Fahrtdaten (`dist/strassen/ausstattung.json` `orte`, ab 1000 m² in der Zelle) oder eine Stadtzone liegt (118 Zellen), sonst **1 m**
+  (400 × 400, 121 Zellen).
+  `index.json` nennt je Zelle `res` und den Flugtag des Luftbilds (`flug`).
+- **Straßen** jenseits des Quadrats: die Wege der Fahrt (`dist/fahrt/strassen.json`, was `welt/fahrt.js` lädt: Art, Breite) und aus
+  OpenStreetMap die Straßen der Orte, Feldwege und Pfade mit den Breiten von `tools/geo/build_roads.py` (`quellen.road_of`, ein Unit-Test
+  vergleicht die Regeln mit dem Skript). Im Quadrat bleiben es die Wege von `dist/geo/roads.b64.json`; Zellen am Rand des Quadrats nehmen
+  jenseits davon die Fahrt- und OSM-Wege (in Teil a fehlten dort die Straßen).
+- **Bankett nur außerhalb der Ortslage des Basis-DLM** (vorher: bebaute Flächen der Fahrtdaten, die gilt jetzt auch im Quadrat); in der
+  Ortslage die Grünstreifen an den Straßen (bis 1,5 m) öffentlich.
+- **Gebäude** dazu: ETHOS-Zellen (`dist/gebaeude/z/`), die eigenen Häuser der Stadtzonen (`stadt.json`, `ort.json` `b`). Hecken von
+  `stadtgruen` in Schleusingen (`baeume.json`) und die Hecken und Mauern von Kloster Veßra (`ort.json`) sind 0 – sie zeichnen sie selbst.
+- **Kein Höhenmodell** jenseits des Quadrats: keine Büsche aus Höhen, keine Böschungen; Gebüsch dort nur aus OSM und dem Basis-DLM.
+  Kronen von Bäumen im Ort sind im Maibild grün und zählen dann zum Rasen darunter.
+- **Zwei Flüge:** südlich von etwa N 5 597 000 der 07.04.2024, nördlich der 15.05.2024 (Laub, längeres Gras). Der Wuchs wird je Flugtag
+  auf die Spanne seiner eigenen Zellen gelegt (`index.json` `vigour`: je Flugtag die Spannen je Klasse); eine Zelle, die über die Grenze
+  reicht, nimmt den Tag ihrer Mitte.
+- Basis-DLM jenseits des Quadrats in Blöcken von 5 × 5 Zellen (2 km, 1 m, 15 Ebenen).
+
 ### Klassen (ids fest)
 
 | id | Name | was | woher (Reihenfolge: spätere Regeln gewinnen) |
@@ -28,7 +56,7 @@ Blumen, Büsche und Beete zeichnet, baut der Straßen-Chat (`viz3/src/bewuchs/`)
 | 1 | zierrasen | privater Rasen | grüne Flächen im Dorf (Basis-DLM Wohnbau/gemischt/Ortslage, OSM residential), nicht öffentlich |
 | 2 | oeffentlich | Anger, Schulwiese, Brunnen, Badewiese, Sportanlagen-Grün, Grünstreifen an Dorfstraßen (bis 1,5 m) | OSM (park, school, village_green …), Basis-DLM (Bildung, Freibad, Sport), Handdaten (`handdaten.py`: Anger, Schulwiese, Brunnen – OSM hat dort nichts) |
 | 3 | bankett | Bankett außerorts, 0,3 m bis 3 / 2,5 / 2 / 1,5 / 1 / 0,5 m hinter dem Fahrbahnrand (Autobahn / Haupt-, Kreisstraße / Straße, Weg / Zufahrt / Feldweg / Pfad), am Acker höchstens bis 1,5 m | Straßen der App |
-| 4 | maehwiese | Wiese | Basis-DLM Grünland, OSM meadow/grass; breite unbekannte grüne Flächen; raue Grasflächen in großen Gärten |
+| 4 | maehwiese | Wiese | Basis-DLM Grünland, OSM meadow/grass; breite unbekannte grüne Flächen; raue Grasflächen in großen Gärten (Schwelle des NDVI je Zelle: das 60. Perzentil des Grüns im Ort – im Mai üppiger als im April); das Gras von Höfen, Gewerbe- und Industrieflächen (Basis-DLM, OSM farmyard/industrial) |
 | 5 | weide | Weide | OSM pasture (keine im Quadrat), Basis-DLM Tiergehege, Ronalds Ziegenweide (`npc/npc.js` PAD) |
 | 6 | streuobst | Streuobstwiese | OSM orchard, Basis-DLM Streuobst – im Quadrat keine (auch im Bild keine gefunden) |
 | 7 | saum | Rain, Brache, Graben, Böschung | 1 m Wiese am Acker, 2 m Waldsaum, 1,2 m um Gräben (OSM ditch), steile Hänge (> 31°) außerorts, Straßenland der Autobahn jenseits des Banketts, Basis-DLM „naturnahe Fläche“, schmale unbekannte grüne Streifen (< 8 m), Gartenrand am Zaun |
@@ -104,11 +132,13 @@ Siehe `tools/bewuchs/daten/bauen.py` (Ausgabe) – Flächen je Klasse im Quadrat
 
 ```bash
 cd <repo>
+python3 -I tools/bewuchs/daten/holen.py korridor            # Teil b: OSM, Luftbilder (0,2 m bzw. 0,4 m je Zelle), Flugtage, Basis-DLM-Blöcke
 python3 -I tools/bewuchs/daten/holen.py osm                 # OpenStreetMap (Cache /home/claude/bewuchs-raw/osm, BEWUCHS_RAW ändert den Ort)
 python3 -I tools/bewuchs/daten/holen.py dlm                 # Basis-DLM, 20 Ebenen, 1 m
 python3 -I tools/bewuchs/daten/holen.py dop -3 -4 3 2       # Luftbild Farbe + Infrarot je Zelle (49 × 2 Bilder, ~60 MB, 5 min)
 node tools/bewuchs/daten/app_daten.mjs > /home/claude/bewuchs-raw/app.json
-nice -n 10 python3 -I tools/bewuchs/daten/bauen.py ratscher --boegen <Berichtsordner>   # Karten, Index, Manifest; Bögen und Tabelle
+nice -n 10 python3 -I tools/bewuchs/daten/bauen.py ratscher korridor --boegen <Berichtsordner>   # Karten, Index, Manifest; Bögen
+# (nur ein Gebiet: die Zellen der anderen bleiben im Index stehen)
 python3 -m unittest discover -s tools/bewuchs/daten -p 'test_*.py'                      # Unit-Tests (rein, ohne Netz)
 ```
 
@@ -120,6 +150,7 @@ und keine Böschungen.
 | Datei | was |
 |---|---|
 | `gemeinsam.py` | Modellrahmen, Zellen, Raster (`Grid`), Klassen, Kodierung, PNG |
+| `gebiete.py` | die Gebiete (Quadrat, Strecken mit den Stadtzonen) und die Auflösung je Zelle |
 | `holen.py` | Downloads mit Cache (OSM, DOP, DLM; `dlm_info` für GetFeatureInfo) |
 | `osm_flaechen.py` | OSM-XML → Flächen und Linien mit Tags in Modellmetern (Multipolygone) |
 | `quellen.py` | alle Vektorquellen einmal geladen (OSM nach Art, Straßen, Orte, Gebäude, Bäume, App, `stadtgruen`-Hecken) |
@@ -133,7 +164,5 @@ und keine Böschungen.
 
 ## Offen (für die nächsten Teile)
 
-- (b) Strecken nach Schleusingen und Kloster Veßra (Zellen von `dist/gebaeude/z/index.json`), Schleusingens Zone, Kloster Veßra;
-  (c) alle Welt-Kacheln; (d) Feldfrüchte nach Flugdatum.
-- Außerhalb des Quadrats fehlen die Straßen der App als eine Datei: dort die Wege von `welt/fahrt.js`/`dist/fahrt` oder OSM mit den
-  Breiten von `tools/geo/build_roads.py`.
+- (c) alle Welt-Kacheln; (d) Feldfrüchte nach Flugdatum.
+- Weiden sind nirgends erfasst (nur Ronalds Ziegen und ein Tiergehege); Beete (13) erkennt das Bild nicht.
