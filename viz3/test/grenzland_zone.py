@@ -9,7 +9,8 @@
 #            hide; the trees of the forest edges (cards far, 3D near); pictures by day and at dusk
 #   turm     the Grenzturm from outside: the tower, the wall's pieces, the fence, the shelter with its board, the opening hours
 #            (OEFFNUNG), the door shut; a picture
-#   schnell  the quality „schnell“ (VEG.lodK 0.6, as on the iPhone): built again, the zone draws far fewer triangles at the heath
+#   schnell  the quality levels (VEG.lodK 1, 0.8, 0.6): built again for each and measured at the Kolonnenweg – on „mittel“ within the
+#            iPhone's budget (4.5 M triangles), on „schnell“ far fewer than on „hoch“; the heath on „schnell“ at dusk (a picture)
 #   zufahrt  by road: the Simson eastwards over the end of the region's L 3004 comes in on the Coburger Straße (a picture), north out of
 #            the zone back onto the L 3004
 #   (every run ends with leaving: back in the garden, the zone is freed – meshes, roads, collisions, the tiles' need)
@@ -217,22 +218,39 @@ with lib.browser() as b:
         for _ in range(6): steps(0.3); time.sleep(0.6)
         pic('08_grenzturm')
     # ------------------------------------------------------------------ schnell ------------------------------------------------------------------
-    # the quality „schnell“ (the iPhone; VEG.lodK 0.6): the zone built again draws its 3D trees, grass and heather less far
+    # the quality levels: the zone built again with VEG.lodK 1 („hoch“), 0.8 („mittel“), 0.6 („schnell“) and measured in the view of
+    # picture 01 at the Kolonnenweg – the iPhone's budget is 4.5 M triangles on „mittel“; then the heath on „schnell“ at dusk (a picture)
     if want('schnell'):
+        ok, o = zu_fuss('kolonnenweg_a')
+        until("GLZONE.state().decke > 0 && GLZONE.state().zellenNah > 0", 90)
+        X("window._lk = VEG.lodK; window._pk = GLZONE.debug.platz('kolonnenweg_a')")
+        def messen():
+            X("const p = _pk; TS.look(p[0], p[1], p[3] + 12, 7, 1.7, -7)")
+            for _ in range(8): steps(0.3); time.sleep(0.4)
+            return J("TS.calls()"), J("GLZONE.state()")
+        def neu(k):
+            X(f"VEG.lodK = {k}; VEG.last.set(1e9, 0, 0); GLZONE.debug.abbauen(); window._re = 0; GLZONE.debug.bauen().then(() => window._re = 1)")
+            until("window._re === 1 && GLZONE.state().decke > 0 && GLZONE.state().zellenNah > 0", 90)
+        neu(1)
+        hoch, sh = messen()
+        neu(0.8)
+        mittel, sm = messen()
+        neu(0.6)
+        schnell, ss = messen()
+        print('levels at the Kolonnenweg: calls, triangles – hoch', hoch, 'mittel', mittel, 'schnell', schnell, flush=True)
+        ck('on „mittel“ the Kolonnenweg stays within the iPhone budget (≤ 4.5 M triangles)', mittel[1] <= 4.5e6,
+           f"mittel {mittel} hoch {hoch}; near trees {sm['baeumeNah']} / {sh['baeumeNah']}, cover cells {sm['decke']} / {sh['decke']}")
+        ck('on „schnell“ far fewer triangles (< 0.75 x „hoch“)', schnell[1] < hoch[1] * 0.75,
+           f"schnell {schnell} hoch {hoch}; near trees {ss['baeumeNah']} / {sh['baeumeNah']}, cover cells {ss['decke']} / {sh['decke']}")
         ok, o = zu_fuss('heide')
         until("GLZONE.state().decke > 0 && GLZONE.state().zellenNah > 0", 90)
-        X(f"TS.look({o['x']}, {o['y']}, 150, 18, 2.0, -6)")
-        for _ in range(8): steps(0.3); time.sleep(0.4)
-        hoch, sh = J("TS.calls()"), J("GLZONE.state()")
-        X("window._lk = VEG.lodK; VEG.lodK = 0.6; VEG.last.set(1e9, 0, 0); GLZONE.debug.abbauen(); window._re = 0; GLZONE.debug.bauen().then(() => window._re = 1)")
-        until("window._re === 1 && GLZONE.state().decke > 0 && GLZONE.state().zellenNah > 0", 90)
-        X(f"TS.look({o['x']}, {o['y']}, 150, 18, 2.0, -6)")
-        for _ in range(8): steps(0.3); time.sleep(0.4)
-        low, sl = J("TS.calls()"), J("GLZONE.state()")
-        print('schnell: calls, triangles', low, 'hoch', hoch, flush=True)
-        ck('at the quality „schnell“ the zone draws far fewer triangles (< 0.75 x „hoch“)', low[1] < hoch[1] * 0.75,
-           f"{low} hoch {hoch}; near trees {sl['baeumeNah']} / {sh['baeumeNah']}, cover cells {sl['decke']} / {sh['decke']}")
+        daemmerung()
+        X(f"TS.look({o['x']}, {o['y']}, 330, 14, 1.8, -4)")
+        for _ in range(6): steps(0.3); time.sleep(0.6)
+        pic('11_heide_schnell_daemmerung')
         X("VEG.lodK = window._lk; VEG.last.set(1e9, 0, 0)")
+        X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 11 * 60")
+        lib.settle_light(pg)
     # ------------------------------------------------------------------ zufahrt ------------------------------------------------------------------
     # by road: the Simson on the L 3004 eastwards over the end of the region's roads → the cut to the Coburger Straße (ankunft_nord);
     # north out of the zone → back on the L 3004 westbound
