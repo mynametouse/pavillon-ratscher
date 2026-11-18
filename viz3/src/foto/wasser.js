@@ -60,9 +60,9 @@ export const WASSER = (() => {
   ];
   const GUST = 610; // the tile of the gusts' patches (m)
   const NEAR = 600; // within this the moving water asks for pictures (m)
-  // The terrain under a water body is the laser scan's own water surface: it lies within centimetres of the body's level, here and
-  // there above it – near the eye such ground won against the old plate (dark steps of bed along the dam). The water lies a hand's
-  // width higher than the level of the data.
+  // The terrain under a water body is the laser scan's own water surface: it lies within centimetres of the body's level (at the
+  // dam 2 cm below to 3 cm above) – near the eye, where the plate's depth offset no longer helps, such ground shows through. The
+  // water lies a hand's width higher than the level of the data.
   const LIFT = 0.12;
   const LO = -8, // the bank maps hold distances from LO (outside) to HI (inside), a byte's step: 0.125 m
     HI = 24;
