@@ -276,6 +276,8 @@ export const ROADS = (() => {
     D = new Uint8Array(W * H * 4);
     STRSTIL.clear(D);
     const placeAt = STRDAT.ready ? STRDAT.placeAt : null;
+    // feat/strassen: acute junctions – a way leaving another at a sharp angle has no centre line beside it (strassen/strassen_stil.js)
+    S.acute = STRSTIL.acute(S.ways, w => ({ p: w.p, stride: 2, n: w.p.length / 2, hw: w.w / 2, s0: 0 }));
     for (const wy of S.ways) {
       const n = wy.p.length / 2;
       // the style of every stretch (open country, no overtaking, town, village) – also for the bridges: the furniture reads it
@@ -289,6 +291,7 @@ export const ROADS = (() => {
         kind: wy.kind,
         surf: wy.surf,
         st: wy.st,
+        ncs: wy.ncs, // feat/strassen
       });
     }
     S.rasterMs = Math.round(performance.now() - t0);

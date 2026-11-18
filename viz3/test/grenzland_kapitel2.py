@@ -2,7 +2,9 @@
 # „Ein Auto für die Nacht“ (cracking a Wartburg, the owner as a witness, repainting, other plates, the haulier's jacket), played through by
 # the test like viz3/test/grenzland_mission.py: where a human would walk or drive for minutes the test puts the player there, every step is
 # finished by its real check; talks are skipped with the action a player has (GLMISSION.weiter). Sections (second argument, comma
-# separated; default all): start m2 knacken m1. Pictures in out/grenzland_kapitel2/.
+# separated; default start,m2,knacken): start m2 knacken m1 m1e – m1 is mission 1 in agent zone's GLZONE (the stand-in when there is
+# none), m1e against the stand-in west of Ratscher; run either alone; direkt (alone): ?szenario=grenzland&kapitel=2 on a fresh save.
+# Pictures in out/grenzland_kapitel2/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9062 --serve grenzland_kapitel2:start,m2
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib, grenzland_ci
@@ -19,8 +21,11 @@ with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs)
     # (mission 1 is off in the preview – switched on for its own section before the page loads; run m1 alone)
-    if 'm1' in SECT: pg.add_init_script("window.GLK2_M1 = true")
-    lib.boot(pg, port, '?szenario=grenzland', figures=True)
+    M1 = next((x for x in ('m1', 'm1z', 'm1e') if x in SECT), None)
+    # (mission 1 was off in the preview V19g: switched on before the page loads, should it be off again)
+    if M1: pg.add_init_script("window.GLK2_M1 = true")
+    # (direkt: the address of the direct way into chapter 2 – run it alone)
+    lib.boot(pg, port, '?szenario=grenzland' + ('&kapitel=2' if 'direkt' in SECT else ''), figures=True)
     E = pg.evaluate
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
     steps = lambda secs, dt=0.1: E(f"for (let i = 0; i < {max(1, int(round(secs / dt)))}; i++) GAME.step({dt})")
@@ -68,6 +73,26 @@ with lib.browser() as b:
     until("GLMISSION.debug.info().step === 'ankunft' && !!GLMISSION.St.S.da", 120, 0.5, 0.3)
     talk()
 
+    # ================================================================ direkt · ?szenario=grenzland&kapitel=2 on a fresh save ================================================================
+    if 'direkt' in SECT:
+      try:
+        # (the page runs while it boots: the opening may be further on – still at the barn)
+        ok = until("GLMISSION.cur() === GLKAP2.debug.info().erste && !document.getElementById('glfade').classList.contains('on')", 60, 0.25, 0.1)
+        st = J("({ kap: GLSTATE.kap, k1: ['gefallen', 'clique', 'gerhard', 'klinge', 'coup'].map(id => GLSTATE.m[id] && GLSTATE.m[id].st), d: DN.dateStr(CLOCK.t, true), "
+               "t: document.getElementById('glmtitel').textContent, p: [GAME.P.x, GAME.P.y], ich: GLKAP2.debug.hof().ich, url: location.search, "
+               "i: GLSTATE.m[GLKAP2.debug.info().erste], card: GLKAP2.debug.info().karte })")
+        ck('?szenario=grenzland&kapitel=2 on a fresh save: chapter 1 marked done, chapter 2 opens at once – at the field barn with the chapter\'s card',
+           ok and st['kap'] == 2 and st['k1'] == ['erledigt'] * 5 and '4. Dezember 2026' in st['d'] and st['i']['st'] == 'läuft' and st['i']['i'] <= 2
+           and st['card'] and math.hypot(st['p'][0] - st['ich'][0], st['p'][1] - st['ich'][1]) < 3, str(st))
+        steps(0.5)
+        pic('40_direkt')
+        # once chapter 2 has begun the parameter changes nothing (a reload: the mode's start again)
+        E("GLSTATE.emit('start', { fresh: false })"); steps(1)
+        st2 = J("({ cur: GLMISSION.cur(), kap: GLSTATE.kap, i: GLSTATE.m[GLKAP2.debug.info().erste], k1: GLSTATE.m.gefallen.st })")
+        ck('once chapter 2 has begun ?kapitel=2 changes nothing', st2['cur'] == J("GLKAP2.debug.info().erste") and st2['kap'] == 2 and st2['i']['st'] == 'läuft' and st2['i']['i'] >= st['i']['i'] and st2['k1'] == 'erledigt', str(st2) + ' ' + str(st['i']))
+      except Exception as e:
+        ck('direkt ran through without an error of the test', False, str(e)[:300])
+
     # ================================================================ start · the chapter opens after chapter 1 ================================================================
     if 'start' in SECT:
       try:
@@ -77,15 +102,15 @@ with lib.browser() as b:
         ck('free play after chapter 1: chapter 2 is offered on the panel („Kapitel 2 beginnen“), its missions are still a secret',
            ok and st['cur'] == '' and st['kap'] == 1 and [s for _, s in st['j']] == ['erledigt'] * 5, str(st))
         E("void GLHUD.acts.extra()")
-        ok = until("GLMISSION.cur() === 'k2m2' && GLMISSION.debug.info().step === 'scheune'", 10)
+        ok = until("GLMISSION.cur() === 'k2m1' && GLMISSION.debug.info().step === 'scheune'", 10)
         ok2 = until("!!GLMISSION.St.S.da && !document.getElementById('glfade').classList.contains('on')", 40, 0.25, 0.1)
         # (the chapter's card comes after the mode's own start card of the fresh start above – a queue)
         until("/Kolonnenweg/.test(document.getElementById('glmtitel').textContent)", 12, 0.25, 0.1)
         st = J("({ d: DN.dateStr(CLOCK.t, true), m: Math.floor(CLOCK.t) % 1440, kap: GLSTATE.kap, wx: window.WETTER ? WETTER.state().preset : 'kein WETTER', "
                "p: [GAME.P.x, GAME.P.y], ich: GLKAP2.debug.hof().ich, t: document.getElementById('glmtitel').textContent, track: QUESTS.track })")
-        ck('„Drei Monate später“: Friday, 4 December 2026, 16:40, snow – the two at the field barn, the chapter\'s card „Kapitel 2 – Vorabversion · Kolonnenweg“',
+        ck('„Drei Monate später“: Friday, 4 December 2026, 16:40, snow – the two at the field barn, the chapter\'s card „Kapitel 2 · Kolonnenweg“',
            ok and ok2 and '4. Dezember 2026' in st['d'] and abs(st['m'] - 1000) < 12 and st['kap'] == 2 and st['wx'] in ('schnee', 'kein WETTER')
-           and math.hypot(st['p'][0] - st['ich'][0], st['p'][1] - st['ich'][1]) < 3 and 'Kolonnenweg' in st['t'] and 'Vorabversion' in st['t'] and st['track'] == 'grenzland:k2m2', str(st))
+           and math.hypot(st['p'][0] - st['ich'][0], st['p'][1] - st['ich'][1]) < 3 and 'Kolonnenweg' in st['t'] and 'Vorabversion' not in st['t'] and st['track'] == 'grenzland:k2m1', str(st))
         ok = until("['jule', 'timo', 'basti', 'gerhard'].every(k => GLMISSION.F(k))", 90, 0.3, 0.4)
         ck('the clique and Gerhard wait at the barn (winter hats)', ok, str(info()['figs']))
         steps(0.5)
@@ -111,12 +136,12 @@ with lib.browser() as b:
         talk()
         ck('they talk about it – who knew they were there? (the lorry drives off)', ok and bis('nacht', 15), info()['step'])
         put(J("GLDATA.ORTE.garten.pos"), 0, (2, 2))
-        ok = until("GLMISSION.debug.info().step === 'treff' && !document.getElementById('glfade').classList.contains('on')", 30, 0.25, 0.2)
+        ok = until("GLMISSION.debug.info().step === 'aufbruch' && !document.getElementById('glfade').classList.contains('on')", 30, 0.25, 0.2)
         steps(1)
         st = J("({ d: DN.dateStr(CLOCK.t, true), m: Math.floor(CLOCK.t) % 1440, t: GLMISSION.debug.info().titel, chat: GLSTATE.feed.slice(-4).map(q => q.text ? q.text.slice(0, 20) : ''), "
                "j: KERN.tasks.list().filter(e => e.src === 'grenzland').map(e => [e.id, e.status, e.title]) })")
-        ck('the night in the garden: Saturday, 5 December, 10:20 – mission 2 „Ein Auto für die Nacht“ begins with its title card (Kapitel 2 · Mission 2)',
-           ok and 'Samstag, 5. Dezember' in st['d'] and abs(st['m'] - 620) < 10 and st['t'] == 'Ein Auto für die Nacht' and ['k2m2', 'läuft', 'Ein Auto für die Nacht'] in st['j'], str(st))
+        ck('the night in the garden: Saturday, 5 December, 9:40 – mission 1 „Grünes Band“ begins with its title card (Kapitel 2 · Mission 1)',
+           ok and 'Samstag, 5. Dezember' in st['d'] and abs(st['m'] - 580) < 10 and st['t'] == 'Grünes Band' and ['k2m1', 'läuft', 'Grünes Band'] in st['j'], str(st))
         pic('04_samstag_garten')
       except Exception as e:
         ck('the opening ran through without an error of the test', False, str(e)[:300])
@@ -236,7 +261,8 @@ with lib.browser() as b:
     # ================================================================ knacken · GLKNACKEN alone: the window, the wires, the report, paint, plates, saved ================================================================
     if 'knacken' in SECT:
       try:
-        # (free play with chapter 2 out of the way: at the barn it would begin)
+        # (free play with chapter 2 out of the way: at the barn it would begin; the mode on again after m2's „Beenden“)
+        if not E("GLSTATE.on"): E("GRENZLAND.start()"); steps(1)
         E(KAP1 + "; GLSTATE.m.k2m2 = { st: 'erledigt', i: 0, n: 0 }; GLSTATE.m.k2m1 = { st: 'erledigt', i: 0, n: 0 }"); steps(0.5)
         H = J("GLKAP2.debug.hof()")
         q = J("GLKAP2.debug.hof().at(10, 5)")
@@ -273,24 +299,38 @@ with lib.browser() as b:
         pic('31_weinrot')
         E("GRENZLAND.stop()"); steps(0.5)
         st1 = J("({ w: Object.keys(GLKNACKEN.S.welt), v: VEH.by['gl-wartburg'].g.visible })")
-        E("GRENZLAND.start()"); steps(1)
+        # a reload while the mode runs goes on with the story (the mode's start without fresh): the stolen car stands again
+        E("GLSTATE.on = true; GLSTATE.emit('start', { fresh: false })"); steps(1)
         st2 = J("({ s: GLKNACKEN.stand().welt.probe || null, a: GLKNACKEN.auto('probe') })")
-        ck('„Beenden“ puts the car away; the next start sets the stolen car up again where it was (for the missions that follow)',
+        ck('„Beenden“ puts the car away; going on with the story (a reload) sets the stolen car up again where it was',
            st1['w'] == [] and st1['v'] is False and st2['s'] and st2['s']['sichtbar'] and abs(st2['s']['x'] - v[0]) < 0.5 and st2['a']['farbe'] == 'weinrot', str(st1) + str(st2))
-        E("GLKNACKEN.weg('probe'); (s => { delete s.autos.probe; GLKNACKEN.save(); })(GLKNACKEN.S)")
+        # a fresh start is a new story: no car of the old one
+        E("GRENZLAND.stop()"); steps(0.3)
+        E("GRENZLAND.start()"); steps(1)
+        st3 = J("({ autos: Object.keys(GLKNACKEN.S.autos), w: Object.keys(GLKNACKEN.S.welt), sv: SAVE.get('pav-gl-knacken-v1') })")
+        ck('a fresh start of Grenzland (a new story): the cars of the old story are gone', st3['autos'] == [] and st3['w'] == [] and not (st3['sv'] or {}).get('autos'), str(st3))
       except Exception as e:
         ck('knacken ran through without an error of the test', False, str(e)[:300])
 
     # ================================================================ m1 · Grünes Band (against the zone's stand-in; mission 1 is off in the preview) ================================================================
-    if 'm1' in SECT:
+    if M1:
+      echt = M1 != 'm1e' and E("!!(window.GLZONE && GLZONE.need)")
+      # (the stand-in's pictures get an 'e')
+      N = lambda s: s if echt else s.replace('_', 'e_', 1)
       try:
         E(KAP1); steps(0.5)
-        E("GLKAP2.debug.zone(window.GLZONE && GLZONE.ort && GLZONE.ort('bunker') ? undefined : null)")
+        if echt:
+            E("GLZONE.need('test', true)")
+            ok = until("!!(window.GLZONE && GLZONE.ort('bunker') && GLZONE.weg().length > 1)", 120, 0.5, 0.25)
+            ck('the zone of feat/grenzland-zone is there: its car park, bunker and Kolonnenweg', ok, str(J("window.GLZONE ? GLZONE.state() : 'kein GLZONE'"))[:300])
+            E("GLZONE.need('test', false); GLKAP2.debug.zone(undefined)")
+        else:
+            E("GLKAP2.debug.zone(null)")
         E("GLMISSION.debug.go('k2m1', 'aufbruch')"); steps(0.5)
         ok = until("GLMISSION.debug.info().titel === 'Grünes Band'", 30, 0.25, 0.05)
         st = J("({ sms: GLSTATE.sms.map(q => q.von + ': ' + q.text.slice(0, 20)), x: GLHUD.xl, tank: GLSTATE.tank, moped: !!(GLAUTO.moped && GLAUTO.moped.g.visible), d: DN.dateStr(CLOCK.t, true), ersatz: GLKAP2.ersatz(), wx: window.WETTER ? WETTER.state().preset : '' })")
         ck('mission 1 „Grünes Band“ (Kapitel 2 · Mission 1): a message from Jule, the Simson in the garden (full), „Hinfahren“', ok and any(q.startswith('Jule') for q in st['sms']) and st['x'] == 'Hinfahren' and st['tank'] >= 3 and st['moped'] and 'Dezember' in st['d'], str(st))
-        pic('20_aufbruch')
+        pic(N('20_aufbruch'))
         m0 = E("CLOCK.t")
         E("void GLHUD.acts.extra()")
         ok = until("!GLMISSION.St.busy && !document.getElementById('glfade').classList.contains('on')", 40, 0.25, 0.2)
@@ -300,7 +340,7 @@ with lib.browser() as b:
         ok = bis('museum', 10)
         ok2 = until("GLMISSION.redet() && GLMISSION.St.talk.key === 'k2museum'", 20)
         steps(0.6)
-        pic('21_grenzturm')
+        pic(N('21_grenzturm'))
         n = talk()
         ck('Sarah on the crossing point Eisfeld–Rottenbach (1973) and the Grünes Band (Hof, 9 December 1989)', ok and ok2 and n >= 3 and bis('kolonnenweg', 10), info()['step'])
         B = J("(B => ({ b: B.b, s: B.s, van: B.van, vorn: B.vorn, men: B.men.map(m => m[2]), fremder: B.fremder }))(GLKAP2.debug.bp())")
@@ -310,7 +350,7 @@ with lib.browser() as b:
         ok = until("GLMISSION.redet() && GLMISSION.St.talk.key === 'k2platten'", 6)
         talk()
         E("(v => GAME.view(v.st.x - Math.sin(v.st.psi) * 6, v.st.y - Math.cos(v.st.psi) * 6, v.st.z + 2.2, v.st.psi * 180 / Math.PI, -10))(VEH.cur)")
-        pic('22_kolonnenweg', False)
+        pic(N('22_kolonnenweg'), False)
         p = J(f"GLK2LOGIK.entlang(GLKAP2.weg(), {B['s']} - 100)")
         E(f"VEH.place('gl-moped', {p['x']}, {p['y']}, {p['hd']})"); steps(1)
         ok2 = bis('bunker', 8)
@@ -320,7 +360,7 @@ with lib.browser() as b:
         E("VEH.exit()"); steps(0.4)
         put(B['vorn'], yawTo(B['vorn'], B['b']))
         E(f"GAME.view({B['vorn'][0]}, {B['vorn'][1]}, KERN.ground({B['vorn'][0]}, {B['vorn'][1]}) + 1.62, {yawTo(B['vorn'], B['b'])}, -2)"); steps(0.3)
-        pic('23_bunker_fern')
+        pic(N('23_bunker_fern'))
         # too loud: the moped is heard – on foot they come and catch one
         w3 = B['men'][2]
         E("VEH.enter('gl-moped')"); steps(0.3)
@@ -340,17 +380,19 @@ with lib.browser() as b:
         f = J("(F => [F.x, F.y])(GLMISSION.F('fremder'))") if ok2 else None
         if f:
             E(f"GAME.view({side[0]}, {side[1]}, KERN.ground({side[0]}, {side[1]}) + 1.1, {yawTo(side, f)}, 0)"); steps(0.4)
-            pic('24_fremder')
+            pic(N('24_fremder'))
         a2 = act('gl:k2foto'); steps(0.6)
         ok3 = bis('rueckzug', 8)
         ck('two photos from cover (ducked, from the side); the stranger at the edge of the heath', ok and a1 and a2 and ok2 and ok3 and E("GLKAP2.K1.n") == 2, f'{ok} {a1} {a2} {ok2} {ok3}')
         E("GAME.P.stance = 'stand'")
-        steps(6)
+        # (they walk to the van first – agent zone's bunker lies ~95 m off the way)
+        until("GLKAP2.V1.fahrt", 90, 0.25, 0.02)
+        steps(2)
         st = J("({ v: GLKAP2.V1, men: ['w1', 'w2', 'w3'].map(k => !!GLMISSION.F(k)) })")
         c = J("(c => c ? [c.x, c.y, c.hd] : null)(GLMISSION.C('k2van'))")
         if c:
-            E(f"GAME.view({c[0] - math.sin(c[2]) * -14}, {c[1] - math.cos(c[2]) * -14}, KERN.ground({c[0]}, {c[1]}) + 1.7, {math.degrees(c[2]) + 180}, -4)"); steps(0.2)
-            pic('25_transporter', False)
+            E(f"GAME.view({c[0] + math.sin(c[2]) * 16}, {c[1] + math.cos(c[2]) * 16}, KERN.ground({c[0]}, {c[1]}) + 3.2, {math.degrees(c[2]) + 180}, -9)"); steps(0.2)
+            pic(N('25_transporter'), False)
         ck('the men pack up and get into the van, it drives the Kolonnenweg out', st['v']['fahrt'] and not any(st['men']), str(st))
         # in its way: seen – again from the bunker
         q = J("GLK2LOGIK.entlang(GLKAP2.weg(), Math.max(0, GLKAP2.V1.s - 14))")
@@ -370,7 +412,21 @@ with lib.browser() as b:
         ok2 = until("GLMISSION.debug.info().st.k2m1 === 'erledigt'", 10)
         ev = J("__ev.filter(e => e[0] === 'mission' && e[2] === 'erledigt').map(e => e.slice(1))")
         ck('„Heimfahren“: home – mission 1 done („Zwei Fotos vom Bunker“)', ok and ok2 and ['k2m1', 'erledigt', 'Grünes Band', 'Zwei Fotos vom Bunker'] in ev, str(ev))
-        pic('26_heim')
+        pic(N('26_heim'))
+        # mission 2 follows the same day – past the opening, which mission 1 had
+        m0 = E("Math.floor(CLOCK.t) % 1440")
+        ok = until("GLMISSION.cur() === 'k2m2' && GLMISSION.debug.info().step === 'treff'", 40, 0.25, 0.05)
+        st = J("({ i: GLMISSION.debug.info().step, m: Math.floor(CLOCK.t) % 1440, f: document.getElementById('glfade').classList.contains('on') })")
+        ck('after mission 1 mission 2 begins at the barn the same day – the opening is not played again', ok and abs(st['m'] - m0) < 30 and not st['f'], str(st) + ' ' + str(m0))
+        # a save of the preview: mission 2 done before mission 1 was in – mission 1 goes past the opening, after the night
+        E(KAP1 + "; GLSTATE.kap = 2; GLSTATE.m.k2m2 = { st: 'erledigt', i: 0, n: 0 }; CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 20 * 60; GLSTATE.save(true)"); steps(0.5)
+        E("GLMISSION.start('k2m1')")
+        ok = until("GLMISSION.debug.info().step === 'aufbruch' && !GLMISSION.St.busy && !document.getElementById('glfade').classList.contains('on')", 40, 0.25, 0.1)
+        m1 = E("Math.floor(CLOCK.t) % 1440")
+        until("/Grünes Band/.test(document.getElementById('glmtitel').textContent)", 10, 0.25, 0.1)
+        st = J("({ i: GLMISSION.debug.info().step, t: document.getElementById('glmtitel').textContent, figs: GLMISSION.debug.info().figs })")
+        ck('a save of the preview (mission 2 done first): mission 1 goes past the opening – the next morning, 9:40, „Grünes Band“',
+           ok and abs(m1 - 580) < 10 and 'Grünes Band' in st['t'] and 'gerhard' not in ' '.join(st['figs']), str(st) + ' ' + str(m1))
       except Exception as e:
         ck('mission 1 ran through without an error of the test', False, str(e)[:300])
 

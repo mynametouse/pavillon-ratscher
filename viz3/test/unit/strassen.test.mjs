@@ -467,3 +467,43 @@ test('paint: a stop line is solid, a give-way line in blocks, a zebra in stripes
   M.deckMarks(K2, P, 1.8, T.marks(4, 1.8, T.RURAL));
   assert.equal(K2.count(), 0);
 });
+
+test('acute junctions: a way leaving another at a sharp angle has no centre line beside it, a T and a continuation keep theirs', () => {
+  const rad = (d) => (d * Math.PI) / 180,
+    get = w => ({ p: w.p, stride: 2, n: w.p.length / 2, hw: w.hw, s0: w.s0 || 0 });
+  // a main road west–east; a side road leaves its middle at 20°; a T at 90°; the main road's second piece goes straight on
+  const main = { p: line(-100, 0, 60, 0), hw: 3.2 },
+    main2 = { p: line(60, 0, 200, 0), hw: 3.2 },
+    side = { p: line(0, 0, 120 * Math.cos(rad(20)), 120 * Math.sin(rad(20)), 5), hw: 2.8 },
+    tee = { p: line(100, 0, 100, 80), hw: 2.8 };
+  const ws = [main, main2, side, tee];
+  assert.equal(T.acute(ws, get), 1);
+  assert.equal(main.ncs, null);
+  assert.equal(main2.ncs, null);
+  assert.equal(tee.ncs, null);
+  const L = (2.8 + 3.2 + 0.6) / Math.sin(rad(20));
+  assert.ok(side.ncs.length === 1 && side.ncs[0][0] === 0 && Math.abs(side.ncs[0][1] - L) < 0.5, JSON.stringify(side.ncs));
+  // where three ways end in one point: the two most nearly straight on are the through road, the third at 25° branches off
+  const a = { p: line(-80, -40, 0, 0), hw: 3 },
+    b = { p: line(0, 0, 80, 40), hw: 3 },
+    c = { p: line(0, 0, 80 * Math.cos(rad(26.6 + 25)), 80 * Math.sin(rad(26.6 + 25))), hw: 2.5 };
+  assert.equal(T.acute([a, b, c], get), 1);
+  assert.ok(a.ncs === null && b.ncs === null && c.ncs && c.ncs[0][0] === 0, JSON.stringify([a.ncs, b.ncs, c.ncs]));
+  // the raster: on the side road within its stretch the lateral offset stays off the axis (no line), beyond it the line is there
+  const N = 400,
+    D = new Uint8Array(N * N * 4);
+  T.clear(D);
+  const opt = w => ({ p: w.p, stride: 2, n: w.p.length / 2, hw: w.hw, kind: 1, surf: 0, st: null, ncs: w.ncs });
+  T.raster(D, N, N, -100, -100, 1, opt(main));
+  T.raster(D, N, N, -100, -100, 1, opt(main2));
+  T.raster(D, N, N, -100, -100, 1, opt(side));
+  const latAt = (s) => {
+    // the pixel on the side road's axis s metres from the junction: its lateral offset (B channel)
+    const x = s * Math.cos(rad(20)),
+      y = s * Math.sin(rad(20)),
+      q = (Math.floor(y + 100) * N + Math.floor(x + 100)) * 4;
+    return (D[q + 2] / 255) * 2 * T.LRNG - T.LRNG;
+  };
+  assert.ok(Math.abs(latAt(L * 0.75)) >= T.NC - 0.06, 'no line inside the stretch: ' + latAt(L * 0.75));
+  assert.ok(Math.abs(latAt(L + 15)) < 0.5, 'the line beyond it: ' + latAt(L + 15));
+});

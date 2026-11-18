@@ -291,6 +291,11 @@ with lib.browser() as b:
         k = J("{ on: STRKARTE.on, active: STRKARTE.active, n: STRKARTE.n, ms: STRKARTE.ms, ways: STRKARTE.ways, u: ROADS.W.uRoad.value.toArray(), far: STRKARTE.FAR }")
         r = J(f"STRKARTE.at({START[0]}, {START[1]})")
         ck('beyond the square the tiles read the road map of a window around the vehicle', k['active'] and k['u'][0] == 1 and abs(k['u'][2] - k['far']) < 1 and k['ways'] > 0, json.dumps(k))
+        # acute junctions (STRSTIL.acute): the stretches without a centre line where a way runs beside another (the ramps of the A 73)
+        ac = J("""(() => { const iv = []; let ramps = 0; for (const w of FAHRT.data.ways) if (w.ncs) { if (w.kind === 0) ramps++; for (const q of w.ncs) iv.push(q[1] - q[0]); }
+          return { n: STRKARTE.acute, ms: STRKARTE.acuteMs, ramps, lo: Math.min(...iv), hi: Math.max(...iv), sq: ROADS.acute }; })()""")
+        ck('acute junctions: stretches without a centre line beside the other way, found for the whole region in a moment',
+           ac['n'] >= 6 and ac['ramps'] >= 2 and ac['lo'] >= 6 - 1e-6 and ac['hi'] <= 80 + 1e-6 and ac['ms'] < 300 and ac['sq'] >= 0, json.dumps(ac))
         ck('on the L 1625 it says: a main road, asphalt, open country, the middle of the carriageway', bool(r) and r['kind'] == 1 and r['surf'] == 0 and r['style'] in (0, 1) and r['e'] > 2 and abs(r['lat']) < 1.5, json.dumps(r))
         # the finest tiles under the car came after the first cells: within a few seconds everything is set down on them
         steps(4, 0.05)
