@@ -12,10 +12,9 @@
 //   the waves' fronts hide their backs: seen flat the surface is flattened and roughened the same way.
 // - a bank: every body carries a small map of the distance to its bank (drawn once from its outline, 0.4–3.2 m a texel, exact near
 //   the bank). In the last two and a half metres the water thins out to nothing – the aerial photo's own bank shows through –,
-//   behind it lies a band of lighter, greener shallows before the dark of the deep. The reservoir's bed is carved into the terrain
-//   cell by cell, so along a slanted bank (the dam) cells of the bed lie beyond the outline: the old plate ended above them in mid
-//   air, a dark strip of bed between water and bank. The water now spreads over every such cell it can reach from inside (up to
-//   26 m beyond the outline, the ground there below the level but not by more than 8 m – never down the far side of the dam).
+//   behind it lies a band of lighter, greener shallows before the dark of the deep. Where the laser scan found water beyond the
+//   outline (ground at the water's level next to it), the reservoir spreads over it: every such texel it can reach from inside, up
+//   to 26 m beyond the outline, the ground there below the surface but not by more than 3 m – never down the far side of the dam.
 // - the sun's shadows (the trees of the bank, the dam; the hills' at a low sun): the glitter ends where the shadow begins.
 // No new light, no render pass, one shader program (in place of the old one), one texture of 256² and a bank map per body (the
 // reservoir's: 200 kB). The water moves in real time, not in the game's; it asks for pictures (15 a second) only while it is in the
@@ -61,6 +60,10 @@ export const WASSER = (() => {
   ];
   const GUST = 610; // the tile of the gusts' patches (m)
   const NEAR = 600; // within this the moving water asks for pictures (m)
+  // The terrain under a water body is the laser scan's own water surface: it lies within centimetres of the body's level, here and
+  // there above it – near the eye such ground won against the old plate (dark steps of bed along the dam). The water lies a hand's
+  // width higher than the level of the data.
+  const LIFT = 0.12;
   const LO = -8, // the bank maps hold distances from LO (outside) to HI (inside), a byte's step: 0.125 m
     HI = 24;
   const SHALLOW = new THREE.Color(0x596150); // the bed showing through at the bank (the deep: the material's colour)
@@ -260,7 +263,7 @@ export const WASSER = (() => {
         wet[q] = 3;
         if (i < 1 || j < 1 || i > W - 2 || j > H - 2 || d2[q] > lim) continue; // (the map's rim stays dry: the water ends inside it)
         const h = o.terrain(x0 + (i + 0.5) * s, -(z0 + (j + 0.5) * s));
-        if (!(h < o.level - 0.05 && h > o.level - 8)) continue;
+        if (!(h < o.level - 0.05 && h > o.level - 3)) continue;
         wet[q] = 2;
         ext++;
         st.push(q - 1, q + 1, q - W, q + W);
@@ -457,7 +460,8 @@ export const WASSER = (() => {
       const { T, B } = outline(w);
       if (!B.length) continue;
       // (the reservoir – a hectare and more – also takes the carved bed beyond its outline)
-      const F = field(B, w.area >= 10000 ? { spread: 26, level: w.z, terrain: RATSCHER.hMesh } : null),
+      const top = w.z + LIFT,
+        F = field(B, w.area >= 10000 ? { spread: 26, level: top, terrain: RATSCHER.hMesh } : null),
         P = [];
       // (for the distance to the camera: the outline's corners and the middle of every triangle)
       for (let i = 0; i < w.x.length; i++) P.push(w.x[i], -w.y[i]);
@@ -471,7 +475,7 @@ export const WASSER = (() => {
         g = new THREE.BufferGeometry();
       g.setAttribute(
         'position',
-        new THREE.BufferAttribute(new Float32Array([xa, w.z, za, xa, w.z, zb, xb, w.z, zb, xb, w.z, za]), 3)
+        new THREE.BufferAttribute(new Float32Array([xa, top, za, xa, top, zb, xb, top, zb, xb, top, za]), 3)
       );
       g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]), 3));
       g.setIndex([0, 1, 2, 0, 2, 3]);
@@ -493,7 +497,7 @@ export const WASSER = (() => {
             q = a * a + b * b;
           if (q < m) m = q;
         }
-        seen(Math.sqrt(m + (c.position.y - w.z) ** 2));
+        seen(Math.sqrt(m + (c.position.y - top) ** 2));
       };
       scene.add(me);
       S.neu.push(me);
