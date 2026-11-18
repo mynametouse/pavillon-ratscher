@@ -91,8 +91,9 @@ Waldrändern, Anfahrt). Quellen und Lizenzen: `meta.json` → `attribution`, `ma
   Programme, Bilder Tag und Dämmerung, Regen: nasse Platten und Pfützen, wieder trocken; vorher: der Bedarf einer Mission lädt nur die
   Daten, die Landstraße der Simson), `bunker` (Fundament, Tür, Wand, Ortsname, Bilder), `heide` (Heidekraut, Gras, Bäume, Tafeln,
   Bilder Tag und Dämmerung), `turm` (Tür, Tafel, Öffnungszeiten, Ortsname, Bild), `schnell` (die Zone neu gebaut mit `VEG.lodK` 0,6:
-  deutlich weniger Dreiecke an der Heide), am Ende Verlassen und Freigeben. Bilder `out/grenzland_zone/`. In `tests.txt` zwei Zeilen:
-  `weg,bunker` und `heide,turm,schnell`.
+  deutlich weniger Dreiecke an der Heide), `zufahrt` (mit der Simson auf der L 3004 über das Ende der Straßendaten → Coburger Straße,
+  Bild; nach Norden hinaus → zurück auf die L 3004), am Ende Verlassen und Freigeben. Das Licht folgt im Test der Uhr wie im Spiel
+  (Dämmerung, nasser Boden). Bilder `out/grenzland_zone/`. In `tests.txt` zwei Zeilen: `weg,bunker,zufahrt` und `heide,turm,schnell`.
 - `viz3/test/unit/grenzland_zone.test.mjs` – Linien, Platten (Maße, Fugen, Spuren), Texte mit Quellen, `zone.json`.
 
 ## Für den Lead
