@@ -1,4 +1,5 @@
 # feat/fotorealismus: the picture quality – the sun's shadow in cascades, the air, the vegetation far away (viz3/test/fotorealismus.py);
 # the fixed reference views with what each costs (viz3/test/fotoref.py, views.json here; pictures in out/fotoref/ref)
+# (both load the page with ?kaskade=an: the test browser has no graphics card, and without one the page leaves the far shadows out)
 fotorealismus
 fotoref:only=r1+r4+r5
