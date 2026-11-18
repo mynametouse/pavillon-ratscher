@@ -65,6 +65,27 @@ export const BWHALM = (() => {
       b.set(L[2][0], L[2][1], L[3][0], 2);
     });
   }
+  // stage 5a: a field of the crop classes of the maps (or unclear arable land, 9) carries one crop – the same over the field (~140 m, its
+  // edges wavy), by the shares of its class. One text for the blades and the crops' plants (bw_blume.js: its own hash of the same formula).
+  // bwCropRow: the plants of a crop sown in rows (k6.w of its row: the spacing, m) – the point onto the middle of its row, the rows of a
+  // field all one way (its direction from the field's hash)
+  const cropGlsl = h => `uniform vec4 uBwCr[ 10 ];
+vec2 bwCropField( vec2 q ) { return floor( q / 140.0 + 0.35 * vec2( sin( q.y * 0.011 ), sin( q.x * 0.013 ) ) ); }
+int bwCrop( int c, vec2 q ) {
+  int i = c == 9 ? 0 : c - 18;
+  float r = ${h}( bwCropField( q ) + 31.7 );
+  vec4 a = uBwCr[ i * 2 ], b = uBwCr[ i * 2 + 1 ];
+  if ( r <= a.y ) return int( a.x + 0.5 );
+  if ( r <= a.w ) return int( a.z + 0.5 );
+  if ( r <= b.y ) return int( b.x + 0.5 );
+  return int( b.z + 0.5 );
+}
+vec2 bwCropRow( vec2 q, float sp ) {
+  float a = ${h}( bwCropField( q ) + 5.3 ) * 3.14159;
+  vec2 v = vec2( - sin( a ), cos( a ) );
+  float s = dot( q, v );
+  return q + v * ( ( floor( s / sp ) + 0.5 ) * sp - s );
+}`;
   // ---------- the patch of one tile: K blades, each 5 vertices (near: two segments and the tip) or 3 (one triangle) ----------
   function mulberry(a) {
     return () => {
@@ -155,19 +176,7 @@ float bwCode( vec2 q, out float site ) {
   return floor( texture( tBwG, g ).r * 255.0 + 0.5 );
 }
 float k0h( int c ) { return texelFetch( tBwK, ivec2( 0, c ), 0 ).y; }
-// stage 5a: a field of the crop classes of the maps (or unclear arable land, 9) carries one crop – the same over the field (~140 m, its
-// edges wavy), by the shares of its class
-uniform vec4 uBwCr[ 10 ];
-int bwCrop( int c, vec2 q ) {
-  int i = c == 9 ? 0 : c - 18;
-  vec2 fw = q / 140.0 + 0.35 * vec2( sin( q.y * 0.011 ), sin( q.x * 0.013 ) );
-  float r = bwHash( floor( fw ) + 31.7 );
-  vec4 a = uBwCr[ i * 2 ], b = uBwCr[ i * 2 + 1 ];
-  if ( r <= a.y ) return int( a.x + 0.5 );
-  if ( r <= a.w ) return int( a.z + 0.5 );
-  if ( r <= b.y ) return int( b.x + 0.5 );
-  return int( b.z + 0.5 );
-}
+${cropGlsl('bwHash')}
 // the height of class c at q today: the stand uncut this year, or what has grown since this field was cut (its days from its hash)
 float bwHeight( int c, vec2 q ) {
   vec4 k0 = texelFetch( tBwK, ivec2( 0, c ), 0 ), k1 = texelFetch( tBwK, ivec2( 1, c ), 0 ), k4 = texelFetch( tBwK, ivec2( 4, c ), 0 );
@@ -567,7 +576,7 @@ void bwBlade( out vec3 P, out vec3 N ) {
     };
   }
   heightsNow();
-  Object.assign(S, { build, update, day, stats, U, zAt, crops });
+  Object.assign(S, { build, update, day, stats, U, zAt, crops, cropGlsl });
   return S;
 })();
 if (typeof window !== 'undefined') window.BWHALM = BWHALM;
