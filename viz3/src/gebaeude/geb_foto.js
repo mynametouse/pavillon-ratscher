@@ -157,6 +157,7 @@ export const GEBFOTO = (() => {
           c *= 1.0 - fk * max( age - 0.3, 0.0 ) * west * ( barn || shed || hall ? 0.2 : 0.13 ) * smoothstep( 0.6, 0.84, n1.a ) * smoothstep( 0.5, 0.72, n0.a + 0.5 * ( n0.r - 0.5 ) ) * smoothstep( 0.1, 0.7, up );   // rain runs: here and there, on worn walls, more on the weather side
           if ( win > 0.5 ) { float sx = bnd( uF, lo.x - 0.07, hi.x + 0.07, fw.x ), dy = lo.y - 0.08 - v;
             gFgUp = max( gFgUp, f1 * sx * bnd( v, lo.y - 0.06, lo.y, fw.y ) * ( 1.0 - aaW ) );   // the sill catches the light,
+            { float sb = sx * bnd( v, lo.y - 0.17, lo.y - 0.06, fw.y ) * ( 1.0 - aaW ); c *= mix( 1.0, ( 1.0 - 0.14 * sb ) / ( 1.0 - 0.4 * sb ), f1 ); }   // (the village's painted shade under it, 40 %, becomes a faint one: the real shadow follows)
             if ( gFgL.z > 0.03 && gFgL.y > 0.0 ) { float ls = min( 0.32, 0.055 * gFgL.y / gFgL.z ), ox = 0.055 * gFgL.x / gFgL.z;   // and throws a shadow as long as the sun stands steep to this wall
               gFgSun = 1.0 - f1 * bnd( uF + ox, lo.x - 0.07, hi.x + 0.07, max( fw.x, 0.012 ) ) * bnd( v, lo.y - 0.06 - ls, lo.y - 0.05, max( fw.y, 0.008 ) ) * ( 1.0 - aaW ); }
             if ( dy > 0.0 && dy < 1.6 ) { float wk = fgH( vec2( b1 + bi * 7.0, fi * 3.0 + 1.0 ) ), ew = max( 0.03, fw.x * 1.5 );   // dirt runs under the ends of the sill, a fainter veil under its length
@@ -170,8 +171,8 @@ export const GEBFOTO = (() => {
           // ---- plaster one can see: the grain in the normal (the sun rakes over it) and, as the sky lights it from above, in the colour (so it shows in the shade too); the plinth rougher ----
           bool grain = ( inP && pT > 0.0 ) || !( sty == 2.0 || sty == 3.0 || barn || shed || hall || st == 9.0 );
           float gA = grain ? ( inP ? 1.6 : 1.0 ) : 0.0, gF = gA * ( 1.0 - aaF ), gC = gA * ( 1.0 - smoothstep( 0.02, 0.09, px ) );
-          c *= 1.0 + fk * ( gF * ( 0.8 * pa.y + 0.4 * pa.x ) + gC * ( 0.65 * pb.y + 0.25 * pb.x ) );
-          gFgB = -fk * ( 1.7 * gF * pa.xy + 1.2 * gC * pb.xy );
+          c *= 1.0 + fk * ( gF * ( 0.8 * pa.y + 0.4 * pa.x ) + gC * ( 0.5 * pb.y + 0.2 * pb.x ) );
+          gFgB = -fk * ( 1.7 * gF * pa.xy + 1.0 * gC * pb.xy );
           if ( nearK > 0.0 ) { gFgB += fk * age * 0.035 * nearK * fgNg( wp * 1.7 ).yz;   // an old wall is not plane
             if ( ( barn || shed ) && !inP ) gFgB.x += fk * 0.08 * nearK * ( fgH( vec2( floor( uF / 0.2 ) + b1, 5.0 ) ) - 0.5 ); }   // boards lean each their own way
         }`;
