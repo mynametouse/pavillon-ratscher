@@ -60,6 +60,24 @@ Stadtzone und Kloster Veßra – im selben Format, im selben Index (Abschnitt �
 - **Größen:** die 239 Zellen zusammen 11,1 MB (0,5 m: Ø 60 KB, höchstens 97 KB; 1 m: Ø 22 KB, höchstens 29 KB); alle 288 Zellen mit
   dem Quadrat 13,6 MB, `index.json` 45 KB, `garten.png` 13 KB.
 
+### Teil c: die Welt-Blöcke und die flachen Orte (18.11.)
+
+- **Zellen** (`gebiete.py welt`): Block B (9,6 km um den Garten) und der Block von Kloster Veßra – die Detailblöcke der Welt-Kacheln
+  (`tools/welt/wlib.py` `BLOCK_B`, `VESSRA_BLK`) –, dazu die flachen Orte der Region von `welt-orte` (`dist/gebaeude/z/index.json`
+  `order` hinter `stats.cells`), ohne die Zellen von Teil a und b: 607 Zellen (565 in den Blöcken, 42 Orte außerhalb). Suhls Korridore
+  nicht (Straßen-Chat 18.11.). **0,5 m** nach den Regeln von Teil b und wo OpenStreetMap 25 und mehr Gebäude in der Zelle hat
+  (`holen.py welt` zählt sie nach dem OSM-Abruf, `osm_haeuser.json` im Cache) – 51 Zellen –, sonst **1 m** (556 Zellen).
+- **Das Repo wächst nicht bei jedem Neubau:** `bauen.py` schreibt ein PNG nur, wenn sich seine Werte ändern (`save_if_changed`, ein
+  Unit-Test), und behält die Wuchs-Spannen der Flugtage, die der Index schon hat – ein neues Gebiet verschiebt den Wuchs der alten nicht
+  (`--spannen` rechnet sie neu aus den gebauten Zellen); ein neuer Flugtag bekommt seine Spannen aus seinen Zellen, fehlende Klassen vom
+  Flugtag mit den meisten Zellen. Die Spannen stehen seit Teil c mit 6 Stellen im Index (vorher 3: ein Neubau des Quadrats oder der
+  Strecken schreibt deren PNGs einmal neu, danach bleiben sie bitgleich). Teil c hat keine Zelle von Teil a oder b angefasst.
+- Downloads zu dritt nebeneinander (Luftbilder mit Flugtag, Basis-DLM-Blöcke), OSM weiter eine Anfrage je Sekunde.
+- Flugtage wie in Teil b: 412 Zellen vom 07.04.2024, 195 vom 15.05.2024 (kein neuer Flugtag; die Spannen von Teil a/b gelten).
+- **Größen:** die 607 Zellen 14,7 MB (0,5 m: Ø 65 KB, höchstens 99 KB; 1 m: Ø 21 KB, höchstens 35 KB) – Block B 10,5 MB (433 Zellen),
+  Block Veßra 2,6 MB (132), die Orte außerhalb 1,6 MB (42). Alle 895 Zellen zusammen 28,4 MB (Ø 32 KB), `index.json` 114 KB; die
+  größten 4 × 4 Zellen 1,14 MB (Themar). Bauen 21 min, Downloads 16 min (Luftbilder 0,3 GB, 23 DLM-Blöcke, 67 OSM-Kacheln).
+
 ### Klassen (ids fest)
 
 | id | Name | was | woher (Reihenfolge: spätere Regeln gewinnen) |
@@ -131,7 +149,7 @@ Teil b (Strecken, Dörfer, Schleusingen, Kloster Veßra) – wo es anders ist al
 | 7 (Bahn) | mittel | 3 m je Seite nach Regel; Bahnflächen nur, wo OSM `landuse=railway` hat |
 | Wuchs | mittel | je Flugtag eigene Spannen; eine Zelle über der Flugtag-Grenze (etwa N 5 597 000, z. B. `-3_3` am Markt von Schleusingen) nimmt den Tag ihrer Mitte |
 
-## Zahlen (18.11.2026: Quadrat und Strecken zusammen neu gebaut)
+## Zahlen (18.11.2026: Quadrat und Strecken zusammen neu gebaut, dann Teil c dazu)
 
 Flächen je Klasse und Gebiet (aus `index.json`; die Tabelle je Zelle schreibt `bauen.py --boegen` als `flaechen_*.csv`):
 
@@ -142,7 +160,11 @@ Flächen je Klasse und Gebiet (aus `index.json`; die Tabelle je Zelle schreibt `
 | Kloster Veßra (Zone) | 16 (0,5 m) | 256 | Acker 37 %, Mähwiese 33 %, Waldboden 9 %, nichts 7 %, Gebüsch 4 %, Zierrasen 3,5 %, öffentliches Grün 1,6 %, Saum, Ackerrand je 1,0 %, Ufer 0,9 %, Bankett 0,8 % |
 | Dörfer an den Strecken | 127 (0,5 m) | 2032 | Mähwiese 31 %, nichts 19 %, Acker 15 %, Zierrasen 14 %, Waldboden 14 %, Gebüsch 2,3 %, Saum 1,4 %, Bankett 0,9 %, Ufer, Ackerrand je 0,7 %, öffentliches Grün 0,5 % |
 | Freiland zwischen den Orten | 84 (1 m) | 1344 | Waldboden 37 %, Mähwiese 34 %, Acker 16 %, nichts 4,6 %, Gebüsch 3,3 %, Bankett 1,7 %, Saum 1,3 %, Zierrasen 1,0 %, Ackerrand, Ufer je 0,6 % |
-| alle | 288 | 4608 | Mähwiese 30 %, Waldboden 22 %, Acker 17 %, nichts 14 %, Zierrasen 8,7 %, Gebüsch 2,7 %, Saum 1,6 %, Bankett 1,1 %, Ackerrand 0,7 %, Ufer 0,6 %, öffentliches Grün 0,5 %, Rest je ≤ 0,1 % |
+| Teil a und b | 288 | 4608 | Mähwiese 30 %, Waldboden 22 %, Acker 17 %, nichts 14 %, Zierrasen 8,7 %, Gebüsch 2,7 %, Saum 1,6 %, Bankett 1,1 %, Ackerrand 0,7 %, Ufer 0,6 %, öffentliches Grün 0,5 %, Rest je ≤ 0,1 % |
+| Teil c: Dörfer (0,5 m) | 51 | 816 | Mähwiese 29 %, Waldboden 26 %, nichts 17 %, Zierrasen 15 %, Acker 5 %, Gebüsch 2,9 %, öffentliches Grün 1,4 %, Bankett, Saum je 0,9 % |
+| Teil c: Freiland (1 m) | 556 | 8896 | Waldboden 66 %, Mähwiese 16 %, Acker 11 %, nichts 2,9 %, Bankett 1,3 %, Gebüsch 1,3 %, Saum 0,9 % |
+| Teil c zusammen (Block B 433 Zellen, Block Veßra 132, Orte außerhalb 42) | 607 | 9712 | Waldboden 63 %, Mähwiese 17 %, Acker 10 %, nichts 4,1 %, Zierrasen 1,5 %, Gebüsch 1,4 %, Bankett 1,3 %, Saum 0,9 % |
+| alle | 895 | 14320 | Waldboden 50 %, Mähwiese 21 %, Acker 13 %, nichts 7,4 %, Zierrasen 3,8 %, Gebüsch 1,8 %, Bankett 1,2 %, Saum 1,1 % |
 
 Falkos Garten und die modellierte Zone (25 cm): Zierrasen 4045 m², nichts 1718 m², Mähwiese 1363 m², Acker 1071 m², Ufer 429 m², Ackerrand
 211 m², Weide 183 m², Saum 129 m², Bankett 37 m², Gemüse 14 m² (gegenüber Teil a: Huberts Südwestecke um den runden Behälter rau,
@@ -173,12 +195,13 @@ Bauen: Quadrat und Strecken zusammen 25 min auf dem Chat-Rechner (zwei Kerne get
 ```bash
 cd <repo>
 python3 -I tools/bewuchs/daten/holen.py korridor            # Teil b: OSM, Luftbilder (0,2 m bzw. 0,4 m je Zelle), Flugtage, Basis-DLM-Blöcke
+python3 -I tools/bewuchs/daten/holen.py welt                # Teil c: dasselbe für die Welt-Blöcke und die flachen Orte (zu dritt, ~15 min)
 python3 -I tools/bewuchs/daten/holen.py osm                 # OpenStreetMap (Cache /home/claude/bewuchs-raw/osm, BEWUCHS_RAW ändert den Ort)
 python3 -I tools/bewuchs/daten/holen.py dlm                 # Basis-DLM, 20 Ebenen, 1 m
 python3 -I tools/bewuchs/daten/holen.py dop -3 -4 3 2       # Luftbild Farbe + Infrarot je Zelle (49 × 2 Bilder, ~60 MB, 5 min)
 node tools/bewuchs/daten/app_daten.mjs > /home/claude/bewuchs-raw/app.json
-nice -n 10 python3 -I tools/bewuchs/daten/bauen.py ratscher korridor --boegen <Berichtsordner>   # Karten, Index, Manifest; Bögen
-# (nur ein Gebiet: die Zellen der anderen bleiben im Index stehen)
+nice -n 19 python3 -I tools/bewuchs/daten/bauen.py ratscher korridor welt --boegen <Berichtsordner>   # Karten, Index, Manifest; Bögen
+# (nur ein Gebiet: die Zellen der anderen bleiben im Index stehen; nur geänderte PNGs werden geschrieben; --spannen: Wuchs-Spannen neu)
 python3 -m unittest discover -s tools/bewuchs/daten -p 'test_*.py'                      # Unit-Tests (rein, ohne Netz)
 ```
 
@@ -190,7 +213,7 @@ und keine Böschungen.
 | Datei | was |
 |---|---|
 | `gemeinsam.py` | Modellrahmen, Zellen, Raster (`Grid`), Klassen, Kodierung, PNG |
-| `gebiete.py` | die Gebiete (Quadrat, Strecken mit den Stadtzonen) und die Auflösung je Zelle |
+| `gebiete.py` | die Gebiete (Quadrat, Strecken mit den Stadtzonen, Welt-Blöcke mit den flachen Orten) und die Auflösung je Zelle |
 | `holen.py` | Downloads mit Cache (OSM, DOP, DLM; `dlm_info` für GetFeatureInfo) |
 | `osm_flaechen.py` | OSM-XML → Flächen und Linien mit Tags in Modellmetern (Multipolygone) |
 | `quellen.py` | alle Vektorquellen einmal geladen (OSM nach Art, Straßen – App, Fahrt, OSM mit den Regeln von `build_roads.py`, die gemalten Straßen der Städte –, Orte, Gebäude, Bäume, App, `stadtgruen`-Hecken) |
@@ -198,18 +221,17 @@ und keine Böschungen.
 | `klassen.py` | die Regeln einer Zelle |
 | `handdaten.py` | was den Quellen fehlt (Anger, Schulwiese, Brunnen, Wiese an der Haltestelle, Ziegenweide, Pflanzflecken) |
 | `garten.py` | die feine Karte der modellierten Zone |
-| `bauen.py`, `boegen.py`, `boegen_bauen.py` | bauen, Prüfbögen, Flächentabelle |
+| `bauen.py`, `boegen.py`, `boegen_bauen.py` | bauen (schreibt nur geänderte PNGs, behält die Wuchs-Spannen), Prüfbögen, Flächentabelle |
 | `app_daten.mjs` | Garten, Bach, Anger aus den Modulen der App (node) |
 | `test_gemeinsam.py`, `test_raster.py`, `test_daten.py` | Unit-Tests (Rahmen, Kodierung, Raster, Straßenraster, Bach, Abgleich mit der App – Ziegenweide, Zone, Pflanzflecken, Straßenregeln von `build_roads.py`, Straßenbreiten der Städte –, die Zellen der Strecken, Format der gebauten Karten) |
 
 ## Offen (für die nächsten Teile)
 
-- **(c) alle Welt-Kacheln:** Block B (9,6 km um den Garten, 614 Zellen) und der Block von Kloster Veßra (233 Zellen) haben zusammen
-  ~830 Zellen, davon ~270 schon gebaut – ~565 neu; dazu die flachen Orte von `welt-orte` (`gebaeude/z/index.json` `order` hinter
-  `stats.cells`, ~107 Zellen) und, wenn gewünscht, die Korridore des Suhl-Chats. Downloads ~0,4 GB (Luftbild 0,4 MB je 1-m-Zelle,
-  1,3 MB je 0,5-m-Zelle; Basis-DLM in 5 × 5-Blöcken; OSM über die API), Bauen ~2 s je 1-m-Zelle, ~5 s je 0,5-m-Zelle – auf dem
-  Chat-Rechner in 1–1,5 h machbar, ohne Workflow. Offen ist der Platz im Repo: ~20 MB mehr Karten, und jeder Neubau schreibt alle
-  PNGs neu (nur geänderte Zellen schreiben, oder die Karten wie `welt-test/` nach gh-pages).
+- **Teil c steht** (Welt-Blöcke B und Veßra, flache Orte). Offen: die Korridore des Suhl-Chats; der Kontext der Welt (25,6 km, nur
+  Stufen 5–7) braucht keine Karten in dieser Auflösung (höchstens grob für die Blüte in der Ferne).
+- **Größe:** „Quadrat < 3 MB“ bleibt (49 Zellen); für größere Gebiete sagt eine Summe je Gebiet nichts, sie wächst mit der Fläche. Für
+  die Laufzeit zählt, was `BWKARTE` um die Kamera hält (bis 520 m: höchstens 4 × 4 Zellen): je 4 × 4 Zellen < 1,5 MB (heute höchstens
+  1,14 MB, Themar) und je PNG < 200 KB – beides prüfen die Unit-Tests.
 - **Höhenmodell jenseits des Quadrats** (DOM1/DGM1 Thüringen) für Gebüsch, Feldgehölze und Böschungen; bis dahin die Wälder von
   `welt-wald` (eigene 400-m-Zellen) als Klasse 11 abgleichen, sobald es sie gibt.
 - Maibild: Baumkronen im Ort zählen zum Rasen, hohes Gras großer Gärten nur zum Teil Wiese (die Regel für raues Gras ist am Aprilbild

@@ -68,6 +68,11 @@ class Built(unittest.TestCase):
             self.assertEqual(sum(c['n'].values()), n * n, key)
         self.assertLess(tot, 3 * 1024 * 1024)  # Ratscher's square together under 3 MB
 
+    def test_window(self):  # any 4 × 4 cells (1.6 km, what BWKARTE holds round the camera) together under 1.5 MB
+        sz = {tuple(map(int, k.split('_'))): os.path.getsize(os.path.join(G.OUT, 'z', k + '.png')) for k in self.idx['cells']}
+        worst = max(sum(sz.get((i + a, j + b), 0) for a in range(4) for b in range(4)) for (i, j) in sz)
+        self.assertLess(worst, 1.5 * 1024 * 1024)
+
     def test_square_covered(self):
         keys = set(self.idx['cells'])
         for i, j in G.cells_in(*G.square_box()):
@@ -122,6 +127,20 @@ class Areas(unittest.TestCase):
             if gebiete.houses(i, j) >= gebiete.MIN_HOUSES:
                 self.assertEqual(r, 0.5, (i, j))
 
+    def test_welt(self):  # part (c): the world blocks and welt-orte's places, without the cells of parts (a) and (b)
+        import gebiete
+        done = {(i, j) for i, j, r in gebiete.korridor() + gebiete.ratscher()}
+        c = gebiete.welt()
+        keys = {(i, j) for i, j, r in c}
+        self.assertFalse(keys & done)
+        self.assertEqual(len(keys), len(c))
+        self.assertTrue({r for i, j, r in c} <= {0.5, 1.0})
+        blocks = set()
+        for b in gebiete.welt_blocks().values():
+            blocks |= gebiete.utm_cells(*b)
+        self.assertTrue((blocks - done) <= keys)
+
+
 class TownStreets(unittest.TestCase):
     def test_same_as_the_towns(self):  # quellen.TOWN_ST keeps the widths and windows of streetMap() in welt/schleusingen.js, welt/vessra.js
         import quellen
@@ -148,6 +167,22 @@ class TownStreets(unittest.TestCase):
         self.assertEqual([x['kind'] for x in r], [1, 7])
         self.assertAlmostEqual(float(r[0]['p'][:, 0].max() - r[0]['p'][:, 0].min()), 920.0, 3)
         self.assertEqual(r[0]['w'], 7.0)
+
+class Writing(unittest.TestCase):
+    def test_unchanged_png_not_written(self):  # bauen.save_if_changed: the same values keep the file (and its bytes) as it is
+        import tempfile
+        import bauen
+        with tempfile.TemporaryDirectory() as d:
+            fn = os.path.join(d, 'z.png')
+            v = (np.arange(400 * 400).reshape(400, 400) % 251).astype(np.uint8)
+            self.assertEqual(bauen.save_if_changed(fn, v)[1], 1)
+            os.utime(fn, (1, 1))
+            self.assertEqual(bauen.save_if_changed(fn, v.copy())[1], 0)
+            self.assertEqual(os.stat(fn).st_mtime, 1)
+            w = v.copy()
+            w[0, 0] ^= 32
+            self.assertEqual(bauen.save_if_changed(fn, w)[1], 1)
+            self.assertTrue(np.array_equal(G.load_png(fn), w))
 
 
 if __name__ == '__main__':

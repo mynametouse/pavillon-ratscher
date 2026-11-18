@@ -68,9 +68,10 @@ NAH_B = [
 ]
 
 
-def alle(folder, areas, cells, res_cells, garten, sizes, tabs):
+def alle(folder, areas, cells, res_cells, garten, sizes, tabs, by_area=None):
     os.makedirs(folder, exist_ok=True)
     keys = [(c[0], c[1]) for c in cells]
+    by_area = by_area or {}
     if 'ratscher' in areas:
         sq = [k for k in keys if -3 <= k[0] <= 3 and -4 <= k[1] <= 2]
         rc = {k: res_cells[k] for k in sq}
@@ -86,8 +87,25 @@ def alle(folder, areas, cells, res_cells, garten, sizes, tabs):
             boegen.sheet(os.path.join(folder, name + '.jpg'), photo_on(g, sq),
                          classes_on(g, sq, rc, garten if name in ('nah_garten', 'nah_hubert_ronald') else None),
                          f'{name[4:]}: x {x0}…{x1}, y {y0}…{y1} ({res:g} m je Bildpunkt)')
+    if 'welt' in areas:  # part (c): the overview at 10 m and close-ups of a village and of the open land
+        wc = [(c[0], c[1]) for c in by_area.get('welt', [])]
+        rc = {k: res_cells[k] for k in wc}
+        i0, j0 = min(c[0] for c in wc), min(c[1] for c in wc)
+        i1, j1 = max(c[0] for c in wc), max(c[1] for c in wc)
+        res = 10.0
+        g = Grid(400 * i0, 400 * (j1 + 1), res, int(400 * (i1 - i0 + 1) / res), int(400 * (j1 - j0 + 1) / res))
+        labels = {(i - i0, j1 - j): f'{i}_{j}' for (i, j) in wc if i % 4 == 0 and j % 4 == 0}
+        boegen.sheet(os.path.join(folder, 'welt.jpg'), photo_on(g, wc), classes_on(g, wc, rc),
+                     'Welt-Blöcke B und Kloster Veßra, flache Orte – Flächenart (10 m je Bildpunkt; Zellen 400 m)', side=False,
+                     grid=(400 / res, labels))
+        for name, (x0, y0, x1, y1), r in extra_nah(wc, rc, prefix='nah_welt_', skip_towns=False):
+            g = Grid(x0, y1, r, int((x1 - x0) / r), int((y1 - y0) / r))
+            boegen.sheet(os.path.join(folder, name + '.jpg'), photo_on(g, wc), classes_on(g, wc, rc),
+                         f'{name[4:]}: x {x0:.0f}…{x1:.0f}, y {y0:.0f}…{y1:.0f} ({r:g} m je Bildpunkt)')
     if 'korridor' in areas:
         kc = [k for k in keys if not (-3 <= k[0] <= 3 and -4 <= k[1] <= 2)]
+        if by_area.get('korridor'):
+            kc = [(c[0], c[1]) for c in by_area['korridor']]
         rc = {k: res_cells[k] for k in kc}
         i0, j0 = min(c[0] for c in kc), min(c[1] for c in kc)
         i1, j1 = max(c[0] for c in kc), max(c[1] for c in kc)
@@ -106,17 +124,17 @@ def alle(folder, areas, cells, res_cells, garten, sizes, tabs):
     print('sheets in', folder)
 
 
-def extra_nah(kc, rc):
+def extra_nah(kc, rc, prefix='nah_', skip_towns=True):
     """a close-up of the open land (a 1 m cell with the most verge) and of a village on the way (a 0.5 m cell with the most lawn)"""
     out = []
     one = [k for k in kc if rc[k].shape[0] == 400]
-    half = [k for k in kc if rc[k].shape[0] == 800 and not (-5 <= k[0] <= -1 and 1 <= k[1] <= 5) and not (-24 <= k[0] <= -20 and -3 <= k[1] <= 1)]
+    half = [k for k in kc if rc[k].shape[0] == 800 and not (skip_towns and ((-5 <= k[0] <= -1 and 1 <= k[1] <= 5) or (-24 <= k[0] <= -20 and -3 <= k[1] <= 1)))]
     if one:
         k = max(one, key=lambda k: (rc[k] == 3).sum())
-        out.append(('nah_bankett_1m', (400 * k[0], 400 * k[1] + 100, 400 * k[0] + 250, 400 * k[1] + 300), 0.5))
+        out.append((prefix + 'bankett_1m', (400 * k[0], 400 * k[1] + 100, 400 * k[0] + 250, 400 * k[1] + 300), 0.5))
     if half:
         k = max(half, key=lambda k: (rc[k] == 1).sum())
-        out.append(('nah_dorf', (400 * k[0] + 75, 400 * k[1] + 75, 400 * k[0] + 325, 400 * k[1] + 275), 0.25))
+        out.append((prefix + 'dorf', (400 * k[0] + 75, 400 * k[1] + 75, 400 * k[0] + 325, 400 * k[1] + 275), 0.25))
     return out
 
 
