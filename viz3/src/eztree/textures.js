@@ -54,9 +54,6 @@ const loadTexture = (url, srgb = true) => {
 // Leaf types without a matrix are summer pictures already: their own texture comes back.
 const SUMMER = { aspen: [0.1, 0.2, 0.0, 0.16, 0.4, 0.0, 0.04, 0.09, 0.2] };
 const summer = {};
-export function summerColour(M, r, g, b) {
-  return [M[0] * r + M[1] * g + M[2] * b, M[3] * r + M[4] * g + M[5] * b, M[6] * r + M[7] * g + M[8] * b];
-}
 function toSummer(tex, M) {
   const img = tex.image;
   if (!img || !img.width || typeof document === 'undefined') return;

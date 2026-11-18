@@ -825,6 +825,7 @@ export const RATSCHER = (() => {
         );
     }; // V16c: a crown shades itself – the flat cards were pale
     mat.customProgramCacheKey = () => 'geotree';
+    mat.userData.treeCards = true; // feat/fotorealismus (foto-baeume): tests find the far cards' material by it
     const cross = (() => {
       const a = new THREE.PlaneGeometry(1, 1),
         b = new THREE.PlaneGeometry(1, 1);

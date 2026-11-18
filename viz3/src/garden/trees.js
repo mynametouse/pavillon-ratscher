@@ -87,7 +87,9 @@ export const TREEHOOK = { leaf: null };
 // No program more: all leaf materials get the same patch and the same cache key. No texture, no draw call, no triangle; one byte per
 // card corner (aLfIn).
 export const LAUB = (() => {
-  const ON = [0.16, 1, 1, 1, 0.3, 0.3, 0.9, 0.03, 0.12, 1];
+  // (tuned on the lime at the Anger, 1 June 15:30 and 20:00: lit leaves about sRGB 100/123/70, shaded ones 45/66/25 – a photo of
+  // a lime in June has 95–125 / 125–150 / 55–75 and 35–55 / 55–70 / 30–40)
+  const ON = [0.16, 1, 1, 1, 0.3, 0.3, 1.0, 0.04, 0.18, 1, 0.5];
   const U = {
     lfK: { value: new THREE.Vector4(ON[0], ON[1], ON[2], ON[3]) },
     // z: 1 while a far tree's picture is drawn (world/ratscher.js treeAtlas: the picture without a tree's own colour), w: the sky's
@@ -96,12 +98,19 @@ export const LAUB = (() => {
     lfT: { value: new THREE.Vector4(ON[4], ON[5], 0, ON[6]) },
     // x: the white in a leaf's colour – what its surface reflects of any light, whatever its green (as a share of the light; the leaf
     // pictures hold the pigment only: hardly any blue, a third of the red a leaf in a photo has – emerald under a blue sky), y: light
-    // bounced between the leaves of a sunlit crown (a share of the sun, in the leaves' colour), z: the leaves' light altogether
-    lfC: { value: new THREE.Vector4(ON[7], ON[8], ON[9], 0) },
+    // bounced between the leaves of a sunlit crown (a share of the sun, in the leaves' colour), z: the leaves' light altogether,
+    // w: how far the sky's light is read towards straight up instead of along the crown's normal (a leaf in a crown sees the sky
+    // through the gaps above it – read along the normal alone, a crown's shaded side had the dark of the sky's far side and the ground)
+    lfC: { value: new THREE.Vector4(ON[7], ON[8], ON[9], ON[10]) },
   };
   // a tree's own colour from two random numbers of its place (h.x: hue, yellow-green … blue-green; h.y: brightness), k its strength
   const GLSL_VARY = `vec3 lfVary( vec2 h, float k ) { float a = ( h.x * 2.0 - 1.0 ) * k, b = ( h.y * 2.0 - 1.0 ) * k;
   return vec3( 1.0 + 0.22 * a, 1.0 + 0.04 * a, 1.0 - 0.2 * a ) * ( 1.0 + 0.18 * b ); }\n`;
+  // three's chunk that reads the image light, the sky's light on the leaf read along lfNa (if three changes the line, nothing changes)
+  const MAPS = THREE.ShaderChunk.lights_fragment_maps.replace(
+    'getIBLIrradiance( geometryNormal )',
+    'getIBLIrradiance( lfNa )'
+  );
   const GLSL_HASH = `vec2 lfHash( vec2 p ) { p = floor( p * 4.0 ); return fract( sin( vec2( dot( p, vec2( 12.9898, 78.233 ) ), dot( p, vec2( 39.3468, 11.1351 ) ) ) ) * 43758.5453 ); }\n`;
   const S = { n: 0, ms: 0, crowns: 0 };
   // a leaf material (MeshStandardMaterial with a leaf picture, after patchSV, before the wind's hook). o.thru: how much light its
@@ -156,7 +165,8 @@ export const LAUB = (() => {
           )
           .replace(
             '#include <lights_fragment_maps>',
-            `#include <lights_fragment_maps>
+            `vec3 lfNa = normalize( geometryNormal + ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz * lfC.w );
+${MAPS}
 #if defined( RE_IndirectDiffuse ) && defined( USE_ENVMAP ) && defined( STANDARD ) && defined( ENVMAP_TYPE_CUBE_UV )
   if ( lfT.w > 0.0 ) iblIrradiance *= lfT.w / max( envMapIntensity, 0.2 );   // the sky's light on the leaves' own colour (not its mirror)
 #endif`
@@ -265,7 +275,7 @@ export const LAUB = (() => {
     crownDepth,
     GLSL_VARY,
     GLSL_HASH,
-    // tests and tuning: LAUB.set({ sheen, thru, inside, vary, wrap, card, sky, white, bounce, gain }); LAUB.set({ on: false }) lights the leaves
+    // tests and tuning: LAUB.set({ sheen, thru, inside, vary, wrap, card, sky, white, bounce, gain, bend }); LAUB.set({ on: false }) lights the leaves
     // as three does without this (the mirror lobes whole, no light through, no depth, no colour of its own; the crown's normal stays)
     set(o = {}) {
       const k = U.lfK.value,
@@ -281,7 +291,7 @@ export const LAUB = (() => {
         t.x = ON[4];
         t.y = ON[5];
         t.w = ON[6];
-        U.lfC.value.set(ON[7], ON[8], ON[9], 0);
+        U.lfC.value.set(ON[7], ON[8], ON[9], ON[10]);
       }
       if (o.sheen != null) k.x = o.sheen;
       if (o.thru != null) k.y = o.thru;
@@ -293,6 +303,7 @@ export const LAUB = (() => {
       if (o.white != null) U.lfC.value.x = o.white;
       if (o.bounce != null) U.lfC.value.y = o.bounce;
       if (o.gain != null) U.lfC.value.z = o.gain;
+      if (o.bend != null) U.lfC.value.w = o.bend;
       markDirty();
       return LAUB.state();
     },
