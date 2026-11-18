@@ -199,15 +199,18 @@ export const BWSTRAUCH = (() => {
     if (!(r <= 0.5) || !S.on || !S.G || !S.G.visible) return undefined;
     const gi = Math.floor(p[0] / CG),
       gj = Math.floor(p[1] / CG);
-    let ck = '',
+    let ci0 = NaN,
+      cj0 = NaN,
       G = null;
     for (let i = gi - 1; i <= gi + 1; i++)
       for (let j = gj - 1; j <= gj + 1; j++) {
-        // the map cell this 4 m square lies in (a shrub near a cell's edge is found from the other side too)
-        const k = Math.floor((i * CG) / CELL) + '_' + Math.floor((j * CG) / CELL);
-        if (k !== ck) {
-          ck = k;
-          const c = BWKARTE.cells.get(k);
+        // the map cell this 4 m square lies in (a shrub near a cell's edge is found from the other side too; its key made only on a change)
+        const ci = Math.floor((i * CG) / CELL),
+          cj = Math.floor((j * CG) / CELL);
+        if (ci !== ci0 || cj !== cj0) {
+          ci0 = ci;
+          cj0 = cj;
+          const c = BWKARTE.cells.get(ci + '_' + cj);
           G = c && c.solid;
         }
         const L = G && G.get(gk(i, j));
@@ -412,6 +415,9 @@ export const BWSTRAUCH = (() => {
         LG = [K.lv[0], K.lv[2]];
       M.b = M.cap.map((c, i) => im(BG[i], K.bark, c));
       M.l = M.cap.map((c, i) => im(LG[i], K.leaf, c, true));
+      // the near band casts its shadow (as the garden's trees: the leaf cards through their depth material with the alpha of the leaves)
+      M.b[0].castShadow = M.l[0].castShadow = true;
+      if (K.depth) M.l[0].customDepthMaterial = K.depth;
       M.all = [...M.b, ...M.l];
       S.meshes[id] = M;
     }

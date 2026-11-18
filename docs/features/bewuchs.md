@@ -65,7 +65,8 @@ wobei es trotzdem im Browser weiterhin flüssig laufen können soll.“ Gewählt
   je Zelle die Sträucher ab 1 m in einem 4-m-Raster (Kreis 0,55 des Kronenradius – die äußeren Zweige geben nach); `KERN.pushOut`
   (Anbieter mit Vorrang 20, gibt die Frage weiter, damit Wände und Stämme danach kommen) schiebt Körper zu Fuß (Radius bis 0,5 m: Figur,
   Hund, Tiere, Leute zu Fuß) heraus, Fahrzeuge (ab 0,85 m) fahren wie bisher hindurch; im Kasten des Gartens (|x| ≤ 50, |y| ≤ 55 m, dort
-  fragt `game/walkable.js` nur die eigenen Hindernisse) stehen keine. Noch offen: eigene Hüllen für Buchs, Thuja und Hecken, Schatten nah.
+  fragt `game/walkable.js` nur die eigenen Hindernisse) stehen keine. Das nahe Band wirft Schatten (wie die Gartenbäume, die Blattkarten über
+  ihr Tiefenmaterial). Noch offen: eigene Hüllen für Buchs, Thuja und Hecken.
 - **Die ganze Welt** (Teile b und c von `bewuchs-daten`): die Strecken nach Schleusingen und Kloster Veßra und beide Orte, die Welt-Kacheln
   (Block B, Veßra) und die flachen Orte – 895 Zellen im Index (28 MB, je 4 × 4 Zellen unter 1,5 MB); geladen wird nur, was um die Kamera liegt.
 
@@ -122,6 +123,6 @@ Halme, `GRASS.cutCount` aus dem Raster, keine Programme über 16 Texturen; Bilde
 
 - Grasähren aus dem Atlas (getönt), Dürre- und Schattenfarbe der Flächen, der kiesige Bankettrand, Geilstellen der Weide; die
   Jahreszeit des Bodenbilds im Garten.
-- Hüllen für Buchs, Thuja und geschnittene Hecken; Schatten der Sträucher nah; die Beete der Dorfleute (`dorf/dorf_life.js`, noch
+- Hüllen für Buchs, Thuja und geschnittene Hecken; die Beete der Dorfleute (`dorf/dorf_life.js`, noch
   Erde mit Klötzchen) aus den Beetvorlagen; Fahrzeuge in Sträuchern (heute fahren sie hindurch); Waldboden außerhalb der Klinge (mit
   `welt-wald`), Suhl (über den Suhl-Chat).
