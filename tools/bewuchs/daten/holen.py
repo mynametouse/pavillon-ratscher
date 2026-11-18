@@ -5,10 +5,11 @@
   python3 -I tools/bewuchs/daten/holen.py dop  i0 j0 i1 j1       # orthophoto 20 cm, colour and colour infrared, per 400 m cell
   python3 -I tools/bewuchs/daten/holen.py dlm  [x0 y0 x1 y1]     # ATKIS Basis-DLM layers rendered by the state's WMS (1 m)
   python3 -I tools/bewuchs/daten/holen.py korridor               # part (b): OSM, DLM (blocks of 5 × 5 cells), photos and flight dates
+  python3 -I tools/bewuchs/daten/holen.py welt                   # part (c): the same for the world blocks and welt-orte's places
 
 Model boxes in metres (default: Ratscher's square). Sources: © OpenStreetMap contributors (ODbL 1.0); DOP and Basis-DLM © GDI-Th
 (dl-de/by-2-0), WMS www.geoproxy.geoportal-th.de (reachable from the chat machine; Overpass and Geofabrik are not)."""
-import io, json, os, sys, time, urllib.error, urllib.request
+import io, json, os, sys, threading, time, urllib.error, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from gemeinsam import RAW, CELL, m2u, square_box  # noqa: E402
 
@@ -148,11 +149,15 @@ def dop_cell(i, j, margin=12.0, res=0.2, layers=('th_dop', 'th_dop20cir')):
     return out
 
 
+_FLUG = threading.Lock()
+
+
 def flight(i, j):
-    """flight date of the orthophoto tile under the centre of cell (i, j) (cached in dop/flug.json)"""
+    """flight date of the orthophoto tile under the centre of cell (i, j) (cached in dop/flug.json; safe from several threads)"""
     fn = os.path.join(RAW, 'dop', 'flug.json')
-    d = json.load(open(fn)) if os.path.exists(fn) else {}
     key = f'{i}_{j}'
+    with _FLUG:
+        d = json.load(open(fn)) if os.path.exists(fn) else {}
     if key not in d:
         E, N = m2u(CELL * (i + 0.5), CELL * (j + 0.5))
         q = (f'{WMS_DOP}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&LAYERS=th_dop_info&QUERY_LAYERS=th_dop_info&STYLES='
@@ -160,9 +165,46 @@ def flight(i, j):
         t = get(q, 60).decode('utf-8', 'replace')
         a = {k: v.strip() for k, v in (p.split('=', 1) for p in t.split('$#$') if '=' in p)}
         dd = a.get('Erstellung', '')
-        d[key] = '-'.join(reversed(dd.split('.'))) if dd.count('.') == 2 else dd
-        json.dump(d, open(fn, 'w'), indent=0)
+        with _FLUG:
+            d = json.load(open(fn)) if os.path.exists(fn) else {}
+            d[key] = '-'.join(reversed(dd.split('.'))) if dd.count('.') == 2 else dd
+            json.dump(d, open(fn + '.part', 'w'), indent=0)
+            os.replace(fn + '.part', fn)
     return d[key]
+
+
+def osm_houses(cells, files):
+    """OSM buildings per cell (by the centre of the footprint) – gebiete.welt() takes 0.5 m where there are 25 and more"""
+    import osm_flaechen
+    from gemeinsam import cell_of
+    want = {f'{c[0]}_{c[1]}' for c in cells}
+    areas, lines, points = osm_flaechen.extract(sorted(set(files)))
+    n = {}
+    for g, t, oid in areas:
+        if 'building' in t:
+            c = g.centroid
+            k = cell_of(c.x, c.y)
+            if k in want:
+                n[k] = n.get(k, 0) + 1
+    import gebiete
+    json.dump(n, open(os.path.join(RAW, gebiete.OSM_HOUSES), 'w'), indent=0)
+    return n
+
+
+def fetch_cells(cells, workers=3):
+    """photos (0.2 m for the 0.5 m cells, 0.4 m for the 1 m cells) and flight dates of many cells, a few at a time"""
+    from concurrent.futures import ThreadPoolExecutor
+    t0 = time.time()
+
+    def one(c):
+        i, j, r = c
+        dop_cell(i, j, res=0.2 if r <= 0.5 else 0.4)
+        return c, flight(i, j)
+
+    with ThreadPoolExecutor(workers) as ex:
+        for k, (c, fl) in enumerate(ex.map(one, cells)):
+            if k % 25 == 0 or k == len(cells) - 1:
+                print('dop', k + 1, '/', len(cells), c, fl, f'{time.time() - t0:.0f} s', flush=True)
 
 
 # ---------------- ATKIS Basis-DLM (rendered by the WMS; colours are read in klassen.py) ----------------
@@ -173,14 +215,18 @@ DLM_USED = ['veg01_f', 'veg02_f', 'veg03_f_1', 'veg03_f_5', 'sie01_f', 'sie02_f_
 BLOCK = 5  # cells per side of a DLM block beyond the square
 
 
-def dlm_blocks(cells):
-    """the DLM in blocks of 5 × 5 cells (2 km, 1 m) – one set of pictures per block that holds a cell"""
-    done = []
-    for bi, bj in sorted({(c[0] // BLOCK, c[1] // BLOCK) for c in cells}):
-        x0, y0 = CELL * BLOCK * bi, CELL * BLOCK * bj
-        dlm((x0, y0, x0 + CELL * BLOCK, y0 + CELL * BLOCK), name=f'b{bi}_{bj}', layers=DLM_USED)
-        done.append((bi, bj))
-    return done
+def dlm_blocks(cells, workers=1):
+    """the DLM in blocks of 5 × 5 cells (2 km, 1 m) – one set of pictures per block that holds a cell (a few blocks at a time)"""
+    from concurrent.futures import ThreadPoolExecutor
+    blocks = sorted({(c[0] // BLOCK, c[1] // BLOCK) for c in cells})
+
+    def one(b):
+        x0, y0 = CELL * BLOCK * b[0], CELL * BLOCK * b[1]
+        dlm((x0, y0, x0 + CELL * BLOCK, y0 + CELL * BLOCK), name=f'b{b[0]}_{b[1]}', layers=DLM_USED)
+        return b
+
+    with ThreadPoolExecutor(workers) as ex:
+        return list(ex.map(one, blocks))
 
 
 def dlm(box, res=1.0, name='ratscher', layers=None):
@@ -238,6 +284,16 @@ if __name__ == '__main__':
             dop_cell(i, j, res=0.2 if r <= 0.5 else 0.4)
             print('dop', k, i, j, r, flight(i, j), f'{time.time() - t0:.1f} s', flush=True)
         dlm_blocks(cells)
+    elif what == 'welt':
+        import gebiete
+        cells = gebiete.welt()
+        files = osm_cells(cells)
+        n = osm_houses(cells, files)
+        cells = gebiete.welt()  # again, with the OSM buildings per cell
+        print('welt', len(cells), 'cells,', sum(1 for c in cells if c[2] == 0.5), 'at 0.5 m;', sum(n.values()), 'OSM buildings', flush=True)
+        fetch_cells(cells)
+        dlm_blocks(cells, workers=3)
+        print('done', flush=True)
     elif what == 'dop':
         i0, j0, i1, j1 = map(int, a)
         for j in range(j0, j1 + 1):

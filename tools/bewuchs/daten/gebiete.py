@@ -88,11 +88,62 @@ def houses(i, j):
         return len(json.load(fh).get('b', []))
 
 
+def utm_cells(e0, n0, e1, n1):
+    """the cells (i, j) a UTM box touches (the box turned into the model frame)"""
+    import math
+    from shapely.geometry import Polygon, box
+    from gemeinsam import u2m
+    X, Y = u2m([e0, e1, e1, e0], [n0, n0, n1, n1])
+    poly = Polygon(list(zip(X, Y)))
+    out = set()
+    for i in range(math.floor(min(X) / CELL), math.floor(max(X) / CELL) + 1):
+        for j in range(math.floor(min(Y) / CELL), math.floor(max(Y) / CELL) + 1):
+            if poly.intersects(box(CELL * i, CELL * j, CELL * (i + 1), CELL * (j + 1))):
+                out.add((i, j))
+    return out
+
+
+def welt_blocks():
+    """the world tiles' detail blocks (tools/welt/wlib.py): block B (9.6 km round the garden) and the block of Kloster Veßra"""
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'welt'))
+    import wlib
+    return {'B': tuple(wlib.BLOCK_B), 'V': tuple(wlib.VESSRA_BLK)}
+
+
+OSM_HOUSES = 'osm_haeuser.json'  # OSM buildings per cell (holen.py welt writes it after the OSM fetch, in BEWUCHS_RAW)
+
+
+def welt():
+    """part (c): the cells of the world tiles' detail blocks and of welt-orte's flat places of the region (dist/gebaeude/z/index.json order
+    after stats.cells), minus parts (a) and (b); 0.5 m by the rules of korridor() and where OSM has 25 buildings and more in the cell"""
+    from shapely.geometry import box
+    from gemeinsam import RAW
+    keys = set()
+    for b in welt_blocks().values():
+        keys |= utm_cells(*b)
+    idx = _load('gebaeude/z/index.json')
+    if isinstance(idx.get('order'), list) and isinstance(idx.get('stats'), dict) and 'cells' in idx['stats']:
+        keys |= {tuple(map(int, k.split('_'))) for k in idx['order'][int(idx['stats']['cells']):]}
+    keys -= {(i, j) for i, j, r in korridor() + ratscher()}
+    fn = os.path.join(RAW, OSM_HOUSES)
+    osm_n = json.load(open(fn)) if os.path.exists(fn) else {}
+    orte = orte_polys()
+    zb = [box(*z) for z in zones().values()]
+    out = []
+    for i, j in sorted(keys, key=lambda c: (c[1], c[0])):
+        cb = box(CELL * i, CELL * j, CELL * (i + 1), CELL * (j + 1))
+        built = sum(p.intersection(cb).area for n, t, p in orte if p.intersects(cb))
+        town = any(z.intersects(cb) for z in zb)
+        n = max(houses(i, j), int(osm_n.get(f'{i}_{j}', 0)))
+        out.append((i, j, 0.5 if built >= MIN_BUILT or town or n >= MIN_HOUSES else 1.0))
+    return out
+
+
 def area(name):
-    return {'ratscher': ratscher, 'korridor': korridor}[name]()
+    return {'ratscher': ratscher, 'korridor': korridor, 'welt': welt}[name]()
 
 
 if __name__ == '__main__':
-    for n in ('ratscher', 'korridor'):
+    for n in ('ratscher', 'korridor', 'welt'):
         c = area(n)
         print(n, len(c), 'cells,', sum(1 for x in c if x[2] == 0.5), 'at 0.5 m')
