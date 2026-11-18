@@ -183,6 +183,7 @@ export function stadt(ctx, G, IX, worker, opt) {
         z0ok: opt.z0ok(),
         old: opt.old,
         patch: S.patch,
+        vor: S.vor || 0, // Suhl 1989: no building of the era from 1991 (kern/jahr1989.js)
         extra: S.extra.get(t.k) || null,
         recs: !t.recs || t.recsDirty,
       })
@@ -648,7 +649,8 @@ export function stadt(ctx, G, IX, worker, opt) {
     'glas',
   ];
   // what stands in the world: not the records of buildings no longer standing (fg 32), not what a scenario took away
-  const stands = b => !(b.fg & 32) && !(S.patch[b.id] && S.patch[b.id].hidden);
+  const stands = b =>
+    !(b.fg & 32) && !(S.patch[b.id] && S.patch[b.id].hidden) && !(S.vor && S.vor < 1991 && (b.era | 0) === 4);
   function view(t, i) {
     const b = t.recs[i],
       ox = b._abs ? 0 : t.T.cx,
@@ -828,6 +830,14 @@ export function stadt(ctx, G, IX, worker, opt) {
   S.override = (id, patch) => {
     S.patch[id] = Object.assign({}, S.patch[id], patch);
     again(id);
+  };
+  // Suhl 1989 (kern/jahr1989.js): a year before 1991 leaves out the buildings of the era from 1991 (era 4); every tile is made again
+  S.jahr = y => {
+    const v = y && y < 1991 ? y : 0;
+    if (v === (S.vor || 0)) return;
+    S.vor = v;
+    for (const t of S.tiles.values()) t.dirty = true;
+    ctx.KERN.emit('suhl:changed', { jahr: v || null });
   };
   S.reset = id => {
     const ids = id === undefined ? Object.keys(S.patch) : [id];
