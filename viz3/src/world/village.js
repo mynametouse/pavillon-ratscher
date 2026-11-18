@@ -16,6 +16,7 @@ import { ROADS } from './roads.js';
 import { KERN } from '../core/kern.js';
 import { DKDATA } from './dorfkern_data.js';
 import { GEBDACH } from '../gebaeude/geb_dach.js'; // feat/welt-gebaeude
+import { GEBFOTO } from '../gebaeude/geb_foto.js'; // feat/fotorealismus (foto-gebaeude): weathering of every wall, in the facade shader below
 export const VILLAGE = (() => {
   const S = {
     on: false,
@@ -584,6 +585,7 @@ export const VILLAGE = (() => {
         );
       sh.fragmentShader =
         WGLSL +
+        GEBFOTO.pars + // feat/fotorealismus (foto-gebaeude)
         '\n' +
         sh.fragmentShader
           .replace(
@@ -653,6 +655,7 @@ export const VILLAGE = (() => {
           vec3 wd = vec3( 0.17, 0.085, 0.04 ) * ( 0.8 + 0.4 * vh( floor( uF / bw2 ) + bid * 3.0 ) ) * texN( tWood, vec2( uF / 1.4, v / 2.2 ) );
           c = mix( wd * ( 1.0 - 0.55 * gp * ( 1.0 - aaF ) ), vec3( 0.13, 0.07, 0.035 ), aaW * 0.6 ); }
         c *= 0.8 + 0.2 * smoothstep( -0.3, 1.4, v );   // darker at the foot (splash, shade)
+        ${GEBFOTO.wall}
         // ---- shutters and sills, in the wall plane ----
         if ( win > 0.5 && aaW < 0.99 ) {
           if ( surr > 0.5 ) c = mix( c, vec3( 0.40, 0.40, 0.385 ) * ( 0.92 + 0.08 * texN( tPlas, tq * 0.5 ).r ), bnd( uF, lo.x - 0.11, hi.x + 0.11, fw.x ) * bnd( v, lo.y - 0.11, hi.y + 0.11, fw.y ) * ( 1.0 - aaW ) );   // feat/dorfkern: light surrounds on slate houses
@@ -704,8 +707,9 @@ export const VILLAGE = (() => {
           )
           .replace(
             '#include <normal_fragment_maps>',
-            '#include <normal_fragment_maps>\n if ( gNrmK > 0.5 ) normal = normalize( gNrm );'
+            '#include <normal_fragment_maps>\n if ( gNrmK > 0.5 ) normal = normalize( gNrm );' + GEBFOTO.normal // feat/fotorealismus (foto-gebaeude)
           )
+          .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>' + GEBFOTO.light) // feat/fotorealismus (foto-gebaeude)
           .replace(
             '#include <emissivemap_fragment>',
             `#include <emissivemap_fragment>
@@ -1390,6 +1394,7 @@ export const VILLAGE = (() => {
       uWinK: { value: 2.0 },
       uLampV: { value: Array.from({ length: 8 }, () => new THREE.Vector4()) },
     };
+    Object.assign(S.U, GEBFOTO.uniforms(tex)); // feat/fotorealismus (foto-gebaeude): uFoto, the noise, the plaster's normal map
     wallAttrs();
     const wm = RATSCHER.bld[0];
     S.wall0 = wm.material;

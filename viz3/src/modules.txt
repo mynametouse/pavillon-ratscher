@@ -76,6 +76,7 @@ audio/music.js              #
 game/quests.js              # tasks with the neighbours, journal, tracker (QUESTS)
 # feat/welt-gebaeude: Ratscher's ground without the printed roofs – the switch and the roof colours (before world/ratscher.js reads the names)
 gebaeude/geb_dach.js        # feat/welt-gebaeude the retouched ground images of Ratscher, ?bodenalt for the originals, the originals' roof colours for the village (GEBDACH)
+gebaeude/geb_foto.js        # feat/fotorealismus (foto-gebaeude) weathering of every wall in the village's facade shader: the house's own tone, patches, plinth, splash, runs, grain – GLSL and its noise (GEBFOTO)
 world/ratscher.js           # real surroundings from geodata: terrain, orthophotos, buildings, trees (RATSCHER)
 # feat/strassen: the roads' styles and data (before world/roads.js: its raster asks them); the furniture follows further down
 strassen/strassen_stil.js   # feat/strassen how a road is marked and edged (open country, no overtaking, town, village) and its raster – pure (STRSTIL)
