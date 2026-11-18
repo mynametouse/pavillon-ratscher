@@ -355,11 +355,13 @@ with lib.browser() as b:
         ok3 = bis('rueckzug', 8)
         ck('two photos from cover (ducked, from the side); the stranger at the edge of the heath', ok and a1 and a2 and ok2 and ok3 and E("GLKAP2.K1.n") == 2, f'{ok} {a1} {a2} {ok2} {ok3}')
         E("GAME.P.stance = 'stand'")
-        steps(6)
+        # (they walk to the van first – agent zone's bunker lies ~95 m off the way)
+        until("GLKAP2.V1.fahrt", 90, 0.25, 0.02)
+        steps(2)
         st = J("({ v: GLKAP2.V1, men: ['w1', 'w2', 'w3'].map(k => !!GLMISSION.F(k)) })")
         c = J("(c => c ? [c.x, c.y, c.hd] : null)(GLMISSION.C('k2van'))")
         if c:
-            E(f"GAME.view({c[0] - math.sin(c[2]) * -14}, {c[1] - math.cos(c[2]) * -14}, KERN.ground({c[0]}, {c[1]}) + 1.7, {math.degrees(c[2]) + 180}, -4)"); steps(0.2)
+            E(f"GAME.view({c[0] + math.sin(c[2]) * 16}, {c[1] + math.cos(c[2]) * 16}, KERN.ground({c[0]}, {c[1]}) + 3.2, {math.degrees(c[2]) + 180}, -9)"); steps(0.2)
             pic(N('25_transporter'), False)
         ck('the men pack up and get into the van, it drives the Kolonnenweg out', st['v']['fahrt'] and not any(st['men']), str(st))
         # in its way: seen – again from the bunker
@@ -381,6 +383,20 @@ with lib.browser() as b:
         ev = J("__ev.filter(e => e[0] === 'mission' && e[2] === 'erledigt').map(e => e.slice(1))")
         ck('„Heimfahren“: home – mission 1 done („Zwei Fotos vom Bunker“)', ok and ok2 and ['k2m1', 'erledigt', 'Grünes Band', 'Zwei Fotos vom Bunker'] in ev, str(ev))
         pic(N('26_heim'))
+        # mission 2 follows the same day – past the opening, which mission 1 had
+        m0 = E("Math.floor(CLOCK.t) % 1440")
+        ok = until("GLMISSION.cur() === 'k2m2' && GLMISSION.debug.info().step === 'treff'", 40, 0.25, 0.05)
+        st = J("({ i: GLMISSION.debug.info().step, m: Math.floor(CLOCK.t) % 1440, f: document.getElementById('glfade').classList.contains('on') })")
+        ck('after mission 1 mission 2 begins at the barn the same day – the opening is not played again', ok and abs(st['m'] - m0) < 30 and not st['f'], str(st) + ' ' + str(m0))
+        # a save of the preview: mission 2 done before mission 1 was in – mission 1 goes past the opening, after the night
+        E(KAP1 + "; GLSTATE.kap = 2; GLSTATE.m.k2m2 = { st: 'erledigt', i: 0, n: 0 }; CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 20 * 60; GLSTATE.save(true)"); steps(0.5)
+        E("GLMISSION.start('k2m1')")
+        ok = until("GLMISSION.debug.info().step === 'aufbruch' && !GLMISSION.St.busy && !document.getElementById('glfade').classList.contains('on')", 40, 0.25, 0.1)
+        m1 = E("Math.floor(CLOCK.t) % 1440")
+        until("/Grünes Band/.test(document.getElementById('glmtitel').textContent)", 10, 0.25, 0.1)
+        st = J("({ i: GLMISSION.debug.info().step, t: document.getElementById('glmtitel').textContent, figs: GLMISSION.debug.info().figs })")
+        ck('a save of the preview (mission 2 done first): mission 1 goes past the opening – the next morning, 9:40, „Grünes Band“',
+           ok and abs(m1 - 580) < 10 and 'Grünes Band' in st['t'] and 'gerhard' not in ' '.join(st['figs']), str(st) + ' ' + str(m1))
       except Exception as e:
         ck('mission 1 ran through without an error of the test', False, str(e)[:300])
 

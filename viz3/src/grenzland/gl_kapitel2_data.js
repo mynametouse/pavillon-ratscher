@@ -39,7 +39,7 @@ export const GLK2DATA = (() => {
     k2m1: {
       kap: 2,
       ueber: 'Kapitel 2 · Mission 1',
-      unter: 'Görsdorfer Heide · Samstagvormittag',
+      unter: 'Görsdorfer Heide · Vormittag',
       title: 'Grünes Band',
       who: 'Jule',
       teaser: 'Jule hat Neuigkeiten über die Kiste.',
@@ -295,6 +295,9 @@ export const GLK2DATA = (() => {
     morgenB: 'Über Nacht sind zehn Zentimeter Schnee gefallen. Die Simson springt trotzdem an.',
     morgenVorab:
       'Samstag. Mission 1 „Grünes Band“ – zum Bunker am Kolonnenweg – kommt mit der nächsten Version. Heute braucht die Clique ein Auto.',
+    // (mission 1 after a preview's mission 2: the night after it)
+    spaetA: 'Am nächsten Morgen',
+    spaetB: 'Der Schnee liegt noch. Zeit für das Grüne Band – die Simson springt trotzdem an.',
     hinfahren: 'Hinfahren',
     hinA: 'Eine halbe Stunde später',
     hinB: 'Über die Landstraße bis Eisfeld – die Simson darf nicht auf die Autobahn, und das ist auch gut so.',
