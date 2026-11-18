@@ -695,7 +695,8 @@ export const VILLAGE = (() => {
               gc = mix( gc, vec3( 0.30, 0.30, 0.28 ), curP * 0.7 );
               gGlass = ( 1.0 - frm ) * ( 1.0 - curP * 0.7 ); oc = mix( gc, fc, frm );
               gLit = ( 1.0 - frm ) * step( vh( wid + 0.37 ), uWinP ) * ( 0.5 + 0.5 * cur ) * ( barn || hall ? 0.3 : 1.0 ); } }
-          c = mix( c, oc, inWin ); gWin = inWin; }
+          c = mix( c, oc, inWin ); gWin = inWin;
+          ${GEBFOTO.open} }
         else if ( win > 0.5 && aaW > 0.0 ) c = mix( c, c * 0.72, aaW * win * bnd( uF, lo.x, hi.x, fw.x * 2.0 ) * bnd( v, lo.y, hi.y, fw.y * 2.0 ) );   // far: windows as a darker patch
         vCol = c;
         }
@@ -1297,6 +1298,8 @@ export const VILLAGE = (() => {
         );
       sh.fragmentShader =
         RGLSL +
+        GEBFOTO.pars + // feat/fotorealismus (foto-gebaeude)
+        GEBFOTO.roofPars +
         '\n' +
         sh.fragmentShader
           .replace(
@@ -1323,6 +1326,7 @@ export const VILLAGE = (() => {
           else if ( k < 16.5 ) { rc = vec3( 0.42, 0.40, 0.37 ) * rtN( tPlas, p * 0.5 ).r; }   // plaster
           else if ( k < 17.5 ) { rc = vec3( 0.12, 0.12, 0.125 ); }   // chimney cap
           else { rc = vec3( 0.36, 0.37, 0.37 ); rr = 0.4; rm = 0.5; }   // parapet: sheet-metal cap
+          ${GEBFOTO.roof}
         }
         diffuseColor.rgb *= rc;`
           )
