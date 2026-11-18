@@ -395,6 +395,7 @@ navi/navi.js                # feat/navi a destination in the vehicle panel, the 
 foto/schatten_land.js       # feat/fotorealismus the hills' shadows at a low sun: a raster of the terrain's heights around the walker, swept along the sun into a field of shadow heights (SCHLAND)
 foto/schatten.js            # feat/fotorealismus the sun's shadows beyond the walker's box: a far and a wide tile in the sun's shadow atlas, the land casts and receives, the hills' field in a strip of the atlas (SCHATTEN)
 foto/luft.js                # feat/fotorealismus the air: haze that lies in the valleys and brightens towards the sun – three's fog chunks, shared uniforms (LUFT)
+foto/wasser.js              # feat/fotorealismus the water of the reservoir and the ponds: waves with the wind, the right gloss at every distance, a soft bank with shallows (WASSER)
 game/tutorial.js            # the introduction for beginners: a card leads step by step through the first minutes, notices what is done (TUT)
 game/game.js                # the frame loop: frame, physics of walking, place label, frame-rate safety net – loads last, it calls everything
 boot/report.js              # REPORT: error report by click – device, graphics, load log, errors to copy or as a GitHub issue
