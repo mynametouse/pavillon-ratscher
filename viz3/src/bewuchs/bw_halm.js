@@ -44,7 +44,27 @@ export const BWHALM = (() => {
     uBwF: { value: new THREE.Vector4(0, 0, 0, 0) }, // orthophoto box (as world/ratscher.js: ex − e0, ey − n0, 1/w), w = on
     uBwAB: { value: new THREE.Vector2(1, 0) },
     uBwP: { value: new THREE.Vector4(150, 1, 0, 0) }, // day of year, density scale, snow lying (0–1), hoarfrost (0–1)
+    // stage 5a: the crops a field of each map class may carry (9, 19, 20, 21, 22): per class two vec4 (row, cumulative share) × 4
+    uBwCr: { value: Array.from({ length: 10 }, () => new THREE.Vector4(0, 2, 0, 2)) },
   };
+  // the crop choices (BWPHAENO.cropChoice) into the uniform; the rows' heights for the tiles' test
+  let CROPCH = {};
+  function crops(ch) {
+    CROPCH = ch || {};
+    [9, 19, 20, 21, 22].forEach((c, i) => {
+      const L = (CROPCH[c] || []).slice(0, 4);
+      while (L.length && L.length < 4) L.push([L[L.length - 1][0], 2]);
+      const a = U.uBwCr.value[i * 2],
+        b = U.uBwCr.value[i * 2 + 1];
+      if (!L.length) {
+        a.set(0, 2, 0, 2);
+        b.set(0, 2, 0, 2);
+        return;
+      }
+      a.set(L[0][0], L[0][1], L[1][0], L[1][1]);
+      b.set(L[2][0], L[2][1], L[3][0], 2);
+    });
+  }
   // ---------- the patch of one tile: K blades, each 5 vertices (near: two segments and the tip) or 3 (one triangle) ----------
   function mulberry(a) {
     return () => {
@@ -135,6 +155,19 @@ float bwCode( vec2 q, out float site ) {
   return floor( texture( tBwG, g ).r * 255.0 + 0.5 );
 }
 float k0h( int c ) { return texelFetch( tBwK, ivec2( 0, c ), 0 ).y; }
+// stage 5a: a field of the crop classes of the maps (or unclear arable land, 9) carries one crop – the same over the field (~140 m, its
+// edges wavy), by the shares of its class
+uniform vec4 uBwCr[ 10 ];
+int bwCrop( int c, vec2 q ) {
+  int i = c == 9 ? 0 : c - 18;
+  vec2 fw = q / 140.0 + 0.35 * vec2( sin( q.y * 0.011 ), sin( q.x * 0.013 ) );
+  float r = bwHash( floor( fw ) + 31.7 );
+  vec4 a = uBwCr[ i * 2 ], b = uBwCr[ i * 2 + 1 ];
+  if ( r <= a.y ) return int( a.x + 0.5 );
+  if ( r <= a.w ) return int( a.z + 0.5 );
+  if ( r <= b.y ) return int( b.x + 0.5 );
+  return int( b.z + 0.5 );
+}
 // the height of class c at q today: the stand uncut this year, or what has grown since this field was cut (its days from its hash)
 float bwHeight( int c, vec2 q ) {
   vec4 k0 = texelFetch( tBwK, ivec2( 0, c ), 0 ), k1 = texelFetch( tBwK, ivec2( 1, c ), 0 ), k4 = texelFetch( tBwK, ivec2( 4, c ), 0 );
@@ -173,6 +206,7 @@ void bwBlade( out vec3 P, out vec3 N ) {
   float site;
   float code = bwCode( q, site );
   int cls = int( mod( code, 32.0 ) );
+  if ( cls == 9 || ( cls >= 19 && cls <= 22 ) ) cls = bwCrop( cls, q );
   float vig = floor( code / 32.0 ) / 7.0;
   vec4 k2 = texelFetch( tBwK, ivec2( 2, cls ), 0 ), k3 = texelFetch( tBwK, ivec2( 3, cls ), 0 );
   vec4 k5 = texelFetch( tBwK, ivec2( 5, cls ), 0 ), k6 = texelFetch( tBwK, ivec2( 6, cls ), 0 );
@@ -360,7 +394,7 @@ void bwBlade( out vec3 P, out vec3 N ) {
     const doy = U.uBwP.value.x;
     for (let c = 0; c < 32; c++) {
       const k = BWPHAENO.K[c];
-      if (!k || !(k.dens > 0)) {
+      if (!k || !(k.dens > 0) || k.crop) {
         hNow[c] = 0;
         continue;
       }
@@ -371,6 +405,11 @@ void bwBlade( out vec3 P, out vec3 N ) {
       hNow[c] =
         (ev ? Math.min(hs, k.h0 + BWPHAENO.rate(k, doy) * ev) : hs) * Math.max(1, ...((k.kraft && k.kraft.h) || [1]));
     }
+    // the crops' rows: today's height of their phase; the map classes of the fields: the highest of their crops
+    const T = BWPHAENO.table(doy);
+    for (let c = BWPHAENO.CROP0; c < 32; c++)
+      if (BWPHAENO.K[c] && BWPHAENO.K[c].crop) hNow[c] = T[c * BWPHAENO.TW * 4 + 1];
+    for (const [c, L] of Object.entries(CROPCH)) hNow[c] = Math.max(0, ...L.map(([r]) => hNow[r] || 0));
   }
   // does anything that the ring draws grow in the tile at (x0, y0) of size s? (corners and middle)
   function tileOn(x0, y0, s, minH) {
@@ -528,7 +567,7 @@ void bwBlade( out vec3 P, out vec3 N ) {
     };
   }
   heightsNow();
-  Object.assign(S, { build, update, day, stats, U, zAt });
+  Object.assign(S, { build, update, day, stats, U, zAt, crops });
   return S;
 })();
 if (typeof window !== 'undefined') window.BWHALM = BWHALM;

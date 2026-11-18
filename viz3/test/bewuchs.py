@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
 port = sys.argv[1]
-WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'rasen,maehen,wiese,ferne,jahr,strauch,beet,leistung').split(','))
+WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'rasen,maehen,wiese,ferne,jahr,strauch,beet,acker,leistung').split(','))
 OUT = lib.out('bewuchs')
 ck = lib.Checks('bewuchs')
 
@@ -164,6 +164,24 @@ with lib.browser() as b:
                 E("BEWUCHS.set({ doy: 190 })")
                 view(spot[0] - 5, spot[1] - 5, math.degrees(math.atan2(5, 5)), -20)
                 lib.shot(pg, OUT, 'beet_juli')
+        if 'acker' in WANT:
+            # stage 5a: a field of the maps' crop classes near the garden (cereal 19 or rape 20) through the farmer's year
+            spot = J("""(() => { let best = null; for (const c of BWKARTE.cells.values()) { if (c.state !== 'ok') continue;
+                for (let v = 0; v < c.n; v += 6) for (let u = 0; u < c.n; u += 6) { const k = c.px[v * c.n + u] & 31; if (k !== 19 && k !== 20) continue;
+                  const x = c.i * 400 + (u + 0.5) * c.res, y = c.j * 400 + (c.n - 1 - v + 0.5) * c.res, d = Math.hypot(x - 2, y - 2);
+                  if (d > 80 && (!best || d < best[2])) best = [x, y, d, k]; } } return best; })()""")
+            print('field', spot, flush=True)
+            ck('a field of the crop classes near the garden', bool(spot), spot)
+            if spot:
+                fx, fy = spot[0], spot[1]
+                for d, name in ((130, 'mai'), (170, 'juni'), (225, 'august'), (300, 'oktober')):
+                    E(f"BEWUCHS.set({{ doy: {d} }})")
+                    view(fx - 6, fy - 6, 45, -10)
+                    s = st()
+                    print('acker', name, json.dumps(s['halm']['rings'])[:300], flush=True)
+                    lib.shot(pg, OUT, 'acker_' + name)
+                    if name == 'juni':
+                        ck('the field stands in June (blades on its tiles)', s['halm']['blades'] > 2000, json.dumps(s['halm']['rings'])[:300])
         if 'leistung' in WANT:
             view(14, 16, math.degrees(math.atan2(2 - 14, 2 - 16)), -14)
             r = J("(() => { const R = GAME.R; R.info.autoReset = false; R.info.reset(); GAME.shot(); const o = { calls: R.info.render.calls, tris: R.info.render.triangles }; R.info.autoReset = true; return o; })()")
