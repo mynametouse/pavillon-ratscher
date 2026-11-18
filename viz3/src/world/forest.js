@@ -466,6 +466,7 @@ export const FOREST = (() => {
     bCan: { value: new THREE.Vector4(0, 0, 1, 1) },
     uSunBox: { value: new THREE.Vector4(0, 0, 16, 0.8) },
   }; // w: share of the canopy shade kept inside the box
+  S.CU = CU; // feat/fotorealismus (foto-wald): the canopy map and the sun's box for the plants and blades of bewuchs/ (bw_halm.js bwLight)
   const VSH = `attribute float aH; uniform vec4 uLod; uniform sampler2D tCan; uniform vec4 bCan, uSunBox; varying float vFade, vShade;`;
   const FSH = `varying float vFade, vShade; float fdHash( vec2 p ) { return fract( sin( dot( p, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); }`;
   function patch(m, key, lodU, cardsMat, solo) {

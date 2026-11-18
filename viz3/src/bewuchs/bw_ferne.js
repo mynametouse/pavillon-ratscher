@@ -22,6 +22,7 @@
 import * as THREE from 'three';
 import { markDirty } from '../core/assets.js';
 import { DETAIL } from '../core/detail.js';
+import { FOREST } from '../world/forest.js';
 import { BWKARTE } from './bw_karte.js';
 import { BWPHAENO } from './bw_phaeno.js';
 import { BWBLUME } from './bw_blume.js';
@@ -50,6 +51,9 @@ export const BWFERNE = (() => {
     // feat/fotorealismus: the crops in the ground – x, y: they fade out between these distances (m; inside the window wherever the
     // camera stands in it), z: their strength (0 from high above), w: the day of the year
     uBwFarC: { value: new THREE.Vector4(RC0, RC1, 0, 150) },
+    // feat/fotorealismus (foto-wald): the woods' floor under its trees – x: the share of the light that reaches it (the class's
+    // row, BWARTEN flaechen[11].schirm: what its plants get, bw_halm.js bwLight)
+    uBwFarW: { value: new THREE.Vector4(1, 0, 0, 0) },
     // per crop (the rows CROP0 … of BWPHAENO): the stand's colour and how much of the soil it covers; the soil's colour; its harvest
     // (the day, ± days per field; 0: not in its harvest days); the stubble's colour and cover
     uBwFc: { value: Array.from({ length: NC }, () => new THREE.Vector4(0.1, 0.2, 0.05, 0)) },
@@ -122,6 +126,9 @@ export const BWFERNE = (() => {
       };
     }
     S.bloom = out;
+    // feat/fotorealismus (foto-wald): the light on a wood's floor (as on its plants)
+    const ws = BWPHAENO.K[WOOD] && BWPHAENO.K[WOOD].schirm;
+    U.uBwFarW.value.x = ws ? ws.sun : 1;
     cropsDay(doy);
     S.job = null; // refill
     S.x0 = NaN;
@@ -190,6 +197,12 @@ export const BWFERNE = (() => {
       U.uBwFarC.value.z = zz;
       markDirty();
     }
+    // (feat/fotorealismus, foto-wald: the forest at the Klinge built since the last fill – the woods' floor again, it carries where)
+    const kl = !!(FOREST && FOREST.ready);
+    if (kl !== S.klinge) {
+      S.klinge = kl;
+      refill();
+    }
     if (!S.bloom.length) return;
     const half = SPAN / 2;
     if (!S.job && Math.abs(x - (S.x0 + half)) < MOVE && Math.abs(y - (S.y0 + half)) < MOVE) return;
@@ -199,7 +212,8 @@ export const BWFERNE = (() => {
       S.job = { x0, y0, row: 0, buf: new Uint8Array(N * N * 8) };
     }
     const J = S.job,
-      t0 = performance.now();
+      t0 = performance.now(),
+      klinge = !!(FOREST && FOREST.ready && FOREST.owns);
     while (J.row < N && performance.now() - t0 < 3) {
       const j = J.row++,
         yy = J.y0 + (j + 0.5) * RES;
@@ -209,6 +223,9 @@ export const BWFERNE = (() => {
           b = S.bloom[code & 31];
         // the class of the place (lower half, for the crops of the fields)
         J.buf[((j + N) * N + i) * 4] = code & 255;
+        // (feat/fotorealismus, foto-wald: green – a wood's floor inside the forest at the Klinge, which has its own light from its
+        // canopy map, world/forest.js S.LIGHT; every other wood's floor is dimmed here)
+        if (klinge && (code & 31) === WOOD && FOREST.owns(xx, yy)) J.buf[((j + N) * N + i) * 4 + 1] = 255;
         if (!b) continue;
         const r = hash(xx, yy);
         let col = b.list[b.list.length - 1][1];
@@ -246,7 +263,7 @@ export const BWFERNE = (() => {
     TM = (DETAIL.tile.mossfloor || 2).toFixed(2);
   // the ground shaders' part (the derivatives first: they must not sit after a branch that differs from pixel to pixel)
   const GLSL = `
-uniform sampler2D tBwFar; uniform vec4 uBwFarB, uBwFarC;
+uniform sampler2D tBwFar; uniform vec4 uBwFarB, uBwFarC, uBwFarW;
 uniform vec4 uBwFc[ ${NC} ], uBwFs[ ${NC} ], uBwFh[ ${NC} ], uBwFt[ ${NC} ];
 float bwFH( vec2 p ) { return fract( sin( dot( p, vec2( 41.3, 289.1 ) ) ) * 45758.5453 ); }
 // the blades' own hash (bw_halm.js bwHash): a field carries here the crop it carries there
@@ -270,7 +287,8 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
     // (the classes are texels of 2 m: read a little beside the point, so a field's edge is no staircase)
     vec2 pw = p + 0.8 * vec2( sin( p.y * 0.83 + 1.7 * sin( p.x * 0.31 ) ), sin( p.x * 0.77 + 1.3 * sin( p.y * 0.37 ) ) );
     ivec2 ti = ivec2( clamp( ( pw - uBwFarB.xy ) * uBwFarB.z, 0.0, 0.9999 ) * ${N}.0 );
-    int code = int( texelFetch( tBwFar, ivec2( ti.x, ti.y + ${N} ), 0 ).r * 255.0 + 0.5 ), cls = code - ( code / 32 ) * 32;
+    vec4 ct = texelFetch( tBwFar, ivec2( ti.x, ti.y + ${N} ), 0 );
+    int code = int( ct.r * 255.0 + 0.5 ), cls = code - ( code / 32 ) * 32;
     if ( cls == ${WOOD} && wW > 0.001 ) {
       // Under trees the aerial photo shows their crowns from above – dark blue-green, as ground a slate floor. Where the maps say
       // wood the ground is what lies under trees: litter with moss and herbs in patches (the detail layers of the forest at the
@@ -281,6 +299,11 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
       vec3 fl = mix( lf * vec3( 0.5, 0.43, 0.36 ), ms * vec3( 0.55, 0.66, 0.46 ), mz * 0.8 ) * ( 0.82 + 0.36 * bwFB( p * 0.31 + 7.0 ) );
       // (the photo's light and dark a little: a clearing stays lighter than the stand)
       fl *= clamp( 0.78 + 2.4 * dot( c, vec3( 0.3, 0.59, 0.11 ) ), 0.78, 1.22 );
+      // feat/fotorealismus (foto-wald): … and it lies in the shade of its trees. Only the forest at the Klinge knows its crowns (its
+      // canopy map dims the light on its ground: ct.g) – every other wood's floor would lie in the open sun between a few trunks.
+      // So here it takes the share of the light its plants get (their row of the class table), as its colour: the ground's light
+      // is not this function's to change.
+      fl *= mix( uBwFarW.x, 1.0, ct.g );
       c = mix( c, fl, wW * 0.92 );
     } else if ( wC > 0.001 && ( cls == 9 || ( cls >= 19 && cls <= 22 ) ) ) {
       int row = bwCrop( cls, p ) - ${BWPHAENO.CROP0};

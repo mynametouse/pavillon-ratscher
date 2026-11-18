@@ -206,11 +206,15 @@ export const BWBLUME = (() => {
   SPT.generateMipmaps = false;
   // per class: 12 entries (species index, cumulative share); a bed class: its templates (−1 − template, cumulative share); rows 32 + t: the
   // plants of template t in today's phase (stage 4: bw_arten.js beetvorlagen)
+  // feat/fotorealismus (foto-wald): columns NMX + k – where entry k of a wood's class stands (its patches): the values of the soft
+  // field (bw_halm.js bwField) it stands between (from, to), which field (0: the grasses' own), its patches' size (× the class's);
+  // column 0 .z: how many times denser than the table's mean of the area the plants stand inside their patches (0: no patches)
   const NMX = 12,
+    MXW = 2 * NMX,
     NTPL = 16;
   const MXT = new THREE.DataTexture(
-    new Float32Array(NMX * (32 + NTPL) * 4),
-    NMX,
+    new Float32Array(MXW * (32 + NTPL) * 4),
+    MXW,
     32 + NTPL,
     THREE.RGBAFormat,
     THREE.FloatType
@@ -231,22 +235,50 @@ export const BWBLUME = (() => {
       m = (CELLINFO[cell] && CELLINFO[cell][2]) || [0.58, 0.59, 0.48];
     return c ? c.map((v, i) => Math.max(0.15, Math.min(1.3, (0.72 * v) / Math.max(0.05, m[i])))) : [1, 1, 1];
   };
+  // feat/fotorealismus (foto-wald): a wood's herb layer stands in patches (BWARTEN flaechen[c].flecken → PATCH[c]: { grass: the
+  // share of the area with its grasses, arten: { id: [share of the area with its patches, their size] } }). Each species has a soft
+  // field of its own (its number from its name: the patches stay where they are whatever else grows there); the grasses' heads
+  // stand where the blades do (field 0, bw_halm.js).
+  let PATCH = {};
+  const fieldNo = id => {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 97;
+    return 1 + (h % 11);
+  };
   function mixes() {
     const D = MXT.image.data;
     D.fill(0);
     for (const [c, m] of Object.entries(MIX)) {
-      const e = Object.entries(m)
+      const P = PATCH[c],
+        A = (P && P.arten) || {},
+        share = id => (!P ? 1 : id.startsWith('gras:') ? P.grass : A[id] ? A[id][0] : 1),
+        carpet = P ? Object.keys(A)[0] : null,
+        // (in a wood: by how dense each stands inside its own patches – the table's plants per m² are the mean of the area –, the
+        // carpet plant first: inside its patches nothing else)
+        e = Object.entries(m)
           .filter(([id, w]) => (IDX[id] !== undefined || /^tpl:\d+$/.test(id)) && w > 0)
-          .sort((p, q) => q[1] - p[1])
+          .map(([id, w]) => [id, w / Math.max(0.01, share(id)), w])
+          .sort((p, q) => (q[0] === carpet ? 1 : 0) - (p[0] === carpet ? 1 : 0) || q[1] - p[1])
           .slice(0, NMX),
-        sum = e.reduce((a, [, w]) => a + w, 0) || 1;
+        sum = e.reduce((a, [, w]) => a + w, 0) || 1,
+        mean = e.reduce((a, q) => a + q[2], 0) || 1;
       let acc = 0;
       e.forEach(([id, w], k) => {
         acc += w / sum;
-        const o = (+c * NMX + k) * 4;
+        const o = (+c * MXW + k) * 4;
         D[o] = id.startsWith('tpl:') ? -1 - +id.slice(4) : IDX[id];
         D[o + 1] = k === e.length - 1 ? 1.0001 : acc;
+        if (P)
+          D.set(
+            id.startsWith('gras:')
+              ? [BWPHAENO.fieldT(1 - P.grass), 2, 0, 1]
+              : A[id]
+                ? [-1, BWPHAENO.fieldT(A[id][0]), fieldNo(id), A[id][1] || 1]
+                : [-1, 2, 0, 1],
+            (+c * MXW + NMX + k) * 4
+          );
       });
+      if (P) D[+c * MXW * 4 + 2] = sum / mean;
     }
     tplRows(S.doy);
     MXT.needsUpdate = true;
@@ -255,7 +287,7 @@ export const BWBLUME = (() => {
   let TPL = [];
   function tplRows(d) {
     const D = MXT.image.data;
-    D.fill(0, 32 * NMX * 4);
+    D.fill(0, 32 * MXW * 4);
     if (!Number.isFinite(d)) return;
     TPL.forEach((t, ti) => {
       if (ti >= NTPL) return;
@@ -269,7 +301,7 @@ export const BWBLUME = (() => {
       let acc = 0;
       e.forEach(([id, w], k) => {
         acc += w / sum;
-        const o = ((32 + ti) * NMX + k) * 4;
+        const o = ((32 + ti) * MXW + k) * 4;
         D[o] = IDX['beet:' + id];
         D[o + 1] = k === e.length - 1 ? 1.0001 : acc;
       });
@@ -466,6 +498,20 @@ export const BWBLUME = (() => {
       if (top.length) M[c] = Object.fromEntries(top);
     }
     if (M[1]) M[18] = M[1]; // the garden's own lawn: the lawn's flowers
+    // feat/fotorealismus (foto-wald): the areas whose herb layer stands in patches (a wood's floor)
+    const PT = {};
+    for (const [c, e] of Object.entries(A.flaechen || {})) {
+      const f = e && e.flecken;
+      if (!f || !(f.groesse_m > 0) || !M[c]) continue;
+      PT[c] = {
+        grass: Number.isFinite(f.gras) ? Math.max(0.05, Math.min(1, f.gras)) : 1,
+        arten: Object.fromEntries(
+          Object.entries(f.arten || {})
+            .filter(([id, v]) => ids.has(id) && Array.isArray(v) && v[0] > 0)
+            .map(([id, v]) => [id, [Math.min(1, v[0]), v[1] > 0 ? v[1] : 1]])
+        ),
+      };
+    }
     // stage 4: the bed classes take their templates (a bed one template, chosen by the place)
     TPL = Object.values(A.beetvorlagen || {});
     const tix = Object.fromEntries(Object.keys(A.beetvorlagen || {}).map((k, i) => [k, i]));
@@ -483,6 +529,8 @@ export const BWBLUME = (() => {
       IDX = Object.fromEntries(SP.map((s, i) => [s.id, i]));
       MIX = M;
       S.MIX = M;
+      PATCH = PT;
+      S.PATCH = PT;
       if (cells) CELLINFO = cells;
       mixes();
       atlas(tex);
@@ -599,9 +647,17 @@ uniform vec4 uBwG, uBwS, uBwM, uBwP, uBwFr;
 uniform float uFlRows;
 uniform vec4 wxSw; uniform vec2 wxSwD; uniform vec2 wxGr;
 attribute vec4 aF; attribute vec3 aQ; attribute vec4 iT; attribute vec4 iU;
-varying vec2 vFlUv; varying vec3 vFlTint;
+varying vec2 vFlUv, vFlL; varying vec4 vFlTint;
 float flHash( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
 ${BWHALM.cropGlsl('flHash')}
+${BWHALM.woodGlsl('flHash')}
+// feat/fotorealismus (foto-wald): does a plant of a wood's floor stand at q? pm: its patches (the mix texture's columns ${NMX} …) –
+// the values of its soft field it stands between, which field, their size; s: the size of the class's patches (m); jit: its own
+// small offset (the patches thin out towards their edge)
+bool flIn( vec2 q, float s, vec4 pm, float jit ) {
+  float f = bwField( q, s * pm.w, vec2( 23.7, 7.1 ) + pm.z * vec2( 17.3, 5.9 ) ) + jit;
+  return f > pm.x && f < pm.y;
+}
 float flCode( vec2 q ) {
   vec2 s = ( q - uBwS.xy ) * uBwS.zw;
   if ( s.x > 0.0 && s.y > 0.0 && s.x < 1.0 && s.y < 1.0 ) return floor( texture( tBwS, s ).r * 255.0 + 0.5 );
@@ -640,7 +696,8 @@ void flPlant( out vec3 P ) {
   float zr = mix( mix( iT.z, iT.w, b.x ), mix( iU.x, iU.y, b.x ), b.y );
   P = vec3( q.x, zr - 0.05, - q.y );
   vFlUv = vec2( 0.0 );
-  vFlTint = vec3( 1.0 );
+  vFlTint = vec4( 1.0, 1.0, 1.0, 0.0 );
+  vFlL = vec2( 1.0 );
   float code = flCode( q );
   int cls = int( mod( code, 32.0 ) );
   if ( cls == 0 || uBwP.z > 0.3 ) return;   // no flowers under snow
@@ -654,12 +711,28 @@ void flPlant( out vec3 P ) {
   float d = distance( q, cm );
   float fade = 1.0 - smoothstep( uBwFr.x, uBwFr.y, d );
   float rS = fract( aF.z + th * 3.3 ), rZ = fract( aF.w + th * 5.7 );
-  if ( rZ > k3.z * mix( k6.x, k6.y, vig ) * Sz * Sz / uBwFr.z * fade * uBwP.y ) return;
+  float use = k3.z * mix( k6.x, k6.y, vig ) * Sz * Sz / uBwFr.z * fade * uBwP.y;
   // the species from the class's mix
   // (a bed class: its template chosen by the place – one bed, one template – then a plant of the template's phase today)
   vec4 m0 = texelFetch( tBwMx, ivec2( 0, cls ), 0 );
   float rP = m0.x < -0.5 ? flHash( floor( q / 3.0 ) + 17.3 ) : rS, mx = -999.0;
-  for ( int k = 0; k < ${NMX}; k++ ) { vec4 m = texelFetch( tBwMx, ivec2( k, cls ), 0 ); if ( m.y <= 0.0 ) break; if ( rP <= m.y ) { mx = m.x; break; } }
+  // feat/fotorealismus (foto-wald): under trees. The stand's light at the plant (a wood's floor: its row's; in the forest at the
+  // Klinge the canopy map's), and a wood's herb layer in patches instead of evenly: inside a patch of its carpet plant (the first
+  // of its mix – bilberry) that one, as dense as it stands there; elsewhere one of the others, if it has a patch of its own here –
+  // so most of the floor stays bare litter. Little grows under closed crowns.
+  vec4 k7 = texelFetch( tBwK, ivec2( 7, cls ), 0 );
+  vec3 wl = bwLight( q, k7.xy, iU.w );
+  float wood = m0.z > 0.0 && k7.z > 0.0 ? 1.0 : 0.0, jit = ( fract( rS * 143.7 + th * 1.9 ) - 0.5 ) * 0.1;
+  int k0 = 0, ke = 0;
+  use *= 1.0 - 0.6 * smoothstep( 0.72, 1.0, wl.z );
+  if ( wood > 0.5 ) {
+    use *= m0.z;
+    if ( flIn( q, k7.z, texelFetch( tBwMx, ivec2( ${NMX}, cls ), 0 ), jit ) ) { use *= m0.y; mx = m0.x; }
+    else { use *= 1.0 - m0.y; k0 = 1; rP = m0.y + rP * ( 1.0 - m0.y ); }
+  }
+  if ( rZ > use ) return;
+  if ( mx < -900.0 ) for ( int k = k0; k < ${NMX}; k++ ) { vec4 m = texelFetch( tBwMx, ivec2( k, cls ), 0 ); if ( m.y <= 0.0 ) break; if ( rP <= m.y ) { mx = m.x; ke = k; break; } }
+  if ( k0 > 0 && ! flIn( q, k7.z, texelFetch( tBwMx, ivec2( ${NMX} + ke, cls ), 0 ), jit ) ) return;
   if ( mx < -0.5 && mx > -900.0 ) {
     int tr = 32 + int( -mx + 0.5 ) - 1;
     float r2 = fract( rS * 7.31 + th );
@@ -685,13 +758,21 @@ void flPlant( out vec3 P ) {
     if ( cell < 0.0 ) return;
   }
   // its height (by its frame and the month); in a short sward not far above the grass – a grass head stands its own height above it
-  float hf = mix( s2.x, s2.y, fract( rZ * 13.7 ) ) * hk, zb = 0.0;
+  // (feat/fotorealismus, foto-wald: under trees smaller the less light there is; in a wood most are small, few reach their full height)
+  float rh = fract( rZ * 13.7 + rS * 71.3 );
+  float hf = mix( s2.x, s2.y, mix( rh, rh * rh, wood ) ) * hk * mix( 0.62, 1.0, min( 1.0, wl.x * 1.5 ) ), zb = 0.0;
   // a grass head: the card's upper part (the head, ~45 % of the drawing) over the sward, its stem down into it
   if ( s2.z > 0.5 ) { zb = max( 0.0, hc - 0.5 * hf ); hf = hc + hf - zb; }
   else if ( hc > 0.02 ) hf = min( hf, max( hc * 2.2, 0.08 ) );
   if ( hf < 0.012 ) return;
   // the colour of a grass head (drawn neutral): the bloom's or the ripe one's
-  vFlTint = texelFetch( tBwSp, ivec2( seed > 0.5 ? 8 : 7, sp ), 0 ).rgb;
+  vFlTint.rgb = texelFetch( tBwSp, ivec2( seed > 0.5 ? 8 : 7, sp ), 0 ).rgb;
+  // feat/fotorealismus (foto-wald): no two plants one green – each a little lighter or darker; in a wood more: dark and light
+  // ones, some yellowing, a few fronds brown with age (a: how much of the drawing's colour turns to that brown)
+  float rc = fract( rS * 191.7 + th * 3.1 ), ry = fract( rS * 357.3 + th * 7.7 );
+  vFlTint.rgb *= mix( vec3( mix( 0.9, 1.08, rc ) ), mix( 0.62, 1.1, rc ) * mix( vec3( 0.9, 1.0, 0.84 ), vec3( 1.13, 1.0, 0.72 ), ry * ry ), wood );
+  vFlTint.a = wood * step( fract( rS * 517.3 + th * 2.3 ), 0.06 ) * mix( 0.55, 0.9, ry );
+  vFlL = wl.xy;
   // the card: as tall as the plant over how high the drawing reaches in its cell, as wide as the drawing (the cell's middle only)
   vec4 cd = texelFetch( tBwSp, ivec2( int( mod( cell, 8.0 ) ), ${NS} + int( cell / 8.0 ) ), 0 );
   float H = hf / max( cd.x, 0.3 ), hw = 0.5 * cd.y * H;
@@ -727,7 +808,7 @@ void flPlant( out vec3 P ) {
     m.userData.leak = true;
     const ringU = { uBwFr: { value: new THREE.Vector4(10, 14, F, 0) } };
     m.onBeforeCompile = sh => {
-      Object.assign(sh.uniforms, BWHALM.U, BWKARTE.U, U, ringU, {
+      Object.assign(sh.uniforms, BWHALM.U, BWKARTE.U, BWHALM.WU, U, ringU, {
         wxSw: WXWIND.U.wxSw,
         wxSwD: WXWIND.U.wxSwD,
         wxGr: WXWIND.UG.wxGr,
@@ -737,19 +818,24 @@ void flPlant( out vec3 P ) {
         sh.vertexShader
           .replace('#include <beginnormal_vertex>', 'vec3 objectNormal = vec3( 0.0, 1.0, 0.0 );')
           .replace('#include <begin_vertex>', 'vec3 transformed; flPlant( transformed );\n  vMapUv = vFlUv;');
-      sh.fragmentShader = ('varying vec3 vFlTint;\n' + sh.fragmentShader)
+      sh.fragmentShader = ('varying vec4 vFlTint; varying vec2 vFlL;\n' + sh.fragmentShader)
         .replace(
           '#include <normal_fragment_begin>',
           'float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;\n  vec3 normal = normalize( vNormal );\n  vec3 nonPerturbedNormal = normal;'
         )
         // the grass heads' colour (their cells are drawn light and neutral; every other plant: 1)
-        .replace('#include <map_fragment>', '#include <map_fragment>\n  diffuseColor.rgb *= vFlTint;')
+        // (feat/fotorealismus, foto-wald: and each plant's own shade of green; an old frond brown)
+        .replace(
+          '#include <map_fragment>',
+          '#include <map_fragment>\n  diffuseColor.rgb *= vFlTint.rgb;\n  diffuseColor.rgb = mix( diffuseColor.rgb, dot( diffuseColor.rgb, vec3( 0.3, 0.59, 0.11 ) ) * vec3( 2.0, 1.0, 0.38 ), vFlTint.a );'
+        )
         // feat/fotorealismus: no mirror of the sky on the plants. Their cards stand upright but are lit as ground (the normal points
         // up), so seen from a walker's height every card is seen at a grazing angle – and reflected the bright sky at the horizon
         // nearly in full: ferns in a wood pale mint, grass heads like milk glass. Leaves scatter; a little sheen stays.
         .replace(
           '#include <lights_fragment_end>',
-          '#include <lights_fragment_end>\n  reflectedLight.indirectSpecular *= 0.12; reflectedLight.directSpecular *= 0.3;'
+          '#include <lights_fragment_end>\n  reflectedLight.indirectSpecular *= 0.12; reflectedLight.directSpecular *= 0.3;\n  ' +
+            BWHALM.woodLight('vFlL') // feat/fotorealismus (foto-wald): under trees
         );
     };
     m.customProgramCacheKey = () => 'bwblume';

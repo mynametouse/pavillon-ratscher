@@ -325,7 +325,10 @@ export const BWPHAENO = (() => {
   //   k 4: cut 3, the shares of the fields cut on 1, 2, 3
   //   k 5: the vigour's factors (bits 5–7 of the map: 0 poor … 7 rich): density at 0 and at 7, height at 0 and at 7
   //   k 6: flowers at vigour 0 and 7; bare spots: the threshold of the shaders' value noise for their share, their size (m)
-  const TW = 7;
+  //   k 7: feat/fotorealismus (foto-wald) – under trees (a wood's floor, BWARTEN flaechen[k].schirm and .flecken): the share of the
+  //        direct sun and of the open sky that reach its plants (1, 1: open ground); its herb layer in patches: the size (m) of the
+  //        shaders' soft field (0: evenly), the field's value above which its grasses stand (below it: bare litter)
+  const TW = 8;
   const KRAFT = { d: [0.4, 1], h: [1, 1], f: [1, 1] };
   // the share of the area bare → the threshold of the value noise (hash on a lattice, smoothstep between) under which it is that share
   const NQ = [
@@ -351,10 +354,38 @@ export const BWPHAENO = (() => {
       }
     return 0.5;
   }
+  // feat/fotorealismus (foto-wald): the soft field a wood's herbs stand in patches by (the shaders' bwField, bw_halm.js: 0.7 of the
+  // value noise at the patches' size and 0.3 of it at about a third of that) – the value under which it lies on the share p of the
+  // area. From 40 000 draws of the same mix (a fixed seed), once.
+  let FQ = null;
+  function fieldT(p) {
+    if (!FQ) {
+      let a = 20261118;
+      const R = () => {
+          a = (a * 16807) % 2147483647;
+          return (a - 1) / 2147483646;
+        },
+        sm = t => t * t * (3 - 2 * t),
+        vn = () => {
+          const u = sm(R()),
+            v = sm(R());
+          return (R() * (1 - u) + R() * u) * (1 - v) + (R() * (1 - u) + R() * u) * v;
+        },
+        n = 40000;
+      FQ = new Float32Array(n);
+      for (let i = 0; i < n; i++) FQ[i] = 0.7 * vn() + 0.3 * vn();
+      FQ.sort();
+    }
+    const q = Math.max(0, Math.min(1, p)) * (FQ.length - 1),
+      i = Math.floor(q);
+    return p <= 0 ? -1 : p >= 1 ? 2 : FQ[i] + (FQ[Math.min(FQ.length - 1, i + 1)] - FQ[i]) * (q - i);
+  }
   function table(doy, out) {
     const T = out || new Float32Array(TW * NC * 4);
     T.fill(0);
     for (let c = 0; c < NC; c++) {
+      // (open ground until the class says otherwise)
+      T.set([1, 1, 0, 0], c * TW * 4 + 28);
       const k = K[c];
       if (!k) continue;
       if (k.crop) {
@@ -389,6 +420,10 @@ export const BWPHAENO = (() => {
       const kr = k.kraft || KRAFT;
       T.set([kr.d[0], kr.d[1], kr.h[0], kr.h[1]], o + 20);
       T.set([kr.f[0], kr.f[1], kahlT(k.kahl || 0), k.fleck || 0.5], o + 24);
+      // feat/fotorealismus (foto-wald): the light under its trees, its herb layer's patches
+      const sc = k.schirm,
+        pt = k.patch;
+      T.set([sc ? sc.sun : 1, sc ? sc.sky : 1, pt ? pt.size : 0, pt ? fieldT(1 - pt.grass) : 0], o + 28);
     }
     return T;
   }
@@ -406,6 +441,9 @@ export const BWPHAENO = (() => {
       if (e.mow && typeof e.mow === 'object') k.mow = e.mow;
       if (e.mow === null) delete k.mow;
       if (e.col && typeof e.col === 'object') k.col = Object.assign({}, k.col, e.col);
+      // feat/fotorealismus (foto-wald)
+      if (e.schirm !== undefined) k.schirm = e.schirm || undefined;
+      if (e.patch !== undefined) k.patch = e.patch || undefined;
       n++;
     }
     return n;
@@ -633,6 +671,13 @@ export const BWPHAENO = (() => {
           h: pair(e.kraft.hoehe, KRAFT.h),
           f: pair(e.kraft.blumen, KRAFT.f),
         };
+      // feat/fotorealismus (foto-wald): under trees – what of the sun and of the sky reaches the plants; the herb layer in patches
+      const unit = (v, d) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : d);
+      delete k.schirm;
+      delete k.patch;
+      if (e.schirm) k.schirm = { sun: unit(e.schirm.sonne, 1), sky: unit(e.schirm.himmel, 1) };
+      if (e.flecken && e.flecken.groesse_m > 0)
+        k.patch = { size: Math.max(2, e.flecken.groesse_m), grass: Math.max(0.05, unit(e.flecken.gras, 1)) };
       // bare spots of their share and size
       if (e.kahl && Number.isFinite(e.kahl.anteil)) {
         k.kahl = Math.max(0, Math.min(0.9, e.kahl.anteil));
@@ -672,6 +717,7 @@ export const BWPHAENO = (() => {
     shapeAt,
     seedK,
     kahlT,
+    fieldT,
     CROPS,
     CROP0,
     cropPhase,
