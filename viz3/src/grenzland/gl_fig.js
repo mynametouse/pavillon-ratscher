@@ -40,7 +40,8 @@ export const GLFIG = (() => {
   const CH = window.CHARMAN || {},
     PM = window.PLAYERMAN || {};
   const U = f => BASE + 'chars/' + f;
-  const fileOf = c => (c.fig === 'player_m' || c.fig === 'player_f' ? PM[c.fig] : CH[c.fig]);
+  // (feat/mehrspieler: any player figure of PLAYERMAN – player_c is Christoph, for the other players of netz/netz_avatar.js)
+  const fileOf = c => (/^player_[a-z]+$/.test(c.fig || '') ? PM[c.fig] : CH[c.fig]);
   const avail = id => {
     const c = GLDATA.CAST[id];
     return !!(c && PM.pclips_m && PM.pclips_f && fileOf(c) && !QS.get('lowfig'));
