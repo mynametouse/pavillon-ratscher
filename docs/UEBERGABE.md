@@ -16,16 +16,23 @@ veröffentlicht.
 
 ## Stand
 
-- **18.11.2026 morgens: der Bewuchs in 3D, alle Stufen (V18z 06:31, V19 07:56, V19a 09:50; Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx,
-  Hilfs-Agenten `bewuchs-daten` und `bewuchs-pflanzen`, `docs/features/bewuchs.md`, Plan `docs/plans/plan_bewuchs.md`).** Module
-  `viz3/src/bewuchs/` (`BEWUCHS`, `BWHALM` Halme in drei Ringen, `BWBLUME` Wildblumen/Grasähren/Beete aus einem Atlas 8 × 16, `BWSTRAUCH`
-  Sträucher (EZ-Tree, zwei Bänder, höchstens acht Formen), `BWFERNE` Blüte in der Ferne (Haken `bwFar` in `world/roads.js`), `BWKARTE`
-  Karten, `BWPHAENO` das Jahr (rein, Unit-Tests; Zeilen 23–30 die Feldfrüchte), `BWARTEN` Artentabelle); Haken in `garden/grass.js` (die
-  alten Büschel aus, `GRASS.*` bleibt). Karten: 895 Zellen unter `viz3/extra/bewuchs-daten/dist/bewuchs/z/` (Klassen 0–22: 13–16 Beete,
-  19–22 Fruchtarten je Feld), Werkzeuge `tools/bewuchs/daten/`; Artentabelle und drei Atlanten (`blumen.png`, `beete.png`, `acker.png`)
-  von `tools/bewuchs/pflanzen/`. Test `viz3/test/bewuchs.py` (Abschnitte rasen, maehen, wiese, ferne, jahr, strauch, beet, acker,
-  leistung). Offen: Sträucher fest ab 1 m, Hüllen für Buchs/Thuja/Hecken, Ähren/Mais aus `acker.png` auf den Feldern (der Atlas ist
-  geladen, aber noch nicht gezeichnet), Suhl-Korridore, ein Höhenmodell jenseits des Quadrats für Gehölze.
+- **18.11.2026: der Bewuchs in 3D, alle Stufen (V18z 06:31, V19 07:56, V19a 09:50, V19b 11:47; Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx, Hilfs-Agenten `bewuchs-daten` und `bewuchs-pflanzen`, `docs/features/bewuchs.md`, Plan
+  `docs/plans/plan_bewuchs.md`). Übergeben an den Fotorealismus-Chat (Falko 18.11. 11:13: „… stopp erstmal hier die Arbeit … und lass den
+  Fotorealismus-Chat den Rest übernehmen“).** Module `viz3/src/bewuchs/` (`BEWUCHS`, `BWHALM` Halme in drei Ringen und die Frucht je Feld
+  (`cropGlsl`), `BWBLUME` Wildblumen/Grasähren/Beete/Feldfrüchte aus einem Atlas 8 × 24 (`blumen.png`, `beete.png`, `acker.png`; am
+  Telefon in der Stufe von `TEXHALF`), `BWSTRAUCH` Sträucher (EZ-Tree, zwei Bänder, höchstens acht Formen, ab 1 m fest über einen
+  `KERN.pushOut`-Anbieter für Körper zu Fuß, das nahe Band mit Schatten), `BWFERNE` Blüte in der Ferne (Haken `bwFar` in `world/roads.js`),
+  `BWKARTE` Karten, `BWPHAENO` das Jahr (rein, Unit-Tests; Zeilen 23–30 die Feldfrüchte, `cropNow`), `BWARTEN` Artentabelle); Haken in
+  `garden/grass.js` (die alten Büschel aus, `GRASS.*` bleibt). Karten: 895 Zellen unter `viz3/extra/bewuchs-daten/dist/bewuchs/z/`
+  (Klassen 0–22: 13–16 Beete, 19–22 Fruchtarten je Feld), Werkzeuge `tools/bewuchs/daten/`; Artentabelle und Atlanten von
+  `tools/bewuchs/pflanzen/`. Test `viz3/test/bewuchs.py` (Abschnitte rasen, maehen, wiese, ferne, jahr, strauch, beet, acker, leistung;
+  vor jeder Version dazu garage, smoke, leistung, memphone). **Offen für den Fotorealismus-Chat:** Hüllen für Buchs, Thuja und
+  geschnittene Hecken (`BWARTEN.straeucher[id].form`: kugel, saeule, hecke – heute EZ-Tree-Formen); die Beete der Dorfleute
+  (`dorf/dorf_life.js` `beds()`, noch Erde mit Klötzchen) aus den Beetvorlagen; Fahrzeuge in Sträuchern (fahren hindurch); Furchen und
+  Bodenfarbe der Äcker nach Phase (`BWARTEN.ackerboden`, heute das Luftbild); Rüben und Sonnenblumen (im Atlas, nicht unter den acht
+  Fruchtzeilen); die Suhl-Korridore (Karten); der Waldboden außerhalb der Klinge (mit `welt-wald`); ein Höhenmodell jenseits des
+  Quadrats für Gehölze; Falkos Eindruck am Laptop und iPhone. Die Hilfs-Agenten sind pausiert (`wip/bewuchs-daten` `7ad5ef58`,
+  `wip/bewuchs-pflanzen` `ff89622b`; Aufträge `docs/plans/auftraege/bewuchs-*.md`).
 - **17.11.2026 spät: die flachen Orte in 3D und Schleusingen nach Ansicht (V18y; Hilfs-Agenten `welt-orte`, `schleusingen-ansicht`).** 18 779 Gebäude in 324 Zellen (`GEB.Z`, neu: Neusetzen auf feinere Kacheln `GEB.Z.rs`), 157 Fassaden und 117 Geschosszahlen über die `FASSADE`-Datei, der Markt (`SAMARKT`). **Offen:** Runde 3 nach Ansicht (Gauben, Fenster, Türen, Ladenfronten – `tools/schleusingen-ansicht/abgleich.py` vergleicht alle Blickpunkte; die Ansichten liegen nur auf dem Chat-Rechner); geparkte Autos für weitere Orte; der Wald der Region (`welt-wald`, Branch `feat/welt-wald`, Straße nach Suhl fertig bis auf einen Test); drei Haustüren in Schleusingen zu Fuß nicht erreichbar (#623, #240, #644 – beim Grenzland-Chat gemeldet).
 - **17.11.2026 abends: Schleusingen grün (V18w; Hilfs-Agent `stadtgruen`, `docs/features/stadtgruen.md`).** Straßenbäume und Gehölze aus dem Luftbild (Farbe, Infrarot) und OSM für die Stadtzone, Gehölzstreifen an der L 1625 südlich von Ratscher; die Jahreszeit über `SGREGELN` – in Ratscher noch aus (`AREAS.ratscher.seasons = false`), bis Ratschers Laubbäume Jahreszeiten haben (macht `welt-wald` nach seiner ersten Lieferung). **Läuft noch** (Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv): `schleusingen-ansicht` (Fassaden über die `FASSADE`-Datei, der Markt `SAMARKT`), `welt-orte` (die flachen Orte, zuerst die Straße nach Suhl), `welt-wald` (Wald und Bäume der Region); die privaten Ansichten von der Straße liegen nur auf dem Chat-Rechner und nie im Repo.
 - **14.11.2026 morgens: Schleusingen von innen (V18q; Hilfs-Agent `schleusingen-innen`, `docs/features/schleusingen-innen.md`).** `SINNEN` gibt `HAEUSER` die Türen der Stadt als zweite Quelle (`HAEUSER.addSource`, Nummern ab 900000); die Räume baut der Baukasten der Zombie-Nacht über `ZIPLAN.source` (Datensätze aus `SIPLAN.record`, Treppenhaus und Wohnungen über `post`, Räume mit `room.own`), die Läden zeichnet `LINNEN.drawPlan`. 500 der 787 Gebäude (338 ganze Häuser, 158 mit Treppenhaus, 4 Läden). **Offen:** die Wohnungen über den Läden, nur 4 der 14 Schilder mit passender Ladenart, 11 schmale hohe Häuser und 28 ohne Grundriss bleiben zu (der Baukasten braucht 1,45 m Flur für seine Treppe), Öffnungszeiten angenommen. **Als Nächstes:** Suhl mit dem Suhl-Chat.
