@@ -180,12 +180,22 @@ export const BWBLUME = (() => {
   //   x 1  its bloom's cell (−1: none) and height share today, its leaves' cell (−1: none) and height share today
   //   x 2  its height (m): min, max
   //   x 3–6  its plants in four groups, ¾ … ¼ of its spread earlier and ¼ … ¾ later than the table: the cell of their frame today (−1:
-  //        nothing above the grass), its height share, the share of the plants in it (the others in leaf), the day it began (for the cuts)
+  //        nothing above the grass), its height share (negative: a seed or fruit frame), the share of the plants in it (the others in leaf),
+  //        the day it began (for the cuts)
+  //   x 7, 8  the colour its bloom and its seed frames are multiplied with (1 – the grass heads are drawn light and neutral: their
+  //        colour over the cell's); x 2 .z: 1 for a grass head (it stands its height above the sward)
   // rows NS … NS + 7: the atlas' cells (cell n at (n % 8, NS + n / 8)): how high the drawing reaches in its cell, how wide it is
   const NS = 64, // species at most
     NOFF = 4,
     OFF = [-0.75, -0.25, 0.25, 0.75];
-  const SPT = new THREE.DataTexture(new Float32Array(8 * (NS + 8) * 4), 8, NS + 8, THREE.RGBAFormat, THREE.FloatType);
+  const SPW = 10;
+  const SPT = new THREE.DataTexture(
+    new Float32Array(SPW * (NS + 8) * 4),
+    SPW,
+    NS + 8,
+    THREE.RGBAFormat,
+    THREE.FloatType
+  );
   SPT.magFilter = SPT.minFilter = THREE.NearestFilter;
   SPT.generateMipmaps = false;
   // per class: 12 entries (species index, cumulative share)
@@ -193,9 +203,20 @@ export const BWBLUME = (() => {
   const MXT = new THREE.DataTexture(new Float32Array(NMX * 32 * 4), NMX, 32, THREE.RGBAFormat, THREE.FloatType);
   MXT.magFilter = MXT.minFilter = THREE.NearestFilter;
   MXT.generateMipmaps = false;
-  // the atlas' cells: [oben, breite] – how high the plant reaches in its cell (the card is height / oben tall), how much of the width it
-  // covers (the card that wide, the cell's middle only: less drawn for nothing); the stand-in's drawings end ~0.86 up
-  let CELLINFO = Array.from({ length: 64 }, () => [0.86, 1]);
+  // the atlas' cells: [oben, breite, mean colour (linear rgb)] – how high the plant reaches in its cell (the card is height / oben tall),
+  // how much of the width it covers (the card that wide, the cell's middle only: less drawn for nothing); the stand-in's end ~0.86 up
+  let CELLINFO = Array.from({ length: 64 }, () => [0.86, 1, null]);
+  const lin = v => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  const hexLin = h =>
+    typeof h === 'string' && /^#[0-9a-f]{6}$/i.test(h)
+      ? [1, 3, 5].map(i => lin(parseInt(h.slice(i, i + 2), 16) / 255))
+      : null;
+  // the tint of a grass head: its colour over the cell's mean colour (both linear), kept in reason
+  const tintOf = (hex, cell) => {
+    const c = hexLin(hex),
+      m = (CELLINFO[cell] && CELLINFO[cell][2]) || [0.58, 0.59, 0.48];
+    return c ? c.map((v, i) => Math.max(0.15, Math.min(1.6, v / Math.max(0.05, m[i])))) : [1, 1, 1];
+  };
   function mixes() {
     const D = MXT.image.data;
     D.fill(0);
@@ -241,7 +262,7 @@ export const BWBLUME = (() => {
     const m = monthOf(doy);
     SP.forEach((s, i) => {
       if (i >= NS) return;
-      const o = i * 8 * 4,
+      const o = i * SPW * 4,
         F = s.frames || {},
         wu = s.wuchs ? s.wuchs[m] : 1,
         hk = (fr, f) => (f.k || 1) * (LIVING[fr] ? wu : 1),
@@ -249,17 +270,22 @@ export const BWBLUME = (() => {
         lf = F.blatt;
       D.set([s.bt, s.nst, s.nbb, s.bloomLen * 0.6], o);
       D.set([bl ? bl.cell : -1, bl ? hk('bluete', bl) : 0, lf ? lf.cell : -1, lf ? hk('blatt', lf) : 0], o + 4);
-      D.set([s.h[0], s.h[1], 0, 0], o + 8);
+      D.set([s.h[0], s.h[1], s.grass ? 1 : 0, 0], o + 8);
       for (let k = 0; k < NOFF; k++) {
         const p = phaseAt(s, doy, k),
           f = p && F[p[0]],
-          q = o + (3 + k) * 4;
+          q = o + (3 + k) * 4,
+          seed = p && (p[0] === 'samen' || p[0] === 'frucht');
         if (!f || !(f.cell >= 0)) D.set([-1, 0, 0, 9999], q);
-        else D.set([f.cell, hk(p[0], f), p[1], p[2] + OFF[k] * (s.streu || 0)], q);
+        else D.set([f.cell, hk(p[0], f) * (seed ? -1 : 1), p[1], p[2] + OFF[k] * (s.streu || 0)], q);
       }
+      const tb = s.grass && F.bluete ? tintOf(s.col, F.bluete.cell) : [1, 1, 1],
+        ts = s.grass && F.samen ? tintOf(s.colSeed, F.samen.cell) : [1, 1, 1];
+      D.set([...tb, 1], o + 28);
+      D.set([...ts, 1], o + 32);
     });
     for (let n = 0; n < 64; n++) {
-      const o = ((NS + (n >> 3)) * 8 + (n & 7)) * 4,
+      const o = ((NS + (n >> 3)) * SPW + (n & 7)) * 4,
         c = CELLINFO[n] || [0.97, 1];
       D.set([c[0], c[1], 0, 0], o);
     }
@@ -296,10 +322,47 @@ export const BWBLUME = (() => {
       });
     }
     if (!L.length) return 0;
+    // the grasses' heads (ear or panicle): green in flower from aehre.von to bis, ripe and straw coloured to reif_bis, standing ueber_m
+    // above the sward; anteil of the tufts carries one – as plants per m² of the area: its share of the grass × anteil × HEADS
+    const HEADS = 14;
+    for (const [gid, g] of Object.entries(A.gras || {})) {
+      const a = g && g.aehre;
+      if (!a || !Array.isArray(a.zelle) || !Number.isFinite(a.von) || !Number.isFinite(a.bis)) continue;
+      const rz = Array.isArray(a.reif_zelle) ? a.reif_zelle : a.zelle,
+        um = Array.isArray(a.ueber_m) ? a.ueber_m : [0.1, 0.3];
+      L.push({
+        id: 'gras:' + gid,
+        grass: true,
+        anteil: Number.isFinite(a.anteil) ? a.anteil : 0.25,
+        h: [um[0], um[1]],
+        frames: { bluete: { cell: a.zelle[1] * 8 + a.zelle[0], k: 1 }, samen: { cell: rz[1] * 8 + rz[0], k: 1 } },
+        jahr: [
+          ['bluete', a.von, a.bis],
+          ['samen', a.bis + 1, Number.isFinite(a.reif_bis) ? a.reif_bis : a.bis + 30],
+        ],
+        streu: 6,
+        wuchs: null,
+        bt: 999, // cut: gone (the aftermath carries few)
+        nst: -1,
+        nbb: 366,
+        bloomLen: a.bis - a.von + 1,
+        col: a.farbe,
+        colSeed: a.reif_farbe || a.farbe,
+      });
+    }
     const M = {};
     const ids = new Set(L.slice(0, NS).map(s => s.id));
     for (const [c, e] of Object.entries(A.flaechen || {})) {
+      const heads = Object.entries((e && e.gras) || {})
+        .map(([gid, sh]) => {
+          const s = L.find(q => q.id === 'gras:' + gid);
+          return s && sh > 0
+            ? ['gras:' + gid, sh * s.anteil * HEADS * (Number.isFinite(e.dichte) ? e.dichte : 1)]
+            : null;
+        })
+        .filter(Boolean);
       const top = Object.entries((e && e.blumen) || {})
+        .concat(heads)
         .filter(([id, v]) => ids.has(id) && v > 0)
         .sort((a, b) => b[1] - a[1])
         .slice(0, NMX);
@@ -337,6 +400,7 @@ export const BWBLUME = (() => {
             C[n] = [
               Number.isFinite(z.oben) ? Math.max(0.3, Math.min(1, z.oben)) : 0.97,
               Number.isFinite(z.breite) ? Math.max(0.2, Math.min(1, z.breite)) : 1,
+              hexLin(z.farbe),
             ];
         }
         return C;
@@ -399,7 +463,7 @@ export const BWBLUME = (() => {
 uniform vec4 uBwG, uBwS, uBwM, uBwP, uBwFr;
 uniform vec4 wxSw; uniform vec2 wxSwD; uniform vec2 wxGr;
 attribute vec4 aF; attribute vec3 aQ; attribute vec4 iT; attribute vec4 iU;
-varying vec2 vFlUv;
+varying vec2 vFlUv; varying vec3 vFlTint;
 float flHash( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
 float flCode( vec2 q ) {
   vec2 s = ( q - uBwS.xy ) * uBwS.zw;
@@ -439,6 +503,7 @@ void flPlant( out vec3 P ) {
   float zr = mix( mix( iT.z, iT.w, b.x ), mix( iU.x, iU.y, b.x ), b.y );
   P = vec3( q.x, zr - 0.05, - q.y );
   vFlUv = vec2( 0.0 );
+  vFlTint = vec3( 1.0 );
   float code = flCode( q );
   int cls = int( mod( code, 32.0 ) );
   if ( cls == 0 || uBwP.z > 0.3 ) return;   // no flowers under snow
@@ -457,9 +522,9 @@ void flPlant( out vec3 P ) {
   vec4 s0 = texelFetch( tBwSp, ivec2( 0, sp ), 0 ), s1 = texelFetch( tBwSp, ivec2( 1, sp ), 0 ), s2 = texelFetch( tBwSp, ivec2( 2, sp ), 0 );
   // this plant's group (earlier or later than the table by the species' spread) and its frame today; a share of them in leaf
   vec4 ph = texelFetch( tBwSp, ivec2( 3 + int( fract( rS * 29.3 + th ) * 3.999 ), sp ), 0 );
-  float cell = ph.x, hk = ph.y;
+  float cell = ph.x, hk = abs( ph.y ), seed = step( ph.y, -1e-6 );
   if ( cell < 0.0 ) return;
-  if ( fract( rS * 17.1 ) > ph.z ) { if ( s1.z < 0.0 || abs( cell - s1.z ) < 0.5 ) return; cell = s1.z; hk = s1.w; }
+  if ( fract( rS * 17.1 ) > ph.z ) { if ( s1.z < 0.0 || abs( cell - s1.z ) < 0.5 ) return; cell = s1.z; hk = s1.w; seed = 0.0; }
   // cut since its phase began: nothing for a few days, then its leaves, its flowers again after a while (if its season allows)
   float hc, last = flLast( cls, q, hc );
   if ( last > 1.5 && ph.w <= last ) {
@@ -467,12 +532,16 @@ void flPlant( out vec3 P ) {
     if ( ds < s0.x ) return;
     if ( s0.y >= 0.0 && last + s0.y <= s0.z && ds >= s0.y && ds < s0.y + s0.w ) { cell = s1.x; hk = s1.y; }
     else { cell = s1.z; hk = s1.w; }
+    seed = 0.0;
     if ( cell < 0.0 ) return;
   }
-  // its height (by its frame and the month); in a short sward not far above the grass
+  // its height (by its frame and the month); in a short sward not far above the grass – a grass head stands its own height above it
   float hf = mix( s2.x, s2.y, fract( rZ * 13.7 ) ) * hk;
-  hf = min( hf, max( hc * 2.2, 0.08 ) );
+  if ( s2.z > 0.5 ) hf += hc;
+  else hf = min( hf, max( hc * 2.2, 0.08 ) );
   if ( hf < 0.012 ) return;
+  // the colour of a grass head (drawn neutral): the bloom's or the ripe one's
+  vFlTint = texelFetch( tBwSp, ivec2( seed > 0.5 ? 8 : 7, sp ), 0 ).rgb;
   // the card: as tall as the plant over how high the drawing reaches in its cell, as wide as the drawing (the cell's middle only)
   vec4 cd = texelFetch( tBwSp, ivec2( int( mod( cell, 8.0 ) ), ${NS} + int( cell / 8.0 ) ), 0 );
   float H = hf / max( cd.x, 0.3 ), hw = 0.5 * cd.y * H;
@@ -517,10 +586,13 @@ void flPlant( out vec3 P ) {
         sh.vertexShader
           .replace('#include <beginnormal_vertex>', 'vec3 objectNormal = vec3( 0.0, 1.0, 0.0 );')
           .replace('#include <begin_vertex>', 'vec3 transformed; flPlant( transformed );\n  vMapUv = vFlUv;');
-      sh.fragmentShader = sh.fragmentShader.replace(
-        '#include <normal_fragment_begin>',
-        'float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;\n  vec3 normal = normalize( vNormal );\n  vec3 nonPerturbedNormal = normal;'
-      );
+      sh.fragmentShader = ('varying vec3 vFlTint;\n' + sh.fragmentShader)
+        .replace(
+          '#include <normal_fragment_begin>',
+          'float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;\n  vec3 normal = normalize( vNormal );\n  vec3 nonPerturbedNormal = normal;'
+        )
+        // the grass heads' colour (their cells are drawn light and neutral; every other plant: 1)
+        .replace('#include <map_fragment>', '#include <map_fragment>\n  diffuseColor.rgb *= vFlTint;');
     };
     m.customProgramCacheKey = () => 'bwblume';
     m.userData.ringU = ringU;
