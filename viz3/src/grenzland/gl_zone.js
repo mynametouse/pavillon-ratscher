@@ -474,17 +474,8 @@ export const GLZONE = (() => {
             y = q.y + ny * lat + (R() - 0.5) * 0.2,
             g = 0.75 + R() * 0.45,
             dry = R() < 0.35;
-          list.push([
-            x,
-            y,
-            q.z + 0.005 + (Math.abs(lat) < 0.4 ? 0.0 : 0.0),
-            R() * 6.28,
-            0.7 + R() * 0.7,
-            1,
-            g * (dry ? 1.25 : 1),
-            g,
-            g * (dry ? 0.8 : 1),
-          ]);
+          // (x, y, turn, size, height, r, g, b – the height of the ground comes when the cell is built, deckeZelle)
+          list.push([x, y, R() * 6.28, 0.7 + R() * 0.7, 1, g * (dry ? 1.25 : 1), g, g * (dry ? 0.8 : 1)]);
         }
       }
     }
@@ -522,20 +513,9 @@ export const GLZONE = (() => {
         for (let k = 0; k < nk; k++) {
           const px = x + (R() - 0.5) * step,
             py = y + (R() - 0.5) * step,
-            z = WELT.heightAt(px, py),
-            h = z !== undefined ? z : nq.z,
             g = 0.75 + R() * 0.4;
-          list.push([
-            px,
-            py,
-            h - 0.02,
-            R() * 6.28,
-            0.8 + R() * 0.9,
-            0.8 + R() * 0.5,
-            g,
-            g * (0.9 + R() * 0.15),
-            g * 0.9,
-          ]);
+          // (x, y, turn, size, height, r, g, b – as the grass)
+          list.push([px, py, R() * 6.28, 0.8 + R() * 0.9, 0.8 + R() * 0.5, g, g * (0.9 + R() * 0.15), g * 0.9]);
         }
       }
     decke(buschelGeo('heide'), list, 70, 'grenzland-zone-heide');
@@ -1830,7 +1810,7 @@ export const GLZONE = (() => {
       need: [...S.bedarf],
       welt: WELT.state ? WELT.state() : null,
     }),
-    debug: { bauen, abbauen, laden, want, platz, BK },
+    debug: { bauen, abbauen, laden, want, platz, BK, roh: (x, y) => (S.hAt ? S.hAt(x, y) : undefined) },
   });
 })();
 window.GLZONE = GLZONE;
