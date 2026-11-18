@@ -14,7 +14,7 @@ import { ANISO, b64bytes, cellsOf, GI, LM, markDirty, SV, VEG, vegReady, whenLoa
 import { COL } from '../core/geo.js';
 import { STREAM } from '../garden/stream_geo.js';
 import { FAKEENV, FIELD_GLSL, FIELDU, GEO_REAL, GEOGU, S0 } from '../garden/env.js';
-import { TREES, treeLeafLevels } from '../garden/trees.js';
+import { LAUB, TREES, treeLeafLevels } from '../garden/trees.js'; // feat/fotorealismus (foto-baeume): LAUB
 import { GRADE } from '../render/render.js';
 import { P, rebuildGrids } from '../game/walkable.js';
 import { go } from '../game/player.js';
@@ -643,6 +643,7 @@ export const RATSCHER = (() => {
     R.setRenderTarget(rt);
     R.setClearColor(0x3f4b30, 0);
     R.clear();
+    LAUB.U.lfT.value.z = 1; // feat/fotorealismus (foto-baeume): the leaf pictures as they are – the cards' shader gives each kind its month
     const info = [];
     Ks.forEach((K, i) => {
       const sc = new THREE.Scene();
@@ -666,6 +667,7 @@ export const RATSCHER = (() => {
     });
     rt.scissorTest = false;
     rt.viewport.set(0, 0, C * TK.length, C);
+    LAUB.U.lfT.value.z = 0; // feat/fotorealismus (foto-baeume)
     R.setRenderTarget(pt);
     R.setClearColor(pc, pa);
     SV.on.value = sv;
@@ -692,8 +694,12 @@ export const RATSCHER = (() => {
       } // V16c: the forest at the Klinge draws these itself (world/forest.js)
       if (LATE.ROADS.edge(x, y) > -0.4) continue; // V16b: a crown measured over a road stands beside it, not in it
       const hs = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
+      // feat/fotorealismus (foto-baeume): h2, h3 – two more random numbers of the tree's place. hs chooses the kind, so within a kind it
+      // spans a quarter: every oak stood turned within the same 90° and had nearly the same brightness
+      const h2 = Math.abs(Math.sin(x * 39.3468 + y * 11.1351) * 24634.6345) % 1,
+        h3 = Math.abs(Math.sin(x * 73.1567 + y * 27.6192) * 13758.2531) % 1;
       const kind = con ? 4 : Math.floor(hs * 4),
-        it = { x, y, z: hAt(x, y), h, r, kind, hs, con, inst: [], col: -1 }; // inst: [instanced mesh, index] (world/treehit.js tips it)
+        it = { x, y, z: hAt(x, y), h, r, kind, hs, h2, h3, con, inst: [], col: -1 }; // inst: [instanced mesh, index] (world/treehit.js tips it)
       (Math.hypot(x - 2, y - 2) < 100 ? mid : far).push(it);
       S.treeXY.push(x, y, h);
     }
@@ -728,10 +734,10 @@ export const RATSCHER = (() => {
         list.forEach((it, i) => {
           const sy = it.h / K.H,
             sx = THREE.MathUtils.clamp(it.r / K.R, sy * 0.75, sy * 1.3);
-          q.setFromAxisAngle(up, it.hs * 6.283);
+          q.setFromAxisAngle(up, it.h2 * 6.283); // feat/fotorealismus (foto-baeume): any turn (was hs: a quarter turn per kind)
           m4.compose(V(it.x, it.y, it.z - 0.1), q, sv.set(sx, sy, sx));
           ib.setMatrixAt(i, m4);
-          il.setColorAt(i, new THREE.Color(1, 1, 1).multiplyScalar(0.84 + it.hs * 0.2));
+          il.setColorAt(i, new THREE.Color(1, 1, 1).multiplyScalar(0.86 + it.h3 * 0.16)); // feat/fotorealismus (foto-baeume): hue and brightness per tree in the leaf shader (LAUB)
           it.inst.push([ib, i]);
           if (Math.hypot(it.x - 2, it.y - 2) < 90) {
             COL.push([it.x - 0.3, it.x + 0.3, it.y - 0.3, it.y + 0.3, 0, 4, 'tree']);
@@ -768,25 +774,44 @@ export const RATSCHER = (() => {
       roughness: 1,
       envMapIntensity: 0.55,
     });
+    // feat/fotorealismus (foto-baeume): the far cards' share of the leaves' light (garden/trees.js LAUB) – a hue and a brightness per
+    // tree from its place (vGt; also for the town's cards, which share this material; lfK.w its strength), no mirror of the sun
+    // either, each crown's normal turned a little its own way, and against the light the upper crown lets some sun through
     mat.onBeforeCompile = sh => {
+      sh.uniforms.lfK = LAUB.U.lfK; // feat/fotorealismus (foto-baeume)
       sh.vertexShader =
-        'attribute float aKind;\n' +
+        'attribute float aKind; varying vec2 vGt;\n' +
+        LAUB.GLSL_HASH + // feat/fotorealismus (foto-baeume)
         sh.vertexShader.replace(
           '#include <uv_vertex>',
-          `#include <uv_vertex>\n vMapUv.x = ( aKind + vMapUv.x ) / ${nK.toFixed(1)};`
+          `#include <uv_vertex>\n vMapUv.x = ( aKind + vMapUv.x ) / ${nK.toFixed(1)};
+#ifdef USE_INSTANCING
+  vGt = lfHash( instanceMatrix[ 3 ].xz );
+#else
+  vGt = vec2( 0.5 );
+#endif`
         );
-      sh.fragmentShader = sh.fragmentShader
+      sh.fragmentShader = ('uniform vec4 lfK; varying vec2 vGt;\n' + LAUB.GLSL_VARY + sh.fragmentShader)
+        .replace('#include <color_fragment>', '#include <color_fragment>\n diffuseColor.rgb *= lfVary( vGt, lfK.w );') // feat/fotorealismus (foto-baeume): the tree's own hue
         .replace(
           '#include <normal_fragment_begin>',
           // feat/fotorealismus: a crown is no flat ground – its normal half up, half towards whoever looks at it (as a ball of leaves
           // seen from there): lit from the front by a low sun it glows, against the light it stands dark; before, the upward normal
           // alone left every far wood pale cream at dusk, whichever way one looked. And its lower part in its own shade.
-          '#include <normal_fragment_begin>\n normal = normalize( vNormal ); { vec3 gtC = normalize( vViewPosition ), gtS = gtC - normal * dot( gtC, normal ); normal = normalize( normal * 0.72 + gtS / max( length( gtS ), 0.001 ) * 0.7 ); } nonPerturbedNormal = normal;'
+          '#include <normal_fragment_begin>\n normal = normalize( vNormal ); { vec3 gtC = normalize( vViewPosition ), gtS = gtC - normal * dot( gtC, normal ); normal = normalize( normal * 0.72 + gtS / max( length( gtS ), 0.001 ) * 0.7 ); }' +
+            ' normal = normalize( normal + vec3( vGt.x - 0.5, 0.0, vGt.y - 0.5 ) * 0.5 ); nonPerturbedNormal = normal;' // feat/fotorealismus (foto-baeume): each crown catches the light a little differently
         )
         .replace(
           '#include <lights_fragment_end>',
-          '#include <lights_fragment_end>\n reflectedLight.directDiffuse *= 0.82; reflectedLight.indirectDiffuse *= 0.6; reflectedLight.indirectSpecular *= 0.25;' +
-            ' { float gtH = mix( 0.6, 1.0, smoothstep( 0.12, 0.8, vMapUv.y ) ); reflectedLight.directDiffuse *= gtH; reflectedLight.indirectDiffuse *= gtH; }' // feat/fotorealismus
+          '#include <lights_fragment_end>\n reflectedLight.directDiffuse *= 0.82; reflectedLight.indirectDiffuse *= 0.6; reflectedLight.indirectSpecular *= 0.16; reflectedLight.directSpecular *= 0.16;' + // feat/fotorealismus (foto-baeume): 0.16 – the leaves' sheen (LAUB), the sun's lobe too
+            ' { float gtH = mix( 0.6, 1.0, smoothstep( 0.12, 0.8, vMapUv.y ) ); reflectedLight.directDiffuse *= gtH; reflectedLight.indirectDiffuse *= gtH; }' + // feat/fotorealismus
+            // feat/fotorealismus (foto-baeume): looking towards the sun the upper crown glows (light through the leaves)
+            `
+#if NUM_DIR_LIGHTS > 0
+  { float gtB = max( 0.0, - dot( directionalLights[ 0 ].direction, normalize( vViewPosition ) ) );
+    reflectedLight.directDiffuse += directLight.color * RECIPROCAL_PI * material.diffuseColor * vec3( 0.95, 1.2, 0.55 ) *
+      ( gtB * gtB * smoothstep( 0.3, 0.95, vMapUv.y ) * 0.45 ); }
+#endif`
         );
     }; // V16c: a crown shades itself – the flat cards were pale
     mat.customProgramCacheKey = () => 'geotree';
@@ -811,17 +836,19 @@ export const RATSCHER = (() => {
           sy = it.h / I.h,
           wv = THREE.MathUtils.clamp(it.r * 2, it.h * asp * 0.75, it.h * asp * 1.35),
           sx = wv / I.w;
-        q.setFromAxisAngle(up, it.hs * 6.283);
-        m4.compose(V(it.x, it.y, it.z - 0.3), q, sv.set(sx, sy, sx));
+        // feat/fotorealismus (foto-baeume): any turn (the card seen from behind is its mirror image; was hs: a quarter turn per kind),
+        // and each card stretched a little its own way (± 6 % in height, ± 10 % in width) – no two alike in a row
+        q.setFromAxisAngle(up, it.h2 * 6.283);
+        m4.compose(
+          V(it.x, it.y, it.z - 0.3),
+          q,
+          sv.set(sx * (0.9 + 0.2 * it.h3), sy * (0.94 + 0.12 * it.h2), sx * (0.9 + 0.2 * it.h3))
+        );
         im.setMatrixAt(i, m4);
         it.inst.push([im, i]);
         kk[i] = it.kind;
-        im.setColorAt(
-          i,
-          new THREE.Color(1, 1, 1)
-            .offsetHSL((it.hs - 0.5) * 0.04, 0, (it.hs - 0.5) * 0.1)
-            .multiplyScalar(it.kind === 4 ? 0.82 : 1)
-        );
+        // (the hue and brightness of each tree: the cards' shader, from the tree's place – offsetHSL on white changed nothing)
+        im.setColorAt(i, new THREE.Color(1, 1, 1).multiplyScalar(it.kind === 4 ? 0.82 : 1));
       });
       im.castShadow = false;
       im.receiveShadow = false;

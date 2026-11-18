@@ -1,0 +1,4 @@
+# feat/fotorealismus (helper foto-baeume): the leaves' light and colour – no mirror of sky and sun on leaf cards, light through the
+# leaf, darker inside the crown, each tree its own hue, the aspen green until October (garden/trees.js LAUB, the far cards in
+# world/ratscher.js); viz3/test/foto_baeume.py. Loads with ?kaskade=an like the other photorealism tests.
+foto_baeume

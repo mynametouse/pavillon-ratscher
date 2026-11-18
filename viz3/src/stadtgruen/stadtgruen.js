@@ -97,6 +97,7 @@ export const STADTGRUEN = (() => {
       preset: 'Aspen Medium',
       seed: 808,
       tint: 0xc6d496,
+      sommer: true, // feat/fotorealismus (foto-baeume): the aspen's leaf picture is October's gold – its summer green (eztree/textures.js); the autumn comes from the crown's colour as for the other kinds
       mod: o => {
         o.bark.type = 'birch';
         o.leaves.size = 2.1;

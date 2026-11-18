@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Tree } from '../eztree/tree.js';
+import { getSummerLeafTexture } from '../eztree/textures.js'; // feat/fotorealismus (foto-baeume)
 import { BASE, QS, R, rnd, rr, scene, V } from '../core/head.js';
 import {
   cellsOf,
@@ -26,7 +27,8 @@ const TREE_KINDS = [
   { key: 'oakA', preset: 'Oak Medium', seed: 1201, tint: 0xbfd09a },
   { key: 'oakB', preset: 'Oak Medium', seed: 77, tint: 0xc8d3a0 },
   { key: 'ash', preset: 'Ash Medium', seed: 4242, tint: 0xc7d6a2 },
-  { key: 'aspen', preset: 'Aspen Medium', seed: 911, tint: 0xd2d9a6 },
+  // (sommer: the leaf picture of this kind in its summer green – eztree/textures.js; without it the aspen's is October's gold)
+  { key: 'aspen', preset: 'Aspen Medium', seed: 911, tint: 0xd2d9a6, sommer: true },
   {
     key: 'apple',
     preset: 'Oak Small',
@@ -59,12 +61,247 @@ const TREE_KINDS = [
   },
   // the hedge belts round the garden (photos 26.10.2026): hazel, field maple, elder – two bush shapes
   { key: 'bushA', preset: 'Bush 1', seed: 501, tint: 0xc9d39a },
-  { key: 'bushB', preset: 'Bush 2', seed: 77, tint: 0xd3d49a },
+  { key: 'bushB', preset: 'Bush 2', seed: 77, tint: 0xd3d49a, sommer: true },
 ];
 const leafDepthMats = {};
 // feat/wetter: each leaf material built here is handed to TREEHOOK.leaf right after it is made, before anything draws it (the weather's
 // sway and snow – wetter/wx_wind.js; the garden planner's own kinds then share the garden's programs)
 export const TREEHOOK = { leaf: null };
+// ---------------- feat/fotorealismus (foto-baeume): the leaves' light and colour (LAUB) ----------------
+// What a walker saw until 18.11.2026 (the lime at the Anger: pale grey-green in the afternoon, cream-white in the evening sun, light and
+// dark cards side by side like cut-outs; every fourth far tree orange in June):
+//   – a leaf card is lit as a piece of its crown (its normal points out of the crown), and three's standard light gives such a surface
+//     a mirror lobe: seen at a grazing angle it reflects the sky (indirectSpecular) and the sun (directSpecular) many times stronger
+//     than its own green – a pale veil by day, cream in a low warm sun. Leaves only shimmer: of both lobes a sheen stays (lfK.x);
+//   – the material is double-sided, and three turns the normal round on the back of a card: half the cards of a crown were lit as if
+//     they hung on its other side – light and dark at random, no round crown. Both faces keep the crown's normal now, with a share
+//     of the card's own face in it (lfT.y) so that twigs still differ;
+//   – light through the leaf (lfK.y): a card seen from its unlit face glows yellow-green where the sun reaches it – the sunny side
+//     from below, the rim of the crown against the light; and the sun gets a little round the crown, which is no solid ball (lfT.x);
+//   – darker inside (lfK.z): every corner of every card knows how deep in the crown it sits (aLfIn, crownDepth below) – less of the
+//     sky and of the sun gets there. Baked into the far trees' pictures as well (they are drawn with this material);
+//   – no two trees alike (lfK.w): a hue and a brightness from the tree's place (its instance matrix – nothing to store, and whoever
+//     draws these crowns gets it: garden, world, town, garden planner);
+//   – the month: the aspen's leaf picture shows the gold of October; kinds built with `sommer: true` get the same leaves in summer
+//     green (eztree/textures.js getSummerLeafTexture).
+// No program more: all leaf materials get the same patch and the same cache key. No texture, no draw call, no triangle; one byte per
+// card corner (aLfIn).
+export const LAUB = (() => {
+  const ON = [0.16, 1, 1, 1, 0.3, 0.3, 0.9, 0.03, 0.12, 1];
+  const U = {
+    lfK: { value: new THREE.Vector4(ON[0], ON[1], ON[2], ON[3]) },
+    // z: 1 while a far tree's picture is drawn (world/ratscher.js treeAtlas: the picture without a tree's own colour), w: the sky's
+    // light on the leaves as a share of the image light – whatever a material's envMapIntensity says: that was turned down to 0.35–0.6
+    // against the mirror, and took the sky's light on the leaves' own green with it (a crown against the light stood black)
+    lfT: { value: new THREE.Vector4(ON[4], ON[5], 0, ON[6]) },
+    // x: the white in a leaf's colour – what its surface reflects of any light, whatever its green (as a share of the light; the leaf
+    // pictures hold the pigment only: hardly any blue, a third of the red a leaf in a photo has – emerald under a blue sky), y: light
+    // bounced between the leaves of a sunlit crown (a share of the sun, in the leaves' colour), z: the leaves' light altogether
+    lfC: { value: new THREE.Vector4(ON[7], ON[8], ON[9], 0) },
+  };
+  // a tree's own colour from two random numbers of its place (h.x: hue, yellow-green … blue-green; h.y: brightness), k its strength
+  const GLSL_VARY = `vec3 lfVary( vec2 h, float k ) { float a = ( h.x * 2.0 - 1.0 ) * k, b = ( h.y * 2.0 - 1.0 ) * k;
+  return vec3( 1.0 + 0.22 * a, 1.0 + 0.04 * a, 1.0 - 0.2 * a ) * ( 1.0 + 0.18 * b ); }\n`;
+  const GLSL_HASH = `vec2 lfHash( vec2 p ) { p = floor( p * 4.0 ); return fract( sin( vec2( dot( p, vec2( 12.9898, 78.233 ) ), dot( p, vec2( 39.3468, 11.1351 ) ) ) ) * 43758.5453 ); }\n`;
+  const S = { n: 0, ms: 0, crowns: 0 };
+  // a leaf material (MeshStandardMaterial with a leaf picture, after patchSV, before the wind's hook). o.thru: how much light its
+  // leaves let through (1 a broad leaf, less for needles); o.crown === false: the cards' normals are their own (a model that was not
+  // built here) – no crown's normal, no depth
+  function patch(m, o = {}) {
+    if (!m || m.userData.laub) return m;
+    m.userData.laub = true;
+    const crown = o.crown !== false,
+      u = { value: new THREE.Vector4(o.thru ?? 1, 0, 0, 0) },
+      prev = m.onBeforeCompile,
+      key = m.customProgramCacheKey;
+    m.onBeforeCompile = (sh, r) => {
+      if (prev) prev.call(m, sh, r);
+      const F = sh.fragmentShader;
+      if (!F.includes('#include <lights_fragment_end>') || !F.includes('#include <normal_fragment_begin>')) return;
+      sh.uniforms.lfK = U.lfK;
+      sh.uniforms.lfT = U.lfT;
+      sh.uniforms.lfC = U.lfC;
+      sh.uniforms.lfM = u;
+      sh.vertexShader =
+        (crown ? 'attribute float aLfIn;\n' : '') +
+        'varying vec3 vLf;\n' +
+        GLSL_HASH +
+        sh.vertexShader.replace(
+          '#include <uv_vertex>',
+          `#include <uv_vertex>
+  { vec2 lfH = vec2( 0.5 );
+#ifdef USE_INSTANCING
+    lfH = lfHash( instanceMatrix[ 3 ].xz );
+#endif
+    vLf = vec3( ${crown ? 'aLfIn' : '0.0'}, lfH ); }`
+        );
+      sh.fragmentShader =
+        'uniform vec4 lfK, lfT, lfC, lfM; varying vec3 vLf; vec3 lfNc, lfNf;\n' +
+        GLSL_VARY +
+        F.replace(
+          '#include <color_fragment>',
+          `#include <color_fragment>
+  diffuseColor.rgb = diffuseColor.rgb * lfVary( vLf.yz, lfK.w * ( 1.0 - lfT.z ) ) + lfC.x;`
+        )
+          .replace(
+            '#include <normal_fragment_begin>',
+            `#include <normal_fragment_begin>
+  lfNf = normalize( cross( dFdx( vViewPosition ), dFdy( vViewPosition ) ) );   // the card's own face, towards the eye
+  ${
+    crown
+      ? `lfNc = normalize( vNormal );   // the crown's normal, the same on both faces of a card
+  normal = normalize( lfNc + lfNf * ( lfT.y * sign( dot( lfNf, lfNc ) ) ) ); nonPerturbedNormal = normal;`
+      : 'lfNc = normal;'
+  }`
+          )
+          .replace(
+            '#include <lights_fragment_end>',
+            `#include <lights_fragment_end>
+  { float lfIn = vLf.x * lfK.z;
+    reflectedLight.indirectSpecular *= lfK.x * ( 1.0 - 0.7 * lfIn );
+    reflectedLight.directSpecular *= lfK.x * ( 1.0 - 0.7 * lfIn );
+    reflectedLight.indirectDiffuse *= 1.0 - 0.45 * lfIn;
+    reflectedLight.directDiffuse *= 1.0 - 0.5 * lfIn;
+#ifdef USE_ENVMAP
+    if ( lfT.w > 0.0 ) reflectedLight.indirectDiffuse *= lfT.w / max( envMapIntensity, 0.2 );
+#endif
+#if NUM_DIR_LIGHTS > 0
+    // the sun is the only directional light; directLight still holds it, shadows and all (three's light loop ends with it)
+    vec3 lfL = directionalLights[ 0 ].direction, lfA = RECIPROCAL_PI * material.diffuseColor;
+    float lfSun = dot( lfNc, lfL ),
+      lfWrap = max( 0.0, ( lfSun + lfT.x ) / ( 1.0 + lfT.x ) ) - max( lfSun, 0.0 ),
+      // (how much sun gets to a card on the crown's far side: through the crown, the longer the way the less – only its rim glows)
+      lfThru = max( 0.0, - dot( lfL, lfNf ) ) * ${crown ? 'exp( 3.5 * min( lfSun - 0.1, 0.0 ) )' : '1.0'};
+    reflectedLight.directDiffuse += directLight.color * lfA * ( 1.0 - 0.75 * lfIn ) *
+      ( lfWrap * 0.7 + lfThru * lfK.y * lfM.x * vec3( 1.0, 1.15, 0.5 ) );
+    // light bounced between the leaves: a crown in the sun is light on its shaded side and inside too (a third of it also where
+    // the crown's own leaves shade a card – the shadow map cannot tell them from a house)
+    reflectedLight.directDiffuse += ( 0.35 * directionalLights[ 0 ].color + 0.65 * directLight.color ) * lfA *
+      ( lfC.y * material.diffuseColor / max( material.diffuseColor.g, 0.02 ) );
+#endif
+    reflectedLight.directDiffuse *= lfC.z; reflectedLight.indirectDiffuse *= lfC.z;
+  }`
+          );
+    };
+    m.customProgramCacheKey = () => (key ? key.call(m) : '') + (crown ? '|laub' : '|laubk');
+    S.n++;
+    return m;
+  }
+  // how deep in its crown each corner of each leaf card sits (0 at the hull … 1 in the core): the corners counted in a coarse grid
+  // (softened), then from every corner the way out through it – along the crown's normal and straight up, where the sky is – with
+  // the leaves on the way summed up. One byte per corner; thinCards() and clones carry it along. ~10 ms for a crown of 5000 cards.
+  function crownDepth(lg, G = 14, K = 0.35) {
+    const t0 = performance.now(),
+      P = lg.attributes.position.array,
+      N = lg.attributes.normal.array,
+      n = P.length / 3,
+      b = lg.boundingBox,
+      x0 = b.min.x,
+      y0 = b.min.y,
+      z0 = b.min.z,
+      ix = G / (b.max.x - x0 || 1),
+      iy = G / (b.max.y - y0 || 1),
+      iz = G / (b.max.z - z0 || 1),
+      D = new Float32Array(G * G * G),
+      T = new Float32Array(G * G * G),
+      G1 = G - 1;
+    for (let v = 0; v < n; v++)
+      D[
+        Math.min(G1, Math.floor((P[v * 3] - x0) * ix)) +
+          G *
+            (Math.min(G1, Math.floor((P[v * 3 + 1] - y0) * iy)) +
+              G * Math.min(G1, Math.floor((P[v * 3 + 2] - z0) * iz)))
+      ]++;
+    for (let ax = 0; ax < 3; ax++) {
+      const st = ax === 0 ? 1 : ax === 1 ? G : G * G;
+      for (let i = 0; i < D.length; i++) {
+        const q = Math.floor(i / st) % G;
+        T[i] = 0.5 * D[i] + 0.25 * (q > 0 ? D[i - st] : 0) + 0.25 * (q < G1 ? D[i + st] : 0);
+      }
+      D.set(T);
+    }
+    // the unit: how dense the leaves stand where a leaf stands (the count's mean weighted by itself)
+    let s = 0,
+      w = 0;
+    for (let i = 0; i < D.length; i++) {
+      s += D[i] * D[i];
+      w += D[i];
+    }
+    const k = (-K * 0.5 * w) / (s || 1),
+      out = new Uint8Array(n);
+    for (let v = 0; v < n; v++) {
+      const x = (P[v * 3] - x0) * ix,
+        y = (P[v * 3 + 1] - y0) * iy,
+        z = (P[v * 3 + 2] - z0) * iz;
+      let sum = 0;
+      for (let d = 0; d < 2; d++) {
+        const dx = d ? 0 : N[v * 3],
+          dy = d ? 1 : N[v * 3 + 1],
+          dz = d ? 0 : N[v * 3 + 2];
+        for (let t = 1; t <= 2 * G; t++) {
+          const i = Math.floor(x + dx * t),
+            j = Math.floor(y + dy * t),
+            l = Math.floor(z + dz * t);
+          if (i < 0 || j < 0 || l < 0 || i > G1 || j > G1 || l > G1) break;
+          sum += D[i + G * (j + G * l)];
+        }
+      }
+      out[v] = Math.round(255 * (1 - Math.exp(k * sum)));
+    }
+    lg.setAttribute('aLfIn', new THREE.BufferAttribute(out, 1, true));
+    S.ms += performance.now() - t0;
+    S.crowns++;
+    return out;
+  }
+  return {
+    U,
+    S,
+    patch,
+    crownDepth,
+    GLSL_VARY,
+    GLSL_HASH,
+    // tests and tuning: LAUB.set({ sheen, thru, inside, vary, wrap, card, sky, white, bounce, gain }); LAUB.set({ on: false }) lights the leaves
+    // as three does without this (the mirror lobes whole, no light through, no depth, no colour of its own; the crown's normal stays)
+    set(o = {}) {
+      const k = U.lfK.value,
+        t = U.lfT.value;
+      if (o.on === false) {
+        k.set(1, 0, 0, 0);
+        t.x = 0;
+        t.w = 0;
+        U.lfC.value.set(0, 0, 1, 0);
+      }
+      if (o.on === true) {
+        k.set(ON[0], ON[1], ON[2], ON[3]);
+        t.x = ON[4];
+        t.y = ON[5];
+        t.w = ON[6];
+        U.lfC.value.set(ON[7], ON[8], ON[9], 0);
+      }
+      if (o.sheen != null) k.x = o.sheen;
+      if (o.thru != null) k.y = o.thru;
+      if (o.inside != null) k.z = o.inside;
+      if (o.vary != null) k.w = o.vary;
+      if (o.wrap != null) t.x = o.wrap;
+      if (o.card != null) t.y = o.card;
+      if (o.sky != null) t.w = o.sky;
+      if (o.white != null) U.lfC.value.x = o.white;
+      if (o.bounce != null) U.lfC.value.y = o.bounce;
+      if (o.gain != null) U.lfC.value.z = o.gain;
+      markDirty();
+      return LAUB.state();
+    },
+    state: () => ({
+      n: S.n,
+      crowns: S.crowns,
+      ms: Math.round(S.ms),
+      k: U.lfK.value.toArray().map(v => +v.toFixed(3)),
+      t: U.lfT.value.toArray().map(v => +v.toFixed(3)),
+      c: U.lfC.value.toArray().map(v => +v.toFixed(3)),
+    }),
+  };
+})();
+window.LAUB = LAUB;
 export function buildTreeKind(k) {
   const t = new Tree();
   t.loadPreset(k.preset);
@@ -93,6 +330,7 @@ export function buildTreeKind(k) {
     }
     lg.setAttribute('normal', new THREE.BufferAttribute(n, 3));
   }
+  LAUB.crownDepth(lg); // feat/fotorealismus (foto-baeume): how deep in the crown each card corner sits
   const om = t.branchesMesh.material,
     ol = t.leavesMesh.material;
   const bark = patchSV(
@@ -109,7 +347,7 @@ export function buildTreeKind(k) {
   const leaf = patchSV(
     new THREE.MeshStandardMaterial({
       color: ol.color,
-      map: ol.map,
+      map: k.sommer ? getSummerLeafTexture(t.options.leaves.type) : ol.map, // feat/fotorealismus (foto-baeume)
       alphaTest: Math.max(0.35, ol.alphaTest || 0.5),
       side: THREE.DoubleSide,
       roughness: 0.8,
@@ -117,11 +355,13 @@ export function buildTreeKind(k) {
     })
   );
   leaf.userData.leaf = true;
+  // feat/fotorealismus (foto-baeume): the leaves' light (needles let little through)
+  LAUB.patch(leaf, { thru: /pine/i.test(t.options.leaves.type) ? 0.35 : 1 });
   if (TREEHOOK.leaf) TREEHOOK.leaf(leaf); // feat/wetter
   if (!leafDepthMats[k.preset])
     leafDepthMats[k.preset] = new THREE.MeshDepthMaterial({
       depthPacking: THREE.RGBADepthPacking,
-      map: ol.map,
+      map: leaf.map,
       alphaTest: leaf.alphaTest,
     });
   // V17g: the bark's levels of detail (barkLOD): without the twigs from 30 m, only the stem and the main boughs from 110 m
