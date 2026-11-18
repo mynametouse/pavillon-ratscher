@@ -112,6 +112,10 @@ export const ROADS = (() => {
       if ( k > 0.0 ) { vec3 d = gr < 0.02 ? rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ) : gr > 0.98 ? rdTex( ${LY('lawn')}, p, uDTile.x, dx, dy ) : mix( rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ), rdTex( ${LY('lawn')}, p, uDTile.x, dx, dy ), gr );
         c *= mix( vec3( 1.0 ), clamp( d, 0.2, 2.5 ), 0.8 * k ); }
       return bwFar( p, c * ( 1.0 + n ), dist ); }   // feat/bewuchs
+    // feat/fotorealismus (foto-boeden): one stone in every cell of a lattice – somewhere in it, of some size and brightness, soft at its
+    // rim (hard-edged cells of single pixels were drawn out into a weave by the picture's anti-aliasing)
+    float rdGrit( vec2 q ) { float h = rdH( floor( q ) ); vec2 o = fract( q ) - 0.5 - ( vec2( fract( h * 17.3 ), fract( h * 91.7 ) ) - 0.5 ) * 0.5;
+      return ( 1.0 - smoothstep( 0.04, 0.16 + 0.1 * fract( h * 7.1 ), dot( o, o ) ) ) * fract( h * 43.7 ); }
     // dark joints of a pattern of cells (q in cells, jw the joint's half width in cells, fw the pixel's footprint in cells)
     float rdJoint( vec2 q, float jw, float fw ) { vec2 f = fract( q ); float d = min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) );
       return ( 1.0 - smoothstep( jw, jw + max( fw, 0.02 ), d ) ) * ( 1.0 - smoothstep( 0.25, 0.7, fw ) ); }
@@ -157,14 +161,14 @@ export const ROADS = (() => {
         // asphalt: newly laid dark and bluish, weathered lighter and warmer (the binder worn off the stones), lighter and darker after
         // the photo's brightness, in soft clouds of 4 m (faint on a well-kept road); texture up close
         r = mix( vec3( 0.074, 0.077, 0.084 ), vec3( 0.108, 0.105, 0.098 ), old ) * clamp( lum / 0.12, 0.72, 1.45 ) * ( 1.0 + ( 0.12 + 0.2 * old ) * ( n1 - 0.5 ) ) * ( 0.94 + 0.12 * n2 ) * mix( vec3( 1.0 + 0.3 * n3 ), clamp( rdTex( ${LY('asphalt')}, p, uDTile.z, dx, dy ), 0.3, 2.2 ), kd );
-        // feat/fotorealismus (foto-boeden): the aggregate up close – light stones in the dark binder: cells of 8 mm, the product of two
-        // lattices turned against each other (no grid shows, few bright stones), gone where a pixel is wider than a stone; a soft
-        // mottling of 2 cm, 4 cm and 14 cm carries the grain on to ~20 m, each gone where a pixel is wider than it. (pf: the place
-        // modulo 64 m – the hash keeps its digits far out.) gk: how much of the grain shows – less where the wheels have polished
-        // the surface and on newer asphalt (a patch); sl: bitumen lines (seams, sealed cracks), laid over the grain at the end
+        // feat/fotorealismus (foto-boeden): the aggregate up close – light stones in the dark binder, one in every cell of two lattices
+        // of 8 mm and 1 cm turned against each other (no grid shows), gone where a pixel is wider than a stone; a soft mottling of
+        // 2 cm, 4 cm and 14 cm carries the grain on to ~20 m, each gone where a pixel is wider than it. Subtle: a few percent.
+        // (pf: the place modulo 64 m – the hash keeps its digits far out.) gk: how much of the grain shows – less where the wheels
+        // have polished the surface and on newer asphalt (a patch); sl: bitumen lines (seams, sealed cracks), laid over the grain
         vec2 pf = fract( p / 64.0 ) * 64.0;
-        float ag = ( rdH( floor( pf * 131.0 ) ) * rdH( floor( mat2( 0.8, -0.6, 0.6, 0.8 ) * pf * 97.0 ) + 7.0 ) - 0.25 ) * ( 1.0 - smoothstep( 0.003, 0.01, fwp ) ) * 1.3
-          + ( rdN( pf * 47.0 ) - 0.5 ) * ( 1.0 - smoothstep( 0.009, 0.03, fwp ) ) * 0.34;
+        float ag = ( rdGrit( pf * 131.0 ) + rdGrit( mat2( 0.8, -0.6, 0.6, 0.8 ) * pf * 97.0 + 3.3 ) - 0.37 ) * ( 1.0 - smoothstep( 0.003, 0.01, fwp ) ) * 0.2
+          + ( rdN( pf * 47.0 ) - 0.5 ) * ( 1.0 - smoothstep( 0.009, 0.03, fwp ) ) * 0.2;
         float gk = 1.0, sl = 0.0;
         if ( kind < 5.5 ) {
           // driven on: the wheel paths a little darker and smoother (polished, rubber), broad and soft – clearest on the main roads,
@@ -204,10 +208,10 @@ export const ROADS = (() => {
             float dt = abs( fract( u / 12.0 + 0.37 ) - 0.5 ) * 12.0 + 0.12 * sin( lat * 2.3 + floor( u / 12.0 + 0.37 ) );
             ln = max( ln, rdLine( abs( dt ), 0.012, max( fwp, 0.01 ) ) * step( rdH( vec2( floor( u / 12.0 + 0.37 ), 3.0 ) + floor( p / 120.0 ) ), 0.55 ) );
             sl = max( sl, ln * cr * 0.85 ); } }
-        r *= 1.0 + ( ag * ( 0.55 + 0.6 * old ) + n3 * 0.34 * kd ) * gk;
+        r *= 1.0 + ( ag * ( 0.55 + 0.6 * old ) + n3 * 0.3 * kd ) * gk;
         r = mix( r, vec3( 0.029, 0.029, 0.031 ), sl );
         // feat/fotorealismus (foto-boeden): sand and dust washed to the side lie on the last decimetres of an open edge
-        r = mix( r, vec3( 0.185, 0.168, 0.137 ) * ( 0.75 + 0.5 * n2 ), ( 1.0 - smoothstep( 0.02, 0.2 + 0.3 * eb, eN ) ) * ( 0.22 + 0.4 * old ) * clamp( 0.8 + 1.6 * n3 + 2.0 * ag, 0.0, 1.5 ) * oEdge ); }
+        r = mix( r, vec3( 0.185, 0.168, 0.137 ) * ( 0.75 + 0.5 * n2 ), ( 1.0 - smoothstep( 0.02, 0.2 + 0.3 * eb, eN ) ) * ( 0.22 + 0.4 * old ) * clamp( 0.8 + 1.6 * n3 + 4.0 * ag, 0.0, 1.5 ) * oEdge ); }
       else if ( surf < 1.5 ) { r = vec3( 0.32, 0.315, 0.3 ) * ( 0.88 + 0.2 * n1 ) * ( 1.0 + 0.22 * n3 ); }   // concrete
       else if ( surf < 2.5 ) {   // paving stones: small blocks
         vec2 bq = fract( p * vec2( 4.0, 6.0 ) ); float jt = ( 1.0 - smoothstep( 0.0, 0.08, min( min( bq.x, 1.0 - bq.x ), min( bq.y, 1.0 - bq.y ) ) ) ) * fine;
