@@ -386,6 +386,7 @@ export const GRENZLAND = (() => {
     GLUMGEBUNG.stop();
     if (window.GLRUF) window.GLRUF.stop(); // grenzland-ruf
     for (const m of [window.GLLINIEN, window.GLRAST]) if (m && m.stop) m.stop(); // grenzland-strasse
+    if (window.GLZONE && window.GLZONE.stop) window.GLZONE.stop(); // grenzland-zone
     GLHANDY.stop();
     if (window.GLKAP2) window.GLKAP2.stop(); // grenzland-kapitel2
     GLCOCKPIT.stop();
@@ -474,6 +475,7 @@ export const GRENZLAND = (() => {
     GLUMGEBUNG.tick(dt);
     if (window.GLRUF) window.GLRUF.tick(dt); // grenzland-ruf
     for (const m of [window.GLLINIEN, window.GLRAST]) if (m && m.tick) m.tick(dt); // grenzland-strasse
+    if (window.GLZONE && window.GLZONE.tick) window.GLZONE.tick(dt); // grenzland-zone
     GLHANDY.tick(dt);
     if (window.GLKAP2) window.GLKAP2.tick(dt); // grenzland-kapitel2
     GLCOCKPIT.tick(dt);
