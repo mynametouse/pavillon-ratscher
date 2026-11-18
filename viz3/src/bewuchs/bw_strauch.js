@@ -10,7 +10,8 @@
 //   BWSTRAUCH.fromArten(A)      the species and the plans of the areas
 //   BWSTRAUCH.tick(x, y, doy)   the shrubs round the camera (again when it moved > 20 m, the day changed, a cell or a kind came)
 //   BWSTRAUCH.set({ on, r, cap }) on/off, radius (m), most shrubs drawn
-//   BWSTRAUCH.state()           { on, sp, cells, near, drawn, kinds, queue, dots, err }
+//   BWSTRAUCH.state()           { on, sp, cells, near, drawn, kinds, queue, dots, solid, pushes, err }
+// Solid from 1 m (the plan: like the trunks, a lower one is walked through): a body on foot goes round them (KERN.pushOut, below).
 import * as THREE from 'three';
 import { scene, V } from '../core/head.js';
 import { markDirty, plain } from '../core/assets.js';
@@ -32,6 +33,7 @@ export const BWSTRAUCH = (() => {
     drawn: 0,
     near: 0,
     nDots: 0,
+    pushes: 0,
     err: '',
     doy: NaN,
     cx: NaN,
@@ -111,11 +113,19 @@ export const BWSTRAUCH = (() => {
       [0, 1.5],
       [0, -1.5],
     ].some(([dx, dy]) => (codeIn(c, x + dx, y + dy) & 31) !== k);
+  // not on the modelled site (its planner's plants), nor anywhere the walker has the garden's own colliders (game/walkable.js: inside
+  // |x| ≤ 50, |y| ≤ 55 it asks KERN.pushOut nothing – a shrub there could not be solid: the brook's modelled banks, the neighbours' edges)
+  const off = (x, y) => {
+    const SITE = BWKARTE.SITE;
+    return (
+      (x > SITE.x0 - 2 && x < SITE.x1 + 2 && y > SITE.y0 - 2 && y < SITE.y1 + 2) ||
+      (Math.abs(x) < 51 && Math.abs(y) < 56)
+    );
+  };
   function place(c) {
     const out = [],
       x0 = c.i * CELL,
-      y0 = c.j * CELL,
-      SITE = BWKARTE.SITE;
+      y0 = c.j * CELL;
     for (const [k, P] of Object.entries(S.plans)) {
       const cls = +k,
         grp = P.how === 'gruppen',
@@ -128,7 +138,7 @@ export const BWSTRAUCH = (() => {
             y = gy + hash(gy, gx, cls + 3.1) * g,
             code = codeIn(c, x, y);
           if ((code & 31) !== cls) continue;
-          if (x > SITE.x0 - 2 && x < SITE.x1 + 2 && y > SITE.y0 - 2 && y < SITE.y1 + 2) continue;
+          if (off(x, y)) continue;
           if (P.how === 'rand' && !edge(c, x, y, cls)) continue;
           const vig = (code >> 5) / 7,
             n = grp ? 2 + Math.floor(hash(x, y, 9.1) * 4) : 1;
@@ -137,7 +147,7 @@ export const BWSTRAUCH = (() => {
               rr = m ? 1.2 + hash(y, x, m + 5.5) * 2.4 : 0,
               px = x + Math.cos(a) * rr,
               py = y + Math.sin(a) * rr;
-            if (m && (codeIn(c, px, py) & 31) !== cls) continue;
+            if (m && ((codeIn(c, px, py) & 31) !== cls || off(px, py))) continue;
             const r = hash(px, py, 4.4);
             let si = P.list[P.list.length - 1][1];
             for (const [cw, s] of P.list)
@@ -160,8 +170,63 @@ export const BWSTRAUCH = (() => {
         }
     }
     c.shrubs = new Float32Array(out);
+    solidOf(c);
     S.dirty = true;
   }
+  // ---------- solid from 1 m ----------
+  // each placed cell keeps its shrubs of 1 m and more in a 4 m hash ([x, y, r] each; r: 0.55 of the crown's radius – the outer twigs give
+  // way). KERN.pushOut moves a body on foot (r ≤ 0.5 m: the walker, the dog, the animals, people on foot) out of them; vehicles (r ≥ 0.85 m)
+  // still pass as before. The question goes on to the next provider (undefined): the walls and trunks come after the shrubs.
+  const SOLID = 1,
+    CG = 4,
+    gk = (i, j) => (i + 32768) * 65536 + (j + 32768);
+  function solidOf(c) {
+    const G = new Map(),
+      A = c.shrubs;
+    let n = 0;
+    for (let i = 0; i + 5 < A.length; i += 6) {
+      if (!(A[i + 3] >= SOLID)) continue;
+      const k = gk(Math.floor(A[i] / CG), Math.floor(A[i + 1] / CG));
+      let L = G.get(k);
+      if (!L) G.set(k, (L = []));
+      L.push(A[i], A[i + 1], Math.min(1.6, Math.max(0.2, A[i + 4] * 0.275)));
+      n++;
+    }
+    c.solid = G;
+    c.nSolid = n;
+  }
+  function pushOut(p, r) {
+    if (!(r <= 0.5) || !S.on || !S.G || !S.G.visible) return undefined;
+    const gi = Math.floor(p[0] / CG),
+      gj = Math.floor(p[1] / CG);
+    let ck = '',
+      G = null;
+    for (let i = gi - 1; i <= gi + 1; i++)
+      for (let j = gj - 1; j <= gj + 1; j++) {
+        // the map cell this 4 m square lies in (a shrub near a cell's edge is found from the other side too)
+        const k = Math.floor((i * CG) / CELL) + '_' + Math.floor((j * CG) / CELL);
+        if (k !== ck) {
+          ck = k;
+          const c = BWKARTE.cells.get(k);
+          G = c && c.solid;
+        }
+        const L = G && G.get(gk(i, j));
+        if (!L) continue;
+        for (let n = 0; n < L.length; n += 3) {
+          const ex = p[0] - L[n],
+            ey = p[1] - L[n + 1],
+            rr = r + L[n + 2],
+            d2 = ex * ex + ey * ey;
+          if (d2 >= rr * rr || d2 < 1e-10) continue;
+          const d = Math.sqrt(d2);
+          p[0] = L[n] + (ex / d) * rr;
+          p[1] = L[n + 1] + (ey / d) * rr;
+          S.pushes++;
+        }
+      }
+    return undefined;
+  }
+  KERN.provide('pushOut', pushOut, 20);
   // ---------- the kinds: ez-tree, one built per call ----------
   function cardCentres(geo, n) {
     const idx = geo.index ? geo.index.array : null,
@@ -529,11 +594,13 @@ export const BWSTRAUCH = (() => {
   }
   const state = () => {
     let cells = 0,
-      placed = 0;
+      placed = 0,
+      solid = 0;
     for (const c of BWKARTE.cells.values())
       if (c.shrubs) {
         cells++;
         placed += c.shrubs.length / 6;
+        solid += c.nSolid || 0;
       }
     return {
       on: S.on,
@@ -546,11 +613,13 @@ export const BWSTRAUCH = (() => {
       failed: Object.keys(S.kinds).filter(k => S.kinds[k] === 'fail'),
       queue: S.queue.length,
       dots: S.nDots,
+      solid,
+      pushes: S.pushes,
       R: S.R,
       err: S.err,
     };
   };
-  Object.assign(S, { fromArten, tick, set, state, leaves, dots });
+  Object.assign(S, { fromArten, tick, set, state, leaves, dots, pushOut });
   return S;
 })();
 if (typeof window !== 'undefined') window.BWSTRAUCH = BWSTRAUCH;

@@ -61,7 +61,11 @@ wobei es trotzdem im Browser weiterhin flüssig laufen können soll.“ Gewählt
   sie in die Nähe kommen; je Art zwei Bänder (nah die volle Rinde und Krone, weiter die ausgedünnten); das Laub nach Monat über die
   Instanzfarbe (Austrieb, grün, Herbstfarbe, fallend, kahl – dann ohne Krone; immergrün und trockenes Laub der Hainbuchenhecke bleiben);
   Blüten und Beeren als Punkte auf den Blattkarten bis 70 m (vor dem Laub und im Winter an den Zweigen). Reichweite nach Grafikstufe (150 /
-  110 / 70 m, höchstens 1600 / 1000 / 450 Sträucher). Noch offen: fest ab 1 m, eigene Hüllen für Buchs, Thuja und Hecken, Schatten nah.
+  110 / 70 m, höchstens 1600 / 1000 / 450 Sträucher), ausgeblendet ab 160 m über dem Boden unter der Kamera. **Fest ab 1 m** (seit V19b):
+  je Zelle die Sträucher ab 1 m in einem 4-m-Raster (Kreis 0,55 des Kronenradius – die äußeren Zweige geben nach); `KERN.pushOut`
+  (Anbieter mit Vorrang 20, gibt die Frage weiter, damit Wände und Stämme danach kommen) schiebt Körper zu Fuß (Radius bis 0,5 m: Figur,
+  Hund, Tiere, Leute zu Fuß) heraus, Fahrzeuge (ab 0,85 m) fahren wie bisher hindurch; im Kasten des Gartens (|x| ≤ 50, |y| ≤ 55 m, dort
+  fragt `game/walkable.js` nur die eigenen Hindernisse) stehen keine. Noch offen: eigene Hüllen für Buchs, Thuja und Hecken, Schatten nah.
 - **Die ganze Welt** (Teile b und c von `bewuchs-daten`): die Strecken nach Schleusingen und Kloster Veßra und beide Orte, die Welt-Kacheln
   (Block B, Veßra) und die flachen Orte – 895 Zellen im Index (28 MB, je 4 × 4 Zellen unter 1,5 MB); geladen wird nur, was um die Kamera liegt.
 
@@ -75,6 +79,15 @@ wobei es trotzdem im Browser weiterhin flüssig laufen können soll.“ Gewählt
   nach den Anteilen (`BWARTEN.feldfruechte`, Landkreis Hildburghausen); ihre Zeile der Tabelle hat die Höhe heute (in der Phase
   gewachsen), Farbe, Deckung, Halm (Mais breit, Getreide schmal), Ähren; geerntet Feld für Feld über die Erntetage, Stoppel bis zum
   Pflug, Winterungen im Herbst neu gesät.
+- **Die Pflanzen der Früchte** (Stufe 5b, seit V19b, `BWBLUME`): der Ackeratlas von `bewuchs-pflanzen` (`acker.png`, 37 Zellen) als
+  drittes Bild der Leinwand (8 × 24 Zellen; am Telefon in der Texturstufe der übrigen Bilder, `TEXHALF`); jede Frucht eine Art
+  `acker:<id>` mit einem Bild je Phase (`bilder` oder die Ähren `kopf.zellen`) – Mais jung, Streckung, Fahne, Kolben, reif, trocken;
+  Kartoffel jung, Kraut, Blüte, welk, krautfrei; Raps Rosette, Knospe, Blüte, Schoten, reif; Kleegras in der Blüte; die Ähren von Weizen,
+  Gerste und Triticale –, so hoch wie die Frucht heute (`BWPHAENO.cropNow`); in den Erntetagen das Bild der Phase davor, bis ihr Feld
+  geschnitten ist (dieselben Felder wie die Halme), danach beim Mais die Stoppeln, sonst nichts. Der Blumen-Shader wählt die Frucht des
+  Felds wie die Halme (`BWHALM.cropGlsl`: ein Text für beide); Pflanzen je m² aus k3.z der Fruchtzeile (Mais 9, Kartoffel 4, Raps 12,
+  Kleegras 6, Getreide 4 Ähren – gedeckelt durch die Plätze der Kacheln), Mais und Kartoffeln in Reihen (k6.w: 75 cm, je Feld eine
+  Richtung aus seinem Hash). Aus der Ferne bleibt die Farbe des Felds die des Luftbilds (keine Fernblüte für Früchte).
 
 ## Flüssig
 
@@ -94,7 +107,8 @@ wobei es trotzdem im Browser weiterhin flüssig laufen können soll.“ Gewählt
 
 ## Tests
 
-`viz3/test/bewuchs.py` (Abschnitte rasen, wiese, ferne, jahr, maehen, leistung): Artentabelle und Atlas geladen, Ringe und Kacheln im
+`viz3/test/bewuchs.py` (Abschnitte rasen, maehen, wiese, ferne, jahr, strauch, beet, acker, leistung; seit V19b auch: Sträucher fest für
+die Figur, nicht für Fahrzeuge; der Atlas 8 × 24 Zellen, jede Frucht mit Bildern, Mais im August mit Kolben): Artentabelle und Atlas geladen, Ringe und Kacheln im
 Garten und auf der Wiese, Budget je Stufe, Blumen im Rasen im Mai und in der Wiese im Juni, die Blüte in der Ferne, Mähen erreicht die
 Halme, `GRASS.cutCount` aus dem Raster, keine Programme über 16 Texturen; Bilder in `out/bewuchs/`. Unit-Tests
 `viz3/test/unit/bewuchs_phaeno.test.mjs` (auch mit der echten Artentabelle) und `bewuchs_arten.test.mjs` (die Daten des Hilfs-Agenten). Dazu `garage` (Mähen, Aufgabe, Speicherstand).
@@ -108,4 +122,6 @@ Halme, `GRASS.cutCount` aus dem Raster, keine Programme über 16 Texturen; Bilde
 
 - Grasähren aus dem Atlas (getönt), Dürre- und Schattenfarbe der Flächen, der kiesige Bankettrand, Geilstellen der Weide; die
   Jahreszeit des Bodenbilds im Garten.
-- Stufe 3 (Büsche und Beeren), 4 (gestaltete Flächen), 5 (die ganze Welt, Äcker) – `docs/plans/plan_bewuchs.md`.
+- Hüllen für Buchs, Thuja und geschnittene Hecken; Schatten der Sträucher nah; die Beete der Dorfleute (`dorf/dorf_life.js`, noch
+  Erde mit Klötzchen) aus den Beetvorlagen; Fahrzeuge in Sträuchern (heute fahren sie hindurch); Waldboden außerhalb der Klinge (mit
+  `welt-wald`), Suhl (über den Suhl-Chat).

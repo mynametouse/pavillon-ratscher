@@ -65,8 +65,8 @@ export const BWFERNE = (() => {
       let sum = 0;
       for (const [id, w] of Object.entries(m)) {
         const s = SP.find(q => q.id === id);
-        // (the grasses' heads are no coloured dots from afar)
-        if (!s || s.grass) continue;
+        // (the grasses' heads are no coloured dots from afar, nor the crops' plants: a field's colour from afar is the photo's)
+        if (!s || s.grass || s.crop) continue;
         const a = bloomOf(s, doy);
         if (!(a.amount > 0) || !a.col) continue;
         sum += w * a.amount;
