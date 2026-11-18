@@ -93,7 +93,9 @@ Waldrändern, Anfahrt). Quellen und Lizenzen: `meta.json` → `attribution`, `ma
   Bilder Tag und Dämmerung), `turm` (Tür, Tafel, Öffnungszeiten, Ortsname, Bild), `schnell` (die Zone neu gebaut mit `VEG.lodK` 0,6:
   deutlich weniger Dreiecke an der Heide), `zufahrt` (mit der Simson auf der L 3004 über das Ende der Straßendaten → Coburger Straße,
   Bild; nach Norden hinaus → zurück auf die L 3004), am Ende Verlassen und Freigeben. Das Licht folgt im Test der Uhr wie im Spiel
-  (Dämmerung, nasser Boden). Bilder `out/grenzland_zone/`. In `tests.txt` zwei Zeilen: `weg,bunker,zufahrt` und `heide,turm,schnell`.
+  (Dämmerung, nasser Boden). Bilder `out/grenzland_zone/`. In `tests.txt` zwei Zeilen: `weg,bunker` und `heide,turm,schnell`;
+  `zufahrt` noch nicht – die Simson fährt im Test am Ende der L 3004 nicht los (die Kacheln des Korridors dort sind wohl noch nicht da,
+  wenn sie aufsitzt), der Auslöser selbst ist ungeprüft.
 - `viz3/test/unit/grenzland_zone.test.mjs` – Linien, Platten (Maße, Fugen, Spuren), Texte mit Quellen, `zone.json`.
 
 ## Für den Lead
