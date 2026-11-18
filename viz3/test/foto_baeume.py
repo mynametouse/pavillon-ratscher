@@ -87,7 +87,7 @@ with lib.browser() as b:
 
     if 'szene' in WANT:
         clock(pg, 15.5); go(pg, 4, 23, 1.6, 186, 6, 62)
-        kinds = J("""Object.fromEntries(Object.entries(TREES).map(([k, K]) => { const a = K.lg.getAttribute('aLfIn'); let s = 0, n = 0, lo = 255, hi = 0;
+        kinds = J("""Object.fromEntries(Object.entries(LAUB.kinds).map(([k, K]) => { const a = K.lg.getAttribute('aLfIn'); let s = 0, n = 0, lo = 255, hi = 0;
           if (a) for (let i = 0; i < a.count; i += 5) { const v = a.array[i]; s += v; n++; if (v < lo) lo = v; if (v > hi) hi = v; }
           return [k, { laub: !!K.leaf.userData.laub, n: a ? a.count : 0, pos: K.lg.attributes.position.count, mean: n ? +(s / n / 255).toFixed(3) : -1, lo, hi,
             far: [K.lgFar, K.lgFar2].filter(g => g && !g.getAttribute('aLfIn')).length }]; }))""")
@@ -97,7 +97,7 @@ with lib.browser() as b:
         E("__FB.grab(); 0")
         u = J("__FB.uni()")
         ck("the leaves' uniforms reach their programs (leaf crowns and far cards)", u['leaf'] >= 1 and u['leaf'] == u['leafOk'] and u['far'] >= 1 and u['far'] == u['farOk'], str(u))
-        pic = J("({ aspen: __FB.pic(TREES.aspen.leaf.map), bush: __FB.pic(TREES.bushB.leaf.map), oak: __FB.pic(TREES.oakA.leaf.map) })")
+        pic = J("({ aspen: __FB.pic(LAUB.kinds.aspen.leaf.map), bush: __FB.pic(LAUB.kinds.bushB.leaf.map), oak: __FB.pic(LAUB.kinds.oakA.leaf.map) })")
         ck("the aspen's leaf picture is a summer one: green as the oak's, not October's gold",
            all(pic[k] and pic[k][1] > pic[k][0] * 1.15 and pic[k][1] > pic[k][2] * 1.3 for k in pic), str(pic))
         st = J("LAUB.state()")

@@ -307,6 +307,10 @@ ${MAPS}
       markDirty();
       return LAUB.state();
     },
+    // the kinds built for the garden and the world (tests: TREES is no global)
+    get kinds() {
+      return TREES;
+    },
     state: () => ({
       n: S.n,
       crowns: S.crowns,
