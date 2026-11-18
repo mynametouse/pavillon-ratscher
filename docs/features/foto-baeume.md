@@ -54,9 +54,13 @@ alle teilen sich weiter dieselben Programme):
 
 Das Espen-Laubbild wird beim Laden einmal in dieselben Blätter im Sommer umgerechnet (eine Matrix auf den linearen Farben: mattes,
 leicht graues Grün, Hell und Dunkel und Adern bleiben). Arten mit `sommer: true` bekommen dieses Bild: die Espe und die Heckensträucher
-des Gartens, die Birke der Straßenbäume (eine markierte Zeile in `stadtgruen/stadtgruen.js`; ihre Herbstfärbung macht dort wie bei den
-anderen Arten die Kronenfarbe). Die eigenen Arten des Gartenplaners behalten das Originalbild (er färbt jede Pflanze selbst auf ihren
-Monatston). **Kein neues Asset**, keine neue Datei – das Bild entsteht im Browser aus dem vorhandenen.
+des Gartens (`aspen`, `bushB` – damit auch die Espen der Welt, ihre ferne Karte, die Hecken der Straßenbäume und die Birken des Walds
+der Region, die diese Arten zeichnen) und die Birke der Straßenbäume (eine markierte Zeile in `stadtgruen/stadtgruen.js`; ihre
+Herbstfärbung macht dort wie bei den anderen Arten die Kronenfarbe). Der Wald der Region (`weltwald/weltwald.js`) hatte das goldene
+Bild selbst ausgeglichen (Sommer-Tönung 0,56 / 0,98 / 1,35 – ein Gelboliv); zwei markierte Zeilen dort: die Birke nimmt das Sommerbild,
+wie es ist, und ihr Oktobergold kommt als Tönung (5,65 / 1,64 / 0,57 – derselbe Farbton wie bisher). Die eigenen Arten des
+Gartenplaners behalten das Originalbild (er färbt jede Pflanze selbst auf ihren Monatston). **Kein neues Asset**, keine neue Datei –
+das Bild entsteht im Browser aus dem vorhandenen.
 
 ### Ferne Bäume (`world/ratscher.js`, markierte Zeilen)
 
@@ -76,6 +80,7 @@ Monatston). **Kein neues Asset**, keine neue Datei – das Bild entsteht im Brow
 | `viz3/src/eztree/textures.js` | `getSummerLeafTexture` |
 | `viz3/src/world/ratscher.js` | markierte Zeilen: Atlas ohne Baumfarbe zeichnen, Zufallszahlen je Baum, ferne Karten (Farbe, Licht, Drehung, Streckung) |
 | `viz3/src/stadtgruen/stadtgruen.js` | eine markierte Zeile: Birke mit Sommerbild |
+| `viz3/src/weltwald/weltwald.js` | zwei markierte Zeilen: Sommer- und Herbsttönung der Birke für das Sommerbild |
 | `viz3/test/foto_baeume.py`, `viz3/extra/foto-baeume/tests.txt` | Test |
 
 Neuer `window`-Name: `LAUB` (bitte in `docs/ARCHITECTURE.md` eintragen – gemeinsame Datei). Kein neuer Speicher-Schlüssel.
@@ -90,11 +95,41 @@ Neuer `window`-Name: `LAUB` (bitte in `docs/ARCHITECTURE.md` eintragen – gemei
 
 ## Kosten
 
-PLATZHALTER_KOSTEN
+Gezählt wie in `docs/features/fotorealismus.md` (Stufe „hoch“, 960 × 540, Wetter „klar“, Software-Grafik – Bildzeiten sagen dort
+nichts, deshalb Zeichenaufrufe und Dreiecke).
+
+- **Zeichenaufrufe, Dreiecke: unverändert.** Kein neues Mesh, keine neue Geometrie (die Kartenstreckung der fernen Bäume ändert die
+  Dreieckszahl nicht). Zahlen je Blickpunkt vorher/nachher: PLATZHALTER_ZAHLEN
+- **Programme: unverändert** (vorher 193 nach allen Blickpunkten, nachher PLATZHALTER_PROG). Alle Laubmaterialien bekommen denselben
+  Zusatz und denselben Cache-Schlüssel und teilen sich ihre Programme wie bisher; die fernen Karten bleiben ein Programm (auch für die
+  Karten der Straßenbäume und des Walds der Region).
+- **Texturen je Programm: höchstens 16 wie vorher** (das Laub selbst liegt weit darunter); kein neuer Sampler, keine neue Textur im
+  Shader.
+- **Speicher:** ein Byte je Kartenecke (`aLfIn`) – bei den 23 Arten der Blickpunkte zusammen unter 1 MB mit allen Detailstufen. Das
+  Sommerbild der Espe ist ein Bild 1024 × 1024 im Arbeitsspeicher (auf Telefonen halbiert wie alle Bilder); auf der Grafikkarte ersetzt
+  es das Original, das erst wieder gebraucht wird, wenn der Gartenplaner seine eigenen Arten zeichnet.
+- **Laden:** die Kronentiefe aller Arten zusammen 84 ms (23 Kronen, im Chat-Rechner gemessen, `LAUB.state().ms`); das Sommerbild einmal
+  eine Schleife über die deckenden Bildpunkte (ein Sechstel des Bilds) – nicht einzeln gemessen.
+- **Je Bildpunkt Laub:** zwei Bildschirm-Ableitungen, ein `exp`, zwei `smoothstep`, einige Skalarprodukte mehr; kein Textur-Abruf mehr
+  als vorher. **Nicht gemessen:** Bildzeiten auf einer echten Grafikkarte (Falkos Laptop, iPhone) – im Chat-Rechner gibt es nur
+  Software-Grafik.
 
 ## Tests
 
-PLATZHALTER_TESTS
+`viz3/test/foto_baeume.py` (Abschnitte `szene`, `linde`, `reihen`, `tal`; in `viz3/extra/foto-baeume/tests.txt`, dazu `leistung`,
+`memphone`, `gpu`, `baeume`, `garten`, `stadtgruen`, `welt_wald`, `gartenplaner` – sie laufen im Feature-Lauf bei GitHub):
+
+- jede Art trägt den Zusatz und die Kronentiefe (außen offen, innen tief), auch in den ausgedünnten Stufen; die Uniforms kommen in
+  den Programmen an (Laub und ferne Karten); das Espen-Laubbild ist grün;
+- die Linde am Anger um 15:30 und 20:00: ihre Laub-Bildpunkte (gefunden, indem ihr Material für ein Bild magenta gemalt wird) sind
+  grün, kaum einer blass (Creme) oder neon (kein Blau); beleuchtete und beschattete Blätter liegen im Bereich eines Fotos einer Linde
+  im Juni; mit vollem Spiegel (`LAUB.set({ sheen: 1 })`) ist die Krone blasser – der Test merkt, wenn sich three's Licht unter dem Zusatz
+  ändert;
+- ferne Reihen: keine orangen Bäume im Juni; mit der eigenen Farbe je Baum streuen die Farbtöne weiter als ohne;
+- Tal von oben: keine orangen Bäume, ferne Karten und 3D-Kronen in einem Ton;
+- höchstens 16 Texturen je Programm, keines kaputt.
+
+Stand der Läufe: PLATZHALTER_LAEUFE
 
 ## Bilder
 
@@ -103,4 +138,21 @@ Vorher/nachher von den festen Blickpunkten des Auftrags (im Chat-Rechner, nicht 
 
 ## Grenzen und offen
 
-PLATZHALTER_OFFEN
+- **Herbst der Welt-Bäume:** die Laubbäume des Kronenmodells und des Gartens sind das ganze Jahr sommergrün (die Espe war bisher das
+  ganze Jahr golden). Schritt 3 des Auftrags: Tönung nach Datum je Art (wie Straßenbäume und Wald der Region es schon tun), kahle
+  Kronen im Winter.
+- **Gartenplaner:** Pflanzen, die er mit der Espe des Gartens zeichnet (säulenförmige Kronen), erreichen ihr Herbstgold nur noch so
+  weit wie seine Eichen und Eschen (seine Tönung ist auf das 2,6-Fache begrenzt, `gplan/gplan_3d.js` `tint` – nicht meine Datei).
+  Seine eigenen Arten (Obstbaum, Strauch, Staude) behalten das Originalbild und sind unverändert.
+- **glTF-Bäume des Gartens** (Tanne, Apfelbäume aus `instanceVariants`, `core/assets.js`): noch mit three's Standardlicht (Spiegel des
+  Himmels auf den Karten). `LAUB.patch(material, { crown: false })` ist dafür vorbereitet; es braucht eine markierte Zeile in
+  `core/assets.js` (ein Haken je Material) – mit dem Lead abstimmen.
+- **Nadelbäume aus ez-tree** (`pine`, Kiefern der Welt nahe am Garten): ihr Laubbild ist hell (0,12 / 0,18 / 0,03) – Nadeln sind dunkler.
+  Farbe je Art ist Schritt 3.
+- **Ferne Karten:** fünf Bilder für 21 000 Bäume – Farbe, Licht, Drehung und Streckung unterscheiden sie jetzt, die Umrisse bleiben
+  fünf. Mehr Bilder je Art (zwei Ansichten, zwei Wuchsformen) kosten nur Atlasbreite. Der Atlas speichert linear in 8 Bit; in dunklen
+  Kronenteilen sind das wenige Stufen (sRGB-Atlas prüfen).
+- **Übergang 3D → Karte bei ~100 m** (Schritt 4): Farbe und Licht sind angeglichen, die Größe nicht geprüft.
+- **Schatten im Laub:** nahe Gartenbäume beschatten sich über die Schattenkarte selbst (hart, kartenweise); die Kronentiefe mildert das
+  nicht. Die SSAO-Stufe (N8AO) dunkelt Laub aus der Nähe zusätzlich ab – nicht meine Datei.
+- Falkos Eindruck am Laptop und am iPhone.

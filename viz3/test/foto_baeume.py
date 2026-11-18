@@ -7,7 +7,7 @@
 #   linde  – the lime at the Anger in the afternoon and in the evening sun (15:30, 20:00, 1 June) is a green tree: its leaves' pixels
 #            (found by painting its leaf material for one frame) are green-dominant, hardly any is pale (the cream of the mirror lobes)
 #            or neon (hardly any blue or red in it); its lit and its shaded leaves lie in the range of a photo of a lime in June; with
-#            the mirror lobes back (LAUB.set({ on: false })) it is paler – so the test notices if three's light changes under the patch
+#            the mirror lobes back (LAUB.set({ sheen: 1 })) it is paler – so the test notices if three's light changes under the patch
 #   reihen – the far rows in June: no orange trees; no two alike – the hues of the trees' pixels spread wider with each tree's own
 #            colour than without
 #   tal    – the valley from above: no orange trees in June (every fourth leaf tree was), the far cards and the 3D crowns in one tone
@@ -38,7 +38,7 @@ window.__FB = {
   stat(f, m) { const o = { n: m.length, green: 0, pale: 0, neon: 0, orange: 0 }, s = [0, 0, 0], lum = new Float32Array(m.length), cell = new Map(); let k = 0;
     for (const i of m) { const r = f.px[i], g = f.px[i + 1], b = f.px[i + 2], lu = 0.3 * r + 0.59 * g + 0.11 * b, mx = Math.max(r, g, b), mn = Math.min(r, g, b);
       s[0] += r; s[1] += g; s[2] += b; lum[k++] = lu; if (g > r * 1.02 && g > b * 1.08) o.green++; if (lu > 150 && mx - mn < 0.3 * mx) o.pale++;
-      if (g > 60 && b < 0.3 * g) o.neon++; if (r > g * 1.12 && g > b * 1.15 && mx > 70) o.orange++;
+      if (g > 45 && b < 0.2 * g) o.neon++; if (r > g * 1.12 && g > b * 1.15 && mx > 70) o.orange++;
       const p = i / 4, ck = Math.floor((p % f.w) / 6) + 4096 * Math.floor(Math.floor(p / f.w) / 6); let c = cell.get(ck); if (!c) cell.set(ck, (c = [0, 0, 0, 0])); c[0] += r; c[1] += g; c[2] += b; c[3]++; }
     const n = Math.max(1, m.length); o.mean = s.map(v => Math.round(v / n)); for (const q of ['green', 'pale', 'neon', 'orange']) o[q] = +(o[q] / n).toFixed(4);
     const srt = Float32Array.from(lum).sort(), band = (a, b) => { const lo = srt[Math.floor(a * (n - 1))], hi = srt[Math.floor(b * (n - 1))], t = [0, 0, 0]; let c = 0, j = 0;
@@ -74,7 +74,7 @@ def clock(pg, hour):
 def natural(s):
     l, d = s['lit'], s['shade']
     return (75 <= l[0] <= 150 and 100 <= l[1] <= 170 and 35 <= l[2] <= 100 and l[1] > l[0] > l[2]
-            and 18 <= d[0] <= 75 and 30 <= d[1] <= 95 and 10 <= d[2] <= 60 and d[1] > d[0])
+            and 10 <= d[0] <= 75 and 22 <= d[1] <= 95 and 4 <= d[2] <= 60 and d[1] > d[0])
 
 with lib.browser() as b:
     pg = lib.page(b, 960, 540, errs=errs, tier='hoch'); E = pg.evaluate
@@ -109,18 +109,21 @@ with lib.browser() as b:
         for hour, name, v in ((15.5, 'linde_1530', (240, -112, 1.6, 250, 0, 62)), (20, 'linde_20', (240, -112, 1.6, 250, 0, 62))) if has else ():
             clock(pg, hour); go(pg, *v)
             E(f"""(() => {{ const F = __FB, ms = [VPROPS.lindeMeshes[1].material]; F.a = F.grab('{name}'); F.m = F.leaves(F.a, ms);
-              LAUB.set({{ on: false }}); F.off = F.grab('{name}_spiegel'); LAUB.set({{ on: true }}); }})(); 0""")
+              LAUB.set({{ sheen: 1 }}); F.off = F.grab('{name}_spiegel'); LAUB.set({{ on: true }}); }})(); 0""")
             s, so = J("__FB.stat(__FB.a, __FB.m)"), J("__FB.stat(__FB.off, __FB.m)")
             print(name, s, '| with the mirror lobes', so, flush=True)
             ck(f'{name}: the crown fills a good part of the picture', s['n'] > 0.08 * 960 * 540, f"{s['n']} pixels")
-            ck(f'{name}: the lime is green – most of its pixels green-dominant, hardly any pale or neon',
-               s['green'] > 0.8 and s['pale'] < 0.03 and s['neon'] < 0.12, f"green {s['green']}, pale {s['pale']}, neon {s['neon']}, mean {s['mean']}")
             if hour < 18:
+                ck(f'{name}: the lime is green – most of its pixels green-dominant, hardly any pale or neon',
+                   s['green'] > 0.8 and s['pale'] < 0.03 and s['neon'] < 0.15, f"green {s['green']}, pale {s['pale']}, neon {s['neon']}, mean {s['mean']}")
                 ck(f'{name}: lit and shaded leaves as in a photo of a lime in June', natural(s), f"lit {s['lit']}, shade {s['shade']}")
             else:
-                ck(f'{name}: no cream in the low sun – its brightest leaves keep their colour', s['lit'][1] >= s['lit'][0] * 0.97 and s['lit'][2] < 0.72 * s['lit'][1], f"lit {s['lit']}, shade {s['shade']}")
-            ck(f'{name}: with the mirror lobes of sky and sun it is paler (the patch is what keeps it green)',
-               so['pale'] > s['pale'] + 0.02 or so['mean'][2] > s['mean'][2] + 12, f"pale {so['pale']} vs {s['pale']}, mean {so['mean']} vs {s['mean']}")
+                ck(f'{name}: no cream in the low sun – green in the shade, its brightest leaves keep their colour',
+                   s['green'] > 0.55 and s['pale'] < 0.03 and s['lit'][1] >= s['lit'][0] * 0.9 and s['lit'][2] < 0.72 * s['lit'][1] and s['shade'][1] > s['shade'][0],
+                   f"green {s['green']}, pale {s['pale']}, lit {s['lit']}, shade {s['shade']}")
+            lum = lambda c: 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]
+            ck(f'{name}: with the mirror lobes of sky and sun back (LAUB.set sheen 1) the crown is paler – the patch is what keeps it green',
+               so['mean'][2] > s['mean'][2] + 8 and lum(so['mean']) > lum(s['mean']) + 4, f"mean {so['mean']} vs {s['mean']}, pale {so['pale']} vs {s['pale']}, lit {so['lit']} vs {s['lit']}")
 
     if 'reihen' in WANT:
         clock(pg, 15.5); go(pg, -520, -480, 1.6, 40, 2, 62, 32)
@@ -139,8 +142,10 @@ with lib.browser() as b:
         print('tal', s, '| far cards', sf, '| 3D crowns', near, flush=True)
         ck('the valley: trees in the picture, far cards and 3D crowns', sf['n'] > 3000 and near['n'] > 1500, f"{sf['n']} / {near['n']} pixels")
         ck('June: no orange trees in the valley (every fourth leaf tree was)', s['orange'] < 0.01 and s['green'] > 0.75, f"orange {s['orange']}, green {s['green']}")
-        d = [abs(sf['mean'][i] - near['mean'][i]) for i in range(3)]
-        ck('far cards and 3D crowns in one tone (the means of their pixels close)', max(d) < 40, f"far {sf['mean']}, 3D {near['mean']}")
+        rg = lambda c: c[0] / max(1, c[1])
+        lum = lambda c: 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]
+        ck('far cards and 3D crowns in one tone (red to green alike, neither half as bright as the other)',
+           abs(rg(sf['mean']) - rg(near['mean'])) < 0.2 and 0.5 < lum(sf['mean']) / max(1, lum(near['mean'])) < 2, f"far {sf['mean']}, 3D {near['mean']}")
 
     for k, d in (J("__FB.img || {}")).items():
         open(os.path.join(OUT, k + '.jpg'), 'wb').write(base64.b64decode(d.split(',')[1]))

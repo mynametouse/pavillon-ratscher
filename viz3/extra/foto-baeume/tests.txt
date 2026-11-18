@@ -1,4 +1,18 @@
 # feat/fotorealismus (helper foto-baeume): the leaves' light and colour – no mirror of sky and sun on leaf cards, light through the
-# leaf, darker inside the crown, each tree its own hue, the aspen green until October (garden/trees.js LAUB, the far cards in
-# world/ratscher.js); viz3/test/foto_baeume.py. Loads with ?kaskade=an like the other photorealism tests.
+# leaf, darker inside the crown, each tree its own hue, the aspen's leaf picture in summer green (garden/trees.js LAUB,
+# eztree/textures.js, the far cards in world/ratscher.js); viz3/test/foto_baeume.py. Loads with ?kaskade=an like the other
+# photorealism tests.
 foto_baeume
+# the budgets of a frame and of memory, 16 textures per program
+leistung
+memphone
+gpu
+# the areas touched: trees that give way to vehicles (instance matrices of the crowns), the garden, the town's trees (the birch's
+# summer picture, the far cards' shader they share), the region's forest (the birch's colours, the same shader), the garden planner
+# (it draws its plants with these leaf materials)
+baeume
+garten
+stadtgruen:data,stadt,telefon
+stadtgruen:bilder,ratscher
+welt_wald:data,road,drive,season
+gartenplaner
