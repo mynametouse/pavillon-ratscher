@@ -1,11 +1,15 @@
 // ---------------- 3D lawn: instanced grass clumps + a few meadow flowers near the pavilion ----------------
 import * as THREE from 'three';
-import { BASE, HQ0, OFFLINE, rnd, rr, scene, V } from '../core/head.js';
+import { BASE, HQ0, OFFLINE, QS, rnd, rr, scene, V } from '../core/head.js';
 import { ANISO, cellsOf, GLL, instanceVariants, markDirty, MODELS, patchSV, vegReady } from '../core/assets.js';
 import { bldRects, inRect, rectCorners } from '../core/geo.js';
 import { STREAM } from './stream_geo.js';
-import { gmask, S0, toPxF } from './env.js';
+import { GEO_REAL, gmask, S0, toPxF } from './env.js';
 import { inLocal } from './site_base.js';
+// feat/bewuchs: the vegetation template (viz3/src/bewuchs/) draws the lawn and its flowers – the clumps and the three meadow flowers are not
+// built (their random slots still are, so the garden's random sequence stays); the mowing grid, the tint and GRASS.* stay the interface
+// (GRASS.footRects and GRASS.onFoot tell the template where buildings and worn patches are); ?nobewuchs: the old lawn
+const BW = GEO_REAL && !QS.has('nobewuchs');
 export function inPoly(x, y, poly) {
   let c = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
@@ -380,6 +384,24 @@ function cutArea(t) {
 function cutCount(x, y, r) {
   let n = 0,
     all = 0;
+  if (BW) {
+    // feat/bewuchs: the lawn's cells (0.25 m) instead of its clumps – short while within the clumps' 90 % of their height
+    const c = MOW.c,
+      t = window.CLOCK ? CLOCK.t : 0,
+      lim = (MOW.grow * (0.9 - MOW.keep.lawn)) / (1 - MOW.keep.lawn);
+    for (let gx = Math.floor((x - r - MOW.x0) / c); gx <= Math.floor((x + r - MOW.x0) / c); gx++)
+      for (let gy = Math.floor((y - r - MOW.y0) / c); gy <= Math.floor((y + r - MOW.y0) / c); gy++) {
+        if (gx < 0 || gy < 0 || gx >= MOW.nx || gy >= MOW.ny) continue;
+        const mx = MOW.x0 + (gx + 0.5) * c,
+          my = MOW.y0 + (gy + 0.5) * c;
+        if ((mx - x) ** 2 + (my - y) ** 2 > r * r) continue;
+        if (gravelMask(mx, my) > 0.3 || STREAM.zAt(mx, my) < -0.04 || !inPoly(mx, my, S0.garden)) continue;
+        all++;
+        const tc = MOW.grid[gy * MOW.nx + gx];
+        if (tc >= 0 && t - tc < lim) n++;
+      }
+    return { n, all };
+  }
   for (const e of FOOTHIDE.list) {
     if (e.kind !== 'lawn') continue;
     for (let i = 0; i < e.f.length; i++) {
@@ -398,13 +420,14 @@ function bare(id, r) {
   else BARE.delete(id);
   if (r || had) footHideApply();
 }
-Object.assign(GRASS, { cut, grow, cutSave, cutLoad, cutArea, cutCount, bare, MOW, TINT });
+Object.assign(GRASS, { cut, grow, cutSave, cutLoad, cutArea, cutCount, bare, MOW, TINT, footRects, bw: BW }); // feat/bewuchs: footRects, bw
 window.GRASS = GRASS;
 export function footHideApply() {
   const R = footRects();
   let ch = false;
   for (const e of FOOTHIDE.list) if (footHideOne(e, R)) ch = true;
   if (ch) markDirty(true);
+  if (GRASS.onFoot) GRASS.onFoot(); // feat/bewuchs: the template's site texture follows
 }
 window.footHideApply = footHideApply;
 export function mulberry(a) {
@@ -498,6 +521,18 @@ function buildGrass() {
     mat0.userData.leak = true;
     const mat = patchSV(mat0);
     if (GRASS.wxSway) GRASS.wxSway(mat); // feat/wetter: the lawn bends in the wind (wetter/wx_wind.js), before anything draws it
+    if (BW) {
+      // feat/bewuchs: one empty mesh, out of view – zukunft/zk_welt.js takes the clump's geometry and material from it (compiled at load)
+      const im = new THREE.InstancedMesh(geo, mat, 1);
+      im.setColorAt(0, new THREE.Color(1, 1, 1));
+      im.count = 0;
+      im.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, -1e4, 0), 0.1);
+      im.userData.noMerge = true;
+      im.userData.bw = true;
+      scene.add(im);
+      GRASS.meshes.push(im);
+      return;
+    }
     const m4 = new THREE.Matrix4(),
       q = new THREE.Quaternion(),
       up = new THREE.Vector3(0, 1, 0);
@@ -582,6 +617,7 @@ function buildGrass() {
     ['flower_blue.glb', HQ0 ? 60 : 28],
   ]) {
     const fp = slots(n, 30, (x, y, r) => r > 5.5 && okLawn(x, y));
+    if (BW) continue; // feat/bewuchs: the template's flowers
     GLL.load(BASE + 'grass/' + file + '.json', g => {
       const parts = [];
       g.scene.updateMatrixWorld(true);

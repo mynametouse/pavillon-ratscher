@@ -24,6 +24,12 @@ from retusche import fill
 ROOT_E0, ROOT_N0, ROOT = 420700.0, 5390800.0, 409600.0
 SITE = 'https://mynametouse.github.io/pavillon-ratscher/welt-test/'
 SETS = ['', 'zonen/vessra/']
+# feat/welt-orte: Suhl's ground (the Suhl chat's data repo) carries the corridor of the way there – Hirschbach, Erlau's north, the farms
+# at the road stand on its tiles. Its tiles of levels 10–12 come into the same set without the roofs (keys L/x/y are one quadtree: the
+# sets do not overlap at these levels); only where our cells stand (Suhl's own town has no building of ours). The set is listed by
+# its tiles ('has'), not by a rectangle.
+DATEN = 'https://mynametouse.github.io/pavillon-daten/suhl/'
+SUHL = 'suhl:'
 
 
 _CACHE, _CLOCK = {}, __import__('threading').Lock()
@@ -109,18 +115,33 @@ def main():
     ap.add_argument('--levels', default='10,11,12')
     ap.add_argument('--only', type=int, default=0, help='at most N tiles (a quick try)')
     ap.add_argument('--debug', default=None)
-    ap.add_argument('--near', default=None, help='E,N: only tiles within 600 m of this UTM point (a quick look)')
+    ap.add_argument('--near', default=None, help='E,N[;E,N…]: only tiles within 600 m of these UTM points (a quick look)')
+    ap.add_argument('--daten', default=DATEN, help="the Suhl chat's data repo (its ground product carries the corridor to Suhl)")
+    ap.add_argument('--no-suhl', action='store_true', help="without Suhl's set (as before feat/welt-orte)")
     a = ap.parse_args()
     import cv2
     from PIL import Image
     from shapely.strtree import STRtree
     from shapely.geometry import box as sbox
-    metas = {}
+    metas, base = {}, {}
     for st in SETS:
         b = get(a.site + st + 'meta.json')
         if b:
             metas[st] = json.loads(b)
-    print('sets', list(metas), flush=True)
+            base[st] = a.site + st
+    # feat/welt-orte: Suhl's set (its current ground product) with the lists of its tiles per level
+    has = {}
+    if not a.no_suhl:
+        try:
+            ak = json.loads(get(a.daten + 'aktuell.json'))['products']['boden']
+            m = json.loads(get(a.daten + ak['index']))
+            metas[SUHL] = m
+            base[SUHL] = a.daten + ak['path']
+            has = {int(L): {tuple(t) for t in v.get('has', [])} for L, v in m['tiling']['levels'].items()}
+        except Exception as e:
+            print('no Suhl set', e, flush=True)
+    sets = [st for st in SETS + [SUHL] if st in metas]
+    print('sets', sets, flush=True)
     fps = footprints()
     masks = [p.buffer(0.6 + 0.08 * min(h, 30), join_style=2) for p, h in fps] + feature_masks()
     tree = STRtree(masks)
@@ -128,7 +149,11 @@ def main():
     levels = [int(v) for v in a.levels.split(',')]
 
     def set_of(L, x, y):
-        for st in SETS:
+        for st in sets:
+            if st == SUHL:
+                if (x, y) in has.get(L, ()):
+                    return st
+                continue
             m = metas.get(st)
             r = m and m['tiling']['levels'].get(str(L), {}).get('rect')
             if r and r[0] <= x <= r[2] and r[1] <= y <= r[3]:
@@ -148,8 +173,9 @@ def main():
             if st is not None:
                 jobs.append((L, x, y, st))
     if a.near:
-        ce, cn = (float(v) for v in a.near.split(','))
-        jobs = [j for j in jobs if math.hypot(ROOT_E0 + (j[1] + 0.5) * ROOT / (1 << j[0]) - ce, ROOT_N0 + (j[2] + 0.5) * ROOT / (1 << j[0]) - cn) < 600]
+        pts = [tuple(float(v) for v in q.split(',')) for q in a.near.split(';')]
+        jobs = [j for j in jobs if any(math.hypot(ROOT_E0 + (j[1] + 0.5) * ROOT / (1 << j[0]) - ce, ROOT_N0 + (j[2] + 0.5) * ROOT / (1 << j[0]) - cn) < 600
+                                       for ce, cn in pts)]
     if a.only:
         jobs = jobs[:a.only]
     print('tiles to retouch', len(jobs), {L: sum(1 for j in jobs if j[0] == L) for L in levels}, flush=True)
@@ -163,7 +189,7 @@ def main():
         L, x, y, st = job
         s = ROOT / (1 << L)
         e0, n0 = ROOT_E0 + x * s, ROOT_N0 + y * s
-        img = get_tile(a.site + st + f'i/{L}/{x}/{y}.webp')
+        img = get_tile(base[st] + f'i/{L}/{x}/{y}.webp')
         if img is None:
             return None
         n = img.shape[0]
@@ -176,7 +202,7 @@ def main():
                 if dx == 0 and dy == 0:
                     continue
                 sn = set_of(L, x + dx, y + dy)
-                nb = get_tile(a.site + sn + f'i/{L}/{x + dx}/{y + dy}.webp') if sn is not None else None
+                nb = get_tile(base[sn] + f'i/{L}/{x + dx}/{y + dy}.webp') if sn is not None else None
                 if nb is None or nb.shape[0] != n:
                     continue
                 # rows: north is up (y + 1 above), columns: east to the right
@@ -217,7 +243,9 @@ def main():
                 if len(done) % 100 == 0:
                     print(len(done), 'tiles', round(time.time() - t0), 's', flush=True)
     json.dump({'v': 1, 'made': time.strftime('%Y-%m-%d %H:%M'), 'from': a.site, 'tiles': sorted(k for k, _ in done),
-               'note': 'feat/welt-gebaeude: orthophoto tiles of welt-test/ (and zonen/vessra/) without the roofs of the buildings standing in 3D'},
+               'note': 'feat/welt-gebaeude: orthophoto tiles of welt-test/ (and zonen/vessra/, and Suhl\'s ground of the data repo where '
+                       'feat/welt-orte built) without the roofs of the buildings standing in 3D',
+               'suhl': base.get(SUHL)},
               open(os.path.join(a.out, 'index.json'), 'w'), separators=(',', ':'))
     size = sum(os.path.getsize(f) for f in glob.glob(os.path.join(a.out, 'i', '*', '*', '*.webp')))
     print('done', len(done), 'tiles', round(size / 1e6, 1), 'MB', round(time.time() - t0), 's', flush=True)

@@ -29,6 +29,8 @@ COUNT = r"""
 SPOTS = [
     ('Gartentor', "GAME.view(2.6, 29.0, KERN.ground(2.6, 29.0) + 1.6, 180, -4, 62)", 1050, 2.6e6, 700e3),
     ('Huberts Hof', "GAME.view(-4.0, 34.5, KERN.ground(-4.0, 34.5) + 1.6, 285, -3, 62)", 500, 1.6e6, 600e3),
+    # (feat/fotorealismus, 18.11.2026: the village casts the sun's shadow now – its lime trees, and its walls and roofs, each one mesh for
+    # the whole village and so drawn whole into the walker's box: 95 k instead of 30 k)
     ('Anger', "GAME.view(240.0, -112.0, KERN.ground(240.0, -112.0) + 1.6, 250, -2, 62)", 750, 1.5e6, 200e3),
 ]
 ROUTE = [(3.6, 15.2), (4.0, 24.0), (4.0, 31.5), (4.5, 34.5), (40.0, 31.0), (60.0, 30.0), (60.0, 34.0), (20.0, 36.0), (0.0, 36.0)]
@@ -40,6 +42,9 @@ with lib.browser() as b:
     ck('levels of detail and view distances there', E("!!(window.VEG && VEG.add && window.CULL && window.DIRTY)"))
     for name, view, lc, lt, ls in SPOTS:
         E(view); E("for (let i = 0; i < 8; i++) GAME.step(0.25)"); time.sleep(1.0)
+        # (the far shadow tiles that are due after the jump first: they come in frames of their own, viz3/test/fotorealismus.py has
+        # their budgets – here the frame's own shadow map is counted)
+        E("window.SCHATTEN && SCHATTEN.settle(); 0")
         r = E(COUNT); res['spots'][name] = r
         ck(f'{name}: draw calls', r['calls'] <= lc, f"{r['calls']} (≤ {lc}), {r['tris'] / 1e6:.2f} M triangles, {r['culled']} far small meshes not drawn, {r['lod']} of {r['lodSets']} tree sets coarser")
         ck(f'{name}: triangles', r['tris'] <= lt, f"{r['tris'] / 1e6:.2f} M (≤ {lt / 1e6:.1f} M)")

@@ -124,6 +124,16 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
   Kasten um den Pavillon (weicher Rand 1,5 m, Tönung `GI.tint`), Figurenschatten (`FIGSH`), Maske gegen Lampenlicht durch Wände
   (`material.userData.leak`, Rasen/Kies). Programm-Cache-Schlüssel beachten (`customProgramCacheKey`), sonst teilen Varianten Shader.
 - Lichter nie per `visible` an/aus (ändert die Shader-Varianten → alles neu kompilieren); stattdessen `intensity = 0`.
+- **Sonnenschatten in drei Zonen** (`foto/schatten_glsl.js`, `foto/schatten.js`, `SCHATTEN`, seit 18.11.2026): die Schattenkarte der Sonne
+  ist ein Atlas – links der Kasten um die Spielfigur (`garden/env.js` `sunFollow`), rechts zwei Kacheln halber Größe (fern ±96 m, weit
+  ±640 m), gezeichnet von three's Schattenpass für je ein verstecktes Licht und in den Atlas kopiert. Der Shader (`sunShadow()` statt
+  `getShadow()` in three's Bausteinen) rechnet die Kachel-Koordinaten aus der Schattenkoordinate des Kastens – **kein neues Licht, keine
+  neue Textur, kein neues Programm**. Die Uniforms dafür (und für die Luft) stehen als typisierte Arrays in `THREE.ShaderLib`: so teilen
+  sie sich alle Materialien (three klont nur seine eigenen Typen) – nach einem three-Update `viz3/test/fotorealismus.py` laufen lassen.
+  Wer in der Welt Schatten wirft und empfängt, setzt `SCHATTEN` (Gelände, Gebäude, Bäume; `SCHATTEN.add` für eigene Dinge).
+- **Luft** (`foto/luft.js`, `LUFT`): der Dunst (`scene.fog`, exponentiell, `world/ratscher.js`) nach Höhe (Skalenhöhe 450 m) und zur Sonne hin
+  heller – in three's Nebel-Bausteinen; das Varying `vLuft` (Blick von der Kamera zum Punkt in Weltachsen) steht jedem Material mit Nebel
+  zur Verfügung.
 - **Höchstens 16 Texturen je Shader-Programm** (Fragment- und Vertex-Shader getrennt gezählt). Das ist die Untergrenze von WebGL 2 und
   auf vielen Laptops, Macs und Telefonen auch die Obergrenze; SwiftShader in den Tests erlaubt 32. Mehr Texturen → das Programm kompiliert
   nicht, das Mesh fehlt (V16b: Boden um den Garten mit 21 Texturen, der Himmel schien durch). Gleichartige Kacheltexturen deshalb als
@@ -148,6 +158,8 @@ Frames (geringere Auflösung, ohne AO), im Stand ein volles Bild. `markDirty(tru
 | `WINDE`, `KRAN` | werk/winde.js, kran.js | Forstseilwinde am Traktorheck (Seil, Choker, Funk, Gefahrenbereich, Rücken) und Kran am Rungenwagen (Hubmoment, Reichweite); Hinweise der Gabel (`HOLZ.whyNot`) (`docs/features/winde.md`) |
 | `TREEHIT` | world/treehit.js | kleine Bäume geben Fahrzeugen nach: biegen, kippen mit Wurzelteller, bleiben liegen (`pav-trees-v1`), dicke halten auf (`give`, `standUp`, `axisOf`); Jungbäume nur für Fahrzeuge in `WCOL` (`each(…, soft)`) (`docs/features/baeume.md`) |
 | `WELT`, `SCHL` | welt/welt.js, schleusingen.js | Kachelwelt aus `tools/welt` (Gelände, Luftbilder) nach Bedarf um die Kamera gestreamt (Zonen fordern sie an); Schleusingen begehbar: Altstadt aus OSM mit den Dorf-Shadern, Markt, Rathaus mit Halle, Wahrzeichen |
+| `GEB` (Kachelwelt `GEB.Z`) | gebaeude/gebaeude.js | Gebäude jenseits des Quadrats in 400-m-Zellen (`viz3/extra/welt-gebaeude/dist/gebaeude/z/`, ETHOS, OSM): seit V18y alle Kacheln, auf denen man fährt, ohne die Stadt Suhl; je Gebäude Feld `o` (Stufe `suhl`/`welt`/`osm` von `welt-orte`), `order` im Index (alte Zellen behalten Nummer und Aussehen); der Lader setzt eine Zelle neu, sobald `WELT.visible` eine feinere Kachel darunter zeigt (`GEB.Z.rs`: `due`, Zähler, `log`); `DINGE` liest dazu `dinge/orte.json` (`docs/features/welt-gebaeude.md`, `welt-orte.md`) |
+| `SAMARKT` | schleusingen-ansicht/sa_markt.js | Der Markt von Schleusingen fertig (V18y): Pflaster als eigenes Bodenstück über dem Markt-Umriss, Bänke, Pflanzkübel, die sitzende Figur, Abfalleimer; Kollisionen über `KERN.pushOut` (Rang 11). Die Fassaden nach Ansicht sind Daten für `FASSADE` (`viz3/extra/schleusingen-ansicht/dist/fassade/ansicht.json`, über `gebaeude/ansicht.json` gelegt) (`docs/features/schleusingen-ansicht.md`) |
 | `AMT`, `AMTDATA`, `AMTMODEL`, `AMTWORLD` | amt/ | Ortsvorsteher: Wahl und Amt nach Thüringer Recht – Daten (Menschen, Anliegen, Aufgaben, Texte), reine Logik (Meinungen, Versprechen, Unterschriften, Auszählung, Ortsteilrat, Stadtrat; Einheitentests), was im Dorf entsteht (Laterne, Mitfahrbank, Anzeige …), Brief, Mappe (O), Wahltag, Rathaus über `SCHL`; Start mit `?amt=brief\|wahlkampf\|wahltag\|zaehlen\|amt\|stadtrat` (`docs/features/ortsvorsteher.md`) |
 | `GPLAN`, `GPMODEL`, `GPRULES`, `GPSUN`, `GP3D`, `GPSCHEMA` | gplan/ | Gartenplaner (V16n): Datenvertrag der Pflanzendaten (`gplan_schema.js`, Daten in `extra/pflanzen/dist/gartenplaner/`), reine Logik mit Einheitentests – Wachsen und Jahreszeiten, Plan, Gilden, Listen (`gplan_model.js`), Sonne und Schatten über Ratscher (`gplan_sun.js`), Berater mit Gründen (`gplan_rules.js`: Grenzabstand ThürNRG, Gebäude – immer der geplante Pavillon –, Bach, Spätfrost, Befruchter, Nachbarn, Licht) –, Pflanzen in 3D ohne neue Programme (`gplan_3d.js`), Fenster und Draufsicht über `SITEPLAN.hooks` (`gplan.js`); Menü → Gestalten → „Garten planen“, `?szenario=gartenplaner` (`docs/features/gartenplaner.md`) |
 | `FAHRT` | welt/fahrt.js | Fahrt über das 2,4-km-Quadrat hinaus (V16q): wacht erst am Rand auf, holt `fahrt/strassen.json` (OSM-Straßen um Schleusingen bis Kloster Veßra mit geglättetem Längsprofil) und die Kacheln vor dem Fahrzeug (`WELT.focus`, `WELT.keep`), schneidet die Straßen ins Kachelnetz (`WELT.setPads` mit `under: true`), Brücken, Ortstafeln, Wegweiser, Karte (`MMAP.more`, `MMAP.dest`), Rand und Tempo (`VEH.edge`: `null` \| `'wait'` \| `'end'`, `VEH.limit`, Wände draußen `VEH.hitsOut`); Ereignis `fahrt:ankunft`; `?szenario=fahrt`, `?szenario=fahrt-vessra` (`docs/features/fahrt.md`) |
@@ -202,6 +214,8 @@ Neue Werte: in `core/save.js` eintragen und mit `SAVE.get/set` (typisiert) bzw. 
 | Schlüssel | Inhalt |
 |---|---|
 | `pav-tier` | Grafikstufe (hoch/mittel/schnell) |
+| `pav-bewuchs-v1` | Gras und Blumen in 3D (voll/einfach/aus; Menü → Einstellungen → Grafik) |
+| `pav-schatten-v1` | Schatten in der Ferne (auto/an/aus; Menü → Einstellungen → Grafik; `foto/schatten.js`) |
 | `pav-light2` | Lichtmodus (auto/day/gold/dusk/night) |
 | `pav-variant`, `pav-facade`, `pav-style`, `pav-layout`, `pav-site`, `pav-plan-ts` | Entwurf: Variante, Fassade, Innenstil, Möbel, Gebäude/Zäune, Stand des veröffentlichten Plans |
 | `pav-gh-token` | GitHub-Schlüssel des Eigentümers zum Veröffentlichen des Plans (nur in seinem Browser, nie im Repo) |
@@ -254,6 +268,12 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
 - `world/` – Draufsicht/Planen, Umgebung Ratscher, Straßen und Wege (`roads`), Wald an der Klinge (`forest`), Fällen (`fell`, V16c2), das Dorf nach Fotos (`village`, `village_props`, `village_near`),
   Kollision mit der Umgebung (`worldcol`), Bäume, die Fahrzeugen nachgeben (`treehit`)
 - `time/` – Uhr, Sterndaten, Tag und Nacht
+- `bewuchs/` – Bewuchs in 3D (feat/bewuchs, `docs/features/bewuchs.md`): Halme in drei Ringen um die Kamera (`bw_halm`, `BWHALM`), Wildblumen auf
+  denselben Kacheln (`bw_blume`, `BWBLUME`), das Jahr je Flächenart (`bw_phaeno`, `BWPHAENO`, rein), was wo wächst (`bw_karte`, `BWKARTE`),
+  die Arten des Hilfs-Agenten `bewuchs-pflanzen` (`bw_arten`, `BWARTEN`, rein), blühende Wiesen in der Ferne im Bodenshader (`bw_ferne`,
+  `BWFERNE`, Haken `bwFar` in `world/roads.js`), Stufe, Tag und Mähen (`bewuchs`, `BEWUCHS`)
+- `foto/` – Bildqualität (feat/fotorealismus, `docs/features/fotorealismus.md`): die Shader-Seite der Schattenzonen (`schatten_glsl`, lädt gleich nach
+  `core/head.js`, vor `core/assets.js`), die Kacheln und wer Schatten wirft (`schatten`, `SCHATTEN`), die Luft (`luft`, `LUFT`)
 - `werk/` – Schutzausrüstung, Werkstatt-Spiel, Werkstatt-Fenster; Holz vom Stamm zum Brett (`holz`, `holz_saw`, `holz_dry`, V16d);
   Rückewinde und Kran (`winde`, `kran`)
 - `boot/` – Start

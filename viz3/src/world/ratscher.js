@@ -237,6 +237,10 @@ export const RATSCHER = (() => {
           .replace(
             '#include <lights_fragment_end>',
             '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= mix( 0.35, 0.8, max( gRdGloss * 0.5, gRdPud ) );\n' + // feat/strassen: a wet road shines
+              // feat/fotorealismus: nor does land mirror the sun – towards a low sun a field shone like a lake (a surface of roughness 1
+              // still returns many times its diffuse light at a grazing angle; grass and soil shade themselves there). A third of it
+              // stays: the sheen of a meadow against the evening sun, as the blades up close have it. Roads keep theirs.
+              ' reflectedLight.directSpecular *= mix( 0.3, 1.0, max( gRdCov, gRdPud ) );\n' +
               (window.FOREST && LATE.FOREST.LIGHT ? LATE.FOREST.LIGHT : '')
           ) // grass and soil scatter: no pale sky sheen at grazing angles (V16b, low driving views)
           .replace(
@@ -774,11 +778,15 @@ export const RATSCHER = (() => {
       sh.fragmentShader = sh.fragmentShader
         .replace(
           '#include <normal_fragment_begin>',
-          '#include <normal_fragment_begin>\n normal = normalize( vNormal ); nonPerturbedNormal = normal;'
+          // feat/fotorealismus: a crown is no flat ground – its normal half up, half towards whoever looks at it (as a ball of leaves
+          // seen from there): lit from the front by a low sun it glows, against the light it stands dark; before, the upward normal
+          // alone left every far wood pale cream at dusk, whichever way one looked. And its lower part in its own shade.
+          '#include <normal_fragment_begin>\n normal = normalize( vNormal ); { vec3 gtC = normalize( vViewPosition ), gtS = gtC - normal * dot( gtC, normal ); normal = normalize( normal * 0.72 + gtS / max( length( gtS ), 0.001 ) * 0.7 ); } nonPerturbedNormal = normal;'
         )
         .replace(
           '#include <lights_fragment_end>',
-          '#include <lights_fragment_end>\n reflectedLight.directDiffuse *= 0.82; reflectedLight.indirectDiffuse *= 0.6; reflectedLight.indirectSpecular *= 0.25;'
+          '#include <lights_fragment_end>\n reflectedLight.directDiffuse *= 0.82; reflectedLight.indirectDiffuse *= 0.6; reflectedLight.indirectSpecular *= 0.25;' +
+            ' { float gtH = mix( 0.6, 1.0, smoothstep( 0.12, 0.8, vMapUv.y ) ); reflectedLight.directDiffuse *= gtH; reflectedLight.indirectDiffuse *= gtH; }' // feat/fotorealismus
         );
     }; // V16c: a crown shades itself – the flat cards were pale
     mat.customProgramCacheKey = () => 'geotree';

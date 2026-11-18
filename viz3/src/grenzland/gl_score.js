@@ -2,7 +2,7 @@
 // Falko (13.11.2026 1:25): own compositions or public domain only – so everything here was composed in code and synthesised live in
 // WebAudio, in D minor, on the game's music bus (the „Musik“ volume and „Ton aus“ hold). Since 17.11.2026 (Falko: „Filmmusik bei
 // Missionen“, free music only) real pieces play instead when the sound repository answers – Kevin MacLeod (incompetech.com, CC BY 4.0):
-// spannung „Crypto“, flucht „Hot Pursuit“ (from three stars „Ready Aim Fire“), 1989 „SCP-x6x (Hopes)“, szene „Almost New“, the stings from
+// spannung „Crypto“, flucht „Hot Pursuit“ (from three stars „Ready Aim Fire“), 1989 „SCP-x6x (Hopes)“, the stings from
 // „Danse Macabre – Big Hit 1“, „Loping Sting“ and „Der Kleber Sting“ (files: pavillon-ton/score/, credits in the radio extra). Two media
 // elements take turns (a layer change or a piece near its end crossfades); a file that cannot be loaded brings the synthesis back.
 // The synthesised layers, crossfaded over about two seconds:
@@ -342,6 +342,9 @@ export const GLSCORE = (() => {
   }
   // ---------------- the real pieces: two decks that take turns ----------------
   const DECK_G = 0.6;
+  // the scenes (talks between people) keep the synthesised layer – Falko 18.11.2026 18:42: the piano piece „klingt eher wie so ein lustiges
+  // Klavierspiel und passt überhaupt gar nicht … nimmst du wieder die Synthi-Sounds von vorher in den Zwischensequenzen“
+  const SYNTH_NUR = { szene: true };
   const STDATEI = { start: 'st_start', bestanden: 'st_bestanden', gescheitert: 'st_gescheitert' };
   const url = name => GLRDATA.ton() + 'score/' + name + '.mp3';
   function deck(A) {
@@ -360,7 +363,7 @@ export const GLSCORE = (() => {
     return d;
   }
   function dateiTick(A, now) {
-    const want = S.ziel ? (S.ziel === 'flucht' && S.stufe >= 3 ? 'flucht2' : S.ziel) : '';
+    const want = S.ziel && !SYNTH_NUR[S.ziel] ? (S.ziel === 'flucht' && S.stufe >= 3 ? 'flucht2' : S.ziel) : '';
     if (!S.D && !want) return;
     const D = S.D || (S.D = { a: deck(A), b: deck(A), cur: null });
     const cur = D.cur,
@@ -447,7 +450,7 @@ export const GLSCORE = (() => {
     if (!datei && S.D) deckStop();
     for (const name of Object.keys(LAYER)) {
       const D = LAYER[name],
-        on = !datei && S.ziel === name;
+        on = (!datei || !!SYNTH_NUR[name]) && S.ziel === name;
       let l = S.L[name];
       if (on && !l) {
         l = S.L[name] = { g: c.createGain(), on: true, next: now + 0.08, n: 0, nodes: null, off: 0 };

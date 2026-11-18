@@ -1,0 +1,575 @@
+{
+ "v": 1,
+ "bild": "acker.png",
+ "groesse_px": 1024,
+ "zelle_px": 128,
+ "spalten": 8,
+ "zeilen": 8,
+ "hinweis": "Zelle (Spalte, Zeile) von oben links; eine Feldfrucht von der Seite, Fuß unten in der Mitte, füllt die Höhe der Zelle (bei den Getreideähren: eine Ähre auf einem Stück Halm, ohne Abdunkeln am Fuß – die Halme zeichnet die Vorlage); breite = Anteil der Zellbreite (Alpha ≥ 0,5); farbe = mittlere Farbe (sRGB); leere Zellen fehlen in der Liste. Erzeugt von tools/bewuchs/pflanzen/acker.py (eigene Zeichnung).",
+ "zellen": [
+  {
+   "zelle": [
+    0,
+    0
+   ],
+   "id": "raps-rosette",
+   "bild": "rosette",
+   "arten": [
+    "winterraps"
+   ],
+   "breite": 0.969,
+   "oben": 0.477,
+   "deckung": 0.3074,
+   "farbe": "#507350"
+  },
+  {
+   "zelle": [
+    1,
+    0
+   ],
+   "id": "raps-knospe",
+   "bild": "knospe",
+   "arten": [
+    "winterraps"
+   ],
+   "breite": 0.562,
+   "oben": 0.977,
+   "deckung": 0.1491,
+   "farbe": "#6e8e52"
+  },
+  {
+   "zelle": [
+    2,
+    0
+   ],
+   "id": "raps-bluete",
+   "bild": "bluete",
+   "arten": [
+    "winterraps"
+   ],
+   "breite": 0.797,
+   "oben": 0.984,
+   "deckung": 0.2322,
+   "farbe": "#969e41"
+  },
+  {
+   "zelle": [
+    3,
+    0
+   ],
+   "id": "raps-schoten",
+   "bild": "schoten",
+   "arten": [
+    "winterraps"
+   ],
+   "breite": 0.812,
+   "oben": 0.969,
+   "deckung": 0.1942,
+   "farbe": "#75944b"
+  },
+  {
+   "zelle": [
+    4,
+    0
+   ],
+   "id": "raps-reif",
+   "bild": "reif",
+   "arten": [
+    "winterraps"
+   ],
+   "breite": 0.719,
+   "oben": 0.969,
+   "deckung": 0.1791,
+   "farbe": "#857a57"
+  },
+  {
+   "zelle": [
+    5,
+    0
+   ],
+   "id": "senf-bluete",
+   "bild": "bluete",
+   "arten": [
+    "zwischenfrucht"
+   ],
+   "breite": 0.75,
+   "oben": 0.992,
+   "deckung": 0.213,
+   "farbe": "#7a9848"
+  },
+  {
+   "zelle": [
+    6,
+    0
+   ],
+   "id": "luzerne",
+   "bild": "luzerne",
+   "arten": [
+    "kleegras"
+   ],
+   "breite": 0.578,
+   "oben": 0.969,
+   "deckung": 0.1569,
+   "farbe": "#54734b"
+  },
+  {
+   "zelle": [
+    7,
+    0
+   ],
+   "id": "kleegras-bluete",
+   "bild": "bluete",
+   "arten": [
+    "kleegras"
+   ],
+   "breite": 0.969,
+   "oben": 0.953,
+   "deckung": 0.3082,
+   "farbe": "#617444"
+  },
+  {
+   "zelle": [
+    0,
+    1
+   ],
+   "id": "mais-jung",
+   "bild": "jung",
+   "arten": [
+    "silomais",
+    "koernermais"
+   ],
+   "breite": 0.953,
+   "oben": 0.664,
+   "deckung": 0.1197,
+   "farbe": "#6c9749"
+  },
+  {
+   "zelle": [
+    1,
+    1
+   ],
+   "id": "mais-streckung",
+   "bild": "streckung",
+   "arten": [
+    "silomais",
+    "koernermais"
+   ],
+   "breite": 1.0,
+   "oben": 0.875,
+   "deckung": 0.1523,
+   "farbe": "#4e7938"
+  },
+  {
+   "zelle": [
+    2,
+    1
+   ],
+   "id": "mais-fahne",
+   "bild": "fahne",
+   "arten": [
+    "silomais",
+    "koernermais"
+   ],
+   "breite": 1.0,
+   "oben": 0.969,
+   "deckung": 0.1694,
+   "farbe": "#527c3b"
+  },
+  {
+   "zelle": [
+    3,
+    1
+   ],
+   "id": "mais-kolben",
+   "bild": "kolben",
+   "arten": [
+    "silomais",
+    "koernermais"
+   ],
+   "breite": 1.0,
+   "oben": 0.969,
+   "deckung": 0.1946,
+   "farbe": "#567f3e"
+  },
+  {
+   "zelle": [
+    4,
+    1
+   ],
+   "id": "mais-reif",
+   "bild": "reif",
+   "arten": [
+    "silomais",
+    "koernermais"
+   ],
+   "breite": 1.0,
+   "oben": 0.969,
+   "deckung": 0.2048,
+   "farbe": "#72864a"
+  },
+  {
+   "zelle": [
+    5,
+    1
+   ],
+   "id": "mais-trocken",
+   "bild": "trocken",
+   "arten": [
+    "silomais",
+    "koernermais"
+   ],
+   "breite": 1.0,
+   "oben": 0.953,
+   "deckung": 0.1921,
+   "farbe": "#a09067"
+  },
+  {
+   "zelle": [
+    6,
+    1
+   ],
+   "id": "mais-stoppel",
+   "bild": "stoppel",
+   "arten": [
+    "silomais",
+    "koernermais"
+   ],
+   "breite": 0.906,
+   "oben": 0.977,
+   "deckung": 0.2432,
+   "farbe": "#a69874"
+  },
+  {
+   "zelle": [
+    0,
+    2
+   ],
+   "id": "ruebe-jung",
+   "bild": "jung",
+   "arten": [
+    "zuckerruebe"
+   ],
+   "breite": 1.0,
+   "oben": 0.688,
+   "deckung": 0.3303,
+   "farbe": "#64934b"
+  },
+  {
+   "zelle": [
+    1,
+    2
+   ],
+   "id": "ruebe-blatt",
+   "bild": "blatt",
+   "arten": [
+    "zuckerruebe"
+   ],
+   "breite": 1.0,
+   "oben": 0.836,
+   "deckung": 0.647,
+   "farbe": "#46763d"
+  },
+  {
+   "zelle": [
+    2,
+    2
+   ],
+   "id": "ruebe-herbst",
+   "bild": "herbst",
+   "arten": [
+    "zuckerruebe"
+   ],
+   "breite": 1.0,
+   "oben": 0.648,
+   "deckung": 0.4199,
+   "farbe": "#608044"
+  },
+  {
+   "zelle": [
+    3,
+    2
+   ],
+   "id": "kartoffel-jung",
+   "bild": "jung",
+   "arten": [
+    "kartoffel"
+   ],
+   "breite": 0.953,
+   "oben": 0.977,
+   "deckung": 0.1856,
+   "farbe": "#5f8242"
+  },
+  {
+   "zelle": [
+    4,
+    2
+   ],
+   "id": "kartoffel-kraut",
+   "bild": "kraut",
+   "arten": [
+    "kartoffel"
+   ],
+   "breite": 0.953,
+   "oben": 0.977,
+   "deckung": 0.291,
+   "farbe": "#4a6c35"
+  },
+  {
+   "zelle": [
+    5,
+    2
+   ],
+   "id": "kartoffel-bluete",
+   "bild": "bluete",
+   "arten": [
+    "kartoffel"
+   ],
+   "breite": 0.969,
+   "oben": 0.953,
+   "deckung": 0.3347,
+   "farbe": "#5a7649"
+  },
+  {
+   "zelle": [
+    6,
+    2
+   ],
+   "id": "kartoffel-welk",
+   "bild": "welk",
+   "arten": [
+    "kartoffel"
+   ],
+   "breite": 0.969,
+   "oben": 0.734,
+   "deckung": 0.2414,
+   "farbe": "#958a48"
+  },
+  {
+   "zelle": [
+    7,
+    2
+   ],
+   "id": "kartoffel-krautfrei",
+   "bild": "krautfrei",
+   "arten": [
+    "kartoffel"
+   ],
+   "breite": 1.0,
+   "oben": 0.438,
+   "deckung": 0.0746,
+   "farbe": "#41382a"
+  },
+  {
+   "zelle": [
+    0,
+    3
+   ],
+   "id": "sonnenblume-jung",
+   "bild": "jung",
+   "arten": [
+    "sonnenblume"
+   ],
+   "breite": 0.688,
+   "oben": 0.977,
+   "deckung": 0.2502,
+   "farbe": "#4b7039"
+  },
+  {
+   "zelle": [
+    1,
+    3
+   ],
+   "id": "sonnenblume-knospe",
+   "bild": "knospe",
+   "arten": [
+    "sonnenblume"
+   ],
+   "breite": 0.484,
+   "oben": 0.961,
+   "deckung": 0.1655,
+   "farbe": "#4c7038"
+  },
+  {
+   "zelle": [
+    2,
+    3
+   ],
+   "id": "sonnenblume-bluete",
+   "bild": "bluete",
+   "arten": [
+    "sonnenblume"
+   ],
+   "breite": 0.484,
+   "oben": 0.977,
+   "deckung": 0.2275,
+   "farbe": "#677632"
+  },
+  {
+   "zelle": [
+    3,
+    3
+   ],
+   "id": "sonnenblume-reif",
+   "bild": "reif",
+   "arten": [
+    "sonnenblume"
+   ],
+   "breite": 0.5,
+   "oben": 0.977,
+   "deckung": 0.2469,
+   "farbe": "#7b6f3e"
+  },
+  {
+   "zelle": [
+    4,
+    3
+   ],
+   "id": "roggen-bluete",
+   "bild": "bluete",
+   "arten": [
+    "winterroggen"
+   ],
+   "breite": 0.172,
+   "oben": 0.969,
+   "deckung": 0.0652,
+   "farbe": "#8c9e7a"
+  },
+  {
+   "zelle": [
+    5,
+    3
+   ],
+   "id": "senf-jung",
+   "bild": "jung",
+   "arten": [
+    "zwischenfrucht"
+   ],
+   "breite": 0.656,
+   "oben": 0.977,
+   "deckung": 0.241,
+   "farbe": "#5c8944"
+  },
+  {
+   "zelle": [
+    0,
+    4
+   ],
+   "id": "weizen-gruen",
+   "bild": "gruen",
+   "arten": [
+    "winterweizen"
+   ],
+   "breite": 0.156,
+   "oben": 0.977,
+   "deckung": 0.1086,
+   "farbe": "#759047"
+  },
+  {
+   "zelle": [
+    1,
+    4
+   ],
+   "id": "weizen-reif",
+   "bild": "reif",
+   "arten": [
+    "winterweizen"
+   ],
+   "breite": 0.281,
+   "oben": 0.977,
+   "deckung": 0.1092,
+   "farbe": "#c1a365"
+  },
+  {
+   "zelle": [
+    2,
+    4
+   ],
+   "id": "gerste-gruen",
+   "bild": "gruen",
+   "arten": [
+    "wintergerste",
+    "sommergerste"
+   ],
+   "breite": 0.172,
+   "oben": 0.961,
+   "deckung": 0.062,
+   "farbe": "#9ab474"
+  },
+  {
+   "zelle": [
+    3,
+    4
+   ],
+   "id": "gerste-reif",
+   "bild": "reif",
+   "arten": [
+    "wintergerste",
+    "sommergerste"
+   ],
+   "breite": 0.906,
+   "oben": 0.969,
+   "deckung": 0.0961,
+   "farbe": "#ddcf9e"
+  },
+  {
+   "zelle": [
+    4,
+    4
+   ],
+   "id": "roggen-gruen",
+   "bild": "gruen",
+   "arten": [
+    "winterroggen"
+   ],
+   "breite": 0.125,
+   "oben": 0.969,
+   "deckung": 0.0589,
+   "farbe": "#7a9274"
+  },
+  {
+   "zelle": [
+    5,
+    4
+   ],
+   "id": "roggen-reif",
+   "bild": "reif",
+   "arten": [
+    "winterroggen"
+   ],
+   "breite": 0.484,
+   "oben": 0.945,
+   "deckung": 0.0687,
+   "farbe": "#bba069"
+  },
+  {
+   "zelle": [
+    6,
+    4
+   ],
+   "id": "triticale-gruen",
+   "bild": "gruen",
+   "arten": [
+    "triticale"
+   ],
+   "breite": 0.172,
+   "oben": 0.953,
+   "deckung": 0.0881,
+   "farbe": "#6e945a"
+  },
+  {
+   "zelle": [
+    7,
+    4
+   ],
+   "id": "triticale-reif",
+   "bild": "reif",
+   "arten": [
+    "triticale"
+   ],
+   "breite": 0.344,
+   "oben": 0.961,
+   "deckung": 0.0917,
+   "farbe": "#bb9f66"
+  }
+ ]
+}

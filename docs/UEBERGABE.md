@@ -16,6 +16,51 @@ veröffentlicht.
 
 ## Stand
 
+- **18.11.2026: Fotorealismus Schritt 2, V19e (Fotorealismus-Chat session_01L6Yrpe4euXqyTbnuvdamYz, `docs/features/fotorealismus.md`
+  Abschnitte 5 und 6; Falko 18.11. 15:39: „Stück für Stück die nächsten Versionen.“).** **Hügel werfen Schatten:**
+  `foto/schatten_land.js` (`SCHLAND`) hält ein Raster der Geländehöhen um die Spielfigur (±7,7 km, `KERN.terrain`, in jedem Bild ein
+  paar Dutzend Zellen aufgefrischt) und rechnet daraus je Sonnenschritt ein Feld der „Schattenhöhe“ (256² Zellen von 24 m, zwei Höhen
+  für die weiche Kante, ~2 ms auf drei, vier Bilder verteilt); `foto/schatten.js` kopiert es in einen 256 Texel breiten Streifen des
+  Schatten-Atlas (Breite jetzt 1,5 Karten + 256), `sunLand()` in `foto/schatten_glsl.js` liest es für **jedes** beleuchtete Material
+  (außerhalb von `receiveShadow`; Uniforms `csmL`, `csmH`). Nur unter 19° Sonnenhöhe, Teil von „Schatten in der Ferne“, `?nohuegel`.
+  Am 1.6. liegt der Garten bis 6:00 und ab 20:55 im Hügelschatten. **Land spiegelt die tiefe Sonne nicht mehr:** markierte Zeilen in
+  `world/ratscher.js`, `garden/env.js`, `welt/welt.js` (`reflectedLight.directSpecular` × 0,3 außerhalb von Straßen und Pfützen) und
+  `bewuchs/bw_halm.js` (× 0,6). Test `fotorealismus.py` Abschnitt `land`, Blickpunkte r9/r10 (Morgen). **Wichtig für Nachfolger:** wer
+  die Kacheln oder den Atlas anfasst – die Kachelbreite ist `csmP.y * 0.5`, das Feld beginnt bei x = 1,5 Kartenhöhen; die Höhen des
+  Rasters sind punktweise abgetastet (24 m), Wald innerhalb des Quadrats von Ratscher steht nicht darin. **Offen:** Laub der 3D-Bäume
+  in der Abendsonne cremefarben (Sonnenstärke bei 8° in `time/daynight.js` höher als mittags – mit dem Kern-Chat abstimmen), Kronenhöhen
+  ins Raster (Waldschatten jenseits von 640 m), dann Wasser des Stausees, Stufe „Ultra“, Rasen von oben.
+- **18.11.2026: Fotorealismus Schritt 1 (Fotorealismus-Chat session_01L6Yrpe4euXqyTbnuvdamYz, `docs/features/fotorealismus.md`; Falkos
+  Auftrag „Fotorealismus-Upgrade“ vom 18.11. – zuerst analysieren, zehn Schwächen, dann die wirkungsvollsten direkt bauen; dazu seit 11:13
+  der Bewuchs).** Neu: `viz3/src/foto/` – **Sonnenschatten in drei Zonen** (`SCHATTEN`: die Schattenkarte der Sonne als Atlas, eine ferne
+  Kachel ±96 m und eine weite ±640 m, `sunShadow()` in three's Bausteinen; Gelände, Gebäude und Bäume der Welt werfen und empfangen;
+  Schalter Menü → Grafik → „Schatten in der Ferne“, `pav-schatten-v1`, „auto“ = aus auf „schnell“ und am Telefon), **Luft** (`LUFT`: Dunst
+  nach Höhe und zur Sonne hin, three's Nebel-Bausteine); im Bewuchs `bw_ferne.js` neu geschrieben (**Blüte als Tönung**, **Äcker als
+  Bestand im Boden**, eine Textur 512 × 1024), Halme der Feldfrüchte angepasst; `world/ratscher.js`: Kronenlicht der fernen Baumkarten.
+  Tests `viz3/test/fotorealismus.py`, feste Blickpunkte `viz3/test/fotoref.py` (`viz3/extra/fotorealismus/views.json`; der Vergleich mit
+  V19b: `python3 viz3/test/fotoref.py PORT name=…,wetter=klar,map=4096`). **Wichtig für Nachfolger:** die gemeinsamen Uniforms (Schatten,
+  Luft) sind typisierte Arrays in `THREE.ShaderLib` – nach einem three-Update prüft `fotorealismus.py`, ob sie noch ankommen; echte
+  Bildzeiten (Grafikkarte, Falkos Laptop mit Intel UHD 620, iPhone) sind **nicht gemessen** (hier nur Software-Grafik). **Offen:** Stufe
+  „Ultra“ (Plan im Feature-Dokument), Gelände als Schattenwerfer bei tiefer Sonne, Wasser des Stausees, Rasen von oben, Feldfrüchte weiter
+  als 340 m, Schatten der Detailzonen (`SCHATTEN.add` durch ihre Module), die offenen Punkte des Bewuchses (Eintrag darunter).
+- **18.11.2026: der Bewuchs in 3D, alle Stufen (V18z 06:31, V19 07:56, V19a 09:50, V19b 11:47; Straßen-Chat session_01WqScFDtq8GSy4n7wU7foJx, Hilfs-Agenten `bewuchs-daten` und `bewuchs-pflanzen`, `docs/features/bewuchs.md`, Plan
+  `docs/plans/plan_bewuchs.md`). Übergeben an den Fotorealismus-Chat (Falko 18.11. 11:13: „… stopp erstmal hier die Arbeit … und lass den
+  Fotorealismus-Chat den Rest übernehmen“).** Module `viz3/src/bewuchs/` (`BEWUCHS`, `BWHALM` Halme in drei Ringen und die Frucht je Feld
+  (`cropGlsl`), `BWBLUME` Wildblumen/Grasähren/Beete/Feldfrüchte aus einem Atlas 8 × 24 (`blumen.png`, `beete.png`, `acker.png`; am
+  Telefon in der Stufe von `TEXHALF`), `BWSTRAUCH` Sträucher (EZ-Tree, zwei Bänder, höchstens acht Formen, ab 1 m fest über einen
+  `KERN.pushOut`-Anbieter für Körper zu Fuß, das nahe Band mit Schatten), `BWFERNE` Blüte in der Ferne (Haken `bwFar` in `world/roads.js`),
+  `BWKARTE` Karten, `BWPHAENO` das Jahr (rein, Unit-Tests; Zeilen 23–30 die Feldfrüchte, `cropNow`), `BWARTEN` Artentabelle); Haken in
+  `garden/grass.js` (die alten Büschel aus, `GRASS.*` bleibt). Karten: 895 Zellen unter `viz3/extra/bewuchs-daten/dist/bewuchs/z/`
+  (Klassen 0–22: 13–16 Beete, 19–22 Fruchtarten je Feld), Werkzeuge `tools/bewuchs/daten/`; Artentabelle und Atlanten von
+  `tools/bewuchs/pflanzen/`. Test `viz3/test/bewuchs.py` (Abschnitte rasen, maehen, wiese, ferne, jahr, strauch, beet, acker, leistung;
+  vor jeder Version dazu garage, smoke, leistung, memphone). **Offen für den Fotorealismus-Chat:** Hüllen für Buchs, Thuja und
+  geschnittene Hecken (`BWARTEN.straeucher[id].form`: kugel, saeule, hecke – heute EZ-Tree-Formen); die Beete der Dorfleute
+  (`dorf/dorf_life.js` `beds()`, noch Erde mit Klötzchen) aus den Beetvorlagen; Fahrzeuge in Sträuchern (fahren hindurch); Furchen und
+  Bodenfarbe der Äcker nach Phase (`BWARTEN.ackerboden`, heute das Luftbild); Rüben und Sonnenblumen (im Atlas, nicht unter den acht
+  Fruchtzeilen); die Suhl-Korridore (Karten); der Waldboden außerhalb der Klinge (mit `welt-wald`); ein Höhenmodell jenseits des
+  Quadrats für Gehölze; Falkos Eindruck am Laptop und iPhone. Die Hilfs-Agenten sind pausiert (`wip/bewuchs-daten` `7ad5ef58`,
+  `wip/bewuchs-pflanzen` `ff89622b`; Aufträge `docs/plans/auftraege/bewuchs-*.md`).
+- **17.11.2026 spät: die flachen Orte in 3D und Schleusingen nach Ansicht (V18y; Hilfs-Agenten `welt-orte`, `schleusingen-ansicht`).** 18 779 Gebäude in 324 Zellen (`GEB.Z`, neu: Neusetzen auf feinere Kacheln `GEB.Z.rs`), 157 Fassaden und 117 Geschosszahlen über die `FASSADE`-Datei, der Markt (`SAMARKT`). **Offen:** Runde 3 nach Ansicht (Gauben, Fenster, Türen, Ladenfronten – `tools/schleusingen-ansicht/abgleich.py` vergleicht alle Blickpunkte; die Ansichten liegen nur auf dem Chat-Rechner); geparkte Autos für weitere Orte; der Wald der Region (`welt-wald`, Branch `feat/welt-wald`, Straße nach Suhl fertig bis auf einen Test); drei Haustüren in Schleusingen zu Fuß nicht erreichbar (#623, #240, #644 – beim Grenzland-Chat gemeldet).
 - **17.11.2026 abends: Schleusingen grün (V18w; Hilfs-Agent `stadtgruen`, `docs/features/stadtgruen.md`).** Straßenbäume und Gehölze aus dem Luftbild (Farbe, Infrarot) und OSM für die Stadtzone, Gehölzstreifen an der L 1625 südlich von Ratscher; die Jahreszeit über `SGREGELN` – in Ratscher noch aus (`AREAS.ratscher.seasons = false`), bis Ratschers Laubbäume Jahreszeiten haben (macht `welt-wald` nach seiner ersten Lieferung). **Läuft noch** (Chat session_01Mmpsvp11QsXpPSQRRbZ4Jv): `schleusingen-ansicht` (Fassaden über die `FASSADE`-Datei, der Markt `SAMARKT`), `welt-orte` (die flachen Orte, zuerst die Straße nach Suhl), `welt-wald` (Wald und Bäume der Region); die privaten Ansichten von der Straße liegen nur auf dem Chat-Rechner und nie im Repo.
 - **14.11.2026 morgens: Schleusingen von innen (V18q; Hilfs-Agent `schleusingen-innen`, `docs/features/schleusingen-innen.md`).** `SINNEN` gibt `HAEUSER` die Türen der Stadt als zweite Quelle (`HAEUSER.addSource`, Nummern ab 900000); die Räume baut der Baukasten der Zombie-Nacht über `ZIPLAN.source` (Datensätze aus `SIPLAN.record`, Treppenhaus und Wohnungen über `post`, Räume mit `room.own`), die Läden zeichnet `LINNEN.drawPlan`. 500 der 787 Gebäude (338 ganze Häuser, 158 mit Treppenhaus, 4 Läden). **Offen:** die Wohnungen über den Läden, nur 4 der 14 Schilder mit passender Ladenart, 11 schmale hohe Häuser und 28 ohne Grundriss bleiben zu (der Baukasten braucht 1,45 m Flur für seine Treppe), Öffnungszeiten angenommen. **Als Nächstes:** Suhl mit dem Suhl-Chat.
 - **14.11.2026 früh: alle Häuser in Ratscher und die Läden in Schleusingen von innen (V18p; Hilfs-Agenten `haeuser` und `laeden-innen`, `docs/features/haeuser.md`, `docs/features/laeden-innen.md`).** Häuser: `HAEUSER` nutzt die Einrichtung der Zombie-Nacht (`ZINNEN.mount(id, {look, still: true})`), Stil je Hausnummer, Stil „heute“ in `HHEUTE`, Dorfbewohner zu Hause in `HGAST` (liest `DLIFE`), Fülllicht über `KERN.lights.borrow` (`haeuser:fill`). Läden: `LINNEN` baut die Räume beim Näherkommen (höchstens 2, Telefon 1), Haken in `laeden/laeden.js` nur mit `LAEDEN.ownLeaves`. **Offen:** Raumhöhe 2,53 m (die Fassade gibt 2,75 m Geschoss vor); in der Zombie-Nacht flimmert über Innentüren noch der Putzstreifen (Haken in `z_innen.js` ohne `o.still`) und die DDR-Schrankwand verdeckt ihre Fernsehnische; mit Dorfbewohnern nur ein Gruß; keine Leute in den Läden; Läden der Ladenstraße nur hinter Glas; OBI-Kalthaus ohne eigene Tür; Öffnungszeiten ohne OSM-Angabe angenommen. **Danach:** Schleusingen von innen (V18q).

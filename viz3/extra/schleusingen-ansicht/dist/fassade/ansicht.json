@@ -1,0 +1,1900 @@
+{
+"v": 1,
+"quelle": "feat/schleusingen-ansicht: aus viz3/extra/schleusingen-ansicht/dist/schleusingen-ansicht/fassaden.json (private Ansichten von der Straße, von Hand gelesen) und ratscher.json (freie Fotos) – tools/schleusingen-ansicht/ansicht.py",
+"b": {
+"#7": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e9e8e3",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+}
+},
+"#12": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d8d9db",
+"laeden": false,
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+},
+"geschosse": 1
+},
+"#16": {
+"art": "haus",
+"material": "stein",
+"farbe": "#bba98f",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#17": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#c9c8c2",
+"rahmen": "gruen",
+"laeden": "gruen",
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+}
+},
+"#18": {
+"art": "halle",
+"material": "glas",
+"achse": 3.3,
+"farbe": "#bebeb6",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 1
+},
+"#32": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#6cbcae",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#40": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e7e4dc",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#48": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d1d0d0",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 1
+},
+"#50": {
+"art": "haus",
+"material": "putz",
+"farbe": "#5e4636",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1,
+"first": "giebel"
+},
+"#51": {
+"art": "halle",
+"material": "glas",
+"achse": 3.3,
+"farbe": "#e8eae9",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 1
+},
+"#53": {
+"art": "haus",
+"material": "putz",
+"farbe": "#cecdcf",
+"rahmen": "gruen",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#56": {
+"art": "haus",
+"material": "fachwerk",
+"farbe": "#ece8df",
+"fachwerkTon": 0,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2
+},
+"#70": {
+"art": "haus",
+"material": "fachwerk-og",
+"farbe": "#8c3a2e",
+"fachwerkTon": 2,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 3
+},
+"#71": {
+"art": "haus",
+"material": "fachwerk-og",
+"farbe": "#d6d2d2",
+"fachwerkTon": 2,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#72": {
+"art": "kirche",
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"material": "stein",
+"farbe": "#c2b49a",
+"laeden": false
+},
+"#79": {
+"art": "haus",
+"material": "glatt",
+"achse": 3.3,
+"farbe": "#e2d49c",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 3
+},
+"#80": {
+"art": "schule",
+"geschosse": 2,
+"farbe": "#e8e8e4",
+"dach": {
+"form": "flach",
+"material": "flach",
+"farbe": "#55555a"
+},
+"material": "glatt",
+"laeden": false
+},
+"#82": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e6dcc0",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c",
+"form": "walm"
+},
+"geschosse": 2
+},
+"#83": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e8e1ce",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2
+},
+"#84": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e7eae9",
+"laeden": false,
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+}
+},
+"#85": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e0cfa4",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2
+},
+"#86": {
+"art": "haus",
+"material": "putz",
+"farbe": "#dfdcd0",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#92": {
+"art": "haus",
+"material": "glatt",
+"achse": 3.3,
+"farbe": "#d5cca8",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 3
+},
+"#93": {
+"art": "haus",
+"material": "glatt",
+"achse": 3.3,
+"farbe": "#e8e1ca",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 4
+},
+"#94": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ecebe6",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c"
+},
+"geschosse": 2,
+"first": "giebel"
+},
+"#114": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ecebe6",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#115": {
+"art": "haus",
+"material": "glatt",
+"achse": 3.3,
+"farbe": "#cccdcc",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 3
+},
+"#116": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e3e1df",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c"
+},
+"geschosse": 3,
+"first": "giebel"
+},
+"#118": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e8dccf",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3
+},
+"#119": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e9e0bd",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c"
+},
+"geschosse": 2
+},
+"#148": {
+"art": "haus",
+"material": "putz",
+"farbe": "#eceded",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2
+},
+"#149": {
+"art": "haus",
+"material": "putz",
+"farbe": "#f7f3f1",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#150": {
+"art": "haus",
+"material": "putz",
+"farbe": "#f3f2f3",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127",
+"form": "walm"
+},
+"geschosse": 2
+},
+"#151": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e7e7e3",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2
+},
+"#152": {
+"art": "haus",
+"material": "putz",
+"farbe": "#efefeb",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c"
+},
+"geschosse": 4
+},
+"#153": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#d8d7d0",
+"laeden": false,
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+},
+"geschosse": 2
+},
+"#154": {
+"art": "haus",
+"material": "putz",
+"farbe": "#a6a4a5",
+"laeden": false,
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+},
+"geschosse": 2
+},
+"#190": {
+"art": "haus",
+"material": "fachwerk-og",
+"farbe": "#dee0e5",
+"fachwerkTon": 0,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 3,
+"first": "giebel"
+},
+"#211": {
+"art": "haus",
+"material": "putz",
+"farbe": "#9da58a",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3,
+"first": "trauf",
+"gauben": true
+},
+"#212": {
+"art": "haus",
+"material": "putz",
+"farbe": "#efede8",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"first": "trauf",
+"gauben": true
+},
+"#217": {
+"art": "haus",
+"material": "putz",
+"farbe": "#c3b9a8",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#218": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e0b867",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#219": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d7d6d0",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#220": {
+"art": "haus",
+"material": "putz",
+"farbe": "#dca95a",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#221": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d9876a",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#226": {
+"art": "haus",
+"material": "putz",
+"farbe": "#b9644d",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3
+},
+"#227": {
+"art": "haus",
+"material": "putz",
+"farbe": "#bdb7aa",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 2,
+"first": "trauf"
+},
+"#228": {
+"art": "haus",
+"material": "putz",
+"farbe": "#bdb7aa",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 2,
+"first": "trauf"
+},
+"#232": {
+"art": "haus",
+"material": "glatt",
+"achse": 3.3,
+"farbe": "#a9b3c6",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3
+},
+"#233": {
+"art": "haus",
+"material": "glatt",
+"achse": 3.3,
+"farbe": "#d5d6b6",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 2
+},
+"#234": {
+"art": "haus",
+"material": "glatt",
+"achse": 3.3,
+"farbe": "#e2dbb2",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 2
+},
+"#235": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#8e8f8f",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c"
+},
+"geschosse": 2
+},
+"#236": {
+"art": "haus",
+"material": "glatt",
+"achse": 3.3,
+"farbe": "#dcd6c4",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 4
+},
+"#239": {
+"art": "haus",
+"material": "putz",
+"farbe": "#b5baa7",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#241": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e4e3dd",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#242": {
+"art": "haus",
+"material": "putz",
+"farbe": "#b8c4b0",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#243": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ede2b8",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2,
+"first": "trauf"
+},
+"#244": {
+"art": "haus",
+"material": "putz",
+"farbe": "#efe9cc",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#245": {
+"art": "haus",
+"material": "putz",
+"farbe": "#f6dfd1",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2,
+"first": "trauf",
+"gauben": true
+},
+"#246": {
+"art": "haus",
+"material": "fachwerk",
+"farbe": "#ece6da",
+"fachwerkTon": 1,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2,
+"first": "giebel"
+},
+"#247": {
+"art": "haus",
+"material": "putz",
+"farbe": "#efe5a6",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3,
+"first": "trauf",
+"gauben": true
+},
+"#250": {
+"art": "haus",
+"material": "putz",
+"farbe": "#f1dbba",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3,
+"first": "trauf",
+"gauben": true
+},
+"#251": {
+"art": "haus",
+"material": "putz",
+"farbe": "#f8f8f2",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3,
+"first": "trauf"
+},
+"#252": {
+"art": "haus",
+"material": "putz",
+"farbe": "#8e4a3c",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 3
+},
+"#253": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#5d6066",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#308": {
+"art": "haus",
+"farbe": "#d4d4d8",
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+},
+"material": "putz",
+"laeden": false,
+"geschosse": 3
+},
+"#310": {
+"art": "haus",
+"material": "putz",
+"farbe": "#dcc07e",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3
+},
+"#331": {
+"art": "haus",
+"material": "fachwerk-giebel",
+"farbe": "#ebe7dc",
+"fachwerkTon": 0,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1,
+"first": "giebel"
+},
+"#332": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e9e3d2",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2,
+"first": "giebel"
+},
+"#335": {
+"art": "haus",
+"material": "schiefer-og",
+"schieferTon": 0,
+"farbe": "#ddd8bc",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#336": {
+"art": "haus",
+"material": "schiefer-og",
+"schieferTon": 0,
+"farbe": "#ddd8bc",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#337": {
+"art": "haus",
+"material": "schiefer-og",
+"schieferTon": 0,
+"farbe": "#ddd8bc",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3
+},
+"#345": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e6e1cf",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"tuer": 4,
+"ladenfront": {
+"schrift": [
+"Optik"
+]
+}
+},
+"#349": {
+"art": "haus",
+"material": "fachwerk-og",
+"farbe": "#edece8",
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"fachwerkTon": 2,
+"laeden": false,
+"geschosse": 2
+},
+"#350": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e4e5e4",
+"laeden": false,
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+},
+"geschosse": 4
+},
+"#351": {
+"art": "haus",
+"material": "putz",
+"farbe": "#c9c4bc",
+"rahmen": "braun",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2
+},
+"#352": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e2e2e2",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1,
+"first": "giebel"
+},
+"#359": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d1d9d8",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#360": {
+"art": "haus",
+"material": "putz",
+"farbe": "#a9c4af",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"tuer": 4,
+"ladenfront": {
+"schrift": [
+"Apotheke"
+]
+}
+},
+"#361": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ece8dc",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#362": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d6dbd6",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#363": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#5a5d63",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#368": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e8dcb0",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#374": {
+"art": "haus",
+"material": "putz",
+"farbe": "#aba498",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 2
+},
+"#376": {
+"art": "schuppen",
+"material": "putz",
+"farbe": "#a3a29a",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 2
+},
+"#380": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#5d6067",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+}
+},
+"#400": {
+"art": "haus",
+"material": "fachwerk-og",
+"farbe": "#d4cecb",
+"fachwerkTon": 1,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 2
+},
+"#401": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#b4b3ac",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2
+},
+"#408": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#c8c2b8",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3
+},
+"#409": {
+"art": "haus",
+"material": "fachwerk-og",
+"farbe": "#c9d4be",
+"fachwerkTon": 1,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3
+},
+"#411": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ecd660",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c"
+},
+"geschosse": 2
+},
+"#417": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e8e8e4",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c"
+}
+},
+"#418": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ebebe6",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#419": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ebe9e3",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#423": {
+"art": "haus",
+"material": "putz",
+"farbe": "#f2f2f6",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#424": {
+"art": "haus",
+"material": "putz",
+"farbe": "#8f857a",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 2
+},
+"#425": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e9dcae",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#430": {
+"art": "haus",
+"farbe": "#ecebe6",
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"material": "putz",
+"laeden": false,
+"geschosse": 1
+},
+"#431": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d4d3d5",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 1
+},
+"#436": {
+"art": "schuppen",
+"material": "schuppen",
+"achse": 3.2,
+"farbe": "#6b3a2e",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#438": {
+"art": "schuppen",
+"material": "schuppen",
+"achse": 3.2,
+"farbe": "#6b3a2e",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#457": {
+"art": "haus",
+"material": "fachwerk-og",
+"farbe": "#c1c2c2",
+"fachwerkTon": 1,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2
+},
+"#459": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e7dfc4",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c"
+},
+"geschosse": 2
+},
+"#460": {
+"art": "haus",
+"material": "putz",
+"farbe": "#dfe0e0",
+"rahmen": "braun",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2
+},
+"#492": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#5d6066",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#494": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#5d6066",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#495": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ebebe6",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#503": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d1beb8",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3,
+"tuer": 0,
+"ladenfront": {
+"farbe": "#5e4a43",
+"schrift": [
+"Fleischerei"
+]
+}
+},
+"#504": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e4ddc5",
+"rahmen": "gruen",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3,
+"tuer": 0,
+"ladenfront": {
+"farbe": "#5a4136",
+"schrift": [
+"Fleischerei"
+]
+}
+},
+"#505": {
+"art": "haus",
+"material": "putz",
+"farbe": "#cedce4",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3,
+"tuer": 6,
+"ladenfront": {
+"farbe": "#a3cfda",
+"schrift": [
+"Konditorei",
+"Confiserie"
+]
+}
+},
+"#506": {
+"art": "haus",
+"material": "putz",
+"farbe": "#f9f4ec",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3
+},
+"#507": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e3d8c6",
+"rahmen": "braun",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3,
+"tuer": 1
+},
+"#508": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e6d9c7",
+"rahmen": "braun",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"tuer": 1,
+"ladenfront": {
+"farbe": "#9a6248",
+"schrift": [
+"Haushaltwaren",
+"Geschenke",
+"Schlüsseldienst"
+]
+}
+},
+"#510": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e8c3a5",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#511": {
+"art": "haus",
+"material": "putz",
+"farbe": "#f6e3d2",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 3
+},
+"#512": {
+"art": "haus",
+"material": "putz",
+"farbe": "#f9f5e8",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2
+},
+"#513": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e2c7c3",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 2
+},
+"#532": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e7ebec",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#535": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e6d8bc",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3
+},
+"#538": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ece0b5",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2
+},
+"#552": {
+"art": "halle",
+"material": "blech",
+"achse": 4.5,
+"farbe": "#8f9a8e",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 1
+},
+"#554": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e6d3c3",
+"rahmen": "weiss",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 3,
+"tuer": 4
+},
+"#555": {
+"art": "haus",
+"material": "putz",
+"farbe": "#c9c99a",
+"rahmen": "braun",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3
+},
+"#561": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#d8d7d0",
+"laeden": false,
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+}
+},
+"#564": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e0dfd6",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 2
+},
+"#577": {
+"art": "haus",
+"material": "fachwerk-og",
+"farbe": "#9a4a3a",
+"fachwerkTon": 2,
+"laeden": false,
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+},
+"geschosse": 2
+},
+"#578": {
+"art": "haus",
+"material": "putz",
+"farbe": "#dcdcd6",
+"laeden": false,
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+}
+},
+"#579": {
+"art": "haus",
+"farbe": "#d3d1d0",
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"material": "fachwerk-giebel",
+"fachwerkTon": 1,
+"laeden": false,
+"geschosse": 2
+},
+"#580": {
+"geschosse": 1,
+"art": "halle",
+"material": "putz",
+"farbe": "#dddbd8",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+}
+},
+"#584": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#55575d",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 2
+},
+"#595": {
+"art": "haus",
+"material": "fachwerk",
+"farbe": "#ece6da",
+"fachwerkTon": 1,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#614": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d3d3d5",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2
+},
+"#615": {
+"art": "haus",
+"material": "putz",
+"farbe": "#d2d3d5",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#4f4d4c"
+},
+"geschosse": 1
+},
+"#616": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#4f5258",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#635": {
+"art": "haus",
+"material": "putz",
+"farbe": "#efeeea",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 3
+},
+"#645": {
+"art": "haus",
+"material": "putz",
+"farbe": "#eadfb5",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#653": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e2cfa6",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+}
+},
+"#673": {
+"art": "haus",
+"material": "fachwerk-og",
+"farbe": "#9a4a3a",
+"fachwerkTon": 0,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2
+},
+"#706": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#b3afa4",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+}
+},
+"#709": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#a9aaa9",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 2
+},
+"#710": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e8e0cc",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 2
+},
+"#711": {
+"art": "haus",
+"material": "schiefer-og",
+"schieferTon": 0,
+"farbe": "#ecebe6",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#712": {
+"art": "haus",
+"material": "schiefer-og",
+"schieferTon": 0,
+"farbe": "#9a4a3a",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 2
+},
+"#713": {
+"art": "halle",
+"material": "putz",
+"farbe": "#b8afa0",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 1
+},
+"#714": {
+"art": "halle",
+"material": "putz",
+"farbe": "#b8afa0",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 1
+},
+"#715": {
+"art": "haus",
+"material": "putz",
+"farbe": "#ece2c4",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+},
+"geschosse": 1
+},
+"#716": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e7e7e4",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#8e4632"
+}
+},
+"#717": {
+"geschosse": 1,
+"art": "halle",
+"material": "putz",
+"farbe": "#9a5442",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+}
+},
+"#718": {
+"art": "haus",
+"material": "schiefer",
+"schieferTon": 3,
+"farbe": "#56585e",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#719": {
+"art": "schuppen",
+"material": "blech",
+"achse": 4.5,
+"farbe": "#8b8f8f",
+"laeden": false,
+"dach": {
+"material": "blech",
+"farbe": "#8c9090"
+},
+"geschosse": 1
+},
+"#720": {
+"art": "haus",
+"material": "putz",
+"farbe": "#e6e6e7",
+"rahmen": "braun",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#5e3b2f"
+},
+"geschosse": 2
+},
+"#761": {
+"art": "schuppen",
+"material": "schuppen",
+"achse": 3.2,
+"farbe": "#6a5d50",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 1
+},
+"#762": {
+"art": "schuppen",
+"material": "schuppen",
+"achse": 3.2,
+"farbe": "#6a5d50",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 1
+},
+"#763": {
+"art": "scheune",
+"material": "putz",
+"farbe": "#a39d92",
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#b5553a"
+},
+"geschosse": 1
+},
+"#767": {
+"art": "haus",
+"material": "putz",
+"farbe": "#c8cbd1",
+"laeden": false,
+"dach": {
+"material": "schiefer",
+"farbe": "#3a3d44"
+}
+},
+"#768": {
+"art": "haus",
+"material": "fachwerk",
+"farbe": "#9c5642",
+"fachwerkTon": 0,
+"laeden": false,
+"dach": {
+"material": "ziegel",
+"farbe": "#7c3127"
+},
+"geschosse": 2,
+"first": "giebel"
+},
+"#773": {
+"art": "halle",
+"material": "glas",
+"achse": 3.3,
+"farbe": "#d1d3d9",
+"laeden": false,
+"dach": {
+"material": "flach",
+"farbe": "#55555a",
+"form": "flach"
+},
+"geschosse": 1
+},
+"ratscher:196": {
+"art": "halle",
+"material": "blech",
+"achse": 4.5,
+"farbe": "#5c7090",
+"laeden": false,
+"dach": {
+"material": "blech",
+"farbe": "#6a7891"
+}
+}
+}
+}
