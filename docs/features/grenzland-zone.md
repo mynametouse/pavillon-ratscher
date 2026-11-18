@@ -56,7 +56,11 @@ Einzelheiten danach).
 ## Schnittstelle (für `kapitel2`)
 
 `GLZONE.da()` (gebaut, und der Boden unter dem Spieler gezeichnet) · `GLZONE.ort(name)` → `{ x, y, z, name }` für `kolonnenweg_a`
-(am Grenzturm), `kolonnenweg_b` (Richtung Görsdorf), `bunker`, `museum`, `heide`, `parkplatz`, `hide`, `ankunft` · `GLZONE.weg()` →
+(am Grenzturm), `kolonnenweg_b` (Richtung Görsdorf), `bunker`, `museum`, `heide`, `parkplatz`, `hide`, `ankunft`, dazu aus der gebauten
+Zone `foto` (von hier fotografiert man den Bunker, 24 m vor der Tür) und `fremder` (am Waldrand mit Blick auf den Bunker) ·
+`GLZONE.netz(x, y)` → Empfang 0–4 Balken, −1 kein Netz (gut am Parkplatz, schwach im Streifen, keins in der Heide und Richtung Görsdorf –
+„kein Netz“ der Mission 1) · `GLZONE.punkte('wachen' | 'wild')` → `[[x, y, Blickrichtung°], …]` (drei Stellen der Wachen am Bunker; Wild
+am Waldrand des Streifens, für die Dämmerung) · `GLZONE.weg()` →
 der Kolonnenweg `[[x, y, z], …]` alle 2 m · `GLZONE.anfahrt()` → `[[x, y], …]` · `GLZONE.hin(o)` → Promise (`o.ort`, `o.mit`:
 `'moped'` | `'fuss'` | sonst das Fahrzeug, in dem man sitzt) · `GLZONE.need(id, an)` · `GLZONE.route(an)` · `GLZONE.state()` ·
 `KERN.emit('grenzland:zone', { an })`. Daten und Texte: `GLZDATA` (`gl_zone_data.js`, rein).
@@ -84,6 +88,11 @@ Waldrändern, Anfahrt). Quellen und Lizenzen: `meta.json` → `attribution`, `ma
 - **Wunsch an den Fotorealismus-Chat (Bewuchs):** `BWKARTE` kennt nur seine eigenen Zellen; außerhalb wächst nichts. Ein Weg, dass eine
   Zone eigene Karten mitbringt (etwa `BWKARTE.zone(base, zellen)`), gäbe der Heide und dem Streifen Gras und Blumen.
 - Der Partner, der zu Fuß folgt, bleibt bei `hin()` zurück (nur wer mitfährt, kommt mit) – `gl_modus.js` kennt das Nachholen.
+- **Empfang:** `GLZONE.netz(x, y)` in die Welt-Funktion `netz()` des Handys hängen (`gl_handy.js`, eine Zeile: in der Zone ihr Wert,
+  sonst wie bisher) – dann zeigt das Handy im Grünen Band „Kein Netz“.
+- **KERN-Boden:** die Zone gibt `ground`/`terrain` mit Rang 4 aus ihren eigenen Kacheln (roh, über `WELT.sampler`), wo noch keine Kachel
+  gezeichnet ist – vorher fiel `KERN.ground` dort auf das alte 120-m-Gelände von `world/ratscher.js` zurück (es endet nördlich der Zone
+  und antwortet mit seinem Rand): eine Kamera oder ein Fußgänger, dorthin gesetzt, stand Meter zu tief.
 
 ## Offen
 
