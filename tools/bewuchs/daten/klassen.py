@@ -2,7 +2,7 @@
 07.04.2024) says where it is green, bare or sealed, the height model says where bushes stand, the app's roads, buildings and water say
 where nothing grows. Rules in order (later ones win); the reasons are in docs/features/bewuchs-daten.md.
 
-  cls, ndvi, info = classify(q, i, j)      # q: quellen.Quellen; arrays on Grid.cell(i, j, 0.5) (no margin)"""
+  cls, ndvi, info = classify(q, i, j, res=0.5)   # q: quellen.Quellen; arrays on Grid.cell(i, j, res) (no margin); res 0.5 or 1 m"""
 import os, sys
 import numpy as np
 from scipy import ndimage as ndi
@@ -12,7 +12,7 @@ from gemeinsam import Grid, K, SITE_ZONE  # noqa: E402
 import handdaten  # noqa: E402
 import raster  # noqa: E402
 
-RES = 0.5
+RES = 0.5  # default; villages and towns 0.5 m, the open land beyond the square 1 m (gebiete.py)
 MARGIN = 10.0  # m around the cell (the orthophoto is fetched with 12 m)
 MP = int(MARGIN / RES)
 # thresholds of the April 2024 colour-infrared image (8 bit, NDVI = (NIR − R) / (NIR + R)); checked on the OSM meadows (median 0.52–0.58),
@@ -22,6 +22,8 @@ T_BARE = 0.18   # below: soil, gravel, asphalt, roofs (and the bare twigs of lea
 # verge widths beyond the carriageway edge (m) by road kind (world/roads.js KINDS: motorway main county street lane service track path foot)
 VERGE = [3.0, 2.5, 2.5, 2.0, 2.0, 1.5, 1.0, 0.5, 0.5]
 VERGE_IN = 0.3  # the first 0.3 m beyond the edge: the road's own shoulder (roads.js roadShade), class 0
+RAIL_BED = 4.4   # m: the ballast bed of a track (OSM railway lines, quellen.RAIL_KINDS) – nothing grows (weeds in it are not a lawn)
+RAIL_SIDE = 3.0  # m beyond the bed on either side: the cess and the slope, unmanaged – a margin where the land beside was lawn or meadow
 # DLM: colours of the WMS rendering (holen.py; their meaning read with GetFeatureInfo)
 DLM_ACKER, DLM_GRUEN = (255, 255, 239), (217, 255, 191)  # AX_Landwirtschaft Vegetationsmerkmal 1010 Ackerland, 1020 Grünland
 DLM_SPORT = {(64, 241, 175): 'sport', (16, 239, 175): 'bad', (60, 239, 110): 'allot', (225, 244, 189): 'enclosure'}  # Funktion 4100, 4320, 4440/4310, 4200
@@ -39,9 +41,9 @@ def _half(a):
     return a.reshape(h // 2, 2, w // 2, 2, *a.shape[2:]).mean((1, 3))
 
 
-def features(i, j):
-    """image and height features of a cell on the 0.5 m grid with margin"""
-    g25 = Grid.cell(i, j, RES / 2, MARGIN)
+def features(i, j, res=RES):
+    """image and height features of a cell on its grid (res) with margin, from the photo at res / 2"""
+    g25 = Grid.cell(i, j, res / 2, MARGIN)
     rgb = raster.dop(i, j, 'th_dop', g25).astype(np.float32)
     cir = raster.dop(i, j, 'th_dop20cir', g25).astype(np.float32)
     nir, red = cir[..., 0], cir[..., 1]
@@ -50,7 +52,7 @@ def features(i, j):
     m1 = ndi.uniform_filter(nir, 5)
     m2 = ndi.uniform_filter(nir * nir, 5)
     cv = np.sqrt(np.maximum(m2 - m1 * m1, 0)) / (m1 + 8.0)
-    g = Grid.cell(i, j, RES, MARGIN)
+    g = Grid.cell(i, j, res, MARGIN)
     gr, hag = raster.heights(g)
     if hag is None:  # no height model here: no bushes from heights, no slopes
         hag = np.zeros((g.h, g.w), np.float32)
@@ -62,7 +64,7 @@ def roads_raster(q, g):
     """carriageway mask, distance to the nearest carriageway edge (m) and that road's kind; bridges left out (ground under them)"""
     bx = box(g.x0 - 20, g.y0 - 20, g.x1 + 20, g.y1 + 20)
     lab = np.zeros((g.h, g.w), np.uint8)
-    for r in sorted(q.roads, key=lambda r: -r['kind']):  # wide roads first, narrow ones over them
+    for r in sorted(q.roads_in(bx) if hasattr(q, 'roads_in') else q.roads, key=lambda r: -r['kind']):  # wide roads first, narrow over them
         if r['bridge']:
             continue
         ln = LineString(r['p'])
@@ -80,11 +82,12 @@ def _sizes(mask, lab, n, res):
     return ndi.sum(mask, lab, np.arange(1, n + 1)) * res * res
 
 
-def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
+def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True, res=RES):
     """extra: [(polygon, use name)] drawn over OSM; garten: (map, x0, y0, res) – decides in the site zone; model_zone: OSM waters left out
     in the site zone (the modelled brook replaces them there)"""
-    f = f or features(i, j)
+    f = f or features(i, j, res)
     g = f['grid']
+    P = lambda m: max(1, int(round(m / g.res)))  # noqa: E731  metres → pixels (iterations of the morphology)
     H, W = g.h, g.w
     X, Y = g.centres()
     bx = box(g.x0, g.y0, g.x1, g.y1)
@@ -100,7 +103,8 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
         A.setdefault(kind, []).append(geom)
     mk = {k: raster.draw_polys(g, v).astype(bool) for k, v in A.items()}
     get = lambda k: mk.get(k, Z())  # noqa: E731
-    bld = get('building') | raster.draw_polys(g, [p for p in q.ethos if p.intersects(bx)]).astype(bool)
+    more = q.ethos + (q.ethos_z(i, j) if hasattr(q, 'ethos_z') else []) + getattr(q, 'zone_b', [])
+    bld = get('building') | raster.draw_polys(g, [p for p in more if p.intersects(bx)]).astype(bool)
     water = get('water')
     stream_m, ditch_m = Z(), Z()
     zone = box(*SITE_ZONE)
@@ -116,6 +120,9 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
             else:
                 stream_m |= m
     carr, edge, rkind = roads_raster(q, g)
+    rl = [ln for ln in getattr(q, 'rails', []) if ln.intersects(bx)]
+    rail = raster.draw_lines(g, rl, RAIL_BED).astype(bool) if rl else Z()
+    rail_side = raster.draw_lines(g, rl, RAIL_BED + 2 * RAIL_SIDE).astype(bool) & ~rail if rl else Z()
     orte = raster.draw_polys(g, [p for n, t, p in q.orte if p.intersects(bx)]).astype(bool)
     # ---------- DLM ----------
     d_lw = raster.dlm('veg01_f', g)
@@ -148,13 +155,14 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
     use[d_gruen] = USE['meadow']
     use[raster.dlm('veg02_f', g)[..., 3] > 60] = USE['forest']
     use[raster.dlm('veg03_f_1', g)[..., 3] > 60] = USE['scrub']
-    use[(raster.dlm('sie02_f_1', g)[..., 3] > 60) | (raster.dlm('sie02_f_6', g)[..., 3] > 60) | (raster.dlm('sie02_f_2', g)[..., 3] > 60)] = USE['garden']
+    use[(raster.dlm('sie02_f_1', g)[..., 3] > 60) | (raster.dlm('sie02_f_6', g)[..., 3] > 60)] = USE['garden']
+    use[raster.dlm('sie02_f_2', g)[..., 3] > 60] = USE['yard']  # industry and trade: rough grass, not lawn
     use[raster.dlm('sie02_f_7', g)[..., 3] > 60] = USE['public']
     use[raster.dlm('sie02_f_9', g)[..., 3] > 60] = USE['cemetery']
     for col, u in DLM_SPORT.items():
         use[raster.colour_mask(d_sp, col, 10)] = USE[u]
     use[d_unl] = USE['naturnah']
-    use[d_unl & dil(water_all | d_water, 40)] = USE['ufer']  # Unland by the water: the reservoir's shore
+    use[d_unl & dil(water_all | d_water, P(20))] = USE['ufer']  # Unland by the water: the reservoir's shore
     for k, u in OSM_USE:
         if k in mk:
             use[mk[k]] = USE[u]
@@ -178,19 +186,25 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
         cls[use == USE[u]] = K[c]
     # village land (gardens, yards, public greens, sport, allotments, the bathing lawn): what the image shows
     vil = np.isin(use, [USE['garden'], USE['yard'], USE['public'], USE['sport'], USE['pitch'], USE['allot'], USE['bad']]) | ((use == 0) & village)
-    lawn_cls = np.select([np.isin(use, [USE['public'], USE['bad'], USE['sport']]), use == USE['pitch']], [K['oeffentlich'], K['sportrasen']], K['zierrasen'])
+    # the grass of yards, works and depots is mown now and then (a meadow), not a lawn
+    lawn_cls = np.select([np.isin(use, [USE['public'], USE['bad'], USE['sport']]), use == USE['pitch'], use == USE['yard']],
+                         [K['oeffentlich'], K['sportrasen'], K['maehwiese']], K['zierrasen'])
     vg = vil & ~bare
     cls[vg] = lawn_cls[vg]
     # coarse grass in big gardens and yards (last year's grass in April; the lawns are mown smooth): a meadow
-    coarse = vil & green & (cv > 0.16) & (nd < 0.42) & (lawn_cls == K['zierrasen'])
-    cls[ndi.binary_opening(coarse, iterations=2)] = K['maehwiese']
+    # (the cap of the NDVI follows the flight: the 60th percentile of the village's green – lusher in May than in April)
+    vgn = nd[vil & green]
+    cap = float(np.percentile(vgn, 60)) if vgn.size > 1000 else 0.42
+    coarse = vil & green & (cv > 0.16) & (nd < cap) & (lawn_cls == K['zierrasen'])
+    cls[ndi.binary_opening(coarse, iterations=P(1.0))] = K['maehwiese']
     cls[vil & bare] = K['nichts']
     # dug beds in gardens: in early April a vegetable plot is soil with a few weeds – between lawn and paving in the infrared (NDVI
     # 0.12–0.27, a plot in Ratscher 0.17–0.23), rough (cv ≥ 0.03), flat, compact (≥ 1.5 m across), 8–400 m², mostly framed by green
     # (not the joints of a paved yard), away from the road and the eaves. Ornamental beds are not told apart in the image (stage 4).
-    dug = vil & (nd >= 0.12) & (nd < 0.27) & (cv >= 0.03) & (hag < 0.5) & (lum > 60) & ~carr & (edge > 2.0) & ~dil(bld, 3)
-    dug &= ~np.isin(use, [USE['yard'], USE['public'], USE['sport'], USE['pitch'], USE['bad']])
-    dug = ndi.binary_opening(dug, iterations=2)
+    dug = vil & (nd >= 0.12) & (nd < 0.27) & (cv >= 0.03) & (hag < 0.5) & (lum > 60) & ~carr & (edge > 2.0) & ~dil(bld, P(1.5))
+    dug &= g.res <= 0.5  # (only where the map is fine enough)
+    dug &= ~np.isin(use, [USE['yard'], USE['public'], USE['sport'], USE['pitch'], USE['bad']]) & ~rail & ~rail_side & ~get('railland')
+    dug = ndi.binary_opening(dug, iterations=P(1.0))
     lab, n = ndi.label(dug)
     if n:
         ids = np.arange(1, n + 1)
@@ -213,9 +227,9 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
         wide = np.r_[False, ndi.maximum(wdt, lab, np.arange(1, n + 1)) > 4.0]
         cls[gu & wide[lab]] = K['maehwiese']
         cls[gu & ~wide[lab]] = K['saum']
-    cls[unk & soil & dil(cls == K['acker'], 8)] = K['acker']
+    cls[unk & soil & dil(cls == K['acker'], P(4))] = K['acker']
     cls[cls == 255] = K['nichts']
-    pl = ndi.binary_opening((cls == K['maehwiese']) & soil & ~vil, iterations=3)
+    pl = ndi.binary_opening((cls == K['maehwiese']) & soil & ~vil, iterations=P(1.5))
     lab, n = ndi.label(pl)
     if n:
         cls[np.isin(lab, np.flatnonzero(_sizes(pl, lab, n, g.res) >= 1000) + 1)] = K['acker']
@@ -233,12 +247,12 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
         struct = np.isin(lab, np.flatnonzero(_sizes(struct, lab, n, g.res) >= 15) + 1)
     bldx = bld | struct
     # farm yards round the barns that stand in a field block: bare ground within 15 m of a building is a yard, not the field
-    cls[np.isin(cls, [K['acker'], K['maehwiese']]) & (nd < 0.15) & dil(bldx, 30)] = K['nichts']
+    cls[np.isin(cls, [K['acker'], K['maehwiese']]) & (nd < 0.15) & dil(bldx, P(15))] = K['nichts']
 
     # ---------- bushes: 0.5–4 m above the ground, not a building, car, wall or tree; or OSM/DLM scrub where the heights agree ----------
     in_forest = cls == K['waldboden']
     tallc = hag >= 4.0
-    bush = shrub_h & ~tree_m & ~dil(bldx, 2) & ~carr & ~water_all & (nd >= 0.12)
+    bush = shrub_h & ~tree_m & ~dil(bldx, P(1)) & ~carr & ~water_all & (nd >= 0.12)
     bush &= ~((use == USE['field']) & (hag < 1.5)) & (use != USE['yard'])
     bush = ndi.binary_opening(bush, iterations=1)
     lab, n = ndi.label(bush)
@@ -265,7 +279,7 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
         ok = under & (d * g.res < 12)
         cls[ok] = cls[idx[0], idx[1]][ok]
     # closed canopy outside the forest areas and the village (copses, the gallery along the river): forest floor
-    big = ndi.binary_closing(canopy, iterations=2) & ~vil
+    big = ndi.binary_closing(canopy, iterations=P(1)) & ~vil
     lab, n = ndi.label(big)
     if n:
         cls[np.isin(lab, np.flatnonzero(_sizes(big, lab, n, g.res) >= 1500) + 1) & ~carr & ~bld & (cls != K['acker'])] = K['waldboden']
@@ -273,7 +287,7 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
     # ---------- roads: carriageway and shoulder nothing, the verge outside the villages, green strips inside ----------
     cls[carr | (edge < VERGE_IN)] = K['nichts']
     vw = np.where(rkind >= 0, np.take(VERGE, np.clip(rkind, 0, 8)), 0.0)
-    built = orte & vil  # built-up proper: a road through the built-up area along a meadow or a field still has a verge
+    built = d_ort  # verges only outside the built-up area of the Basis-DLM (Ortslage); the green strips along streets inside it
     verge = ~carr & (edge >= VERGE_IN) & (edge <= vw) & ~built & ~bldx & ~water_all
     verge &= ~np.isin(cls, [K['nichts'], K['gebuesch']]) | ((cls == K['nichts']) & ~bare) | ((cls == K['gebuesch']) & (edge <= 1.5))
     verge &= ~(np.isin(cls, [K['acker'], K['ackerrand']]) & (edge > 1.5))
@@ -289,7 +303,7 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
         sz = _sizes(isl, lab, n, g.res)
         for k in np.flatnonzero((sz >= 4) & (sz <= 500)) + 1:
             comp = lab == k
-            rim = dil(comp, 3) & ~comp
+            rim = dil(comp, P(1.5)) & ~comp
             if carr[rim].mean() >= 0.75:
                 cls[comp] = K['verkehrsgruen']
 
@@ -301,13 +315,13 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
     # inside a field block of the DLM: where a large ploughed part meets a large green one (two fields of one block, or grass on arable
     # land), a margin on both sides (smoothed over 15 m, parts of at least 0.5 ha: tramlines and patches inside one field do not count)
     if field.any():
-        sm = ndi.uniform_filter((nd < 0.25).astype(np.float32), 31) > 0.5
+        sm = ndi.uniform_filter((nd < 0.25).astype(np.float32), 2 * P(7.5) + 1) > 0.5
         parts = []
         for m in (sm & field, ~sm & field):
-            m = ndi.binary_opening(m, iterations=6)
+            m = ndi.binary_opening(m, iterations=P(3))
             lab, n = ndi.label(m)
             parts.append(np.isin(lab, np.flatnonzero(_sizes(m, lab, n, g.res) >= 5000) + 1) if n else m)
-        cls[dil(parts[0], 2) & dil(parts[1], 2) & field] = K['ackerrand']
+        cls[dil(parts[0], P(1)) & dil(parts[1], P(1)) & field] = K['ackerrand']
     d_f = ndi.distance_transform_edt(~field) * g.res
     cls[np.isin(cls, [K['maehwiese'], K['weide']]) & (d_f <= 1.0)] = K['saum']
     forest = cls == K['waldboden']
@@ -322,7 +336,17 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
     if gr is not None:  # steep slopes outside the village (embankments, the dam): margins
         gy, gx = np.gradient(np.nan_to_num(gr, nan=0.0), g.res)
         steep = (np.hypot(gx, gy) > 0.6) & ~village & np.isin(cls, [K['maehwiese'], K['weide'], K['acker'], K['ackerrand']])
-        cls[ndi.binary_opening(steep, iterations=2)] = K['saum']
+        cls[ndi.binary_opening(steep, iterations=P(1))] = K['saum']
+
+    # ---------- railways: the ballast bed nothing, the cess and the slopes beside it margins (where the land was lawn or meadow); the green of
+    # a station's or a line's land (OSM landuse=railway) a margin too, its bare ground nothing ----------
+    rland = get('railland')
+    if rl or rland.any():
+        soft = np.isin(cls, [K['zierrasen'], K['oeffentlich'], K['bankett'], K['maehwiese'], K['weide'], K['gemuese'], K['sportrasen'],
+                             K['verkehrsgruen']])
+        cls[(rail_side | rland) & soft] = K['saum']
+        cls[rland & bare & ~np.isin(cls, [K['waldboden'], K['gebuesch'], K['ufer']])] = K['nichts']
+        cls[rail] = K['nichts']
 
     # ---------- built things: buildings, water, the app's own village centre and stadtgruen's hedges ----------
     cls[bldx | water | (stream_m & ~carr)] = K['nichts']
@@ -332,6 +356,9 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
         cls[raster.draw_polys(g, [Polygon(p['p']) for p in dk.get('paving', [])]).astype(bool)] = K['nichts']
         if dk.get('well'):
             cls[raster.disc_mask(g, [dk['well']['c']], max(dk['well']['size']) / 2 + 0.3)] = K['nichts']
+    zl = [(ln, w) for ln, w in getattr(q, 'zone_lines', []) if ln.intersects(bx)]
+    for ln, w in zl:
+        cls[raster.draw_lines(g, [ln], w).astype(bool)] = K['nichts']
     sh = [h for h in q.stadtgruen_hedges if g.x0 - 5 < h[0] < g.x1 + 5 and g.y0 - 5 < h[1] < g.y1 + 5]
     if sh:
         cls[raster.disc_mask(g, [h[:2] for h in sh], [h[2] for h in sh])] = K['nichts']
@@ -347,5 +374,5 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True):
             v = np.clip(((gy0 + gm.shape[0] * gres - Y[inz]) / gres).astype(int), 0, gm.shape[0] - 1)
             cls[inz] = gm[v, u]
 
-    core = g.inner(MP)
+    core = g.inner(int(round(MARGIN / g.res)))
     return cls[core], nd[core], {'use': use[core]}
