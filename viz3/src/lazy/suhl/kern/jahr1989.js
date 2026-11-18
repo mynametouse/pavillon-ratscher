@@ -67,7 +67,9 @@ export function jahr1989(ctx, C, ST, api) {
   let undo = [],
     mats = [],
     HASH = null; // the people in cells of 2 m (S.pushOut)
-  const WALLS = []; // the fence, the gate and its pillars: [x0, y0, x1, y1, half width]
+  const WALLS = [], // the fence, the gate and its pillars: [x0, y0, x1, y1, half width] (below 0: open, not in the way)
+    LEAVES = []; // the gate's two leaves: [group, side, rotation shut]
+  let GATEWALL = null;
   const hh = n => {
     const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
     return x - Math.floor(x);
@@ -250,14 +252,16 @@ export function jahr1989(ctx, C, ST, api) {
     });
     // a slow sway (weight from one foot to the other) in the vertex shader: by person (aPh – the instance's number differs between the
     // parts, a cap swayed off its head with it), more at the shoulders than at the feet
-    const U = { uT: { value: 0 } };
+    const U = { uT: { value: 0 }, uCh: { value: 0 }, uChF: { value: 4 } };
     mat.onBeforeCompile = sh => {
       sh.uniforms.uT = U.uT;
+      sh.uniforms.uCh = U.uCh;
+      sh.uniforms.uChF = U.uChF;
       sh.vertexShader =
-        'attribute float aPh;\nuniform float uT;\n' +
+        'attribute float aPh;\nuniform float uT, uCh, uChF;\n' +
         sh.vertexShader.replace(
           '#include <begin_vertex>',
-          '#include <begin_vertex>\n float ph = aPh; transformed.x += sin( uT * 0.9 + ph ) * 0.018 * transformed.y; transformed.z += sin( uT * 0.63 + ph * 1.3 ) * 0.01 * transformed.y;'
+          '#include <begin_vertex>\n float ph = aPh; transformed.x += sin( uT * 0.9 + ph ) * 0.018 * transformed.y; transformed.z += sin( uT * 0.63 + ph * 1.3 ) * 0.01 * transformed.y; transformed.y += uCh * 0.045 * max( 0.0, sin( uT * uChF + fract( ph ) * 0.6 ) ) * smoothstep( 0.95, 1.5, transformed.y );'
         );
     };
     mat.customProgramCacheKey = () => 'suhl1989-fig';
@@ -507,13 +511,16 @@ export function jahr1989(ctx, C, ST, api) {
       leaf.position.set(gx + across[0] * s * 4.05, gzz, -(gy + across[1] * s * 4.05));
       leaf.rotation.y = Math.atan2(across[1], across[0]);
       G.add(leaf);
+      LEAVES.push([leaf, s, leaf.rotation.y]);
       // the pillar holds one off as well (a point with its half width)
       const px = gx + across[0] * s * 4.3,
         py = gy + across[1] * s * 4.3;
       WALLS.push([px, py, px, py, 0.3]);
     }
     // the shut gate across the drive, from pillar to pillar
-    WALLS.push([gx - across[0] * 4.3, gy - across[1] * 4.3, gx + across[0] * 4.3, gy + across[1] * 4.3, 0.08]);
+    WALLS.push(
+      (GATEWALL = [gx - across[0] * 4.3, gy - across[1] * 4.3, gx + across[0] * 4.3, gy + across[1] * 4.3, 0.08])
+    );
     S.fence = posts.length;
   }
 
@@ -759,7 +766,9 @@ export function jahr1989(ctx, C, ST, api) {
     if (
       !(window.GLSTATE && GLSTATE.on) &&
       G2.tick &&
-      (G2.figs || []).every(F => !F.g.visible || NEAR.figs.some(n => n.F === F) || NEAR.vp.some(n => n.F === F))
+      (G2.figs || []).every(
+        F => !F.g.visible || NEAR.figs.some(n => n.F === F) || NEAR.vp.some(n => n.F === F) || LV.deleg.includes(F)
+      )
     )
       G2.tick(dt);
     // the candles: in the fist (a little before and above the wrist), upright, flickering
@@ -905,6 +914,7 @@ export function jahr1989(ctx, C, ST, api) {
     if (!walker && r < 0.5) return undefined;
     let moved = false;
     for (const [ax, ay, bx, by, w] of WALLS) {
+      if (w < 0) continue;
       const dx = bx - ax,
         dy = by - ay,
         l2 = dx * dx + dy * dy,
@@ -973,8 +983,8 @@ export function jahr1989(ctx, C, ST, api) {
         ty = 0,
         v = 0.25; // back, slowly
       if (f.gt > 0) {
-        tx = f.gx * GIVE;
-        ty = f.gy * GIVE;
+        tx = f.gx * (f.gd || GIVE);
+        ty = f.gy * (f.gd || GIVE);
         v = 0.9;
       } else if (o && Math.hypot(o[0] - f.x, o[1] - f.y) < 1.1) continue; // he is still beside: stays aside
       const dx = tx - ox,
@@ -1052,10 +1062,321 @@ export function jahr1989(ctx, C, ST, api) {
     markDirty(true);
   }
 
+  // ---- the night goes on (Falko, 18.11.2026 21:56: „… eine tote Szene, keine Bewegung, keine Sprechchöre, keine Aktion, nichts damit
+  // machen, keinerlei Dinge, die … über die Geschichte aufklären“). While the layer stands and the observer is within 250 m:
+  //   - the murmur of the crowd, and speaking choirs every 25–50 s with slogans of that autumn – heads rising on the beat (uCh);
+  //   - the evening shortened to a few minutes, told in short notes that keep to the sources (head of this file): why they came; a
+  //     megaphone; the gate opens, a delegation goes in to seal the cupboards (the Volkspolizei step aside), comes back to applause; the
+  //     bus drivers of the next day; what came of it;
+  //   - one can join in: the action button near a person („Ansprechen“: what they see and fear – every second time they start a choir)
+  //     and at the gate (the Volkspolizist answers).
+  // Sounds: tools/suhl/ton1989.py → snd/suhl89/ (Piper voices: Multilingual LibriSpeech CC BY 4.0, Thorsten CC0; applause synthesised).
+  // Without sound the choirs show as a line at the bottom. ----
+  const SND = ['chor_stasi_raus', 'chor_keine_gewalt', 'chor_volk', 'chor_produktion', 'menge', 'megafon', 'beifall'],
+    CHANT = {
+      chor_stasi_raus: [1.45, '„Stasi raus! Stasi raus!“'],
+      chor_keine_gewalt: [1.7, '„Keine Gewalt! Keine Gewalt!“'],
+      chor_volk: [1.9, '„Wir sind das Volk!“'],
+      chor_produktion: [2.4, '„Stasi in die Produktion!“'],
+    },
+    MID = [GATE[0] - INWARD[0] * 14, GATE[1] - INWARD[1] * 14], // the middle of the crowd
+    ACROSS = [-INWARD[1], INWARD[0]],
+    LV = {
+      t: 0,
+      step: 0,
+      next: 12,
+      last: '',
+      chant: 0,
+      quiet: 0,
+      buf: {},
+      loading: false,
+      loop: null,
+      deleg: [],
+      gate: 0,
+      gateTo: 0,
+      said: 0,
+      vpSaid: 0,
+      acts: false,
+    };
+  const LINES = [
+    '„Seit heute Mittag heißt es: Die da drin vernichten ihre Akten. Deshalb sind wir hier.“',
+    '„In Erfurt haben sie heute früh die Bezirksverwaltung besetzt. Hier soll auch keiner mehr was rausschaffen.“',
+    '„Keine Gewalt – das ist das Wichtigste. Wir geben denen keinen Vorwand.“',
+    '„Wer eine Kerze hält, hat keine Hand frei für einen Stein.“',
+    '„Vierzig Jahre haben die uns bespitzelt. Jetzt wollen wir wissen, was in den Akten steht.“',
+    '„Am Tor stehen nur Volkspolizisten. Die von der Stasi zeigen sich nicht.“',
+    '„Wir wollen, dass Leute von uns mit reindürfen und die Schränke versiegeln.“',
+    '„Vor einem Monat ist die Mauer gefallen. Und jetzt stehen wir hier oben in der Hölderlinstraße.“',
+    '„Morgen wollen die Busfahrer mit ihren Bussen die Ausfahrten zustellen.“',
+    '„Meine Tochter ist im Sommer über Ungarn rüber. Ich bleibe – hier muss sich was ändern.“',
+  ];
+  const VPLINES = [
+    'Volkspolizist: „Gehen Sie nach Hause, Bürger. Hier gibt es nichts zu sehen.“',
+    'Volkspolizist: „Wir haben Anweisung, ruhig zu bleiben. Bleiben Sie es auch.“',
+    'Volkspolizist: „Ich weiß auch nicht mehr als Sie.“',
+  ];
+  const say = (t, ms) => {
+    if (ctx.toast) ctx.toast(t, ms);
+    LV.quiet = ms / 1000;
+  };
+  const STEPS = [
+    [
+      4,
+      () =>
+        say(
+          'Suhl, Montag, 4. Dezember 1989. An diesem Tag geht durch die DDR: Die Staatssicherheit vernichtet Akten – in Erfurt besetzen Bürger am Morgen die Bezirksverwaltung. Am Abend kommen in Suhl rund 3 000 Menschen mit Kerzen hierher, vor das Tor in der Hölderlinstraße.',
+          12000
+        ),
+    ],
+    [
+      50,
+      () => {
+        play('megafon', 1);
+        say(
+          'Über ein Megafon: „Bleibt ruhig, keine Gewalt! Eine Abordnung spricht mit der Leitung der Bezirksverwaltung. Wir gehen hier nicht weg, bis die Akten gesichert sind!“',
+          10000
+        );
+        LV.next = Math.max(LV.next, 26);
+      },
+    ],
+    [
+      95,
+      () => {
+        LV.gateTo = 1;
+        delegation(true);
+        say(
+          'Kurz vor Mitternacht öffnet sich das Tor: 16 Menschen aus der Menge und der Bezirksstaatsanwalt dürfen hinein. Sie versiegeln Schränke mit Akten, damit nichts mehr verschwindet.',
+          11000
+        );
+        LV.next = Math.max(LV.next, 16);
+      },
+    ],
+    [112, () => (LV.gateTo = 0)],
+    [
+      175,
+      () => {
+        LV.gateTo = 1;
+        delegation(false);
+      },
+    ],
+    [
+      190,
+      () => {
+        play('beifall', 1);
+        chant('chor_keine_gewalt', true);
+        say(
+          'Die Abordnung kommt zurück, die Schränke sind versiegelt. Am nächsten Tag stellen Suhler Busfahrer ihre Busse vor die Ausfahrten, damit nichts mehr hinausgebracht wird.',
+          11000
+        );
+      },
+    ],
+    [205, () => (LV.gateTo = 0)],
+    [
+      255,
+      () =>
+        say(
+          'In den folgenden Wochen wird die Staatssicherheit aufgelöst. Auf dem Gelände sind heute Gerichte und Behörden; die Akten liegen im Stasi-Unterlagen-Archiv des Bundesarchivs.',
+          11000
+        ),
+    ],
+  ];
+  function aud() {
+    const A = ctx.AUDIO && ctx.AUDIO.raw ? ctx.AUDIO.raw() : null;
+    return A && A.ctx && A.ctx.state === 'running' ? A : null;
+  }
+  const away = () => {
+    const o = KERN.where ? KERN.where() : null;
+    return o ? Math.hypot(o[0] - MID[0], o[1] - MID[1]) : 1e9;
+  };
+  const level = d => Math.pow(Math.max(0, Math.min(1, 1 - (d - 12) / 240)), 1.6);
+  function play(n, vol) {
+    const A = aud(),
+      b = LV.buf[n];
+    if (!A || !b) return 0;
+    const src = A.ctx.createBufferSource(),
+      g = A.ctx.createGain();
+    src.buffer = b;
+    g.gain.value = vol * level(away());
+    src.connect(g);
+    g.connect(n === 'beifall' ? A.sfx : A.vox || A.sfx);
+    src.start();
+    return b.duration;
+  }
+  function chant(n, quiet) {
+    if (LV.chant > 0) return false;
+    if (!n) {
+      const L = Object.keys(CHANT).filter(k => k !== LV.last);
+      n = L[Math.floor(Math.random() * L.length)];
+    }
+    const d = play(n, 0.95) || 7;
+    LV.last = n;
+    LV.chant = d;
+    LV.next = 25 + Math.random() * 25;
+    if (S.u) S.u.uChF.value = (2 * Math.PI) / CHANT[n][0];
+    if (!quiet && LV.quiet <= 0 && ctx.toast) ctx.toast('Sprechchor: ' + CHANT[n][1], 3500);
+    return true;
+  }
+  // the real demonstrator nearest the walker (for „Ansprechen“)
+  function whoNear() {
+    const o = KERN.where ? KERN.where() : null;
+    let best = null,
+      bd = 2.4;
+    if (o)
+      for (const n of NEAR.figs)
+        if (n.spot && n.F.g.visible) {
+          const d = Math.hypot(n.F.x - o[0], n.F.y - o[1]);
+          if (d < bd) {
+            bd = d;
+            best = n;
+          }
+        }
+    return best;
+  }
+  function acts(on) {
+    if (on === LV.acts || !KERN.act) return;
+    LV.acts = on;
+    if (!on) {
+      KERN.unact('suhl89:leute');
+      KERN.unact('suhl89:tor');
+      return;
+    }
+    KERN.act({
+      id: 'suhl89:leute',
+      r: 2.4,
+      label: () => (whoNear() ? 'Ansprechen' : null),
+      pos: () => {
+        const n = whoNear();
+        return n ? [n.F.x, n.F.y, n.F.z + 1] : [1e9, 1e9, 0];
+      },
+      run: () => {
+        say(LINES[LV.said % LINES.length], 7000);
+        if (++LV.said % 2 === 0) LV.next = Math.min(LV.next, 7.5); // „ruf mit!“ – a choir starts
+      },
+    });
+    const tor = [GATE[0] - INWARD[0] * 0.8, GATE[1] - INWARD[1] * 0.8];
+    KERN.act({
+      id: 'suhl89:tor',
+      r: 3,
+      label: () => (LV.gate < 0.05 ? 'Den Volkspolizisten ansprechen' : null),
+      pos: () => [tor[0], tor[1], gz(tor[0], tor[1]) + 1],
+      run: () => say(VPLINES[LV.vpSaid++ % VPLINES.length], 5000),
+    });
+  }
+  // the delegation: six of the crowd in front of the gate go in (the Volkspolizei step aside) and later come back into the crowd
+  function delegation(go) {
+    const G2 = FG();
+    if (!G2 || !G2.go) return;
+    const P0 = (k, a) => [
+      GATE[0] + INWARD[0] * a + ACROSS[0] * ((k % 3) - 1) * 0.8,
+      GATE[1] + INWARD[1] * a + ACROSS[1] * ((k % 3) - 1) * 0.8,
+    ];
+    if (go) {
+      for (let k = 0; k < 6; k++) {
+        const id = castOf(k + 5);
+        if (!G2.avail(id)) continue;
+        G2.make(id, { era: '1989' })
+          .then(F => {
+            if (!F) return;
+            if (!S.on || !S.built) return G2.drop(F);
+            F.sees = false;
+            LV.deleg.push(F);
+            const a = P0(k, -2.2 - Math.floor(k / 3) * 1.1);
+            G2.place(F, a[0], a[1], Math.atan2(INWARD[0], INWARD[1]));
+            G2.go(F, [P0(k, 4), P0(k, 26 + Math.floor(k / 3) * 1.4)], 1.1, () => (F.g.visible = false));
+          })
+          .catch(() => {});
+      }
+    } else
+      LV.deleg.forEach((F, k) => {
+        const a = P0(k, 26);
+        G2.place(F, a[0], a[1], Math.atan2(-INWARD[0], -INWARD[1]));
+        G2.go(F, [P0(k, 4), P0(k, -4 - Math.floor(k / 3))], 1.1, () => {
+          G2.drop(F);
+          LV.deleg = LV.deleg.filter(x => x !== F);
+        });
+      });
+  }
+  function lifeTick(dt) {
+    const d = away(),
+      A = aud();
+    if (A && !LV.loading) {
+      LV.loading = true;
+      for (const n of SND)
+        fetch(new URL('snd/suhl89/' + n + '.mp3', document.baseURI).href)
+          .then(r => (r.ok ? r.arrayBuffer() : null))
+          .then(b => (b ? A.ctx.decodeAudioData(b) : null))
+          .then(b => b && (LV.buf[n] = b))
+          .catch(() => {});
+    }
+    // the murmur under it all, by distance
+    if (A && LV.buf.menge && !LV.loop) {
+      const src = A.ctx.createBufferSource(),
+        g = A.ctx.createGain();
+      src.buffer = LV.buf.menge;
+      src.loop = true;
+      g.gain.value = 0;
+      src.connect(g);
+      g.connect(A.amb || A.sfx);
+      src.start();
+      LV.loop = { src, g };
+    }
+    if (LV.loop) LV.loop.g.gain.setTargetAtTime(0.7 * level(d), LV.loop.src.context.currentTime, 0.4);
+    acts(d < 140);
+    LV.quiet -= dt;
+    LV.chant -= dt;
+    if (d < 250) {
+      LV.t += dt;
+      while (LV.step < STEPS.length && LV.t >= STEPS[LV.step][0]) STEPS[LV.step++][1]();
+      if (LV.chant <= 0 && (LV.next -= dt) <= 0) chant();
+    }
+    if (S.u) S.u.uCh.value += ((LV.chant > 0.5 ? 1 : 0) - S.u.uCh.value) * Math.min(1, dt * 3);
+    // the gate swings inward; the Volkspolizei step aside while it is open
+    const g0 = LV.gate;
+    LV.gate += Math.max(-dt * 0.3, Math.min(dt * 0.3, LV.gateTo - LV.gate));
+    if (g0 !== LV.gate) {
+      for (const [leaf, side, r0] of LEAVES) leaf.rotation.y = r0 + side * LV.gate * 1.45;
+      if (GATEWALL) GATEWALL[4] = LV.gate > 0.15 ? -1 : 0.08;
+      if (g0 > 0.02 !== LV.gate > 0.02)
+        for (const f of S.list || [])
+          if (!f.demo) {
+            const side = (f.x - GATE[0]) * ACROSS[0] + (f.y - GATE[1]) * ACROSS[1] >= 0 ? 1 : -1;
+            f.gx = ACROSS[0] * side;
+            f.gy = ACROSS[1] * side;
+            f.gd = 2.4;
+            f.gt = LV.gate > 0.02 ? 1e9 : 0;
+            giving.add(f);
+          }
+      markDirty(true);
+    }
+  }
+  // for the tests and the inspections: the evening from a given second on
+  S.lifeAt = t => {
+    LV.t = t;
+    LV.step = STEPS.findIndex(st => st[0] > t);
+    if (LV.step < 0) LV.step = STEPS.length;
+  };
+  function lifeClear() {
+    if (LV.loop)
+      try {
+        LV.loop.src.stop();
+      } catch (e) {}
+    const G2 = FG();
+    for (const F of LV.deleg) if (G2) G2.drop(F);
+    acts(false);
+    Object.assign(LV, { t: 0, step: 0, next: 12, chant: 0, quiet: 0, loop: null, deleg: [], gate: 0, gateTo: 0 });
+  }
+
   function build() {
     const L = street();
     if (L.length < 1) {
       S.wait = 'Hölderlinstraße'; // not loaded yet (or not in this set): tried again every 2 s
+      return false;
+    }
+    // the near ground at the gate and in the crowd first: built on the far ground the people stood up to 2 m in the hill
+    const W = ctx.WELT,
+      fine = (x, y) => !W || !W.heightAt || Number.isFinite(W.heightAt(x, y));
+    if (!fine(GATE[0], GATE[1]) || !fine(GATE[0] - INWARD[0] * 30, GATE[1] - INWARD[1] * 30)) {
+      S.wait = 'Boden';
       return false;
     }
     S.wait = '';
@@ -1152,6 +1473,7 @@ export function jahr1989(ctx, C, ST, api) {
     return true;
   }
   function clear() {
+    lifeClear();
     nearDrop();
     S.list = null;
     HASH = null;
@@ -1236,6 +1558,7 @@ export function jahr1989(ctx, C, ST, api) {
     if (S.built) {
       giveTick(dt);
       nearTick(dt);
+      lifeTick(dt);
     }
   };
   S.leave = () => {
@@ -1257,6 +1580,14 @@ export function jahr1989(ctx, C, ST, api) {
     walls: WALLS.length,
     dressed: S.dressed || '',
     giving: giving.size,
+    life: {
+      t: Math.round(LV.t),
+      step: LV.step,
+      gate: +LV.gate.toFixed(2),
+      chants: Object.keys(LV.buf).length,
+      deleg: LV.deleg.length,
+      chant: LV.chant > 0 ? LV.last : '',
+    },
     buses: BH.on,
     err: S.err || NEAR.err,
   });

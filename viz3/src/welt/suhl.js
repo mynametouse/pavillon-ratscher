@@ -17,7 +17,7 @@ import { TREES } from '../garden/trees.js';
 import { warmUp } from '../render/render.js';
 import { P } from '../game/walkable.js';
 import { go } from '../game/player.js';
-import { toast } from '../audio/audio.js';
+import { audio, toast } from '../audio/audio.js';
 import { RATSCHER } from '../world/ratscher.js';
 import { VILLAGE } from '../world/village.js';
 import { WELT } from './welt.js';
@@ -107,6 +107,9 @@ export const SUHL = (() => {
     xf: M.xf,
     base: S.BASE,
     worker: lazy('suhl-worker.js'),
+    // the sound (Suhl 1989: the murmur, the choirs – audio.raw() gives the context and buses) and the line at the bottom
+    AUDIO: audio,
+    toast,
     get VEH() {
       return window.VEH;
     },

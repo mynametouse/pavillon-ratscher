@@ -280,6 +280,7 @@ export async function start(ctx) {
     // Suhl 1989 on or off (Grenzland's mission 3, or ?suhl1989=1): { on, built, people, candles, banners, fence, cars, err }
     jahr1989: (on, o) => (J ? J.set(on, o) : null),
     jahr1989dbg: () => (J ? J.dbg() : null),
+    jahr1989at: t => J && J.lifeAt(t),
     status: () => ({
       on: A.on,
       d: Math.round(A.d),
