@@ -391,6 +391,13 @@ schleusingen-ansicht/sa_markt.js    # feat/schleusingen-ansicht the Markt as it 
 jetpack/jetpack.js          # feat/jetpack put on a jetpack, fly high and far, the overview with the places' names, fly to a place by itself (JET)
 # feat/navi: the autopilot in the car (Falko 17.11.2026) – after the traffic (VNETZ, VAUTO) and the drive (FAHRT)
 navi/navi.js                # feat/navi a destination in the vehicle panel, the autopilot drives there – route over the village's and the drive's roads (NAVI)
+# feat/mehrspieler: playing together over the internet (Falko 17.11.2026) – after the figures (AVATAR, GLFIG), the houses, the vehicles, the jetpack
+netz/netz_logik.js          # feat/mehrspieler the pure part: room codes, the avatar's plan, checks of what comes in, hide and seek – node-tested (NETZLOGIK)
+netz/netz_raum.js           # feat/mehrspieler the way the messages go: Trystero over Nostr (lazy/raum.js), or a BroadcastChannel for the tests (NETZRAUM)
+netz/netz_avatar.js         # feat/mehrspieler one's own avatar (AVATAR painted by GLFIG) and the others' figures (GLFIG, posed per frame), pav-netz-v1 (NAVATAR)
+netz/netz.js                # feat/mehrspieler the room, the others in the world with names, vehicles, the host's clock, pointing, gestures, jumping (NETZ)
+netz/netz_verstecken.js     # feat/mehrspieler the first game: hide and seek in the village, kept by the host (NVERSTECK)
+netz/netz_ui.js             # feat/mehrspieler the window „Zusammen spielen“, the menu entry, the bar's buttons, G and the middle mouse button (NETZUI)
 # feat/fotorealismus: picture quality below this line (after the world it lights, before the frame loop)
 foto/schatten_land.js       # feat/fotorealismus the hills' shadows at a low sun: a raster of the terrain's heights around the walker, swept along the sun into a field of shadow heights (SCHLAND)
 foto/schatten.js            # feat/fotorealismus the sun's shadows beyond the walker's box: a far and a wide tile in the sun's shadow atlas, the land casts and receives, the hills' field in a strip of the atlas (SCHATTEN)
