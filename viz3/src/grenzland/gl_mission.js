@@ -465,7 +465,13 @@ export const GLMISSION = (() => {
       const s = St.step;
       if (QUESTS.track !== 'grenzland:' + m.id) QUESTS.track = 'grenzland:' + m.id;
       // a mission begins: its title card and the sting (feat/grenzland-kino) – the chapter's card at the very start is the mode's
-      if (why === 'start' || (why === 'debug' && i === 0)) titel(m);
+      // grenzland-kapitel2: a mission that opens a chapter shows its own title at a later step (m.titelBei: that step's id)
+      if (
+        m.titelBei
+          ? s.id === m.titelBei && why !== 'reload' && why !== 'nochmal'
+          : why === 'start' || (why === 'debug' && i === 0)
+      )
+        titel(m);
       // the music: what the step wants (grenzland/gl_score.js; wanted and 1989 decide there by themselves)
       GLSCORE.mission(m.id);
       GLSCORE.lage(s.lage || GLMDATA.LAGE[m.id + ':' + s.id] || '');
@@ -575,8 +581,9 @@ export const GLMISSION = (() => {
       if (g !== St.titelN || !GL.on || GL.cur !== m.id || St.busy) return;
       const D = GLMDATA.M[m.id];
       try {
+        // (grenzland-kapitel2: a mission of another chapter names its own line over the title, D.ueber)
         if (GLHUD.titel)
-          GLHUD.titel(D.title, 'Kapitel 1 · Mission ' + (GLMDATA.ORDER.indexOf(m.id) + 1), 5, D.unter || '');
+          GLHUD.titel(D.title, D.ueber || 'Kapitel 1 · Mission ' + (GLMDATA.ORDER.indexOf(m.id) + 1), 5, D.unter || '');
         else GLHUD.say(D.title, D.unter || '', 5);
       } catch (e) {}
       GLSCORE.stich('start');
@@ -741,6 +748,8 @@ export const GLMISSION = (() => {
       const nx = R.nextOpen();
       if (R.cur()) return;
       if (nx) R.start(nx.id);
+      // grenzland-kapitel2: the closing screen is chapter 1's – after the last mission of a later chapter so far its module goes on
+      else if ((GL.kap || 1) > 1) GL.emit('kapitel', { kap: GL.kap, st: 'pause' });
       else if (!GL.kap1) {
         GL.kap1 = true;
         ende();
