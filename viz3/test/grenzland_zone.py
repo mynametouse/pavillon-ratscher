@@ -2,7 +2,7 @@
 # (comma separated):
 #   weg      the zone loads when one gets there (GLZONE.hin on the Simson to the Kolonnenweg), its tiles are drawn, the ground on the
 #            Kolonnenweg is its smoothed profile, the slabs lie on it; the Simson rides 300 m along it (VEH.follow) and stays on it;
-#            draw calls; pictures by day and at dusk
+#            draw calls; pictures by day and at dusk; rain: the slabs wet, water in their holes (a picture), dry again
 #   bunker   the bunker's outside: the old foundation (one stands on it), the mound, the wall with the iron door and its padlock
 #            (the action „Tür ansehen“: locked); the walker cannot pass through the wall; a picture
 #   heide    the heath: heather where the photo shows heath, young pines and birches, the boards with their text („Tafel lesen“), the
@@ -99,6 +99,18 @@ with lib.browser() as b:
             X("const m = _mo; TS.look(m[0], m[1], m[2] * 57.2958 + 150, 6, 1.6, -6)")
             for _ in range(5): steps(0.3); time.sleep(0.6)
             pic('02_simson_auf_dem_weg')
+            # rain (the weather's preset): the slabs and the grass darken, water stands in the slabs' holes; dry again afterwards
+            X("WETTER.preset('regen')")
+            ok = until("GLZONE.state().nass", 120, real=0.15, dt=0.2)
+            wet = J("(() => { let m = null; GAME.scene.traverse(o => { if (!m && o.name === 'grenzland-zone-platten') m = o.material }); return { c: m ? +m.color.r.toFixed(3) : null, r: m ? +m.roughness.toFixed(3) : null, n: GLZONE.state().pfuetzen, wet: WETTER.S.wet } })()")
+            ck('in rain the slabs turn wet (darker, glossier) and water stands in their holes', ok and wet['n'] > 0 and wet['c'] is not None and wet['c'] < 0.99 and wet['r'] < 0.93, str(wet))
+            X("const m = _mo; TS.look(m[0], m[1], m[2] * 57.2958 + 160, 3.2, 1.5, -22)")
+            for _ in range(4): steps(0.3); time.sleep(0.5)
+            pic('09_kolonnenweg_regen')
+            X("WETTER.preset(null); WETTER.S.wet = 0")
+            # (unless the weather of the day itself is wet)
+            ok = until("!GLZONE.state().nass || WETTER.S.wetWant > 0.3", 30, real=0.15, dt=0.2)
+            ck('… and dry again: no puddles', ok and (J("GLZONE.state().nass") is False or J("WETTER.S.wetWant") > 0.3), str(J("[GLZONE.state().nass, WETTER.S.wet, WETTER.S.wetWant]")))
             # dusk (November: the sun sets ~16:30)
             X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 16 * 60 + 58")
             lib.settle_light(pg)

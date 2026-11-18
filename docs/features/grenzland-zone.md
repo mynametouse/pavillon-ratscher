@@ -22,6 +22,10 @@ Einzelheiten danach).
   Wikipedia), 0,75 m Gras dazwischen, Fugen von 3,5 cm, vier Reihen Löcher mit Erde, Moos und Gras gefüllt; je Platte ein wenig Spiel,
   einige gebrochen, abgesackt oder fehlend (immer dieselben), verwittertes Grau. Instanzen je ~120 m: nah mit Löchern, weiter als glatte
   Platten (`VEG`-Stufen, 45 m). Man fährt ihn mit der Simson; Grasbüschel zwischen den Spuren und an den Rändern.
+- **Regen und Schnee** (`wetter/`): Platten, Gras und Heidekraut werden bei Regen dunkler und glänzen, unter Schnee und Raureif weiß wie
+  der Rasen des Gartens (`WXBODEN` erkennt sie an ihrer Markierung als ausgedünnte Instanzen); nach Regen steht in etwa 40 % der Löcher
+  Wasser – ein dunkler, glatter Film, der den Himmel spiegelt, nur nah (mit den Löchern) und nur, solange der Boden nass und nicht
+  verschneit ist. Das Material der Pfützen hat dieselben Merkmale wie das der Platten (kein neues Programm), die Matrizen teilen sie sich.
 - **Der Streifen und die Heide:** Heidekraut (im Dezember braun) dort, wo das Luftbild Heide zeigt (Klasse „Heide“ der Auswertung des
   Luftbilds), junge Kiefern und Birken darin; Gras und Heidekraut werden in Zellen von 40 m um den Spieler gebaut, sobald der Boden
   darunter gezeichnet ist (ihre Höhen sind dann die gezeichneten – nichts schwebt); die **Waldränder** aus 24 615 Bäumen der Auswertung (Fichten/Kiefern in den Beständen,
@@ -75,7 +79,7 @@ Waldrändern, Anfahrt). Quellen und Lizenzen: `meta.json` → `attribution`, `ma
 ## Tests
 
 - `viz3/test/grenzland_zone.py` – Abschnitte `weg` (laden, Boden auf dem Profil, 300 m mit der Simson, Zeichenaufrufe, Dreiecke,
-  Programme, Bilder Tag und Dämmerung), `bunker` (Fundament, Tür, Wand, Ortsname, Bilder), `heide` (Heidekraut, Gras, Bäume, Tafeln,
+  Programme, Bilder Tag und Dämmerung, Regen: nasse Platten und Pfützen, wieder trocken), `bunker` (Fundament, Tür, Wand, Ortsname, Bilder), `heide` (Heidekraut, Gras, Bäume, Tafeln,
   Bilder Tag und Dämmerung), `turm` (Tür, Tafel, Öffnungszeiten, Ortsname, Bild), am Ende Verlassen und Freigeben. Bilder
   `out/grenzland_zone/`. In `tests.txt` zwei Zeilen: `weg,bunker` und `heide,turm`.
 - `viz3/test/unit/grenzland_zone.test.mjs` – Linien, Platten (Maße, Fugen, Spuren), Texte mit Quellen, `zone.json`.
@@ -97,6 +101,6 @@ Waldrändern, Anfahrt). Quellen und Lizenzen: `meta.json` → `attribution`, `ma
 ## Offen
 
 - Rehe in der Dämmerung (die Tiere des Grundspiels stehen nach `tiere/` an ihren Orten; ein Rudel am Heiderand wäre ein Haken dort),
-  Pfützen in den Löchern nach Regen, der Waldboden unter den Kronen (das Luftbild zeigt dort grüne Kronen von oben).
+  der Waldboden unter den Kronen (das Luftbild zeigt dort grüne Kronen von oben).
 - Der Speichertest (`grenzland_speicher.py`) mit der Zone; das iPhone: die Zone braucht ~105 Kacheln (wie Schleusingen).
 - Die kurze Abzweigung des Kolonnenwegs (364 m) hat am Anschluss eine Stufe im Profil (1,3 m auf 2 m) – sie liegt abseits der Fahrt.

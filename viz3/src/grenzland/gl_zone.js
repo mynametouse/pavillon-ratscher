@@ -26,6 +26,7 @@ import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { WELT } from '../welt/welt.js';
+import { WXBODEN } from '../wetter/wx_boden.js';
 import { FAHRT } from '../welt/fahrt.js';
 import { GL } from './gl_state.js';
 import { GLHUD } from './gl_hud.js';
@@ -57,6 +58,8 @@ export const GLZONE = (() => {
     hAt: null, // the zone's raw ground (WELT.sampler over its tiles), for KERN where no tile is drawn
     gras: 0,
     heide: 0,
+    pfuetzen: [], // the water in the slabs' holes (near), shown while the ground is wet
+    nass: false,
   };
   const SET = 'grenzland-zone';
   // ------------------------------------------------------------------ colours (linear, as the kit wants them) ------------------------------------------------------------------
@@ -181,13 +184,63 @@ export const GLZONE = (() => {
       MAT = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0, envMapIntensity: 0.5 });
     return MAT;
   }
+  // after rain: water standing in some of the holes – a dark, smooth film 7 mm below the top that mirrors the sky; drawn with the holes (near)
+  // and only while the ground is wet and not under snow (wetter/wx_boden.js)
+  function pfuetzeGeo(variante) {
+    const K = GLORTE.kit(),
+      PL = D.PLATTE,
+      [nx, ny] = PL.loch,
+      hb = PL.lb,
+      hl = PL.ll,
+      wx = (PL.b - nx * hb) / (nx + 1),
+      wy = (PL.l - ny * hl) / (ny + 1),
+      R = D.zufall(311 + variante * 17),
+      z = -0.007,
+      e = 0.004;
+    for (let i = 0; i < nx; i++)
+      for (let j = 0; j < ny; j++) {
+        if (R() > 0.42) continue;
+        const a = -PL.b / 2 + wx + i * (wx + hb) + e,
+          b = -PL.l / 2 + wy + j * (wy + hl) + e,
+          g = 0.014 + R() * 0.01;
+        K.quad(
+          [a, b, z],
+          [a + hb - 2 * e, b, z],
+          [a + hb - 2 * e, b + hl - 2 * e, z],
+          [a, b + hl - 2 * e, z],
+          [g, g * 1.03, g * 0.95]
+        );
+      }
+    return K.geo();
+  }
+  let WMAT = null;
+  function wasserMat() {
+    // the slabs' features again (vertex and instance colours), only smooth: the same program
+    if (!WMAT)
+      WMAT = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.06, metalness: 0, envMapIntensity: 1 });
+    return WMAT;
+  }
+  // the puddles' meshes (S.pfuetzen) shown or hidden with the wetness of the moment
+  function pfuetzenZeigen() {
+    const B = WXBODEN && WXBODEN.S,
+      an = !!B && B.shown > 0.3 && B.snowShown < 0.15 && B.frostShown < 0.5;
+    if (an === S.nass) return;
+    S.nass = an;
+    for (const w of S.pfuetzen) w.visible = an;
+    markDirty();
+  }
   const m4 = new THREE.Matrix4(),
     q4 = new THREE.Quaternion(),
     e4 = new THREE.Euler(),
     s4 = new THREE.Vector3(1, 1, 1),
     c4 = new THREE.Color();
   function bauPlatten() {
-    if (!GEO) GEO = { fein: [plattenGeo(true, 0), plattenGeo(true, 1)], grob: plattenGeo(false, 0) };
+    if (!GEO)
+      GEO = {
+        fein: [plattenGeo(true, 0), plattenGeo(true, 1)],
+        grob: plattenGeo(false, 0),
+        wasser: [pfuetzeGeo(0), pfuetzeGeo(1)],
+      };
     const mat = plattenMat(),
       STRECKE = 120;
     let n = 0;
@@ -233,6 +286,9 @@ export const GLZONE = (() => {
           im.castShadow = false;
           im.receiveShadow = false;
           im.userData.noMerge = true;
+          // the flag the weather's wet ground looks for (wetter/wx_boden.js kind(): instanced and thinned, as the lawn's tufts): the slabs
+          // turn darker and glossier in rain and white under snow like the grass beside them (they are in no VEG.far list – nothing thins them)
+          im.userData.thin = [1e9, 1e9];
           im.name = 'grenzland-zone-platten';
         }
         // the level of detail: the holes within ~45 m of the stretch; the two hole patterns in one group (VEG shows one level at a time
@@ -241,6 +297,21 @@ export const GLZONE = (() => {
         G.name = 'grenzland-zone-platten-nah';
         G.userData.noMerge = true;
         for (const f of feine) if (f) G.add(f);
+        // the puddles lie in the same slabs: the holes' matrices and colours are shared, nothing is copied
+        feine.forEach((f, v) => {
+          if (!f) return;
+          const w = new THREE.InstancedMesh(GEO.wasser[v], wasserMat(), f.count);
+          w.instanceMatrix = f.instanceMatrix;
+          w.instanceColor = f.instanceColor;
+          w.computeBoundingSphere();
+          w.castShadow = false;
+          w.receiveShadow = false;
+          w.userData.noMerge = true;
+          w.visible = !!S.nass;
+          w.name = 'grenzland-zone-pfuetzen';
+          G.add(w);
+          S.pfuetzen.push(w);
+        });
         scene.add(G);
         scene.add(grob);
         S.meshes.push(G, grob);
@@ -1407,11 +1478,16 @@ export const GLZONE = (() => {
       scene.remove(m);
       const all = m.isGroup ? m.children.slice() : [m];
       for (const q of all) {
-        if (q.geometry && !(GEO && (GEO.grob === q.geometry || GEO.fein.includes(q.geometry)))) q.geometry.dispose();
+        if (
+          q.geometry &&
+          !(GEO && (GEO.grob === q.geometry || GEO.fein.includes(q.geometry) || GEO.wasser.includes(q.geometry)))
+        )
+          q.geometry.dispose();
         if (q.isInstancedMesh && q.dispose) q.dispose();
       }
     }
     S.meshes.length = 0;
+    S.pfuetzen.length = 0;
     for (const Lv of S.lods) {
       const i = VEG.lod.indexOf(Lv);
       if (i >= 0) VEG.lod.splice(i, 1);
@@ -1425,7 +1501,11 @@ export const GLZONE = (() => {
     }
     S.far.length = 0;
     DECK.near.clear();
+    for (const A of DECK.arten) A.geo.dispose();
     DECK.arten.length = 0;
+    // a fresh material next time: the weather's wet ground keeps the colours it first saw on a material (wetter/wx_boden.js) – painted wet or
+    // white when the zone went, they would count as its own; the same program serves the new one (nothing is compiled again)
+    MAT = null;
     for (const c of S.cols) {
       const i = VEH.extra.indexOf(c.x);
       if (i >= 0) VEH.extra.splice(i, 1);
@@ -1480,6 +1560,7 @@ export const GLZONE = (() => {
         nahBaeume(x, y);
         deckeNah(x, y);
       }
+      if (S.an) pfuetzenZeigen();
       zufahrt(x, y);
     } catch (e) {
       if (!S._e) {
@@ -1717,6 +1798,8 @@ export const GLZONE = (() => {
       gras: S.gras,
       heide: S.heide,
       decke: DECK.near.size,
+      pfuetzen: S.pfuetzen.length,
+      nass: S.nass,
       baeumeNah: BA.nahN,
       zellenNah: BA.near.size,
       lods: S.lods.length,
