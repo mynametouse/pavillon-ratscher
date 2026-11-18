@@ -324,6 +324,8 @@ Aufträge wörtlich in `docs/plans/auftraege/`, Stand mit `bash tools/agents.sh`
 
 ## Offen, in dieser Reihenfolge sinnvoll
 
+- **Grenzland, Kapitel 2 – Winter-Runde (Falko, 18.11.2026 22:39, angeklickt: „Nach der Pause“, als Erstes):** im Schnee brauchen alle warme Kleidung, die Mützen sind unrealistisch. Umfang (alles angeklickt): **Winterkleidung für Clique und Gerhard** (dicke Jacken, Schals, Handschuhe, Stiefel statt Hemd und Turnschuhen); **echte Strickmützen** (weich am Kopf, Rippstrick, Umschlag, Bommel nur bei manchen – heute wirken sie wie harte Helmschalen, `GLFIG` `hatOn`/`hut`); **alle Leute im Winter** (Straße, Weihnachtsmarkt, Polizei, Krähwinkels Leute); **Schnee bleibt sichtbar am Boden** (heute grün, die Grashalme liegen über dem Schnee) **und Atemwolken** in der Kälte. Dazu prüfen: in Testbildern der Feldscheune standen zwei Figuren in T-Haltung (`out/grenzland_kapitel2/01_dezember_scheune`) – im Spiel nachsehen. Stand Kapitel 2: `docs/features/grenzland-kapitel2.md`, Projekt-Dokument `claude/pavillon-gta-kapitel2.md` (online bis V19p).
+
 1. **Rückmeldung von Falko zu V16u:** KI-Gespräch am iPhone (Schlüssel, Mikrofon, Sprachausgabe), Stimmen der Dorfbewohner (Edge-Aufnahmen)
    und „Natürlich“ (Piper), Hubert und Ronald tagsüber sichtbar? KTX2 in der Vorschau auf iPhone und Laptop.
 2. **Agent `verkehr`:** gemergt und live (V16w). Falko fragen, wie es sich anfühlt.
