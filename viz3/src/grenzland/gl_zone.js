@@ -53,6 +53,9 @@ export const GLZONE = (() => {
     droppedN: 0,
     routeOn: false,
     transfer: null,
+    far: [], // instanced meshes in VEG.far (grass, heather): taken out again when the zone goes
+    gras: 0,
+    heide: 0,
   };
   const SET = 'grenzland-zone';
   // ------------------------------------------------------------------ colours (linear, as the kit wants them) ------------------------------------------------------------------
@@ -68,10 +71,10 @@ export const GLZONE = (() => {
       rost: L(112, 64, 38),
       rostD: L(76, 44, 28),
       stahl: L(70, 72, 74),
-      fund: L(150, 146, 136),
-      fundD: L(112, 108, 100),
-      hugel: L(84, 92, 56),
-      hugelD: L(70, 74, 46),
+      fund: L(118, 114, 106),
+      fundD: L(92, 89, 82),
+      hugel: L(92, 90, 60),
+      hugelD: L(78, 76, 50),
       schloss: L(150, 120, 60),
     };
   // inside the zone's tiles (their rectangle is square in UTM; the model is turned by 4.4° against it)
@@ -249,16 +252,192 @@ export const GLZONE = (() => {
     S.platten = n;
   }
 
+  // ------------------------------------------------------------------ grass and heather (instanced, the slabs' material) ------------------------------------------------------------------
+  // a tuft of blades or a heather clump as one small geometry with colours per vertex (base dark, tips light), normals up (soft light)
+  function buschelGeo(art) {
+    const pos = [],
+      col = [],
+      R = D.zufall(art === 'heide' ? 31 : 17),
+      n = art === 'heide' ? 16 : 7,
+      fuss = art === 'heide' ? [0.16, 0.12, 0.08] : [0.07, 0.1, 0.04],
+      spitze = art === 'heide' ? [0.32, 0.18, 0.12] : [0.36, 0.38, 0.16],
+      grau = [0.2, 0.22, 0.16];
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2 + R() * 0.6,
+        r0 = art === 'heide' ? 0.04 + R() * 0.08 : 0.02,
+        h = art === 'heide' ? 0.16 + R() * 0.18 : 0.22 + R() * 0.26,
+        lean = art === 'heide' ? 0.12 + R() * 0.12 : 0.05 + R() * 0.12,
+        w = art === 'heide' ? 0.07 : 0.022,
+        bx = Math.cos(a) * r0,
+        by = Math.sin(a) * r0,
+        tx = Math.cos(a) * (r0 + lean),
+        ty = Math.sin(a) * (r0 + lean),
+        px = -Math.sin(a) * w,
+        py = Math.cos(a) * w,
+        tip = art === 'heide' && R() < 0.3 ? grau : spitze;
+      // two-sided: both windings (x east, y up, z = -north, as three.js has it)
+      const A = [bx - px, 0, -(by - py)],
+        B = [bx + px, 0, -(by + py)],
+        T = [tx, h, -ty];
+      for (const tri of [
+        [A, B, T],
+        [B, A, T],
+      ])
+        for (const v of tri) {
+          pos.push(...v);
+          col.push(...(v === T ? tip : fuss));
+        }
+    }
+    const g = new THREE.BufferGeometry(),
+      nrm = new Float32Array(pos.length);
+    for (let i = 1; i < nrm.length; i += 3) nrm[i] = 1;
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.computeBoundingSphere();
+    return g;
+  }
+  // instances in cells of 60 m, each drawn within maxD (VEG thins them with distance)
+  function instanzen(geo, list, maxD, name) {
+    const by = new Map();
+    for (const q of list) {
+      const k = Math.floor(q[0] / 60) + ':' + Math.floor(q[1] / 60);
+      let a = by.get(k);
+      if (!a) by.set(k, (a = []));
+      a.push(q);
+    }
+    const mat = plattenMat(),
+      up = new THREE.Vector3(0, 1, 0),
+      sv = new THREE.Vector3();
+    for (const a of by.values()) {
+      const im = new THREE.InstancedMesh(geo, mat, a.length);
+      a.forEach((q, j) => {
+        q4.setFromAxisAngle(up, q[3]);
+        m4.compose(V(q[0], q[1], q[2]), q4, sv.set(q[4], q[4] * (q[5] || 1), q[4]));
+        im.setMatrixAt(j, m4);
+        im.setColorAt(j, c4.setRGB(q[6] || 1, q[7] || 1, q[8] || 1));
+      });
+      im.castShadow = false;
+      im.receiveShadow = false;
+      im.userData.noMerge = true;
+      im.userData.n0 = a.length;
+      im.userData.thin = [maxD * 0.45, maxD * 0.75];
+      im.name = name;
+      vegReady(im, maxD);
+      scene.add(im);
+      S.meshes.push(im);
+      S.far.push(im);
+    }
+  }
+  // the grass between the two lanes and along their outer edges
+  function bauGras(hAt) {
+    const R = D.zufall(4242),
+      list = [];
+    for (const Lw of S.lin) {
+      for (let s = 0; s < Lw.len; s += 0.55) {
+        const q = D.bei(Lw, s),
+          nx = Math.cos(q.hd),
+          ny = -Math.sin(q.hd);
+        for (const [lat, pr] of [
+          [(R() - 0.5) * 0.5, 0.9],
+          [-1.62 - R() * 0.6, 0.8],
+          [1.62 + R() * 0.6, 0.8],
+          [-2.4 - R() * 1.2, 0.45],
+          [2.4 + R() * 1.2, 0.45],
+        ]) {
+          if (R() > pr) continue;
+          const x = q.x + nx * lat + (R() - 0.5) * 0.2,
+            y = q.y + ny * lat + (R() - 0.5) * 0.2,
+            g = 0.75 + R() * 0.45,
+            dry = R() < 0.35;
+          list.push([
+            x,
+            y,
+            q.z + 0.005 + (Math.abs(lat) < 0.4 ? 0.0 : 0.0),
+            R() * 6.28,
+            0.7 + R() * 0.7,
+            1,
+            g * (dry ? 1.25 : 1),
+            g,
+            g * (dry ? 0.8 : 1),
+          ]);
+        }
+      }
+    }
+    instanzen(buschelGeo('gras'), list, 55, 'grenzland-zone-gras');
+    S.gras = list.length;
+  }
+  // heather where the photo shows the heath (the land cover's class 2), near the Kolonnenweg
+  async function bauHeide(hAt) {
+    const b = S.data.bewuchs;
+    if (!b || typeof DecompressionStream === 'undefined') return;
+    const raw = new Uint8Array(
+        await new Response(
+          new Blob([D.bytes(b.b64)]).stream().pipeThrough(new DecompressionStream('deflate'))
+        ).arrayBuffer()
+      ),
+      BW = D.bewuchs(b, raw);
+    S.bw = BW;
+    if (!S.an) return;
+    const R = D.zufall(1990),
+      list = [],
+      Lw = S.lin[0];
+    // over the land cover's cells near the way: heath cells get clumps (about one per 1.3 m²)
+    const step = b.step;
+    for (let j = 0; j < b.ny; j++)
+      for (let i = 0; i < b.nx; i++) {
+        if (raw[j * b.nx + i] !== 2) continue;
+        const E = b.E0 + (i + 0.5) * step,
+          N = b.N0 + (j + 0.5) * step,
+          [x, y] = WELT.toM(E, N);
+        if (Math.abs(x - Lw.x[0]) > 4000) continue;
+        const nq = D.naechst(Lw, x, y);
+        if (nq.d > 160 || nq.d < 2.6) continue;
+        for (let k = 0; k < 3; k++) {
+          const px = x + (R() - 0.5) * step,
+            py = y + (R() - 0.5) * step,
+            z = WELT.heightAt(px, py),
+            h = z !== undefined ? z : nq.z,
+            g = 0.75 + R() * 0.4;
+          list.push([
+            px,
+            py,
+            h - 0.02,
+            R() * 6.28,
+            0.8 + R() * 0.9,
+            0.8 + R() * 0.5,
+            g,
+            g * (0.9 + R() * 0.15),
+            g * 0.9,
+          ]);
+        }
+      }
+    instanzen(buschelGeo('heide'), list, 70, 'grenzland-zone-heide');
+    S.heide = list.length;
+    markDirty(true);
+  }
+
+  async function bauBoden() {
+    if (!WELT.sampler) return;
+    const r = S.data.rect,
+      hAt = await WELT.sampler(r[0], r[1], r[2], r[3]);
+    if (!S.an || !hAt.tiles) return;
+    // the pads of the zone (none so far) and the carved ground are in the tiles already: the raw heights are the drawn ones
+    bauGras(hAt);
+    await bauHeide(hAt);
+    markDirty(true);
+  }
   // ------------------------------------------------------------------ the trees at the forest edges ------------------------------------------------------------------
   // 24 615 trees in zone.json (spruce and pine – the stands; birches and broadleaves – the young growth; young pines and birches in the
   // heath), within 120 m of the Kolonnenweg and 90 m of the tower. Far: crossed cards with the atlas of world/ratscher.js and its material
   // (the region's far trees: no new program), in cells of 128 m. Near (within ~70 m of the player): the garden's generated trees (pine,
   // aspen) with their levels of detail, built a cell of 48 m at a time; their cards meanwhile folded away. Trunks stop walkers and vehicles.
   const BA = { T: null, n: 0, ci: null, ii: null, cells: [], near: new Map(), grid: new Map(), nahN: 0 };
+  // (the near band kept narrow: within 45 m of the player the trees are 3D – the forest edges along the strip –, farther the cards)
   const CARD = 128,
-    NC = 48,
-    NAH = 70,
-    WEG_NAH = 115;
+    NC = 40,
+    NAH = 45,
+    WEG_NAH = 80;
   const KIND = { 4: 'pine', 3: 'aspen' };
   function bauBaeume() {
     const t = S.data.baeume;
@@ -408,8 +587,8 @@ export const GLZONE = (() => {
         scene.add(im);
         Z.ms.push(im);
       }
-      const a = VEG.add({ ms: [ib, bm, bf], d: [30, 90] }),
-        b = VEG.add({ ms: [il, lf], d: [90] });
+      const a = VEG.add({ ms: [ib, bm, bf], d: [16, 40] }),
+        b = VEG.add({ ms: [il, lf], d: [30] });
       Z.lods.push(a, b);
     }
     for (const i of list) karte(i, false);
@@ -489,6 +668,298 @@ export const GLZONE = (() => {
       }
     return moved;
   }
+
+  // ------------------------------------------------------------------ what is left, the boards, the tower, the high seats ------------------------------------------------------------------
+  const W = {
+    holz: L(118, 88, 60),
+    holzD: L(84, 62, 42),
+    holzG: L(104, 96, 84),
+    dach: L(70, 66, 62),
+    tafel: L(46, 70, 52),
+    tafelB: L(224, 216, 196),
+    weiss: L(232, 230, 222),
+    braun: L(96, 62, 38),
+    gruen: L(40, 92, 56),
+    granit: L(150, 146, 140),
+    granitD: L(110, 106, 102),
+    glas: L(52, 62, 70),
+    rahmen: L(70, 72, 70),
+    turm: L(176, 172, 160),
+    turmD: L(140, 136, 126),
+    mauer: L(188, 184, 172),
+    gitter: L(120, 124, 126),
+  };
+  // which side of the Kolonnenweg the old border lies (+1 right of the way's direction, −1 left)
+  function grenzSeite(Lw, s) {
+    const g = S.data.grenze && S.data.grenze[0];
+    if (!g) return 1;
+    const q = D.bei(Lw, s),
+      G = D.linie(g, 2),
+      n = D.naechst(G, q.x, q.y),
+      p = D.bei(G, n.s),
+      rx = Math.cos(q.hd),
+      ry = -Math.sin(q.hd);
+    return (p.x - q.x) * rx + (p.y - q.y) * ry >= 0 ? 1 : -1;
+  }
+  // a nature board as they stand in the Grünes Band: two posts, a board under a small roof, words in the dot font
+  function tafelBau(K, x, y, z, az, titel, zeilen, farbe) {
+    const F = GLORTE.frame(K, x, y, az + Math.PI, z);
+    for (const r of [-0.62, 0.62]) F.box(r, 0, -0.4, 0.09, 0.09, 2.35, W.holzD);
+    F.box(0, 0.02, 0.85, 1.42, 0.05, 1.0, W.holz);
+    F.box(0, 0.0, 0.88, 1.32, 0.02, 0.94, farbe || W.tafel);
+    F.slab([-0.8, -0.3, 2.02], [0.8, -0.3, 2.02], [0.8, 0.32, 1.9], [-0.8, 0.32, 1.9], 0.03, W.dach);
+    const px = 0.016,
+      mid = (zz, t, p = px) => GLORTE.tafelText(K, t, F.P(0, -0.012, zz), az, p, W.tafelB);
+    mid(1.7, titel, 0.02);
+    zeilen.forEach((t, i) => mid(1.5 - i * 0.14, t));
+    return F;
+  }
+  function bauReste() {
+    const K = GLORTE.kit(),
+      KM = GLORTE.kit(),
+      Lw = S.lin[0],
+      R = D.zufall(1961),
+      o = S.data;
+    // concrete posts of the old fence, on the border's side of the way: one upright with a rag of mesh, one leaning, one broken off
+    for (const [s, art] of [
+      [380, 0],
+      [386, 1],
+      [920, 2],
+      [1460, 1],
+      [1990, 0],
+    ]) {
+      if (s > Lw.len) continue;
+      const q = D.bei(Lw, s),
+        sd = grenzSeite(Lw, s),
+        F = GLORTE.frame(K, q.x, q.y, q.hd, q.z),
+        r = sd * (10 + R() * 3),
+        g = F.g(r, 0),
+        hh = art === 2 ? 0.7 : 2.5,
+        tilt = art === 1 ? 0.35 : 0.04;
+      // a post leaning: built as a beam from its foot to its head
+      F.beam(
+        [r, 0, g - 0.3],
+        [r + sd * Math.sin(tilt) * hh, Math.sin(tilt * 0.3), g + Math.cos(tilt) * hh],
+        0.13,
+        0.13,
+        W.turmD
+      );
+      if (art === 0)
+        for (let k = 0; k < 5; k++)
+          F.box(
+            r + sd * 0.09,
+            0.1 + k * 0.05,
+            g + 1.2 + k * 0.22,
+            0.01,
+            0.4 + R() * 0.3,
+            0.012,
+            C.rost,
+            false,
+            R() * 0.5
+          );
+    }
+    // the old border stone of granite at the junction (OpenStreetMap: historic=boundary_stone), and more along the line
+    const stones = (o.punkte || []).filter(p => p[0] === 'grenzstein').map(p => [p[1], p[2], p[3]]);
+    const g = o.grenze && o.grenze[0] ? D.linie(o.grenze[0], 2) : null;
+    if (g) for (const s of [0.3, 0.55, 0.8]) stones.push(D.bei(g, g.len * s));
+    for (const st of stones) {
+      const x = st.x !== undefined ? st.x : st[0],
+        y = st.y !== undefined ? st.y : st[1],
+        zz = WELT.heightAt(x, y),
+        z0 = zz !== undefined ? zz : st.z !== undefined ? st.z : st[2],
+        F = GLORTE.frame(K, x, y, st.hd || 0, z0);
+      F.box(0, 0, -0.2, 0.26, 0.18, 0.72, W.granit);
+      F.box(0, 0, 0.5, 0.2, 0.12, 0.04, W.granitD);
+      GLORTE.tafelText(K, 'DDR', F.P(0, 0.093, 0.3), st.hd || 0, 0.018, W.granitD);
+      GLORTE.tafelText(K, 'B', F.P(0, -0.093, 0.3), (st.hd || 0) + Math.PI, 0.018, W.granitD);
+    }
+    // the boards at the north end of the heath (where OpenStreetMap has them): the Kolonnenweg and the Grünes Band, the nature reserve,
+    // the Naturmonument's sign
+    const tf = (o.punkte || []).filter(
+      p => p[0] === 'tafel' && Math.hypot(p[1] - o.orte.heide[0], p[2] - o.orte.heide[1]) < 600
+    );
+    const spots = tf.length ? tf : [['tafel', o.orte.heide[0], o.orte.heide[1] + 150, o.orte.heide[2]]];
+    const texte = [
+      [D.TAFEL.titel, D.TAFEL.zeilen, W.tafel, D.TAFEL.lesen],
+      [
+        D.NSG.titel,
+        D.NSG.zeilen,
+        W.gruen,
+        ['Naturschutzgebiet Görsdorfer Heide: Heide, Sand und junge Kiefern im früheren Grenzstreifen.'],
+      ],
+      [D.BAND.titel, D.BAND.zeilen, W.braun, ['Grünes Band – Nationales Naturmonument (Thüringen, seit 2018).']],
+    ];
+    spots.slice(0, 3).forEach((p, i) => {
+      const q = D.naechst(Lw, p[1], p[2]),
+        w = D.bei(Lw, q.s),
+        az = Math.atan2(w.x - p[1], w.y - p[2]),
+        zz = WELT.heightAt(p[1], p[2]),
+        [ti, ze, fa, le] = texte[i % 3];
+      tafelBau(K, p[1], p[2], zz !== undefined ? zz : p[3], az, ti, ze, fa);
+      act({
+        id: 'glzone-tafel-' + i,
+        label: () => (S.an ? 'Tafel lesen' : null),
+        pos: () => [p[1] + Math.sin(az) * 1.2, p[2] + Math.cos(az) * 1.2, p[3]],
+        r: 2.6,
+        run: () => le.forEach((t, k) => GLHUD.sub('Tafel', t, 7000 + k * 10)),
+      });
+    });
+    // high seats at the forest edges (OpenStreetMap: amenity=hunting_stand): a closed box on four legs, a ladder
+    for (const p of (o.punkte || []).filter(p => p[0] === 'hochsitz')) {
+      const zz = WELT.heightAt(p[1], p[2]),
+        q = D.naechst(Lw, p[1], p[2]),
+        w = D.bei(Lw, q.s),
+        az = Math.atan2(w.x - p[1], w.y - p[2]),
+        F = GLORTE.frame(K, p[1], p[2], az, zz !== undefined ? zz : p[3]);
+      for (const [r, f] of [
+        [-0.75, -0.75],
+        [0.75, -0.75],
+        [0.75, 0.75],
+        [-0.75, 0.75],
+      ])
+        F.beam([r * 1.2, f * 1.2, -0.3], [r, f, 3.4], 0.12, 0.12, W.holzD);
+      F.box(0, 0, 3.3, 1.7, 1.7, 0.08, W.holz);
+      F.box(0, -0.84, 3.38, 1.7, 0.05, 1.0, W.holzG);
+      F.box(0, 0.84, 3.38, 1.7, 0.05, 0.45, W.holzG);
+      F.box(-0.84, 0, 3.38, 0.05, 1.7, 1.0, W.holzG);
+      F.box(0.84, 0, 3.38, 0.05, 1.7, 1.0, W.holzG);
+      F.slab([-0.95, -0.95, 4.65], [0.95, -0.95, 4.65], [0.95, 0.95, 4.35], [-0.95, 0.95, 4.35], 0.04, W.dach);
+      for (const r of [-0.25, 0.25]) F.beam([r, 2.1, -0.2], [r, 0.9, 3.3], 0.07, 0.07, W.holzD);
+      for (let k = 1; k < 9; k++)
+        F.beam([-0.25, 2.1 - k * 0.135, k * 0.4 - 0.2], [0.25, 2.1 - k * 0.135, k * 0.4 - 0.2], 0.05, 0.05, W.holz);
+    }
+    const m1 = GLORTE.mesh(K, GLORTE.mat().paint, 'grenzland-zone-reste'),
+      m2 = GLORTE.mesh(KM, GLORTE.mat().metal, 'grenzland-zone-reste-eisen');
+    for (const m of [m1, m2]) if (m) S.meshes.push(m);
+  }
+  // the Grenzturm of the old crossing point, as one sees it from outside: the shaft, the glazed room on top (raised in 1982), the door
+  // shut; beside it the memorial's pieces – parts of the wall, a stretch of the metal mesh fence on concrete posts, the shelter, boards
+  function bauTurm() {
+    const o = S.data,
+      m = o.orte.museum,
+      ring = o.turm;
+    if (!m) return;
+    let hd = 0;
+    if (ring && ring.length >= 4) hd = Math.atan2(ring[2] - ring[0], ring[3] - ring[1]);
+    const zz = WELT.heightAt(m[0], m[1]),
+      z0 = zz !== undefined ? zz : m[2],
+      K = GLORTE.kit(),
+      KM = GLORTE.kit(),
+      KG = GLORTE.kit(),
+      F = GLORTE.frame(K, m[0], m[1], hd, z0),
+      FM = GLORTE.frame(KM, m[0], m[1], hd, z0),
+      FG = GLORTE.frame(KG, m[0], m[1], hd, z0);
+    // the shaft 4.2 m square up to 9.6 m, the glazed room 5.2 m square from 9.6 to 12.2 m, a flat roof with a parapet
+    F.box(0, 0, -0.5, 4.2, 4.2, 10.1, W.turm);
+    for (let k = 0; k < 3; k++) F.box(0, 0, 2.6 + k * 2.6, 4.26, 4.26, 0.06, W.turmD);
+    F.box(0, 0, 9.6, 5.2, 5.2, 0.3, W.turmD);
+    for (const [r, f, sr, sf] of [
+      [0, -2.55, 5.2, 0.1],
+      [0, 2.55, 5.2, 0.1],
+      [-2.55, 0, 0.1, 5.2],
+      [2.55, 0, 0.1, 5.2],
+    ]) {
+      F.box(r, f, 9.9, sr, sf, 0.6, W.turm);
+      FG.box(r * 0.99, f * 0.99, 10.5, sr === 0.1 ? 0.06 : sr - 0.3, sf === 0.1 ? 0.06 : sf - 0.3, 1.45, W.glas);
+      F.box(r, f, 11.95, sr, sf, 0.35, W.turm);
+    }
+    for (const [r, f] of [
+      [-2.55, -2.55],
+      [2.55, -2.55],
+      [2.55, 2.55],
+      [-2.55, 2.55],
+    ])
+      F.box(r, f, 9.9, 0.22, 0.22, 2.4, W.rahmen);
+    F.box(0, 0, 12.3, 5.3, 5.3, 0.18, W.turmD);
+    for (const [r, f, sr, sf] of [
+      [0, -2.62, 5.3, 0.06],
+      [0, 2.62, 5.3, 0.06],
+      [-2.62, 0, 0.06, 5.3],
+      [2.62, 0, 0.06, 5.3],
+    ])
+      FM.box(r, f, 12.48, sr, sf, 0.05, W.gitter);
+    FM.cyl(1.4, 1.4, 12.48, 12.95, 0.16, 0.2, 8, W.gitter, true);
+    // the door (shut) and small windows in the shaft, on the side towards the road
+    FM.box(0, -2.12, 0, 1.0, 0.06, 2.1, C.stahl);
+    for (const zz2 of [3.4, 6.0, 8.2]) FG.box(0, -2.115, zz2, 0.5, 0.04, 0.7, W.glas);
+    // the memorial's pieces: three elements of the wall (L-shaped, 3.6 m, the pipe on top), the fence on concrete posts
+    const mr = o.punkte ? o.punkte.find(p => p[0] === 'mauerreste') : null,
+      [lx, ly] = mr ? F.loc(mr[1], mr[2]) : [0, -9];
+    for (let k = 0; k < 3; k++) {
+      const r = lx - 1.2 + k * 1.21;
+      F.box(r, ly, -0.3, 1.2, 0.18, 3.9, W.mauer);
+      F.box(r, ly + 0.6, -0.3, 1.2, 1.2, 0.18, W.mauer);
+      F.rolle([r - 0.6, ly, 3.75], [r + 0.6, ly, 3.75], 0.2, W.mauer, 10);
+    }
+    for (let k = 0; k < 3; k++) {
+      const r = lx + 3.2 + k * 3.1;
+      F.box(r, ly + 0.5, -0.4, 0.12, 0.12, 3.5, W.turmD);
+      if (k < 2) FM.box(r + 1.55, ly + 0.5, 0.15, 2.9, 0.02, 2.9, W.gitter);
+    }
+    // the shelter with the boards (OpenStreetMap: amenity=shelter, tourism=information)
+    const sh = o.punkte ? o.punkte.find(p => p[0] === 'unterstand') : null;
+    if (sh) {
+      const [sx, sy] = F.loc(sh[1], sh[2]);
+      for (const [dr, df] of [
+        [-1.4, -0.9],
+        [1.4, -0.9],
+        [1.4, 0.9],
+        [-1.4, 0.9],
+      ])
+        F.box(sx + dr, sy + df, -0.3, 0.12, 0.12, 2.6, W.holzD);
+      F.slab(
+        [sx - 1.7, sy - 1.2, 2.45],
+        [sx + 1.7, sy - 1.2, 2.45],
+        [sx + 1.7, sy + 1.2, 2.15],
+        [sx - 1.7, sy + 1.2, 2.15],
+        0.05,
+        W.dach
+      );
+      F.box(sx, sy + 0.7, 0.42, 2.4, 0.4, 0.06, W.holz);
+      tafelBau(K, ...F.xy(sx, sy - 2.2), z0, hd + Math.PI, D.MUSEUM.titel, D.MUSEUM.zeilen, W.tafel);
+      act({
+        id: 'glzone-museum-tafel',
+        label: () => (S.an ? 'Tafel lesen' : null),
+        pos: () => [...F.xy(sx, sy - 3.1), z0],
+        r: 2.6,
+        run: () => D.MUSEUM.lesen.forEach((t, k) => GLHUD.sub('Tafel', t, 7000 + k * 10)),
+      });
+    }
+    for (const mm of [
+      GLORTE.mesh(K, GLORTE.mat().paint, 'grenzland-zone-turm'),
+      GLORTE.mesh(KM, GLORTE.mat().metal, 'grenzland-zone-turm-eisen'),
+      GLORTE.mesh(KG, GLORTE.mat().metal, 'grenzland-zone-turm-glas'),
+    ])
+      if (mm) S.meshes.push(mm);
+    // the tower and the wall stop walkers and vehicles; not to be entered in this stage
+    addCol(F.col(-2.15, 2.15, -2.15, 2.15, -1, 13));
+    addCol(F.col(lx - 1.85, lx + 1.85, ly - 0.15, ly + 1.25, -1, 4));
+    TU.F = F;
+    TU.z = z0;
+    // the opening hours (einkauf/oeffnung.js) – the door stays shut in this stage
+    if (window.OEFFNUNG && OEFFNUNG.add)
+      OEFFNUNG.add('grenzturm-eisfeld', {
+        name: D.ORTE.museum,
+        art: 'museum',
+        ort: 'Eisfeld',
+        oh: D.MUSEUM.oh,
+        quelle: D.MUSEUM.quelle,
+      });
+    act({
+      id: 'glzone-turm-tuer',
+      label: () => (S.an ? 'Tür' : null),
+      pos: () => [...F.xy(0, -3.0), z0],
+      r: 2.2,
+      run: () => {
+        const t = window.OEFFNUNG && OEFFNUNG.text ? OEFFNUNG.text('grenzturm-eisfeld') : '';
+        PLAY.think(
+          'Der Grenzturm – heute Gedenkstätte. ' + (t ? t.charAt(0).toUpperCase() + t.slice(1) + '.' : ''),
+          3600
+        );
+      },
+    });
+  }
+  const TU = { F: null, z: 0 };
   // ------------------------------------------------------------------ the bunker's outside (invented) ------------------------------------------------------------------
   const BK = { F: null, tuer: null, z: 0, sockel: 0.36 };
   function bauBunker() {
@@ -643,7 +1114,8 @@ export const GLZONE = (() => {
       (p, rad) => {
         if (!S.an || !inZone(p[0], p[1])) return undefined;
         let moved = false;
-        if (bnah(p[0], p[1])) for (const c of S.cols) if (!c.stehen && pushBox(c.B, p, rad)) moved = true;
+        if (bnah(p[0], p[1]) || (TU.F && Math.abs(p[0] - TU.F.ox) < 30 && Math.abs(p[1] - TU.F.oy) < 30))
+          for (const c of S.cols) if (!c.stehen && pushBox(c.B, p, rad)) moved = true;
         if (stamm(p, rad)) moved = true;
         return moved ? true : undefined;
       },
@@ -768,6 +1240,18 @@ export const GLZONE = (() => {
         } catch (e) {
           console.warn('grenzland zone: baeume', e);
         }
+        try {
+          bauReste();
+        } catch (e) {
+          console.warn('grenzland zone: reste', e);
+        }
+        try {
+          bauTurm();
+        } catch (e) {
+          console.warn('grenzland zone: turm', e);
+        }
+        // grass and heather on the ground of the tiles (their raw heights, before they are drawn: WELT.sampler)
+        bauBoden().catch(e => console.warn('grenzland zone: boden', e));
         S.phase = 'an';
         S.ms = Math.round(performance.now() - t0);
         S.builtN++;
@@ -807,6 +1291,11 @@ export const GLZONE = (() => {
       if (i >= 0) VEG.lod.splice(i, 1);
     }
     S.lods.length = 0;
+    for (const im of S.far) {
+      const i = VEG.far.indexOf(im);
+      if (i >= 0) VEG.far.splice(i, 1);
+    }
+    S.far.length = 0;
     for (const c of S.cols) {
       const i = VEH.extra.indexOf(c.x);
       if (i >= 0) VEH.extra.splice(i, 1);
@@ -815,6 +1304,7 @@ export const GLZONE = (() => {
     for (const id of S.acts) KERN.unact(id);
     S.acts.length = 0;
     BK.F = null;
+    TU.F = null;
     if (FAHRT.drop) FAHRT.drop(SET);
     WELT.need(SET, false);
     S.phase = 'aus';
@@ -1028,6 +1518,8 @@ export const GLZONE = (() => {
       platten: S.platten,
       meshes: S.meshes.length,
       baeume: BA.n,
+      gras: S.gras,
+      heide: S.heide,
       baeumeNah: BA.nahN,
       zellenNah: BA.near.size,
       lods: S.lods.length,

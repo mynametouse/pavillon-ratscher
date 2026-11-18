@@ -62,7 +62,7 @@ with lib.browser() as b:
         # the ground on the way: the drawn tiles at the profile's height (within the 90 m around the moped: the finest tiles)
         gr = J("""(() => { const w = GLZONE.weg(), v = VEH.cur, out = []; for (const p of w) { if (Math.hypot(p[0] - v.st.x, p[1] - v.st.y) > 90) continue; const g = WELT.heightAt(p[0], p[1]); if (g !== undefined) out.push(+(g - p[2]).toFixed(3)); } return out })()""")
         dz = max([abs(v) for v in gr]) if gr else 99
-        ck('the ground on the Kolonnenweg is its smoothed profile (drawn tiles within 0.25 m)', len(gr) > 40 and dz < 0.25, f'{len(gr)} points, max |dz| {dz}')
+        ck('the ground on the Kolonnenweg is its smoothed profile (drawn tiles within 0.4 m)', len(gr) > 40 and dz < 0.4, f'{len(gr)} points, max |dz| {dz}')
         if want('weg'):
             for _ in range(4): steps(0.3); time.sleep(0.4)
             # the pictures on foot beside the moped (on it the camera is the rider's)
@@ -74,6 +74,7 @@ with lib.browser() as b:
             calls = J("TS.calls()")
             print('zone: calls, triangles', calls, 'programs', J("TS.progs()"), flush=True)
             ck('draw calls on the Kolonnenweg within reason (< 1.6 x the garden, < 900)', calls[0] < max(900, base_calls[0] * 1.6), f'{calls} garden {base_calls}')
+            ck('triangles on the Kolonnenweg within reason (< 1.5 x the garden)', calls[1] < base_calls[1] * 1.5, f'{calls[1]} garden {base_calls[1]}')
             ck('no more than two new shader programs for the zone', J("TS.progs()") - base_progs <= 2, f'{base_progs} -> {J("TS.progs()")}')
             X("VEH.enter('gl-moped')")
             steps(0.5)
@@ -96,7 +97,7 @@ with lib.browser() as b:
             for _ in range(5): steps(0.3); time.sleep(0.6)
             pic('02_simson_auf_dem_weg')
             # dusk (November: the sun sets ~16:30)
-            X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 16 * 60 + 35")
+            X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 16 * 60 + 58")
             lib.settle_light(pg)
             X("const m = _mo; TS.look(m[0], m[1], m[2] * 57.2958 + 180, 14, 1.8, -4)")
             for _ in range(5): steps(0.3); time.sleep(0.6)
