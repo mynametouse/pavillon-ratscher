@@ -67,12 +67,62 @@ z. B. für das Dorf von 1989); `?nofotogeb` startet mit 0; `GEBFOTO.state()`.
 
 ## Kosten
 
-KOSTEN_PLATZHALTER
+Gezählt wie `viz3/test/fotoref.py` (Stufe „hoch“, 1280 × 720, 15:30 Uhr, Wetter „klar“; Software-Grafik im Chat-Rechner – Zeiten sagen
+dort nichts): **Zeichenaufrufe und Dreiecke sind mit und ohne exakt gleich**, im Bild wie in der Schattenkarte (keine Geometrie, kein
+Mesh, kein Pass).
+
+| Blickpunkt | Zeichenaufrufe / Dreiecke (mit = ohne) | Schattenkarte des Kastens |
+|---|---|---|
+| Anger (242, −101) | 690 / 1,35 M | 75 / 90 Tsd. |
+| Fassaden am Anger (250, −118) | 249 / 0,86 M | 72 / 88 Tsd. |
+| Scheune (300, −160) | 263 / 0,75 M | 64 / 74 Tsd. |
+| Wand in 2 m | 253 / 0,85 M | 73 / 95 Tsd. |
+| Halle (120, −60) | 320 / 0,94 M | 65 / 47 Tsd. |
+| Welt: Rappelsdorf (−3206, −54) | 211 / 0,21 M | 63 / 19 Tsd. |
+| Markt Schleusingen (−1100, 1215) | 350 / 1,02 M | 76 / 45 Tsd. |
+
+- **Programme:** kein neues – die zwei vorhandenen (`v16e-wall`, `v16e-roof`) sind geändert; 177 Programme nach allen Blickpunkten wie vorher.
+- **Texturen je Programm:** Wand 7 statt 5 (dazu das Rauschen und die Normalenkarte des Putzes), Dach 8 statt 7 (das Rauschen); das
+  größte Programm bleibt bei 16 (die Bodenshader). `lib.check_gl`: keins über 16, keins kaputt.
+- **Speicher:** eine Textur mehr – das Rauschen, 256² RGBA mit Mip-Stufen, 0,35 MB, beim Start gerechnet (20–50 ms einmalig, in node
+  gemessen). Die Normalenkarte des Putzes (`tex/plaster_ext_nrm`) laden die Gartenwände ohnehin; keine neue Datei, kein neues Asset.
+- **Arbeit je Bild auf der CPU:** keine (kein Tick, keine Uniform, die sich je Bild ändert).
+- **Arbeit je Bildpunkt:** das ist der Preis. Je Wandpixel vier Textur-Abrufe und einige Hashes mehr, je Dachpixel zwei Abrufe. Gemessen
+  mit denselben Shadern auf einem Software-Rasterer (Mesa llvmpipe, nicht im Browser): eine Wand, die das Bild füllt, braucht das
+  1,56-fache der Shader-Zeit, ein Dach das 1,08-fache. Auf einer Grafikkarte sind Textur-Abrufe verhältnismäßig billiger – **gemessen ist
+  das dort nicht** (kein Gerät im Chat-Rechner); auf Falkos Laptop (Intel UHD 620) und am iPhone bitte ansehen. Wenn es dort zu viel ist:
+  die grobe Körnung und die Wellen der Wand lassen sich je Stufe abschalten (zwei Abrufe weniger) – noch nicht eingebaut.
 
 ## Tests
 
-TESTS_PLATZHALTER
+- `viz3/test/foto_gebaeude.py` (neu): das eine Wandmaterial zeichnet auch die Gebäude des Quadrats; Wand- und Dach-Programm halten die
+  neuen Uniforms und höchstens 16 Texturen; eine Putzwand aus 2 m ist nicht mehr einfarbig (Streuung der Helligkeit), ihr Sockel ist
+  höher als der alte und dunkler als die Wand, der Fuß noch dunkler; an einer Fassade in der Sonne liegt der obere Fensterstreifen im
+  Schatten des Sturzes; Häuser einer Straße weichen im Ton voneinander ab; der Himmel bleibt bildpunktgleich, Zeichenaufrufe und Dreiecke
+  gleich; `GEBFOTO.set(0)` gibt das alte Bild. Hinweise ohne Urteil: die Ziegelreihen (Streuung der Bildzeilen über der Traufe), der Fuß.
+- `viz3/extra/foto-gebaeude/tests.txt`: dazu `dorfkern`, `welt_gebaeude`, `schleusingen`, `leistung`, `memphone` – laufen im Feature-Lauf
+  bei GitHub auf jedem Push nach `feat/foto-gebaeude` (seit 18.11. 21:00 testen die Hilfs-Agenten dort, der Browser im Chat-Rechner ist
+  für Bilder).
+- Ohne Browser: `bash tools/check.sh`; die beiden Shader (so, wie three sie zusammensetzt) übersetzt und mit einer Probe-Fassade
+  gezeichnet mit Mesa (EGL, llvmpipe) – daher die Probe-Bilder unter `/home/claude/scratch/foto/gebaeude/glsl/` (nicht das Licht der App).
+- Bilder vorher/nachher aus der App: `/home/claude/scratch/foto/gebaeude/c/` (`<blick>_vorher.jpg`, `<blick>_nachher.jpg`; ein Laden,
+  `GEBFOTO.set(0)` und `set(1)` von derselben Stelle).
 
 ## Offen
 
-OFFEN_PLATZHALTER
+1. **Am echten Gerät ansehen** (Laptop, iPhone): Bildrate vor einer Wand, die das Bild füllt; Stärke von Körnung, Flecken und Sockel.
+2. **Fenster, zweiter Teil:** nicht jedes Fenster gleich (Rollladen halb unten, Gardinen in mehr Arten, offene Flügel), Scheiben, die
+   aus der Ferne den Himmel verschieden hell spiegeln; Rahmen mit Profil. Der Schatten der Laibung ist gerechnet, nicht in der
+   Schattenkarte: ein Fenster im Schatten eines Nachbarhauses bekommt ihn nicht doppelt, aber die Laibung wirft keinen Schatten auf
+   Dinge davor.
+3. **Sockel und Gelände:** der Sockel misst von der Fußhöhe des Hauses; wo der Boden am Hang höher liegt, verschwindet er teilweise im
+   Boden, wo er tiefer liegt, läuft das Sockelmaterial als Fundament weiter. Türen stehen wie bisher auf der alten Sockelhöhe.
+4. **Dächer:** Moos und Dunkelwerden *zur Traufe hin* brauchen den Abstand zur Traufe je Dachpunkt – den geben die Dach-Bauer nicht mit
+   (ein Attribut mehr in `village.js`, `gebaeude.js`, `schleusingen.js`, `vessra.js`); jetzt sitzt das Moos in Flecken auf der ganzen
+   Nordseite. Schiefer- und Wellplattendächer haben Flecken und Nordseite, aber keine neuen Reihen. Schornsteine, wo ein Wohnhaus keinen
+   hat: offen (Schritt 3 des Auftrags).
+5. **Wo es herkommt, ist allgemein:** Sockelmaterial, Alter und Schmutz sind nicht aus Daten des einzelnen Hauses. Sagt eine Quelle
+   mehr (Baujahr aus dem LoD2, Falkos Video), kann `age` daraus kommen statt aus der Hausnummer.
+6. Das Dorf von 1989 (`grenzland/gl_1989_welt.js`) könnte mit `GEBFOTO.set(1.8)` unrenovierte Wände zeigen – nicht angefasst (nicht meine
+   Dateien).
+7. Suhl (`lazy/suhl/**`) zeichnet mit demselben Wandmaterial und bekommt alles mit – dort nicht angesehen.
