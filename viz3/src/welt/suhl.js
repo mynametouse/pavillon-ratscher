@@ -152,6 +152,11 @@ export const SUHL = (() => {
     };
   for (const k of ['building', 'roofPlanes', 'quarter']) S.data[k] = (...a) => (api ? api.data[k](...a) : null);
   S.data.each = (...a) => S.load().then(p => p.data.each(...a));
+  // Suhl 1989 – the night at the gate (lazy/suhl/kern/jahr1989.js): for Grenzland's mission 3, „Die Nacht am Tor“. SUHL.jahr1989(true,
+  // { nacht }) → Promise of { on, built, people, candles, banners, fence, cars, err }; false gives everything back. To look at it without
+  // the mission: ?suhl1989=1 switches it on when Suhl is built (with the clock at 20:30).
+  S.jahr1989 = (on, o) => S.load().then(p => (p.jahr1989 ? p.jahr1989(on, o) : null));
+  if (/[?&]suhl1989=1/.test(location.search)) built.push(() => S.jahr1989(true, { nacht: true }));
   Object.defineProperty(S.data, 'meta', { get: () => (api ? api.data.meta : null) });
   S.status = () =>
     Object.assign(
