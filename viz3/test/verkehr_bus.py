@@ -27,7 +27,21 @@ with lib.browser() as b:
     try:
         # the 205 at the stop (the clock at 7:45, in real time from there)
         E("document.querySelectorAll('#toast').forEach(e => e.style.visibility = 'hidden'); VKSTROM.force = { n: 0 }")
-        E("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 7 * 60 + 45; CLOCK.focus('test')")
+        # the scene sets its own clock (7:38 at the stop) once it stands – then waiting for the bus as in bus.py: the clock jumps to 7:45
+        # and runs in real time from there
+        for i in range(60):
+            if E("CLOCK.hm()") in ('07:38', '07:39', '07:40') and E("!!BUS.stopAt(GAME.P.x, GAME.P.y, 30)"):
+                break
+            steps(0.2)
+            time.sleep(0.2)
+        E("(() => { const e = BUS.stopAt(GAME.P.x, GAME.P.y, 30); BUS.board(e); })()")
+        E("VERKEHR.autoOn(false); VERKEHR.clear && VERKEHR.clear()")
+        E("document.querySelector('#busboard [data-k=warten]').click()")
+        for i in range(40):
+            steps(0.5)
+            if not E("!!CLOCK.warp"):
+                break
+        E("CLOCK.focus('test')")
         arr = None
         for i in range(150):
             steps(1.0)
