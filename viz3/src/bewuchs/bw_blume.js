@@ -760,7 +760,8 @@ void flPlant( out vec3 P ) {
   // its height (by its frame and the month); in a short sward not far above the grass – a grass head stands its own height above it
   // (feat/fotorealismus, foto-wald: under trees smaller the less light there is; in a wood most are small, few reach their full height)
   float rh = fract( rZ * 13.7 + rS * 71.3 );
-  float hf = mix( s2.x, s2.y, mix( rh, rh * rh, wood ) ) * hk * mix( 0.62, 1.0, min( 1.0, wl.x * 1.5 ) ), zb = 0.0;
+  // (by the crowns over it, not by wl.x: that changes where the sun's shadow box ends, which follows the walker)
+  float hf = mix( s2.x, s2.y, mix( rh, rh * rh, wood ) ) * hk * mix( 0.62, 1.0, min( 1.0, ( iU.w > 0.5 ? 1.0 - 0.86 * wl.z : k7.x ) * 1.5 ) ), zb = 0.0;
   // a grass head: the card's upper part (the head, ~45 % of the drawing) over the sward, its stem down into it
   if ( s2.z > 0.5 ) { zb = max( 0.0, hc - 0.5 * hf ); hf = hc + hf - zb; }
   else if ( hc > 0.02 ) hf = min( hf, max( hc * 2.2, 0.08 ) );
@@ -905,7 +906,7 @@ void flPlant( out vec3 P ) {
     atlasPx: S.atlasPx || null,
     beds: Object.keys(MIX).filter(c => Object.keys(MIX[c]).some(id => id.startsWith('tpl:'))),
   });
-  Object.assign(S, { build, day, atlas, stats, fromArten, phaseAt, SP, MIX, U });
+  Object.assign(S, { build, day, atlas, stats, fromArten, phaseAt, mixes, fieldNo, SP, MIX, U });
   BWHALM.onBuild = build;
   return S;
 })();

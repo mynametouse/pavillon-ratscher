@@ -1,0 +1,4 @@
+# feat/fotorealismus (foto-wald): the woods' herb layer – in the stand's light, in patches (viz3/test/foto_wald.py; pictures in
+# out/foto_wald/), and the vegetation template it changes (viz3/test/bewuchs.py)
+foto_wald
+bewuchs:rasen,wiese,leistung

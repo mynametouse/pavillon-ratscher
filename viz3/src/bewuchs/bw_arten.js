@@ -1793,12 +1793,12 @@ export const BWARTEN = (() => {
       // Forest's foreland (assumed, generic – no survey of these stands): most of the floor bare litter and moss; bilberry as low
       // carpets where the stand is lighter, wavy hair-grass in tussocks, male fern in loose groups of a few plants (before: 1.5 ferns
       // on every m² – an even carpet), foxglove and nettle rare and in small groups (clearings, rich spots)
-      blumen: { heidelbeere: 1.6, farn: 0.12, fingerhut: 0.03, brennnessel: 0.03 },
+      blumen: { heidelbeere: 1.5, farn: 0.12, fingerhut: 0.012, brennnessel: 0.015 },
       schirm: { sonne: 0.42, himmel: 0 },
       flecken: {
         groesse_m: 14,
         gras: 0.4,
-        arten: { heidelbeere: [0.2, 1], farn: [0.1, 0.5], fingerhut: [0.04, 0.32], brennnessel: [0.03, 0.3] },
+        arten: { heidelbeere: [0.17, 1], farn: [0.1, 0.5], fingerhut: [0.012, 0.3], brennnessel: [0.012, 0.3] },
       },
       dichte: 0.4,
       hoehe: {

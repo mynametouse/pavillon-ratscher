@@ -53,7 +53,12 @@ export const BWFERNE = (() => {
     uBwFarC: { value: new THREE.Vector4(RC0, RC1, 0, 150) },
     // feat/fotorealismus (foto-wald): the woods' floor under its trees – x: the share of the light that reaches it (the class's
     // row, BWARTEN flaechen[11].schirm: what its plants get, bw_halm.js bwLight)
+    // y: the size (m) of the soft patches its herb layer stands in (0: none), z: how much of the herb layer shows in the floor
     uBwFarW: { value: new THREE.Vector4(1, 0, 0, 0) },
+    // the herb layer in the floor's colour – 0 its carpet plant (bilberry), 1 its grasses: where each stands (the soft field's
+    // values from, to; which field; the patches' size – as the mix texture of bw_blume.js has them), and its colour and cover
+    uBwFarH: { value: [new THREE.Vector4(-1, -1, 0, 1), new THREE.Vector4(2, 2, 0, 1)] },
+    uBwFarHc: { value: [new THREE.Vector4(0.05, 0.1, 0.03, 0), new THREE.Vector4(0.08, 0.14, 0.04, 0)] },
     // per crop (the rows CROP0 … of BWPHAENO): the stand's colour and how much of the soil it covers; the soil's colour; its harvest
     // (the day, ± days per field; 0: not in its harvest days); the stubble's colour and cover
     uBwFc: { value: Array.from({ length: NC }, () => new THREE.Vector4(0.1, 0.2, 0.05, 0)) },
@@ -127,11 +132,44 @@ export const BWFERNE = (() => {
     }
     S.bloom = out;
     // feat/fotorealismus (foto-wald): the light on a wood's floor (as on its plants)
-    const ws = BWPHAENO.K[WOOD] && BWPHAENO.K[WOOD].schirm;
+    const kw = BWPHAENO.K[WOOD],
+      ws = kw && kw.schirm;
     U.uBwFarW.value.x = ws ? ws.sun : 1;
+    woodDay(doy, kw);
     cropsDay(doy);
     S.job = null; // refill
     S.x0 = NaN;
+  }
+  // feat/fotorealismus (foto-wald): a wood's herb layer in its floor's colour. The plants of bw_blume.js stand out to ~26 m, the
+  // blades to 40 m – beyond, a carpet of bilberry would end in a straight line. So the floor carries the same patches (the same soft
+  // fields): the carpet plant's and the grasses', each in its colour of today by how much of the floor it covers.
+  function woodDay(doy, kw) {
+    const W = U.uBwFarW.value,
+      H = U.uBwFarH.value,
+      C = U.uBwFarHc.value,
+      P = BWBLUME.PATCH && BWBLUME.PATCH[WOOD],
+      id = P && Object.keys(P.arten || {})[0],
+      sp = id && BWBLUME.SP.find(q => q.id === id);
+    W.y = 0;
+    W.z = 0;
+    S.wood = null;
+    if (!kw || !kw.patch || !P) return;
+    W.y = kw.patch.size;
+    W.z = 1;
+    // the carpet plant: in leaf today? (the mean of its four groups of plants); its patches as the plants take them
+    let leaf = 0;
+    if (sp) for (let k = 0; k < 4; k++) if (BWBLUME.phaseAt(sp, doy, k)) leaf += 0.25;
+    const a = id ? P.arten[id] : null,
+      cc = (sp && hexLin(sp.col)) || [0.08, 0.19, 0.03];
+    if (a) H[0].set(-1, BWPHAENO.fieldT(a[0]), BWBLUME.fieldNo(id), a[1] || 1);
+    else H[0].set(-1, -1, 0, 1);
+    // (seen from above a carpet is leaves and the dark between them: its colour a little darker than the leaf's)
+    C[0].set(cc[0] * 0.62, cc[1] * 0.62, cc[2] * 0.62, a ? 0.78 * leaf : 0);
+    // the grasses: their colour of today, as dense as the blades stand in their patches (thin tussocks: seen from above mostly litter)
+    const gc = BWPHAENO.colour(kw, doy).map(lin);
+    H[1].set(BWPHAENO.fieldT(1 - kw.patch.grass), 2, 0, 1);
+    C[1].set(gc[0] * 0.7, gc[1] * 0.7, gc[2] * 0.7, Math.min(0.5, 0.55 * kw.dens));
+    S.wood = { size: W.y, carpet: id || '', leaf, cover: [+C[0].w.toFixed(2), +C[1].w.toFixed(2)] };
   }
   // feat/fotorealismus: the crops' rows today for the ground – the stand's colour and cover of its phase, the soil of that phase, in its
   // harvest days the day and its spread (each field is cut on its own day, as the blades are) and the stubble left
@@ -263,12 +301,13 @@ export const BWFERNE = (() => {
     TM = (DETAIL.tile.mossfloor || 2).toFixed(2);
   // the ground shaders' part (the derivatives first: they must not sit after a branch that differs from pixel to pixel)
   const GLSL = `
-uniform sampler2D tBwFar; uniform vec4 uBwFarB, uBwFarC, uBwFarW;
+uniform sampler2D tBwFar; uniform vec4 uBwFarB, uBwFarC, uBwFarW, uBwFarH[ 2 ], uBwFarHc[ 2 ];
 uniform vec4 uBwFc[ ${NC} ], uBwFs[ ${NC} ], uBwFh[ ${NC} ], uBwFt[ ${NC} ];
 float bwFH( vec2 p ) { return fract( sin( dot( p, vec2( 41.3, 289.1 ) ) ) * 45758.5453 ); }
 // the blades' own hash (bw_halm.js bwHash): a field carries here the crop it carries there
 float bwFHc( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
 ${BWHALM.cropGlsl('bwFHc')}
+${BWHALM.fieldGlsl('bwFHc')}
 // soft blotches of ~1 / f metres, 0 … 1 (four sines – no texture, no hash)
 float bwFB( vec2 p ) { return 0.5 + 0.5 * sin( p.x + 1.7 * sin( p.y * 0.73 + 1.1 ) ) * sin( p.y * 1.13 + 1.3 * sin( p.x * 0.61 + 2.3 ) ); }
 vec3 bwFar( vec2 p, vec3 c, float dist ) {
@@ -303,6 +342,17 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
       // canopy map dims the light on its ground: ct.g) – every other wood's floor would lie in the open sun between a few trunks.
       // So here it takes the share of the light its plants get (their row of the class table), as its colour: the ground's light
       // is not this function's to change.
+      // Its herb layer in its colour: the carpets of bilberry and the patches of grass where the plants and blades themselves stand
+      // (bw_blume.js, bw_halm.js: the same soft fields) – under them the dark of a closed carpet, beyond them (26 m, 40 m) their
+      // colour instead of bare litter. Seen flat the plants stand before the floor behind them.
+      if ( uBwFarW.z > 0.0 ) {
+        float f0 = bwField( p, uBwFarW.y * uBwFarH[ 0 ].w, vec2( 23.7, 7.1 ) + uBwFarH[ 0 ].z * vec2( 17.3, 5.9 ) );
+        float in0 = smoothstep( -0.05, 0.05, uBwFarH[ 0 ].y - f0 ) * smoothstep( -0.05, 0.05, f0 - uBwFarH[ 0 ].x );
+        float in1 = smoothstep( -0.05, 0.05, bwField( p, uBwFarW.y, vec2( 23.7, 7.1 ) ) - uBwFarH[ 1 ].x ) * ( 1.0 - in0 );
+        float fl2 = min( 1.0 / sinEl, 4.0 ), fine = 0.75 + 0.5 * bwFB( p * 2.3 + 4.1 );
+        fl = mix( fl, uBwFarHc[ 0 ].rgb * fine, ( 1.0 - pow( 1.0 - uBwFarHc[ 0 ].a * in0, fl2 ) ) * uBwFarW.z );
+        fl = mix( fl, uBwFarHc[ 1 ].rgb * fine, ( 1.0 - pow( 1.0 - uBwFarHc[ 1 ].a * in1, fl2 ) ) * uBwFarW.z * smoothstep( 6.0, 30.0, dist ) );
+      }
       fl *= mix( uBwFarW.x, 1.0, ct.g );
       c = mix( c, fl, wW * 0.92 );
     } else if ( wC > 0.001 && ( cls == 9 || ( cls >= 19 && cls <= 22 ) ) ) {
@@ -358,6 +408,8 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
     crops: S.crops,
     reach: [RC0, RC1],
     high: +U.uBwFarC.value.z.toFixed(2),
+    // (feat/fotorealismus, foto-wald) the woods' floor: the share of the light on it, its herb layer's patches
+    wood: Object.assign({ light: +U.uBwFarW.value.x.toFixed(2) }, S.wood || {}),
   });
   // the maps changed (cells loaded, the garden's site rebuilt): fill again
   const refill = () => {

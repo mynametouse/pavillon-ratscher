@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
 port = sys.argv[1]
-WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'rasen,maehen,wiese,ferne,jahr,strauch,beet,acker,leistung').split(','))
+WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'rasen,maehen,wiese,ferne,jahr,strauch,beet,acker,wald,leistung').split(','))
 OUT = lib.out('bewuchs')
 ck = lib.Checks('bewuchs')
 
@@ -219,6 +219,24 @@ with lib.browser() as b:
                     E(f"BEWUCHS.set({{ doy: {d} }})")
                     view(sp21[0] - 4, sp21[1] - 4, 45, -6)
                     lib.shot(pg, OUT, 'acker21_' + name)
+        if 'wald' in WANT:
+            # feat/fotorealismus (foto-wald): a wood of the maps (class 11) near the garden – its herb layer in the stand's light and in
+            # patches (the class table's texel 7, the mix texture's patches, the floor's share of the light; more in viz3/test/foto_wald.py)
+            E("BEWUCHS.set({ doy: 156 })")
+            for i in range(3):
+                E("GAME.step(0.1)")
+            w = J("(() => { const T = BWHALM.U.tBwK.value.image, o = (11 * T.width + 7) * 4; return { k7: Array.from(T.data.slice(o, o + 4)).map(v => +v.toFixed(3)), w: T.width, patch: !!(BWBLUME.PATCH && BWBLUME.PATCH[11]), far: BEWUCHS.state().ferne.wood }; })()")
+            print('wald', json.dumps(w), flush=True)
+            ck("a wood's floor: less than 60 % of the sun for its plants and its floor, the herb layer in patches of 8–20 m, the bilberry as carpet",
+               w['w'] == 8 and 0.2 < w['k7'][0] < 0.6 and 8 <= w['k7'][2] <= 20 and w['patch'] and 0.2 < w['far']['light'] < 0.6 and w['far'].get('carpet') == 'heidelbeere', json.dumps(w))
+            spot = J("""(() => { let best = null; for (const c of BWKARTE.cells.values()) { if (c.state !== 'ok') continue;
+                for (let v = 0; v < c.n; v += 6) for (let u = 0; u < c.n; u += 6) { if ((c.px[v * c.n + u] & 31) !== 11) continue;
+                  const x = c.i * 400 + (u + 0.5) * c.res, y = c.j * 400 + (c.n - 1 - v + 0.5) * c.res, d = Math.hypot(x - 2, y - 2);
+                  if (d > 80 && !(window.FOREST && FOREST.owns && FOREST.owns(x, y)) && (BWKARTE.codeAt(x + 8, y) & 31) === 11 && (BWKARTE.codeAt(x - 8, y) & 31) === 11 && (BWKARTE.codeAt(x, y + 8) & 31) === 11 && (BWKARTE.codeAt(x, y - 8) & 31) === 11 && (!best || d < best[2])) best = [x, y, d]; } } return best; })()""")
+            print('wood', spot, flush=True)
+            if spot:
+                view(spot[0], spot[1], 30, -8, n=14)
+                lib.shot(pg, OUT, 'wald_juni')
         if 'leistung' in WANT:
             view(14, 16, math.degrees(math.atan2(2 - 14, 2 - 16)), -14)
             r = J("(() => { const R = GAME.R; R.info.autoReset = false; R.info.reset(); GAME.shot(); const o = { calls: R.info.render.calls, tris: R.info.render.triangles }; R.info.autoReset = true; return o; })()")

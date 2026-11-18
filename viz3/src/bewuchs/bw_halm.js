@@ -94,10 +94,12 @@ vec2 bwCropRow( vec2 q, float sp ) {
   //   In the forest at the Klinge (w: the tile lies in it – FOREST.owns, fill() below) from its canopy map, exactly as its ground
   //   takes it (world/forest.js S.LIGHT: the sun dimmed under the crowns, less of it inside the sun's shadow box, where the trees
   //   cast their own shadows); everywhere else the constants of the plant's kind of area (kl – a wood's floor: the row's k 7).
-  const woodGlsl = h => `uniform sampler2D tCan; uniform vec4 bCan, uSunBox;
-float bwFn( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
+  // (fieldGlsl alone for the ground's shaders, bw_ferne.js: the same patches in the floor's colour far away)
+  const fieldGlsl = h => `float bwFn( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
   return mix( mix( ${h}( i ), ${h}( i + vec2( 1.0, 0.0 ) ), f.x ), mix( ${h}( i + vec2( 0.0, 1.0 ) ), ${h}( i + vec2( 1.0, 1.0 ) ), f.x ), f.y ); }
-float bwField( vec2 q, float s, vec2 o ) { return 0.7 * bwFn( q / s + o ) + 0.3 * bwFn( q / ( s * 0.37 ) + o.yx + 3.3 ); }
+float bwField( vec2 q, float s, vec2 o ) { return 0.7 * bwFn( q / s + o ) + 0.3 * bwFn( q / ( s * 0.37 ) + o.yx + 3.3 ); }`;
+  const woodGlsl = h => `uniform sampler2D tCan; uniform vec4 bCan, uSunBox;
+${fieldGlsl(h)}
 vec3 bwLight( vec2 q, vec2 kl, float w ) {
   if ( w < 0.5 ) return vec3( kl, 0.0 );
   float can = texture( tCan, ( q - bCan.xy ) * bCan.zw ).r;
@@ -635,7 +637,7 @@ void bwBlade( out vec3 P, out vec3 N ) {
     };
   }
   heightsNow();
-  Object.assign(S, { build, update, day, stats, U, zAt, crops, cropGlsl, woodGlsl, woodLight, WU });
+  Object.assign(S, { build, update, day, stats, U, zAt, crops, cropGlsl, fieldGlsl, woodGlsl, woodLight, WU });
   return S;
 })();
 if (typeof window !== 'undefined') window.BWHALM = BWHALM;
