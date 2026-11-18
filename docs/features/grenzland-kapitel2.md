@@ -166,8 +166,9 @@ Das Kapitel beginnt mit Mission 1 (mit dem Kapitelstart), Mission 2 folgt am sel
   `weg()`, `da()`, `need('gl-k2', an)` von „Grünes Band“ bis zur Heimfahrt und `hin({ ort: 'parkplatz', mit: 'moped', fade: false })` für
   „Hinfahren“ (die eigene Blende von Mission 1 liegt darüber). Wenn es sie gibt (`feat/grenzland-zone` nach V19g): `route(true, 'land')`
   beim Aufbruch (der Weg der Simson über die L 3004 auf dem Radar), `route(false)` am Grenzturm; `ort('fremder')` für den Fremden,
-  `ort('foto')` als Ziel der Fotos; `netz(x, y) > 0`, bevor die Nachricht des Fremden kommt. Solange `GLZONE.ort('bunker')` nichts liefert
-  (Zone nicht geladen), gilt der Ersatz westlich von Ratscher.
+  `ort('foto')` als Ziel der Fotos, `punkte('wachen')` für Krähwinkels drei Männer am Bunker (mit ihrer Blickrichtung); `netz(x, y) > 0`,
+  bevor die Nachricht des Fremden kommt (in der Heide und am Kolonnenweg Richtung Görsdorf kein Netz). Solange `GLZONE.ort('bunker')`
+  nichts liefert (Zone nicht geladen), gilt der Ersatz westlich von Ratscher. `feat/grenzland-zone` 8417ed4dc ist in diesem Zweig.
 
 ## Offen
 

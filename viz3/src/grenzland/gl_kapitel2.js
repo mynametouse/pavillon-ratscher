@@ -234,6 +234,17 @@ export const GLKAP2 = (() => {
     try {
       KERN.pushOut(vorn, 0.5);
     } catch (e) {}
+    const wp = zhelp('punkte', 'wachen'),
+      wachen =
+        Array.isArray(wp) && wp.length >= 3 && wp.slice(0, 3).every(q => Number.isFinite(q[0]) && Number.isFinite(q[1]))
+          ? ['w1', 'w2', 'w3'].map((k, i) => [
+              k,
+              'wache' + (i + 1),
+              [wp[i][0], wp[i][1]],
+              ['pick', 'saw', null][i],
+              Number.isFinite(wp[i][2]) ? (wp[i][2] * Math.PI) / 180 : null,
+            ])
+          : null;
     return {
       b,
       s: n.s,
@@ -244,10 +255,11 @@ export const GLKAP2 = (() => {
       vanHd: on.hd + Math.PI,
       vorn,
       vornHd: yawTo(vorn, b),
-      men: [
-        ['w1', 'wache1', [b[0] - ux * 1.3 + uy * 0.6, b[1] - uy * 1.3 - ux * 0.6], 'pick'],
-        ['w2', 'wache2', [b[0] - ux * 1.1 - uy * 1.2, b[1] - uy * 1.1 + ux * 1.2], 'saw'],
-        ['w3', 'wache3', [on.x + ux * 3.2 + uy * 2.5, on.y + uy * 3.2 - ux * 2.5], null],
+      // [key, cast, [x, y], pose, heading or null: towards the bunker] – agent zone's spots round its bunker when it has them
+      men: wachen || [
+        ['w1', 'wache1', [b[0] - ux * 1.3 + uy * 0.6, b[1] - uy * 1.3 - ux * 0.6], 'pick', null],
+        ['w2', 'wache2', [b[0] - ux * 1.1 - uy * 1.2, b[1] - uy * 1.1 + ux * 1.2], 'saw', null],
+        ['w3', 'wache3', [on.x + ux * 3.2 + uy * 2.5, on.y + uy * 3.2 - ux * 2.5], null, null],
       ],
       // the stranger: at the edge of the heath, beyond the bunker (the zone's own place for him, when it has one)
       fremder: zort('fremder') || [b[0] + ux * 58 - uy * 16, b[1] + uy * 58 + ux * 16],
@@ -255,7 +267,9 @@ export const GLKAP2 = (() => {
   }
   let BP = null;
   const bp = () => {
-    const k = ort('bunker').join() + '|' + weg().length;
+    // (agent zone's spots round its bunker follow the bunker it builds: again once the zone is built)
+    const zs = zhelp('state'),
+      k = ort('bunker').join() + '|' + weg().length + '|' + !!(zs && zs.an);
     if (!BP || BP.k !== k) BP = Object.assign(bunkerPlan(), { k });
     return BP;
   };
@@ -300,13 +314,16 @@ export const GLKAP2 = (() => {
   };
   // the men's attention (as at the Klinge in chapter 1): they see with their eyes – the dark and ducking help, a moped is heard
   const K1 = { W: [], job: 'arbeit', n: 0, ft: 0, fremder: false, fremderGesehen: false };
+  // where a man of the plan looks: his own heading, or towards the bunker
+  const blick = (B, m) => (m[4] != null ? m[4] : Math.atan2(B.b[0] - m[2][0], B.b[1] - m[2][1]));
   function maennerHeim(B) {
     K1.job = 'arbeit';
-    for (const [key, , p, pk] of B.men) {
-      const f = MI.F(key);
+    for (const m of B.men) {
+      const [key, , p, pk] = m,
+        f = MI.F(key);
       if (f && !f.gone)
         GLFIG.go(f, p, 1.4, q => {
-          q.hd = Math.atan2(B.b[0] - q.x, B.b[1] - q.y);
+          q.hd = blick(B, m);
           GLFIG.pose(q, pk);
         });
     }
@@ -797,12 +814,14 @@ export const GLKAP2 = (() => {
         if (ersatz()) A.ding('k2bunker', () => ding(bunkerForm, B.b[0], B.b[1], B.vanHd));
         if (i <= 8) {
           A.auto('k2van', 'kasten', B.van[0], B.van[1], B.vanHd, { col: '#d9d9d2' });
-          for (const [key, cast, p, pk] of B.men)
-            A.fig(key, cast, p[0], p[1], Math.atan2(B.b[0] - p[0], B.b[1] - p[1]), {
+          for (const m of B.men) {
+            const [key, cast, p, pk] = m;
+            A.fig(key, cast, p[0], p[1], blick(B, m), {
               karte: 'feind',
               hut: key === 'w3' ? 'strick' : undefined,
               ready: F => GLFIG.pose(F, pk),
             });
+          }
           if (i >= 7 && K1.fremder)
             A.fig(
               'fremder',
@@ -892,11 +911,11 @@ export const GLKAP2 = (() => {
             K1.fremder = false;
             K1.fremderGesehen = false;
             const B = bp();
-            for (const [key, , p, pk] of B.men) {
-              const f = MI.F(key);
+            for (const m of B.men) {
+              const f = MI.F(m[0]);
               if (f) {
-                GLFIG.place(f, p[0], p[1], Math.atan2(B.b[0] - p[0], B.b[1] - p[1]));
-                GLFIG.pose(f, pk);
+                GLFIG.place(f, m[2][0], m[2][1], blick(B, m));
+                GLFIG.pose(f, m[3]);
               }
             }
             if (why === 'nochmal') {
