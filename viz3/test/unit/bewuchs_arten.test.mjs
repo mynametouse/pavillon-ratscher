@@ -68,7 +68,16 @@ test('the table: version, parts, sources', () => {
   }
   // every source is used somewhere
   const used = new Set();
-  for (const part of [B.gras, B.blumen, B.flaechen, B.straeucher || {}, B.beet || {}, B.beetvorlagen || {}])
+  for (const part of [
+    B.gras,
+    B.blumen,
+    B.flaechen,
+    B.straeucher,
+    B.beet,
+    B.beetvorlagen,
+    B.feldfruechte,
+    { z: B.zwischenfrucht },
+  ])
     for (const e of Object.values(part)) for (const k of e.quellen) used.add(k);
   for (const k of Object.keys(B.quellen)) assert.ok(used.has(k), 'Quelle nicht benutzt: ' + k);
 });
@@ -686,4 +695,234 @@ test('bed templates: edge, soil, ordered phases of existing plants that live in 
   assert.equal(phase(15).decke, 'tannengruen', 'Januar: Tannengrün');
   assert.equal(frame('kartoffel', 190), 'bluete', 'Juli: Kartoffeln blühen');
   assert.equal(frame('salat', 150), 'reif');
+});
+
+// the third atlas (field crops)
+const ATLAS3 = JSON.parse(fs.readFileSync(path.join(DIST, 'acker.json'), 'utf8'));
+const CELL3 = new Map(ATLAS3.zellen.map(e => [e.zelle.join(','), e]));
+const PHASE_NAMES = [
+  'pflugacker',
+  'saatbett',
+  'saat',
+  'auflaufen',
+  'bestockung',
+  'rosette',
+  'winter',
+  'schossen',
+  'streckung',
+  'jugend',
+  'knospe',
+  'aehre',
+  'fahne',
+  'bluete',
+  'kolben',
+  'schoten',
+  'milchreife',
+  'gelbreife',
+  'reife',
+  'trocken',
+  'bestand',
+  'kraut',
+  'abreife',
+  'krautfrei',
+  'herbst',
+  'aufwuchs',
+  'schnitt',
+  'wuchs',
+  'frost',
+  'mulch',
+  'ernte',
+  'stoppel',
+  'umbruch',
+];
+// phases: contiguous day windows from 'from' to 'to', each with height, colour and soil
+const phases = (list, from, to, what, crop) => {
+  assert.ok(Array.isArray(list) && list.length >= 1, what);
+  let next = from;
+  for (const ph of list) {
+    const at = what + ' ' + ph.name;
+    assert.ok(PHASE_NAMES.includes(ph.name), at + ': unbekannte Phase');
+    doy(ph.von, at);
+    doy(ph.bis, at);
+    assert.equal(ph.von, next, at + ': Phasen lückenlos (' + ph.von + ' statt ' + next + ')');
+    assert.ok(ph.von <= ph.bis, at + ': von > bis');
+    next = ph.bis + 1;
+    assert.ok(Array.isArray(ph.hoehe_m) && ph.hoehe_m.length === 2, at + '.hoehe_m: [Anfang, Ende]');
+    ph.hoehe_m.forEach(h => num(h, 0, 3.5, at + '.hoehe_m')); // may fall within a phase (ripening, frost)
+    assert.match(ph.farbe, HEX, at + '.farbe');
+    num(ph.boden, 0, 1, at + '.boden');
+    if (ph.boden_art !== undefined) assert.ok(B.ackerboden[ph.boden_art], at + '.boden_art ' + ph.boden_art);
+    if (ph.bild !== undefined)
+      assert.ok(crop.bilder && crop.bilder[ph.bild], at + ': Bild ' + ph.bild + ' fehlt in bilder');
+    if (ph.kopf !== undefined) assert.ok(crop.kopf && crop.kopf.zellen[ph.kopf], at + ': Ähre ' + ph.kopf + ' fehlt');
+  }
+  assert.equal(next - 1, to, what + ': endet am Tag ' + to);
+};
+const cellOf = (z, id, frame, what) => {
+  const c = CELL3.get(String(z));
+  assert.ok(c, what + ': Zelle ' + z + ' fehlt in acker.json');
+  assert.ok(c.arten.includes(id), what + ': Zelle ' + c.id + ' nennt ' + id + ' nicht');
+  assert.ok(c.bild === frame || (c.auch || []).includes(frame), what + ': Zelle ' + c.id + ' zeigt nicht ' + frame);
+};
+
+test('field crops: shares, sowing and harvest, contiguous phases with height, colour and soil, stand, ears and cells, rotation', () => {
+  const F = B.feldfruechte;
+  assert.ok(F && Object.keys(F).length >= 10, 'mindestens 10 Feldfrüchte');
+  for (const id of [
+    'winterweizen',
+    'wintergerste',
+    'winterroggen',
+    'triticale',
+    'winterraps',
+    'silomais',
+    'sommergerste',
+  ])
+    assert.ok(F[id], 'fehlt: ' + id);
+  for (const id of ['zuckerruebe', 'kartoffel', 'kleegras', 'sonnenblume']) assert.ok(F[id], 'fehlt: ' + id);
+  for (const [k, c] of Object.entries(B.ackerboden)) assert.match(c, HEX, 'ackerboden.' + k);
+  let sumTh = 0,
+    sumHbn = 0;
+  for (const [id, f] of Object.entries(F)) {
+    const at = 'feldfruechte.' + id;
+    assert.match(id, /^[a-z]+$/, at);
+    assert.ok(typeof f.name === 'string' && f.name.length > 3 && typeof f.latein === 'string', at + ' name/latein');
+    const G = ['wintergetreide', 'sommergetreide', 'raps', 'mais', 'hackfrucht', 'oelfrucht', 'futter'];
+    assert.ok(G.includes(f.gruppe), at + '.gruppe');
+    num(f.anteil.thueringen, 0, 0.5, at + '.anteil.thueringen');
+    num(f.anteil.hildburghausen, 0, 0.5, at + '.anteil.hildburghausen');
+    sumTh += f.anteil.thueringen;
+    sumHbn += f.anteil.hildburghausen;
+    assert.equal(typeof f.winterung, 'boolean', at + '.winterung');
+    doy(f.saat.doy, at + '.saat.doy');
+    num(f.saat.streuung_tage, 0, 30, at + '.saat.streuung_tage');
+    if (f.schnitte) {
+      assert.ok(f.schnitte.length >= 2, at + '.schnitte');
+      for (const s of f.schnitte) {
+        doy(s.doy, at + '.schnitte');
+        assert.ok(
+          f.jahr.some(ph => ph.name === 'schnitt' && ph.von === s.doy),
+          at + ': Schnitt am Tag ' + s.doy + ' ohne Phase'
+        );
+      }
+      for (const [g, x] of Object.entries(f.gras)) assert.ok(B.gras[g] && x > 0, at + '.gras ' + g);
+      for (const [b, x] of Object.entries(f.blumen)) assert.ok(B.blumen[b] && x > 0, at + '.blumen ' + b);
+    } else {
+      doy(f.ernte.doy, at + '.ernte.doy');
+      num(f.ernte.streuung_tage, 0, 30, at + '.ernte.streuung_tage');
+      assert.ok(['maehdrusch', 'haeckseln', 'roden', 'schnitt'].includes(f.ernte.art), at + '.ernte.art');
+      assert.ok(
+        f.jahr.some(ph => ph.name === 'ernte' && ph.von === f.ernte.doy),
+        at + ': die Phase ernte beginnt am Erntetag'
+      );
+    }
+    if (f.winterung) {
+      phases(f.herbst, f.saat.doy, 366, at + '.herbst', f);
+      assert.equal(f.herbst[0].name, 'saat', at + ': der Herbst beginnt mit der Saat');
+      assert.ok(f.saat.doy > 200, at + ': Winterung im Spätsommer oder Herbst gesät');
+    } else {
+      assert.equal(f.herbst, undefined, at + ': nur Winterungen haben herbst');
+      if (!f.schnitte)
+        assert.ok(
+          f.jahr.some(ph => ph.name === 'saat' && ph.von === f.saat.doy),
+          at + ': Saat im Jahr'
+        );
+    }
+    phases(f.jahr, 1, 366, at + '.jahr', f);
+    const b = f.bestand;
+    assert.ok(b.pflanzen_m2 === null || (b.pflanzen_m2 >= 1 && b.pflanzen_m2 <= 500), at + '.bestand.pflanzen_m2');
+    assert.ok(b.halme_m2 === null || (b.halme_m2 >= 100 && b.halme_m2 <= 3000), at + '.bestand.halme_m2');
+    num(b.reihe_cm, 10, 80, at + '.bestand.reihe_cm');
+    if (f.gruppe === 'wintergetreide' || f.gruppe === 'sommergetreide') {
+      const k = f.kopf;
+      assert.ok(['aehre', 'grannen', 'roggen', 'triticale'].includes(k.form), at + '.kopf.form');
+      num(k.laenge_m, 0.05, 0.3, at + '.kopf.laenge_m');
+      num(k.nickt, 0, 1, at + '.kopf.nickt');
+      for (const [fr, z] of Object.entries(k.zellen)) cellOf(z, id, fr, at + '.kopf.zellen.' + fr);
+      assert.ok(k.zellen.gruen && k.zellen.reif, at + ': Ähre grün und reif');
+      assert.ok(b.halme_m2 >= 300, at + ': Ähren je m²');
+    } else {
+      assert.ok(f.bilder && Object.keys(f.bilder).length >= 1, at + '.bilder');
+      for (const [fr, e] of Object.entries(f.bilder)) {
+        cellOf(e.zelle, id, fr, at + '.bilder.' + fr);
+        num(e.hoehe, 0.2, 1, at + '.bilder.' + fr + '.hoehe');
+      }
+    }
+    let w = 0;
+    for (const [n, x] of Object.entries(f.nachfolger)) {
+      assert.ok(F[n], at + '.nachfolger: unbekannt ' + n);
+      num(x, 0.005, 1, at + '.nachfolger.' + n);
+      w += x;
+    }
+    assert.ok(Math.abs(w - 1) < 0.005, at + '.nachfolger: Summe ' + w);
+    sources(f.quellen, at);
+  }
+  assert.ok(sumTh <= 1 && sumTh > 0.8, 'Anteile Thüringen ' + sumTh);
+  assert.ok(sumHbn <= 1 && sumHbn > 0.8, 'Anteile Hildburghausen ' + sumHbn);
+  // class 9 draws from the local shares
+  let s9 = 0;
+  for (const [id, x] of Object.entries(B.flaechen[9].feldfruechte)) {
+    assert.ok(F[id], 'flaechen[9].feldfruechte: unbekannt ' + id);
+    num(x, 0.001, 0.6, 'flaechen[9].feldfruechte.' + id);
+    s9 += x;
+  }
+  assert.ok(Math.abs(s9 - 1) < 0.005, 'flaechen[9].feldfruechte: Summe ' + s9);
+  // the catch crop
+  const Z = B.zwischenfrucht;
+  num(Z.anteil, 0, 1, 'zwischenfrucht.anteil');
+  phases(Z.herbst, Z.saat.doy, 366, 'zwischenfrucht.herbst', Z);
+  phases(Z.fruehjahr, 1, Z.fruehjahr[Z.fruehjahr.length - 1].bis, 'zwischenfrucht.fruehjahr', Z);
+  for (const [fr, e] of Object.entries(Z.bilder)) cellOf(e.zelle, 'zwischenfrucht', fr, 'zwischenfrucht.bilder.' + fr);
+  sources(Z.quellen, 'zwischenfrucht');
+});
+
+test('the third atlas: the cells the crops name, each used; the picture is 1024² RGBA under 3 MB', () => {
+  assert.equal(ATLAS3.v, 1);
+  assert.equal(ATLAS3.bild, 'acker.png');
+  assert.equal(ATLAS3.groesse_px, 1024);
+  assert.equal(ATLAS3.zelle_px, 128);
+  assert.ok(ATLAS3.zellen.length >= 30 && ATLAS3.zellen.length <= 64, 'Zellen ' + ATLAS3.zellen.length);
+  assert.equal(CELL3.size, ATLAS3.zellen.length, 'Zellen doppelt');
+  const used = new Set();
+  for (const f of Object.values(B.feldfruechte)) {
+    for (const e of Object.values(f.bilder || {})) used.add(String(e.zelle));
+    for (const z of Object.values((f.kopf || {}).zellen || {})) used.add(String(z));
+  }
+  for (const e of Object.values(B.zwischenfrucht.bilder)) used.add(String(e.zelle));
+  for (const e of ATLAS3.zellen) {
+    assert.ok(used.has(String(e.zelle)), 'Zelle ' + e.id + ' wird nicht benutzt');
+    for (const a of e.arten) assert.ok(B.feldfruechte[a] || a === 'zwischenfrucht', e.id + ': unbekannte Art ' + a);
+    num(e.breite, 0.05, 1, e.id + '.breite');
+    num(e.oben, 0.4, 1, e.id + '.oben');
+    assert.match(e.farbe, HEX, e.id + '.farbe');
+  }
+  const png = fs.readFileSync(path.join(DIST, 'acker.png'));
+  assert.equal(png.toString('latin1', 12, 16), 'IHDR');
+  assert.equal(png.readUInt32BE(16), 1024);
+  assert.equal(png.readUInt32BE(20), 1024);
+  assert.equal(png[24], 8);
+  assert.equal(png[25], 6);
+  assert.ok(png.length < 3 * 1024 * 1024, 'atlas ' + png.length + ' bytes');
+  assert.equal(B.atlas_acker.bild, 'bewuchs/acker.png');
+});
+
+test('the farm year is plausible: rape yellow in May, barley first in July, wheat in August, maize tall, beets late', () => {
+  const F = B.feldfruechte;
+  const ph = (id, d) => F[id].jahr.find(p => d >= p.von && d <= p.bis);
+  assert.equal(ph('winterraps', 135).name, 'bluete');
+  assert.ok(F.winterraps.jahr.find(p => p.name === 'bluete').farbe.match(/^#e|^#f/), 'Raps blüht gelb');
+  assert.ok(F.wintergerste.ernte.doy < F.winterraps.ernte.doy, 'Gerste vor Raps');
+  assert.ok(F.winterraps.ernte.doy < F.winterweizen.ernte.doy, 'Raps vor Weizen');
+  assert.ok(F.winterweizen.ernte.doy >= 213 && F.winterweizen.ernte.doy <= 243, 'Weizen im August');
+  assert.ok(F.silomais.ernte.doy >= 244 && F.silomais.ernte.doy <= 290, 'Silomais im September');
+  assert.ok(F.zuckerruebe.ernte.doy >= 265, 'Rüben ab Ende September');
+  assert.ok(ph('silomais', 225).hoehe_m[1] >= 2.5, 'Mais im August über 2,5 m');
+  assert.equal(ph('winterweizen', 20).name, 'winter');
+  assert.equal(ph('winterweizen', 215).kopf, 'reif');
+  assert.equal(ph('sommergerste', 30).name, 'pflugacker');
+  // the rotation: after barley comes rape, after rape wheat
+  const top = id => Object.entries(F[id].nachfolger).sort((a, b) => b[1] - a[1])[0][0];
+  assert.equal(top('wintergerste'), 'winterraps');
+  assert.equal(top('winterraps'), 'winterweizen');
+  // a winter crop's sowing comes after the harvest of the crop before it (barley → rape in August)
+  assert.ok(F.wintergerste.ernte.doy + 21 < F.winterraps.saat.doy, 'Raps nach der Gerste gesät');
 });

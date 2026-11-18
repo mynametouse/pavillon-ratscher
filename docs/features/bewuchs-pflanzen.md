@@ -1,11 +1,13 @@
-# Bewuchs: Pflanzen – Gräser, Wildblumen, Sträucher, Beete, ihr Jahr, die Pflege je Flächenart, zwei Bildatlanten (Branch `feat/bewuchs-pflanzen`)
+# Bewuchs: Pflanzen – Gräser, Wildblumen, Sträucher, Beete, Feldfrüchte, ihr Jahr, die Pflege je Flächenart, drei Bildatlanten (Branch `feat/bewuchs-pflanzen`)
 
 Das **Was** der Vorlage für den Bewuchs (Plan `docs/plans/plan_bewuchs.md`, Auftrag `docs/plans/auftraege/bewuchs-pflanzen.md`): jede Grasart,
-Wildblume, Strauch- und Beetpflanze der Region als Daten, die die Vorlage des Straßen-Chats zeichnet (`viz3/src/bewuchs/`), dazu zwei Bildatlanten
-(Blumen, Beetpflanzen) in eigener Zeichnung. Das **Wo** (Karten der Flächenart, Klassen 0–17) macht `bewuchs-daten`. Teil 1 (Gräser, Wildblumen, Flächen, Blumenatlas)
+Wildblume, Strauch-, Beetpflanze und Feldfrucht der Region als Daten, die die Vorlage des Straßen-Chats zeichnet (`viz3/src/bewuchs/`), dazu drei
+Bildatlanten (Blumen, Beetpflanzen, Feldfrüchte) in eigener Zeichnung. Das **Wo** (Karten der Flächenart, Klassen 0–17) macht `bewuchs-daten`. Teil 1 (Gräser, Wildblumen, Flächen, Blumenatlas)
 17.11.2026, beim Straßen-Chat eingebaut; **Teil 2** (Sträucher mit Beeren, Beet- und Zierpflanzen, Beetvorlagen, zweiter Atlas) 18.11.2026 –
 die Felder von Teil 1 sind unverändert, Teil 2 kommt dazu (`straeucher`, `beet`, `beetvorlagen`, `boden`, `lagen`, `atlas_beete`, und je
-Flächenart `straeucher` und `beete`).
+Flächenart `straeucher` und `beete`). **Teil 3** (die Äcker, Klasse 9: Feldfrüchte mit Kalender je Feld, Fruchtfolge, Zwischenfrucht, dritter
+Atlas) 18.11.2026 – dazu `feldfruechte`, `zwischenfrucht`, `ackerboden`, `atlas_acker` und `flaechen[9].feldfruechte`. Teil 3 liegt nur auf
+`wip/bewuchs-pflanzen`.
 
 ## Was es gibt
 
@@ -17,6 +19,8 @@ Flächenart `straeucher` und `beete`).
 | `tools/bewuchs/pflanzen/atlas.py` | der Zeichner des Atlas (Python, Pillow, numpy, scipy) |
 | `viz3/extra/bewuchs-pflanzen/dist/bewuchs/beete.png`, `beete.json` | der zweite Atlas: die Beetpflanzen, gleiches Format (1024 × 1024 RGBA, 8 × 8 Zellen zu 128 px, ~1,25 MB); in `beete.json` zusätzlich `auch` (weitere Bilder derselben Art, die eine Zelle zeigt) |
 | `tools/bewuchs/pflanzen/beete.py` | der Zeichner des zweiten Atlas (benutzt den Maler von `atlas.py`) |
+| `viz3/extra/bewuchs-pflanzen/dist/bewuchs/acker.png`, `acker.json` | der dritte Atlas: die Feldfrüchte (37 von 64 Zellen, ~0,6 MB; leere Zellen fehlen in `acker.json`); die Getreideähren als eine Ähre auf einem Stück Halm, ohne Abdunkeln am Fuß |
+| `tools/bewuchs/pflanzen/acker.py` | der Zeichner des dritten Atlas (Maler von `atlas.py`, Kartoffel und Sonnenblume aus `beete.py`) |
 | `viz3/extra/bewuchs-pflanzen/manifest.json`, `tests.txt` | eine Zeile in „Quellen und Lizenzen“; kein Browsertest in der CI (die Daten prüft der Unit-Test) |
 | `viz3/test/unit/bewuchs_arten.test.mjs` | Prüfung ohne Browser (in `tools/check.sh`): Felder und Bereiche, Kalender als geordnete Tagesfenster 1–366, jede Zelle da und von der richtigen Art, jede Klasse 0–17, Grasanteile = 1, Quellen, PNG 1024² RGBA < 3 MB, ein plausibles Jahr; für Teil 2: EZ-Tree-Vorlagen und Optionspfade, Laub, Blüte und Frucht in Reihenfolge, „hängt im Winter“ passend zu den Fenstern, Mischungen je Fläche (Summe 1, nur Arten, die dort wachsen), jede Beetpflanze mit Zellen im zweiten Atlas, Vorlagen mit geordneten Phasen lebender Pflanzen |
 | `viz3/test/bewuchs_pflanzen.py` | nur zum Ansehen (von Hand, nicht in der CI): die Pflanzen als gekreuzte Bildkarten auf vier Flecken zu 4 × 4 m – Zierrasen, Mähwiese, Bankett, Saum – auf dem freiesten 8 × 8 m des Gartenrasens, das der Test selbst aus den Rasenbüscheln (`GRASS.meshes`) sucht (17.11.: x −4…4, y −10…−2, südlich des Pavillons), an Tagen im April, Juni, August, Oktober; Bilder nach `out/bewuchs_pflanzen/` |
@@ -25,7 +29,8 @@ Flächenart `straeucher` und `beete`).
 davon 6 von mehreren Arten geteilte Blatt- und Trockenbilder, und 8 Grasähren). Teil 2 – 34 Sträucher (14 wild, 20 im Garten, auf
 Friedhof und Grünanlage), Strauchmischungen für 10 Flächenarten, 44 Beet- und Zierpflanzen (Wechselflor für Frühjahr, Sommer und Herbst,
 Stauden, Ziergräser, Rosen, Bodendecker, Grabpflanzen, Gemüse), 10 Beetvorlagen, 64 Zellen im zweiten Atlas. 105 Quellen (14
-Werke, Datensätze und Stellen, 91 Artikel).
+Werke, Datensätze und Stellen, 91 Artikel). Teil 3 – 12 Feldfrüchte und die Zwischenfrucht, 37 Zellen im dritten Atlas, drei Quellen dazu (Statistik
+und Phänologie, unten).
 
 ## Wie die Vorlage die Daten liest (Vorschlag; die Regeln stehen auch im Kopf von `bw_arten.js`)
 
@@ -57,7 +62,7 @@ Werke, Datensätze und Stellen, 91 Artikel).
   `farbe.duerre` / `farbe.schatten`: Zielfarbe und Stärke zum Mischen; `kahl`: Anteil, Fleckgröße, Bodenfarbe, Moos im Schatten
   (Bankett: `rand_m` kiesig am Fahrbahnrand; Sportrasen: `tritt` vor den Toren). `kraft`: Faktoren für Dichte, Höhe, Blumen bei Wuchskraft
   0 und 7 (Bits 5–7 der Karte) – eine fette Wiese hat weniger Blumen als eine magere.
-- Klassen ohne eigenen Bewuchs in Teil 1: 0 (nichts), 9 (Acker – Feldfrüchte mit Stufe 5), 13 (Beet), 14 (Gemüse – beides Teil 2); sie haben
+- Klassen ohne eigenen Bewuchs in Teil 1: 0 (nichts), 9 (Acker – Feldfrüchte: Teil 3), 13 (Beet), 14 (Gemüse – beides Teil 2); sie haben
   `dichte: 0` und einen `hinweis`.
 
 ### Teil 2: Sträucher (`straeucher`) – Vorschlag, die Regeln stehen auch über der Tabelle in `bw_arten.js`
@@ -111,6 +116,28 @@ Werke, Datensätze und Stellen, 91 Artikel).
 - **Wechselflor** dreimal im Jahr: Frühjahr 16.3.–18.5. (Tulpen, Stiefmütterchen, Vergissmeinnicht, Narzissen), Sommer nach den Eisheiligen
   22.5.–7.10. (Geranien, Begonien, Tagetes), Herbst 11.10.–21.11. (Heide, Chrysanthemen), im Winter Tannengrün; Gräber ebenso, mit Efeu und
   Immergrün das ganze Jahr.
+
+### Teil 3: Äcker (`feldfruechte`, `zwischenfrucht`, `flaechen[9].feldfruechte`) – Vorschlag, die Regeln stehen auch über der Tabelle
+
+- **Welche Frucht:** je Feld (zusammenhängende Fläche der Klasse 9) und Jahr eine Frucht. Ohne Fruchtfolge: aus `flaechen[9].feldfruechte`
+  (Anteile, Landkreis Hildburghausen 2025) nach dem Hash von Feld und Jahr. Mit Fruchtfolge: das erste Jahr so, dann jedes Jahr aus
+  `nachfolger` der Frucht des Vorjahres (Wintergerste → meist Winterraps → meist Winterweizen; Kleegras bleibt mit 0,5 ein zweites Jahr).
+  Für die Welt jenseits des Landkreises gibt `anteil.thueringen` die Anteile des Landes (mit Zuckerrüben).
+- **Der Tag eines Feldes:** jedes Feld hat einen eigenen Versatz o ∈ [−1, 1] aus seinem Hash; vom Frühjahr an gelten die Tage von `jahr` um
+  o · `ernte.streuung_tage` verschoben, im Herbst die von `herbst` um o · `saat.streuung_tage` – so wird nicht jedes Feld am selben Tag
+  gedroschen. Die Phase, in der der Tag liegt, sagt: Höhe (`hoehe_m` vom Anfang zum Ende der Phase überblenden), Farbe des Bestands
+  (`farbe`, aus der Ferne), wie viel Boden man von oben sieht (`boden`, Farbe aus `ackerboden[boden_art]`, sonst `saatbett`), und was auf den
+  Pflanzen steht: bei Getreide die Ähre (`kopf`: `gruen`, `bluete`, `reif` → `kopf.zellen`, Länge `kopf.laenge_m`, `nickt` = wie weit sich die
+  reife Ähre neigt), sonst das Bild (`bild` → `bilder[bild].zelle` im Ackeratlas). Die Halme selbst zeichnet die Vorlage (Dichte
+  `bestand.halme_m2`, Reihen `bestand.reihe_cm`; Mais, Rübe, Kartoffel und Sonnenblume als Einzelpflanzen `bestand.pflanzen_m2` in Reihen,
+  die Kartoffel auf Dämmen).
+- **Über den Jahreswechsel:** Eine Winterung (Wintergetreide, Raps) zeigt im Herbst vor ihrem Erntejahr `herbst` (ab ihrer Saat), im
+  Erntejahr `jahr` ab Tag 1 (`winter`). Nach jeder Ernte: `ernte` (Schwaden auf der Stoppel), `stoppel`, dann `umbruch` (bearbeitete Erde)
+  bis zur nächsten Frucht – ist sie eine Winterung, beginnt ihr `herbst` an ihrem Saattag, frühestens 3 Tage nach dem Ende der Stoppel (Weizen
+  nach Mais wird also später gesät); ist sie eine Sommerung, bleibt `umbruch` bis Silvester, bei `zwischenfrucht.anteil` der Felder mit
+  der Zwischenfrucht (Senf gelb im Oktober, im Frost liegend, im Frühjahr Mulch bis Tag 80), und ihr `jahr` beginnt mit `pflugacker`.
+- **Kleegras** ist mehrjährig: kein Herbst, vier Schnitte (`schnitte`, die Phasen `schnitt`), dazwischen `aufwuchs` und kurz vor dem Schnitt
+  `bluete` (Rotklee, bei `luzerne` der Felder Luzerne); den Bestand zeichnet die Vorlage wie eine Wiese aus `gras` und `blumen` (Teil 1).
 
 ## Die Arten
 
@@ -198,7 +225,7 @@ Wiesenkerbel, Rainfarn, Klatschmohn, Kamille), trockene Dolden 1/3 (Schafgarbe, 
 | 6 streuobst | Glatthafer 25 %, Knaulgras 16 %, Goldhafer 10 % | Hahnenfuß 2, Löwenzahn 2, Margerite 1,2, Rotklee 1,2 | 0,08–0,65 | 29.6. ± 12, 12.9. ± 15 (60 %) |
 | 7 saum | Glatthafer 30 %, Knaulgras 20 %, Quecke 20 % | Brennnessel 2,5, Labkraut 1, Rainfarn 1, Distel 0,8 | 0,1–0,9 | spät, jedes zweite Jahr: 2.10. ± 20 (50 %) |
 | 8 ufer | Rohr-Glanzgras 30 %, Sumpf-Segge 20 %, Rasen-Schmiele 15 % | Mädesüß 2, Brennnessel 2, Springkraut 1,5, Schaumkraut 1 | 0,1–1 | 27.9. ± 20 (30 %) |
-| 9 acker | – | – | – | Stufe 5 |
+| 9 acker | – | – | – | Feldfrüchte (Teil 3, unten) |
 | 10 ackerrand | Quecke 45 %, Windhalm 30 %, Weidelgras 10 % | Klatschmohn 2,5, Kamille 2, Kornblume 1,2, Distel 0,6 | 0,1–0,6 | folgt dem Acker |
 | 11 waldboden | Draht-Schmiele 70 %, Straußgras 15 %, Honiggras 15 % | Heidelbeere 2, Farn 1,5, Fingerhut 0,2, Brennnessel 0,2 | 0,3–0,35 | – |
 | 12 gebuesch | Quecke 40 %, Knaulgras 30 %, Glatthafer 30 % | Brennnessel 2, Labkraut 0,3, Distel 0,2 | 0,2–0,6 | – (die Sträucher: Teil 2, unten) |
@@ -290,6 +317,28 @@ Wechselflor 10 %, Kübel 5 %; 14 Gemüsegarten 85 %, Bauerngarten 15 %; 15 Verke
 | kreisel | verkehrsgruen, oeffentlich | bordstein | splitt | 7 | 1.1.–31.12.: Garten-Reitgras, Blau-Schwingel, Gelber Sonnenhut, Hohe Fetthenne … |
 | gemuesegarten | gemuese | brett | erde_dunkel | 6 | 1.1.–31.12.: Kartoffel, Weißkohl und Wirsing, Kopfsalat, Zwiebel … |
 
+### Feldfrüchte (`feldfruechte`; Tage einer mittleren Frucht bei ~450 m, je Feld ± `streuung_tage`)
+
+| Frucht | Anteil Thüringen / Hildburghausen | Saat | Ernte | Blüte/Ähre | Höhe max (m) | Bestand | Reihe |
+|---|---|---|---|---|---|---|---|
+| Winterweizen | 31,2 % / 32,1 % | Vorjahr 5.10. ± 10 | 15.8. ± 9 (maehdrusch) | aehre 5.6.–12.6. | 0,9 | 300 Pfl./m², 600 Ähren/m² | 12,5 cm |
+| Wintergerste | 11,6 % / 10,3 % | Vorjahr 17.9. ± 8 | 21.7. ± 7 (maehdrusch) | aehre 19.5.–1.6. | 0,95 | 280 Pfl./m², 650 Ähren/m² | 12,5 cm |
+| Winterroggen | 1,2 % / 1,1 % | Vorjahr 25.9. ± 9 | 10.8. ± 9 (maehdrusch) | aehre 20.5.–2.6. | 1,45 | 250 Pfl./m², 550 Ähren/m² | 12,5 cm |
+| Triticale | 1,5 % / 6,5 % | Vorjahr 29.9. ± 10 | 8.8. ± 9 (maehdrusch) | aehre 30.5.–9.6. | 1,2 | 280 Pfl./m², 500 Ähren/m² | 12,5 cm |
+| Sommergerste (Braugerste) | 6,2 % / 4,9 % | 28.3. ± 10 | 5.8. ± 8 (maehdrusch) | aehre 9.6.–24.6. | 0,75 | 320 Pfl./m², 800 Ähren/m² | 12,5 cm |
+| Winterraps | 16,2 % / 13,6 % | Vorjahr 22.8. ± 6 | 1.8. ± 8 (maehdrusch) | bluete 3.5.–30.5. | 1,5 | 40 Pfl./m² | 25 cm |
+| Silomais | 8,8 % / 17,4 % | 29.4. ± 7 | 23.9. ± 10 (haeckseln) | fahne 21.7.–13.8. | 2,9 | 9 Pfl./m² | 75 cm |
+| Körnermais | 1,3 % / 0 % | 29.4. ± 7 | 17.10. ± 12 (maehdrusch) | fahne 21.7.–13.8. | 2,8 | 9 Pfl./m² | 75 cm |
+| Zuckerrübe | 2,1 % / 0 % | 15.4. ± 8 | 12.10. ± 18 (roden) | – | 0,55 | 9 Pfl./m² | 45 cm |
+| Kartoffel | 0,3 % / 0,2 % | 25.4. ± 7 | 13.9. ± 12 (roden) | bluete 25.6.–19.7. | 0,6 | 4 Pfl./m² | 75 cm, Dämme |
+| Sonnenblume | 1,1 % / 0,3 % | 24.4. ± 7 | 20.9. ± 10 (maehdrusch) | bluete 18.7.–13.8. | 1,9 | 7 Pfl./m² | 70 cm |
+| Kleegras und Luzerne (Ackerfutter) | 5 % / 8,7 % | 10.4. ± 10 | 26.5., 9.7., 23.8., 12.10. (Schnitte) | bluete 16.5.–25.5. | 0,55 | 2000 Halme/m² | 12,5 cm |
+
+Anteile: Thüringen = Anteil am Ackerland (602 700 ha), Hildburghausen = Anteil an den Hauptfrüchten des Landkreises (~18 400 ha), beides
+2025. Nicht dargestellt: Hafer (1,2 % / 2,7 %), Erbsen und Ackerbohnen (3,6 % / 2,2 %), Hartweizen (2,7 % / –), Brache (3,3 %).
+`flaechen[9].feldfruechte` (was die Vorlage zieht): Winterweizen 33,1 %, Silomais 18,4 %, Winterraps 14,4 %, Wintergerste 10,9 %, Kleegras
+9,2 %, Triticale 6,9 %, Sommergerste 5,2 %, Roggen 1,1 %, Sonnenblume 0,5 %, Kartoffel 0,3 %.
+
 ## Die Atlanten
 
 ### Der Blumenatlas (Teil 1)
@@ -322,6 +371,16 @@ und Lampenputzergras teilen sich die Zellen des Chinaschilfs (bei 5–60 px glei
 **Neu bauen:** `nice -n 10 python3 tools/bewuchs/pflanzen/beete.py [--sheets ORDNER]` (≈ 15 s, fester Zufall, gleiches Ergebnis) schreibt
 `beete.png` und `beete.json`; Bögen `beete_1zu1.png`, `beete_1zu4.png`, `beete_rgb.png`, `beete_bildschirm.png`. Eine Zelle: Funktion in
 `beete.py`, Zeile in `LAYOUT2` und in `bw_arten.js` (`beet[id].bilder`).
+
+### Der Ackeratlas (Teil 3)
+
+Gleiches Format, 37 Zellen: Raps als Herbstrosette, mit Knospen, in Blüte, mit grünen und mit reifen Schoten; Senf der Zwischenfrucht jung und
+blühend; Luzerne und Kleegras mit Rotklee; Mais jung, in der Streckung, mit Fahne, mit Kolben, siloreif, trocken und als Stoppel; Zuckerrübe
+jung, geschlossen und im Herbst mit sichtbarem Rübenkopf; Kartoffel jung, im Kraut, blühend, welk und abgetötet; Sonnenblume jung, mit Knospe,
+blühend und reif; die Ähren von Weizen (ohne Grannen), Gerste (mit langen Grannen, reif geneigt), Roggen (auch blühend mit hängenden
+Staubbeuteln) und Triticale, je grün und reif – eine Ähre je Zelle auf einem Stück Halm, ohne Abdunkeln am Fuß (sie sitzt oben auf dem Halm
+der Vorlage). **Neu bauen:** `nice -n 19 python3 tools/bewuchs/pflanzen/acker.py [--sheets ORDNER]` (≈ 15 s, gleiches Ergebnis); Bögen
+`acker_1zu1.png`, `acker_1zu4.png`, `acker_bildschirm.png`. Eine Zelle: Funktion in `acker.py`, Zeile in `LAYOUT3` und in `bw_arten.js`.
 
 Für die Sträucher gibt es keinen Atlas: Blüten und Beeren sind Punkte auf den Blattkarten (Plan 4.3). Falls sie aus der Nähe als Dolden,
 Trauben und Kätzchen zu sehen sein sollen, kann ich einen dritten Atlas mit Blüten- und Fruchtständen zeichnen (`straeucher.png`, ~40 Zellen).
@@ -388,6 +447,22 @@ Trauben und Kätzchen zu sehen sein sollen, kann ich einen dritten Atlas mit Bl�
   Pflanz- und Wechseltage (Eisheilige, Totensonntag), Schnitttage der Gärten, Blühfenster der Beet- und Gartenpflanzen ohne DWD-Meldung
   (Hortensie, Sommerflieder, Weigelie, Bauernjasmin, Rhododendron, Feuerdorn, Stauden, Wechselflor, Gemüse), alle Farben, die EZ-Tree-Änderungen
   (nicht im Spiel angesehen – keine Browserläufe).
+- **Teil 3, Anbau** (belegt): Thüringer Landesamt für Statistik, Statistischer Bericht C II – j/25 (Ernte- und Betriebsberichterstattung
+  Feldfrüchte und Grünland 2025; Anbauflächen = endgültiges Ergebnis der Bodennutzungshaupterhebung 2025), Tabelle 1 für Thüringen und
+  Tabelle 2.14 für den Landkreis Hildburghausen (dort in 1000 ha mit einer Nachkommastelle – die kleinen Anteile sind daher grob), und die
+  Pressemitteilung 176/2025 (Ackerland 602 700 ha). Hildburghausen baut fast doppelt so viel Silomais und Kleegras an wie das Land, keine
+  Zuckerrüben und kaum Kartoffeln.
+- **Teil 3, Phänologie der Feldfrüchte** (belegt): DWD-Jahresmelder, landwirtschaftliche Kulturpflanzen, ausgewertet wie oben (1995–2024,
+  Stationen bis 75 km um Schleusingen in 250–750 m, Tag bei 450 m aus der Höhengeraden): Winterweizen Bestellung 278, Auflaufen 292, Schossen
+  123, Ährenschieben 156, Milchreife 187, Gelbreife 204, Ernte 227; Wintergerste 260, 272, 115, 139, Gelbreife 181, Ernte 202; Winterroggen 268,
+  280, 115, 140, Blüte 154, Gelbreife 202, Ernte 222; Sommergerste 87, 102, 139, 160, 195, 217; Winterraps Bestellung 234, Auflaufen 247,
+  Rosette 271, Längenwachstum 97, Knospen 108, Blühbeginn 123, Vollreife 201, Ernte 213; Mais 119, 136, Längenwachstum 164, Fahnen 202, Blüte
+  210, Milchreife 234, Teigreife 249 (Ernte aller Maisarten 275 – Silomais in der Tabelle 266); Sonnenblume 114, 129, Knospen 176, Blüte 199,
+  Ernte 263; Zuckerrübe (22 Stationen im Tiefland, mittlere Höhe 301 m – zu 450 m verlängert) 105, 121, Bestand geschlossen 165, Ernte 278;
+  Dauergrünland 1. Silageschnitt 146 (= erster Kleegrasschnitt), 1. Heuschnitt 165 (Teil 1: Mähwiese 11.6. = 162 – stimmt).
+- **Teil 3, geschätzt** (`eigen`): Triticale, Kartoffel und Kleegras-Schnitte nach dem ersten (keine DWD-Meldungen), Ende der Blüte und die
+  Länge jeder Phase zwischen den gemeldeten Tagen, Höhen, Farben, Boden sichtbar, Pflanzen und Ähren je m², Reihenabstände (übliche Werte des
+  Ackerbaus, nicht einzeln nachgeschlagen), die Fruchtfolge (`nachfolger`), Stoppel- und Umbruchzeiten, die Zwischenfrucht (Anteil, Tage).
 
 ## Offen (Fragen an den Straßen-Chat)
 
@@ -405,11 +480,11 @@ Trauben und Kätzchen zu sehen sein sollen, kann ich einen dritten Atlas mit Bl�
 - **Herbstzeitlose:** giftig; auf Weiden gemieden, in Heuwiesen problematisch – nur geringe Dichte eingetragen.
 - **Tageszeit:** `offen_h` (Löwenzahn, Gänseblümchen, Pippau, Wegwarte schließen sich abends bzw. Wegwarte mittags) – nur wenn die
   Vorlage es mag.
-- **Teil 2, Name:** die Sträucher heißen `straeucher` (wie im Auftrag vom 17.11.), nicht `buesche`.
-- **Teil 2, EZ-Tree:** die Änderungen (`eztree.mod`) sind nur aus den Vorlagen und der Art geschätzt, nicht angesehen; bitte im Spiel
-  prüfen. Für Buchskugeln, Thuja und geschnittene Hecken ist eine eigene Hülle (Kugel, Säule, Quader mit Blattkarten) wohl besser als ein
-  EZ-Tree.
-- **Teil 2, Punkte vor dem Laub:** Hasel, Salweide, Schlehe, Forsythie und Kornelkirsche blühen an kahlen Zweigen – die Punkte brauchen dann
-  Stellen an den Zweigen (z. B. Enden der Äste aus der Zweig-Geometrie), nicht die Blattkarten.
-- **Teil 2, Beete:** die Vorlage je Beet wählt ihr nach Lage oder nach `flaechen[k].beete`; braucht ihr eine feste Regel im Datensatz (z. B.
-  „Beet am Markt“ aus den Karten von `bewuchs-daten`), sagt Bescheid.
+- **Teil 2 – geklärt (Straßen-Chat 18.11.):** der Name `straeucher` bleibt; `eztree.mod` als Daten (Pfad → Wert) setzt die Vorlage ein; die
+  Vorblüher bekommen Punkte an den Zweigen (aus der Zweig-Geometrie); Buchs, Thuja und Hecken eine eigene Hülle; die Beetvorlage nach Klasse
+  und `flaechen[k].beete`, die Lage aus Regeln (keine Kartenänderung); zwei Texturen statt einer, vorerst kein Atlas für Blüten- und
+  Fruchtstände der Sträucher.
+- **Teil 3, Felder:** die Vorlage braucht die Felder als zusammenhängende Flächen der Klasse 9 (für den eigenen Kalender und die Frucht je
+  Feld) – kommen die aus den Karten von `bewuchs-daten` (z. B. OSM-Feldgrenzen), oder bildet ihr sie selbst?
+- **Teil 3, Getreide:** die Ähren sind eine je Zelle; Grannen der Gerste stehen über die Ähre hinaus (`laenge_m` mit Grannen). Hartweizen
+  (2,7 % im Land, mit Grannen) ist nicht eigens da – bei Bedarf als Gerstenbild.
