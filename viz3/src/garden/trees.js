@@ -155,6 +155,13 @@ export const LAUB = (() => {
   }`
           )
           .replace(
+            '#include <lights_fragment_maps>',
+            `#include <lights_fragment_maps>
+#if defined( RE_IndirectDiffuse ) && defined( USE_ENVMAP ) && defined( STANDARD ) && defined( ENVMAP_TYPE_CUBE_UV )
+  if ( lfT.w > 0.0 ) iblIrradiance *= lfT.w / max( envMapIntensity, 0.2 );   // the sky's light on the leaves' own colour (not its mirror)
+#endif`
+          )
+          .replace(
             '#include <lights_fragment_end>',
             `#include <lights_fragment_end>
   { float lfIn = vLf.x * lfK.z;
@@ -162,9 +169,6 @@ export const LAUB = (() => {
     reflectedLight.directSpecular *= lfK.x * ( 1.0 - 0.7 * lfIn );
     reflectedLight.indirectDiffuse *= 1.0 - 0.45 * lfIn;
     reflectedLight.directDiffuse *= 1.0 - 0.5 * lfIn;
-#ifdef USE_ENVMAP
-    if ( lfT.w > 0.0 ) reflectedLight.indirectDiffuse *= lfT.w / max( envMapIntensity, 0.2 );
-#endif
 #if NUM_DIR_LIGHTS > 0
     // the sun is the only directional light; directLight still holds it, shadows and all (three's light loop ends with it)
     vec3 lfL = directionalLights[ 0 ].direction, lfA = RECIPROCAL_PI * material.diffuseColor;
@@ -174,9 +178,10 @@ export const LAUB = (() => {
       lfThru = max( 0.0, - dot( lfL, lfNf ) ) * ${crown ? 'exp( 3.5 * min( lfSun - 0.1, 0.0 ) )' : '1.0'};
     reflectedLight.directDiffuse += directLight.color * lfA * ( 1.0 - 0.75 * lfIn ) *
       ( lfWrap * 0.7 + lfThru * lfK.y * lfM.x * vec3( 1.0, 1.15, 0.5 ) );
-    // light bounced between the leaves: a crown in the sun is light on its shaded side and inside too (a third of it also where
-    // the crown's own leaves shade a card – the shadow map cannot tell them from a house)
-    reflectedLight.directDiffuse += ( 0.35 * directionalLights[ 0 ].color + 0.65 * directLight.color ) * lfA *
+    // light bounced between the leaves: a crown in the sun is light on its shaded side and inside too. Under a high sun also where
+    // the shadow map says shade – there it is mostly the crown's own leaves; under a low sun the shade is a hill's or a house's
+    float lfEl = dot( lfL, ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz );
+    reflectedLight.directDiffuse += mix( directLight.color, directionalLights[ 0 ].color, 0.7 * smoothstep( 0.12, 0.45, lfEl ) ) * lfA *
       ( lfC.y * material.diffuseColor / max( material.diffuseColor.g, 0.02 ) );
 #endif
     reflectedLight.directDiffuse *= lfC.z; reflectedLight.indirectDiffuse *= lfC.z;

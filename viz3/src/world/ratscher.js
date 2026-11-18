@@ -779,6 +779,8 @@ export const RATSCHER = (() => {
     // either, each crown's normal turned a little its own way, and against the light the upper crown lets some sun through
     mat.onBeforeCompile = sh => {
       sh.uniforms.lfK = LAUB.U.lfK; // feat/fotorealismus (foto-baeume)
+      sh.uniforms.lfT = LAUB.U.lfT;
+      sh.uniforms.lfC = LAUB.U.lfC;
       sh.vertexShader =
         'attribute float aKind; varying vec2 vGt;\n' +
         LAUB.GLSL_HASH + // feat/fotorealismus (foto-baeume)
@@ -791,7 +793,7 @@ export const RATSCHER = (() => {
   vGt = vec2( 0.5 );
 #endif`
         );
-      sh.fragmentShader = ('uniform vec4 lfK; varying vec2 vGt;\n' + LAUB.GLSL_VARY + sh.fragmentShader)
+      sh.fragmentShader = ('uniform vec4 lfK, lfT, lfC; varying vec2 vGt;\n' + LAUB.GLSL_VARY + sh.fragmentShader)
         .replace('#include <color_fragment>', '#include <color_fragment>\n diffuseColor.rgb *= lfVary( vGt, lfK.w );') // feat/fotorealismus (foto-baeume): the tree's own hue
         .replace(
           '#include <normal_fragment_begin>',
@@ -803,15 +805,23 @@ export const RATSCHER = (() => {
         )
         .replace(
           '#include <lights_fragment_end>',
-          '#include <lights_fragment_end>\n reflectedLight.directDiffuse *= 0.82; reflectedLight.indirectDiffuse *= 0.6; reflectedLight.indirectSpecular *= 0.16; reflectedLight.directSpecular *= 0.16;' + // feat/fotorealismus (foto-baeume): 0.16 – the leaves' sheen (LAUB), the sun's lobe too
-            ' { float gtH = mix( 0.6, 1.0, smoothstep( 0.12, 0.8, vMapUv.y ) ); reflectedLight.directDiffuse *= gtH; reflectedLight.indirectDiffuse *= gtH; }' + // feat/fotorealismus
-            // feat/fotorealismus (foto-baeume): looking towards the sun the upper crown glows (light through the leaves)
-            `
+          // feat/fotorealismus (foto-baeume): the far cards in the leaves' light of the 3D crowns (garden/trees.js LAUB), so that a wood's
+          // edge 150 m away is lit as the tree 50 m away – the sky's light on the leaves' own colour at LAUB's share (lfT.w; the material's
+          // envMapIntensity of 0.55 times 0.6 left a third of it: woods in the shade went black), of the mirror lobes of sky and sun a
+          // sheen (lfK.x; the sun's was whole), light bounced between the leaves (lfC.y) and, looking towards the sun, the upper crown
+          // letting some of it through. With LAUB off (tests) the factors of before: 0.82, 0.6, 0.25, 1.
+          `#include <lights_fragment_end>
+  { bool gtOn = lfT.w > 0.0;
+    reflectedLight.directDiffuse *= gtOn ? 0.95 : 0.82; reflectedLight.indirectDiffuse *= gtOn ? lfT.w / 0.55 : 0.6;
+    reflectedLight.indirectSpecular *= gtOn ? lfK.x : 0.25; reflectedLight.directSpecular *= gtOn ? lfK.x : 1.0;
+    float gtH = mix( 0.6, 1.0, smoothstep( 0.12, 0.8, vMapUv.y ) ); reflectedLight.directDiffuse *= gtH; reflectedLight.indirectDiffuse *= gtH;   // feat/fotorealismus: the lower part of a crown in its own shade
 #if NUM_DIR_LIGHTS > 0
-  { float gtB = max( 0.0, - dot( directionalLights[ 0 ].direction, normalize( vViewPosition ) ) );
-    reflectedLight.directDiffuse += directLight.color * RECIPROCAL_PI * material.diffuseColor * vec3( 0.95, 1.2, 0.55 ) *
-      ( gtB * gtB * smoothstep( 0.3, 0.95, vMapUv.y ) * 0.45 ); }
-#endif`
+    if ( gtOn ) { vec3 gtA = RECIPROCAL_PI * material.diffuseColor;
+      float gtB = max( 0.0, - dot( directionalLights[ 0 ].direction, normalize( vViewPosition ) ) );
+      reflectedLight.directDiffuse += directLight.color * gtA * ( vec3( 1.0, 1.15, 0.5 ) * ( lfK.y * gtB * gtB * smoothstep( 0.3, 0.95, vMapUv.y ) * 0.45 ) +
+        lfC.y * gtH * material.diffuseColor / max( material.diffuseColor.g, 0.02 ) ); }
+#endif
+    reflectedLight.directDiffuse *= lfC.z; reflectedLight.indirectDiffuse *= lfC.z; }`
         );
     }; // V16c: a crown shades itself – the flat cards were pale
     mat.customProgramCacheKey = () => 'geotree';
