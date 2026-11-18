@@ -43,30 +43,39 @@ Einzelheiten danach).
 - **Der Bunker von außen (erfunden):** in der Görsdorfer Heide, ~95 m vom Kolonnenweg, das alte Fundament eines abgebauten Turms (4,2 m
   im Quadrat, Moos, vier rostige Anker, ein Rohrstumpf – man steht darauf), dahinter ein Erdhügel mit einer Betonfront und einer rostigen
   Eisentür mit neuem Vorhängeschloss: „Tür ansehen“ → „Abgeschlossen …“ (`KERN.emit('grenzland:zone:tuer')`). Hinein geht es in Etappe 4.
-- **Laden und Freigeben:** nur im Modus und heute (nicht 1989), wenn man näher als 2,6 km kommt oder eine Mission sie braucht
-  (`GLZONE.need`); frei, wenn man 3,6 km weg ist und 15 s keiner sie braucht – Meshes, Straßen (`FAHRT.drop`), Kollisionen, Aktionen,
-  die `VEG`-Einträge, der Bedarf an Kacheln.
+- **Laden und Freigeben:** nur im Modus und heute (nicht 1989). Gebaut wird sie, wenn man näher als 2,6 km kommt oder mit
+  `GLZONE.hin` (unter dessen Abblende); braucht eine Mission sie (`GLZONE.need`), kommen ihre Daten schon vorher (Orte, Weg), gebaut
+  wird im Garten aber nichts – das kostete dort ein Ruckeln und Zeichenaufrufe in ihre Richtung. Frei, wenn man 3,6 km weg ist und 15 s
+  keiner sie braucht – Meshes, Straßen (`FAHRT.drop`), Kollisionen, Aktionen, die `VEG`-Einträge, der Bedarf an Kacheln.
+- **Grafikstufen:** unter „hoch“ reichen die 3D-Bäume, Gras und Heidekraut weniger weit (mal `VEG.lodK`: „mittel“ 0,8, „schnell“ 0,6 –
+  das iPhone), die Karten kommen näher; die Plattenstufen und das Ausdünnen folgen demselben Faktor (`VEG`).
 - **Straßen der Zone** gehen als Satz an `welt/fahrt.js` (`FAHRT.add`, nichts geschnitten; der Kolonnenweg darin nur als schmale Spur,
   damit die Straßenkarte kein Betonband zwischen die Plattenspuren malt): das Radar zeigt sie, der Ortsname, der Griff der Räder; die
   Fahrzeuge dürfen dorthin, wo die Kacheln der Zone gezeichnet sind (`FAHRT.ground`).
 - **Hinkommen:** `GLZONE.hin({ ort, mit })` – ein Schnitt mit Abblende („Grünes Band · bei Eisfeld“): erst zu Fuß dort (die Kacheln
   kommen um den Fußgänger), das Fahrzeug erst, wenn sein Boden gezeichnet ist. Über die Straße: wer auf der A 73 aus Schleusingen nach
   Südosten über das Ende der Straßendaten fährt (bei x 2619 / y −1058), kommt an der Ausfahrt Eisfeld-Süd an (K 530 Richtung Grenzturm);
-  auf der K 530 nach Norden aus der Zone geht es zurück auf die A 73 Richtung Schleusingen. `GLZONE.anfahrt()` ist die echte Strecke für
-  das Radar (Schleusingen → L 3247 → A 73 → Eisfeld-Süd → K 530, 20,9 km, OSRM auf OSM-Daten); `GLZONE.route(true)` zeichnet sie
-  magenta ins Radar und setzt eine Nadel an den Parkplatz. Der Autopilot (`navi/navi.js`) hat keine öffentliche Zielliste – ein Ziel
+  die Simson darf nicht auf die Autobahn: wer auf der **L 3004** nach Osten über das Ende der Straßendaten fährt (bei x 1637 / y −2526),
+  kommt über die Landstraße und durch Eisfeld auf der Coburger Straße an (`ankunft_nord`). Nach Norden aus der Zone geht es zurück –
+  die Simson auf die L 3004 Richtung Ratscher, die anderen auf die A 73 Richtung Schleusingen. `GLZONE.anfahrt()` ist die echte
+  Strecke mit dem Auto (Schleusingen → L 3247 → A 73 → Eisfeld-Süd → K 530, 20,9 km), `GLZONE.anfahrt('land')` die der Simson
+  (Ratscher → L 3004 → Eisfeld → Coburger Straße, 19,5 km; beide OSRM auf OSM-Daten, die Landstraße über Wegpunkte, weil der
+  Demo-Server kein „ohne Autobahn“ kennt); `GLZONE.route(true, art)` zeichnet sie magenta ins Radar (ohne `art` nach dem Fahrzeug)
+  und setzt eine Nadel an den Parkplatz. Der Autopilot (`navi/navi.js`) hat keine öffentliche Zielliste – ein Ziel
   „Grünes Band“ dort wäre ein Haken für den Suhl-Chat (Für den Lead).
 
 ## Schnittstelle (für `kapitel2`)
 
 `GLZONE.da()` (gebaut, und der Boden unter dem Spieler gezeichnet) · `GLZONE.ort(name)` → `{ x, y, z, name }` für `kolonnenweg_a`
-(am Grenzturm), `kolonnenweg_b` (Richtung Görsdorf), `bunker`, `museum`, `heide`, `parkplatz`, `hide`, `ankunft`, dazu aus der gebauten
+(am Grenzturm), `kolonnenweg_b` (Richtung Görsdorf), `bunker`, `museum`, `heide`, `parkplatz`, `hide`, `ankunft` (von Eisfeld-Süd),
+`ankunft_nord` (aus Eisfeld), dazu aus der gebauten
 Zone `foto` (von hier fotografiert man den Bunker, 24 m vor der Tür) und `fremder` (am Waldrand mit Blick auf den Bunker) ·
 `GLZONE.netz(x, y)` → Empfang 0–4 Balken, −1 kein Netz (gut am Parkplatz, schwach im Streifen, keins in der Heide und Richtung Görsdorf –
 „kein Netz“ der Mission 1) · `GLZONE.punkte('wachen' | 'wild')` → `[[x, y, Blickrichtung°], …]` (drei Stellen der Wachen am Bunker; Wild
 am Waldrand des Streifens, für die Dämmerung) · `GLZONE.weg()` →
-der Kolonnenweg `[[x, y, z], …]` alle 2 m · `GLZONE.anfahrt()` → `[[x, y], …]` · `GLZONE.hin(o)` → Promise (`o.ort`, `o.mit`:
-`'moped'` | `'fuss'` | sonst das Fahrzeug, in dem man sitzt) · `GLZONE.need(id, an)` · `GLZONE.route(an)` · `GLZONE.state()` ·
+der Kolonnenweg `[[x, y, z], …]` alle 2 m · `GLZONE.anfahrt(art)` → `[[x, y], …]` (Auto; `'land'`: die Simson) · `GLZONE.hin(o)` →
+Promise (`o.ort`, `o.mit`: `'moped'` | `'fuss'` | sonst das Fahrzeug, in dem man sitzt; `o.fade: false` ohne eigene Abblende) ·
+`GLZONE.need(id, an)` (Daten voraus, nicht freigeben) · `GLZONE.route(an, art)` · `GLZONE.state()` ·
 `KERN.emit('grenzland:zone', { an })`. Daten und Texte: `GLZDATA` (`gl_zone_data.js`, rein).
 
 ## Daten
@@ -79,9 +88,11 @@ Waldrändern, Anfahrt). Quellen und Lizenzen: `meta.json` → `attribution`, `ma
 ## Tests
 
 - `viz3/test/grenzland_zone.py` – Abschnitte `weg` (laden, Boden auf dem Profil, 300 m mit der Simson, Zeichenaufrufe, Dreiecke,
-  Programme, Bilder Tag und Dämmerung, Regen: nasse Platten und Pfützen, wieder trocken), `bunker` (Fundament, Tür, Wand, Ortsname, Bilder), `heide` (Heidekraut, Gras, Bäume, Tafeln,
-  Bilder Tag und Dämmerung), `turm` (Tür, Tafel, Öffnungszeiten, Ortsname, Bild), am Ende Verlassen und Freigeben. Bilder
-  `out/grenzland_zone/`. In `tests.txt` zwei Zeilen: `weg,bunker` und `heide,turm`.
+  Programme, Bilder Tag und Dämmerung, Regen: nasse Platten und Pfützen, wieder trocken; vorher: der Bedarf einer Mission lädt nur die
+  Daten, die Landstraße der Simson), `bunker` (Fundament, Tür, Wand, Ortsname, Bilder), `heide` (Heidekraut, Gras, Bäume, Tafeln,
+  Bilder Tag und Dämmerung), `turm` (Tür, Tafel, Öffnungszeiten, Ortsname, Bild), `schnell` (die Zone neu gebaut mit `VEG.lodK` 0,6:
+  deutlich weniger Dreiecke an der Heide), am Ende Verlassen und Freigeben. Bilder `out/grenzland_zone/`. In `tests.txt` zwei Zeilen:
+  `weg,bunker` und `heide,turm,schnell`.
 - `viz3/test/unit/grenzland_zone.test.mjs` – Linien, Platten (Maße, Fugen, Spuren), Texte mit Quellen, `zone.json`.
 
 ## Für den Lead
@@ -94,6 +105,11 @@ Waldrändern, Anfahrt). Quellen und Lizenzen: `meta.json` → `attribution`, `ma
 - Der Partner, der zu Fuß folgt, bleibt bei `hin()` zurück (nur wer mitfährt, kommt mit) – `gl_modus.js` kennt das Nachholen.
 - **Empfang:** `GLZONE.netz(x, y)` in die Welt-Funktion `netz()` des Handys hängen (`gl_handy.js`, eine Zeile: in der Zone ihr Wert,
   sonst wie bisher) – dann zeigt das Handy im Grünen Band „Kein Netz“.
+- **Mission 1 (`kapitel2`):** `GLZONE.route(true, 'land')` im Schritt „aufbruch“ zeichnet der Simson die Landstraße ins Radar (der
+  Text sagt schon „über die Landstraße“), `route(false)` am Parkplatz; `hin({ ort: 'parkplatz', mit: 'moped', fade: false })` und
+  `need('gl-k2', …)` gehen so, wie `gl_kapitel2.js` sie ruft.
+- **Dreiecke:** auf „hoch“ an der Heide ~5,6 Mio. (der Garten ~4,2 Mio.); auf „schnell“ (iPhone) reichen 3D-Bäume, Gras und Heidekraut
+  weniger weit – der Abschnitt `schnell` misst es.
 - **KERN-Boden:** die Zone gibt `ground`/`terrain` mit Rang 4 aus ihren eigenen Kacheln (roh, über `WELT.sampler`), wo noch keine Kachel
   gezeichnet ist – vorher fiel `KERN.ground` dort auf das alte 120-m-Gelände von `world/ratscher.js` zurück (es endet nördlich der Zone
   und antwortet mit seinem Rand): eine Kamera oder ein Fußgänger, dorthin gesetzt, stand Meter zu tief.

@@ -9,6 +9,7 @@
 #            hide; the trees of the forest edges (cards far, 3D near); pictures by day and at dusk
 #   turm     the Grenzturm from outside: the tower, the wall's pieces, the fence, the shelter with its board, the opening hours
 #            (OEFFNUNG), the door shut; a picture
+#   schnell  the quality „schnell“ (VEG.lodK 0.6, as on the iPhone): built again, the zone draws far fewer triangles at the heath
 #   (every run ends with leaving: back in the garden, the zone is freed – meshes, roads, collisions, the tiles' need)
 # Pictures in out/grenzland_zone/.   python3 viz3/test/grenzland_zone.py 9061 [sections]
 import sys, os, json, time
@@ -52,6 +53,15 @@ with lib.browser() as b:
     base_progs = J("TS.progs()")
     print('garden: calls, triangles', base_calls, 'programs', base_progs, flush=True)
     # ------------------------------------------------------------------ weg ------------------------------------------------------------------
+    if want('weg'):
+        # a mission's need: the data comes ahead (places, the way), nothing is built in the garden; the Simson's way over the Landstraße
+        X("GLZONE.need('test', true)")
+        until("GLZONE.ort('bunker') !== null", 40)
+        st = J("GLZONE.state()")
+        ck("a mission's need loads the zone's data ahead but builds nothing in the garden", J("GLZONE.ort('bunker')") is not None and st['an'] is False and st['meshes'] == 0, str(st))
+        al = J("GLZONE.anfahrt('land')")
+        ck("the Simson's way: over the L 3004 through Eisfeld, past the northern arrival", len(al) > 300 and J("GLZONE.ort('ankunft_nord')") is not None and len(J("GLZONE.anfahrt()")) > 300, f"land {len(al)}")
+        X("GLZONE.need('test', false)")
     if want('weg') or want('bunker'):
         X("window._hin = 0; GLZONE.hin({ mit: 'moped', ort: 'kolonnenweg_a' }).then(r => window._hin = r ? 1 : -1)")
         ok = until("window._hin !== 0", 150)
@@ -193,8 +203,25 @@ with lib.browser() as b:
         X(f"TS.look({m['x']}, {m['y']} + 6, 20, 28, 1.7, 4)")
         for _ in range(6): steps(0.3); time.sleep(0.6)
         pic('08_grenzturm')
+    # ------------------------------------------------------------------ schnell ------------------------------------------------------------------
+    # the quality „schnell“ (the iPhone; VEG.lodK 0.6): the zone built again draws its 3D trees, grass and heather less far
+    if want('schnell'):
+        ok, o = zu_fuss('heide')
+        until("GLZONE.state().decke > 0 && GLZONE.state().zellenNah > 0", 90)
+        X(f"TS.look({o['x']}, {o['y']}, 150, 18, 2.0, -6)")
+        for _ in range(8): steps(0.3); time.sleep(0.4)
+        hoch, sh = J("TS.calls()"), J("GLZONE.state()")
+        X("window._lk = VEG.lodK; VEG.lodK = 0.6; VEG.last.set(1e9, 0, 0); GLZONE.debug.abbauen(); window._re = 0; GLZONE.debug.bauen().then(() => window._re = 1)")
+        until("window._re === 1 && GLZONE.state().decke > 0 && GLZONE.state().zellenNah > 0", 90)
+        X(f"TS.look({o['x']}, {o['y']}, 150, 18, 2.0, -6)")
+        for _ in range(8): steps(0.3); time.sleep(0.4)
+        low, sl = J("TS.calls()"), J("GLZONE.state()")
+        print('schnell: calls, triangles', low, 'hoch', hoch, flush=True)
+        ck('at the quality „schnell“ the zone draws far fewer triangles (< 0.75 x „hoch“)', low[1] < hoch[1] * 0.75,
+           f"{low} hoch {hoch}; near trees {sl['baeumeNah']} / {sh['baeumeNah']}, cover cells {sl['decke']} / {sh['decke']}")
+        X("VEG.lodK = window._lk; VEG.last.set(1e9, 0, 0)")
     # ------------------------------------------------------------------ leaving ------------------------------------------------------------------
-    if want('weg') or want('bunker') or want('heide') or want('turm'):
+    if want('weg') or want('bunker') or want('heide') or want('turm') or want('schnell'):
         X("if (VEH.cur) VEH.exit(); GAME.go('garten')")
         until("!GLZONE.state().an", 60, 0.3, 0.2)
         st = J("GLZONE.state()")

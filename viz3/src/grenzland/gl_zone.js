@@ -12,11 +12,14 @@
 //     iron door with a padlock („Abgeschlossen.“)
 // Its roads and tracks go to welt/fahrt.js (FAHRT.add: the radar, the place names, the grip) and its ground to the vehicles' edge
 // (FAHRT.ground). Getting there: GLZONE.hin() (a cut with a fade, for missions and tests) or by road – the A 73 south out of the region's
-// data (its end beyond Schleusingen) leads to Eisfeld-Süd, the K 530 north out of the zone back.
+// data (its end beyond Schleusingen) leads to Eisfeld-Süd, the L 3004 east out of it (the Landstraße, for the Simson) through Eisfeld
+// to the Coburger Straße; the Coburger Straße north out of the zone back (the Simson onto the L 3004, the others onto the A 73).
 //   GLZONE.da() → loaded and drawn · ort(name) → { x, y, z, name } ('kolonnenweg_a', 'kolonnenweg_b', 'bunker', 'museum', 'heide',
-//   'parkplatz', 'hide') · weg() → the Kolonnenweg [[x, y, z], …] · anfahrt() → the drive from Schleusingen [[x, y], …] (A 73,
-//   Eisfeld-Süd, K 530) · hin(o) → promise (o: { ort, mit: 'moped' | 'auto' | 'fuss' }) · need(id, on) · route(on) (the drive on the
-//   radar) · state() · tick(dt) · stop() · linien() (no spoken lines) · KERN.emit('grenzland:zone', { an })
+//   'parkplatz', 'hide', 'ankunft', 'ankunft_nord'; 'foto', 'fremder' worked out) · weg() → the Kolonnenweg [[x, y, z], …] ·
+//   anfahrt(art) → the drive there [[x, y], …] (default the A 73 from Schleusingen, 'land' the Simson's way from Ratscher over the
+//   L 3004) · hin(o) → promise (o: { ort, mit: 'moped' | 'auto' | 'fuss', fade }) · need(id, on) · route(on, art) (the drive on the
+//   radar; art as anfahrt, else by the vehicle) · netz(x, y) · punkte(art) · state() · tick(dt) · stop() · linien() (no spoken lines) ·
+//   KERN.emit('grenzland:zone', { an })
 import * as THREE from 'three';
 import { BASE, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -53,6 +56,7 @@ export const GLZONE = (() => {
     builtN: 0,
     droppedN: 0,
     routeOn: false,
+    routeArt: null, // 'land' | 'auto' | null (by the vehicle)
     transfer: null,
     far: [], // instanced meshes in VEG.far (grass, heather): taken out again when the zone goes
     hAt: null, // the zone's raw ground (WELT.sampler over its tiles), for KERN where no tile is drawn
@@ -385,7 +389,7 @@ export const GLZONE = (() => {
     }
     DECK.arten.push({ geo, by, maxD, name });
   }
-  function deckeZelle(A, key, list) {
+  function deckeZelle(A, key, list, md) {
     const mat = plattenMat(),
       up = new THREE.Vector3(0, 1, 0),
       sv = new THREE.Vector3(),
@@ -407,19 +411,21 @@ export const GLZONE = (() => {
     im.userData.n0 = n;
     im.userData.thin = [A.maxD * 0.5, A.maxD * 0.8];
     im.name = A.name;
-    vegReady(im, A.maxD);
+    vegReady(im, md);
     scene.add(im);
     S.far.push(im);
     return im;
   }
   function deckeNah(x, y) {
     let built = 0;
+    // below „hoch“ the cover reaches less far (VEG.lodK; its thinning with distance follows the same factor in VEG.update)
+    const lk = VEG.lodK || 1;
     for (const [k, im] of DECK.near) {
       const [ai, cx, cy] = k.split(':').map(Number),
         A = DECK.arten[ai],
         dx = Math.max(cx * DC - x, 0, x - (cx + 1) * DC),
         dy = Math.max(cy * DC - y, 0, y - (cy + 1) * DC);
-      if (!A || Math.hypot(dx, dy) > A.maxD + 40) {
+      if (!A || Math.hypot(dx, dy) > A.maxD * lk + 40) {
         scene.remove(im);
         im.dispose();
         const i = VEG.far.indexOf(im);
@@ -437,11 +443,11 @@ export const GLZONE = (() => {
         const [cx, cy] = ck.split(':').map(Number),
           dx = Math.max(cx * DC - x, 0, x - (cx + 1) * DC),
           dy = Math.max(cy * DC - y, 0, y - (cy + 1) * DC);
-        if (Math.hypot(dx, dy) > A.maxD) continue;
+        if (Math.hypot(dx, dy) > A.maxD * lk) continue;
         // only on drawn ground: the cell's middle and corners
         const m = [(cx + 0.5) * DC, (cy + 0.5) * DC];
         if (WELT.heightAt(m[0], m[1]) === undefined) continue;
-        DECK.near.set(key, deckeZelle(A, key, list));
+        DECK.near.set(key, deckeZelle(A, key, list, A.maxD * lk));
         if (++built > 1) return;
       }
     });
@@ -736,15 +742,18 @@ export const GLZONE = (() => {
   // near the player: build the next missing cell (one per call), drop the far ones
   function nahBaeume(x, y) {
     if (!BA.T || !TREES.pine) return;
-    const c0 = Math.floor((x - NAH) / NC),
-      c1 = Math.floor((x + NAH) / NC),
-      r0 = Math.floor((y - NAH) / NC),
-      r1 = Math.floor((y + NAH) / NC);
+    // below the quality „hoch“ the 3D band is narrower (VEG.lodK: 0.8 „mittel“, 0.6 „schnell“ – the iPhone): cards come nearer
+    const lk = VEG.lodK || 1,
+      nah = NAH * lk,
+      c0 = Math.floor((x - nah) / NC),
+      c1 = Math.floor((x + nah) / NC),
+      r0 = Math.floor((y - nah) / NC),
+      r1 = Math.floor((y + nah) / NC);
     for (const [k, Z] of BA.near) {
       const [cx, cy] = k.split(':').map(Number),
         dx = Math.max(cx * NC - x, 0, x - (cx + 1) * NC),
         dy = Math.max(cy * NC - y, 0, y - (cy + 1) * NC);
-      if (Math.hypot(dx, dy) > WEG_NAH) {
+      if (Math.hypot(dx, dy) > WEG_NAH * lk) {
         nahWeg(Z);
         BA.near.delete(k);
       }
@@ -758,7 +767,7 @@ export const GLZONE = (() => {
         const dx = Math.max(cx * NC - x, 0, x - (cx + 1) * NC),
           dy = Math.max(cy * NC - y, 0, y - (cy + 1) * NC),
           d = Math.hypot(dx, dy);
-        if (d < NAH && d < bd) {
+        if (d < nah && d < bd) {
           bd = d;
           best = [k, cx, cy];
         }
@@ -1372,8 +1381,8 @@ export const GLZONE = (() => {
       M.more = function (g, Pt, cx, cy, R2) {
         if (prev) prev.apply(this, arguments);
         try {
-          if (!S.routeOn || !S.data || !S.data.anfahrt || !GL.on) return;
-          const pts = anfahrt();
+          if (!S.routeOn || !S.data || !GL.on) return;
+          const pts = anfahrt(routeArt());
           g.save();
           g.strokeStyle = 'rgba(232,90,216,0.9)';
           g.lineWidth = 3;
@@ -1402,7 +1411,8 @@ export const GLZONE = (() => {
     const t0 = performance.now();
     baut = laden()
       .then(j => {
-        if (!want()) {
+        // (no longer wanted meanwhile: the mode ended, or one is not near and no cut there waits for it)
+        if (!heute() || (!want() && !S.bedarf.has('hin'))) {
           S.phase = 'aus';
           return false;
         }
@@ -1530,9 +1540,10 @@ export const GLZONE = (() => {
     return v ? [v.st.x, v.st.y] : [P.x, P.y];
   };
   const heute = () => GL.on && GL.era !== '1989';
+  // built when one comes near (or by the cut there, under its fade); a mission's need (need(id, on)) loads the data ahead and keeps the
+  // zone while one is away – it is not built in the garden 13 km off (that would cost a stutter there and draw calls toward it)
   function want() {
     if (!heute()) return false;
-    if (S.bedarf.size) return true;
     const [x, y] = wo(),
       m = mid();
     return Math.hypot(x - m[0], y - m[1]) < D.NEAR;
@@ -1578,11 +1589,13 @@ export const GLZONE = (() => {
     const sp = v.st.u,
       hd = (v.st.psi * 180) / Math.PI;
     if (sp < 6) return;
-    const A = D.A73;
-    if (Math.hypot(x - A.ende[0], y - A.ende[1]) < A.r && Math.abs(D.dWinkel(hd, A.hd)) < 50) {
-      hin({ mit: 'fahrzeug', ort: 'ankunft', titel: 'A 73 · Richtung Coburg', unter: 'Ausfahrt Eisfeld-Süd' });
-      return;
-    }
+    // on at the end of the region's roads: the A 73 southbound (Eisfeld-Süd) or the L 3004 eastbound (the Landstraße, through Eisfeld)
+    for (const A of [D.A73, D.LAND])
+      if (Math.hypot(x - A.ende[0], y - A.ende[1]) < A.r && Math.abs(D.dWinkel(hd, A.hd)) < 50) {
+        hin({ mit: 'fahrzeug', ort: A.ort, titel: A.titel, unter: A.unter });
+        return;
+      }
+    // out at the north edge (the Coburger Straße towards Eisfeld): back – the Simson on the Landstraße, the others on the A 73
     if (S.an && S.data && inZone(x, y) && !inZone(x, y, -45) && Math.abs(D.dWinkel(hd, 0)) < 60) {
       const [, N] = WELT.toU(x, y);
       if (N > S.data.utm[3] - 45) zurueck();
@@ -1657,11 +1670,12 @@ export const GLZONE = (() => {
     if (S.transfer) return S.transfer;
     S.transfer = (async () => {
       try {
-        await GLHUD.fade(true, 'A 73 · Richtung Suhl', 'Schleusingen');
-        const [x, y, hdg] = D.A73.zurueck,
-          v = VEH.cur,
+        const v = VEH.cur,
           id = v ? v.id : null,
+          A = D.strecke(id),
+          [x, y, hdg] = A.zurueck,
           hd = (hdg * Math.PI) / 180;
+        await GLHUD.fade(true, A.heim[0], A.heim[1]);
         if (v) VEH.exit();
         P.x = x - Math.sin(hd) * 3;
         P.y = y - Math.cos(hd) * 3;
@@ -1752,11 +1766,16 @@ export const GLZONE = (() => {
     for (let i = 0; i < Lw.n; i++) out.push([Lw.x[i], Lw.y[i], Lw.z[i]]);
     return out;
   }
-  let afCache = null;
-  function anfahrt() {
-    if (!S.data || !S.data.anfahrt) return [];
-    return afCache || (afCache = D.anfahrt(S.data.anfahrt, 0));
+  // the drive there: by car over the A 73 (default), or art 'land' (also 'moped'): the Simson's way over the L 3004 and through Eisfeld
+  const afCache = {};
+  const landArt = art => art === 'land' || art === 'moped' || art === 'gl-moped';
+  function anfahrt(art) {
+    const k = landArt(art) ? 'anfahrt_land' : 'anfahrt';
+    if (!S.data || !S.data[k]) return [];
+    return afCache[k] || (afCache[k] = D.anfahrt(S.data[k], 0));
   }
+  // the one on the radar: as asked (route(on, art)), else by the vehicle one sits on
+  const routeArt = () => S.routeArt || (VEH.cur && VEH.cur.id === 'gl-moped' ? 'land' : 'auto');
   function stop() {
     S.bedarf.clear();
     S.routeOn = false;
@@ -1781,8 +1800,9 @@ export const GLZONE = (() => {
       else S.bedarf.delete(id);
       if (on && !S.an) laden().catch(() => {});
     },
-    route(on) {
+    route(on, art) {
       S.routeOn = !!on;
+      S.routeArt = on && art ? (landArt(art) ? 'land' : 'auto') : null;
       if (on && !S.data) laden().catch(() => {});
     },
     tick,
