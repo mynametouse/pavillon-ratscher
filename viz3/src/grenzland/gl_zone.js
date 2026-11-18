@@ -12,11 +12,14 @@
 //     iron door with a padlock („Abgeschlossen.“)
 // Its roads and tracks go to welt/fahrt.js (FAHRT.add: the radar, the place names, the grip) and its ground to the vehicles' edge
 // (FAHRT.ground). Getting there: GLZONE.hin() (a cut with a fade, for missions and tests) or by road – the A 73 south out of the region's
-// data (its end beyond Schleusingen) leads to Eisfeld-Süd, the K 530 north out of the zone back.
+// data (its end beyond Schleusingen) leads to Eisfeld-Süd, the L 3004 east out of it (the Landstraße, for the Simson) through Eisfeld
+// to the Coburger Straße; the Coburger Straße north out of the zone back (the Simson onto the L 3004, the others onto the A 73).
 //   GLZONE.da() → loaded and drawn · ort(name) → { x, y, z, name } ('kolonnenweg_a', 'kolonnenweg_b', 'bunker', 'museum', 'heide',
-//   'parkplatz', 'hide') · weg() → the Kolonnenweg [[x, y, z], …] · anfahrt() → the drive from Schleusingen [[x, y], …] (A 73,
-//   Eisfeld-Süd, K 530) · hin(o) → promise (o: { ort, mit: 'moped' | 'auto' | 'fuss' }) · need(id, on) · route(on) (the drive on the
-//   radar) · state() · tick(dt) · stop() · linien() (no spoken lines) · KERN.emit('grenzland:zone', { an })
+//   'parkplatz', 'hide', 'ankunft', 'ankunft_nord'; 'foto', 'fremder' worked out) · weg() → the Kolonnenweg [[x, y, z], …] ·
+//   anfahrt(art) → the drive there [[x, y], …] (default the A 73 from Schleusingen, 'land' the Simson's way from Ratscher over the
+//   L 3004) · hin(o) → promise (o: { ort, mit: 'moped' | 'auto' | 'fuss', fade }) · need(id, on) · route(on, art) (the drive on the
+//   radar; art as anfahrt, else by the vehicle) · netz(x, y) · punkte(art) · state() · tick(dt) · stop() · linien() (no spoken lines) ·
+//   KERN.emit('grenzland:zone', { an })
 import * as THREE from 'three';
 import { BASE, scene, V } from '../core/head.js';
 import { KERN } from '../core/kern.js';
@@ -26,6 +29,7 @@ import { P } from '../game/walkable.js';
 import { PLAY } from '../game/play.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { WELT } from '../welt/welt.js';
+import { WXBODEN } from '../wetter/wx_boden.js';
 import { FAHRT } from '../welt/fahrt.js';
 import { GL } from './gl_state.js';
 import { GLHUD } from './gl_hud.js';
@@ -52,10 +56,14 @@ export const GLZONE = (() => {
     builtN: 0,
     droppedN: 0,
     routeOn: false,
+    routeArt: null, // 'land' | 'auto' | null (by the vehicle)
     transfer: null,
     far: [], // instanced meshes in VEG.far (grass, heather): taken out again when the zone goes
+    hAt: null, // the zone's raw ground (WELT.sampler over its tiles), for KERN where no tile is drawn
     gras: 0,
     heide: 0,
+    pfuetzen: [], // the water in the slabs' holes (near), shown while the ground is wet
+    nass: false,
   };
   const SET = 'grenzland-zone';
   // ------------------------------------------------------------------ colours (linear, as the kit wants them) ------------------------------------------------------------------
@@ -180,13 +188,63 @@ export const GLZONE = (() => {
       MAT = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.94, metalness: 0, envMapIntensity: 0.5 });
     return MAT;
   }
+  // after rain: water standing in some of the holes – a dark, smooth film 7 mm below the top that mirrors the sky; drawn with the holes (near)
+  // and only while the ground is wet and not under snow (wetter/wx_boden.js)
+  function pfuetzeGeo(variante) {
+    const K = GLORTE.kit(),
+      PL = D.PLATTE,
+      [nx, ny] = PL.loch,
+      hb = PL.lb,
+      hl = PL.ll,
+      wx = (PL.b - nx * hb) / (nx + 1),
+      wy = (PL.l - ny * hl) / (ny + 1),
+      R = D.zufall(311 + variante * 17),
+      z = -0.007,
+      e = 0.004;
+    for (let i = 0; i < nx; i++)
+      for (let j = 0; j < ny; j++) {
+        if (R() > 0.42) continue;
+        const a = -PL.b / 2 + wx + i * (wx + hb) + e,
+          b = -PL.l / 2 + wy + j * (wy + hl) + e,
+          g = 0.014 + R() * 0.01;
+        K.quad(
+          [a, b, z],
+          [a + hb - 2 * e, b, z],
+          [a + hb - 2 * e, b + hl - 2 * e, z],
+          [a, b + hl - 2 * e, z],
+          [g, g * 1.03, g * 0.95]
+        );
+      }
+    return K.geo();
+  }
+  let WMAT = null;
+  function wasserMat() {
+    // the slabs' features again (vertex and instance colours), only smooth: the same program
+    if (!WMAT)
+      WMAT = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.06, metalness: 0, envMapIntensity: 1 });
+    return WMAT;
+  }
+  // the puddles' meshes (S.pfuetzen) shown or hidden with the wetness of the moment
+  function pfuetzenZeigen() {
+    const B = WXBODEN && WXBODEN.S,
+      an = !!B && B.shown > 0.3 && B.snowShown < 0.15 && B.frostShown < 0.5;
+    if (an === S.nass) return;
+    S.nass = an;
+    for (const w of S.pfuetzen) w.visible = an;
+    markDirty();
+  }
   const m4 = new THREE.Matrix4(),
     q4 = new THREE.Quaternion(),
     e4 = new THREE.Euler(),
     s4 = new THREE.Vector3(1, 1, 1),
     c4 = new THREE.Color();
   function bauPlatten() {
-    if (!GEO) GEO = { fein: [plattenGeo(true, 0), plattenGeo(true, 1)], grob: plattenGeo(false, 0) };
+    if (!GEO)
+      GEO = {
+        fein: [plattenGeo(true, 0), plattenGeo(true, 1)],
+        grob: plattenGeo(false, 0),
+        wasser: [pfuetzeGeo(0), pfuetzeGeo(1)],
+      };
     const mat = plattenMat(),
       STRECKE = 120;
     let n = 0;
@@ -232,6 +290,9 @@ export const GLZONE = (() => {
           im.castShadow = false;
           im.receiveShadow = false;
           im.userData.noMerge = true;
+          // the flag the weather's wet ground looks for (wetter/wx_boden.js kind(): instanced and thinned, as the lawn's tufts): the slabs
+          // turn darker and glossier in rain and white under snow like the grass beside them (they are in no VEG.far list – nothing thins them)
+          im.userData.thin = [1e9, 1e9];
           im.name = 'grenzland-zone-platten';
         }
         // the level of detail: the holes within ~45 m of the stretch; the two hole patterns in one group (VEG shows one level at a time
@@ -240,6 +301,21 @@ export const GLZONE = (() => {
         G.name = 'grenzland-zone-platten-nah';
         G.userData.noMerge = true;
         for (const f of feine) if (f) G.add(f);
+        // the puddles lie in the same slabs: the holes' matrices and colours are shared, nothing is copied
+        feine.forEach((f, v) => {
+          if (!f) return;
+          const w = new THREE.InstancedMesh(GEO.wasser[v], wasserMat(), f.count);
+          w.instanceMatrix = f.instanceMatrix;
+          w.instanceColor = f.instanceColor;
+          w.computeBoundingSphere();
+          w.castShadow = false;
+          w.receiveShadow = false;
+          w.userData.noMerge = true;
+          w.visible = !!S.nass;
+          w.name = 'grenzland-zone-pfuetzen';
+          G.add(w);
+          S.pfuetzen.push(w);
+        });
         scene.add(G);
         scene.add(grob);
         S.meshes.push(G, grob);
@@ -313,7 +389,7 @@ export const GLZONE = (() => {
     }
     DECK.arten.push({ geo, by, maxD, name });
   }
-  function deckeZelle(A, key, list) {
+  function deckeZelle(A, key, list, md) {
     const mat = plattenMat(),
       up = new THREE.Vector3(0, 1, 0),
       sv = new THREE.Vector3(),
@@ -335,19 +411,21 @@ export const GLZONE = (() => {
     im.userData.n0 = n;
     im.userData.thin = [A.maxD * 0.5, A.maxD * 0.8];
     im.name = A.name;
-    vegReady(im, A.maxD);
+    vegReady(im, md);
     scene.add(im);
     S.far.push(im);
     return im;
   }
   function deckeNah(x, y) {
     let built = 0;
+    // below „hoch“ the cover reaches less far (VEG.lodK; its thinning with distance follows the same factor in VEG.update)
+    const lk = VEG.lodK || 1;
     for (const [k, im] of DECK.near) {
       const [ai, cx, cy] = k.split(':').map(Number),
         A = DECK.arten[ai],
         dx = Math.max(cx * DC - x, 0, x - (cx + 1) * DC),
         dy = Math.max(cy * DC - y, 0, y - (cy + 1) * DC);
-      if (!A || Math.hypot(dx, dy) > A.maxD + 40) {
+      if (!A || Math.hypot(dx, dy) > A.maxD * lk + 40) {
         scene.remove(im);
         im.dispose();
         const i = VEG.far.indexOf(im);
@@ -365,11 +443,11 @@ export const GLZONE = (() => {
         const [cx, cy] = ck.split(':').map(Number),
           dx = Math.max(cx * DC - x, 0, x - (cx + 1) * DC),
           dy = Math.max(cy * DC - y, 0, y - (cy + 1) * DC);
-        if (Math.hypot(dx, dy) > A.maxD) continue;
+        if (Math.hypot(dx, dy) > A.maxD * lk) continue;
         // only on drawn ground: the cell's middle and corners
         const m = [(cx + 0.5) * DC, (cy + 0.5) * DC];
         if (WELT.heightAt(m[0], m[1]) === undefined) continue;
-        DECK.near.set(key, deckeZelle(A, key, list));
+        DECK.near.set(key, deckeZelle(A, key, list, A.maxD * lk));
         if (++built > 1) return;
       }
     });
@@ -396,17 +474,8 @@ export const GLZONE = (() => {
             y = q.y + ny * lat + (R() - 0.5) * 0.2,
             g = 0.75 + R() * 0.45,
             dry = R() < 0.35;
-          list.push([
-            x,
-            y,
-            q.z + 0.005 + (Math.abs(lat) < 0.4 ? 0.0 : 0.0),
-            R() * 6.28,
-            0.7 + R() * 0.7,
-            1,
-            g * (dry ? 1.25 : 1),
-            g,
-            g * (dry ? 0.8 : 1),
-          ]);
+          // (x, y, turn, size, height, r, g, b – the height of the ground comes when the cell is built, deckeZelle)
+          list.push([x, y, R() * 6.28, 0.7 + R() * 0.7, 1, g * (dry ? 1.25 : 1), g, g * (dry ? 0.8 : 1)]);
         }
       }
     }
@@ -444,20 +513,9 @@ export const GLZONE = (() => {
         for (let k = 0; k < nk; k++) {
           const px = x + (R() - 0.5) * step,
             py = y + (R() - 0.5) * step,
-            z = WELT.heightAt(px, py),
-            h = z !== undefined ? z : nq.z,
             g = 0.75 + R() * 0.4;
-          list.push([
-            px,
-            py,
-            h - 0.02,
-            R() * 6.28,
-            0.8 + R() * 0.9,
-            0.8 + R() * 0.5,
-            g,
-            g * (0.9 + R() * 0.15),
-            g * 0.9,
-          ]);
+          // (x, y, turn, size, height, r, g, b – as the grass)
+          list.push([px, py, R() * 6.28, 0.8 + R() * 0.9, 0.8 + R() * 0.5, g, g * (0.9 + R() * 0.15), g * 0.9]);
         }
       }
     decke(buschelGeo('heide'), list, 70, 'grenzland-zone-heide');
@@ -472,6 +530,10 @@ export const GLZONE = (() => {
     const r = S.data.rect,
       hAt = await WELT.sampler(r[0], r[1], r[2], r[3]);
     if (!S.an || !hAt.tiles) return;
+    // the zone's ground for KERN where a tile is not drawn (yet): without it KERN fell back to the old 120 m terrain of
+    // world/ratscher.js, which ends north of the zone and answers with its clamped edge – a walker or a camera put there stood metres
+    // below or above the zone's ground until the tile came
+    S.hAt = hAt;
     try {
       bauSteine(hAt);
     } catch (e) {
@@ -660,15 +722,18 @@ export const GLZONE = (() => {
   // near the player: build the next missing cell (one per call), drop the far ones
   function nahBaeume(x, y) {
     if (!BA.T || !TREES.pine) return;
-    const c0 = Math.floor((x - NAH) / NC),
-      c1 = Math.floor((x + NAH) / NC),
-      r0 = Math.floor((y - NAH) / NC),
-      r1 = Math.floor((y + NAH) / NC);
+    // below the quality „hoch“ the 3D band is narrower (VEG.lodK: 0.8 „mittel“, 0.6 „schnell“ – the iPhone): cards come nearer
+    const lk = VEG.lodK || 1,
+      nah = NAH * lk,
+      c0 = Math.floor((x - nah) / NC),
+      c1 = Math.floor((x + nah) / NC),
+      r0 = Math.floor((y - nah) / NC),
+      r1 = Math.floor((y + nah) / NC);
     for (const [k, Z] of BA.near) {
       const [cx, cy] = k.split(':').map(Number),
         dx = Math.max(cx * NC - x, 0, x - (cx + 1) * NC),
         dy = Math.max(cy * NC - y, 0, y - (cy + 1) * NC);
-      if (Math.hypot(dx, dy) > WEG_NAH) {
+      if (Math.hypot(dx, dy) > WEG_NAH * lk) {
         nahWeg(Z);
         BA.near.delete(k);
       }
@@ -682,7 +747,7 @@ export const GLZONE = (() => {
         const dx = Math.max(cx * NC - x, 0, x - (cx + 1) * NC),
           dy = Math.max(cy * NC - y, 0, y - (cy + 1) * NC),
           d = Math.hypot(dx, dy);
-        if (d < NAH && d < bd) {
+        if (d < nah && d < bd) {
           bd = d;
           best = [k, cx, cy];
         }
@@ -1238,6 +1303,10 @@ export const GLZONE = (() => {
       },
       40
     );
+    // the zone's raw ground where no tile is drawn (yet) – below the drawn tiles of welt/welt.js (5), above the old far terrain (0)
+    const roh = (x, y) => (S.an && S.hAt && inZone(x, y) ? S.hAt(x, y) : undefined);
+    KERN.provide('ground', roh, 4);
+    KERN.provide('terrain', roh, 4);
     // standing on the old foundation
     KERN.provide(
       'ground',
@@ -1292,8 +1361,8 @@ export const GLZONE = (() => {
       M.more = function (g, Pt, cx, cy, R2) {
         if (prev) prev.apply(this, arguments);
         try {
-          if (!S.routeOn || !S.data || !S.data.anfahrt || !GL.on) return;
-          const pts = anfahrt();
+          if (!S.routeOn || !S.data || !GL.on) return;
+          const pts = anfahrt(routeArt());
           g.save();
           g.strokeStyle = 'rgba(232,90,216,0.9)';
           g.lineWidth = 3;
@@ -1322,7 +1391,8 @@ export const GLZONE = (() => {
     const t0 = performance.now();
     baut = laden()
       .then(j => {
-        if (!want()) {
+        // (no longer wanted meanwhile: the mode ended, or one is not near and no cut there waits for it)
+        if (!heute() || (!want() && !S.bedarf.has('hin'))) {
           S.phase = 'aus';
           return false;
         }
@@ -1398,11 +1468,16 @@ export const GLZONE = (() => {
       scene.remove(m);
       const all = m.isGroup ? m.children.slice() : [m];
       for (const q of all) {
-        if (q.geometry && !(GEO && (GEO.grob === q.geometry || GEO.fein.includes(q.geometry)))) q.geometry.dispose();
+        if (
+          q.geometry &&
+          !(GEO && (GEO.grob === q.geometry || GEO.fein.includes(q.geometry) || GEO.wasser.includes(q.geometry)))
+        )
+          q.geometry.dispose();
         if (q.isInstancedMesh && q.dispose) q.dispose();
       }
     }
     S.meshes.length = 0;
+    S.pfuetzen.length = 0;
     for (const Lv of S.lods) {
       const i = VEG.lod.indexOf(Lv);
       if (i >= 0) VEG.lod.splice(i, 1);
@@ -1416,7 +1491,11 @@ export const GLZONE = (() => {
     }
     S.far.length = 0;
     DECK.near.clear();
+    for (const A of DECK.arten) A.geo.dispose();
     DECK.arten.length = 0;
+    // a fresh material next time: the weather's wet ground keeps the colours it first saw on a material (wetter/wx_boden.js) – painted wet or
+    // white when the zone went, they would count as its own; the same program serves the new one (nothing is compiled again)
+    MAT = null;
     for (const c of S.cols) {
       const i = VEH.extra.indexOf(c.x);
       if (i >= 0) VEH.extra.splice(i, 1);
@@ -1427,6 +1506,7 @@ export const GLZONE = (() => {
     BK.F = null;
     TU.F = null;
     HI.F = null;
+    S.hAt = null;
     if (FAHRT.drop) FAHRT.drop(SET);
     WELT.need(SET, false);
     S.phase = 'aus';
@@ -1440,9 +1520,10 @@ export const GLZONE = (() => {
     return v ? [v.st.x, v.st.y] : [P.x, P.y];
   };
   const heute = () => GL.on && GL.era !== '1989';
+  // built when one comes near (or by the cut there, under its fade); a mission's need (need(id, on)) loads the data ahead and keeps the
+  // zone while one is away – it is not built in the garden 13 km off (that would cost a stutter there and draw calls toward it)
   function want() {
     if (!heute()) return false;
-    if (S.bedarf.size) return true;
     const [x, y] = wo(),
       m = mid();
     return Math.hypot(x - m[0], y - m[1]) < D.NEAR;
@@ -1470,6 +1551,7 @@ export const GLZONE = (() => {
         nahBaeume(x, y);
         deckeNah(x, y);
       }
+      if (S.an) pfuetzenZeigen();
       zufahrt(x, y);
     } catch (e) {
       if (!S._e) {
@@ -1487,11 +1569,13 @@ export const GLZONE = (() => {
     const sp = v.st.u,
       hd = (v.st.psi * 180) / Math.PI;
     if (sp < 6) return;
-    const A = D.A73;
-    if (Math.hypot(x - A.ende[0], y - A.ende[1]) < A.r && Math.abs(D.dWinkel(hd, A.hd)) < 50) {
-      hin({ mit: 'fahrzeug', ort: 'ankunft', titel: 'A 73 · Richtung Coburg', unter: 'Ausfahrt Eisfeld-Süd' });
-      return;
-    }
+    // on at the end of the region's roads: the A 73 southbound (Eisfeld-Süd) or the L 3004 eastbound (the Landstraße, through Eisfeld)
+    for (const A of [D.A73, D.LAND])
+      if (Math.hypot(x - A.ende[0], y - A.ende[1]) < A.r && Math.abs(D.dWinkel(hd, A.hd)) < 50) {
+        hin({ mit: 'fahrzeug', ort: A.ort, titel: A.titel, unter: A.unter });
+        return;
+      }
+    // out at the north edge (the Coburger Straße towards Eisfeld): back – the Simson on the Landstraße, the others on the A 73
     if (S.an && S.data && inZone(x, y) && !inZone(x, y, -45) && Math.abs(D.dWinkel(hd, 0)) < 60) {
       const [, N] = WELT.toU(x, y);
       if (N > S.data.utm[3] - 45) zurueck();
@@ -1566,11 +1650,12 @@ export const GLZONE = (() => {
     if (S.transfer) return S.transfer;
     S.transfer = (async () => {
       try {
-        await GLHUD.fade(true, 'A 73 · Richtung Suhl', 'Schleusingen');
-        const [x, y, hdg] = D.A73.zurueck,
-          v = VEH.cur,
+        const v = VEH.cur,
           id = v ? v.id : null,
+          A = D.strecke(id),
+          [x, y, hdg] = A.zurueck,
           hd = (hdg * Math.PI) / 180;
+        await GLHUD.fade(true, A.heim[0], A.heim[1]);
         if (v) VEH.exit();
         P.x = x - Math.sin(hd) * 3;
         P.y = y - Math.cos(hd) * 3;
@@ -1593,7 +1678,66 @@ export const GLZONE = (() => {
   function ort(name) {
     if (!S.data || !S.data.orte) return null;
     const p = S.data.orte[name];
-    return p ? { x: p[0], y: p[1], z: p[2], name: D.ORTE[name] || name } : null;
+    if (p) return { x: p[0], y: p[1], z: p[2], name: D.ORTE[name] || name };
+    // places worked out from the built zone (mission 1): where one photographs the bunker from, where the stranger stands
+    const B = S.data.orte.bunker;
+    if (!B) return null;
+    const hd = BK.F ? BK.F.hd : 0,
+      aus = (r, f) => {
+        const x = B[0] + r * Math.cos(hd) + f * Math.sin(hd),
+          y = B[1] - r * Math.sin(hd) + f * Math.cos(hd),
+          z = KERN.ground(x, y);
+        return { x, y, z: Number.isFinite(z) ? z : B[2], name: D.ORTE[name] || name };
+      };
+    // (the door looks towards +f of the bunker's frame: the photo from 24 m in front of it, a little to the side)
+    if (name === 'foto') return aus(-6, 24);
+    if (name === 'fremder') return aus(38, 30);
+    return null;
+  }
+  // mobile reception in the zone (bars 0–4, −1 none): good at the road and the car park, weak in the strip, none deep in the heath and
+  // in the hollow towards Görsdorf – for the phone (gl_handy.js's world netz(), Für den Lead) and mission 1's „no signal“
+  function netz(x, y) {
+    if (!S.data || !inZone(x, y, 200)) return undefined;
+    const o = S.data.orte,
+      dP = o.parkplatz ? Math.hypot(x - o.parkplatz[0], y - o.parkplatz[1]) : 1e9,
+      dH = o.heide ? Math.hypot(x - o.heide[0], y - o.heide[1]) : 1e9,
+      dB = o.kolonnenweg_b ? Math.hypot(x - o.kolonnenweg_b[0], y - o.kolonnenweg_b[1]) : 1e9;
+    if (dP < 350) return 4;
+    if (dP < 800) return 2;
+    if (dH < 260 || dB < 300) return -1;
+    return dP < 1200 ? 1 : 0;
+  }
+  // spots for figures of a mission: 'wild' (deer at the forest edges of the strip, at dusk), 'wachen' (round the bunker)
+  function punkte(art) {
+    if (!S.data || !S.lin) return [];
+    const Lw = S.lin[0],
+      out = [];
+    if (art === 'wachen' && S.data.orte.bunker) {
+      const B = S.data.orte.bunker,
+        hd = BK.F ? BK.F.hd : 0;
+      for (const [r, f, h] of [
+        [3.2, 3.5, 200],
+        [-4.5, 1.0, 110],
+        [1.5, -9.5, 20],
+      ]) {
+        const x = B[0] + r * Math.cos(hd) + f * Math.sin(hd),
+          y = B[1] - r * Math.sin(hd) + f * Math.cos(hd);
+        out.push([x, y, ((((hd * 180) / Math.PI + h) % 360) + 360) % 360]);
+      }
+    } else if (art === 'wild') {
+      const R = D.zufall(77);
+      for (let s = 150; s < Lw.len - 100; s += 260) {
+        const q = D.bei(Lw, s),
+          sd = R() < 0.5 ? -1 : 1,
+          off = 18 + R() * 22;
+        out.push([
+          q.x + Math.cos(q.hd) * off * sd,
+          q.y - Math.sin(q.hd) * off * sd,
+          ((((q.hd * 180) / Math.PI + 90 * sd) % 360) + 360) % 360,
+        ]);
+      }
+    }
+    return out;
   }
   function weg() {
     if (!S.lin || !S.lin.length) return [];
@@ -1602,11 +1746,16 @@ export const GLZONE = (() => {
     for (let i = 0; i < Lw.n; i++) out.push([Lw.x[i], Lw.y[i], Lw.z[i]]);
     return out;
   }
-  let afCache = null;
-  function anfahrt() {
-    if (!S.data || !S.data.anfahrt) return [];
-    return afCache || (afCache = D.anfahrt(S.data.anfahrt, 0));
+  // the drive there: by car over the A 73 (default), or art 'land' (also 'moped'): the Simson's way over the L 3004 and through Eisfeld
+  const afCache = {};
+  const landArt = art => art === 'land' || art === 'moped' || art === 'gl-moped';
+  function anfahrt(art) {
+    const k = landArt(art) ? 'anfahrt_land' : 'anfahrt';
+    if (!S.data || !S.data[k]) return [];
+    return afCache[k] || (afCache[k] = D.anfahrt(S.data[k], 0));
   }
+  // the one on the radar: as asked (route(on, art)), else by the vehicle one sits on
+  const routeArt = () => S.routeArt || (VEH.cur && VEH.cur.id === 'gl-moped' ? 'land' : 'auto');
   function stop() {
     S.bedarf.clear();
     S.routeOn = false;
@@ -1620,6 +1769,8 @@ export const GLZONE = (() => {
       return !inZone(x, y) || WELT.heightAt(x, y) !== undefined;
     },
     ort,
+    netz,
+    punkte,
     weg,
     anfahrt,
     hin,
@@ -1629,8 +1780,9 @@ export const GLZONE = (() => {
       else S.bedarf.delete(id);
       if (on && !S.an) laden().catch(() => {});
     },
-    route(on) {
+    route(on, art) {
       S.routeOn = !!on;
+      S.routeArt = on && art ? (landArt(art) ? 'land' : 'auto') : null;
       if (on && !S.data) laden().catch(() => {});
     },
     tick,
@@ -1646,6 +1798,8 @@ export const GLZONE = (() => {
       gras: S.gras,
       heide: S.heide,
       decke: DECK.near.size,
+      pfuetzen: S.pfuetzen.length,
+      nass: S.nass,
       baeumeNah: BA.nahN,
       zellenNah: BA.near.size,
       lods: S.lods.length,
@@ -1656,7 +1810,7 @@ export const GLZONE = (() => {
       need: [...S.bedarf],
       welt: WELT.state ? WELT.state() : null,
     }),
-    debug: { bauen, abbauen, laden, want, platz, BK },
+    debug: { bauen, abbauen, laden, want, platz, BK, roh: (x, y) => (S.hAt ? S.hAt(x, y) : undefined) },
   });
 })();
 window.GLZONE = GLZONE;

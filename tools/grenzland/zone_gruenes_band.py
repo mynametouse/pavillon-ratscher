@@ -670,15 +670,20 @@ def write_meta(stats, l12):
 # ---------------------------------------------------------------- the way there ----------------------------------------------------------------
 OSRM = ('https://router.project-osrm.org/route/v1/driving/10.7563,50.5103;10.9216,50.3929'
         '?overview=full&geometries=geojson&steps=true')   # Schleusingen, Markt → the car park at the tower (OSM data, ODbL)
+# the way for the Simson (no motorway for a moped): from Ratscher over the L 3004 to Eisfeld and through the town (Schleusinger Straße,
+# Coburger Straße) to the tower – the demo server has no 'exclude=motorway', so points on those roads hold the route to them
+OSRM_LAND = ('https://router.project-osrm.org/route/v1/driving/10.76916,50.49914;10.8030,50.4767;10.8537,50.4637;10.8605,50.4467;'
+             '10.8970,50.4323;10.9080,50.4226;10.9216,50.3929?overview=full&geometries=geojson&steps=true')
 
 
-def anfahrt():
-    """the drive from Schleusingen over the A 73 to Eisfeld-Süd and the Coburger Straße (K 530) to the tower: the line in model
-    metres for the radar and the legs with their names (OSRM demo server on OpenStreetMap data, fetched once into the raw cache)"""
+def anfahrt(url=OSRM, name='osrm.json'):
+    """the drive from Schleusingen over the A 73 to Eisfeld-Süd and the Coburger Straße (K 530) to the tower (or another route): the
+    line in model metres for the radar and the legs with their names (OSRM demo server on OpenStreetMap data, fetched once into the raw
+    cache)"""
     from pyproj import Transformer
-    p = os.path.join(RAW, 'route', 'osrm.json')
+    p = os.path.join(RAW, 'route', name)
     os.makedirs(os.path.dirname(p), exist_ok=True)
-    b = cached(p, OSRM, ok=lambda st, b, ct: st == 200 and b[:1] == b'{', timeout=60)
+    b = cached(p, url, ok=lambda st, b, ct: st == 200 and b[:1] == b'{', timeout=60)
     if not b:
         return None
     j = json.loads(b)
@@ -689,11 +694,12 @@ def anfahrt():
     Q, s = resample(P, 25.0)
     x, y = to_model(Q[:, 0], Q[:, 1])
     legs, at = [], 0.0
-    for st in r['legs'][0]['steps']:
-        nm = st.get('ref') or st.get('name') or ''
-        if st['distance'] > 30 and nm and (not legs or legs[-1][0] != nm):
-            legs.append([nm, round(at)])
-        at += st['distance']
+    for leg in r['legs']:
+        for st in leg['steps']:
+            nm = st.get('ref') or st.get('name') or ''
+            if st['distance'] > 30 and nm and (not legs or legs[-1][0] != nm):
+                legs.append([nm, round(at)])
+            at += st['distance']
     return {'p': [v for i in range(len(x)) for v in (int(round(x[i] * 10)), int(round(y[i] * 10)))], 'km': round(r['distance'] / 1000, 1),
             'min': round(r['duration'] / 60), 'abschnitte': legs, 'quelle': 'OSRM auf OpenStreetMap-Daten (ODbL)'}
 
@@ -814,6 +820,7 @@ def build_zone(H, Z, cls):
     put('heide', 637962.0, 5583800.0)
     put('parkplatz', 636652.0, 5584102.0, 200.0)
     put('ankunft', 636530.0, 5583890.0, 17.3)      # on the K 530 coming from Eisfeld-Süd, towards the tower
+    put('ankunft_nord', 636579.5, 5584287.5, 181.0)  # on the Coburger Straße (K 530) coming from Eisfeld town, towards the tower
     # the land cover as a small grid (2 m, uint8 classes, zlib + base64), UTM-aligned
     c2 = cls[::2, ::2]
     out['bewuchs'] = {'E0': ZONE[0], 'N0': ZONE[1], 'step': 2.0, 'nx': int(c2.shape[1]), 'ny': int(c2.shape[0]),
@@ -875,6 +882,9 @@ def build_zone(H, Z, cls):
     af = anfahrt()
     if af:
         out['anfahrt'] = af
+    af = anfahrt(OSRM_LAND, 'osrm_land.json')
+    if af:
+        out['anfahrt_land'] = af
     log(f"zone.json: Kolonnenweg {len(kol)} Züge ({sum(len(k['p']) // 3 for k in kol)} Punkte), {len(ways)} Wege, {len(trees)} Bäume")
     p = os.path.join(OUT, 'zone.json')
     os.makedirs(OUT, exist_ok=True)
@@ -951,3 +961,8 @@ if __name__ == '__main__':
         fetch_cop()
     if step in ('build', 'all'):
         run_all()
+    if step == 'zone':
+        # zone.json alone, from the cached carved terrain and land cover (the tiles stay as they are)
+        Zz = osm_zone()
+        Zz['profiles'] = {}
+        build_zone(np.load(os.path.join(RAW, 'terrain_carved.npy')), Zz, np.load(os.path.join(RAW, 'cover.npy')))
