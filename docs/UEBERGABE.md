@@ -16,6 +16,20 @@ veröffentlicht.
 
 ## Stand
 
+- **18.11.2026: Fotorealismus Schritt 2, V19d (Fotorealismus-Chat session_01L6Yrpe4euXqyTbnuvdamYz, `docs/features/fotorealismus.md`
+  Abschnitte 5 und 6; Falko 18.11. 15:39: „Stück für Stück die nächsten Versionen.“).** **Hügel werfen Schatten:**
+  `foto/schatten_land.js` (`SCHLAND`) hält ein Raster der Geländehöhen um die Spielfigur (±7,7 km, `KERN.terrain`, in jedem Bild ein
+  paar Dutzend Zellen aufgefrischt) und rechnet daraus je Sonnenschritt ein Feld der „Schattenhöhe“ (256² Zellen von 24 m, zwei Höhen
+  für die weiche Kante, ~2 ms auf drei, vier Bilder verteilt); `foto/schatten.js` kopiert es in einen 256 Texel breiten Streifen des
+  Schatten-Atlas (Breite jetzt 1,5 Karten + 256), `sunLand()` in `foto/schatten_glsl.js` liest es für **jedes** beleuchtete Material
+  (außerhalb von `receiveShadow`; Uniforms `csmL`, `csmH`). Nur unter 19° Sonnenhöhe, Teil von „Schatten in der Ferne“, `?nohuegel`.
+  Am 1.6. liegt der Garten bis 6:00 und ab 20:55 im Hügelschatten. **Land spiegelt die tiefe Sonne nicht mehr:** markierte Zeilen in
+  `world/ratscher.js`, `garden/env.js`, `welt/welt.js` (`reflectedLight.directSpecular` × 0,3 außerhalb von Straßen und Pfützen) und
+  `bewuchs/bw_halm.js` (× 0,6). Test `fotorealismus.py` Abschnitt `land`, Blickpunkte r9/r10 (Morgen). **Wichtig für Nachfolger:** wer
+  die Kacheln oder den Atlas anfasst – die Kachelbreite ist `csmP.y * 0.5`, das Feld beginnt bei x = 1,5 Kartenhöhen; die Höhen des
+  Rasters sind punktweise abgetastet (24 m), Wald innerhalb des Quadrats von Ratscher steht nicht darin. **Offen:** Laub der 3D-Bäume
+  in der Abendsonne cremefarben (Sonnenstärke bei 8° in `time/daynight.js` höher als mittags – mit dem Kern-Chat abstimmen), Kronenhöhen
+  ins Raster (Waldschatten jenseits von 640 m), dann Wasser des Stausees, Stufe „Ultra“, Rasen von oben.
 - **18.11.2026: Fotorealismus Schritt 1 (Fotorealismus-Chat session_01L6Yrpe4euXqyTbnuvdamYz, `docs/features/fotorealismus.md`; Falkos
   Auftrag „Fotorealismus-Upgrade“ vom 18.11. – zuerst analysieren, zehn Schwächen, dann die wirkungsvollsten direkt bauen; dazu seit 11:13
   der Bewuchs).** Neu: `viz3/src/foto/` – **Sonnenschatten in drei Zonen** (`SCHATTEN`: die Schattenkarte der Sonne als Atlas, eine ferne

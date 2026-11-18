@@ -152,12 +152,14 @@ Häuser und Bäume der Welt jetzt hineinzeichnen. Programme: 185 statt 183 (Baup
 - **Nicht gemessen:** echte Bildzeiten auf einer Grafikkarte, auf Falkos Laptop (Intel UHD 620) und am iPhone – im Chat-Rechner gibt
   es nur Software-Grafik. Deshalb ist „auto“ vorsichtig (aus auf „schnell“ und am Telefon).
 
-**Hügelschatten (V19d):** kein Zeichnen, keine Dreiecke. Ein Feld kostet auf der CPU 1–2,6 ms (im Chat-Rechner gemessen), verteilt auf
-zwei, drei Bilder (0,6 ms je Bild), neu bei jedem Sonnenschritt – bei normaler Spielzeit etwa zweimal je Sekunde, in Echtzeit alle
-halbe Minute; über 19° Sonnenhöhe gar nicht. Das Höhenraster: einmal 0,3 s Rechenzeit, verteilt mit 1 ms je Bild (einige Sekunden nach dem
+**Hügelschatten (V19d):** kein Zeichnen, keine Dreiecke. Ein Feld kostet auf der CPU rund 2 ms (im Chat-Rechner gemessen, eine
+Spielstunde am Morgen: 121 Felder, je Bild im Mittel 0,6 ms über drei, vier Bilder, 1 % der Schritte über 3 ms), neu bei jedem
+Sonnenschritt – bei normaler Spielzeit etwa zweimal je Sekunde, in Echtzeit alle halbe Minute; über 19° Sonnenhöhe gar nicht. Das Höhenraster: einmal 0,3 s Rechenzeit, verteilt mit 1 ms je Bild (einige Sekunden nach dem
 Laden), danach 0,08 ms je Bild. Im Bild: vier Texel-Abrufe je beleuchtetem Bildpunkt aus der Schattenkarte, die das Programm ohnehin
 liest (nur unter 19°). Speicher: 4 MB Felder, der Atlas 256 Texel breiter (6400 × 4096 statt 6144 × 4096 auf „hoch“). Zeichenaufrufe
-und Dreiecke der Blickpunkte bleiben, wie sie waren (Tabelle oben; `leistung` 15/15).
+und Dreiecke der Blickpunkte bleiben, wie sie waren (Tabelle oben; `leistung` 15/15). Die Blickpunkte bei tiefer Sonne, V19c → V19d
+(`fotoref`, Schattenkarte 2048²): Abendblick West (r6) 358 / 1,06 M → 358 / 1,06 M, Morgen im Tal (r9) 246 / 0,84 M → 239 / 0,85 M,
+Sonnenaufgang von oben (r10) 193 / 0,48 M → 188 / 0,48 M; Schattenkarte des Kastens unverändert (545 / 231 / 195 Tsd. Dreiecke).
 
 ## Qualitätsstufen
 
