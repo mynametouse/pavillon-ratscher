@@ -1,2 +1,4 @@
 # feat/verkehr-real: vehicles of today, built in a worker, three levels, the density by road and hour, the flow, the top view (viz3/test/verkehr_real.py)
 verkehr_real
+# stage 3b: a bus in the knock – it stands with its hazard lights, the driver complains, then it goes on (viz3/test/verkehr_bus.py)
+verkehr_bus
