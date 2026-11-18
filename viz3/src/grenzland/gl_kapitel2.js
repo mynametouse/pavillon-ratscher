@@ -167,13 +167,20 @@ export const GLKAP2 = (() => {
       return true;
     }
   };
-  // ask agent zone to load its tiles while a step needs them (if its GLZONE offers it)
+  // ask agent zone to load its tiles while a step needs them (GLZONE.need(id, on) of feat/grenzland-zone)
   function zoneLaden(on) {
     try {
       const Z = window.GLZONE;
-      if (Z && typeof Z.lade === 'function') Z.lade(!!on);
+      if (!Z) return;
+      if (typeof Z.need === 'function') Z.need('gl-k2', !!on);
+      else if (typeof Z.lade === 'function') Z.lade(!!on);
     } catch (e) {}
   }
+  // agent zone's real zone, when there is one (not in tests that give their own zone object): it brings its own ground and the cut there
+  const echteZone = () => {
+    const Z = window.GLZONE;
+    return S.zoneTest === undefined && Z && typeof Z.hin === 'function' ? Z : null;
+  };
   // ---------------- the bunker and its watchers ----------------
   // where things stand: the bunker, the nearest point of the Kolonnenweg (the van stands there), where one approaches from
   function bunkerPlan() {
@@ -410,19 +417,28 @@ export const GLKAP2 = (() => {
         } catch (e) {}
         if (hin) {
           zoneLaden(true);
-          const p = ort('parkplatz'),
-            W = weg(),
-            hd = Math.atan2(W[0][0] - p[0], W[0][1] - p[1]);
-          if (VEH.cur) VEH.exit();
-          GLAUTO.mopedAt(p[0], p[1], hd);
-          MI.hin(p[0] - Math.cos(hd) * 1.2, p[1] + Math.sin(hd) * 1.2, (hd * 180) / Math.PI);
-          try {
-            await KERN.until(() => zoneDa() || St.gen !== g, 60);
-          } catch (e) {}
-          // (the ground may have come with the zone: stand on it again)
-          if (St.gen === g) {
+          // the real zone: its own cut (it loads and builds the ground first, then puts one on the Simson at the car park)
+          const Z = echteZone();
+          let da = false;
+          if (Z)
+            try {
+              da = !!(await Z.hin({ ort: 'parkplatz', mit: 'moped', fade: false }));
+            } catch (e) {}
+          if (!da && St.gen === g) {
+            const p = ort('parkplatz'),
+              W = weg(),
+              hd = Math.atan2(W[0][0] - p[0], W[0][1] - p[1]);
+            if (VEH.cur) VEH.exit();
             GLAUTO.mopedAt(p[0], p[1], hd);
             MI.hin(p[0] - Math.cos(hd) * 1.2, p[1] + Math.sin(hd) * 1.2, (hd * 180) / Math.PI);
+            try {
+              await KERN.until(() => zoneDa() || St.gen !== g, 60);
+            } catch (e) {}
+            // (the ground may have come with the zone: stand on it again)
+            if (St.gen === g) {
+              GLAUTO.mopedAt(p[0], p[1], hd);
+              MI.hin(p[0] - Math.cos(hd) * 1.2, p[1] + Math.sin(hd) * 1.2, (hd * 180) / Math.PI);
+            }
           }
         } else {
           const m = O.moped;
@@ -439,12 +455,12 @@ export const GLKAP2 = (() => {
     }
   }
   // ---------------- December: the story's calendar and the weather ----------------
-  // the calendar jumps to Friday, 4 December 2026, at h:m of the next game day (once: a reload keeps GL.e0neu)
-  function dezember(h, m) {
+  // the calendar jumps to Friday, 4 December 2026 (plus: days after it), at h:m of the next game day (once: a reload keeps GL.e0neu)
+  function dezember(h, m, plus = 0) {
     const d0 = Math.floor(CLOCK.t / 1440) + 1;
     CLOCK.t = d0 * 1440 + h * 60 + m;
     try {
-      DN.e0 = L.e0(d0);
+      DN.e0 = L.e0(d0) + plus;
       GL.e0neu = DN.e0;
       if (DN.active) DN.update(true);
     } catch (e) {}
@@ -735,6 +751,8 @@ export const GLKAP2 = (() => {
           ort: 'Grünes Band',
           ziel: () => ort('parkplatz'),
           an(S, why) {
+            // (jumped straight here: the story's December all the same – Saturday, 5 December)
+            if (!imDezember()) dezember(9, 40, 1);
             wetter(true);
             zoneLaden(true);
             sms('jule1');
@@ -1142,7 +1160,8 @@ export const GLKAP2 = (() => {
         },
         an(S, why) {
           wetter(true);
-          if (!imDezember()) dezember(10, 20);
+          // (jumped straight here: Saturday, 5 December, the morning after the opening)
+          if (!imDezember()) dezember(10, 20, 1);
           if (why !== 'reload') sms('jule2');
         },
         tick: (dt, S) => (S.r || nahJule(S)) && sag(S, 'k2auto'),
