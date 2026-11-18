@@ -68,6 +68,11 @@ class Built(unittest.TestCase):
             self.assertEqual(sum(c['n'].values()), n * n, key)
         self.assertLess(tot, 3 * 1024 * 1024)  # Ratscher's square together under 3 MB
 
+    def test_window(self):  # any 4 × 4 cells (1.6 km, what BWKARTE holds round the camera) together under 1.5 MB
+        sz = {tuple(map(int, k.split('_'))): os.path.getsize(os.path.join(G.OUT, 'z', k + '.png')) for k in self.idx['cells']}
+        worst = max(sum(sz.get((i + a, j + b), 0) for a in range(4) for b in range(4)) for (i, j) in sz)
+        self.assertLess(worst, 1.5 * 1024 * 1024)
+
     def test_square_covered(self):
         keys = set(self.idx['cells'])
         for i, j in G.cells_in(*G.square_box()):
