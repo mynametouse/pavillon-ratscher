@@ -23,7 +23,8 @@ Einzelheiten danach).
   einige gebrochen, abgesackt oder fehlend (immer dieselben), verwittertes Grau. Instanzen je ~120 m: nah mit Löchern, weiter als glatte
   Platten (`VEG`-Stufen, 45 m). Man fährt ihn mit der Simson; Grasbüschel zwischen den Spuren und an den Rändern.
 - **Der Streifen und die Heide:** Heidekraut (im Dezember braun) dort, wo das Luftbild Heide zeigt (Klasse „Heide“ der Auswertung des
-  Luftbilds), junge Kiefern und Birken darin; die **Waldränder** aus 24 615 Bäumen der Auswertung (Fichten/Kiefern in den Beständen,
+  Luftbilds), junge Kiefern und Birken darin; Gras und Heidekraut werden in Zellen von 40 m um den Spieler gebaut, sobald der Boden
+  darunter gezeichnet ist (ihre Höhen sind dann die gezeichneten – nichts schwebt); die **Waldränder** aus 24 615 Bäumen der Auswertung (Fichten/Kiefern in den Beständen,
   Birken und Laub im Jungwuchs, Höhen nach Copernicus minus Gelände, am Rand niedriger) – fern als Kreuzkarten aus dem Atlas von
   `world/ratscher.js` (dessen Material, kein neues Programm), innerhalb von 45 m als 3D-Bäume des Gartens; Stämme halten Fußgänger und
   Fahrzeuge auf. Ein **Beobachtungsstand** (erfunden, wie sie in Schutzgebieten stehen) am Rand der Heide.
