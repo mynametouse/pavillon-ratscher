@@ -51,6 +51,9 @@ export const GLKAP2 = (() => {
     O = GLDATA.ORTE,
     hyp = Math.hypot,
     St = MI.St;
+  // the preview of 18.11.2026 (GLK2DATA.KAP.vorab): mission 1 not in yet; the browser test of mission 1 switches it on before the page
+  // loads (window.GLK2_M1) – then the chapter is as it will be: mission 1 first
+  const VORAB = !!K.vorab && !(typeof window !== 'undefined' && window.GLK2_M1);
   const S = {
     frei: 0, // seconds of calm free play after chapter 1
     angebot: false,
@@ -60,6 +63,7 @@ export const GLKAP2 = (() => {
     wetter: '', // the preset we set ('' none) and the one before it
     wetterVor: null,
     pause: false,
+    direkt: false, // the mode began with ?kapitel=2: chapter 2 opens on the next frame
     zoneTest: undefined, // tests: a zone object instead of window.GLZONE (null: the stand-in)
   };
   // shouts in the action and whispers: never a cutscene
@@ -195,14 +199,19 @@ export const GLKAP2 = (() => {
       ux = ox / od,
       uy = oy / od,
       a = L.entlang(W, Math.max(0, n.s - 110)),
-      // across the way from the approach: a few metres into the heath
-      vorn = [a.x + ux * 9, a.y + uy * 9];
+      // across the way from the approach: a few metres into the heath – at most 75 m from the bunker (agent zone's lies ~95 m off the way)
+      v0 = [a.x + ux * 9, a.y + uy * 9],
+      vd = hyp(v0[0] - b[0], v0[1] - b[1]),
+      vk = vd > 75 ? 75 / vd : 1,
+      vorn = [b[0] + (v0[0] - b[0]) * vk, b[1] + (v0[1] - b[1]) * vk];
     try {
       KERN.pushOut(vorn, 0.5);
     } catch (e) {}
     return {
       b,
       s: n.s,
+      // how far the bunker lies off the way
+      ab: n.d,
       van: [on.x, on.y],
       // (facing back along the way, the way out)
       vanHd: on.hd + Math.PI,
@@ -368,6 +377,21 @@ export const GLKAP2 = (() => {
     try {
       GLHANDY.kamera(null);
     } catch (e) {}
+  }
+  // the men walk to their van and get in (a figure still loading – after a fresh start of the step – is sent when it is there)
+  function einsteigen(S, B) {
+    if (!S.drin) S.drin = new Set();
+    for (const [key] of B.men) {
+      const f = MI.F(key);
+      if (f && !f.k2ein && !S.drin.has(key)) {
+        f.k2ein = true;
+        GLFIG.pose(f, null);
+        GLFIG.go(f, [B.van[0], B.van[1]], 1.6, () => {
+          S.drin.add(key);
+          MI.figWeg(key);
+        });
+      }
+    }
   }
   // ---------------- the van on the Kolonnenweg: along the way's points, on the ground, wheels turning ----------------
   const V1 = { s: 0, v: 0, fahrt: false };
@@ -580,8 +604,15 @@ export const GLKAP2 = (() => {
     return (LKW = { k: s.join(), p: q.p, hd: q.hd });
   }
   // ================================================================ the chapter's opening (the first steps of the chapter's first mission) ================================================================
-  // the barn at dusk in December, the clique and Gerhard, the traitor's trace, the night – in the preview (K.vorab) before mission 2,
-  // later before mission 1
+  // the barn at dusk in December, the clique and Gerhard, the traitor's trace, the night – in the preview (VORAB) before mission 2,
+  // later before mission 1. Both missions begin with these three steps (their step lists stay the same from the preview on – a save keeps
+  // its step); the opening is played once: a mission whose partner of the chapter is done goes past them
+  // (how often the chapter's card was shown – tests)
+  let karteN = 0;
+  const auftaktWeg = () => {
+    const o = GL.cur === 'k2m1' ? 'k2m2' : 'k2m1';
+    return !!(MI.R && MI.R.by(o) && MI.R.st(o) === 'erledigt');
+  };
   const AUFTAKT = [
     {
       id: 'scheune',
@@ -590,6 +621,7 @@ export const GLKAP2 = (() => {
       ziel: () => hof(),
       // black: three months later, December, the barn at dusk in the snow; the chapter's card
       an(S, why) {
+        if ((S.weg = auftaktWeg())) return void wetter(true);
         const g = St.gen;
         (async () => {
           const n = await dunkel(K.blendeA, K.blendeB);
@@ -605,13 +637,15 @@ export const GLKAP2 = (() => {
           if (St.gen !== g) return;
           S.da = true;
           try {
-            GLHUD.titel(K.titel, K.vorab ? K.ueberVorab : K.ueber, 5.5, K.unter);
+            GLHUD.titel(K.titel, VORAB ? K.ueberVorab : K.ueber, 5.5, K.unter);
+            karteN++;
           } catch (e) {}
           GLSCORE.stich('start');
           GL.emit('kapitel', { kap: 2, st: 'beginnt' });
         })();
       },
       tick(dt, S) {
+        if (S.weg) return true;
         if (!S.da) return false;
         // (the talk waits a moment for the figures – it should be a scene with them)
         if (!S.r && !MI.F('jule') && S.t < 9) return false;
@@ -624,6 +658,7 @@ export const GLKAP2 = (() => {
       ort: 'Feldweg',
       ziel: () => lkwPlatz().p,
       an(S) {
+        if ((S.weg = auftaktWeg())) return;
         S.smsT = 2.5;
         S.auf0 = GLHANDY.isOpen();
       },
@@ -633,6 +668,7 @@ export const GLKAP2 = (() => {
         },
       },
       tick(dt, S) {
+        if (S.weg) return true;
         if (S.smsT > 0 && (S.smsT -= dt) <= 0) {
           sms('unbekannt');
           chat('lkw');
@@ -668,20 +704,30 @@ export const GLKAP2 = (() => {
       text: TX.k2m1.nacht,
       ort: 'Garten',
       ziel: () => O.garten.pos,
-      an() {
+      an(S) {
         MI.autoWeg('k2lkw');
+        S.weg = auftaktWeg();
       },
-      // (the preview: mission 1 is not in yet – Saturday a little later, and the morning says so)
-      tick: (dt, S) =>
-        (S.n || (MI.zuFuss() && MI.fern(O.garten.pos) < 14)) &&
-        (K.vorab ? schlaf(S, T.morgenA, T.morgenVorab, 10, 20) : schlaf(S, T.morgenA, T.morgenB, 9, 40)),
-      ab() {
-        chat('schnee');
+      // (the preview: mission 1 is not in yet – Saturday a little later, and the morning says so; past the opening: mission 2 goes on the
+      // same day, mission 1 after the night of a preview's mission 2 the next morning)
+      tick(dt, S) {
+        if (S.weg) {
+          const m = GLMLOGIK.tag(CLOCK.t);
+          return GL.cur !== 'k2m1' || (m >= 7 * 60 && m < 12 * 60) || schlaf(S, T.spaetA, T.spaetB, 9, 40);
+        }
+        return (
+          (S.n || (MI.zuFuss() && MI.fern(O.garten.pos) < 14)) &&
+          (VORAB ? schlaf(S, T.morgenA, T.morgenVorab, 10, 20) : schlaf(S, T.morgenA, T.morgenB, 9, 40))
+        );
+      },
+      ab(S) {
+        if (!S.weg) chat('schnee');
       },
     },
   ];
   function auftaktSzene(id, A) {
-    if (id !== 'scheune' && id !== 'spur') return false;
+    if (id !== 'scheune' && id !== 'spur' && id !== 'nacht') return false;
+    if (id === 'nacht' || auftaktWeg()) return true;
     const H = amHof(),
       hut = { jule: 'strickblau', timo: 'schiebergrau', basti: 'basecap', gerhard: 'hut' };
     for (const k of ['jule', 'timo', 'basti', 'gerhard'])
@@ -697,9 +743,8 @@ export const GLKAP2 = (() => {
     return true;
   }
   // ================================================================ mission 1 · Grünes Band (with the chapter's opening) ================================================================
-  // (the preview of 18.11.2026 – K.vorab – has the zone's mission not yet: the opening goes before mission 2 then; the browser test of
-  // mission 1 switches it on before the page loads: window.GLK2_M1)
-  if (!K.vorab || (typeof window !== 'undefined' && window.GLK2_M1))
+  // (the preview of 18.11.2026 – VORAB – has the zone's mission not yet: the opening goes before mission 2 then)
+  if (!VORAB)
     MI.def({
       id: 'k2m1',
       kap: 2,
@@ -795,7 +840,9 @@ export const GLKAP2 = (() => {
               S.platten = true;
               MI.rede('k2platten');
             }
-            return MI.fern(bp().b) < 115;
+            // (passing it on the way is enough, however far off the way the bunker lies)
+            const B = bp();
+            return MI.fern(B.b) < Math.max(115, B.ab + 60);
           },
         },
         {
@@ -911,15 +958,17 @@ export const GLKAP2 = (() => {
             V1.s = B.s;
             V1.v = 0;
             V1.fahrt = false;
-            S.einT = 4.5;
             if (!MI.redet()) MI.rede('k2abzug');
-            for (const [key] of B.men) {
-              const f = MI.F(key);
-              if (f) {
-                GLFIG.pose(f, null);
-                GLFIG.go(f, [B.van[0], B.van[1]], 1.6);
-              }
+            // they walk to their van and get in; it leaves when all are in (at the latest when the farthest could be)
+            S.drin = new Set();
+            let weit = 0;
+            for (const [key, , p] of B.men) {
+              const f = MI.F(key),
+                q = f ? [f.x, f.y] : p;
+              weit = Math.max(weit, hyp(q[0] - B.van[0], q[1] - B.van[1]));
             }
+            einsteigen(S, B);
+            S.einT = Math.max(4.5, weit / 1.6 + 4);
             const f = MI.F('fremder');
             if (f)
               GLFIG.go(
@@ -934,9 +983,13 @@ export const GLKAP2 = (() => {
           },
           tick(dt, S) {
             const B = bp();
-            if (S.einT > 0 && (S.einT -= dt) <= 0) {
-              for (const [key] of B.men) MI.figWeg(key);
-              V1.fahrt = true;
+            if (!V1.fahrt && S.einT > 0) {
+              einsteigen(S, B);
+              if ((S.einT -= dt) <= 0 || B.men.every(([k]) => S.drin.has(k))) {
+                S.einT = 0;
+                for (const [key] of B.men) MI.figWeg(key);
+                V1.fahrt = true;
+              }
             }
             vanTick(dt);
             if (vanSieht() && !S.aus) {
@@ -1149,7 +1202,7 @@ export const GLKAP2 = (() => {
       }
     },
     steps: [
-      ...(K.vorab ? AUFTAKT : []),
+      ...AUFTAKT,
       {
         id: 'treff',
         text: TX.k2m2.scheune,
@@ -1430,7 +1483,7 @@ export const GLKAP2 = (() => {
     ],
   });
   // the chapter's first mission (the preview: mission 2)
-  const ERSTE = () => (K.vorab ? 'k2m2' : 'k2m1');
+  const ERSTE = () => (VORAB ? 'k2m2' : 'k2m1');
   // ================================================================ free play after chapter 1: when chapter 2 begins ================================================================
   const kap1Ids = () => (MI.R ? GLMDATA.ORDER.filter(id => MI.R.by(id) && !((GLMDATA.M[id] || {}).kap > 1)) : []);
   const kap1Fertig = () => {
@@ -1497,10 +1550,45 @@ export const GLKAP2 = (() => {
     if (wie) beginn();
   }
   // ---------------- per frame (grenzland/gl_modus.js, after the place beds) ----------------
+  // the direct way into chapter 2 (Falko, 18.11.2026 20:28 over the lead – his save may not have chapter 1 done): ?kapitel=2 in the
+  // address, with ?szenario=grenzland or the menu's Szenen → Grenzland. On the mode's start – a frame later, after its own fresh start
+  // has begun chapter 1 – chapter 1 is marked done if it is not (as the browser test's KAP1), and chapter 2 opens at once; once
+  // chapter 2 has begun, nothing. Without the parameter nothing changes.
+  const kapitelUrl = () => {
+    try {
+      return new URL(location.href).searchParams.get('kapitel') === '2';
+    } catch (e) {
+      return false;
+    }
+  };
+  KERN.on('grenzland:start', () => {
+    if (kapitelUrl()) S.direkt = true;
+  });
+  function direkt() {
+    S.direkt = false;
+    if (!MI.R) return;
+    const was = L.direkt({
+      kap: GL.kap,
+      kap1: kap1Ids().map(id => MI.R.st(id)),
+      k2: ['k2m1', 'k2m2'].map(id => (MI.R.by(id) ? MI.R.st(id) : 'offen')),
+    });
+    if (was === 'nichts') return;
+    if (was === 'kap1') {
+      MI.stop();
+      for (const id of kap1Ids()) GL.m[id] = { st: 'erledigt', i: 0, n: 0 };
+      for (const id of ['k2m1', 'k2m2']) delete GL.m[id];
+      GL.cur = '';
+      GL.kap = 1;
+      GL.kap1 = true;
+      GL.save(true);
+    }
+    beginn();
+  }
   function tick(dt) {
     if (!GL.on) return;
     try {
       if (GL.era !== 'heute') return;
+      if (S.direkt) direkt();
       freiTick(dt);
       GLKNACKEN.tick(dt);
       // the snow belongs to the story's December while chapter 2 runs
@@ -1513,6 +1601,7 @@ export const GLKAP2 = (() => {
     }
   }
   function stop() {
+    S.direkt = false;
     knopf(false);
     wetter(false);
     fotoAus();
@@ -1559,6 +1648,8 @@ export const GLKAP2 = (() => {
       fremder: K1.fremder,
       van: { s: Math.round(V1.s), fahrt: V1.fahrt },
       err: S.err || '',
+      erste: ERSTE(),
+      karte: karteN,
     }),
     bp: () => bp(),
     lkw: () => lkwPlatz(),

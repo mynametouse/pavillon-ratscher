@@ -60,11 +60,23 @@ export const STRKARTE = (() => {
     nc: NOLINE(w),
     noL: !!(w.fl & 256),
     noR: !!(w.fl & 512),
+    ncs: w.ncs,
   });
+  // acute junctions (STRSTIL.acute): the stretches without a centre line, found again whenever the road data changes
+  let acuteRev = -1;
+  function acute() {
+    const rev = (FAHRT.rev || 0) + ':' + FAHRT.data.ways.length;
+    if (rev === acuteRev) return;
+    acuteRev = rev;
+    const t0 = performance.now();
+    S.acute = STRSTIL.acute(FAHRT.data.ways, w => ({ p: w.p, stride: 3, n: w.n, hw: w.hw, s0: w.s0 || 0 }));
+    S.acuteMs = Math.round((performance.now() - t0) * 10) / 10;
+  }
   function start(cx, cy) {
     const x0 = Math.round(cx - SZ / 2),
       y0 = Math.round(cy - SZ / 2),
       list = [];
+    acute();
     for (const w of FAHRT.data.ways) {
       if (w.fl & 131) continue; // bridges get their deck (welt/fahrt.js), tunnels nothing; steps are no band on the ground
       if (w.bb[2] < x0 - 12 || w.bb[0] > x0 + SZ + 12 || w.bb[3] < y0 - 12 || w.bb[1] > y0 + SZ + 12) continue;
@@ -155,6 +167,7 @@ export const STRKARTE = (() => {
   // the road data or the places changed: the window is rastered again (around where the observer is now) – a running raster starts over
   S.refresh = () => {
     again = true;
+    acuteRev = -1;
     if (job) {
       job = null;
       S.busy = false;
