@@ -54,6 +54,7 @@ export const GLZONE = (() => {
     routeOn: false,
     transfer: null,
     far: [], // instanced meshes in VEG.far (grass, heather): taken out again when the zone goes
+    hAt: null, // the zone's raw ground (WELT.sampler over its tiles), for KERN where no tile is drawn
     gras: 0,
     heide: 0,
   };
@@ -472,6 +473,10 @@ export const GLZONE = (() => {
     const r = S.data.rect,
       hAt = await WELT.sampler(r[0], r[1], r[2], r[3]);
     if (!S.an || !hAt.tiles) return;
+    // the zone's ground for KERN where a tile is not drawn (yet): without it KERN fell back to the old 120 m terrain of
+    // world/ratscher.js, which ends north of the zone and answers with its clamped edge – a walker or a camera put there stood metres
+    // below or above the zone's ground until the tile came
+    S.hAt = hAt;
     try {
       bauSteine(hAt);
     } catch (e) {
@@ -1238,6 +1243,10 @@ export const GLZONE = (() => {
       },
       40
     );
+    // the zone's raw ground where no tile is drawn (yet) – below the drawn tiles of welt/welt.js (5), above the old far terrain (0)
+    const roh = (x, y) => (S.an && S.hAt && inZone(x, y) ? S.hAt(x, y) : undefined);
+    KERN.provide('ground', roh, 4);
+    KERN.provide('terrain', roh, 4);
     // standing on the old foundation
     KERN.provide(
       'ground',
@@ -1427,6 +1436,7 @@ export const GLZONE = (() => {
     BK.F = null;
     TU.F = null;
     HI.F = null;
+    S.hAt = null;
     if (FAHRT.drop) FAHRT.drop(SET);
     WELT.need(SET, false);
     S.phase = 'aus';
@@ -1593,7 +1603,66 @@ export const GLZONE = (() => {
   function ort(name) {
     if (!S.data || !S.data.orte) return null;
     const p = S.data.orte[name];
-    return p ? { x: p[0], y: p[1], z: p[2], name: D.ORTE[name] || name } : null;
+    if (p) return { x: p[0], y: p[1], z: p[2], name: D.ORTE[name] || name };
+    // places worked out from the built zone (mission 1): where one photographs the bunker from, where the stranger stands
+    const B = S.data.orte.bunker;
+    if (!B) return null;
+    const hd = BK.F ? BK.F.hd : 0,
+      aus = (r, f) => {
+        const x = B[0] + r * Math.cos(hd) + f * Math.sin(hd),
+          y = B[1] - r * Math.sin(hd) + f * Math.cos(hd),
+          z = KERN.ground(x, y);
+        return { x, y, z: Number.isFinite(z) ? z : B[2], name: D.ORTE[name] || name };
+      };
+    // (the door looks towards +f of the bunker's frame: the photo from 24 m in front of it, a little to the side)
+    if (name === 'foto') return aus(-6, 24);
+    if (name === 'fremder') return aus(38, 30);
+    return null;
+  }
+  // mobile reception in the zone (bars 0–4, −1 none): good at the road and the car park, weak in the strip, none deep in the heath and
+  // in the hollow towards Görsdorf – for the phone (gl_handy.js's world netz(), Für den Lead) and mission 1's „no signal“
+  function netz(x, y) {
+    if (!S.data || !inZone(x, y, 200)) return undefined;
+    const o = S.data.orte,
+      dP = o.parkplatz ? Math.hypot(x - o.parkplatz[0], y - o.parkplatz[1]) : 1e9,
+      dH = o.heide ? Math.hypot(x - o.heide[0], y - o.heide[1]) : 1e9,
+      dB = o.kolonnenweg_b ? Math.hypot(x - o.kolonnenweg_b[0], y - o.kolonnenweg_b[1]) : 1e9;
+    if (dP < 350) return 4;
+    if (dP < 800) return 2;
+    if (dH < 260 || dB < 300) return -1;
+    return dP < 1200 ? 1 : 0;
+  }
+  // spots for figures of a mission: 'wild' (deer at the forest edges of the strip, at dusk), 'wachen' (round the bunker)
+  function punkte(art) {
+    if (!S.data || !S.lin) return [];
+    const Lw = S.lin[0],
+      out = [];
+    if (art === 'wachen' && S.data.orte.bunker) {
+      const B = S.data.orte.bunker,
+        hd = BK.F ? BK.F.hd : 0;
+      for (const [r, f, h] of [
+        [3.2, 3.5, 200],
+        [-4.5, 1.0, 110],
+        [1.5, -9.5, 20],
+      ]) {
+        const x = B[0] + r * Math.cos(hd) + f * Math.sin(hd),
+          y = B[1] - r * Math.sin(hd) + f * Math.cos(hd);
+        out.push([x, y, ((((hd * 180) / Math.PI + h) % 360) + 360) % 360]);
+      }
+    } else if (art === 'wild') {
+      const R = D.zufall(77);
+      for (let s = 150; s < Lw.len - 100; s += 260) {
+        const q = D.bei(Lw, s),
+          sd = R() < 0.5 ? -1 : 1,
+          off = 18 + R() * 22;
+        out.push([
+          q.x + Math.cos(q.hd) * off * sd,
+          q.y - Math.sin(q.hd) * off * sd,
+          ((((q.hd * 180) / Math.PI + 90 * sd) % 360) + 360) % 360,
+        ]);
+      }
+    }
+    return out;
   }
   function weg() {
     if (!S.lin || !S.lin.length) return [];
@@ -1620,6 +1689,8 @@ export const GLZONE = (() => {
       return !inZone(x, y) || WELT.heightAt(x, y) !== undefined;
     },
     ort,
+    netz,
+    punkte,
     weg,
     anfahrt,
     hin,
