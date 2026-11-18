@@ -41,6 +41,8 @@ with lib.browser() as b:
         time.sleep(0.25)
     print('state', json.dumps(s0)[:900], flush=True)
     ck('the species table and the flower atlas are loaded', J("BEWUCHS.state().blumen.arten") and not J("BEWUCHS.state().blumen.standin") and J("BEWUCHS.state().arten") >= 18, J("({ a: BEWUCHS.state().arten, s: BEWUCHS.state().blumen.standin, e: BWBLUME.err })"))
+    nidx = J("BWKARTE.index && BWKARTE.index.cells ? Object.keys(BWKARTE.index.cells).length : 0")
+    ck('the maps of the whole world are indexed (the square, the corridors, Schleusingen, Veßra, the world tiles)', nidx >= 800, nidx)
     ck('the template runs (rings built, site texture made)', s0['on'] and len(s0['halm']['rings']) == 3 and s0['karte']['site'] >= 1, json.dumps(s0)[:400])
     top = J("""(() => { const R = GAME.R, gl = R.getContext(), ST = new Set([gl.SAMPLER_2D, gl.SAMPLER_CUBE, gl.SAMPLER_3D, gl.SAMPLER_2D_ARRAY, gl.SAMPLER_2D_SHADOW, gl.SAMPLER_CUBE_SHADOW, gl.SAMPLER_2D_ARRAY_SHADOW]), out = [];
       for (const p of R.info.programs || []) { const prog = p.program; if (!prog) continue; let n = 0;
