@@ -98,7 +98,8 @@ with lib.browser() as b:
         c = pair('wand')
         ck('a picture costs the same with and without (draw calls, triangles)', c['a'] == c['b'], str(c))
         # the plain wall between two bays nearest the camera: above the plinth and its splash it is free of openings (windows sit in the
-        # middle of a bay); the old plinth ended 0.35 m (0.6 m on a raised ground floor) above the foot – the band just above that is plinth now
+        # middle of a bay); the old plinth ended 0.35 m (0.6 m on a raised ground floor) above the foot – the 4 cm just above that are plinth now
+        # (the new one is at least 10 cm taller; its ledge begins 5.5 cm above the old top)
         kb = max(1, min(w['nb'] - 1, round(um / w['bw']))) if w['nb'] > 1 else 0
         ub = kb * w['bw'] if w['nb'] > 1 else um
         if abs(ub - w['door']) < 1.2: ub += w['bw'] if ub + w['bw'] < w['L'] - 0.5 else -w['bw']
@@ -107,7 +108,7 @@ with lib.browser() as b:
         r = J(f"""(() => {{ const F = {F}, g = Math.max(F.foot, KERN.ground(F.ax + F.dx * {ub} + F.nx * 0.15, F.ay + F.dy * {ub} + F.ny * 0.15)),
             P = (f, h0, h1, du = 0.32, base = F.foot) => {{ const p = __FG.patch(f, F, {ub} - du, {ub} + du, h0, h1, 14, base); if (p) delete p.L; return p; }};
           return {{ ground: +(g - F.foot).toFixed(2), wallA: P(__a, 1.3, 2.1), wallB: P(__b, 1.3, 2.1), footA: P(__a, 0.04, 0.2, 0.9, g), footB: P(__b, 0.04, 0.2, 0.9, g), midB: P(__b, 1.3, 1.8, 0.9),
-            bandA: P(__a, {pl} + 0.03, {pl} + 0.09, 0.9), bandB: P(__b, {pl} + 0.03, {pl} + 0.09, 0.9) }}; }})()""")
+            bandA: P(__a, {pl} + 0.01, {pl} + 0.05, 0.9), bandB: P(__b, {pl} + 0.01, {pl} + 0.05, 0.9) }}; }})()""")
         print('patches', r, flush=True)
         ok = all(r.get(k) for k in ('wallA', 'wallB', 'footA', 'footB', 'midB', 'bandA', 'bandB'))
         if ck('wall, plinth and foot of the facade are in the picture', ok, str({k: bool(v) for k, v in r.items() if k != 'ground'})):
