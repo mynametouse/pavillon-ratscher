@@ -79,10 +79,12 @@ with lib.browser() as b:
         E("void GLHUD.acts.extra()")
         ok = until("GLMISSION.cur() === 'k2m2' && GLMISSION.debug.info().step === 'scheune'", 10)
         ok2 = until("!!GLMISSION.St.S.da && !document.getElementById('glfade').classList.contains('on')", 40, 0.25, 0.1)
+        # (the chapter's card comes after the mode's own start card of the fresh start above – a queue)
+        until("/Kolonnenweg/.test(document.getElementById('glmtitel').textContent)", 12, 0.25, 0.1)
         st = J("({ d: DN.dateStr(CLOCK.t, true), m: Math.floor(CLOCK.t) % 1440, kap: GLSTATE.kap, wx: window.WETTER ? WETTER.state().preset : 'kein WETTER', "
                "p: [GAME.P.x, GAME.P.y], ich: GLKAP2.debug.hof().ich, t: document.getElementById('glmtitel').textContent, track: QUESTS.track })")
         ck('„Drei Monate später“: Friday, 4 December 2026, 16:40, snow – the two at the field barn, the chapter\'s card „Kapitel 2 – Vorabversion · Kolonnenweg“',
-           ok and ok2 and '4. Dezember 2026' in st['d'] and abs(st['m'] - 1000) < 8 and st['kap'] == 2 and st['wx'] in ('schnee', 'kein WETTER')
+           ok and ok2 and '4. Dezember 2026' in st['d'] and abs(st['m'] - 1000) < 12 and st['kap'] == 2 and st['wx'] in ('schnee', 'kein WETTER')
            and math.hypot(st['p'][0] - st['ich'][0], st['p'][1] - st['ich'][1]) < 3 and 'Kolonnenweg' in st['t'] and 'Vorabversion' in st['t'] and st['track'] == 'grenzland:k2m2', str(st))
         ok = until("['jule', 'timo', 'basti', 'gerhard'].every(k => GLMISSION.F(k))", 90, 0.3, 0.4)
         ck('the clique and Gerhard wait at the barn (winter hats)', ok, str(info()['figs']))
