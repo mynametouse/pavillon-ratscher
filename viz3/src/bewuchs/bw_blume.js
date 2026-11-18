@@ -106,7 +106,9 @@ export const BWBLUME = (() => {
     const N = 1024,
       C = 128,
       cv = document.createElement('canvas');
-    cv.width = cv.height = N;
+    // (8 × 16 cells like the real atlas – the wildflowers' half above, the beds' below)
+    cv.width = N;
+    cv.height = 2 * N;
     const x = cv.getContext('2d');
     x.clearRect(0, 0, N, N);
     let cell = 0;
@@ -185,27 +187,35 @@ export const BWBLUME = (() => {
   //   x 7, 8  the colour its bloom and its seed frames are multiplied with (1 – the grass heads are drawn light and neutral: their
   //        colour over the cell's); x 2 .z: 1 for a grass head (it stands its height above the sward)
   // rows NS … NS + 7: the atlas' cells (cell n at (n % 8, NS + n / 8)): how high the drawing reaches in its cell, how wide it is
-  const NS = 64, // species at most
+  const NS = 128, // species at most (wildflowers, grass heads, bed plants)
     NOFF = 4,
     OFF = [-0.75, -0.25, 0.25, 0.75];
   const SPW = 10;
   const SPT = new THREE.DataTexture(
-    new Float32Array(SPW * (NS + 8) * 4),
+    new Float32Array(SPW * (NS + 16) * 4),
     SPW,
-    NS + 8,
+    NS + 16,
     THREE.RGBAFormat,
     THREE.FloatType
   );
   SPT.magFilter = SPT.minFilter = THREE.NearestFilter;
   SPT.generateMipmaps = false;
-  // per class: 12 entries (species index, cumulative share)
-  const NMX = 12;
-  const MXT = new THREE.DataTexture(new Float32Array(NMX * 32 * 4), NMX, 32, THREE.RGBAFormat, THREE.FloatType);
+  // per class: 12 entries (species index, cumulative share); a bed class: its templates (−1 − template, cumulative share); rows 32 + t: the
+  // plants of template t in today's phase (stage 4: bw_arten.js beetvorlagen)
+  const NMX = 12,
+    NTPL = 16;
+  const MXT = new THREE.DataTexture(
+    new Float32Array(NMX * (32 + NTPL) * 4),
+    NMX,
+    32 + NTPL,
+    THREE.RGBAFormat,
+    THREE.FloatType
+  );
   MXT.magFilter = MXT.minFilter = THREE.NearestFilter;
   MXT.generateMipmaps = false;
   // the atlas' cells: [oben, breite, mean colour (linear rgb)] – how high the plant reaches in its cell (the card is height / oben tall),
   // how much of the width it covers (the card that wide, the cell's middle only: less drawn for nothing); the stand-in's end ~0.86 up
-  let CELLINFO = Array.from({ length: 64 }, () => [0.86, 1, null]);
+  let CELLINFO = Array.from({ length: 128 }, () => [0.86, 1, null]);
   const lin = v => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
   const hexLin = h =>
     typeof h === 'string' && /^#[0-9a-f]{6}$/i.test(h)
@@ -222,7 +232,7 @@ export const BWBLUME = (() => {
     D.fill(0);
     for (const [c, m] of Object.entries(MIX)) {
       const e = Object.entries(m)
-          .filter(([id, w]) => IDX[id] !== undefined && w > 0)
+          .filter(([id, w]) => (IDX[id] !== undefined || /^tpl:\d+$/.test(id)) && w > 0)
           .sort((p, q) => q[1] - p[1])
           .slice(0, NMX),
         sum = e.reduce((a, [, w]) => a + w, 0) || 1;
@@ -230,10 +240,36 @@ export const BWBLUME = (() => {
       e.forEach(([id, w], k) => {
         acc += w / sum;
         const o = (+c * NMX + k) * 4;
-        D[o] = IDX[id];
+        D[o] = id.startsWith('tpl:') ? -1 - +id.slice(4) : IDX[id];
         D[o + 1] = k === e.length - 1 ? 1.0001 : acc;
       });
     }
+    tplRows(S.doy);
+    MXT.needsUpdate = true;
+  }
+  // the bed templates' plants on day d (their phase: the spring, summer and autumn bedding, the vegetables growing)
+  let TPL = [];
+  function tplRows(d) {
+    const D = MXT.image.data;
+    D.fill(0, 32 * NMX * 4);
+    if (!Number.isFinite(d)) return;
+    TPL.forEach((t, ti) => {
+      if (ti >= NTPL) return;
+      const ph = (t.phasen || []).find(p => d >= p.von && d < p.bis + 1);
+      if (!ph) return;
+      const e = Object.entries(ph.pflanzen || {})
+          .filter(([id, w]) => IDX['beet:' + id] !== undefined && w > 0)
+          .sort((p, q) => q[1] - p[1])
+          .slice(0, NMX),
+        sum = e.reduce((a, [, w]) => a + w, 0) || 1;
+      let acc = 0;
+      e.forEach(([id, w], k) => {
+        acc += w / sum;
+        const o = ((32 + ti) * NMX + k) * 4;
+        D[o] = IDX['beet:' + id];
+        D[o + 1] = k === e.length - 1 ? 1.0001 : acc;
+      });
+    });
     MXT.needsUpdate = true;
   }
   const MD = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -284,7 +320,8 @@ export const BWBLUME = (() => {
       D.set([...tb, 1], o + 28);
       D.set([...ts, 1], o + 32);
     });
-    for (let n = 0; n < 64; n++) {
+    tplRows(doy);
+    for (let n = 0; n < 128; n++) {
       const o = ((NS + (n >> 3)) * SPW + (n & 7)) * 4,
         c = CELLINFO[n] || [0.97, 1];
       D.set([c[0], c[1], 0, 0], o);
@@ -298,12 +335,15 @@ export const BWBLUME = (() => {
   function fromArten(A, base) {
     if (!A || !A.blumen) return 0;
     const L = [];
-    for (const [id, b] of Object.entries(A.blumen)) {
+    // the wildflowers (atlas blumen.png, cells 0–63) and the bed plants (beete.png, cells 64–127; ids 'beet:<id>')
+    const plants = Object.entries(A.blumen).concat(Object.entries(A.beet || {}).map(([id, b]) => ['beet:' + id, b]));
+    for (const [id, b] of plants) {
       if (!b || !Array.isArray(b.hoehe_m) || !Array.isArray(b.jahr)) continue;
-      const frames = {};
+      const frames = {},
+        c0 = id.startsWith('beet:') ? 64 : 0;
       for (const [fr, q] of Object.entries(b.bilder || {}))
         if (q && Array.isArray(q.zelle))
-          frames[fr] = { cell: q.zelle[1] * 8 + q.zelle[0], k: Number.isFinite(q.hoehe) ? q.hoehe : 1 };
+          frames[fr] = { cell: c0 + q.zelle[1] * 8 + q.zelle[0], k: Number.isFinite(q.hoehe) ? q.hoehe : 1 };
       const blooms = b.jahr.filter(p => p[0] === 'bluete');
       L.push({
         id,
@@ -369,6 +409,15 @@ export const BWBLUME = (() => {
       if (top.length) M[c] = Object.fromEntries(top);
     }
     if (M[1]) M[18] = M[1]; // the garden's own lawn: the lawn's flowers
+    // stage 4: the bed classes take their templates (a bed one template, chosen by the place)
+    TPL = Object.values(A.beetvorlagen || {});
+    const tix = Object.fromEntries(Object.keys(A.beetvorlagen || {}).map((k, i) => [k, i]));
+    for (const [c, e] of Object.entries(A.flaechen || {})) {
+      const B = Object.entries((e && e.beete) || {}).filter(
+        ([t, sh]) => tix[t] !== undefined && tix[t] < NTPL && sh > 0
+      );
+      if (B.length) M[c] = Object.fromEntries(B.map(([t, sh]) => ['tpl:' + tix[t], sh]));
+    }
     // species and atlas together (the stand-in's cells are elsewhere): once the picture is there
     const apply = (tex, cells) => {
       SP.length = 0;
@@ -388,33 +437,50 @@ export const BWBLUME = (() => {
       return L.length;
     }
     // the cells' measures (blumen.json; without it: the drawings reach the top, full width)
-    const cellsP = fetch(base + 'bewuchs/blumen.json')
-      .then(r => (r.ok ? r.json() : null))
-      .then(j => {
-        if (!j || !Array.isArray(j.zellen)) return null;
-        const C = Array.from({ length: 64 }, () => [0.97, 1]);
-        for (const z of j.zellen) {
-          if (!z || !Array.isArray(z.zelle)) continue;
-          const n = z.zelle[1] * 8 + z.zelle[0];
-          if (n >= 0 && n < 64)
-            C[n] = [
-              Number.isFinite(z.oben) ? Math.max(0.3, Math.min(1, z.oben)) : 0.97,
-              Number.isFinite(z.breite) ? Math.max(0.2, Math.min(1, z.breite)) : 1,
-              hexLin(z.farbe),
-            ];
+    const C = Array.from({ length: 128 }, () => [0.97, 1]);
+    const table = (file, c0) =>
+      fetch(base + 'bewuchs/' + file)
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          if (!j || !Array.isArray(j.zellen)) return null;
+          for (const z of j.zellen) {
+            if (!z || !Array.isArray(z.zelle)) continue;
+            const n = c0 + z.zelle[1] * 8 + z.zelle[0];
+            if (n >= c0 && n < c0 + 64)
+              C[n] = [
+                Number.isFinite(z.oben) ? Math.max(0.3, Math.min(1, z.oben)) : 0.97,
+                Number.isFinite(z.breite) ? Math.max(0.2, Math.min(1, z.breite)) : 1,
+                hexLin(z.farbe),
+              ];
+          }
+          return true;
+        })
+        .catch(() => null);
+    const img = file =>
+      new Promise(res => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = () => res(null);
+        im.src = base + 'bewuchs/' + file;
+      });
+    // one picture of 8 × 16 cells: the wildflowers above, the bed plants below (one material, one draw call per ring)
+    Promise.all([img('blumen.png'), img('beete.png'), table('blumen.json', 0), table('beete.json', 64)]).then(
+      ([a, b]) => {
+        if (!a) {
+          S.err = 'blumen.png nicht geladen';
+          return;
         }
-        return C;
-      })
-      .catch(() => null);
-    new THREE.TextureLoader().load(
-      base + 'bewuchs/blumen.png',
-      t => {
+        const cv = document.createElement('canvas');
+        cv.width = a.width;
+        cv.height = a.height * 2;
+        const g = cv.getContext('2d');
+        g.drawImage(a, 0, 0);
+        if (b) g.drawImage(b, 0, a.height, a.width, a.height);
+        const t = new THREE.CanvasTexture(cv);
         t.colorSpace = THREE.SRGBColorSpace;
         t.anisotropy = 4;
-        cellsP.then(C => apply(t, C));
-      },
-      undefined,
-      e => (S.err = 'blumen.png: ' + String((e && e.message) || e || 'nicht geladen'))
+        apply(t, C);
+      }
     );
     return L.length;
   }
@@ -516,9 +582,18 @@ void flPlant( out vec3 P ) {
   float rS = fract( aF.z + th * 3.3 ), rZ = fract( aF.w + th * 5.7 );
   if ( rZ > k3.z * mix( k6.x, k6.y, vig ) * Sz * Sz / uBwFr.z * fade * uBwP.y ) return;
   // the species from the class's mix
-  int sp = -1;
-  for ( int k = 0; k < ${NMX}; k++ ) { vec4 m = texelFetch( tBwMx, ivec2( k, cls ), 0 ); if ( m.y <= 0.0 ) break; if ( rS <= m.y ) { sp = int( m.x + 0.5 ); break; } }
-  if ( sp < 0 ) return;
+  // (a bed class: its template chosen by the place – one bed, one template – then a plant of the template's phase today)
+  vec4 m0 = texelFetch( tBwMx, ivec2( 0, cls ), 0 );
+  float rP = m0.x < -0.5 ? flHash( floor( q / 3.0 ) + 17.3 ) : rS, mx = -999.0;
+  for ( int k = 0; k < ${NMX}; k++ ) { vec4 m = texelFetch( tBwMx, ivec2( k, cls ), 0 ); if ( m.y <= 0.0 ) break; if ( rP <= m.y ) { mx = m.x; break; } }
+  if ( mx < -0.5 && mx > -900.0 ) {
+    int tr = 32 + int( -mx + 0.5 ) - 1;
+    float r2 = fract( rS * 7.31 + th );
+    mx = -999.0;
+    for ( int k = 0; k < ${NMX}; k++ ) { vec4 m = texelFetch( tBwMx, ivec2( k, tr ), 0 ); if ( m.y <= 0.0 ) break; if ( r2 <= m.y ) { mx = m.x; break; } }
+  }
+  if ( mx < -0.5 ) return;
+  int sp = int( mx + 0.5 );
   vec4 s0 = texelFetch( tBwSp, ivec2( 0, sp ), 0 ), s1 = texelFetch( tBwSp, ivec2( 1, sp ), 0 ), s2 = texelFetch( tBwSp, ivec2( 2, sp ), 0 );
   // this plant's group (earlier or later than the table by the species' spread) and its frame today; a share of them in leaf
   vec4 ph = texelFetch( tBwSp, ivec2( 3 + int( fract( rS * 29.3 + th ) * 3.999 ), sp ), 0 );
@@ -539,7 +614,7 @@ void flPlant( out vec3 P ) {
   float hf = mix( s2.x, s2.y, fract( rZ * 13.7 ) ) * hk, zb = 0.0;
   // a grass head: the card's upper part (the head, ~45 % of the drawing) over the sward, its stem down into it
   if ( s2.z > 0.5 ) { zb = max( 0.0, hc - 0.5 * hf ); hf = hc + hf - zb; }
-  else hf = min( hf, max( hc * 2.2, 0.08 ) );
+  else if ( hc > 0.02 ) hf = min( hf, max( hc * 2.2, 0.08 ) );
   if ( hf < 0.012 ) return;
   // the colour of a grass head (drawn neutral): the bloom's or the ripe one's
   vFlTint = texelFetch( tBwSp, ivec2( seed > 0.5 ? 8 : 7, sp ), 0 ).rgb;
@@ -556,7 +631,7 @@ void flPlant( out vec3 P ) {
   vec2 xy = q + dir * aQ.x * hw + wd * wb * H * t * t;
   P = vec3( xy.x, zr + zb + H * t, - xy.y );
   float col = mod( cell, 8.0 ), row = floor( cell / 8.0 );
-  vFlUv = vec2( ( col + 0.5 + aQ.x * 0.5 * cd.y ) / 8.0, 1.0 - ( row + 1.0 - t ) / 8.0 );
+  vFlUv = vec2( ( col + 0.5 + aQ.x * 0.5 * cd.y ) / 8.0, 1.0 - ( row + 1.0 - t ) / 16.0 );
 }
 `;
   const U = {
@@ -655,6 +730,9 @@ void flPlant( out vec3 P ) {
     ),
     standin: S.standin,
     arten: !!S.arten,
+    // stage 4: the bed templates and the classes planted with them
+    tpl: TPL.length,
+    beds: Object.keys(MIX).filter(c => Object.keys(MIX[c]).some(id => id.startsWith('tpl:'))),
   });
   Object.assign(S, { build, day, atlas, stats, fromArten, phaseAt, SP, MIX, U });
   BWHALM.onBuild = build;

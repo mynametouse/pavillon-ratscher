@@ -479,6 +479,12 @@ export const BWPHAENO = (() => {
         k.col = Object.assign({}, k.col, out);
       }
       k.flowers = Object.values(e.blumen || {}).reduce((a, v) => a + (+v || 0), 0);
+      // a bed class (stage 4): the plants per m² of its templates
+      if (e.beete && A.beetvorlagen)
+        k.flowers = Object.entries(e.beete).reduce(
+          (a, [t, sh]) => a + (+sh || 0) * ((A.beetvorlagen[t] && A.beetvorlagen[t].dichte_m2) || 8),
+          0
+        );
       // the vigour of the place (the map's bits 5–7): a thin, poor sward or a rich one – a rich meadow has fewer flowers
       const pair = (v, d) => (Array.isArray(v) && v.length === 2 && v.every(Number.isFinite) ? v.slice() : d);
       if (e.kraft)
