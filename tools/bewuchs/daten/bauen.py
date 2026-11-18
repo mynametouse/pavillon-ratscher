@@ -111,7 +111,11 @@ def build(areas, boegen=None, spannen=False):
     old = json.load(open(ifn)) if os.path.exists(ifn) else {}
     # the vigour spans: kept from the index for the flight dates it has (unless --spannen), new ones from the cells built
     kept = {} if spannen else {fl: {K[c]: tuple(v) for c, v in t.items()} for fl, t in old.get('vigour', {}).items() if fl[:2] == '20'}
-    tabs = {fl: kept.get(fl) or vigour_table(S) for fl, S in samples.items()}
+    tabs = {}
+    for fl, S in samples.items():
+        tabs[fl] = dict(kept.get(fl) or {})
+        for c, v in vigour_table(S).items():  # classes the kept spans lack (part e: beds, traffic green) from the cells built
+            tabs[fl].setdefault(c, v)
     # a new flight with few cells: the classes it lacks samples for take the spans of the flight with the most cells (not 0 = bare)
     big = sorted(set(tabs) | set(kept), key=lambda fl: -sum(1 for v in flights.values() if v == fl))
     for fl in tabs:
