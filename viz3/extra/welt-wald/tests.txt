@@ -1,0 +1,7 @@
+# feat/welt-wald: the region's forests and trees in 3D (weltwald/weltwald.js) – no tree on a road, in a building or an open field,
+# counts, draw calls and triangles, streaming while driving at 100 km/h, summer/autumn/winter, pictures from the road and from above
+smoke
+welt_wald:data,road,drive,season
+# the phone flag (touch, small screen): the tighter bands, ≤ 8 draw calls and ≤ 60 000 triangles
+welt_wald:phone
+memphone
