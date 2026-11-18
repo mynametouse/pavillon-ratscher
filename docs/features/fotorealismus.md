@@ -138,14 +138,16 @@ Eingriff in `world/ratscher.js` (die Liste `RATSCHER.water` hält danach die neu
   solche Texel, der von innen erreichbar ist, bis 26 m über den Umriss hinaus, der Boden dort unter der Oberfläche, aber höchstens 3 m
   – nie die Luftseite des Damms hinunter.
 - **Eine Handbreit höher:** das Gelände unter dem Wasser ist die vom Laser gemessene Wasseroberfläche und liegt auf Zentimeter an der
-  Höhe der Fläche, stellenweise darüber. Nah am Auge gewann solcher Boden gegen die alte Platte (dunkle Stufen entlang des Damms).
-  Die Oberfläche liegt jetzt 12 cm über der Höhe aus den Daten.
+  Höhe der Fläche (am Damm gemessen: 2 cm darunter bis 3 cm darüber). Nah am Auge schaut solcher Boden durch eine Platte auf genau
+  dieser Höhe. Die Oberfläche liegt jetzt 12 cm über der Höhe aus den Daten.
 - **Schatten der Sonne** fallen auf das Wasser (Uferbäume, Damm, bei tiefer Sonne die Hügel): die Lichtbahn endet, wo der Schatten
   beginnt.
 - **Bewegung:** in Echtzeit, nicht in Spielzeit. Bilder fordert das Wasser nur an, solange es im Bild und näher als 600 m ist –
   höchstens 15 je Sekunde, nicht auf „schnell“ und nicht am Telefon; dort bewegt es sich, wenn ohnehin gezeichnet wird (wie der Bach).
 - **Nicht dabei:** die Spiegelung des Ufers (Bäume, Hang) – sie braucht ein zweites Bild der Szene je Bild und ist ein Kandidat für
-  die Stufe „Ultra“; Regenringe; die Wasserflächen der Welt-Kacheln und Suhls (`lazy/suhl/kern/wasser.js`); der Bach im Garten.
+  die Stufe „Ultra“; Regenringe; die Wasserflächen der Welt-Kacheln und Suhls (`lazy/suhl/kern/wasser.js`); der Bach im Garten. Der
+  **Damm** bleibt das Gelände im 10-m-Raster: von oben ist seine wasserseitige Böschung (am Nachmittag im Schatten) gestuft – der
+  Damm als eigenes Bauwerk wäre der nächste Schritt dort.
 
 ## Geänderte Shader und Render-Methoden
 
