@@ -146,9 +146,10 @@ def colour(photo, k):
 def main():
     gebiet = sys.argv[1]
     args = sys.argv[2:]
-    if '--geb' in args:
-        i = args.index('--geb')
-        args = args[:i] + args[i + 2:]
+    for opt in ('--geb', '--wege'):
+        if opt in args:
+            i = args.index(opt)
+            args = args[:i] + args[i + 2:]
     photo = Photo(args[:4])
     # nothing of ours on a building that stands in 3D (OSM, the old town, welt-gebaeude's ETHOS buildings): a tank or shed that is a
     # building there, a 'car' that was a roof window
@@ -173,6 +174,12 @@ def main():
         return None
     P = json.load(open(os.path.join(EXTRA, f'pruefung_{gebiet}.json')))
     ways = [w for w in wdlib.roads() + (wdlib.roads_fahrt() if gebiet != 'ratscher' else []) if w['kind'] <= 5]
+    # feat/welt-orte: the streets of places beyond the drive's data (the approach to Suhl, OSM's village streets): --wege FILE,
+    # [{ kind, w, p: [[x, y], …] }] in model metres – the same lane rule there
+    if '--wege' in sys.argv:
+        for w in json.load(open(sys.argv[sys.argv.index('--wege') + 1])):
+            if w['kind'] <= 5 and len(w['p']) >= 2:
+                ways.append({'kind': int(w['kind']), 'surf': 0, 'w': float(w['w']), 'p': np.array(w['p'], float)})
     for w in ways:
         w['bb'] = (w['p'][:, 0].min(), w['p'][:, 1].min(), w['p'][:, 0].max(), w['p'][:, 1].max())
     # the lanes stay free (the lead, 6.11. ~2:00: the drive test's car rammed a 'stadt' car 1.5 m from the centreline on the way to the
