@@ -117,15 +117,16 @@ export const GEBFOTO = (() => {
       return vec3( a + ( b - a ) * u.x + ( c - a ) * u.y + k * u.x * u.y, du * vec2( b - a + k * u.y, c - a + k * u.x ) ); }
     // the wall's slope (along it, up); sills and ledges that face up a little; how much of the sun reaches the point (reveals and sills shade); the sun in the wall's frame (along, up, out)
     vec2 gFgB = vec2( 0.0 ); float gFgUp = 0.0, gFgSun = 1.0; vec3 gFgL = vec3( 0.0 );`;
-  // inside the village's colour block: its locals c (the wall's colour so far), v (height above the foot), uF, vW (x: metres around the
-  // footprint, z: the wall's top here), bid, st, sty, house/barn/shed/hall/school, plH, stH, sill, wh, win, lo, hi, bi, bc, fi, px, fw, aaF, aaW
+  // inside the village's colour block: its locals c (the wall's colour so far), v (height above the foot), uF, vW (z: the wall's top
+  // here), bid, st, sty, house/barn/shed/hall/school, plH, stH, sill, wh, win, lo, hi, bi, bc, fi, px, fw, aaF, aaW
   S.wall = `
         if ( uFoto > 0.001 ) {   // feat/fotorealismus (foto-gebaeude, gebaeude/geb_foto.js): the wall as built and weathered
           float fk = uFoto, f1 = min( fk, 1.0 ), b1 = mod( bid, 4093.0 ), h1 = fgH( vec2( b1, 3.7 ) ), h2 = fgH( vec2( b1, 11.1 ) ), h3 = fgH( vec2( b1, 23.9 ) ), h4 = fgH( vec2( b1, 31.3 ) );
           float age = ( st == 1.0 ? 0.4 : barn || shed ? 1.25 : hall ? 0.8 : school ? 0.6 : 0.8 ) * ( h3 < 0.25 ? 0.4 : 0.55 + 0.75 * h3 * h3 );   // how worn: new houses least, barns most; one house in four freshly done, few neglected
-          vec2 wp = vec2( vW.x, v ) + 53.0 * vec2( h1, h2 ), wq = vec2( uF, v ); vec4 n0 = texture2D( tFgN, wp / 32.0 ), n1 = texture2D( tFgN, wp / 6.0 );   // each wall its own place in the noise: clouds, mottling
-          vec3 pa = texture2D( tPlasN, wq * 0.5 ).xyz * 2.0 - 1.0, pb = texture2D( tPlasN, wq * 0.143 + vec2( 0.37, 0.61 ) ).xyz * 2.0 - 1.0;   // the plaster's grain: as the photo has it, and three and a half times coarser (rough cast, seen from the street)
           vec3 fN = normalize( vNormal ), fT = normalize( vTanV ), fU = normalize( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz ), nW = inverseTransformDirection( fN, viewMatrix );
+          float ws = dot( ( vec4( -vViewPosition, 0.0 ) * viewMatrix ).xyz + cameraPosition, ( vec4( fT, 0.0 ) * viewMatrix ).xyz );   // metres along the wall in the world: the same on a wall and on what another module lays over it (fassade's skins, split facades)
+          vec2 wp = vec2( ws, v ) + 53.0 * vec2( h1, h2 ), wq = vec2( uF, v ); vec4 n0 = texture2D( tFgN, wp / 32.0 ), n1 = texture2D( tFgN, wp / 6.0 );   // each wall its own place in the noise: clouds, mottling
+          vec3 pa = texture2D( tPlasN, wq * 0.5 ).xyz * 2.0 - 1.0, pb = texture2D( tPlasN, wq * 0.143 + vec2( 0.37, 0.61 ) ).xyz * 2.0 - 1.0;   // the plaster's grain: as the photo has it, and three and a half times coarser (rough cast, seen from the street)
           float north = clamp( -nW.z, 0.0, 1.0 ), west = 0.6 + 0.4 * clamp( 0.3 * nW.z - 0.9 * nW.x, -1.0, 1.0 );   // x east, z south: damp side, weather side
           #if NUM_DIR_LIGHTS > 0
             gFgL = vec3( dot( directionalLights[ 0 ].direction, fT ), dot( directionalLights[ 0 ].direction, fU ), dot( directionalLights[ 0 ].direction, fN ) );   // the sun (the scene's one directional light)
@@ -136,11 +137,11 @@ export const GEBFOTO = (() => {
           if ( house && pT > 0.0 ) {
             vec3 pc = h2 < 0.45 ? vec3( 0.2, 0.19, 0.175 ) : h2 < 0.75 ? vec3( 0.3, 0.285, 0.26 ) : vec3( 0.35, 0.28, 0.19 );   // dark grey render, a lighter one, sandstone
             pc *= 0.8 + 0.4 * n1.g;
-            if ( h2 >= 0.75 ) { float ch = pT > 0.62 ? pT * 0.5 : pT, row = floor( v / ch ), bu = uF / 0.62 + 0.5 * mod( row, 2.0 );
+            if ( h2 >= 0.75 ) { float ch = pT > 0.62 ? pT * 0.5 : pT, row = floor( v / ch ), bu = ws / 0.62 + 0.5 * mod( row, 2.0 );
               pc *= 0.84 + 0.32 * fgH( vec2( floor( bu ) + b1, row ) );
               pc *= 1.0 - 0.5 * ( 1.0 - aaF ) * max( 1.0 - bnd( fract( bu ), 0.02, 0.98, fw.x / 0.62 ), 1.0 - bnd( fract( v / ch ), 0.04, 0.96, fw.y / ch ) ); }
             c = mix( c, pc * ( 0.8 + 0.2 * smoothstep( -0.3, 1.4, v ) ), f1 * ( 1.0 - smoothstep( pT - max( fw.y, 0.003 ), pT + max( fw.y, 0.003 ), v ) ) ); }
-          else if ( st == 7.0 && inP ) { float row = floor( v / 0.28 ), bu = uF / 0.55 + 0.5 * mod( row, 2.0 );
+          else if ( st == 7.0 && inP ) { float row = floor( v / 0.28 ), bu = ws / 0.55 + 0.5 * mod( row, 2.0 );
             c *= 1.0 + f1 * ( 0.3 * ( fgH( vec2( floor( bu ) + b1, row ) ) - 0.5 ) - 0.4 * ( 1.0 - aaF ) * max( 1.0 - bnd( fract( bu ), 0.03, 0.97, fw.x / 0.55 ), 1.0 - bnd( fract( v / 0.28 ), 0.06, 0.94, fw.y / 0.28 ) ) ); }
           if ( pT > 0.0 ) { float led = bnd( v, pT - 0.045, pT, max( fw.y, 0.004 ) ) * ( 1.0 - aaW );   // its ledge: a face that looks up a little – it catches the light, a clear line from afar
             gFgUp = f1 * led; c *= 1.0 + f1 * 0.1 * led; c *= 1.0 - f1 * 0.22 * bnd( v, pT - 0.11, pT - 0.045, max( fw.y, 0.006 ) ) * ( 1.0 - aaW ); }
