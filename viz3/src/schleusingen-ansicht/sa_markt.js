@@ -90,7 +90,7 @@ export const SAMARKT = (() => {
         return a;
       };
     const WX = field((x, y, L2) => (vn(L2, x, y) - 0.5) * 0.022, lattice(24)), // the edges wander by a centimetre
-      WY = field((x, y, L2) => (vn(L2, x, y) - 0.5) * 0.022, lattice(24)),
+      WY = field((x, y, L2) => (vn(L2, x, y) - 0.5) * 0.014, lattice(24)), // (the courses less: far off their lines would waver)
       P1 = lattice(3), // patches over a metre or two: worn lighter, damp darker (they survive the mipmaps far off)
       P2 = lattice(7),
       PT = field((x, y) => vn(P1, x, y) * 0.6 + vn(P2, x, y) * 0.4),
