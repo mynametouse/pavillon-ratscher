@@ -1,0 +1,1016 @@
+{
+ "v": 1,
+ "bild": "blumen.png",
+ "groesse_px": 1024,
+ "zelle_px": 128,
+ "spalten": 8,
+ "zeilen": 8,
+ "hinweis": "Zelle (Spalte, Zeile) von oben links; eine Pflanze von der Seite, Stängelfuß unten in der Mitte, die Pflanze füllt die Höhe der Zelle; breite = Anteil der Zellbreite, den sie bedeckt (Alpha ≥ 0,5); farbe = mittlere Farbe (sRGB); toenen: Grasähren hell und fast neutral gezeichnet – mit der Farbe der Art / farbe multiplizieren. Erzeugt von tools/bewuchs/pflanzen/atlas.py (eigene Zeichnung).",
+ "zellen": [
+  {
+   "zelle": [
+    0,
+    0
+   ],
+   "id": "loewenzahn-blatt",
+   "bild": "blatt",
+   "arten": [
+    "loewenzahn",
+    "wegwarte",
+    "wiesenpippau"
+   ],
+   "breite": 0.969,
+   "oben": 0.875,
+   "deckung": 0.2891,
+   "farbe": "#567c37"
+  },
+  {
+   "zelle": [
+    1,
+    0
+   ],
+   "id": "loewenzahn-knospe",
+   "bild": "knospe",
+   "arten": [
+    "loewenzahn"
+   ],
+   "breite": 0.734,
+   "oben": 1.0,
+   "deckung": 0.1436,
+   "farbe": "#617f3e"
+  },
+  {
+   "zelle": [
+    2,
+    0
+   ],
+   "id": "loewenzahn-bluete",
+   "bild": "bluete",
+   "arten": [
+    "loewenzahn"
+   ],
+   "breite": 0.875,
+   "oben": 0.977,
+   "deckung": 0.2067,
+   "farbe": "#878e35"
+  },
+  {
+   "zelle": [
+    3,
+    0
+   ],
+   "id": "loewenzahn-samen",
+   "bild": "samen",
+   "arten": [
+    "loewenzahn"
+   ],
+   "breite": 0.516,
+   "oben": 1.0,
+   "deckung": 0.1542,
+   "farbe": "#a6b391"
+  },
+  {
+   "zelle": [
+    4,
+    0
+   ],
+   "id": "gaensebluemchen-bluete",
+   "bild": "bluete",
+   "arten": [
+    "gaensebluemchen"
+   ],
+   "breite": 0.688,
+   "oben": 0.977,
+   "deckung": 0.1919,
+   "farbe": "#8b956d"
+  },
+  {
+   "zelle": [
+    5,
+    0
+   ],
+   "id": "weissklee-bluete",
+   "bild": "bluete",
+   "arten": [
+    "weissklee"
+   ],
+   "breite": 0.969,
+   "oben": 0.977,
+   "deckung": 0.1895,
+   "farbe": "#83986b"
+  },
+  {
+   "zelle": [
+    6,
+    0
+   ],
+   "id": "klee-blatt",
+   "bild": "blatt",
+   "arten": [
+    "weissklee",
+    "rotklee"
+   ],
+   "breite": 0.984,
+   "oben": 0.961,
+   "deckung": 0.2692,
+   "farbe": "#58813d"
+  },
+  {
+   "zelle": [
+    7,
+    0
+   ],
+   "id": "rotklee-bluete",
+   "bild": "bluete",
+   "arten": [
+    "rotklee"
+   ],
+   "breite": 0.797,
+   "oben": 0.969,
+   "deckung": 0.2264,
+   "farbe": "#785c55"
+  },
+  {
+   "zelle": [
+    0,
+    1
+   ],
+   "id": "hahnenfuss-bluete",
+   "bild": "bluete",
+   "arten": [
+    "hahnenfuss"
+   ],
+   "breite": 0.734,
+   "oben": 0.977,
+   "deckung": 0.13,
+   "farbe": "#7f903a"
+  },
+  {
+   "zelle": [
+    1,
+    1
+   ],
+   "id": "lappig-blatt",
+   "bild": "blatt",
+   "arten": [
+    "hahnenfuss",
+    "storchschnabel"
+   ],
+   "breite": 0.969,
+   "oben": 0.953,
+   "deckung": 0.2747,
+   "farbe": "#4b7130"
+  },
+  {
+   "zelle": [
+    2,
+    1
+   ],
+   "id": "wiesenschaumkraut-bluete",
+   "bild": "bluete",
+   "arten": [
+    "wiesenschaumkraut"
+   ],
+   "breite": 0.562,
+   "oben": 0.977,
+   "deckung": 0.0775,
+   "farbe": "#899579"
+  },
+  {
+   "zelle": [
+    3,
+    1
+   ],
+   "id": "spitzwegerich-bluete",
+   "bild": "bluete",
+   "arten": [
+    "spitzwegerich"
+   ],
+   "breite": 0.547,
+   "oben": 0.961,
+   "deckung": 0.1325,
+   "farbe": "#6b804e"
+  },
+  {
+   "zelle": [
+    4,
+    1
+   ],
+   "id": "spitzwegerich-blatt",
+   "bild": "blatt",
+   "arten": [
+    "spitzwegerich"
+   ],
+   "breite": 0.969,
+   "oben": 0.82,
+   "deckung": 0.2762,
+   "farbe": "#4f7338"
+  },
+  {
+   "zelle": [
+    5,
+    1
+   ],
+   "id": "breitwegerich-bluete",
+   "bild": "bluete",
+   "arten": [
+    "breitwegerich"
+   ],
+   "breite": 0.438,
+   "oben": 0.977,
+   "deckung": 0.1119,
+   "farbe": "#617643"
+  },
+  {
+   "zelle": [
+    6,
+    1
+   ],
+   "id": "margerite-bluete",
+   "bild": "bluete",
+   "arten": [
+    "margerite"
+   ],
+   "breite": 0.75,
+   "oben": 0.977,
+   "deckung": 0.1551,
+   "farbe": "#96a57a"
+  },
+  {
+   "zelle": [
+    7,
+    1
+   ],
+   "id": "margerite-samen",
+   "bild": "samen",
+   "arten": [
+    "margerite"
+   ],
+   "breite": 0.656,
+   "oben": 0.977,
+   "deckung": 0.1327,
+   "farbe": "#75804b"
+  },
+  {
+   "zelle": [
+    0,
+    2
+   ],
+   "id": "lanzett-blatt",
+   "bild": "blatt",
+   "arten": [
+    "margerite",
+    "glockenblume",
+    "flockenblume",
+    "kornblume",
+    "weidenroeschen"
+   ],
+   "breite": 0.547,
+   "oben": 0.977,
+   "deckung": 0.1391,
+   "farbe": "#577b3c"
+  },
+  {
+   "zelle": [
+    1,
+    2
+   ],
+   "id": "glockenblume-bluete",
+   "bild": "bluete",
+   "arten": [
+    "glockenblume"
+   ],
+   "breite": 0.953,
+   "oben": 0.977,
+   "deckung": 0.1219,
+   "farbe": "#6d7a72"
+  },
+  {
+   "zelle": [
+    2,
+    2
+   ],
+   "id": "storchschnabel-bluete",
+   "bild": "bluete",
+   "arten": [
+    "storchschnabel"
+   ],
+   "breite": 0.719,
+   "oben": 0.977,
+   "deckung": 0.1742,
+   "farbe": "#5c785b"
+  },
+  {
+   "zelle": [
+    3,
+    2
+   ],
+   "id": "flockenblume-bluete",
+   "bild": "bluete",
+   "arten": [
+    "flockenblume"
+   ],
+   "breite": 0.734,
+   "oben": 0.977,
+   "deckung": 0.1385,
+   "farbe": "#706657"
+  },
+  {
+   "zelle": [
+    4,
+    2
+   ],
+   "id": "wiesenpippau-bluete",
+   "bild": "bluete",
+   "arten": [
+    "wiesenpippau"
+   ],
+   "breite": 0.609,
+   "oben": 0.969,
+   "deckung": 0.0995,
+   "farbe": "#869033"
+  },
+  {
+   "zelle": [
+    5,
+    2
+   ],
+   "id": "vogelwicke-bluete",
+   "bild": "bluete",
+   "arten": [
+    "vogelwicke"
+   ],
+   "breite": 0.656,
+   "oben": 0.969,
+   "deckung": 0.1373,
+   "farbe": "#60765a"
+  },
+  {
+   "zelle": [
+    6,
+    2
+   ],
+   "id": "labkraut-bluete",
+   "bild": "bluete",
+   "arten": [
+    "labkraut"
+   ],
+   "breite": 0.719,
+   "oben": 0.977,
+   "deckung": 0.1041,
+   "farbe": "#bac6a7"
+  },
+  {
+   "zelle": [
+    7,
+    2
+   ],
+   "id": "johanniskraut-bluete",
+   "bild": "bluete",
+   "arten": [
+    "johanniskraut"
+   ],
+   "breite": 0.547,
+   "oben": 0.984,
+   "deckung": 0.0973,
+   "farbe": "#94923e"
+  },
+  {
+   "zelle": [
+    0,
+    3
+   ],
+   "id": "schafgarbe-bluete",
+   "bild": "bluete",
+   "arten": [
+    "schafgarbe"
+   ],
+   "breite": 0.594,
+   "oben": 0.977,
+   "deckung": 0.095,
+   "farbe": "#748a5e"
+  },
+  {
+   "zelle": [
+    1,
+    3
+   ],
+   "id": "dolde-trocken",
+   "bild": "samen",
+   "arten": [
+    "schafgarbe",
+    "rainfarn"
+   ],
+   "breite": 0.656,
+   "oben": 0.977,
+   "deckung": 0.0744,
+   "farbe": "#817258"
+  },
+  {
+   "zelle": [
+    2,
+    3
+   ],
+   "id": "fieder-blatt",
+   "bild": "blatt",
+   "arten": [
+    "schafgarbe",
+    "wilde_moehre",
+    "wiesenkerbel",
+    "rainfarn",
+    "klatschmohn",
+    "kamille"
+   ],
+   "breite": 1.0,
+   "oben": 0.891,
+   "deckung": 0.2855,
+   "farbe": "#476930"
+  },
+  {
+   "zelle": [
+    3,
+    3
+   ],
+   "id": "wilde_moehre-bluete",
+   "bild": "bluete",
+   "arten": [
+    "wilde_moehre"
+   ],
+   "breite": 0.562,
+   "oben": 0.977,
+   "deckung": 0.0936,
+   "farbe": "#93a180"
+  },
+  {
+   "zelle": [
+    4,
+    3
+   ],
+   "id": "wilde_moehre-samen",
+   "bild": "samen",
+   "arten": [
+    "wilde_moehre"
+   ],
+   "breite": 0.469,
+   "oben": 1.0,
+   "deckung": 0.0955,
+   "farbe": "#706c47"
+  },
+  {
+   "zelle": [
+    5,
+    3
+   ],
+   "id": "baerenklau-bluete",
+   "bild": "bluete",
+   "arten": [
+    "baerenklau"
+   ],
+   "breite": 0.719,
+   "oben": 0.977,
+   "deckung": 0.1637,
+   "farbe": "#7b9163"
+  },
+  {
+   "zelle": [
+    6,
+    3
+   ],
+   "id": "baerenklau-samen",
+   "bild": "samen",
+   "arten": [
+    "baerenklau"
+   ],
+   "breite": 0.609,
+   "oben": 0.977,
+   "deckung": 0.0854,
+   "farbe": "#8b8f62"
+  },
+  {
+   "zelle": [
+    7,
+    3
+   ],
+   "id": "baerenklau-blatt",
+   "bild": "blatt",
+   "arten": [
+    "baerenklau"
+   ],
+   "breite": 0.969,
+   "oben": 0.883,
+   "deckung": 0.3602,
+   "farbe": "#4c7132"
+  },
+  {
+   "zelle": [
+    0,
+    4
+   ],
+   "id": "wiesenkerbel-bluete",
+   "bild": "bluete",
+   "arten": [
+    "wiesenkerbel"
+   ],
+   "breite": 0.703,
+   "oben": 0.977,
+   "deckung": 0.1932,
+   "farbe": "#869a6e"
+  },
+  {
+   "zelle": [
+    1,
+    4
+   ],
+   "id": "wiesenkerbel-samen",
+   "bild": "samen",
+   "arten": [
+    "wiesenkerbel"
+   ],
+   "breite": 0.688,
+   "oben": 0.977,
+   "deckung": 0.1024,
+   "farbe": "#656e41"
+  },
+  {
+   "zelle": [
+    2,
+    4
+   ],
+   "id": "rainfarn-bluete",
+   "bild": "bluete",
+   "arten": [
+    "rainfarn"
+   ],
+   "breite": 0.594,
+   "oben": 0.977,
+   "deckung": 0.1268,
+   "farbe": "#6e7c34"
+  },
+  {
+   "zelle": [
+    3,
+    4
+   ],
+   "id": "wegwarte-bluete",
+   "bild": "bluete",
+   "arten": [
+    "wegwarte"
+   ],
+   "breite": 0.531,
+   "oben": 0.977,
+   "deckung": 0.0996,
+   "farbe": "#6f8b92"
+  },
+  {
+   "zelle": [
+    4,
+    4
+   ],
+   "id": "klatschmohn-bluete",
+   "bild": "bluete",
+   "arten": [
+    "klatschmohn"
+   ],
+   "breite": 0.672,
+   "oben": 1.0,
+   "deckung": 0.146,
+   "farbe": "#805431"
+  },
+  {
+   "zelle": [
+    5,
+    4
+   ],
+   "id": "klatschmohn-frucht",
+   "bild": "frucht",
+   "arten": [
+    "klatschmohn"
+   ],
+   "breite": 0.562,
+   "oben": 0.977,
+   "deckung": 0.08,
+   "farbe": "#787d4f"
+  },
+  {
+   "zelle": [
+    6,
+    4
+   ],
+   "id": "kornblume-bluete",
+   "bild": "bluete",
+   "arten": [
+    "kornblume"
+   ],
+   "breite": 0.828,
+   "oben": 0.969,
+   "deckung": 0.129,
+   "farbe": "#596e88"
+  },
+  {
+   "zelle": [
+    7,
+    4
+   ],
+   "id": "kamille-bluete",
+   "bild": "bluete",
+   "arten": [
+    "kamille"
+   ],
+   "breite": 0.609,
+   "oben": 0.961,
+   "deckung": 0.0878,
+   "farbe": "#9aaa76"
+  },
+  {
+   "zelle": [
+    0,
+    5
+   ],
+   "id": "herbstzeitlose-bluete",
+   "bild": "bluete",
+   "arten": [
+    "herbstzeitlose"
+   ],
+   "breite": 0.906,
+   "oben": 1.0,
+   "deckung": 0.2307,
+   "farbe": "#a18ba3"
+  },
+  {
+   "zelle": [
+    1,
+    5
+   ],
+   "id": "herbstzeitlose-blatt",
+   "bild": "blatt",
+   "arten": [
+    "herbstzeitlose"
+   ],
+   "breite": 0.484,
+   "oben": 0.969,
+   "deckung": 0.2441,
+   "farbe": "#598440"
+  },
+  {
+   "zelle": [
+    2,
+    5
+   ],
+   "id": "distel-bluete",
+   "bild": "bluete",
+   "arten": [
+    "distel"
+   ],
+   "breite": 0.469,
+   "oben": 0.961,
+   "deckung": 0.0856,
+   "farbe": "#6c7c56"
+  },
+  {
+   "zelle": [
+    3,
+    5
+   ],
+   "id": "distel-samen",
+   "bild": "samen",
+   "arten": [
+    "distel"
+   ],
+   "breite": 0.375,
+   "oben": 0.961,
+   "deckung": 0.0965,
+   "farbe": "#88916b"
+  },
+  {
+   "zelle": [
+    4,
+    5
+   ],
+   "id": "distel-blatt",
+   "bild": "blatt",
+   "arten": [
+    "distel"
+   ],
+   "breite": 0.594,
+   "oben": 0.977,
+   "deckung": 0.2379,
+   "farbe": "#52723d"
+  },
+  {
+   "zelle": [
+    5,
+    5
+   ],
+   "id": "brennnessel-blatt",
+   "bild": "blatt",
+   "arten": [
+    "brennnessel"
+   ],
+   "breite": 0.453,
+   "oben": 0.977,
+   "deckung": 0.1912,
+   "farbe": "#4e6a3b"
+  },
+  {
+   "zelle": [
+    6,
+    5
+   ],
+   "id": "springkraut-bluete",
+   "bild": "bluete",
+   "arten": [
+    "springkraut"
+   ],
+   "breite": 0.375,
+   "oben": 0.977,
+   "deckung": 0.1298,
+   "farbe": "#7c7457"
+  },
+  {
+   "zelle": [
+    7,
+    5
+   ],
+   "id": "springkraut-blatt",
+   "bild": "blatt",
+   "arten": [
+    "springkraut"
+   ],
+   "breite": 0.406,
+   "oben": 0.977,
+   "deckung": 0.1199,
+   "farbe": "#657b45"
+  },
+  {
+   "zelle": [
+    0,
+    6
+   ],
+   "id": "fingerhut-bluete",
+   "bild": "bluete",
+   "arten": [
+    "fingerhut"
+   ],
+   "breite": 0.297,
+   "oben": 0.969,
+   "deckung": 0.0892,
+   "farbe": "#816c66"
+  },
+  {
+   "zelle": [
+    1,
+    6
+   ],
+   "id": "fingerhut-blatt",
+   "bild": "blatt",
+   "arten": [
+    "fingerhut"
+   ],
+   "breite": 0.969,
+   "oben": 0.867,
+   "deckung": 0.5021,
+   "farbe": "#597449"
+  },
+  {
+   "zelle": [
+    2,
+    6
+   ],
+   "id": "maedesuess-bluete",
+   "bild": "bluete",
+   "arten": [
+    "maedesuess"
+   ],
+   "breite": 0.547,
+   "oben": 1.0,
+   "deckung": 0.1329,
+   "farbe": "#7a835d"
+  },
+  {
+   "zelle": [
+    3,
+    6
+   ],
+   "id": "maedesuess-blatt",
+   "bild": "blatt",
+   "arten": [
+    "maedesuess"
+   ],
+   "breite": 0.516,
+   "oben": 0.977,
+   "deckung": 0.1553,
+   "farbe": "#566539"
+  },
+  {
+   "zelle": [
+    4,
+    6
+   ],
+   "id": "weidenroeschen-bluete",
+   "bild": "bluete",
+   "arten": [
+    "weidenroeschen"
+   ],
+   "breite": 0.344,
+   "oben": 0.977,
+   "deckung": 0.1067,
+   "farbe": "#86605f"
+  },
+  {
+   "zelle": [
+    5,
+    6
+   ],
+   "id": "weidenroeschen-samen",
+   "bild": "samen",
+   "arten": [
+    "weidenroeschen"
+   ],
+   "breite": 0.297,
+   "oben": 0.992,
+   "deckung": 0.0502,
+   "farbe": "#82785a"
+  },
+  {
+   "zelle": [
+    6,
+    6
+   ],
+   "id": "farn-blatt",
+   "bild": "blatt",
+   "arten": [
+    "farn"
+   ],
+   "breite": 0.688,
+   "oben": 0.969,
+   "deckung": 0.2864,
+   "farbe": "#4f7b36"
+  },
+  {
+   "zelle": [
+    7,
+    6
+   ],
+   "id": "heidelbeere-blatt",
+   "bild": "blatt",
+   "arten": [
+    "heidelbeere"
+   ],
+   "breite": 0.969,
+   "oben": 0.898,
+   "deckung": 0.1979,
+   "farbe": "#5c853a"
+  },
+  {
+   "zelle": [
+    0,
+    7
+   ],
+   "id": "gras-rispe",
+   "bild": "aehre",
+   "arten": [
+    "wiesenrispe",
+    "jaehrige_rispe",
+    "gemeine_rispe",
+    "rotschwingel",
+    "glatthafer",
+    "goldhafer",
+    "wiesenschwingel",
+    "rohrglanzgras"
+   ],
+   "breite": 0.359,
+   "oben": 0.977,
+   "deckung": 0.0752,
+   "farbe": "#c9cab6",
+   "toenen": true
+  },
+  {
+   "zelle": [
+    1,
+    7
+   ],
+   "id": "gras-rispe-reif",
+   "bild": "reif",
+   "arten": [
+    "wiesenrispe",
+    "jaehrige_rispe",
+    "gemeine_rispe",
+    "rotschwingel",
+    "glatthafer",
+    "goldhafer",
+    "wiesenschwingel",
+    "rohrglanzgras"
+   ],
+   "breite": 0.75,
+   "oben": 0.977,
+   "deckung": 0.0706,
+   "farbe": "#cacbb8",
+   "toenen": true
+  },
+  {
+   "zelle": [
+    2,
+    7
+   ],
+   "id": "gras-aehrenrispe",
+   "bild": "aehre",
+   "arten": [
+    "fuchsschwanz",
+    "lieschgras",
+    "ruchgras"
+   ],
+   "breite": 0.375,
+   "oben": 0.977,
+   "deckung": 0.047,
+   "farbe": "#c6c6b5",
+   "toenen": true
+  },
+  {
+   "zelle": [
+    3,
+    7
+   ],
+   "id": "gras-aehre",
+   "bild": "aehre",
+   "arten": [
+    "weidelgras",
+    "kammgras",
+    "quecke"
+   ],
+   "breite": 0.328,
+   "oben": 0.977,
+   "deckung": 0.0416,
+   "farbe": "#c2c3af",
+   "toenen": true
+  },
+  {
+   "zelle": [
+    4,
+    7
+   ],
+   "id": "gras-knaeuel",
+   "bild": "aehre",
+   "arten": [
+    "knaulgras"
+   ],
+   "breite": 0.531,
+   "oben": 0.984,
+   "deckung": 0.0914,
+   "farbe": "#a7a697",
+   "toenen": true
+  },
+  {
+   "zelle": [
+    5,
+    7
+   ],
+   "id": "gras-schmiele",
+   "bild": "aehre",
+   "arten": [
+    "straussgras",
+    "honiggras",
+    "rasenschmiele",
+    "drahtschmiele",
+    "windhalm"
+   ],
+   "breite": 0.469,
+   "oben": 0.977,
+   "deckung": 0.127,
+   "farbe": "#d0cfbd",
+   "toenen": true
+  },
+  {
+   "zelle": [
+    6,
+    7
+   ],
+   "id": "gras-schilf",
+   "bild": "aehre",
+   "arten": [
+    "schilf"
+   ],
+   "breite": 0.531,
+   "oben": 0.992,
+   "deckung": 0.1003,
+   "farbe": "#b4b6a1",
+   "toenen": true
+  },
+  {
+   "zelle": [
+    7,
+    7
+   ],
+   "id": "gras-segge",
+   "bild": "aehre",
+   "arten": [
+    "segge",
+    "binse"
+   ],
+   "breite": 0.297,
+   "oben": 0.961,
+   "deckung": 0.1108,
+   "farbe": "#abac94",
+   "toenen": true
+  }
+ ]
+}

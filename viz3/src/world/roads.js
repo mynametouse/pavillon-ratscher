@@ -94,6 +94,7 @@ export const ROADS = (() => {
     // bare fields, stubble and gravel come out of the photos too bright and cold (like frost): brightness above 0.22 compressed, warmed
     vec3 landHi( vec3 c ) { float l = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hi = smoothstep( 0.18, 0.42, l );
       return c * ( l > 0.22 ? ( 0.22 + ( l - 0.22 ) * 0.45 ) / l : 1.0 ) * mix( vec3( 1.0 ), vec3( 1.08, 1.0, 0.82 ), hi ); }
+    vec3 bwFar( vec2 p, vec3 c, float dist );   // feat/bewuchs: flowering meadows far away (bewuchs/bw_ferne.js; S.shader appends it)
     vec3 landDetail( vec2 p, vec3 c, float dist ) { vec2 dx = dFdx( p ), dy = dFdy( p );
       // the aerial photos are cool and hazy (April, from the plane): the blue veil lifted from the darker ground, a little more colour
       float l = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hz = 1.0 - smoothstep( 0.08, 0.35, l );
@@ -105,7 +106,7 @@ export const ROADS = (() => {
       float n = ( rdN( p * 0.85 ) - 0.5 ) * 0.18 * ( 1.0 - smoothstep( 300.0, 700.0, dist ) );
       if ( k > 0.0 ) { vec3 d = gr < 0.02 ? rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ) : gr > 0.98 ? rdTex( ${LY('lawn')}, p, uDTile.x, dx, dy ) : mix( rdTex( ${LY('forestfloor')}, p, uDTile.y, dx, dy ), rdTex( ${LY('lawn')}, p, uDTile.x, dx, dy ), gr );
         c *= mix( vec3( 1.0 ), clamp( d, 0.2, 2.5 ), 0.8 * k ); }
-      return c * ( 1.0 + n ); }
+      return bwFar( p, c * ( 1.0 + n ), dist ); }   // feat/bewuchs
     // dark joints of a pattern of cells (q in cells, jw the joint's half width in cells, fw the pixel's footprint in cells)
     float rdJoint( vec2 q, float jw, float fw ) { vec2 f = fract( q ); float d = min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) );
       return ( 1.0 - smoothstep( jw, jw + max( fw, 0.02 ), d ) ) * ( 1.0 - smoothstep( 0.25, 0.7, fw ) ); }
@@ -218,7 +219,8 @@ export const ROADS = (() => {
   S.shader = sh => {
     if (window.GLCHECK && GLCHECK.lite) return S.STUB;
     Object.assign(sh.uniforms, U);
-    return S.GLSL;
+    // feat/bewuchs: the body of bwFar – the vegetation template's (S.bwFar(sh), bewuchs/bw_ferne.js) or nothing
+    return S.GLSL + (S.bwFar ? S.bwFar(sh) : '\nvec3 bwFar( vec2 p, vec3 c, float dist ) { return c; }\n');
   }; // a ground material's onBeforeCompile: S.shader(sh) → GLSL to prepend
   // … and S.gloss(fragmentShader): the material's roughness follows the wet road (after roadShade ran in <map_fragment>)
   S.gloss = fs =>
