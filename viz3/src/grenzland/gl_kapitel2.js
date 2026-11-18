@@ -486,6 +486,9 @@ export const GLKAP2 = (() => {
     if (!S.n) {
       S.n = 1;
       const g = St.gen;
+      try {
+        if (GLHUD.subAus) GLHUD.subAus();
+      } catch (e) {}
       (async () => {
         const n = await dunkel(a, b);
         if (St.gen !== g) return void hell(n);
@@ -652,7 +655,10 @@ export const GLKAP2 = (() => {
       an() {
         MI.autoWeg('k2lkw');
       },
-      tick: (dt, S) => (S.n || (MI.zuFuss() && MI.fern(O.garten.pos) < 14)) && schlaf(S, T.morgenA, T.morgenB, 9, 40),
+      // (the preview: mission 1 is not in yet – Saturday a little later, and the morning says so)
+      tick: (dt, S) =>
+        (S.n || (MI.zuFuss() && MI.fern(O.garten.pos) < 14)) &&
+        (K.vorab ? schlaf(S, T.morgenA, T.morgenVorab, 10, 20) : schlaf(S, T.morgenA, T.morgenB, 9, 40)),
       ab() {
         chat('schnee');
       },
@@ -675,8 +681,9 @@ export const GLKAP2 = (() => {
     return true;
   }
   // ================================================================ mission 1 · Grünes Band (with the chapter's opening) ================================================================
-  // (the preview of 18.11.2026 – K.vorab – has the zone's mission not yet: the opening goes before mission 2 then)
-  if (!K.vorab)
+  // (the preview of 18.11.2026 – K.vorab – has the zone's mission not yet: the opening goes before mission 2 then; the browser test of
+  // mission 1 switches it on before the page loads: window.GLK2_M1)
+  if (!K.vorab || (typeof window !== 'undefined' && window.GLK2_M1))
     MI.def({
       id: 'k2m1',
       kap: 2,
@@ -1029,6 +1036,12 @@ export const GLKAP2 = (() => {
       return true;
     }
   };
+  // the town stands now: the kerb is found again (while the car is still shut and nobody is at it)
+  function nachStellen() {
+    if (!PARK || !PARK.fb || !stadtDa() || GLKNACKEN.offen(A2.id) || MI.fern(PARK.p) < 10) return;
+    PARK = null;
+    autosStellen(true);
+  }
   const wartburg = () => GLKNACKEN.fz(A2.id);
   const imWagen = () => GLKNACKEN.drin(A2.id);
   // where Fiedler stands at the market: by the mulled wine, facing the stalls
@@ -1155,11 +1168,7 @@ export const GLKAP2 = (() => {
           });
         },
         tick(dt, S) {
-          // the town stands now: the kerb is found again (while the car is still shut)
-          if (PARK && PARK.fb && stadtDa() && !GLKNACKEN.offen(A2.id)) {
-            PARK = null;
-            autosStellen(true);
-          }
+          nachStellen();
           const m = GLMLOGIK.tag(CLOCK.t),
             abends = m >= 17 * 60 + 30 || m < 60;
           if (MI.fern(parkplatz().p) > 75) return false;
@@ -1196,6 +1205,7 @@ export const GLKAP2 = (() => {
         },
         tick(dt, S) {
           marktDeckung();
+          nachStellen();
           if (imWagen()) return true;
           const f = MI.F('fiedler'),
             P0 = parkplatz();

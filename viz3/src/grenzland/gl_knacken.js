@@ -135,13 +135,14 @@ export const GLKNACKEN = (() => {
     if (!kz) return;
     const m = schildMat(kz);
     for (const [y, z, dir] of [
-      [2.036 + 0.0075, 0.43, 1],
+      [2.036 + 0.012, 0.43, 1],
       [T.yRm - 0.0155, 0.7, -1],
     ]) {
       const me = GLMOD.own(new THREE.Mesh(SCHILDGEO, m));
       me.name = 'kennzeichen';
       me.position.set(0, z, -y);
-      if (dir < 0) me.rotation.y = Math.PI;
+      // (a plane faces +z – backwards in the vehicle's frame: the front plate is turned round)
+      if (dir > 0) me.rotation.y = Math.PI;
       g.add(me);
     }
     markDirty(true);
@@ -173,11 +174,19 @@ export const GLKNACKEN = (() => {
     const N0 = GLTYPEN.bau('wartburg', { col: N.FARBEN[farbe] ? N.FARBEN[farbe].hex : '#e9e6da', einzel: true }),
       T = Object.assign({}, N0.T),
       LM = GLMOD.LM,
-      lamps = { head: LM.head89.clone(), tail: LM.tail.clone(), blau: LM.blau, blau2: LM.blau2, blink: LM.blink },
+      lamps = {
+        head: LM.head89.clone(),
+        tail: LM.tail.clone(),
+        blau: LM.blau,
+        blau2: LM.blau2,
+        blink: LM.blink.clone(),
+      },
       g = new THREE.Group(),
       body = new THREE.Group(),
       Pc = name => N0.pieces.find(p => p.name === name);
     T.yRm = yHinten(N0);
+    // (its own lamps start dark: the vehicle switches them with its engine – a copy taken at night would glow while it is parked)
+    for (const m of [lamps.head, lamps.tail, lamps.blink]) m.emissiveIntensity = 0;
     g.add(body);
     body.add(GLMOD.meshes(Pc('body'), T, lamps));
     const wheels = [];
@@ -598,6 +607,20 @@ export const GLKNACKEN = (() => {
     for (const id of Object.keys(S.welt)) weg(id);
     save();
   }
+  function boden() {
+    for (const w of Object.values(S.welt)) {
+      const v = w.v;
+      if (v && v.g.visible && VEH.cur !== v && Math.hypot(v.st.u, v.st.v) < 0.2) {
+        const z = KERN.ground(v.st.x, v.st.y, v.st.z + 0.5);
+        if (Number.isFinite(z) && Math.abs(z - v.st.z) > 0.25) VEH.place(VID, v.st.x, v.st.y, v.st.psi);
+      }
+      const c = w.c;
+      if (c && !c.gone) {
+        const z = KERN.ground(c.x, c.y);
+        if (Number.isFinite(z) && Math.abs(z - c.z) > 0.25) GLAUTO.park(c, c.x, c.y, c.hd);
+      }
+    }
+  }
   function tick(dt) {
     if (!GL.on) return;
     try {
@@ -616,6 +639,12 @@ export const GLKNACKEN = (() => {
           if (p.farbe || p.kz)
             GLFAHNDUNG.tat('autoklau', { force: [{ name: c.melder || 'Der Besitzer', knows: false }], k: 0.6 });
         }
+      }
+      // the ground under a parked car changes when a town's detail comes (a car set down on the coarse ground would hover): once a
+      // second, a car nobody drives is set onto the ground again where it stands
+      if ((S.bt = (S.bt || 0) + dt) > 1) {
+        S.bt = 0;
+        boden();
       }
       if ((S.t += dt) > 5) {
         S.t = 0;
