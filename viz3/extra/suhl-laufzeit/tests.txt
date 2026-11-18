@@ -2,6 +2,7 @@
 suhl:start,sprung,stufen,boden,fahrt
 suhl:zahlen,oben,frei,nacht
 suhl:telefon,uebergabe,anfahrt,bus
+suhl:jahr1989
 # the hooks in shared files (welt/welt.js W1–W4, garden/env.js S1, game/camera.js K1, bus/bus.js B1) must not change the others
 schleusingen
 vessra
