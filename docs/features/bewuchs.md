@@ -51,6 +51,19 @@ wobei es trotzdem im Browser weiterhin flüssig laufen können soll.“ Gewählt
 - **Menü → Einstellungen → Grafik → „Gras und Blumen“:** voll – einfach (eine Stufe leichter und dünner) – aus; gespeichert als
   `pav-bewuchs-v1`. `?nobewuchs` schaltet alles ab (der alte Rasen kommt zurück).
 
+- **Grasähren** (Stufe 2b, `BWBLUME`): die Ähren und Rispen der Gräser aus der untersten Zeile des Blumenatlas, als eigene „Arten“ in den
+  Mischungen der Flächen (Anteil des Grases × Anteil der Büschel mit Ähre); grün in der Blüte (`aehre.von`–`bis`), strohfarben reif (bis
+  `reif_bis`), je Gras getönt (seine Farbe über der Zellfarbe – die Zellen sind hell und neutral gezeichnet); nur der obere Teil der Karte
+  steht über den Blättern; nach dem Schnitt weg.
+- **Sträucher** (Stufe 3, `bewuchs/bw_strauch.js`, `BWSTRAUCH`, erste Fassung): je Kartenzelle einmal gesetzt nach den Plänen der Flächen
+  (`BWARTEN.flaechen[k].straeucher`: Sträucher je 100 m², verteilt flächig, in Gruppen, einzeln oder am Rand), nie auf dem modellierten
+  Grundstück; die Arten (`BWARTEN.straeucher`) als EZ-Tree-Sträucher (Preset, Seed, Optionspfade der Tabelle), gebaut eine je Bild, sobald
+  sie in die Nähe kommen; je Art zwei Bänder (nah die volle Rinde und Krone, weiter die ausgedünnten); das Laub nach Monat über die
+  Instanzfarbe (Austrieb, grün, Herbstfarbe, fallend, kahl – dann ohne Krone; immergrün und trockenes Laub der Hainbuchenhecke bleiben);
+  Blüten und Beeren als Punkte auf den Blattkarten bis 70 m (vor dem Laub und im Winter an den Zweigen). Reichweite nach Grafikstufe (150 /
+  110 / 70 m, höchstens 1600 / 1000 / 450 Sträucher). Noch offen: fest ab 1 m, eigene Hüllen für Buchs, Thuja und Hecken, Schatten nah.
+- **Die Strecken** nach Schleusingen und Kloster Veßra und beide Orte (Teil b von `bewuchs-daten`): 239 Zellen mehr (288 im Index).
+
 ## Flüssig
 
 - Je Ring ein Zeichenaufruf für die Halme und einer für die Blumen (zusammen 5), die Programme beim Laden übersetzt (keine neuen im
