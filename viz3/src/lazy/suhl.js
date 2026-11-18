@@ -281,6 +281,7 @@ export async function start(ctx) {
     jahr1989: (on, o) => (J ? J.set(on, o) : null),
     jahr1989dbg: () => (J ? J.dbg() : null),
     jahr1989at: t => J && J.lifeAt(t),
+    jahr1989regie: o => (J ? J.regie(o) : null),
     status: () => ({
       on: A.on,
       d: Math.round(A.d),

@@ -85,21 +85,44 @@ def save(name, st, kbps=64, mono=False):
     print(name, round(len(st) / SR, 1), 's', os.path.getsize(p) // 1024, 'KB')
 
 
-def choir(name, text, reps, period, n=16):
-    L = reps * period + 2.0
+def choir(name, text, reps, period, n=9):
+    # a caller says it alone (Thorsten, angry), then the crowd: few voices close together (Falko 19.11.: „kaum verständliche Stimmen“)
+    L = (reps + 1) * period + 2.0
     buf = np.zeros((int(L * SR), 2), np.float32)
+    lead = say(EMO, text, 1, 0.92)
+    put(buf, lead, 0.15, 1.3, 0.5)
     spk = rnd.sample(range(236), n)
     for k, s in enumerate(spk):
-        emo = k < 3
-        a = say(EMO if emo else MLS, text, 1 if emo else s, rnd.uniform(0.86, 1.0))
-        a = np.tanh(a * 2.2) * 0.7  # pressed, like shouting
-        f0, g, pan, lag = rnd.uniform(1.05, 1.2), rnd.uniform(0.45, 1.0), rnd.uniform(0.1, 0.9), rnd.uniform(0, 0.13)
-        for r in range(reps):
-            put(buf, resample(a, f0 * rnd.uniform(0.985, 1.015)), 0.15 + r * period + lag + rnd.uniform(0, 0.04), g, pan)
+        emo = k < 2
+        a = say(EMO if emo else MLS, text, 1 if emo else s, rnd.uniform(0.9, 0.98))
+        a = np.tanh(a * 1.3) * 0.8
+        f0, g, pan, lag = rnd.uniform(1.02, 1.1), rnd.uniform(0.55, 1.0), rnd.uniform(0.15, 0.85), rnd.uniform(0, 0.05)
+        for r in range(1, reps + 1):
+            put(buf, resample(a, f0 * rnd.uniform(0.99, 1.01)), 0.15 + r * period + lag + rnd.uniform(0, 0.02), g, pan)
     # a bed of the crowd under it
     bed = band(np.random.randn(len(buf)).astype(np.float32), 150, 1800) * 0.025
     buf += bed[:, None]
-    save(name, room(buf))
+    save(name, room(buf, 0.6, 0.14))
+
+
+def line(name, text, spk=1):
+    # one voice (the Volkspolizist at the gate): Thorsten, a little street echo
+    a = say(EMO, text, spk, 0.95)
+    st = np.zeros((len(a) + SR, 2), np.float32)
+    put(st, a, 0.1, 1.0, 0.5)
+    save(name, room(st, 0.5, 0.12), kbps=48, mono=True)
+
+
+def rattle(name, secs=2.6):
+    # the gate shaken: hits on steel bars – a few inharmonic partials each, decaying fast
+    buf = np.zeros((int(secs * SR), 2), np.float32)
+    t = np.arange(int(SR * 0.5)) / SR
+    for _ in range(26):
+        f = rnd.uniform(180, 420)
+        hit = sum(np.sin(2 * np.pi * f * m * t) * np.exp(-t * (14 + 9 * m)) for m in (1, 2.76, 5.4, 8.9))
+        hit = (hit + np.random.randn(len(t)) * np.exp(-t * 60) * 0.6).astype(np.float32)
+        put(buf, hit * 0.25, rnd.uniform(0, secs - 0.5), rnd.uniform(0.4, 1.0), rnd.uniform(0.3, 0.7))
+    save(name, room(buf, 0.6, 0.2), kbps=48)
 
 
 def murmur(name, secs=14.0, n=26):
@@ -145,6 +168,10 @@ def applause(name, secs=5.0):
     save(name, room(buf, 0.5, 0.2), kbps=48)
 
 
+line('vp_zurueck', 'Bleiben Sie zurück! Hier ist kein Durchgang!', 1)
+line('vp_hause', 'Gehen Sie nach Hause, Bürger. Hier gibt es nichts zu sehen.', 4)
+line('vp_ruhig', 'Bleiben Sie ruhig. Wir haben Anweisung, ruhig zu bleiben.', 4)
+rattle('tor')
 choir('chor_stasi_raus', 'Stasi raus!', 4, 1.45)
 choir('chor_keine_gewalt', 'Keine Gewalt!', 3, 1.7)
 choir('chor_volk', 'Wir sind das Volk!', 3, 1.9)

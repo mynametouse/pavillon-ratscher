@@ -349,6 +349,21 @@ Mal beginnt ein Sprechchor) und „Den Volkspolizisten ansprechen“ am Tor. Tö
 emotional (CC0), Beifall synthetisch; abgespielt über `audio.raw()` (Busse `vox`, `amb`, `sfx`). Gebaut wird erst, wenn der nahe Boden
 am Tor da ist (sonst standen die Leute bis 2 m im Hang). Für Tests: `(await SUHL.load()).jahr1989at(t)` springt im Ablauf.
 
+**Die Menge lebt (Schritt 4, Falko 19.11. 0:xx: „Mission 3 spielbar“ – die Geschichte erzählt Grenzlands Mission 3, die Bühne
+bewegt sich):** die instanzierten Leute schauen jetzt zum Tor (vorher standen sie verkehrt herum: die Geometrie zeigt nach +z, gedreht
+wird um π − hd); im Sprechchor gehen bei 45 % die linke Faust hoch (die Kerze ist in der rechten), die Nahen drängen in Wellen zum Tor
+(`aIn` je Person: Faust, Drang; `uDr`), das geschlossene Tor rüttelt und klirrt. Echte Figuren nicken im Takt und schauen den Spieler
+an, wenn er auf 2,6 m herankommt (`GLFIG.blick`, `geste('nicken')`). Kommt er auf 4,5 m ans Tor, tritt ein Volkspolizist an die
+Gitter, zeigt auf ihn und schickt ihn zurück (drei Sätze mit Stimme; Ereignis `suhl:1989` `{ was: 'tor' }`). Nachzügler (am Rechner
+drei, am Telefon einer) kommen mit Kerzen die Straße herauf. Die Chöre: erst ein Vorrufer allein, dann neun Stimmen dicht beieinander
+(verständlicher als die 16 von Schritt 3).
+
+**Regie für Mission 3:** `SUHL.jahr1989regie({ ruf, tor, drang, ablauf, choere })` → Promise mit `status().jahr1989.life` –
+`ruf: true | 'stasi' | 'gewalt' | 'volk' | 'produktion'` (ein Sprechchor jetzt), `tor: true | false` (auf/zu; die Polizisten treten
+zur Seite), `drang: 0 … 1` (wie stark die Menge zum Tor drängt), `ablauf: false` (der eigene Ablauf mit Hinweisen, Tor und Abordnung
+aus – die Mission erzählt), `choere: false` (keine eigenen Chöre, nur auf `ruf`). Dasselbe beim Einschalten:
+`SUHL.jahr1989(true, { ablauf: false, choere: false })`. `life`: `{ t, step, gate, sounds, deleg, chant, drang, late, vpOut }`.
+
 **Offen:** die instanzierte Menge aus der Nähe noch schlicht (die nächsten 24 sind echte Figuren); die Sprechchöre sind
 gemischte Sprachsynthese (keine Aufnahme von 1989); die Gebäude von 1989, die heute fehlen (abgerissen), sind nicht da; die Abordnung zählt sechs statt 16
 Menschen; Mission 3 kann den Ablauf später mit eigenen Figuren ersetzen.

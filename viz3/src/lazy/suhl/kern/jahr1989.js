@@ -139,7 +139,7 @@ export function jahr1989(ctx, C, ST, api) {
   const at = f => [f.x + (f.ox || 0), f.y + (f.oy || 0), f.oz === undefined ? f.z : f.oz];
   function bodyM(f, m) {
     const [x, y, z] = at(f);
-    _e.set(0, -f.hd, 0, 'YXZ');
+    _e.set(0, Math.PI - f.hd, 0, 'YXZ'); // the geometry faces +z: turned by π − hd it faces hd (by −hd it faced away from the gate)
     _q.setFromEuler(_e);
     _sc.set(f.s, f.s, f.s);
     return m.compose(_v.set(x, z, -y), _q, _sc);
@@ -162,7 +162,7 @@ export function jahr1989(ctx, C, ST, api) {
   function figures(list) {
     // the parts of a figure (metres, facing +z): legs in trousers, a winter coat flaring a little to the knee, arms bent forward,
     // hands, neck and head, a knitted cap – each part one geometry for all (merged by hand: no helper module in the package)
-    const merge = geos => {
+    const merge = (geos, arm) => {
       let nv = 0,
         ni = 0;
       for (const g of geos) {
@@ -171,12 +171,14 @@ export function jahr1989(ctx, C, ST, api) {
       }
       const P = new Float32Array(nv * 3),
         N = new Float32Array(nv * 3),
+        AR = new Float32Array(nv),
         I = new Uint32Array(ni);
       let ov = 0,
         oi = 0;
-      for (const g of geos) {
+      for (const [gi, g] of geos.entries()) {
         P.set(g.attributes.position.array, ov * 3);
         N.set(g.attributes.normal.array, ov * 3);
+        if (arm && arm[gi]) AR.fill(1, ov, ov + g.attributes.position.count);
         const idx = g.index ? g.index.array : Array.from({ length: g.attributes.position.count }, (_, k) => k);
         for (let k = 0; k < idx.length; k++) I[oi + k] = idx[k] + ov;
         ov += g.attributes.position.count;
@@ -186,6 +188,7 @@ export function jahr1989(ctx, C, ST, api) {
       const m = new THREE.BufferGeometry();
       m.setAttribute('position', new THREE.BufferAttribute(P, 3));
       m.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+      m.setAttribute('aArm', new THREE.BufferAttribute(AR, 1));
       m.setIndex(new THREE.BufferAttribute(I, 1));
       return m;
     };
@@ -202,12 +205,15 @@ export function jahr1989(ctx, C, ST, api) {
       return g;
     };
     // legs, shoes and gloves: the dark part
-    const legsG = merge([
-      limb(0.075, 0.065, [-0.1, 0.02, 0], [-0.1, 0.8, 0]),
-      limb(0.075, 0.065, [0.1, 0.02, 0], [0.1, 0.8, 0]),
-      new THREE.SphereGeometry(0.045, 8, 6).translate(-0.12, 1.0, 0.27),
-      new THREE.SphereGeometry(0.045, 8, 6).translate(0.11, 1.02, 0.28),
-    ]);
+    const legsG = merge(
+      [
+        limb(0.075, 0.065, [-0.1, 0.02, 0], [-0.1, 0.8, 0]),
+        limb(0.075, 0.065, [0.1, 0.02, 0], [0.1, 0.8, 0]),
+        new THREE.SphereGeometry(0.045, 8, 6).translate(-0.12, 1.0, 0.27),
+        new THREE.SphereGeometry(0.045, 8, 6).translate(0.11, 1.02, 0.28),
+      ],
+      [0, 0, 0, 1]
+    );
     // the coat: a lathe (hem, waist, chest, shoulders, collar), flattened front to back
     const prof = [
       [0.0, 0.5],
@@ -223,13 +229,16 @@ export function jahr1989(ctx, C, ST, api) {
     const torso = new THREE.LatheGeometry(prof, 12);
     torso.scale(1, 1, 0.62);
     torso.computeVertexNormals();
-    const coatG = merge([
-      torso,
-      limb(0.06, 0.055, [-0.22, 1.36, 0], [-0.23, 1.08, 0.06]),
-      limb(0.055, 0.05, [-0.23, 1.08, 0.06], [-0.13, 1.02, 0.24]),
-      limb(0.06, 0.055, [0.22, 1.36, 0], [0.23, 1.08, 0.06]),
-      limb(0.055, 0.05, [0.23, 1.08, 0.06], [0.12, 1.04, 0.25]),
-    ]);
+    const coatG = merge(
+      [
+        torso,
+        limb(0.06, 0.055, [-0.22, 1.36, 0], [-0.23, 1.08, 0.06]),
+        limb(0.055, 0.05, [-0.23, 1.08, 0.06], [-0.13, 1.02, 0.24]),
+        limb(0.06, 0.055, [0.22, 1.36, 0], [0.23, 1.08, 0.06]),
+        limb(0.055, 0.05, [0.23, 1.08, 0.06], [0.12, 1.04, 0.25]),
+      ],
+      [0, 0, 0, 1, 1]
+    );
     const headG = merge([
       new THREE.SphereGeometry(0.095, 12, 10).scale(0.92, 1.08, 1).translate(0, 1.6, 0.01),
       limb(0.045, 0.045, [0, 1.44, 0], [0, 1.54, 0]),
@@ -242,6 +251,8 @@ export function jahr1989(ctx, C, ST, api) {
       .rotateX(-0.35)
       .scale(0.96, 1.04, 1.05)
       .translate(0, 1.615, -0.012);
+    for (const g of [capG, hairG])
+      g.setAttribute('aArm', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count), 1));
     // a very faint warm glow of their own (the candles light the crowd from below; one borrowed light cannot do that for all) – an
     // orange one made shop-window dummies of them
     const mat = new THREE.MeshStandardMaterial({
@@ -252,16 +263,19 @@ export function jahr1989(ctx, C, ST, api) {
     });
     // a slow sway (weight from one foot to the other) in the vertex shader: by person (aPh – the instance's number differs between the
     // parts, a cap swayed off its head with it), more at the shoulders than at the feet
-    const U = { uT: { value: 0 }, uCh: { value: 0 }, uChF: { value: 4 } };
+    // In a choir (uCh) the left arm of some goes up, a fist on the beat (aArm: the arm's vertices, aIn.x: who); pressing towards the gate
+    // (uDr) the near ones (aIn.y) lean and step forward in waves.
+    const U = { uT: { value: 0 }, uCh: { value: 0 }, uChF: { value: 4 }, uDr: { value: 0 } };
     mat.onBeforeCompile = sh => {
       sh.uniforms.uT = U.uT;
       sh.uniforms.uCh = U.uCh;
       sh.uniforms.uChF = U.uChF;
+      sh.uniforms.uDr = U.uDr;
       sh.vertexShader =
-        'attribute float aPh;\nuniform float uT, uCh, uChF;\n' +
+        'attribute float aPh, aArm;\nattribute vec2 aIn;\nuniform float uT, uCh, uChF, uDr;\n' +
         sh.vertexShader.replace(
           '#include <begin_vertex>',
-          '#include <begin_vertex>\n float ph = aPh; transformed.x += sin( uT * 0.9 + ph ) * 0.018 * transformed.y; transformed.z += sin( uT * 0.63 + ph * 1.3 ) * 0.01 * transformed.y; transformed.y += uCh * 0.045 * max( 0.0, sin( uT * uChF + fract( ph ) * 0.6 ) ) * smoothstep( 0.95, 1.5, transformed.y );'
+          '#include <begin_vertex>\n float ph = aPh; if ( aArm > 0.5 && aIn.x > 0.5 && uCh > 0.01 ) { float a = uCh * ( 1.75 + 0.3 * max( 0.0, sin( uT * uChF + fract( ph ) * 0.6 ) ) ); vec2 v = vec2( transformed.z, transformed.y - 1.36 ); float c = cos( a ), s = sin( a ); transformed.z = v.x * c - v.y * s; transformed.y = 1.36 + v.x * s + v.y * c; } float dr = uDr * aIn.y; transformed.z += dr * ( 0.22 + 0.12 * sin( uT * 1.7 + ph ) ) + dr * 0.06 * transformed.y; transformed.x += sin( uT * 0.9 + ph ) * 0.018 * transformed.y; transformed.z += sin( uT * 0.63 + ph * 1.3 ) * 0.01 * transformed.y; transformed.y += uCh * 0.045 * max( 0.0, sin( uT * uChF + fract( ph ) * 0.6 ) ) * smoothstep( 0.95, 1.5, transformed.y );'
         );
     };
     mat.customProgramCacheKey = () => 'suhl1989-fig';
@@ -278,7 +292,8 @@ export function jahr1989(ctx, C, ST, api) {
     for (const [geo, colOf] of parts) {
       const cnt = list.filter((f, i) => colOf(i)).length,
         me = new THREE.InstancedMesh(geo, mat, Math.max(1, cnt)),
-        ph = new Float32Array(Math.max(1, cnt));
+        ph = new Float32Array(Math.max(1, cnt)),
+        inA = new Float32Array(Math.max(1, cnt) * 2);
       let k = 0;
       list.forEach((f, i) => {
         const c = colOf(i);
@@ -286,10 +301,13 @@ export function jahr1989(ctx, C, ST, api) {
         me.setMatrixAt(k, bodyM(f, m4));
         me.setColorAt(k, col.set(c));
         ph[k] = i * 1.7317;
+        inA[k * 2] = f.raise || 0;
+        inA[k * 2 + 1] = f.push || 0;
         (f.inst || (f.inst = [])).push([me, k]); // where this one is drawn (a real figure folds it away, giving way moves it)
         k++;
       });
       geo.setAttribute('aPh', new THREE.InstancedBufferAttribute(ph, 1));
+      geo.setAttribute('aIn', new THREE.InstancedBufferAttribute(inA, 2));
       me.count = k;
       me.castShadow = false;
       me.receiveShadow = false;
@@ -767,18 +785,23 @@ export function jahr1989(ctx, C, ST, api) {
       !(window.GLSTATE && GLSTATE.on) &&
       G2.tick &&
       (G2.figs || []).every(
-        F => !F.g.visible || NEAR.figs.some(n => n.F === F) || NEAR.vp.some(n => n.F === F) || LV.deleg.includes(F)
+        F =>
+          !F.g.visible ||
+          NEAR.figs.some(n => n.F === F) ||
+          NEAR.vp.some(n => n.F === F) ||
+          LV.deleg.includes(F) ||
+          LV.late.some(n => n.F === F)
       )
     )
       G2.tick(dt);
     // the candles: in the fist (a little before and above the wrist), upright, flickering
     const fl = 0.85 + 0.2 * Math.sin(S.t * 11) * Math.sin(S.t * 6.7);
-    for (const n of NEAR.figs)
+    for (const n of NEAR.figs.concat(LV.late))
       if (n.c) {
         const hd = n.F.hd || 0;
         n.c.bone.getWorldPosition(_s3);
         n.c.g.position.set(_s3.x + Math.sin(hd) * 0.05, _s3.y + 0.03, _s3.z - Math.cos(hd) * 0.05);
-        n.c.g.visible = n.F.g.visible && !!n.spot;
+        n.c.g.visible = n.F.g.visible && (!!n.spot || !!n.late);
         n.c.flame.scale.set(1, fl + 0.1 * Math.sin(S.t * 17 + n.k), 1);
         n.c.glow.scale.setScalar(0.17 * (0.9 + 0.15 * fl));
       }
@@ -1072,7 +1095,22 @@ export function jahr1989(ctx, C, ST, api) {
   //     and at the gate (the Volkspolizist answers).
   // Sounds: tools/suhl/ton1989.py → snd/suhl89/ (Piper voices: Multilingual LibriSpeech CC BY 4.0, Thorsten CC0; applause synthesised).
   // Without sound the choirs show as a line at the bottom. ----
-  const SND = ['chor_stasi_raus', 'chor_keine_gewalt', 'chor_volk', 'chor_produktion', 'menge', 'megafon', 'beifall'],
+  const SND = [
+      'chor_stasi_raus',
+      'chor_keine_gewalt',
+      'chor_volk',
+      'chor_produktion',
+      'menge',
+      'megafon',
+      'beifall',
+      'tor',
+      'vp_zurueck',
+      'vp_hause',
+      'vp_ruhig',
+    ],
+    VPSND = ['vp_zurueck', 'vp_hause', 'vp_ruhig'],
+    LATE_N = ctx.COARSE ? 1 : 3,
+    RUF = { stasi: 'chor_stasi_raus', gewalt: 'chor_keine_gewalt', volk: 'chor_volk', produktion: 'chor_produktion' },
     CHANT = {
       chor_stasi_raus: [1.45, '„Stasi raus! Stasi raus!“'],
       chor_keine_gewalt: [1.7, '„Keine Gewalt! Keine Gewalt!“'],
@@ -1097,6 +1135,15 @@ export function jahr1989(ctx, C, ST, api) {
       said: 0,
       vpSaid: 0,
       acts: false,
+      drang: 0,
+      dr: 0,
+      rattleT: 0,
+      rattling: false,
+      late: [],
+      lateT: 4,
+      vpOut: null,
+      vpT: 0,
+      lookT: 0,
     };
   const LINES = [
     '„Seit heute Mittag heißt es: Die da drin vernichten ihre Akten. Deshalb sind wir hier.“',
@@ -1111,9 +1158,9 @@ export function jahr1989(ctx, C, ST, api) {
     '„Meine Tochter ist im Sommer über Ungarn rüber. Ich bleibe – hier muss sich was ändern.“',
   ];
   const VPLINES = [
+    'Volkspolizist: „Bleiben Sie zurück! Hier ist kein Durchgang!“',
     'Volkspolizist: „Gehen Sie nach Hause, Bürger. Hier gibt es nichts zu sehen.“',
-    'Volkspolizist: „Wir haben Anweisung, ruhig zu bleiben. Bleiben Sie es auch.“',
-    'Volkspolizist: „Ich weiß auch nicht mehr als Sie.“',
+    'Volkspolizist: „Bleiben Sie ruhig. Wir haben Anweisung, ruhig zu bleiben.“',
   ];
   const say = (t, ms) => {
     if (ctx.toast) ctx.toast(t, ms);
@@ -1213,6 +1260,9 @@ export function jahr1989(ctx, C, ST, api) {
     LV.chant = d;
     LV.next = 25 + Math.random() * 25;
     if (S.u) S.u.uChF.value = (2 * Math.PI) / CHANT[n][0];
+    const G2 = FG();
+    if (G2 && G2.geste)
+      for (const m of NEAR.figs) if (m.spot && Math.random() < 0.5) G2.geste(m.F, 'nicken', { sec: 1.2 });
     if (!quiet && LV.quiet <= 0 && ctx.toast) ctx.toast('Sprechchor: ' + CHANT[n][1], 3500);
     return true;
   }
@@ -1259,7 +1309,11 @@ export function jahr1989(ctx, C, ST, api) {
       r: 3,
       label: () => (LV.gate < 0.05 ? 'Den Volkspolizisten ansprechen' : null),
       pos: () => [tor[0], tor[1], gz(tor[0], tor[1]) + 1],
-      run: () => say(VPLINES[LV.vpSaid++ % VPLINES.length], 5000),
+      run: () => {
+        const k = LV.vpSaid++ % VPLINES.length;
+        play(VPSND[k], 1.1);
+        say(VPLINES[k], 5000);
+      },
     });
   }
   // the delegation: six of the crowd in front of the gate go in (the Volkspolizei step aside) and later come back into the crowd
@@ -1326,10 +1380,26 @@ export function jahr1989(ctx, C, ST, api) {
     LV.chant -= dt;
     if (d < 250) {
       LV.t += dt;
-      while (LV.step < STEPS.length && LV.t >= STEPS[LV.step][0]) STEPS[LV.step++][1]();
-      if (LV.chant <= 0 && (LV.next -= dt) <= 0) chant();
+      if (S.ablauf !== false) while (LV.step < STEPS.length && LV.t >= STEPS[LV.step][0]) STEPS[LV.step++][1]();
+      if (S.choere !== false && LV.chant <= 0 && (LV.next -= dt) <= 0) chant();
+      people(dt);
     }
     if (S.u) S.u.uCh.value += ((LV.chant > 0.5 ? 1 : 0) - S.u.uCh.value) * Math.min(1, dt * 3);
+    // pressing towards the gate: in a choir, or as the mission asks (regie drang); the shut gate rattles under it
+    LV.dr +=
+      (Math.max(LV.drang, LV.chant > 0.5 ? 0.55 : 0) * (LV.gate < 0.05 ? 1 : 0.3) - LV.dr) * Math.min(1, dt * 1.5);
+    if (S.u) S.u.uDr.value = LV.dr;
+    const rattle = LV.dr > 0.35 && LV.gate < 0.05 && d < 250;
+    if (rattle || LV.rattling) {
+      for (const [leaf, side, r0] of LEAVES)
+        leaf.rotation.y = r0 + (rattle ? Math.sin(S.t * 29 + side * 2) * 0.012 * LV.dr : 0);
+      LV.rattling = rattle;
+      if (rattle && (LV.rattleT -= dt) <= 0) {
+        play('tor', 0.8);
+        LV.rattleT = 2.2 + Math.random() * 2.5;
+      }
+      markDirty(true);
+    }
     // the gate swings inward; the Volkspolizei step aside while it is open
     const g0 = LV.gate;
     LV.gate += Math.max(-dt * 0.3, Math.min(dt * 0.3, LV.gateTo - LV.gate));
@@ -1349,6 +1419,124 @@ export function jahr1989(ctx, C, ST, api) {
       markDirty(true);
     }
   }
+
+  // the people near the walker look at him (and nod now and then); at the shut gate a Volkspolizist steps up to the bars, points and
+  // sends him back; latecomers walk up the street with their candles (Falko 19.11.: „ich kann einfach zu den Polizisten laufen und sie
+  // tun nichts, alles ist sehr statisch“)
+  function people(dt) {
+    const G2 = FG(),
+      o = KERN.where ? KERN.where() : null;
+    if (!G2 || !o) return;
+    if ((LV.lookT -= dt) <= 0 && G2.blick) {
+      LV.lookT = 0.5;
+      for (const n of NEAR.figs) {
+        if (!n.spot) continue;
+        const d = Math.hypot(n.F.x - o[0], n.F.y - o[1]);
+        if (d < 2.6 && !n.look) {
+          n.look = true;
+          G2.blick(n.F, 'spieler');
+          if (Math.random() < 0.5 && G2.geste) G2.geste(n.F, 'nicken', { sec: 1 });
+        } else if (d > 3.4 && n.look) {
+          n.look = false;
+          G2.blick(n.F, null);
+        }
+      }
+    }
+    // the Volkspolizei
+    const dg = Math.hypot(o[0] - GATE[0], o[1] - GATE[1]);
+    LV.vpT -= dt;
+    if (dg < 4.5 && LV.gate < 0.05 && LV.vpT <= 0) {
+      LV.vpT = 14;
+      const v = NEAR.vp
+        .filter(n => n.F && n.F.g.visible && n.spot)
+        .sort((a, b) => Math.hypot(a.F.x - GATE[0], a.F.y - GATE[1]) - Math.hypot(b.F.x - GATE[0], b.F.y - GATE[1]))[0];
+      if (v && G2.go) {
+        const side = (o[0] - GATE[0]) * ACROSS[0] + (o[1] - GATE[1]) * ACROSS[1],
+          w = Math.max(-2.5, Math.min(2.5, side));
+        G2.go(
+          v.F,
+          [[GATE[0] + INWARD[0] * 3.8 + ACROSS[0] * w, GATE[1] + INWARD[1] * 3.8 + ACROSS[1] * w]],
+          1.3,
+          () => {
+            if (G2.blick) G2.blick(v.F, 'spieler');
+            if (G2.geste) G2.geste(v.F, 'zeigen', { ziel: 'spieler', sec: 2.4 });
+          }
+        );
+        LV.vpOut = v;
+      }
+      const k = LV.vpSaid++ % VPLINES.length;
+      play(VPSND[k], 1.15);
+      say(VPLINES[k], 5000);
+      if (KERN.emit) KERN.emit('suhl:1989', { was: 'tor' });
+    }
+    if (LV.vpOut && (dg > 9 || LV.gate > 0.05)) {
+      const v = LV.vpOut;
+      LV.vpOut = null;
+      if (G2.blick) G2.blick(v.F, null);
+      if (v.spot && LV.gate < 0.05)
+        G2.go(v.F, [[v.spot.x, v.spot.y]], 1.0, () => v.spot && G2.place(v.F, v.spot.x, v.spot.y, v.spot.hd));
+    }
+    // latecomers
+    if ((LV.lateT -= dt) > 0 || !S.list || !G2.go) return;
+    LV.lateT = 8 + Math.random() * 9;
+    if (LV.late.length >= LATE_N) {
+      const old = LV.late.find(n => n.arrived && Math.hypot(n.F.x - o[0], n.F.y - o[1]) > 30);
+      if (!old) return;
+      if (old.c && old.c.g.parent) old.c.g.parent.remove(old.c.g);
+      G2.drop(old.F);
+      LV.late = LV.late.filter(n => n !== old);
+    }
+    const L = S.streetL || [],
+      onStreet = (x, y) =>
+        L.some(([ax, ay, bx, by, w]) => {
+          const ex = bx - ax,
+            ey = by - ay,
+            u = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / (ex * ex + ey * ey || 1)));
+          return Math.hypot(ax + ex * u - x, ay + ey * u - y) < w / 2 + 5;
+        }),
+      from = S.list.filter(f => f.demo && f.d > 70 && f.d < 115),
+      to = S.list.filter(f => f.demo && f.d > 18 && f.d < 32);
+    for (let tries = 0; tries < 12 && from.length && to.length; tries++) {
+      const a = from[Math.floor(Math.random() * from.length)],
+        b = to[Math.floor(Math.random() * to.length)];
+      if (![0.25, 0.5, 0.75].every(t => onStreet(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t))) continue;
+      const id = castOf(Math.floor(Math.random() * PEOPLE.length));
+      if (!G2.avail(id)) return;
+      G2.make(id, { era: '1989' })
+        .then(F => {
+          if (!F) return;
+          if (!S.on || !S.built) return G2.drop(F);
+          F.lampe = true;
+          F.sees = false;
+          const n = {
+            F,
+            k: 100 + Math.floor(Math.random() * 100),
+            spot: null,
+            late: true,
+            arrived: false,
+            c: candleOf(F),
+          };
+          LV.late.push(n);
+          G2.place(F, a.x, a.y, Math.atan2(b.x - a.x, b.y - a.y));
+          G2.go(F, [[b.x + 0.6, b.y + 0.6]], 1.05, () => {
+            n.arrived = true;
+            G2.place(F, F.x, F.y, Math.atan2(GATE[0] - F.x, GATE[1] - F.y));
+          });
+        })
+        .catch(() => {});
+      return;
+    }
+  }
+  // what a mission asks of the night (SUHL.jahr1989regie): { ruf: true | 'stasi' | 'gewalt' | 'volk' | 'produktion', tor: true | false,
+  // drang: 0 … 1, ablauf: false (its own notes, gate and delegation off), choere: false (no choirs of their own) }
+  S.regie = (o = {}) => {
+    if (o.ablauf !== undefined) S.ablauf = !!o.ablauf;
+    if (o.choere !== undefined) S.choere = !!o.choere;
+    if (o.tor !== undefined) LV.gateTo = o.tor ? 1 : 0;
+    if (o.drang !== undefined) LV.drang = Math.max(0, Math.min(1, +o.drang || 0));
+    if (o.ruf) chant(RUF[o.ruf] || null, false);
+    return S.state().life;
+  };
   // for the tests and the inspections: the evening from a given second on
   S.lifeAt = t => {
     LV.t = t;
@@ -1362,8 +1550,29 @@ export function jahr1989(ctx, C, ST, api) {
       } catch (e) {}
     const G2 = FG();
     for (const F of LV.deleg) if (G2) G2.drop(F);
+    for (const n of LV.late) {
+      if (n.c && n.c.g.parent) n.c.g.parent.remove(n.c.g);
+      if (G2) G2.drop(n.F);
+    }
     acts(false);
-    Object.assign(LV, { t: 0, step: 0, next: 12, chant: 0, quiet: 0, loop: null, deleg: [], gate: 0, gateTo: 0 });
+    Object.assign(LV, {
+      t: 0,
+      step: 0,
+      next: 12,
+      chant: 0,
+      quiet: 0,
+      loop: null,
+      deleg: [],
+      gate: 0,
+      gateTo: 0,
+      drang: 0,
+      dr: 0,
+      rattling: false,
+      late: [],
+      lateT: 4,
+      vpOut: null,
+      vpT: 0,
+    });
   }
 
   function build() {
@@ -1391,6 +1600,7 @@ export function jahr1989(ctx, C, ST, api) {
         y: p.y,
         z: p.z,
         hd,
+        d: p.d,
         s: 0.93 + hh(i * 1.9) * 0.14,
         coat: pick(COATS, r),
         legs: LEGS[Math.floor(hh(i * 5.7) * LEGS.length)],
@@ -1398,6 +1608,8 @@ export function jahr1989(ctx, C, ST, api) {
         cap: hh(i * 4.1) < 0.45 ? CAPS[Math.floor(hh(i * 6.1) * CAPS.length)] : null,
         hair: HAIR[Math.floor(hh(i * 9.7) * HAIR.length)],
         candle: hh(i * 8.9) < 0.42,
+        raise: hh(i * 13.7) < 0.45 ? 1 : 0,
+        push: Math.max(0, Math.min(1, (45 - p.d) / 41)),
         demo: true,
       };
     });
@@ -1502,12 +1714,15 @@ export function jahr1989(ctx, C, ST, api) {
   S.set = (on, o = {}) => {
     on = !!on;
     if (on && o.spieler) S.spieler = true;
+    if (on && o.ablauf === false) S.ablauf = false;
+    if (on && o.choere === false) S.choere = false;
     if (on === S.on && !o.again) return S.state();
     S.on = on;
     C.jahr(on ? 1989 : 0);
     if (!on) {
       S.nacht = null;
       S.spieler = false;
+      S.ablauf = S.choere = undefined;
       clear();
       buses(false);
       return S.state();
@@ -1584,9 +1799,12 @@ export function jahr1989(ctx, C, ST, api) {
       t: Math.round(LV.t),
       step: LV.step,
       gate: +LV.gate.toFixed(2),
-      chants: Object.keys(LV.buf).length,
+      sounds: Object.keys(LV.buf).length,
       deleg: LV.deleg.length,
       chant: LV.chant > 0 ? LV.last : '',
+      drang: +LV.dr.toFixed(2),
+      late: LV.late.length,
+      vpOut: !!LV.vpOut,
     },
     buses: BH.on,
     err: S.err || NEAR.err,

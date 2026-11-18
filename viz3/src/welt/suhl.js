@@ -160,6 +160,8 @@ export const SUHL = (() => {
   // { nacht }) → Promise of { on, built, people, candles, banners, fence, cars, err }; false gives everything back. To look at it without
   // the mission: the scene „Suhl 1989: Nacht am Tor“ (menu Szenen, ?szenario=suhl1989, or ?suhl1989=1) – below the places to jump to.
   S.jahr1989 = (on, o) => S.load().then(p => (p.jahr1989 ? p.jahr1989(on, o) : null));
+  // what a mission asks of the night: { ruf, tor, drang, ablauf, choere } (docs/features/suhl.md 7a)
+  S.jahr1989regie = o => S.load().then(p => (p.jahr1989regie ? p.jahr1989regie(o) : null));
   Object.defineProperty(S.data, 'meta', { get: () => (api ? api.data.meta : null) });
   S.status = () =>
     Object.assign(
