@@ -116,6 +116,7 @@ Alles ist ab dem Laden der Seite aufrufbar. Vor dem Bau der Zone antworten Abfra
 | `SUHL.data.building(id)`, `roofPlanes(id)`, `each(gebiet, fn)`, `meta` | da: Zahlen aus dem Feld `d` des Datensatzes (in UTM gerechnet, echte m²): `footprint` (`fa`), `floorArea` (`gfa`), `roofArea` (`rf`), `levels`; `volume`, `roofByDir`, `roofUsable`, `residents`, `heat`, `pvKwp` sind `null`, bis die Daten sie führen. Dachebenen in Modellkoordinaten. `data.quarter(id)` = `null`, bis `viertel.json` kommt |
 | `SUHL.ownFade(x, y)` | 0 auf Suhls eigenem Boden, 1 ab 100 m außerhalb (für Zonen-Abfragen; die Fahrt fragt über `FAHRT.ground`, Abschnitt 8) |
 | `SUHL.status()` | da; neu: `live` (was das Paket erzeugt und noch nicht freigegeben hat), `stadt.gone`, `stadt.z0`, `strassen.given` |
+| `SUHL.jahr1989(on, { nacht })` | da (Abschnitt 7a): die Nacht am Tor 1989 an und aus; Promise mit dem Stand (wie `SUHL.status().jahr1989`); `?suhl1989=1` schaltet sie ein, sobald Suhl gebaut ist |
 | Ereignisse | `suhl:built`, `suhl:freed`, `suhl:tile`, `suhl:quarter`, `suhl:changed` |
 | Dienste für `KERN` | `free` (10), `pushOut` (15: Wandfüße und Stämme), `place` (20: „Steinweg, Suhl“), `ground` (8: Straßenflächen, heute leer; 3: Fernboden, bis die nahen Kacheln da sind), `terrain` (3) |
 
@@ -297,6 +298,38 @@ index 2e739ac6..215d18e5 100644
 
 M1 (Karte) ist später dran und nicht gebaut.
 
+## 7a Suhl 1989 – die Nacht am Tor
+
+Für Mission 3 des Grenzland-Kapitels 2, „Die Nacht am Tor“ (Rückblende auf den 4./5.12.1989, gewaltfrei, niemand stirbt im Bild),
+eine Schicht auf dem Zwilling: `viz3/src/lazy/suhl/kern/jahr1989.js` (Quellen im Kopf der Datei: bpb, Bundesarchiv).
+
+**Schnittstelle (für den Grenzland-Chat):**
+- `SUHL.jahr1989(true, { nacht })` schaltet ein, `SUHL.jahr1989(false)` gibt alles zurück; beides gibt ein Promise mit dem Stand.
+  Ohne `nacht` bleibt die Uhr der Mission überlassen; mit `nacht: true` (zum Ansehen ohne Mission) wird der Spieltag zum 4.12.1989
+  (`DN.e0`) und die Uhr 20:30, sie läuft dann in Echtzeit (`CLOCK.focus('suhl1989')`) und springt nach 23 Uhr auf 20:30 zurück.
+- `SUHL.status().jahr1989`: `{ on, built, people, candles, banners, fence, cars, wait, real, realPlaced, err }` – `wait` nennt, worauf
+  die Schicht noch wartet (die Hölderlinstraße aus den Straßenkacheln; alle 2 s ein neuer Versuch), `real`/`realPlaced` die echten
+  Figuren in der Nähe.
+- `?suhl1989=1` an der Adresse: einschalten, sobald Suhl gebaut ist (mit `nacht`).
+- Ereignis `suhl:changed` mit `{ jahr: 1989 }` bzw. `{ jahr: null }`, wenn die Gebäude von 1991 an aus- oder wieder eingeblendet werden.
+
+**Was zu sehen ist:** an der Bezirksverwaltung der Staatssicherheit (Hölderlinstraße, Tor an der nördlichen Zufahrt) Zaun mit Pfosten
+und Gitterfeldern, das Tor mit Pfeilern, Lampen und zwei Flügeln, dahinter sechs Volkspolizisten; davor auf der Straße und den Seitenwegen
+rund 1 700 Menschen, die zum Tor schauen, vier von zehn mit einer Kerze; sechs Transparente mit den belegten Losungen („STASI RAUS – ES IST
+AUS!“, „KEINE GEWALT!“ …); Trabant, Wartburg und Barkas 95–170 m die Straße hinunter (Grenzlands Modelle, `GLAUTO`); Gebäude der
+Bauzeit ab 1991 ausgeblendet (`era` 4, in Kachel und Abfragen). Die nächsten 24 Menschen (am Telefon 6) sind echte Figuren aus
+Grenzlands Bausatz `GLFIG` in Kleidung von 1989 (Mäntel, Steppjacken, Wattejacke, Parka; Dauerwelle, Vokuhila, Schnauzer, große Brillen,
+Hut, Schiebermütze, Kopftuch, Pudelmütze), die Kerze in der rechten Hand vor der Brust (die Haltung von Grenzlands Taschenlampe,
+`F.lampe`); sie wechseln auf die Plätze, die der Kamera dann am nächsten sind, und werden ab 160 m freigegeben. Die übrigen sind
+instanziert (Beine, Mantel, Kopf, Mütze oder Haar; wiegen sich leicht). Zwei geliehene Lichter (`KERN.lights.borrow`, `suhl:1989`):
+die Torlampe und der warme Schein der Kerzen über der Menge.
+
+**Bewegt:** außerhalb von Grenzland ruft die Schicht `GLFIG.tick` selbst (nur wenn keine fremden Figuren stehen); im Modus tut es
+Grenzlands Schleife.
+
+**Offen:** Figuren in der Nähe ohne Kollision; die instanzierte Menge aus der Nähe noch schlicht; keine Sprechchöre (Ton beim
+Grenzland-Chat); die Gebäude von 1989, die heute fehlen (abgerissen), sind nicht da.
+
 ## 8 Straßen: wer sie zeichnet
 
 Suhl baut kein zweites Straßensystem. `kern/strassen.js` kennt zwei Wege und wählt selbst:
@@ -379,6 +412,7 @@ Kacheln).
 | `uebergabe` | die Straßen gehen an das Straßensystem (Abschnitt 8); eigene Seite |
 | `anfahrt` | mit `?suhl=1`: die Anfahrt-Wege kommen in die Fahrt, sobald sie erwacht; die Karte „Nach Suhl“ (eine Karte zur Zeit mit „Neu hier?“), der Chip, „Suhl“ unter Hingehen; die Karte schließt das Menü und führt hin; eigene Seite |
 | `bus` | Standard-Version: Linie 203 fährt von Ratscher nach Suhl, die Stadtbusse fahren, Haltestelle Zentrum; mit `?suhl=0` der Fahrplan der Welt; eigene Seiten |
+| `jahr1989` | die Nacht am Tor: ein und aus, der 4.12.1989 um 20:30, Zaun, sechs Transparente, Menge, Kerzen, echte Figuren in der Nähe (mit dem Probesatz, dem die Hölderlinstraße fehlt: die Schicht wartet ohne Fehler); aus gibt das Datum zurück; eigene Seite |
 | `tag1` | die Prüfungen des ersten Tages (nicht im Standardlauf) |
 
 Bei GitHub (`feat.yml`, je Zeile von `tests.txt` ein Job): `suhl` in drei Jobs, dazu `schleusingen`, `vessra`, `fahrt`, `gpu`,

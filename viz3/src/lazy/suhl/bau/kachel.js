@@ -235,6 +235,11 @@ export function kachel(m, F) {
   const recs = (m.recs || []).concat(m.extra || []);
   for (let i = 0; i < recs.length; i++) {
     let rec = recs[i];
+    // Suhl 1989: what was built from 1991 is not there yet
+    if (m.vor && m.vor < 1991 && rec && (rec.era | 0) === 4) {
+      foot.push(0, 0, 0, 0);
+      continue;
+    }
     const pt = rec && patch[rec.id];
     if (pt) {
       if (pt.hidden) {
