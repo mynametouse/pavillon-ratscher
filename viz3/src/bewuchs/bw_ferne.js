@@ -155,7 +155,7 @@ export const BWFERNE = (() => {
     S.wood = null;
     if (!kw || !kw.patch || !P) return;
     W.y = kw.patch.size;
-    W.z = 1;
+    W.z = 0.85;
     // the carpet plant: in leaf today? (the mean of its four groups of plants); its patches as the plants take them
     let leaf = 0;
     if (sp) for (let k = 0; k < 4; k++) if (BWBLUME.phaseAt(sp, doy, k)) leaf += 0.25;
@@ -164,16 +164,15 @@ export const BWFERNE = (() => {
     if (a) H[0].set(-1, BWPHAENO.fieldT(a[0]), BWBLUME.fieldNo(id), a[1] || 1);
     else H[0].set(-1, -1, 0, 1);
     // (seen from above a carpet is leaves and the dark between them: its colour a little darker than the leaf's)
-    const dull = (c, k, g) => {
-      const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2];
-      return c.map(v => (v + (l - v) * g) * k);
-    };
-    const c0 = dull(cc, 0.5, 0.35);
+    // (… and a quarter of the litter's brown in it: twigs and the floor between the leaves – warm, not the grey-green of paint)
+    const LIT = [0.139, 0.071, 0.017],
+      dull = (c, k, g) => c.map((v, i) => v * k * (1 - g) + LIT[i] * g);
+    const c0 = dull(cc, 0.62, 0.25);
     C[0].set(c0[0], c0[1], c0[2], a ? 0.8 * leaf : 0);
     // the grasses: their colour of today, as dense as the blades stand in their patches (thin tussocks: seen from above mostly litter)
     const gc = BWPHAENO.colour(kw, doy).map(lin);
     H[1].set(BWPHAENO.fieldT(1 - kw.patch.grass), 2, 0, 1);
-    const c1 = dull(gc, 0.6, 0.3);
+    const c1 = dull(gc, 0.7, 0.2);
     C[1].set(c1[0], c1[1], c1[2], Math.min(0.5, 0.7 * kw.dens));
     S.wood = { size: W.y, carpet: id || '', leaf, cover: [+C[0].w.toFixed(2), +C[1].w.toFixed(2)] };
   }
@@ -355,7 +354,7 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
         float in0 = smoothstep( -0.05, 0.05, uBwFarH[ 0 ].y - f0 ) * smoothstep( -0.05, 0.05, f0 - uBwFarH[ 0 ].x );
         float in1 = smoothstep( -0.05, 0.05, bwField( p, uBwFarW.y, vec2( 23.7, 7.1 ) ) - uBwFarH[ 1 ].x ) * ( 1.0 - in0 );
         // (mottled – no carpet is closed: tufts of a foot or two, the litter between them; and no two of one green)
-        float fl2 = min( 1.0 / sinEl, 3.0 ), mo = bwFB( p * 2.9 + 4.1 ) * ( 0.45 + 0.55 * bwFB( p * 7.7 + 1.3 ) ), fine = 0.7 + 0.6 * bwFB( p * 1.1 + 2.7 );
+        float fl2 = min( 1.0 / sinEl, 3.0 ), mo = bwFn( p / 1.25 + 4.1 ) * ( 0.45 + 0.55 * bwFn( p / 0.42 + 1.3 ) ), fine = 0.7 + 0.6 * bwFB( p * 1.1 + 2.7 );
         float c0 = uBwFarHc[ 0 ].a * in0 * smoothstep( 0.05, 0.5, mo ), c1 = uBwFarHc[ 1 ].a * in1 * smoothstep( 0.1, 0.6, mo ) * smoothstep( 6.0, 30.0, dist );
         float a0 = ( 1.0 - pow( 1.0 - c0, fl2 ) ) * uBwFarW.z, a1 = ( 1.0 - pow( 1.0 - c1, fl2 ) ) * uBwFarW.z;
         vec3 hc = ( uBwFarHc[ 0 ].rgb * a0 + uBwFarHc[ 1 ].rgb * a1 ) / max( a0 + a1, 1e-4 ) * fine;

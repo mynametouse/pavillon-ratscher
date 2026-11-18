@@ -780,7 +780,9 @@ void flPlant( out vec3 P ) {
   // feat/fotorealismus (foto-wald): no two plants one green – each a little lighter or darker; in a wood more: dark and light
   // ones, some yellowing, a few fronds brown with age (a: how much of the drawing's colour turns to that brown)
   float rc = fract( rS * 191.7 + th * 3.1 ), ry = fract( rS * 357.3 + th * 7.7 );
-  vFlTint.rgb *= mix( vec3( mix( 0.9, 1.08, rc ) ), mix( 0.55, 1.0, rc ) * mix( vec3( 0.9, 1.0, 0.84 ), vec3( 1.13, 1.0, 0.72 ), ry * ry ), wood );
+  // (a wood's plants darker and less green than the drawings: leaves grown in the shade, and small in the picture each is a tuft
+  // of one colour – the drawing's mean, without its own dark between the leaves)
+  vFlTint.rgb *= mix( vec3( mix( 0.9, 1.08, rc ) ), mix( 0.4, 0.74, rc ) * vec3( 1.05, 0.9, 1.08 ) * mix( vec3( 0.9, 1.0, 0.84 ), vec3( 1.13, 1.0, 0.72 ), ry * ry ), wood );
   vFlTint.a = wood * step( fract( rS * 517.3 + th * 2.3 ), 0.05 ) * mix( 0.5, 0.85, ry );
   // (z: a wood's plant keeps its cover when it is small in the picture – the fragment shader's lines before the alpha test)
   vFlL = vec3( wl.xy, wood * uFlMip );

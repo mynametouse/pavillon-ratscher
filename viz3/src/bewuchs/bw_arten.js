@@ -1795,7 +1795,7 @@ export const BWARTEN = (() => {
       // it, male fern in loose groups (two on a m² on a tenth of it; before: 1.5 ferns on every m² – an even carpet), foxglove
       // and nettle rare, in small groups (clearings, rich spots)
       blumen: { heidelbeere: 1.4, farn: 0.18, fingerhut: 0.012, brennnessel: 0.015 },
-      schirm: { sonne: 0.42, himmel: 0 },
+      schirm: { sonne: 0.38, himmel: 0 },
       flecken: {
         groesse_m: 14,
         gras: 0.4,
