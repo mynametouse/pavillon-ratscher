@@ -78,6 +78,55 @@ Stadtzone und Kloster Veßra – im selben Format, im selben Index (Abschnitt �
   Block Veßra 2,6 MB (132), die Orte außerhalb 1,6 MB (42). Alle 895 Zellen zusammen 28,4 MB (Ø 32 KB), `index.json` 114 KB; die
   größten 4 × 4 Zellen 1,14 MB (Themar). Bauen 21 min, Downloads 16 min (Luftbilder 0,3 GB, 23 DLM-Blöcke, 67 OSM-Kacheln).
 
+### Teil e: gestaltete Flächen (18.11.)
+
+Was das Luftbild nicht trennt, aber jedes Dorf hat – nach Regeln, mit einer festen Zufallszahl je Haus bzw. Ort (`gestaltung.h01`: dasselbe
+Haus bekommt in jedem Bau und in beiden Zellen, die es berührt, dieselben Beete). `gestaltung.py`, aufgerufen in `klassen.classify` vor
+den Gebäuden; die modellierte Zone des Gartens bleibt der Gartenkarte.
+
+- **Wohnhäuser:** ETHOS-Umrisse der Art 0 (`dist/gebaeude/ratscher.json`, `z/`), OSM-Gebäude, die kein Schuppen, keine Scheune, Garage,
+  Halle … sind, und die Häuser der Stadtzonen; 40–400 m², nicht lang (Seiten ≤ 2,6 : 1); ein Umriss je Ort (ETHOS vor OSM vor Stadt).
+- **Vorgartenbeete (13)**, nur in 0,5-m-Zellen: bei 60 % der Häuser entlang jeder Wand, die einer Straße (Haupt-, Kreis-, Ortsstraße,
+  Weg; nicht Autobahn, Zufahrt, Feldweg) zugewandt ist – die Straße höchstens 25 m vor der Wand –, ein Streifen von 0,6–1,5 m (je Haus),
+  0,3 m vor den Ecken endend, nur wo die Karte Rasen (1) oder öffentliches Grün (2) hatte. Dazu OSM `landuse=flowerbed` und öffentliche
+  `leisure=garden` (ihr Grün).
+- **Gemüsebeete (14):** bei 30 % der Häuser ein Rechteck von 10–40 m² (Seiten 1,3 : 1 bis 2,5 : 1) hinter dem Haus (von der nächsten
+  Straße abgewandt, 3, 6 oder 10 m hinter der Rückwand, seitlich versetzt), wenn es zu ≥ 90 % auf Rasen liegt und 1 m darum weder Haus noch
+  Fahrbahn noch Wasser ist. In Kleingärten (OSM `landuse=allotments`) 30 % ihres Rasens als Beete von 3 × 8 m entlang der langen Seite der
+  Anlage. Die umgegrabenen Flecken aus dem Aprilbild bleiben.
+- **Verkehrsgrün (15):** die Mitte von Kreiseln (OSM `junction=roundabout`, die Fläche im Ring), Verkehrsinseln (`traffic_calming=island`,
+  `area:highway=traffic_island`), Mittelstreifen zwischen zwei Einbahn-Fahrbahnen (Autobahn, Haupt- und Kreisstraßen; Lücken bis 6 m
+  geschlossen), das Grün auf Parkplätzen (`amenity=parking`) – jeweils, wo die Karte Grün hatte (Rasen, Wiese, Bankett, Saum, Gebüsch …).
+- **Friedhof (16)** wie bisher; OSM-Wege im Friedhof (Fußwege, Pfade, Zufahrten, Feldwege mit ihren Breiten) sind 0.
+- **Fläche vorher → nachher** (alle 895 Zellen): Beet 0 → 2,2 ha, Gemüsebeet 3,5 → 11,8 ha, Verkehrsgrün 0,5 → 3,1 ha, Friedhof 6,2 ha
+  (die Wege darin kaum, sie waren als Fahrbahn schon 0); dafür Zierrasen 543,6 → 532,5 ha, öffentliches Grün 43,2 → 41,9 ha. Quadrat:
+  Beet 0,2 ha, Gemüse 0,1 → 1,0 ha, Verkehrsgrün 0,04 → 1,5 ha (Parkplatzgrün an der Talsperre); Strecken: Beet 1,2 ha, Gemüse 2,6 →
+  8,9 ha (Kleingärten); Welt: Beet 0,8 ha, Gemüse 0,8 → 1,9 ha. Nebenbei in den Strecken +3,4 ha Waldboden, −3 ha Mähwiese: der
+  OSM-Cache hat seit Teil c mehr Kacheln, große Wald-Multipolygone am Rand der Strecken sind jetzt vollständig.
+- Neubau aller 895 Zellen 52 min; 225 PNGs mit geänderter Karte geschrieben, 133 weitere unterschieden sich nur im Wuchs durch die auf 3
+  Stellen gespeicherten Spannen von Teil a/b und blieben (`bauen.same_map`: gleiche Klassen, Wuchs höchstens eine Stufe in ≤ 2 % der
+  Punkte – so schreibt auch `save_if_changed` künftig nur echte Änderungen).
+
+### Teil d: die Feldfrüchte (18.11.)
+
+Die Ackerpunkte (9) bekommen die Frucht ihres Feldes, aus dem Luftbild ihres Flugtags (Farbe und Infrarot) – ein Feld, eine Klasse: das
+zusammenhängende Ackerland einer Zelle zwischen den Ackerrändern (10), geteilt an den OSM-Flächen `landuse=farmland` und an der
+Flugtag-Grenze (N 5 597 000: nördlich der 15.05.2024, südlich der 07.04.2024; ganz im Westen auch nördlich April); entscheidend sind die
+Mediane des Feldes (NDVI, Anteil offenen Bodens mit NDVI < 0,25, Gelbton (R + G) / 2 − B je Helligkeit). Unter 400 m² bleibt 9, ebenso in
+der modellierten Zone (die Gartenkarte). Neue Klassen (vom Straßen-Chat 18.11. vergeben; 18 bleibt frei):
+
+| id | Name | April (07.04.) | Mai (15.05.) |
+|---|---|---|---|
+| 19 | wintergetreide | grün (NDVI ≥ 0,30, nicht blaugrün) | grün bis olivgrün (NDVI ≥ 0,30, < 30 % Boden; das Maibild ist dunkler und wärmer als das Aprilbild) |
+| 20 | winterraps | dicht blaugrün (NDVI ≥ 0,45, Gelbton ≤ −0,12: die Blätter des Rapses) | gelb (Gelbton ≥ 0,18 oder 90. Perzentil ≥ 0,28: Blüte) oder dicht blaugrün (Schoten) |
+| 21 | hackfrucht | offener Boden (≥ 60 % des Feldes) – Mais, Rübe, Kartoffel und das noch nicht aufgegangene Sommergetreide | ebenso |
+| 22 | kleegras | – (im April nicht von Getreide zu trennen) | blass (Helligkeit ≥ 90, NDVI 0,25–0,45, Gelbton 0,05–0,18, < 30 % Boden): gemäht oder dünne Narbe |
+| 9 | acker | dünn bewachsen, unklar (NDVI < 0,30 bei < 60 % Boden) | unklar |
+
+Der Wuchs der Früchte wird auf der Spanne des Ackers (9) seines Flugtags gemessen – das Teilen ändert ihn nicht. `classify` ruft
+`feldfrucht.apply` auf dem Kern der Zelle auf; für die Karten von Teil a–c lief der Schritt auf den Zwischenständen
+(`python3 -I tools/bewuchs/daten/feldfrucht.py`, dasselbe Ergebnis wie ein Neubau). ⟨D_ZAHLEN⟩
+
 ### Klassen (ids fest)
 
 | id | Name | was | woher (Reihenfolge: spätere Regeln gewinnen) |
@@ -95,11 +144,13 @@ Stadtzone und Kloster Veßra – im selben Format, im selben Index (Abschnitt �
 | 10 | ackerrand | äußere 2 m eines Ackers | zum Weg (hinter dem Bankett), zur Wiese, zum Dorf; dazu, wo in einem Feldblock ein gepflügter und ein grüner Teil (je ≥ 0,5 ha) aneinanderstoßen |
 | 11 | waldboden | unter geschlossenem Kronendach | Basis-DLM Wald, OSM forest/wood; geschlossenes Kronendach ab 0,15 ha außerhalb des Dorfs (Feldgehölze, Galerie am Fluss) |
 | 12 | gebuesch | Gebüsch, Hecke | 0,5–4 m über Grund (DOM1 − DGM1), grün oder kahl, nicht Gebäude, Auto, gemessener Baum; Basis-DLM Gehölz und Bewuchs-Flächen, OSM scrub, OSM-Hecken (1,6 m) |
-| 13 | beet | Zierbeet | im Quadrat keine (im Bild nicht von anderem zu unterscheiden; Stufe 4) |
-| 14 | gemuese | Gemüsebeet | im Dorf und in Kleingärten: umgegrabene Flecken im Aprilbild (NDVI 0,12–0,27, rau, flach, 8–400 m², von Grün umgeben) |
-| 15 | verkehrsgruen | Verkehrsinsel, Kreiselmitte | grüne Inseln ≤ 500 m², zu ≥ 75 % von Fahrbahn umgeben – im Quadrat praktisch keine |
-| 16 | friedhof | Friedhof | OSM, Basis-DLM – im Quadrat keiner |
+| 13 | beet | Zierbeet | Vorgartenbeete nach Regel (Teil e: 60 % der Wohnhäuser, an der Straßenseite, 0,6–1,5 m), OSM flowerbed, öffentliche Gärten |
+| 14 | gemuese | Gemüsebeet | im Dorf und in Kleingärten: umgegrabene Flecken im Aprilbild (NDVI 0,12–0,27, rau, flach, 8–400 m², von Grün umgeben); Teil e: 10–40 m² hinter 30 % der Häuser, 30 % des Rasens in Kleingärten |
+| 15 | verkehrsgruen | Verkehrsinsel, Kreiselmitte, Mittelstreifen, Parkplatzgrün | grüne Inseln ≤ 500 m², zu ≥ 75 % von Fahrbahn umgeben; Teil e: Kreiselmitten, Inseln, Mittelstreifen, Parkplatzgrün nach OSM |
+| 16 | friedhof | Friedhof | OSM, Basis-DLM (im Quadrat keiner); die OSM-Wege darin 0 |
 | 17 | sportrasen | Spielfeld | OSM pitch mit Rasen (Kunstrasen, Tartan, Sand: 0) |
+| 18 | reserviert | – | frei |
+| 19–22 | wintergetreide, winterraps, hackfrucht, kleegras | die Frucht eines Ackers (Teil d) | Luftbild des Flugtags, je Feld (siehe oben) |
 
 Nicht im Bild: die Hecken des Angers (`world/dorfkern_data.js`) und von `stadtgruen` (`ratscher.json`, solange es nicht in `src` ist, von
 `origin/feat/stadtgruen`) sind 0 – sie zeichnen ihre Hecken selbst; ebenso das Pflaster und der Brunnen des Angers.
@@ -134,7 +185,8 @@ Häusern geben kleine Werte; im Acker heißt 0 im April kahler Boden.
 | 5 | schwach | Weiden sind nirgends erfasst – außer Ronalds Ziegen gilt alles Grünland als Mähwiese |
 | 7, 8 | mittel | Breiten nach Regel; Gräben nur, wo OSM sie hat |
 | 12 | mittel | Höhenmodell älter als das Luftbild (DOM1), Kronenränder und Stapel möglich; im Dorf vor allem Gartensträucher |
-| 14 | schwach | nur, was Anfang April 2024 umgegraben war; Beete (13) gar nicht |
+| 14 | schwach | aus dem Bild nur, was Anfang April 2024 umgegraben war; dazu nach Regel (Teil e) |
+| 13, 14, 15 (Teil e) | Regel | Lage und Anteil plausibel (Vorgärten an der Straßenseite, Gemüse hinter dem Haus, Kleingärten zu 30 %), aber nicht die wirklichen Beete eines Hauses; Verkehrsgrün nur, wo OSM Kreisel, Inseln, Einbahn-Fahrbahnen und Parkplätze kennt |
 | 15, 16, 6 | – | im Quadrat nicht vorhanden |
 
 Teil b (Strecken, Dörfer, Schleusingen, Kloster Veßra) – wo es anders ist als im Quadrat:
@@ -221,9 +273,10 @@ und keine Böschungen.
 | `klassen.py` | die Regeln einer Zelle |
 | `handdaten.py` | was den Quellen fehlt (Anger, Schulwiese, Brunnen, Wiese an der Haltestelle, Ziegenweide, Pflanzflecken) |
 | `garten.py` | die feine Karte der modellierten Zone |
+| `gestaltung.py` | Teil e: Vorgartenbeete, Gemüsebeete, Kleingärten, Verkehrsgrün, Friedhofswege |
 | `bauen.py`, `boegen.py`, `boegen_bauen.py` | bauen (schreibt nur geänderte PNGs, behält die Wuchs-Spannen), Prüfbögen, Flächentabelle |
 | `app_daten.mjs` | Garten, Bach, Anger aus den Modulen der App (node) |
-| `test_gemeinsam.py`, `test_raster.py`, `test_daten.py` | Unit-Tests (Rahmen, Kodierung, Raster, Straßenraster, Bach, Abgleich mit der App – Ziegenweide, Zone, Pflanzflecken, Straßenregeln von `build_roads.py`, Straßenbreiten der Städte –, die Zellen der Strecken, Format der gebauten Karten) |
+| `test_gemeinsam.py`, `test_raster.py`, `test_daten.py`, `test_gestaltung.py` | Unit-Tests (Rahmen, Kodierung, Raster, Straßenraster, Bach, Abgleich mit der App – Ziegenweide, Zone, Pflanzflecken, Straßenregeln von `build_roads.py`, Straßenbreiten der Städte –, die Zellen der Strecken, Format der gebauten Karten) |
 
 ## Offen (für die nächsten Teile)
 

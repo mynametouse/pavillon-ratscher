@@ -116,6 +116,12 @@ def build(areas, boegen=None, spannen=False):
         tabs[fl] = dict(kept.get(fl) or {})
         for c, v in vigour_table(S).items():  # classes the kept spans lack (part e: beds, traffic green) from the cells built
             tabs[fl].setdefault(c, v)
+    # the crops (part d) are measured on the span of arable land, so that splitting a field does not change its vigour
+    import feldfrucht
+    for t in tabs.values():
+        if K['acker'] in t:
+            for c in feldfrucht.CROPS:
+                t[c] = t[K['acker']]
     # a new flight with few cells: the classes it lacks samples for take the spans of the flight with the most cells (not 0 = bare)
     big = sorted(set(tabs) | set(kept), key=lambda fl: -sum(1 for v in flights.values() if v == fl))
     for fl in tabs:
@@ -164,12 +170,23 @@ def build(areas, boegen=None, spannen=False):
     return index
 
 
+VIG_NOISE = 0.02  # a map whose classes are the same and whose vigour differs by one step in at most 2 % of its pixels is kept as it is
+
+
+def same_map(old, val):
+    """the same classes, the vigour the same but for rounding (spans stored with fewer decimals than they were built with)"""
+    if old.shape != val.shape or not np.array_equal(old & 31, val & 31):
+        return False
+    dv = np.abs((old >> 5).astype(np.int16) - (val >> 5).astype(np.int16))
+    return int(dv.max(initial=0)) <= 1 and float((dv > 0).mean()) <= VIG_NOISE
+
+
 def save_if_changed(path, val):
-    """write the PNG only when its values differ from the file there (the repo keeps the old bytes otherwise); (size, 1 if written)"""
+    """write the PNG only when its map changed (same_map: the repo keeps the old bytes otherwise); (size, 1 if written)"""
     from gemeinsam import load_png
     if os.path.exists(path):
         try:
-            same = np.array_equal(load_png(path), val)
+            same = same_map(load_png(path), np.asarray(val, np.uint8))
         except Exception:
             same = False
         if same:

@@ -9,6 +9,7 @@ from scipy import ndimage as ndi
 from shapely.geometry import LineString, Polygon, box
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from gemeinsam import Grid, K, SITE_ZONE  # noqa: E402
+import feldfrucht  # noqa: E402
 import gestaltung  # noqa: E402
 import handdaten  # noqa: E402
 import raster  # noqa: E402
@@ -379,4 +380,9 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True, res=RES):
             cls[inz] = gm[v, u]
 
     core = g.inner(int(round(MARGIN / g.res)))
-    return cls[core], nd[core], {'use': use[core], 'gestaltung': gst}
+    cls = cls[core]
+    # ---------- the crops of the fields (part d): on the core, one class per field (feldfrucht.py) ----------
+    import holen
+    gc = Grid.cell(i, j, g.res)
+    fst = feldfrucht.apply(cls, nd[core], f['rgb'][core], X[core], Y[core], holen.flight(i, j), feldfrucht.farm_labels(q, gc), g.res)
+    return cls, nd[core], {'use': use[core], 'gestaltung': gst, 'feldfrucht': fst}

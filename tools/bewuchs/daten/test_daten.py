@@ -180,9 +180,14 @@ class Writing(unittest.TestCase):
             self.assertEqual(bauen.save_if_changed(fn, v.copy())[1], 0)
             self.assertEqual(os.stat(fn).st_mtime, 1)
             w = v.copy()
-            w[0, 0] ^= 32
+            w[0, 0] ^= 32  # one vigour step at one pixel (rounding of the spans): the map is kept
+            self.assertEqual(bauen.save_if_changed(fn, w)[1], 0)
+            w[0, 0] ^= 1  # a class changed: written
             self.assertEqual(bauen.save_if_changed(fn, w)[1], 1)
             self.assertTrue(np.array_equal(G.load_png(fn), w))
+            x = w.copy()
+            x[:40] = (x[:40] & 31) | (((x[:40] >> 5) + 1) % 8 << 5)  # the vigour of a tenth of the map: written
+            self.assertEqual(bauen.save_if_changed(fn, x)[1], 1)
 
 
 if __name__ == '__main__':
