@@ -774,11 +774,15 @@ export const RATSCHER = (() => {
       sh.fragmentShader = sh.fragmentShader
         .replace(
           '#include <normal_fragment_begin>',
-          '#include <normal_fragment_begin>\n normal = normalize( vNormal ); nonPerturbedNormal = normal;'
+          // feat/fotorealismus: a crown is no flat ground – its normal half up, half towards whoever looks at it (as a ball of leaves
+          // seen from there): lit from the front by a low sun it glows, against the light it stands dark; before, the upward normal
+          // alone left every far wood pale cream at dusk, whichever way one looked. And its lower part in its own shade.
+          '#include <normal_fragment_begin>\n normal = normalize( vNormal ); { vec3 gtC = normalize( vViewPosition ), gtS = gtC - normal * dot( gtC, normal ); normal = normalize( normal * 0.72 + gtS / max( length( gtS ), 0.001 ) * 0.7 ); } nonPerturbedNormal = normal;'
         )
         .replace(
           '#include <lights_fragment_end>',
-          '#include <lights_fragment_end>\n reflectedLight.directDiffuse *= 0.82; reflectedLight.indirectDiffuse *= 0.6; reflectedLight.indirectSpecular *= 0.25;'
+          '#include <lights_fragment_end>\n reflectedLight.directDiffuse *= 0.82; reflectedLight.indirectDiffuse *= 0.6; reflectedLight.indirectSpecular *= 0.25;' +
+            ' { float gtH = mix( 0.6, 1.0, smoothstep( 0.12, 0.8, vMapUv.y ) ); reflectedLight.directDiffuse *= gtH; reflectedLight.indirectDiffuse *= gtH; }' // feat/fotorealismus
         );
     }; // V16c: a crown shades itself – the flat cards were pale
     mat.customProgramCacheKey = () => 'geotree';

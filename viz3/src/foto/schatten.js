@@ -49,7 +49,7 @@ export const SCHATTEN = (() => {
   {
     const q = QS.get('kaskade');
     if (MODES.includes(q)) S.mode = q;
-    if (QS.get('nokaskade')) S.mode = 'aus';
+    if (QS.has('nokaskade')) S.mode = 'aus';
   }
   const _d = new THREE.Vector3(),
     _c = new THREE.Vector3(),
