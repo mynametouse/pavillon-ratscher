@@ -172,6 +172,16 @@ Das Kapitel beginnt mit Mission 1 (mit dem Kapitelstart), Mission 2 folgt am sel
 
 ## Offen
 
+- **Auf dem Zweig, noch nicht auf `src` (V19o)** – 9b8980c56 und dieser Stand, lokal `start,m2,knacken,m1` 42/42 und `direkt` 4/4: Mission 1
+  nutzt die Helfer der Zone, wenn es sie gibt – `route(true, 'land')` beim Aufbruch (der Weg der Simson auf dem Radar), `route(false)` am
+  Grenzturm, `ort('foto')` als Ziel der Fotos, `ort('fremder')`, `punkte('wachen')` für Krähwinkels drei Männer (mit Blickrichtung),
+  `netz(x, y) > 0`, bevor die Nachricht des Fremden kommt; der Plan am Bunker wird neu gerechnet, sobald die Zone gebaut ist. Tests:
+  `knacken` repariert (Modus an; Neuladen gegen frischen Start; die Tat am Ereignis) und in `tests.txt`; `m1` holt die Nachricht am
+  Parkplatz ab. Der Zweig lässt sich ohne Konflikt mit `src` (V19o) zusammenführen.
+- **Als Nächstes:** Mission 3 „Die Nacht am Tor“ (Suhl, Dezember 1989 – die Schnittstelle von Suhl 1989 ist auf `src`); die Zufahrten
+  der Zone über die A 73 / L 3004 sind im Browser noch nicht geprüft (Agent `zone`: die Simson springt dort im Test nicht an – „Hinfahren“
+  ist der sichere Weg); das Handy im Grünen Band über `GLZONE.netz` (`gl_handy.js`); das Reden mit dem Partner in Kapitel 2.
+
 - Im Grünen Band zeigt das Ortsschild oben links in der Nähe des Museums „Feldflur“ statt des Namens der Zone (Agent `zone`).
 - Schnee fällt, aber am Tag bleibt der Boden grün (die Grashalme des Bewuchses liegen über dem Schnee) – Sache des Wetters/Bewuchses.
 - Sarah geht neben dem geduckten Spieler aufrecht (die Partnerin duckt sich nicht mit; `gl_partner.js`).
