@@ -104,7 +104,7 @@ with lib.browser() as b:
             lib.shot(pg, OUT, 'ferne_januar')
         if 'jahr' in WANT:
             view(14, 16, math.degrees(math.atan2(2 - 14, 2 - 16)), -14)
-            for d, name in ((20, 'januar'), (105, 'april'), (200, 'juli'), (290, 'oktober')):
+            for d, name in ((20, 'januar'), (105, 'april'), (200, 'juli'), (290, 'oktober'), (322, 'november')):
                 E(f"BEWUCHS.set({{ doy: {d} }})")
                 E("GAME.step(0.1); GAME.step(0.1)")
                 lib.shot(pg, OUT, 'garten_' + name)
