@@ -2196,7 +2196,8 @@ def draw_cell(fn, seed):
     # it stands in the grass: darker towards the foot; and a fine noise against the flat look
     v = 1 - (np.arange(N) + 0.5) / N
     ao = 0.76 + 0.24 * np.clip(v / 0.3, 0, 1) ** 0.8  # mild: the template darkens the roots too
-    rgb = rgb * ao[:, None, None]
+    if not getattr(fn, 'no_ao', False):  # cereal ears sit on top of the stalks: no darkening at their foot
+        rgb = rgb * ao[:, None, None]
     rng = np.random.default_rng(seed + 991)
     noise = rng.normal(0, 1, (N // 2, N // 2)).astype(np.float32)
     noise = np.kron(noise, np.ones((2, 2), np.float32))
