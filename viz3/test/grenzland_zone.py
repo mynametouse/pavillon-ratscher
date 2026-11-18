@@ -5,7 +5,10 @@
 #            draw calls; pictures by day and at dusk
 #   bunker   the bunker's outside: the old foundation (one stands on it), the mound, the wall with the iron door and its padlock
 #            (the action „Tür ansehen“: locked); the walker cannot pass through the wall; a picture
-#   heide    (next version) the heath: heather, birches, pines, the hide
+#   heide    the heath: heather where the photo shows heath, young pines and birches, the boards with their text („Tafel lesen“), the
+#            hide; the trees of the forest edges (cards far, 3D near); pictures by day and at dusk
+#   turm     the Grenzturm from outside: the tower, the wall's pieces, the fence, the shelter with its board, the opening hours
+#            (OEFFNUNG), the door shut; a picture
 #   (every run ends with leaving: back in the garden, the zone is freed – meshes, roads, collisions, the tiles' need)
 # Pictures in out/grenzland_zone/.   python3 viz3/test/grenzland_zone.py 9061 [sections]
 import sys, os, json, time
@@ -130,8 +133,50 @@ with lib.browser() as b:
         X(f"const F = GLZONE.debug.BK.F, w = F.P(0, -2.2, 0); TS.look(w[0], w[1], F.hd * 57.2958 + 180, 4.5, 1.6, -4)")
         for _ in range(4): steps(0.3); time.sleep(0.6)
         pic('05_bunker_tuer')
+    # ------------------------------------------------------------------ heide ------------------------------------------------------------------
+    def zu_fuss(name, off=(0, 0)):
+        X(f"window._hin = 0; GLZONE.hin({{ mit: 'fuss', ort: '{name}' }}).then(r => window._hin = r ? 1 : -1)")
+        ok = until("window._hin !== 0", 150)
+        o = J(f"GLZONE.ort('{name}')")
+        until(f"WELT.heightAt({o['x']}, {o['y']}) !== undefined", 60)
+        return ok and E("window._hin") == 1, o
+    if want('heide'):
+        ok, o = zu_fuss('heide')
+        ck('on foot to the Görsdorfer Heide (GLZONE.hin)', ok, str(o))
+        until("GLZONE.state().heide > 0", 90)
+        st = J("GLZONE.state()")
+        ck('heather where the photo shows heath, grass along the way', st['heide'] > 1000 and st['gras'] > 5000, f"heide {st['heide']} gras {st['gras']}")
+        ck('trees at the forest edges: cards far, 3D near', st['baeume'] > 20000 and st['zellenNah'] > 0, f"{st['baeume']} trees, near cells {st['zellenNah']} ({st['baeumeNah']} trees)")
+        acts = J("KERN.acts().filter(a => a.id.startsWith('glzone-')).map(a => a.id)")
+        ck('the boards of the heath can be read', sum(1 for a in acts if a.startswith('glzone-tafel')) >= 2, str(acts))
+        X("const a = KERN.acts().find(a => a.id === 'glzone-tafel-0'); if (a) a.run()")
+        steps(0.5)
+        X(f"TS.look({o['x']}, {o['y']}, 150, 18, 2.0, -6)")
+        for _ in range(6): steps(0.3); time.sleep(0.6)
+        pic('06_heide_tag')
+        X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 16 * 60 + 58")
+        lib.settle_light(pg)
+        X(f"TS.look({o['x']}, {o['y']}, 330, 14, 1.8, -4)")
+        for _ in range(5): steps(0.3); time.sleep(0.6)
+        pic('07_heide_daemmerung')
+        X("CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 11 * 60")
+        lib.settle_light(pg)
+    # ------------------------------------------------------------------ turm ------------------------------------------------------------------
+    if want('turm'):
+        ok, o = zu_fuss('parkplatz')
+        ck('on foot to the car park at the Grenzturm', ok, str(o))
+        steps(1)
+        acts = J("KERN.acts().filter(a => a.id.startsWith('glzone-')).map(a => a.id)")
+        ck('the tower: its door (shut) and the board of the memorial', 'glzone-turm-tuer' in acts and 'glzone-museum-tafel' in acts, str(acts))
+        z = J("window.OEFFNUNG ? OEFFNUNG.zeiten('grenzturm-eisfeld') : null")
+        ck('the opening hours of the memorial (OEFFNUNG)', bool(z), str(z))
+        m = J("GLZONE.ort('museum')")
+        ck('KERN.place names the tower', E(f"KERN.place({m['x']}, {m['y']} - 6)") == 'Grenzturm Eisfeld', str(E(f"KERN.place({m['x']}, {m['y']} - 6)")))
+        X(f"TS.look({m['x']}, {m['y']} + 6, 20, 28, 1.7, 4)")
+        for _ in range(6): steps(0.3); time.sleep(0.6)
+        pic('08_grenzturm')
     # ------------------------------------------------------------------ leaving ------------------------------------------------------------------
-    if want('weg') or want('bunker'):
+    if want('weg') or want('bunker') or want('heide') or want('turm'):
         X("if (VEH.cur) VEH.exit(); GAME.go('garten')")
         until("!GLZONE.state().an", 60, 0.3, 0.2)
         st = J("GLZONE.state()")

@@ -828,6 +828,33 @@ export const GLZONE = (() => {
       for (let k = 1; k < 9; k++)
         F.beam([-0.25, 2.1 - k * 0.135, k * 0.4 - 0.2], [0.25, 2.1 - k * 0.135, k * 0.4 - 0.2], 0.05, 0.05, W.holz);
     }
+    // a hide for birdwatchers at the edge of the heath (invented, as nature reserves have them): a hut of boards on short stilts, a slit
+    // towards the heath, a few steps up
+    const hp = o.orte.hide;
+    if (hp) {
+      const q = D.naechst(Lw, o.orte.heide[0], o.orte.heide[1]),
+        az = Math.atan2(o.orte.heide[0] - hp[0], o.orte.heide[1] - hp[1]),
+        zz = WELT.heightAt(hp[0], hp[1]),
+        F = GLORTE.frame(K, hp[0], hp[1], az, zz !== undefined ? zz : hp[2]);
+      void q;
+      for (const [r, f] of [
+        [-1.3, -1.0],
+        [1.3, -1.0],
+        [1.3, 1.0],
+        [-1.3, 1.0],
+      ])
+        F.box(r, f, -0.4, 0.14, 0.14, 1.5, W.holzD);
+      F.box(0, 0, 1.0, 2.8, 2.2, 0.1, W.holz);
+      F.box(0, -1.08, 1.1, 2.8, 0.06, 2.1, W.holzG);
+      F.box(-1.38, 0, 1.1, 0.06, 2.2, 2.1, W.holzG);
+      F.box(1.38, 0, 1.1, 0.06, 2.2, 2.1, W.holzG);
+      F.box(0, 1.08, 1.1, 2.8, 0.06, 0.75, W.holzG);
+      F.box(0, 1.08, 2.25, 2.8, 0.06, 0.95, W.holzG);
+      F.slab([-1.6, -1.4, 3.35], [1.6, -1.4, 3.35], [1.6, 1.4, 3.05], [-1.6, 1.4, 3.05], 0.04, W.dach);
+      for (let k = 0; k < 5; k++) F.box(0.6, -1.4 - k * 0.3, 0.85 - k * 0.2, 0.9, 0.28, 0.05, W.holz);
+      addCol(F.col(-1.42, 1.42, -1.12, 1.12, -1, 3.4));
+      HI.F = F;
+    }
     const m1 = GLORTE.mesh(K, GLORTE.mat().paint, 'grenzland-zone-reste'),
       m2 = GLORTE.mesh(KM, GLORTE.mat().metal, 'grenzland-zone-reste-eisen');
     for (const m of [m1, m2]) if (m) S.meshes.push(m);
@@ -959,7 +986,8 @@ export const GLZONE = (() => {
       },
     });
   }
-  const TU = { F: null, z: 0 };
+  const TU = { F: null, z: 0 },
+    HI = { F: null };
   // ------------------------------------------------------------------ the bunker's outside (invented) ------------------------------------------------------------------
   const BK = { F: null, tuer: null, z: 0, sockel: 0.36 };
   function bauBunker() {
@@ -1114,7 +1142,11 @@ export const GLZONE = (() => {
       (p, rad) => {
         if (!S.an || !inZone(p[0], p[1])) return undefined;
         let moved = false;
-        if (bnah(p[0], p[1]) || (TU.F && Math.abs(p[0] - TU.F.ox) < 30 && Math.abs(p[1] - TU.F.oy) < 30))
+        if (
+          bnah(p[0], p[1]) ||
+          (TU.F && Math.abs(p[0] - TU.F.ox) < 30 && Math.abs(p[1] - TU.F.oy) < 30) ||
+          (HI.F && Math.abs(p[0] - HI.F.ox) < 8 && Math.abs(p[1] - HI.F.oy) < 8)
+        )
           for (const c of S.cols) if (!c.stehen && pushBox(c.B, p, rad)) moved = true;
         if (stamm(p, rad)) moved = true;
         return moved ? true : undefined;
@@ -1305,6 +1337,7 @@ export const GLZONE = (() => {
     S.acts.length = 0;
     BK.F = null;
     TU.F = null;
+    HI.F = null;
     if (FAHRT.drop) FAHRT.drop(SET);
     WELT.need(SET, false);
     S.phase = 'aus';
