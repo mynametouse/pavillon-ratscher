@@ -16,6 +16,23 @@ veröffentlicht.
 
 ## Stand
 
+- **18.11.2026: Fotorealismus Schritt 3, V19m (Fotorealismus-Chat session_01L6Yrpe4euXqyTbnuvdamYz; Falko 18:50: mehr als Licht und
+  Schatten – „Gebäude, die gesamte Atmosphäre, auch im Wald“; 19:22: „Parallel und so schnell wie möglich.“; 21:21: online bringen, was
+  fertig ist, „und stoppe dann erstmal“).** **Wasser:** `foto/wasser.js` (`WASSER`) ersetzt nach dem Laden die Platten aus
+  `world/ratscher.js` (die Liste `RATSCHER.water` hält dann acht Rechtecke mit eigenem Material): Wellen nach dem Wind des Wetters
+  (`WETTER.S.cur`), Rauheit aus nicht aufgelösten Neigungen, Uferkarte je Fläche, 12 cm über der Höhe der Daten; `?nowasser`,
+  `docs/features/fotorealismus.md` Abschnitt 7. **Waldboden:** Schritte 1 und 2 des Hilfs-Agenten `foto-wald`
+  (`docs/features/foto-wald.md`: Licht des Bestands für die Krautschicht, Flecken je Art, Ähren in ihrer Länge). **Vier Hilfs-Agenten**
+  des Fotorealismus-Chats seit 19:35, am 18.11. 21:25 auf Falkos Wunsch angehalten – Aufträge `docs/plans/auftraege/foto-*.md`
+  (gemeinsame Regeln `foto-gemeinsam.md`), Stände: `feat/foto-wald` `724db5bf` (in `src`), `feat/foto-gebaeude`, `feat/foto-boeden`,
+  `feat/foto-baeume` und die Zwischenstände `wip/foto-*`; Worktrees `/home/claude/wt-foto-*`, Bilder `/home/claude/scratch/foto/<name>/`
+  (nur im Chat-Rechner). Nächste Schritte je Agent: Wald – Lichtflecken unter den Kronen, Moos/Zapfen/Reisig, weiche Ränder; Gebäude –
+  Sockel, Laibungen mit Schatten, Putzkorn als Normale, Dächer (liest später die Felder aus „Schleusingen Runde 3“ des Chats
+  session_01Mmpsvp…); Böden – Pflaster am Markt Schleusingen, Flicken und Fahrspuren natürlicher; Bäume – Laub natürlicher grün,
+  kein Baum wie der andere, „Ratschers Laubbäume mit Jahreszeit“ mit dem Kalender von `WWALD`/`SGREGELN`. **Lehre des Abends:** der eine
+  Browser des Chat-Rechners ist mit vier Agenten der Engpass (bis 50 Minuten Schlange) – Tests gehören auf GitHub (Feature-Lauf des
+  Zweigs, Bilder aus dem Artefakt `out`), der lokale Browser nur für Bilder, je Agent ein Auftrag in der Schlange. **Offen von mir:**
+  Projekt-Dokument `claude/pavillon-ratscher-stand.md` steht noch auf V19c (V19e und V19m nachtragen).
 - **18.11.2026: Fotorealismus Schritt 2, V19e (Fotorealismus-Chat session_01L6Yrpe4euXqyTbnuvdamYz, `docs/features/fotorealismus.md`
   Abschnitte 5 und 6; Falko 18.11. 15:39: „Stück für Stück die nächsten Versionen.“).** **Hügel werfen Schatten:**
   `foto/schatten_land.js` (`SCHLAND`) hält ein Raster der Geländehöhen um die Spielfigur (±7,7 km, `KERN.terrain`, in jedem Bild ein
