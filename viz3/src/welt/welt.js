@@ -218,7 +218,7 @@ export const WELT = (() => {
     // from 6 m on); the courses' shades show a little further. slab 1: paving slabs – even, in a half bond, thin joints, no tints.
     // Returns the factor for the surface's colour (sc: courses per metre; fwp: the pixel's footprint in metres).
     vec3 setts( vec2 p, float sc, float fwp, float slab ) {
-      float qy = p.y * sc + 0.08 * ( 1.0 - slab ) * sin( p.x * 5.3 + p.y * 1.9 ), row = floor( qy ), hr = rdH( vec2( row, 3.7 ) ), ar = mix( 0.8 + 0.4 * hr, 1.0, slab );
+      float qy = p.y * sc + 0.04 * ( 1.0 - slab ) * sin( p.x * 5.3 + p.y * 1.9 ), row = floor( qy ), hr = rdH( vec2( row, 3.7 ) ), ar = mix( 0.8 + 0.4 * hr, 1.0, slab );
       float qx = p.x * sc * ar + mix( hr * 37.0 + 0.07 * sin( p.y * 6.1 + row * 2.4 ), 0.5 * mod( row, 2.0 ), slab ), ix = floor( qx );
       vec2 f = vec2( fract( qx ), fract( qy ) ); float fw = fwp * sc, fine = 1.0 - smoothstep( 0.25, 0.9, fw ), jw = mix( 0.045, 0.014, slab );
       float d = min( min( f.x, 1.0 - f.x ) / ar, min( f.y, 1.0 - f.y ) ), aw = max( fw * 0.7, 0.012 ), jt = 1.0 - smoothstep( jw - aw, jw + aw, d );
