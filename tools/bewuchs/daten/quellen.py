@@ -14,6 +14,9 @@ import osm_flaechen  # noqa: E402
 
 # width (m) of waterways without a width tag
 WATER_W = {'river': 6.0, 'canal': 4.0, 'stream': 1.4, 'ditch': 0.8, 'drain': 0.8, 'brook': 1.2}
+# railway tracks that are still there (the branch line through Kloster Veßra and Schleusingen, sidings, the disused stretches); abandoned
+# ones (rails taken up) are left to the photo
+RAIL_KINDS = {'rail', 'light_rail', 'narrow_gauge', 'tram', 'preserved', 'disused'}
 SEALED_SURF = {'asphalt', 'concrete', 'paving_stones', 'sett', 'paved', 'tartan', 'artificial_turf', 'compacted', 'gravel', 'fine_gravel',
                'sand', 'concrete:plates', 'cobblestone', 'clay', 'acrylic', 'rubber', 'metal', 'wood'}
 
@@ -124,6 +127,8 @@ def kind_of(t):
         return 'building'
     if na == 'water' or lu in ('reservoir', 'basin') or t.get('waterway') in ('riverbank', 'dock') or le == 'swimming_pool':
         return 'water'
+    if lu == 'railway' and not t.get('railway') and not t.get('amenity'):
+        return 'railland'  # the land of a station or a line: ballast, sidings, weedy strips (klassen.py: the green a margin, not a lawn)
     if am in ('parking', 'fuel', 'bicycle_parking') or 'area:highway' in t or t.get('highway') in ('pedestrian', 'service', 'footway') \
             or t.get('railway') or lu in ('railway', 'construction', 'garages') or t.get('parking'):
         return 'sealed'
@@ -174,7 +179,10 @@ class Quellen:
         self.hedges = []
         self.fences = []
         self.highways = []  # OSM roads beyond the square: {kind, surf, w, bridge, p, osm}
+        self.rails = []  # OSM tracks on the ground (not on bridges, not in tunnels): LineStrings
         for g, t, i in lines:
+            if t.get('railway') in RAIL_KINDS and t.get('tunnel') in (None, 'no') and t.get('bridge') in (None, 'no'):
+                self.rails.append(g)
             r = road_of(t) if 'highway' in t and t.get('area') != 'yes' and t.get('tunnel') in (None, 'no') else None
             if r:
                 self.highways.append({'kind': r[0], 'surf': r[1], 'w': r[2], 'bridge': r[3], 'p': np.asarray(g.coords), 'osm': True})

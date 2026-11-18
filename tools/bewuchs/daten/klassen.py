@@ -22,6 +22,8 @@ T_BARE = 0.18   # below: soil, gravel, asphalt, roofs (and the bare twigs of lea
 # verge widths beyond the carriageway edge (m) by road kind (world/roads.js KINDS: motorway main county street lane service track path foot)
 VERGE = [3.0, 2.5, 2.5, 2.0, 2.0, 1.5, 1.0, 0.5, 0.5]
 VERGE_IN = 0.3  # the first 0.3 m beyond the edge: the road's own shoulder (roads.js roadShade), class 0
+RAIL_BED = 4.4   # m: the ballast bed of a track (OSM railway lines, quellen.RAIL_KINDS) – nothing grows (weeds in it are not a lawn)
+RAIL_SIDE = 3.0  # m beyond the bed on either side: the cess and the slope, unmanaged – a margin where the land beside was lawn or meadow
 # DLM: colours of the WMS rendering (holen.py; their meaning read with GetFeatureInfo)
 DLM_ACKER, DLM_GRUEN = (255, 255, 239), (217, 255, 191)  # AX_Landwirtschaft Vegetationsmerkmal 1010 Ackerland, 1020 Grünland
 DLM_SPORT = {(64, 241, 175): 'sport', (16, 239, 175): 'bad', (60, 239, 110): 'allot', (225, 244, 189): 'enclosure'}  # Funktion 4100, 4320, 4440/4310, 4200
@@ -118,6 +120,9 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True, res=RES):
             else:
                 stream_m |= m
     carr, edge, rkind = roads_raster(q, g)
+    rl = [ln for ln in getattr(q, 'rails', []) if ln.intersects(bx)]
+    rail = raster.draw_lines(g, rl, RAIL_BED).astype(bool) if rl else Z()
+    rail_side = raster.draw_lines(g, rl, RAIL_BED + 2 * RAIL_SIDE).astype(bool) & ~rail if rl else Z()
     orte = raster.draw_polys(g, [p for n, t, p in q.orte if p.intersects(bx)]).astype(bool)
     # ---------- DLM ----------
     d_lw = raster.dlm('veg01_f', g)
@@ -198,7 +203,7 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True, res=RES):
     # (not the joints of a paved yard), away from the road and the eaves. Ornamental beds are not told apart in the image (stage 4).
     dug = vil & (nd >= 0.12) & (nd < 0.27) & (cv >= 0.03) & (hag < 0.5) & (lum > 60) & ~carr & (edge > 2.0) & ~dil(bld, P(1.5))
     dug &= g.res <= 0.5  # (only where the map is fine enough)
-    dug &= ~np.isin(use, [USE['yard'], USE['public'], USE['sport'], USE['pitch'], USE['bad']])
+    dug &= ~np.isin(use, [USE['yard'], USE['public'], USE['sport'], USE['pitch'], USE['bad']]) & ~rail & ~rail_side & ~get('railland')
     dug = ndi.binary_opening(dug, iterations=P(1.0))
     lab, n = ndi.label(dug)
     if n:
@@ -332,6 +337,16 @@ def classify(q, i, j, f=None, garten=None, extra=(), model_zone=True, res=RES):
         gy, gx = np.gradient(np.nan_to_num(gr, nan=0.0), g.res)
         steep = (np.hypot(gx, gy) > 0.6) & ~village & np.isin(cls, [K['maehwiese'], K['weide'], K['acker'], K['ackerrand']])
         cls[ndi.binary_opening(steep, iterations=P(1))] = K['saum']
+
+    # ---------- railways: the ballast bed nothing, the cess and the slopes beside it margins (where the land was lawn or meadow); the green of
+    # a station's or a line's land (OSM landuse=railway) a margin too, its bare ground nothing ----------
+    rland = get('railland')
+    if rl or rland.any():
+        soft = np.isin(cls, [K['zierrasen'], K['oeffentlich'], K['bankett'], K['maehwiese'], K['weide'], K['gemuese'], K['sportrasen'],
+                             K['verkehrsgruen']])
+        cls[(rail_side | rland) & soft] = K['saum']
+        cls[rland & bare & ~np.isin(cls, [K['waldboden'], K['gebuesch'], K['ufer']])] = K['nichts']
+        cls[rail] = K['nichts']
 
     # ---------- built things: buildings, water, the app's own village centre and stadtgruen's hedges ----------
     cls[bldx | water | (stream_m & ~carr)] = K['nichts']

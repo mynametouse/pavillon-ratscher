@@ -118,6 +118,9 @@ class Areas(unittest.TestCase):
             for k in G.cells_in(*z):
                 if k not in sq:
                     self.assertIn((k[0], k[1], 0.5), c)
+        for i, j, r in c:  # a village off the drive's routes (25 buildings and more) at 0.5 m too
+            if gebiete.houses(i, j) >= gebiete.MIN_HOUSES:
+                self.assertEqual(r, 0.5, (i, j))
 
 class TownStreets(unittest.TestCase):
     def test_same_as_the_towns(self):  # quellen.TOWN_ST keeps the widths and windows of streetMap() in welt/schleusingen.js, welt/vessra.js

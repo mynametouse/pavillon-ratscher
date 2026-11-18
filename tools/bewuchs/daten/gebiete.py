@@ -1,13 +1,15 @@
 """The areas built (part a: Ratscher's square; part b: the road corridors to Schleusingen and Kloster Veßra – the cells of
 dist/gebaeude/z/index.json beyond the square and those along the drive's routes –, Schleusingen's town zone and Kloster Veßra) and the
-resolution of each cell: 0.5 m where a village or town is (a built-up area of dist/strassen/ausstattung.json, or a town zone), 1 m
-elsewhere."""
+resolution of each cell: 0.5 m where a village or town is (a built-up area of dist/strassen/ausstattung.json, a town zone, or 25 buildings
+and more in the cell), 1 m elsewhere."""
 import json, os, sys
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from gemeinsam import CELL, DIST, cells_in, square_box  # noqa: E402
 
 MIN_BUILT = 1000.0  # m² of built-up area in a cell for 0.5 m
+MIN_HOUSES = 25     # or this many buildings in the cell (dist/gebaeude/z/<cell>.json): the villages off the drive's routes, which the
+                    # drive's built-up areas do not hold
 
 
 def _load(p):
@@ -73,8 +75,17 @@ def korridor():
         cb = box(CELL * i, CELL * j, CELL * (i + 1), CELL * (j + 1))
         built = sum(p.intersection(cb).area for n, t, p in orte if p.intersects(cb))
         town = any(z.intersects(cb) for z in zb)
-        out.append((i, j, 0.5 if built >= MIN_BUILT or town else 1.0))
+        out.append((i, j, 0.5 if built >= MIN_BUILT or town or houses(i, j) >= MIN_HOUSES else 1.0))
     return out
+
+
+def houses(i, j):
+    """the number of buildings in the building cell i_j (dist/gebaeude/z/), 0 without one"""
+    fn = os.path.join(DIST, 'gebaeude', 'z', f'{i}_{j}.json')
+    if not os.path.exists(fn):
+        return 0
+    with open(fn) as fh:
+        return len(json.load(fh).get('b', []))
 
 
 def area(name):
