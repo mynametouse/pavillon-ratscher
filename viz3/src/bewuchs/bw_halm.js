@@ -19,6 +19,7 @@ import { cam, scene } from '../core/head.js';
 import { markDirty, patchSV } from '../core/assets.js';
 import { KERN } from '../core/kern.js';
 import { WXWIND } from '../wetter/wx_wind.js';
+import { FOREST } from '../world/forest.js';
 import { BWKARTE } from './bw_karte.js';
 import { BWPHAENO } from './bw_phaeno.js';
 export const BWHALM = (() => {
@@ -86,6 +87,35 @@ vec2 bwCropRow( vec2 q, float sp ) {
   float s = dot( q, v );
   return q + v * ( ( floor( s / sp ) + 0.5 ) * sp - s );
 }`;
+  // feat/fotorealismus (foto-wald): under trees. One text for the blades and the plants (bw_blume.js, with its own hash):
+  // bwField – the soft field a wood's herb layer stands in patches by (0 … 1; s: the patches' size in m, o: which field): the value
+  //   noise at that size and, weaker, at about a third of it (ragged outlines); BWPHAENO.fieldT has its quantiles.
+  // bwLight – what reaches a plant at q: x the share of the direct sun, y of the open sky, z the crowns over it (0–1, where known).
+  //   In the forest at the Klinge (w: the tile lies in it – FOREST.owns, fill() below) from its canopy map, exactly as its ground
+  //   takes it (world/forest.js S.LIGHT: the sun dimmed under the crowns, less of it inside the sun's shadow box, where the trees
+  //   cast their own shadows); everywhere else the constants of the plant's kind of area (kl – a wood's floor: the row's k 7).
+  // (fieldGlsl alone for the ground's shaders, bw_ferne.js: the same patches in the floor's colour far away)
+  const fieldGlsl = h => `float bwFn( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
+  return mix( mix( ${h}( i ), ${h}( i + vec2( 1.0, 0.0 ) ), f.x ), mix( ${h}( i + vec2( 0.0, 1.0 ) ), ${h}( i + vec2( 1.0, 1.0 ) ), f.x ), f.y ); }
+float bwField( vec2 q, float s, vec2 o ) { return 0.7 * bwFn( q / s + o ) + 0.3 * bwFn( q / ( s * 0.37 ) + o.yx + 3.3 ); }`;
+  const woodGlsl = h => `uniform sampler2D tCan; uniform vec4 bCan, uSunBox;
+${fieldGlsl(h)}
+vec3 bwLight( vec2 q, vec2 kl, float w ) {
+  if ( w < 0.5 ) return vec3( kl, 0.0 );
+  float can = texture( tCan, ( q - bCan.xy ) * bCan.zw ).r;
+  float ob = max( smoothstep( uSunBox.z - 3.0, uSunBox.z, max( abs( q.x - uSunBox.x ), abs( q.y - uSunBox.y ) ) ), uSunBox.w );
+  return vec3( 1.0 - 0.86 * can * ob, 1.0 - can, can );
+}`;
+  // the fragment shaders' lines after the lights (vL: bwLight's x, y): the sun dimmed, the sky's light less and green-brown – the
+  // numbers of the forest's ground (world/forest.js S.LIGHT)
+  const woodLight = vL =>
+    `reflectedLight.directDiffuse *= ${vL}.x; reflectedLight.directSpecular *= ${vL}.x * ${vL}.x; reflectedLight.indirectDiffuse *= mix( vec3( 0.46, 0.5, 0.36 ), vec3( 1.0 ), ${vL}.y ); reflectedLight.indirectSpecular *= 0.2 + 0.8 * ${vL}.y;`;
+  // the forest's canopy map and the sun's shadow box (its own uniforms – the same objects); without the forest: nothing lies in it
+  const WU = (FOREST && FOREST.CU) || {
+    tCan: { value: one },
+    bCan: { value: new THREE.Vector4(0, 0, 0, 0) },
+    uSunBox: { value: new THREE.Vector4(0, 0, 16, 0.8) },
+  };
   // ---------- the patch of one tile: K blades, each 5 vertices (near: two segments and the tip) or 3 (one triangle) ----------
   function mulberry(a) {
     return () => {
@@ -162,8 +192,9 @@ uniform vec4 uBwG, uBwS, uBwM, uBwF, uBwR, uBwP, uBwQ;
 uniform vec2 uBwAB;
 uniform vec4 wxSw; uniform vec2 wxSwD; uniform vec2 wxGr;
 attribute vec4 aB; attribute vec3 aV; attribute vec4 iT; attribute vec4 iU;
-varying vec3 vBwC;
+varying vec3 vBwC; varying vec2 vBwL;
 float bwHash( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
+${woodGlsl('bwHash')}
 float bwNoise( vec2 p ) { vec2 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
   return mix( mix( bwHash( i ), bwHash( i + vec2( 1.0, 0.0 ) ), f.x ), mix( bwHash( i + vec2( 0.0, 1.0 ) ), bwHash( i + vec2( 1.0, 1.0 ) ), f.x ), f.y ); }
 // the code (class | vigour << 5) at model point q: the site's (0.25 m) inside the modelled site, else the guide's (0.5 m)
@@ -223,6 +254,21 @@ void bwBlade( out vec3 P, out vec3 N ) {
   float dens = k2.w * mix( k5.x, k5.y, vig ) * uBwP.y;
   // bare spots of the kind of area (their share of it, their size): no blades, a soft edge
   if ( k6.z > 0.0 ) dens *= smoothstep( k6.z - 0.025, k6.z + 0.025, bwNoise( q / max( k6.w, 0.15 ) + vec2( 23.7, 7.1 ) ) );
+  // feat/fotorealismus (foto-wald): under trees – the grass of a wood's floor in patches of several metres with bare litter between
+  // them (the field of its row), little of it under closed crowns; and the stand's light instead of the open sky's
+  vec4 k7 = texelFetch( tBwK, ivec2( 7, cls ), 0 );
+  vec3 wl = bwLight( q, k7.xy, iU.w );
+  dens *= 1.0 - 0.5 * smoothstep( 0.72, 1.0, wl.z );
+  if ( k7.z > 0.0 ) {
+    dens *= smoothstep( k7.w - 0.05, k7.w + 0.05, bwField( q, k7.z, vec2( 23.7, 7.1 ) ) );
+    // … and in tussocks: a thin sward of single blades everywhere stands like hairs on the litter – here whole tufts stand or are
+    // missing (cells of a foot, turned and offset row by row: no grid shows), the root of the density each way
+    vec2 qc = vec2( 0.8 * q.x + 0.6 * q.y, 0.8 * q.y - 0.6 * q.x ) / 0.31;
+    qc.x += 0.5 * floor( qc.y );
+    float dc = sqrt( clamp( dens, 0.0, 1.0 ) );
+    dens = bwHash( floor( qc ) + 11.3 ) > dc ? 0.0 : dc;
+  }
+  vBwL = wl.xy;
   vec3 col = k2.rgb;
   // the orthophoto at the foot (outside the modelled site): no blades where it is not green, the colour a little towards it
   // (feat/fotorealismus: not for a crop – its field is what the crop table says, whatever the photo showed there in its April; the
@@ -299,7 +345,7 @@ void bwBlade( out vec3 P, out vec3 N ) {
     });
     m.userData.leak = true;
     m.onBeforeCompile = sh => {
-      Object.assign(sh.uniforms, U, BWKARTE.U, ringU, {
+      Object.assign(sh.uniforms, U, BWKARTE.U, WU, ringU, {
         wxSw: WXWIND.U.wxSw,
         wxSwD: WXWIND.U.wxSwD,
         wxGr: WXWIND.UG.wxGr,
@@ -310,14 +356,17 @@ void bwBlade( out vec3 P, out vec3 N ) {
           .replace('#include <beginnormal_vertex>', 'vec3 bwP; vec3 objectNormal; bwBlade( bwP, objectNormal );')
           .replace('#include <begin_vertex>', 'vec3 transformed = bwP;');
       sh.fragmentShader =
-        'varying vec3 vBwC;\n' +
+        'varying vec3 vBwC; varying vec2 vBwL;\n' +
         sh.fragmentShader
           .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= vBwC;')
           // feat/fotorealismus: the blades' glitter against a low sun a little calmer (thin bright blades flicker in motion), and
           // nearer to the sheen the ground beyond them keeps (world/ratscher.js)
+          // (and of the sky's a quarter: the blades are lit from above like the ground, so across a meadow each one mirrored the
+          // pale sky at the horizon – a milky veil over the green)
           .replace(
             '#include <lights_fragment_end>',
-            '#include <lights_fragment_end>\n  reflectedLight.directSpecular *= 0.6;'
+            '#include <lights_fragment_end>\n  reflectedLight.directSpecular *= 0.6; reflectedLight.indirectSpecular *= 0.25;\n  ' +
+              woodLight('vBwL') // feat/fotorealismus (foto-wald): under trees
           )
           .replace(
             '#include <normal_fragment_begin>',
@@ -478,7 +527,8 @@ void bwBlade( out vec3 P, out vec3 N ) {
     ord.sort((a, b) => list[a * 3] - list[b * 3]);
     const cap = Math.min(n, R.P.cap),
       T = R.P.iT.array,
-      Uu = R.P.iU.array;
+      Uu = R.P.iU.array,
+      wood = !!(FOREST && FOREST.ready && FOREST.CU && FOREST.owns);
     for (let k = 0; k < cap; k++) {
       const q = ord[k] * 3,
         i = list[q + 1],
@@ -492,7 +542,8 @@ void bwBlade( out vec3 P, out vec3 N ) {
       Uu[o] = zAt(i, j + 1, s);
       Uu[o + 1] = zAt(i + 1, j + 1, s);
       Uu[o + 2] = s;
-      Uu[o + 3] = 0;
+      // feat/fotorealismus (foto-wald): the tile lies in the forest at the Klinge – its canopy map says what light its plants get
+      Uu[o + 3] = wood && FOREST.owns((i + 0.5) * s, (j + 0.5) * s) ? 1 : 0;
     }
     R.P.iT.needsUpdate = true;
     R.P.iU.needsUpdate = true;
@@ -532,6 +583,12 @@ void bwBlade( out vec3 P, out vec3 N ) {
       cosH = Math.cos(Math.min(Math.PI, hf)),
       camH = p.y - zAt(Math.floor(cx), Math.floor(cy), 1);
     let ch = false;
+    // (the forest at the Klinge built since the tiles were listed: list them again – they carry whether they lie in it)
+    const fr = !!(FOREST && FOREST.ready);
+    if (fr !== S.forest) {
+      S.forest = fr;
+      force = true;
+    }
     for (const R of S.rings) {
       const mv = R.near ? 0.25 : 1.2,
         tw = R.near ? 0.05 : 0.08;
@@ -588,7 +645,7 @@ void bwBlade( out vec3 P, out vec3 N ) {
     };
   }
   heightsNow();
-  Object.assign(S, { build, update, day, stats, U, zAt, crops, cropGlsl });
+  Object.assign(S, { build, update, day, stats, U, zAt, crops, cropGlsl, fieldGlsl, woodGlsl, woodLight, WU });
   return S;
 })();
 if (typeof window !== 'undefined') window.BWHALM = BWHALM;

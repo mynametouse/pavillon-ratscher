@@ -8,5 +8,8 @@
   { "name": "r7_feldweg_landschaft", "x": 62, "y": 31, "eye": 1.6, "yaw": 112, "pitch": 1, "vfov": 60, "phase": "0", "time": 11.0 },
   { "name": "r8_tal_von_oben", "x": 20, "y": 60, "eye": 60, "yaw": 150, "pitch": -12, "vfov": 55, "phase": "0", "time": 15.5 },
   { "name": "r9_morgen_im_tal", "x": 62, "y": 31, "eye": 1.6, "yaw": 112, "pitch": 1, "vfov": 60, "phase": "0", "time": 5.9 },
-  { "name": "r10_sonnenaufgang_von_oben", "x": 20, "y": 60, "eye": 120, "yaw": 60, "pitch": -10, "vfov": 60, "phase": "0", "time": 5.75 }
+  { "name": "r10_sonnenaufgang_von_oben", "x": 20, "y": 60, "eye": 120, "yaw": 60, "pitch": -10, "vfov": 60, "phase": "0", "time": 5.75 },
+  { "name": "r11_stausee_abend", "x": 2018, "y": -1368, "eye": 1.6, "yaw": 285, "pitch": -2, "vfov": 55, "phase": "0", "time": 20.0 },
+  { "name": "r12_stausee_damm", "x": 1176, "y": -730, "eye": 1.6, "yaw": 200, "pitch": -5, "vfov": 60, "phase": "0", "time": 15.5 },
+  { "name": "r13_stausee_von_oben", "x": 900, "y": -700, "eye": 80, "yaw": 135, "pitch": -18, "vfov": 55, "phase": "0", "time": 15.5 }
 ]
