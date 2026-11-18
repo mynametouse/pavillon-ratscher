@@ -328,6 +328,39 @@ export const WWALD = (() => {
   // drawn so that the widest part of its crown lies at the same height of the card (CY), where the card's level plane is (cardGeo); the
   // tree stands at y0 of the card (the card is set that much lower). info: the share of the side cell the tree fills (w across, h up), y0
   const CY = 0.45;
+  // the views from above keep TOP_A of their alpha (the card material tests at 0.24): where the atlas is seen in its fine levels a crown
+  // from above stays whole; in the small mip levels – far away, or the level plane seen at a grazing angle from a hill or the road – its
+  // average falls under the test and the plane is gone. Without it, a crown's average alpha passed there and each plane showed as an
+  // olive square: carpets of squares along a stand's edge and over tree rows from above, dark lines across the crowns from the road
+  const TOP_A = 0.28;
+  function dimTops(rt, C) {
+    if (!CARD.dim) {
+      // the alpha of the upper third times TOP_A, the colour kept (blending only: no new program of the trees)
+      const m = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        opacity: TOP_A,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        blending: THREE.CustomBlending,
+        blendEquation: THREE.AddEquation,
+        blendSrc: THREE.ZeroFactor,
+        blendDst: THREE.OneFactor,
+        blendEquationAlpha: THREE.AddEquation,
+        blendSrcAlpha: THREE.ZeroFactor,
+        blendDstAlpha: THREE.SrcAlphaFactor,
+      });
+      const sc = new THREE.Scene();
+      sc.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m));
+      CARD.dim = { sc, cam: new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1) };
+    }
+    const ac = R.autoClear;
+    R.autoClear = false;
+    rt.viewport.set(0, 2 * C, C * CK, C);
+    R.setRenderTarget(rt);
+    R.render(CARD.dim.sc, CARD.dim.cam);
+    R.autoClear = ac;
+  }
   function drawAtlas(bare) {
     const cols = atlasModels();
     if (!cols) return false;
@@ -402,6 +435,7 @@ export const WWALD = (() => {
       info.push({ w: (2 * hw) / (Hs / 2), h, y0 });
     });
     rt.scissorTest = false;
+    dimTops(rt, C);
     rt.viewport.set(0, 0, C * CK, C * 3);
     R.setRenderTarget(pt);
     R.setClearColor(pc, pa);
