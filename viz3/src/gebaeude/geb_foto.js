@@ -95,7 +95,7 @@ export const GEBFOTO = (() => {
     t.magFilter = THREE.LinearFilter;
     t.minFilter = THREE.LinearMipmapLinearFilter;
     t.generateMipmaps = true;
-    t.anisotropy = Math.min(4, ANISO);
+    t.anisotropy = Math.min(2, ANISO); // soft fields: little to gain from more
     t.needsUpdate = true;
     return t;
   }
