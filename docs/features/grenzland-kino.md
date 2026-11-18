@@ -33,7 +33,7 @@ Branch `feat/grenzland-kino`, Auftrag `docs/plans/auftraege/grenzland2-kino.md` 
   Grundspiels ist weg.
 - **Musik nach Lage** (`viz3/src/grenzland/gl_score.js`, GLSCORE) – seit V18r (17.11.2026, Falko: „Filmmusik bei Missionen“) spielen
   **echte Stücke von Kevin MacLeod** (incompetech.com, CC BY 4.0) aus dem Klang-Archiv `pavillon-ton/score/`: `spannung` „Crypto“,
-  `flucht` „Hot Pursuit“, ab drei Sternen „Ready Aim Fire“, `1989` „SCP-x6x (Hopes)“, `szene` „Almost New“; Stiche „Danse Macabre – Big
+  `flucht` „Hot Pursuit“, ab drei Sternen „Ready Aim Fire“, `1989` „SCP-x6x (Hopes)“ – `szene` (Gespräche) seit V19d wieder die Synthese (Falko 18.11.: das Klavierstück „Almost New“ passte nicht zum Krimi); Stiche „Danse Macabre – Big
   Hit 1“, „Loping Sting“, „Der Kleber Sting“ (−18 bzw. −15 LUFS). Zwei Media-Elemente wechseln sich ab (Schichtwechsel und Stückende blenden
   in rund zwei Sekunden über), Lautstärke und Ducken über den Master wie bisher; lädt eine Datei nicht (`ohneDatei`), kommt die Synthese
   zurück. `stand()` nennt `datei` und `dateiT`. Die Synthese – selbst komponiert, live in WebAudio erzeugt, d-Moll, über den Musik-Bus des
