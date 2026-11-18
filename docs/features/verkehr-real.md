@@ -167,7 +167,16 @@ schreibt die blockierenden WebGL-Aufrufe des ersten Bilds ins Protokoll.
   Lampen nachts, die drei Stufen, Sattelzug in der Kurve, die Zahl je Stunde, Draufsicht, Zeichenaufrufe, keine neuen Shader-Programme.
 - Bilder ohne Browser: `node viz3/extra/verkehr-real/werkzeug/bild.mjs <typ> out/verkehr_real/<typ>.png --col '#…' [--col2 '#…'] [--zug]`.
 
+## Stufe 3b – Busse im Stoß (seit 18.11.2026)
+
+`verkehr/vk_bus.js` (`VKBUS`): jeder Bus des Fahrplans (`bus/bus.js`, eine Kiste in `VEH.extra`) ist mit einem markierten Haken (`dyn`)
+im Stoß ein Körper von 12,5 t (`vehicles/vehicle.js` wie die Verkehrsautos der Stufe 3): das Auto des Spielers prallt ab, der Bus bewegt
+sich kaum. Nach einem Rempler steht er 6 s, nach einem Unfall 15 s mit Warnblinker (`I.knockT`, im Haken von `bus.js` stehen seine
+Minuten still; `bus_modell.js` `B.blink(2)`: beide Seiten), die Busfahrerin oder der Busfahrer schimpft vom Sitz aus (Untertitel und
+Stimme über `verkehr/verkehr.js`), dann fährt er weiter – der Fahrplan bleibt die Wahrheit (er ist danach verspätet). Test
+`viz3/test/verkehr_bus.py` (Szene `?szenario=bus`: der 205 an der Schleusebrücke, das Auto fährt mit 4 m/s auf; 8 Prüfungen).
+
 ## Was als Nächstes kommt (Plan, Stufe 4b und danach)
 
-Radfahrer im Verkehr (fest, stürzen und stehen wieder auf; Autos überholen mit Abstand), Busse im Stoß (Haken in `bus/`), eine Delle
+Radfahrer im Verkehr (fest, stürzen und stehen wieder auf; Autos überholen mit Abstand), eine Delle
 ab einer Geschwindigkeit, das Dorfgerede nach einem Unfall mit jemandem aus dem Ort, Überholen außerorts.

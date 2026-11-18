@@ -161,6 +161,121 @@ export const STRSTIL = (() => {
   // right in the direction of its points – that half is rastered like a through road in a village: kerb and gutter, nothing behind
   // them; a street (kind 3) is written as kind 2 there, and to keep it free of a centre line its lateral offset stays off the axis) } ----
   const BAND = 4;
+  // ---- acute junctions (an open point of Paket 1: „an spitzen Einmündungen liegen zwei Mittellinien nebeneinander“): a way that leaves
+  // another one at a sharp angle runs beside it inside its carriageway for a while – its centre line there would lie next to the other's.
+  // S.acute marks on each such way the stretch from the junction until the two axes are apart by both half widths and a little more:
+  // w.ncs = [[from, to], …] in metres along the way (the coordinate raster() counts in: s0 + the projection) – no centre line there.
+  // A way that ends on the middle of another branches off it; where three or more ways end in one point, the two that run most nearly
+  // straight on are the through road and the others branch off it. Continuations (two ends in one point) are no junction.
+  //   ways: any list; get(w) → { p, stride, n, hw, s0 } (s0: the metres along of the first point, a piece of a longer way). Returns the
+  //   number of stretches; each w gets w.ncs (or null) ----
+  S.ACUTE = 35; // degrees
+  S.acute = (ways, get) => {
+    const G = 16,
+      cells = new Map(),
+      cellOf = (x, y) => Math.floor(x / G) + ',' + Math.floor(y / G),
+      add = (k, v) => {
+        const L = cells.get(k);
+        if (L) L.push(v);
+        else cells.set(k, [v]);
+      },
+      W = ways.map(get),
+      ends = [];
+    W.forEach((w, wi) => {
+      ways[wi].ncs = null;
+      const { p, stride, n } = w;
+      if (!(n >= 2)) return;
+      const c = S.cum(p, stride, n);
+      w.L = c[n - 1];
+      for (let k = 0; k < n - 1; k++) {
+        const ax = p[k * stride],
+          ay = p[k * stride + 1],
+          bx = p[(k + 1) * stride],
+          by = p[(k + 1) * stride + 1];
+        const seen = new Set();
+        for (let x = Math.floor(Math.min(ax, bx) / G); x <= Math.floor(Math.max(ax, bx) / G); x++)
+          for (let y = Math.floor(Math.min(ay, by) / G); y <= Math.floor(Math.max(ay, by) / G); y++) {
+            const kk = x + ',' + y;
+            if (seen.has(kk)) continue;
+            seen.add(kk);
+            add(kk, ['s', wi, ax, ay, bx, by]);
+          }
+      }
+      // the two ends, each with the direction away from it along the way (over the first 3 m or more)
+      for (const e of [0, 1]) {
+        const i0 = e ? n - 1 : 0,
+          x = p[i0 * stride],
+          y = p[i0 * stride + 1];
+        let j = i0,
+          dx = 0,
+          dy = 0;
+        do {
+          j += e ? -1 : 1;
+          dx = p[j * stride] - x;
+          dy = p[j * stride + 1] - y;
+        } while (Math.hypot(dx, dy) < 3 && j > 0 && j < n - 1);
+        const l = Math.hypot(dx, dy);
+        if (l < 1e-3) continue;
+        const E = { wi, e, x, y, dx: dx / l, dy: dy / l };
+        ends.push(E);
+        add(cellOf(x, y), ['e', E]);
+      }
+    });
+    const ang = (ax, ay, bx, by) => (Math.acos(Math.min(1, Math.abs(ax * bx + ay * by))) * 180) / Math.PI;
+    let marks = 0;
+    const mark = (E, a, hwOther) => {
+      const w = W[E.wi],
+        L = Math.min(80, Math.max(6, (w.hw + hwOther + 0.6) / Math.sin((Math.max(a, 3) * Math.PI) / 180))),
+        s0 = w.s0 || 0,
+        iv = E.e ? [s0 + w.L - L, s0 + w.L] : [s0, s0 + L],
+        o = ways[E.wi];
+      (o.ncs = o.ncs || []).push(iv);
+      marks++;
+    };
+    for (const E of ends) {
+      const near = cells.get(cellOf(E.x, E.y)) || [],
+        // the other ends in this point (other ways)
+        here = near.filter(
+          q => q[0] === 'e' && q[1] !== E && q[1].wi !== E.wi && Math.hypot(q[1].x - E.x, q[1].y - E.y) < 0.6
+        ),
+        at = [E, ...here.map(q => q[1])];
+      if (at.length >= 3) {
+        // the through road: the pair that runs most nearly straight on (most opposite directions away from the point)
+        let best = null;
+        for (let i = 0; i < at.length; i++)
+          for (let j = i + 1; j < at.length; j++) {
+            const d = at[i].dx * at[j].dx + at[i].dy * at[j].dy;
+            if (!best || d < best[0]) best = [d, at[i], at[j]];
+          }
+        if (best[1] === E || best[2] === E) continue;
+        // (both directions point away from the point: a sharp angle to either means the two run side by side)
+        const a1 = (Math.acos(Math.max(-1, Math.min(1, E.dx * best[1].dx + E.dy * best[1].dy))) * 180) / Math.PI,
+          a2 = (Math.acos(Math.max(-1, Math.min(1, E.dx * best[2].dx + E.dy * best[2].dy))) * 180) / Math.PI;
+        const am = Math.min(a1, a2);
+        if (am < S.ACUTE) mark(E, am, Math.max(W[best[1].wi].hw, W[best[2].wi].hw));
+        continue;
+      }
+      if (at.length === 2) continue; // a continuation (or two ways meeting – no third to run beside)
+      // an end on the middle of another way: the segment nearest to it, the angle between the two
+      let hit = null;
+      for (const q of near) {
+        if (q[0] !== 's' || q[1] === E.wi) continue;
+        const [, oi, ax, ay, bx, by] = q,
+          ux = bx - ax,
+          uy = by - ay,
+          l2 = ux * ux + uy * uy;
+        if (l2 < 1e-6) continue;
+        const t = ((E.x - ax) * ux + (E.y - ay) * uy) / l2;
+        if (t < -0.02 || t > 1.02) continue;
+        const d = Math.hypot(ax + ux * t - E.x, ay + uy * t - E.y);
+        if (d > 0.8 || (hit && d >= hit[0])) continue;
+        const l = Math.sqrt(l2);
+        hit = [d, oi, ang(E.dx, E.dy, ux / l, uy / l)];
+      }
+      if (hit && hit[2] < S.ACUTE) mark(E, hit[2], W[hit[1]].hw);
+    }
+    return marks;
+  };
   S.clear = D => {
     D.fill(0);
     for (let i = 2; i < D.length; i += 4) D[i] = 128; // R 0 = far from every road, B = centre
@@ -170,6 +285,7 @@ export const STRSTIL = (() => {
       eK = 255 / S.ERNG,
       lK = 255 / (2 * S.LRNG),
       { p, stride, n, hw, kind, surf, st, noL, noR } = way,
+      ncs = way.ncs && way.ncs.length ? way.ncs : null,
       R2 = hw + BAND,
       nc = way.nc || (kind === 3 && (noL || noR)),
       bare = S.code(kind === 3 ? 2 : kind, surf, S.VILLAGE);
@@ -207,8 +323,14 @@ export const STRSTIL = (() => {
           const r8 = enc((e - S.EMIN) * eK),
             q = (j * W + i) * 4;
           if (r8 <= D[q]) continue;
-          const lat = ux * py - uy * px, // + to the left of the direction of the points
-            lw = nc ? Math.max(Math.abs(lat), S.NC) : lat;
+          const lat = ux * py - uy * px; // + to the left of the direction of the points
+          let off = nc;
+          if (!off && ncs) {
+            // an acute junction's stretch (S.acute): no centre line there
+            const sa = s0 + tc;
+            for (let m = 0; m < ncs.length; m++) if (sa >= ncs[m][0] && sa <= ncs[m][1]) off = true;
+          }
+          const lw = off ? Math.max(Math.abs(lat), S.NC) : lat;
           D[q] = r8;
           D[q + 1] = lat > 0 ? codeL : codeR;
           D[q + 2] = enc(((lw < -S.LRNG ? -S.LRNG : lw > S.LRNG ? S.LRNG : lw) + S.LRNG) * lK);

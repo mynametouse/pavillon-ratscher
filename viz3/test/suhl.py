@@ -7,13 +7,14 @@
 #   uebergabe  the streets handed to the region's road system (FAHRT.add/drop/ground, round 2 of the roads chat) – a page of its own
 #   anfahrt    the way there: with ?suhl=1 the approach ways and the named routes garden → Suhl come into the drive once it wakes
 #   bus        by bus: with ?suhl=1 the bus module takes the timetable that runs on into Suhl (203 from Ratscher, the city buses)
+#   jahr1989   Suhl in the night of 4.12.1989 (lazy/suhl/kern/jahr1989.js): on and off, the night, the crowd before the gate – a page of its own
 #   tag1   the checks of the first day (not in the default run): package and worker, the sky and the top view at Suhl, precision
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
 port = sys.argv[1]
-ALL = ['start', 'sprung', 'stufen', 'boden', 'fahrt', 'oben', 'nacht', 'frei', 'zahlen', 'telefon', 'uebergabe', 'anfahrt', 'bus']
+ALL = ['start', 'sprung', 'stufen', 'boden', 'fahrt', 'oben', 'nacht', 'frei', 'zahlen', 'telefon', 'uebergabe', 'anfahrt', 'bus', 'jahr1989']
 ONLY = sys.argv[2].split(',') if len(sys.argv) > 2 else ALL
 want = lambda k: k in ONLY
 ck = lib.Checks('suhl')
@@ -711,7 +712,52 @@ def bus():
             ck.errors(errs)
 
 
-if [k for k in ONLY if k not in ('telefon', 'uebergabe', 'anfahrt', 'bus')]:
+def jahr1989():
+    """Suhl 1989 for Grenzland's „Die Nacht am Tor“: SUHL.jahr1989(true, { nacht: true }) turns the city into the night of 4.12.1989 (the
+    day and the hour set, buildings of 1991 on hidden) and puts the fence, the gate, the Volkspolizei, the crowd with candles and banners
+    and cars of the time before the district office of the Stasi in the Hölderlinstraße; the nearest people as real figures (GLFIG);
+    off gives everything back. A page of its own."""
+    GATE = (-3960.4, 12361.5)
+    with lib.browser() as b:
+        errs = []
+        pg = lib.page(b, 1100, 680, errs, tier='hoch')
+        lib.boot(pg, port, '?suhl=suhl/')
+        E = pg.evaluate
+        J = lambda s: json.loads(E('JSON.stringify(' + s + ')'))
+        E("GAME.setView3(false); GAME.go('suhl')")
+        t0 = time.time()
+        while time.time() - t0 < 240 and not E("SUHL.status().state === 'ready'"):
+            E("GAME.step(0.5)")
+        before = J("({ e0: DN.e0, t: CLOCK.t })")
+        E("SUHL.jahr1989(true, { nacht: true })")
+        E(f"GAME.view({GATE[0] + 4}, {GATE[1] + 22}, KERN.ground({GATE[0] + 4}, {GATE[1] + 22}, 9999) + 1.7, 190, -3, 60)")
+        t0 = time.time()
+        while time.time() - t0 < 180 and not E("(SUHL.status().jahr1989 || {}).built"):
+            E("GAME.step(0.5)")
+        night = J("(() => { const d = new Date((DN.e0 + Math.floor(CLOCK.t / 1440)) * 864e5); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(), h: (CLOCK.t % 1440) / 60 }; })()")
+        st = J("SUHL.status().jahr1989")
+        ck('1989: the night of 4.12.1989 (date and hour set), the layer on', st and st['on'] and night['y'] == 1989 and night['m'] == 12 and night['d'] == 4
+           and 19.5 < night['h'] < 22.5, json.dumps({'night': night, 'st': st}))
+        if st and st['built']:
+            ck('1989: before the gate the fence, six banners, ~1 700 people, four in ten with a candle, cars of the time',
+               st['fence'] >= 20 and st['banners'] == 6 and st['people'] >= 800 and st['candles'] >= 300, json.dumps(st))
+            t0 = time.time()
+            while time.time() - t0 < 120 and J("SUHL.status().jahr1989.realPlaced") < 3:
+                E("GAME.step(0.5)")
+            st = J("SUHL.status().jahr1989")
+            ck('1989: the nearest people are real figures (GLFIG, clothes of 1989) on their spots', st['realPlaced'] >= 3, json.dumps(st))
+        else:
+            ck('1989: the street before the gate is not in this set – the layer waits for it (no build, no error)', st and not st['err'] and st['wait'], json.dumps(st))
+        E("SUHL.jahr1989(false)")
+        for _ in range(6):
+            E("GAME.step(0.5)")
+        after = J("({ e0: DN.e0, t: CLOCK.t, st: SUHL.status().jahr1989 })")
+        ck('1989: off – the layer gone, the date as before', not after['st']['on'] and not after['st']['built'] and after['st']['real'] == 0 and after['e0'] == before['e0'],
+           json.dumps({'before': before, 'after': after}))
+        ck.errors(errs)
+
+
+if [k for k in ONLY if k not in ('telefon', 'uebergabe', 'anfahrt', 'bus', 'jahr1989')]:
     desktop()
 if want('telefon'):
     telefon()
@@ -721,4 +767,6 @@ if want('anfahrt'):
     anfahrt()
 if want('bus'):
     bus()
+if want('jahr1989'):
+    jahr1989()
 ck.done()

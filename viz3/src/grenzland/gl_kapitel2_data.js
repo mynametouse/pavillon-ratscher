@@ -18,9 +18,9 @@ export const GLK2DATA = (() => {
   // ---- the chapter's card (the opening of mission 1) ----
   const KAP = {
     nr: 2,
-    // the preview (Falko, 18.11.2026 18:42: a „Vorabversion“ of chapter 2 at ~20:30): the opening and mission 2 – mission 1 at the
-    // Grünes Band comes with agent zone's zone; until then the chapter opens before mission 2 and its card says so
-    vorab: true,
+    // the preview (Falko, 18.11.2026 18:42: a „Vorabversion“ of chapter 2 at ~20:30, V19g): the opening and mission 2 only – the chapter
+    // opened before mission 2 and its card said so. Since agent zone's zone is in (V19g), mission 1 at the Grünes Band is in: false
+    vorab: false,
     titel: 'Kolonnenweg',
     ueber: 'Kapitel 2',
     ueberVorab: 'Kapitel 2 – Vorabversion',
@@ -39,7 +39,7 @@ export const GLK2DATA = (() => {
     k2m1: {
       kap: 2,
       ueber: 'Kapitel 2 · Mission 1',
-      unter: 'Görsdorfer Heide · Samstagvormittag',
+      unter: 'Görsdorfer Heide · Vormittag',
       title: 'Grünes Band',
       who: 'Jule',
       teaser: 'Jule hat Neuigkeiten über die Kiste.',
@@ -295,6 +295,9 @@ export const GLK2DATA = (() => {
     morgenB: 'Über Nacht sind zehn Zentimeter Schnee gefallen. Die Simson springt trotzdem an.',
     morgenVorab:
       'Samstag. Mission 1 „Grünes Band“ – zum Bunker am Kolonnenweg – kommt mit der nächsten Version. Heute braucht die Clique ein Auto.',
+    // (mission 1 after a preview's mission 2: the night after it)
+    spaetA: 'Am nächsten Morgen',
+    spaetB: 'Der Schnee liegt noch. Zeit für das Grüne Band – die Simson springt trotzdem an.',
     hinfahren: 'Hinfahren',
     hinA: 'Eine halbe Stunde später',
     hinB: 'Über die Landstraße bis Eisfeld – die Simson darf nicht auf die Autobahn, und das ist auch gut so.',
@@ -438,6 +441,13 @@ export const GLK2LOGIK = (() => {
   // when the chapter begins in free play after chapter 1: the player asked for it (the panel's button), came to the barn, or played on
   // for a while (s of calm free play) – never in the middle of something (a mission, wanted, a side job, on the phone, a card on the screen)
   const FREI_T = 180;
+  // the direct way in (?kapitel=2, Falko 18.11.2026 20:28 over the lead): o = { kap: GL.kap, kap1: states of chapter 1's missions,
+  // k2: states of chapter 2's } → 'nichts' (chapter 2 has begun) | 'beginnen' (chapter 1 is done) | 'kap1' (mark chapter 1 done first)
+  function direkt(o = {}) {
+    if ((o.kap || 1) > 1 || (o.k2 || []).some(s => s && s !== 'offen')) return 'nichts';
+    const k1 = o.kap1 || [];
+    return k1.length && k1.every(s => s === 'erledigt') ? 'beginnen' : 'kap1';
+  }
   function beginnt(o = {}) {
     if (!o.on || o.era !== 'heute' || !o.kap1 || o.k2 || o.mission) return '';
     if (o.ende || o.sterne > 0 || o.job || o.handy || o.blende) return '';
@@ -510,7 +520,7 @@ export const GLK2LOGIK = (() => {
     }
     return out.length >= 2 ? out : null;
   }
-  return { tag, DEZ, e0, FREI_T, beginnt, WETTER, FREMDER_R, BUNKER, WAGEN, entlang, laenge, abstand, punkte };
+  return { tag, DEZ, e0, FREI_T, direkt, beginnt, WETTER, FREMDER_R, BUNKER, WAGEN, entlang, laenge, abstand, punkte };
 })();
 // ===================================================================================================================================
 export const GLKNLOGIK = (() => {

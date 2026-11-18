@@ -15,6 +15,13 @@ umsetzen kannst, das tu“.
   (daraus alle Strichfolgen: 4 m/8 m außerorts, 3 m/6 m innerorts, 6 m/12 m Autobahn). Der Shader `roadShade` zeichnet daraus:
   - **Markierung nach Klasse, Breite und Lage:** Mittellinie ab 5,5 m Breite auf Haupt- und Kreisstraßen (gestrichelt oder durchgezogen),
     Randlinien außerorts auf Hauptstraßen und auf Kreisstraßen ab 5 m; schmale Kreisstraßen nur Randlinien; innerorts keine Randlinien.
+  - **Einmündungen in spitzem Winkel** (seit 18.11.2026, `STRSTIL.acute`): ein Weg, der unter weniger als 35° von einem anderen abgeht,
+    läuft eine Strecke lang in dessen Fahrbahn – dort trägt er keine eigene Mittellinie, bis die beiden Achsen um beide halben Breiten und
+    0,6 m auseinander sind (6 bis 80 m). Endet ein Weg auf der Mitte eines anderen, zweigt er ab; enden drei oder mehr Wege in einem Punkt,
+    sind die zwei, die am geradesten durchlaufen, die durchgehende Straße. Gefunden einmal beim Laden (Quadrat, `world/roads.js`) und bei
+    jeder Änderung der Fahrtdaten (`strassen/strassen_karte.js`, die ganze Region in ~25 ms). Heute wirkt das an den Rampen der
+    Anschlussstelle der A 73 (sechs Stellen: dort lagen die Strichlinien von Rampe und Fahrbahn nebeneinander); die übrigen 45 Stellen der
+    Region und die 17 im Quadrat liegen an Wegen ohne Mittellinie.
   - **Ränder:** außerorts ein Bankett aus Schotter und Gras; in der Stadt Bordstein (Steine von 1 m, dunkle Kante zur Rinne), Rinne
     aus zwei Reihen Pflaster und Gehweg aus Betonpflaster (1,7 m an Durchgangsstraßen, 1,3 m an Wohnstraßen); im Dorf Bordstein und Rinne
     nur an den Durchgangsstraßen (Haupt-/Kreisstraße) – die Gassen bleiben, wie sie sind.
@@ -53,6 +60,11 @@ umsetzen kannst, das tu“.
   - **Brücken:** die Straßenkarte lässt Brücken aus (sonst läge unter dem Deck eine Straße auf dem Talboden) – ihre Mittel- und
     Randlinien liegen als Farbe auf dem Deck (`STRMOD.deckMarks`; die Decks des Quadrats und die von `welt/fahrt.js`).
   - **Rückstrahler:** nachts leuchten die Rückstrahler der Leitpfosten dem Auto entgegen, das man fährt (kleine helle Flächen, addiert).
+  - **Schilder reflektieren** (seit 18.11.2026): die Schildflächen tragen ihr Bild auch als Leuchtbild (`emissiveMap`); im Shader
+    (`onBeforeCompile` des Materials der Flächen, beim Laden übersetzt) zählt nachts nur das Licht des Autos, das man fährt: wie gerade die
+    Fläche zu den Scheinwerfern steht, ob sie im Lichtkegel liegt (Abblendlicht, ±35°, in der Mitte am stärksten) und der Abstand (bei
+    60 m die Hälfte) – Uniforms `uHl` (Ort der Scheinwerfer, w die Stärke 0…1) und `uHd` (Richtung), gesetzt in `light()`; am Tag, zu Fuß
+    und mit ausgeschaltetem Licht 0 (`STRASSEN.state().shine`).
 - **Kein neues Shader-Programm zur Laufzeit:** alles mit Vertexfarben auf dem Material der geparkten Autos (`DMOD.mat`), die
   Schildflächen, das Lampenglas, die Seile und die Linien mit je einem Material, das beim Laden mitkompiliert wird (Träger-Dreiecke).
 
@@ -146,8 +158,6 @@ deren Achsen und Breiten ausgerichtet. Braucht `pyproj`, `numpy`. Nach neuen Fah
 
 ## Offen
 
-- **Einmündungen in spitzem Winkel:** zwei Mittellinien nebeneinander, wo zwei Wege fast parallel zusammenlaufen (wie vorher).
-- **Schilder** sind nachts dunkel (die Rückstrahler der Leitpfosten leuchten im Licht des Autos, das man fährt).
 - **Ampeln** (drei Fußgängerampeln in OSM) fehlen; **Gehwege** stehen in der Region überall in der Stadt beidseitig – die Fahrtdaten
   der Region tragen die Merker 256/512 noch nicht (`viz3/extra/fahrt/strecke.py` liest OSM `sidewalk` nicht), ebenso wenig 32 und 64;
   Suhls Daten bringen sie mit. In der Region gilt bis dahin: Einbahnstraßen der Arten 1 und 2 (dort sind auch die Kreisverkehre so
