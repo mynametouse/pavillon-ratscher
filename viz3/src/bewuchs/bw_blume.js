@@ -365,8 +365,11 @@ export const BWBLUME = (() => {
         if (!f || !(f.cell >= 0)) D.set([-1, 0, 0, 9999], q);
         else D.set([f.cell, hk(p[0], f) * (seed ? -1 : 1), p[1], p[2] + OFF[k] * (s.streu || 0)], q);
       }
-      const tb = s.grass && F.bluete ? tintOf(s.col, F.bluete.cell) : [1, 1, 1],
-        ts = s.grass && F.samen ? tintOf(s.colSeed, F.samen.cell) : [1, 1, 1];
+      // (feat/fotorealismus, foto-wald: a cereal's ears a quarter darker than drawn – lit from above like the ground, the pale
+      // green of the drawings stood milky over the field)
+      const te = s.earLen ? [0.76, 0.78, 0.7] : [1, 1, 1],
+        tb = s.grass && F.bluete ? tintOf(s.col, F.bluete.cell) : te,
+        ts = s.grass && F.samen ? tintOf(s.colSeed, F.samen.cell) : te;
       D.set([...tb, 1], o + 28);
       D.set([...ts, 1], o + 32);
     });

@@ -1,4 +1,8 @@
 # feat/fotorealismus (foto-wald): the woods' herb layer – in the stand's light, in patches (viz3/test/foto_wald.py; pictures in
-# out/foto_wald/), and the vegetation template it changes (viz3/test/bewuchs.py)
+# out/foto_wald/), the vegetation template it changes (viz3/test/bewuchs.py, the far vegetation of viz3/test/fotorealismus.py), and what
+# every change of the picture must keep: the budgets of a frame (leistung) and the memory on phones (memphone)
 foto_wald
-bewuchs:rasen,wiese,leistung
+bewuchs
+fotorealismus:ferne
+leistung
+memphone
