@@ -12,14 +12,17 @@
 //   the waves' fronts hide their backs: seen flat the surface is flattened and roughened the same way.
 // - a bank: every body carries a small map of the distance to its bank (drawn once from its outline, 0.4–3.2 m a texel, exact near
 //   the bank). In the last two and a half metres the water thins out to nothing – the aerial photo's own bank shows through –,
-//   behind it lies a band of lighter, greener shallows before the dark of the deep.
+//   behind it lies a band of lighter, greener shallows before the dark of the deep. The reservoir's bed is carved into the terrain
+//   cell by cell, so along a slanted bank (the dam) cells of the bed lie beyond the outline: the old plate ended above them in mid
+//   air, a dark strip of bed between water and bank. The water now spreads over every such cell it can reach from inside (up to
+//   26 m beyond the outline, the ground there below the level but not by more than 8 m – never down the far side of the dam).
 // - the sun's shadows (the trees of the bank, the dam; the hills' at a low sun): the glitter ends where the shadow begins.
 // No new light, no render pass, one shader program (in place of the old one), one texture of 256² and a bank map per body (the
 // reservoir's: 200 kB). The water moves in real time, not in the game's; it asks for pictures (15 a second) only while it is in the
 // picture and within 600 m, and not on tier „schnell“ or a phone – there it moves when the picture is drawn anyway (as the brook,
 // garden/stream.js).
 //   ?nowasser            the water as world/ratscher.js made it (comparisons)
-//   WASSER.state()       { on, built, bodies, tris, maps: [[w, h, m per texel], …], ms, wind, slope, near }
+//   WASSER.state()       { on, built, bodies, tris, maps: [[w, h, m per texel, texels of bed beyond the outline], …], ms, wind, slope, near }
 //   WASSER.set({ on })   the old plate back, or the waves again (comparisons in one session)
 //   WASSER.step(s)       moves the waves on by s seconds (tests; with window.FREEZE they stand still otherwise)
 //   WASSER.bank(x, y)    the distance to the nearest bank as the maps hold it (m; inside positive, outside negative; null: no map there)
@@ -167,9 +170,11 @@ export const WASSER = (() => {
       }
     return { T, B };
   }
-  // ---------- the map of the distance to the bank: exact within HI of it (each bank edge writes its neighbourhood), inside or
-  // outside row by row from the edges the row crosses ----------
-  function field(B) {
+  // ---------- the map of the distance to the bank: exact within HI of the outline (each bank edge writes its neighbourhood), inside
+  // or outside row by row from the edges the row crosses; o.spread > 0: the water also takes the ground beyond the outline that
+  // lies below o.level (o.terrain(x, y): the drawn ground) and that it can reach from inside – there the bank is where that ground
+  // rises out of the water ----------
+  function field(B, o) {
     let x0 = Infinity,
       x1 = -Infinity,
       z0 = Infinity,
@@ -184,12 +189,14 @@ export const WASSER = (() => {
         if (z < z0) z0 = z;
         if (z > z1) z1 = z;
       }
-    const s = Math.min(3.2, Math.max(0.4, Math.max(x1 - x0, z1 - z0) / 480)),
-      pad = 4 * s + 2,
+    const spread = (o && o.terrain && o.spread) || 0,
+      s = Math.min(3.2, Math.max(0.4, Math.max(x1 - x0, z1 - z0) / 480)),
+      pad = Math.max(4 * s + 2, spread + 3 * s),
       W = Math.ceil((x1 - x0 + 2 * pad) / s),
       H = Math.ceil((z1 - z0 + 2 * pad) / s),
-      R = HI + s,
-      d2 = new Float32Array(W * H).fill(R * R);
+      N = W * H,
+      R = Math.max(HI, spread) + s,
+      d2 = new Float32Array(N).fill(R * R);
     x0 -= pad;
     z0 -= pad;
     for (let e = 0; e < B.length; e += 4) {
@@ -204,18 +211,19 @@ export const WASSER = (() => {
         j1 = Math.min(H - 1, Math.ceil((Math.max(az, az + uz) + R - z0) / s));
       for (let j = j0; j <= j1; j++) {
         const rz = z0 + (j + 0.5) * s - az;
-        for (let i = i0, o = j * W + i0; i <= i1; i++, o++) {
+        for (let i = i0, q = j * W + i0; i <= i1; i++, q++) {
           const rx = x0 + (i + 0.5) * s - ax;
           let t = (rx * ux + rz * uz) / L;
           t = t < 0 ? 0 : t > 1 ? 1 : t;
           const px = rx - t * ux,
             pz = rz - t * uz,
-            q = px * px + pz * pz;
-          if (q < d2[o]) d2[o] = q;
+            v = px * px + pz * pz;
+          if (v < d2[q]) d2[q] = v;
         }
       }
     }
-    const d = new Uint8Array(W * H),
+    // 1: inside the outline; 2: bed beyond it that the water reaches; 3: looked at and dry
+    const wet = new Uint8Array(N),
       xs = [];
     for (let j = 0; j < H; j++) {
       const zc = z0 + (j + 0.5) * s;
@@ -226,14 +234,89 @@ export const WASSER = (() => {
         if (az > zc !== bz > zc) xs.push(B[e] + ((zc - az) / (bz - az)) * B[e + 2]);
       }
       xs.sort((a, b) => a - b);
-      for (let i = 0, o = j * W, n = 0; i < W; i++, o++) {
+      for (let i = 0, q = j * W, n = 0; i < W; i++, q++) {
         const xc = x0 + (i + 0.5) * s;
         while (n < xs.length && xs[n] < xc) n++;
-        const v = Math.sqrt(d2[o]) * (n & 1 ? 1 : -1);
-        d[o] = Math.round((255 * (Math.min(HI, Math.max(LO, v)) - LO)) / (HI - LO));
+        if (n & 1) wet[q] = 1;
       }
     }
-    return { d, W, H, s, x0, z0 };
+    let ext = 0;
+    if (spread > 0) {
+      const st = [],
+        lim = spread * spread;
+      for (let j = 1; j < H - 1; j++)
+        for (let i = 1, q = j * W + 1; i < W - 1; i++, q++)
+          if (wet[q] === 1) {
+            if (!wet[q - 1]) st.push(q - 1);
+            if (!wet[q + 1]) st.push(q + 1);
+            if (!wet[q - W]) st.push(q - W);
+            if (!wet[q + W]) st.push(q + W);
+          }
+      while (st.length) {
+        const q = st.pop();
+        if (wet[q]) continue;
+        const i = q % W,
+          j = (q - i) / W;
+        wet[q] = 3;
+        if (i < 1 || j < 1 || i > W - 2 || j > H - 2 || d2[q] > lim) continue; // (the map's rim stays dry: the water ends inside it)
+        const h = o.terrain(x0 + (i + 0.5) * s, -(z0 + (j + 0.5) * s));
+        if (!(h < o.level - 0.05 && h > o.level - 8)) continue;
+        wet[q] = 2;
+        ext++;
+        st.push(q - 1, q + 1, q - W, q + W);
+      }
+      if (ext > 0.25 * N) {
+        // (more than a bank's worth: not a carved bed but open low ground – leave the outline as it is)
+        for (let q = 0; q < N; q++) if (wet[q] === 2) wet[q] = 3;
+        ext = 0;
+      }
+    }
+    const d = new Uint8Array(N),
+      byte = v => Math.round((255 * (Math.min(HI, Math.max(LO, v)) - LO)) / (HI - LO));
+    if (!ext) for (let q = 0; q < N; q++) d[q] = byte(Math.sqrt(d2[q]) * (wet[q] === 1 ? 1 : -1));
+    else {
+      // with bed beyond the outline: the distance to the nearest dry texel (a) and to the nearest wet one (b), two sweeps each; where
+      // they say the bank is elsewhere than the outline, they count
+      const a = new Float32Array(N),
+        b = new Float32Array(N),
+        sd = s * 1.41421356;
+      for (let q = 0; q < N; q++) {
+        const w = wet[q] === 1 || wet[q] === 2;
+        a[q] = w ? 1e9 : 0;
+        b[q] = w ? 0 : 1e9;
+      }
+      for (const f of [a, b]) {
+        for (let j = 0, q = 0; j < H; j++)
+          for (let i = 0; i < W; i++, q++) {
+            let v = f[q];
+            if (i > 0 && f[q - 1] + s < v) v = f[q - 1] + s;
+            if (j > 0) {
+              if (f[q - W] + s < v) v = f[q - W] + s;
+              if (i > 0 && f[q - W - 1] + sd < v) v = f[q - W - 1] + sd;
+              if (i < W - 1 && f[q - W + 1] + sd < v) v = f[q - W + 1] + sd;
+            }
+            f[q] = v;
+          }
+        for (let j = H - 1, q = N - 1; j >= 0; j--)
+          for (let i = W - 1; i >= 0; i--, q--) {
+            let v = f[q];
+            if (i < W - 1 && f[q + 1] + s < v) v = f[q + 1] + s;
+            if (j < H - 1) {
+              if (f[q + W] + s < v) v = f[q + W] + s;
+              if (i < W - 1 && f[q + W + 1] + sd < v) v = f[q + W + 1] + sd;
+              if (i > 0 && f[q + W - 1] + sd < v) v = f[q + W - 1] + sd;
+            }
+            f[q] = v;
+          }
+      }
+      for (let q = 0; q < N; q++) {
+        const w = wet[q] === 1 || wet[q] === 2,
+          sp = Math.sqrt(d2[q]) * (wet[q] === 1 ? 1 : -1), // by the outline
+          sc = w ? a[q] - 0.5 * s : 0.5 * s - b[q]; // by the wet and the dry texels
+        d[q] = byte(wet[q] === 2 || sc > sp + 1.5 * s ? sc : sp);
+      }
+    }
+    return { d, W, H, s, x0, z0, ext };
   }
   // ---------- the material: one program for all bodies, each with its bank map ----------
   function material(old, F) {
@@ -279,6 +362,7 @@ export const WASSER = (() => {
     float waB = texture2D( tWaB, ( vWaP.xz - uWaB.xy ) * uWaB.zw ).r * ${f(HI - LO)} + ${f(LO)};
     diffuseColor.rgb = mix( vec3( ${f(SHALLOW.r)}, ${f(SHALLOW.g)}, ${f(SHALLOW.b)} ), diffuseColor.rgb, smoothstep( 0.4, 10.0, waB ) );
     diffuseColor.a *= smoothstep( 0.0, 2.6, waB );
+    if ( waB <= 0.02 ) discard;   // (the mesh is the map's rectangle)
   }`
           )
           .replace(
@@ -372,25 +456,25 @@ export const WASSER = (() => {
       if (!w.tri || w.tri.length < 3) continue;
       const { T, B } = outline(w);
       if (!B.length) continue;
-      const F = field(B),
-        n = w.x.length,
-        pos = new Float32Array(n * 3),
-        nor = new Float32Array(n * 3),
+      // (the reservoir – a hectare and more – also takes the carved bed beyond its outline)
+      const F = field(B, w.area >= 10000 ? { spread: 26, level: w.z, terrain: RATSCHER.hMesh } : null),
         P = [];
-      for (let i = 0; i < n; i++) {
-        pos[i * 3] = w.x[i];
-        pos[i * 3 + 1] = w.z;
-        pos[i * 3 + 2] = -w.y[i];
-        nor[i * 3 + 1] = 1;
-        P.push(w.x[i], -w.y[i]);
-      }
-      // (for the distance to the camera: the corners and the middle of every triangle)
+      // (for the distance to the camera: the outline's corners and the middle of every triangle)
+      for (let i = 0; i < w.x.length; i++) P.push(w.x[i], -w.y[i]);
       for (let t = 0; t < T.length; t += 3)
         P.push((w.x[T[t]] + w.x[T[t + 1]] + w.x[T[t + 2]]) / 3, -(w.y[T[t]] + w.y[T[t + 1]] + w.y[T[t + 2]]) / 3);
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
-      g.setIndex(T);
+      // the mesh: the map's rectangle at the water's level (the map says where there is water)
+      const xa = F.x0,
+        xb = F.x0 + F.W * F.s,
+        za = F.z0,
+        zb = F.z0 + F.H * F.s,
+        g = new THREE.BufferGeometry();
+      g.setAttribute(
+        'position',
+        new THREE.BufferAttribute(new Float32Array([xa, w.z, za, xa, w.z, zb, xb, w.z, zb, xb, w.z, za]), 3)
+      );
+      g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]), 3));
+      g.setIndex([0, 1, 2, 0, 2, 3]);
       g.computeBoundingBox();
       g.computeBoundingSphere();
       const me = new THREE.Mesh(g, material(old.material, F));
@@ -414,8 +498,8 @@ export const WASSER = (() => {
       scene.add(me);
       S.neu.push(me);
       S.fields.push(F);
-      S.tris += T.length / 3;
-      S.maps.push([F.W, F.H, +F.s.toFixed(2)]);
+      S.tris += 2;
+      S.maps.push([F.W, F.H, +F.s.toFixed(2), F.ext]);
     }
     if (!S.neu.length) return;
     S.old = RATSCHER.water.slice();
