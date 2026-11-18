@@ -73,15 +73,17 @@ Mesh, kein Pass).
 
 | Blickpunkt | Zeichenaufrufe / Dreiecke (mit = ohne) | Schattenkarte des Kastens |
 |---|---|---|
-| Anger (242, −101) | 690 / 1,35 M | 75 / 90 Tsd. |
-| Fassaden am Anger (250, −118) | 249 / 0,86 M | 72 / 88 Tsd. |
-| Scheune (300, −160) | 263 / 0,75 M | 64 / 74 Tsd. |
+| Anger (242, −101) | 705 / 1,39 M | 75 / 97 Tsd. |
+| Fassaden am Anger (250, −118) | 252 / 0,89 M | 72 / 95 Tsd. |
+| Scheune (300, −160) | 258 / 0,73 M | 64 / 74 Tsd. |
 | Wand in 2 m | 253 / 0,85 M | 73 / 95 Tsd. |
-| Halle (120, −60) | 320 / 0,94 M | 65 / 47 Tsd. |
-| Welt: Rappelsdorf (−3206, −54) | 211 / 0,21 M | 63 / 19 Tsd. |
-| Markt Schleusingen (−1100, 1215) | 350 / 1,02 M | 76 / 45 Tsd. |
+| Fassade in der Sonne aus 9 m / 4 m / schräg | 247 / 0,69 M · 244 / 0,69 M · 221 / 0,68 M | 72 / 81 Tsd. |
+| Halle (120, −60) | 344 / 0,96 M | 66 / 52 Tsd. |
+| Welt: Rappelsdorf (−3206, −54) | 213 / 0,21 M | 63 / 19 Tsd. |
+| Markt Schleusingen (−1100, 1215) | 365 / 1,03 M | 74 / 45 Tsd. |
 
-- **Programme:** kein neues – die zwei vorhandenen (`v16e-wall`, `v16e-roof`) sind geändert; 177 Programme nach allen Blickpunkten wie vorher.
+- **Programme:** kein neues – dieselben zwei Materialien (`v16e-wall`, `v16e-roof`), ihr Shader geändert (184 Programme im Test bei GitHub,
+  188 nach allen dreizehn Blickpunkten im Chat-Rechner).
 - **Texturen je Programm:** Wand 7 statt 5 (dazu das Rauschen und die Normalenkarte des Putzes), Dach 8 statt 7 (das Rauschen); das
   größte Programm bleibt bei 16 (die Bodenshader). `lib.check_gl`: keins über 16, keins kaputt.
 - **Speicher:** eine Textur mehr – das Rauschen, 256² RGBA mit Mip-Stufen, 0,35 MB, beim Start gerechnet (20–50 ms einmalig, in node
@@ -105,11 +107,22 @@ Mesh, kein Pass).
   für Bilder).
 - Ohne Browser: `bash tools/check.sh`; die beiden Shader (so, wie three sie zusammensetzt) übersetzt und mit einer Probe-Fassade
   gezeichnet mit Mesa (EGL, llvmpipe) – daher die Probe-Bilder unter `/home/claude/scratch/foto/gebaeude/glsl/` (nicht das Licht der App).
+- **Erster Feature-Lauf bei GitHub** (44386911206, Stand `62b7e3f9`): `smoke`, `leistung`, `memphone`, `schleusingen` grün;
+  `foto_gebaeude` 18 von 19 – Wand: Streuung 1,2 → 3,0 (von 255), Sockelband 75 → 59 bei Wand 100, Fuß 52; Fensterstreifen unter dem
+  Sturz 0,38 und 0,41 der Helligkeit von vorher; Himmel bildpunktgleich, 15 % des Straßenbilds geändert; Wand 7, Dach 8 Texturen. Die
+  eine rote Prüfung war meine Messung des Tons je Haus (zu tief gemessen – hinter Zäunen – und die Schwelle zu hoch: drei Häuser lagen
+  bei 0,975–0,992); im zweiten Push misst sie über den Zäunen.
 - Bilder vorher/nachher aus der App: `/home/claude/scratch/foto/gebaeude/c/` (`<blick>_vorher.jpg`, `<blick>_nachher.jpg`; ein Laden,
-  `GEBFOTO.set(0)` und `set(1)` von derselben Stelle).
+  `GEBFOTO.set(0)` und `set(1)` von derselben Stelle; dreizehn Blickpunkte, darunter `sonne` 9 m, `sonne_nah` 4 m, `sonne_schraeg`,
+  `dach`, `wand` 2 m, `welt` Rappelsdorf, `markt` und `markt_nah` Schleusingen, `abend` 20 Uhr). Sie zeigen den Stand **vor** zwei
+  kleinen Nachbesserungen aus genau diesen Bildern (`3ba70e77`): unter den Fensterbänken lag der alte gemalte Schatten *und* der neue
+  der Sonne – ein dunkler Balken –, jetzt nur noch ein Hauch des gemalten; die grobe Körnung ist auf weißen Sonnenwänden etwas ruhiger.
+  Die Fensterbank danach: `glsl/c7_sims_1.jpg` (Probe-Fassade).
 
 ## Offen
 
+0. **Wahrzeichen mit eigenem Material** (das Rathaus von Schleusingen, Kirchen, die Burg) zeichnet nicht der Fassaden-Shader – sie
+   bleiben, wie sie waren (am Markt neben den neuen Wänden zu sehen).
 1. **Am echten Gerät ansehen** (Laptop, iPhone): Bildrate vor einer Wand, die das Bild füllt; Stärke von Körnung, Flecken und Sockel.
 2. **Fenster, zweiter Teil:** nicht jedes Fenster gleich (Rollladen halb unten, Gardinen in mehr Arten, offene Flügel), Scheiben, die
    aus der Ferne den Himmel verschieden hell spiegeln; Rahmen mit Profil. Der Schatten der Laibung ist gerechnet, nicht in der
