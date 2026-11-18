@@ -339,13 +339,13 @@ with lib.browser() as b:
             # the findings of schleusingen-ansicht in our own look file (gebaeude/ansicht.json): halls that are houses, garages of one storey,
             # the Kreuzkirche (Gottesackerkirche) in sandstone
             ff = json.loads(E("""JSON.stringify([308, 349, 430, 579, 580, 717, 72].map(i => { const b = SCHL.bld.find(q => q.i === i);
-                return b ? { i, typ: b.st.typ, style: b.st.style, rk: b.rk, e: +b.e.toFixed(2), look: !!b.look } : { i, gone: true }; }))"""))
+                return b ? { i, typ: b.st.typ, style: b.st.style, rk: b.rk, rkL: FASSADE.ansichtDachArt(FASSADE.ansichtOf(b)), e: +b.e.toFixed(2), look: !!b.look } : { i, gone: true }; }))"""))  # rkL: the roof of the look that wins (fassade/ansicht.json over ours)
             print('look file', json.dumps(ff), E("JSON.stringify(FASSADE.ansichtStand())"), flush=True)
             byi = {q['i']: q for q in ff}
             ck('the findings from our look file: four halls are houses, two garages of one storey, the church in sandstone',
                sum(1 for q in ff if q.get('gone')) <= 1
-               and all(byi[i].get('gone') or (byi[i].get('look') and byi[i]['typ'] == 0 and byi[i]['style'] != 10 and byi[i]['rk'] == 0) for i in (308, 349, 430, 579))
-               and all(byi[i].get('gone') or abs(byi[i].get('e', 0) - 3.15) < 0.01 for i in (580, 717)) and (byi[72].get('gone') or (byi[72].get('look') and byi[72]['rk'] == 3)),
+               and all(byi[i].get('gone') or (byi[i].get('look') and byi[i]['typ'] == 0 and byi[i]['style'] != 10 and byi[i]['rk'] == byi[i]['rkL']) for i in (308, 349, 430, 579))
+               and all(byi[i].get('gone') or abs(byi[i].get('e', 0) - 3.15) < 0.01 for i in (580, 717)) and (byi[72].get('gone') or (byi[72].get('look') and byi[72]['rk'] == byi[72]['rkL'])),
                json.dumps(ff))
             # the three findings of schleusingen-ansicht: the Markt from its south-east corner looking west (a grey block stood there), the
             # blocks of flats on Hildburghäuser Straße (white, no shutters), the school (a school's look, not a house's)

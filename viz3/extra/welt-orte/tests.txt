@@ -1,0 +1,7 @@
+# feat/welt-orte: the flat places of the region in 3D (tools/welt-gebaeude/orte.py → the cells gebaeude/z/ of gebaeude/gebaeude.js):
+# the data (no browser), St. Kilian, Erlau and Hirschbach on the way to Suhl with the tiles of Suhl's corridor (the data repo)
+welt_orte
+# the cells' own test (counts, no doubles, nothing in what the zones model, none in a drawn road; Schleusingen and Rappelsdorf)
+welt_gebaeude
+# memory as on an iPhone (the cells' data and meshes come and go with the place)
+memphone

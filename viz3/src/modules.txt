@@ -381,6 +381,9 @@ vehicles/cockpit_cluster.js # feat/cockpit the faces: the instrument cluster and
 vehicles/cockpit_hands.js   # feat/cockpit the driver's arms (the zombie night's first-person body) on the wheel and the lever (CPHANDS)
 vehicles/cockpit_mirror.js  # feat/cockpit real mirrors: interior and door mirrors from one small render target (CPMIRROR)
 vehicles/cockpit.js         # feat/cockpit the driver's view: cluster, wheel and hands, mirrors, wipers, indicators, navi (COCKPIT)
+# feat/schleusingen-ansicht: Schleusingen after private views from the street – the Markt (the facade values go into the town through
+# FASSADE: viz3/extra/schleusingen-ansicht/dist/fassade/ansicht.json)
+schleusingen-ansicht/sa_markt.js    # feat/schleusingen-ansicht the Markt as it is: cobbles far off, benches, planters, the seated bronze figure, a bin (SAMARKT)
 # feat/jetpack: the jetpack (Falko 17.11.2026) – after the vehicles and the figure, before the frame loop
 jetpack/jetpack.js          # feat/jetpack put on a jetpack, fly high and far, the overview with the places' names, fly to a place by itself (JET)
 # feat/navi: the autopilot in the car (Falko 17.11.2026) – after the traffic (VNETZ, VAUTO) and the drive (FAHRT)
