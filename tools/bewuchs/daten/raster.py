@@ -60,14 +60,35 @@ def heights(grid):
 
 
 _DLM = {}
+_SETS = []
 
 
-def dlm(layer, grid, name='ratscher'):
+def dlm_set(grid):
+    """the DLM pictures that cover a grid: Ratscher's square (holen.py dlm) or a block of 5 × 5 cells (holen.py korridor)"""
+    import glob
+    if not _SETS:
+        for fn in sorted(glob.glob(os.path.join(RAW, 'dlm', '*.json'))):
+            with open(fn) as fh:
+                m = json.load(fh)
+            _SETS.append((os.path.basename(fn)[:-5], m))
+        _SETS.sort(key=lambda s: s[0] != 'ratscher')
+    E, N = m2u([grid.x0, grid.x1, grid.x1, grid.x0], [grid.y0, grid.y0, grid.y1, grid.y1])
+    for name, m in _SETS:
+        if min(E) >= m['e0'] and max(E) <= m['e0'] + m['w'] * m['res'] and max(N) <= m['n1'] and min(N) >= m['n1'] - m['h'] * m['res']:
+            return name
+    raise FileNotFoundError('no DLM pictures cover this grid – holen.py dlm / korridor')
+
+
+def dlm(layer, grid, name=None):
     """a rendered DLM layer (RGBA) on the grid, nearest pixel"""
     from PIL import Image
+    name = name or dlm_set(grid)
     key = (name, layer)
     if key not in _DLM:
-        meta = json.load(open(os.path.join(RAW, 'dlm', f'{name}.json')))
+        if len(_DLM) > 40:  # keep the memory small when many blocks pass by
+            _DLM.clear()
+        with open(os.path.join(RAW, 'dlm', f'{name}.json')) as fh:
+            meta = json.load(fh)
         _DLM[key] = (np.asarray(Image.open(os.path.join(RAW, 'dlm', f'{name}_{layer}.png')).convert('RGBA')), meta)
     img, meta = _DLM[key]
     return _sample_utm(img, meta['e0'], meta['n1'], meta['res'], grid, 'nearest')
