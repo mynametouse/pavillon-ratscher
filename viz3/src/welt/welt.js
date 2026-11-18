@@ -256,6 +256,7 @@ export const WELT = (() => {
       float bank = inCw * s25 + wPav * s8 + ( 1.0 - inFoot ) * mix( s15, max( s6, s15 ), nearRd );
       g = mix( g, g0, bank );
       gRdGloss *= 1.0 - bank; gRdPud *= 1.0 - bank;   // and no wet-road sheen there (it mirrored the sky: a pale bank)
+      gRdWorn *= 1.0 - bank;   // feat/fotorealismus (foto-boeden): nor the polish of the wheel paths
       pk *= 1.0 - bank;
       // feat/suhl (W5): the bank itself – where the photo is grey or beige there (smeared road, wall, roof), grass and earth
       // (green in the photo – meadow, bushes, forest on a slope – stays as photographed; grey, beige, blue-grey shadow becomes the bank)
@@ -271,7 +272,7 @@ export const WELT = (() => {
       g = mix( g, kc, kb * ( 1.0 - gRdCov ) );
       return g; }`;
   const STUB =
-    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0, gRdE = -99.0, gRdFoot = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }';
+    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0, gRdE = -99.0, gRdFoot = 0.0, gRdWorn = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c * 0.8; } vec3 landHi( vec3 c ) { return c; }'; // (gRdWorn: feat/fotorealismus, foto-boeden)
   // one material per tile (its photo); all share one program
   function tileMat(tex) {
     const m = new THREE.MeshStandardMaterial({

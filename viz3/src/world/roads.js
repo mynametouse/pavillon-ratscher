@@ -63,6 +63,10 @@ export const ROADS = (() => {
   S.GLSL = `uniform sampler2D tRoad; uniform highp sampler2DArray tDet; uniform vec4 bRoad, uRoad, uDTile;
     float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0;   // set by roadShade: the pixel is wet hard road / standing water / a road or its edge
     float gRdE = -99.0, gRdFoot = 0.0;   // feat/suhl (W8): the edge distance here (−99: no road within 4 m) and where the road's own surface ends
+    // feat/fotorealismus (foto-boeden): set by landDetail – the photo's brightness here before the grain of grass and soil is laid on it
+    // (roadShade: the asphalt takes its light and dark from the photo, not the blades of the lawn texture – it looked like felt up close)
+    float gLdL = -1.0;
+    float gRdWorn = 0.0;   // feat/fotorealismus (foto-boeden): set by roadShade – the wheel paths of an asphalt road, polished: a little smoother (ROADS.gloss)
     float rdH( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
     float rdN( vec2 p ) { vec2 i = floor( p ), f = fract( p ); vec2 u = f * f * ( 3.0 - 2.0 * f ); return mix( mix( rdH( i ), rdH( i + vec2( 1.0, 0.0 ) ), u.x ), mix( rdH( i + vec2( 0.0, 1.0 ) ), rdH( i + vec2( 1.0, 1.0 ) ), u.x ), u.y ); }
     float rdLine( float d, float hw, float fw ) { return clamp( ( hw - d ) / fw + 0.5, 0.0, 1.0 ) * min( 1.0, 2.0 * hw / fw ); }   // coverage of a line of half width hw
@@ -101,6 +105,7 @@ export const ROADS = (() => {
       c *= vec3( 1.0 + 0.08 * hz, 1.0, 0.62 + 0.38 * ( 1.0 - hz ) ); l = dot( c, vec3( 0.3, 0.59, 0.11 ) );
       c = landHi( c ); l = dot( c, vec3( 0.3, 0.59, 0.11 ) );
       c = max( mix( vec3( l ), c, 1.15 ), vec3( 0.0 ) ) * 0.8;   // and a little darker: grass and soil reflect less than the photo shows
+      gLdL = dot( c, vec3( 0.3, 0.59, 0.11 ) );   // feat/fotorealismus (foto-boeden)
       // up close the photo is soft: the grain of grass (most of the land) or of bare soil (brown fields), fading out by 150 m
       float k = 1.0 - smoothstep( 30.0, 150.0, dist ), gr = clamp( ( c.g - c.r ) * 12.0 + 0.7, 0.0, 1.0 );
       float n = ( rdN( p * 0.85 ) - 0.5 ) * 0.18 * ( 1.0 - smoothstep( 300.0, 700.0, dist ) );
@@ -123,7 +128,7 @@ export const ROADS = (() => {
       if ( far <= 0.0 ) return c;
       float code = rdCode( uv ), style = floor( code / 60.0 ), rest = code - style * 60.0, kind = floor( rest / 6.0 ), surf = rest - kind * 6.0;   // feat/suhl (S-R1)
       float al = abs( lat ), hw = max( e + al, 0.6 ), fine = 1.0 - smoothstep( 0.012, 0.05, fwp ), mid = 1.0 - smoothstep( 0.08, 0.4, fwp );
-      float lum = dot( c, vec3( 0.3, 0.59, 0.11 ) ), hard = step( surf, 2.5 );   // asphalt, concrete, paving: a hard edge; gravel and earth fray into the grass
+      float lum = gLdL >= 0.0 ? gLdL : dot( c, vec3( 0.3, 0.59, 0.11 ) ), hard = step( surf, 2.5 );   // asphalt, concrete, paving: a hard edge; gravel and earth fray into the grass
       float built = step( 1.5, style ), town = built * step( style, 2.5 ), two = step( 2.6, hw );
       float level = step( 8.5, kind );   // a level surface (a pedestrian zone, a square, a car park): flush with what lies beside it
       // kerbs: in a town along its streets, in a village along the through roads; pavements in the town
@@ -136,70 +141,73 @@ export const ROADS = (() => {
       // and where an open edge has given way: there it wanders more, bites break out of it (the same noise lays more grit on the shoulder)
       float asph = step( surf, 0.5 ), oEdge = ( 1.0 - kerbed ) * ( 1.0 - level * hard );
       float old = clamp( ( kind - 0.6 ) * 0.2 + rdN( p * 0.011 + 5.3 ) * 0.75, 0.0, 1.0 ), eb = rdN( p * 0.6 + 9.0 );
-      float eN = e + ( ( rdN( p * 1.7 ) - 0.5 ) * mix( 0.5, 0.13 + 0.14 * old * asph, hard ) + ( rdN( p * 9.0 ) - 0.5 ) * 0.05 * mid ) * oEdge
+      float n9 = rdN( p * 9.0 ) - 0.5, eN = e + ( ( rdN( p * 1.7 ) - 0.5 ) * mix( 0.5, 0.13 + 0.14 * old * asph, hard ) + n9 * 0.05 * mid ) * oEdge
         - clamp( ( kind - 1.0 ) * 0.11, 0.03, 0.34 ) * ( 0.4 + 0.6 * old ) * smoothstep( 0.5, 0.86, eb ) * asph * oEdge;
       float k = smoothstep( -fwE, fwE, eN ) * far;
       float n1 = rdN( p * 0.23 ), n2 = rdN( p * 1.3 + 3.7 ), n3 = ( rdN( p * 23.0 ) - 0.5 ) * fine + ( rdN( p * 7.0 + 1.3 ) - 0.5 ) * 0.6 * mid;
       float kd = 1.0 - smoothstep( 25.0, 120.0, dist ), u = 0.0, ph = 0.0;
       if ( hard > 0.5 && dist < 240.0 ) { ph = rdPhase( uv ); u = ph * 36.0; }   // metres along the way (wraps every 36 m)
-      // feat/fotorealismus (foto-boeden): where the wheels run – two paths in every lane (a road under 4 m: one lane in its middle),
-      // 0.8 m either side of the lane's middle, wandering a little; lm: the distance to that middle
-      float lm = abs( al - step( 2.0, hw ) * hw * 0.5 ), wheel = ( 1.0 - smoothstep( 0.12, 0.42, abs( lm - 0.8 + ( n2 - 0.5 ) * 0.12 ) ) ) * step( kind, 5.5 );
+      // feat/fotorealismus (foto-boeden): where the wheels run – two paths in every lane (a road under 5.2 m: one lane, driven in its
+      // middle), 0.8 m either side of the lane's middle: broad soft bands (half a metre and their flanks), wandering a little;
+      // lm: the distance to the lane's middle
+      float lm = abs( al - two * hw * 0.5 ), wheel = ( 1.0 - smoothstep( 0.08, 0.48, abs( lm - 0.8 + ( n2 - 0.5 ) * 0.14 ) ) ) * step( kind, 5.5 );
       vec3 r;
       if ( mode > 0.5 ) r = c;
       else if ( surf < 0.5 ) {
         // asphalt: newly laid dark and bluish, weathered lighter and warmer (the binder worn off the stones), lighter and darker after
         // the photo's brightness, in soft clouds of 4 m (faint on a well-kept road); texture up close
         r = mix( vec3( 0.074, 0.077, 0.084 ), vec3( 0.108, 0.105, 0.098 ), old ) * clamp( lum / 0.12, 0.72, 1.45 ) * ( 1.0 + ( 0.12 + 0.2 * old ) * ( n1 - 0.5 ) ) * ( 0.94 + 0.12 * n2 ) * mix( vec3( 1.0 + 0.3 * n3 ), clamp( rdTex( ${LY('asphalt')}, p, uDTile.z, dx, dy ), 0.3, 2.2 ), kd );
-        // feat/fotorealismus (foto-boeden): the aggregate up close – light stones in the dark binder: cells of 8 mm and of 2 cm, each the
-        // product of two lattices turned against each other (no grid shows, few bright stones), gone where a pixel is wider than a
-        // stone; a coarser mottling (4 cm, 14 cm) carries on to ~20 m. (pf: the place modulo 64 m – the hash keeps its digits far out.)
-        vec2 pf = fract( p / 64.0 ) * 64.0, pr = mat2( 0.8, -0.6, 0.6, 0.8 ) * pf;
-        float ag = ( rdH( floor( pf * 131.0 ) ) * rdH( floor( pr * 97.0 ) + 7.0 ) - 0.25 ) * ( 1.0 - smoothstep( 0.003, 0.01, fwp ) ) * 1.3
-          + ( rdH( floor( pf * 47.0 ) + 3.0 ) * rdH( floor( pr * 37.0 ) + 11.0 ) - 0.25 ) * ( 1.0 - smoothstep( 0.009, 0.028, fwp ) ) * 0.6;
-        r *= 1.0 + ag * ( 0.55 + 0.6 * old ) + n3 * 0.22 * kd;
+        // feat/fotorealismus (foto-boeden): the aggregate up close – light stones in the dark binder: cells of 8 mm, the product of two
+        // lattices turned against each other (no grid shows, few bright stones), gone where a pixel is wider than a stone; a soft
+        // mottling of 2 cm, 4 cm and 14 cm carries the grain on to ~20 m, each gone where a pixel is wider than it. (pf: the place
+        // modulo 64 m – the hash keeps its digits far out.) gk: how much of the grain shows – less where the wheels have polished
+        // the surface and on newer asphalt (a patch); sl: bitumen lines (seams, sealed cracks), laid over the grain at the end
+        vec2 pf = fract( p / 64.0 ) * 64.0;
+        float ag = ( rdH( floor( pf * 131.0 ) ) * rdH( floor( mat2( 0.8, -0.6, 0.6, 0.8 ) * pf * 97.0 ) + 7.0 ) - 0.25 ) * ( 1.0 - smoothstep( 0.003, 0.01, fwp ) ) * 1.3
+          + ( rdN( pf * 47.0 ) - 0.5 ) * ( 1.0 - smoothstep( 0.009, 0.03, fwp ) ) * 0.34;
+        float gk = 1.0, sl = 0.0;
         if ( kind < 5.5 ) {
-          // driven on: the wheel paths worn lighter, between them a darker stripe (oil and rubber – clearest on the main roads); it
-          // comes and goes along the road. On a lane dirt and moss lie between the paths instead, in patches.
-          float bd = ( 1.0 - smoothstep( 0.3, 0.9, fwp ) ) * ( 0.5 + n1 ) * ( kind < 2.5 ? 1.0 : kind < 3.5 ? 0.75 : 0.55 ), ms = ( 1.0 - smoothstep( 0.1, 0.5, lm ) ) * ( 1.0 - wheel );
-          r *= 1.0 + ( 0.085 * wheel - 0.07 * ms ) * bd;
-          if ( kind > 3.5 ) r = mix( r, r * vec3( 0.74, 0.8, 0.6 ), ms * old * smoothstep( 0.45, 0.75, eb ) * 0.6 ); }
+          // driven on: the wheel paths a little darker and smoother (polished, rubber), broad and soft – clearest on the main roads,
+          // coming and going along the road; in the lane's middle a faint dark stain in places (oil). On a lane dirt and moss
+          // lie between the paths instead, in patches.
+          float bd = ( 1.0 - smoothstep( 0.3, 0.9, fwp ) ) * ( 0.5 + n1 ) * ( kind < 2.5 ? 1.0 : kind < 3.5 ? 0.75 : 0.55 ), ms = 1.0 - smoothstep( 0.05, 0.4, lm );
+          r *= 1.0 - ( 0.075 * wheel + 0.05 * ms * smoothstep( 0.35, 0.75, eb ) ) * bd;
+          gk -= 0.45 * wheel * min( bd, 1.0 ); gRdWorn = 0.16 * wheel * min( bd, 1.0 ) * k;
+          if ( kind > 3.5 ) r = mix( r, r * vec3( 0.74, 0.8, 0.6 ), ms * old * smoothstep( 0.45, 0.75, eb ) * 0.5 ); }
         if ( mid > 0.0 && kind < 5.5 && dist < 240.0 ) {
-          // up close a road shows its age: the two lanes laid one after the other, patches of newer asphalt with a sealed rim, sealed
-          // cracks along the lanes and across – more of it on the small roads, in stretches (main roads are kept best)
+          // up close a road shows its age: the two lanes laid one after the other, patches of newer asphalt, sealed cracks along the
+          // lanes and across – more of it on the small roads, in stretches (main roads are kept best)
           float side = step( 0.0, lat ), aw = max( fwp, 0.02 ), fu = fract( u / 9.0 ) * 9.0;
           r *= 1.0 + ( side - 0.5 ) * 0.09 * two * smoothstep( 0.35, 0.6, rdN( p * 0.006 + 2.1 ) );
           vec2 pb = floor( p / 120.0 ) * 7.0, pc = vec2( floor( u / 9.0 ), side ) + pb; float h1 = rdH( pc ), h2 = rdH( pc + 3.1 ), h3 = rdH( pc + 9.7 );
-          // feat/fotorealismus (foto-boeden): a trench reinstated along the road (pipes, cables) – a strip of another grey between two
-          // sealed joints, on one side or the other for a stretch (blocks of 120 m); most of them in the streets of villages and towns
-          if ( hw > 1.6 && rdH( pb + side + 21.3 ) < ( 0.1 + 0.34 * built ) * ( 0.3 + old ) ) {
-            float dS = abs( al - hw * 0.34 - 0.42 ) - 0.42;
-            r = mix( r, r * ( 0.8 + 0.3 * rdH( pb + side + 0.7 ) ), ( 1.0 - smoothstep( -aw, aw, dS ) ) * mid );
-            r = mix( r, vec3( 0.03, 0.03, 0.032 ), rdLine( abs( dS ), 0.014, aw ) * 0.7 * mid ); }
-          if ( h1 < 0.05 + 0.32 * old * old ) {
-            float a0 = 0.8 + 3.0 * h2, a1 = a0 + 1.6 + 3.4 * h3, v0 = h3 < 0.5 ? 0.14 : hw * 0.42, v1 = min( hw - 0.24, v0 + 1.1 + 1.5 * h1 / 0.37 );
-            // feat/fotorealismus (foto-boeden): in a village or town a third of the patches are a trench across this half of the street
-            // (a house's connection to the main in the middle)
+          // feat/fotorealismus (foto-boeden): a repair is mostly another grey and another grain of its AREA (newer asphalt: darker,
+          // bluish, its stones still under the binder); its edge a thin seam of bitumen that wanders and is missing in places
+          float wob = ( n2 - 0.5 ) * 0.05 + n9 * 0.03, seam = smoothstep( 0.3, 0.55, rdN( p * 2.1 + 40.0 ) ) * 0.5 * mid;
+          // a trench reinstated along the road (pipes, cables): a strip on one side or the other for a stretch (blocks of 120 m) – in
+          // the streets of villages and towns, now and then on a small road, not on the Landstraße
+          if ( hw > 1.6 && rdH( pb + side + 21.3 ) < ( 0.26 * built + 0.05 * step( 2.5, kind ) ) * ( 0.3 + old ) ) {
+            float dS = abs( al - hw * 0.34 - 0.42 + wob ) - 0.42, sa = ( 1.0 - smoothstep( -aw, aw, dS ) ) * mid;
+            r = mix( r, r * ( 0.84 + 0.22 * rdH( pb + side + 0.7 ) ) * vec3( 0.96, 0.98, 1.02 ), sa ); gk *= 1.0 - 0.4 * sa;
+            sl = max( sl, rdLine( abs( dS ), 0.008, aw ) * seam ); }
+          if ( h1 < 0.03 + 0.2 * old * old ) {
+            float a0 = 0.8 + 3.0 * h2, a1 = a0 + 1.6 + 3.4 * h3, v0 = h3 < 0.5 ? 0.14 : hw * 0.42, v1 = min( hw - 0.24, v0 + 1.1 + 1.5 * h1 / 0.23 );
+            // in a village or town a third of the patches are a trench across this half of the street (a house's connection to the
+            // main in the middle)
             if ( built > 0.5 && h2 > 0.66 ) { a1 = a0 + 0.55 + 0.5 * h3; v0 = -1.0; v1 = hw + 1.0; }
-            float dR = max( max( a0 - fu, fu - a1 ), max( v0 - al, al - v1 ) );
-            r = mix( r, r * ( 0.76 + 0.26 * fract( h2 * 7.3 ) ), ( 1.0 - smoothstep( -aw, aw, dR ) ) * mid );
-            r = mix( r, vec3( 0.03, 0.03, 0.032 ), rdLine( abs( dR ), 0.016, aw ) * 0.75 * mid ); }
+            float dR = max( max( a0 - fu, fu - a1 ), max( v0 - al, al - v1 ) ) + wob, pa = ( 1.0 - smoothstep( -aw, aw, dR ) ) * mid;
+            r = mix( r, r * ( 0.8 + 0.2 * fract( h2 * 7.3 ) ) * vec3( 0.95, 0.97, 1.03 ), pa ); gk *= 1.0 - 0.5 * pa;
+            sl = max( sl, rdLine( abs( dR ), 0.008, aw ) * seam ); }
           float cr = smoothstep( 0.42, 0.68, old ) * mid;
           if ( cr > 0.0 ) {
             float w1 = hw * 0.5 * two + 0.16 * sin( u * 0.5236 + side * 2.0 ) + 0.06 * sin( u * 1.5708 ) + ( rdN( p * 0.7 + 31.0 ) - 0.5 ) * 0.34;
             float ln = rdLine( abs( al - w1 ), 0.013, fwL ) * step( 0.45, rdN( p * 0.09 + 17.0 ) );
             float dt = abs( fract( u / 12.0 + 0.37 ) - 0.5 ) * 12.0 + 0.12 * sin( lat * 2.3 + floor( u / 12.0 + 0.37 ) );
             ln = max( ln, rdLine( abs( dt ), 0.012, max( fwp, 0.01 ) ) * step( rdH( vec2( floor( u / 12.0 + 0.37 ), 3.0 ) + floor( p / 120.0 ) ), 0.55 ) );
-            r = mix( r, vec3( 0.028, 0.028, 0.03 ), ln * cr * 0.85 ); }
-          // feat/fotorealismus (foto-boeden): where the base has given way on an old road the surface breaks into blocks – a net of
-          // fine open cracks (blocks of ~28 cm in offset rows, bent out of shape), in patches, in the wheel paths and along the edge
-          float net = smoothstep( 0.56, 0.7, n1 ) * smoothstep( 0.55, 0.8, old ) * ( 1.0 - smoothstep( 0.02, 0.07, fwp ) ) * max( wheel, 1.0 - smoothstep( 0.2, 0.7, e ) );
-          if ( net > 0.0 ) {
-            vec2 q = vec2( u, lat ) * 3.6 + ( rdN( p * 2.3 + 50.0 ) - 0.5 ) * vec2( 1.7, -1.3 ) + ( n2 - 0.5 ) * vec2( -1.1, 1.5 );
-            q.x += 0.5 * mod( floor( q.y ), 2.0 ); q = abs( fract( q ) - 0.5 );
-            r *= 1.0 - 0.6 * rdLine( ( 0.5 - max( q.x, q.y ) ) / 3.6, 0.004, max( fwp, 0.004 ) ) * net; } }
+            sl = max( sl, ln * cr * 0.85 ); } }
+        r *= 1.0 + ( ag * ( 0.55 + 0.6 * old ) + n3 * 0.34 * kd ) * gk;
+        r = mix( r, vec3( 0.029, 0.029, 0.031 ), sl );
         // feat/fotorealismus (foto-boeden): sand and dust washed to the side lie on the last decimetres of an open edge
-        r = mix( r, vec3( 0.185, 0.168, 0.137 ) * ( 0.75 + 0.5 * n2 ), ( 1.0 - smoothstep( 0.02, 0.2 + 0.3 * eb, eN ) ) * ( 0.22 + 0.4 * old ) * oEdge ); }
+        r = mix( r, vec3( 0.185, 0.168, 0.137 ) * ( 0.75 + 0.5 * n2 ), ( 1.0 - smoothstep( 0.02, 0.2 + 0.3 * eb, eN ) ) * ( 0.22 + 0.4 * old ) * clamp( 0.8 + 1.6 * n3 + 2.0 * ag, 0.0, 1.5 ) * oEdge ); }
       else if ( surf < 1.5 ) { r = vec3( 0.32, 0.315, 0.3 ) * ( 0.88 + 0.2 * n1 ) * ( 1.0 + 0.22 * n3 ); }   // concrete
       else if ( surf < 2.5 ) {   // paving stones: small blocks
         vec2 bq = fract( p * vec2( 4.0, 6.0 ) ); float jt = ( 1.0 - smoothstep( 0.0, 0.08, min( min( bq.x, 1.0 - bq.x ), min( bq.y, 1.0 - bq.y ) ) ) ) * fine;
@@ -256,7 +264,7 @@ export const ROADS = (() => {
     vec3 roadShade( vec2 p, vec3 c, float dist ) { return roadShade( p, c, dist, 0.0 ); }`;
   // without textures (GPU below what the shader needs, core/detail.js GLCHECK.lite): the same functions, plain
   S.STUB =
-    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0, gRdE = -99.0, gRdFoot = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';
+    'float gRdGloss = 0.0, gRdPud = 0.0, gRdCov = 0.0, gRdE = -99.0, gRdFoot = 0.0, gRdWorn = 0.0; float rdH( vec2 p ) { return 0.5; } float rdN( vec2 p ) { return 0.5; } vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 roadShade( vec2 p, vec3 c, float d, float m ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }';
   S.shader = sh => {
     if (window.GLCHECK && GLCHECK.lite) return S.STUB;
     Object.assign(sh.uniforms, U);
@@ -267,7 +275,7 @@ export const ROADS = (() => {
   S.gloss = fs =>
     fs.replace(
       '#include <roughnessmap_fragment>',
-      '#include <roughnessmap_fragment>\n roughnessFactor = mix( mix( roughnessFactor, 0.42, gRdGloss ), 0.07, gRdPud );'
+      '#include <roughnessmap_fragment>\n roughnessFactor = mix( mix( roughnessFactor * ( 1.0 - gRdWorn ), 0.42, gRdGloss ), 0.07, gRdPud );'
     );
   const ground0 = (x, y) =>
     (Math.abs(x) < 120 && Math.abs(y) < 120) || !(window.RATSCHER && RATSCHER.ready)

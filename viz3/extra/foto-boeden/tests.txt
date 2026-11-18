@@ -1,0 +1,4 @@
+# feat/foto-boeden: the ground up close – asphalt driven on and aged (world/roads.js roadShade; docs/features/foto-boeden.md)
+foto_boeden
+# what the road shader touches: the roads' own test (styles, furniture, wet roads, the window map on a drive)
+strassen
