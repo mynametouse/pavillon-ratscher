@@ -142,6 +142,7 @@ export const SCHATTEN = (() => {
       e = on ? ext() : 1;
     // (the width again when the map's size has changed with the tier: the land's strip is as many texels at every size)
     if (on === S.on && Math.abs(sun.shadow._frameExtents.x - e) < 1e-9) return false;
+    if (on !== S.on) LD.have = false; // (switched on later: a field for the light as it stands then, not the one of hours ago)
     S.on = on;
     sun.shadow._frameExtents.set(e, 1);
     if (sun.shadow.map) {

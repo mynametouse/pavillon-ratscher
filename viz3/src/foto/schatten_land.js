@@ -34,6 +34,7 @@ export const SCHLAND = (() => {
     HALF = HN >> 1,
     BLOCK = 32, // the raster's middle moves in steps of this many cells
     DRIFT = 64, // … once the walker is this many cells from it
+    IDLE = 64, // cells sampled anew in a frame when none is missing
     FLOOR = -300, // the packed heights' floor (m, the model's heights: 0 is the garden) and
     STEP = 0.02, // their step: 16 bit reach 1010 m above the garden
     SUNR = 0.00465, // the sun's radius (rad)
@@ -136,9 +137,10 @@ export const SCHLAND = (() => {
   function work(ms, x, y) {
     init();
     centre(x, y);
+    // cells are missing or have changed: for the frame's share of time; else a few dozen cells a frame (a round in a minute or two –
+    // counted, not timed: a browser's clock may tick only every tenth of a millisecond)
     const t0 = performance.now(),
-      fast = S.boost || S.missing > 0,
-      lim = fast ? ms : Math.min(ms, 0.08);
+      fast = S.boost || S.missing > 0;
     let n = 0;
     for (;;) {
       const c = cellOf(S.r, S.k);
@@ -172,7 +174,8 @@ export const SCHLAND = (() => {
           break;
         }
       }
-      if ((++n & 31) === 0 && performance.now() - t0 > lim) break;
+      n++;
+      if (fast ? (n & 31) === 0 && performance.now() - t0 > ms : n >= IDLE) break;
     }
     return S.missing > 0;
   }
@@ -225,8 +228,9 @@ export const SCHLAND = (() => {
       { sx, sy, tx, ty, u00, v00, dLo, dHi } = W,
       top = HN - 1.001,
       inv = 1 / STEP;
+    const i0 = W.i;
     let shaded = 0,
-      i = W.i;
+      i = i0;
     for (; i < G; i++) {
       // the column from its end towards the sun (cell J − 1) back to the field's far side (cell 0)
       let u = u00 + i * tx + (J - 1) * sx,
@@ -310,7 +314,8 @@ export const SCHLAND = (() => {
     W.shaded += shaded;
     const t1 = performance.now();
     W.ms += t1 - t0;
-    if (i < G) return false;
+    // (the bytes in a frame of their own when the columns have taken this one's share)
+    if (i < G || (i0 < G && t1 - t0 > ms * 0.5)) return false;
     // the heights into bytes, each with half of its two neighbours across the sun: a column is 24 m wide and the land along it
     // sampled at points – from column to column the shadow's end would jump by tens of metres at a low sun (teeth along its edge)
     for (let j = 0, k = 0, o = 0; j < G; j++)

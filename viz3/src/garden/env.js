@@ -528,7 +528,7 @@ export function mkGroundMat(cut) {
     Object.assign(sh.uniforms, U);
     const RD = window.ROADS
       ? LATE.ROADS.shader(sh)
-      : 'vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }'; // V16b roads (world/roads.js)
+      : 'float gRdCov = 0.0, gRdPud = 0.0; vec3 roadShade( vec2 p, vec3 c, float d ) { return c; } vec3 landDetail( vec2 p, vec3 c, float d ) { return c; } vec3 landHi( vec3 c ) { return c; }'; // V16b roads (world/roads.js)
     sh.uniforms.tDet = { value: DETAIL.tex };
     const decl = /sampler2DArray\s+tDet\b/.test(RD) ? '' : 'uniform highp sampler2DArray tDet;\n'; // shared with the road shader's declaration
     sh.fragmentShader =
@@ -579,7 +579,8 @@ export function mkGroundMat(cut) {
         .replace(
           '#include <lights_fragment_end>',
           `#include <lights_fragment_end>
-        reflectedLight.indirectSpecular *= 0.4;   // grass blades scatter: no mirror-like sky sheen at grazing angles`
+        reflectedLight.indirectSpecular *= 0.4;   // grass blades scatter: no mirror-like sky sheen at grazing angles
+        reflectedLight.directSpecular *= mix( 0.3, 1.0, max( gRdCov, gRdPud ) );   // feat/fotorealismus: nor the low sun's (world/ratscher.js); paths keep theirs`
         )
         .replace(
           '#include <normal_fragment_maps>',

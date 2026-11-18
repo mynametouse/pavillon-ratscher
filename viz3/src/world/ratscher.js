@@ -237,6 +237,10 @@ export const RATSCHER = (() => {
           .replace(
             '#include <lights_fragment_end>',
             '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= mix( 0.35, 0.8, max( gRdGloss * 0.5, gRdPud ) );\n' + // feat/strassen: a wet road shines
+              // feat/fotorealismus: nor does land mirror the sun – towards a low sun a field shone like a lake (a surface of roughness 1
+              // still returns many times its diffuse light at a grazing angle; grass and soil shade themselves there). A third of it
+              // stays: the sheen of a meadow against the evening sun, as the blades up close have it. Roads keep theirs.
+              ' reflectedLight.directSpecular *= mix( 0.3, 1.0, max( gRdCov, gRdPud ) );\n' +
               (window.FOREST && LATE.FOREST.LIGHT ? LATE.FOREST.LIGHT : '')
           ) // grass and soil scatter: no pale sky sheen at grazing angles (V16b, low driving views)
           .replace(
