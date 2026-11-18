@@ -62,7 +62,8 @@ wobei es trotzdem im Browser weiterhin flüssig laufen können soll.“ Gewählt
   Instanzfarbe (Austrieb, grün, Herbstfarbe, fallend, kahl – dann ohne Krone; immergrün und trockenes Laub der Hainbuchenhecke bleiben);
   Blüten und Beeren als Punkte auf den Blattkarten bis 70 m (vor dem Laub und im Winter an den Zweigen). Reichweite nach Grafikstufe (150 /
   110 / 70 m, höchstens 1600 / 1000 / 450 Sträucher). Noch offen: fest ab 1 m, eigene Hüllen für Buchs, Thuja und Hecken, Schatten nah.
-- **Die Strecken** nach Schleusingen und Kloster Veßra und beide Orte (Teil b von `bewuchs-daten`): 239 Zellen mehr (288 im Index).
+- **Die ganze Welt** (Teile b und c von `bewuchs-daten`): die Strecken nach Schleusingen und Kloster Veßra und beide Orte, die Welt-Kacheln
+  (Block B, Veßra) und die flachen Orte – 895 Zellen im Index (28 MB, je 4 × 4 Zellen unter 1,5 MB); geladen wird nur, was um die Kamera liegt.
 
 ## Flüssig
 
