@@ -2,7 +2,8 @@
 # „Ein Auto für die Nacht“ (cracking a Wartburg, the owner as a witness, repainting, other plates, the haulier's jacket), played through by
 # the test like viz3/test/grenzland_mission.py: where a human would walk or drive for minutes the test puts the player there, every step is
 # finished by its real check; talks are skipped with the action a player has (GLMISSION.weiter). Sections (second argument, comma
-# separated; default all): start m2 knacken m1. Pictures in out/grenzland_kapitel2/.
+# separated; default start,m2,knacken): start m2 knacken m1 m1z – m1 is mission 1 against the zone's stand-in west of Ratscher, m1z
+# against agent zone's GLZONE (feat/grenzland-zone merged); run either alone. Pictures in out/grenzland_kapitel2/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9062 --serve grenzland_kapitel2:start,m2
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib, grenzland_ci
@@ -19,7 +20,8 @@ with lib.browser() as b:
     errs = []
     pg = lib.page(b, 1100, 680, errs)
     # (mission 1 is off in the preview – switched on for its own section before the page loads; run m1 alone)
-    if 'm1' in SECT: pg.add_init_script("window.GLK2_M1 = true")
+    M1 = 'm1z' if 'm1z' in SECT else 'm1' if 'm1' in SECT else None
+    if M1: pg.add_init_script("window.GLK2_M1 = true")
     lib.boot(pg, port, '?szenario=grenzland', figures=True)
     E = pg.evaluate
     J = lambda js: json.loads(E("JSON.stringify(" + js + ")"))
@@ -282,15 +284,23 @@ with lib.browser() as b:
         ck('knacken ran through without an error of the test', False, str(e)[:300])
 
     # ================================================================ m1 · Grünes Band (against the zone's stand-in; mission 1 is off in the preview) ================================================================
-    if 'm1' in SECT:
+    if M1:
+      # (m1z: the real zone's pictures get a 'z')
+      N = lambda s: s if M1 == 'm1' else s.replace('_', 'z_', 1)
       try:
         E(KAP1); steps(0.5)
-        E("GLKAP2.debug.zone(window.GLZONE && GLZONE.ort && GLZONE.ort('bunker') ? undefined : null)")
+        if M1 == 'm1z':
+            E("GLZONE.need('test', true)")
+            ok = until("!!(window.GLZONE && GLZONE.ort('bunker') && GLZONE.weg().length > 1)", 120, 0.5, 0.25)
+            ck('the zone of feat/grenzland-zone is there: its car park, bunker and Kolonnenweg', ok, str(J("window.GLZONE ? GLZONE.state() : 'kein GLZONE'"))[:300])
+            E("GLZONE.need('test', false); GLKAP2.debug.zone(undefined)")
+        else:
+            E("GLKAP2.debug.zone(null)")
         E("GLMISSION.debug.go('k2m1', 'aufbruch')"); steps(0.5)
         ok = until("GLMISSION.debug.info().titel === 'Grünes Band'", 30, 0.25, 0.05)
         st = J("({ sms: GLSTATE.sms.map(q => q.von + ': ' + q.text.slice(0, 20)), x: GLHUD.xl, tank: GLSTATE.tank, moped: !!(GLAUTO.moped && GLAUTO.moped.g.visible), d: DN.dateStr(CLOCK.t, true), ersatz: GLKAP2.ersatz(), wx: window.WETTER ? WETTER.state().preset : '' })")
         ck('mission 1 „Grünes Band“ (Kapitel 2 · Mission 1): a message from Jule, the Simson in the garden (full), „Hinfahren“', ok and any(q.startswith('Jule') for q in st['sms']) and st['x'] == 'Hinfahren' and st['tank'] >= 3 and st['moped'] and 'Dezember' in st['d'], str(st))
-        pic('20_aufbruch')
+        pic(N('20_aufbruch'))
         m0 = E("CLOCK.t")
         E("void GLHUD.acts.extra()")
         ok = until("!GLMISSION.St.busy && !document.getElementById('glfade').classList.contains('on')", 40, 0.25, 0.2)
@@ -300,7 +310,7 @@ with lib.browser() as b:
         ok = bis('museum', 10)
         ok2 = until("GLMISSION.redet() && GLMISSION.St.talk.key === 'k2museum'", 20)
         steps(0.6)
-        pic('21_grenzturm')
+        pic(N('21_grenzturm'))
         n = talk()
         ck('Sarah on the crossing point Eisfeld–Rottenbach (1973) and the Grünes Band (Hof, 9 December 1989)', ok and ok2 and n >= 3 and bis('kolonnenweg', 10), info()['step'])
         B = J("(B => ({ b: B.b, s: B.s, van: B.van, vorn: B.vorn, men: B.men.map(m => m[2]), fremder: B.fremder }))(GLKAP2.debug.bp())")
@@ -310,7 +320,7 @@ with lib.browser() as b:
         ok = until("GLMISSION.redet() && GLMISSION.St.talk.key === 'k2platten'", 6)
         talk()
         E("(v => GAME.view(v.st.x - Math.sin(v.st.psi) * 6, v.st.y - Math.cos(v.st.psi) * 6, v.st.z + 2.2, v.st.psi * 180 / Math.PI, -10))(VEH.cur)")
-        pic('22_kolonnenweg', False)
+        pic(N('22_kolonnenweg'), False)
         p = J(f"GLK2LOGIK.entlang(GLKAP2.weg(), {B['s']} - 100)")
         E(f"VEH.place('gl-moped', {p['x']}, {p['y']}, {p['hd']})"); steps(1)
         ok2 = bis('bunker', 8)
@@ -320,7 +330,7 @@ with lib.browser() as b:
         E("VEH.exit()"); steps(0.4)
         put(B['vorn'], yawTo(B['vorn'], B['b']))
         E(f"GAME.view({B['vorn'][0]}, {B['vorn'][1]}, KERN.ground({B['vorn'][0]}, {B['vorn'][1]}) + 1.62, {yawTo(B['vorn'], B['b'])}, -2)"); steps(0.3)
-        pic('23_bunker_fern')
+        pic(N('23_bunker_fern'))
         # too loud: the moped is heard – on foot they come and catch one
         w3 = B['men'][2]
         E("VEH.enter('gl-moped')"); steps(0.3)
@@ -340,7 +350,7 @@ with lib.browser() as b:
         f = J("(F => [F.x, F.y])(GLMISSION.F('fremder'))") if ok2 else None
         if f:
             E(f"GAME.view({side[0]}, {side[1]}, KERN.ground({side[0]}, {side[1]}) + 1.1, {yawTo(side, f)}, 0)"); steps(0.4)
-            pic('24_fremder')
+            pic(N('24_fremder'))
         a2 = act('gl:k2foto'); steps(0.6)
         ok3 = bis('rueckzug', 8)
         ck('two photos from cover (ducked, from the side); the stranger at the edge of the heath', ok and a1 and a2 and ok2 and ok3 and E("GLKAP2.K1.n") == 2, f'{ok} {a1} {a2} {ok2} {ok3}')
@@ -350,7 +360,7 @@ with lib.browser() as b:
         c = J("(c => c ? [c.x, c.y, c.hd] : null)(GLMISSION.C('k2van'))")
         if c:
             E(f"GAME.view({c[0] - math.sin(c[2]) * -14}, {c[1] - math.cos(c[2]) * -14}, KERN.ground({c[0]}, {c[1]}) + 1.7, {math.degrees(c[2]) + 180}, -4)"); steps(0.2)
-            pic('25_transporter', False)
+            pic(N('25_transporter'), False)
         ck('the men pack up and get into the van, it drives the Kolonnenweg out', st['v']['fahrt'] and not any(st['men']), str(st))
         # in its way: seen – again from the bunker
         q = J("GLK2LOGIK.entlang(GLKAP2.weg(), Math.max(0, GLKAP2.V1.s - 14))")
@@ -370,7 +380,7 @@ with lib.browser() as b:
         ok2 = until("GLMISSION.debug.info().st.k2m1 === 'erledigt'", 10)
         ev = J("__ev.filter(e => e[0] === 'mission' && e[2] === 'erledigt').map(e => e.slice(1))")
         ck('„Heimfahren“: home – mission 1 done („Zwei Fotos vom Bunker“)', ok and ok2 and ['k2m1', 'erledigt', 'Grünes Band', 'Zwei Fotos vom Bunker'] in ev, str(ev))
-        pic('26_heim')
+        pic(N('26_heim'))
       except Exception as e:
         ck('mission 1 ran through without an error of the test', False, str(e)[:300])
 
