@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
 
 port = sys.argv[1]
-WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'rasen,maehen,wiese,ferne,jahr,leistung').split(','))
+WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'rasen,maehen,wiese,ferne,jahr,strauch,leistung').split(','))
 OUT = lib.out('bewuchs')
 ck = lib.Checks('bewuchs')
 
@@ -121,6 +121,34 @@ with lib.browser() as b:
             ck('GRASS.cutCount answers from the grid', c['all'] > 0 and c['n'] >= 0.8 * c['all'], c)
             view(10, 17, 180, -24)
             lib.shot(pg, OUT, 'garten_gemaeht')
+        if 'strauch' in WANT:
+            # stage 3: a thicket of the maps (class 12) near the garden – the nearest place of that class, searched in the loaded cells
+            spot = J("""(() => { let best = null; for (const c of BWKARTE.cells.values()) { if (c.state !== 'ok') continue;
+                for (let v = 0; v < c.n; v += 4) for (let u = 0; u < c.n; u += 4) { if ((c.px[v * c.n + u] & 31) !== 12) continue;
+                  const x = c.i * 400 + (u + 0.5) * c.res, y = c.j * 400 + (c.n - 1 - v + 0.5) * c.res, d = Math.hypot(x - 2, y - 2);
+                  if (d > 60 && (!best || d < best[2])) best = [x, y, d]; } } return best; })()""")
+            print('thicket', spot, flush=True)
+            ck('a thicket in the maps near the garden', bool(spot), spot)
+            if spot:
+                sx, sy = spot[0], spot[1]
+                # from 14 m south-west of it, looking at it
+                vx, vy = sx - 10, sy - 10
+                for d, name in ((156, 'juni'), (255, 'september'), (20, 'januar')):
+                    E(f"BEWUCHS.set({{ doy: {d} }})")
+                    view(vx, vy, math.degrees(math.atan2(sx - vx, sy - vy)), -6)
+                    for i in range(40):
+                        E("GAME.step(0.1)")
+                        t = J("BEWUCHS.state().strauch")
+                        if t['queue'] == 0 and t['drawn'] > 0:
+                            break
+                        time.sleep(0.2)
+                    t = J("BEWUCHS.state().strauch")
+                    print('strauch', name, json.dumps(t), flush=True)
+                    lib.shot(pg, OUT, 'strauch_' + name)
+                    if name == 'juni':
+                        ck('shrubs stand in the thicket (kinds built, near ones drawn)', t['kinds'] >= 3 and t['near'] >= 5 and not t['failed'], json.dumps(t))
+                    if name == 'september':
+                        ck('berries in September', t['dots'] > 50, json.dumps(t))
         if 'leistung' in WANT:
             view(14, 16, math.degrees(math.atan2(2 - 14, 2 - 16)), -14)
             r = J("(() => { const R = GAME.R; R.info.autoReset = false; R.info.reset(); GAME.shot(); const o = { calls: R.info.render.calls, tris: R.info.render.triangles }; R.info.autoReset = true; return o; })()")

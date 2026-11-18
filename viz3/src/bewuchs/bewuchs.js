@@ -28,6 +28,7 @@ import { BWPHAENO } from './bw_phaeno.js';
 import { BWHALM } from './bw_halm.js';
 import { BWBLUME } from './bw_blume.js';
 import { BWFERNE } from './bw_ferne.js';
+import { BWSTRAUCH } from './bw_strauch.js';
 import { BWARTEN } from './bw_arten.js';
 import { ROADS } from '../world/roads.js';
 export const BEWUCHS = (() => {
@@ -65,6 +66,7 @@ export const BEWUCHS = (() => {
     const on = S.mode !== 'aus';
     for (const R of BWHALM.rings) R.mesh.visible = on;
     for (const M of BWBLUME.meshes) M.mesh.visible = on;
+    if (BWSTRAUCH.G) BWSTRAUCH.G.visible = on;
     BWHALM.U.uBwP.value.y = S.mode === 'einfach' ? 0.6 : S.dens;
     const b = $('bwbtn');
     if (b) {
@@ -82,12 +84,19 @@ export const BEWUCHS = (() => {
     show();
   }
   $('bwbtn')?.addEventListener('click', () => setMode(MODES[(MODES.indexOf(S.mode) + 1) % MODES.length]));
+  // the shrubs: how far (m) and how many by tier
+  const SHRUBS = {
+    hoch: { r: 150, cap: 1600, near: 34 },
+    mittel: { r: 110, cap: 1000, near: 26 },
+    schnell: { r: 70, cap: 450, near: 18 },
+  };
   function retier() {
     const t = tierNow();
     if (t === S.tier && S.spec) return;
     S.tier = t;
     S.spec = SPEC[t] || SPEC.mittel;
     BWHALM.build(S.spec);
+    BWSTRAUCH.set(SHRUBS[t] || SHRUBS.mittel);
     show();
   }
   // the day of the year of the game's clock (as world/forest.js), with its hour
@@ -200,6 +209,9 @@ export const BEWUCHS = (() => {
       const t = window.CLOCK ? CLOCK.t : 0;
       if (mowDirty || (S.mowN && Math.abs(t - mowT) > 20)) mowUpload(t);
       BWHALM.update(false, dt);
+      // stage 3: the shrubs round the camera (not seen from high above)
+      BWSTRAUCH.set({ on: cam.position.y < 160 });
+      BWSTRAUCH.tick(cam.position.x, -cam.position.z, S.doy);
     } catch (e) {
       if (!S.err) console.warn('bewuchs', e);
       S.err = String((e && e.message) || e);
@@ -215,6 +227,7 @@ export const BEWUCHS = (() => {
   try {
     S.arten = BWPHAENO.fromArten(BWARTEN);
     BWBLUME.fromArten(BWARTEN, BASE);
+    BWSTRAUCH.fromArten(BWARTEN);
   } catch (e) {
     S.err = 'arten: ' + String((e && e.message) || e);
   }
@@ -246,6 +259,7 @@ export const BEWUCHS = (() => {
     mown: S.mowN,
     err: S.err,
     arten: S.arten || 0,
+    strauch: BWSTRAUCH.state(),
     karte: BWKARTE.state(),
     halm: BWHALM.stats(),
     blumen: BWBLUME.stats(),
