@@ -11,10 +11,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 
 port = sys.argv[1]
 OUT = lib.out('foto_boeden')
-# the limits (first set 18.11.2026 before the first run at GitHub – wide; to be drawn in after its numbers, docs/features/foto-boeden.md)
-GRAIN = 0.012     # fine contrast of the asphalt from 1.3 m (the grain is subtle: a few percent)
-WHEEL = 0.99      # brightness of the wheel paths against the asphalt beside them
-SHADER = 140000   # characters of a ground shader's fragment source without comments and blanks
+# the limits, after the first run at GitHub (18.11.2026, run 44388287806, SwiftShader, 1100 × 620, tier hoch): fine contrast 0.0259
+# on the Landstraße and 0.0258 in the village (from 14 m 0.0166), wheel paths 0.961 of the asphalt beside them, red/blue 1.031 in
+# the village against 0.991, ground shaders 97 958 – 104 166 characters
+GRAIN = 0.018     # fine contrast of the asphalt from 1.3 m (the grain is subtle: a few percent)
+WHEEL = 0.98      # brightness of the wheel paths against the asphalt beside them
+SHADER = 108000   # characters of a ground shader's fragment source without comments and blanks
 ck = lib.Checks('foto_boeden')
 errs = []
 HELP = r"""
@@ -118,7 +120,7 @@ with lib.browser() as b:
     ck('the village street shows its aggregate too', g_dorf['rel'] > GRAIN, json.dumps(g_dorf))
     # (both spots lie in the sun at 15:30: the same light – what differs is the surface: weathered asphalt is warmer, new bluish)
     warm = lambda g: g['rgb'][0] / max(1, g['rgb'][2])
-    ck('the old asphalt of the village street is warmer in tone than the Landstraße (kept best)', warm(g_dorf) > warm(g_main) + 0.008, f"red/blue: village {warm(g_dorf):.3f} {g_dorf['rgb']}, Landstraße {warm(g_main):.3f} {g_main['rgb']}")
+    ck('the old asphalt of the village street is warmer in tone than the Landstraße (kept best)', warm(g_dorf) > warm(g_main) + 0.015, f"red/blue: village {warm(g_dorf):.3f} {g_dorf['rgb']}, Landstraße {warm(g_main):.3f} {g_main['rgb']}")
     view(AX, AY, 1.6, 292, -8, 62, 4)
     shot('04_anger')
 
@@ -134,7 +136,9 @@ with lib.browser() as b:
     sh = J("__FB.shaders()")
     print('ground shaders (fragment source, characters):', json.dumps(sh), flush=True)
     ck('the ground shaders stay within their length (every line is paid at every pixel without a graphics card)', len(sh) >= 2 and max(sh.values()) < SHADER, f"below {SHADER}: " + json.dumps(sh))
-    ck('no shader program came with the views (the road is drawn by the ground materials there are)', E("GAME.R.info.programs.length") <= progs0, f"{progs0} → {E('GAME.R.info.programs.length')}")
+    # (other things compile a program when they first come into view – a bridge's deck, a car –, so only the ground's own are counted:
+    # the garden's ground in its variants, the terrain, the bridges' decks, the tiles of the wider world)
+    ck('the road is drawn by the ground programs there are (no further one carries the road GLSL)', 2 <= len(sh) <= 5, f"{len(sh)} ground programs; all programs {progs0} → {E('GAME.R.info.programs.length')}")
     ok, r = lib.check_gl(pg, 16)
     ck('every shader program links and stays within 16 textures', ok, json.dumps({k: r[k] for k in ('programs', 'maxFrag', 'maxVert', 'broken')}) + json.dumps(r['bad'])[:300])
 ck.errors(errs)

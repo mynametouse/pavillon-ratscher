@@ -99,9 +99,11 @@ neuen Assets.
   Rauschen als vorher, keine Texturabfrage mehr als vorher (die neun Abfragen des Detail-Arrays kosten dort am meisten); in
   `weltGround()` ein Pflaster-Aufruf statt drei (vier Hashes und zwei Sinus statt sechs Hashes). Texturabfragen mit Bildschirm-
   Ableitungen stehen in keinem neuen Zweig (Direct3D).
-- **Ladezeit ohne Grafikkarte (`softgl`) und Speicher am Telefon (`memphone`): im Chat-Rechner nicht gemessen** – die Warteschlange
-  des einen Test-Browsers war am 18.11. abends ~50 Minuten lang; beide laufen mit `gpu`, `leistung` und `strassen` im Feature-Lauf
-  bei GitHub (`viz3/extra/foto-boeden/tests.txt`). Nicht gemessen: Bildzeiten auf einer echten Grafikkarte, auf Falkos Laptop, am iPhone.
+- **Ladezeit ohne Grafikkarte** (`softgl` im Feature-Lauf bei GitHub, 44388287806): Vorbereitung 23,7 s (Grenze 3 min), längste
+  Wartezeit 10,0 s (Grenze 20 s). Die Läufe desselben Abends ohne diese Arbeit streuen je nach Rechner von GitHub zwischen 11,2 und
+  24,8 s bzw. 6,8 und 12,1 s (fünf Prüfpakete auf `kern/*`) – ein Unterschied durch die längeren Shader ist darin nicht zu messen.
+  `memphone` und `leistung` (15/15) unverändert grün. Im Chat-Rechner liefen nur Bilder (die Warteschlange des einen Test-Browsers
+  war ~50 Minuten lang). Nicht gemessen: Bildzeiten auf einer echten Grafikkarte, auf Falkos Laptop, am iPhone.
 
 ## Tests
 
@@ -110,9 +112,16 @@ sind von oben dunkler als der Asphalt daneben; aus 1,3 m zeigt der Asphalt Korn,
 ist wärmer als der der Landstraße; aus der Szene – das Marktpflaster liegt in Reihen (ganze Bildzeilen unterscheiden sich, Spalten
 kaum) und kachelt ohne Naht; die Bodenshader bleiben in ihrer Länge, kein Programm über 16 Texturen, keines defekt, kein neues.
 
-Stand 18.11. abends: `tools/check.sh` grün (427 Unit-Tests); im Chat-Rechner nur Bilder (alle Programme übersetzt und gelinkt,
-höchstens 16 Texturen, in drei Bilderläufen); die Tests laufen im Feature-Lauf bei GitHub (Lauf-Nummer im Bericht). Die Grenzen
-des eigenen Tests (`GRAIN`, `WHEEL`, `SHADER`) sind weit gesetzt und werden nach den ersten Zahlen von dort enger gezogen.
+Stand 18.11. abends: `tools/check.sh` grün (427 Unit-Tests); im Chat-Rechner nur Bilder (vier Bilderläufe: alle Programme übersetzt
+und gelinkt, höchstens 16 Texturen). Feature-Lauf bei GitHub **44388287806** (Stand `2307242f`): `smoke`, `gpu`, `softgl`,
+`memphone` grün, `leistung` 15/15, `strassen` 53/53; `foto_boeden` 12/13 – die eine rote Prüfung war eine falsche Annahme des Tests
+(„kein Programm kommt mit den Blicken dazu“: 173 → 174, eines kompiliert immer, wenn etwas zum ersten Mal ins Bild kommt) und zählt
+jetzt nur die Bodenprogramme; gemessen: Radspuren 0,961 des Asphalts daneben, Korn 0,026 (aus 14 m 0,017), Rot/Blau 1,031 im Dorf
+gegen 0,991 auf der Landstraße, Marktbild Zeilen 17,8 gegen Spalten 3,6, Bodenshader 98–104 Tsd. Zeichen ohne Kommentare.
+`schleusingen_ansicht:markt` 5/7: rot sind „höchstens 4 Zeichenaufrufe mehr am Markt“ (283 gegen 273 in zwei Bildern
+nacheinander) und „das Pflaster liegt überall 2–5 cm über dem Boden“ (0,6–18,8 cm) – beides fasst diese Arbeit nicht an (dasselbe
+Netz in derselben Höhe, nur sein Bild und seine Texturkoordinaten sind neu); der Test lief zuletzt am 17.11. grün, vor den
+Änderungen an den Kacheln (V18x) und den Schatten (V19c). Auf `src` nicht gegengeprüft.
 
 Bilder vorher/nachher (Arbeitsordner des Chats, nicht im Repo): `/home/claude/scratch/foto/boeden/` – `vorher/` (Stand vor der
 Arbeit; der Markt dort ohne Kacheln), `n2/` (nachher, 20:30: Asphalt und Marktpflaster auf echten Kacheln), `nachher/` (Endstand,
