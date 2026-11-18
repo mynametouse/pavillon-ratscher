@@ -25,10 +25,17 @@ Detailstufen, kleine Dinge in der Ferne ausgeblendet (`CULL`), ein Bild nur bei 
 | 4 | Blühende Wiesen von oben wie Konfetti (40 cm bis 3 m große Farbkleckse) | **erledigt** – Blüte als Tönung in Flecken (unten) |
 | 5 | Äcker: dunkle Halme auf dem hellen Luftbild-Boden, nur im Ring um die Kamera; dahinter kahles Luftbild | **erledigt** – Bestand im Boden bis ~340 m, Halme passen dazu (unten) |
 | 6 | Der modellierte Rasen (240 m) ist von oben eine gleichmäßig grüne Fläche | offen |
-| 7 | Häuser der Welt: flache, prozedurale Fassaden, Dächer satter als das Bodenfoto | offen (Grenzland-/Suhl-Chat arbeiten an Fassaden) |
-| 8 | Wasser des Stausees: glatter Spiegel ohne Wellen und Ufer | offen |
-| 9 | Bäume jenseits von ~100 m sind Karten (gekreuzte Bilder) | gemildert (Licht und Schatten passen jetzt), Modell offen |
+| 7 | Häuser der Welt: flache, prozedurale Fassaden, Dächer satter als das Bodenfoto | **in Arbeit** – Hilfs-Agent `foto-gebaeude` (`docs/features/foto-gebaeude.md`) |
+| 8 | Wasser des Stausees: glatter Spiegel ohne Wellen und Ufer | **erledigt** – Wellen nach dem Wind, Glanz nach Entfernung, weiches Ufer (unten, 7); offen: Spiegelung des Ufers |
+| 9 | Bäume jenseits von ~100 m sind Karten (gekreuzte Bilder) | gemildert (Licht und Schatten passen jetzt); Laub und ferne Karten **in Arbeit** – Hilfs-Agent `foto-baeume` |
 | 10 | Keine Stufe über „hoch“ für starke Rechner (Auflösung höchstens 1,5-fach, AO „Medium“) | offen – Plan unten |
+
+Nach Falkos Hinweis vom 18.11. 18:50 („Gebäude, die gesamte Atmosphäre, auch im Wald. Nichts sollte so ständig wiederholend sein, sondern
+natürlich und organisch und abwechslungsreich“) kamen aus einer zweiten Durchsicht dazu: der **Wald** (Farn als heller, gleichmäßiger
+Teppich, Boden blaugrau, flaches Licht), die **Böden der Orte** (Asphalt und Höfe glatt und einfarbig, der Markt in Schleusingen ein
+Rauschteppich), die **Grasähren** der Wiesen (blasse Kleckse) und das **Laub** (blass bis cremefarben). Daran arbeiten seit 19:35 vier
+Hilfs-Agenten parallel (Falko 19:22: „Parallel und so schnell wie möglich.“): `foto-wald`, `foto-gebaeude`, `foto-boeden`,
+`foto-baeume` – Aufträge `docs/plans/auftraege/foto-*.md`, Ergebnisse je in `docs/features/foto-<name>.md`.
 
 ## Was neu ist
 
@@ -107,6 +114,41 @@ Detailstufen, kleine Dinge in der Ferne ausgeblendet (`CULL`), ein Bild nur bei 
   auf dem Land (Gelände um Ratscher, Gartenboden, Kacheln der Welt) ist auf 30 % gesenkt: es bleibt der Schimmer einer Wiese im
   Gegenlicht. Straßen und Wege behalten ihren Glanz (nasser Asphalt, Pfützen). Die Halme glitzern etwas ruhiger (60 %).
 
+### 7 Wasser: Wellen nach dem Wind, Glanz nach Entfernung, ein Ufer (`foto/wasser.js`, `WASSER`)
+
+Vorher legte `world/ratscher.js` jede Wasserfläche der Geodaten (die Talsperre Ratscher, 82 ha, und sieben Teiche) als ebenes Vieleck
+mit spiegelglattem Material: eine graublaue Platte mit harter Kante. Sobald die Welt steht, ersetzt `foto/wasser.js` sie – ohne
+Eingriff in `world/ratscher.js` (die Liste `RATSCHER.water` hält danach die neuen Flächen).
+
+- **Wellen:** drei Lagen einer kachelbaren Textur aus Neigungen (256², einmal gerechnet: eine Summe zufälliger Wellen), mit Kacheln
+  von 23 m, 7,3 m und 2,1 m (Wellenlängen von Metern, einem Meter, einer Handbreit), gegeneinander gedreht. Sie laufen mit dem Wind
+  (1,7 / 1,0 / 0,5 m/s) und kreuzen sich. Ihre Steilheit folgt dem Wind des Wetters: nach Cox und Munk ist die mittlere quadratische
+  Neigung einer Wasserfläche 0,003 + 0,00512 · Wind (m/s); für den kurzen Anlauf eines Stausees davon das 0,7-Fache der Wurzel – 0,04
+  bei Windstille (eine flache Dünung, der Himmel spiegelt sich), 0,08 bei 2 m/s, 0,12 bei 5 m/s (gekräuselt, der Spiegel zerfällt).
+  Eine vierte, 610 m große Lage macht die Böenfelder: glattere und rauere Flächen nebeneinander.
+- **Der richtige Glanz in jeder Entfernung:** Wellen, die kleiner sind als ein Bildpunkt (weit weg oder flach gesehen), kippen die
+  Fläche nicht mehr – ihre Neigungen werden zu Rauheit (eine GGX-Keule derselben Neigungsstreuung). So ist die Lichtbahn der Sonne
+  am Ufer schmal und funkelnd und weit draußen breit und weich, und fernes Wasser spiegelt einen verschwommenen Himmel. Flach
+  gesehen verdecken die Wellen einander: die Fläche wird flacher gerechnet und dafür rauer.
+- **Ufer:** jede Wasserfläche trägt eine kleine Karte des Abstands zum Ufer (ein Byte je Texel, 0,4–3,2 m je Texel, am Ufer genau aus
+  dem Umriss gerechnet; die des Stausees 503 × 436). In den letzten 2,6 m läuft das Wasser durchsichtig aus – das Ufer des Luftbilds
+  scheint durch –, dahinter liegt bis 10 m ein Band helleren, grüneren Flachwassers vor dem dunklen Tiefen. Gezeichnet wird das
+  Rechteck der Karte; wo sie kein Wasser meldet, entsteht kein Bildpunkt.
+- **Wo der Laserscan Wasser über den Umriss hinaus fand** (Boden auf Wasserhöhe neben dem Umriss), nimmt der Stausee es mit: jeder
+  solche Texel, der von innen erreichbar ist, bis 26 m über den Umriss hinaus, der Boden dort unter der Oberfläche, aber höchstens 3 m
+  – nie die Luftseite des Damms hinunter.
+- **Eine Handbreit höher:** das Gelände unter dem Wasser ist die vom Laser gemessene Wasseroberfläche und liegt auf Zentimeter an der
+  Höhe der Fläche (am Damm gemessen: 2 cm darunter bis 3 cm darüber). Nah am Auge schaut solcher Boden durch eine Platte auf genau
+  dieser Höhe. Die Oberfläche liegt jetzt 12 cm über der Höhe aus den Daten.
+- **Schatten der Sonne** fallen auf das Wasser (Uferbäume, Damm, bei tiefer Sonne die Hügel): die Lichtbahn endet, wo der Schatten
+  beginnt.
+- **Bewegung:** in Echtzeit, nicht in Spielzeit. Bilder fordert das Wasser nur an, solange es im Bild und näher als 600 m ist –
+  höchstens 15 je Sekunde, nicht auf „schnell“ und nicht am Telefon; dort bewegt es sich, wenn ohnehin gezeichnet wird (wie der Bach).
+- **Nicht dabei:** die Spiegelung des Ufers (Bäume, Hang) – sie braucht ein zweites Bild der Szene je Bild und ist ein Kandidat für
+  die Stufe „Ultra“; Regenringe; die Wasserflächen der Welt-Kacheln und Suhls (`lazy/suhl/kern/wasser.js`); der Bach im Garten. Der
+  **Damm** bleibt das Gelände im 10-m-Raster: von oben ist seine wasserseitige Böschung (am Nachmittag im Schatten) gestuft – der
+  Damm als eigenes Bauwerk wäre der nächste Schritt dort.
+
 ## Geänderte Shader und Render-Methoden
 
 | Stelle | Änderung |
@@ -122,8 +164,9 @@ Detailstufen, kleine Dinge in der Ferne ausgeblendet (`CULL`), ein Bild nur bei 
 | Schatten-Atlas (V19e) | 256 Texel breiter als bisher (1,5 Karten + 256); das Feld wird wie die Kacheln hineinkopiert |
 | Boden: `world/ratscher.js`, `garden/env.js`, `welt/welt.js` (V19e) | `reflectedLight.directSpecular` × 0,3 außerhalb von Straßen und Pfützen |
 | Halme `bewuchs/bw_halm.js` (V19e) | `reflectedLight.directSpecular` × 0,6 |
+| Wasser `foto/wasser.js` | eigenes Material (ein Programm, Schlüssel `foto-wasser`, ersetzt das der Platte): nach `color_fragment` Flachwasser und Auslaufen aus der Uferkarte, nach `roughnessmap_fragment` die drei Wellenlagen, Böen und die Rauheit aus den nicht mehr aufgelösten Neigungen, nach `normal_fragment_maps` die Normale; durchsichtig, vor allem anderen Durchsichtigen gezeichnet (`renderOrder` −1), empfängt Schatten |
 
-Neue Assets: **keine** (keine Texturen, keine Modelle, keine fremden Daten).
+Neue Assets: **keine** (keine Texturen aus Dateien, keine Modelle, keine fremden Daten; die Wellentextur und die Uferkarten rechnet die Seite selbst).
 
 ## Leistung
 
@@ -161,6 +204,11 @@ und Dreiecke der Blickpunkte bleiben, wie sie waren (Tabelle oben; `leistung` 15
 (`fotoref`, Schattenkarte 2048²): Abendblick West (r6) 358 / 1,06 M → 358 / 1,06 M, Morgen im Tal (r9) 246 / 0,84 M → 239 / 0,85 M,
 Sonnenaufgang von oben (r10) 193 / 0,48 M → 188 / 0,48 M; Schattenkarte des Kastens unverändert (545 / 231 / 195 Tsd. Dreiecke).
 
+**Wasser:** je Wasserfläche im Bild ein Zeichenaufruf mit zwei Dreiecken (vorher einer für alle acht zusammen, 181 Dreiecke; meist
+ist nur der Stausee im Bild), ein Programm (das der Platte entfällt), je Bildpunkt Wasser fünf Texel-Abrufe. Speicher: Wellentextur
+256² (0,35 MB mit Stufen), Uferkarten zusammen 0,31 MB. Aufbau einmal beim Laden: rund 0,1 s (Rechner der Tests). Am Stausee kosten
+die Blickpunkte Abend (r11) 605 Aufrufe / 1,10 M Dreiecke, Damm (r12) 162 / 0,28 M, von oben (r13) 172 / 0,33 M.
+
 ## Qualitätsstufen
 
 Der Auftrag nennt Ultra / High / Balanced / Performance. Vorhanden: **hoch** (= High), **mittel** (= Balanced), **schnell**
@@ -177,18 +225,24 @@ und die Anzeige (andere Module lesen `RENDER.tier` als hoch/mittel/schnell) und 
   rechnet das Feld sofort (Tests, Bilder); `SCHATTEN.add(mesh, { cast, receive, roof })`.
 - `SCHLAND.at(x, y)` → die zwei Schattenhöhen an einem Punkt (Tests), `SCHLAND.state()`; `?nohuegel`.
 - `LUFT.state()`, `LUFT.set({ H, on })`.
+- `WASSER.state()` → `{ on, built, bodies, tris, maps: [[Breite, Höhe, m je Texel, Texel jenseits des Umrisses], …], ms, wind, slope,
+  near }`; `WASSER.set({ on })` (die alte Platte zurück oder die Wellen wieder), `WASSER.step(s)` (die Wellen um s Sekunden weiter –
+  mit `window.FREEZE` stehen sie sonst), `WASSER.bank(x, y)` (Abstand zum Ufer laut Karte); `?nowasser`.
 - `BWFERNE.state()` → dazu `crops` (Frucht, Phase, Deckung, Erntetage), `reach`, `high`.
 - Gespeichert: `pav-schatten-v1` (auto/an/aus).
 
 ## Tests und Vergleich
 
-- `viz3/test/fotorealismus.py` (Abschnitte `schatten`, `land`, `luft`, `ferne`): gemeinsame Uniforms kommen in den Programmen an (ein
+- `viz3/test/fotorealismus.py` (Abschnitte `schatten`, `land`, `luft`, `ferne`, `wasser`): gemeinsame Uniforms kommen in den Programmen an (ein
   three-Update könnte sie klonen), beide Kacheln gezeichnet und benutzt, im Budget, im Stand keine neue; mit Kacheln mehr Schatten und
   nirgends mehr Licht als ohne; Hügelschatten: das Feld gerechnet und im Atlas, um 5:45 liegen Garten und Feldweg im Schatten (das
   Bild über 5 % dunkler, nirgends heller), um 7:15 in der Sonne, nachmittags wird kein Feld gerechnet oder gelesen; der Dunst dünner
-  in der Höhe; ein Feld 90 m entfernt ist im Juni grün; kein Programm über 16 Texturen.
+  in der Höhe; ein Feld 90 m entfernt ist im Juni grün; das Wasser: alle acht Flächen mit ihrer Uferkarte, tief in der Mitte des
+  Stausees und Land 60 m hinter dem Damm, die Wellen stehen, solange der Test die Welt hält, und laufen, wenn er sie weiterstellt,
+  steiler bei 5 m/s Wind, die alte Platte lässt sich zurückholen; kein Programm über 16 Texturen.
 - `viz3/test/fotoref.py`: die festen Blickpunkte (`views.json`: Garten gesamt, Pavillon nah, Vegetation, Gebäude und Landschaft,
-  Bodenperspektive, Abendblick nach Westen, Feldweg, Tal von oben, seit V19e Morgen im Tal und Sonnenaufgang von oben) mit Kosten je Bild; `python3 viz3/test/fotoref.py PORT
+  Bodenperspektive, Abendblick nach Westen, Feldweg, Tal von oben, seit V19e Morgen im Tal und Sonnenaufgang von oben, mit dem Wasser
+  drei am Stausee: Abend am Ostufer, vom Damm, von oben) mit Kosten je Bild; `python3 viz3/test/fotoref.py PORT
   name=…,wetter=klar,map=4096` (`map`: Schattenkarte wie auf einer Grafikkarte). Bilder unter `out/fotoref/<name>/`.
 - Vor jeder Version dazu: smoke, gpu, leistung, memphone, bewuchs, garage.
 
@@ -197,7 +251,8 @@ und die Anzeige (andere Module lesen `RENDER.tier` als hoch/mittel/schnell) und 
 1. **Ultra-Stufe** (oben). 2. **Tiefe Sonne, Rest:** Laub der 3D-Bäume wird in der Abendsonne cremefarben (zu hell – die Sonnenstärke
 bei 8° ist in `time/daynight.js` höher als mittags, dazu die Belichtung; mit dem Kern-Chat abstimmen), Wald im Quadrat von Ratscher
 als Schattenwerfer jenseits der Kacheln (Kronenhöhen ins Raster), schmale Böschungen feiner.
-3. **Wasser** des Stausees (Wellen, Ufer, Spiegelung des Himmels). 4. **Rasen von oben** (Struktur, Mähspuren in der Ferne).
+3. **Wasser, Rest:** Spiegelung des Ufers (zweites Bild der Szene – Stufe „Ultra“), Regenringe, die Wasserflächen der Welt-Kacheln und
+Suhls, der Bach. 4. **Rasen von oben** (Struktur, Mähspuren in der Ferne).
 5. Feldfrüchte weiter als 340 m und aus der Höhe (größeres Fenster, Karten weiter laden), Fahrgassen. 6. Die übrigen offenen Punkte des
 Bewuchses (`docs/features/bewuchs.md`). 7. Schatten der Detailzonen (Schleusingen, Kloster Veßra, Suhl: `SCHATTEN.add` durch ihre Module).
 8. Falkos Eindruck am Laptop und am iPhone; dort „Schatten in der Ferne: an“ ausprobieren.

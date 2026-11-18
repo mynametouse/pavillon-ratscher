@@ -1,17 +1,18 @@
 # feat/fotorealismus: the machinery of the picture quality – the sun's shadow in cascades (foto/schatten.js: a far and a wide tile in the
 # sun's own shadow map), the hills' shadows at a low sun (foto/schatten_land.js: a field of shadow heights in a strip of the same map),
-# the air (foto/luft.js: haze by height and towards the sun) and the vegetation far away in the ground (bewuchs/bw_ferne.js: flowers as
-# a tint, the fields' crops as one surface).
-#   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9071 --serve fotorealismus[:schatten,land,luft,ferne]
+# the air (foto/luft.js: haze by height and towards the sun), the water of the reservoir (foto/wasser.js: waves with the wind, a bank
+# from a map of the distance to it) and the vegetation far away in the ground (bewuchs/bw_ferne.js: flowers as a tint, the fields'
+# crops as one surface).
+#   bash tools/browser_lock.sh python3 viz3/test/run.py --port 9071 --serve fotorealismus[:schatten,land,luft,wasser,ferne]
 # What it guards: the shared uniforms still reach the programs (they are typed arrays in THREE.ShaderLib – a three.js update could
 # clone them), the tiles are drawn, used and stay within their budgets, no program over 16 textures, shadows show far from the walker
 # and nowhere light leaks in, the garden lies in the shadow of the hills until the sun is over them in the morning, the haze thins with
-# the height, a field in June is green out to where the eye reaches.
+# the height, the reservoir has waves that move and a bank that fades, a field in June is green out to where the eye reaches.
 import sys, os, json, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import lib
 
 port = sys.argv[1]
-WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'schatten,land,luft,ferne').split(','))
+WANT = set((sys.argv[2] if len(sys.argv) > 2 else 'schatten,land,luft,wasser,ferne').split(','))
 OUT = lib.out('fotorealismus')
 ck = lib.Checks('fotorealismus')
 errs = []
@@ -174,6 +175,46 @@ with lib.browser() as b:
         view(-26, 46, 130, 143, -40, 55, n=3)
         hi = J("BWFERNE.state().high")
         ck('from 130 m up the fields keep the aerial photo', hi < 0.05, hi)
+    # (last: its views take the camera to the reservoir, 1.5 km away – the plants' maps around the garden would have to load again)
+    if 'wasser' in WANT:
+        w = J("WASSER.state()"); print('wasser', json.dumps(w), flush=True)
+        nb = J("GEOMAN.water.length")
+        ck('the water: every body of the geodata rebuilt with its bank map, quickly', w['built'] and w['bodies'] == nb and len(w['maps']) == nb and w['ms'] < 600 and J("RATSCHER.water.length") == nb, json.dumps(w))
+        # the reservoir (the largest body): the middle of its largest triangle is deep water, 60 m behind the dam is land, the garden has no map
+        bk = J("""(() => { const g = GEOMAN.water.slice().sort((a, b) => b.area - a.area)[0]; let best = 0, m = null;
+          for (let t = 0; t < g.tri.length; t += 3) { const [p, q, r] = [g.tri[t], g.tri[t + 1], g.tri[t + 2]], a = Math.abs((g.x[q] - g.x[p]) * (g.y[r] - g.y[p]) - (g.y[q] - g.y[p]) * (g.x[r] - g.x[p]));
+            if (a > best) { best = a; m = [(g.x[p] + g.x[q] + g.x[r]) / 3, (g.y[p] + g.y[q] + g.y[r]) / 3]; } }
+          // across the dam's middle (840, -833; outward: -0.544, 0.84): the drawn ground against the water's level, and what the map says
+          const prof = []; for (let t = -20; t <= 60; t += 5) { const x = 840 - 0.544 * t, y = -833 + 0.84 * t; prof.push([t, +(RATSCHER.hMesh(x, y) - g.z).toFixed(2), WASSER.bank(x, y)]); }
+          return { mid: WASSER.bank(m[0], m[1]), behind: WASSER.bank(840 - 0.544 * 60, -833 + 0.84 * 60), garden: WASSER.bank(2, 2), prof, area: g.area }; })()""")
+        print('dam profile [m outward, ground − level, map]', json.dumps(bk['prof']), flush=True)
+        big = max(w['maps'], key=lambda m: m[0] * m[1] * m[2] * m[2])
+        ck('the bank map: deep in the middle of the reservoir, land 60 m behind the dam, none at the garden', bk['mid'] is not None and bk['mid'] > 8 and (bk['behind'] is None or bk['behind'] < 0) and bk['garden'] is None, json.dumps({k: bk[k] for k in ('mid', 'behind', 'garden')}))
+        ck('the reservoir takes the carved bed beyond its outline, and no more than a bank\'s worth (under a tenth of its area)', 0 <= big[3] * big[2] * big[2] < 0.1 * bk['area'], f"{big[3]} texels of {big[2]} m = {round(big[3] * big[2] * big[2])} m² of {bk['area']} m²")
+        # from the east end of the dam over the water (a calm afternoon): the waves stand until they are stepped, then the picture of the water changes
+        view(1176, -730, 1.6, 200, -5, 60)
+        E("WASSER.step(0); window.__w0 = __FT.grab(); window.__w1 = __FT.grab(); 0")
+        lib.shot(pg, OUT, 'wasser_damm')
+        dif = "(a, b) => { let n = 0, c = 0; for (let y = 0; y < Math.floor(a.h * 0.45); y++) for (let x = 0; x < a.w; x += 2) { const i = (y * a.w + x) * 4; n++; if (Math.abs(a.px[i] - b.px[i]) + Math.abs(a.px[i + 1] - b.px[i + 1]) + Math.abs(a.px[i + 2] - b.px[i + 2]) > 12) c++; } return +(c / n).toFixed(4); }"
+        still = J(f"({dif})(__w0, __w1)")
+        moved = J(f"(() => {{ WASSER.step(0.8); window.__w2 = __FT.grab(); return ({dif})(__w0, __w2); }})()")
+        ck('the waves stand while the test holds the world, and move when stepped (lower part of the picture)', still < 0.004 and moved > 0.03, f'still {still}, after 0.8 s {moved}')
+        # wind ruffles it: steeper waves
+        w0 = J("WETTER.S.cur.wind")
+        s0 = J("(() => { WETTER.S.cur.wind = 0; return WASSER.step(0).slope; })()")
+        s1 = J("(() => { WETTER.S.cur.wind = 5; const s = WASSER.step(0).slope; __FT.grab(); return s; })()")
+        lib.shot(pg, OUT, 'wasser_damm_wind')
+        ck('steeper waves in a wind of 5 m/s than in calm air', 0.02 < s0 < 0.06 and s1 > s0 * 1.8, f'{s0} → {s1}')
+        E(f"WETTER.S.cur.wind = {w0}; WASSER.step(0); 0")
+        # the old plate back and the waves again
+        off = J(f"(() => {{ WASSER.set({{ on: false }}); const c = __FT.grab(); const r = [RATSCHER.water.length, ({dif})(__w2, c)]; WASSER.set({{ on: true }}); return r; }})()")
+        lib.shot(pg, OUT, 'wasser_damm_an')
+        ck('switched off the old plate is back (one mesh), on again the bodies', off[0] == 1 and off[1] > 0.03 and J("RATSCHER.water.length") == nb, off)
+        # from above: the whole reservoir in one picture
+        view(900, -700, 80, 135, -18, 55, n=3)
+        E("__FT.grab(); 0")
+        lib.shot(pg, OUT, 'wasser_oben')
+        ck('seen from 80 m up the water is within 600 m and would ask for pictures on a graphics card', J("WASSER.state().near") < 600, J("WASSER.state()"))
     ok, gl = lib.check_gl(pg)
     ck('at most 16 textures per shader program, none broken', ok, f"{gl['programs']} programs, max {gl['maxFrag']} fragment / {gl['maxVert']} vertex samplers, bad {[p['name'] for p in gl['bad']]}, broken {gl['broken']}")
 ck.errors(errs)
