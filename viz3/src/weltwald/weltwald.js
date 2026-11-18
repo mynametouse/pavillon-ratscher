@@ -105,12 +105,13 @@ export const WWALD = (() => {
   const AUTUMN = {
     3: [2.3, 1.15, 0.3],
     4: [1.8, 1.15, 0.45],
-    5: [1.2, 1.12, 0.8],
+    5: [5.65, 1.64, 0.57], // feat/fotorealismus (foto-baeume): the birch's gold from the summer picture of the garden's aspen (was 1.2, 1.12, 0.8 on the golden one – the same colour)
     6: [2.4, 1.0, 0.4],
     7: [2.1, 1.1, 0.4],
   };
-  // the green of summer (the birch: the garden's aspen leaves are golden – its own colour is its autumn)
-  const SUMMER = { 3: [1, 1, 1], 4: [1, 1, 1], 5: [0.56, 0.98, 1.35], 6: [1, 1, 1], 7: [1, 1, 1] };
+  // the green of summer (the birch: the garden's aspen leaves were golden – its own colour was its autumn; feat/fotorealismus
+  // (foto-baeume): the garden's aspen now has its leaf picture in summer green, eztree/textures.js – the birch takes it as it is)
+  const SUMMER = { 3: [1, 1, 1], 4: [1, 1, 1], 5: [1, 1, 1], 6: [1, 1, 1], 7: [1, 1, 1] };
   const tmpC = new THREE.Color();
   function leafColour(k, g, a, out) {
     const A = AUTUMN[k] || AUTUMN[3],
