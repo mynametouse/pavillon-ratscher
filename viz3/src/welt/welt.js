@@ -312,7 +312,8 @@ export const WELT = (() => {
       // (the photo's shadow under the trees of Am Domberg, seen along the slope); roads keep theirs (wet asphalt, puddles)
       sh.fragmentShader = sh.fragmentShader.replace(
         '#include <lights_fragment_end>',
-        '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= mix( 0.3, 1.0, gRdCov );'
+        // (feat/fotorealismus: and little of the low sun – a field towards it shone like a lake, world/ratscher.js)
+        '#include <lights_fragment_end>\n reflectedLight.indirectSpecular *= mix( 0.3, 1.0, gRdCov ); reflectedLight.directSpecular *= mix( 0.3, 1.0, gRdCov );'
       );
     };
     m.customProgramCacheKey = () => 'welt-tile' + (window.GLCHECK && GLCHECK.lite ? '-lite' : '');

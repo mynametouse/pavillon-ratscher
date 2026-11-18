@@ -313,6 +313,12 @@ void bwBlade( out vec3 P, out vec3 N ) {
         'varying vec3 vBwC;\n' +
         sh.fragmentShader
           .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= vBwC;')
+          // feat/fotorealismus: the blades' glitter against a low sun a little calmer (thin bright blades flicker in motion), and
+          // nearer to the sheen the ground beyond them keeps (world/ratscher.js)
+          .replace(
+            '#include <lights_fragment_end>',
+            '#include <lights_fragment_end>\n  reflectedLight.directSpecular *= 0.6;'
+          )
           .replace(
             '#include <normal_fragment_begin>',
             'float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;\n  vec3 normal = normalize( vNormal );\n  vec3 nonPerturbedNormal = normal;'
