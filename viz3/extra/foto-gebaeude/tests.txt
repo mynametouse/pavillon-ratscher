@@ -1,0 +1,10 @@
+# feat/fotorealismus (foto-gebaeude): walls that look built and lived in – the weathering every wall gets in the facade shader of
+# world/village.js (gebaeude/geb_foto.js); docs/features/foto-gebaeude.md. One 'name[:args]' per line as for viz3/test/run.py
+foto_gebaeude
+# what is drawn with the village's wall material: the centre after Falko's video, the buildings of the square and the cells, the town
+dorfkern
+welt_gebaeude
+schleusingen
+# the budgets of a picture and the memory of a phone (two samplers more in the wall program, a 256² noise made at the start)
+leistung
+memphone

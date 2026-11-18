@@ -8,12 +8,12 @@
 //           greyer, warmer), large soft patches, a plinth band on every dwelling (render or sandstone – slate and half-timbering ran to the
 //           ground), shade under the eaves, a little bleaching higher up, rain runs, dirt runs under the ends of the window sills, splash
 //           and soil at the foot with a ragged edge, green on the damp north side – strongest on barns and sheds, least on new houses, one
-//           house in five freshly done; old walls are not plane (a soft slope in the normal), boards each lean their own way
+//           house in four freshly done; old walls are not plane (a soft slope in the normal), boards each lean their own way
 //   normal  the slope and the grain of the plaster (the normal map of the plaster photo the garden's walls use already – no new file)
 //   light   a rough wall does not mirror the sky at grazing angles (three's GGX lobe gave every facade seen along a street a pale veil)
 // Generic wear, not a survey: where the dirt sits follows from height, side and chance, not from photos of the single house.
 // Cost: no geometry, no draw call; two samplers more in the one wall program (7 of 16): a 256² noise made here (0.35 MB with its mips, no
-// file) and the plaster's normal map; per wall pixel three texture fetches and five hashes more. GEBFOTO.set(k) scales it all (0 = the
+// file) and the plaster's normal map; per wall pixel four texture fetches and a few hashes more. GEBFOTO.set(k) scales it all (0 = the
 // walls as before, for comparing in one load); ?nofotogeb starts with 0.
 import * as THREE from 'three';
 import { ANISO, markDirty } from '../core/assets.js';
@@ -21,7 +21,7 @@ export const GEBFOTO = (() => {
   const off = new URLSearchParams(location.search).has('nofotogeb');
   const N = 256;
   // ---- the noise: four fields that tile, each smooth between its lattice points – r clouds (32, 16, 8 texels), g mottling (8, 4),
-  // b speckle (2), a runs (2–4 texels wide, 32–64 tall). Sampled twice by the shader: 32 m and 6 m across ----
+  // b speckle (2), a runs (2–4 texels wide, 32–64 tall). Sampled three times by the shader: 32 m, 6 m and 0.9 m across ----
   function noiseTex() {
     const d = new Uint8Array(N * N * 4);
     let s = 20261118;
@@ -111,8 +111,8 @@ export const GEBFOTO = (() => {
   S.wall = `
         if ( uFoto > 0.001 ) {   // feat/fotorealismus (foto-gebaeude, gebaeude/geb_foto.js): weathering
           float fk = uFoto, b1 = mod( bid, 4093.0 ), h1 = fgH( vec2( b1, 3.7 ) ), h2 = fgH( vec2( b1, 11.1 ) ), h3 = fgH( vec2( b1, 23.9 ) );
-          float age = ( st == 1.0 ? 0.4 : barn || shed ? 1.25 : hall ? 0.8 : school ? 0.6 : 0.9 ) * ( h3 < 0.2 ? 0.45 : 0.7 + 0.6 * h3 );   // how worn: new houses least, barns most, one in five freshly done
-          vec2 wp = vec2( vW.x, v ) + 53.0 * vec2( h1, h2 ); vec4 n0 = texture2D( tFgN, wp / 32.0 ), n1 = texture2D( tFgN, wp / 6.0 );   // each wall its own place in the noise
+          float age = ( st == 1.0 ? 0.4 : barn || shed ? 1.25 : hall ? 0.8 : school ? 0.6 : 0.8 ) * ( h3 < 0.25 ? 0.4 : 0.55 + 0.75 * h3 * h3 );   // how worn: new houses least, barns most; one house in four freshly done, few neglected
+          vec2 wp = vec2( vW.x, v ) + 53.0 * vec2( h1, h2 ); vec4 n0 = texture2D( tFgN, wp / 32.0 ), n1 = texture2D( tFgN, wp / 6.0 ), n2 = texture2D( tFgN, wp / 0.9 );   // each wall its own place in the noise: clouds, mottling, grain
           vec3 nW = inverseTransformDirection( normalize( vNormal ), viewMatrix ); float north = clamp( -nW.z, 0.0, 1.0 ), west = 0.6 + 0.4 * clamp( 0.3 * nW.z - 0.9 * nW.x, -1.0, 1.0 );   // x east, z south: damp side, weather side
           float up = vW.z - v, nearK = 1.0 - smoothstep( 0.03, 0.14, px );
           if ( house && plH > 0.0 ) {   // the plinth of this house: grey render, a lighter one, or sandstone blocks – also under slate and half-timbering
@@ -127,19 +127,22 @@ export const GEBFOTO = (() => {
           float lum = dot( c, vec3( 0.3, 0.59, 0.11 ) );
           c = mix( c, vec3( lum ), fk * 0.22 * h2 );   // the house's own tone: greyer,
           c *= 1.0 + fk * ( ( h1 - 0.5 ) * 0.22 + vec3( 0.03, 0.0, -0.04 ) * ( fract( h3 * 7.31 ) - 0.5 ) );   // lighter or darker, warmer or cooler
-          c *= 1.0 + fk * age * ( 0.26 * ( n0.r - 0.5 ) + 0.1 * ( n0.g - 0.5 ) + 0.07 * ( n1.g - 0.5 ) * nearK );   // large soft patches, mottling up close
+          c *= 1.0 + fk * age * ( 0.32 * ( n0.r - 0.5 ) + 0.13 * ( n0.g - 0.5 ) + 0.07 * ( n1.g - 0.5 ) * nearK );   // large soft patches, mottling up close
+          if ( sty == 5.0 || sty == 6.0 ) { float flv = mod( v - plH, stH ), zone = flv < sill ? 0.0 : flv < sill + wh ? 1.0 : 2.0;   // half-timbering: every panel was filled and limewashed by itself
+            c *= 1.0 + fk * 0.1 * ( 0.4 + age ) * ( fgH( vec2( bi * 4.0 + step( bc, uF ) + b1, fi * 3.0 + zone ) ) - 0.5 ); }
           c *= 1.0 - fk * 0.12 * ( 1.0 - smoothstep( 0.0, 0.6, up ) );   // under the eaves and verges: shade, dust the rain does not reach
           c = mix( c, vec3( dot( c, vec3( 0.3, 0.59, 0.11 ) ) ) * 1.05, fk * 0.1 * age * smoothstep( 1.6, 4.5, v ) );   // bleached a little higher up
-          c *= 1.0 - fk * age * west * 0.13 * smoothstep( 0.56, 0.8, n1.a ) * ( 0.4 + 1.2 * n0.a ) * smoothstep( 0.1, 0.7, up );   // rain runs, more on the weather side
+          c *= 1.0 - fk * max( age - 0.3, 0.0 ) * west * ( barn || shed || hall ? 0.2 : 0.13 ) * smoothstep( 0.6, 0.84, n1.a ) * smoothstep( 0.5, 0.72, n0.a + 0.5 * ( n0.r - 0.5 ) ) * smoothstep( 0.1, 0.7, up );   // rain runs: here and there, on worn walls, more on the weather side
           if ( win > 0.5 ) { float dy = lo.y - 0.08 - v;   // dirt runs under the ends of the sill, a fainter veil under its length
             if ( dy > 0.0 && dy < 1.6 ) { float wk = fgH( vec2( b1 + bi * 7.0, fi * 3.0 + 1.0 ) ), ew = max( 0.03, fw.x * 1.5 );
               float ends = max( bnd( uF, lo.x - 0.11, lo.x - 0.03, ew ), bnd( uF, hi.x + 0.03, hi.x + 0.11, ew ) ), under = bnd( uF, lo.x - 0.05, hi.x + 0.05, ew * 2.0 ) * smoothstep( 0.45, 0.8, n1.a );
-              c *= 1.0 - fk * age * ( 0.25 + 0.75 * wk ) * ( 0.34 * ends * exp( -dy * 2.2 ) + 0.14 * under * exp( -dy * 3.5 ) ) * ( 1.0 - smoothstep( 0.06, 0.25, px ) ); } }
-          float sh = max( 0.08, 0.14 + ( 0.18 + 0.3 * age ) * ( 0.5 + 1.6 * ( n1.r - 0.5 ) ) ), spl = ( 1.0 - smoothstep( 0.3 * sh, sh, v + 0.12 * ( n1.b - 0.5 ) * nearK ) ) * mix( 0.4, 1.0, smoothstep( -0.8, -0.15, v ) );   // splash and soil at the foot: how high it reaches changes along the wall
+              c *= 1.0 - fk * age * ( 0.25 + 0.75 * wk ) * ( 0.3 * ends * exp( -dy * 2.4 ) + 0.12 * under * exp( -dy * 3.5 ) ) * ( 1.0 - smoothstep( 0.06, 0.25, px ) ); } }
+          float sh = max( 0.1, 0.2 + ( 0.25 + 0.35 * age ) * ( 0.5 + 1.6 * ( n1.r - 0.5 ) ) ), spl = ( 1.0 - smoothstep( 0.3 * sh, sh, v + 0.12 * ( n1.b - 0.5 ) * nearK ) ) * mix( 0.4, 1.0, smoothstep( -0.8, -0.15, v ) );   // splash and soil at the foot: how high it reaches changes along the wall
           c = mix( c, mix( c * 0.8, vec3( 0.13, 0.105, 0.075 ), 0.5 ), min( 1.0, fk * spl * ( 0.4 + 0.4 * age ) ) );
           float alg = north * age * ( 1.0 - smoothstep( 0.15, 0.45 + 1.0 * n0.g, v ) ) * smoothstep( 0.38, 0.62, n1.r );   // green where the wall stays damp
           c = mix( c, c * vec3( 0.62, 0.78, 0.5 ), min( 1.0, fk * 0.55 * alg ) );
           bool grain = !( sty == 2.0 || sty == 3.0 || barn || shed || hall || st == 9.0 ) || ( house && v < plH );
+          c *= 1.0 + fk * ( grain ? 0.11 : 0.05 ) * ( n2.b - 0.5 );   // the grain itself, as it shows without sun (the far mip levels are plain grey: it ends by itself)
           gFgG = fk * ( grain ? 1.0 - aaF : 0.0 );
           if ( nearK > 0.0 ) { gFgB = fk * age * 0.035 * nearK * fgNg( wp * 1.7 ).yz;   // an old wall is not plane
             if ( ( barn || shed ) && !( st == 7.0 && v < 2.2 ) ) gFgB.x += fk * 0.08 * nearK * ( fgH( vec2( floor( uF / 0.2 ) + b1, 5.0 ) ) - 0.5 ); }   // boards lean each their own way
