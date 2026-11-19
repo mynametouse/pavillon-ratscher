@@ -319,7 +319,10 @@ import { GSZ, mkGroundMat } from './env.js';
     const hole = new THREE.Path();
     hole.absarc(0, pz, pr, 0, Math.PI * 2, true);
     sh.holes.push(hole);
-    const hw = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.24, bevelEnabled: false, curveSegments: 18 }), MAT.conc);
+    const hw = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(sh, { depth: 0.24, bevelEnabled: false, curveSegments: 18 }),
+      MAT.conc
+    );
     hw.rotation.y = Math.PI / 2;
     hw.position.copy(V(-0.24, 0, 0)); // its face towards the open ditch (west), its back in the bank
     hw.castShadow = hw.receiveShadow = true;
