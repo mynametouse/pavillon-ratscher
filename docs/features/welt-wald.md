@@ -104,3 +104,14 @@ Auswahl höchstens 3,5 ms; Sommer, Oktober (Herbstfarben), Januar (kahl, Atlas o
   (`models0`, `models1`, `VI`), seine Funktion `patch` (dieselben Programme, die Entfernungsbänder je Material), `seasonal` und die
   Jahreszeit der Lärche (`SEAS`), die Texturen (`mk`).
 - Quellen: `credits_add` in `viz3/extra/welt-wald/manifest.json`; Daten `viz3/extra/welt-wald/dist/weltwald/z/`.
+
+## Die ganze feine Karte (V19y, Karten-Chat 19.11.2026)
+
+Falko 21:09: „möglichst überall, wo möglich, 3D-Wald hinzufügen. Auf der gesamten Karte.“ – alle Zellen unter den feinen Kacheln (Stufe 10)
+aller Sätze: `welt-test/`, Kloster Veßra, Trusetal, Meiningen, Werratal (`tile_cells`), ohne die Zellen, die zu mehr als der Hälfte dort
+liegen, wo andere pflanzen (`wwlib.keepout()`): 2 727 Zellen, 10,5 Mio. Bäume, 36,6 MB. OSM-Wege und -Grünflächen aus der Bearbeitungs-API
+(`tools/weltwald/osm_api.py` über die Stücke von `tools/welt/zone_trusetal.py`; Overpass antwortet aus dem Chat-Rechner nicht zuverlässig).
+Im Chat-Rechner braucht GDAL `GDAL_CURL_CA_BUNDLE`/`CURL_CA_BUNDLE`=`~/.ccr/ca-bundle.crt` und `GDAL_HTTP_PROXY`=`$HTTPS_PROXY`; der
+Index wird erst am Ende eines Laufs geschrieben – lange Listen in Etappen zu 60 Zellen laufen lassen (vier Läufe in eigenen Worktrees,
+danach Zellen und Index zusammenführen, `--drop-in-buildings`). Die Grenze des Datentests liegt jetzt bei 48 MB.
+

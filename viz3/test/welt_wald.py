@@ -72,7 +72,9 @@ if 'data' in want:
     ck('the cells hold as many trees as the index says', all(len(T[k]) == idx['cells'][k][0] for k in files) and n == idx['n'],
        f'{n} trees, index {idx["n"]}')
     size = sum(os.path.getsize(os.path.join(WW, 'z', k + '.bin')) for k in files)
-    ck('the data stay small (every file < 1 MB, all < 16 MB)', size < 16e6 and all(os.path.getsize(os.path.join(WW, 'z', k + '.bin')) < 1e6 for k in files),
+    # Karten-Chat 19.11.2026: the forest under every fine tile of the map (Falko 21:09 „möglichst überall … 3D-Wald“) – about 2 700
+    # cells; the app loads only the cells round the observer
+    ck('the data stay small (every file < 1 MB, all < 48 MB)', size < 48e6 and all(os.path.getsize(os.path.join(WW, 'z', k + '.bin')) < 1e6 for k in files),
        f'{size / 1e6:.1f} MB in {len(files)} cells')
     # keep-out: Ratscher's square, Schleusingen's town zone
     T0 = MAN['terrain']['inner']
