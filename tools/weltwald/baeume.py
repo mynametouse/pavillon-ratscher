@@ -525,13 +525,16 @@ def corridor_cells(names, width=CORRIDOR):
 
 
 def tile_cells():
-    """every cell under the world's tiles of level 10 (the main set, Kloster Veßra's, Suhl's corridor ground): [(i, j)]"""
+    """every cell under the world's tiles of level 10 (the main set, Kloster Veßra's, Trusetal's, Meiningen's, the Werra valley's,
+    Suhl's corridor ground): [(i, j)]"""
     from shapely.geometry import Polygon, box
     from shapely.ops import unary_union
     site = 'https://mynametouse.github.io/pavillon-ratscher/welt-test/'
     polys = []
+    # the zones of the Karten-Chat (19.11.2026): Trusetal, Meiningen, the Werra valley on the way
     for name, url in (('main', site + 'meta.json'), ('vessra', site + 'zonen/vessra/meta.json'),
-                      ('suhl', W.SUHL_BASE + 'boden/v2/meta.json')):
+                      ('trusetal', site + 'zonen/trusetal/meta.json'), ('meiningen', site + 'zonen/meiningen/meta.json'),
+                      ('werratal', site + 'zonen/werratal/meta.json'), ('suhl', W.SUHL_BASE + 'boden/v2/meta.json')):
         try:
             m = json.loads(W.cached(f'meta/{name}.json', lambda: W.http(url)))
         except Exception as e:
