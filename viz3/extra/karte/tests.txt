@@ -1,0 +1,5 @@
+# feat/karte: the map to switch on, where am I top left, destinations to look up and follow (karte/karte.js) – the gazetteer, the
+# line top left in the garden and in Schleusingen, K and Shift+K, the search, a tap on the map, flying there, reached, in a vehicle
+smoke
+karte
+memphone
