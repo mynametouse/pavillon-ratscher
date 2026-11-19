@@ -7,6 +7,7 @@ environment (GitHub secret MAPILLARY_TOKEN – never from the chat, never into t
 Mapillary API v4: https://graph.mapillary.com/images?bbox=W,S,E,N (a box must be smaller than 0.01 square degrees; the script walks 0.004-degree
 cells). The images are CC BY-SA 4.0 by their authors (attribution: 'Mapillary, CC BY-SA 4.0, <creator>') – only metadata is stored here."""
 import csv, json, os, sys, time, urllib.parse, urllib.request, urllib.error
+# run 19.11.2026 (Karten-Chat): MAPILLARY_TOKEN is set since 19.11. 3:20 – a push to feat/daten that touches this file starts the catalog
 
 AREAS = {'ratscher': (50.49082, 10.75362, 50.50093, 10.77794), 'schleusingen': (50.49684, 10.72576, 50.52261, 10.77567), 'vessra': (50.48815, 10.63301, 50.49882, 10.65245)}
 # the roads between the places (rough boxes along L 3004 / B 247 / B 89, one cell each) – coverage there matters for the drive
