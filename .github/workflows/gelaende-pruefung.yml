@@ -50,7 +50,7 @@ jobs:
           EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
           EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
           PROJ_NETWORK: 'ON'
-          SAT: '--no-sat'   # the satellites take ~20 min; this run is for the 1 m window of Ratscher
+          SAT: ''
         run: |
           set -o pipefail
           mkdir -p out/gelaende

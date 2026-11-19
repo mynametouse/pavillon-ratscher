@@ -527,7 +527,16 @@ def satellites(raw, mos, cur_at, WCc, geoid):
                 D, how = atl08_earthaccess(raw, bbox)
             else:
                 parts, notes = [], []
-                for y0, y1 in ((2019, 2020), (2020, 2021), (2021, 2022), (2022, 2023), (2023, 2024), (2024, 2025), (2025, 2027)):
+                tg0 = time.time()
+                try:
+                    import sliderule
+                    sliderule.set_rqst_timeout((10, 300))   # the public cluster is often busy: no year may take longer than 5 min
+                except Exception:
+                    pass
+                # (19.11.: 2019 gave 20 287 footprints in 8 min, 2021 8 932; busy years fail – enough once ~15 000 are there or after 25 min)
+                for y0, y1 in ((2019, 2020), (2021, 2022), (2020, 2021), (2022, 2023), (2024, 2025), (2025, 2027)):
+                    if sum(len(p['lon']) for p in parts) >= 15000 or time.time() - tg0 > 1500:
+                        break
                     try:
                         Dp, how = sliderule_get('gedi02ax', {'poly': poly, 'degrade_filter': True, 'l2_quality_filter': True,
                                                              't0': f'{y0}-01-01T00:00:00Z', 't1': f'{y1}-01-01T00:00:00Z'})
