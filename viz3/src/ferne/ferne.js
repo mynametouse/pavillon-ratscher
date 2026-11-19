@@ -209,6 +209,14 @@ export const FERNE = (() => {
     }
     return Number.isFinite(z) ? z : NaN;
   }
+  // the slices' times: the longest, and the 9 in 10 below (a single long one is mostly the machine: a collection, another tab)
+  const SL = [];
+  function slice(t) {
+    S.ms = Math.max(S.ms, Math.round(t));
+    SL.push(t);
+    if (SL.length > 200) SL.shift();
+  }
+  const ms90 = () => (SL.length ? Math.round([...SL].sort((a, b) => a - b)[Math.floor(SL.length * 0.9)]) : 0);
   // in slices of `budget` ms (a big block is a few thousand buildings: never one long frame); true when the mesh stands
   function buildBlock(B, budget) {
     const t0 = performance.now(),
@@ -244,7 +252,7 @@ export const FERNE = (() => {
         WK.k = k;
         WK.nv = nv;
         WK.ni = ni;
-        S.ms = Math.max(S.ms, Math.round(performance.now() - t0));
+        slice(performance.now() - t0);
         return false;
       }
       const o = rec0 + (B.first + k) * 16,
@@ -417,7 +425,7 @@ export const FERNE = (() => {
       const f = fadeOf(texel(B.I * 4 + (c & 3), B.J * 4 + (c >> 2)));
       if (f.tgt > 0) f.cur = Math.min(f.cur, 0.001);
     }
-    S.ms = Math.max(S.ms, Math.round(performance.now() - t0));
+    slice(performance.now() - t0);
     markDirty();
     return true;
   }
@@ -582,6 +590,7 @@ export const FERNE = (() => {
       buildings,
       tris,
       ms: S.ms,
+      ms90: ms90(),
       hidden: lastHidden.size,
       fading: [...FADE.values()].filter(f => f.cur !== f.tgt).length,
       range: range(),

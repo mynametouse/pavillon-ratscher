@@ -27,30 +27,56 @@ export const FWALD = (() => {
     NR = CELL / RES,
     OUT = 900, // the ring's outer edge (m): beyond the tiles nothing is built anyway
     MOVE = 80;
-  const D = { cells: null };
+  const D = { cells: new Map(), index: null, blocks: new Map(), bc: 8 };
   const hh = n => {
     const s = Math.sin(n * 12.9898 + 4.1) * 43758.5453;
     return s - Math.floor(s);
   };
-  // ---- the data ----
-  async function load() {
+  // ---- the data: blocks of 8 × 8 cells (3.2 km), each loaded when the camera comes within OUT of it ----
+  async function index() {
     try {
-      const r = await fetch(BASE + 'ferne/wald.bin');
-      if (!r.ok) throw new Error('wald.bin ' + r.status);
-      const buf = await new Response(r.body.pipeThrough(new DecompressionStream('deflate'))).arrayBuffer(),
-        dv = new DataView(buf),
-        n = dv.getUint32(4, true),
-        o0 = 8 + n * 4;
-      D.cells = new Map();
-      for (let k = 0; k < n; k++)
-        D.cells.set(
-          dv.getInt16(8 + k * 4, true) + '_' + dv.getInt16(10 + k * 4, true),
-          new Uint8Array(buf, o0 + k * 800, 800)
-        );
+      const r = await fetch(BASE + 'ferne/wald.json');
+      if (!r.ok) throw new Error('wald.json ' + r.status);
+      const x = await r.json();
+      D.bc = x.bc;
+      D.index = new Set(x.blocks);
       S.ready = true;
     } catch (e) {
       S.err = String(e);
     }
+  }
+  async function loadBlock(k) {
+    D.blocks.set(k, 'loading');
+    try {
+      const r = await fetch(BASE + 'ferne/wald/' + k + '.bin');
+      if (!r.ok) throw new Error(k + ' ' + r.status);
+      const buf = await new Response(r.body.pipeThrough(new DecompressionStream('deflate'))).arrayBuffer(),
+        dv = new DataView(buf),
+        n = dv.getUint32(4, true),
+        o0 = 8 + n * 4;
+      for (let q = 0; q < n; q++)
+        D.cells.set(
+          dv.getInt16(8 + q * 4, true) + '_' + dv.getInt16(10 + q * 4, true),
+          new Uint8Array(buf, o0 + q * 800, 800)
+        );
+      D.blocks.set(k, 'ready');
+      B.x = NaN; // build again with it
+    } catch (e) {
+      D.blocks.set(k, 'err');
+      S.err = String(e);
+    }
+  }
+  function want(x, y) {
+    const s = D.bc * CELL,
+      I0 = Math.floor((x - OUT) / s),
+      I1 = Math.floor((x + OUT) / s),
+      J0 = Math.floor((y - OUT) / s),
+      J1 = Math.floor((y + OUT) / s);
+    for (let I = I0; I <= I1; I++)
+      for (let J = J0; J <= J1; J++) {
+        const k = I + '_' + J;
+        if (D.index.has(k) && !D.blocks.has(k)) loadBlock(k);
+      }
   }
   // the square of 20 m at the grid indices (gx, gy) (world: x = gx·20): [height m, cover 0–1, conifers 0–1] or null
   function sq(gx, gy) {
@@ -258,6 +284,7 @@ export const FWALD = (() => {
     U.uFwD.value.set(b.rf - 90, b.rf, 0, 0);
     if (RATSCHER.map || S.off) mesh.visible = false;
     if (B.job) return step(3);
+    want(...KERN.where());
     // again when the camera moved 80 m, or when tiles came or went (at most every 1.5 s: while they load they come one by one)
     const [wx, wy] = KERN.where(),
       ok = WELT.n.ok,
@@ -271,7 +298,8 @@ export const FWALD = (() => {
   S.state = () => ({
     on: S.on,
     ready: S.ready,
-    cells: D.cells ? D.cells.size : 0,
+    cells: D.cells.size,
+    blocks: [...D.blocks.values()].filter(v => v === 'ready').length,
     tris: S.tris,
     ms: +S.ms.toFixed(1),
     builds: S.builds,
@@ -279,7 +307,7 @@ export const FWALD = (() => {
   });
   S.U = U;
   S.mesh = mesh;
-  whenLoaded(load);
+  whenLoaded(index);
   KERN.tick(tick, 'ferne-wald');
   window.FWALD = S;
   return S;

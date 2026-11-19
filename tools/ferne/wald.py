@@ -3,7 +3,7 @@
 20 x 20 squares of 20 m: the crowns' cover, their mean top height and the conifers' share.
 
 Reads <dist>/weltwald/z/*.bin (the copy in the build output – the data themselves belong to the map chat and are not changed here) and
-writes <dist>/ferne/wald.bin:
+writes <dist>/ferne/wald/<I>_<J>.bin per block of 8 x 8 cells (3.2 km; I = floor(i / 8)) and the list <dist>/ferne/wald.json:
   b'FWD1' + uint32 n + n x <hh> (i, j) + n x 400 x 2 bytes (row 0 south, column 0 west):
     byte 0  top height in ½ m (0: no crowns)
     byte 1  cover in 16ths (low nibble, 0–15 for 0–1) | conifers in 16ths (high nibble)
@@ -11,6 +11,7 @@ writes <dist>/ferne/wald.bin:
 Run by viz3/build.py after the extras are copied: new forest cells come with the build by themselves.
 """
 import glob
+import json
 import math
 import os
 import struct
@@ -19,6 +20,7 @@ import zlib
 
 CELL, RES = 400, 20
 NR = CELL // RES
+BC = 8  # cells per block side (3.2 km): one file each, loaded round the camera
 
 
 def decode(buf):
@@ -67,7 +69,8 @@ def cell(path):
 
 def main(dist):
     fs = sorted(glob.glob(os.path.join(dist, 'weltwald', 'z', '*_*.bin')))
-    ij, body = [], []
+    blocks = {}
+    nc = 0
     for f in fs:
         try:
             i, j = map(int, os.path.basename(f)[:-4].split('_'))
@@ -76,13 +79,18 @@ def main(dist):
             print('ferne wald: skip', os.path.basename(f), e)
             continue
         if b:
-            ij.append(struct.pack('<hh', i, j))
-            body.append(b)
-    raw = b'FWD1' + struct.pack('<I', len(ij)) + b''.join(ij) + b''.join(body)
-    os.makedirs(os.path.join(dist, 'ferne'), exist_ok=True)
-    out = zlib.compress(raw, 9)
-    open(os.path.join(dist, 'ferne', 'wald.bin'), 'wb').write(out)
-    print(f'ferne wald: {len(ij)} of {len(fs)} forest cells, {len(out) // 1024} KB')
+            blocks.setdefault((i // BC, j // BC), []).append((i, j, b))
+            nc += 1
+    od = os.path.join(dist, 'ferne', 'wald')
+    os.makedirs(od, exist_ok=True)
+    size = 0
+    for (I, J), cs in sorted(blocks.items()):
+        raw = b'FWD1' + struct.pack('<I', len(cs)) + b''.join(struct.pack('<hh', i, j) for i, j, _ in cs) + b''.join(b for _, _, b in cs)
+        out = zlib.compress(raw, 9)
+        open(os.path.join(od, f'{I}_{J}.bin'), 'wb').write(out)
+        size += len(out)
+    open(os.path.join(dist, 'ferne', 'wald.json'), 'w').write(json.dumps({'bc': BC, 'blocks': [f'{I}_{J}' for I, J in sorted(blocks)]}))
+    print(f'ferne wald: {nc} of {len(fs)} forest cells in {len(blocks)} blocks, {size // 1024} KB')
 
 
 if __name__ == '__main__':

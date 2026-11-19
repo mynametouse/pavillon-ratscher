@@ -57,7 +57,7 @@ Schwerpunkt Laptop (Stufe „hoch“), das Handy wird nicht schlechter.
   Wald nur im Luftbild – ein flacher Ring, in den die Bäume beim Fahren hineinwuchsen.
 - Jetzt füllt ein **Kronendach** diesen Ring: ein Netz um die Kamera (ein Zeichenaufruf, wenige tausend Dreiecke), alle 80 m Bewegung
   neu gebaut (≤ 3 ms je Bild), aus einem 20-m-Raster je 400-m-Zelle (Bedeckung, mittlere Wipfelhöhe, Nadelanteil; `tools/ferne/wald.py`
-  → `dist/ferne/wald.bin`, beim Bauen aus `weltwald/z/` erzeugt – die Walddaten selbst bleiben unberührt), auf dem Boden der Kacheln
+  → `dist/ferne/wald/<I>_<J>.bin` je 3,2 km, geladen um die Kamera; beim Bauen aus `weltwald/z/` erzeugt – die Walddaten selbst bleiben unberührt), auf dem Boden der Kacheln
   (`WELT.heightAt`), endet, wo die Kacheln enden.
 - Ränder fallen schräg ab, die Punkte etwas neben dem Raster und ungleich hoch (keine Rasterkante am Horizont); Kronen als Zellmuster von
   ~7 m mit dunklen Lücken, jede von der Sonnenseite beleuchtet; Nadelwald dunkel, Laubwald nach der Jahreszeit der Bäume
