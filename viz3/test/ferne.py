@@ -149,6 +149,38 @@ with lib.browser() as b:
         hid = J("(() => { const out = []; for (const c of (GEB.Z ? GEB.Z.cells.values() : [])) if (c.meshes.length) out.push(FERNE.cellFade(c.ij[0], c.ij[1])); return out; })()")
         if hid:
             ck(f"{v['name']}: the {len(hid)} cells built in detail near the camera show no far blocks", max(hid) == 0, hid)
+    # step 3: the crops far away (bewuchs/bw_ferne.js, the coarse band of 10 m texels from dist/ferne/felder.bin) – July, ripe grain
+    if not ONLY or any(o.startswith('g') for o in ONLY):
+        # (25 m up at the edge of Ratscher, looking west over the fields towards Hinternah: 400 m – 1.5 km lie between rows 0.43 and 0.49)
+        v = {'name': 'g_felder_juli', 'x': 62, 'y': 31, 'eye': 25, 'yaw': 260, 'pitch': -4, 'fov': 60}
+        JULI = "DN.e0 = Date.UTC(2026, 6, 15) / 864e5 - Math.floor(CLOCK.t / 1440); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 15.5 * 60; DN.update(true)"
+        E(JULI)
+        eye(v)
+        for k in range(30):
+            E("GAME.step(0.3)")
+            eye(v)
+            time.sleep(0.2)
+        bf = J("BWFERNE.state().far")
+        ck('the fields\' coarse band is filled round the camera (434 cells with fields)', bf['ready'] and bf['n'] >= 1 and bf['cells'] > 300, json.dumps(bf))
+        E(JULI)
+        eye(v)
+        mit = json.loads(E(COUNT))
+        save(mit, 'g_felder_juli_mit')
+        E("BWFERNE.U.uBwFarE.value.w = 0; GAME.step(0.05)")
+        eye(v)
+        ohne = json.loads(E(COUNT))
+        save(ohne, 'g_felder_juli_ohne')
+        E("BWFERNE.U.uBwFarE.value.w = 1; GAME.step(0.05)")
+        # the picture changes beyond the fine band (the upper part of the ground: far away) and not in front (near: the same)
+        DIFF = '''((a, b, y0, y1) => new Promise(res => { const A = new Image(), B = new Image(); let n = 0; const go = () => { if (++n < 2) return;
+          const c = document.createElement('canvas'); c.width = A.width; c.height = A.height; const g = c.getContext('2d');
+          g.drawImage(A, 0, 0); const pa = g.getImageData(0, 0, c.width, c.height).data; g.drawImage(B, 0, 0); const pb = g.getImageData(0, 0, c.width, c.height).data;
+          let k = 0, t = 0; for (let y = Math.floor(c.height * y0); y < c.height * y1; y++) for (let x = 0; x < c.width; x += 2) { const i = (y * c.width + x) * 4; t++;
+          if (Math.abs(pa[i] - pb[i]) + Math.abs(pa[i + 1] - pb[i + 1]) + Math.abs(pa[i + 2] - pb[i + 2]) > 15) k++; } res(+(k / t).toFixed(4)); };
+          A.onload = go; B.onload = go; A.src = a; B.src = b; }))'''
+        far_d = E(f"{DIFF}({json.dumps(mit['img'])}, {json.dumps(ohne['img'])}, 0.42, 0.5)")
+        near_d = E(f"{DIFF}({json.dumps(mit['img'])}, {json.dumps(ohne['img'])}, 0.85, 1.0)")
+        ck('July: the fields far away show their crop (the picture changes beyond 340 m, not in front)', far_d > 0.02 and near_d < 0.01, f'far {far_d}, near {near_d}')
     mx = J("FERNE.state().ms")
     ck('a block is built in slices: no step over 12 ms (this machine, without a graphics card)', mx <= 12, f'{mx} ms')
     ok, gl = lib.check_gl(pg)

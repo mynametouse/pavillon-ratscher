@@ -148,7 +148,9 @@ with lib.browser() as b:
         f = J("BWFERNE.state()"); print('ferne', json.dumps(f)[:700], flush=True)
         cer = [c for c in f.get('crops', []) if c['id'] in ('winterweizen', 'wintergerste', 'triticale')]
         ck('the crops\' rows of the day (eight, the winter cereals closed in June)', len(f.get('crops', [])) == 8 and len(cer) == 3 and all(c['cover'] > 0.8 for c in cer), json.dumps(f.get('crops'))[:400])
-        ck('one texture for bloom and classes (512 × 1024)', J("[BWFERNE.U.tBwFar.value.image.width, BWFERNE.U.tBwFar.value.image.height]") == [512, 1024])
+        # (feat/ferne: a third band of 512² for the fields far away – not on phones)
+        ck('one texture for bloom, classes and the far fields (512 × 1536; phones 512 × 1024)',
+           J("[BWFERNE.U.tBwFar.value.image.width, BWFERNE.U.tBwFar.value.image.height]") == [512, 1024 if J("BWFERNE.state().far.on") is False else 1536])
         # a field of winter cereal (class 19) with nothing but field 30 m around it, 150–330 m from the garden: seen from 90 m away
         spot = J("""(() => { let best = null; const is = (x, y) => (BWKARTE.codeAt(x, y) & 31) === 19;
           for (let x = -330; x <= 330; x += 10) for (let y = -330; y <= 330; y += 10) { const d = Math.hypot(x - 2, y - 2); if (d < 150 || d > 330 || !is(x, y)) continue;

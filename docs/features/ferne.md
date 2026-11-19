@@ -50,14 +50,27 @@ Schwerpunkt Laptop (Stufe „hoch“), das Handy wird nicht schlechter.
 - **Nicht dabei:** Suhls eigene Gebäude (Suhl-Chat), Kloster Veßras Dorf (`welt/vessra.js`), die Wahrzeichen der Orte (Kirchtürme,
   Bertholdsburg) als eigene Form – sie stehen als Blöcke ihrer ETHOS-Höhe da, soweit sie in den Zellen sind.
 
+## Schritt 3: Felder weiter sichtbar (`bewuchs/bw_ferne.js`, `tools/ferne/felder.py`)
+
+- Vorher endeten die Feldfrüchte (reifes Getreide, Raps, Mais, Rüben – die Farbe des Tages) mit dem feinen Fenster bei **260–340 m**;
+  dahinter lag wieder das Luftbild, eine sichtbare Kante, die beim Fahren mitwanderte.
+- Jetzt ein **drittes Band** in derselben Textur (512² Texel zu 10 m, 5 km um die Kamera; beim Bewegen um 384 m neu gefüllt, ≤ 3 ms je
+  Bild): die Klassen der Äcker aus einer groben Kopie der Bewuchskarten (8 m, `tools/ferne/felder.py` → `dist/ferne/felder.bin`, 434
+  Zellen, 30 KB – die Karten selbst lädt `BWKARTE` nur bis ~520 m). Die Früchte gehen dort weiter, wo das feine Band abgibt, in
+  derselben Farbe desselben Tages (Erntetage je Feld wie nah), bis **1,5–2 km**, dann weich ins Luftbild. Halme bleiben nah.
+- Nur am Laptop/Rechner: am Handy bleibt die Textur bei zwei Bändern, der Zweig ist dort nicht im Programm. Wie das feine Band nur bis
+  ~30–70 m über dem Boden (von oben trägt das Luftbild).
+- `felder.bin` neu erzeugen, wenn sich die Bewuchskarten ändern: `python3 tools/ferne/felder.py`.
+
 ## Tests
 
-- `viz3/test/ferne.py` (`viz3/extra/ferne/tests.txt`: smoke, ferne, leistung, memphone): Daten da (über 20 000 Gebäude, über 100
+- `viz3/test/ferne.py` (`viz3/extra/ferne/tests.txt`: smoke, ferne, fotorealismus, leistung, memphone): Daten da (über 20 000 Gebäude, über 100
   Blöcke), Reichweite je Stufe, an sechs festen Blickpunkten (`viz3/extra/ferne/views.json`: Ratscher Anger, über dem Markt von
   Schleusingen, B 89 bei Belrieth, über dem Markt von Meiningen, über Trusetal, über dem Anger von Ratscher) Bilder mit und ohne
   (`out/ferne/<Blick>_mit.jpg`, `_ohne.jpg`), Blöcke in Reichweite (im Gebiet um Ratscher) bzw. keine (jenseits von 12 km), die nahen
   Zellen ohne Blöcke, Kosten (≤ 40 Aufrufe, ≤ 500 000 Dreiecke), keine Bauscheibe über 12 ms, kein Programm über 16 Texturen. Der Test
-  kopiert die Kacheln um die Blickpunkte in `dist/` (wie die anderen Welt-Tests).
+  kopiert die Kacheln um die Blickpunkte in `dist/` (wie die anderen Welt-Tests). Felder: Blick `g` (25 m über dem Westrand von
+  Ratscher nach Westen, 15. Juli) mit und ohne grobes Band – das Bild ändert sich jenseits von 340 m, davor nicht.
 
 ## Nächste Schritte
 
@@ -65,6 +78,6 @@ Schwerpunkt Laptop (Stufe „hoch“), das Handy wird nicht schlechter.
    schon) als Fernring bis zum Horizont; danach die Blöcke auch dort. Berührt `welt/welt.js` – wird in `docs/PARALLEL.md` angekündigt.
 2. **Wald in der Ferne:** hinter den Baumkarten eine erhabene, dunkle Kronenfläche nach den Kronenhöhen der Waldzellen, bis zum
    Horizont; die Karten ab 450 m weich in sie überblendet.
-3. **Felder weiter sichtbar:** ein zweites, gröberes Feld-Fenster bis 1–2 km in `bewuchs/bw_ferne.js`.
+3. ~~Felder weiter sichtbar~~ – erledigt (oben).
 4. **Personen in der Ferne** als leichte, bewegte Silhouetten bis 200–300 m, weich eingeblendet.
 5. **Vorausladen** in Blick- und Fahrtrichtung; beim Start erst die Fernsicht, dann einblenden.

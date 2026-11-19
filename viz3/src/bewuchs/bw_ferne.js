@@ -13,6 +13,10 @@
 //   the stand as one surface in its colour of today by how much of the soil it covers (closed the flatter the view; looking down
 //   into it the soil of its phase, BWARTEN.ackerboden), in its harvest days each field cut on its own day.
 //   Out to ~340 m around the camera, and only below ~70 m above the ground: from high up a field keeps the photo (the window is 1 km).
+// - feat/ferne (19.11.2026, Falko: „die Felder auch von größerer Ferne aus sehen … und nicht dann plötzlich auftauchen“): a third band
+//   of 512² texels of 10 m (5 km) around the camera, the classes of the fields from a coarse copy of the maps (8 m, tools/ferne/
+//   felder.py → dist/ferne/felder.bin, 30 KB – the maps themselves are loaded only within ~520 m): the crops go on from where the
+//   fine band hands over (260–340 m) out to 1.5–2 km, in the same colour of the same day, then fade into the photo. Not on phones.
 // Fields cut in the last weeks carry fewer flowers (the share of the fields of a class that flower again after the cuts, from its care).
 //   BWFERNE.shader(sh)       for world/roads.js S.shader: the uniforms into sh, the GLSL of bwFar
 //   BWFERNE.day(doy)         the bloom of each class and the crops' rows today – refills the texture
@@ -21,6 +25,7 @@
 //   BWFERNE.state()          { on, x0, y0, n, classes: { id: share }, crops: [{ id, cover, cut }] }
 import * as THREE from 'three';
 import { markDirty } from '../core/assets.js';
+import { BASE, COARSE } from '../core/head.js';
 import { DETAIL } from '../core/detail.js';
 import { FOREST } from '../world/forest.js';
 import { BWKARTE } from './bw_karte.js';
@@ -36,11 +41,18 @@ export const BWFERNE = (() => {
     // the crops fade out before the window's edge can come into sight: half the window less a step and what a vehicle drives in a refill
     RC1 = SPAN / 2 - MOVE - 76,
     RC0 = RC1 - 80,
-    NC = 8;
+    NC = 8,
+    // feat/ferne: the coarse band of the fields (not on phones: their texture keeps its two bands)
+    FAR = !COARSE,
+    RES2 = 10,
+    SPAN2 = N * RES2,
+    MOVE2 = 384,
+    RF0 = 1500, // the far crops fade into the photo between these (m): inside the band wherever the camera stands in it
+    RF1 = 2000;
   // rows 0 … N − 1 the bloom (filtered), rows N … 2N − 1 the class codes (read texel by texel) – one texture, one sampler: the ground
   // near the pavilion is at its 16
-  const data = new Uint8Array(N * N * 8),
-    tex = new THREE.DataTexture(data, N, 2 * N, THREE.RGBAFormat, THREE.UnsignedByteType);
+  const data = new Uint8Array(N * N * (FAR ? 12 : 8)),
+    tex = new THREE.DataTexture(data, N, (FAR ? 3 : 2) * N, THREE.RGBAFormat, THREE.UnsignedByteType);
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearFilter;
   tex.generateMipmaps = false;
@@ -48,6 +60,7 @@ export const BWFERNE = (() => {
   const U = {
     tBwFar: { value: tex },
     uBwFarB: { value: new THREE.Vector4(0, 0, 1 / SPAN, 0) }, // x0, y0, 1/size, on
+    uBwFarE: { value: new THREE.Vector4(0, 0, 1 / SPAN2, 0) }, // feat/ferne: the coarse band of the fields – x0, y0, 1/size, on
     // feat/fotorealismus: the crops in the ground – x, y: they fade out between these distances (m; inside the window wherever the
     // camera stands in it), z: their strength (0 from high above), w: the day of the year
     uBwFarC: { value: new THREE.Vector4(RC0, RC1, 0, 150) },
@@ -66,7 +79,16 @@ export const BWFERNE = (() => {
     uBwFh: { value: Array.from({ length: NC }, () => new THREE.Vector4(0, 0, 0, 0)) },
     uBwFt: { value: Array.from({ length: NC }, () => new THREE.Vector4(0.57, 0.46, 0.2, 0)) },
   };
-  const S = { x0: NaN, y0: NaN, job: null, n: 0, bloom: [], crops: [], doy: NaN };
+  const S = {
+    x0: NaN,
+    y0: NaN,
+    job: null,
+    n: 0,
+    bloom: [],
+    crops: [],
+    doy: NaN,
+    far: { x0: NaN, y0: NaN, job: null, n: 0, cells: null },
+  };
   const lin = v => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
   const hexLin = h =>
     typeof h === 'string' && h[0] === '#' ? [1, 3, 5].map(i => lin(parseInt(h.slice(i, i + 2), 16) / 255)) : null;
@@ -247,6 +269,7 @@ export const BWFERNE = (() => {
       refill();
     }
     if (!S.bloom.length) return;
+    wantFar(x, y);
     const half = SPAN / 2;
     if (!S.job && Math.abs(x - (S.x0 + half)) < MOVE && Math.abs(y - (S.y0 + half)) < MOVE) return;
     if (!S.job) {
@@ -298,6 +321,71 @@ export const BWFERNE = (() => {
     U.uBwFarB.value.set(S.x0, S.y0, 1 / SPAN, 1);
     markDirty();
   }
+  // ---- feat/ferne: the coarse band – the classes of the fields within ~2.5 km (one fill per 384 m moved, ≤ 3 ms a frame) ----
+  async function loadFar() {
+    const F = S.far;
+    F.cells = new Map();
+    try {
+      const r = await fetch(BASE + 'ferne/felder.bin');
+      if (!r.ok) throw new Error('felder.bin ' + r.status);
+      const buf = await new Response(r.body.pipeThrough(new DecompressionStream('deflate'))).arrayBuffer(),
+        dv = new DataView(buf),
+        n = dv.getUint32(4, true),
+        o0 = 8 + n * 4;
+      for (let k = 0; k < n; k++)
+        F.cells.set(
+          dv.getInt16(8 + k * 4, true) + '_' + dv.getInt16(10 + k * 4, true),
+          new Uint8Array(buf, o0 + k * 2500, 2500)
+        );
+      F.ready = true;
+    } catch (e) {
+      F.err = String(e);
+    }
+  }
+  function wantFar(x, y) {
+    const F = S.far;
+    if (!FAR) return;
+    if (!F.cells) loadFar();
+    if (!F.ready) return;
+    const half = SPAN2 / 2;
+    if (!F.job && Math.abs(x - (F.x0 + half)) < MOVE2 && Math.abs(y - (F.y0 + half)) < MOVE2) return;
+    if (!F.job)
+      F.job = {
+        x0: Math.floor((x - half) / 40) * 40,
+        y0: Math.floor((y - half) / 40) * 40,
+        row: 0,
+        buf: new Uint8Array(N * N * 4),
+      };
+    const J = F.job,
+      t0 = performance.now();
+    let key = '',
+      cm = null;
+    while (J.row < N && performance.now() - t0 < 3) {
+      const j = J.row++,
+        yy = J.y0 + (j + 0.5) * RES2,
+        cj = Math.floor(yy / 400),
+        sj = Math.floor((yy - cj * 400) / 8) * 50;
+      for (let i = 0; i < N; i++) {
+        const xx = J.x0 + (i + 0.5) * RES2,
+          ci = Math.floor(xx / 400),
+          k = ci + '_' + cj;
+        if (k !== key) {
+          key = k;
+          cm = F.cells.get(k) || null;
+        }
+        if (cm) J.buf[(j * N + i) * 4] = cm[sj + Math.floor((xx - ci * 400) / 8)];
+      }
+    }
+    if (J.row < N) return;
+    data.set(J.buf, N * N * 8);
+    tex.needsUpdate = true;
+    F.x0 = J.x0;
+    F.y0 = J.y0;
+    F.job = null;
+    F.n++;
+    U.uBwFarE.value.set(F.x0, F.y0, 1 / SPAN2, 1);
+    markDirty();
+  }
   // the woods' floor: the class of the maps and the layers of the ground's detail textures (core/detail.js) it is made of
   const WOOD = BWPHAENO.CLASSES.indexOf('waldboden'),
     LF = DETAIL.L.forestfloor.toFixed(1),
@@ -306,7 +394,7 @@ export const BWFERNE = (() => {
     TM = (DETAIL.tile.mossfloor || 2).toFixed(2);
   // the ground shaders' part (the derivatives first: they must not sit after a branch that differs from pixel to pixel)
   const GLSL = `
-uniform sampler2D tBwFar; uniform vec4 uBwFarB, uBwFarC, uBwFarW, uBwFarH[ 2 ], uBwFarHc[ 2 ];
+uniform sampler2D tBwFar; uniform vec4 uBwFarB, uBwFarE, uBwFarC, uBwFarW, uBwFarH[ 2 ], uBwFarHc[ 2 ];
 uniform vec4 uBwFc[ ${NC} ], uBwFs[ ${NC} ], uBwFh[ ${NC} ], uBwFt[ ${NC} ];
 float bwFH( vec2 p ) { return fract( sin( dot( p, vec2( 41.3, 289.1 ) ) ) * 45758.5453 ); }
 // feat/fotorealismus (foto-wald): the herb layer of a wood's floor at this pixel – its colour and how much of the floor it covers
@@ -318,11 +406,33 @@ ${BWHALM.cropGlsl('bwFHc')}
 ${BWHALM.fieldGlsl('bwFHc')}
 // soft blotches of ~1 / f metres, 0 … 1 (four sines – no texture, no hash)
 float bwFB( vec2 p ) { return 0.5 + 0.5 * sin( p.x + 1.7 * sin( p.y * 0.73 + 1.1 ) ) * sin( p.y * 1.13 + 1.3 * sin( p.x * 0.61 + 2.3 ) ); }
+// a field's crop as one surface in its colour of today (cls: its class; c: the photo's colour there) – the full tint, weighted by the caller
+vec3 bwCropT( int cls, vec2 p, vec3 c, float dist, float sinEl ) {
+  int row = bwCrop( cls, p ) - ${BWPHAENO.CROP0};
+  if ( row >= 0 && row < ${NC} ) {
+    vec4 fc = uBwFc[ row ], fh = uBwFh[ row ];
+    vec3 soil = uBwFs[ row ].rgb, can = fc.rgb; float cover = fc.a;
+    if ( fh.y > 0.0 ) {
+      // its harvest days: this field on its own day (as the blades' bwHeight: fields of 65 m, the same hash)
+      vec2 fq = floor( p / 65.0 + 0.4 * vec2( sin( p.y * 0.043 ), sin( p.x * 0.037 ) ) ) + float( row + ${BWPHAENO.CROP0} ) * 7.13;
+      if ( uBwFarC.w >= fh.x + ( bwFHc( fq ) - 0.5 ) * 2.0 * fh.y ) { can = uBwFt[ row ].rgb; cover = uBwFt[ row ].a; }
+    }
+    // the photo's light and dark stay (tramlines, wet hollows, the one field paler than the next), its colour only a little
+    float l = dot( c, vec3( 0.3, 0.59, 0.11 ) ), m = clamp( sqrt( l / 0.14 ), 0.78, 1.28 );
+    soil *= m; can *= m * ( 0.9 + 0.2 * bwFB( p * 0.045 + 3.1 ) );
+    // the stand as one surface, closed the flatter the view (the plants stand before the soil behind them); looking down into it
+    // the soil between the plants, in their shade
+    // (only from where the plants are too small to see one by one: close by they stand there themselves, on their soil)
+    float app = 1.0 - pow( 1.0 - cover, mix( 1.0, min( 1.0 / sinEl, 6.0 ), smoothstep( 8.0, 45.0, dist ) ) );
+    return mix( mix( soil * ( 1.0 - 0.35 * cover ), can, app ), c, 0.15 );
+  }
+  return c;
+}
 vec3 bwFar( vec2 p, vec3 c, float dist ) {
   vec2 dx = dFdx( p ), dy = dFdy( p );
   if ( uBwFarB.w < 0.5 ) return c;
   vec2 u = ( p - uBwFarB.xy ) * uBwFarB.z;
-  if ( u.x <= 0.0 || u.y <= 0.0 || u.x >= 1.0 || u.y >= 1.0 ) return c;
+  bool inF = u.x > 0.0 && u.y > 0.0 && u.x < 1.0 && u.y < 1.0;
   // the pixel on the ground: its long side (m) and how steeply the view meets the ground (1 from straight above; the ratio of the
   // footprint's two axes)
   float ja = dot( dx, dx ), jb = dot( dx, dy ), jd = dot( dy, dy ), jt = 0.5 * ( ja + jd ), jq = sqrt( max( jt * jt - ( ja * jd - jb * jb ), 0.0 ) );
@@ -330,7 +440,8 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
   // ---- the crops of the fields, the floor of the woods ----
   float wC = ( 1.0 - smoothstep( uBwFarC.x, uBwFarC.y, dist ) ) * uBwFarC.z;
   float wW = ( 1.0 - smoothstep( 110.0, 240.0, dist ) ) * uBwFarC.z;
-  if ( max( wC, wW ) > 0.001 ) {
+  vec3 t1 = c, t2 = c; float a1 = 0.0, a2 = 0.0;
+  if ( inF && max( wC, wW ) > 0.001 ) {
     // (the classes are texels of 2 m: read a little beside the point, so a field's edge is no staircase)
     vec2 pw = p + 0.8 * vec2( sin( p.y * 0.83 + 1.7 * sin( p.x * 0.31 ) ), sin( p.x * 0.77 + 1.3 * sin( p.y * 0.37 ) ) );
     ivec2 ti = ivec2( clamp( ( pw - uBwFarB.xy ) * uBwFarB.z, 0.0, 0.9999 ) * ${N}.0 );
@@ -369,29 +480,31 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
       fl *= mix( uBwFarW.x, 1.0, ct.g );
       c = mix( c, fl, wW * 0.92 );
     } else if ( wC > 0.001 && ( cls == 9 || ( cls >= 19 && cls <= 22 ) ) ) {
-      int row = bwCrop( cls, p ) - ${BWPHAENO.CROP0};
-      if ( row >= 0 && row < ${NC} ) {
-        vec4 fc = uBwFc[ row ], fh = uBwFh[ row ];
-        vec3 soil = uBwFs[ row ].rgb, can = fc.rgb; float cover = fc.a;
-        if ( fh.y > 0.0 ) {
-          // its harvest days: this field on its own day (as the blades' bwHeight: fields of 65 m, the same hash)
-          vec2 fq = floor( p / 65.0 + 0.4 * vec2( sin( p.y * 0.043 ), sin( p.x * 0.037 ) ) ) + float( row + ${BWPHAENO.CROP0} ) * 7.13;
-          if ( uBwFarC.w >= fh.x + ( bwFHc( fq ) - 0.5 ) * 2.0 * fh.y ) { can = uBwFt[ row ].rgb; cover = uBwFt[ row ].a; }
-        }
-        // the photo's light and dark stay (tramlines, wet hollows, the one field paler than the next), its colour only a little
-        float l = dot( c, vec3( 0.3, 0.59, 0.11 ) ), m = clamp( sqrt( l / 0.14 ), 0.78, 1.28 );
-        soil *= m; can *= m * ( 0.9 + 0.2 * bwFB( p * 0.045 + 3.1 ) );
-        // the stand as one surface, closed the flatter the view (the plants stand before the soil behind them); looking down into it
-        // the soil between the plants, in their shade
-        // (only from where the plants are too small to see one by one: close by they stand there themselves, on their soil)
-        float app = 1.0 - pow( 1.0 - cover, mix( 1.0, min( 1.0 / sinEl, 6.0 ), smoothstep( 8.0, 45.0, dist ) ) );
-        c = mix( c, mix( mix( soil * ( 1.0 - 0.35 * cover ), can, app ), c, 0.15 ), wC );
+      t1 = bwCropT( cls, p, c, dist, sinEl );
+      a1 = wC;
+    }
+  }
+${
+  FAR
+    ? `  // feat/ferne: beyond the fine band the coarse one (10 m texels, read a little beside the point: no staircase at a field's edge)
+  float wF = smoothstep( uBwFarC.x, uBwFarC.y, dist ) * ( 1.0 - smoothstep( ${RF0}.0, ${RF1}.0, dist ) ) * uBwFarC.z * uBwFarE.w;
+  if ( wF > 0.001 ) {
+    vec2 pf = p + 4.0 * vec2( sin( p.y * 0.21 + 1.7 * sin( p.x * 0.077 ) ), sin( p.x * 0.19 + 1.3 * sin( p.y * 0.093 ) ) ),
+      uf = ( pf - uBwFarE.xy ) * uBwFarE.z;
+    if ( uf.x > 0.0 && uf.y > 0.0 && uf.x < 1.0 && uf.y < 1.0 ) {
+      int cf = int( texelFetch( tBwFar, ivec2( uf * ${N}.0 ) + ivec2( 0, ${2 * N} ), 0 ).r * 255.0 + 0.5 );
+      if ( cf == 9 || ( cf >= 19 && cf <= 22 ) ) {
+        t2 = bwCropT( cf, p, c, dist, sinEl );
+        a2 = wF;
       }
     }
   }
+`
+    : ''
+}  if ( a1 + a2 > 0.001 ) c = mix( c, ( t1 * a1 + t2 * a2 ) / ( a1 + a2 ), min( 1.0, a1 + a2 ) );
   // ---- the flowers of the meadows, verges and lawns ----
-  if ( dist < 20.0 ) return c;
-  vec4 f = texture( tBwFar, vec2( u.x, clamp( u.y, ${(0.5 / N).toFixed(6)}, ${(1 - 0.5 / N).toFixed(6)} ) * 0.5 ) );
+  if ( !inF || dist < 20.0 ) return c;
+  vec4 f = texture( tBwFar, vec2( u.x, clamp( u.y, ${(0.5 / N).toFixed(6)}, ${(1 - 0.5 / N).toFixed(6)} ) * ${FAR ? '0.333333' : '0.5'} ) );
   if ( f.a < 0.004 ) return c;
   // in from where the flowers of bw_blume.js end, out before the window's edge
   float fade = smoothstep( 20.0, 34.0, dist ) * ( 1.0 - smoothstep( uBwFarC.x + 20.0, uBwFarC.y + 40.0, dist ) );
@@ -413,6 +526,15 @@ vec3 bwFar( vec2 p, vec3 c, float dist ) {
     return GLSL;
   }
   const state = () => ({
+    far: {
+      on: FAR,
+      ready: !!S.far.ready,
+      n: S.far.n,
+      x0: S.far.x0,
+      y0: S.far.y0,
+      cells: S.far.cells ? S.far.cells.size : 0,
+      err: S.far.err || '',
+    },
     on: U.uBwFarB.value.w > 0.5,
     x0: S.x0,
     y0: S.y0,
