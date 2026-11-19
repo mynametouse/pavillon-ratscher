@@ -295,7 +295,7 @@ export const TRUSETAL = (() => {
     wt2.offset.x = 0.37;
     S.waterTex = [wt, wt2];
     MATS = {
-      plaster: pbrMat('plaster_ext', { color: 0xf3f0e9 }),
+      plaster: pbrMat('plaster_ext', { wash: ['#f6f4ef', 0.55] }),
       roof: pbrMat('rooftiles', { wash: ['#c45a32', 0.3] }),
       slate: pbrMat('slate', { color: 0x8f959c }),
       sand: std({ color: 0xa8604d }),
@@ -303,7 +303,10 @@ export const TRUSETAL = (() => {
       dark: std({ color: 0x15120f, roughness: 1 }),
       stone: std({ roughness: 0.95 }, canvasTex(512, 512, ashlar([176, 166, 148], 1), [0.25, 0.25])),
       wallstone: std({ roughness: 0.95 }, canvasTex(512, 512, ashlar([128, 120, 110], 5), [0.3, 0.3])),
-      rock: std({ roughness: 0.95, flatShading: true }, canvasTex(256, 256, rockTex, [0.2, 0.2])),
+      rock: std(
+        { color: 0x77706a, roughness: 1, flatShading: true, envMapIntensity: 0.4 },
+        canvasTex(256, 256, rockTex, [0.2, 0.2])
+      ),
       water: std(
         { color: 0xf2f7fa, transparent: true, opacity: 0.9, depthWrite: false, roughness: 0.2, side: THREE.DoubleSide },
         wt
@@ -350,7 +353,9 @@ export const TRUSETAL = (() => {
       vm = (Math.max(...vs) + Math.min(...vs)) / 2,
       W = (u, v, z) => [cx + ax[0] * u - ax[1] * v, cy + ax[1] * u + ax[0] * v, z],
       ang = Math.atan2(ax[1], ax[0]),
-      T = 5.2;
+      T = 6.0,
+      tk = T / 5.2,
+      sc = pr => pr.map(([r, z]) => [r * tk, z]);
     walls('plaster', f, z0, E);
     walls('sand', grow(f, 0.06), z0, zg + 0.55); // the plinth
     S.segs.push(...segsOfPoly(f));
@@ -405,7 +410,7 @@ export const TRUSETAL = (() => {
     }
     // the hipped roof: every eave edge rises to the ridge (half the width in from either end), red tiles, eaves 0.45 m out
     const rf = grow(f, 0.45),
-      RH = half * 1.15,
+      RH = half * 0.85,
       onRidge = p => W(Math.max(u0 + half, Math.min(u1 - half, U(p))), vm, E + RH);
     for (let i = 0; i < rf.length; i++) {
       const a = [rf[i][0], rf[i][1], E - 0.3],
@@ -450,10 +455,10 @@ export const TRUSETAL = (() => {
       'slate',
       tc[0],
       tc[1],
-      [
+      sc([
         [2.25, zt1 + 0.35],
         [2.25, zt1 + 3.2],
-      ],
+      ]),
       8,
       o8,
       false
@@ -463,7 +468,7 @@ export const TRUSETAL = (() => {
         n = [Math.cos(t), Math.sin(t)],
         d = [-n[1], n[0]],
         at = (r, s, z) => [tc[0] + n[0] * r + d[0] * s, tc[1] + n[1] * r + d[1] * s, z],
-        r8 = 2.25 * Math.cos(Math.PI / 8) + 0.02,
+        r8 = 2.25 * tk * Math.cos(Math.PI / 8) + 0.02,
         rq = T / 2 + 0.02;
       face('dark', [
         at(r8, -0.42, zt1 + 1.0),
@@ -482,14 +487,14 @@ export const TRUSETAL = (() => {
       'slate',
       tc[0],
       tc[1],
-      [
+      sc([
         [2.45, zt1 + 3.2],
         [2.55, zt1 + 3.5],
         [2.3, zt1 + 4.2],
         [1.6, zt1 + 4.9],
         [0.85, zt1 + 5.3],
         [0.8, zt1 + 5.45],
-      ],
+      ]),
       8,
       o8
     ); // the hood (welsche Haube): bulging, then drawn in
@@ -497,10 +502,10 @@ export const TRUSETAL = (() => {
       'slate',
       tc[0],
       tc[1],
-      [
+      sc([
         [0.8, zt1 + 5.45],
         [0.8, zt1 + 6.6],
-      ],
+      ]),
       8,
       o8,
       false
@@ -509,7 +514,7 @@ export const TRUSETAL = (() => {
       const t = ang + Math.PI / 4 + (q * Math.PI) / 4,
         n = [Math.cos(t), Math.sin(t)],
         d = [-n[1], n[0]],
-        r = 0.8 * Math.cos(Math.PI / 8) + 0.01,
+        r = 0.8 * tk * Math.cos(Math.PI / 8) + 0.01,
         P = (s, z) => [tc[0] + n[0] * r + d[0] * s, tc[1] + n[1] * r + d[1] * s, z];
       face('dark', [P(-0.18, zt1 + 5.75), P(0.18, zt1 + 5.75), P(0.18, zt1 + 6.35), P(-0.18, zt1 + 6.35)]);
     }
@@ -517,13 +522,13 @@ export const TRUSETAL = (() => {
       'slate',
       tc[0],
       tc[1],
-      [
+      sc([
         [0.95, zt1 + 6.6],
         [0.75, zt1 + 7.0],
         [0.35, zt1 + 7.4],
         [0.12, zt1 + 7.6],
         [0.0, zt1 + 9.6],
-      ],
+      ]),
       8,
       o8
     );
@@ -703,6 +708,33 @@ export const TRUSETAL = (() => {
         b.i.push(a, a + 1, a + 3, a, a + 3, a + 2);
       }
     }
+    // the rock face: a broad band of rough dark rock under the fall, its middle low (the water runs over it), its edges higher
+    {
+      const b = bucket('rock'),
+        o0 = b.p.length / 3,
+        C = 7;
+      let rows = 0;
+      for (let i = Math.max(0, k0 - 3); i < P.length; i++) {
+        const p = P[i],
+          f = Math.max(0, Math.min(1, (p.s - sTop) / Math.max(1, sEnd - sTop))),
+          half = 3.2 + 3.5 * f;
+        for (let c = 0; c < C; c++) {
+          const a = (c / (C - 1)) * 2 - 1,
+            x = p.x + p.n[0] * a * half,
+            y = p.y + p.n[1] * a * half,
+            z = Z(x, y) + 0.05 + Math.abs(a) * (0.25 + hh(i * 13 + c) * 0.7) - (1 - Math.abs(a)) * 0.15 * hh(i * 7 + c);
+          b.p.push(x, z, -y);
+          b.n.push(0, 1, 0);
+          b.u.push(a * half, p.s);
+        }
+        rows++;
+      }
+      for (let r = 0; r + 1 < rows; r++)
+        for (let c = 0; c + 1 < C; c++) {
+          const q = o0 + r * C + c;
+          b.i.push(q, q + C, q + C + 1, q, q + C + 1, q + 1);
+        }
+    }
     ribbon('water', 0, 1.6, 3.0, 0.5, 0);
     ribbon('water', -1.6, 0.9, 1.8, 0.8, sTop);
     ribbon('water', 1.5, 0.8, 1.6, 0.6, sTop + 3);
@@ -727,12 +759,12 @@ export const TRUSETAL = (() => {
     P.forEach((p, i) => {
       if (!p.fall || i % 2) return;
       const f = (p.s - sTop) / Math.max(1, sEnd - sTop);
-      rock(p.x + p.n[0] * 0.2, p.y + p.n[1] * 0.2, p.z - 0.8, 1.3 + 1.2 * Math.sin(Math.PI * f), i); // the pyramid under the water
+      rock(p.x + p.n[0] * 0.2, p.y + p.n[1] * 0.2, p.z - 0.9, 0.8 + 0.9 * Math.sin(Math.PI * f), i); // the pyramid under the water
       for (const sd of [-1, 1]) {
         const o = sd * (2.6 + f * 2.5 + hh(i * 7 + sd) * 1.5),
           x = p.x + p.n[0] * o,
           y = p.y + p.n[1] * o;
-        rock(x, y, Z(x, y) - 0.6, 1.2 + hh(i + sd * 5) * 1.8, i * 3 + sd);
+        rock(x, y, Z(x, y) - 0.5, 0.6 + hh(i + sd * 5) * 1.0, i * 3 + sd);
       }
     });
     const foot = P[P.length - 1];
