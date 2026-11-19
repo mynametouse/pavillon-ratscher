@@ -42,3 +42,4 @@ export const TRUSETAL = (() => {
   });
   return S;
 })();
+window.TRUSETAL = TRUSETAL;
