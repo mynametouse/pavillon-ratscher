@@ -1,6 +1,7 @@
 # feat/ferne: the far houses (ferne/ferne.js) – data, blocks in reach, cells of gebaeude.js hidden, pictures with and without at five places,
-# cost; plus the usual guards
+# cost; the fields far away in July (bewuchs/bw_ferne.js: coarse band); fotorealismus (the same texture); plus the usual guards
 smoke
 ferne
+fotorealismus
 leistung
 memphone
