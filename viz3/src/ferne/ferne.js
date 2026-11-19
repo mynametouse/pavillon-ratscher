@@ -53,7 +53,9 @@ export const FERNE = (() => {
     return s - Math.floor(s);
   };
   const lin = c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-  const pal = a => a.map(c => c.map(lin));
+  // colours as the vertex bytes hold them (linear, 0–255)
+  const pal = a => a.map(c => c.map(v => Math.round(lin(v) * 255)));
+  const LB = Array.from({ length: 256 }, (_, k) => Math.round(lin(k / 255) * 255));
   // walls by kind (sRGB): houses plaster in the village's pastels, a quarter slate-hung; barns and halls wood, grey render or metal;
   // sheds wood or grey; tanks and towers concrete
   const WALL = {
@@ -214,17 +216,34 @@ export const FERNE = (() => {
       ox = B.I * BLOCK,
       oy = B.J * BLOCK;
     // parts: per building x, y, base z, first vertex, vertex count (for the ground check)
-    if (!B.work) B.work = { k: 0, nv: 0, P: [], N: [], C: [], F: [], Wu: [], IX: [], parts: [] };
+    // typed arrays sized for the block at the start (at most 36 corners and 16 triangles a building): no copying at the end
+    if (!B.work) {
+      const V = B.n * 36;
+      B.work = {
+        k: 0,
+        nv: 0,
+        ni: 0,
+        P: new Float32Array(V * 3),
+        N: new Int8Array(V * 3),
+        C: new Uint8Array(V * 3),
+        F: new Uint8Array(V * 4),
+        Wu: new Int16Array(V * 2),
+        IX: V > 65535 ? new Uint32Array(B.n * 48) : new Uint16Array(B.n * 48),
+        parts: [],
+      };
+    }
     const WK = B.work,
       { P, N, C, F, Wu, IX } = WK;
-    let nv = WK.nv;
+    let nv = WK.nv,
+      ni = WK.ni;
     const tv = new THREE.Vector3(),
       tw = new THREE.Vector3(),
       tn = new THREE.Vector3();
     for (let k = WK.k; k < B.n; k++) {
-      if ((k & 15) === 0 && k > WK.k && performance.now() - t0 > budget) {
+      if ((k & 3) === 0 && k > WK.k && performance.now() - t0 > budget) {
         WK.k = k;
         WK.nv = nv;
+        WK.ni = ni;
         S.ms = Math.max(S.ms, Math.round(performance.now() - t0));
         return false;
       }
@@ -251,7 +270,7 @@ export const FERNE = (() => {
       const hs = hh(cx * 0.37 + cy * 0.71),
         win = kind === 0 && L > 4 ? 1 : 0;
       // colours (linear): roof from the photo, walls by kind
-      const rc = [lin(dv.getUint8(o + 12) / 255), lin(dv.getUint8(o + 13) / 255), lin(dv.getUint8(o + 14) / 255)];
+      const rc = [LB[dv.getUint8(o + 12)], LB[dv.getUint8(o + 13)], LB[dv.getUint8(o + 14)]];
       let wc;
       if (kind === 0)
         wc = hs < 0.24 && !schl ? WALL.slate[Math.floor(hs * 8) % 2] : WALL.house[Math.floor(hs * 97) % 8];
@@ -277,18 +296,34 @@ export const FERNE = (() => {
         tn.crossVectors(tv, tw).normalize();
         let flip = tn.x * outx + tn.y * outz - tn.z * outy < 0;
         if (flip) tn.negate();
+        const nx = Math.round(tn.x * 127),
+          ny = Math.round(tn.y * 127),
+          nz = Math.round(tn.z * 127),
+          wv = wall ? win : 0,
+          hb = Math.round(hs * 251);
         for (const p of pts) {
-          P.push(p[0], z0 + p[2], -p[1]);
-          N.push(tn.x, tn.y, tn.z);
-          C.push(col[0], col[1], col[2]);
-          F.push(ti, tj, wall ? win : 0, hs * 251);
-          Wu.push(wall ? p[3] : 0, wall ? p[2] : -9);
+          const v = nv++;
+          P[v * 3] = p[0];
+          P[v * 3 + 1] = z0 + p[2];
+          P[v * 3 + 2] = -p[1];
+          N[v * 3] = nx;
+          N[v * 3 + 1] = ny;
+          N[v * 3 + 2] = nz;
+          C[v * 3] = col[0];
+          C[v * 3 + 1] = col[1];
+          C[v * 3 + 2] = col[2];
+          F[v * 4] = ti;
+          F[v * 4 + 1] = tj;
+          F[v * 4 + 2] = wv;
+          F[v * 4 + 3] = hb;
+          Wu[v * 2] = wall ? Math.round(p[3] * 10) : 0;
+          Wu[v * 2 + 1] = wall ? Math.round(p[2] * 10) : -90;
         }
         for (let t = 1; t + 1 < pts.length; t++) {
-          if (flip) IX.push(b, b + t + 1, b + t);
-          else IX.push(b, b + t, b + t + 1);
+          IX[ni++] = b;
+          IX[ni++] = flip ? b + t + 1 : b + t;
+          IX[ni++] = flip ? b + t : b + t + 1;
         }
-        nv += pts.length;
       };
       // walls: per side the tops at its two corners (a mono-pitch roof rises from side 0–1 to side 2–3)
       const top = c => (form === 3 ? (c >= 2 ? h : e) : form === 0 ? h : e);
@@ -352,39 +387,17 @@ export const FERNE = (() => {
     B.parts = WK.parts;
     B.work = null;
     const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
-    g.setAttribute(
-      'normal',
-      new THREE.BufferAttribute(
-        Int8Array.from(N, v => Math.round(v * 127)),
-        3,
-        true
-      )
-    );
-    g.setAttribute(
-      'color',
-      new THREE.BufferAttribute(
-        Uint8Array.from(C, v => Math.round(Math.min(1, v) * 255)),
-        3,
-        true
-      )
-    );
-    g.setAttribute(
-      'aFe',
-      new THREE.BufferAttribute(
-        Uint8Array.from(F, v => Math.max(0, Math.min(255, Math.round(v)))),
-        4
-      )
-    );
-    g.setAttribute(
-      'aWu',
-      new THREE.BufferAttribute(
-        Int16Array.from(Wu, v => Math.max(-32768, Math.min(32767, Math.round(v * 10)))),
-        2
-      )
-    );
-    g.setIndex(nv > 65535 ? new THREE.Uint32BufferAttribute(IX, 1) : new THREE.Uint16BufferAttribute(IX, 1));
-    g.computeBoundingSphere();
+    g.setAttribute('position', new THREE.BufferAttribute(P.subarray(0, nv * 3), 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(N.subarray(0, nv * 3), 3, true));
+    g.setAttribute('color', new THREE.BufferAttribute(C.subarray(0, nv * 3), 3, true));
+    g.setAttribute('aFe', new THREE.BufferAttribute(F.subarray(0, nv * 4), 4));
+    g.setAttribute('aWu', new THREE.BufferAttribute(Wu.subarray(0, nv * 2), 2));
+    g.setIndex(new THREE.BufferAttribute(IX.subarray(0, ni), 1));
+    // the sphere round the block (its buildings stand within it; their ground lies within a few hundred metres of the camera's)
+    let zs = 0;
+    for (let k = 2; k < B.parts.length; k += 5) zs += B.parts[k];
+    const zc = B.parts.length ? zs / (B.parts.length / 5) : 0;
+    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(ox + BLOCK / 2, zc, -(oy + BLOCK / 2)), BLOCK * 0.72 + 250);
     if (!MAT) MAT = material();
     const me = new THREE.Mesh(g, MAT);
     me.name = 'ferne ' + B.I + '_' + B.J;
@@ -397,7 +410,7 @@ export const FERNE = (() => {
     B.mesh = me;
     B.state = 'built';
     B.zv = WELT.n ? WELT.n.ok : 0;
-    B.tris = IX.length / 3;
+    B.tris = ni / 3;
     S.built++;
     // the block's cells fade in (unless their detail is up already)
     for (let c = 0; c < 16; c++) {
@@ -434,7 +447,6 @@ export const FERNE = (() => {
     }
     if (moved) {
       pos.needsUpdate = true;
-      B.mesh.geometry.computeBoundingSphere();
       markDirty();
     }
     B.zv = WELT.n ? WELT.n.ok : 0;
