@@ -1,0 +1,62 @@
+[
+ {
+  "name": "a_ratscher_anger",
+  "x": 241.5,
+  "y": -101.5,
+  "eye": 1.7,
+  "yaw": 315.4,
+  "pitch": 2,
+  "fov": 60,
+  "note": "Ratscher, Anger – Blick nach Schleusingen"
+ },
+ {
+  "name": "b_schleusingen_oben",
+  "x": -1084.7,
+  "y": 1241.9,
+  "eye": 60,
+  "yaw": 135.4,
+  "pitch": -6,
+  "fov": 60,
+  "note": "über dem Markt von Schleusingen, 60 m – Blick nach Ratscher"
+ },
+ {
+  "name": "c_b89_belrieth",
+  "x": -18890,
+  "y": 4233,
+  "eye": 1.7,
+  "yaw": 310.8,
+  "pitch": 2,
+  "fov": 60,
+  "note": "B 89 bei Belrieth – Blick nach Meiningen"
+ },
+ {
+  "name": "d_meiningen_oben",
+  "x": -24237,
+  "y": 8850,
+  "eye": 70,
+  "yaw": 130.8,
+  "pitch": -7,
+  "fov": 60,
+  "note": "über dem Markt von Meiningen, 70 m – Blick ins Werratal"
+ },
+ {
+  "name": "e_trusetal_oben",
+  "x": -23506,
+  "y": 32729,
+  "eye": 60,
+  "yaw": 180,
+  "pitch": -6,
+  "fov": 60,
+  "note": "über dem Rathaus von Trusetal, 60 m – Blick nach Süden"
+ },
+ {
+  "name": "f_ratscher_oben",
+  "x": 241.5,
+  "y": -101.5,
+  "eye": 45,
+  "yaw": 315.4,
+  "pitch": -4,
+  "fov": 60,
+  "note": "über dem Anger von Ratscher, 45 m – Blick nach Schleusingen"
+ }
+]
