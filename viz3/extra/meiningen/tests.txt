@@ -1,3 +1,6 @@
 # (Karten-Chat, 19.11.2026)
-# Meiningen and the Werra valley (welt/meiningen.js): the zone tiles, the houses, the known places – the topic test follows
+# Meiningen and the Werra valley (welt/meiningen.js): the zone tiles, the houses, the Stadtkirche and the theatre, the B 89 at Belrieth
 smoke
+meiningen
+welt_orte:daten
+welt_wald:data

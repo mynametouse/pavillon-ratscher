@@ -240,6 +240,75 @@ def named(N, W, pt, line, r1):
     return pois, st
 
 
+def drop_under(polys, apply):
+    """the ETHOS buildings of the cells (zones west of x -50 cells) more than half under one of polys; dropped when apply"""
+    from shapely.geometry import Polygon
+    idx_fn = os.path.join(ZDIR, 'index.json')
+    idx = json.load(open(idx_fn))
+    drop = []
+    for key in idx['cells']:
+        if int(key.split('_')[0]) > -40:
+            continue
+        fn = os.path.join(ZDIR, key + '.json')
+        d = json.load(open(fn))
+        keep = []
+        for b in d['b']:
+            fp = b['f']
+            g = Polygon([(fp[k], fp[k + 1]) for k in range(0, len(fp), 2)]).buffer(0)
+            (drop if any(g.intersection(c).area > 0.5 * g.area for c in polys) else keep).append(b if g.area else b)
+            if drop and drop[-1] is b:
+                drop[-1] = b['id']
+        if apply and len(keep) != len(d['b']):
+            d['b'] = keep
+            json.dump(d, open(fn, 'w'), separators=(',', ':'), ensure_ascii=False)
+            idx['cells'][key] = len(keep)
+    if apply and drop:
+        json.dump(idx, open(idx_fn, 'w'), separators=(',', ':'), ensure_ascii=False)
+    return drop
+
+
+def landmarks_mg(W, line, r1, a):
+    """Meiningen: the Stadtkirche (Q2327360: its west towers, the hall, the choir) and the theatre (Q486132: the body, the portico)"""
+    from shapely.geometry import Polygon, box as sbox
+    from shapely import affinity
+    out = {}
+    ch = line(500215490)[:-1]
+    P = Polygon(ch).buffer(0)
+    # the axis: the longest edge of the hull's minimum rectangle, pointing east
+    mr = list(P.minimum_rotated_rectangle.exterior.coords)[:4]
+    e = max([(mr[i], mr[(i + 1) % 4]) for i in range(4)], key=lambda q: math.dist(*q))
+    ax = [(e[1][0] - e[0][0]) / math.dist(*e), (e[1][1] - e[0][1]) / math.dist(*e)]
+    if ax[0] < 0:
+        ax = [-ax[0], -ax[1]]
+    c = P.centroid
+    U = lambda p: (p[0] - c.x) * ax[0] + (p[1] - c.y) * ax[1]
+    V = lambda p: -(p[0] - c.x) * ax[1] + (p[1] - c.y) * ax[0]
+    W_ = lambda u, v: [r1(c.x + ax[0] * u - ax[1] * v), r1(c.y + ax[1] * u + ax[0] * v)]
+    us, vs = [U(p) for p in ch], [V(p) for p in ch]
+    u0, u1, v0, v1 = min(us), max(us), min(vs), max(vs)
+    T = 8.6   # the depth of the tower block (OSM: the west front to the hall)
+    hull = P.convex_hull
+    half = sbox(-1e4, -1e4, 1e4, 1e4)
+    cut = Polygon([W_(u0 + T, v0 - 5), W_(u1 + 5, v0 - 5), W_(u1 + 5, v1 + 5), W_(u0 + T, v1 + 5)])
+    roof = list(hull.intersection(cut).exterior.coords)[:-1]
+    tw = (v1 - v0 - 4.5) / 2   # two towers and the bay between them (4.5 m)
+    out['church'] = {'f': [v for p in ch for v in p], 'roof': [r1(v) for p in roof for v in p], 'ax': [round(v, 4) for v in ax],
+                     'towers': [W_(u0 + T / 2, v0 + tw / 2), W_(u0 + T / 2, v1 - tw / 2)], 'tw': round(min(tw, T), 2),
+                     'bay': W_(u0, (v0 + v1) / 2), 'name': 'Stadtkirche Unserer lieben Frauen', 'q': 'Q2327360'}
+    th = line(49286126)[:-1]
+    Q = Polygon(th).buffer(0)
+    xs = [p[0] for p in th]
+    x0 = min(xs)
+    body = Q.difference(sbox(x0 - 1, -1e6, x0 + 8.0, 1e6))
+    py = [p[1] for p in th if p[0] < x0 + 1.5]   # the portico's front: the vertices of the west face
+    out['theatre'] = {'body': [r1(v) for p in list(body.exterior.coords)[:-1] for v in p],
+                      'front': [[r1(x0), r1(min(py))], [r1(x0), r1(max(py))]], 'depth': 8.0, 'name': 'Meininger Staatstheater', 'q': 'Q486132'}
+    out['dropped'] = drop_under([P.buffer(1.0), Q.buffer(1.0)], a.drop_cells)
+    log('Meiningen: church axis', out['church']['ax'], 'towers', out['church']['towers'], 'tower', out['church']['tw'], 'm; theatre front',
+        out['theatre']['front'], '; ETHOS under them', out['dropped'])
+    return out
+
+
 def streets_only(a):
     """another zone (wlib.ZONES[a.zone]): its named streets and places → viz3/extra/<name>/dist/<name>/ort.json"""
     from pyproj import Transformer
@@ -257,7 +326,8 @@ def streets_only(a):
         return [pt(n) for n in W[wid]['nodes'] if n in N]
 
     pois, st = named(N, W, pt, line, r1)
-    out = {'v': 1, 'made': time.strftime('%Y-%m-%d'), 'zone': z['name'], 'pois': pois, 'streets': st,
+    lm = landmarks_mg(W, line, r1, a) if a.zone == 'MG' else {}
+    out = {**lm, 'v': 1, 'made': time.strftime('%Y-%m-%d'), 'zone': z['name'], 'pois': pois, 'streets': st,
            'src': 'OpenStreetMap-Mitwirkende (ODbL 1.0), Stand ' + time.strftime('%d.%m.%Y') + '; tools/welt/zone_trusetal.py --zone ' + a.zone}
     fn = os.path.join(REPO, 'viz3', 'extra', z['name'], 'dist', z['name'], 'ort.json')
     os.makedirs(os.path.dirname(fn), exist_ok=True)
