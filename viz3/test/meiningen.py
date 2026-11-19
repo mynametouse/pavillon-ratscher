@@ -4,6 +4,7 @@
 # with its twin towers and the theatre's portico are built, the street's name comes from OSM; then in the Werra valley at Belrieth
 # (welt-test/zonen/werratal/): its tiles and the village's houses. Pictures in out/meiningen/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 8981 --serve meiningen
+# (the first push of a new branch starts no run: this line came with the second push of kern/meiningen)
 import sys, os, json, time, math, urllib.request, concurrent.futures
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
