@@ -143,7 +143,7 @@ import { GSZ, mkGroundMat } from './env.js';
   waterMat.customProgramCacheKey = () => 'brook';
   {
     const tw0 = ST.tLim[0] + 14,
-      tw1 = ST.tLim[1] - 14,
+      tw1 = ST.TE != null && ST.tLim[1] >= ST.TE ? ST.TE - 0.2 : ST.tLim[1] - 14, // the water from the pipe's mouth on
       WS = [-ST.WW, -ST.WW / 2, 0, ST.WW / 2, ST.WW];
     for (let t0 = tw0; t0 < tw1; t0 += 30) {
       const pos = [],
@@ -202,7 +202,8 @@ import { GSZ, mkGroundMat } from './env.js';
     const mat = pbrMat('flagstone', { fallback: 0x7d786c, color: 0x9a968c, nrm: 1.0, rough: 0.75, tile: [0.6, 0.6] });
     const pts = [];
     for (let i = 0; i < 150; i++) {
-      const t = ST.TB + (rnd() * 2 - 1) * 70;
+      const t0 = ST.TB + (rnd() * 2 - 1) * 70,
+        t = t0 > ST.TE - 0.8 ? 2 * ST.TB - t0 : t0; // none beyond the pipe's mouth (the same draws as before)
       if (Math.abs(t - ST.TB) < 1.6) continue;
       const edge = rnd() < 0.4,
         a = edge ? (rnd() < 0.5 ? -1 : 1) * (0.42 + rnd() * 0.22) : (rnd() * 2 - 1) * 0.36;
@@ -287,6 +288,56 @@ import { GSZ, mkGroundMat } from './env.js';
       }); // abutment walls holding the banks under the slab
     WALK.push([-w, w, -l, l, 0.06, 'stone', null, null, null, rot]);
     ST.BR.walkTop = 0.06;
+  }
+  // --- the pipe's mouth at the Gartenweg (Karten-Chat, 19.11.2026; Falko: the brook comes from the Schleuse, piped under the village past
+  // the wells, and out here): the ditch ends at a concrete headwall with the mouth of a pipe Ø 60 cm, its invert just above the bed ---
+  {
+    const t = ST.TE,
+      c = cOff(t),
+      d = (cOff(t + 0.5) - cOff(t - 0.5)) / 1, // the brook's direction here: along U turned by its slope across
+      dir = [ST.U[0] + ST.N[0] * d, ST.U[1] + ST.N[1] * d],
+      ang = Math.atan2(dir[1], dir[0]),
+      p = wpt(t, c),
+      g = new THREE.Group();
+    g.position.copy(V(p[0], p[1], 0));
+    g.rotation.y = ang;
+    scene.add(g);
+    const rot = { cx: p[0], cy: p[1], c: Math.cos(ang), s: Math.sin(ang) },
+      zt = 0.1,
+      aMax = ST.WT + 0.12,
+      pr = 0.3,
+      pz = -ST.D + 0.06 + pr,
+      pipeIn = plain({ color: 0x15170f, roughness: 1, side: THREE.DoubleSide });
+    const sh = new THREE.Shape();
+    sh.moveTo(-aMax, zt);
+    for (let i = 0; i <= 28; i++) {
+      const a = -aMax + (2 * aMax * i) / 28;
+      sh.lineTo(a, Math.min(zt - 0.02, ST.prof(a) - 0.04));
+    }
+    sh.lineTo(aMax, zt);
+    sh.closePath();
+    const hole = new THREE.Path();
+    hole.absarc(0, pz, pr, 0, Math.PI * 2, true);
+    sh.holes.push(hole);
+    const hw = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.24, bevelEnabled: false, curveSegments: 18 }), MAT.conc);
+    hw.rotation.y = Math.PI / 2;
+    hw.position.copy(V(-0.24, 0, 0)); // its face towards the open ditch (west), its back in the bank
+    hw.castShadow = hw.receiveShadow = true;
+    g.add(hw);
+    const lip = new THREE.Mesh(new THREE.TorusGeometry(pr + 0.02, 0.04, 6, 20), MAT.conc);
+    lip.rotation.y = Math.PI / 2;
+    lip.position.copy(V(-0.25, 0, pz));
+    g.add(lip);
+    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(pr, pr, 2.2, 18, 1, true), pipeIn);
+    pipe.rotation.z = Math.PI / 2;
+    pipe.position.copy(V(0.85, 0, pz));
+    g.add(pipe);
+    const cap = new THREE.Mesh(new THREE.CircleGeometry(pr, 18), pipeIn); // the dark inside, closed far in the bank
+    cap.rotation.y = -Math.PI / 2;
+    cap.position.copy(V(1.95, 0, pz));
+    g.add(cap);
+    COL.push([-0.24, 0.02, -aMax, aMax, -ST.D - 0.2, zt, 'wall', null, null, rot]);
+    ST.OUT = { t, c, p, ang, pz, pr };
   }
   // --- stairs to a stone landing at the water (garden side): oak sleepers with a handrail, or (kind 'slab', the steps from the terrace on
   // Falko's photos 7205/7207) narrow concrete slabs in the grass ---

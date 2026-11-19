@@ -26,7 +26,7 @@ export const sitePlace = (x, y, z) => {
       [tt, oo] = STREAM.loc(x, y);
     if (Math.abs(tt - T.t) < T.ht + 0.75 && Math.abs(oo - T.o) < T.ho + 0.4) return 'Platz am Bach'; // the slab terrace with the bench
     const a = STREAM.across(x, y);
-    if (Math.abs(a) < STREAM.WT) {
+    if (Math.abs(a) < STREAM.WT && STREAM.inDitch(x, y)) {
       const [t] = STREAM.loc(x, y);
       if (a > 0.5 && STREAM.STAIRS.some(s => Math.abs(t - s.t) < STREAM.SW + 0.1)) return 'Treppe zum Bach';
       return Math.abs(a) < STREAM.WW ? 'Im Bach' : 'Am Bach';
@@ -37,9 +37,8 @@ export const sitePlace = (x, y, z) => {
     dy = p2[1] - p1[1],
     L = Math.hypot(dx, dy);
   const t = ((x - p1[0]) * dx + (y - p1[1]) * dy) / L;
-  const px = p1[0] + (dx / L) * t,
-    py = p1[1] + (dy / L) * t;
-  if (Math.hypot(x - px, y - py) < 1.8 && t > -5 && t < L + 5) return 'Feldweg';
+  const [px, py] = STREAM.pathPt(t); // the field path as painted (it turns with the real track east of the gate)
+  if (Math.hypot(x - px, y - py) < 1.8 && t > -5 && t < L + 45) return 'Feldweg';
   if (!inPolyXY(x, y, S0.garden)) return x < 2 ? 'Nachbargrundstück West' : 'Nachbargrundstück Ost';
   return null;
 };

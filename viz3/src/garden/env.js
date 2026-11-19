@@ -343,31 +343,32 @@ export const gpaint = mkCanvasG(GPX),
     nx = -nx;
     ny = -ny;
   }
-  const f = (t, o) => toPx(P1[0] + ux * t + nx * o, P1[1] + uy * t + ny * o);
+  // o here towards the field; the field path follows STREAM.pathOff (the real track turns south-east at the gate, Karten-Chat 19.11.2026)
+  const f = (t, o) => {
+      const q = o - STREAM.pathOff(t);
+      return toPx(P1[0] + ux * t + nx * q, P1[1] + uy * t + ny * q);
+    },
+    TS = [];
+  for (let t = -200; t <= 250; t += t > 20 && t < 50 ? 1 : 4) TS.push(t);
+  const along = (o, back) => (back ? TS.slice().reverse() : TS).map(t => f(t, o)),
+    poly = (L, fill) => {
+      g.beginPath();
+      L.forEach((q, i) => (i ? g.lineTo(...q) : g.moveTo(...q)));
+      if (fill) {
+        g.closePath();
+        g.fill();
+      } else g.stroke();
+    };
   g.fillStyle = '#cdb98a';
-  g.beginPath();
-  [f(-200, 2.2), f(250, 2.2), f(250, 200), f(-200, 200)].forEach((q, i) => (i ? g.lineTo(...q) : g.moveTo(...q)));
-  g.fill();
+  poly([...along(2.2), ...along(200, true)], true);
   g.strokeStyle = 'rgba(120,98,60,0.35)';
   g.lineWidth = 2;
-  for (let o = 3; o < 200; o += 0.9) {
-    g.beginPath();
-    g.moveTo(...f(-200, o));
-    g.lineTo(...f(250, o));
-    g.stroke();
-  }
+  for (let o = 3; o < 200; o += 0.9) poly(along(o));
   g.fillStyle = '#c9c0ad';
-  g.beginPath();
-  [f(-200, -1.6), f(250, -1.6), f(250, 1.6), f(-200, 1.6)].forEach((q, i) => (i ? g.lineTo(...q) : g.moveTo(...q)));
-  g.fill();
+  poly([...along(-1.6), ...along(1.6, true)], true);
   g.strokeStyle = 'rgba(110,100,80,0.4)';
   g.lineWidth = 5;
-  for (const o of [-0.7, 0.7]) {
-    g.beginPath();
-    g.moveTo(...f(-200, o));
-    g.lineTo(...f(250, o));
-    g.stroke();
-  }
+  for (const o of [-0.7, 0.7]) poly(along(o));
   g.fillStyle = '#829a58';
   g.beginPath();
   S0.garden.forEach((q, i) => {
@@ -559,8 +560,9 @@ export function mkGroundMat(cut) {
         gCol *= mix( vec3( 1.0 ), gTint, ( 1.0 - gMsk.g ) * 0.7 );
         if ( uGeoOn > 0.5 ) {   // the real land (orthophoto) outside the modelled site
           float gdz = max( max( uGeoZone.x - gW.x, gW.x - uGeoZone.y ), max( uGeoZone.z - gW.y, gW.y - uGeoZone.w ) );
-          float go = dot( gW - uGeoPath.xy, uGeoPath.zw );
-          float gKeep = max( 1.0 - smoothstep( 0.0, 18.0, gdz ), ( 1.0 - smoothstep( 8.0, 16.0, abs( go - 3.0 ) ) ) * ( 1.0 - smoothstep( 20.0, 60.0, gdz ) ) );
+          float go = dot( gW - uGeoPath.xy, uGeoPath.zw ), gAlong = dot( gW - uGeoPath.xy, vec2( -uGeoPath.w, uGeoPath.z ) );
+          go -= 0.38 * max( gAlong - 30.0, 0.0 );   // east of the gate the corridor turns with the real track and brook (STREAM.pathOff, Karten-Chat 19.11.2026)
+          float gKeep = max( 1.0 - smoothstep( 0.0, 18.0, gdz ), ( 1.0 - smoothstep( 8.0, 16.0, abs( go - 3.0 ) ) ) * ( 1.0 - smoothstep( 20.0, 60.0, gdz ) ) * ( 1.0 - smoothstep( 92.0, 104.0, gAlong ) ) );
           vec2 gou = vec2( uGeoAB.x * gW.x - uGeoAB.y * gW.y + uGeoBox.x, uGeoAB.y * gW.x + uGeoAB.x * gW.y + uGeoBox.y ) * uGeoBox.z;
           if ( uGeoMap > 0.5 ) gKeep = gMsk.g;   // map: only the garden itself stays drawn as modelled
           else { vec3 oLow = geoAlbN( textureLod( uGeoTex, gou, 6.0 ).rgb, uGeoGain ), pLow = textureLod( map, vMapUv, 7.0 ).rgb;   // the modelled plots take over the real colours (20 m scale, mostly brightness)

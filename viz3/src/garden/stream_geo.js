@@ -29,37 +29,53 @@ export const STREAM = (() => {
     const u = Math.min(1, Math.max(0, (x - a) / (b - a)));
     return u * u * (3 - 2 * u);
   };
-  // east of the garden the field path bends south towards the village (OSM track, orthophoto) and the brook keeps to its south side
-  // (Falko, 30.10.2026: no bridge there): the centre line follows the path's offset from the straight axis, [t, o] of the track's points
-  const BEND = [
-    [52, 0],
-    [56, 0.4],
-    [63.4, 3.3],
-    [76.8, 12.1],
-    [92.6, 23.1],
-    [108.3, 31.8],
-    [130, 45],
+  // East of the bridge (Karten-Chat, 19.11.2026, Falko 11:41 and 11:54: „der Bach fließt nicht korrekt, insbesondere im unteren Dorf
+  // Richtung Garten … der Weg parallel zum Bach weicht auch ab“): the course of the 1 m terrain – the ditch's deepest line in DGM1
+  // Thüringen (© GDI-Th, CC BY 4.0, tools/gelaende), every 2 m, smoothed – [t, o] of the centre line. The real field path and the brook run
+  // ~22° further south than the modelled axis (OSM track 2026: 139° against the axis' 117°); the two cross at the gate, so east of it the
+  // brook keeps 5–6 m beside the real track on the garden side. It comes out of a pipe at TE (OSM ditch: Falko – from the Schleuse at the
+  // upper village entrance, piped under the village past the wells, out at the Gartenweg); before that nothing of it is open.
+  const EAST = [
+    [26, 3.3],
+    [34, 6.2],
+    [42, 9.3],
+    [50, 11.6],
+    [58, 14.4],
+    [66, 17.6],
+    [74, 21.0],
+    [82, 24.9],
+    [90, 28.0],
   ];
-  const bend = t => {
-    if (t <= BEND[0][0]) return 0;
-    for (let i = 1; i < BEND.length; i++)
-      if (t <= BEND[i][0]) {
-        const [t0, o0] = BEND[i - 1],
-          [t1, o1] = BEND[i];
+  const lin = (T, t) => {
+    if (t <= T[0][0]) return T[0][1];
+    for (let i = 1; i < T.length; i++)
+      if (t <= T[i][0]) {
+        const [t0, o0] = T[i - 1],
+          [t1, o1] = T[i];
         return o0 + ((o1 - o0) * (t - t0)) / (t1 - t0);
       }
-    const [t0, o0] = BEND[BEND.length - 2],
-      [t1, o1] = BEND[BEND.length - 1];
+    const [t0, o0] = T[T.length - 2],
+      [t1, o1] = T[T.length - 1];
     return o1 + ((o1 - o0) * (t - t1)) / (t1 - t0);
   };
+  const TE = 86; // the pipe's mouth at the Gartenweg (OSM ditch from here west, the DGM1 ditch begins here)
+  // the field path: the modelled axis west of the gate, the real track east of it (OSM 2026, straight to the Ratschner Anger: o = 0 at
+  // t = 34.2, 23.1 at t = 92.6), the turn rounded over 12 m – painted ground, labels and the guides follow it (garden/env.js, places.js)
+  const PK = 34.2,
+    PS = 0.395;
+  const pathOff = t => {
+    const u = t - PK;
+    return u <= -6 ? 0 : u >= 6 ? PS * u : (PS * (u + 6) * (u + 6)) / 24;
+  };
+  const pathPt = t => wpt(t, pathOff(t));
   // west of the gate the brook keeps 1.5 m further from the path (Falko's photos of 26.10.2026: the board stack stands between the path and
   // the water (7186, 7187, 7207; on the old aerial photo too), the slab terrace with its steps lies on the garden side (7204–7207)); it
   // bends back over the last metres before the bridge, where the gate and the culvert stay
   const WEST = t => 1.5 * (1 - ss(TB - 4.3, TB - 1.5, t));
+  const kE = t => ss(TB + 1.5, TB + 7, t); // from the photo-set bridge into the measured course
   const cOff = t =>
-    OFF +
-    bend(t) +
-    WEST(t) +
+    (OFF + WEST(t)) * (1 - kE(t)) +
+    lin(EAST, t) * kE(t) +
     ss(6.5, 13, Math.abs(t - TB)) * (0.45 * Math.sin(t / 6.3 + 1.1) + 0.22 * Math.sin(t / 2.6 + 0.4)); // gentle meander, straight at the bridge
   function prof(a) {
     a = Math.abs(a);
@@ -92,7 +108,7 @@ export const STREAM = (() => {
     }
     return null;
   }
-  const tLim = (() => {
+  const tZone = (() => {
     let a = -400,
       b = 400;
     const inside = t => {
@@ -103,7 +119,9 @@ export const STREAM = (() => {
     while (!inside(b)) b -= 0.5;
     return [a, b];
   })();
-  const kD = t => ss(tLim[0], tLim[0] + 15, t) * (1 - ss(tLim[1] - 15, tLim[1], t));
+  // the open brook: from the zone's western edge to the pipe's mouth (the ditch ends there at a headwall, garden/stream.js)
+  const tLim = [tZone[0], Math.min(tZone[1], TE)];
+  const kD = t => (t > TE ? 0 : ss(tZone[0], tZone[0] + 15, t) * (1 - ss(tZone[1] - 15, tZone[1], t)));
   function zAtTA(t, o) {
     const a = o - cOff(t);
     let z = prof(a);
@@ -123,8 +141,9 @@ export const STREAM = (() => {
     const [t, o] = loc(x, y);
     return o - cOff(t);
   }; // signed distance from the centre line (+ towards the garden)
-  const inDitch = (x, y, pad = 0) => Math.abs(across(x, y)) < WT + pad;
-  const inWater = (x, y) => Math.abs(across(x, y)) < WW;
+  const open = (x, y, pad = 0) => loc(x, y)[0] <= TE + pad; // east of the pipe's mouth there is no ditch
+  const inDitch = (x, y, pad = 0) => open(x, y, pad) && Math.abs(across(x, y)) < WT + pad;
+  const inWater = (x, y) => open(x, y) && Math.abs(across(x, y)) < WW;
   // the bridge in its own frame: x along the stream (U), y across towards the field path (−N); deck 2.5 × 6.2 m
   const ang = Math.atan2(U[1], U[0]),
     BR = {
@@ -219,7 +238,7 @@ export const STREAM = (() => {
   // the brook's sound: one loop that follows the listener along the stream (always at the nearest point of the water)
   function listen(x, y) {
     try {
-      const [t] = loc(x, y),
+      const t = Math.min(TE, Math.max(tLim[0], loc(x, y)[0])), // (east of the pipe's mouth the brook runs in its pipe: no sound)
         p = wpt(t, cOff(t));
       if (!LATE.audio.hasLoop('brook')) LATE.audio.loopAt('brook', 'stream', p[0], p[1], { vol: 0.9, ref: 4.5 });
       else LATE.audio.moveLoop('brook', p[0], p[1]);
@@ -228,6 +247,10 @@ export const STREAM = (() => {
   return {
     listen,
     tLim,
+    tZone,
+    TE,
+    pathOff,
+    pathPt,
     kD,
     band,
     paint,
