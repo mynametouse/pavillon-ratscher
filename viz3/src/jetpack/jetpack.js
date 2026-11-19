@@ -43,6 +43,7 @@ export const JET = (() => {
     ['dorf', 'Ratscher'],
     ['schleusingen', 'Schleusingen'],
     ['vessra', 'Kloster Veßra'],
+    ['trusetal', 'Trusetal'],
     ['suhl', 'Suhl, Markt'],
     ['suhl_bahnhof', 'Suhl, Bahnhof'],
     ['suhl_ccs', 'Suhl, Congress Centrum'],
@@ -239,6 +240,7 @@ export const JET = (() => {
       ['dorf', 'Ratscher'],
       ['schleusingen', 'Schleusingen'],
       ['vessra', 'Kloster Veßra'],
+      ['trusetal', 'Trusetal'],
       ['suhl', 'Suhl'],
     ]) {
       const s = KERN.spot(k);

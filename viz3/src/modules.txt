@@ -95,6 +95,7 @@ fassade/fassade_audit.js    # feat/gebaeude is every building plausible from out
 welt/schleusingen.js        # Schleusingen after photos: the old town walkable, Rathaus to enter, landmarks, lamps, street names (SCHL)
 # feat/vessra: Kloster Veßra below this line (the monastery, the village, the tree nursery)
 welt/vessra.js              # Kloster Veßra: the monastery ruin and its grounds, the village, the tree nursery Baumschule Kammbach – walkable (VESSRA)
+welt/trusetal.js            # Trusetal (Brotterode-Trusetal) on the original data: its own tile set near the town, the ETHOS houses (TRUSETAL)
 # feat/suhl: Suhl below this line – only its registration; the city itself is a package loaded on demand (src/lazy/suhl.js, src/lazy/suhl/**)
 welt/suhl.js                # feat/suhl Suhl: the zone around the municipality, places, ?szenario=suhl, the contract SUHL.* as a shell – no request at the start (SUHL)
 # feat/welt-gebaeude: every building in 3D below this line (after the village and the zones, before world/worldcol.js: its collisions)

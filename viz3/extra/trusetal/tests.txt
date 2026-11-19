@@ -1,0 +1,4 @@
+# (Karten-Chat, 19.11.2026)
+# Trusetal (welt/trusetal.js): ?szenario=trusetal – the zone's own tiles (DGM1, aerial 2024), the town's height, the ETHOS houses around
+smoke
+trusetal

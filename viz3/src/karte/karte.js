@@ -748,6 +748,7 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
     if (WELT && WELT.base) {
       metas.push(WELT.meta ? Promise.resolve({ base: WELT.base, levels: WELT.meta.tiling.levels }) : one(WELT.base));
       metas.push(one(WELT.base + 'zonen/vessra/'));
+      metas.push(one(WELT.base + 'zonen/trusetal/'));
     }
     metas.push(one(BASE + 'grenzland-zone/welt/'));
     if (SUHL && SUHL.on && SUHL.DATA && SUHL.BASE)

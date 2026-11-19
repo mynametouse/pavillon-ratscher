@@ -199,5 +199,10 @@ rc = wlib.VESSRA_ROUTE
 ck('zone Veßra: the road corridor from block B (levels 10-11), adjoining it', vb[0] <= rc[0] and vb[1] <= rc[1] and rc[2] <= vb[2]
    and rc[3] <= vb[3] and vb[2] == wlib.PLANS['B'][8][0], f'{rc} in {vb}')
 ck('zone Veßra: published under welt-test/zonen/vessra/', wlib.ZONES['V']['sub'] == 'zonen/vessra/')
+tb, td = wlib.TRUSE_BLK, wlib.TRUSE_DET
+ck('zone Trusetal: detail inside the block, the centre inside the detail, tile counts (rounded out to the grids), under welt-test/zonen/trusetal/',
+   tb[0] <= td[0] and td[2] <= tb[2] and tb[1] <= td[1] and td[3] <= tb[3] and td[0] < wlib.TRUSE_C[0] < td[2]
+   and td[1] < wlib.TRUSE_C[1] < td[3] and len(wlib.tiles(11, tb)) == 1056 and len(wlib.tiles(12, td)) == 768
+   and wlib.ZONES['TS']['sub'] == 'zonen/trusetal/', f'{len(wlib.tiles(11, tb))} {len(wlib.tiles(12, td))}')
 print('test_welt:', 'ok' if not fails else f'{fails} FAILED')
 sys.exit(1 if fails else 0)

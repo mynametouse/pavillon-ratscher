@@ -10,7 +10,7 @@ make() (footprint, kind, eave, height, facades, roof faces; roof colour and ridg
                  anfahrt.json / anfahrt-grund.json: the country road L 3247 over St. Kilian, Erlau and Hirschbach, the A 73), as the
                  corridors of V17r along fahrt/strassen.json;
   --stage welt   then everything else inside the fine level (10, 0.8 m per pixel) of the tile sets the game drives on – the test block
-                 (welt-test/) and Kloster Veßra's (welt-test/zonen/vessra/) – the villages, hamlets and farms off the roads; on Suhl's
+                 (welt-test/), Kloster Veßra's (welt-test/zonen/vessra/) and Trusetal's (welt-test/zonen/trusetal/) – the villages, hamlets and farms off the roads; on Suhl's
                  ground (pavillon-daten suhl/boden) only the corridor of the first stage: the rest of its tiles is the town and its edge
                  (the part of Zella-Mehlis its tiles' frame cuts – the Suhl chat's area).
 
@@ -87,6 +87,13 @@ def tile_sets(cache):
     v = jfetch(SITE + 'zonen/vessra/meta.json', cache, 'meta_vessra.json')
     r = v['tiling']['levels']['10']['rect']
     out['vessra'] = {(x, y) for x in range(r[0], r[2] + 1) for y in range(r[1], r[3] + 1)}
+    # the zone Trusetal (Karten-Chat 19.11.2026, tools/welt/wlib.py ZONES['TS']): its fine level, once the zone is published
+    try:
+        t = jfetch(SITE + 'zonen/trusetal/meta.json', cache, 'meta_trusetal.json')
+        r = t['tiling']['levels']['10']['rect']
+        out['trusetal'] = {(x, y) for x in range(r[0], r[2] + 1) for y in range(r[1], r[3] + 1)}
+    except Exception as e:
+        log('zone Trusetal not published yet:', e)
     ak = suhl_products(cache)
     b = jfetch(DATEN + ak['boden']['index'], cache, 'meta_suhl_boden.json')
     out['suhl'] = {tuple(t) for t in b['tiling']['levels']['10']['has']}
