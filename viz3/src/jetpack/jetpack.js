@@ -45,6 +45,7 @@ export const JET = (() => {
     ['vessra', 'Kloster Veßra'],
     ['trusetal', 'Trusetal'],
     ['trusetal_wasserfall', 'Trusetaler Wasserfall'],
+    ['meiningen', 'Meiningen, Markt'],
     ['suhl', 'Suhl, Markt'],
     ['suhl_bahnhof', 'Suhl, Bahnhof'],
     ['suhl_ccs', 'Suhl, Congress Centrum'],
@@ -242,6 +243,7 @@ export const JET = (() => {
       ['schleusingen', 'Schleusingen'],
       ['vessra', 'Kloster Veßra'],
       ['trusetal', 'Trusetal'],
+      ['meiningen', 'Meiningen'],
       ['suhl', 'Suhl'],
     ]) {
       const s = KERN.spot(k);

@@ -28,6 +28,7 @@ import { WELT } from '../welt/welt.js';
 import { FAHRT } from '../welt/fahrt.js';
 import { SUHL } from '../welt/suhl.js';
 import { TRUSETAL } from '../welt/trusetal.js';
+import { MEININGEN } from '../welt/meiningen.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { MMAP } from '../vehicles/minimap.js';
 import { JET } from '../jetpack/jetpack.js';
@@ -504,14 +505,16 @@ export const KARTE = (() => {
         S.err = 'roads ' + e;
       });
   }
-  // the drive's ways, else the map's own; Trusetal's named streets (welt/trusetal.js) added once its data is there
-  const RW = { b: null, n: -1, rev: -1, all: null };
+  // the drive's ways, else the map's own; the named streets of Trusetal, Meiningen and the Werra valley (welt/trusetal.js,
+  // welt/meiningen.js) added once their data is there
+  const RW = { b: null, n: -1, rev: '', all: null };
   const roadWays = () => {
     const b = FAHRT && FAHRT.ready && FAHRT.data ? FAHRT.data.ways : own ? own.ways : [],
-      t = TRUSETAL && TRUSETAL.ways;
-    if (!t || !t.length) return b;
-    if (RW.b !== b || RW.n !== b.length || RW.rev !== TRUSETAL.rev)
-      [RW.b, RW.n, RW.rev, RW.all] = [b, b.length, TRUSETAL.rev, b.concat(t)];
+      zs = [TRUSETAL, MEININGEN].filter(z => z && z.ways && z.ways.length);
+    if (!zs.length) return b;
+    const rev = zs.map(z => z.rev).join(',');
+    if (RW.b !== b || RW.n !== b.length || RW.rev !== rev)
+      [RW.b, RW.n, RW.rev, RW.all] = [b, b.length, rev, b.concat(...zs.map(z => z.ways))];
     return RW.all;
   };
   // the named roads in a grid of 40 m for the street under one's feet
@@ -759,6 +762,8 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
       metas.push(WELT.meta ? Promise.resolve({ base: WELT.base, levels: WELT.meta.tiling.levels }) : one(WELT.base));
       metas.push(one(WELT.base + 'zonen/vessra/'));
       metas.push(one(WELT.base + 'zonen/trusetal/'));
+      metas.push(one(WELT.base + 'zonen/meiningen/'));
+      metas.push(one(WELT.base + 'zonen/werratal/'));
     }
     metas.push(one(BASE + 'grenzland-zone/welt/'));
     if (SUHL && SUHL.on && SUHL.DATA && SUHL.BASE)

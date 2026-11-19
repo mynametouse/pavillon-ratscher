@@ -63,10 +63,10 @@ jobs:
         run: |
           python3 -I -u - <<'PY'
           import os, sys
+          sys.path.insert(0, os.path.abspath('tools/welt'))
+          import wlib   # this repo's (the data house's checkout brings an older tools/welt)
           sys.path.insert(0, os.path.abspath('ext/suhl/tools/suhl/lib'))
           import easygeodata as EG
-          sys.path.insert(0, os.path.abspath('tools/welt'))
-          import wlib
           b = wlib.PLANS[os.environ['PLAN']][8]
           e0, n0, e1, n1 = b[0] - 200, b[1] - 200, b[2] + 200, b[3] + 200
           tiles = [(e, n) for n in range(int(n0 // 1000), int((n1 - 1) // 1000) + 1) for e in range(int(e0 // 1000), int((e1 - 1) // 1000) + 1)]

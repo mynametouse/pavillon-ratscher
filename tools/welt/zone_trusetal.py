@@ -47,29 +47,29 @@ def log(*a):
     print(time.strftime('%H:%M:%S'), *a, flush=True)
 
 
-def fetch(cache):
-    """the zone's block (wlib.TRUSE_BLK) in 3 x 3 pieces of the editing API: nodes, ways, relations by id"""
+def fetch(cache, blk=None, k=3):
+    """a zone's block (default wlib.TRUSE_BLK) in k x k pieces of the editing API: nodes, ways, relations by id"""
     from pyproj import Transformer
     tr = Transformer.from_crs(25832, 4326, always_xy=True)
-    e0, n0, e1, n1 = wlib.TRUSE_BLK
+    e0, n0, e1, n1 = blk or wlib.TRUSE_BLK
     lo0, la0 = tr.transform(e0, n0)
     lo1, la1 = tr.transform(e1, n1)
     N, W, R = {}, {}, {}
     os.makedirs(cache, exist_ok=True)
-    for i in range(3):
-        for j in range(3):
+    for i in range(k):
+        for j in range(k):
             fn = os.path.join(cache, f'p{i}{j}.json')
             if not os.path.exists(fn):
-                a, b = lo0 + (lo1 - lo0) * i / 3, lo0 + (lo1 - lo0) * (i + 1) / 3
-                c, d = la0 + (la1 - la0) * j / 3, la0 + (la1 - la0) * (j + 1) / 3
+                a, b = lo0 + (lo1 - lo0) * i / k, lo0 + (lo1 - lo0) * (i + 1) / k
+                c, d = la0 + (la1 - la0) * j / k, la0 + (la1 - la0) * (j + 1) / k
                 url = API + f'{a:.5f},{c:.5f},{b:.5f},{d:.5f}'
-                for k in range(4):
+                for tr_ in range(4):
                     try:
                         body = urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': UA}), timeout=180).read()
                         break
                     except Exception as e:
                         log('retry', i, j, e)
-                        time.sleep(5 + 10 * k)
+                        time.sleep(5 + 10 * tr_)
                 else:
                     raise SystemExit('OSM API not reachable')
                 open(fn, 'wb').write(body)
@@ -83,9 +83,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--cache', default='/tmp/zone-trusetal')
     ap.add_argument('--drop-cells', action='store_true', help='drop the ETHOS buildings under the church and the tower from gebaeude/z/')
+    ap.add_argument('--zone', default='TS', help='TS (Trusetal, with its places) or another key of wlib.ZONES (streets and named places)')
     a = ap.parse_args()
     from pyproj import Transformer
     from shapely.geometry import Polygon, LineString
+    if a.zone != 'TS':
+        return streets_only(a)
     N, W, R = fetch(a.cache)
     ti = Transformer.from_crs(4326, 25832, always_xy=True)
     r1 = lambda v: round(v, 1)
@@ -200,6 +203,66 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump(out, open(OUT, 'w'), separators=(',', ':'), ensure_ascii=False)
     log('wrote', OUT, os.path.getsize(OUT) // 1024, 'kB')
+
+
+def named(N, W, pt, line, r1):
+    """the named places (points) and the named streets of an OSM dump"""
+    want = lambda t: (t.get('name') and (t.get('tourism') in ('attraction', 'museum', 'theme_park', 'viewpoint', 'hotel', 'guest_house')
+                      or t.get('historic') or t.get('amenity') in ('place_of_worship', 'townhall', 'school', 'restaurant', 'cafe', 'pub',
+                      'pharmacy', 'post_office', 'fire_station', 'bank', 'kindergarten', 'theatre', 'cinema', 'hospital', 'library')
+                      or t.get('shop') or t.get('natural') == 'peak' or t.get('railway') == 'station' or t.get('man_made') in ('adit', 'tower')))
+    pois = []
+    for el in list(N.values()) + list(W.values()):
+        t = el.get('tags') or {}
+        if not want(t):
+            continue
+        if el['type'] == 'node':
+            p = pt(el['id'])
+        else:
+            q = line(el['id'])
+            if not q:
+                continue
+            p = [r1(sum(v[0] for v in q) / len(q)), r1(sum(v[1] for v in q) / len(q))]
+        kind = (t.get('tourism') or (t.get('historic') and 'historic') or t.get('amenity') or (t.get('shop') and 'shop') or t.get('natural')
+                or t.get('railway') or t.get('man_made'))
+        pois.append([t['name'], kind, p[0], p[1]])
+    pois.sort()
+    st = []
+    for w in W.values():
+        t = w.get('tags') or {}
+        kd = KIND.get(t.get('highway'))
+        if kd is None or not (t.get('name') or t.get('ref')):
+            continue
+        q = line(w['id'])
+        if len(q) >= 2:
+            st.append({'name': t.get('name', ''), 'ref': t.get('ref', ''), 'kind': kd, 'p': [v for p in q for v in p]})
+    st.sort(key=lambda s: (s['name'], s['p'][0]))
+    return pois, st
+
+
+def streets_only(a):
+    """another zone (wlib.ZONES[a.zone]): its named streets and places → viz3/extra/<name>/dist/<name>/ort.json"""
+    from pyproj import Transformer
+    z = wlib.ZONES[a.zone]
+    blk = wlib.PLANS[a.zone][8]
+    N, W, R = fetch(os.path.join(a.cache, z['name']), blk, 4)
+    ti = Transformer.from_crs(4326, 25832, always_xy=True)
+    r1 = lambda v: round(v, 1)
+
+    def pt(n):
+        x, y = to_model(*ti.transform(N[n]['lon'], N[n]['lat']))
+        return [r1(x), r1(y)]
+
+    def line(wid):
+        return [pt(n) for n in W[wid]['nodes'] if n in N]
+
+    pois, st = named(N, W, pt, line, r1)
+    out = {'v': 1, 'made': time.strftime('%Y-%m-%d'), 'zone': z['name'], 'pois': pois, 'streets': st,
+           'src': 'OpenStreetMap-Mitwirkende (ODbL 1.0), Stand ' + time.strftime('%d.%m.%Y') + '; tools/welt/zone_trusetal.py --zone ' + a.zone}
+    fn = os.path.join(REPO, 'viz3', 'extra', z['name'], 'dist', z['name'], 'ort.json')
+    os.makedirs(os.path.dirname(fn), exist_ok=True)
+    json.dump(out, open(fn, 'w'), separators=(',', ':'), ensure_ascii=False)
+    log(z['name'], len(pois), 'places,', len(st), 'streets →', fn, os.path.getsize(fn) // 1024, 'kB')
 
 
 if __name__ == '__main__':
