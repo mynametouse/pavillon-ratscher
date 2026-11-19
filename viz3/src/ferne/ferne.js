@@ -240,7 +240,7 @@ export const FERNE = (() => {
       tw = new THREE.Vector3(),
       tn = new THREE.Vector3();
     for (let k = WK.k; k < B.n; k++) {
-      if ((k & 3) === 0 && k > WK.k && performance.now() - t0 > budget) {
+      if ((k & 1) === 0 && k > WK.k && performance.now() - t0 > budget) {
         WK.k = k;
         WK.nv = nv;
         WK.ni = ni;

@@ -50,6 +50,21 @@ Schwerpunkt Laptop (Stufe „hoch“), das Handy wird nicht schlechter.
 - **Nicht dabei:** Suhls eigene Gebäude (Suhl-Chat), Kloster Veßras Dorf (`welt/vessra.js`), die Wahrzeichen der Orte (Kirchtürme,
   Bertholdsburg) als eigene Form – sie stehen als Blöcke ihrer ETHOS-Höhe da, soweit sie in den Zellen sind.
 
+## Schritt 2: Wald in der Ferne – das Kronendach (`ferne/wald.js`, `FWALD`; `tools/ferne/wald.py`)
+
+- Vorher: die Bäume der Welt (`weltwald/weltwald.js`) stehen bis `rf` (520 m auf „hoch“), das Gelände jenseits der gezeichneten Kacheln
+  (760 m) ist das Oberflächenmodell (`world/ratscher.js`, die Wälder darin erhaben). Dazwischen lag der nackte Boden der Kacheln mit dem
+  Wald nur im Luftbild – ein flacher Ring, in den die Bäume beim Fahren hineinwuchsen.
+- Jetzt füllt ein **Kronendach** diesen Ring: ein Netz um die Kamera (ein Zeichenaufruf, wenige tausend Dreiecke), alle 80 m Bewegung
+  neu gebaut (≤ 3 ms je Bild), aus einem 20-m-Raster je 400-m-Zelle (Bedeckung, mittlere Wipfelhöhe, Nadelanteil; `tools/ferne/wald.py`
+  → `dist/ferne/wald.bin`, beim Bauen aus `weltwald/z/` erzeugt – die Walddaten selbst bleiben unberührt), auf dem Boden der Kacheln
+  (`WELT.heightAt`), endet, wo die Kacheln enden.
+- Ränder fallen schräg ab, die Punkte etwas neben dem Raster und ungleich hoch (keine Rasterkante am Horizont); Kronen als Zellmuster von
+  ~7 m mit dunklen Lücken, jede von der Sonnenseite beleuchtet; Nadelwald dunkel, Laubwald nach der Jahreszeit der Bäume
+  (`WWALD.season()`).
+- Blendet von `rf − 90` bis `rf` ein (Raster-Dither), wo die Karten der Bäume ausdünnen. `?noferne` schaltet es mit aus.
+- Test `ferne` Blicke h (Feld westlich von Ratscher, Wald 450–900 m im Süden; am Boden und 30 m hoch): mit/ohne.
+
 ## Schritt 3: Felder weiter sichtbar (`bewuchs/bw_ferne.js`, `tools/ferne/felder.py`)
 
 - Vorher endeten die Feldfrüchte (reifes Getreide, Raps, Mais, Rüben – die Farbe des Tages) mit dem feinen Fenster bei **260–340 m**;
@@ -76,8 +91,7 @@ Schwerpunkt Laptop (Stufe „hoch“), das Handy wird nicht schlechter.
 
 1. **1b – Boden in der Ferne für die Zonen jenseits von 12 km** (Meiningen, Trusetal, Werratal): ihre groben Kacheln (Stufen 7–9 gibt es
    schon) als Fernring bis zum Horizont; danach die Blöcke auch dort. Berührt `welt/welt.js` – wird in `docs/PARALLEL.md` angekündigt.
-2. **Wald in der Ferne:** hinter den Baumkarten eine erhabene, dunkle Kronenfläche nach den Kronenhöhen der Waldzellen, bis zum
-   Horizont; die Karten ab 450 m weich in sie überblendet.
+2. ~~Wald in der Ferne~~ – erledigt (oben); jenseits von 12 km (Meiningen, Trusetal) mit Schritt 1b.
 3. ~~Felder weiter sichtbar~~ – erledigt (oben).
 4. **Personen in der Ferne** als leichte, bewegte Silhouetten bis 200–300 m, weich eingeblendet.
 5. **Vorausladen** in Blick- und Fahrtrichtung; beim Start erst die Fernsicht, dann einblenden.
