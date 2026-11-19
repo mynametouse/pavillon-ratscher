@@ -122,6 +122,9 @@ def http(url, headers=None, timeout=60, tries=3):
             if e.code in (400, 403, 404, 410):
                 return e.code, b''
             last = e
+            if e.code == 429:                                       # Wikidata: one request a minute while it is rate-limited
+                time.sleep(65)
+                continue
         except Exception as e:
             last = e
         time.sleep(2 * (k + 1))
@@ -352,22 +355,27 @@ def roads(mos, cur_at, places):
 
 # ------------------------------------------------------------------ peaks (Wikidata)
 def peaks(lon0, lat0, lon1, lat1):
-    q = f"""SELECT ?p ?pLabel ?ele ?coord WHERE {{
-  VALUES ?cls {{ wd:Q8502 wd:Q207326 wd:Q54050 wd:Q1595289 }}
-  ?p wdt:P31 ?cls; wdt:P2044 ?ele; wdt:P625 ?coord .
-  SERVICE wikibase:box {{ ?p wdt:P625 ?coord . bd:serviceParam wikibase:cornerSouthWest "Point({lon0} {lat0})"^^geo:wktLiteral .
-                          bd:serviceParam wikibase:cornerNorthEast "Point({lon1} {lat1})"^^geo:wktLiteral . }}
-  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "de,en". }} }}"""
-    st, b = http('https://query.wikidata.org/sparql?format=json&query=' + urllib.parse.quote(q), headers={'Accept': 'application/sparql-results+json'},
-                 timeout=120)
+    # the form of tools/karte/wd_orte.py (box first, then the classes): mountain, hill, summit, mountain range peak
+    q = """SELECT ?p ?pLabel ?ele ?lat ?lon WHERE {
+  SERVICE wikibase:box { ?p wdt:P625 ?c . bd:serviceParam wikibase:cornerSouthWest "Point(%f %f)"^^geo:wktLiteral .
+                         bd:serviceParam wikibase:cornerNorthEast "Point(%f %f)"^^geo:wktLiteral . }
+  ?p wdt:P31 ?t .
+  VALUES ?t { wd:Q8502 wd:Q54050 wd:Q207326 wd:Q1595289 }
+  ?p wdt:P2044 ?ele .
+  BIND(geof:latitude(?c) AS ?lat) BIND(geof:longitude(?c) AS ?lon)
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en". }
+}""" % (lon0, lat0, lon1, lat1)
+    st, b = http('https://query.wikidata.org/sparql?' + urllib.parse.urlencode({'query': q, 'format': 'json'}),
+                 headers={'Accept': 'application/sparql-results+json'}, timeout=120)
+    if st != 200:
+        raise RuntimeError(f'Wikidata HTTP {st}')
     seen, out = set(), []
     for r in json.loads(b.decode())['results']['bindings']:
         pid = r['p']['value'].rsplit('/', 1)[-1]
         if pid in seen:
             continue
         seen.add(pid)
-        c = r['coord']['value']                                     # Point(lon lat)
-        lon, lat = (float(v) for v in c[c.index('(') + 1:c.index(')')].split())
+        lon, lat = float(r['lon']['value']), float(r['lat']['value'])
         try:
             ele = float(r['ele']['value'])
         except Exception:
@@ -379,19 +387,39 @@ def peaks(lon0, lat0, lon1, lat1):
 
 
 # ------------------------------------------------------------------ 4. satellites
-def geoid_fn():
-    """ellipsoid (WGS84) -> NHN, with the EGM2008 grid of PROJ (network) – the note says what was used"""
+def geoid_fn(raw):
+    """ellipsoid (WGS84) -> NHN: the EGM2008 geoid (2.5' grid of the PROJ CDN, a window around the context square, cached); the
+    German quasigeoid GCG2016 differs from it here by a few decimetres – the median against DGM1 on open land shows what is left"""
     try:
-        from pyproj import Transformer
-        from pyproj import network
-        network.set_network_enabled(True)
-        t = Transformer.from_crs('EPSG:4979', 'EPSG:4326+3855', always_xy=True)
-        _, _, h = t.transform(10.77, 50.50, 400.0)
-        if 40 < 400.0 - h < 55:
-            return (lambda lon, lat, he: np.asarray(t.transform(lon, lat, he)[2])), f'EGM2008 (PROJ), Undulation am Garten {400.0 - h:.2f} m'
+        p = os.path.join(raw, 'geoid', 'egm08_window.npz')
+        if os.path.exists(p):
+            z = np.load(p)
+            A, lon0, lat0, st = z['a'], float(z['lon0']), float(z['lat0']), float(z['st'])
+        else:
+            import rasterio
+            from rasterio.windows import from_bounds
+            with rasterio.open('https://cdn.proj.org/us_nga_egm08_25.tif') as src:
+                win = from_bounds(10.2, 50.1, 11.4, 50.9, src.transform).round_offsets().round_lengths()
+                A = src.read(1, window=win).astype(np.float64)
+                t = src.window_transform(win)
+            st = float(t.a)
+            lon0, lat0 = float(t.c + t.a / 2), float(t.f + t.e / 2)       # first grid node (top-left), rows go south
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            np.savez(p, a=A, lon0=lon0, lat0=lat0, st=st)
+
+        def N(lon, lat):
+            c = (np.asarray(lon, float) - lon0) / st
+            r = (lat0 - np.asarray(lat, float)) / st
+            c0 = np.clip(np.floor(c).astype(int), 0, A.shape[1] - 2)
+            r0 = np.clip(np.floor(r).astype(int), 0, A.shape[0] - 2)
+            fc, fr = np.clip(c - c0, 0, 1), np.clip(r - r0, 0, 1)
+            return (A[r0, c0] * (1 - fc) * (1 - fr) + A[r0, c0 + 1] * fc * (1 - fr) + A[r0 + 1, c0] * (1 - fc) * fr + A[r0 + 1, c0 + 1] * fc * fr)
+        n0 = float(N(10.7692, 50.4991))
+        if 40 < n0 < 55:
+            return (lambda lon, lat, he: np.asarray(he, float) - N(lon, lat)), f'EGM2008 (Geoidhöhe am Garten {n0:.2f} m)'.replace('.', ',')
     except Exception as ex:
         log('EGM2008 nicht verfügbar:', repr(ex)[:160])
-    return (lambda lon, lat, he: np.asarray(he) - 47.6), 'fester Wert 47,6 m (EGM2008 nicht erreichbar)'
+    return (lambda lon, lat, he: np.asarray(he) - 47.1), 'fester Wert 47,1 m (EGM2008 nicht erreichbar)'
 
 
 def poly_ll(e0, n0, size):
@@ -438,12 +466,21 @@ def sliderule_get(api, parms):
     raise RuntimeError('; '.join(errs) or 'keine passende Funktion in sliderule')
 
 
-def atl08_earthaccess(raw, bbox, max_granules=40):
-    """fallback: ATL08 granules through earthaccess (Earthdata login), land segments inside bbox"""
+def atl08_earthaccess(raw, bbox, max_granules=200):
+    """ATL08 granules through earthaccess (Earthdata login), land segments inside bbox"""
     import earthaccess, h5py
     earthaccess.login(strategy='environment')
-    res = earthaccess.search_data(short_name='ATL08', bounding_box=bbox, count=400)
-    res = res[-max_granules:]
+    res = earthaccess.search_data(short_name='ATL08', bounding_box=bbox, temporal=('2018-10-01', '2030-01-01'), count=2000)
+    best = {}                                                      # one version per granule (ATL08_<time>_<track>_<version>_<rev>.h5)
+    for r in res:
+        try:
+            ur = r['umm']['GranuleUR']
+        except Exception:
+            ur = str(r)
+        k = '_'.join(ur.split('_')[:3])
+        if k not in best or ur > best[k][0]:
+            best[k] = (ur, r)
+    res = [v[1] for _, v in sorted(best.items())][-max_granules:]
     import tempfile
     d = tempfile.mkdtemp(prefix='atl08-')                          # not into the raw cache: granules are large
     files = earthaccess.download(res, d)
@@ -484,16 +521,27 @@ def satellites(raw, mos, cur_at, WCc, geoid):
     except Exception as ex:
         login = f'Fehler: {ex!r}'[:160]
     out['earthdata_login'] = login
-    for key, api, parms in (('atl08', 'atl08x', {'poly': poly, 't0': '2018-10-01T00:00:00Z'}),
-                            ('gedi', 'gedi02ax', {'poly': poly, 'degrade_filter': True, 'l2_quality_filter': True})):
+    for key in ('atl08', 'gedi'):
         try:
-            try:
-                D, how = sliderule_get(api, parms)
-            except Exception as ex:
-                if key != 'atl08':
-                    raise
-                log('SlideRule ATL08:', repr(ex)[:200], '– weiter über earthaccess')
+            if key == 'atl08':
                 D, how = atl08_earthaccess(raw, bbox)
+            else:
+                parts, notes = [], []
+                for y0, y1 in ((2019, 2020), (2020, 2021), (2021, 2022), (2022, 2023), (2023, 2024), (2024, 2025), (2025, 2027)):
+                    try:
+                        Dp, how = sliderule_get('gedi02ax', {'poly': poly, 'degrade_filter': True, 'l2_quality_filter': True,
+                                                             't0': f'{y0}-01-01T00:00:00Z', 't1': f'{y1}-01-01T00:00:00Z'})
+                        parts.append(Dp)
+                        notes.append(f'{y0}: {len(Dp["lon"])}')
+                    except Exception as ex:
+                        notes.append(f'{y0}: {str(ex)[:60]}')
+                    log('GEDI', y0, notes[-1])
+                if not parts:
+                    raise RuntimeError('; '.join(notes))
+                keys = set.intersection(*(set(p) for p in parts))
+                D = {k: np.concatenate([p[k] for p in parts]) for k in keys}
+                how = 'SlideRule gedi02ax je Jahr (' + ', '.join(notes) + ')'
+            log(key, 'Spalten:', sorted(D)[:40])
             if key == 'atl08':
                 he = next((D[c] for c in ('h_te_median', 'h_te_best_fit', 'h_te_mean') if c in D), None)
                 if he is None:
@@ -521,10 +569,17 @@ def satellites(raw, mos, cur_at, WCc, geoid):
             res = {'quelle': how, 'punkte': int(h.size)}
             okg = np.isfinite(g)
             # robust: drop gross outliers (clouds, wrong ground) by |sat - reference| > 30 m
-            for ref, vals in (('dgm1', g), ('heute', t)):
+            sl = np.full(h.shape, np.nan)
+            if okg.any():
+                gy, gx = np.gradient(mos.G, STEP)
+                sl = bilinear(np.degrees(np.arctan(np.hypot(gx, gy))).astype(np.float32), E, N, B_E0, B_N0, STEP)
+            with np.errstate(invalid='ignore'):
+                mb = okg & np.isfinite(t) & (np.abs(h - g) < 30) & (np.abs(h - t) < 30)    # the same points for DGM1 and today in block B
+                mc = np.isfinite(t) & (np.abs(h - t) < 30)
+            for ref, vals, m in (('dgm1', g, mb), ('heute_block', t, mb), ('heute', t, mc)):
                 dd = h - vals
-                m = np.isfinite(dd) & (np.abs(dd) < 30)
-                res[ref] = {'alle': stats(dd[m]), 'wald': stats(dd[m & (cls == 10)]), 'offen': stats(dd[m & np.isin(cls, (30, 40))])}
+                res[ref] = {'alle': stats(dd[m]), 'wald': stats(dd[m & (cls == 10)]), 'offen': stats(dd[m & np.isin(cls, (30, 40))]),
+                            'flach': stats(dd[m & (sl < 5)])}
             res['heute_minus_dgm1_an_den_punkten'] = stats((t - g)[okg])
             out[key] = res
             for i in range(h.size):
@@ -648,17 +703,22 @@ def report(R, out):
         a(f"Earthdata-Anmeldung: {Sx.get('earthdata_login')}; Höhenbezug {R.get('geoid', '')}. Ausreißer über 30 m (Wolken, falscher Boden) "
           'nicht gezählt. Negativ = das Gelände liegt höher als der Satellit misst.')
         a('')
-        a('| Quelle | Punkte | gegen | alle: Median | RMSE | Wald: Median | RMSE | offen: Median | RMSE |')
-        a('|---|---|---|---|---|---|---|---|---|')
+        a('| Quelle | Punkte | gegen | alle: Median | RMSE | Wald: Median | RMSE | offen: Median | RMSE | flach (< 5°): Median | RMSE |')
+        a('|---|---|---|---|---|---|---|---|---|---|---|')
         for key, nm in (('atl08', 'ICESat-2 ATL08'), ('gedi', 'GEDI L2A')):
             s = Sx.get(key, {})
             if 'fehler' in s:
-                a(f"| {nm} | – | – | Fehler: {s['fehler'][:120]} | | | | | |")
+                a(f"| {nm} | – | – | Fehler: {s['fehler'][:160]} | | | | | | | |")
                 continue
-            for ref, rn in (('dgm1', 'DGM1 (Block B)'), ('heute', 'heutiges Gelände')):
+            for ref, rn in (('dgm1', 'DGM1 (Block B)'), ('heute_block', 'heute (dieselben Punkte)'), ('heute', 'heute (ganzes Quadrat)')):
                 q = s.get(ref, {})
                 rr = lambda z: (f"{fmt(z)} | {str(z.get('rmse', '–')).replace('.', ',')}" if z and z.get('n') else '– | –')
-                a(f"| {nm} | {s.get('punkte', 0)} | {rn} | {rr(q.get('alle'))} | {rr(q.get('wald'))} | {rr(q.get('offen'))} |")
+                n = (q.get('alle') or {}).get('n', 0)
+                a(f"| {nm} | {n} | {rn} | {rr(q.get('alle'))} | {rr(q.get('wald'))} | {rr(q.get('offen'))} | {rr(q.get('flach'))} |")
+        a('')
+        a(f"Quellen: ATL08 {Sx.get('atl08', {}).get('quelle', '–')}; GEDI {Sx.get('gedi', {}).get('quelle', '–')}. "
+          'ATL08 misst je 100-m-Abschnitt (Median der Bodenphotonen), GEDI je 25-m-Fleck – am Hang streut das gegen einen Punkt des '
+          'Rasters; die Spalte „flach“ zeigt den Höhenbezug am klarsten.')
         a('')
     a('## Was daraus folgt')
     a('')
@@ -809,7 +869,7 @@ def main():
 
     # 5. satellites
     if not a.no_sat:
-        geoid, note = geoid_fn()
+        geoid, note = geoid_fn(a.raw)
         R['geoid'] = note
         got = part('satelliten', lambda: satellites(a.raw, mos, cur_at, WCc, geoid))
         if got:
