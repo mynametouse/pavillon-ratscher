@@ -259,6 +259,7 @@ Reihenfolge und Kurzbeschreibung: `viz3/src/modules.txt`. Ordner:
   Haus (Schalter, Ofen, Sitzen), Aufgaben, HUD, Spielfigur
 - `jetpack/` – der Jetpack (`JET`, V18s, `docs/features/jetpack.md`): anlegen, fliegen über Haken J1 in `game/game.js` `physics()`, Überblick mit Ortsnamen, Zielflug zu den Orten
 - `navi/` – der Autopilot im Auto (`NAVI`, V18t, `docs/features/navi.md`): Ziel im Fahrzeugfeld, Graph über `ROADS.ways` und `FAHRT.data.ways`, fährt über `VEH.auto`
+- `karte/` – Karte, Ortsanzeige und Ziel (`KARTE`, `docs/features/karte.md`): kleine Karte (K), große Karte mit Suche (Shift+K), Straße · Ort · Kreis oben links, Ziel als `KERN.spot('kartenziel')` für `JET.flyTo` und `NAVI.go`; Ortsverzeichnis `karte/orte.json` (Wikidata, `tools/karte/`), Luftbild aus den Kachelsätzen; gespeichert `pav-karte-v1`
 - `audio/` – Ton-Engine (Aufnahmen, Synthese, Atmosphäre, Stimmen), Musik (Klavier, Platten, Ukulele)
 - `npc/` – Nachbarn und Ziegen, echte Figuren, Tagesrhythmus, Tagesablauf (`life`)
 - `dorf/` – Dorfleben (Kalender, Texte, Dorfbewohner, Schule, Feuer)
