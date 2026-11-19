@@ -1,0 +1,3 @@
+# (Karten-Chat, 19.11.2026)
+# Meiningen and the Werra valley (welt/meiningen.js): the zone tiles, the houses, the known places – the topic test follows
+smoke
