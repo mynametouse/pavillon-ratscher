@@ -13,7 +13,7 @@ port = sys.argv[1] if len(sys.argv) > 1 else '8951'
 ck = lib.Checks('meiningen')
 OUT = lib.out('meiningen')
 SITE = os.environ.get('WELT_SITE', 'https://mynametouse.github.io/pavillon-ratscher/welt-test/')
-MARKT = (-24240.0, 8787.0)
+MARKT = (-24237.0, 8850.0)   # the middle of the Markt (the spot)
 BELRIETH = (-18890.0, 4233.0)   # the village (Wikidata) on the B 89
 D = json.load(open(os.path.join(lib.ROOT, 'viz3', 'extra', 'meiningen', 'dist', 'meiningen', 'ort.json')))
 
@@ -109,7 +109,7 @@ with lib.browser() as b:
     E("if (!DN.active) GAME.setMode('auto'); CLOCK.t = 11 * 60; DN.update(true)")
     lib.settle_light(pg)
     E("GAME.step(0.5)")
-    eye(MARKT[0] + 2, MARKT[1] - 30, 5, 22)
+    eye(MARKT[0], MARKT[1], math.degrees(math.atan2(-24250 - MARKT[0], 8806 - MARKT[1])), 16)
     E("GAME.step(0.3)")
     lib.shot(pg, OUT, 'a_markt_stadtkirche')
     if th:

@@ -26,7 +26,7 @@ export const MEININGEN = (() => {
     { id: 'meiningen', name: 'meiningen', sub: 'zonen/meiningen/', c: [-24230, 8931], near: 3000, far: 3800 },
     { id: 'werratal', name: 'werratal', sub: 'zonen/werratal/', c: [-16284, 3586], near: 6500, far: 7500 },
   ];
-  const START = [-24240, 8787];
+  const START = [-24237, 8850]; // the middle of the Markt, north of the Stadtkirche
   const yawTo = (x, y, tx, ty) => (Math.atan2(tx - x, ty - y) * 180) / Math.PI;
   KERN.spot('meiningen', {
     mode: 'walk',
@@ -36,6 +36,7 @@ export const MEININGEN = (() => {
     pitch: 12,
     label: 'Meiningen, Markt',
   });
+  KERN.area({ name: 'Markt', circle: [...START, 38], prio: 24 }); // the square round the spot (OSM draws it as a ring of ways)
   KERN.scenario('meiningen', { label: 'Meiningen, Markt', order: 35, run: () => go('meiningen') });
   // the streets of the zones whose data is loaded, for karte/karte.js ({ name, ref, kind, n, p: [x, y, z, …] })
   function setWays() {
@@ -440,6 +441,7 @@ export const MEININGEN = (() => {
   S.status = () => ({
     state: S.state,
     ways: S.ways.length,
+    landmarks: S.landmarks || null,
     zones: Z.map(z => ({ id: z.id, state: z.state || 'idle', err: z.err || '' })),
   });
   return S;
