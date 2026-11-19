@@ -4,7 +4,8 @@
 // hoch, cards beyond the 3D ones); the terrain beyond the drawn tiles (760 m) is the surface model of world/ratscher.js, the forests on it
 // raised. Between the two the tiles' bare ground with the forest only in the photo: a flat ring that the trees walk into as one drives.
 // Here the forest's roof fills that ring: one mesh, rebuilt round the camera every 80 m moved (≤ 3 ms a frame), from a grid of 20 m per
-// 400 m cell (tools/ferne/wald.py → dist/ferne/wald.bin: cover, mean top height, conifers' share – made from weltwald/z/ at build time)
+// 400 m cell (tools/ferne/wald.py → dist/ferne/wald/<I>_<J>.bin per 3.2 km, loaded round the camera: cover, mean top height, conifers'
+// share – made from weltwald/z/ at build time)
 // on the ground the tiles draw (WELT.heightAt) – ending where the tiles end, the surface model takes over there.
 // - the edges slope down (the vertices' cover from the four squares round them), the vertices a little off the grid and their heights
 //   a little uneven: no grid on the skyline; crowns as a value noise of 6 m in the colour
