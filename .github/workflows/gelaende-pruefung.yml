@@ -54,6 +54,9 @@ jobs:
           set -o pipefail
           mkdir -p out/gelaende
           python3 -I -u tools/gelaende/pruefung.py --raw ~/gel-raw --out out/gelaende --egd ext/suhl/tools/suhl/lib 2>&1 | tee out/gelaende/lauf.log
+      - name: 1-m-Ausschnitte für die Nahprüfung (Bach und Feldweg Ratscher)
+        if: always()
+        run: python3 -I tools/gelaende/ausschnitt.py --raw ~/gel-raw --out out/gelaende --egd ext/suhl/tools/suhl/lib --name ratscher --box 624900 5594900 626400 5596200
       - name: Rohdaten in den Cache
         if: always()
         uses: actions/cache/save@v4
