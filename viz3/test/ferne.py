@@ -65,6 +65,17 @@ def tiles(sub, place, R=260):
 
 for v in VIEWS:
     tiles(SUBS[v['name'][:2]], (v['x'], v['y']))
+# step 2: the forests' roof – a field west of Ratscher, the forest 450–900 m to the south (and the same 30 m up)
+HV = [{'name': 'h_wald_boden', 'x': -2200, 'y': 0, 'eye': 1.7, 'yaw': 180, 'pitch': 1, 'fov': 60},
+      {'name': 'h_wald_oben', 'x': -2200, 'y': 0, 'eye': 30, 'yaw': 180, 'pitch': -3, 'fov': 60}]
+if not ONLY or any(o.startswith('h') for o in ONLY):
+    tiles('', (-2200, 0), R=420)
+DIFF = '''((a, b, y0, y1) => new Promise(res => { const A = new Image(), B = new Image(); let n = 0; const go = () => { if (++n < 2) return;
+  const c = document.createElement('canvas'); c.width = A.width; c.height = A.height; const g = c.getContext('2d');
+  g.drawImage(A, 0, 0); const pa = g.getImageData(0, 0, c.width, c.height).data; g.drawImage(B, 0, 0); const pb = g.getImageData(0, 0, c.width, c.height).data;
+  let k = 0, t = 0; for (let y = Math.floor(c.height * y0); y < c.height * y1; y++) for (let x = 0; x < c.width; x += 2) { const i = (y * c.width + x) * 4; t++;
+  if (Math.abs(pa[i] - pb[i]) + Math.abs(pa[i + 1] - pb[i + 1]) + Math.abs(pa[i + 2] - pb[i + 2]) > 15) k++; } res(+(k / t).toFixed(4)); };
+  A.onload = go; B.onload = go; A.src = a; B.src = b; }))'''
 COUNT = r"""
 (() => {
   const R = GAME.R, I = { M: [0, 0], F: [0, 0] }, rbd = R.renderBufferDirect;
@@ -172,17 +183,33 @@ with lib.browser() as b:
         save(ohne, 'g_felder_juli_ohne')
         E("BWFERNE.U.uBwFarE.value.w = 1; GAME.step(0.05)")
         # the picture changes beyond the fine band (the upper part of the ground: far away) and not in front (near: the same)
-        DIFF = '''((a, b, y0, y1) => new Promise(res => { const A = new Image(), B = new Image(); let n = 0; const go = () => { if (++n < 2) return;
-          const c = document.createElement('canvas'); c.width = A.width; c.height = A.height; const g = c.getContext('2d');
-          g.drawImage(A, 0, 0); const pa = g.getImageData(0, 0, c.width, c.height).data; g.drawImage(B, 0, 0); const pb = g.getImageData(0, 0, c.width, c.height).data;
-          let k = 0, t = 0; for (let y = Math.floor(c.height * y0); y < c.height * y1; y++) for (let x = 0; x < c.width; x += 2) { const i = (y * c.width + x) * 4; t++;
-          if (Math.abs(pa[i] - pb[i]) + Math.abs(pa[i + 1] - pb[i + 1]) + Math.abs(pa[i + 2] - pb[i + 2]) > 15) k++; } res(+(k / t).toFixed(4)); };
-          A.onload = go; B.onload = go; A.src = a; B.src = b; }))'''
         far_d = E(f"{DIFF}({json.dumps(mit['img'])}, {json.dumps(ohne['img'])}, 0.42, 0.5)")
         near_d = E(f"{DIFF}({json.dumps(mit['img'])}, {json.dumps(ohne['img'])}, 0.85, 1.0)")
         ck('July: the fields far away show their crop (the picture changes beyond 340 m, not in front)', far_d > 0.02 and near_d < 0.01, f'far {far_d}, near {near_d}')
-    mx = J("FERNE.state().ms")
-    ck('a block is built in slices: no step over 12 ms (this machine, without a graphics card)', mx <= 12, f'{mx} ms')
+    if not ONLY or any(o.startswith('h') for o in ONLY):
+        E("DN.e0 = Date.UTC(2026, 6, 15) / 864e5 - Math.floor(CLOCK.t / 1440); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 15.5 * 60; DN.update(true)")
+        for v in HV:
+            eye(v)
+            for k in range(40):
+                E("GAME.step(0.3)")
+                eye(v)
+                time.sleep(0.2)
+            fw = J("FWALD.state()")
+            ck(f"{v['name']}: the forests' roof stands round the camera", fw['ready'] and fw['builds'] >= 1 and fw['tris'] > 2000 and fw['ms'] <= 12, json.dumps(fw))
+            E("DN.e0 = Date.UTC(2026, 6, 15) / 864e5 - Math.floor(CLOCK.t / 1440); CLOCK.t = Math.floor(CLOCK.t / 1440) * 1440 + 15.5 * 60; DN.update(true)")
+            eye(v)
+            mit = json.loads(E(COUNT))
+            save(mit, v['name'] + '_mit')
+            E("FWALD.off = true; GAME.step(0.05)")
+            eye(v)
+            ohne = json.loads(E(COUNT))
+            save(ohne, v['name'] + '_ohne')
+            E("FWALD.off = false; FWALD.mesh.visible = true; GAME.step(0.05)")
+            far_d = E(f"{DIFF}({json.dumps(mit['img'])}, {json.dumps(ohne['img'])}, 0.3, 0.56)")
+            near_d = E(f"{DIFF}({json.dumps(mit['img'])}, {json.dumps(ohne['img'])}, 0.85, 1.0)")
+            ck(f"{v['name']}: the forest beyond the trees stands up (the picture changes at the horizon, not in front)", far_d > 0.01 and near_d < 0.01, f'far {far_d}, near {near_d}, calls {mit["calls"] - ohne["calls"]}, tris {mit["tris"] - ohne["tris"]}')
+    mx = J("[FERNE.state().ms90, FERNE.state().ms]")
+    ck('a block is built in slices: 9 in 10 steps within 12 ms, none over 40 ms (this machine, without a graphics card)', mx[0] <= 12 and mx[1] <= 40, f'{mx[0]} ms (the longest {mx[1]} ms)')
     ok, gl = lib.check_gl(pg)
     ck('every shader program within 16 textures, none broken (the far houses add one program)', ok, json.dumps(gl)[:300])
     ck.errors(errs)

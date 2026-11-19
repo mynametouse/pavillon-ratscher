@@ -56,6 +56,10 @@ _fe = os.path.join(SP, 'tools', 'ferne', 'haeuser.py')
 if os.path.exists(_fe):
     _r = subprocess.run([sys.executable, _fe, D], capture_output=True, text=True)
     print((_r.stdout or _r.stderr).strip()[-300:])
+for _fe in [os.path.join(SP, 'tools', 'ferne', 'wald.py')]:  # step 2: the forests' roof from weltwald/z/ (just copied)
+    if os.path.exists(_fe):
+        _r = subprocess.run([sys.executable, _fe, D], capture_output=True, text=True)
+        print((_r.stdout or _r.stderr).strip()[-300:])
 # an extra may replace recorded lines by their id ('vm_replace'; viz3/extra/stimmen: Hubert's lines with du instead of Sie)
 for _l in M.pop('vm_replace', []):
     _L = M['vm']['lines']; _i = next((i for i, x in enumerate(_L) if x['id'] == _l['id']), None)
