@@ -1,0 +1,6 @@
+# feat/ferne: the far houses (ferne/ferne.js) – data, blocks in reach, cells of gebaeude.js hidden, pictures with and without at five places,
+# cost; plus the usual guards
+smoke
+ferne
+leistung
+memphone
