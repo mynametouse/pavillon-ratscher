@@ -3,6 +3,7 @@
 # aerial image 2024) carries him at the town's real height, the ETHOS houses of the cells (gebaeude/gebaeude.js, tools/welt-gebaeude/orte.py)
 # stand around him on that ground, no page errors. Pictures at eye height and from above in out/trusetal/.
 #   bash tools/browser_lock.sh python3 viz3/test/run.py --port 8981 --serve trusetal
+# (the first push of a new branch starts no run, nor does a push of docs alone: this line came with the third push of kern/trusetal)
 import sys, os, json, time, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib
