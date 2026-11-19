@@ -70,12 +70,13 @@ TRUSE_BLK = (596700.0, 5623500.0, 603100.0, 5629900.0)
 PLANS['TS'] = {7: TRUSE_BLK, 8: TRUSE_BLK, 9: TRUSE_BLK, 10: TRUSE_BLK, 11: TRUSE_BLK, 12: TRUSE_DET}
 ZONES['TS'] = {'name': 'trusetal', 'title': 'Trusetal', 'centre': TRUSE_C, 'sub': 'zonen/trusetal/'}
 # Meiningen and the way there (Falko 19.11. 18:52: „Meiningen … und den Weg nach Meiningen, sodass dort keine flache Karte erscheint,
-# sondern echte Gebäude“; Karten-Chat): two blocks of their own on the level-8 grid – the town (levels 7-11 over 6.4 x 6.4 km, level 12 over
-# 3.1 x 3.2 km round the Markt, Wikidata 600363/5600744) and the Werra valley from Kloster Veßra's block (E 614000) along the B 89 by
+# sondern echte Gebäude“; Karten-Chat): two blocks of their own on the level-8 grid – the town (levels 7-11 over 6.4 x 8 km down to Obermaßfeld, level 12 over
+# 2.4 x 2.8 km round the Markt, the Stadtkirche, the Schloss Elisabethenburg, the theatre and the station – Wikidata's point for the town,
+# 600363/5600744, lies 2 km south of the Markt) and the Werra valley from Kloster Veßra's block (E 614000) along the B 89 by
 # Henfstädt, Leutersdorf, Vachdorf, Belrieth, Einhausen (levels 7-11 over 11.2 x 4.8 km; level 12 only round the Werra bridge at Belrieth).
-MEIN_C = (600363.0, 5600744.0)
-MEIN_DET = (598800.0, 5599200.0, 601900.0, 5602400.0)
-MEIN_BLK = (596700.0, 5597200.0, 603100.0, 5603600.0)
+MEIN_C = (600240.0, 5602800.0)   # the Markt by the Stadtkirche
+MEIN_DET = (599200.0, 5601600.0, 601600.0, 5604400.0)
+MEIN_BLK = (596700.0, 5597200.0, 603100.0, 5605200.0)
 PLANS['MG'] = {7: MEIN_BLK, 8: MEIN_BLK, 9: MEIN_BLK, 10: MEIN_BLK, 11: MEIN_BLK, 12: MEIN_DET}
 ZONES['MG'] = {'name': 'meiningen', 'title': 'Meiningen', 'centre': MEIN_C, 'sub': 'zonen/meiningen/'}
 WERRA_C = (608700.0, 5598000.0)

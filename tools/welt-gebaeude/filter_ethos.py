@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """feat/welt-gebaeude: stream ETHOS.BUILDA DEG.csv (Thuringia, EPSG:3035 WKT) from stdin, keep the buildings of our area (Suhl to south of
-Ratscher, Kloster Vessra in the west: UTM E 610000..640000, N 5580000..5616000; and the zone Trusetal) and write them in UTM 25832 as JSON lines.
+Ratscher, Kloster Vessra in the west: UTM E 610000..640000, N 5580000..5616000; and the zones Trusetal, Meiningen, Werratal) and write them in UTM 25832 as JSON lines.
 
   curl -sSL https://zenodo.org/api/records/11845992/files/DEG.csv/content | python3 -I tools/welt-gebaeude/filter_ethos.py OUT.jsonl
 """
@@ -13,9 +13,13 @@ out = open(sys.argv[1], 'w')
 # area of interest (UTM): Suhl in the north to south of Ratscher, Kloster Vessra in the west
 E0, E1, N0, N1 = 610000, 640000, 5580000, 5616000
 X0, X1, Y0, Y1 = 4359892 - 200, 4390381 + 200, 3027495 - 200, 3063898 + 200
-# the zone Trusetal (tools/welt/wlib.py TRUSE_BLK with 200 m margin; Karten-Chat 19.11.2026)
-TE0, TE1, TN0, TN1 = 596500, 603300, 5623300, 5630100
-TX0, TX1, TY0, TY1 = 4346972 - 200, 4353866 + 200, 3071289 - 200, 3078182 + 200
+# the zones beyond (tools/welt/wlib.py, with 200 m margin): Trusetal (Karten-Chat 19.11.2026), Meiningen and the Werra valley on the way
+ZONES = [(596500, 5623300, 603300, 5630100), (596500, 5597000, 603300, 5603800), (602900, 5595400, 614500, 5600600)]
+_t = Transformer.from_crs(25832, 3035, always_xy=True)
+ZONES3035 = []
+for e0, n0, e1, n1 in ZONES:
+    xs, ys = zip(*[_t.transform(e, n) for e in (e0, e1) for n in (n0, n1)])
+    ZONES3035.append((min(xs) - 200, max(xs) + 200, min(ys) - 200, max(ys) + 200))
 tr = Transformer.from_crs(3035, 25832, always_xy=True)
 n = kept = bad = 0
 inp = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8', errors='replace', newline='')
@@ -40,7 +44,7 @@ for line in inp:
     except ValueError:
         bad += 1
         continue
-    if not (X0 <= x <= X1 and Y0 <= y <= Y1) and not (TX0 <= x <= TX1 and TY0 <= y <= TY1):
+    if not (X0 <= x <= X1 and Y0 <= y <= Y1) and not any(a <= x <= b and c <= y <= d for a, b, c, d in ZONES3035):
         continue
     row = next(csv.reader([line]))
     try:
@@ -51,7 +55,7 @@ for line in inp:
         continue
     g = stransform(lambda a, b, c=None: tr.transform(a, b), g)
     c = g.representative_point()
-    if not (E0 <= c.x <= E1 and N0 <= c.y <= N1) and not (TE0 <= c.x <= TE1 and TN0 <= c.y <= TN1):
+    if not (E0 <= c.x <= E1 and N0 <= c.y <= N1) and not any(a <= c.x <= b and q <= c.y <= d for a, q, b, d in ZONES):
         continue
     polys = list(g.geoms) if g.geom_type == 'MultiPolygon' else [g]
     rings = []
