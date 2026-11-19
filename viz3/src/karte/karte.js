@@ -27,6 +27,7 @@ import { P } from '../game/walkable.js';
 import { WELT } from '../welt/welt.js';
 import { FAHRT } from '../welt/fahrt.js';
 import { SUHL } from '../welt/suhl.js';
+import { TRUSETAL } from '../welt/trusetal.js';
 import { VEH } from '../vehicles/vehicle.js';
 import { MMAP } from '../vehicles/minimap.js';
 import { JET } from '../jetpack/jetpack.js';
@@ -503,7 +504,16 @@ export const KARTE = (() => {
         S.err = 'roads ' + e;
       });
   }
-  const roadWays = () => (FAHRT && FAHRT.ready && FAHRT.data ? FAHRT.data.ways : own ? own.ways : []);
+  // the drive's ways, else the map's own; Trusetal's named streets (welt/trusetal.js) added once its data is there
+  const RW = { b: null, n: -1, rev: -1, all: null };
+  const roadWays = () => {
+    const b = FAHRT && FAHRT.ready && FAHRT.data ? FAHRT.data.ways : own ? own.ways : [],
+      t = TRUSETAL && TRUSETAL.ways;
+    if (!t || !t.length) return b;
+    if (RW.b !== b || RW.n !== b.length || RW.rev !== TRUSETAL.rev)
+      [RW.b, RW.n, RW.rev, RW.all] = [b, b.length, TRUSETAL.rev, b.concat(t)];
+    return RW.all;
+  };
   // the named roads in a grid of 40 m for the street under one's feet
   let roadsKey = '',
     RG = null;

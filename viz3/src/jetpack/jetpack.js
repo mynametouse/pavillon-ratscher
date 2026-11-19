@@ -44,6 +44,7 @@ export const JET = (() => {
     ['schleusingen', 'Schleusingen'],
     ['vessra', 'Kloster Veßra'],
     ['trusetal', 'Trusetal'],
+    ['trusetal_wasserfall', 'Trusetaler Wasserfall'],
     ['suhl', 'Suhl, Markt'],
     ['suhl_bahnhof', 'Suhl, Bahnhof'],
     ['suhl_ccs', 'Suhl, Congress Centrum'],
