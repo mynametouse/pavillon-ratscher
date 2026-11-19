@@ -732,7 +732,7 @@ export const TRUSETAL = (() => {
       for (let r = 0; r + 1 < rows; r++)
         for (let c = 0; c + 1 < C; c++) {
           const q = o0 + r * C + c;
-          b.i.push(q, q + C, q + C + 1, q, q + C + 1, q + 1);
+          b.i.push(q, q + C + 1, q + C, q, q + 1, q + C + 1); // counter-clockwise from above
         }
     }
     ribbon('water', 0, 1.6, 3.0, 0.5, 0);
