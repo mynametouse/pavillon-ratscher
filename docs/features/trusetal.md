@@ -13,5 +13,10 @@ Falko, 19.11.2026 16:54: „Kannst du bitte auch Trusetal, also die Stadt Truset
 - **App:** `welt/trusetal.js` – Zone (`KERN.zone`, lädt die Kacheln ab 2,5 km, gibt sie jenseits von 3,2 km frei), Sprungpunkt
   `trusetal` auf einer Straße im Ortskern, `?szenario=trusetal`, Jetpack-Ziel „Trusetal“; die Karte zeigt das Luftbild des Blocks.
   Hinkommen: Karte (K bzw. Shift+K) → „Trusetal“ suchen → Hinfliegen.
+- **Sehenswürdigkeiten (V19w):** `tools/welt/zone_trusetal.py` holt OSM (API, in Stücken) → `viz3/extra/trusetal/dist/trusetal/ort.json`
+  (Kirche, Wallenburger Turm, Wasserfall-Linie, Zwergen-Park mit Weg und Häusern, Bergwerk, Rathaus, 95 benannte Orte, 378 benannte
+  Straßen) und nimmt mit `--drop-cells` die ETHOS-Körper unter Kirche und Turm aus den Zellen. Modelle in `welt/trusetal.js` nach Fotos
+  (Commons: Kirche Trusetal, Wallenburgturm, Trusetaler Wasserfall), Boden aus `WELT.sampler`. Wald: `tools/weltwald/baeume.py --cells …`
+  mit den OSM-Wegen und -Grünflächen (183 Zellen, 620 502 Bäume; GDAL braucht im Chat-Rechner `GDAL_CURL_CA_BUNDLE`/`GDAL_HTTP_PROXY`).
 - **Test:** `viz3/test/trusetal.py` (`viz3/extra/trusetal/tests.txt`).
-- **Offen:** Wald und Wiesen als Bewuchs, Laternen/Straßennamen, eigene Modelle (Kirche, Wasserfall, Bergbau-Museum).
+- **Offen:** Wiesen als Halme, Laternen, das Innere von Kirche und Bergwerk, Klangpfad, Schloss Bairoda.
