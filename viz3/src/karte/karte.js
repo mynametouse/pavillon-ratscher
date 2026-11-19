@@ -345,11 +345,114 @@ export const KARTE = (() => {
     return (p === 'an der' && /^(Talsperre|Burg|Kirche|Ruine)\b/.test(o.n) ? 'an der' : p) + ' ' + o.n;
   };
   function labelAt(x, y) {
+    const ad = addressAt(x, y, 25);
+    if (ad) return ad.street + ' ' + ad.num;
     const d = describe(x, y);
     if (d.ort) return d.ort.n;
     if (d.nat) return d.nat.n;
     if (d.bei) return 'bei ' + d.bei.n;
     return 'Punkt auf der Karte';
+  }
+
+  // ---------------- house numbers (tools/karte/adressen.py: the house coordinates of Thuringia, © GDI-Th, CC BY 4.0) ----------------
+  // index.json: the streets (name, municipality, centre, count); <i>_<j>.json: the houses of a 2 km cell – loaded near the observer or for a
+  // search, at most 24 cells kept
+  const ADR = { idx: null, p: null, cells: new Map(), fail: -1e9 };
+  const gemName = g => String(g || '').replace(/, (Kurort|Stadt)$/, '');
+  function loadAdr() {
+    if (ADR.idx) return Promise.resolve(ADR.idx);
+    if (ADR.p) return ADR.p;
+    if (performance.now() - ADR.fail < 30000) return Promise.reject(new Error('adr'));
+    ADR.p = fetch(BASE + 'karte/adr/index.json')
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('karte/adr ' + r.status))))
+      .then(j => {
+        const gem = (j.gem || []).map(gemName);
+        ADR.idx = {
+          C: j.cell || 2000,
+          cells: j.cells || {},
+          s: (j.s || []).map((q, i) => ({ i, n: q[0], g: gem[q[1]] || '', x: q[2], y: q[3], c: q[4], q: norm(q[0]) })),
+        };
+        ADR.names = new Set(ADR.idx.s.map(q => q.q));
+        streetsKey = '';
+        return ADR.idx;
+      })
+      .catch(e => {
+        ADR.p = null;
+        ADR.fail = performance.now();
+        throw e;
+      });
+    return ADR.p;
+  }
+  function adrCell(k) {
+    let c = ADR.cells.get(k);
+    if (c) {
+      c.used = performance.now();
+      return c;
+    }
+    if (!ADR.idx || !ADR.idx.cells[k]) return null;
+    c = { st: 'load', a: [], used: performance.now() };
+    ADR.cells.set(k, c);
+    c.p = fetch(BASE + 'karte/adr/' + k + '.json')
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+      .then(a => {
+        c.a = Array.isArray(a) ? a.filter(q => Array.isArray(q) && Number.isFinite(q[2]) && Number.isFinite(q[3])) : [];
+        c.st = 'ok';
+        dirtyBig = true;
+        return c;
+      })
+      .catch(() => {
+        c.st = 'err';
+        return c;
+      });
+    if (ADR.cells.size > 24) {
+      const old = [...ADR.cells.entries()].filter(e => e[1].st !== 'load').sort((a, b) => a[1].used - b[1].used);
+      for (let i = 0; i < old.length && ADR.cells.size > 24; i++) ADR.cells.delete(old[i][0]);
+    }
+    return c;
+  }
+  // the house nearest to (x, y) within r – from the cells that are there (asks for the missing ones)
+  function addressAt(x, y, r) {
+    if (!ADR.idx) return null;
+    const C = ADR.idx.C;
+    let best = null,
+      bd = r;
+    for (let i = Math.floor((x - r) / C); i <= Math.floor((x + r) / C); i++)
+      for (let j = Math.floor((y - r) / C); j <= Math.floor((y + r) / C); j++) {
+        const c = adrCell(i + '_' + j);
+        if (!c || c.st !== 'ok') continue;
+        for (const q of c.a) {
+          const dx = q[2] - x,
+            dy = q[3] - y;
+          if (Math.abs(dx) > bd || Math.abs(dy) > bd) continue;
+          const d = Math.hypot(dx, dy);
+          if (d < bd) {
+            bd = d;
+            best = q;
+          }
+        }
+      }
+    const st = best && ADR.idx.s[best[0]];
+    return st ? { street: st.n, gem: st.g, num: String(best[1]), x: best[2], y: best[3], d: bd } : null;
+  }
+  // the house of a street with that number: the cells around the street are fetched first
+  function findHouse(si, num) {
+    return loadAdr().then(() => {
+      const st = ADR.idx.s[si];
+      if (!st) return null;
+      const C = ADR.idx.C,
+        cs = [];
+      for (let i = -1; i <= 1; i++)
+        for (let j = -1; j <= 1; j++) {
+          const c = adrCell(Math.floor(st.x / C) + i + '_' + (Math.floor(st.y / C) + j));
+          if (c) cs.push(c);
+        }
+      return Promise.all(cs.map(c => c.p || c)).then(() => {
+        const want = norm(num).replace(/ /g, '');
+        for (const c of cs)
+          for (const q of c.a) if (q[0] === si && norm(q[1]).replace(/ /g, '') === want) return { x: q[2], y: q[3] };
+        return null;
+      });
+    });
   }
 
   // ---------------- roads: the drive's data (welt/fahrt.js), or a copy of its file until the drive loads it ----------------
@@ -567,7 +670,18 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
     } catch (e) {}
     const street = high ? '' : streetAt(h.x, h.y, h.veh ? 14 : 22);
     const d = describe(h.x, h.y);
-    let l1 = street;
+    // the house beside one (on foot with its number, in a vehicle the street); indoors the room's or the building's own name
+    if (!ADR.idx && S.data) loadAdr().catch(() => {});
+    let inside = false;
+    try {
+      inside = !!(KERN.inside && KERN.inside(h.x, h.y, h.z));
+    } catch (e) {}
+    const adr = high || inside ? null : addressAt(h.x, h.y, h.veh ? 45 : 32);
+    if (adr && adr.gem) {
+      const kind = S.data && S.data.towns.get(adr.gem);
+      d.gem = (kind === 'Stadt' ? 'Stadt ' : 'Gemeinde ') + adr.gem;
+    }
+    let l1 = adr ? (h.veh ? adr.street : adr.street + ' ' + adr.num) : street;
     if (!l1 && kp && !/^Feldflur|^Modellansicht/.test(kp)) l1 = String(kp).split(/, | · /)[0];
     if (!l1 || high)
       l1 = d.ort
@@ -957,6 +1071,33 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
     g.restore();
   }
 
+  // the house numbers in view (large map, close up)
+  function drawHouses(g, V, T) {
+    if (!ADR.idx) {
+      loadAdr().catch(() => {});
+      return;
+    }
+    const C = ADR.idx.C,
+      r = Math.hypot(V.W, V.H) / 2 / V.k;
+    g.font = '600 10.5px system-ui, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    for (let i = Math.floor((V.cx - r) / C); i <= Math.floor((V.cx + r) / C); i++)
+      for (let j = Math.floor((V.cy - r) / C); j <= Math.floor((V.cy + r) / C); j++) {
+        const c = adrCell(i + '_' + j);
+        if (!c || c.st !== 'ok') continue;
+        for (const q of c.a) {
+          const p = T.P(q[2], q[3]);
+          if (p[0] < -10 || p[0] > V.W + 10 || p[1] < -10 || p[1] > V.H + 10) continue;
+          g.lineWidth = 3;
+          g.strokeStyle = 'rgba(0,0,0,.7)';
+          g.strokeText(q[1], p[0], p[1]);
+          g.fillStyle = '#ffe9c4';
+          g.fillText(q[1], p[0], p[1]);
+        }
+      }
+  }
+
   // ---------------- the small map ----------------
   let miniT = 0;
   function rangeNow(me) {
@@ -1039,7 +1180,7 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
     '<button type="button" class="kb kx" data-k="close" aria-label="Karte schließen">×</button></div>' +
     '<div class="kc"><canvas></canvas><div class="kz"><button type="button" data-k="in" aria-label="Näher">+</button>' +
     '<button type="button" data-k="out" aria-label="Weiter weg">−</button><button type="button" data-k="me" aria-label="Wo bin ich" title="Wo bin ich">◎</button></div>' +
-    '<div class="ka">Luftbild © GDI-Th · Orte: Wikidata · Straßen und Grenzen © OpenStreetMap-Mitwirkende</div></div>' +
+    '<div class="ka">Luftbild und Hausnummern © GDI-Th · Orte: Wikidata · Straßen und Grenzen © OpenStreetMap-Mitwirkende</div></div>' +
     '<div class="kf"><div class="kt"></div><span class="kfa"></span></div>';
   const bc = big.querySelector('canvas'),
     inp = big.querySelector('#ksuche'),
@@ -1107,6 +1248,7 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
     }
     drawRoads(g, BV, T, Math.hypot(W, H) / BV.k);
     drawLabels(g, BV, T, BV.k < 0.012 ? 8 : BV.k < 0.03 ? 6 : BV.k < 0.09 ? 5 : 3, false);
+    if (BV.k > 1.2) drawHouses(g, BV, T);
     drawZiel(g, BV, T, me, 0);
     drawMe(g, BV, T, me, viewHeading());
     // scale bar
@@ -1310,8 +1452,38 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
       if (sc >= 0) out.push([sc, o]);
     }
     for (const o of streets) {
+      // a street that has houses comes from the house coordinates below
+      if (ADR.names && ADR.names.has(o.q)) continue;
       const sc = score(o);
       if (sc >= 0) out.push([sc, o]);
+    }
+    if (ADR.idx) {
+      // „Ratschner Anger 12“: the street and the number; the house's place comes when it is chosen (choose → findHouse)
+      const m = /^(.*?)[ ,]+([0-9]+ ?[a-z]?)$/.exec(String(text).trim().toLowerCase()),
+        qs = m ? norm(m[1]) : '',
+        num = m ? m[2].replace(/ /g, '') : '';
+      for (const st of ADR.idx.s) {
+        if (m && qs.length >= 2 && st.q.indexOf(qs) >= 0) {
+          const o = {
+            n: st.n + ' ' + num,
+            k: 'Adresse',
+            x: st.x,
+            y: st.y,
+            q: st.q,
+            r: 6,
+            m: 2,
+            si: st.i,
+            num,
+            g: st.g,
+          };
+          const sc = score(Object.assign({}, o, { q: norm(o.n) }));
+          out.push([(sc >= 0 ? sc : 20) + 6, o]);
+          continue;
+        }
+        const o = { n: st.n, k: 'Straße', x: st.x, y: st.y, q: st.q, r: 4, m: 2, si: st.i, g: st.g };
+        const sc = score(o);
+        if (sc >= 0) out.push([sc, o]);
+      }
     }
     out.sort((a, b) => b[0] - a[0]);
     const seen = new Set(),
@@ -1340,6 +1512,11 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
       const b = document.createElement('button');
       b.type = 'button';
       b.className = (i === sel ? 'on' : '') + (o.m === 0 ? ' off' : '');
+      if (o.si !== undefined && o.where === undefined) {
+        const ds = describe(o.x, o.y),
+          parts = [ds.ort && ds.ort.n !== o.g ? ds.ort.n : '', o.g].filter(Boolean);
+        o.where = parts.join(', ');
+      }
       const where =
         o.where !== undefined
           ? o.where
@@ -1363,6 +1540,18 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
   function choose(o) {
     res.hidden = true;
     inp.value = o.n;
+    if (o.num && o.si !== undefined) {
+      findHouse(o.si, o.num).then(
+        p => {
+          if (!p) toast('Hausnummer ' + o.num + ' gibt es dort nicht – das Ziel ist die Straße.', 4200);
+          choose(
+            Object.assign({}, o, p ? { x: p.x, y: p.y } : { n: o.n.replace(/ [0-9]+ ?[a-z]?$/i, '') }, { num: '' })
+          );
+        },
+        () => choose(Object.assign({}, o, { num: '' }))
+      );
+      return;
+    }
     if (o.m === 0) toast(o.n + ' liegt noch außerhalb der Karte – das Ziel zeigt die Richtung.', 4200);
     setZiel({ label: o.n, x: o.x, y: o.y, kind: o.k });
     BV.cx = o.x;
@@ -1372,6 +1561,14 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
     inp.blur();
   }
   inp.addEventListener('input', () => {
+    if (!ADR.idx)
+      loadAdr().then(
+        () => {
+          hits = search(inp.value);
+          showHits();
+        },
+        () => {}
+      );
     if (!S.data)
       loadData().then(
         () => {
@@ -1683,6 +1880,9 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
   setTimeout(() => {
     if (S.ort) loadData().catch(() => {});
   }, 4000);
+  setTimeout(() => {
+    if (S.ort) loadAdr().catch(() => {});
+  }, 7000);
 
   // ---------------- per frame ----------------
   let tOrt = 0,
@@ -1749,6 +1949,9 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
     search,
     describe,
     streetAt,
+    addressAt,
+    findHouse,
+    loadAdr,
     loadData,
     get ready() {
       return !!S.data;
@@ -1764,6 +1967,8 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
       tiles: TILE.size,
       n: Object.assign({}, S.n),
       roads: roadWays().length,
+      adr: ADR.idx ? ADR.idx.s.length : 0,
+      adrCells: ADR.cells.size,
       own: !!own,
       marker: MK.visible,
       err: S.err,

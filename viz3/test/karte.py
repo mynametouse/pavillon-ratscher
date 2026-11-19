@@ -30,6 +30,21 @@ with lib.browser() as b:
     ui = J("({ ort: !document.getElementById('ortinfo').hidden, where: getComputedStyle(document.querySelector('.where')).display, btn: !!document.getElementById('kartebtn'), chip: !!document.querySelector('#kartemenu [data-karte=big]') })")
     ck('where am I top left in the garden, the place line gives way', ui['ort'] and ui['where'] == 'none' and 'Ratscher' in ' '.join(s['line']) and 'Landkreis Hildburghausen' in s['line'][1], json.dumps(s['line'], ensure_ascii=False) + ' ' + json.dumps(ui))
     ck('button top right and menu chip', ui['btn'] and ui['chip'])
+    # house numbers (the house coordinates of Thuringia): beside a house in Ratscher its street and number, the search finds street + number
+    E("KARTE.loadAdr()")
+    pg.wait_for_function("KARTE.state().adr > 1000", timeout=60000, polling=500)
+    hs = J("(() => { const s = KARTE.search('ratschner anger 12'); return s.slice(0, 3).map(o => ({ n: o.n, k: o.k, si: o.si, num: o.num })); })()")
+    ck('the search finds street and number', bool(hs) and hs[0]['k'] == 'Adresse' and hs[0]['n'] == 'Ratschner Anger 12', json.dumps(hs, ensure_ascii=False))
+    p = json.loads(E(f"KARTE.findHouse({hs[0]['si']}, '12').then(p => JSON.stringify(p))")) if hs else None
+    E(f"GAME.go('dorf')"); step(2)
+    if p:
+        E(f"GAME.P.x = {p['x'] + 4}; GAME.P.y = {p['y'] + 4}; GAME.P.feet = KERN.ground(GAME.P.x, GAME.P.y, 999)")
+    for _ in range(12):
+        step(2); time.sleep(0.3)
+    s = J("KARTE.state()")
+    ck('beside a house in Ratscher: street and number top left', bool(p) and s['line'][0].startswith('Ratschner Anger') and 'Stadt Schleusingen' in s['line'][1], json.dumps(p) + ' ' + json.dumps(s['line'], ensure_ascii=False))
+    pic('a0_hausnummer')
+    E("GAME.go('garten')"); step(6)
     # the small map: K and the button
     E("window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k' }))"); step(4)
     s = J("({ k: KARTE.state(), shown: !document.getElementById('kmini').hidden, pressed: document.getElementById('kartebtn').getAttribute('aria-pressed') })")

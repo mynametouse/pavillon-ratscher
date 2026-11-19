@@ -13,11 +13,12 @@ im Projekt „Garten“ unter `claude/pavillon-karte-daten.md`, die Werkzeuge un
 | kleine Karte an/aus | Taste **K**, Knopf **„Karte“** oben rechts, Menü → Hingehen → Karte und Ziel | Knopf oben rechts |
 | große Karte mit Suche | **Shift+K**, Klick auf die kleine Karte oder auf die Ortsanzeige | antippen |
 | verschieben, zoomen | ziehen, Mausrad, **+ −**, **◎** = wo bin ich | ziehen, zwei Finger |
-| Ziel setzen | Ort, Straße, Berg … ins Suchfeld (↑ ↓ Enter) oder auf die Karte klicken | tippen |
+| Ziel setzen | Ort, Straße, Berg, **Straße mit Hausnummer** („Ratschner Anger 12“) ins Suchfeld (↑ ↓ Enter) oder auf die Karte klicken | tippen |
 | Ziel verfolgen | **„Hinfliegen“** (Jetpack), im Auto **„Autopilot“**; sonst Linie und Pfeil | dasselbe |
 | Ortsanzeige oben links an/aus | Haken „Ortsanzeige“ in der großen Karte | dasselbe |
 
-- **Oben links** (statt der bisherigen Ortszeile): die Straße (benannte Straßen der Fahrt-Daten in 22 m, im Auto 14 m), sonst was
+- **Oben links** (statt der bisherigen Ortszeile): das Haus daneben mit Straße und Hausnummer (amtliche Hauskoordinaten, in 32 m; im Auto
+  nur die Straße, in 45 m; V19t), sonst die Straße (benannte Straßen der Fahrt-Daten in 22 m, im Auto 14 m), sonst was
   `KERN.place` weiß (Räume des Pavillons, Plätze im Dorf, Schleusingen …); darunter Ort · Gemeinde · Landkreis, draußen „bei …“ oder der
   Berg, Wald, See in der Nähe („am Adlersberg“); im Flug die Höhe über NN und über Grund; mit Ziel dessen Name, die Entfernung und ein
   Pfeil dorthin (nach der Blickrichtung).
@@ -45,6 +46,12 @@ im Projekt „Garten“ unter `claude/pavillon-karte-daten.md`, die Werkzeuge un
   Lage auf der Karte), `tools/karte/karte_bild.py` (Bild der Abdeckung).
 - **Ort und Gebiet**: der Umriss eines Orts aus den Fahrt-Daten (`places[].a`), sonst der nächste Ort nach Entfernung im Verhältnis zu
   seiner Größe (Großstadt 2,6 km, Stadt 1–1,5 km, Dorf/Ortsteil 650 m, Weiler 350 m); der Landkreis aus den Grenzen.
+- **Hausnummern (V19t)**: die amtlichen Hauskoordinaten Thüringens (INSPIRE-Adressen, Stand 2025 Q1, © GDI-Th, CC BY 4.0; ATOM-Feed des
+  Landes, Datei `ad_25832.zip`, 26 MB – die im Zugangsdokument genannte `HK-TH.zip` lieferte am 19.11. nur die Wartungsseite), auf die Karte
+  zugeschnitten: 50 579 Häuser, 3 328 Straßen in 58 Gemeinden. `karte/adr/index.json` (Straßen: Name, Gemeinde, Mitte, Zahl; 120 KB, geholt
+  7 s nach dem Start) und 291 Zellen zu 2 km `karte/adr/<i>_<j>.json` (zusammen 1,4 MB; nur die Zellen um den Beobachter oder um eine
+  gesuchte Straße, höchstens 24 im Speicher). Werkzeug `tools/karte/adressen.py` (liest das GML von 1,4 GB als Strom in 17 s). Ortsteile
+  stehen nicht in den Daten – sie kommen aus dem Ortsverzeichnis. In der großen Karte stehen die Hausnummern ab etwa 1 px je Meter.
 - **Straßen**: die Wege der Fahrt (`FAHRT.data.ways`, mit Suhls Straßen, sobald Suhl sie bringt); solange die Fahrt ihre Datei nicht
   geladen hat, eine eigene, schlanke Kopie von `fahrt/strassen.json` (nur Lage, Art, Name), die mit dem Laden der Fahrt wegfällt; Raster
   von 40 m für die Straße unter den Füßen.
@@ -70,6 +77,5 @@ Speicherschlüssel ist bei `SAVE` angemeldet; keine Seitenfehler. Bilder in `out
 - **Straßennamen überall**: die Fahrt-Daten decken nur die Strecke Kloster Veßra – Schleusingen – Ratscher ab (828 Wege) und Suhl, sobald
   es geladen ist. Für die ganze Karte: die benannten Straßen der Region aus dem Geofabrik-Auszug in GitHub Actions (wie
   `welt-dinge-osm.yml`), als eigene kleine Datei für Karte und Ortsanzeige.
-- **Hausnummern** (Zielsuche nach Adresse): erst mit den amtlichen Hauskoordinaten Thüringens (Analyse, Punkt 8).
 - **Zu Fuß den Weg zeigen**: bisher Luftlinie; ein Fußweg-Graph über die Wege (wie `NAVI` für Autos) wäre der nächste Schritt.
 - Außerhalb der Kacheln (Sonneberg, Schmalkalden …) bleibt die Karte dunkel – die Suche zeigt solche Orte als „nicht auf der Karte“.
