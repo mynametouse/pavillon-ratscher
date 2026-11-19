@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: gelaende-pruefung
+  group: gelaende-pruefung-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
