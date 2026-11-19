@@ -11,49 +11,58 @@ writes <dist>/ferne/wald.bin:
 Run by viz3/build.py after the extras are copied: new forest cells come with the build by themselves.
 """
 import glob
+import math
 import os
 import struct
 import sys
 import zlib
-
-import numpy as np
 
 CELL, RES = 400, 20
 NR = CELL // RES
 
 
 def decode(buf):
+    """the trees of a cell: lists x, y (m in the cell), h (m), r (m), kind (plain Python: the build machine has no numpy)"""
     if buf[:4] != b'WWB2':
         raise ValueError('not WWB2')
     n = struct.unpack_from('<I', buf, 4)[0]
-    raw = np.frombuffer(zlib.decompress(buf[8:]), np.uint8)
-    pl = [raw[k * n:(k + 1) * n].astype(np.int64) for k in range(7)]
-    x = (pl[0] | (pl[1] << 8)) / 10.0
-    y = (np.cumsum(pl[2] | (pl[3] << 8)) & 0xFFFF) / 10.0
-    return x, y, pl[4] / 4.0, pl[5] / 10.0, pl[6] & 15
+    raw = zlib.decompress(buf[8:])
+    x, y, h, r, k = [], [], [], [], []
+    yd = 0
+    for t in range(n):
+        yd = (yd + (raw[2 * n + t] | (raw[3 * n + t] << 8))) & 0xFFFF
+        x.append((raw[t] | (raw[n + t] << 8)) / 10.0)
+        y.append(yd / 10.0)
+        h.append(raw[4 * n + t] / 4.0)
+        r.append(raw[5 * n + t] / 10.0)
+        k.append(raw[6 * n + t] & 15)
+    return x, y, h, r, k
 
 
 def cell(path):
     x, y, h, r, k = decode(open(path, 'rb').read())
-    if not len(x):
-        return None
-    ok = (k != 7) & (h >= 3)  # (shrubs and young growth stay out: the canopy is the forest's roof)
-    x, y, h, r, k = x[ok], y[ok], h[ok], r[ok], k[ok]
-    ix = np.clip((x // RES).astype(int), 0, NR - 1)
-    iy = np.clip((y // RES).astype(int), 0, NR - 1)
-    q = iy * NR + ix
-    a = np.pi * np.maximum(r, 1.0) ** 2
-    A = np.bincount(q, a, NR * NR)
-    H = np.bincount(q, a * h, NR * NR)
-    C = np.bincount(q, a * (k <= 2), NR * NR)
-    out = np.zeros((NR * NR, 2), np.uint8)
-    has = A > 0
-    out[has, 0] = np.clip(np.round(H[has] / A[has] * 2), 1, 255)
-    cov = np.clip(np.round(A / (RES * RES) * 15), 0, 15).astype(np.uint8)
-    con = np.where(has, np.clip(np.round(C / np.maximum(A, 1e-9) * 15), 0, 15), 0).astype(np.uint8)
-    out[:, 1] = cov | (con << 4)
-    out[~has] = 0
-    return out.tobytes() if has.any() else None
+    A = [0.0] * (NR * NR)
+    H = [0.0] * (NR * NR)
+    C = [0.0] * (NR * NR)
+    for t in range(len(x)):
+        if k[t] == 7 or h[t] < 3:  # (shrubs and young growth stay out: the canopy is the forest's roof)
+            continue
+        q = min(NR - 1, max(0, int(y[t] // RES))) * NR + min(NR - 1, max(0, int(x[t] // RES)))
+        a = math.pi * max(r[t], 1.0) ** 2
+        A[q] += a
+        H[q] += a * h[t]
+        C[q] += a * (k[t] <= 2)
+    out = bytearray(NR * NR * 2)
+    has = False
+    for q in range(NR * NR):
+        if A[q] <= 0:
+            continue
+        has = True
+        out[q * 2] = min(255, max(1, int(round(H[q] / A[q] * 2))))
+        cov = min(15, max(0, int(round(A[q] / (RES * RES) * 15))))
+        con = min(15, max(0, int(round(C[q] / A[q] * 15))))
+        out[q * 2 + 1] = cov | (con << 4)
+    return bytes(out) if has else None
 
 
 def main(dist):
