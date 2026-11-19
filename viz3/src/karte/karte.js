@@ -476,9 +476,9 @@ export const KARTE = (() => {
 #ortinfo .oz{color:#ffb070;opacity:1;font-weight:600}
 #ortinfo .oz i{display:inline-block;font-style:normal;width:14px;text-align:center;margin-right:3px}
 body[data-ort="1"] .where{display:none}
-body[data-ort="1"] #qtrack{top:calc(var(--ort-h,58px) + 22px)}
-body[data-ort="1"] #vmap{top:calc(var(--ort-h,58px) + 20px)}
-body[data-ort="1"] #vmaplab{top:calc(var(--ort-h,58px) + 194px)}
+body[data-ort="1"] #qtrack{top:calc(var(--ort-h,58px) + 10px)!important}
+body[data-ort="1"] #vmap{top:calc(var(--ort-h,58px) + 12px)!important}
+body[data-ort="1"] #vmaplab{top:calc(var(--ort-h,58px) + 186px)!important}
 body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #kminilab{display:none!important}
 #kmini{right:max(12px,env(safe-area-inset-right,0px));top:calc(62px + env(safe-area-inset-top,0px));width:176px;height:176px;border-radius:50%;
   z-index:3;pointer-events:auto;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35)}
@@ -512,11 +512,13 @@ body[data-clean="1"] #ortinfo,body[data-clean="1"] #kmini,body[data-clean="1"] #
 #kbig .kf{display:flex;gap:8px;align-items:center;padding:8px 10px;background:rgba(18,17,15,.92);flex-wrap:wrap}
 #kbig .kf .kt{flex:1 1 200px;min-width:0}
 #kbig .kf .kt b{color:#ffb070}
-#kbig .ka{position:absolute;left:8px;bottom:6px;font:400 10px/1.2 var(--f-body,system-ui);opacity:.75;text-shadow:0 1px 2px #000;pointer-events:none}
+#kbig .ka{position:absolute;left:8px;bottom:6px;max-width:calc(100% - 150px);font:400 10px/1.2 var(--f-body,system-ui);opacity:.75;text-shadow:0 1px 2px #000;pointer-events:none}
 #kbig label{display:flex;gap:5px;align-items:center;white-space:nowrap;font-size:12.5px;opacity:.9;cursor:pointer}
-@media (max-width:560px){#kmini{width:120px;height:120px;top:calc(56px + env(safe-area-inset-top,0px))}
+@media (min-width:561px) and (max-width:1100px){#ortinfo{top:calc(64px + env(safe-area-inset-top,0px));max-width:calc(100vw - 230px)}}
+@media (max-width:560px){body[data-ort="1"] #vmaplab{top:calc(var(--ort-h,58px) + 136px)!important}
+  #kmini{width:120px;height:120px;top:calc(56px + env(safe-area-inset-top,0px))}
   #kminilab{width:120px;top:calc(180px + env(safe-area-inset-top,0px))}
-  #ortinfo{top:calc(8px + env(safe-area-inset-top,0px));max-width:calc(100vw - 200px);padding:5px 9px 6px}
+  #ortinfo{top:calc(58px + env(safe-area-inset-top,0px));max-width:calc(100vw - 160px);padding:5px 9px 6px}
   #ortinfo b{font-size:13px} #ortinfo span{font-size:11.5px}
   #kbig{inset:6px} #kbig .kh label{display:none}}`;
   document.head.appendChild(st);
