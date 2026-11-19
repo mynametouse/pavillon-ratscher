@@ -1,0 +1,29 @@
+# Vorlagefotos zum Modellieren (Karten-Chat, 19.11.2026): Dateien von Wikimedia Commons nach Titel ins Artefakt `fotos` – nicht ins Repo.
+# Ausgelöst durch einen Push auf feat/gelaende, der tools/gelaende/fotos.py oder diese Datei ändert. Veröffentlicht nichts.
+name: Vorlagefotos
+
+on:
+  push:
+    branches: ['feat/gelaende']
+    paths: ['tools/gelaende/fotos.py', '.github/workflows/gelaende-fotos.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  holen:
+    name: Fotos holen
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dorfbrunnen Ratscher (Commons „Ratscher, Schleusingen 1–7“, Alte Schule)
+        run: |
+          python3 -I tools/gelaende/fotos.py --out out/fotos "File:Ratscher, Schleusingen 1.jpg" "File:Ratscher, Schleusingen 2.jpg" \
+            "File:Ratscher, Schleusingen 3.jpg" "File:Ratscher, Schleusingen 4.jpg" "File:Ratscher, Schleusingen 5.jpg" \
+            "File:Ratscher, Schleusingen 6.jpg" "File:Ratscher, Schleusingen 7.jpg" "File:Ratscher-Alte-Schule.jpg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fotos
+          path: out/fotos
+          retention-days: 7
