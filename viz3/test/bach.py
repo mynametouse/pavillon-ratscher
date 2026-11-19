@@ -1,4 +1,5 @@
 # feat/bach (Falko, 19.11.2026 11:41/11:54: „der Bach fließt nicht korrekt, insbesondere im unteren Dorf Richtung Garten … der Weg
+# (the first push of a new branch starts no run: this line came with the second push of kern/bach)
 # parallel zum Bach weicht auch ab“ – the brook comes piped from the Schleuse under the village and out at the Gartenweg): garden/stream_geo.js.
 # Checked: at the bridge and west of it the photo-set course is unchanged; east of it the centre line follows the 1 m terrain (DGM1, the
 # ditch's deepest line, tools/gelaende) within 1.2 m; the open ditch ends at the pipe's mouth (TE) – beyond it flat ground, no water, no
