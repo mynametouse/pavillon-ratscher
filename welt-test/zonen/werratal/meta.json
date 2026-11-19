@@ -1,0 +1,506 @@
+{
+ "format": "welt-test/1",
+ "generated": "2026-11-19T18:11:21Z",
+ "commit": "9a3b6a5",
+ "plan": "MR",
+ "crs": "EPSG:25832",
+ "heights": "NHN (DHHN2016) in m minus H0",
+ "H0": 374.617,
+ "origin": {
+  "E": 625469.0070213208,
+  "N": 5595624.323524626,
+  "H": 374.617,
+  "latlon": [
+   50.4991,
+   10.7692
+  ],
+  "note": "Ursprung des App-Modells (Garten): Modell (0, 0, 0) = UTM (E, N), Höhe H0"
+ },
+ "model_xf": {
+  "a": 1.0127906473420232,
+  "b": 0.07715765993901931,
+  "ex": 625469.0070213208,
+  "ey": 5595624.323524626,
+  "scale": 1.015725,
+  "rotation_deg": 4.357,
+  "note": "Modellmeter (x Ost, y Nord) -> UTM: E = a x - b y + ex, N = b x + a y + ey; z = H - H0. Umkehrung: x = (a dE + b dN) / (a²+b²), y = (-b dE + a dN) / (a²+b²) mit dE = E - ex, dN = N - ey. Achtung: das App-Modell ist gegen UTM gedreht und skaliert (scale, rotation_deg); die Kacheln sind echte UTM-Meter."
+ },
+ "tiling": {
+  "root": [
+   420700.0,
+   5390800.0,
+   409600.0
+  ],
+  "y": "north",
+  "tile_px": 512,
+  "terrain_n": 101,
+  "image": "i/{z}/{x}/{y}.webp",
+  "terrain": "t/{z}/{x}/{y}.bin",
+  "terrain_format": "WTH1: Kopf 20 Byte (Magic, n, Flags, Basis cm, hmin, hmax) + zlib der Lorenzo-Reste in cm (tools/welt/tiles.py)",
+  "levels": {
+   "7": {
+    "size": 3200.0,
+    "rect": [
+     57,
+     64,
+     60,
+     65
+    ],
+    "terrain_step": 32.0,
+    "px": 6.25,
+    "terrain": {
+     "n": 8,
+     "bytes": 98343
+    },
+    "image": {
+     "n": 8,
+     "bytes": 434416
+    }
+   },
+   "8": {
+    "size": 1600.0,
+    "rect": [
+     114,
+     128,
+     120,
+     130
+    ],
+    "terrain_step": 16.0,
+    "px": 3.125,
+    "terrain": {
+     "n": 21,
+     "bytes": 211186
+    },
+    "image": {
+     "n": 21,
+     "bytes": 732168
+    }
+   },
+   "9": {
+    "size": 800.0,
+    "rect": [
+     228,
+     256,
+     241,
+     261
+    ],
+    "terrain_step": 8.0,
+    "px": 1.5625,
+    "terrain": {
+     "n": 84,
+     "bytes": 633039
+    },
+    "image": {
+     "n": 84,
+     "bytes": 2744186
+    }
+   },
+   "10": {
+    "size": 400.0,
+    "rect": [
+     456,
+     512,
+     483,
+     523
+    ],
+    "terrain_step": 4.0,
+    "px": 0.78125,
+    "terrain": {
+     "n": 336,
+     "bytes": 2050102
+    },
+    "image": {
+     "n": 336,
+     "bytes": 10702716
+    }
+   },
+   "11": {
+    "size": 200.0,
+    "rect": [
+     912,
+     1024,
+     967,
+     1047
+    ],
+    "terrain_step": 2.0,
+    "px": 0.390625,
+    "terrain": {
+     "n": 1344,
+     "bytes": 6915249
+    },
+    "image": {
+     "n": 1344,
+     "bytes": 39732920
+    }
+   },
+   "12": {
+    "size": 100.0,
+    "rect": [
+     1849,
+     2072,
+     1856,
+     2079
+    ],
+    "terrain_step": 1.0,
+    "px": 0.1953125,
+    "terrain": {
+     "n": 64,
+     "bytes": 286920
+    },
+    "image": {
+     "n": 64,
+     "bytes": 1344250
+    }
+   }
+  },
+  "hmin": -78.08,
+  "hmax": 199.16,
+  "areas": {
+   "context": [
+    603100.0,
+    5595600.0,
+    615900.0,
+    5602000.0
+   ],
+   "block": [
+    603100.0,
+    5595600.0,
+    614300.0,
+    5600400.0
+   ],
+   "detail": [
+    605600.0,
+    5598000.0,
+    606400.0,
+    5598800.0
+   ]
+  }
+ },
+ "content": {
+  "level": 9,
+  "roads": "r/{z}_{x}_{y}.glb",
+  "buildings": "b/{z}_{x}_{y}.glb",
+  "glb_frame": "x = E - Ec, y = H - H0, z = -(N - Nc); (Ec, Nc) = Mitte der Kachel (auch in extras.utm_centre)",
+  "roads_tiles": [
+   "231_259",
+   "232_259"
+  ],
+  "buildings_tiles": [
+   "228_257",
+   "228_259",
+   "228_260",
+   "229_259",
+   "229_261",
+   "230_260",
+   "230_261",
+   "231_257",
+   "231_259",
+   "231_260",
+   "232_259",
+   "232_261",
+   "234_258",
+   "234_259",
+   "234_260",
+   "235_258",
+   "235_259",
+   "236_258",
+   "237_257",
+   "237_258",
+   "239_257",
+   "239_258",
+   "239_259",
+   "240_257",
+   "240_258",
+   "241_256",
+   "241_257",
+   "241_258",
+   "241_259"
+  ],
+  "trees": "v/{z}_{x}_{y}.bin",
+  "trees_tiles": [
+   "228_256",
+   "228_257",
+   "228_258",
+   "228_259",
+   "228_260",
+   "228_261",
+   "229_256",
+   "229_257",
+   "229_258",
+   "229_259",
+   "229_260",
+   "229_261",
+   "230_256",
+   "230_257",
+   "230_258",
+   "230_259",
+   "230_260",
+   "230_261",
+   "231_256",
+   "231_257",
+   "231_258",
+   "231_259",
+   "231_260",
+   "231_261",
+   "232_256",
+   "232_257",
+   "232_258",
+   "232_259",
+   "232_260",
+   "232_261",
+   "233_256",
+   "233_257",
+   "233_258",
+   "233_259",
+   "233_260",
+   "233_261",
+   "234_256",
+   "234_257",
+   "234_258",
+   "234_259",
+   "234_260",
+   "234_261",
+   "235_256",
+   "235_257",
+   "235_258",
+   "235_259",
+   "235_260",
+   "235_261",
+   "236_256",
+   "236_257",
+   "236_258",
+   "236_259",
+   "236_260",
+   "236_261",
+   "237_256",
+   "237_257",
+   "237_258",
+   "237_259",
+   "237_260",
+   "237_261",
+   "238_256",
+   "238_257",
+   "238_258",
+   "238_259",
+   "238_260",
+   "238_261",
+   "239_256",
+   "239_257",
+   "239_258",
+   "239_259",
+   "239_260",
+   "239_261",
+   "240_256",
+   "240_257",
+   "240_258",
+   "240_259",
+   "240_260",
+   "240_261",
+   "241_256",
+   "241_257",
+   "241_258",
+   "241_259",
+   "241_260",
+   "241_261"
+  ],
+  "trees_format": "int16 je Baum: x dm, z dm (= -(N - Nc)), Boden H - H0 dm, Höhe dm, Kronenradius dm, Typ (0 Nadel, 1 Laub)",
+  "routes": "routes.json",
+  "roads_json": "roads.json",
+  "names": "names.json"
+ },
+ "sources": {
+  "terrain": "DGM1 Thüringen (1 m, © GDI-Th, CC BY 4.0)",
+  "terrain_source": "dgm1",
+  "dgm1_tiles": [
+   78,
+   78
+  ],
+  "dgm1_share": 1.0,
+  "copernicus_offset_m": -1.87,
+  "imagery": "DOP Thüringen, WMS TH DOP (th_dop), © GDI-Th, CC BY 4.0",
+  "imagery_balance": {
+   "model": "one tone curve per flight day and channel (quantile matching across the km lines where flights meet)",
+   "cells_km": [
+    27,
+    14
+   ],
+   "flights": {
+    "2024-04-07": 22,
+    "2024-04-30": 14,
+    "2024-05-15": 55
+   },
+   "reference": "2024-05-15",
+   "boundaries": {
+    "2024-04-07|2024-04-30": {
+     "pairs": 890,
+     "step_before": 53.0,
+     "step_after": 24.0,
+     "contrast_before": 2.39,
+     "contrast_after": 2.47
+    },
+    "2024-04-30|2024-05-15": {
+     "pairs": 3161,
+     "step_before": 15.0,
+     "step_after": 4.0,
+     "contrast_before": 0.94,
+     "contrast_after": 1.02
+    },
+    "2024-04-07|2024-05-15": {
+     "pairs": 7028,
+     "step_before": 40.0,
+     "step_after": 3.0,
+     "contrast_before": 1.04,
+     "contrast_after": 0.99
+    }
+   }
+  },
+  "osm": "OpenStreetMap (2026-11-19T18:07Z), © OpenStreetMap-Mitwirkende, ODbL 1.0"
+ },
+ "attribution": "Luftbild und Geländemodell: © GDI-Th (CC BY 4.0) · © OpenStreetMap-Mitwirkende (ODbL) · Copernicus DEM GLO-30: © DLR e.V. 2010-2014 und © Airbus Defence and Space GmbH 2014-2018, bereitgestellt im Rahmen von COPERNICUS durch EU und ESA · Landbedeckung: © ESA WorldCover project 2021 (CC BY 4.0)",
+ "roads": {
+  "metric": {
+   "track": {
+    "km": 7.72,
+    "wellen_je_km_vorher": 9.7,
+    "wellen_je_km": 0.6,
+    "steigungswechsel_10m_vorher": 1.55,
+    "steigungswechsel_10m": 0.42,
+    "max_steigung_vorher": 34.2,
+    "max_steigung": 17.3,
+    "grenzwerte": {
+     "wellen_je_km": 6,
+     "steigungswechsel_10m": 1.5
+    },
+    "test": true
+   },
+   "main": {
+    "km": 2.33,
+    "wellen_je_km_vorher": 0.0,
+    "wellen_je_km": 0.0,
+    "steigungswechsel_10m_vorher": 0.22,
+    "steigungswechsel_10m": 0.06,
+    "max_steigung_vorher": 3.9,
+    "max_steigung": 3.3,
+    "grenzwerte": {
+     "wellen_je_km": 2,
+     "steigungswechsel_10m": 0.5
+    },
+    "test": true,
+    "ral": {
+     "max_steigung": 5.5,
+     "min_kuppe": 6000,
+     "min_wanne": 3500
+    },
+    "anteil_ueber_steigung": 0.0,
+    "anteil_kuppe_zu_eng": 0.0,
+    "anteil_wanne_zu_eng": 0.0
+   },
+   "lane": {
+    "km": 1.93,
+    "wellen_je_km_vorher": 1.6,
+    "wellen_je_km": 0.5,
+    "steigungswechsel_10m_vorher": 0.47,
+    "steigungswechsel_10m": 0.14,
+    "max_steigung_vorher": 4.8,
+    "max_steigung": 3.7,
+    "grenzwerte": {
+     "wellen_je_km": 4,
+     "steigungswechsel_10m": 1.0
+    },
+    "test": true,
+    "ral": {
+     "max_steigung": 8.0,
+     "min_kuppe": 3000,
+     "min_wanne": 2000
+    },
+    "anteil_ueber_steigung": 0.0,
+    "anteil_kuppe_zu_eng": 0.0,
+    "anteil_wanne_zu_eng": 0.0
+   },
+   "street": {
+    "km": 1.48,
+    "wellen_je_km_vorher": 4.1,
+    "wellen_je_km": 0.0,
+    "steigungswechsel_10m_vorher": 0.62,
+    "steigungswechsel_10m": 0.08,
+    "max_steigung_vorher": 3.2,
+    "max_steigung": 1.0,
+    "grenzwerte": {
+     "wellen_je_km": 4,
+     "steigungswechsel_10m": 1.0
+    },
+    "test": true,
+    "ral": {
+     "max_steigung": 8.0,
+     "min_kuppe": 3000,
+     "min_wanne": 2000
+    },
+    "anteil_ueber_steigung": 0.0,
+    "anteil_kuppe_zu_eng": 0.0,
+    "anteil_wanne_zu_eng": 0.0
+   },
+   "service": {
+    "km": 1.27,
+    "wellen_je_km_vorher": 7.1,
+    "wellen_je_km": 0.8,
+    "steigungswechsel_10m_vorher": 1.27,
+    "steigungswechsel_10m": 0.53,
+    "max_steigung_vorher": 18.4,
+    "max_steigung": 12.0,
+    "grenzwerte": {
+     "wellen_je_km": 5,
+     "steigungswechsel_10m": 1.2
+    },
+    "test": true
+   },
+   "foot": {
+    "km": 1.15,
+    "wellen_je_km_vorher": 5.2,
+    "wellen_je_km": 1.7,
+    "steigungswechsel_10m_vorher": 0.64,
+    "steigungswechsel_10m": 0.4,
+    "max_steigung_vorher": 7.6,
+    "max_steigung": 3.4
+   },
+   "path": {
+    "km": 0.68,
+    "wellen_je_km_vorher": 8.8,
+    "wellen_je_km": 1.5,
+    "steigungswechsel_10m_vorher": 2.36,
+    "steigungswechsel_10m": 1.0,
+    "max_steigung_vorher": 29.6,
+    "max_steigung": 27.9
+   }
+  },
+  "terrain_change": {
+   "pixel": 37331,
+   "mittel_m": 0.18,
+   "p95_m": 0.57,
+   "max_auftrag_m": 0.99,
+   "max_abtrag_m": 3.2
+  },
+  "ways": 87,
+  "km": 16.6,
+  "axis_fit": {
+   "mittel_m": 0.2,
+   "p95_m": 1.0
+  }
+ },
+ "buildings": {
+  "count": 1844,
+  "roofs": {
+   "flach": 41,
+   "Satteldach": 1803
+  }
+ },
+ "zone": {
+  "name": "werratal",
+  "title": "Werratal Themar – Meiningen",
+  "sub": "zonen/werratal/",
+  "centre": [
+   608700.0,
+   5598000.0
+  ],
+  "note": "eigener Block einer Detailzone (welt-test/zonen/werratal/), gleiche Kachelung wie welt-test/"
+ }
+}
