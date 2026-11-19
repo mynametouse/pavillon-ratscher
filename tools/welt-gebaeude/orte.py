@@ -38,6 +38,7 @@ import wglib as W
 import prep as PR
 
 SITE = 'https://mynametouse.github.io/pavillon-ratscher/welt-test/'
+SUHL_RAND = '--suhl-rand' in sys.argv   # see region_of
 DATEN = 'https://mynametouse.github.io/pavillon-daten/suhl/'
 OVERPASS = ['https://overpass.kumi.systems/api/interpreter', 'https://overpass-api.de/api/interpreter',
             'https://overpass.private.coffee/api/interpreter']
@@ -398,6 +399,11 @@ def region_of(stage, cache, sets, ext):
         return reg
     # on Suhl's ground only the corridor of the approach: the rest of its tiles is the town and its edge (Zella-Mehlis beyond it, cut
     # by the tiles' frame – the Suhl chat's area)
+    # Karten-Chat 19.11.2026 (Falko 18:52: „dass auch Suhl nun detaillierter wird“): with --suhl-rand also the rest of Suhl's tiles
+    # outside the municipality of Suhl – Zella-Mehlis, Benshausen, Albrechts' neighbours … lay flat there; Suhl's own buildings (its
+    # municipality, lazy/suhl/) stay out as before (the filter 'suhl' of the stages)
+    if SUHL_RAND:
+        return unary_union([extent(sets), region_of('suhl', cache, sets, ext)])
     return unary_union([extent({k: v for k, v in sets.items() if k != 'suhl'}), region_of('suhl', cache, sets, ext)])
 
 
@@ -810,6 +816,7 @@ def main():
     ap.add_argument('--ethos', required=True)
     ap.add_argument('--stage', choices=['suhl', 'welt', 'osm'], default='suhl')
     ap.add_argument('--cache', default='/tmp/welt-orte')
+    ap.add_argument('--suhl-rand', action='store_true', help='stage welt: also Suhl\'s tiles outside its municipality (Zella-Mehlis …)')
     ap.add_argument('--dry', action='store_true', help='count only, write nothing')
     ap.add_argument('--list', action='store_true', help='the places of the stage and their buildings (json on stdout)')
     ap.add_argument('--report', action='store_true', help='every building of the tiles by place: before, built by each stage, left out (markdown)')
