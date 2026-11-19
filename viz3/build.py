@@ -50,6 +50,12 @@ for _fx in sorted(glob.glob(os.path.join(H, 'extra', '*'))):
         if _add:   # into the list of sources (before its </ul>), not behind the licence texts
             _c = M.get('credits', ''); _i = _c.rfind('</ul>')
             M['credits'] = _c[:_i] + _add + _c[_i:] if _i >= 0 else _c + _add
+# feat/ferne: the houses of the world as far blocks, from the cells just copied (tools/ferne/haeuser.py → dist/ferne/haeuser.bin) – new cells
+# of viz3/extra/welt-gebaeude come with them by themselves
+_fe = os.path.join(SP, 'tools', 'ferne', 'haeuser.py')
+if os.path.exists(_fe):
+    _r = subprocess.run([sys.executable, _fe, D], capture_output=True, text=True)
+    print((_r.stdout or _r.stderr).strip()[-300:])
 # an extra may replace recorded lines by their id ('vm_replace'; viz3/extra/stimmen: Hubert's lines with du instead of Sie)
 for _l in M.pop('vm_replace', []):
     _L = M['vm']['lines']; _i = next((i for i, x in enumerate(_L) if x['id'] == _l['id']), None)
