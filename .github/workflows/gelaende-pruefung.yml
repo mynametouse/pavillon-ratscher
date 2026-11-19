@@ -1,0 +1,72 @@
+# Geländeprüfung (Karten-Chat, 19.11.2026): DGM1 für Block B über easygeodata holen und das heutige Gelände der App dagegen
+# prüfen – nach Bodenbedeckung, Hang, an den Straßen, in Ratschers Quadrat, an den Gipfeln; dazu ICESat-2 ATL08 und GEDI L2A
+# (SlideRule, Earthdata) im Kontextquadrat. Ergebnis: Artefakt `gelaende-pruefung` (maengel.md, pruefung.json, Bilder, CSV) und die
+# Mängel-Tabelle in der Zusammenfassung des Laufs. Veröffentlicht nichts, ändert nichts an der Website.
+#   Werkzeug: tools/gelaende/pruefung.py · ausgelöst durch einen Push auf feat/gelaende, der eine der Dateien unten ändert
+name: Geländeprüfung
+
+on:
+  push:
+    branches: ['feat/gelaende']
+    paths: ['tools/gelaende/**', '.github/workflows/gelaende-pruefung.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gelaende-pruefung
+  cancel-in-progress: false
+
+jobs:
+  pruefen:
+    name: DGM1 holen und Gelände prüfen
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      # the easygeodata client of the Suhl data house, read-only at a fixed commit of suhl/daten (with the tools/welt it reads with)
+      - uses: actions/checkout@v4
+        with:
+          ref: 3e915b3d2e69993d52b0dbc09c22578caf26e740
+          path: ext/suhl
+          sparse-checkout: |
+            tools/suhl/lib
+            tools/welt
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet numpy scipy pyproj pillow tifffile imagecodecs requests rasterio sliderule geopandas pyarrow earthaccess h5py
+      - name: Rohdaten aus dem Cache (DGM1-Kacheln früherer Läufe – spart Kontingent)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/gel-raw
+          key: gel-raw-v1-${{ github.run_id }}
+          restore-keys: gel-raw-v1-
+      - name: Prüfen
+        env:
+          EASYGEODATA_KEY: ${{ secrets.EASYGEODATA_KEY }}
+          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
+          PROJ_NETWORK: 'ON'
+        run: |
+          set -o pipefail
+          mkdir -p out/gelaende
+          python3 -I -u tools/gelaende/pruefung.py --raw ~/gel-raw --out out/gelaende --egd ext/suhl/tools/suhl/lib 2>&1 | tee out/gelaende/lauf.log
+      - name: Rohdaten in den Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/gel-raw
+          key: gel-raw-v1-${{ github.run_id }}
+      - name: Mängel-Tabelle in die Zusammenfassung
+        if: always()
+        run: '[ -f out/gelaende/maengel.md ] && cat out/gelaende/maengel.md >> "$GITHUB_STEP_SUMMARY" || echo "keine maengel.md" >> "$GITHUB_STEP_SUMMARY"'
+      - name: Ergebnis aufheben
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gelaende-pruefung
+          path: out/gelaende
+          retention-days: 14
