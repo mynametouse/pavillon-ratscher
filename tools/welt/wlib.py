@@ -61,6 +61,14 @@ VESSRA_BLK = (614000.0, 5592150.0, 620700.0, 5597150.0)
 VESSRA_ROUTE = (615902.0, 5593606.0, 620700.0, 5595399.0)   # the corridor west of block B (route + 600 m), checked in test_welt.py
 PLANS['V'] = {7: VESSRA_BLK, 8: VESSRA_BLK, 9: VESSRA_BLK, 10: VESSRA_BLK, 11: VESSRA_BLK, 12: VESSRA_DET}
 ZONES = {'V': {'name': 'vessra', 'title': 'Kloster Veßra', 'centre': VESSRA_C, 'sub': 'zonen/vessra/'}}
+# Trusetal (Brotterode-Trusetal, ~40 km north-west of the garden; Falko 19.11.2026: „die Stadt Trusetal mit Originaldaten, 3D-Daten“; Karten-Chat):
+# a zone of its own like Kloster Veßra – levels 7-11 over 6.4 x 6.4 km (Trusetal from Herges-Auwallenburg to Laudenbach, Wahles), level 12
+# over 2.4 x 3.2 km round the town's centre (Wikidata 599867/5626688); the ground DGM1 Thüringen (easygeodata, fetched by the workflow).
+TRUSE_C = (599867.0, 5626688.0)
+TRUSE_DET = (598700.0, 5624800.0, 601100.0, 5628000.0)
+TRUSE_BLK = (596700.0, 5623500.0, 603100.0, 5629900.0)
+PLANS['TS'] = {7: TRUSE_BLK, 8: TRUSE_BLK, 9: TRUSE_BLK, 10: TRUSE_BLK, 11: TRUSE_BLK, 12: TRUSE_DET}
+ZONES['TS'] = {'name': 'trusetal', 'title': 'Trusetal', 'centre': TRUSE_C, 'sub': 'zonen/trusetal/'}
 
 
 def tsize(L):

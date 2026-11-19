@@ -1,0 +1,168 @@
+# Welt-Zone Trusetal (Karten-Chat, 19.11.2026; Falko: „die Stadt Trusetal mit Originaldaten, 3D-Daten“): eigener Kachelblock wie Kloster Veßra
+# (tools/welt/wlib.py ZONES['TS']) – Stufe 12 über 2,4 × 3,2 km um die Stadtmitte, Stufen 7–11 über 6,4 × 6,4 km; Gelände DGM1 Thüringen
+# (easygeodata, Client tools/suhl/lib von suhl/daten, nur lesend), Luftbilder GDI-Th, Straßen eingeschnitten. Veröffentlicht nur nach
+# gh-pages/welt-test/zonen/trusetal/; die App (karte/karte.js) nimmt den Block, solange man in Trusetal ist.
+#   Ergebnis: https://mynametouse.github.io/pavillon-ratscher/welt-test/zonen/trusetal/meta.json
+name: Welt-Zone Trusetal
+
+on:
+  workflow_dispatch:
+    inputs:
+      veroeffentlichen:
+        description: 'nach gh-pages/welt-test/zonen/trusetal/ veröffentlichen'
+        type: boolean
+        default: true
+  push:
+    branches: ['feat/trusetal']
+    paths: ['tools/welt/wlib.py', '.github/workflows/welt-trusetal.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Kacheln Trusetal bauen
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    concurrency:
+      group: welt-trusetal-build
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Werkzeuge
+        run: pip install --quiet numpy scipy shapely pyproj pillow tifffile imagecodecs requests mapbox-earcut rasterio
+      - name: Kurztests der Pipeline (Sekunden)
+        run: python -I tools/welt/test_welt.py
+      - name: Rohdaten aus dem Cache (Downloads früherer Läufe)
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/welt-raw
+          key: welt-raw-TS-v1-${{ github.run_id }}
+          restore-keys: |
+            welt-raw-TS-v1-
+      - uses: actions/checkout@v4
+        with:
+          ref: 3e915b3d2e69993d52b0dbc09c22578caf26e740
+          path: ext/suhl
+          sparse-checkout: |
+            tools/suhl/lib
+            tools/welt
+          persist-credentials: false
+      - name: DGM1 Thüringen über easygeodata (Block mit 200 m Rand, Kacheln wie tools/welt/fetch.py sie liest)
+        env:
+          EASYGEODATA_KEY: ${{ secrets.EASYGEODATA_KEY }}
+        run: |
+          python3 -I -u - <<'PY'
+          import os, sys
+          sys.path.insert(0, os.path.abspath('ext/suhl/tools/suhl/lib'))
+          import easygeodata as EG
+          e0, n0, e1, n1 = 596700 - 200, 5623500 - 200, 603100 + 200, 5629900 + 200
+          tiles = [(e, n) for n in range(int(n0 // 1000), int((n1 - 1) // 1000) + 1) for e in range(int(e0 // 1000), int((e1 - 1) // 1000) + 1)]
+          rep = EG.Easygeodata(raw=os.path.expanduser('~/welt-raw'), log=print).fetch_many('dgm', tiles, max_mb=400)
+          print({k: rep.get(k) for k in ('wanted', 'present', 'fetched', 'cached', 'bytes', 'missing', 'failed', 'stopped')})
+          PY
+      - name: Pipeline (Laden, Gelände, Straßen, Luftbild, Gebäude) – Plan TS
+        run: |
+          set -o pipefail
+          python -I -u tools/welt/build.py --plan TS --raw ~/welt-raw --out site/trusetal 2>&1 | tee build.log
+      - name: Inhalt der Rohdaten (neuer Cache nur, wenn etwas dazukam)
+        if: always()
+        run: echo "RAWKEY=$(cd ~/welt-raw 2>/dev/null && find . -type f -printf '%P %s\n' | sort | sha1sum | cut -c1-16)" >> "$GITHUB_ENV"
+      - name: Rohdaten in den Cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/welt-raw
+          key: welt-raw-TS-v1-${{ env.RAWKEY }}
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          [ -f build.log ] || exit 0
+          {
+            echo "### Welt-Zone Trusetal (Plan TS)"
+            echo '```'
+            grep -E "Straßen|Wellen|Gelände an|Gebäude:|DEM source|Farbausgleich|fertig in|Stufe" build.log | head -40
+            [ -f zone.log ] && tail -5 zone.log
+            echo '```'
+            du -sh site/trusetal 2>/dev/null
+          } >> "$GITHUB_STEP_SUMMARY"
+          du -sh site/trusetal; find site/trusetal -type f | wc -l
+      - name: Kacheln für die Veröffentlichung
+        uses: actions/upload-artifact@v4
+        with:
+          name: welt-trusetal
+          path: site/trusetal
+          retention-days: 3
+          compression-level: 0
+      - name: Protokolle, Übersicht und Zonendaten
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: welt-trusetal-pruefung
+          path: |
+            build.log
+            zone.log
+            zone/
+            site/trusetal/meta.json
+            site/trusetal/diag/uebersicht.jpg
+          if-no-files-found: ignore
+
+  deploy:
+    name: Nach gh-pages/welt-test/zonen/trusetal/
+    needs: build
+    if: github.event_name == 'push' || inputs.veroeffentlichen
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: welt-trusetal
+          path: new/trusetal
+      - name: Größe prüfen (Grenze 300 MB)
+        run: |
+          MB=$(du -sm new/trusetal | cut -f1); echo "zonen/trusetal: $MB MB"
+          [ "$MB" -lt 300 ] || { echo "zu groß für gh-pages"; exit 1; }
+          [ -f new/trusetal/meta.json ] || { echo "keine meta.json"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: welt-test/zonen/trusetal
+      - name: Nur welt-test/zonen/trusetal/ ersetzen, committen, pushen (bei Wettlauf neu aufsetzen)
+        working-directory: pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          apply() { rm -rf welt-test/zonen/trusetal && mkdir -p welt-test/zonen && cp -r ../new/trusetal welt-test/zonen/trusetal && git add -A welt-test/zonen/trusetal; }
+          apply
+          if git diff --cached --quiet; then echo "keine Änderung"; exit 0; fi
+          # only this folder may change on gh-pages
+          if git diff --cached --name-only | grep -v '^welt-test/zonen/trusetal/' | grep -q .; then echo "fremde Pfade im Commit"; exit 1; fi
+          MSG="Welt-Zone Trusetal: Kacheln aus ${GITHUB_SHA::7} (${GITHUB_REF_NAME})
+
+          Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+          Claude-Session: https://claude.ai/code/session_01L6YrpdQB8xo27qs5JraP4x"
+          git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+          for i in 1 2 3 4 5; do
+            if git push -q origin HEAD:gh-pages; then echo "gepusht"; break; fi
+            echo "Push abgelehnt (Versuch $i) – neu holen und den eigenen Commit darauf setzen"
+            git fetch -q --depth 1 --filter=blob:none origin gh-pages
+            if ! git rebase -q --onto FETCH_HEAD HEAD~1; then
+              git rebase --abort || true
+              git reset -q --hard FETCH_HEAD
+              apply
+              git commit -q -m "$(echo "$MSG" | sed 's/^          //')"
+            fi
+            [ "$i" = 5 ] && exit 1
+            sleep $((i * 7))
+          done
+          git log --oneline -2
+          echo "### Veröffentlicht: welt-test/zonen/trusetal/ ($(du -sh welt-test/zonen/trusetal | cut -f1))" >> "$GITHUB_STEP_SUMMARY"
