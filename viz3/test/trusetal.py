@@ -44,7 +44,8 @@ with lib.browser() as b:
     g = J("{ x: GAME.P.x, y: GAME.P.y, feet: GAME.P.feet, w: WELT.heightAt(GAME.P.x, GAME.P.y), g: KERN.ground(GAME.P.x, GAME.P.y) }")
     ck('the zone built around the walker from its own tiles (TRUSETAL ready, the tiles in)', J("TRUSETAL.state") == 'ready' and s['w'] == 0 and g['w'] is not None, json.dumps(s))
     hz = (g['w'] or 0) + 374.617
-    ck('… the ground at the town\'s real height (DGM1: the valley floor 380–480 m NHN), the walker on it', 380 < hz < 480 and abs(g['feet'] - g['g']) < 0.15,
+    # DGM1 there: 337.8 m NHN (the town lies in the Truse valley, 280–420 m from Herges-Auwallenburg up to the waterfall)
+    ck('… the ground at the town\'s real height (DGM1: about 338 m NHN in the core), the walker on it', 325 < hz < 350 and abs(g['feet'] - g['g']) < 0.15,
        f"{hz:.1f} m NHN; {json.dumps(g)}")
     ck('the houses stand around him (ETHOS cells, at least 250 within 350 m)', s['n'] >= 250 and not s['err'], json.dumps(s))
     E("if (!DN.active) GAME.setMode('auto'); CLOCK.t = 11 * 60; DN.update(true)")
